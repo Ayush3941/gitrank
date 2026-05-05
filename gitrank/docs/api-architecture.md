@@ -255,8 +255,27 @@ Implemented routes:
 - `GET /readyz`
 - `GET /metrics`
 - `GET /v1/meta/manifest`
+- `GET /v1/jobs`
 - `GET /v1/jobs/config`
+- `POST /v1/jobs/sync`
+- `POST /v1/jobs/lease`
+- `POST /v1/jobs/{job_id}/complete`
+- `POST /v1/jobs/{job_id}/fail`
+- `POST /v1/jobs/{job_id}/pause`
+- `POST /v1/jobs/{job_id}/resume`
+- `POST /v1/jobs/{job_id}/cancel`
+- `GET /v1/jobs/dead-letters`
 - `GET /v1/jobs/dead-letters/config`
+- `POST /v1/jobs/dead-letters/{record_id}/replay`
+
+Current state:
+
+- in-memory queue orchestration is implemented for local and integration use
+- sync jobs are deduplicated by `dedupe_key`
+- ready jobs can be leased up to the configured worker concurrency
+- retries apply exponential backoff before the next eligible lease
+- poison jobs move into a dead-letter queue and can be manually replayed
+- cron-driven recurring scheduling and persistent queue storage are still pending
 
 ## Browser Auth Scheme
 

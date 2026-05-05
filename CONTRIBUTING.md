@@ -571,18 +571,18 @@ Target directory:
 
 Must be implemented:
 
-- [ ] job queue selection
+- [x] job queue selection
 - [ ] cron scheduling
-- [ ] retry policy
-- [ ] exponential backoff
-- [ ] dead-letter queue
-- [ ] idempotent job handling
-- [ ] concurrency controls
+- [x] retry policy
+- [x] exponential backoff
+- [x] dead-letter queue
+- [x] idempotent job handling
+- [x] concurrency controls
 - [ ] per-user and per-installation rate controls
-- [ ] job cancellation or pausing support
-- [ ] manual replay support
+- [x] job cancellation or pausing support
+- [x] manual replay support
 - [ ] backfill orchestration
-- [ ] observability for queue depth and failures
+- [x] observability for queue depth and failures
 
 ## 12. Shared Packages Checklist
 
@@ -796,7 +796,7 @@ Metrics:
 
 - [x] HTTP request counts and latency
 - [x] queue depth
-- [ ] job retries
+- [x] job retries
 - [x] GitHub API rate-limit usage
 - [x] sync duration
 - [ ] analysis cost and token usage

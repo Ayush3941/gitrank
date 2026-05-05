@@ -210,7 +210,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			mode = req.Mode
 		}
 
-		jobs, err := manualSyncJobs(cfg, req, httpkit.RequestIDFromContext(r.Context()))
+		jobs, err := store.BuildSyncJobs(req, githubSyncQueueName, httpkit.RequestIDFromContext(r.Context()), cfg.Scheduler.MaxAttempts)
 		if err != nil {
 			status = "invalid_request"
 			httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
@@ -344,94 +344,6 @@ func webhookJobs(cfg config.App, envelope githubapi.WebhookEnvelope, correlation
 	return []store.QueueJob{job}, nil
 }
 
-func manualSyncJobs(cfg config.App, req contracts.SyncRequest, correlationID string) ([]store.QueueJob, error) {
-	switch req.Mode {
-	case "installation":
-		if req.InstallationID <= 0 {
-			return nil, errors.New("installation_id is required when mode=installation")
-		}
-		job, err := store.NewQueueJob(store.QueueJobInput{
-			QueueName:      githubSyncQueueName,
-			Type:           store.SyncInstallationJob,
-			CorrelationID:  correlationID,
-			InstallationID: req.InstallationID,
-			Subject:        strconv.FormatInt(req.InstallationID, 10),
-			DedupeKey:      "installation:" + strconv.FormatInt(req.InstallationID, 10),
-			MaxAttempts:    cfg.Scheduler.MaxAttempts,
-			Payload: map[string]any{
-				"installation_id": req.InstallationID,
-				"mode":            "installation",
-			},
-		})
-		if err != nil {
-			return nil, err
-		}
-		return []store.QueueJob{job}, nil
-	case "user":
-		if req.User == "" {
-			return nil, errors.New("user is required when mode=user")
-		}
-		job, err := store.NewQueueJob(store.QueueJobInput{
-			QueueName:     githubSyncQueueName,
-			Type:          store.SyncUserHistoryJob,
-			CorrelationID: correlationID,
-			Subject:       req.User,
-			DedupeKey:     "user:" + req.User,
-			MaxAttempts:   cfg.Scheduler.MaxAttempts,
-			Payload: map[string]string{
-				"user": req.User,
-				"mode": "user",
-			},
-		})
-		if err != nil {
-			return nil, err
-		}
-		return []store.QueueJob{job}, nil
-	case "repository":
-		if req.Repository == "" {
-			return nil, errors.New("repository is required when mode=repository")
-		}
-		job, err := store.NewQueueJob(store.QueueJobInput{
-			QueueName:     githubSyncQueueName,
-			Type:          store.SyncRepositoryJob,
-			CorrelationID: correlationID,
-			Repository:    req.Repository,
-			DedupeKey:     "repository:" + req.Repository,
-			MaxAttempts:   cfg.Scheduler.MaxAttempts,
-			Payload: map[string]string{
-				"repository": req.Repository,
-				"mode":       "repository",
-			},
-		})
-		if err != nil {
-			return nil, err
-		}
-		return []store.QueueJob{job}, nil
-	case "pull_request":
-		if req.Repository == "" || req.Number <= 0 {
-			return nil, errors.New("repository and number are required when mode=pull_request")
-		}
-		return resourceJobs(cfg, correlationID, store.SyncPullRequestJob, req.Repository, req.Number, "", "pull_request")
-	case "review":
-		if req.Repository == "" || req.Number <= 0 {
-			return nil, errors.New("repository and number are required when mode=review")
-		}
-		return resourceJobs(cfg, correlationID, store.SyncReviewJob, req.Repository, req.Number, "", "review")
-	case "issue":
-		if req.Repository == "" || req.Number <= 0 {
-			return nil, errors.New("repository and number are required when mode=issue")
-		}
-		return resourceJobs(cfg, correlationID, store.SyncIssueJob, req.Repository, req.Number, "", "issue")
-	case "commit":
-		if req.Repository == "" || req.SHA == "" {
-			return nil, errors.New("repository and sha are required when mode=commit")
-		}
-		return resourceJobs(cfg, correlationID, store.SyncCommitJob, req.Repository, 0, req.SHA, "commit")
-	default:
-		return nil, errors.New("unsupported sync mode")
-	}
-}
-
 func registerSyncRoute(mux *http.ServeMux, cfg config.App, queue *store.InMemoryJobQueue, syncMetrics *syncMetricsSource, path, mode string) {
 	mux.Handle(path, httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -448,7 +360,7 @@ func registerSyncRoute(mux *http.ServeMux, cfg config.App, queue *store.InMemory
 		}
 		req.Mode = mode
 
-		jobs, err := manualSyncJobs(cfg, req, httpkit.RequestIDFromContext(r.Context()))
+		jobs, err := store.BuildSyncJobs(req, githubSyncQueueName, httpkit.RequestIDFromContext(r.Context()), cfg.Scheduler.MaxAttempts)
 		if err != nil {
 			status = "invalid_request"
 			httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
@@ -461,48 +373,6 @@ func registerSyncRoute(mux *http.ServeMux, cfg config.App, queue *store.InMemory
 		}
 		httpkit.WriteJSON(w, http.StatusAccepted, queuePreview("queued", jobs, false))
 	})))
-}
-
-func resourceJobs(
-	cfg config.App,
-	correlationID string,
-	jobType store.SyncJobType,
-	repository string,
-	number int,
-	sha string,
-	mode string,
-) ([]store.QueueJob, error) {
-	subject := repository
-	payload := map[string]any{
-		"repository": repository,
-		"mode":       mode,
-	}
-	dedupeKey := mode + ":" + repository
-	if number > 0 {
-		subject = repository + "#" + strconv.Itoa(number)
-		payload["number"] = number
-		dedupeKey = subject
-	}
-	if sha != "" {
-		subject = repository + "@" + sha
-		payload["sha"] = sha
-		dedupeKey = subject
-	}
-
-	job, err := store.NewQueueJob(store.QueueJobInput{
-		QueueName:     githubSyncQueueName,
-		Type:          jobType,
-		CorrelationID: correlationID,
-		Repository:    repository,
-		Subject:       subject,
-		DedupeKey:     dedupeKey,
-		MaxAttempts:   cfg.Scheduler.MaxAttempts,
-		Payload:       payload,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return []store.QueueJob{job}, nil
 }
 
 func webhookSubject(envelope githubapi.WebhookEnvelope) string {

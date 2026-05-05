@@ -31,6 +31,8 @@ const (
 	JobSucceeded  SyncJobStatus = "succeeded"
 	JobFailed     SyncJobStatus = "failed"
 	JobDeadLetter SyncJobStatus = "dead_letter"
+	JobPaused     SyncJobStatus = "paused"
+	JobCanceled   SyncJobStatus = "canceled"
 )
 
 type QueueJob struct {
@@ -54,15 +56,22 @@ type QueueJob struct {
 }
 
 type DeadLetterRecord struct {
-	ID            string          `json:"id"`
-	JobID         string          `json:"job_id"`
-	JobType       SyncJobType     `json:"job_type"`
-	DeliveryID    string          `json:"delivery_id,omitempty"`
-	CorrelationID string          `json:"correlation_id,omitempty"`
-	Attempts      int             `json:"attempts"`
-	ErrorMessage  string          `json:"error_message"`
-	Payload       json.RawMessage `json:"payload"`
-	CreatedAt     time.Time       `json:"created_at"`
+	ID             string          `json:"id"`
+	JobID          string          `json:"job_id"`
+	QueueName      string          `json:"queue_name"`
+	JobType        SyncJobType     `json:"job_type"`
+	DeliveryID     string          `json:"delivery_id,omitempty"`
+	CorrelationID  string          `json:"correlation_id,omitempty"`
+	InstallationID int64           `json:"installation_id,omitempty"`
+	Repository     string          `json:"repository,omitempty"`
+	Subject        string          `json:"subject,omitempty"`
+	DedupeKey      string          `json:"dedupe_key,omitempty"`
+	Attempts       int             `json:"attempts"`
+	MaxAttempts    int             `json:"max_attempts"`
+	ErrorMessage   string          `json:"error_message"`
+	Payload        json.RawMessage `json:"payload"`
+	CreatedAt      time.Time       `json:"created_at"`
+	ReplayedAt     *time.Time      `json:"replayed_at,omitempty"`
 }
 
 type QueueJobInput struct {
