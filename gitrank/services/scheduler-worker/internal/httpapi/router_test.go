@@ -153,6 +153,65 @@ func TestSchedulerPauseResumeAndMetrics(t *testing.T) {
 	}
 }
 
+func TestSchedulerLeaseAndCompleteLifecycle(t *testing.T) {
+	router := newTestRouter(testConfig())
+
+	enqueueResponse := httptest.NewRecorder()
+	enqueueRequest := httptest.NewRequest(http.MethodPost, "/v1/jobs/sync", strings.NewReader(`{"mode":"user","user":"octocat"}`))
+	enqueueRequest.Header.Set("Content-Type", "application/json")
+	router.ServeHTTP(enqueueResponse, enqueueRequest)
+	if enqueueResponse.Code != http.StatusAccepted {
+		t.Fatalf("enqueue status = %d, want %d, body=%s", enqueueResponse.Code, http.StatusAccepted, enqueueResponse.Body.String())
+	}
+
+	leaseResponse := httptest.NewRecorder()
+	leaseRequest := httptest.NewRequest(http.MethodPost, "/v1/jobs/lease", strings.NewReader(`{"limit":1}`))
+	leaseRequest.Header.Set("Content-Type", "application/json")
+	router.ServeHTTP(leaseResponse, leaseRequest)
+	if leaseResponse.Code != http.StatusOK {
+		t.Fatalf("lease status = %d, want %d, body=%s", leaseResponse.Code, http.StatusOK, leaseResponse.Body.String())
+	}
+
+	var leaseOut contracts.SchedulerLeaseResponse
+	if err := json.Unmarshal(leaseResponse.Body.Bytes(), &leaseOut); err != nil {
+		t.Fatalf("unmarshal lease response: %v", err)
+	}
+	if len(leaseOut.Jobs) != 1 {
+		t.Fatalf("lease jobs = %d, want 1", len(leaseOut.Jobs))
+	}
+
+	completeResponse := httptest.NewRecorder()
+	router.ServeHTTP(completeResponse, httptest.NewRequest(http.MethodPost, "/v1/jobs/"+leaseOut.Jobs[0].ID+"/complete", nil))
+	if completeResponse.Code != http.StatusOK {
+		t.Fatalf("complete status = %d, want %d, body=%s", completeResponse.Code, http.StatusOK, completeResponse.Body.String())
+	}
+
+	var completed contracts.SchedulerJobActionResponse
+	if err := json.Unmarshal(completeResponse.Body.Bytes(), &completed); err != nil {
+		t.Fatalf("unmarshal complete response: %v", err)
+	}
+	if completed.Status != "completed" {
+		t.Fatalf("complete status = %q, want completed", completed.Status)
+	}
+
+	queueResponse := httptest.NewRecorder()
+	router.ServeHTTP(queueResponse, httptest.NewRequest(http.MethodGet, "/v1/jobs", nil))
+	if queueResponse.Code != http.StatusOK {
+		t.Fatalf("queue status = %d, want %d, body=%s", queueResponse.Code, http.StatusOK, queueResponse.Body.String())
+	}
+
+	var queueOut contracts.SchedulerQueueStatusResponse
+	if err := json.Unmarshal(queueResponse.Body.Bytes(), &queueOut); err != nil {
+		t.Fatalf("unmarshal queue response: %v", err)
+	}
+	if queueOut.QueueDepth != 0 {
+		t.Fatalf("queue depth = %d, want 0", queueOut.QueueDepth)
+	}
+	if queueOut.ActiveLeases != 0 {
+		t.Fatalf("active leases = %d, want 0", queueOut.ActiveLeases)
+	}
+}
+
 func TestSchedulerQueueStatusFiltersByUserAndRepository(t *testing.T) {
 	router := newTestRouter(testConfig())
 

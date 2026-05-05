@@ -696,7 +696,7 @@ Integration tests:
 
 - [ ] DB repositories
 - [x] service HTTP handlers
-- [ ] queue workers
+- [x] queue workers
 - [x] GitHub API client adapters
 - [ ] migration safety
 

@@ -187,6 +187,73 @@ func TestQueueStatusFiltersJobsByUserAndRepository(t *testing.T) {
 	}
 }
 
+func TestLeaseFailRetryAndCompleteLifecycle(t *testing.T) {
+	cfg := testServiceConfig()
+	cfg.Scheduler.RetryBackoff = time.Second
+	scheduler := New(cfg)
+	leaseAt := time.Now().UTC().Add(2 * time.Second)
+
+	enqueue, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "user", User: "octocat"}, "worker-correlation", leaseAt.Add(-2*time.Second))
+	if err != nil {
+		t.Fatalf("EnqueueSync() error = %v", err)
+	}
+	if len(enqueue.JobIDs) != 1 {
+		t.Fatalf("job ids len = %d, want 1", len(enqueue.JobIDs))
+	}
+	jobID := enqueue.JobIDs[0]
+
+	firstLease := scheduler.Lease(1, leaseAt)
+	if len(firstLease.Jobs) != 1 {
+		t.Fatalf("first lease jobs = %d, want 1", len(firstLease.Jobs))
+	}
+	if firstLease.Jobs[0].ID != jobID {
+		t.Fatalf("leased job id = %q, want %q", firstLease.Jobs[0].ID, jobID)
+	}
+
+	failed, err := scheduler.Fail(jobID, "temporary upstream failure", leaseAt)
+	if err != nil {
+		t.Fatalf("Fail() error = %v", err)
+	}
+	if failed.Status != "failed" {
+		t.Fatalf("fail status = %q, want failed", failed.Status)
+	}
+	if failed.Job.AttemptCount != 1 {
+		t.Fatalf("attempt count = %d, want 1", failed.Job.AttemptCount)
+	}
+
+	earlyLease := scheduler.Lease(1, leaseAt.Add(500*time.Millisecond))
+	if len(earlyLease.Jobs) != 0 {
+		t.Fatalf("early lease jobs = %d, want 0 before backoff expires", len(earlyLease.Jobs))
+	}
+
+	retryLease := scheduler.Lease(1, leaseAt.Add(1100*time.Millisecond))
+	if len(retryLease.Jobs) != 1 {
+		t.Fatalf("retry lease jobs = %d, want 1", len(retryLease.Jobs))
+	}
+	if retryLease.Jobs[0].ID != jobID {
+		t.Fatalf("retry leased job id = %q, want %q", retryLease.Jobs[0].ID, jobID)
+	}
+
+	completed, err := scheduler.Complete(jobID, leaseAt.Add(2*time.Second))
+	if err != nil {
+		t.Fatalf("Complete() error = %v", err)
+	}
+	if completed.Status != "completed" {
+		t.Fatalf("complete status = %q, want completed", completed.Status)
+	}
+
+	queue := scheduler.QueueStatus(leaseAt.Add(2*time.Second), contracts.SchedulerJobFilter{})
+	if queue.QueueDepth != 0 {
+		t.Fatalf("queue depth = %d, want 0", queue.QueueDepth)
+	}
+	if queue.ActiveLeases != 0 {
+		t.Fatalf("active leases = %d, want 0", queue.ActiveLeases)
+	}
+	if queue.Retried != 1 {
+		t.Fatalf("retried = %d, want 1", queue.Retried)
+	}
+}
+
 func testServiceConfig() config.App {
 	return config.App{
 		ServiceName: "scheduler-worker",
