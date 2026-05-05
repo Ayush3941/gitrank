@@ -6,5 +6,6 @@ cd "$root_dir"
 
 make fmt
 make test
+make test-migrations
 make vet
 make race

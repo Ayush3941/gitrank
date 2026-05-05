@@ -39,6 +39,9 @@ jobs:
       - name: Run tests
         run: find . -name go.mod -execdir sh -c 'go test ./...' \;
 
+      - name: Run migration smoke test
+        run: ./scripts/test_migrations.sh
+
       - name: Run builds
         run: find . -name go.mod -execdir sh -c 'go build ./...' \;
 

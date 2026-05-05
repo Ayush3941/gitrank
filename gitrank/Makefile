@@ -2,7 +2,7 @@ SHELL := /bin/sh
 TMPDIR ?= $(CURDIR)/.tmp
 GOCACHE ?= $(CURDIR)/.gocache
 
-.PHONY: fmt test race vet tidy compose-up compose-down
+.PHONY: fmt test test-migrations race vet tidy compose-up compose-down
 
 fmt:
 	mkdir -p "$(TMPDIR)" "$(GOCACHE)"
@@ -11,6 +11,9 @@ fmt:
 test:
 	mkdir -p "$(TMPDIR)" "$(GOCACHE)"
 	find . -name go.mod -execdir sh -c 'TMPDIR="$(TMPDIR)" GOCACHE="$(GOCACHE)" go test ./...' \;
+
+test-migrations:
+	./scripts/test_migrations.sh
 
 race:
 	mkdir -p "$(TMPDIR)" "$(GOCACHE)"

@@ -698,7 +698,7 @@ Integration tests:
 - [x] service HTTP handlers
 - [x] queue workers
 - [x] GitHub API client adapters
-- [ ] migration safety
+- [x] migration safety
 
 Contract tests:
 
