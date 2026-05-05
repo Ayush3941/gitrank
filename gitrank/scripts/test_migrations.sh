@@ -69,6 +69,8 @@ fi
 DATABASE_URL="postgres://${db_user}:${db_password}@127.0.0.1:${host_port}/${db_name}?sslmode=disable" \
   "$root_dir/scripts/migrate.sh"
 
+mkdir -p "$root_dir/.tmp" "$root_dir/.gocache"
+
 assert_true "users table exists" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'users');"
 assert_true "github_installations table exists" \
@@ -87,5 +89,13 @@ assert_true "auth session token hash column exists" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'auth_sessions' AND column_name = 'session_token_hash');"
 assert_true "profile snapshot freshness columns exist" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'profile_snapshots' AND column_name = 'refreshed_at');"
+
+(
+  cd "$root_dir/packages/store"
+  TMPDIR="$root_dir/.tmp" \
+    GOCACHE="$root_dir/.gocache" \
+    GITRANK_STORE_DATABASE_URL="postgres://${db_user}:${db_password}@127.0.0.1:${host_port}/${db_name}?sslmode=disable" \
+    go test ./...
+)
 
 echo "migration smoke test passed"

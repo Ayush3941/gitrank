@@ -694,7 +694,7 @@ Unit tests:
 
 Integration tests:
 
-- [ ] DB repositories
+- [x] DB repositories
 - [x] service HTTP handlers
 - [x] queue workers
 - [x] GitHub API client adapters
