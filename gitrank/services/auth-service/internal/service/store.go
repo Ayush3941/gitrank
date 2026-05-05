@@ -412,6 +412,41 @@ func (s *Store) UnlinkAccount(ctx context.Context, userID, githubAccountID strin
 	})
 }
 
+func (s *Store) DeleteAccount(ctx context.Context, userID, githubAccountID string, now time.Time) error {
+	return withTx(ctx, s.pool, func(tx pgx.Tx) error {
+		row := tx.QueryRow(ctx, `
+			SELECT id::text, login
+			FROM github_accounts
+			WHERE id = $1
+			  AND user_id = $2::uuid
+			  AND link_status = 'linked'
+		`, githubAccountID, userID)
+
+		var accountID string
+		var githubLogin string
+		if err := row.Scan(&accountID, &githubLogin); err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return ErrNotFound
+			}
+			return err
+		}
+
+		if err := insertAudit(ctx, tx, "user", userID, "auth.account_deleted", "user", userID, map[string]any{
+			"github_account_id": accountID,
+			"github_login":      githubLogin,
+			"mode":              "hard_delete_v1",
+		}); err != nil {
+			return err
+		}
+
+		_, err := tx.Exec(ctx, `
+			DELETE FROM users
+			WHERE id = $1::uuid
+		`, userID)
+		return err
+	})
+}
+
 func (s *Store) Audit(ctx context.Context, actorType, actorID, action, targetType, targetID string, metadata map[string]any) error {
 	return insertAudit(ctx, s.pool, actorType, actorID, action, targetType, targetID, metadata)
 }

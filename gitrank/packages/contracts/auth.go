@@ -77,3 +77,9 @@ type AccountUnlinkResponse struct {
 	LoggedOut     bool   `json:"logged_out"`
 	ReauthorizeAt string `json:"reauthorize_at,omitempty"`
 }
+
+type AccountDeletionResponse struct {
+	Status    string    `json:"status"`
+	LoggedOut bool      `json:"logged_out"`
+	DeletedAt time.Time `json:"deleted_at"`
+}

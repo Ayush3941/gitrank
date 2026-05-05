@@ -132,6 +132,48 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		})
 	})))
 
+	mux.Handle("/v1/me/account/unlink", sessionAuth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			writeMethodNotAllowed(w, r)
+			return
+		}
+		if err := validateSessionCSRF(r, cfg.Auth.SessionCookieName, []byte(cfg.Auth.SessionSecret)); err != nil {
+			httpkit.WriteError(w, http.StatusForbidden, "invalid_csrf", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		if !allowRateLimit(w, r, writeLimiter, "account_unlink") {
+			return
+		}
+
+		proxyRequest(w, r, client, authBaseURL, "/v1/account/unlink", proxyOptions{
+			ForwardHeaders: defaultForwardHeaders(r),
+			ResponseHeaders: map[string]string{
+				"Cache-Control": "private, no-store",
+			},
+		})
+	})))
+
+	mux.Handle("/v1/me/account/delete", sessionAuth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			writeMethodNotAllowed(w, r)
+			return
+		}
+		if err := validateSessionCSRF(r, cfg.Auth.SessionCookieName, []byte(cfg.Auth.SessionSecret)); err != nil {
+			httpkit.WriteError(w, http.StatusForbidden, "invalid_csrf", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		if !allowRateLimit(w, r, writeLimiter, "account_delete") {
+			return
+		}
+
+		proxyRequest(w, r, client, authBaseURL, "/v1/account/delete", proxyOptions{
+			ForwardHeaders: defaultForwardHeaders(r),
+			ResponseHeaders: map[string]string{
+				"Cache-Control": "private, no-store",
+			},
+		})
+	})))
+
 	mux.Handle("/v1/sync", sessionAuth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			writeMethodNotAllowed(w, r)

@@ -304,6 +304,120 @@ func TestSyncRouteRejectsInvalidCSRF(t *testing.T) {
 	}
 }
 
+func TestAccountUnlinkRouteForwardsCookiesAndPrivateCacheControl(t *testing.T) {
+	auth := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/v1/session/me":
+			_ = json.NewEncoder(w).Encode(contracts.SessionEnvelope{
+				Session: contracts.SessionIdentity{
+					Subject:     "user-1",
+					GitHubLogin: "octocat",
+					Roles:       []string{"user"},
+				},
+			})
+		case "/v1/account/unlink":
+			if r.Method != http.MethodPost {
+				t.Fatalf("unlink method = %s, want POST", r.Method)
+			}
+			if r.Header.Get("X-CSRF-Token") == "" {
+				t.Fatal("expected CSRF token to be forwarded")
+			}
+			http.SetCookie(w, &http.Cookie{Name: "gitrank_session", Value: "", Path: "/", MaxAge: -1})
+			http.SetCookie(w, &http.Cookie{Name: "gitrank_csrf", Value: "", Path: "/", MaxAge: -1})
+			_ = json.NewEncoder(w).Encode(contracts.AccountUnlinkResponse{
+				Status:        "unlinked",
+				LoggedOut:     true,
+				ReauthorizeAt: "http://localhost:3000/login",
+			})
+		default:
+			t.Fatalf("unexpected auth path %s", r.URL.Path)
+		}
+	}))
+	defer auth.Close()
+
+	router := NewRouter(testConfig(stubProfileServer().URL, auth.URL, stubIngestorServer().URL), testLogger(), "test")
+	request := httptest.NewRequest(http.MethodPost, "/v1/me/account/unlink", strings.NewReader(`{}`))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Cookie", "gitrank_session=session-original; gitrank_csrf=csrf-original")
+	csrfToken, err := authkit.DoubleSubmitCSRFFromToken([]byte("test-session-secret"), "session-original")
+	if err != nil {
+		t.Fatalf("csrf token: %v", err)
+	}
+	request.Header.Set("X-CSRF-Token", csrfToken)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusOK, response.Body.String())
+	}
+	if response.Header().Get("Cache-Control") != "private, no-store" {
+		t.Fatalf("cache-control = %q, want private, no-store", response.Header().Get("Cache-Control"))
+	}
+	if len(response.Result().Cookies()) != 2 {
+		t.Fatalf("cookies len = %d, want 2", len(response.Result().Cookies()))
+	}
+}
+
+func TestAccountDeleteRoutePassesThroughDeletionResponse(t *testing.T) {
+	deletedAt := time.Date(2026, 5, 5, 16, 0, 0, 0, time.UTC)
+	auth := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/v1/session/me":
+			_ = json.NewEncoder(w).Encode(contracts.SessionEnvelope{
+				Session: contracts.SessionIdentity{
+					Subject:     "user-1",
+					GitHubLogin: "octocat",
+					Roles:       []string{"user"},
+				},
+			})
+		case "/v1/account/delete":
+			payload, _ := io.ReadAll(r.Body)
+			if string(payload) != `{"confirmation":"DELETE"}` {
+				t.Fatalf("delete body = %q, want confirmation payload", string(payload))
+			}
+			http.SetCookie(w, &http.Cookie{Name: "gitrank_session", Value: "", Path: "/", MaxAge: -1})
+			http.SetCookie(w, &http.Cookie{Name: "gitrank_csrf", Value: "", Path: "/", MaxAge: -1})
+			_ = json.NewEncoder(w).Encode(contracts.AccountDeletionResponse{
+				Status:    "deleted",
+				LoggedOut: true,
+				DeletedAt: deletedAt,
+			})
+		default:
+			t.Fatalf("unexpected auth path %s", r.URL.Path)
+		}
+	}))
+	defer auth.Close()
+
+	router := NewRouter(testConfig(stubProfileServer().URL, auth.URL, stubIngestorServer().URL), testLogger(), "test")
+	request := httptest.NewRequest(http.MethodPost, "/v1/me/account/delete", strings.NewReader(`{"confirmation":"DELETE"}`))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Cookie", "gitrank_session=session-original; gitrank_csrf=csrf-original")
+	csrfToken, err := authkit.DoubleSubmitCSRFFromToken([]byte("test-session-secret"), "session-original")
+	if err != nil {
+		t.Fatalf("csrf token: %v", err)
+	}
+	request.Header.Set("X-CSRF-Token", csrfToken)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusOK, response.Body.String())
+	}
+	if len(response.Result().Cookies()) != 2 {
+		t.Fatalf("cookies len = %d, want 2", len(response.Result().Cookies()))
+	}
+
+	var observed contracts.AccountDeletionResponse
+	if err := json.Unmarshal(response.Body.Bytes(), &observed); err != nil {
+		t.Fatalf("unmarshal response: %v", err)
+	}
+	if observed.Status != "deleted" || !observed.DeletedAt.Equal(deletedAt) {
+		t.Fatalf("deletion response = %+v", observed)
+	}
+}
+
 func testConfig(profileBaseURL, authBaseURL, ingestorBaseURL string) config.App {
 	return config.App{
 		ServiceName: "api-gateway",

@@ -24,6 +24,10 @@ type linkStartRequest struct {
 	ReturnTo string `json:"return_to,omitempty"`
 }
 
+type accountDeleteRequest struct {
+	Confirmation string `json:"confirmation"`
+}
+
 func NewRouter(cfg config.App, authService *service.Service, log *slog.Logger, version string) http.Handler {
 	manifest := app.Manifest(cfg, version)
 	mux := http.NewServeMux()
@@ -174,6 +178,35 @@ func NewRouter(cfg config.App, authService *service.Service, log *slog.Logger, v
 		})
 	})))
 
+	mux.Handle("/v1/account/delete", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		now := time.Now().UTC()
+		if !checkRateLimit(w, r, authService, "account_delete", now) {
+			return
+		}
+
+		var req accountDeleteRequest
+		if err := httpkit.DecodeJSON(r, &req, 1<<20); err != nil {
+			httpkit.WriteError(w, http.StatusBadRequest, "invalid_json", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		if strings.TrimSpace(req.Confirmation) != "DELETE" {
+			httpkit.WriteError(w, http.StatusBadRequest, "invalid_confirmation", "confirmation must equal DELETE", httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+
+		sessionCookie, _ := r.Cookie(cfg.Auth.SessionCookieName)
+		if err := authService.DeleteAccount(r.Context(), cookieValue(sessionCookie), r.Header.Get("X-CSRF-Token"), now); err != nil {
+			writeAuthError(w, r, err)
+			return
+		}
+		clearSessionCookies(w, cfg)
+		httpkit.WriteJSON(w, http.StatusOK, contracts.AccountDeletionResponse{
+			Status:    "deleted",
+			LoggedOut: true,
+			DeletedAt: now,
+		})
+	})))
+
 	mux.Handle("/v1/session/me", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sessionCookie, _ := r.Cookie(cfg.Auth.SessionCookieName)
 		result, err := authService.GetSession(r.Context(), cookieValue(sessionCookie), time.Now().UTC())
@@ -228,6 +261,8 @@ func writeAuthError(w http.ResponseWriter, r *http.Request, err error) {
 	switch {
 	case errors.Is(err, service.ErrSessionNotFound):
 		httpkit.WriteError(w, http.StatusUnauthorized, "unauthorized", "authentication required", requestID)
+	case errors.Is(err, service.ErrNotFound):
+		httpkit.WriteError(w, http.StatusNotFound, "not_found", "requested auth resource was not found", requestID)
 	case errors.Is(err, service.ErrInvalidCSRF):
 		httpkit.WriteError(w, http.StatusForbidden, "invalid_csrf", err.Error(), requestID)
 	case errors.Is(err, service.ErrStateNotUsable):

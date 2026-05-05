@@ -20,6 +20,7 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 			{Method: "GET", Path: "/oauth/github/callback", Summary: "Complete GitHub sign-in or account-link flow", Status: "implemented"},
 			{Method: "POST", Path: "/v1/account/link/start", Summary: "Begin authenticated GitHub account link or reauthorization flow", Status: "implemented"},
 			{Method: "POST", Path: "/v1/account/unlink", Summary: "Unlink the active GitHub account and revoke local auth state", Status: "implemented"},
+			{Method: "POST", Path: "/v1/account/delete", Summary: "Delete the active account and remove user-owned auth state", Status: "implemented"},
 			{Method: "GET", Path: "/v1/session/me", Summary: "Authenticated session inspection", Status: "implemented"},
 			{Method: "POST", Path: "/v1/session/refresh", Summary: "Rotate the current session and extend its lifetime", Status: "implemented"},
 			{Method: "POST", Path: "/v1/session/logout", Summary: "Invalidate the current session", Status: "implemented"},

@@ -134,6 +134,8 @@ Implemented routes:
 - `GET /v1/me/profile`
 - `PATCH /v1/me/profile`
 - `PATCH /v1/me/profile/repositories/{owner}/{repo}`
+- `POST /v1/me/account/unlink`
+- `POST /v1/me/account/delete`
 - `GET /v1/users/{handle}`
 - `GET /v1/users/{handle}/card`
 
@@ -145,9 +147,10 @@ Gateway behavior:
 - rate limits public reads, private reads, and state-changing routes separately
 - verifies the browser session by calling `auth-service /v1/session/me`
 - rotates downstream cookies if `auth-service` rotates the session
+- forwards downstream session-clearing `Set-Cookie` headers from `auth-service`
 - requires `X-CSRF-Token` on state-changing browser routes
 - returns short-lived public caching headers for public profiles
-- returns `Cache-Control: private, no-store` for authenticated profile and sync routes
+- returns `Cache-Control: private, no-store` for authenticated profile, sync, and account-action routes
 
 ### Auth Service
 
@@ -166,6 +169,7 @@ Implemented routes:
 - `GET /oauth/github/callback`
 - `POST /v1/account/link/start`
 - `POST /v1/account/unlink`
+- `POST /v1/account/delete`
 - `GET /v1/session/me`
 - `POST /v1/session/refresh`
 - `POST /v1/session/logout`
@@ -175,7 +179,7 @@ Auth behavior:
 - issues cookie-based browser sessions
 - rotates sessions on inspection and refresh
 - uses double-submit CSRF tokens for state-changing routes
-- supports GitHub account linking and unlinking
+- supports GitHub account linking, unlinking, and self-service account deletion
 - encrypts GitHub user tokens at rest
 
 ### GitHub Ingestor
@@ -320,6 +324,8 @@ Route requirements:
 - `GET /v1/me/profile` requires a valid session cookie
 - `PATCH /v1/me/profile` requires a valid session cookie and matching CSRF header
 - `PATCH /v1/me/profile/repositories/{owner}/{repo}` requires a valid session cookie and matching CSRF header
+- `POST /v1/me/account/unlink` requires a valid session cookie and matching CSRF header
+- `POST /v1/me/account/delete` requires a valid session cookie and matching CSRF header
 - `POST /v1/sync` requires a valid session cookie and matching CSRF header
 
 ## Rate Limiting

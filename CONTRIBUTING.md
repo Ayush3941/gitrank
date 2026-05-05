@@ -658,7 +658,7 @@ Current preview state:
 
 ## 13. Frontend and User Experience Checklist
 
-The repo now contains a Next.js frontend in a nested git repo with its own CI and secret-scanning workflows. Real backend integration is still incomplete outside profile and settings flows.
+The repo now contains a Next.js frontend in a nested git repo with its own CI and secret-scanning workflows. Public profile reads plus authenticated settings, sync, disconnect, and account-deletion flows are live. Most other product surfaces still use mock data.
 
 Must be defined or built:
 
@@ -886,7 +886,7 @@ GitRank may expose reputational data about real people. That increases the stand
 - [x] define whether AI providers receive raw code snippets or summaries only
 - [x] minimize transmitted and retained data
 - [x] let users understand what data powers their score
-- [ ] let users request re-sync or deletion
+- [x] let users request re-sync or deletion
 - [x] document privacy limitations clearly
 - [x] document known fairness limitations clearly
 

@@ -26,6 +26,7 @@ tags:
   - name: Meta
   - name: Profiles
   - name: Sync
+  - name: Account
 paths:
   /healthz:
     get:
@@ -202,6 +203,130 @@ paths:
           headers:
             X-Request-ID:
               $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /v1/me/account/unlink:
+    post:
+      tags: [Account]
+      summary: Disconnect the linked GitHub account and clear the current session
+      operationId: unlinkMyAccount
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      responses:
+        "200":
+          description: Linked account disconnected and current session cleared
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Cache-Control:
+              $ref: "#/components/headers/PrivateNoStoreCacheControl"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountUnlinkResponse"
+        "401":
+          description: Authentication required
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Invalid or missing CSRF token
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limit exceeded
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Retry-After:
+              $ref: "#/components/headers/RetryAfter"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /v1/me/account/delete:
+    post:
+      tags: [Account]
+      summary: Delete the authenticated GitRank account and clear the current session
+      description: |
+        This route performs confirmed self-service account deletion for the authenticated user.
+
+        Current v1 behavior:
+        - user-owned GitRank records are hard-deleted immediately after confirmation
+        - detached repository-level contribution evidence may remain when historical foreign keys use `ON DELETE SET NULL`
+      operationId: deleteMyAccount
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteAccountRequest"
+            examples:
+              confirmDelete:
+                summary: Confirm account deletion
+                value:
+                  confirmation: DELETE
+      responses:
+        "200":
+          description: Account deleted and current session cleared
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Cache-Control:
+              $ref: "#/components/headers/PrivateNoStoreCacheControl"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountDeletionResponse"
+        "400":
+          description: Invalid confirmation or JSON payload
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Invalid or missing CSRF token
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limit exceeded
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Retry-After:
+              $ref: "#/components/headers/RetryAfter"
           content:
             application/json:
               schema:
@@ -603,6 +728,36 @@ components:
         correlation_id:
           type: string
         accepted_at:
+          type: string
+          format: date-time
+    DeleteAccountRequest:
+      type: object
+      required: [confirmation]
+      properties:
+        confirmation:
+          type: string
+          enum: [DELETE]
+    AccountUnlinkResponse:
+      type: object
+      required: [status, logged_out]
+      properties:
+        status:
+          type: string
+          example: unlinked
+        logged_out:
+          type: boolean
+        reauthorize_at:
+          type: string
+    AccountDeletionResponse:
+      type: object
+      required: [status, logged_out, deleted_at]
+      properties:
+        status:
+          type: string
+          example: deleted
+        logged_out:
+          type: boolean
+        deleted_at:
           type: string
           format: date-time
     PublicProfileSummary:

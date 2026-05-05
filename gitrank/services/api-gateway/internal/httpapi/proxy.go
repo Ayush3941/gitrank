@@ -112,6 +112,11 @@ func copyResponseHeaders(dst, src http.Header) {
 	for _, name := range []string{"Content-Type", "Cache-Control", "ETag", "Retry-After", "X-Request-ID"} {
 		copyHeaderIfPresent(dst, name, src.Get(name))
 	}
+	for _, value := range src.Values("Set-Cookie") {
+		if strings.TrimSpace(value) != "" {
+			dst.Add("Set-Cookie", value)
+		}
+	}
 }
 
 func copyHeaderIfPresent(dst http.Header, key, value string) {

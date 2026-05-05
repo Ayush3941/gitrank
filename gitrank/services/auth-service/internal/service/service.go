@@ -363,6 +363,17 @@ func (s *Service) UnlinkAccount(ctx context.Context, sessionToken, csrfToken str
 	return s.store.UnlinkAccount(ctx, session.UserID, session.GitHubAccountID, now)
 }
 
+func (s *Service) DeleteAccount(ctx context.Context, sessionToken, csrfToken string, now time.Time) error {
+	session, _, err := s.authenticateSession(ctx, sessionToken, now, false)
+	if err != nil {
+		return err
+	}
+	if err := s.validateCSRF(sessionToken, csrfToken); err != nil {
+		return err
+	}
+	return s.store.DeleteAccount(ctx, session.UserID, session.GitHubAccountID, now)
+}
+
 func (s *Service) startOAuth(ctx context.Context, intent, linkingUserID, returnTo, requestIP, userAgent string, now time.Time) (OAuthStartResult, error) {
 	stateNonce, err := authkit.NewOpaqueToken(24)
 	if err != nil {

@@ -716,12 +716,12 @@ The repository currently contains a working foundation, not just an empty scaffo
 - deterministic PR analysis and deterministic contribution scoring services
 - a snapshot-backed profile-service read model with privacy controls, repository visibility, caching, and share-card data
 - an in-memory scheduler-worker orchestration layer with deduplicated enqueue, recurring backfill plans, plan pause/resume/delete controls, per-scope throttling, leasing, retries, dead letters, pause/cancel controls, and manual replay
-- live profile route integration through api-gateway plus frontend BFF routes for public profile and settings pages
+- live profile route integration through api-gateway plus frontend BFF routes for public profile and settings pages, including settings-triggered sync, GitHub disconnect, and self-service account deletion
 - metrics endpoints and shared request instrumentation across the Go services, including queue depth, cache hit rate, sync duration, score computation duration, PR analysis breakdowns, GitHub rate-limit tracking, and HTTP error counters
 - PostgreSQL migrations for core entities, GitHub ingestion state, and auth/session security tables
 - generic OCI build packaging under `deployments/docker/` and a release workflow that builds binaries, publishes GitHub Releases, and pushes per-service OCI images
 - a Kubernetes deployment baseline under `deployments/k8s/` with namespace and kustomization scaffolding
-- a substantial Next.js frontend with dashboard, profile, leaderboard, quest, badge, onboarding, and PR-report flows, with profile/settings partially backed by the live Go services
+- a substantial Next.js frontend with dashboard, profile, leaderboard, quest, badge, onboarding, and PR-report flows, with live profile/settings/account actions and mock-backed dashboard, leaderboard, quest, badge, and PR-report surfaces
 - CI, release-artifact, dependency-review, CodeQL, Scorecard, and repo-level secret-scan workflows, plus frontend-specific CI and secret scanning in the nested frontend repo
 
 Major gaps remain:

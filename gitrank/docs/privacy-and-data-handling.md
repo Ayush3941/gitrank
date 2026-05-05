@@ -98,14 +98,15 @@ When a user requests deletion:
 
 1. public profile visibility is disabled immediately
 2. active sessions and linked OAuth tokens are invalidated immediately
-3. user-linked derived profile views, scores, badges, and ranking presence are removed from public surfaces as soon as practical
-4. remaining user-owned records are deleted or tombstoned within 30 days unless a security incident or abuse review requires a temporary hold
+3. user-linked derived profile views, scores, badges, sessions, and ranking presence are removed from GitRank immediately
+4. v1 currently performs immediate hard deletion of user-owned GitRank records after confirmed self-service deletion
+5. contribution evidence that is retained for repository-level history may remain detached from the deleted user account when foreign-key relationships are defined as `ON DELETE SET NULL`
 
 GitRank v1 should prefer:
 
 - immediate public hiding
 - fast credential invalidation
-- short delayed cleanup for replay-safe or audit-safe deletion
+- immediate hard deletion of user-owned records once the request is confirmed
 
 ## Provenance and User Understanding
 
