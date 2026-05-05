@@ -39,7 +39,7 @@ That means GitRank must be:
 
 ## Current Repository Status
 
-The repository is at the scaffold stage.
+The repository is past the pure scaffold stage, but it is not production-ready.
 
 Current state:
 
@@ -48,7 +48,7 @@ Current state:
 - [x] Go workspace exists at `gitrank/go.work`.
 - [x] Core service modules are scaffolded.
 - [x] Shared package modules are scaffolded.
-- [ ] Business logic is implemented.
+- [x] Business logic exists for auth, webhook intake, deterministic PR analysis, scoring, and the mock frontend product flows.
 - [x] API contracts are implemented.
 - [x] Database schema exists.
 - [x] Migrations exist.
@@ -63,12 +63,19 @@ Current state:
 
 ## Repository Layout
 
-The current source tree lives under `gitrank/`.
+The backend workspace lives under `gitrank/`. The frontend lives under `frontend/`.
 
 ```text
 .
 ├── CONTRIBUTING.md
 ├── README.md
+├── frontend/
+│   ├── app/
+│   ├── components/
+│   ├── features/
+│   ├── hooks/
+│   ├── lib/
+│   └── types/
 └── gitrank/
     ├── AGENTS.md
     ├── README.md
@@ -117,9 +124,9 @@ Read these first:
 
 Then understand the current reality:
 
-- the project is still mostly a design and architecture scaffold
+- the project already contains meaningful implementation, but several services are still partial
 - contributors are expected to improve both implementation and clarity
-- a large portion of the work is still foundational, not feature polish
+- a large portion of the remaining work is integration, persistence, and production hardening rather than pure feature polish
 
 ## Contribution Rules
 
@@ -346,15 +353,15 @@ Target directory:
 Must be implemented:
 
 - [x] HTTP server bootstrap
-- [ ] structured request logging
-- [ ] request ID middleware
-- [ ] panic recovery middleware
+- [x] structured request logging
+- [x] request ID middleware
+- [x] panic recovery middleware
 - [ ] auth middleware
 - [ ] CORS policy
 - [ ] rate limiting
-- [ ] API versioning
+- [x] API versioning
 - [ ] input validation
-- [ ] consistent error envelopes
+- [x] consistent error envelopes
 - [x] health endpoints
 - [x] readiness endpoints
 - [ ] metrics endpoint or exporter integration
@@ -411,20 +418,20 @@ This service is one of the highest-risk parts of the system because reliability,
 
 Must be implemented:
 
-- [ ] GitHub App authentication support
+- [x] GitHub App authentication support
 - [ ] GitHub OAuth user token support if needed
-- [ ] installation token lifecycle handling
-- [ ] webhook receiver
-- [ ] webhook signature validation
-- [ ] webhook replay protection
-- [ ] webhook event deduplication
+- [x] installation token lifecycle handling
+- [x] webhook receiver
+- [x] webhook signature validation
+- [x] webhook replay protection
+- [x] webhook event deduplication
 - [ ] webhook retry safety
-- [ ] REST API client
-- [ ] GraphQL API client
-- [ ] pagination utilities
-- [ ] ETag or conditional request support where useful
-- [ ] rate limit tracking
-- [ ] secondary rate limit backoff
+- [x] REST API client
+- [x] GraphQL API client
+- [x] pagination utilities
+- [x] ETag or conditional request support where useful
+- [x] rate limit tracking
+- [x] secondary rate limit backoff
 - [ ] queue-based backfill jobs
 - [ ] repository sync logic
 - [ ] pull request sync logic
@@ -436,10 +443,10 @@ Must be implemented:
 
 GitHub-specific requirements:
 
-- [ ] verify webhook payloads before processing
-- [ ] record GitHub delivery IDs for idempotency
+- [x] verify webhook payloads before processing
+- [x] record GitHub delivery IDs for idempotency
 - [ ] store the minimum GitHub scopes and permissions needed
-- [ ] support re-sync after missed webhooks
+- [x] support re-sync after missed webhooks
 - [ ] support historical backfill without double-counting
 - [ ] document REST versus GraphQL usage rules
 - [ ] document installation rate-limit strategy
@@ -461,18 +468,18 @@ This service should combine deterministic feature extraction with AI assistance.
 
 Deterministic feature extraction:
 
-- [ ] file change classification
+- [x] file change classification
 - [ ] language detection
-- [ ] docs-only detection
-- [ ] test-change detection
-- [ ] config or infra change detection
-- [ ] refactor heuristics
-- [ ] code churn normalization
+- [x] docs-only detection
+- [x] test-change detection
+- [x] config or infra change detection
+- [x] refactor heuristics
+- [x] code churn normalization
 - [ ] directory criticality tagging
 - [ ] issue linkage extraction
 - [ ] review cycle counting
-- [ ] requested-changes detection
-- [ ] maintainer interaction signals
+- [x] requested-changes detection
+- [x] maintainer interaction signals
 
 AI-assisted analysis:
 
@@ -504,27 +511,27 @@ The scoring engine is the core product asset. It must be auditable.
 
 Must be implemented:
 
-- [ ] deterministic scoring pipeline
-- [ ] versioned scoring formula
-- [ ] weighted factors defined in code and docs
-- [ ] explainability output for each scored contribution
+- [x] deterministic scoring pipeline
+- [x] versioned scoring formula
+- [x] weighted factors defined in code and docs
+- [x] explainability output for each scored contribution
 - [ ] user-level aggregate score computation
-- [ ] skill dimension computation
+- [x] skill dimension computation
 - [ ] badge issuance logic
-- [ ] level progression logic
-- [ ] anti-spam penalties
+- [x] level progression logic
+- [x] anti-spam penalties
 - [ ] diminishing returns rules
-- [ ] consistency multiplier rules
-- [ ] repository weighting rules
-- [ ] merge outcome weighting rules
+- [x] consistency multiplier rules
+- [x] repository weighting rules
+- [x] merge outcome weighting rules
 - [ ] re-score and replay jobs
 - [ ] score event ledger
 - [ ] historical score snapshots
 
 Credibility requirements:
 
-- [ ] a user can see why a contribution was scored the way it was
-- [ ] formula changes are versioned
+- [x] a user can see why a contribution was scored the way it was
+- [x] formula changes are versioned
 - [ ] scores can be recomputed from stored evidence
 - [ ] hidden manual overrides are prohibited or tightly audited
 - [ ] score disputes have an operational path
@@ -612,42 +619,42 @@ Must be implemented:
 - [x] event schemas
 - [ ] publisher interface
 - [ ] subscriber interface
-- [ ] versioning rules
+- [x] versioning rules
 
 ### `gitrank/packages/authkit`
 
 - [x] auth helpers
 - [x] token helpers
 - [x] middleware primitives
-- [x] permission checks
+- [ ] permission checks
 
 ## 13. Frontend and User Experience Checklist
 
-The current repo does not yet contain a frontend, but the product requires one.
+The repo now contains a Next.js frontend backed by mock data. Real backend integration is still incomplete.
 
 Must be defined or built:
 
-- [ ] frontend technology choice
-- [ ] dashboard information architecture
-- [ ] public profile page
-- [ ] authenticated account settings
-- [ ] OAuth onboarding flow
-- [ ] sync status UI
-- [ ] contribution drill-down UI
-- [ ] score explanation UI
-- [ ] badge and level UI
-- [ ] privacy controls UI
-- [ ] empty, loading, error, and stale states
-- [ ] mobile-responsive layout
-- [ ] accessibility baseline
+- [x] frontend technology choice
+- [x] dashboard information architecture
+- [x] public profile page
+- [x] authenticated account settings
+- [x] OAuth onboarding flow
+- [x] sync status UI
+- [x] contribution drill-down UI
+- [x] score explanation UI
+- [x] badge and level UI
+- [x] privacy controls UI
+- [x] empty, loading, error, and stale states
+- [x] mobile-responsive layout
+- [x] accessibility baseline
 - [ ] analytics and event tracking plan
 
 UX quality requirements:
 
 - [ ] avoid overstating score confidence
 - [ ] clearly distinguish inferred versus deterministic information
-- [ ] do not shame low-score contributors
-- [ ] make score explanations legible to non-experts
+- [x] do not shame low-score contributors
+- [x] make score explanations legible to non-experts
 
 ## 14. API and Contract Documentation Checklist
 
@@ -667,10 +674,10 @@ Testing cannot be an afterthought in a scoring product.
 
 Unit tests:
 
-- [ ] scoring helpers
+- [x] scoring helpers
 - [x] config validation
 - [x] auth flows
-- [ ] GitHub signature verification
+- [x] GitHub signature verification
 - [x] parsing and normalization
 - [ ] AI output validation
 
@@ -732,7 +739,7 @@ Application security:
 - [ ] validate all external input
 - [ ] constrain outbound network behavior where possible
 - [ ] protect against SSRF in webhook or callback flows
-- [ ] encrypt secrets at rest
+- [x] encrypt secrets at rest
 - [ ] rotate secrets safely
 - [ ] separate prod and non-prod credentials
 - [x] redact secrets from logs
@@ -745,8 +752,8 @@ Go-specific security:
 - [x] run `govulncheck`
 - [ ] audit unsafe or reflection-heavy code paths
 - [x] avoid insecure random sources for secrets or nonces
-- [ ] use timeouts on network clients
-- [ ] avoid unbounded request bodies
+- [x] use timeouts on network clients
+- [x] avoid unbounded request bodies
 
 Container and artifact security:
 
@@ -763,7 +770,7 @@ Container and artifact security:
 - [ ] sign release artifacts
 - [x] generate SBOMs for release artifacts
 - [x] publish artifact checksums
-- [ ] attach provenance metadata to releases
+- [x] attach provenance metadata to releases
 - [x] document trusted builders and release workflow
 - [x] tag releases consistently
 - [x] avoid manual untracked release steps
@@ -781,7 +788,7 @@ Observability is required for trust and operations.
 Logging:
 
 - [x] structured logs
-- [ ] log correlation IDs
+- [x] log correlation IDs
 - [x] no raw secrets or tokens
 - [x] clear service and component names
 
