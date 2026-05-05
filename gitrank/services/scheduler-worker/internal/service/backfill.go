@@ -82,12 +82,7 @@ func (s *Service) BackfillPlans(now time.Time) contracts.SchedulerBackfillPlanLi
 	for _, plan := range s.plans {
 		plans = append(plans, plan)
 	}
-	sort.Slice(plans, func(i, j int) bool {
-		if plans[i].NextRunAt.Equal(plans[j].NextRunAt) {
-			return plans[i].CreatedAt.Before(plans[j].CreatedAt)
-		}
-		return plans[i].NextRunAt.Before(plans[j].NextRunAt)
-	})
+	sort.Slice(plans, func(i, j int) bool { return backfillPlanListLess(plans[i], plans[j]) })
 
 	views := make([]contracts.SchedulerBackfillPlanView, 0, len(plans))
 	for _, plan := range plans {
@@ -97,6 +92,62 @@ func (s *Service) BackfillPlans(now time.Time) contracts.SchedulerBackfillPlanLi
 		Plans:         views,
 		LastUpdatedAt: now.UTC(),
 	}
+}
+
+func (s *Service) PauseBackfillPlan(planID string, now time.Time) (contracts.SchedulerBackfillPlanActionResponse, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	plan, err := s.planByIDLocked(planID)
+	if err != nil {
+		return contracts.SchedulerBackfillPlanActionResponse{}, err
+	}
+
+	plan.Enabled = false
+	plan.NextRunAt = time.Time{}
+	plan.UpdatedAt = now.UTC()
+	return contracts.SchedulerBackfillPlanActionResponse{
+		Status:        "paused",
+		Plan:          plan.view(),
+		LastUpdatedAt: now.UTC(),
+	}, nil
+}
+
+func (s *Service) ResumeBackfillPlan(planID string, now time.Time) (contracts.SchedulerBackfillPlanActionResponse, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	plan, err := s.planByIDLocked(planID)
+	if err != nil {
+		return contracts.SchedulerBackfillPlanActionResponse{}, err
+	}
+
+	plan.Enabled = true
+	plan.NextRunAt = plan.schedule.Next(now.UTC())
+	plan.UpdatedAt = now.UTC()
+	return contracts.SchedulerBackfillPlanActionResponse{
+		Status:        "resumed",
+		Plan:          plan.view(),
+		LastUpdatedAt: now.UTC(),
+	}, nil
+}
+
+func (s *Service) DeleteBackfillPlan(planID string, now time.Time) (contracts.SchedulerBackfillPlanActionResponse, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	plan, err := s.planByIDLocked(planID)
+	if err != nil {
+		return contracts.SchedulerBackfillPlanActionResponse{}, err
+	}
+
+	view := plan.view()
+	delete(s.plans, planID)
+	return contracts.SchedulerBackfillPlanActionResponse{
+		Status:        "deleted",
+		Plan:          view,
+		LastUpdatedAt: now.UTC(),
+	}, nil
 }
 
 func (s *Service) Tick(now time.Time) (contracts.SchedulerTickResponse, error) {
@@ -232,11 +283,39 @@ func cloneTargets(targets []contracts.SyncRequest) []contracts.SyncRequest {
 	return cloned
 }
 
+func backfillPlanListLess(left, right *backfillPlan) bool {
+	if left.Enabled != right.Enabled {
+		return left.Enabled
+	}
+	if left.NextRunAt.IsZero() != right.NextRunAt.IsZero() {
+		return !left.NextRunAt.IsZero()
+	}
+	if left.NextRunAt.IsZero() && right.NextRunAt.IsZero() {
+		return left.CreatedAt.Before(right.CreatedAt)
+	}
+	if left.NextRunAt.Equal(right.NextRunAt) {
+		return left.CreatedAt.Before(right.CreatedAt)
+	}
+	return left.NextRunAt.Before(right.NextRunAt)
+}
+
 func defaultSchedule(planCron, fallback string) string {
 	if strings.TrimSpace(planCron) != "" {
 		return strings.TrimSpace(planCron)
 	}
 	return strings.TrimSpace(fallback)
+}
+
+func (s *Service) planByIDLocked(planID string) (*backfillPlan, error) {
+	planID = strings.TrimSpace(planID)
+	if planID == "" {
+		return nil, errors.New("backfill plan not found")
+	}
+	plan, ok := s.plans[planID]
+	if !ok {
+		return nil, errors.New("backfill plan not found")
+	}
+	return plan, nil
 }
 
 func validateSyncTarget(target contracts.SyncRequest) ([]string, error) {

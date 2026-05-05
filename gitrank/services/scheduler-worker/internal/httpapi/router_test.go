@@ -197,6 +197,75 @@ func TestSchedulerBackfillPlanCreateAndList(t *testing.T) {
 	}
 }
 
+func TestSchedulerBackfillPlanPauseResumeAndDelete(t *testing.T) {
+	router := newTestRouter(testConfig())
+
+	createResponse := httptest.NewRecorder()
+	createRequest := httptest.NewRequest(http.MethodPost, "/v1/jobs/backfills", strings.NewReader(`{
+		"name":"maintainer-history",
+		"cron":"0 */6 * * *",
+		"targets":[{"mode":"repository","repository":"octo/repo"}]
+	}`))
+	createRequest.Header.Set("Content-Type", "application/json")
+	router.ServeHTTP(createResponse, createRequest)
+	if createResponse.Code != http.StatusCreated {
+		t.Fatalf("create status = %d, want %d, body=%s", createResponse.Code, http.StatusCreated, createResponse.Body.String())
+	}
+
+	var created contracts.SchedulerBackfillPlanView
+	if err := json.Unmarshal(createResponse.Body.Bytes(), &created); err != nil {
+		t.Fatalf("unmarshal create response: %v", err)
+	}
+
+	pauseResponse := httptest.NewRecorder()
+	router.ServeHTTP(pauseResponse, httptest.NewRequest(http.MethodPost, "/v1/jobs/backfills/"+created.ID+"/pause", nil))
+	if pauseResponse.Code != http.StatusOK {
+		t.Fatalf("pause status = %d, want %d, body=%s", pauseResponse.Code, http.StatusOK, pauseResponse.Body.String())
+	}
+	var paused contracts.SchedulerBackfillPlanActionResponse
+	if err := json.Unmarshal(pauseResponse.Body.Bytes(), &paused); err != nil {
+		t.Fatalf("unmarshal pause response: %v", err)
+	}
+	if paused.Status != "paused" || paused.Plan.Enabled {
+		t.Fatalf("pause response = %+v, want disabled paused plan", paused)
+	}
+
+	resumeResponse := httptest.NewRecorder()
+	router.ServeHTTP(resumeResponse, httptest.NewRequest(http.MethodPost, "/v1/jobs/backfills/"+created.ID+"/resume", nil))
+	if resumeResponse.Code != http.StatusOK {
+		t.Fatalf("resume status = %d, want %d, body=%s", resumeResponse.Code, http.StatusOK, resumeResponse.Body.String())
+	}
+	var resumed contracts.SchedulerBackfillPlanActionResponse
+	if err := json.Unmarshal(resumeResponse.Body.Bytes(), &resumed); err != nil {
+		t.Fatalf("unmarshal resume response: %v", err)
+	}
+	if resumed.Status != "resumed" || !resumed.Plan.Enabled {
+		t.Fatalf("resume response = %+v, want enabled resumed plan", resumed)
+	}
+	if resumed.Plan.NextRunAt.IsZero() {
+		t.Fatal("resumed plan next_run_at is zero")
+	}
+
+	deleteResponse := httptest.NewRecorder()
+	router.ServeHTTP(deleteResponse, httptest.NewRequest(http.MethodDelete, "/v1/jobs/backfills/"+created.ID, nil))
+	if deleteResponse.Code != http.StatusOK {
+		t.Fatalf("delete status = %d, want %d, body=%s", deleteResponse.Code, http.StatusOK, deleteResponse.Body.String())
+	}
+
+	listResponse := httptest.NewRecorder()
+	router.ServeHTTP(listResponse, httptest.NewRequest(http.MethodGet, "/v1/jobs/backfills", nil))
+	if listResponse.Code != http.StatusOK {
+		t.Fatalf("list status = %d, want %d, body=%s", listResponse.Code, http.StatusOK, listResponse.Body.String())
+	}
+	var listed contracts.SchedulerBackfillPlanListResponse
+	if err := json.Unmarshal(listResponse.Body.Bytes(), &listed); err != nil {
+		t.Fatalf("unmarshal list response: %v", err)
+	}
+	if len(listed.Plans) != 0 {
+		t.Fatalf("list count = %d, want 0", len(listed.Plans))
+	}
+}
+
 func TestSchedulerBackfillPlanTicksAndQueuesTargets(t *testing.T) {
 	cfg := testConfig()
 	cfg.Scheduler.SyncCron = "*/5 * * * *"

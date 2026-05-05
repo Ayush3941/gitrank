@@ -112,6 +112,41 @@ func NewRouter(cfg config.App, scheduler *service.Service, log *slog.Logger, ver
 		}
 	}))
 
+	mux.Handle("/v1/jobs/backfills/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		planID, action, ok := backfillPlanRoute(r.URL.Path)
+		if !ok {
+			httpkit.WriteError(w, http.StatusNotFound, "not_found", "backfill plan target not found", httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+
+		now := time.Now().UTC()
+		switch {
+		case r.Method == http.MethodDelete && action == "":
+			response, err := scheduler.DeleteBackfillPlan(planID, now)
+			if err != nil {
+				writeSchedulerError(w, r, err)
+				return
+			}
+			httpkit.WriteJSON(w, http.StatusOK, response)
+		case r.Method == http.MethodPost && action == "pause":
+			response, err := scheduler.PauseBackfillPlan(planID, now)
+			if err != nil {
+				writeSchedulerError(w, r, err)
+				return
+			}
+			httpkit.WriteJSON(w, http.StatusOK, response)
+		case r.Method == http.MethodPost && action == "resume":
+			response, err := scheduler.ResumeBackfillPlan(planID, now)
+			if err != nil {
+				writeSchedulerError(w, r, err)
+				return
+			}
+			httpkit.WriteJSON(w, http.StatusOK, response)
+		default:
+			writeMethodNotAllowed(w, r)
+		}
+	}))
+
 	mux.Handle("/v1/jobs/dead-letters", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/v1/jobs/dead-letters" {
 			httpkit.WriteError(w, http.StatusNotFound, "not_found", "resource not found", httpkit.RequestIDFromContext(r.Context()))
@@ -232,4 +267,23 @@ func deadLetterRoute(path string) (string, string, bool) {
 		return "", "", false
 	}
 	return parts[0], parts[1], true
+}
+
+func backfillPlanRoute(path string) (string, string, bool) {
+	suffix := strings.TrimPrefix(path, "/v1/jobs/backfills/")
+	parts := strings.Split(strings.Trim(suffix, "/"), "/")
+	switch len(parts) {
+	case 1:
+		if parts[0] == "" {
+			return "", "", false
+		}
+		return parts[0], "", true
+	case 2:
+		if parts[0] == "" || parts[1] == "" {
+			return "", "", false
+		}
+		return parts[0], parts[1], true
+	default:
+		return "", "", false
+	}
 }

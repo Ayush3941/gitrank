@@ -76,6 +76,12 @@ type SchedulerBackfillPlanListResponse struct {
 	LastUpdatedAt time.Time                   `json:"last_updated_at"`
 }
 
+type SchedulerBackfillPlanActionResponse struct {
+	Status        string                    `json:"status"`
+	Plan          SchedulerBackfillPlanView `json:"plan"`
+	LastUpdatedAt time.Time                 `json:"last_updated_at"`
+}
+
 type SchedulerJobView struct {
 	ID             string    `json:"id"`
 	QueueName      string    `json:"queue_name"`

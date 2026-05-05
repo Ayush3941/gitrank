@@ -584,6 +584,11 @@ Must be implemented:
 - [x] backfill orchestration
 - [x] observability for queue depth and failures
 
+Current preview state:
+
+- recurring backfill plans can be created, paused, resumed, manually ticked, and deleted through `scheduler-worker`
+- recurring plan state is still in-memory only and is not durable across process restarts
+
 ## 12. Shared Packages Checklist
 
 ### `gitrank/packages/contracts`

@@ -262,6 +262,9 @@ Implemented routes:
 - `POST /v1/jobs/lease`
 - `GET /v1/jobs/backfills`
 - `POST /v1/jobs/backfills`
+- `POST /v1/jobs/backfills/{plan_id}/pause`
+- `POST /v1/jobs/backfills/{plan_id}/resume`
+- `DELETE /v1/jobs/backfills/{plan_id}`
 - `POST /v1/jobs/{job_id}/complete`
 - `POST /v1/jobs/{job_id}/fail`
 - `POST /v1/jobs/{job_id}/pause`
@@ -279,6 +282,7 @@ Current state:
 - retries apply exponential backoff before the next eligible lease
 - poison jobs move into a dead-letter queue and can be manually replayed
 - recurring cron plans can enqueue normalized sync targets on each scheduler tick
+- recurring plans can be paused, resumed, or deleted through the scheduler control plane
 - per-user and per-installation rate limits throttle repeated sync generation
 - persistent queue storage, cross-process coordination, and durable backfill plan storage are still pending
 

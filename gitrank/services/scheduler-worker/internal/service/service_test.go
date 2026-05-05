@@ -105,6 +105,58 @@ func TestTickTracksInstallationRateLimitedTargets(t *testing.T) {
 	}
 }
 
+func TestPauseResumeAndDeleteBackfillPlan(t *testing.T) {
+	cfg := testServiceConfig()
+	cfg.Scheduler.SyncCron = "*/5 * * * *"
+	scheduler := New(cfg)
+	createdAt := time.Date(2026, time.May, 5, 13, 0, 0, 0, time.UTC)
+
+	plan, err := scheduler.CreateBackfillPlan(contracts.SchedulerBackfillPlanRequest{
+		Name: "pauseable-plan",
+		Targets: []contracts.SyncRequest{
+			{Mode: "user", User: "octocat"},
+		},
+	}, createdAt)
+	if err != nil {
+		t.Fatalf("CreateBackfillPlan() error = %v", err)
+	}
+
+	paused, err := scheduler.PauseBackfillPlan(plan.ID, createdAt.Add(time.Minute))
+	if err != nil {
+		t.Fatalf("PauseBackfillPlan() error = %v", err)
+	}
+	if paused.Status != "paused" || paused.Plan.Enabled {
+		t.Fatalf("pause response = %+v, want disabled plan", paused)
+	}
+
+	tickWhilePaused, err := scheduler.Tick(createdAt.Add(10 * time.Minute))
+	if err != nil {
+		t.Fatalf("Tick() while paused error = %v", err)
+	}
+	if tickWhilePaused.DuePlans != 0 {
+		t.Fatalf("paused due plans = %d, want 0", tickWhilePaused.DuePlans)
+	}
+
+	resumed, err := scheduler.ResumeBackfillPlan(plan.ID, createdAt.Add(11*time.Minute))
+	if err != nil {
+		t.Fatalf("ResumeBackfillPlan() error = %v", err)
+	}
+	if resumed.Status != "resumed" || !resumed.Plan.Enabled {
+		t.Fatalf("resume response = %+v, want enabled plan", resumed)
+	}
+
+	deleted, err := scheduler.DeleteBackfillPlan(plan.ID, createdAt.Add(12*time.Minute))
+	if err != nil {
+		t.Fatalf("DeleteBackfillPlan() error = %v", err)
+	}
+	if deleted.Status != "deleted" {
+		t.Fatalf("delete status = %q, want deleted", deleted.Status)
+	}
+	if len(scheduler.BackfillPlans(createdAt.Add(12*time.Minute)).Plans) != 0 {
+		t.Fatal("expected deleted plan to be removed from list")
+	}
+}
+
 func testServiceConfig() config.App {
 	return config.App{
 		ServiceName: "scheduler-worker",
