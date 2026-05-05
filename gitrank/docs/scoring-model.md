@@ -13,9 +13,14 @@ The score must answer:
 
 The score must not answer:
 
-- whether a person is globally "better" than another person
+- whether a person has an absolute or final measure of engineering worth
 - whether a contribution was perfect
 - whether repository popularity alone implies skill
+
+V1 product note:
+
+- the score does feed a public global leaderboard
+- leaderboard position should be presented as a casual, formula-versioned product surface rather than objective truth
 
 ## Eligibility Gates
 
@@ -137,6 +142,10 @@ Weak secondary signals:
 - stars
 - forks
 
+Repository context guardrail:
+
+- repository bonus must be capped so famous repositories do not dominate the score
+
 ## Outcome Weights
 
 Directional expectations:
@@ -164,6 +173,7 @@ Score events should also map to skill dimensions, for example:
 - AI output cannot directly set the final score.
 - Large diff size alone cannot imply high value.
 - Small but high-signal fixes must still be able to score well.
+- Repeated near-identical PR patterns should receive diminishing returns.
 - The formula must be versioned.
 - Re-scoring must be replayable after model or formula changes.
 - Excluded work should be filtered before scoring, not merely penalized after scoring.

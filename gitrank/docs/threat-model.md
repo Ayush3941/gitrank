@@ -3,7 +3,7 @@
 ## High-Value Assets
 
 - GitHub OAuth credentials
-- GitHub App private key material
+- GitHub App private key material if the optional future App path is enabled
 - session secrets and JWT signing keys
 - user profile data
 - score explanations and derived reputation data
@@ -30,7 +30,7 @@
 - use dependency review and code scanning
 - validate and bound AI outputs
 - redact secrets from logs
-- keep release workflow traceable and signed
+- keep release workflow traceable and auditable, with signing deferred until post-v1 hardening
 
 ## Required Follow-Up
 

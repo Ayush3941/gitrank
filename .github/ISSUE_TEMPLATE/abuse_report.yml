@@ -1,0 +1,56 @@
+name: Abuse report
+description: Report obvious leaderboard abuse, spam, or profile misuse.
+title: "[Abuse] "
+labels:
+  - abuse
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for obvious leaderboard abuse, profile misuse, or repeated low-value contribution farming.
+
+        Do not include secrets, access tokens, or private repository content.
+  - type: input
+    id: profile
+    attributes:
+      label: GitRank profile or GitHub handle
+      description: Link the affected public profile or provide the handle.
+      placeholder: https://... or username
+    validations:
+      required: true
+  - type: input
+    id: evidence
+    attributes:
+      label: Public evidence links
+      description: Include public PRs, repositories, or profile URLs that demonstrate the issue.
+      placeholder: https://github.com/.../pull/123
+    validations:
+      required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: Abuse category
+      options:
+        - self-merge farming
+        - repetitive micro-PR spam
+        - cosmetic churn inflation
+        - impersonation or account-link misuse
+        - other public abuse pattern
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: What looks wrong
+      description: Explain the public pattern and why it appears abusive.
+      placeholder: The same contributor is opening many near-identical PRs...
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: User impact
+      description: Describe any visible leaderboard, profile, or trust impact.
+      placeholder: Inflates public score and misleads profile viewers.
+    validations:
+      required: false

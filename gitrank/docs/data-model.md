@@ -4,8 +4,9 @@ This is the initial relational model direction for PostgreSQL.
 
 ## Design Rules
 
-- Source data from GitHub should be normalized and upsert-safe.
+- Source data from GitHub should be normalized and upsert-safe by stable GitHub IDs.
 - Derived analysis and scoring data should be versioned.
+- Evidence tables should stay explainable and replayable.
 - User-facing aggregates should be rebuildable from source and derived evidence.
 
 ## Core Tables
@@ -182,6 +183,14 @@ Required constraints:
 - unique `users.public_handle` when public
 - unique `(user_id, badge_key)` if badges are non-repeatable
 - unique `(pull_request_id, analyzer_version, prompt_version, model_name, analysis_source)` where desired
+
+## Persistence Policy Notes
+
+- GitHub entities should use stable GitHub IDs for idempotent upsert behavior.
+- Source evidence and audit records are the durable truth.
+- Public profiles, scores, badges, levels, and leaderboard views are recomputed aggregates or snapshots.
+- Manual score overrides are not allowed in v1.
+- Soft-deletion or hidden-state transitions are preferred until explicit account deletion is requested.
 
 ## Retention Guidance
 

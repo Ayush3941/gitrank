@@ -34,7 +34,7 @@ Exit criteria:
 
 Goal: ingest reliable contribution data.
 
-- GitHub App installation flow
+- OAuth-linked public GitHub data sync
 - webhook endpoint and signature validation
 - repository sync
 - PR sync
@@ -112,12 +112,16 @@ Exit criteria:
 Goal: support ongoing production usage.
 
 - SLOs and alerts
-- signed releases
+- GitHub Releases and OCI image publication
 - SBOMs
-- provenance
 - queue scaling
 - rate-limit tuning
 - fairness review loops
+
+Future upgrade after v1:
+
+- signed releases
+- provenance attestations
 
 Exit criteria:
 

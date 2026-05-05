@@ -191,6 +191,27 @@ Eligibility rules:
 - self-merged pull requests do not count toward GitRank
 - bot-authored and bot-assisted pull requests do not count toward GitRank
 
+## Frozen V1 Decisions
+
+The production policy baseline is frozen in these docs:
+
+- [docs/production-decision-register.md](./docs/production-decision-register.md)
+- [docs/MAINTAINER_GUIDE.md](./docs/MAINTAINER_GUIDE.md)
+- [docs/github-integration-policy.md](./docs/github-integration-policy.md)
+- [docs/ai-governance.md](./docs/ai-governance.md)
+- [docs/privacy-and-data-handling.md](./docs/privacy-and-data-handling.md)
+- [docs/analytics-plan.md](./docs/analytics-plan.md)
+- [docs/infrastructure-baseline.md](./docs/infrastructure-baseline.md)
+
+Important v1 decisions:
+
+- GitHub OAuth is the required auth path
+- public profiles and the leaderboard are enabled by default for signed-in users
+- bounded public PR diffs may be used for AI enrichment, but private code and full repository files are out of scope
+- Kubernetes and OCI images are the deployment baseline
+- Git tags, GitHub Releases, and OCI publication are required in v1, while signing and provenance are deferred
+- DCO is required and CLA is not
+
 ## High-Level Architecture
 
 GitRank is structured as a Go monorepo with multiple services and shared packages.
@@ -354,7 +375,7 @@ Shared HTTP server bootstrap, request IDs, access logging, panic recovery, and J
 
 ### `packages/githubapi`
 
-GitHub-specific API helpers for OAuth URL generation, webhook verification, and integration request shaping.
+GitHub-specific API helpers for OAuth URL generation, webhook verification, rate-limit-aware clients, and optional future App-path request shaping.
 
 ### `packages/aiapi`
 
@@ -513,9 +534,11 @@ Core entities:
 
 ### Infrastructure
 
-- containerized services
+- OCI-containerized services
+- Kubernetes as the v1 deployment baseline
+- managed PostgreSQL and Redis preferred for production state
 - async workers for ingestion and re-scoring
-- observability through structured logs and metrics
+- observability through structured logs, metrics, and planned tracing
 
 ## API Direction
 
@@ -553,6 +576,10 @@ Implemented service routes today:
 - Redis
 - an AI provider API key for PR analysis
 
+Optional future-upgrade path:
+
+- GitHub App credentials for deeper org-scale ingestion are not required for the v1 production baseline
+
 ### Current Workspace
 
 This repository is currently scaffolded as a Go workspace using `go.work` with one module per service and shared package.
@@ -585,6 +612,8 @@ DATABASE_URL=postgres://postgres:postgres@localhost:5432/gitrank?sslmode=disable
 REDIS_URL=redis://localhost:6379
 OPENAI_API_KEY=your_api_key
 ```
+
+See [`.env.example`](./.env.example) for the full local configuration surface, including optional future GitHub App settings that are not required in the v1 production baseline.
 
 ## MVP Roadmap
 
@@ -679,6 +708,8 @@ The repository currently contains a working foundation, not just an empty scaffo
 
 - workspace modules for all core services
 - shared packages for config, logging, errors, events, auth, HTTP, and GitHub API access
+- a frozen v1 production decision register plus maintainer, privacy, AI-governance, analytics, and infrastructure policy docs
+- DCO workflow enforcement plus PR-template sign-off reminders
 - real auth-service session, OAuth, token refresh, linking, unlinking, and audit logic
 - webhook intake and sync-job preview routes in the GitHub ingestor
 - optional PostgreSQL-backed webhook delivery persistence for durable dedupe and requeue state in the GitHub ingestor
@@ -688,6 +719,8 @@ The repository currently contains a working foundation, not just an empty scaffo
 - live profile route integration through api-gateway plus frontend BFF routes for public profile and settings pages
 - metrics endpoints and shared request instrumentation across the Go services, including queue depth, cache hit rate, sync duration, score computation duration, PR analysis breakdowns, GitHub rate-limit tracking, and HTTP error counters
 - PostgreSQL migrations for core entities, GitHub ingestion state, and auth/session security tables
+- generic OCI build packaging under `deployments/docker/` and a release workflow that builds binaries, publishes GitHub Releases, and pushes per-service OCI images
+- a Kubernetes deployment baseline under `deployments/k8s/` with namespace and kustomization scaffolding
 - a substantial Next.js frontend with dashboard, profile, leaderboard, quest, badge, onboarding, and PR-report flows, with profile/settings partially backed by the live Go services
 - CI, release-artifact, dependency-review, CodeQL, Scorecard, and repo-level secret-scan workflows, plus frontend-specific CI and secret scanning in the nested frontend repo
 
@@ -696,6 +729,7 @@ Major gaps remain:
 - no end-to-end persistent ingestion worker yet
 - most non-profile frontend routes still use mock data
 - no distributed tracing, alerting, dashboards, or production runtime operations layer yet
+- the committed Kubernetes assets are still only a minimal namespace/layout baseline and do not yet include per-service Deployments, Services, ingress, or secret-manager wiring
 
 ## License
 

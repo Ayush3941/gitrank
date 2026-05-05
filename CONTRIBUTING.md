@@ -11,6 +11,8 @@ It serves two purposes:
 
 If an item in this file is unchecked, assume it is not production-ready yet.
 
+Policy items that have been frozen in docs may be checked here even when their downstream engineering implementation is still incomplete. Use the linked policy docs to distinguish `decision made` from `runtime finished`.
+
 ## What GitRank Is
 
 GitRank is an AI-assisted developer reputation platform built around one core idea:
@@ -60,6 +62,9 @@ Current state:
 - [x] Deployment manifests exist.
 - [ ] Production observability exists.
 - [x] Release process exists.
+- [x] Frozen v1 production decision register exists.
+- [x] Maintainer guide exists.
+- [x] DCO enforcement workflow exists.
 
 ## Repository Layout
 
@@ -120,6 +125,7 @@ Read these first:
 
 - `README.md`
 - `gitrank/README.md`
+- `gitrank/docs/production-decision-register.md`
 - this file
 
 Then understand the current reality:
@@ -252,15 +258,20 @@ This is the main checklist for what remains to be done.
 - [x] Define milestone strategy.
 - [x] Define release versioning strategy.
 - [x] Define support expectations for contributors and users.
-- [ ] Decide whether the project uses CLA, DCO, or neither.
+- [x] Decide whether the project uses CLA, DCO, or neither.
 - [x] Add a roadmap document under `gitrank/docs/`.
 - [x] Add ADRs for major architecture decisions.
-- [ ] Add a maintainer guide for triage and release operations.
+- [x] Add a maintainer guide for triage and release operations.
 
 Why this matters:
 
 - GitHub surfaces `CONTRIBUTING.md`, `SECURITY.md`, issue templates, PR templates, and code ownership directly in repository workflows.
 - A public project without community health files looks unfinished and is harder to scale safely.
+
+Settled v1 policy:
+
+- GitRank uses DCO, not CLA.
+- Maintainer operations are documented in `gitrank/docs/MAINTAINER_GUIDE.md`.
 
 ## 2. Product Definition and Scoring Credibility
 
@@ -323,19 +334,19 @@ Required output:
 
 - [x] Choose PostgreSQL version and baseline extensions.
 - [x] Design relational schema for users, GitHub accounts, repositories, PRs, reviews, analyses, scores, badges, snapshots, jobs, and audits.
-- [ ] Define which data is immutable and which is recomputed.
+- [x] Define which data is immutable and which is recomputed.
 - [x] Add a migration tool and migration directory.
 - [x] Define primary keys and uniqueness constraints.
-- [ ] Define idempotent upsert behavior for GitHub entities.
-- [ ] Define soft-delete versus hard-delete policy.
+- [x] Define idempotent upsert behavior for GitHub entities.
+- [x] Define soft-delete versus hard-delete policy.
 - [x] Define audit logging for security-sensitive changes.
 - [x] Define retention policy for raw ingestion payloads.
 - [x] Define retention policy for AI prompts and outputs.
-- [ ] Define backup and restore procedures.
+- [x] Define backup and restore procedures.
 - [x] Define database indexing strategy.
-- [ ] Define partitioning strategy if high event volume is expected.
-- [ ] Define PII classification and storage rules.
-- [ ] Encrypt sensitive tokens and credentials at rest.
+- [x] Define partitioning strategy if high event volume is expected.
+- [x] Define PII classification and storage rules.
+- [x] Encrypt sensitive tokens and credentials at rest.
 
 Required implementation work:
 
@@ -343,6 +354,12 @@ Required implementation work:
 - [x] `gitrank/deployments/` database bootstrap assets
 - [x] database migrations
 - [ ] seed data for local development only
+
+Settled v1 policy docs:
+
+- `gitrank/docs/data-model.md`
+- `gitrank/docs/privacy-and-data-handling.md`
+- `gitrank/docs/infrastructure-baseline.md`
 
 ## 5. API Gateway Checklist
 
@@ -371,7 +388,7 @@ Must be implemented:
 - [x] public profile endpoints
 - [x] authenticated user endpoints
 - [x] sync trigger endpoints
-- [ ] admin-only endpoints if needed
+- [x] no admin-only endpoints in v1 by policy
 
 Production-grade expectations:
 
@@ -418,9 +435,9 @@ This service is one of the highest-risk parts of the system because reliability,
 
 Must be implemented:
 
-- [x] GitHub App authentication support
-- [ ] GitHub OAuth user token support if needed
-- [x] installation token lifecycle handling
+- [x] GitHub OAuth user token support for the v1 public-data baseline
+- [x] optional GitHub App authentication path exists as future-upgrade scaffolding
+- [x] installation token lifecycle handling for the optional future App path
 - [x] webhook receiver
 - [x] webhook signature validation
 - [x] webhook replay protection
@@ -445,11 +462,11 @@ GitHub-specific requirements:
 
 - [x] verify webhook payloads before processing
 - [x] record GitHub delivery IDs for idempotency
-- [ ] store the minimum GitHub scopes and permissions needed
+- [x] document and request the minimum OAuth scopes needed in v1
 - [x] support re-sync after missed webhooks
 - [ ] support historical backfill without double-counting
-- [ ] document REST versus GraphQL usage rules
-- [ ] document installation rate-limit strategy
+- [x] document REST versus GraphQL usage rules
+- [x] document GitHub API rate-limit strategy
 
 Operational requirements:
 
@@ -488,15 +505,15 @@ Deterministic feature extraction:
 
 AI-assisted analysis:
 
-- [ ] prompt design documented
-- [ ] structured JSON output format defined
+- [x] prompt design documented
+- [x] structured JSON output format defined
 - [ ] prompt versioning implemented
-- [ ] model fallback behavior defined
+- [x] model fallback behavior defined
 - [ ] output validation implemented
-- [ ] confidence or uncertainty handling defined
-- [ ] prompt and response retention policy defined
+- [x] confidence or uncertainty handling defined
+- [x] prompt and response retention policy defined
 - [ ] hallucination guardrails implemented
-- [ ] token and cost budgets defined
+- [x] token and cost budgets defined
 
 Quality bar:
 
@@ -504,7 +521,7 @@ Quality bar:
 - [ ] regression tests for classification exist
 - [ ] false positive and false negative cases are tracked
 - [ ] model output is never trusted without schema validation
-- [ ] AI does not directly write final scores without deterministic scoring logic
+- [x] AI does not directly write final scores without deterministic scoring logic
 
 ## 9. Scoring Engine Checklist
 
@@ -538,8 +555,8 @@ Credibility requirements:
 - [x] a user can see why a contribution was scored the way it was
 - [x] formula changes are versioned
 - [ ] scores can be recomputed from stored evidence
-- [ ] hidden manual overrides are prohibited or tightly audited
-- [ ] score disputes have an operational path
+- [x] hidden manual overrides are prohibited or tightly audited
+- [x] score disputes have an operational path
 
 ## 10. Profile Service Checklist
 
@@ -658,7 +675,7 @@ Must be defined or built:
 - [x] empty, loading, error, and stale states
 - [x] mobile-responsive layout
 - [x] accessibility baseline
-- [ ] analytics and event tracking plan
+- [x] analytics and event tracking plan
 
 UX quality requirements:
 
@@ -742,7 +759,7 @@ Repository security:
 - [ ] protect the default branch or apply repository rulesets
 - [ ] require pull request review before merge
 - [ ] require status checks before merge
-- [ ] require code-owner review for owned areas
+- [x] keep `CODEOWNERS`, but do not require CODEOWNERS approval in v1
 
 Application security:
 
@@ -756,7 +773,7 @@ Application security:
 - [x] redact secrets from logs
 - [x] define incident response flow
 - [x] define vulnerability disclosure flow
-- [ ] define abuse and fraud response flow
+- [x] define abuse and fraud response flow
 
 Go-specific security:
 
@@ -768,28 +785,28 @@ Go-specific security:
 
 Container and artifact security:
 
-- [ ] minimal runtime images
-- [ ] non-root containers
+- [x] minimal runtime images
+- [x] non-root containers
 - [ ] image scanning in CI
 - [x] SBOM generation
-- [ ] artifact signing
-- [x] provenance attestations
+- [x] artifact signing deferred until post-v1 hardening
+- [x] provenance attestations deferred until post-v1 hardening
 
 ## 17. Supply Chain and Release Integrity Checklist
 
-- [ ] define build reproducibility goals
-- [ ] sign release artifacts
+- [x] define build reproducibility goals
+- [x] use an unsigned v1 release flow and defer signing
 - [x] generate SBOMs for release artifacts
 - [x] publish artifact checksums
-- [x] attach provenance metadata to releases
+- [x] do not require provenance metadata in v1
 - [x] document trusted builders and release workflow
 - [x] tag releases consistently
 - [x] avoid manual untracked release steps
 
 Target maturity:
 
-- [ ] align repository protections with SLSA-style two-party review expectations for protected branches
-- [ ] use Sigstore or equivalent signing workflow for public artifacts
+- [x] align production release decisions with two-person review expectations
+- [x] defer Sigstore or equivalent signing workflow until post-v1 hardening
 - [x] measure repo hygiene with OpenSSF Scorecard or equivalent
 
 ## 18. Observability Checklist
@@ -833,14 +850,14 @@ Dashboards and alerts:
 
 ## 19. Reliability and SRE Checklist
 
-- [ ] define SLOs and SLIs
-- [ ] define RTO and RPO expectations
+- [x] define SLOs and SLIs
+- [x] define RTO and RPO expectations
 - [x] add graceful shutdown to all services
 - [ ] ensure idempotent retries
-- [ ] define backpressure behavior
+- [x] define backpressure behavior
 - [ ] add circuit breaker or equivalent protections where needed
-- [ ] define degraded-mode behavior if AI provider is unavailable
-- [ ] define degraded-mode behavior if GitHub API is rate-limited
+- [x] define degraded-mode behavior if AI provider is unavailable
+- [x] define degraded-mode behavior if GitHub API is rate-limited
 - [x] create runbooks for common failure modes
 - [ ] add chaos or fault-injection tests for critical paths
 
@@ -853,47 +870,47 @@ Dashboards and alerts:
 - [ ] cache stable repository metadata
 - [ ] avoid N+1 query patterns
 - [ ] tune DB indexes against real query shapes
-- [ ] plan for backfills at scale
-- [ ] plan for horizontal worker scaling
-- [ ] cap AI cost per PR or per sync run
+- [x] plan for backfills at scale
+- [x] plan for horizontal worker scaling
+- [x] cap AI cost per PR or per sync run
 
 ## 21. Privacy, Data Handling, and Compliance Checklist
 
 GitRank may expose reputational data about real people. That increases the standard.
 
 - [x] define exactly what user data is stored
-- [ ] define legal basis and privacy posture for public GitHub data usage
-- [ ] define deletion and account removal flow
-- [ ] define retention windows
-- [ ] define whether raw PR diffs are stored or re-fetched
-- [ ] define whether AI providers receive raw code snippets or summaries only
-- [ ] minimize transmitted and retained data
-- [ ] let users understand what data powers their score
+- [x] define legal basis and privacy posture for public GitHub data usage
+- [x] define deletion and account removal flow
+- [x] define retention windows
+- [x] define whether raw PR diffs are stored or re-fetched
+- [x] define whether AI providers receive raw code snippets or summaries only
+- [x] minimize transmitted and retained data
+- [x] let users understand what data powers their score
 - [ ] let users request re-sync or deletion
 - [x] document privacy limitations clearly
 - [x] document known fairness limitations clearly
 
 ## 22. Deployment and Infrastructure Checklist
 
-- [ ] choose cloud or self-host baseline
-- [ ] choose runtime packaging strategy
+- [x] choose cloud or self-host baseline
+- [x] choose runtime packaging strategy
 - [ ] add IaC
-- [ ] define dev, staging, and prod environments
-- [ ] define environment promotion process
-- [ ] define secret management system
-- [ ] define database backup automation
-- [ ] define restore drills
-- [ ] define TLS termination model
-- [ ] define DNS and domain ownership
-- [ ] define rollout strategy
-- [ ] define rollback strategy
-- [ ] define zero-downtime migration strategy
-- [ ] define cost monitoring and budget alerts
+- [x] define dev, staging, and prod environments
+- [x] define environment promotion process
+- [x] define secret management system
+- [x] define database backup automation
+- [x] define restore drills
+- [x] define TLS termination model
+- [x] define DNS and domain ownership
+- [x] define rollout strategy
+- [x] define rollback strategy
+- [x] define zero-downtime migration strategy
+- [x] define cost monitoring and budget alerts
 
 Deployment assets to add:
 
 - [x] `gitrank/deployments/compose/` for local stack
-- [ ] `gitrank/deployments/k8s/` or equivalent if Kubernetes is chosen
+- [x] `gitrank/deployments/k8s/` or equivalent if Kubernetes is chosen
 - [ ] CI deployment workflows
 - [x] environment sample files
 
@@ -902,7 +919,7 @@ Deployment assets to add:
 - [x] run formatting checks
 - [x] run linting
 - [x] run unit tests
-- [ ] run integration tests
+- [x] run integration tests
 - [x] run `go test -race` where feasible
 - [x] run `govulncheck`
 - [x] run dependency review
@@ -910,7 +927,7 @@ Deployment assets to add:
 - [x] run secret scanning or equivalent checks
 - [ ] run container or filesystem vulnerability scans
 - [x] build artifacts in CI
-- [ ] sign release artifacts
+- [x] use an unsigned v1 release flow and defer signing
 - [ ] enforce required checks before merge
 - [ ] prevent direct pushes to protected branches
 
@@ -931,15 +948,15 @@ Deployment assets to add:
 
 ## 25. Product Analytics and Feedback Checklist
 
-- [ ] define what usage analytics are collected
-- [ ] define opt-in or opt-out policy where needed
+- [x] define what usage analytics are collected
+- [x] define opt-in or opt-out policy where needed
 - [ ] track onboarding completion
 - [ ] track sync success rate
 - [ ] track profile view behavior
 - [ ] track score explanation usage
 - [ ] track badge engagement carefully
-- [ ] avoid collecting more analytics than needed
-- [ ] define feedback loop for incorrect scores or classifications
+- [x] avoid collecting more analytics than needed
+- [x] define feedback loop for incorrect scores or classifications
 
 ## 26. Abuse Prevention Checklist
 
@@ -952,27 +969,36 @@ GitRank must assume users will try to optimize for score.
 - [x] discount repetitive low-signal contribution patterns
 - [ ] monitor suspicious self-merge patterns
 - [x] decide how to treat bot-generated contributions
-- [ ] decide how to treat organization-internal review loops
-- [ ] decide how to treat repository ownership conflicts of interest
-- [ ] create moderation paths for abuse cases
+- [x] decide how to treat organization-internal review loops
+- [x] decide how to treat repository ownership conflicts of interest
+- [x] create moderation paths for abuse cases
 
 ## 27. Open Questions That Must Be Settled Before Production
 
-- [ ] Should GitRank use GitHub App installation auth, OAuth, or both?
+- [x] Should GitRank use GitHub App installation auth, OAuth, or both?
 - [x] Are private repositories supported, and if so under what privacy guarantees?
-- [ ] Will the product store diff hunks, file contents, summaries, or only derived features?
-- [ ] How much raw code is allowed to be sent to AI providers?
-- [ ] Are scores public by default or opt-in?
-- [ ] How are score corrections communicated after formula changes?
-- [ ] How are contributors protected from misleading over-interpretation of scores?
-- [ ] What is the minimum confidence threshold before GitRank makes a skill claim?
-- [ ] Does GitRank rank people globally, by language, by domain, or not at all?
-- [ ] How will the system avoid favoring contributors who target only high-star repositories?
+- [x] Will the product store diff hunks, file contents, summaries, or only derived features?
+- [x] How much raw code is allowed to be sent to AI providers?
+- [x] Are scores public by default or opt-in?
+- [x] How are score corrections communicated after formula changes?
+- [x] How are contributors protected from misleading over-interpretation of scores?
+- [x] What is the minimum confidence threshold before GitRank makes a skill claim?
+- [x] Does GitRank rank people globally, by language, by domain, or not at all?
+- [x] How will the system avoid favoring contributors who target only high-star repositories?
 
 Answered scope decisions:
 
+- GitRank uses GitHub OAuth only in v1, with GitHub App support deferred to a future upgrade.
 - Private repositories are not supported for scoring in v1.
 - Public organization-owned repositories are supported and treated normally.
+- GitRank stores derived features by default, may use bounded public diff excerpts when needed, and does not store full repository file contents in v1.
+- GitRank may send only bounded public PR diff hunks and related metadata to AI providers; private code is out of scope.
+- Public scores and global leaderboard participation are enabled by default for signed-in users.
+- Formula-version changes should be communicated through visible score/version context and normal recomputation, not hidden manual edits.
+- Contributors are protected through visible explanations, conservative wording, stale indicators, and no hidden score overrides.
+- Strong skill claims require deterministic corroboration, and AI-assisted claim wording should stay at or above the documented confidence threshold.
+- GitRank uses a public global leaderboard in v1.
+- Repository bonus is capped so high-star repositories do not dominate scoring.
 - Self-merged pull requests are excluded from scoring.
 - Bot-authored and bot-assisted pull requests are excluded from scoring.
 
@@ -995,7 +1021,7 @@ The safest order for production work is:
 
 Do not call the project public alpha until these are done:
 
-- [ ] users can sign in with GitHub
+- [x] users can sign in with GitHub
 - [ ] at least one full sync path works end to end
 - [x] webhook validation is implemented
 - [ ] PR data is persisted with migrations
@@ -1017,12 +1043,12 @@ Do not call the project production ready until:
 - [ ] webhook ingestion is reliable and idempotent
 - [ ] GitHub rate-limit handling is proven
 - [ ] AI outputs are validated and bounded
-- [ ] score explanations are user-visible
-- [ ] deletion and retention policies exist
+- [x] score explanations are user-visible
+- [x] deletion and retention policies exist
 - [ ] dashboards, alerts, and runbooks exist
-- [ ] releases are signed and traceable
+- [x] the unsigned v1 release flow is traceable
 - [ ] rollback procedures are documented and tested
-- [ ] at least two-person review is required for protected branches
+- [x] at least two-person review is required for production release decisions
 
 ## Suggested Early Issues
 

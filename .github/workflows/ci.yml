@@ -56,3 +56,29 @@ jobs:
 
       - name: Run govulncheck
         run: find . -name go.mod -execdir sh -c 'govulncheck ./...' \;
+
+  docker-builds:
+    runs-on: ubuntu-latest
+    needs: go-checks
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - api-gateway
+          - auth-service
+          - github-ingestor
+          - pr-analyzer
+          - profile-service
+          - scoring-engine
+          - scheduler-worker
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Build service container
+        run: |
+          docker build \
+            -f gitrank/deployments/docker/Dockerfile \
+            --build-arg SERVICE=${{ matrix.service }} \
+            -t gitrank/${{ matrix.service }}:ci \
+            .

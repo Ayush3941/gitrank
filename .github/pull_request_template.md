@@ -28,6 +28,7 @@ Verification details:
 ## Checklist
 
 - [ ] PR is focused and scoped
+- [ ] Commits are signed off with `git commit -s`
 - [ ] No secrets were committed
 - [ ] Any temporary shortcut is documented in `README.md` and `CONTRIBUTING.md`
 - [ ] New config is reflected in `gitrank/.env.example`

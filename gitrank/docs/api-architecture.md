@@ -2,6 +2,11 @@
 
 This document describes the current external and internal API surface for GitRank as implemented in the repository today.
 
+V1 production policy note:
+
+- GitHub OAuth is the required auth path
+- GitHub App installation remains a future upgrade and is not part of the v1 production baseline
+
 ## External APIs
 
 ### GitHub OAuth
@@ -24,11 +29,20 @@ Config:
 - `GITHUB_CLIENT_SECRET`
 - `GITHUB_OAUTH_REDIRECT_URL`
 
+Requested scopes in v1:
+
+- `read:user`
+- `user:email`
+
 ### GitHub App Installation Flow
 
 Used by:
 
 - `auth-service`
+
+Status:
+
+- future upgrade, not part of the v1 production baseline
 
 Purpose:
 
@@ -64,6 +78,11 @@ Config:
 - `GITHUB_GRAPHQL_URL`
 - `GITHUB_REQUEST_TIMEOUT`
 - `GITHUB_GRAPHQL_PAGE_SIZE`
+
+Usage rules:
+
+- prefer REST for straightforward resource sync and webhook-driven fetches
+- use GraphQL only where it materially reduces round-trips for public data hydration
 
 ### GitHub Webhooks
 

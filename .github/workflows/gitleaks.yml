@@ -28,4 +28,5 @@ jobs:
         run: go install github.com/zricethezav/gitleaks/v8@v8.29.1
 
       - name: Run Gitleaks
-        run: "$(go env GOPATH)/bin/gitleaks" dir . --no-banner --redact
+        run: |
+          "$(go env GOPATH)/bin/gitleaks" dir . --no-banner --redact

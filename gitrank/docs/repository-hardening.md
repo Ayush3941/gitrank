@@ -7,12 +7,16 @@ Some repository controls cannot be committed as code and must be configured manu
 - enable branch protection or repository rulesets on the default branch
 - require pull request review before merge
 - require status checks before merge
-- require CODEOWNERS review for owned areas
 - block direct pushes to the default branch
 - enable dependency graph
 - enable Dependabot alerts
 - enable secret scanning where plan support allows it
 - enable private vulnerability reporting or GitHub security advisories
+
+V1 policy note:
+
+- keep `CODEOWNERS`, but do not require CODEOWNERS approval yet
+- require two-person review for production release decisions rather than every owned-path change
 
 ## Recommended Ruleset
 
