@@ -95,6 +95,32 @@ func TestMetricsIncludeQueueDepthAndDeliveryStatus(t *testing.T) {
 	}
 }
 
+func TestMetricsIncludeSyncDuration(t *testing.T) {
+	router := NewRouter(testConfig(), testLogger(), "test")
+	request := httptest.NewRequest(http.MethodPost, "/v1/sync/repository", strings.NewReader(`{"repository":"octo/repo"}`))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+	if response.Code != http.StatusAccepted {
+		t.Fatalf("sync status = %d, want %d, body=%s", response.Code, http.StatusAccepted, response.Body.String())
+	}
+
+	metricsResponse := httptest.NewRecorder()
+	router.ServeHTTP(metricsResponse, httptest.NewRequest(http.MethodGet, "/metrics", nil))
+	if metricsResponse.Code != http.StatusOK {
+		t.Fatalf("metrics status = %d, want %d", metricsResponse.Code, http.StatusOK)
+	}
+
+	body := metricsResponse.Body.String()
+	if !strings.Contains(body, `gitrank_sync_requests_total{service="github-ingestor",mode="repository",status="queued"} 1`) {
+		t.Fatalf("metrics body missing sync count: %s", body)
+	}
+	if !strings.Contains(body, `gitrank_sync_duration_ms_sum{service="github-ingestor",mode="repository",status="queued"}`) {
+		t.Fatalf("metrics body missing sync duration: %s", body)
+	}
+}
+
 func TestWebhookRejectsInvalidSignature(t *testing.T) {
 	router := NewRouter(testConfig(), testLogger(), "test")
 	request := httptest.NewRequest(http.MethodPost, "/webhooks/github", bytes.NewReader([]byte(`{"action":"opened"}`)))

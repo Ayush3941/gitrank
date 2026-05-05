@@ -798,11 +798,11 @@ Metrics:
 - [x] queue depth
 - [ ] job retries
 - [ ] GitHub API rate-limit usage
-- [ ] sync duration
+- [x] sync duration
 - [ ] analysis cost and token usage
-- [ ] score computation duration
+- [x] score computation duration
 - [x] cache hit rate
-- [ ] error rate by service
+- [x] error rate by service
 
 Tracing:
 

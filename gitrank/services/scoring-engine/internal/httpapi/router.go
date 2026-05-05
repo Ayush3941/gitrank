@@ -3,6 +3,7 @@ package httpapi
 import (
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/Ayush3941/gitrank/packages/config"
 	"github.com/Ayush3941/gitrank/packages/contracts"
@@ -13,6 +14,7 @@ import (
 func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 	engine := scoring.New()
 	metrics := httpkit.NewMetrics(cfg.ServiceName)
+	scoreMetrics := newScoreMetricsSource(cfg.ServiceName)
 	manifest := contracts.ServiceManifest{
 		Service:     cfg.ServiceName,
 		Description: "Deterministic contribution scoring and explainability service.",
@@ -41,14 +43,17 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 	mux.Handle("/v1/meta/manifest", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		httpkit.WriteJSON(w, http.StatusOK, manifest)
 	})))
-	mux.Handle("/metrics", httpkit.RequireMethod(http.MethodGet, metrics.Handler()))
+	mux.Handle("/metrics", httpkit.RequireMethod(http.MethodGet, httpkit.MetricsHandler(metrics, scoreMetrics)))
 	mux.Handle("/v1/score/contribution", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req contracts.ScoreContributionRequest
 		if err := httpkit.DecodeJSON(r, &req, 1<<20); err != nil {
 			httpkit.WriteError(w, http.StatusBadRequest, "invalid_json", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
-		httpkit.WriteJSON(w, http.StatusOK, engine.Score(req))
+		start := time.Now()
+		response := engine.Score(req)
+		scoreMetrics.Observe(response.SuspiciousActivity, time.Since(start))
+		httpkit.WriteJSON(w, http.StatusOK, response)
 	})))
 
 	return httpkit.Chain(mux, httpkit.RequestID, httpkit.Instrument(metrics), httpkit.AccessLog(log), httpkit.Recoverer(log))

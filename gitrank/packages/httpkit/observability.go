@@ -73,6 +73,8 @@ func (m *Metrics) WritePrometheus(w io.Writer) {
 
 	_, _ = fmt.Fprintf(w, "# HELP gitrank_http_requests_total Total HTTP requests observed by this service.\n")
 	_, _ = fmt.Fprintf(w, "# TYPE gitrank_http_requests_total counter\n")
+	_, _ = fmt.Fprintf(w, "# HELP gitrank_http_errors_total Total non-2xx HTTP requests observed by this service.\n")
+	_, _ = fmt.Fprintf(w, "# TYPE gitrank_http_errors_total counter\n")
 	_, _ = fmt.Fprintf(w, "# HELP gitrank_http_request_duration_ms_sum Sum of observed HTTP request duration in milliseconds.\n")
 	_, _ = fmt.Fprintf(w, "# TYPE gitrank_http_request_duration_ms_sum counter\n")
 	_, _ = fmt.Fprintf(w, "# HELP gitrank_service_uptime_seconds Service uptime in seconds.\n")
@@ -123,6 +125,16 @@ func (m *Metrics) WritePrometheus(w io.Writer) {
 			snapshot.key.statusClass,
 			float64(snapshot.value.durationTotal.Microseconds())/1000.0,
 		)
+		if snapshot.key.statusClass != "2xx" {
+			_, _ = fmt.Fprintf(
+				w,
+				`gitrank_http_errors_total{service=%q,method=%q,status_class=%q} %d`+"\n",
+				service,
+				snapshot.key.method,
+				snapshot.key.statusClass,
+				snapshot.value.count,
+			)
+		}
 	}
 
 	_, _ = fmt.Fprintf(

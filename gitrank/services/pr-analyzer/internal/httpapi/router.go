@@ -3,6 +3,7 @@ package httpapi
 import (
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/Ayush3941/gitrank/packages/config"
 	"github.com/Ayush3941/gitrank/packages/contracts"
@@ -13,6 +14,7 @@ import (
 func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 	service := analyzer.New()
 	metrics := httpkit.NewMetrics(cfg.ServiceName)
+	analysisMetrics := newAnalysisMetricsSource(cfg.ServiceName)
 	manifest := contracts.ServiceManifest{
 		Service:     cfg.ServiceName,
 		Description: "Deterministic pull-request analysis and AI-enrichment boundary.",
@@ -41,14 +43,17 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 	mux.Handle("/v1/meta/manifest", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		httpkit.WriteJSON(w, http.StatusOK, manifest)
 	})))
-	mux.Handle("/metrics", httpkit.RequireMethod(http.MethodGet, metrics.Handler()))
+	mux.Handle("/metrics", httpkit.RequireMethod(http.MethodGet, httpkit.MetricsHandler(metrics, analysisMetrics)))
 	mux.Handle("/v1/analyze/pull-request", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req contracts.PullRequestAnalysisRequest
 		if err := httpkit.DecodeJSON(r, &req, 1<<20); err != nil {
 			httpkit.WriteError(w, http.StatusBadRequest, "invalid_json", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
-		httpkit.WriteJSON(w, http.StatusOK, service.Analyze(req))
+		start := time.Now()
+		response := service.Analyze(req)
+		analysisMetrics.Observe(response.Category, time.Since(start))
+		httpkit.WriteJSON(w, http.StatusOK, response)
 	})))
 
 	return httpkit.Chain(mux, httpkit.RequestID, httpkit.Instrument(metrics), httpkit.AccessLog(log), httpkit.Recoverer(log))

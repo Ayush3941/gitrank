@@ -32,6 +32,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		deliveryStore: deliveryStore,
 		jobQueue:      jobQueue,
 	}
+	syncMetrics := newSyncMetricsSource(cfg.ServiceName)
 
 	mux.Handle("/healthz", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		checks := map[string]contracts.ComponentCheck{
@@ -52,7 +53,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		httpkit.WriteJSON(w, http.StatusOK, manifest)
 	})))
 
-	mux.Handle("/metrics", httpkit.RequireMethod(http.MethodGet, httpkit.MetricsHandler(metrics, queueMetrics)))
+	mux.Handle("/metrics", httpkit.RequireMethod(http.MethodGet, httpkit.MetricsHandler(metrics, queueMetrics, syncMetrics)))
 
 	mux.Handle("/webhooks/github", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, err := readWebhookBody(r, cfg.GitHub.MaxBodyBytes)
@@ -144,14 +145,26 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 	})))
 
 	mux.Handle("/v1/sync/preview", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		status := "preview"
+		mode := "unknown"
+		defer func() {
+			syncMetrics.Observe(mode, status, time.Since(start))
+		}()
+
 		var req contracts.SyncRequest
 		if err := httpkit.DecodeJSON(r, &req, 1<<20); err != nil {
+			status = "invalid_json"
 			httpkit.WriteError(w, http.StatusBadRequest, "invalid_json", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
+		}
+		if req.Mode != "" {
+			mode = req.Mode
 		}
 
 		jobs, err := manualSyncJobs(cfg, req, httpkit.RequestIDFromContext(r.Context()))
 		if err != nil {
+			status = "invalid_request"
 			httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
@@ -159,13 +172,13 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		httpkit.WriteJSON(w, http.StatusOK, queuePreview("preview", jobs, false))
 	})))
 
-	registerSyncRoute(mux, cfg, jobQueue, "/v1/sync/installation", "installation")
-	registerSyncRoute(mux, cfg, jobQueue, "/v1/sync/user", "user")
-	registerSyncRoute(mux, cfg, jobQueue, "/v1/sync/repository", "repository")
-	registerSyncRoute(mux, cfg, jobQueue, "/v1/sync/pull-request", "pull_request")
-	registerSyncRoute(mux, cfg, jobQueue, "/v1/sync/review", "review")
-	registerSyncRoute(mux, cfg, jobQueue, "/v1/sync/issue", "issue")
-	registerSyncRoute(mux, cfg, jobQueue, "/v1/sync/commit", "commit")
+	registerSyncRoute(mux, cfg, jobQueue, syncMetrics, "/v1/sync/installation", "installation")
+	registerSyncRoute(mux, cfg, jobQueue, syncMetrics, "/v1/sync/user", "user")
+	registerSyncRoute(mux, cfg, jobQueue, syncMetrics, "/v1/sync/repository", "repository")
+	registerSyncRoute(mux, cfg, jobQueue, syncMetrics, "/v1/sync/pull-request", "pull_request")
+	registerSyncRoute(mux, cfg, jobQueue, syncMetrics, "/v1/sync/review", "review")
+	registerSyncRoute(mux, cfg, jobQueue, syncMetrics, "/v1/sync/issue", "issue")
+	registerSyncRoute(mux, cfg, jobQueue, syncMetrics, "/v1/sync/commit", "commit")
 
 	return httpkit.Chain(mux, httpkit.RequestID, httpkit.Instrument(metrics), httpkit.AccessLog(log), httpkit.Recoverer(log))
 }
@@ -350,10 +363,17 @@ func manualSyncJobs(cfg config.App, req contracts.SyncRequest, correlationID str
 	}
 }
 
-func registerSyncRoute(mux *http.ServeMux, cfg config.App, queue *store.InMemoryJobQueue, path, mode string) {
+func registerSyncRoute(mux *http.ServeMux, cfg config.App, queue *store.InMemoryJobQueue, syncMetrics *syncMetricsSource, path, mode string) {
 	mux.Handle(path, httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		status := "queued"
+		defer func() {
+			syncMetrics.Observe(mode, status, time.Since(start))
+		}()
+
 		var req contracts.SyncRequest
 		if err := httpkit.DecodeJSON(r, &req, 1<<20); err != nil {
+			status = "invalid_json"
 			httpkit.WriteError(w, http.StatusBadRequest, "invalid_json", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
@@ -361,10 +381,12 @@ func registerSyncRoute(mux *http.ServeMux, cfg config.App, queue *store.InMemory
 
 		jobs, err := manualSyncJobs(cfg, req, httpkit.RequestIDFromContext(r.Context()))
 		if err != nil {
+			status = "invalid_request"
 			httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
 		if _, err := enqueueJobs(queue, jobs); err != nil {
+			status = "enqueue_failed"
 			httpkit.WriteError(w, http.StatusInternalServerError, "queue_enqueue_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}

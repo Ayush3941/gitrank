@@ -81,6 +81,28 @@ func TestMetricsHandlerIncludesObservedRequests(t *testing.T) {
 	}
 }
 
+func TestMetricsHandlerIncludesObservedErrors(t *testing.T) {
+	metrics := NewMetrics("test-service")
+	handler := Chain(
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusBadGateway)
+		}),
+		Instrument(metrics),
+	)
+
+	req := httptest.NewRequest(http.MethodGet, "/v1/fail", nil)
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+
+	metricsRec := httptest.NewRecorder()
+	metrics.Handler().ServeHTTP(metricsRec, httptest.NewRequest(http.MethodGet, "/metrics", nil))
+	body, _ := io.ReadAll(metricsRec.Result().Body)
+	text := string(body)
+	if !strings.Contains(text, `gitrank_http_errors_total{service="test-service",method="GET",status_class="5xx"} 1`) {
+		t.Fatalf("metrics output missing error count: %s", text)
+	}
+}
+
 func TestMetricsHandlerIncludesExtraCollectors(t *testing.T) {
 	metrics := NewMetrics("test-service")
 	metrics.Observe(http.MethodGet, http.StatusOK, 5)

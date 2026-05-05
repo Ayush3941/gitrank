@@ -680,7 +680,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 - deterministic PR analysis and deterministic contribution scoring services
 - a snapshot-backed profile-service read model with privacy controls, repository visibility, caching, and share-card data
 - live profile route integration through api-gateway plus frontend BFF routes for public profile and settings pages
-- metrics endpoints and shared request instrumentation across the Go services
+- metrics endpoints and shared request instrumentation across the Go services, including queue depth, cache hit rate, sync duration, score computation duration, PR analysis breakdowns, and HTTP error counters
 - PostgreSQL migrations for core entities, GitHub ingestion state, and auth/session security tables
 - a substantial Next.js frontend with dashboard, profile, leaderboard, quest, badge, onboarding, and PR-report flows, with profile/settings partially backed by the live Go services
 - CI, release-artifact, dependency-review, CodeQL, Scorecard, and repo-level secret-scan workflows, plus frontend-specific CI and secret scanning in the nested frontend repo
