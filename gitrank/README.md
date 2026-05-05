@@ -681,6 +681,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 - shared packages for config, logging, errors, events, auth, HTTP, and GitHub API access
 - real auth-service session, OAuth, token refresh, linking, unlinking, and audit logic
 - webhook intake and sync-job preview routes in the GitHub ingestor
+- optional PostgreSQL-backed webhook delivery persistence for durable dedupe and requeue state in the GitHub ingestor
 - deterministic PR analysis and deterministic contribution scoring services
 - a snapshot-backed profile-service read model with privacy controls, repository visibility, caching, and share-card data
 - an in-memory scheduler-worker orchestration layer with deduplicated enqueue, recurring backfill plans, plan pause/resume/delete controls, per-scope throttling, leasing, retries, dead letters, pause/cancel controls, and manual replay

@@ -22,9 +22,11 @@ const githubSyncQueueName = "github-sync"
 var errWebhookPayloadTooLarge = errors.New("webhook payload exceeds configured maximum")
 
 func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
+	return NewRouterWithStores(cfg, store.NewInMemoryDeliveryStore(cfg.GitHub.DedupeTTL), store.NewInMemoryJobQueue(), log, version)
+}
+
+func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQueue *store.InMemoryJobQueue, log *slog.Logger, version string) http.Handler {
 	manifest := app.Manifest(cfg, version)
-	deliveryStore := store.NewInMemoryDeliveryStore(cfg.GitHub.DedupeTTL)
-	jobQueue := store.NewInMemoryJobQueue()
 	mux := http.NewServeMux()
 	metrics := httpkit.NewMetrics(cfg.ServiceName)
 	queueMetrics := queueMetricsSource{
@@ -38,7 +40,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 	mux.Handle("/healthz", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		checks := map[string]contracts.ComponentCheck{
 			"http":  {Status: "ok", Details: "webhook and sync routes online"},
-			"queue": {Status: "ok", Details: "in-memory queue preview enabled"},
+			"queue": {Status: "ok", Details: "preview queue enabled"},
 		}
 		if cfg.GitHub.WebhookSecret != "" {
 			checks["webhook_secret"] = contracts.ComponentCheck{Status: "ok", Details: "signature validation configured"}
@@ -152,7 +154,11 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			return
 		}
 
-		delivery, found := deliveryStore.Lookup(deliveryID)
+		delivery, found, err := deliveryStore.Lookup(deliveryID)
+		if err != nil {
+			httpkit.WriteError(w, http.StatusInternalServerError, "delivery_lookup_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
 		if !found {
 			httpkit.WriteError(w, http.StatusNotFound, "delivery_not_found", "webhook delivery not found", httpkit.RequestIDFromContext(r.Context()))
 			return

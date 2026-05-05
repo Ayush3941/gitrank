@@ -47,6 +47,17 @@ func TestInMemoryDeliveryStoreRemember(t *testing.T) {
 	if !duplicate {
 		t.Fatal("second Remember() duplicate = false, want true")
 	}
+
+	loaded, found, err := store.Lookup("delivery-1")
+	if err != nil {
+		t.Fatalf("Lookup() error = %v", err)
+	}
+	if !found {
+		t.Fatal("Lookup() found = false, want true")
+	}
+	if loaded.DeliveryID != "delivery-1" {
+		t.Fatalf("delivery id = %q, want %q", loaded.DeliveryID, "delivery-1")
+	}
 }
 
 func TestNewQueueJob(t *testing.T) {
@@ -63,6 +74,9 @@ func TestNewQueueJob(t *testing.T) {
 	}
 	if job.Status != JobPending {
 		t.Fatalf("Status = %q, want pending", job.Status)
+	}
+	if len(job.ID) != 36 || job.ID[8] != '-' || job.ID[13] != '-' || job.ID[18] != '-' || job.ID[23] != '-' {
+		t.Fatalf("job id = %q, want UUID-like identifier", job.ID)
 	}
 }
 

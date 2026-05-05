@@ -186,6 +186,7 @@ Current state:
 
 - webhook validation, replay protection, and deduplication are implemented
 - stored webhook deliveries can be manually requeued for recovery
+- webhook delivery deduplication and requeue state persist in PostgreSQL when `DATABASE_URL` is configured
 - sync requests currently enqueue in-memory preview jobs
 - persistent worker execution and normalized persistence are still pending
 

@@ -10,6 +10,7 @@ require (
 	github.com/Ayush3941/gitrank/packages/httpkit v0.0.0
 	github.com/Ayush3941/gitrank/packages/logger v0.0.0
 	github.com/Ayush3941/gitrank/packages/store v0.0.0
+	github.com/jackc/pgx/v5 v5.7.6
 )
 
 replace github.com/Ayush3941/gitrank/packages/config => ../../packages/config

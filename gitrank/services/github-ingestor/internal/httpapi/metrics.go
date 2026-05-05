@@ -13,7 +13,7 @@ import (
 type queueMetricsSource struct {
 	service       string
 	queueName     string
-	deliveryStore *store.InMemoryDeliveryStore
+	deliveryStore store.DeliveryStore
 	jobQueue      *store.InMemoryJobQueue
 }
 
@@ -126,7 +126,10 @@ func (s queueMetricsSource) WritePrometheus(w io.Writer) {
 	}
 	deliverySnapshot := store.DeliveryStoreSnapshot{}
 	if s.deliveryStore != nil {
-		deliverySnapshot = s.deliveryStore.Snapshot(time.Now().UTC())
+		snapshot, err := s.deliveryStore.Snapshot(time.Now().UTC())
+		if err == nil {
+			deliverySnapshot = snapshot
+		}
 	}
 
 	_, _ = fmt.Fprintf(w, "# HELP gitrank_queue_depth Current queued GitHub sync jobs.\n")

@@ -458,6 +458,11 @@ Operational requirements:
 - [ ] backfill jobs are cancelable
 - [ ] sync jobs are traceable per user and per repo
 
+Current preview state:
+
+- webhook delivery deduplication and requeue state persist in PostgreSQL when `DATABASE_URL` is configured
+- sync job execution remains an in-memory queue preview and is not yet durable across process restarts
+
 ## 8. PR Analyzer Checklist
 
 Target directory:

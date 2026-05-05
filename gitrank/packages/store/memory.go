@@ -64,16 +64,16 @@ func (s *InMemoryDeliveryStore) MarkStatus(deliveryID string, status WebhookDeli
 	return nil
 }
 
-func (s *InMemoryDeliveryStore) Lookup(deliveryID string) (WebhookDelivery, bool) {
+func (s *InMemoryDeliveryStore) Lookup(deliveryID string) (WebhookDelivery, bool, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	s.pruneLocked(time.Now().UTC())
 	delivery, ok := s.entries[deliveryID]
 	if !ok {
-		return WebhookDelivery{}, false
+		return WebhookDelivery{}, false, nil
 	}
-	return delivery, true
+	return delivery, true, nil
 }
 
 func (s *InMemoryDeliveryStore) pruneLocked(now time.Time) {
@@ -84,7 +84,7 @@ func (s *InMemoryDeliveryStore) pruneLocked(now time.Time) {
 	}
 }
 
-func (s *InMemoryDeliveryStore) Snapshot(now time.Time) DeliveryStoreSnapshot {
+func (s *InMemoryDeliveryStore) Snapshot(now time.Time) (DeliveryStoreSnapshot, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -102,7 +102,7 @@ func (s *InMemoryDeliveryStore) Snapshot(now time.Time) DeliveryStoreSnapshot {
 			snapshot.ReplayRecorded++
 		}
 	}
-	return snapshot
+	return snapshot, nil
 }
 
 type InMemoryJobQueue struct {

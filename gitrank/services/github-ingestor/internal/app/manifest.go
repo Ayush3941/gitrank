@@ -31,7 +31,7 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 			{Name: "GitHub GraphQL API", Kind: "external_http", BaseURL: cfg.GitHub.GraphQLURL, Purpose: "Efficient repository and PR graph access", Auth: "GitHub App or OAuth token", Critical: true, Status: "configured"},
 			{Name: "In-memory queue preview", Kind: "queue", Purpose: "Pending jobs and delivery deduplication during local development", Critical: true, Status: "implemented"},
 			{Name: "Redis", Kind: "queue", Purpose: "Pending jobs and delivery deduplication", Critical: true, Status: "planned"},
-			{Name: "PostgreSQL", Kind: "database", Purpose: "Normalized GitHub data persistence", Critical: true, Status: "implemented"},
+			{Name: "PostgreSQL", Kind: "database", Purpose: "Durable webhook delivery deduplication and normalized GitHub data persistence", Critical: true, Status: "implemented"},
 		},
 	}
 }
