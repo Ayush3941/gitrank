@@ -533,7 +533,7 @@ Implemented service routes today:
 
 - `GET /v1/meta/manifest` and `GET /metrics` on every service
 - `GET /oauth/github/start`, `GET /oauth/github/callback`, `GET /v1/session/me`, `POST /v1/session/refresh`, and `POST /v1/session/logout` on `auth-service`
-- `POST /webhooks/github`, `POST /v1/sync/preview`, and the normalized `POST /v1/sync/*` routes on `github-ingestor`
+- `POST /webhooks/github`, `POST /v1/webhooks/github/deliveries/{delivery_id}/requeue`, `POST /v1/sync/preview`, and the normalized `POST /v1/sync/*` routes on `github-ingestor`
 - `POST /v1/analyze/pull-request` on `pr-analyzer`
 - `POST /v1/score/contribution` on `scoring-engine`
 - `GET /v1/profile/schema`, `GET /v1/users/{handle}`, `GET /v1/users/{handle}/card`, `GET /v1/me/profile`, and profile privacy update routes on `profile-service`

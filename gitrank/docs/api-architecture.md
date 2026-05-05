@@ -172,6 +172,7 @@ Implemented routes:
 - `GET /metrics`
 - `GET /v1/meta/manifest`
 - `POST /webhooks/github`
+- `POST /v1/webhooks/github/deliveries/{delivery_id}/requeue`
 - `POST /v1/sync/preview`
 - `POST /v1/sync/installation`
 - `POST /v1/sync/user`
@@ -184,6 +185,7 @@ Implemented routes:
 Current state:
 
 - webhook validation, replay protection, and deduplication are implemented
+- stored webhook deliveries can be manually requeued for recovery
 - sync requests currently enqueue in-memory preview jobs
 - persistent worker execution and normalized persistence are still pending
 

@@ -425,7 +425,7 @@ Must be implemented:
 - [x] webhook signature validation
 - [x] webhook replay protection
 - [x] webhook event deduplication
-- [ ] webhook retry safety
+- [x] webhook retry safety
 - [x] REST API client
 - [x] GraphQL API client
 - [x] pagination utilities
@@ -454,7 +454,7 @@ GitHub-specific requirements:
 Operational requirements:
 
 - [ ] ingestion failures are visible in metrics and alerts
-- [ ] manual requeue exists
+- [x] manual requeue exists
 - [ ] backfill jobs are cancelable
 - [ ] sync jobs are traceable per user and per repo
 

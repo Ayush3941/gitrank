@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Ayush3941/gitrank/packages/config"
@@ -144,6 +145,53 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		})
 	})))
 
+	mux.Handle("/v1/webhooks/github/deliveries/", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		deliveryID, ok := requeueDeliveryID(r.URL.Path)
+		if !ok {
+			httpkit.WriteError(w, http.StatusNotFound, "not_found", "delivery requeue target not found", httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+
+		delivery, found := deliveryStore.Lookup(deliveryID)
+		if !found {
+			httpkit.WriteError(w, http.StatusNotFound, "delivery_not_found", "webhook delivery not found", httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+
+		envelope, err := deliveryEnvelope(delivery)
+		if err != nil {
+			httpkit.WriteError(w, http.StatusInternalServerError, "delivery_requeue_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		jobs, err := webhookJobs(cfg, envelope, httpkit.RequestIDFromContext(r.Context()))
+		if err != nil {
+			_ = deliveryStore.MarkStatus(delivery.DeliveryID, store.DeliveryFailed, err)
+			httpkit.WriteError(w, http.StatusInternalServerError, "delivery_requeue_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		jobIDs, err := enqueueJobs(jobQueue, jobs)
+		if err != nil {
+			_ = deliveryStore.MarkStatus(delivery.DeliveryID, store.DeliveryFailed, err)
+			httpkit.WriteError(w, http.StatusInternalServerError, "queue_enqueue_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		_ = deliveryStore.MarkStatus(delivery.DeliveryID, store.DeliveryEnqueued, nil)
+
+		httpkit.WriteJSON(w, http.StatusAccepted, contracts.GitHubWebhookReceipt{
+			DeliveryID:      envelope.DeliveryID,
+			EventType:       envelope.EventType,
+			Action:          envelope.Action,
+			Repository:      envelope.Repository,
+			Installation:    envelope.Installation,
+			SignatureOK:     delivery.Signature != "",
+			ReplayProtected: true,
+			Deduplicated:    false,
+			DeliveryStatus:  string(store.DeliveryEnqueued),
+			JobIDs:          jobIDs,
+			QueueName:       githubSyncQueueName,
+		})
+	})))
+
 	mux.Handle("/v1/sync/preview", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		status := "preview"
@@ -226,6 +274,27 @@ func queuePreview(status string, jobs []store.QueueJob, deduplicated bool) contr
 		Deduplicated:  deduplicated,
 		AcceptedAt:    time.Now().UTC(),
 	}
+}
+
+func requeueDeliveryID(path string) (string, bool) {
+	suffix := strings.TrimPrefix(path, "/v1/webhooks/github/deliveries/")
+	if !strings.HasSuffix(suffix, "/requeue") {
+		return "", false
+	}
+	deliveryID := strings.TrimSuffix(suffix, "/requeue")
+	deliveryID = strings.Trim(deliveryID, "/")
+	if deliveryID == "" || strings.Contains(deliveryID, "/") {
+		return "", false
+	}
+	return deliveryID, true
+}
+
+func deliveryEnvelope(delivery store.WebhookDelivery) (githubapi.WebhookEnvelope, error) {
+	headers := http.Header{}
+	headers.Set("X-GitHub-Delivery", delivery.DeliveryID)
+	headers.Set("X-GitHub-Event", delivery.EventType)
+	headers.Set("X-Hub-Signature-256", delivery.Signature)
+	return githubapi.ParseWebhookEnvelope(headers, delivery.Payload)
 }
 
 func webhookJobs(cfg config.App, envelope githubapi.WebhookEnvelope, correlationID string) ([]store.QueueJob, error) {

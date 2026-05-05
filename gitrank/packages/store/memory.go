@@ -57,9 +57,23 @@ func (s *InMemoryDeliveryStore) MarkStatus(deliveryID string, status WebhookDeli
 	delivery.Status = status
 	if err != nil {
 		delivery.LastError = err.Error()
+	} else {
+		delivery.LastError = ""
 	}
 	s.entries[deliveryID] = delivery
 	return nil
+}
+
+func (s *InMemoryDeliveryStore) Lookup(deliveryID string) (WebhookDelivery, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.pruneLocked(time.Now().UTC())
+	delivery, ok := s.entries[deliveryID]
+	if !ok {
+		return WebhookDelivery{}, false
+	}
+	return delivery, true
 }
 
 func (s *InMemoryDeliveryStore) pruneLocked(now time.Time) {

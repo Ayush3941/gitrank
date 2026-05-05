@@ -70,6 +70,38 @@ func TestWebhookAcceptedAndDeduplicated(t *testing.T) {
 	}
 }
 
+func TestWebhookDeliveryCanBeManuallyRequeued(t *testing.T) {
+	router := NewRouter(testConfig(), testLogger(), "test")
+	payload := []byte(`{"action":"opened","repository":{"id":99,"full_name":"octo/repo"},"installation":{"id":12},"pull_request":{"number":7,"head":{"sha":"abc123"}}}`)
+
+	firstResponse := httptest.NewRecorder()
+	router.ServeHTTP(firstResponse, signedWebhookRequest(payload))
+	if firstResponse.Code != http.StatusAccepted {
+		t.Fatalf("first status = %d, want %d, body=%s", firstResponse.Code, http.StatusAccepted, firstResponse.Body.String())
+	}
+
+	requeueRequest := httptest.NewRequest(http.MethodPost, "/v1/webhooks/github/deliveries/delivery-1/requeue", nil)
+	requeueResponse := httptest.NewRecorder()
+	router.ServeHTTP(requeueResponse, requeueRequest)
+	if requeueResponse.Code != http.StatusAccepted {
+		t.Fatalf("requeue status = %d, want %d, body=%s", requeueResponse.Code, http.StatusAccepted, requeueResponse.Body.String())
+	}
+
+	var receipt contracts.GitHubWebhookReceipt
+	if err := json.Unmarshal(requeueResponse.Body.Bytes(), &receipt); err != nil {
+		t.Fatalf("unmarshal requeue receipt: %v", err)
+	}
+	if receipt.DeliveryID != "delivery-1" {
+		t.Fatalf("delivery id = %q, want %q", receipt.DeliveryID, "delivery-1")
+	}
+	if receipt.DeliveryStatus != "enqueued" {
+		t.Fatalf("delivery status = %q, want %q", receipt.DeliveryStatus, "enqueued")
+	}
+	if len(receipt.JobIDs) != 1 {
+		t.Fatalf("job ids len = %d, want 1", len(receipt.JobIDs))
+	}
+}
+
 func TestMetricsIncludeQueueDepthAndDeliveryStatus(t *testing.T) {
 	router := NewRouter(testConfig(), testLogger(), "test")
 	payload := []byte(`{"action":"opened","repository":{"id":99,"full_name":"octo/repo"},"installation":{"id":12},"pull_request":{"number":7,"head":{"sha":"abc123"}}}`)
