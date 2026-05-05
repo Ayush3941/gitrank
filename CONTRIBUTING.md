@@ -704,7 +704,7 @@ Contract tests:
 
 - [ ] internal service contracts
 - [x] API response compatibility
-- [ ] event schema compatibility
+- [x] event schema compatibility
 
 End-to-end tests:
 
