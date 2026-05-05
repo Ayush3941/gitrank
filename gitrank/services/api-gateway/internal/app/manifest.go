@@ -16,8 +16,11 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 			{Method: "GET", Path: "/v1/meta/manifest", Summary: "Service route and dependency manifest", Status: "implemented"},
 			{Method: "GET", Path: "/v1/meta/dependencies", Summary: "Internal and external API dependency map", Status: "implemented"},
 			{Method: "POST", Path: "/v1/sync", Summary: "Request a contribution sync", Status: "planned"},
-			{Method: "GET", Path: "/v1/me/profile", Summary: "Get the authenticated user's profile summary", Status: "planned"},
-			{Method: "GET", Path: "/v1/users/{handle}", Summary: "Get a public GitRank profile", Status: "planned"},
+			{Method: "GET", Path: "/v1/me/profile", Summary: "Get the authenticated user's profile summary", Status: "implemented"},
+			{Method: "PATCH", Path: "/v1/me/profile", Summary: "Update authenticated profile privacy settings", Status: "implemented"},
+			{Method: "PATCH", Path: "/v1/me/profile/repositories/{owner}/{repo}", Summary: "Update per-repository public visibility", Status: "implemented"},
+			{Method: "GET", Path: "/v1/users/{handle}", Summary: "Get a public GitRank profile", Status: "implemented"},
+			{Method: "GET", Path: "/v1/users/{handle}/card", Summary: "Get shareable public GitRank card data", Status: "implemented"},
 		},
 		Dependencies: []contracts.DependencySpec{
 			{Name: "auth-service", Kind: "internal_http", BaseURL: cfg.Services.AuthBaseURL, Purpose: "OAuth and session lifecycle", Auth: "service_to_service", Critical: true, Status: "configured"},

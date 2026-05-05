@@ -267,12 +267,23 @@ func publicResponseFromSnapshot(snapshot snapshotRecord, settings contracts.Prof
 		publicRepos = append(publicRepos, repository)
 	}
 
+	publicHistory := make([]contracts.ScoreHistoryEntry, 0, len(snapshot.ScoreHistory))
+	if settings.ShowExactPRs {
+		publicHistory = append(publicHistory, snapshot.ScoreHistory...)
+		if !settings.ShowAISummaries {
+			for i := range publicHistory {
+				publicHistory[i].Explanation = nil
+			}
+		}
+	}
+
 	return contracts.PublicProfileResponse{
 		Summary:         snapshot.Summary,
 		TopSkillAreas:   snapshot.TopSkills,
 		TopRepositories: publicRepos,
 		Level:           snapshot.ShareCard.Level,
 		Badges:          snapshot.Badges,
+		ScoreHistory:    publicHistory,
 		Timeline:        snapshot.Timeline,
 		ShareCard:       snapshot.ShareCard,
 		Staleness:       snapshotStaleness(snapshot, now.UTC()),

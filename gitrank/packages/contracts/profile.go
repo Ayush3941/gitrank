@@ -134,6 +134,7 @@ type PublicProfileResponse struct {
 	TopRepositories []TopRepositoryView  `json:"top_repositories,omitempty"`
 	Level           ProfileLevelView     `json:"level"`
 	Badges          []BadgeView          `json:"badges,omitempty"`
+	ScoreHistory    []ScoreHistoryEntry  `json:"score_history,omitempty"`
 	Timeline        ProfileTimeline      `json:"timeline"`
 	ShareCard       ShareableProfileCard `json:"share_card"`
 	Staleness       ProfileStaleness     `json:"staleness"`

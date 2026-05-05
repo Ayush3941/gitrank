@@ -508,6 +508,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/BadgeView"
+        score_history:
+          type: array
+          items:
+            $ref: "#/components/schemas/ScoreHistoryEntry"
         timeline:
           $ref: "#/components/schemas/ProfileTimeline"
         share_card:

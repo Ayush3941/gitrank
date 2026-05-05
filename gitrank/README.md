@@ -677,15 +677,16 @@ The repository currently contains a working foundation, not just an empty scaffo
 - real auth-service session, OAuth, token refresh, linking, unlinking, and audit logic
 - webhook intake and sync-job preview routes in the GitHub ingestor
 - deterministic PR analysis and deterministic contribution scoring services
+- a snapshot-backed profile-service read model with privacy controls, repository visibility, caching, and share-card data
+- live profile route integration through api-gateway plus frontend BFF routes for public profile and settings pages
 - PostgreSQL migrations for core entities, GitHub ingestion state, and auth/session security tables
-- a substantial Next.js frontend with dashboard, profile, leaderboard, quest, badge, onboarding, and PR-report flows backed by mock data
+- a substantial Next.js frontend with dashboard, profile, leaderboard, quest, badge, onboarding, and PR-report flows, with profile/settings partially backed by the live Go services
 - CI, release-artifact, dependency-review, CodeQL, and Scorecard workflows
 
 Major gaps remain:
 
 - no end-to-end persistent ingestion worker yet
-- no real profile-service read model yet
-- no live frontend-to-backend integration yet
+- most non-profile frontend routes still use mock data
 - no production observability, deployment, or runtime operations layer yet
 
 ## License
