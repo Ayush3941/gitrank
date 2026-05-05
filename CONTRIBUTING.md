@@ -797,7 +797,7 @@ Metrics:
 - [x] HTTP request counts and latency
 - [x] queue depth
 - [ ] job retries
-- [ ] GitHub API rate-limit usage
+- [x] GitHub API rate-limit usage
 - [x] sync duration
 - [ ] analysis cost and token usage
 - [x] score computation duration

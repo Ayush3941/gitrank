@@ -56,7 +56,7 @@ func NewRouter(cfg config.App, authService *service.Service, log *slog.Logger, v
 		httpkit.WriteJSON(w, http.StatusOK, manifest)
 	})))
 
-	mux.Handle("/metrics", httpkit.RequireMethod(http.MethodGet, metrics.Handler()))
+	mux.Handle("/metrics", httpkit.RequireMethod(http.MethodGet, httpkit.MetricsHandler(metrics, authService.MetricsSource())))
 
 	mux.Handle("/oauth/github/install", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		installURL, err := githubapi.BuildAppInstallURL(cfg.GitHub.AppInstallURL, cfg.GitHub.AppSlug)

@@ -1,9 +1,12 @@
 package service
 
 import (
+	"bytes"
 	"testing"
+	"time"
 
 	"github.com/Ayush3941/gitrank/packages/config"
+	"github.com/Ayush3941/gitrank/packages/githubapi"
 )
 
 func TestNormalizeReturnToDefaults(t *testing.T) {
@@ -56,5 +59,38 @@ func testServiceForReturnTo() *Service {
 		cfg: config.App{
 			PublicBaseURL: "https://app.gitrank.dev",
 		},
+	}
+}
+
+func TestGitHubRateLimitMetricsWritePrometheus(t *testing.T) {
+	svc := &Service{
+		cfg:           config.App{ServiceName: "auth-service"},
+		githubMetrics: newGitHubRateLimitMetrics("auth-service"),
+	}
+	resetAt := time.Unix(1770000000, 0).UTC()
+	svc.observeGitHubRateLimit(githubapi.ResponseMetadata{
+		RateLimit: githubapi.RateLimitStatus{
+			Limit:     5000,
+			Remaining: 4999,
+			Used:      1,
+			ResetAt:   resetAt,
+			Resource:  "core",
+		},
+	})
+
+	var out bytes.Buffer
+	svc.MetricsSource().WritePrometheus(&out)
+	text := out.String()
+
+	for _, fragment := range []string{
+		`gitrank_github_rate_limit_limit{service="auth-service",resource="core"} 5000`,
+		`gitrank_github_rate_limit_remaining{service="auth-service",resource="core"} 4999`,
+		`gitrank_github_rate_limit_used{service="auth-service",resource="core"} 1`,
+		`gitrank_github_rate_limit_reset_at_unix{service="auth-service",resource="core"} 1770000000`,
+		`gitrank_github_rate_limit_observations_total{service="auth-service",resource="core"} 1`,
+	} {
+		if !bytes.Contains(out.Bytes(), []byte(fragment)) {
+			t.Fatalf("metrics output missing %q: %s", fragment, text)
+		}
 	}
 }

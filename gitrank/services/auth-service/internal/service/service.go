@@ -15,6 +15,7 @@ import (
 	"github.com/Ayush3941/gitrank/packages/config"
 	"github.com/Ayush3941/gitrank/packages/contracts"
 	"github.com/Ayush3941/gitrank/packages/githubapi"
+	"github.com/Ayush3941/gitrank/packages/httpkit"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -34,6 +35,7 @@ type Service struct {
 	httpClient    *http.Client
 	sessionSecret []byte
 	tokenKey      []byte
+	githubMetrics *githubRateLimitMetrics
 }
 
 type OAuthStartResult struct {
@@ -78,11 +80,19 @@ func New(cfg config.App, pool *pgxpool.Pool, log *slog.Logger) (*Service, error)
 		httpClient:    &http.Client{Timeout: cfg.GitHub.RequestTimeout},
 		sessionSecret: []byte(cfg.Auth.SessionSecret),
 		tokenKey:      tokenKey,
+		githubMetrics: newGitHubRateLimitMetrics(cfg.ServiceName),
 	}, nil
 }
 
 func (s *Service) Ready(ctx context.Context) error {
 	return s.store.Ping(ctx)
+}
+
+func (s *Service) MetricsSource() httpkit.PrometheusSource {
+	if s == nil {
+		return nil
+	}
+	return s.githubMetrics
 }
 
 func (s *Service) AllowRateLimit(scope, clientIP string, now time.Time) (time.Duration, bool) {
@@ -541,18 +551,27 @@ func (s *Service) fetchGitHubIdentity(ctx context.Context, accessToken string) (
 	if err != nil {
 		return githubapi.CurrentUser{}, "", err
 	}
-	user, _, err := githubapi.GetCurrentUser(ctx, restClient)
+	user, meta, err := githubapi.GetCurrentUser(ctx, restClient)
+	s.observeGitHubRateLimit(meta)
 	if err != nil {
 		return githubapi.CurrentUser{}, "", err
 	}
 	email := strings.TrimSpace(user.Email)
 	if email == "" {
-		emails, _, err := githubapi.ListUserEmails(ctx, restClient)
+		emails, meta, err := githubapi.ListUserEmails(ctx, restClient)
+		s.observeGitHubRateLimit(meta)
 		if err == nil {
 			email = githubapi.PrimaryVerifiedEmail(emails)
 		}
 	}
 	return user, email, nil
+}
+
+func (s *Service) observeGitHubRateLimit(meta githubapi.ResponseMetadata) {
+	if s == nil || s.githubMetrics == nil {
+		return
+	}
+	s.githubMetrics.Observe(meta.RateLimit)
 }
 
 func (s *Service) validateCSRF(sessionToken, provided string) error {
