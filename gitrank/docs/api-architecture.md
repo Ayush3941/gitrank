@@ -258,7 +258,10 @@ Implemented routes:
 - `GET /v1/jobs`
 - `GET /v1/jobs/config`
 - `POST /v1/jobs/sync`
+- `POST /v1/jobs/tick`
 - `POST /v1/jobs/lease`
+- `GET /v1/jobs/backfills`
+- `POST /v1/jobs/backfills`
 - `POST /v1/jobs/{job_id}/complete`
 - `POST /v1/jobs/{job_id}/fail`
 - `POST /v1/jobs/{job_id}/pause`
@@ -275,7 +278,9 @@ Current state:
 - ready jobs can be leased up to the configured worker concurrency
 - retries apply exponential backoff before the next eligible lease
 - poison jobs move into a dead-letter queue and can be manually replayed
-- cron-driven recurring scheduling and persistent queue storage are still pending
+- recurring cron plans can enqueue normalized sync targets on each scheduler tick
+- per-user and per-installation rate limits throttle repeated sync generation
+- persistent queue storage, cross-process coordination, and durable backfill plan storage are still pending
 
 ## Browser Auth Scheme
 

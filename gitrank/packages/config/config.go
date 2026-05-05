@@ -128,13 +128,17 @@ type Observability struct {
 }
 
 type Scheduler struct {
-	SyncCron          string
-	MaxAttempts       int
-	RetryBackoff      time.Duration
-	WorkerConcurrency int
-	LeaseTTL          time.Duration
-	PollInterval      time.Duration
-	DeadLetterQueue   string
+	SyncCron                  string
+	MaxAttempts               int
+	RetryBackoff              time.Duration
+	WorkerConcurrency         int
+	LeaseTTL                  time.Duration
+	PollInterval              time.Duration
+	DeadLetterQueue           string
+	PerUserRateWindow         time.Duration
+	PerUserRateMax            int
+	PerInstallationRateWindow time.Duration
+	PerInstallationRateMax    int
 }
 
 func Load(serviceName, addrEnvKey string) (App, error) {
@@ -228,13 +232,17 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			DistributedTraces: getBool("OTEL_TRACES_ENABLED", true),
 		},
 		Scheduler: Scheduler{
-			SyncCron:          getEnv("SCHEDULER_SYNC_CRON", "0 */6 * * *"),
-			MaxAttempts:       getInt("JOB_MAX_ATTEMPTS", 10),
-			RetryBackoff:      getDuration("JOB_RETRY_BACKOFF", 30*time.Second),
-			WorkerConcurrency: getInt("JOB_WORKER_CONCURRENCY", 4),
-			LeaseTTL:          getDuration("JOB_LEASE_TTL", 2*time.Minute),
-			PollInterval:      getDuration("JOB_POLL_INTERVAL", 5*time.Second),
-			DeadLetterQueue:   getEnv("JOB_DEAD_LETTER_QUEUE", "github-sync-dead-letter"),
+			SyncCron:                  getEnv("SCHEDULER_SYNC_CRON", "0 */6 * * *"),
+			MaxAttempts:               getInt("JOB_MAX_ATTEMPTS", 10),
+			RetryBackoff:              getDuration("JOB_RETRY_BACKOFF", 30*time.Second),
+			WorkerConcurrency:         getInt("JOB_WORKER_CONCURRENCY", 4),
+			LeaseTTL:                  getDuration("JOB_LEASE_TTL", 2*time.Minute),
+			PollInterval:              getDuration("JOB_POLL_INTERVAL", 5*time.Second),
+			DeadLetterQueue:           getEnv("JOB_DEAD_LETTER_QUEUE", "github-sync-dead-letter"),
+			PerUserRateWindow:         getDuration("JOB_PER_USER_RATE_WINDOW", 15*time.Minute),
+			PerUserRateMax:            getInt("JOB_PER_USER_RATE_MAX", 6),
+			PerInstallationRateWindow: getDuration("JOB_PER_INSTALLATION_RATE_WINDOW", 15*time.Minute),
+			PerInstallationRateMax:    getInt("JOB_PER_INSTALLATION_RATE_MAX", 18),
 		},
 	}
 
@@ -359,6 +367,18 @@ func (a App) ValidateBase() error {
 	}
 	if strings.TrimSpace(a.Scheduler.DeadLetterQueue) == "" {
 		problems = append(problems, "JOB_DEAD_LETTER_QUEUE is required")
+	}
+	if a.Scheduler.PerUserRateWindow <= 0 {
+		problems = append(problems, "JOB_PER_USER_RATE_WINDOW must be positive")
+	}
+	if a.Scheduler.PerUserRateMax <= 0 {
+		problems = append(problems, "JOB_PER_USER_RATE_MAX must be positive")
+	}
+	if a.Scheduler.PerInstallationRateWindow <= 0 {
+		problems = append(problems, "JOB_PER_INSTALLATION_RATE_WINDOW must be positive")
+	}
+	if a.Scheduler.PerInstallationRateMax <= 0 {
+		problems = append(problems, "JOB_PER_INSTALLATION_RATE_MAX must be positive")
 	}
 
 	if len(problems) == 0 {

@@ -167,14 +167,18 @@ type UpdateRepositoryVisibilityRequest struct {
 }
 
 type SchedulerConfigResponse struct {
-	SyncCron          string   `json:"sync_cron"`
-	MaxAttempts       int      `json:"max_attempts"`
-	RetryBackoff      string   `json:"retry_backoff"`
-	WorkerConcurrency int      `json:"worker_concurrency"`
-	LeaseTTL          string   `json:"lease_ttl"`
-	PollInterval      string   `json:"poll_interval"`
-	DeadLetterQueue   string   `json:"dead_letter_queue"`
-	SupportedJobTypes []string `json:"supported_job_types,omitempty"`
+	SyncCron                  string   `json:"sync_cron"`
+	MaxAttempts               int      `json:"max_attempts"`
+	RetryBackoff              string   `json:"retry_backoff"`
+	WorkerConcurrency         int      `json:"worker_concurrency"`
+	LeaseTTL                  string   `json:"lease_ttl"`
+	PollInterval              string   `json:"poll_interval"`
+	DeadLetterQueue           string   `json:"dead_letter_queue"`
+	PerUserRateWindow         string   `json:"per_user_rate_window"`
+	PerUserRateMax            int      `json:"per_user_rate_max"`
+	PerInstallationRateWindow string   `json:"per_installation_rate_window"`
+	PerInstallationRateMax    int      `json:"per_installation_rate_max"`
+	SupportedJobTypes         []string `json:"supported_job_types,omitempty"`
 }
 
 type DeadLetterQueueStatus struct {

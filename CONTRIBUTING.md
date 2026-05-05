@@ -572,16 +572,16 @@ Target directory:
 Must be implemented:
 
 - [x] job queue selection
-- [ ] cron scheduling
+- [x] cron scheduling
 - [x] retry policy
 - [x] exponential backoff
 - [x] dead-letter queue
 - [x] idempotent job handling
 - [x] concurrency controls
-- [ ] per-user and per-installation rate controls
+- [x] per-user and per-installation rate controls
 - [x] job cancellation or pausing support
 - [x] manual replay support
-- [ ] backfill orchestration
+- [x] backfill orchestration
 - [x] observability for queue depth and failures
 
 ## 12. Shared Packages Checklist

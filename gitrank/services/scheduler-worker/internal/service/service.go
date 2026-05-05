@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"sort"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/Ayush3941/gitrank/packages/config"
@@ -16,14 +18,23 @@ import (
 const primaryQueueName = "github-sync"
 
 type Service struct {
-	cfg   config.App
-	queue *store.InMemoryJobQueue
+	cfg                 config.App
+	queue               *store.InMemoryJobQueue
+	mu                  sync.Mutex
+	plans               map[string]*backfillPlan
+	userLimiter         *scopeRateLimiter
+	installationLimiter *scopeRateLimiter
+	ticks               *tickCounters
 }
 
 func New(cfg config.App) *Service {
 	return &Service{
-		cfg:   cfg,
-		queue: store.NewInMemoryJobQueue(),
+		cfg:                 cfg,
+		queue:               store.NewInMemoryJobQueue(),
+		plans:               make(map[string]*backfillPlan),
+		userLimiter:         newScopeRateLimiter(cfg.Scheduler.PerUserRateWindow, cfg.Scheduler.PerUserRateMax),
+		installationLimiter: newScopeRateLimiter(cfg.Scheduler.PerInstallationRateWindow, cfg.Scheduler.PerInstallationRateMax),
+		ticks:               newTickCounters(),
 	}
 }
 
@@ -33,14 +44,18 @@ func (s *Service) MetricsSource() httpkit.PrometheusSource {
 
 func (s *Service) Config() contracts.SchedulerConfigResponse {
 	return contracts.SchedulerConfigResponse{
-		SyncCron:          s.cfg.Scheduler.SyncCron,
-		MaxAttempts:       s.cfg.Scheduler.MaxAttempts,
-		RetryBackoff:      s.cfg.Scheduler.RetryBackoff.String(),
-		WorkerConcurrency: s.cfg.Scheduler.WorkerConcurrency,
-		LeaseTTL:          s.cfg.Scheduler.LeaseTTL.String(),
-		PollInterval:      s.cfg.Scheduler.PollInterval.String(),
-		DeadLetterQueue:   s.cfg.Scheduler.DeadLetterQueue,
-		SupportedJobTypes: supportedJobTypes(),
+		SyncCron:                  s.cfg.Scheduler.SyncCron,
+		MaxAttempts:               s.cfg.Scheduler.MaxAttempts,
+		RetryBackoff:              s.cfg.Scheduler.RetryBackoff.String(),
+		WorkerConcurrency:         s.cfg.Scheduler.WorkerConcurrency,
+		LeaseTTL:                  s.cfg.Scheduler.LeaseTTL.String(),
+		PollInterval:              s.cfg.Scheduler.PollInterval.String(),
+		DeadLetterQueue:           s.cfg.Scheduler.DeadLetterQueue,
+		PerUserRateWindow:         s.cfg.Scheduler.PerUserRateWindow.String(),
+		PerUserRateMax:            s.cfg.Scheduler.PerUserRateMax,
+		PerInstallationRateWindow: s.cfg.Scheduler.PerInstallationRateWindow.String(),
+		PerInstallationRateMax:    s.cfg.Scheduler.PerInstallationRateMax,
+		SupportedJobTypes:         supportedJobTypes(),
 	}
 }
 
@@ -82,6 +97,14 @@ func (s *Service) Lease(limit int, now time.Time) contracts.SchedulerLeaseRespon
 }
 
 func (s *Service) EnqueueSync(req contracts.SyncRequest, correlationID string, now time.Time) (contracts.SchedulerEnqueueResponse, error) {
+	return s.enqueueSyncRequest(req, correlationID, now)
+}
+
+func (s *Service) enqueueSyncRequest(req contracts.SyncRequest, correlationID string, now time.Time) (contracts.SchedulerEnqueueResponse, error) {
+	if err := s.allowScopedRates(req, now); err != nil {
+		return contracts.SchedulerEnqueueResponse{}, err
+	}
+
 	jobs, err := store.BuildSyncJobs(req, primaryQueueName, correlationID, s.cfg.Scheduler.MaxAttempts)
 	if err != nil {
 		return contracts.SchedulerEnqueueResponse{}, err
@@ -228,12 +251,59 @@ func (s *Service) WritePrometheus(w io.Writer) {
 	_, _ = fmt.Fprintf(w, "# TYPE gitrank_scheduler_job_failures_total counter\n")
 	_, _ = fmt.Fprintf(w, "# HELP gitrank_scheduler_job_replays_total Total scheduler dead-letter replays.\n")
 	_, _ = fmt.Fprintf(w, "# TYPE gitrank_scheduler_job_replays_total counter\n")
+	_, _ = fmt.Fprintf(w, "# HELP gitrank_scheduler_backfill_plans_total Total configured backfill plans.\n")
+	_, _ = fmt.Fprintf(w, "# TYPE gitrank_scheduler_backfill_plans_total gauge\n")
+	_, _ = fmt.Fprintf(w, "# HELP gitrank_scheduler_tick_runs_total Total scheduler tick executions.\n")
+	_, _ = fmt.Fprintf(w, "# TYPE gitrank_scheduler_tick_runs_total counter\n")
+	_, _ = fmt.Fprintf(w, "# HELP gitrank_scheduler_due_plans_total Total due backfill plans observed across ticks.\n")
+	_, _ = fmt.Fprintf(w, "# TYPE gitrank_scheduler_due_plans_total counter\n")
+	_, _ = fmt.Fprintf(w, "# HELP gitrank_scheduler_executed_plans_total Total backfill plans executed across ticks.\n")
+	_, _ = fmt.Fprintf(w, "# TYPE gitrank_scheduler_executed_plans_total counter\n")
+	_, _ = fmt.Fprintf(w, "# HELP gitrank_scheduler_rate_limited_targets_total Total backfill or sync targets blocked by scope rate limits.\n")
+	_, _ = fmt.Fprintf(w, "# TYPE gitrank_scheduler_rate_limited_targets_total counter\n")
+	_, _ = fmt.Fprintf(w, "# HELP gitrank_scheduler_last_tick_unix Last scheduler tick timestamp as a Unix time.\n")
+	_, _ = fmt.Fprintf(w, "# TYPE gitrank_scheduler_last_tick_unix gauge\n")
 	_, _ = fmt.Fprintf(w, `gitrank_scheduler_queue_depth{service=%q,queue=%q} %d`+"\n", s.cfg.ServiceName, primaryQueueName, snapshot.Queued)
 	_, _ = fmt.Fprintf(w, `gitrank_scheduler_active_leases{service=%q,queue=%q} %d`+"\n", s.cfg.ServiceName, primaryQueueName, snapshot.ActiveLeases)
 	_, _ = fmt.Fprintf(w, `gitrank_scheduler_dead_letters{service=%q,queue=%q} %d`+"\n", s.cfg.ServiceName, s.cfg.Scheduler.DeadLetterQueue, snapshot.DeadLetters)
 	_, _ = fmt.Fprintf(w, `gitrank_scheduler_job_retries_total{service=%q,queue=%q} %d`+"\n", s.cfg.ServiceName, primaryQueueName, snapshot.Retried)
 	_, _ = fmt.Fprintf(w, `gitrank_scheduler_job_failures_total{service=%q,queue=%q} %d`+"\n", s.cfg.ServiceName, primaryQueueName, snapshot.Failures)
 	_, _ = fmt.Fprintf(w, `gitrank_scheduler_job_replays_total{service=%q,queue=%q} %d`+"\n", s.cfg.ServiceName, s.cfg.Scheduler.DeadLetterQueue, snapshot.Replays)
+
+	s.mu.Lock()
+	planCount := len(s.plans)
+	s.mu.Unlock()
+	_, _ = fmt.Fprintf(w, `gitrank_scheduler_backfill_plans_total{service=%q} %d`+"\n", s.cfg.ServiceName, planCount)
+
+	if s.ticks != nil {
+		s.ticks.mu.Lock()
+		runs := s.ticks.runs
+		duePlans := s.ticks.duePlans
+		executedPlans := s.ticks.executedPlans
+		rateLimitedTargets := s.ticks.rateLimitedTargets
+		lastTickAt := s.ticks.lastTickAt.Unix()
+		rateLimitedByScope := make(map[string]int, len(s.ticks.rateLimitedByScope))
+		for scope, count := range s.ticks.rateLimitedByScope {
+			rateLimitedByScope[scope] = count
+		}
+		s.ticks.mu.Unlock()
+
+		_, _ = fmt.Fprintf(w, `gitrank_scheduler_tick_runs_total{service=%q} %d`+"\n", s.cfg.ServiceName, runs)
+		_, _ = fmt.Fprintf(w, `gitrank_scheduler_due_plans_total{service=%q} %d`+"\n", s.cfg.ServiceName, duePlans)
+		_, _ = fmt.Fprintf(w, `gitrank_scheduler_executed_plans_total{service=%q} %d`+"\n", s.cfg.ServiceName, executedPlans)
+		_, _ = fmt.Fprintf(w, `gitrank_scheduler_rate_limited_targets_total{service=%q} %d`+"\n", s.cfg.ServiceName, rateLimitedTargets)
+		_, _ = fmt.Fprintf(w, `gitrank_scheduler_last_tick_unix{service=%q} %d`+"\n", s.cfg.ServiceName, lastTickAt)
+
+		scopes := make([]string, 0, len(rateLimitedByScope))
+		for scope := range rateLimitedByScope {
+			scopes = append(scopes, scope)
+		}
+		sort.Strings(scopes)
+		for _, scope := range scopes {
+			_, _ = fmt.Fprintf(w, `gitrank_scheduler_rate_limited_by_scope_total{service=%q,scope=%q} %d`+"\n", s.cfg.ServiceName, scope, rateLimitedByScope[scope])
+		}
+	}
+
 	statuses := make([]string, 0, len(snapshot.ByStatus))
 	for status := range snapshot.ByStatus {
 		statuses = append(statuses, string(status))
@@ -242,6 +312,23 @@ func (s *Service) WritePrometheus(w io.Writer) {
 	for _, status := range statuses {
 		_, _ = fmt.Fprintf(w, `gitrank_scheduler_jobs_by_status{service=%q,queue=%q,status=%q} %d`+"\n", s.cfg.ServiceName, primaryQueueName, status, snapshot.ByStatus[store.SyncJobStatus(status)])
 	}
+}
+
+func (s *Service) allowScopedRates(req contracts.SyncRequest, now time.Time) error {
+	if user := strings.TrimSpace(req.User); user != "" {
+		if allowed, retryAfter := s.userLimiter.Allow(user, now); !allowed {
+			s.recordRateLimited("user")
+			return &RateLimitError{Scope: "user", Key: user, RetryAfter: retryAfter}
+		}
+	}
+	if req.InstallationID > 0 {
+		key := fmt.Sprintf("%d", req.InstallationID)
+		if allowed, retryAfter := s.installationLimiter.Allow(key, now); !allowed {
+			s.recordRateLimited("installation")
+			return &RateLimitError{Scope: "installation", Key: key, RetryAfter: retryAfter}
+		}
+	}
+	return nil
 }
 
 func jobViews(jobs []store.QueueJob) []contracts.SchedulerJobView {

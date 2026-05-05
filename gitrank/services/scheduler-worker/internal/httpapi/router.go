@@ -1,8 +1,10 @@
 package httpapi
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -13,9 +15,8 @@ import (
 	"github.com/Ayush3941/gitrank/services/scheduler-worker/internal/service"
 )
 
-func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
+func NewRouter(cfg config.App, scheduler *service.Service, log *slog.Logger, version string) http.Handler {
 	manifest := app.Manifest(cfg, version)
-	scheduler := service.New(cfg)
 	mux := http.NewServeMux()
 	metrics := httpkit.NewMetrics(cfg.ServiceName)
 
@@ -64,10 +65,19 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		}
 		response, err := scheduler.EnqueueSync(req, httpkit.RequestIDFromContext(r.Context()), time.Now().UTC())
 		if err != nil {
-			httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			writeSchedulerError(w, r, err)
 			return
 		}
 		httpkit.WriteJSON(w, http.StatusAccepted, response)
+	})))
+
+	mux.Handle("/v1/jobs/tick", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		response, err := scheduler.Tick(time.Now().UTC())
+		if err != nil {
+			writeSchedulerError(w, r, err)
+			return
+		}
+		httpkit.WriteJSON(w, http.StatusOK, response)
 	})))
 
 	mux.Handle("/v1/jobs/lease", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -80,6 +90,27 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		}
 		httpkit.WriteJSON(w, http.StatusOK, scheduler.Lease(req.Limit, time.Now().UTC()))
 	})))
+
+	mux.Handle("/v1/jobs/backfills", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			httpkit.WriteJSON(w, http.StatusOK, scheduler.BackfillPlans(time.Now().UTC()))
+		case http.MethodPost:
+			var req contracts.SchedulerBackfillPlanRequest
+			if err := httpkit.DecodeJSON(r, &req, 1<<20); err != nil {
+				httpkit.WriteError(w, http.StatusBadRequest, "invalid_json", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+				return
+			}
+			plan, err := scheduler.CreateBackfillPlan(req, time.Now().UTC())
+			if err != nil {
+				writeSchedulerError(w, r, err)
+				return
+			}
+			httpkit.WriteJSON(w, http.StatusCreated, plan)
+		default:
+			writeMethodNotAllowed(w, r)
+		}
+	}))
 
 	mux.Handle("/v1/jobs/dead-letters", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/v1/jobs/dead-letters" {
@@ -163,7 +194,12 @@ func writeMethodNotAllowed(w http.ResponseWriter, r *http.Request) {
 func writeSchedulerError(w http.ResponseWriter, r *http.Request, err error) {
 	status := http.StatusBadRequest
 	code := "scheduler_error"
+	var rateLimitErr *service.RateLimitError
 	switch {
+	case errors.As(err, &rateLimitErr):
+		status = http.StatusTooManyRequests
+		code = "rate_limited"
+		w.Header().Set("Retry-After", strconv.Itoa(int(rateLimitErr.RetryAfter.Seconds())+1))
 	case strings.Contains(err.Error(), "not found"):
 		status = http.StatusNotFound
 		code = "not_found"

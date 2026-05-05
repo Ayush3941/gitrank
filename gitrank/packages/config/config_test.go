@@ -32,6 +32,12 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.Scheduler.DeadLetterQueue != "github-sync-dead-letter" {
 		t.Fatalf("Scheduler.DeadLetterQueue = %q, want github-sync-dead-letter", cfg.Scheduler.DeadLetterQueue)
 	}
+	if cfg.Scheduler.PerUserRateMax != 6 {
+		t.Fatalf("Scheduler.PerUserRateMax = %d, want 6", cfg.Scheduler.PerUserRateMax)
+	}
+	if cfg.Scheduler.PerInstallationRateMax != 18 {
+		t.Fatalf("Scheduler.PerInstallationRateMax = %d, want 18", cfg.Scheduler.PerInstallationRateMax)
+	}
 	if cfg.Auth.SessionCookieName != "gitrank_session" {
 		t.Fatalf("Auth.SessionCookieName = %q, want gitrank_session", cfg.Auth.SessionCookieName)
 	}
@@ -56,6 +62,8 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	t.Setenv("GITHUB_OAUTH_SCOPES", "read:user,user:email")
 	t.Setenv("JOB_WORKER_CONCURRENCY", "9")
 	t.Setenv("JOB_DEAD_LETTER_QUEUE", "custom-dead-letter")
+	t.Setenv("JOB_PER_USER_RATE_MAX", "3")
+	t.Setenv("JOB_PER_INSTALLATION_RATE_MAX", "11")
 
 	cfg, err := Load("api-gateway", "API_GATEWAY_ADDR")
 	if err != nil {
@@ -100,6 +108,12 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	}
 	if cfg.Scheduler.DeadLetterQueue != "custom-dead-letter" {
 		t.Fatalf("Scheduler.DeadLetterQueue = %q, want custom-dead-letter", cfg.Scheduler.DeadLetterQueue)
+	}
+	if cfg.Scheduler.PerUserRateMax != 3 {
+		t.Fatalf("Scheduler.PerUserRateMax = %d, want 3", cfg.Scheduler.PerUserRateMax)
+	}
+	if cfg.Scheduler.PerInstallationRateMax != 11 {
+		t.Fatalf("Scheduler.PerInstallationRateMax = %d, want 11", cfg.Scheduler.PerInstallationRateMax)
 	}
 }
 

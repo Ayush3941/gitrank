@@ -15,8 +15,25 @@ type SchedulerLeaseRequest struct {
 	Limit int `json:"limit,omitempty"`
 }
 
+type SchedulerBackfillPlanRequest struct {
+	Name    string        `json:"name,omitempty"`
+	Cron    string        `json:"cron,omitempty"`
+	Enabled *bool         `json:"enabled,omitempty"`
+	Targets []SyncRequest `json:"targets"`
+}
+
 type SchedulerJobFailureRequest struct {
 	ErrorMessage string `json:"error_message,omitempty"`
+}
+
+type SchedulerTickResponse struct {
+	Status             string    `json:"status"`
+	DuePlans           int       `json:"due_plans"`
+	ExecutedPlans      int       `json:"executed_plans"`
+	QueuedJobs         int       `json:"queued_jobs"`
+	DeduplicatedJobs   int       `json:"deduplicated_jobs"`
+	RateLimitedTargets int       `json:"rate_limited_targets"`
+	LastTickAt         time.Time `json:"last_tick_at"`
 }
 
 type SchedulerQueueStatusResponse struct {
@@ -54,6 +71,11 @@ type SchedulerDeadLetterListResponse struct {
 	LastUpdatedAt time.Time              `json:"last_updated_at"`
 }
 
+type SchedulerBackfillPlanListResponse struct {
+	Plans         []SchedulerBackfillPlanView `json:"plans,omitempty"`
+	LastUpdatedAt time.Time                   `json:"last_updated_at"`
+}
+
 type SchedulerJobView struct {
 	ID             string    `json:"id"`
 	QueueName      string    `json:"queue_name"`
@@ -71,6 +93,23 @@ type SchedulerJobView struct {
 	NotBefore      time.Time `json:"not_before"`
 	LeaseExpiresAt time.Time `json:"lease_expires_at,omitempty"`
 	LastError      string    `json:"last_error,omitempty"`
+}
+
+type SchedulerBackfillPlanView struct {
+	ID                string        `json:"id"`
+	Name              string        `json:"name,omitempty"`
+	Cron              string        `json:"cron"`
+	Enabled           bool          `json:"enabled"`
+	Targets           []SyncRequest `json:"targets,omitempty"`
+	TargetCount       int           `json:"target_count"`
+	LastRunAt         *time.Time    `json:"last_run_at,omitempty"`
+	NextRunAt         time.Time     `json:"next_run_at"`
+	QueuedJobsTotal   int           `json:"queued_jobs_total"`
+	DeduplicatedTotal int           `json:"deduplicated_total"`
+	RateLimitedTotal  int           `json:"rate_limited_total"`
+	CreatedAt         time.Time     `json:"created_at"`
+	UpdatedAt         time.Time     `json:"updated_at"`
+	LastCorrelationID string        `json:"last_correlation_id,omitempty"`
 }
 
 type DeadLetterRecordView struct {

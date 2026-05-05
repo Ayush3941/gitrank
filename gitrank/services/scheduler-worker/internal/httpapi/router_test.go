@@ -12,10 +12,11 @@ import (
 
 	"github.com/Ayush3941/gitrank/packages/config"
 	"github.com/Ayush3941/gitrank/packages/contracts"
+	"github.com/Ayush3941/gitrank/services/scheduler-worker/internal/service"
 )
 
 func TestSchedulerEnqueueDeduplicatesByDedupeKey(t *testing.T) {
-	router := NewRouter(testConfig(), testLogger(), "test")
+	router := newTestRouter(testConfig())
 	body := `{"mode":"repository","repository":"octo/repo"}`
 
 	first := httptest.NewRecorder()
@@ -47,7 +48,7 @@ func TestSchedulerEnqueueDeduplicatesByDedupeKey(t *testing.T) {
 }
 
 func TestSchedulerFailMovesJobToDeadLetterAndReplayRequeues(t *testing.T) {
-	router := NewRouter(testConfig(), testLogger(), "test")
+	router := newTestRouter(testConfig())
 
 	enqueueResponse := httptest.NewRecorder()
 	enqueueRequest := httptest.NewRequest(http.MethodPost, "/v1/jobs/sync", strings.NewReader(`{"mode":"repository","repository":"octo/repo"}`))
@@ -107,7 +108,7 @@ func TestSchedulerFailMovesJobToDeadLetterAndReplayRequeues(t *testing.T) {
 }
 
 func TestSchedulerPauseResumeAndMetrics(t *testing.T) {
-	router := NewRouter(testConfig(), testLogger(), "test")
+	router := newTestRouter(testConfig())
 
 	enqueueResponse := httptest.NewRecorder()
 	enqueueRequest := httptest.NewRequest(http.MethodPost, "/v1/jobs/sync", strings.NewReader(`{"mode":"user","user":"octocat"}`))
@@ -152,6 +153,117 @@ func TestSchedulerPauseResumeAndMetrics(t *testing.T) {
 	}
 }
 
+func TestSchedulerBackfillPlanCreateAndList(t *testing.T) {
+	router := newTestRouter(testConfig())
+
+	createResponse := httptest.NewRecorder()
+	createRequest := httptest.NewRequest(http.MethodPost, "/v1/jobs/backfills", strings.NewReader(`{
+		"name":"daily-user-backfill",
+		"cron":"0 */6 * * *",
+		"targets":[{"mode":"user","user":"octocat"}]
+	}`))
+	createRequest.Header.Set("Content-Type", "application/json")
+	router.ServeHTTP(createResponse, createRequest)
+	if createResponse.Code != http.StatusCreated {
+		t.Fatalf("create status = %d, want %d, body=%s", createResponse.Code, http.StatusCreated, createResponse.Body.String())
+	}
+
+	var created contracts.SchedulerBackfillPlanView
+	if err := json.Unmarshal(createResponse.Body.Bytes(), &created); err != nil {
+		t.Fatalf("unmarshal create response: %v", err)
+	}
+	if created.ID == "" {
+		t.Fatal("created plan id is empty")
+	}
+	if created.TargetCount != 1 {
+		t.Fatalf("target count = %d, want 1", created.TargetCount)
+	}
+
+	listResponse := httptest.NewRecorder()
+	router.ServeHTTP(listResponse, httptest.NewRequest(http.MethodGet, "/v1/jobs/backfills", nil))
+	if listResponse.Code != http.StatusOK {
+		t.Fatalf("list status = %d, want %d, body=%s", listResponse.Code, http.StatusOK, listResponse.Body.String())
+	}
+
+	var listed contracts.SchedulerBackfillPlanListResponse
+	if err := json.Unmarshal(listResponse.Body.Bytes(), &listed); err != nil {
+		t.Fatalf("unmarshal list response: %v", err)
+	}
+	if len(listed.Plans) != 1 {
+		t.Fatalf("list count = %d, want 1", len(listed.Plans))
+	}
+	if listed.Plans[0].ID != created.ID {
+		t.Fatalf("listed plan id = %q, want %q", listed.Plans[0].ID, created.ID)
+	}
+}
+
+func TestSchedulerBackfillPlanTicksAndQueuesTargets(t *testing.T) {
+	cfg := testConfig()
+	cfg.Scheduler.SyncCron = "*/5 * * * *"
+	scheduler := service.New(cfg)
+	_, err := scheduler.CreateBackfillPlan(contracts.SchedulerBackfillPlanRequest{
+		Name: "user-history",
+		Cron: "*/5 * * * *",
+		Targets: []contracts.SyncRequest{
+			{Mode: "user", User: "octocat"},
+			{Mode: "repository", Repository: "octo/repo"},
+		},
+	}, time.Now().Add(-10*time.Minute))
+	if err != nil {
+		t.Fatalf("CreateBackfillPlan() error = %v", err)
+	}
+	router := NewRouter(cfg, scheduler, testLogger(), "test")
+
+	tickResponse := httptest.NewRecorder()
+	router.ServeHTTP(tickResponse, httptest.NewRequest(http.MethodPost, "/v1/jobs/tick", nil))
+	if tickResponse.Code != http.StatusOK {
+		t.Fatalf("tick status = %d, want %d, body=%s", tickResponse.Code, http.StatusOK, tickResponse.Body.String())
+	}
+
+	var tickOut contracts.SchedulerTickResponse
+	if err := json.Unmarshal(tickResponse.Body.Bytes(), &tickOut); err != nil {
+		t.Fatalf("unmarshal tick response: %v", err)
+	}
+	if tickOut.DuePlans != 1 {
+		t.Fatalf("due plans = %d, want 1", tickOut.DuePlans)
+	}
+	if tickOut.QueuedJobs != 2 {
+		t.Fatalf("queued jobs = %d, want 2", tickOut.QueuedJobs)
+	}
+
+	queueResponse := httptest.NewRecorder()
+	router.ServeHTTP(queueResponse, httptest.NewRequest(http.MethodGet, "/v1/jobs", nil))
+	if queueResponse.Code != http.StatusOK {
+		t.Fatalf("queue status = %d, want %d, body=%s", queueResponse.Code, http.StatusOK, queueResponse.Body.String())
+	}
+}
+
+func TestSchedulerRateLimitsPerUserSyncs(t *testing.T) {
+	cfg := testConfig()
+	cfg.Scheduler.PerUserRateWindow = time.Hour
+	cfg.Scheduler.PerUserRateMax = 1
+	router := newTestRouter(cfg)
+
+	first := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodPost, "/v1/jobs/sync", strings.NewReader(`{"mode":"user","user":"octocat"}`))
+	request.Header.Set("Content-Type", "application/json")
+	router.ServeHTTP(first, request)
+	if first.Code != http.StatusAccepted {
+		t.Fatalf("first status = %d, want %d, body=%s", first.Code, http.StatusAccepted, first.Body.String())
+	}
+
+	second := httptest.NewRecorder()
+	request = httptest.NewRequest(http.MethodPost, "/v1/jobs/sync", strings.NewReader(`{"mode":"user","user":"octocat"}`))
+	request.Header.Set("Content-Type", "application/json")
+	router.ServeHTTP(second, request)
+	if second.Code != http.StatusTooManyRequests {
+		t.Fatalf("second status = %d, want %d, body=%s", second.Code, http.StatusTooManyRequests, second.Body.String())
+	}
+	if second.Header().Get("Retry-After") == "" {
+		t.Fatal("Retry-After header missing")
+	}
+}
+
 func testConfig() config.App {
 	return config.App{
 		ServiceName: "scheduler-worker",
@@ -163,17 +275,25 @@ func testConfig() config.App {
 		},
 		ShutdownTimeout: time.Second,
 		Scheduler: config.Scheduler{
-			SyncCron:          "0 */6 * * *",
-			MaxAttempts:       3,
-			RetryBackoff:      time.Millisecond,
-			WorkerConcurrency: 2,
-			LeaseTTL:          time.Second,
-			PollInterval:      time.Second,
-			DeadLetterQueue:   "github-sync-dead-letter",
+			SyncCron:                  "0 */6 * * *",
+			MaxAttempts:               3,
+			RetryBackoff:              time.Millisecond,
+			WorkerConcurrency:         2,
+			LeaseTTL:                  time.Second,
+			PollInterval:              time.Second,
+			DeadLetterQueue:           "github-sync-dead-letter",
+			PerUserRateWindow:         time.Minute,
+			PerUserRateMax:            6,
+			PerInstallationRateWindow: time.Minute,
+			PerInstallationRateMax:    10,
 		},
 	}
 }
 
 func testLogger() *slog.Logger {
 	return slog.New(slog.NewTextHandler(io.Discard, nil))
+}
+
+func newTestRouter(cfg config.App) http.Handler {
+	return NewRouter(cfg, service.New(cfg), testLogger(), "test")
 }

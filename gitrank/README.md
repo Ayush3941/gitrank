@@ -314,8 +314,10 @@ Runs asynchronous jobs.
 Responsibilities:
 
 - enqueue and deduplicate internal sync jobs
+- trigger recurring backfill plans from cron schedules
 - lease ready work with bounded concurrency
 - apply retry and exponential backoff policy
+- throttle repeated sync generation per user and installation
 - move poison jobs to a dead-letter queue
 - support pause, cancel, and manual replay flows
 
@@ -538,7 +540,7 @@ Implemented service routes today:
 - `POST /v1/analyze/pull-request` on `pr-analyzer`
 - `POST /v1/score/contribution` on `scoring-engine`
 - `GET /v1/profile/schema`, `GET /v1/users/{handle}`, `GET /v1/users/{handle}/card`, `GET /v1/me/profile`, and profile privacy update routes on `profile-service`
-- `GET /v1/jobs`, `POST /v1/jobs/sync`, `POST /v1/jobs/lease`, `GET /v1/jobs/dead-letters`, job control routes, and dead-letter replay routes on `scheduler-worker`
+- `GET /v1/jobs`, `POST /v1/jobs/sync`, `POST /v1/jobs/tick`, `GET|POST /v1/jobs/backfills`, `POST /v1/jobs/lease`, `GET /v1/jobs/dead-letters`, job control routes, and dead-letter replay routes on `scheduler-worker`
 
 ## Local Development
 
@@ -680,7 +682,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 - webhook intake and sync-job preview routes in the GitHub ingestor
 - deterministic PR analysis and deterministic contribution scoring services
 - a snapshot-backed profile-service read model with privacy controls, repository visibility, caching, and share-card data
-- an in-memory scheduler-worker orchestration layer with deduplicated enqueue, leasing, retries, dead letters, pause/cancel controls, and manual replay
+- an in-memory scheduler-worker orchestration layer with deduplicated enqueue, recurring backfill plans, per-scope throttling, leasing, retries, dead letters, pause/cancel controls, and manual replay
 - live profile route integration through api-gateway plus frontend BFF routes for public profile and settings pages
 - metrics endpoints and shared request instrumentation across the Go services, including queue depth, cache hit rate, sync duration, score computation duration, PR analysis breakdowns, GitHub rate-limit tracking, and HTTP error counters
 - PostgreSQL migrations for core entities, GitHub ingestion state, and auth/session security tables
