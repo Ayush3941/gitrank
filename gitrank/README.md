@@ -515,28 +515,29 @@ Core entities:
 
 ## API Direction
 
-Illustrative endpoints for a first API:
+Current gateway routes:
 
-- `POST /auth/github/login`
-- `GET /me/profile`
-- `GET /me/contributions`
-- `GET /me/badges`
-- `GET /me/score-history`
-- `GET /users/{username}`
-- `GET /users/{username}/repos`
-- `GET /users/{username}/skills`
-- `POST /sync/github`
+- `GET /healthz`
+- `GET /readyz`
+- `GET /metrics`
+- `GET /v1/meta/manifest`
+- `GET /v1/meta/dependencies`
+- `POST /v1/sync`
+- `GET /v1/me/profile`
+- `PATCH /v1/me/profile`
+- `PATCH /v1/me/profile/repositories/{owner}/{repo}`
+- `GET /v1/users/{handle}`
+- `GET /v1/users/{handle}/card`
 
-Implemented architecture endpoints today:
+Implemented service routes today:
 
-- `GET /v1/meta/manifest` on every service
-- `GET /v1/meta/dependencies` on `api-gateway`
-- `GET /oauth/github/start` and `GET /oauth/github/callback` on `auth-service`
-- `POST /webhooks/github` and `POST /v1/sync/preview` on `github-ingestor`
+- `GET /v1/meta/manifest` and `GET /metrics` on every service
+- `GET /oauth/github/start`, `GET /oauth/github/callback`, `GET /v1/session/me`, `POST /v1/session/refresh`, and `POST /v1/session/logout` on `auth-service`
+- `POST /webhooks/github`, `POST /v1/sync/preview`, and the normalized `POST /v1/sync/*` routes on `github-ingestor`
 - `POST /v1/analyze/pull-request` on `pr-analyzer`
 - `POST /v1/score/contribution` on `scoring-engine`
-- `GET /v1/profile/schema` on `profile-service`
-- `GET /v1/jobs/config` on `scheduler-worker`
+- `GET /v1/profile/schema`, `GET /v1/users/{handle}`, `GET /v1/users/{handle}/card`, `GET /v1/me/profile`, and profile privacy update routes on `profile-service`
+- `GET /v1/jobs/config` and `GET /v1/jobs/dead-letters/config` on `scheduler-worker`
 
 ## Local Development
 
@@ -679,9 +680,10 @@ The repository currently contains a working foundation, not just an empty scaffo
 - deterministic PR analysis and deterministic contribution scoring services
 - a snapshot-backed profile-service read model with privacy controls, repository visibility, caching, and share-card data
 - live profile route integration through api-gateway plus frontend BFF routes for public profile and settings pages
+- metrics endpoints and shared request instrumentation across the Go services
 - PostgreSQL migrations for core entities, GitHub ingestion state, and auth/session security tables
 - a substantial Next.js frontend with dashboard, profile, leaderboard, quest, badge, onboarding, and PR-report flows, with profile/settings partially backed by the live Go services
-- CI, release-artifact, dependency-review, CodeQL, and Scorecard workflows
+- CI, release-artifact, dependency-review, CodeQL, Scorecard, and repo-level secret-scan workflows, plus frontend-specific CI and secret scanning in the nested frontend repo
 
 Major gaps remain:
 

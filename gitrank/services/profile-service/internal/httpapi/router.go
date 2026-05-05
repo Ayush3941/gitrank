@@ -17,6 +17,7 @@ import (
 func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger, version string) http.Handler {
 	manifest := app.Manifest(cfg, version)
 	mux := http.NewServeMux()
+	metrics := httpkit.NewMetrics(cfg.ServiceName)
 
 	mux.Handle("/healthz", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		checks := map[string]contracts.ComponentCheck{
@@ -44,6 +45,8 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 	mux.Handle("/v1/meta/manifest", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		httpkit.WriteJSON(w, http.StatusOK, manifest)
 	})))
+
+	mux.Handle("/metrics", httpkit.RequireMethod(http.MethodGet, metrics.Handler()))
 
 	mux.Handle("/v1/profile/schema", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		httpkit.WriteJSON(w, http.StatusOK, contracts.ProfileSchemaResponse{
@@ -148,7 +151,7 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 		httpkit.WriteJSON(w, http.StatusOK, response)
 	}))
 
-	return httpkit.Chain(mux, httpkit.RequestID, httpkit.AccessLog(log), httpkit.Recoverer(log))
+	return httpkit.Chain(mux, httpkit.RequestID, httpkit.Instrument(metrics), httpkit.AccessLog(log), httpkit.Recoverer(log))
 }
 
 func writeProfileError(w http.ResponseWriter, r *http.Request, err error) {

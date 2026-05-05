@@ -25,6 +25,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 	deliveryStore := store.NewInMemoryDeliveryStore(cfg.GitHub.DedupeTTL)
 	jobQueue := store.NewInMemoryJobQueue()
 	mux := http.NewServeMux()
+	metrics := httpkit.NewMetrics(cfg.ServiceName)
 
 	mux.Handle("/healthz", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		checks := map[string]contracts.ComponentCheck{
@@ -44,6 +45,8 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 	mux.Handle("/v1/meta/manifest", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		httpkit.WriteJSON(w, http.StatusOK, manifest)
 	})))
+
+	mux.Handle("/metrics", httpkit.RequireMethod(http.MethodGet, metrics.Handler()))
 
 	mux.Handle("/webhooks/github", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, err := readWebhookBody(r, cfg.GitHub.MaxBodyBytes)
@@ -158,7 +161,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 	registerSyncRoute(mux, cfg, jobQueue, "/v1/sync/issue", "issue")
 	registerSyncRoute(mux, cfg, jobQueue, "/v1/sync/commit", "commit")
 
-	return httpkit.Chain(mux, httpkit.RequestID, httpkit.AccessLog(log), httpkit.Recoverer(log))
+	return httpkit.Chain(mux, httpkit.RequestID, httpkit.Instrument(metrics), httpkit.AccessLog(log), httpkit.Recoverer(log))
 }
 
 func readWebhookBody(r *http.Request, maxBytes int) ([]byte, error) {

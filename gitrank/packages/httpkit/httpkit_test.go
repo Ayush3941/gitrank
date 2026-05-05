@@ -2,9 +2,11 @@ package httpkit
 
 import (
 	"context"
+	"io"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -43,5 +45,62 @@ func TestRecovererConvertsPanicsTo500(t *testing.T) {
 
 	if rec.Code != http.StatusInternalServerError {
 		t.Fatalf("status = %d, want %d", rec.Code, http.StatusInternalServerError)
+	}
+}
+
+func TestDecodeJSONRejectsUnknownFields(t *testing.T) {
+	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{"mode":"user","extra":true}`))
+
+	var payload struct {
+		Mode string `json:"mode"`
+	}
+	if err := DecodeJSON(req, &payload, 1<<20); err == nil {
+		t.Fatal("DecodeJSON() error = nil, want unknown field rejection")
+	}
+}
+
+func TestMetricsHandlerIncludesObservedRequests(t *testing.T) {
+	metrics := NewMetrics("test-service")
+	handler := Chain(
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusCreated)
+		}),
+		Instrument(metrics),
+	)
+
+	req := httptest.NewRequest(http.MethodPost, "/v1/sync", nil)
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+
+	metricsRec := httptest.NewRecorder()
+	metrics.Handler().ServeHTTP(metricsRec, httptest.NewRequest(http.MethodGet, "/metrics", nil))
+	body, _ := io.ReadAll(metricsRec.Result().Body)
+	text := string(body)
+	if !strings.Contains(text, `gitrank_http_requests_total{service="test-service",method="POST",status_class="2xx"} 1`) {
+		t.Fatalf("metrics output missing request count: %s", text)
+	}
+}
+
+func TestCORSMiddlewareHandlesPreflight(t *testing.T) {
+	handler := Chain(
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		}),
+		CORS(CORSConfig{
+			AllowedOrigins:   []string{"http://localhost:3000"},
+			AllowCredentials: true,
+		}),
+	)
+
+	req := httptest.NewRequest(http.MethodOptions, "/v1/me/profile", nil)
+	req.Header.Set("Origin", "http://localhost:3000")
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusNoContent {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusNoContent)
+	}
+	if rec.Header().Get("Access-Control-Allow-Origin") != "http://localhost:3000" {
+		t.Fatalf("allow origin = %q", rec.Header().Get("Access-Control-Allow-Origin"))
 	}
 }

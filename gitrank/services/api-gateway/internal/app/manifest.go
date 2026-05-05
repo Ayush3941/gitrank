@@ -13,9 +13,10 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 		Routes: []contracts.RouteSpec{
 			{Method: "GET", Path: "/healthz", Summary: "Liveness probe", Status: "implemented"},
 			{Method: "GET", Path: "/readyz", Summary: "Readiness probe", Status: "implemented"},
+			{Method: "GET", Path: "/metrics", Summary: "Prometheus-style service metrics", Status: "implemented"},
 			{Method: "GET", Path: "/v1/meta/manifest", Summary: "Service route and dependency manifest", Status: "implemented"},
 			{Method: "GET", Path: "/v1/meta/dependencies", Summary: "Internal and external API dependency map", Status: "implemented"},
-			{Method: "POST", Path: "/v1/sync", Summary: "Request a contribution sync", Status: "planned"},
+			{Method: "POST", Path: "/v1/sync", Summary: "Request a contribution sync", Status: "implemented"},
 			{Method: "GET", Path: "/v1/me/profile", Summary: "Get the authenticated user's profile summary", Status: "implemented"},
 			{Method: "PATCH", Path: "/v1/me/profile", Summary: "Update authenticated profile privacy settings", Status: "implemented"},
 			{Method: "PATCH", Path: "/v1/me/profile/repositories/{owner}/{repo}", Summary: "Update per-repository public visibility", Status: "implemented"},

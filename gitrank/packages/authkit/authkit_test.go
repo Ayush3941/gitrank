@@ -125,3 +125,41 @@ func TestSameSiteAndCookies(t *testing.T) {
 		t.Fatalf("SameSite = %v, want strict", cookies[0].SameSite)
 	}
 }
+
+func TestRequireRolesMiddleware(t *testing.T) {
+	handler := RequireRoles("admin")(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	}))
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req = req.WithContext(ContextWithPrincipal(req.Context(), Principal{
+		Subject: "user-1",
+		Roles:   []string{"user", "admin"},
+	}))
+	rec := httptest.NewRecorder()
+
+	handler.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusNoContent {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusNoContent)
+	}
+}
+
+func TestRequireRolesRejectsMissingRole(t *testing.T) {
+	handler := RequireRoles("admin")(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	}))
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req = req.WithContext(ContextWithPrincipal(req.Context(), Principal{
+		Subject: "user-1",
+		Roles:   []string{"user"},
+	}))
+	rec := httptest.NewRecorder()
+
+	handler.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusForbidden {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusForbidden)
+	}
+}

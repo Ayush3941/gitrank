@@ -15,6 +15,7 @@ import (
 func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 	manifest := app.Manifest(cfg, version)
 	mux := http.NewServeMux()
+	metrics := httpkit.NewMetrics(cfg.ServiceName)
 
 	mux.Handle("/healthz", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		httpkit.WriteJSON(w, http.StatusOK, contracts.NewHealthResponse(cfg.ServiceName, string(cfg.Env), version, map[string]contracts.ComponentCheck{
@@ -29,6 +30,8 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 	mux.Handle("/v1/meta/manifest", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		httpkit.WriteJSON(w, http.StatusOK, manifest)
 	})))
+
+	mux.Handle("/metrics", httpkit.RequireMethod(http.MethodGet, metrics.Handler()))
 
 	mux.Handle("/v1/jobs/config", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		httpkit.WriteJSON(w, http.StatusOK, contracts.SchedulerConfigResponse{
@@ -51,7 +54,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		})
 	})))
 
-	return httpkit.Chain(mux, httpkit.RequestID, httpkit.AccessLog(log), httpkit.Recoverer(log))
+	return httpkit.Chain(mux, httpkit.RequestID, httpkit.Instrument(metrics), httpkit.AccessLog(log), httpkit.Recoverer(log))
 }
 
 func supportedJobTypes() []string {

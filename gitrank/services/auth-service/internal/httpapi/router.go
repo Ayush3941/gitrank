@@ -27,6 +27,7 @@ type linkStartRequest struct {
 func NewRouter(cfg config.App, authService *service.Service, log *slog.Logger, version string) http.Handler {
 	manifest := app.Manifest(cfg, version)
 	mux := http.NewServeMux()
+	metrics := httpkit.NewMetrics(cfg.ServiceName)
 
 	mux.Handle("/healthz", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		checks := map[string]contracts.ComponentCheck{
@@ -54,6 +55,8 @@ func NewRouter(cfg config.App, authService *service.Service, log *slog.Logger, v
 	mux.Handle("/v1/meta/manifest", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		httpkit.WriteJSON(w, http.StatusOK, manifest)
 	})))
+
+	mux.Handle("/metrics", httpkit.RequireMethod(http.MethodGet, metrics.Handler()))
 
 	mux.Handle("/oauth/github/install", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		installURL, err := githubapi.BuildAppInstallURL(cfg.GitHub.AppInstallURL, cfg.GitHub.AppSlug)
@@ -217,7 +220,7 @@ func NewRouter(cfg config.App, authService *service.Service, log *slog.Logger, v
 		httpkit.WriteJSON(w, http.StatusOK, contracts.LogoutResponse{Status: "logged_out"})
 	})))
 
-	return httpkit.Chain(mux, httpkit.RequestID, httpkit.AccessLog(log), httpkit.Recoverer(log))
+	return httpkit.Chain(mux, httpkit.RequestID, httpkit.Instrument(metrics), httpkit.AccessLog(log), httpkit.Recoverer(log))
 }
 
 func writeAuthError(w http.ResponseWriter, r *http.Request, err error) {

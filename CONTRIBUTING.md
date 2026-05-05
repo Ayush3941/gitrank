@@ -356,29 +356,29 @@ Must be implemented:
 - [x] structured request logging
 - [x] request ID middleware
 - [x] panic recovery middleware
-- [ ] auth middleware
-- [ ] CORS policy
-- [ ] rate limiting
+- [x] auth middleware
+- [x] CORS policy
+- [x] rate limiting
 - [x] API versioning
-- [ ] input validation
+- [x] input validation
 - [x] consistent error envelopes
 - [x] health endpoints
 - [x] readiness endpoints
-- [ ] metrics endpoint or exporter integration
+- [x] metrics endpoint or exporter integration
 - [x] graceful shutdown
-- [ ] pagination conventions
-- [ ] caching headers where appropriate
-- [ ] public profile endpoints
-- [ ] authenticated user endpoints
-- [ ] sync trigger endpoints
+- [x] pagination conventions
+- [x] caching headers where appropriate
+- [x] public profile endpoints
+- [x] authenticated user endpoints
+- [x] sync trigger endpoints
 - [ ] admin-only endpoints if needed
 
 Production-grade expectations:
 
 - [x] OpenAPI or equivalent contract doc exists.
-- [ ] Endpoint auth requirements are documented.
+- [x] Endpoint auth requirements are documented.
 - [x] Error codes are documented.
-- [ ] Breaking change policy is documented.
+- [x] Breaking change policy is documented.
 
 ## 6. Auth Service Checklist
 
@@ -544,24 +544,24 @@ Target directory:
 
 Must be implemented:
 
-- [ ] public profile read model
-- [ ] authenticated profile read model
-- [ ] contribution timeline
-- [ ] top repositories view
-- [ ] top skill areas view
-- [ ] level and XP view
-- [ ] badge listing
-- [ ] score history view
-- [ ] profile summary caching
-- [ ] privacy or visibility controls
-- [ ] shareable profile card data
+- [x] public profile read model
+- [x] authenticated profile read model
+- [x] contribution timeline
+- [x] top repositories view
+- [x] top skill areas view
+- [x] level and XP view
+- [x] badge listing
+- [x] score history view
+- [x] profile summary caching
+- [x] privacy or visibility controls
+- [x] shareable profile card data
 
 Product requirements:
 
-- [ ] profile explains strengths without overstating certainty
-- [ ] trend lines clearly reflect time windows
-- [ ] profile data is refreshed predictably
-- [ ] stale profile states are visible or handled
+- [x] profile explains strengths without overstating certainty
+- [x] trend lines clearly reflect time windows
+- [x] profile data is refreshed predictably
+- [x] stale profile states are visible or handled
 
 ## 11. Scheduler and Async Job System Checklist
 
@@ -590,14 +590,14 @@ Must be implemented:
 
 - [x] define request and response DTOs
 - [x] define event payloads
-- [ ] define versioning policy
+- [x] define versioning policy
 - [x] avoid circular dependency traps
 
 ### `gitrank/packages/logger`
 
 - [x] structured logger
 - [x] log levels
-- [ ] correlation ID helpers
+- [x] correlation ID helpers
 - [x] PII redaction helpers
 
 ### `gitrank/packages/config`
@@ -617,8 +617,8 @@ Must be implemented:
 ### `gitrank/packages/events`
 
 - [x] event schemas
-- [ ] publisher interface
-- [ ] subscriber interface
+- [x] publisher interface
+- [x] subscriber interface
 - [x] versioning rules
 
 ### `gitrank/packages/authkit`
@@ -626,11 +626,11 @@ Must be implemented:
 - [x] auth helpers
 - [x] token helpers
 - [x] middleware primitives
-- [ ] permission checks
+- [x] permission checks
 
 ## 13. Frontend and User Experience Checklist
 
-The repo now contains a Next.js frontend backed by mock data. Real backend integration is still incomplete.
+The repo now contains a Next.js frontend in a nested git repo with its own CI and secret-scanning workflows. Real backend integration is still incomplete outside profile and settings flows.
 
 Must be defined or built:
 
@@ -651,8 +651,8 @@ Must be defined or built:
 
 UX quality requirements:
 
-- [ ] avoid overstating score confidence
-- [ ] clearly distinguish inferred versus deterministic information
+- [x] avoid overstating score confidence
+- [x] clearly distinguish inferred versus deterministic information
 - [x] do not shame low-score contributors
 - [x] make score explanations legible to non-experts
 
@@ -660,12 +660,12 @@ UX quality requirements:
 
 - [x] publish OpenAPI specs or equivalent
 - [x] define JSON error format
-- [ ] define pagination format
-- [ ] define filtering and sorting conventions
-- [ ] define auth scheme
-- [ ] define idempotency expectations
-- [ ] define rate-limit headers if exposed
-- [ ] define webhook receiver contract if externalized
+- [x] define pagination format
+- [x] define filtering and sorting conventions
+- [x] define auth scheme
+- [x] define idempotency expectations
+- [x] define rate-limit headers if exposed
+- [x] define webhook receiver contract if externalized
 - [x] publish examples for main endpoints
 
 ## 15. Testing Strategy Checklist
@@ -727,7 +727,7 @@ Repository security:
 - [x] add `dependabot.yml`
 - [x] enable dependency review in pull requests
 - [x] enable CodeQL code scanning
-- [ ] enable secret scanning where available
+- [x] enable secret scanning where available
 - [ ] protect the default branch or apply repository rulesets
 - [ ] require pull request review before merge
 - [ ] require status checks before merge
@@ -794,7 +794,7 @@ Logging:
 
 Metrics:
 
-- [ ] HTTP request counts and latency
+- [x] HTTP request counts and latency
 - [ ] queue depth
 - [ ] job retries
 - [ ] GitHub API rate-limit usage
@@ -889,14 +889,14 @@ Deployment assets to add:
 ## 23. CI/CD Checklist
 
 - [x] run formatting checks
-- [ ] run linting
+- [x] run linting
 - [x] run unit tests
 - [ ] run integration tests
 - [x] run `go test -race` where feasible
 - [x] run `govulncheck`
 - [x] run dependency review
 - [x] run CodeQL
-- [ ] run secret scanning or equivalent checks
+- [x] run secret scanning or equivalent checks
 - [ ] run container or filesystem vulnerability scans
 - [x] build artifacts in CI
 - [ ] sign release artifacts
@@ -986,14 +986,14 @@ Do not call the project public alpha until these are done:
 
 - [ ] users can sign in with GitHub
 - [ ] at least one full sync path works end to end
-- [ ] webhook validation is implemented
+- [x] webhook validation is implemented
 - [ ] PR data is persisted with migrations
-- [ ] one deterministic scoring path works
-- [ ] profile pages render real data
+- [x] one deterministic scoring path works
+- [x] profile pages render real data
 - [x] CI runs tests and security checks
 - [x] `SECURITY.md`, issue templates, PR template, and CODEOWNERS exist
-- [ ] basic observability exists
-- [ ] the README and this file match reality
+- [x] basic observability exists
+- [x] the README and this file match reality
 
 ## Minimum Definition of "Production Ready"
 
@@ -1021,11 +1021,11 @@ High-value issues to open next:
 - [x] Add shared config and logging packages
 - [x] Add API error envelope contract
 - [x] Add database migration framework
-- [ ] Add GitHub webhook signature verification middleware
-- [ ] Add GitHub client package with retry and rate-limit helpers
+- [x] Add GitHub webhook signature verification middleware
+- [x] Add GitHub client package with retry and rate-limit helpers
 - [x] Add first schema for users, GitHub accounts, repositories, and pull requests
 - [x] Add queue abstraction and worker bootstrap
-- [ ] Add CI for tests, `govulncheck`, CodeQL, dependency review, and secret scanning
+- [x] Add CI for tests, `govulncheck`, CodeQL, dependency review, and secret scanning
 - [x] Add `docs/scoring-model.md`
 
 ## Maintainer Rule

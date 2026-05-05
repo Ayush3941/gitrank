@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"slices"
 	"strings"
 	"time"
 
@@ -283,6 +284,49 @@ func Bearer(authenticator Authenticator) func(http.Handler) http.Handler {
 
 			ctx := ContextWithPrincipal(r.Context(), *principal)
 			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+}
+
+func HasAnyRole(principal Principal, roles ...string) bool {
+	if len(roles) == 0 {
+		return true
+	}
+	for _, role := range roles {
+		trimmed := strings.TrimSpace(role)
+		if trimmed == "" {
+			continue
+		}
+		if slices.Contains(principal.Roles, trimmed) {
+			return true
+		}
+	}
+	return false
+}
+
+func RequireRoles(roles ...string) func(http.Handler) http.Handler {
+	required := make([]string, 0, len(roles))
+	for _, role := range roles {
+		trimmed := strings.TrimSpace(role)
+		if trimmed != "" {
+			required = append(required, trimmed)
+		}
+	}
+
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			principal, ok := PrincipalFromContext(r.Context())
+			if !ok {
+				writeUnauthorized(w)
+				return
+			}
+			if !HasAnyRole(principal, required...) {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusForbidden)
+				_ = json.NewEncoder(w).Encode(contracts.NewErrorResponse("forbidden", "insufficient permissions", ""))
+				return
+			}
+			next.ServeHTTP(w, r)
 		})
 	}
 }

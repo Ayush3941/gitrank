@@ -13,6 +13,7 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 		Routes: []contracts.RouteSpec{
 			{Method: "GET", Path: "/healthz", Summary: "Liveness probe", Status: "implemented"},
 			{Method: "GET", Path: "/readyz", Summary: "Readiness probe", Status: "implemented"},
+			{Method: "GET", Path: "/metrics", Summary: "Prometheus-style service metrics", Status: "implemented"},
 			{Method: "GET", Path: "/v1/meta/manifest", Summary: "Service route manifest", Status: "implemented"},
 			{Method: "POST", Path: "/webhooks/github", Summary: "Validate, deduplicate, and queue GitHub webhook deliveries", Status: "implemented"},
 			{Method: "POST", Path: "/v1/sync/preview", Summary: "Build a sync event preview without queueing it", Status: "implemented"},

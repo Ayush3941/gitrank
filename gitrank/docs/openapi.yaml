@@ -1,83 +1,246 @@
 openapi: 3.1.0
 info:
-  title: GitRank Platform API
-  version: 0.1.0
+  title: GitRank Gateway API
+  version: 0.2.0
   description: |
-    Initial API contract for GitRank service health and sync control surfaces.
+    Public and authenticated HTTP surface served by `api-gateway`.
+
+    Compatibility policy:
+    - all externally supported routes are versioned under `/v1`
+    - additive changes may add optional fields without a version bump
+    - breaking changes require a new versioned route family and a documented migration window
+
+    Conventions:
+    - authenticated browser clients use the `gitrank_session` cookie
+    - state-changing routes additionally require `X-CSRF-Token`
+    - public profile responses are cacheable for a short window
+    - authenticated profile and sync responses are returned with `Cache-Control: private, no-store`
+    - rate limiting currently exposes `Retry-After` on `429 Too Many Requests`
+
+    Pagination and filtering:
+    - current `/v1` routes do not expose paginated collections
+    - future collection routes should use `page[size]`, `page[after]`, `page[before]`, `sort`, and `filter[...]`
 servers:
   - url: http://localhost:8080
+tags:
+  - name: Meta
+  - name: Profiles
+  - name: Sync
 paths:
   /healthz:
     get:
+      tags: [Meta]
       summary: API gateway liveness check
       operationId: getGatewayHealth
       responses:
         "200":
-          description: Service is healthy
+          description: Gateway process is healthy
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthResponse"
   /readyz:
     get:
+      tags: [Meta]
       summary: API gateway readiness check
       operationId: getGatewayReadiness
       responses:
         "200":
-          description: Service is ready
+          description: Gateway and its critical upstreams are ready
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthResponse"
+        "503":
+          description: One or more required upstream dependencies are unavailable
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /metrics:
+    get:
+      tags: [Meta]
+      summary: Prometheus-style service metrics
+      operationId: getGatewayMetrics
+      responses:
+        "200":
+          description: Plain-text metrics exposition
+          content:
+            text/plain:
+              schema:
+                type: string
+  /v1/meta/manifest:
+    get:
+      tags: [Meta]
+      summary: Return the gateway manifest and declared dependencies
+      operationId: getGatewayManifest
+      responses:
+        "200":
+          description: Gateway manifest
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceManifest"
+  /v1/meta/dependencies:
+    get:
+      tags: [Meta]
+      summary: Return the dependency list declared in the gateway manifest
+      operationId: getGatewayDependencies
+      responses:
+        "200":
+          description: Declared upstream dependencies
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DependencySpec"
   /v1/sync:
     post:
+      tags: [Sync]
       summary: Request a GitHub sync job
+      description: |
+        Accepts a sync request and normalizes it to one of the implemented GitHub ingestor sync routes.
+
+        Idempotency:
+        - this endpoint does not currently accept an explicit idempotency key
+        - repeated requests may enqueue additional work if they fall outside downstream dedupe rules
+        - webhook-driven syncs are deduplicated separately by GitHub delivery ID
       operationId: createSyncRequest
+      security:
+        - sessionCookie: []
+          csrfHeader: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/SyncRequest"
+            examples:
+              syncUser:
+                summary: Sync the authenticated GitHub user
+                value:
+                  mode: user
+              syncRepository:
+                summary: Sync a repository
+                value:
+                  mode: repository
+                  repository: openai/gpt-oss
+              syncPullRequest:
+                summary: Sync a pull request
+                value:
+                  mode: pull_request
+                  repository: Ayush3941/gitrank
+                  number: 42
       responses:
         "202":
           description: Sync job accepted
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Cache-Control:
+              $ref: "#/components/headers/PrivateNoStoreCacheControl"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/SyncResponse"
         "400":
-          description: Invalid sync request
+          description: Invalid sync request or JSON payload
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
         "401":
           description: Authentication required
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Invalid or missing CSRF token
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limit exceeded
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Retry-After:
+              $ref: "#/components/headers/RetryAfter"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "502":
+          description: Upstream auth or ingestion dependency failed
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
   /v1/me/profile:
     get:
+      tags: [Profiles]
       summary: Return the authenticated user's profile read model
       operationId: getMyProfile
+      security:
+        - sessionCookie: []
       responses:
         "200":
-          description: Current authenticated profile
+          description: Current authenticated profile snapshot
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Cache-Control:
+              $ref: "#/components/headers/PrivateNoStoreCacheControl"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/PrivateProfileResponse"
         "401":
           description: Authentication required
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
     patch:
+      tags: [Profiles]
       summary: Update authenticated profile privacy controls
       operationId: updateMyProfilePrivacy
+      security:
+        - sessionCookie: []
+          csrfHeader: []
       requestBody:
         required: true
         content:
@@ -86,33 +249,62 @@ paths:
               $ref: "#/components/schemas/UpdateProfilePrivacyRequest"
       responses:
         "200":
-          description: Updated authenticated profile
+          description: Updated authenticated profile snapshot
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Cache-Control:
+              $ref: "#/components/headers/PrivateNoStoreCacheControl"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/PrivateProfileResponse"
         "400":
           description: Invalid privacy update
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
         "401":
           description: Authentication required
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
         "403":
-          description: Invalid CSRF token
+          description: Invalid or missing CSRF token
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limit exceeded
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Retry-After:
+              $ref: "#/components/headers/RetryAfter"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
   /v1/me/profile/repositories/{owner}/{repo}:
     patch:
+      tags: [Profiles]
       summary: Update per-repository profile visibility
       operationId: updateMyRepositoryVisibility
+      security:
+        - sessionCookie: []
+          csrfHeader: []
       parameters:
         - name: owner
           in: path
@@ -132,38 +324,59 @@ paths:
               $ref: "#/components/schemas/UpdateRepositoryVisibilityRequest"
       responses:
         "200":
-          description: Updated authenticated profile
+          description: Updated authenticated profile snapshot
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Cache-Control:
+              $ref: "#/components/headers/PrivateNoStoreCacheControl"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/PrivateProfileResponse"
         "400":
           description: Invalid repository visibility update
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
         "401":
           description: Authentication required
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
         "403":
-          description: Invalid CSRF token
+          description: Invalid or missing CSRF token
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
         "404":
-          description: Repository not found
+          description: Repository target or profile not found
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
   /v1/users/{handle}:
     get:
+      tags: [Profiles]
       summary: Return the public profile read model
+      description: |
+        Public profile summaries are intentionally directional rather than absolute. Strength summaries and skill areas
+        should be read as recent evidence-backed signals from the snapshot window, not absolute claims of expertise.
       operationId: getPublicProfile
       parameters:
         - name: handle
@@ -173,19 +386,39 @@ paths:
             type: string
       responses:
         "200":
-          description: Public profile
+          description: Public profile snapshot
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Cache-Control:
+              $ref: "#/components/headers/PublicProfileCacheControl"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/PublicProfileResponse"
         "404":
           description: Profile not found or public visibility disabled
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limit exceeded
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Retry-After:
+              $ref: "#/components/headers/RetryAfter"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
   /v1/users/{handle}/card:
     get:
+      tags: [Profiles]
       summary: Return shareable public profile card data
       operationId: getPublicProfileCard
       parameters:
@@ -197,17 +430,56 @@ paths:
       responses:
         "200":
           description: Shareable public profile card
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Cache-Control:
+              $ref: "#/components/headers/PublicProfileCacheControl"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ShareableProfileCard"
         "404":
           description: Profile not found or public visibility disabled
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 components:
+  headers:
+    XRequestID:
+      description: Request correlation ID injected at the gateway edge.
+      schema:
+        type: string
+    RetryAfter:
+      description: Seconds to wait before retrying a rate-limited request.
+      schema:
+        type: integer
+        minimum: 1
+    PublicProfileCacheControl:
+      description: Public cache policy applied to public profile responses.
+      schema:
+        type: string
+        example: public, max-age=60, stale-while-revalidate=300
+    PrivateNoStoreCacheControl:
+      description: Private no-store cache policy applied to authenticated and sync responses.
+      schema:
+        type: string
+        example: private, no-store
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: gitrank_session
+      description: Session cookie issued by `auth-service`.
+    csrfHeader:
+      type: apiKey
+      in: header
+      name: X-CSRF-Token
+      description: Double-submit CSRF token derived from the current session.
   schemas:
     ComponentCheck:
       type: object
@@ -222,6 +494,7 @@ components:
       properties:
         status:
           type: string
+          example: ok
         service:
           type: string
         environment:
@@ -235,22 +508,96 @@ components:
           type: object
           additionalProperties:
             $ref: "#/components/schemas/ComponentCheck"
+    RouteSpec:
+      type: object
+      required: [method, path, summary, status]
+      properties:
+        method:
+          type: string
+        path:
+          type: string
+        summary:
+          type: string
+        status:
+          type: string
+    DependencySpec:
+      type: object
+      required: [name, kind, purpose, critical, status]
+      properties:
+        name:
+          type: string
+        kind:
+          type: string
+        base_url:
+          type: string
+        purpose:
+          type: string
+        auth:
+          type: string
+        critical:
+          type: boolean
+        status:
+          type: string
+    ServiceManifest:
+      type: object
+      required: [service, description, version, routes]
+      properties:
+        service:
+          type: string
+        description:
+          type: string
+        version:
+          type: string
+        routes:
+          type: array
+          items:
+            $ref: "#/components/schemas/RouteSpec"
+        dependencies:
+          type: array
+          items:
+            $ref: "#/components/schemas/DependencySpec"
+    ErrorBody:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        request_id:
+          type: string
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          $ref: "#/components/schemas/ErrorBody"
     SyncRequest:
       type: object
       properties:
         user:
           type: string
+          description: GitHub login to sync when `mode=user`.
         repository:
           type: string
+          description: `owner/repo` identifier for repository, PR, review, issue, and commit sync modes.
         mode:
           type: string
-          enum: [incremental, backfill]
+          enum: [installation, user, repository, pull_request, review, issue, commit]
+        installation_id:
+          type: integer
+          format: int64
+        number:
+          type: integer
+        sha:
+          type: string
     SyncResponse:
       type: object
       required: [status, accepted_at]
       properties:
         status:
           type: string
+          example: queued
         job_id:
           type: string
         correlation_id:
@@ -274,6 +621,7 @@ components:
           type: integer
         strength_summary:
           type: string
+          description: Directional, evidence-backed summary of current contribution strengths.
         top_skills:
           type: array
           items:
@@ -291,8 +639,10 @@ components:
       properties:
         label:
           type: string
+          example: Last 6 weeks
         bucket:
           type: string
+          example: week
         start_at:
           type: string
           format: date-time
@@ -336,6 +686,7 @@ components:
           type: integer
         percentage:
           type: number
+          format: double
         summary:
           type: string
     TopRepositoryView:
@@ -574,19 +925,3 @@ components:
           enum: [public, hidden]
         reason:
           type: string
-    ErrorBody:
-      type: object
-      required: [code, message]
-      properties:
-        code:
-          type: string
-        message:
-          type: string
-        request_id:
-          type: string
-    ErrorResponse:
-      type: object
-      required: [error]
-      properties:
-        error:
-          $ref: "#/components/schemas/ErrorBody"

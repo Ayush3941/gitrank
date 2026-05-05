@@ -13,6 +13,7 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 		Routes: []contracts.RouteSpec{
 			{Method: "GET", Path: "/healthz", Summary: "Liveness probe", Status: "implemented"},
 			{Method: "GET", Path: "/readyz", Summary: "Readiness probe", Status: "implemented"},
+			{Method: "GET", Path: "/metrics", Summary: "Prometheus-style service metrics", Status: "implemented"},
 			{Method: "GET", Path: "/v1/meta/manifest", Summary: "Service route manifest", Status: "implemented"},
 			{Method: "GET", Path: "/oauth/github/install", Summary: "Redirect to GitHub App installation flow", Status: "implemented"},
 			{Method: "GET", Path: "/oauth/github/start", Summary: "Start GitHub sign-in flow with CSRF-safe OAuth state", Status: "implemented"},

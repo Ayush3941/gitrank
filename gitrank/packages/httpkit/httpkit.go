@@ -73,5 +73,17 @@ func WriteError(w http.ResponseWriter, status int, code, message, requestID stri
 func DecodeJSON(r *http.Request, dst any, maxBytes int64) error {
 	r.Body = io.NopCloser(io.LimitReader(r.Body, maxBytes))
 	defer r.Body.Close()
-	return json.NewDecoder(r.Body).Decode(dst)
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(dst); err != nil {
+		return err
+	}
+	if decoder.More() {
+		return errors.New("request body must contain a single JSON object")
+	}
+	var trailing any
+	if err := decoder.Decode(&trailing); err != io.EOF {
+		return errors.New("request body must contain a single JSON object")
+	}
+	return nil
 }

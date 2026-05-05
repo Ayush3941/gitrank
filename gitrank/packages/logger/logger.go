@@ -42,6 +42,28 @@ func New(cfg Config) *slog.Logger {
 	)
 }
 
+func WithRequestID(log *slog.Logger, requestID string) *slog.Logger {
+	if log == nil {
+		log = slog.Default()
+	}
+	requestID = strings.TrimSpace(requestID)
+	if requestID == "" {
+		return log
+	}
+	return log.With(slog.String("request_id", requestID))
+}
+
+func WithCorrelationID(log *slog.Logger, correlationID string) *slog.Logger {
+	if log == nil {
+		log = slog.Default()
+	}
+	correlationID = strings.TrimSpace(correlationID)
+	if correlationID == "" {
+		return log
+	}
+	return log.With(slog.String("correlation_id", correlationID))
+}
+
 func With(ctx context.Context, log *slog.Logger) context.Context {
 	return context.WithValue(ctx, loggerKey{}, log)
 }

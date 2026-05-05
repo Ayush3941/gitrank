@@ -1,6 +1,7 @@
 package events
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
@@ -26,6 +27,16 @@ type Envelope struct {
 	CorrelationID string          `json:"correlation_id,omitempty"`
 	OccurredAt    time.Time       `json:"occurred_at"`
 	Payload       json.RawMessage `json:"payload"`
+}
+
+type Handler func(context.Context, Envelope) error
+
+type Publisher interface {
+	Publish(context.Context, Envelope) error
+}
+
+type Subscriber interface {
+	Subscribe(context.Context, Handler) error
 }
 
 func New[T any](eventType, source, correlationID string, payload T) (Envelope, error) {

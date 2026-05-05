@@ -12,6 +12,7 @@ import (
 
 func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 	service := analyzer.New()
+	metrics := httpkit.NewMetrics(cfg.ServiceName)
 	manifest := contracts.ServiceManifest{
 		Service:     cfg.ServiceName,
 		Description: "Deterministic pull-request analysis and AI-enrichment boundary.",
@@ -19,6 +20,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		Routes: []contracts.RouteSpec{
 			{Method: "GET", Path: "/healthz", Summary: "Liveness probe", Status: "implemented"},
 			{Method: "GET", Path: "/readyz", Summary: "Readiness probe", Status: "implemented"},
+			{Method: "GET", Path: "/metrics", Summary: "Prometheus-style service metrics", Status: "implemented"},
 			{Method: "GET", Path: "/v1/meta/manifest", Summary: "Service route manifest", Status: "implemented"},
 			{Method: "POST", Path: "/v1/analyze/pull-request", Summary: "Analyze PR structure and classify contribution type", Status: "implemented"},
 		},
@@ -39,6 +41,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 	mux.Handle("/v1/meta/manifest", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		httpkit.WriteJSON(w, http.StatusOK, manifest)
 	})))
+	mux.Handle("/metrics", httpkit.RequireMethod(http.MethodGet, metrics.Handler()))
 	mux.Handle("/v1/analyze/pull-request", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req contracts.PullRequestAnalysisRequest
 		if err := httpkit.DecodeJSON(r, &req, 1<<20); err != nil {
@@ -48,5 +51,5 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		httpkit.WriteJSON(w, http.StatusOK, service.Analyze(req))
 	})))
 
-	return httpkit.Chain(mux, httpkit.RequestID, httpkit.AccessLog(log), httpkit.Recoverer(log))
+	return httpkit.Chain(mux, httpkit.RequestID, httpkit.Instrument(metrics), httpkit.AccessLog(log), httpkit.Recoverer(log))
 }
