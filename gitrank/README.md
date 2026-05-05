@@ -722,7 +722,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 - generic OCI build packaging under `deployments/docker/` and a release workflow that builds binaries, publishes GitHub Releases, and pushes per-service OCI images
 - a Kubernetes deployment baseline under `deployments/k8s/` with namespace and kustomization scaffolding
 - a substantial Next.js frontend with dashboard, profile, leaderboard, quest, badge, onboarding, and PR-report flows, with live profile/settings/account actions and mock-backed dashboard, leaderboard, quest, badge, and PR-report surfaces
-- CI, release-artifact, dependency-review, CodeQL, Scorecard, and repo-level secret-scan workflows, plus frontend-specific CI and secret scanning in the nested frontend repo
+- CI, release-artifact, dependency-review, CodeQL, Scorecard, repo-level secret scanning, pinned Trivy filesystem and service-image scanning, plus frontend-specific CI and Trivy/secret scanning in the nested frontend repo
 
 Major gaps remain:
 

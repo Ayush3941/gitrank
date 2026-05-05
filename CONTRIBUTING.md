@@ -787,7 +787,7 @@ Container and artifact security:
 
 - [x] minimal runtime images
 - [x] non-root containers
-- [ ] image scanning in CI
+- [x] image scanning in CI
 - [x] SBOM generation
 - [x] artifact signing deferred until post-v1 hardening
 - [x] provenance attestations deferred until post-v1 hardening
@@ -925,7 +925,7 @@ Deployment assets to add:
 - [x] run dependency review
 - [x] run CodeQL
 - [x] run secret scanning or equivalent checks
-- [ ] run container or filesystem vulnerability scans
+- [x] run container or filesystem vulnerability scans
 - [x] build artifacts in CI
 - [x] use an unsigned v1 release flow and defer signing
 - [ ] enforce required checks before merge
