@@ -111,3 +111,103 @@ func TestRESTClientGetJSON(t *testing.T) {
 		t.Fatal("meta.Links missing next page")
 	}
 }
+
+func TestGraphQLClientQueryJSON(t *testing.T) {
+	query := "query Viewer($owner: String!) { viewer { login } repository(owner: $owner, name: \"gitrank\") { name } }"
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Fatalf("method = %q, want POST", r.Method)
+		}
+		if r.Header.Get("Authorization") != "Bearer test-token" {
+			t.Fatalf("Authorization header = %q, want bearer token", r.Header.Get("Authorization"))
+		}
+		if r.Header.Get("Content-Type") != "application/json" {
+			t.Fatalf("Content-Type = %q, want application/json", r.Header.Get("Content-Type"))
+		}
+
+		var request GraphQLRequest
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			t.Fatalf("decode GraphQL request: %v", err)
+		}
+		if request.Query != query {
+			t.Fatalf("query = %q, want %q", request.Query, query)
+		}
+
+		variables, ok := request.Variables.(map[string]any)
+		if !ok {
+			t.Fatalf("variables type = %T, want map[string]any", request.Variables)
+		}
+		if variables["owner"] != "openai" {
+			t.Fatalf("variables[owner] = %v, want openai", variables["owner"])
+		}
+
+		w.Header().Set("X-GitHub-Request-Id", "graphql-req-1")
+		w.Header().Set("X-RateLimit-Limit", "5000")
+		w.Header().Set("X-RateLimit-Remaining", "4998")
+		w.Header().Set("X-RateLimit-Used", "2")
+		w.Header().Set("X-RateLimit-Reset", "1770000123")
+		_ = json.NewEncoder(w).Encode(GraphQLResponse[struct {
+			Viewer struct {
+				Login string `json:"login"`
+			} `json:"viewer"`
+			Repository struct {
+				Name string `json:"name"`
+			} `json:"repository"`
+		}]{
+			Data: struct {
+				Viewer struct {
+					Login string `json:"login"`
+				} `json:"viewer"`
+				Repository struct {
+					Name string `json:"name"`
+				} `json:"repository"`
+			}{
+				Viewer: struct {
+					Login string `json:"login"`
+				}{Login: "octocat"},
+				Repository: struct {
+					Name string `json:"name"`
+				}{Name: "gitrank"},
+			},
+		})
+	}))
+	defer server.Close()
+
+	client, err := NewGraphQLClient(ClientConfig{
+		BaseURL:          server.URL,
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		TokenSource:      StaticTokenSource("test-token"),
+		HTTPClient:       server.Client(),
+		SecondaryBackoff: time.Second,
+		MaxConcurrency:   1,
+	})
+	if err != nil {
+		t.Fatalf("NewGraphQLClient() error = %v", err)
+	}
+
+	var response GraphQLResponse[struct {
+		Viewer struct {
+			Login string `json:"login"`
+		} `json:"viewer"`
+		Repository struct {
+			Name string `json:"name"`
+		} `json:"repository"`
+	}]
+	meta, err := client.QueryJSON(context.Background(), query, map[string]any{"owner": "openai"}, &response)
+	if err != nil {
+		t.Fatalf("QueryJSON() error = %v", err)
+	}
+	if response.Data.Viewer.Login != "octocat" {
+		t.Fatalf("viewer login = %q, want octocat", response.Data.Viewer.Login)
+	}
+	if response.Data.Repository.Name != "gitrank" {
+		t.Fatalf("repository name = %q, want gitrank", response.Data.Repository.Name)
+	}
+	if meta.RequestID != "graphql-req-1" {
+		t.Fatalf("request id = %q, want graphql-req-1", meta.RequestID)
+	}
+	if meta.RateLimit.Remaining != 4998 {
+		t.Fatalf("remaining = %d, want 4998", meta.RateLimit.Remaining)
+	}
+}
