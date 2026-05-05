@@ -1,0 +1,34 @@
+name: Scoring dispute
+description: Report a contribution score, badge, or classification that appears incorrect or misleading.
+title: "[scoring] "
+labels:
+  - scoring
+body:
+  - type: input
+    id: user
+    attributes:
+      label: GitRank or GitHub identity
+    validations:
+      required: true
+  - type: textarea
+    id: item
+    attributes:
+      label: Contribution under dispute
+      description: Link the PR, repository, or profile section involved.
+    validations:
+      required: true
+  - type: textarea
+    id: concern
+    attributes:
+      label: What looks wrong?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What outcome did you expect instead?
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Supporting evidence
+      description: Reviews, tests, maintainer feedback, repo context, or anything else useful.

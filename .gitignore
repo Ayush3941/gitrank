@@ -1,0 +1,27 @@
+# Editors
+.DS_Store
+.idea/
+.vscode/
+
+# Env and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Go
+bin/
+dist/
+coverage.out
+coverage/
+*.test
+
+# Build and temp
+tmp/
+.tmp/
+.cache/
+.gocache/
+
+# OS and logs
+*.log

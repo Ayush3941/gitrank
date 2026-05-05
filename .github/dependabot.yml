@@ -1,0 +1,110 @@
+version: 2
+updates:
+  - package-ecosystem: "gomod"
+    directory: "/gitrank/services/api-gateway"
+    schedule:
+      interval: weekly
+    groups:
+      go-deps:
+        patterns:
+          - "*"
+  - package-ecosystem: "gomod"
+    directory: "/gitrank/services/auth-service"
+    schedule:
+      interval: weekly
+    groups:
+      go-deps:
+        patterns:
+          - "*"
+  - package-ecosystem: "gomod"
+    directory: "/gitrank/services/github-ingestor"
+    schedule:
+      interval: weekly
+    groups:
+      go-deps:
+        patterns:
+          - "*"
+  - package-ecosystem: "gomod"
+    directory: "/gitrank/services/pr-analyzer"
+    schedule:
+      interval: weekly
+    groups:
+      go-deps:
+        patterns:
+          - "*"
+  - package-ecosystem: "gomod"
+    directory: "/gitrank/services/profile-service"
+    schedule:
+      interval: weekly
+    groups:
+      go-deps:
+        patterns:
+          - "*"
+  - package-ecosystem: "gomod"
+    directory: "/gitrank/services/scoring-engine"
+    schedule:
+      interval: weekly
+    groups:
+      go-deps:
+        patterns:
+          - "*"
+  - package-ecosystem: "gomod"
+    directory: "/gitrank/services/scheduler-worker"
+    schedule:
+      interval: weekly
+    groups:
+      go-deps:
+        patterns:
+          - "*"
+  - package-ecosystem: "gomod"
+    directory: "/gitrank/packages/authkit"
+    schedule:
+      interval: weekly
+    groups:
+      go-deps:
+        patterns:
+          - "*"
+  - package-ecosystem: "gomod"
+    directory: "/gitrank/packages/config"
+    schedule:
+      interval: weekly
+    groups:
+      go-deps:
+        patterns:
+          - "*"
+  - package-ecosystem: "gomod"
+    directory: "/gitrank/packages/contracts"
+    schedule:
+      interval: weekly
+    groups:
+      go-deps:
+        patterns:
+          - "*"
+  - package-ecosystem: "gomod"
+    directory: "/gitrank/packages/errors"
+    schedule:
+      interval: weekly
+    groups:
+      go-deps:
+        patterns:
+          - "*"
+  - package-ecosystem: "gomod"
+    directory: "/gitrank/packages/events"
+    schedule:
+      interval: weekly
+    groups:
+      go-deps:
+        patterns:
+          - "*"
+  - package-ecosystem: "gomod"
+    directory: "/gitrank/packages/logger"
+    schedule:
+      interval: weekly
+    groups:
+      go-deps:
+        patterns:
+          - "*"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: weekly

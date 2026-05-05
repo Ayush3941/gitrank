@@ -1,0 +1,36 @@
+name: Architecture proposal
+description: Propose a substantial architecture, data-model, or workflow change.
+title: "[arch] "
+labels:
+  - architecture
+body:
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: What current limitation or risk drives this proposal?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Describe the design in enough detail to review it.
+    validations:
+      required: true
+  - type: textarea
+    id: boundaries
+    attributes:
+      label: Affected services and packages
+    validations:
+      required: true
+  - type: textarea
+    id: tradeoffs
+    attributes:
+      label: Tradeoffs
+    validations:
+      required: true
+  - type: textarea
+    id: rollout
+    attributes:
+      label: Rollout plan

@@ -1,0 +1,44 @@
+name: Bug report
+description: Report broken behavior in the repository, services, docs, or workflows.
+title: "[bug] "
+labels:
+  - bug
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What is broken?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      description: List exact steps, commands, or API calls.
+    validations:
+      required: true
+  - type: input
+    id: area
+    attributes:
+      label: Affected area
+      placeholder: api-gateway, auth-service, github-ingestor, docs, workflow
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or error output
+      render: text

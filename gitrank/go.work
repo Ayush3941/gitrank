@@ -1,0 +1,21 @@
+go 1.26.2
+
+use (
+	./packages/aiapi
+	./packages/authkit
+	./packages/config
+	./packages/contracts
+	./packages/errors
+	./packages/events
+	./packages/githubapi
+	./packages/httpkit
+	./packages/logger
+	./packages/store
+	./services/api-gateway
+	./services/auth-service
+	./services/github-ingestor
+	./services/pr-analyzer
+	./services/profile-service
+	./services/scheduler-worker
+	./services/scoring-engine
+)

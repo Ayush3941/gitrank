@@ -1,0 +1,49 @@
+name: CodeQL
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  schedule:
+    - cron: "23 3 * * 1"
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        language:
+          - go
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.26.2"
+          cache: true
+          cache-dependency-path: |
+            gitrank/go.work
+            gitrank/**/go.sum
+
+      - name: Build workspace
+        working-directory: gitrank
+        run: |
+          go work sync
+          find . -name go.mod -execdir sh -c 'go test ./...' \;
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4

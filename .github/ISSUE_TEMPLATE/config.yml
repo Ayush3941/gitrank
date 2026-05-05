@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Support Request
+    url: https://github.com/Ayush3941/gitrank/blob/main/SUPPORT.md
+    about: Read support guidance before opening a new issue.
+  - name: Security Reporting
+    url: https://github.com/Ayush3941/gitrank/blob/main/SECURITY.md
+    about: Report security issues privately using the security policy.
