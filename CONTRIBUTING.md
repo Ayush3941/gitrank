@@ -703,7 +703,7 @@ Integration tests:
 Contract tests:
 
 - [ ] internal service contracts
-- [ ] API response compatibility
+- [x] API response compatibility
 - [ ] event schema compatibility
 
 End-to-end tests:

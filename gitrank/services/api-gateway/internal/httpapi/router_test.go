@@ -13,7 +13,65 @@ import (
 	"github.com/Ayush3941/gitrank/packages/authkit"
 	"github.com/Ayush3941/gitrank/packages/config"
 	"github.com/Ayush3941/gitrank/packages/contracts"
+	"github.com/Ayush3941/gitrank/services/api-gateway/internal/app"
 )
+
+func TestManifestAndDependenciesRoutes(t *testing.T) {
+	cfg := testConfig(stubProfileServer().URL, stubAuthServer().URL, stubIngestorServer().URL)
+	router := NewRouter(cfg, testLogger(), "test")
+
+	manifestResponse := httptest.NewRecorder()
+	router.ServeHTTP(manifestResponse, httptest.NewRequest(http.MethodGet, "/v1/meta/manifest", nil))
+	if manifestResponse.Code != http.StatusOK {
+		t.Fatalf("manifest status = %d, want %d", manifestResponse.Code, http.StatusOK)
+	}
+
+	var manifest contracts.ServiceManifest
+	if err := json.Unmarshal(manifestResponse.Body.Bytes(), &manifest); err != nil {
+		t.Fatalf("unmarshal manifest: %v", err)
+	}
+	if manifest.Service != "api-gateway" {
+		t.Fatalf("manifest service = %q, want %q", manifest.Service, "api-gateway")
+	}
+
+	dependenciesResponse := httptest.NewRecorder()
+	router.ServeHTTP(dependenciesResponse, httptest.NewRequest(http.MethodGet, "/v1/meta/dependencies", nil))
+	if dependenciesResponse.Code != http.StatusOK {
+		t.Fatalf("dependencies status = %d, want %d", dependenciesResponse.Code, http.StatusOK)
+	}
+
+	var dependencies []contracts.DependencySpec
+	if err := json.Unmarshal(dependenciesResponse.Body.Bytes(), &dependencies); err != nil {
+		t.Fatalf("unmarshal dependencies: %v", err)
+	}
+	expected := app.Manifest(cfg, "test").Dependencies
+	if len(dependencies) != len(expected) {
+		t.Fatalf("dependency count = %d, want %d", len(dependencies), len(expected))
+	}
+	if dependencies[0].Name != expected[0].Name {
+		t.Fatalf("first dependency = %q, want %q", dependencies[0].Name, expected[0].Name)
+	}
+}
+
+func TestCORSPreflightAllowsConfiguredOrigin(t *testing.T) {
+	router := NewRouter(testConfig(stubProfileServer().URL, stubAuthServer().URL, stubIngestorServer().URL), testLogger(), "test")
+	request := httptest.NewRequest(http.MethodOptions, "/v1/sync", nil)
+	request.Header.Set("Origin", "http://localhost:3000")
+	request.Header.Set("Access-Control-Request-Method", http.MethodPost)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusNoContent {
+		t.Fatalf("status = %d, want %d", response.Code, http.StatusNoContent)
+	}
+	if response.Header().Get("Access-Control-Allow-Origin") != "http://localhost:3000" {
+		t.Fatalf("allow-origin = %q", response.Header().Get("Access-Control-Allow-Origin"))
+	}
+	if response.Header().Get("Access-Control-Allow-Credentials") != "true" {
+		t.Fatalf("allow-credentials = %q", response.Header().Get("Access-Control-Allow-Credentials"))
+	}
+}
 
 func TestProxyPublicProfileRequest(t *testing.T) {
 	type observedRequest struct {
@@ -51,6 +109,31 @@ func TestProxyPublicProfileRequest(t *testing.T) {
 	}
 	if observed.Path != "/v1/users/Ayush3941" {
 		t.Fatalf("path = %q, want %q", observed.Path, "/v1/users/Ayush3941")
+	}
+}
+
+func TestProxyPrivateProfileGetSetsPrivateCacheControl(t *testing.T) {
+	auth := stubAuthServer()
+	defer auth.Close()
+
+	profile := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Cache-Control", "public, max-age=120")
+		_, _ = w.Write([]byte(`{"ok":true}`))
+	}))
+	defer profile.Close()
+
+	router := NewRouter(testConfig(profile.URL, auth.URL, stubIngestorServer().URL), testLogger(), "test")
+	request := httptest.NewRequest(http.MethodGet, "/v1/me/profile", nil)
+	request.Header.Set("Cookie", "gitrank_session=session-original")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusOK, response.Body.String())
+	}
+	if response.Header().Get("Cache-Control") != "private, no-store" {
+		t.Fatalf("cache-control = %q, want private, no-store", response.Header().Get("Cache-Control"))
 	}
 }
 
@@ -163,6 +246,46 @@ func TestSyncRouteDefaultsToAuthenticatedGitHubLogin(t *testing.T) {
 	}
 	if observed.CorrelationID != "/v1/sync/user:octocat" {
 		t.Fatalf("correlation_id = %q, want %q", observed.CorrelationID, "/v1/sync/user:octocat")
+	}
+}
+
+func TestSyncRoutePropagatesRetryAfterFromUpstream(t *testing.T) {
+	auth := stubAuthServer()
+	defer auth.Close()
+
+	ingestor := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Retry-After", "17")
+		w.WriteHeader(http.StatusTooManyRequests)
+		_ = json.NewEncoder(w).Encode(contracts.ErrorResponse{
+			Error: contracts.ErrorBody{
+				Code:    "rate_limited",
+				Message: "upstream limit",
+			},
+		})
+	}))
+	defer ingestor.Close()
+
+	router := NewRouter(testConfig(stubProfileServer().URL, auth.URL, ingestor.URL), testLogger(), "test")
+	request := httptest.NewRequest(http.MethodPost, "/v1/sync", strings.NewReader(`{}`))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Cookie", "gitrank_session=session-original; gitrank_csrf=csrf-original")
+	csrfToken, err := authkit.DoubleSubmitCSRFFromToken([]byte("test-session-secret"), "session-original")
+	if err != nil {
+		t.Fatalf("csrf token: %v", err)
+	}
+	request.Header.Set("X-CSRF-Token", csrfToken)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusTooManyRequests {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusTooManyRequests, response.Body.String())
+	}
+	if response.Header().Get("Retry-After") != "17" {
+		t.Fatalf("retry-after = %q, want %q", response.Header().Get("Retry-After"), "17")
+	}
+	if response.Header().Get("Cache-Control") != "private, no-store" {
+		t.Fatalf("cache-control = %q, want private, no-store", response.Header().Get("Cache-Control"))
 	}
 }
 

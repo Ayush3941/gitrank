@@ -109,7 +109,7 @@ func defaultForwardHeaders(r *http.Request) map[string]string {
 }
 
 func copyResponseHeaders(dst, src http.Header) {
-	for _, name := range []string{"Content-Type", "Cache-Control", "ETag", "X-Request-ID"} {
+	for _, name := range []string{"Content-Type", "Cache-Control", "ETag", "Retry-After", "X-Request-ID"} {
 		copyHeaderIfPresent(dst, name, src.Get(name))
 	}
 }
