@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -95,6 +96,9 @@ func (a *sessionAuthenticator) authorize(ctx context.Context, w http.ResponseWri
 	if err := json.Unmarshal(body, &envelope); err != nil {
 		return nil, err
 	}
+	if err := validateSessionEnvelope(envelope); err != nil {
+		return nil, fmt.Errorf("invalid auth-service session contract: %w", err)
+	}
 
 	cookieHeader := mergeCookies(r.Header.Get("Cookie"), response.Cookies())
 	for _, cookie := range response.Cookies() {
@@ -114,6 +118,13 @@ func (a *sessionAuthenticator) authorize(ctx context.Context, w http.ResponseWri
 		nextRequest.Header.Set("X-CSRF-Token", csrfToken)
 	}
 	return nextRequest, nil
+}
+
+func validateSessionEnvelope(envelope contracts.SessionEnvelope) error {
+	if strings.TrimSpace(envelope.Session.Subject) == "" {
+		return errors.New("missing session.subject")
+	}
+	return nil
 }
 
 func mergeCookies(existing string, updates []*http.Cookie) string {

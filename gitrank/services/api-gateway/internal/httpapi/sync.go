@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -52,6 +53,9 @@ func handleSyncRequest(w http.ResponseWriter, r *http.Request, client *http.Clie
 			var preview contracts.GitHubQueuePreview
 			if err := json.Unmarshal(payload, &preview); err != nil {
 				return 0, nil, nil, err
+			}
+			if err := validateQueuePreview(preview); err != nil {
+				return 0, nil, nil, fmt.Errorf("invalid github-ingestor queue preview contract: %w", err)
 			}
 
 			out := contracts.SyncResponse{
@@ -109,6 +113,16 @@ func normalizeSyncRequest(req *contracts.SyncRequest, principal authkit.Principa
 		}
 	default:
 		return errors.New("unsupported sync mode")
+	}
+	return nil
+}
+
+func validateQueuePreview(preview contracts.GitHubQueuePreview) error {
+	if strings.TrimSpace(preview.Status) == "" {
+		return errors.New("missing status")
+	}
+	if preview.AcceptedAt.IsZero() {
+		return errors.New("missing accepted_at")
 	}
 	return nil
 }

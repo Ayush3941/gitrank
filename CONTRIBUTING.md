@@ -702,7 +702,7 @@ Integration tests:
 
 Contract tests:
 
-- [ ] internal service contracts
+- [x] internal service contracts
 - [x] API response compatibility
 - [x] event schema compatibility
 
