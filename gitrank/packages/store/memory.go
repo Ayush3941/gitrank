@@ -13,6 +13,13 @@ type InMemoryDeliveryStore struct {
 	entries map[string]WebhookDelivery
 }
 
+type DeliveryStoreSnapshot struct {
+	Total          int
+	ByStatus       map[WebhookDeliveryStatus]int
+	Deduplicated   int
+	ReplayRecorded int
+}
+
 func NewInMemoryDeliveryStore(ttl time.Duration) *InMemoryDeliveryStore {
 	if ttl <= 0 {
 		ttl = 7 * 24 * time.Hour
@@ -63,10 +70,36 @@ func (s *InMemoryDeliveryStore) pruneLocked(now time.Time) {
 	}
 }
 
+func (s *InMemoryDeliveryStore) Snapshot(now time.Time) DeliveryStoreSnapshot {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.pruneLocked(now.UTC())
+	snapshot := DeliveryStoreSnapshot{
+		Total:    len(s.entries),
+		ByStatus: make(map[WebhookDeliveryStatus]int),
+	}
+	for _, delivery := range s.entries {
+		snapshot.ByStatus[delivery.Status]++
+		if delivery.Status == DeliveryDuplicate {
+			snapshot.Deduplicated++
+		}
+		if delivery.Signature != "" {
+			snapshot.ReplayRecorded++
+		}
+	}
+	return snapshot
+}
+
 type InMemoryJobQueue struct {
 	mu          sync.Mutex
 	jobs        []QueueJob
 	deadLetters []DeadLetterRecord
+}
+
+type JobQueueSnapshot struct {
+	Queued      int
+	DeadLetters int
 }
 
 func NewInMemoryJobQueue() *InMemoryJobQueue {
@@ -115,4 +148,13 @@ func (q *InMemoryJobQueue) RecordDeadLetter(job QueueJob, err error) {
 		record.ErrorMessage = err.Error()
 	}
 	q.deadLetters = append(q.deadLetters, record)
+}
+
+func (q *InMemoryJobQueue) Snapshot() JobQueueSnapshot {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+	return JobQueueSnapshot{
+		Queued:      len(q.jobs),
+		DeadLetters: len(q.deadLetters),
+	}
 }

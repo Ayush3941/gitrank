@@ -46,7 +46,7 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 		httpkit.WriteJSON(w, http.StatusOK, manifest)
 	})))
 
-	mux.Handle("/metrics", httpkit.RequireMethod(http.MethodGet, metrics.Handler()))
+	mux.Handle("/metrics", httpkit.RequireMethod(http.MethodGet, httpkit.MetricsHandler(metrics, profileService.MetricsSource())))
 
 	mux.Handle("/v1/profile/schema", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		httpkit.WriteJSON(w, http.StatusOK, contracts.ProfileSchemaResponse{

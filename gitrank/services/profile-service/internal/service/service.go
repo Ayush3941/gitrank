@@ -11,6 +11,7 @@ import (
 	"github.com/Ayush3941/gitrank/packages/authkit"
 	"github.com/Ayush3941/gitrank/packages/config"
 	"github.com/Ayush3941/gitrank/packages/contracts"
+	"github.com/Ayush3941/gitrank/packages/httpkit"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -53,6 +54,13 @@ func (s *Service) Ready(ctx context.Context) error {
 		}
 	}
 	return nil
+}
+
+func (s *Service) MetricsSource() httpkit.PrometheusSource {
+	if s == nil || s.cache == nil {
+		return nil
+	}
+	return s.cache.MetricsSource()
 }
 
 func (s *Service) PublicProfile(ctx context.Context, handle string, now time.Time) (contracts.PublicProfileResponse, error) {

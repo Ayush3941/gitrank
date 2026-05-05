@@ -689,7 +689,7 @@ Major gaps remain:
 
 - no end-to-end persistent ingestion worker yet
 - most non-profile frontend routes still use mock data
-- no production observability, deployment, or runtime operations layer yet
+- no distributed tracing, alerting, dashboards, or production runtime operations layer yet
 
 ## License
 

@@ -795,13 +795,13 @@ Logging:
 Metrics:
 
 - [x] HTTP request counts and latency
-- [ ] queue depth
+- [x] queue depth
 - [ ] job retries
 - [ ] GitHub API rate-limit usage
 - [ ] sync duration
 - [ ] analysis cost and token usage
 - [ ] score computation duration
-- [ ] cache hit rate
+- [x] cache hit rate
 - [ ] error rate by service
 
 Tracing:

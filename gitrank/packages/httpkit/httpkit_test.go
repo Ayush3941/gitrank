@@ -81,6 +81,22 @@ func TestMetricsHandlerIncludesObservedRequests(t *testing.T) {
 	}
 }
 
+func TestMetricsHandlerIncludesExtraCollectors(t *testing.T) {
+	metrics := NewMetrics("test-service")
+	metrics.Observe(http.MethodGet, http.StatusOK, 5)
+
+	metricsRec := httptest.NewRecorder()
+	MetricsHandler(metrics, PrometheusSourceFunc(func(w io.Writer) {
+		_, _ = w.Write([]byte("gitrank_extra_metric 7\n"))
+	})).ServeHTTP(metricsRec, httptest.NewRequest(http.MethodGet, "/metrics", nil))
+
+	body, _ := io.ReadAll(metricsRec.Result().Body)
+	text := string(body)
+	if !strings.Contains(text, "gitrank_extra_metric 7") {
+		t.Fatalf("metrics output missing extra collector: %s", text)
+	}
+}
+
 func TestCORSMiddlewareHandlesPreflight(t *testing.T) {
 	handler := Chain(
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
@@ -103,4 +119,10 @@ func TestCORSMiddlewareHandlesPreflight(t *testing.T) {
 	if rec.Header().Get("Access-Control-Allow-Origin") != "http://localhost:3000" {
 		t.Fatalf("allow origin = %q", rec.Header().Get("Access-Control-Allow-Origin"))
 	}
+}
+
+type PrometheusSourceFunc func(io.Writer)
+
+func (f PrometheusSourceFunc) WritePrometheus(w io.Writer) {
+	f(w)
 }

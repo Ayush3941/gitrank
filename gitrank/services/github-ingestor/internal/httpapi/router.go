@@ -26,6 +26,12 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 	jobQueue := store.NewInMemoryJobQueue()
 	mux := http.NewServeMux()
 	metrics := httpkit.NewMetrics(cfg.ServiceName)
+	queueMetrics := queueMetricsSource{
+		service:       cfg.ServiceName,
+		queueName:     githubSyncQueueName,
+		deliveryStore: deliveryStore,
+		jobQueue:      jobQueue,
+	}
 
 	mux.Handle("/healthz", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		checks := map[string]contracts.ComponentCheck{
@@ -46,7 +52,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		httpkit.WriteJSON(w, http.StatusOK, manifest)
 	})))
 
-	mux.Handle("/metrics", httpkit.RequireMethod(http.MethodGet, metrics.Handler()))
+	mux.Handle("/metrics", httpkit.RequireMethod(http.MethodGet, httpkit.MetricsHandler(metrics, queueMetrics)))
 
 	mux.Handle("/webhooks/github", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, err := readWebhookBody(r, cfg.GitHub.MaxBodyBytes)

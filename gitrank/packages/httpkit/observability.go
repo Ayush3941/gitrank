@@ -2,12 +2,17 @@ package httpkit
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"sort"
 	"strings"
 	"sync"
 	"time"
 )
+
+type PrometheusSource interface {
+	WritePrometheus(io.Writer)
+}
 
 type Metrics struct {
 	service string
@@ -58,73 +63,92 @@ func (m *Metrics) Observe(method string, status int, duration time.Duration) {
 }
 
 func (m *Metrics) Handler() http.Handler {
+	return MetricsHandler(m)
+}
+
+func (m *Metrics) WritePrometheus(w io.Writer) {
+	if m == nil {
+		return
+	}
+
+	_, _ = fmt.Fprintf(w, "# HELP gitrank_http_requests_total Total HTTP requests observed by this service.\n")
+	_, _ = fmt.Fprintf(w, "# TYPE gitrank_http_requests_total counter\n")
+	_, _ = fmt.Fprintf(w, "# HELP gitrank_http_request_duration_ms_sum Sum of observed HTTP request duration in milliseconds.\n")
+	_, _ = fmt.Fprintf(w, "# TYPE gitrank_http_request_duration_ms_sum counter\n")
+	_, _ = fmt.Fprintf(w, "# HELP gitrank_service_uptime_seconds Service uptime in seconds.\n")
+	_, _ = fmt.Fprintf(w, "# TYPE gitrank_service_uptime_seconds gauge\n")
+
+	m.mu.Lock()
+	keys := make([]metricKey, 0, len(m.entries))
+	for key := range m.entries {
+		keys = append(keys, key)
+	}
+	sort.Slice(keys, func(i, j int) bool {
+		if keys[i].method != keys[j].method {
+			return keys[i].method < keys[j].method
+		}
+		return keys[i].statusClass < keys[j].statusClass
+	})
+	snapshots := make([]struct {
+		key   metricKey
+		value metricValue
+	}, 0, len(keys))
+	for _, key := range keys {
+		snapshots = append(snapshots, struct {
+			key   metricKey
+			value metricValue
+		}{
+			key:   key,
+			value: *m.entries[key],
+		})
+	}
+	started := m.started
+	service := m.service
+	m.mu.Unlock()
+
+	for _, snapshot := range snapshots {
+		_, _ = fmt.Fprintf(
+			w,
+			`gitrank_http_requests_total{service=%q,method=%q,status_class=%q} %d`+"\n",
+			service,
+			snapshot.key.method,
+			snapshot.key.statusClass,
+			snapshot.value.count,
+		)
+		_, _ = fmt.Fprintf(
+			w,
+			`gitrank_http_request_duration_ms_sum{service=%q,method=%q,status_class=%q} %.3f`+"\n",
+			service,
+			snapshot.key.method,
+			snapshot.key.statusClass,
+			float64(snapshot.value.durationTotal.Microseconds())/1000.0,
+		)
+	}
+
+	_, _ = fmt.Fprintf(
+		w,
+		`gitrank_service_uptime_seconds{service=%q} %.3f`+"\n",
+		service,
+		time.Since(started).Seconds(),
+	)
+}
+
+func MetricsHandler(primary PrometheusSource, extras ...PrometheusSource) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		if m == nil {
+		if primary == nil && len(extras) == 0 {
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
 
 		w.Header().Set("Content-Type", "text/plain; version=0.0.4")
-		_, _ = fmt.Fprintf(w, "# HELP gitrank_http_requests_total Total HTTP requests observed by this service.\n")
-		_, _ = fmt.Fprintf(w, "# TYPE gitrank_http_requests_total counter\n")
-		_, _ = fmt.Fprintf(w, "# HELP gitrank_http_request_duration_ms_sum Sum of observed HTTP request duration in milliseconds.\n")
-		_, _ = fmt.Fprintf(w, "# TYPE gitrank_http_request_duration_ms_sum counter\n")
-		_, _ = fmt.Fprintf(w, "# HELP gitrank_service_uptime_seconds Service uptime in seconds.\n")
-		_, _ = fmt.Fprintf(w, "# TYPE gitrank_service_uptime_seconds gauge\n")
-
-		m.mu.Lock()
-		keys := make([]metricKey, 0, len(m.entries))
-		for key := range m.entries {
-			keys = append(keys, key)
+		if primary != nil {
+			primary.WritePrometheus(w)
 		}
-		sort.Slice(keys, func(i, j int) bool {
-			if keys[i].method != keys[j].method {
-				return keys[i].method < keys[j].method
+		for _, extra := range extras {
+			if extra != nil {
+				extra.WritePrometheus(w)
 			}
-			return keys[i].statusClass < keys[j].statusClass
-		})
-		snapshots := make([]struct {
-			key   metricKey
-			value metricValue
-		}, 0, len(keys))
-		for _, key := range keys {
-			snapshots = append(snapshots, struct {
-				key   metricKey
-				value metricValue
-			}{
-				key:   key,
-				value: *m.entries[key],
-			})
 		}
-		started := m.started
-		service := m.service
-		m.mu.Unlock()
-
-		for _, snapshot := range snapshots {
-			_, _ = fmt.Fprintf(
-				w,
-				`gitrank_http_requests_total{service=%q,method=%q,status_class=%q} %d`+"\n",
-				service,
-				snapshot.key.method,
-				snapshot.key.statusClass,
-				snapshot.value.count,
-			)
-			_, _ = fmt.Fprintf(
-				w,
-				`gitrank_http_request_duration_ms_sum{service=%q,method=%q,status_class=%q} %.3f`+"\n",
-				service,
-				snapshot.key.method,
-				snapshot.key.statusClass,
-				float64(snapshot.value.durationTotal.Microseconds())/1000.0,
-			)
-		}
-
-		_, _ = fmt.Fprintf(
-			w,
-			`gitrank_service_uptime_seconds{service=%q} %.3f`+"\n",
-			service,
-			time.Since(started).Seconds(),
-		)
 	})
 }
 

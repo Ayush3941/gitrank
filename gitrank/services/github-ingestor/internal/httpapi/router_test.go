@@ -10,6 +10,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -66,6 +67,31 @@ func TestWebhookAcceptedAndDeduplicated(t *testing.T) {
 	}
 	if len(duplicate.JobIDs) != 0 {
 		t.Fatalf("duplicate job ids len = %d, want 0", len(duplicate.JobIDs))
+	}
+}
+
+func TestMetricsIncludeQueueDepthAndDeliveryStatus(t *testing.T) {
+	router := NewRouter(testConfig(), testLogger(), "test")
+	payload := []byte(`{"action":"opened","repository":{"id":99,"full_name":"octo/repo"},"installation":{"id":12},"pull_request":{"number":7,"head":{"sha":"abc123"}}}`)
+
+	response := httptest.NewRecorder()
+	router.ServeHTTP(response, signedWebhookRequest(payload))
+	if response.Code != http.StatusAccepted {
+		t.Fatalf("webhook status = %d, want %d", response.Code, http.StatusAccepted)
+	}
+
+	metricsResponse := httptest.NewRecorder()
+	router.ServeHTTP(metricsResponse, httptest.NewRequest(http.MethodGet, "/metrics", nil))
+	if metricsResponse.Code != http.StatusOK {
+		t.Fatalf("metrics status = %d, want %d", metricsResponse.Code, http.StatusOK)
+	}
+
+	body := metricsResponse.Body.String()
+	if !strings.Contains(body, `gitrank_queue_depth{service="github-ingestor",queue="github-sync"} 1`) {
+		t.Fatalf("metrics body missing queue depth: %s", body)
+	}
+	if !strings.Contains(body, `gitrank_webhook_deliveries_tracked{service="github-ingestor",status="enqueued"} 1`) {
+		t.Fatalf("metrics body missing delivery status gauge: %s", body)
 	}
 }
 
