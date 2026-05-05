@@ -6,6 +6,7 @@ import (
 
 	"github.com/Ayush3941/gitrank/packages/config"
 	"github.com/Ayush3941/gitrank/packages/contracts"
+	"github.com/Ayush3941/gitrank/packages/store"
 )
 
 func TestTickQueuesRecurringBackfillTargets(t *testing.T) {
@@ -54,7 +55,7 @@ func TestTickQueuesRecurringBackfillTargets(t *testing.T) {
 		t.Fatalf("queued jobs total = %d, want 2", plans.Plans[0].QueuedJobsTotal)
 	}
 
-	queue := scheduler.QueueStatus(tickAt)
+	queue := scheduler.QueueStatus(tickAt, contracts.SchedulerJobFilter{})
 	if queue.QueueDepth != 2 {
 		t.Fatalf("queue depth = %d, want 2", queue.QueueDepth)
 	}
@@ -100,8 +101,8 @@ func TestTickTracksInstallationRateLimitedTargets(t *testing.T) {
 	if plans.Plans[0].RateLimitedTotal != 1 {
 		t.Fatalf("plan rate limited total = %d, want 1", plans.Plans[0].RateLimitedTotal)
 	}
-	if scheduler.QueueStatus(createdAt.Add(time.Hour)).QueueDepth != 1 {
-		t.Fatalf("queue depth = %d, want 1", scheduler.QueueStatus(createdAt.Add(time.Hour)).QueueDepth)
+	if scheduler.QueueStatus(createdAt.Add(time.Hour), contracts.SchedulerJobFilter{}).QueueDepth != 1 {
+		t.Fatalf("queue depth = %d, want 1", scheduler.QueueStatus(createdAt.Add(time.Hour), contracts.SchedulerJobFilter{}).QueueDepth)
 	}
 }
 
@@ -154,6 +155,35 @@ func TestPauseResumeAndDeleteBackfillPlan(t *testing.T) {
 	}
 	if len(scheduler.BackfillPlans(createdAt.Add(12*time.Minute)).Plans) != 0 {
 		t.Fatal("expected deleted plan to be removed from list")
+	}
+}
+
+func TestQueueStatusFiltersJobsByUserAndRepository(t *testing.T) {
+	cfg := testServiceConfig()
+	scheduler := New(cfg)
+	now := time.Date(2026, time.May, 5, 14, 0, 0, 0, time.UTC)
+
+	if _, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "user", User: "octocat"}, "user-correlation", now); err != nil {
+		t.Fatalf("EnqueueSync(user) error = %v", err)
+	}
+	if _, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "repository", Repository: "octo/repo"}, "repo-correlation", now); err != nil {
+		t.Fatalf("EnqueueSync(repository) error = %v", err)
+	}
+
+	userView := scheduler.QueueStatus(now, contracts.SchedulerJobFilter{User: "octocat"})
+	if userView.VisibleJobs != 1 {
+		t.Fatalf("user visible jobs = %d, want 1", userView.VisibleJobs)
+	}
+	if len(userView.Jobs) != 1 || userView.Jobs[0].Type != string(store.SyncUserHistoryJob) {
+		t.Fatalf("user jobs = %+v, want one sync.user_history job", userView.Jobs)
+	}
+
+	repoView := scheduler.QueueStatus(now, contracts.SchedulerJobFilter{Repository: "octo/repo"})
+	if repoView.VisibleJobs != 1 {
+		t.Fatalf("repository visible jobs = %d, want 1", repoView.VisibleJobs)
+	}
+	if len(repoView.Jobs) != 1 || repoView.Jobs[0].Repository != "octo/repo" {
+		t.Fatalf("repository jobs = %+v, want repository octo/repo", repoView.Jobs)
 	}
 }
 

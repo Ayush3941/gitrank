@@ -17,7 +17,7 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 			{Method: "GET", Path: "/v1/meta/manifest", Summary: "Service route manifest", Status: "implemented"},
 			{Method: "GET", Path: "/v1/jobs/config", Summary: "Current scheduler configuration preview", Status: "implemented"},
 			{Method: "GET", Path: "/v1/jobs/dead-letters/config", Summary: "Current dead-letter queue policy preview", Status: "implemented"},
-			{Method: "GET", Path: "/v1/jobs", Summary: "List current scheduler jobs and queue state", Status: "implemented"},
+			{Method: "GET", Path: "/v1/jobs", Summary: "List current scheduler jobs and queue state, with optional filters for user, repository, installation, status, type, subject, or correlation ID", Status: "implemented"},
 			{Method: "POST", Path: "/v1/jobs/sync", Summary: "Schedule a sync job", Status: "implemented"},
 			{Method: "POST", Path: "/v1/jobs/tick", Summary: "Trigger one scheduler evaluation tick", Status: "implemented"},
 			{Method: "POST", Path: "/v1/jobs/lease", Summary: "Lease ready jobs up to the configured concurrency limit", Status: "implemented"},

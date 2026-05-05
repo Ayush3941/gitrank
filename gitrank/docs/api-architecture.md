@@ -278,6 +278,7 @@ Current state:
 
 - in-memory queue orchestration is implemented for local and integration use
 - sync jobs are deduplicated by `dedupe_key`
+- queue inspection supports filters for `user`, `repository`, `installation_id`, `status`, `type`, `subject`, and `correlation_id`
 - ready jobs can be leased up to the configured worker concurrency
 - retries apply exponential backoff before the next eligible lease
 - poison jobs move into a dead-letter queue and can be manually replayed

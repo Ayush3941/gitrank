@@ -51,7 +51,12 @@ func NewRouter(cfg config.App, scheduler *service.Service, log *slog.Logger, ver
 		}
 		switch r.Method {
 		case http.MethodGet:
-			httpkit.WriteJSON(w, http.StatusOK, scheduler.QueueStatus(time.Now().UTC()))
+			filter, err := decodeJobFilter(r)
+			if err != nil {
+				httpkit.WriteError(w, http.StatusBadRequest, "invalid_query", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+				return
+			}
+			httpkit.WriteJSON(w, http.StatusOK, scheduler.QueueStatus(time.Now().UTC(), filter))
 		default:
 			writeMethodNotAllowed(w, r)
 		}
@@ -286,4 +291,24 @@ func backfillPlanRoute(path string) (string, string, bool) {
 	default:
 		return "", "", false
 	}
+}
+
+func decodeJobFilter(r *http.Request) (contracts.SchedulerJobFilter, error) {
+	query := r.URL.Query()
+	filter := contracts.SchedulerJobFilter{
+		Type:          query.Get("type"),
+		Status:        query.Get("status"),
+		Repository:    query.Get("repository"),
+		User:          query.Get("user"),
+		Subject:       query.Get("subject"),
+		CorrelationID: query.Get("correlation_id"),
+	}
+	if rawInstallationID := strings.TrimSpace(query.Get("installation_id")); rawInstallationID != "" {
+		installationID, err := strconv.ParseInt(rawInstallationID, 10, 64)
+		if err != nil || installationID <= 0 {
+			return contracts.SchedulerJobFilter{}, errors.New("installation_id must be a positive integer")
+		}
+		filter.InstallationID = installationID
+	}
+	return filter, nil
 }

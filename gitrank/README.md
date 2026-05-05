@@ -318,6 +318,7 @@ Responsibilities:
 - lease ready work with bounded concurrency
 - apply retry and exponential backoff policy
 - throttle repeated sync generation per user and installation
+- expose filtered queue inspection for user, repository, installation, and correlation tracing
 - move poison jobs to a dead-letter queue
 - support pause, cancel, manual replay, and recurring-plan control flows
 

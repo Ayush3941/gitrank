@@ -153,6 +153,49 @@ func TestSchedulerPauseResumeAndMetrics(t *testing.T) {
 	}
 }
 
+func TestSchedulerQueueStatusFiltersByUserAndRepository(t *testing.T) {
+	router := newTestRouter(testConfig())
+
+	for _, body := range []string{
+		`{"mode":"user","user":"octocat"}`,
+		`{"mode":"repository","repository":"octo/repo"}`,
+	} {
+		response := httptest.NewRecorder()
+		request := httptest.NewRequest(http.MethodPost, "/v1/jobs/sync", strings.NewReader(body))
+		request.Header.Set("Content-Type", "application/json")
+		router.ServeHTTP(response, request)
+		if response.Code != http.StatusAccepted {
+			t.Fatalf("enqueue status = %d, want %d, body=%s", response.Code, http.StatusAccepted, response.Body.String())
+		}
+	}
+
+	userResponse := httptest.NewRecorder()
+	router.ServeHTTP(userResponse, httptest.NewRequest(http.MethodGet, "/v1/jobs?user=octocat", nil))
+	if userResponse.Code != http.StatusOK {
+		t.Fatalf("user filter status = %d, want %d, body=%s", userResponse.Code, http.StatusOK, userResponse.Body.String())
+	}
+	var userOut contracts.SchedulerQueueStatusResponse
+	if err := json.Unmarshal(userResponse.Body.Bytes(), &userOut); err != nil {
+		t.Fatalf("unmarshal user filter response: %v", err)
+	}
+	if userOut.VisibleJobs != 1 || len(userOut.Jobs) != 1 {
+		t.Fatalf("user filtered jobs = %+v, want exactly one job", userOut)
+	}
+
+	repoResponse := httptest.NewRecorder()
+	router.ServeHTTP(repoResponse, httptest.NewRequest(http.MethodGet, "/v1/jobs?repository=octo/repo", nil))
+	if repoResponse.Code != http.StatusOK {
+		t.Fatalf("repository filter status = %d, want %d, body=%s", repoResponse.Code, http.StatusOK, repoResponse.Body.String())
+	}
+	var repoOut contracts.SchedulerQueueStatusResponse
+	if err := json.Unmarshal(repoResponse.Body.Bytes(), &repoOut); err != nil {
+		t.Fatalf("unmarshal repository filter response: %v", err)
+	}
+	if repoOut.VisibleJobs != 1 || len(repoOut.Jobs) != 1 || repoOut.Jobs[0].Repository != "octo/repo" {
+		t.Fatalf("repository filtered jobs = %+v, want one octo/repo job", repoOut)
+	}
+}
+
 func TestSchedulerBackfillPlanCreateAndList(t *testing.T) {
 	router := newTestRouter(testConfig())
 

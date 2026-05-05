@@ -68,9 +68,10 @@ func (s *Service) DeadLetterConfig(now time.Time) contracts.DeadLetterQueueStatu
 	}
 }
 
-func (s *Service) QueueStatus(now time.Time) contracts.SchedulerQueueStatusResponse {
+func (s *Service) QueueStatus(now time.Time, filter contracts.SchedulerJobFilter) contracts.SchedulerQueueStatusResponse {
 	snapshot := s.queue.Snapshot()
 	jobs := s.queue.Jobs()
+	filtered := filterJobs(jobs, filter)
 	return contracts.SchedulerQueueStatusResponse{
 		QueueName:     primaryQueueName,
 		QueueDepth:    snapshot.Queued,
@@ -79,7 +80,9 @@ func (s *Service) QueueStatus(now time.Time) contracts.SchedulerQueueStatusRespo
 		Retried:       snapshot.Retried,
 		Failures:      snapshot.Failures,
 		Replays:       snapshot.Replays,
-		Jobs:          jobViews(jobs),
+		VisibleJobs:   len(filtered),
+		AppliedFilter: normalizeJobFilter(filter),
+		Jobs:          jobViews(filtered),
 		LastUpdatedAt: now.UTC(),
 	}
 }
@@ -391,4 +394,48 @@ func supportedJobTypes() []string {
 		labels = append(labels, string(jobType))
 	}
 	return labels
+}
+
+func filterJobs(jobs []store.QueueJob, filter contracts.SchedulerJobFilter) []store.QueueJob {
+	filter = normalizeJobFilter(filter)
+	if filter == (contracts.SchedulerJobFilter{}) {
+		return jobs
+	}
+
+	filtered := make([]store.QueueJob, 0, len(jobs))
+	for _, job := range jobs {
+		if filter.Type != "" && string(job.Type) != filter.Type {
+			continue
+		}
+		if filter.Status != "" && string(job.Status) != filter.Status {
+			continue
+		}
+		if filter.Repository != "" && !strings.EqualFold(job.Repository, filter.Repository) {
+			continue
+		}
+		if filter.User != "" && !(job.Type == store.SyncUserHistoryJob && strings.EqualFold(job.Subject, filter.User)) {
+			continue
+		}
+		if filter.Subject != "" && !strings.EqualFold(job.Subject, filter.Subject) {
+			continue
+		}
+		if filter.CorrelationID != "" && job.CorrelationID != filter.CorrelationID {
+			continue
+		}
+		if filter.InstallationID > 0 && job.InstallationID != filter.InstallationID {
+			continue
+		}
+		filtered = append(filtered, job)
+	}
+	return filtered
+}
+
+func normalizeJobFilter(filter contracts.SchedulerJobFilter) contracts.SchedulerJobFilter {
+	filter.Type = strings.TrimSpace(filter.Type)
+	filter.Status = strings.TrimSpace(filter.Status)
+	filter.Repository = strings.TrimSpace(filter.Repository)
+	filter.User = strings.TrimSpace(filter.User)
+	filter.Subject = strings.TrimSpace(filter.Subject)
+	filter.CorrelationID = strings.TrimSpace(filter.CorrelationID)
+	return filter
 }

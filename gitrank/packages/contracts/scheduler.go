@@ -36,6 +36,16 @@ type SchedulerTickResponse struct {
 	LastTickAt         time.Time `json:"last_tick_at"`
 }
 
+type SchedulerJobFilter struct {
+	Type           string `json:"type,omitempty"`
+	Status         string `json:"status,omitempty"`
+	Repository     string `json:"repository,omitempty"`
+	User           string `json:"user,omitempty"`
+	Subject        string `json:"subject,omitempty"`
+	CorrelationID  string `json:"correlation_id,omitempty"`
+	InstallationID int64  `json:"installation_id,omitempty"`
+}
+
 type SchedulerQueueStatusResponse struct {
 	QueueName     string             `json:"queue_name"`
 	QueueDepth    int                `json:"queue_depth"`
@@ -44,6 +54,8 @@ type SchedulerQueueStatusResponse struct {
 	Retried       int                `json:"retried"`
 	Failures      int                `json:"failures"`
 	Replays       int                `json:"replays"`
+	VisibleJobs   int                `json:"visible_jobs"`
+	AppliedFilter SchedulerJobFilter `json:"applied_filter,omitempty"`
 	Jobs          []SchedulerJobView `json:"jobs,omitempty"`
 	LastUpdatedAt time.Time          `json:"last_updated_at"`
 }

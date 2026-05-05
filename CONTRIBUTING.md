@@ -587,6 +587,7 @@ Must be implemented:
 Current preview state:
 
 - recurring backfill plans can be created, paused, resumed, manually ticked, and deleted through `scheduler-worker`
+- queue inspection supports filters for user, repository, installation, status, type, subject, and correlation ID
 - recurring plan state is still in-memory only and is not durable across process restarts
 
 ## 12. Shared Packages Checklist
