@@ -1,0 +1,588 @@
+openapi: 3.1.0
+info:
+  title: GitRank Platform API
+  version: 0.1.0
+  description: |
+    Initial API contract for GitRank service health and sync control surfaces.
+servers:
+  - url: http://localhost:8080
+paths:
+  /healthz:
+    get:
+      summary: API gateway liveness check
+      operationId: getGatewayHealth
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+  /readyz:
+    get:
+      summary: API gateway readiness check
+      operationId: getGatewayReadiness
+      responses:
+        "200":
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+  /v1/sync:
+    post:
+      summary: Request a GitHub sync job
+      operationId: createSyncRequest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SyncRequest"
+      responses:
+        "202":
+          description: Sync job accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SyncResponse"
+        "400":
+          description: Invalid sync request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /v1/me/profile:
+    get:
+      summary: Return the authenticated user's profile read model
+      operationId: getMyProfile
+      responses:
+        "200":
+          description: Current authenticated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivateProfileResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      summary: Update authenticated profile privacy controls
+      operationId: updateMyProfilePrivacy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProfilePrivacyRequest"
+      responses:
+        "200":
+          description: Updated authenticated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivateProfileResponse"
+        "400":
+          description: Invalid privacy update
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Invalid CSRF token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /v1/me/profile/repositories/{owner}/{repo}:
+    patch:
+      summary: Update per-repository profile visibility
+      operationId: updateMyRepositoryVisibility
+      parameters:
+        - name: owner
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: repo
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRepositoryVisibilityRequest"
+      responses:
+        "200":
+          description: Updated authenticated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivateProfileResponse"
+        "400":
+          description: Invalid repository visibility update
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Invalid CSRF token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Repository not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /v1/users/{handle}:
+    get:
+      summary: Return the public profile read model
+      operationId: getPublicProfile
+      parameters:
+        - name: handle
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Public profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicProfileResponse"
+        "404":
+          description: Profile not found or public visibility disabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /v1/users/{handle}/card:
+    get:
+      summary: Return shareable public profile card data
+      operationId: getPublicProfileCard
+      parameters:
+        - name: handle
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Shareable public profile card
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShareableProfileCard"
+        "404":
+          description: Profile not found or public visibility disabled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    ComponentCheck:
+      type: object
+      properties:
+        status:
+          type: string
+        details:
+          type: string
+    HealthResponse:
+      type: object
+      required: [status, service, timestamp]
+      properties:
+        status:
+          type: string
+        service:
+          type: string
+        environment:
+          type: string
+        version:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        checks:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/ComponentCheck"
+    SyncRequest:
+      type: object
+      properties:
+        user:
+          type: string
+        repository:
+          type: string
+        mode:
+          type: string
+          enum: [incremental, backfill]
+    SyncResponse:
+      type: object
+      required: [status, accepted_at]
+      properties:
+        status:
+          type: string
+        job_id:
+          type: string
+        correlation_id:
+          type: string
+        accepted_at:
+          type: string
+          format: date-time
+    PublicProfileSummary:
+      type: object
+      required: [handle, display_name, total_xp, strength_summary, badges_earned, merged_pull_requests, updated_at]
+      properties:
+        handle:
+          type: string
+        display_name:
+          type: string
+        avatar_url:
+          type: string
+        bio:
+          type: string
+        total_xp:
+          type: integer
+        strength_summary:
+          type: string
+        top_skills:
+          type: array
+          items:
+            type: string
+        badges_earned:
+          type: integer
+        merged_pull_requests:
+          type: integer
+        updated_at:
+          type: string
+          format: date-time
+    ProfileTimeWindow:
+      type: object
+      required: [label, bucket, start_at, end_at]
+      properties:
+        label:
+          type: string
+        bucket:
+          type: string
+        start_at:
+          type: string
+          format: date-time
+        end_at:
+          type: string
+          format: date-time
+    ProfileTimelinePoint:
+      type: object
+      required: [bucket_start, bucket_end, delta_xp, total_xp]
+      properties:
+        bucket_start:
+          type: string
+          format: date-time
+        bucket_end:
+          type: string
+          format: date-time
+        delta_xp:
+          type: integer
+        total_xp:
+          type: integer
+    ProfileTimeline:
+      type: object
+      required: [window, points, updated_at]
+      properties:
+        window:
+          $ref: "#/components/schemas/ProfileTimeWindow"
+        points:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProfileTimelinePoint"
+        updated_at:
+          type: string
+          format: date-time
+    SkillAreaView:
+      type: object
+      required: [key, total_xp, percentage]
+      properties:
+        key:
+          type: string
+        total_xp:
+          type: integer
+        percentage:
+          type: number
+        summary:
+          type: string
+    TopRepositoryView:
+      type: object
+      required: [full_name, owner, name, total_xp, contribution_count, merged_pull_requests, last_contribution_at, visibility]
+      properties:
+        full_name:
+          type: string
+        owner:
+          type: string
+        name:
+          type: string
+        total_xp:
+          type: integer
+        contribution_count:
+          type: integer
+        merged_pull_requests:
+          type: integer
+        primary_skill:
+          type: string
+        last_contribution_at:
+          type: string
+          format: date-time
+        visibility:
+          type: string
+          enum: [public, hidden]
+    ProfileLevelView:
+      type: object
+      required: [label, current_level, current_xp, next_level_xp, rank_tier]
+      properties:
+        label:
+          type: string
+        current_level:
+          type: integer
+        current_xp:
+          type: integer
+        next_level_xp:
+          type: integer
+        rank_tier:
+          type: string
+    BadgeView:
+      type: object
+      required: [key, name, awarded_at]
+      properties:
+        key:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        awarded_at:
+          type: string
+          format: date-time
+        evidence:
+          type: object
+          additionalProperties: true
+    PullRequestReference:
+      type: object
+      required: [repository, number]
+      properties:
+        repository:
+          type: string
+        number:
+          type: integer
+        title:
+          type: string
+    ScoreHistoryEntry:
+      type: object
+      required: [event_id, event_type, delta_xp, created_at]
+      properties:
+        event_id:
+          type: string
+        event_type:
+          type: string
+        delta_xp:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        pull_request:
+          $ref: "#/components/schemas/PullRequestReference"
+        explanation:
+          type: array
+          items:
+            type: string
+    ProfilePrivacySettings:
+      type: object
+      required: [public_profile_enabled, show_exact_prs, show_ai_summaries, show_leaderboard_participation]
+      properties:
+        public_profile_enabled:
+          type: boolean
+        show_exact_prs:
+          type: boolean
+        show_ai_summaries:
+          type: boolean
+        show_leaderboard_participation:
+          type: boolean
+    RepositoryVisibilityView:
+      type: object
+      required: [full_name, visibility]
+      properties:
+        full_name:
+          type: string
+        visibility:
+          type: string
+          enum: [public, hidden]
+        reason:
+          type: string
+    ProfileStaleness:
+      type: object
+      required: [refreshed_at, stale_after, source_watermark, is_stale, partial_profile_available]
+      properties:
+        refreshed_at:
+          type: string
+          format: date-time
+        stale_after:
+          type: string
+          format: date-time
+        source_watermark:
+          type: string
+          format: date-time
+        is_stale:
+          type: boolean
+        partial_profile_available:
+          type: boolean
+    ShareableProfileCard:
+      type: object
+      required: [handle, display_name, headline, level, total_xp, refreshed_at]
+      properties:
+        handle:
+          type: string
+        display_name:
+          type: string
+        avatar_url:
+          type: string
+        headline:
+          type: string
+        level:
+          $ref: "#/components/schemas/ProfileLevelView"
+        total_xp:
+          type: integer
+        top_skills:
+          type: array
+          items:
+            type: string
+        badge_keys:
+          type: array
+          items:
+            type: string
+        refreshed_at:
+          type: string
+          format: date-time
+    PublicProfileResponse:
+      type: object
+      required: [summary, level, timeline, share_card, staleness]
+      properties:
+        summary:
+          $ref: "#/components/schemas/PublicProfileSummary"
+        top_skill_areas:
+          type: array
+          items:
+            $ref: "#/components/schemas/SkillAreaView"
+        top_repositories:
+          type: array
+          items:
+            $ref: "#/components/schemas/TopRepositoryView"
+        level:
+          $ref: "#/components/schemas/ProfileLevelView"
+        badges:
+          type: array
+          items:
+            $ref: "#/components/schemas/BadgeView"
+        timeline:
+          $ref: "#/components/schemas/ProfileTimeline"
+        share_card:
+          $ref: "#/components/schemas/ShareableProfileCard"
+        staleness:
+          $ref: "#/components/schemas/ProfileStaleness"
+    PrivateProfileResponse:
+      type: object
+      required: [summary, level, timeline, privacy, share_card, staleness]
+      properties:
+        summary:
+          $ref: "#/components/schemas/PublicProfileSummary"
+        top_skill_areas:
+          type: array
+          items:
+            $ref: "#/components/schemas/SkillAreaView"
+        top_repositories:
+          type: array
+          items:
+            $ref: "#/components/schemas/TopRepositoryView"
+        level:
+          $ref: "#/components/schemas/ProfileLevelView"
+        badges:
+          type: array
+          items:
+            $ref: "#/components/schemas/BadgeView"
+        timeline:
+          $ref: "#/components/schemas/ProfileTimeline"
+        score_history:
+          type: array
+          items:
+            $ref: "#/components/schemas/ScoreHistoryEntry"
+        privacy:
+          $ref: "#/components/schemas/ProfilePrivacySettings"
+        repository_visibility:
+          type: array
+          items:
+            $ref: "#/components/schemas/RepositoryVisibilityView"
+        share_card:
+          $ref: "#/components/schemas/ShareableProfileCard"
+        staleness:
+          $ref: "#/components/schemas/ProfileStaleness"
+    UpdateProfilePrivacyRequest:
+      type: object
+      properties:
+        public_profile_enabled:
+          type: boolean
+        show_exact_prs:
+          type: boolean
+        show_ai_summaries:
+          type: boolean
+        show_leaderboard_participation:
+          type: boolean
+    UpdateRepositoryVisibilityRequest:
+      type: object
+      required: [visibility]
+      properties:
+        visibility:
+          type: string
+          enum: [public, hidden]
+        reason:
+          type: string
+    ErrorBody:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        request_id:
+          type: string
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          $ref: "#/components/schemas/ErrorBody"

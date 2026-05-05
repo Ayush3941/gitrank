@@ -1,0 +1,426 @@
+package service
+
+import (
+	"fmt"
+	"sort"
+	"strings"
+	"time"
+
+	"github.com/Ayush3941/gitrank/packages/contracts"
+)
+
+const (
+	profileStaleTTL = 15 * time.Minute
+	levelStepXP     = 300
+)
+
+func buildSnapshot(user userRecord, scoreRows []scoreRow, badges []badgeRecord, now time.Time) snapshotRecord {
+	totalXP := 0
+	skillTotals := make(map[string]int)
+	mergedPRs := make(map[string]struct{})
+	for _, row := range scoreRows {
+		totalXP += row.DeltaXP
+		for key, value := range row.Skills {
+			skillTotals[key] += value
+		}
+		if row.Repository != "" && row.PRNumber > 0 && row.PRMerged {
+			mergedPRs[fmt.Sprintf("%s#%d", row.Repository, row.PRNumber)] = struct{}{}
+		}
+	}
+
+	sourceWatermark := latestWatermark(scoreRows, badges, now)
+	level := levelViewForXP(totalXP)
+	skills := buildSkillAreas(skillTotals)
+	timeline := buildTimeline(scoreRows, sourceWatermark)
+	repositories := buildTopRepositories(scoreRows)
+	badgeViews := buildBadgeViews(badges)
+	history := buildScoreHistory(scoreRows)
+
+	handle := strings.TrimSpace(user.Handle)
+	if handle == "" {
+		handle = strings.TrimSpace(user.GitHubLogin)
+	}
+
+	displayName := strings.TrimSpace(user.DisplayName)
+	if displayName == "" {
+		displayName = handle
+	}
+
+	topSkillKeys := topSkillKeys(skills, 3)
+	summary := contracts.PublicProfileSummary{
+		Handle:             handle,
+		DisplayName:        displayName,
+		AvatarURL:          strings.TrimSpace(user.AvatarURL),
+		Bio:                strings.TrimSpace(user.Bio),
+		TotalXP:            totalXP,
+		StrengthSummary:    buildStrengthSummary(skills),
+		TopSkills:          topSkillKeys,
+		BadgesEarned:       len(badgeViews),
+		MergedPullRequests: len(mergedPRs),
+		UpdatedAt:          now.UTC(),
+	}
+
+	shareCard := contracts.ShareableProfileCard{
+		Handle:      handle,
+		DisplayName: displayName,
+		AvatarURL:   strings.TrimSpace(user.AvatarURL),
+		Headline:    summary.StrengthSummary,
+		Level:       level,
+		TotalXP:     totalXP,
+		TopSkills:   topSkillKeys,
+		BadgeKeys:   topBadgeKeys(badgeViews, 3),
+		RefreshedAt: now.UTC(),
+	}
+
+	return snapshotRecord{
+		SnapshotVersion: profileSnapshotVersion,
+		TotalXP:         totalXP,
+		LevelLabel:      level.Label,
+		Summary:         summary,
+		TopSkills:       skills,
+		Badges:          badgeViews,
+		Timeline:        timeline,
+		Repositories:    repositories,
+		ScoreHistory:    history,
+		ShareCard:       shareCard,
+		RefreshedAt:     now.UTC(),
+		StaleAfter:      now.UTC().Add(profileStaleTTL),
+		SourceWatermark: sourceWatermark.UTC(),
+	}
+}
+
+func latestWatermark(scoreRows []scoreRow, badges []badgeRecord, fallback time.Time) time.Time {
+	latest := fallback.UTC()
+	for _, row := range scoreRows {
+		if row.CreatedAt.After(latest) {
+			latest = row.CreatedAt.UTC()
+		}
+	}
+	for _, badge := range badges {
+		if badge.AwardedAt.After(latest) {
+			latest = badge.AwardedAt.UTC()
+		}
+	}
+	return latest
+}
+
+func buildSkillAreas(skillTotals map[string]int) []contracts.SkillAreaView {
+	total := 0
+	for _, value := range skillTotals {
+		total += value
+	}
+
+	out := make([]contracts.SkillAreaView, 0, len(skillTotals))
+	for key, value := range skillTotals {
+		percentage := 0.0
+		if total > 0 {
+			percentage = float64(value) * 100 / float64(total)
+		}
+		out = append(out, contracts.SkillAreaView{
+			Key:        key,
+			TotalXP:    value,
+			Percentage: percentage,
+			Summary:    skillSummary(key),
+		})
+	}
+
+	sort.Slice(out, func(i, j int) bool {
+		if out[i].TotalXP == out[j].TotalXP {
+			return out[i].Key < out[j].Key
+		}
+		return out[i].TotalXP > out[j].TotalXP
+	})
+	return out
+}
+
+func skillSummary(key string) string {
+	switch strings.ToLower(strings.TrimSpace(key)) {
+	case "backend":
+		return "Appears strongest in backend-oriented contribution evidence."
+	case "testing":
+		return "Recent scoring evidence shows a test-heavy contribution pattern."
+	case "documentation":
+		return "Documentation work shows repeated high-context contribution signals."
+	case "security":
+		return "Security evidence exists, but it remains a smaller part of the profile."
+	case "architecture":
+		return "Cross-service and design-oriented work appears repeatedly in scored evidence."
+	case "review":
+		return "Review-driven signals are present but should be interpreted conservatively."
+	default:
+		return "Strength area derived from scored contribution evidence."
+	}
+}
+
+func buildTopRepositories(scoreRows []scoreRow) []contracts.TopRepositoryView {
+	type aggregate struct {
+		contracts.TopRepositoryView
+		merged map[int]struct{}
+		skills map[string]int
+	}
+
+	byRepo := make(map[string]*aggregate)
+	for _, row := range scoreRows {
+		if strings.TrimSpace(row.Repository) == "" {
+			continue
+		}
+
+		current, ok := byRepo[row.Repository]
+		if !ok {
+			current = &aggregate{
+				TopRepositoryView: contracts.TopRepositoryView{
+					FullName: row.Repository,
+					Owner:    row.Owner,
+					Name:     row.Name,
+				},
+				merged: make(map[int]struct{}),
+				skills: make(map[string]int),
+			}
+			byRepo[row.Repository] = current
+		}
+
+		current.TotalXP += row.DeltaXP
+		current.ContributionCount++
+		if row.PRMerged && row.PRNumber > 0 {
+			current.merged[row.PRNumber] = struct{}{}
+		}
+		if row.CreatedAt.After(current.LastContributionAt) {
+			current.LastContributionAt = row.CreatedAt.UTC()
+		}
+		for key, value := range row.Skills {
+			current.skills[key] += value
+		}
+	}
+
+	out := make([]contracts.TopRepositoryView, 0, len(byRepo))
+	for _, aggregate := range byRepo {
+		aggregate.MergedPullRequests = len(aggregate.merged)
+		aggregate.PrimarySkill = dominantSkill(aggregate.skills)
+		aggregate.Visibility = "public"
+		out = append(out, aggregate.TopRepositoryView)
+	}
+
+	sort.Slice(out, func(i, j int) bool {
+		if out[i].TotalXP == out[j].TotalXP {
+			return out[i].FullName < out[j].FullName
+		}
+		return out[i].TotalXP > out[j].TotalXP
+	})
+	return out
+}
+
+func dominantSkill(skillTotals map[string]int) string {
+	bestKey := ""
+	bestValue := -1
+	for key, value := range skillTotals {
+		if value > bestValue || (value == bestValue && key < bestKey) {
+			bestKey = key
+			bestValue = value
+		}
+	}
+	return bestKey
+}
+
+func buildBadgeViews(badges []badgeRecord) []contracts.BadgeView {
+	out := make([]contracts.BadgeView, 0, len(badges))
+	for _, badge := range badges {
+		out = append(out, contracts.BadgeView{
+			Key:         badge.Key,
+			Name:        humanizeBadgeKey(badge.Key),
+			Description: badgeDescription(badge.Key),
+			AwardedAt:   badge.AwardedAt.UTC(),
+			Evidence:    badge.Evidence,
+		})
+	}
+	return out
+}
+
+func buildScoreHistory(scoreRows []scoreRow) []contracts.ScoreHistoryEntry {
+	limit := 25
+	if len(scoreRows) < limit {
+		limit = len(scoreRows)
+	}
+
+	out := make([]contracts.ScoreHistoryEntry, 0, limit)
+	for i := 0; i < limit; i++ {
+		row := scoreRows[i]
+		entry := contracts.ScoreHistoryEntry{
+			EventID:     row.EventID,
+			EventType:   row.EventType,
+			DeltaXP:     row.DeltaXP,
+			CreatedAt:   row.CreatedAt.UTC(),
+			Explanation: row.Explanation,
+		}
+		if row.Repository != "" && row.PRNumber > 0 {
+			entry.PullRequest = &contracts.PullRequestReference{
+				Repository: row.Repository,
+				Number:     row.PRNumber,
+				Title:      row.PRTitle,
+			}
+		}
+		out = append(out, entry)
+	}
+	return out
+}
+
+func buildTimeline(scoreRows []scoreRow, sourceWatermark time.Time) contracts.ProfileTimeline {
+	points := make([]contracts.ProfileTimelinePoint, 0, 6)
+	endWeek := startOfWeek(sourceWatermark.UTC())
+	startWeek := endWeek.AddDate(0, 0, -35)
+	weekDelta := make(map[time.Time]int)
+	cumulativeBeforeStart := 0
+
+	ascending := make([]scoreRow, len(scoreRows))
+	copy(ascending, scoreRows)
+	sort.Slice(ascending, func(i, j int) bool {
+		return ascending[i].CreatedAt.Before(ascending[j].CreatedAt)
+	})
+
+	for _, row := range ascending {
+		bucket := startOfWeek(row.CreatedAt.UTC())
+		if bucket.Before(startWeek) {
+			cumulativeBeforeStart += row.DeltaXP
+			continue
+		}
+		if bucket.After(endWeek) {
+			continue
+		}
+		weekDelta[bucket] += row.DeltaXP
+	}
+
+	running := cumulativeBeforeStart
+	for bucket := startWeek; !bucket.After(endWeek); bucket = bucket.AddDate(0, 0, 7) {
+		running += weekDelta[bucket]
+		points = append(points, contracts.ProfileTimelinePoint{
+			BucketStart: bucket,
+			BucketEnd:   bucket.AddDate(0, 0, 7),
+			DeltaXP:     weekDelta[bucket],
+			TotalXP:     running,
+		})
+	}
+
+	return contracts.ProfileTimeline{
+		Window: contracts.ProfileTimeWindow{
+			Label:   "last_6_weeks",
+			Bucket:  "week",
+			StartAt: startWeek,
+			EndAt:   endWeek.AddDate(0, 0, 7),
+		},
+		Points:    points,
+		UpdatedAt: sourceWatermark.UTC(),
+	}
+}
+
+func startOfWeek(value time.Time) time.Time {
+	value = value.UTC()
+	offset := (int(value.Weekday()) + 6) % 7
+	start := value.AddDate(0, 0, -offset)
+	return time.Date(start.Year(), start.Month(), start.Day(), 0, 0, 0, 0, time.UTC)
+}
+
+func levelViewForXP(totalXP int) contracts.ProfileLevelView {
+	if totalXP < 0 {
+		totalXP = 0
+	}
+	currentLevel := totalXP/levelStepXP + 1
+	return contracts.ProfileLevelView{
+		Label:        levelLabelForLevel(currentLevel),
+		CurrentLevel: currentLevel,
+		CurrentXP:    totalXP,
+		NextLevelXP:  currentLevel * levelStepXP,
+		RankTier:     rankTierForXP(totalXP),
+	}
+}
+
+func levelLabelForLevel(level int) string {
+	switch {
+	case level >= 41:
+		return "Architect"
+	case level >= 31:
+		return "Maintainer"
+	case level >= 21:
+		return "Specialist"
+	case level >= 11:
+		return "Builder"
+	case level >= 6:
+		return "Contributor"
+	default:
+		return "Explorer"
+	}
+}
+
+func rankTierForXP(totalXP int) string {
+	switch {
+	case totalXP >= 15000:
+		return "Diamond"
+	case totalXP >= 9000:
+		return "Platinum I"
+	case totalXP >= 4000:
+		return "Gold III"
+	case totalXP >= 1500:
+		return "Silver II"
+	default:
+		return "Bronze I"
+	}
+}
+
+func buildStrengthSummary(skills []contracts.SkillAreaView) string {
+	if len(skills) == 0 {
+		return "Not enough scored public contribution evidence is available yet."
+	}
+	if len(skills) == 1 {
+		return fmt.Sprintf("Appears strongest in %s contributions based on public pull request evidence.", strings.ToLower(skills[0].Key))
+	}
+	return fmt.Sprintf(
+		"Appears strongest in %s and %s contributions based on public pull request evidence.",
+		strings.ToLower(skills[0].Key),
+		strings.ToLower(skills[1].Key),
+	)
+}
+
+func topSkillKeys(skills []contracts.SkillAreaView, limit int) []string {
+	if limit > len(skills) {
+		limit = len(skills)
+	}
+	out := make([]string, 0, limit)
+	for i := 0; i < limit; i++ {
+		out = append(out, skills[i].Key)
+	}
+	return out
+}
+
+func topBadgeKeys(badges []contracts.BadgeView, limit int) []string {
+	if limit > len(badges) {
+		limit = len(badges)
+	}
+	out := make([]string, 0, limit)
+	for i := 0; i < limit; i++ {
+		out = append(out, badges[i].Key)
+	}
+	return out
+}
+
+func humanizeBadgeKey(key string) string {
+	key = strings.TrimSpace(strings.ReplaceAll(key, "-", " "))
+	key = strings.ReplaceAll(key, "_", " ")
+	parts := strings.Fields(strings.ToLower(key))
+	for i := range parts {
+		if parts[i] != "" {
+			parts[i] = strings.ToUpper(parts[i][:1]) + parts[i][1:]
+		}
+	}
+	return strings.Join(parts, " ")
+}
+
+func badgeDescription(key string) string {
+	switch strings.ToLower(strings.TrimSpace(key)) {
+	case "docs_architect", "docs-architect":
+		return "Earned through repeated high-context documentation work."
+	case "test_builder", "test-builder":
+		return "Signals repeated regression-oriented testing contributions."
+	case "backend_signal_1", "backend-signal-1":
+		return "Evidence-backed backend contribution milestone."
+	default:
+		return "Evidence-backed achievement derived from scored contribution history."
+	}
+}

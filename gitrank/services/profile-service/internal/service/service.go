@@ -1,0 +1,359 @@
+package service
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"log/slog"
+	"strings"
+	"time"
+
+	"github.com/Ayush3941/gitrank/packages/authkit"
+	"github.com/Ayush3941/gitrank/packages/config"
+	"github.com/Ayush3941/gitrank/packages/contracts"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+type Service struct {
+	cfg             config.App
+	log             *slog.Logger
+	store           *Store
+	cache           *Cache
+	sessionSecret   []byte
+	publicCacheTTL  time.Duration
+	privateCacheTTL time.Duration
+}
+
+func New(cfg config.App, pool *pgxpool.Pool, cache *Cache, log *slog.Logger) (*Service, error) {
+	if err := cfg.ValidateProfileService(); err != nil {
+		return nil, err
+	}
+	if cache == nil {
+		cache = &Cache{}
+	}
+
+	return &Service{
+		cfg:             cfg,
+		log:             log,
+		store:           NewStore(pool),
+		cache:           cache,
+		sessionSecret:   []byte(cfg.Auth.SessionSecret),
+		publicCacheTTL:  5 * time.Minute,
+		privateCacheTTL: 2 * time.Minute,
+	}, nil
+}
+
+func (s *Service) Ready(ctx context.Context) error {
+	if err := s.store.Ping(ctx); err != nil {
+		return err
+	}
+	if s.cache != nil {
+		if err := s.cache.Ping(ctx); err != nil {
+			s.log.Warn("profile cache unavailable", "error", err)
+		}
+	}
+	return nil
+}
+
+func (s *Service) PublicProfile(ctx context.Context, handle string, now time.Time) (contracts.PublicProfileResponse, error) {
+	user, err := s.store.LoadUserByHandle(ctx, handle)
+	if err != nil {
+		return contracts.PublicProfileResponse{}, err
+	}
+
+	settings, err := s.store.LoadProfileSettings(ctx, user.ID)
+	if err != nil {
+		return contracts.PublicProfileResponse{}, err
+	}
+	if !settings.Settings.PublicProfileEnabled || !strings.EqualFold(user.ProfileVisibility, "public") {
+		return contracts.PublicProfileResponse{}, ErrProfileHidden
+	}
+
+	visibility, visUpdatedAt, err := s.store.LoadRepositoryVisibility(ctx, user.ID)
+	if err != nil {
+		return contracts.PublicProfileResponse{}, err
+	}
+
+	snapshot, err := s.ensureSnapshot(ctx, user, now.UTC())
+	if err != nil {
+		return contracts.PublicProfileResponse{}, err
+	}
+
+	cacheKey := fmt.Sprintf(
+		"profile:public:%s:%s:%d:%d",
+		strings.ToLower(strings.TrimSpace(handle)),
+		snapshot.ID,
+		settings.UpdatedAt.Unix(),
+		visUpdatedAt.Unix(),
+	)
+
+	var cached contracts.PublicProfileResponse
+	if hit, err := s.cache.GetJSON(ctx, cacheKey, &cached); err == nil && hit {
+		return cached, nil
+	} else if err != nil {
+		s.log.Warn("profile cache read failed", "error", err, "cache_key", cacheKey)
+	}
+
+	response := publicResponseFromSnapshot(snapshot, settings.Settings, visibility, now.UTC())
+	if err := s.cache.SetJSON(ctx, cacheKey, response, s.publicCacheTTL); err != nil {
+		s.log.Warn("profile cache write failed", "error", err, "cache_key", cacheKey)
+	}
+	return response, nil
+}
+
+func (s *Service) PublicProfileCard(ctx context.Context, handle string, now time.Time) (contracts.ShareableProfileCard, error) {
+	profile, err := s.PublicProfile(ctx, handle, now)
+	if err != nil {
+		return contracts.ShareableProfileCard{}, err
+	}
+	return profile.ShareCard, nil
+}
+
+func (s *Service) PrivateProfile(ctx context.Context, sessionToken string, now time.Time) (contracts.PrivateProfileResponse, error) {
+	principal, err := s.authenticate(ctx, sessionToken, now.UTC())
+	if err != nil {
+		return contracts.PrivateProfileResponse{}, err
+	}
+
+	user, err := s.store.LoadUserByID(ctx, principal.UserID)
+	if err != nil {
+		return contracts.PrivateProfileResponse{}, err
+	}
+
+	settings, err := s.store.LoadProfileSettings(ctx, user.ID)
+	if err != nil {
+		return contracts.PrivateProfileResponse{}, err
+	}
+	visibility, visUpdatedAt, err := s.store.LoadRepositoryVisibility(ctx, user.ID)
+	if err != nil {
+		return contracts.PrivateProfileResponse{}, err
+	}
+
+	snapshot, err := s.ensureSnapshot(ctx, user, now.UTC())
+	if err != nil {
+		return contracts.PrivateProfileResponse{}, err
+	}
+
+	cacheKey := fmt.Sprintf(
+		"profile:private:%s:%s:%d:%d",
+		user.ID,
+		snapshot.ID,
+		settings.UpdatedAt.Unix(),
+		visUpdatedAt.Unix(),
+	)
+
+	var cached contracts.PrivateProfileResponse
+	if hit, err := s.cache.GetJSON(ctx, cacheKey, &cached); err == nil && hit {
+		return cached, nil
+	} else if err != nil {
+		s.log.Warn("profile cache read failed", "error", err, "cache_key", cacheKey)
+	}
+
+	response := privateResponseFromSnapshot(snapshot, settings.Settings, visibility, now.UTC())
+	if err := s.cache.SetJSON(ctx, cacheKey, response, s.privateCacheTTL); err != nil {
+		s.log.Warn("profile cache write failed", "error", err, "cache_key", cacheKey)
+	}
+	return response, nil
+}
+
+func (s *Service) UpdatePrivacy(ctx context.Context, sessionToken, csrfToken string, req contracts.UpdateProfilePrivacyRequest, now time.Time) (contracts.PrivateProfileResponse, error) {
+	principal, err := s.authenticate(ctx, sessionToken, now.UTC())
+	if err != nil {
+		return contracts.PrivateProfileResponse{}, err
+	}
+	if err := s.validateCSRF(sessionToken, csrfToken); err != nil {
+		return contracts.PrivateProfileResponse{}, err
+	}
+
+	if _, err := s.store.UpdateProfileSettings(ctx, principal.UserID, req, now.UTC()); err != nil {
+		return contracts.PrivateProfileResponse{}, err
+	}
+	return s.PrivateProfile(ctx, sessionToken, now.UTC())
+}
+
+func (s *Service) UpdateRepositoryVisibility(ctx context.Context, sessionToken, csrfToken, fullName string, req contracts.UpdateRepositoryVisibilityRequest, now time.Time) (contracts.PrivateProfileResponse, error) {
+	principal, err := s.authenticate(ctx, sessionToken, now.UTC())
+	if err != nil {
+		return contracts.PrivateProfileResponse{}, err
+	}
+	if err := s.validateCSRF(sessionToken, csrfToken); err != nil {
+		return contracts.PrivateProfileResponse{}, err
+	}
+
+	visibility := strings.ToLower(strings.TrimSpace(req.Visibility))
+	switch visibility {
+	case "public", "hidden":
+	default:
+		return contracts.PrivateProfileResponse{}, ErrInvalidRequest
+	}
+
+	if _, err := s.store.UpsertRepositoryVisibility(ctx, principal.UserID, fullName, visibility, strings.TrimSpace(req.Reason), now.UTC()); err != nil {
+		return contracts.PrivateProfileResponse{}, err
+	}
+	return s.PrivateProfile(ctx, sessionToken, now.UTC())
+}
+
+func (s *Service) authenticate(ctx context.Context, sessionToken string, now time.Time) (sessionPrincipal, error) {
+	if strings.TrimSpace(sessionToken) == "" {
+		return sessionPrincipal{}, ErrUnauthorized
+	}
+	sessionHash, err := authkit.HashOpaqueToken(s.sessionSecret, sessionToken)
+	if err != nil {
+		return sessionPrincipal{}, err
+	}
+	return s.store.LoadSessionPrincipal(ctx, sessionHash, now.UTC())
+}
+
+func (s *Service) validateCSRF(sessionToken, provided string) error {
+	expected, err := authkit.DoubleSubmitCSRFFromToken(s.sessionSecret, sessionToken)
+	if err != nil {
+		return err
+	}
+	if strings.TrimSpace(provided) == "" || provided != expected {
+		return ErrInvalidCSRF
+	}
+	return nil
+}
+
+func (s *Service) ensureSnapshot(ctx context.Context, user userRecord, now time.Time) (snapshotRecord, error) {
+	existing, err := s.store.LoadLatestSnapshot(ctx, user.ID)
+	if err == nil && now.UTC().Before(existing.StaleAfter) {
+		return existing, nil
+	}
+	if err != nil && !errors.Is(err, ErrNotFound) {
+		return snapshotRecord{}, err
+	}
+
+	scoreVersion, err := s.store.LoadLatestScoreVersion(ctx, user.ID)
+	if err != nil {
+		return snapshotRecord{}, err
+	}
+	scoreRows, err := s.store.LoadScoreRows(ctx, user.ID, scoreVersion)
+	if err != nil {
+		if existing.ID != "" {
+			return existing, nil
+		}
+		return snapshotRecord{}, err
+	}
+	badges, err := s.store.LoadBadges(ctx, user.ID)
+	if err != nil {
+		if existing.ID != "" {
+			return existing, nil
+		}
+		return snapshotRecord{}, err
+	}
+
+	built := buildSnapshot(user, scoreRows, badges, now.UTC())
+	snapshot, err := s.store.InsertSnapshot(ctx, user.ID, built)
+	if err != nil {
+		if existing.ID != "" {
+			return existing, nil
+		}
+		return snapshotRecord{}, err
+	}
+	return snapshot, nil
+}
+
+func publicResponseFromSnapshot(snapshot snapshotRecord, settings contracts.ProfilePrivacySettings, visibility []repositoryVisibilityRecord, now time.Time) contracts.PublicProfileResponse {
+	repoMap := visibilityMap(visibility)
+	publicRepos := make([]contracts.TopRepositoryView, 0, len(snapshot.Repositories))
+	for _, repository := range snapshot.Repositories {
+		if override, ok := repoMap[strings.ToLower(repository.FullName)]; ok {
+			repository.Visibility = override.Visibility
+		}
+		if strings.EqualFold(repository.Visibility, "hidden") {
+			continue
+		}
+		publicRepos = append(publicRepos, repository)
+	}
+
+	return contracts.PublicProfileResponse{
+		Summary:         snapshot.Summary,
+		TopSkillAreas:   snapshot.TopSkills,
+		TopRepositories: publicRepos,
+		Level:           snapshot.ShareCard.Level,
+		Badges:          snapshot.Badges,
+		Timeline:        snapshot.Timeline,
+		ShareCard:       snapshot.ShareCard,
+		Staleness:       snapshotStaleness(snapshot, now.UTC()),
+	}
+}
+
+func privateResponseFromSnapshot(snapshot snapshotRecord, settings contracts.ProfilePrivacySettings, visibility []repositoryVisibilityRecord, now time.Time) contracts.PrivateProfileResponse {
+	repoMap := visibilityMap(visibility)
+	privateRepos := make([]contracts.TopRepositoryView, 0, len(snapshot.Repositories))
+	for _, repository := range snapshot.Repositories {
+		if override, ok := repoMap[strings.ToLower(repository.FullName)]; ok {
+			repository.Visibility = override.Visibility
+		}
+		privateRepos = append(privateRepos, repository)
+	}
+
+	visibilityViews := make([]contracts.RepositoryVisibilityView, 0, len(privateRepos))
+	seen := make(map[string]struct{}, len(privateRepos))
+	for _, repository := range privateRepos {
+		view := contracts.RepositoryVisibilityView{
+			FullName:   repository.FullName,
+			Visibility: repository.Visibility,
+		}
+		if override, ok := repoMap[strings.ToLower(repository.FullName)]; ok {
+			view.Reason = override.Reason
+		}
+		visibilityViews = append(visibilityViews, view)
+		seen[strings.ToLower(repository.FullName)] = struct{}{}
+	}
+	for _, override := range visibility {
+		key := strings.ToLower(override.FullName)
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		visibilityViews = append(visibilityViews, contracts.RepositoryVisibilityView{
+			FullName:   override.FullName,
+			Visibility: override.Visibility,
+			Reason:     override.Reason,
+		})
+	}
+
+	sortRepositoryVisibility(visibilityViews)
+	return contracts.PrivateProfileResponse{
+		Summary:              snapshot.Summary,
+		TopSkillAreas:        snapshot.TopSkills,
+		TopRepositories:      privateRepos,
+		Level:                snapshot.ShareCard.Level,
+		Badges:               snapshot.Badges,
+		Timeline:             snapshot.Timeline,
+		ScoreHistory:         snapshot.ScoreHistory,
+		Privacy:              settings,
+		RepositoryVisibility: visibilityViews,
+		ShareCard:            snapshot.ShareCard,
+		Staleness:            snapshotStaleness(snapshot, now.UTC()),
+	}
+}
+
+func visibilityMap(records []repositoryVisibilityRecord) map[string]repositoryVisibilityRecord {
+	out := make(map[string]repositoryVisibilityRecord, len(records))
+	for _, record := range records {
+		out[strings.ToLower(record.FullName)] = record
+	}
+	return out
+}
+
+func snapshotStaleness(snapshot snapshotRecord, now time.Time) contracts.ProfileStaleness {
+	return contracts.ProfileStaleness{
+		RefreshedAt:             snapshot.RefreshedAt.UTC(),
+		StaleAfter:              snapshot.StaleAfter.UTC(),
+		SourceWatermark:         snapshot.SourceWatermark.UTC(),
+		IsStale:                 now.UTC().After(snapshot.StaleAfter.UTC()),
+		PartialProfileAvailable: snapshot.ID != "",
+	}
+}
+
+func sortRepositoryVisibility(values []contracts.RepositoryVisibilityView) {
+	for i := 0; i < len(values); i++ {
+		for j := i + 1; j < len(values); j++ {
+			if values[j].FullName < values[i].FullName {
+				values[i], values[j] = values[j], values[i]
+			}
+		}
+	}
+}
