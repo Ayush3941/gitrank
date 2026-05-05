@@ -611,9 +611,11 @@ func (s *Service) normalizeReturnTo(raw, intent string) string {
 		return base.String()
 	}
 	if strings.HasPrefix(raw, "/") {
-		resolved := *base
-		resolved.Path = raw
-		resolved.RawQuery = ""
+		target, err := url.Parse(raw)
+		if err != nil || target.IsAbs() || target.Host != "" {
+			return base.String()
+		}
+		resolved := base.ResolveReference(target)
 		resolved.Fragment = ""
 		return resolved.String()
 	}
@@ -626,6 +628,7 @@ func (s *Service) normalizeReturnTo(raw, intent string) string {
 		return base.String()
 	}
 	if strings.EqualFold(target.Scheme, baseRoot.Scheme) && strings.EqualFold(target.Host, baseRoot.Host) {
+		target.Fragment = ""
 		return target.String()
 	}
 	return base.String()

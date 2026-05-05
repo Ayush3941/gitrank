@@ -684,7 +684,7 @@ Unit tests:
 Integration tests:
 
 - [ ] DB repositories
-- [ ] service HTTP handlers
+- [x] service HTTP handlers
 - [ ] queue workers
 - [ ] GitHub API client adapters
 - [ ] migration safety
@@ -706,7 +706,7 @@ End-to-end tests:
 
 Specialized tests:
 
-- [ ] fuzz tests for parsers and webhook validation paths
+- [x] fuzz tests for parsers and webhook validation paths
 - [ ] regression tests for scoring edge cases
 - [ ] load tests for sync bursts
 - [x] race detection in concurrent components
