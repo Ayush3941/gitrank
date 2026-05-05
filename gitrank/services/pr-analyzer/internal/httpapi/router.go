@@ -50,8 +50,16 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			httpkit.WriteError(w, http.StatusBadRequest, "invalid_json", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
+		if err := req.Validate(); err != nil {
+			httpkit.WriteError(w, http.StatusBadRequest, "invalid_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
 		start := time.Now()
-		response := service.Analyze(req)
+		response, err := service.Analyze(req)
+		if err != nil {
+			httpkit.WriteError(w, http.StatusInternalServerError, "analysis_validation_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
 		analysisMetrics.Observe(response.Category, time.Since(start))
 		httpkit.WriteJSON(w, http.StatusOK, response)
 	})))

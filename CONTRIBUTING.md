@@ -507,9 +507,9 @@ AI-assisted analysis:
 
 - [x] prompt design documented
 - [x] structured JSON output format defined
-- [ ] prompt versioning implemented
+- [x] prompt versioning implemented
 - [x] model fallback behavior defined
-- [ ] output validation implemented
+- [x] output validation implemented
 - [x] confidence or uncertainty handling defined
 - [x] prompt and response retention policy defined
 - [ ] hallucination guardrails implemented
@@ -520,7 +520,7 @@ Quality bar:
 - [ ] representative evaluation dataset exists
 - [ ] regression tests for classification exist
 - [ ] false positive and false negative cases are tracked
-- [ ] model output is never trusted without schema validation
+- [x] model output is never trusted without schema validation
 - [x] AI does not directly write final scores without deterministic scoring logic
 
 ## 9. Scoring Engine Checklist
@@ -707,7 +707,7 @@ Unit tests:
 - [x] auth flows
 - [x] GitHub signature verification
 - [x] parsing and normalization
-- [ ] AI output validation
+- [x] AI output validation
 
 Integration tests:
 
@@ -1042,7 +1042,7 @@ Do not call the project production ready until:
 - [x] dependency review is enforced on PRs
 - [ ] webhook ingestion is reliable and idempotent
 - [ ] GitHub rate-limit handling is proven
-- [ ] AI outputs are validated and bounded
+- [x] AI outputs are validated and bounded
 - [x] score explanations are user-visible
 - [x] deletion and retention policies exist
 - [ ] dashboards, alerts, and runbooks exist

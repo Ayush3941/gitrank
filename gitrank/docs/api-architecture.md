@@ -227,6 +227,12 @@ Implemented routes:
 - `GET /v1/meta/manifest`
 - `POST /v1/analyze/pull-request`
 
+Current behavior:
+
+- validates normalized PR analysis input before classification
+- emits schema-versioned analysis envelopes with analyzer version, source, validation status, and deterministic fallback metadata
+- does not call a live AI provider yet; current output is deterministic and marked as such
+
 ### Scoring Engine
 
 Base URL:
@@ -240,6 +246,12 @@ Implemented routes:
 - `GET /metrics`
 - `GET /v1/meta/manifest`
 - `POST /v1/score/contribution`
+
+Current behavior:
+
+- validates incoming analysis artifacts before deterministic scoring
+- rejects unsupported categories, invalid AI-assisted envelope metadata, and score-override style strings in analysis hints
+- remains deterministic even when future AI-assisted analysis metadata is present
 
 ### Profile Service
 

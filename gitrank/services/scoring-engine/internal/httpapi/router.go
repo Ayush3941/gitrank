@@ -50,6 +50,10 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			httpkit.WriteError(w, http.StatusBadRequest, "invalid_json", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
+		if err := req.Validate(); err != nil {
+			httpkit.WriteError(w, http.StatusBadRequest, "invalid_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
 		start := time.Now()
 		response := engine.Score(req)
 		scoreMetrics.Observe(response.SuspiciousActivity, time.Since(start))

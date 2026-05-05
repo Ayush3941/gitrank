@@ -46,6 +46,27 @@ func TestMetricsIncludeScoreComputationDuration(t *testing.T) {
 	}
 }
 
+func TestScoreContributionRejectsInvalidAnalysisEnvelope(t *testing.T) {
+	router := NewRouter(testConfig(), testLogger(), "test")
+	request := httptest.NewRequest(http.MethodPost, "/v1/score/contribution", strings.NewReader(`{
+		"repository":{"full_name":"octo/repo"},
+		"pull_request":{"changed_files":1,"additions":4,"deletions":2},
+		"analysis":{
+			"analysis_source":"ai_assisted",
+			"category":"feature",
+			"technical_depth":1.0,
+			"review_strength":1.0
+		}
+	}`))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+	if response.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusBadRequest, response.Body.String())
+	}
+}
+
 func testConfig() config.App {
 	return config.App{
 		ServiceName: "scoring-engine",

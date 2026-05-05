@@ -1,6 +1,7 @@
 package analyzer
 
 import (
+	"errors"
 	"fmt"
 	"path/filepath"
 	"slices"
@@ -9,13 +10,19 @@ import (
 	"github.com/Ayush3941/gitrank/packages/contracts"
 )
 
+const analyzerVersion = "deterministic.v1"
+
 type Service struct{}
 
 func New() Service {
 	return Service{}
 }
 
-func (Service) Analyze(req contracts.PullRequestAnalysisRequest) contracts.PullRequestAnalysisResponse {
+func (Service) Analyze(req contracts.PullRequestAnalysisRequest) (contracts.PullRequestAnalysisResponse, error) {
+	if err := req.Validate(); err != nil {
+		return contracts.PullRequestAnalysisResponse{}, err
+	}
+
 	breakdown := classifyFiles(req.PullRequest.Files)
 	category := classifyCategory(req, breakdown)
 	confidence := categoryConfidence(category, breakdown, req.PullRequest)
@@ -26,17 +33,26 @@ func (Service) Analyze(req contracts.PullRequestAnalysisRequest) contracts.PullR
 	flags := buildFlags(req, breakdown)
 	summary := buildSummary(category, breakdown, req.PullRequest, req.Repository, review)
 
-	return contracts.PullRequestAnalysisResponse{
-		Category:       category,
-		Summary:        summary,
-		Confidence:     confidence,
-		TechnicalDepth: depth,
-		ReviewStrength: review,
-		Signals:        signals,
-		Skills:         skills,
-		Flags:          flags,
-		FileBreakdown:  breakdown,
+	response := contracts.PullRequestAnalysisResponse{
+		SchemaVersion:    contracts.PullRequestAnalysisSchemaVersion,
+		AnalyzerVersion:  analyzerVersion,
+		AnalysisSource:   contracts.AnalysisSourceDeterministic,
+		ValidationStatus: contracts.AnalysisValidationValidated,
+		FallbackReason:   "ai_not_enabled",
+		Category:         category,
+		Summary:          summary,
+		Confidence:       confidence,
+		TechnicalDepth:   depth,
+		ReviewStrength:   review,
+		Signals:          signals,
+		Skills:           skills,
+		Flags:            flags,
+		FileBreakdown:    breakdown,
 	}
+	if err := response.Validate(); err != nil {
+		return contracts.PullRequestAnalysisResponse{}, errors.New("analysis response failed validation: " + err.Error())
+	}
+	return response, nil
 }
 
 func classifyFiles(files []contracts.ChangedFile) contracts.FileBreakdown {

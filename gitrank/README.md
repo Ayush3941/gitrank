@@ -713,7 +713,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 - real auth-service session, OAuth, token refresh, linking, unlinking, and audit logic
 - webhook intake and sync-job preview routes in the GitHub ingestor
 - optional PostgreSQL-backed webhook delivery persistence for durable dedupe and requeue state in the GitHub ingestor
-- deterministic PR analysis and deterministic contribution scoring services
+- deterministic PR analysis and deterministic contribution scoring services, with schema-validated analysis envelopes and scorer-side artifact validation before XP computation
 - a snapshot-backed profile-service read model with privacy controls, repository visibility, caching, and share-card data
 - an in-memory scheduler-worker orchestration layer with deduplicated enqueue, recurring backfill plans, plan pause/resume/delete controls, per-scope throttling, leasing, retries, dead letters, pause/cancel controls, and manual replay
 - live profile route integration through api-gateway plus frontend BFF routes for public profile and settings pages, including settings-triggered sync, GitHub disconnect, and self-service account deletion

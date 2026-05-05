@@ -52,12 +52,21 @@ AI output must validate against a versioned JSON schema before use.
 Baseline schema fields:
 
 - `schema_version`
+- `analyzer_version`
+- `analysis_source`
+- `validation_status`
 - `classification`
 - `confidence`
 - `summary`
 - `skill_signals`
 - `risk_flags`
 - `notes`
+
+Current deterministic implementation note:
+
+- deterministic analyzer output uses `analysis_source=deterministic`
+- deterministic analyzer output records a fallback reason such as `ai_not_enabled`
+- if a future artifact claims `analysis_source=ai_assisted` or `analysis_source=hybrid`, `prompt_version` and `model_name` are required before the artifact may be used
 
 Classification must be one of the supported contribution categories already defined in the scoring model.
 
@@ -75,6 +84,7 @@ If validation fails:
 
 1. retry once with the same bounded evidence
 2. if validation fails again, fall back to deterministic-only analysis
+3. never pass an invalid analysis artifact into deterministic scoring
 
 ## Fallback Behavior
 
