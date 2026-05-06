@@ -482,6 +482,7 @@ Current preview state:
 - `POST /v1/sync/repository/execute` now performs a bounded live repository sync against the public GitHub REST API and persists repository, pull request, review, issue, and commit data directly
 - `POST /v1/sync/user/execute` now performs a bounded live user sync by walking recent public repositories owned by the requested GitHub login and delegating to the repository executor
 - `POST /v1/sync/pull-request/execute` now performs a bounded live pull-request sync and persists the PR, its reviews, and its review comments directly
+- `POST /v1/sync/issue/execute` now performs a bounded live issue sync and persists one standalone issue plus its labels directly
 - manual sync requests also persist queued sync-run records and are queryable by user, repository, subject, requester, correlation ID, and delivery ID
 - manual sync and backfill execution still rely on in-memory scheduler state and are not yet durable across process restarts
 
@@ -615,10 +616,10 @@ Current preview state:
 
 - recurring backfill plans can be created, paused, resumed, manually ticked, and deleted through `scheduler-worker`
 - queue inspection supports filters for user, repository, installation, status, type, subject, and correlation ID
-- the in-process worker can execute bounded `sync.repository`, `sync.user_history`, and `sync.pull_request` jobs through `github-ingestor`, with completion, retry, and dead-letter behavior surfaced on the scheduler queue
+- the in-process worker can execute bounded `sync.repository`, `sync.user_history`, `sync.pull_request`, and `sync.issue` jobs through `github-ingestor`, with completion, retry, and dead-letter behavior surfaced on the scheduler queue
 - bounded user execution currently means recent public repositories owned by the requested GitHub login, not a full cross-repository authored-PR search
 - manual worker execution is exposed through `POST /v1/jobs/run-once`
-- installation, review, issue, and commit sync types still remain queued preview work until additional executors are implemented
+- installation, review, and commit sync types still remain queued preview work until additional executors are implemented
 - recurring plan state is still in-memory only and is not durable across process restarts
 
 ## 12. Shared Packages Checklist

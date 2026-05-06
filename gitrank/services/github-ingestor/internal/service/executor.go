@@ -410,6 +410,105 @@ func (e *Executor) SyncPullRequest(
 	return response, nil
 }
 
+func (e *Executor) SyncIssue(
+	ctx context.Context,
+	req contracts.SyncRequest,
+	actor SyncRequestActor,
+	correlationID string,
+	now time.Time,
+) (contracts.GitHubSyncExecutionResponse, error) {
+	startedAt := now.UTC()
+	response := contracts.GitHubSyncExecutionResponse{
+		Status:        "failed",
+		Mode:          "issue",
+		Repository:    strings.TrimSpace(req.Repository),
+		Number:        req.Number,
+		CorrelationID: strings.TrimSpace(correlationID),
+		StartedAt:     startedAt,
+		FinishedAt:    startedAt,
+	}
+
+	if e == nil || e.store == nil || e.store.pool == nil || e.client == nil {
+		return response, ErrUnavailable
+	}
+	if strings.TrimSpace(req.Repository) == "" || req.Number <= 0 {
+		return response, fmt.Errorf("repository and number are required")
+	}
+
+	owner, name, err := splitRepositoryFullName(req.Repository)
+	if err != nil {
+		return response, err
+	}
+
+	repository, err := e.fetchRepository(ctx, owner, name)
+	if err != nil {
+		_ = e.recordFailedIssueSyncRun(ctx, req, actor, correlationID, startedAt, err)
+		return response, err
+	}
+
+	issue, err := e.fetchIssue(ctx, owner, name, req.Number)
+	if err != nil {
+		_ = e.recordFailedIssueSyncRun(ctx, req, actor, correlationID, startedAt, err)
+		return response, err
+	}
+
+	finishedAt := time.Now().UTC()
+	persisted, err := e.store.WithTx(ctx, func(tx *TxStore) (PersistResult, error) {
+		result := PersistResult{}
+
+		repositoryID, repositoryTouched, err := tx.UpsertRepository(map[string]any{"repository": repository}, finishedAt)
+		if err != nil {
+			return PersistResult{}, err
+		}
+		if repositoryTouched {
+			result.RepositoryCount++
+		}
+
+		issueTouched, labelCount, err := tx.UpsertIssue(map[string]any{
+			"repository": repository,
+			"issue":      issue,
+		}, repositoryID, finishedAt)
+		if err != nil {
+			return PersistResult{}, err
+		}
+		if issueTouched {
+			result.IssueCount++
+		}
+		result.LabelCount += labelCount
+
+		if err := tx.InsertSyncRun(payloadSyncRunInput{
+			CorrelationID:               strings.TrimSpace(correlationID),
+			EventType:                   "issue",
+			Status:                      "completed",
+			Subject:                     fmt.Sprintf("%s#%d", strings.TrimSpace(req.Repository), req.Number),
+			RepositoryID:                repositoryID,
+			RequestedRepositoryFullName: req.Repository,
+			RequestedBySubject:          actor.Subject,
+			RequestedByGitHubLogin:      actor.GitHubLogin,
+			Result:                      result,
+			StartedAt:                   startedAt,
+			FinishedAt:                  timePointer(finishedAt),
+		}); err != nil {
+			return PersistResult{}, err
+		}
+
+		return result, nil
+	})
+	if err != nil {
+		_ = e.recordFailedIssueSyncRun(ctx, req, actor, correlationID, startedAt, err)
+		return response, err
+	}
+
+	response.Status = "completed"
+	response.FinishedAt = finishedAt
+	response.Persisted = persisted.EntityCounts()
+	response.Fetched = map[string]int{
+		"repositories": 1,
+		"issues":       1,
+	}
+	return response, nil
+}
+
 func (e *Executor) recordFailedSyncRun(
 	ctx context.Context,
 	subject string,
@@ -512,6 +611,40 @@ func (e *Executor) recordFailedPullRequestSyncRun(
 	return err
 }
 
+func (e *Executor) recordFailedIssueSyncRun(
+	ctx context.Context,
+	req contracts.SyncRequest,
+	actor SyncRequestActor,
+	correlationID string,
+	startedAt time.Time,
+	failure error,
+) error {
+	if e == nil || e.store == nil || e.store.pool == nil {
+		return nil
+	}
+
+	_, err := e.store.WithTx(ctx, func(tx *TxStore) (PersistResult, error) {
+		repositoryID, lookupErr := tx.lookupRepositoryIDByFullName(req.Repository)
+		if lookupErr != nil {
+			return PersistResult{}, lookupErr
+		}
+		return PersistResult{}, tx.InsertSyncRun(payloadSyncRunInput{
+			CorrelationID:               strings.TrimSpace(correlationID),
+			EventType:                   "issue",
+			Status:                      "failed",
+			LastError:                   failure.Error(),
+			Subject:                     fmt.Sprintf("%s#%d", strings.TrimSpace(req.Repository), req.Number),
+			RepositoryID:                repositoryID,
+			RequestedRepositoryFullName: req.Repository,
+			RequestedBySubject:          actor.Subject,
+			RequestedByGitHubLogin:      actor.GitHubLogin,
+			StartedAt:                   startedAt,
+			FinishedAt:                  timePointer(time.Now().UTC()),
+		})
+	})
+	return err
+}
+
 func (e *Executor) fetchUserRepositories(ctx context.Context, user string) ([]map[string]any, error) {
 	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, defaultUserRepositoryLimit)
 	var repositories []map[string]any
@@ -572,6 +705,18 @@ func (e *Executor) fetchPullRequestReviewComments(ctx context.Context, owner, na
 		return nil, err
 	}
 	return comments, nil
+}
+
+func (e *Executor) fetchIssue(ctx context.Context, owner, name string, number int) (map[string]any, error) {
+	var issue map[string]any
+	_, err := e.client.GetJSON(ctx, fmt.Sprintf("/repos/%s/%s/issues/%d", owner, name, number), nil, githubapi.ConditionalRequest{}, &issue)
+	if err != nil {
+		return nil, err
+	}
+	if object(issue["pull_request"]) != nil {
+		return nil, fmt.Errorf("issue %s/%s#%d is a pull request, not a standalone issue", owner, name, number)
+	}
+	return issue, nil
 }
 
 func (e *Executor) fetchRepository(ctx context.Context, owner, name string) (map[string]any, error) {

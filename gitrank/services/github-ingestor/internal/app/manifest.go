@@ -22,6 +22,7 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 			{Method: "POST", Path: "/v1/sync/user/execute", Summary: "Fetch and persist a bounded live user sync across recent public repositories owned by a GitHub login", Status: "implemented"},
 			{Method: "POST", Path: "/v1/sync/repository/execute", Summary: "Fetch and persist a bounded live repository sync directly from the GitHub REST API", Status: "implemented"},
 			{Method: "POST", Path: "/v1/sync/pull-request/execute", Summary: "Fetch and persist a bounded live pull request sync with reviews and review comments", Status: "implemented"},
+			{Method: "POST", Path: "/v1/sync/issue/execute", Summary: "Fetch and persist a bounded live issue sync directly from the GitHub REST API", Status: "implemented"},
 			{Method: "POST", Path: "/v1/sync/installation", Summary: "Queue an installation sync", Status: "implemented"},
 			{Method: "POST", Path: "/v1/sync/user", Summary: "Queue a user history sync", Status: "implemented"},
 			{Method: "POST", Path: "/v1/sync/repository", Summary: "Queue a repository sync", Status: "implemented"},

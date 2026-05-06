@@ -563,3 +563,123 @@ func TestExecutorSyncPullRequestFetchesAndPersistsBoundedPullRequestData(t *test
 	assertCount(t, ctx, pool, "pull_request_reviews", "SELECT COUNT(*) FROM pull_request_reviews WHERE github_review_id = 701", 1)
 	assertCount(t, ctx, pool, "pull_request_review_comments", "SELECT COUNT(*) FROM pull_request_review_comments WHERE github_review_comment_id = 901", 1)
 }
+
+func TestExecutorSyncIssueFetchesAndPersistsBoundedIssueData(t *testing.T) {
+	databaseURL := strings.TrimSpace(os.Getenv("GITRANK_INGESTOR_DATABASE_URL"))
+	if databaseURL == "" {
+		t.Skip("GITRANK_INGESTOR_DATABASE_URL is not set")
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		switch r.URL.Path {
+		case "/repos/octo/repo":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id":                101,
+				"name":              "repo",
+				"full_name":         "octo/repo",
+				"private":           false,
+				"fork":              false,
+				"language":          "Go",
+				"default_branch":    "main",
+				"stargazers_count":  25,
+				"forks_count":       4,
+				"open_issues_count": 3,
+				"archived":          false,
+				"disabled":          false,
+				"owner": map[string]any{
+					"login": "octo",
+					"type":  "User",
+				},
+			})
+		case "/repos/octo/repo/issues/3":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id":         801,
+				"number":     3,
+				"title":      "Track sync backlog",
+				"state":      "open",
+				"locked":     false,
+				"created_at": "2026-05-05T10:00:00Z",
+				"updated_at": "2026-05-06T10:00:00Z",
+				"user": map[string]any{
+					"id":    501,
+					"login": "octocat",
+				},
+				"labels": []map[string]any{
+					{"id": 603, "name": "tracking", "color": "0366d6", "default": false},
+				},
+			})
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, databaseURL)
+	if err != nil {
+		t.Fatalf("pgxpool.New() error = %v", err)
+	}
+	defer pool.Close()
+
+	client, err := githubapi.NewRESTClient(githubapi.ClientConfig{
+		BaseURL:          server.URL,
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		HTTPClient:       server.Client(),
+		SecondaryBackoff: time.Second,
+		MaxConcurrency:   4,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	executor := NewExecutor(config.App{
+		GitHub: config.GitHub{
+			MaxPageSize: 50,
+		},
+	}, pool, client)
+	now := time.Now().UTC()
+
+	result, err := executor.SyncIssue(ctx, contracts.SyncRequest{
+		Mode:       "issue",
+		Repository: "octo/repo",
+		Number:     3,
+	}, SyncRequestActor{
+		Subject:     "issue-sync-executor",
+		GitHubLogin: "octocat",
+	}, "sync-issue-executor-1", now)
+	if err != nil {
+		t.Fatalf("SyncIssue() error = %v", err)
+	}
+
+	if result.Status != "completed" {
+		t.Fatalf("Status = %q, want completed", result.Status)
+	}
+	if result.Repository != "octo/repo" || result.Number != 3 {
+		t.Fatalf("result = %+v, want repo octo/repo number 3", result)
+	}
+	if result.Fetched["issues"] != 1 {
+		t.Fatalf("Fetched[issues] = %d, want 1", result.Fetched["issues"])
+	}
+	if result.Persisted["issues"] != 1 {
+		t.Fatalf("Persisted[issues] = %d, want 1", result.Persisted["issues"])
+	}
+
+	assertCount(t, ctx, pool, "repository_issues", "SELECT COUNT(*) FROM repository_issues WHERE github_issue_id = 801", 1)
+
+	var requestedRepository string
+	if err := pool.QueryRow(ctx, `
+		SELECT requested_repository_full_name
+		FROM github_sync_runs
+		WHERE correlation_id = 'sync-issue-executor-1'
+		ORDER BY started_at DESC
+		LIMIT 1
+	`).Scan(&requestedRepository); err != nil {
+		t.Fatalf("select github_sync_runs.requested_repository_full_name: %v", err)
+	}
+	if requestedRepository != "octo/repo" {
+		t.Fatalf("requested_repository_full_name = %q, want octo/repo", requestedRepository)
+	}
+}

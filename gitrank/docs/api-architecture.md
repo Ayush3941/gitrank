@@ -202,6 +202,7 @@ Implemented routes:
 - `POST /v1/sync/user/execute`
 - `POST /v1/sync/repository/execute`
 - `POST /v1/sync/pull-request/execute`
+- `POST /v1/sync/issue/execute`
 - `POST /v1/sync/installation`
 - `POST /v1/sync/user`
 - `POST /v1/sync/repository`
@@ -219,6 +220,7 @@ Current state:
 - `POST /v1/sync/user/execute` performs a bounded live user sync by walking recent public repositories owned by the requested GitHub login and delegating to the repository executor
 - `POST /v1/sync/repository/execute` performs a bounded live repository sync through the public GitHub REST API and persists repository, pull request, review, issue, and commit data in PostgreSQL
 - `POST /v1/sync/pull-request/execute` performs a bounded live pull-request sync and persists the PR, its reviews, and its review comments in PostgreSQL
+- `POST /v1/sync/issue/execute` performs a bounded live issue sync and persists one standalone issue plus its labels in PostgreSQL
 - manual sync requests persist queued sync-run records and can be queried through `GET /v1/sync/runs` with user, repository, subject, requester, correlation, and delivery filters
 - sync requests still enqueue in-memory preview jobs for execution
 - persistent worker execution and historical backfill orchestration are still pending
@@ -338,6 +340,7 @@ Current state:
 - the in-process worker can execute ready `sync.repository` jobs by calling `github-ingestor /v1/sync/repository/execute`
 - the in-process worker can execute ready `sync.user_history` jobs by calling `github-ingestor /v1/sync/user/execute`
 - the in-process worker can execute ready `sync.pull_request` jobs by calling `github-ingestor /v1/sync/pull-request/execute`
+- the in-process worker can execute ready `sync.issue` jobs by calling `github-ingestor /v1/sync/issue/execute`
 - bounded user execution currently means recent public repositories owned by the requested GitHub login, not a full authored-PR history search
 - retries apply exponential backoff before the next eligible lease
 - poison jobs move into a dead-letter queue and can be manually replayed
