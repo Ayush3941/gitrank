@@ -2,7 +2,7 @@ SHELL := /bin/sh
 TMPDIR ?= $(CURDIR)/.tmp
 GOCACHE ?= $(CURDIR)/.gocache
 
-.PHONY: fmt test test-migrations race vet tidy compose-up compose-down
+.PHONY: fmt test test-migrations race vet tidy compose-up compose-down seed-local
 
 fmt:
 	mkdir -p "$(TMPDIR)" "$(GOCACHE)"
@@ -31,3 +31,6 @@ compose-up:
 
 compose-down:
 	cd deployments/compose && docker compose down -v
+
+seed-local:
+	./scripts/seed_local_dev.sh

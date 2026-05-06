@@ -615,6 +615,18 @@ OPENAI_API_KEY=your_api_key
 
 See [`.env.example`](./.env.example) for the full local configuration surface, including optional future GitHub App settings that are not required in the v1 production baseline.
 
+Optional local seed data:
+
+```bash
+cd gitrank
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/gitrank?sslmode=disable \
+GITRANK_ENV=development \
+ALLOW_LOCAL_SEED=1 \
+make seed-local
+```
+
+This seed path is intentionally local-only. It creates one deterministic sample user, repository, PR, score event, badge, and profile snapshot for profile and scoring development.
+
 ## MVP Roadmap
 
 ### Phase 1: Foundation

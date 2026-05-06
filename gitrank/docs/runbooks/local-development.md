@@ -24,6 +24,18 @@ go work sync
 find . -name go.mod -execdir sh -c 'go test ./...' \;
 ```
 
+## Optional local seed data
+
+```bash
+cd gitrank
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/gitrank?sslmode=disable \
+GITRANK_ENV=development \
+ALLOW_LOCAL_SEED=1 \
+make seed-local
+```
+
+This seed path is idempotent and meant only for local profile, scoring, and read-model development.
+
 ## Common problems
 
 ### PostgreSQL not reachable

@@ -353,7 +353,7 @@ Required implementation work:
 - [x] `gitrank/docs/data-model.md`
 - [x] `gitrank/deployments/` database bootstrap assets
 - [x] database migrations
-- [ ] seed data for local development only
+- [x] seed data for local development only
 
 Settled v1 policy docs:
 

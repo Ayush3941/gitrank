@@ -69,6 +69,16 @@ fi
 DATABASE_URL="postgres://${db_user}:${db_password}@127.0.0.1:${host_port}/${db_name}?sslmode=disable" \
   "$root_dir/scripts/migrate.sh"
 
+ALLOW_LOCAL_SEED=1 \
+GITRANK_ENV=development \
+DATABASE_URL="postgres://${db_user}:${db_password}@127.0.0.1:${host_port}/${db_name}?sslmode=disable" \
+  "$root_dir/scripts/seed_local_dev.sh"
+
+ALLOW_LOCAL_SEED=1 \
+GITRANK_ENV=development \
+DATABASE_URL="postgres://${db_user}:${db_password}@127.0.0.1:${host_port}/${db_name}?sslmode=disable" \
+  "$root_dir/scripts/seed_local_dev.sh"
+
 mkdir -p "$root_dir/.tmp" "$root_dir/.gocache"
 
 assert_true "users table exists" \
@@ -89,6 +99,12 @@ assert_true "auth session token hash column exists" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'auth_sessions' AND column_name = 'session_token_hash');"
 assert_true "profile snapshot freshness columns exist" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'profile_snapshots' AND column_name = 'refreshed_at');"
+assert_true "local seed user exists exactly once" \
+  "SELECT COUNT(*) = 1 FROM users WHERE id = '11111111-1111-1111-1111-111111111111'::uuid;"
+assert_true "local seed repository exists exactly once" \
+  "SELECT COUNT(*) = 1 FROM repositories WHERE id = '33333333-3333-3333-3333-333333333333'::uuid;"
+assert_true "local seed profile snapshot exists exactly once" \
+  "SELECT COUNT(*) = 1 FROM profile_snapshots WHERE id = '88888888-8888-8888-8888-888888888888'::uuid;"
 
 (
   cd "$root_dir/services/auth-service/internal/service"
