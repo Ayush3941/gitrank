@@ -562,7 +562,7 @@ Implemented service routes today:
 
 - `GET /v1/meta/manifest` and `GET /metrics` on every service
 - `GET /oauth/github/start`, `GET /oauth/github/callback`, `GET /v1/session/me`, `POST /v1/session/refresh`, and `POST /v1/session/logout` on `auth-service`
-- `POST /webhooks/github`, `POST /v1/webhooks/github/deliveries/{delivery_id}/requeue`, `POST /v1/sync/preview`, `GET /v1/sync/runs`, `POST /v1/sync/user/execute`, `POST /v1/sync/repository/execute`, `POST /v1/sync/pull-request/execute`, `POST /v1/sync/issue/execute`, `POST /v1/sync/commit/execute`, and the normalized `POST /v1/sync/*` routes on `github-ingestor`
+- `POST /webhooks/github`, `POST /v1/webhooks/github/deliveries/{delivery_id}/requeue`, `POST /v1/sync/preview`, `GET /v1/sync/runs`, `POST /v1/sync/user/execute`, `POST /v1/sync/repository/execute`, `POST /v1/sync/pull-request/execute`, `POST /v1/sync/review/execute`, `POST /v1/sync/issue/execute`, `POST /v1/sync/commit/execute`, and the normalized `POST /v1/sync/*` routes on `github-ingestor`
 - `POST /v1/analyze/pull-request` on `pr-analyzer`
 - `POST /v1/score/contribution`, `POST /v1/score/users/{user_id}/replay`, `GET /v1/score/users/{user_id}/snapshot`, and `GET /v1/score/users/{user_id}/events` on `scoring-engine`
 - `GET /v1/profile/schema`, `GET /v1/users/{handle}`, `GET /v1/users/{handle}/card`, `GET /v1/me/profile`, and profile privacy update routes on `profile-service`
@@ -729,12 +729,13 @@ The repository currently contains a working foundation, not just an empty scaffo
 - a bounded live user sync execution path that walks recent public repositories owned by a GitHub login and persists them through the repository executor in `github-ingestor`
 - a bounded live repository sync execution path that fetches recent repository, PR, review, issue, and commit data from the public GitHub REST API and persists it directly through `github-ingestor`
 - a bounded live pull-request sync execution path that fetches one public PR plus its reviews and review comments and persists them directly through `github-ingestor`
+- a bounded live review sync execution path that refreshes the review surface for one PR number and persists its reviews and review comments through `github-ingestor`
 - a bounded live issue sync execution path that fetches one standalone public issue plus its labels and persists it directly through `github-ingestor`
 - a bounded live commit sync execution path that fetches one public commit and persists it directly through `github-ingestor`
 - optional PostgreSQL-backed webhook delivery persistence for durable dedupe and requeue state in the GitHub ingestor
 - deterministic PR analysis and deterministic contribution scoring services, with schema-validated analysis envelopes, grounded-language and summary guardrails for future AI-assisted outputs, deterministic language and critical-path heuristics, issue-link and review-cycle extraction, regression datasets, scorer-side artifact validation before XP computation, and persisted replay runs with immutable score events plus historical score snapshots
 - a snapshot-backed profile-service read model with privacy controls, repository visibility, caching, and share-card data
-- an in-memory scheduler-worker orchestration layer with deduplicated enqueue, recurring backfill plans, plan pause/resume/delete controls, per-scope throttling, leasing, retries, dead letters, pause/cancel controls, manual replay, and bounded in-process execution for `sync.repository`, `sync.user_history`, `sync.pull_request`, `sync.issue`, and `sync.commit` jobs
+- an in-memory scheduler-worker orchestration layer with deduplicated enqueue, recurring backfill plans, plan pause/resume/delete controls, per-scope throttling, leasing, retries, dead letters, pause/cancel controls, manual replay, and bounded in-process execution for `sync.repository`, `sync.user_history`, `sync.pull_request`, `sync.review`, `sync.issue`, and `sync.commit` jobs
 - live profile route integration through api-gateway plus frontend BFF routes for public profile and settings pages, including settings-triggered sync, GitHub disconnect, and self-service account deletion
 - metrics endpoints and shared request instrumentation across the Go services, including queue depth, cache hit rate, sync duration, score computation duration, PR analysis breakdowns, GitHub rate-limit tracking, and HTTP error counters
 - PostgreSQL migrations for core entities, GitHub ingestion state, and auth/session security tables
@@ -746,7 +747,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 
 Major gaps remain:
 
-- no persistent cross-process ingestion worker yet, and only bounded `sync.repository`, owned-repository `sync.user_history`, direct `sync.pull_request`, direct `sync.issue`, and direct `sync.commit` jobs currently auto-execute inside `scheduler-worker`
+- no persistent cross-process ingestion worker yet, and only bounded `sync.repository`, owned-repository `sync.user_history`, direct `sync.pull_request`, PR-surface `sync.review`, direct `sync.issue`, and direct `sync.commit` jobs currently auto-execute inside `scheduler-worker`
 - most non-profile frontend routes still use mock data
 - no distributed tracing or deployed observability stack yet; dashboards and alert rules are committed but not wired into runtime infrastructure
 - the committed Kubernetes assets are still only a minimal namespace/layout baseline and do not yet include per-service Deployments, Services, ingress, or secret-manager wiring

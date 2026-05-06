@@ -277,10 +277,31 @@ func (e *Executor) SyncPullRequest(
 	correlationID string,
 	now time.Time,
 ) (contracts.GitHubSyncExecutionResponse, error) {
+	return e.syncPullRequestSurface(ctx, req, actor, correlationID, now, "pull_request")
+}
+
+func (e *Executor) SyncReview(
+	ctx context.Context,
+	req contracts.SyncRequest,
+	actor SyncRequestActor,
+	correlationID string,
+	now time.Time,
+) (contracts.GitHubSyncExecutionResponse, error) {
+	return e.syncPullRequestSurface(ctx, req, actor, correlationID, now, "review")
+}
+
+func (e *Executor) syncPullRequestSurface(
+	ctx context.Context,
+	req contracts.SyncRequest,
+	actor SyncRequestActor,
+	correlationID string,
+	now time.Time,
+	mode string,
+) (contracts.GitHubSyncExecutionResponse, error) {
 	startedAt := now.UTC()
 	response := contracts.GitHubSyncExecutionResponse{
 		Status:        "failed",
-		Mode:          "pull_request",
+		Mode:          mode,
 		Repository:    strings.TrimSpace(req.Repository),
 		Number:        req.Number,
 		CorrelationID: strings.TrimSpace(correlationID),
@@ -302,23 +323,23 @@ func (e *Executor) SyncPullRequest(
 
 	repository, err := e.fetchRepository(ctx, owner, name)
 	if err != nil {
-		_ = e.recordFailedPullRequestSyncRun(ctx, req, actor, correlationID, startedAt, err)
+		_ = e.recordFailedPullRequestSurfaceSyncRun(ctx, req, actor, correlationID, startedAt, mode, err)
 		return response, err
 	}
 
 	pullRequest, err := e.fetchPullRequest(ctx, owner, name, req.Number)
 	if err != nil {
-		_ = e.recordFailedPullRequestSyncRun(ctx, req, actor, correlationID, startedAt, err)
+		_ = e.recordFailedPullRequestSurfaceSyncRun(ctx, req, actor, correlationID, startedAt, mode, err)
 		return response, err
 	}
 	reviews, err := e.fetchPullRequestReviews(ctx, owner, name, req.Number)
 	if err != nil {
-		_ = e.recordFailedPullRequestSyncRun(ctx, req, actor, correlationID, startedAt, err)
+		_ = e.recordFailedPullRequestSurfaceSyncRun(ctx, req, actor, correlationID, startedAt, mode, err)
 		return response, err
 	}
 	reviewComments, err := e.fetchPullRequestReviewComments(ctx, owner, name, req.Number)
 	if err != nil {
-		_ = e.recordFailedPullRequestSyncRun(ctx, req, actor, correlationID, startedAt, err)
+		_ = e.recordFailedPullRequestSurfaceSyncRun(ctx, req, actor, correlationID, startedAt, mode, err)
 		return response, err
 	}
 
@@ -377,7 +398,7 @@ func (e *Executor) SyncPullRequest(
 
 		if err := tx.InsertSyncRun(payloadSyncRunInput{
 			CorrelationID:               strings.TrimSpace(correlationID),
-			EventType:                   "pull_request",
+			EventType:                   mode,
 			Status:                      "completed",
 			Subject:                     fmt.Sprintf("%s#%d", strings.TrimSpace(req.Repository), req.Number),
 			RepositoryID:                repositoryID,
@@ -394,7 +415,7 @@ func (e *Executor) SyncPullRequest(
 		return result, nil
 	})
 	if err != nil {
-		_ = e.recordFailedPullRequestSyncRun(ctx, req, actor, correlationID, startedAt, err)
+		_ = e.recordFailedPullRequestSurfaceSyncRun(ctx, req, actor, correlationID, startedAt, mode, err)
 		return response, err
 	}
 
@@ -672,12 +693,13 @@ func (e *Executor) recordFailedUserSyncRun(
 	return err
 }
 
-func (e *Executor) recordFailedPullRequestSyncRun(
+func (e *Executor) recordFailedPullRequestSurfaceSyncRun(
 	ctx context.Context,
 	req contracts.SyncRequest,
 	actor SyncRequestActor,
 	correlationID string,
 	startedAt time.Time,
+	mode string,
 	failure error,
 ) error {
 	if e == nil || e.store == nil || e.store.pool == nil {
@@ -691,7 +713,7 @@ func (e *Executor) recordFailedPullRequestSyncRun(
 		}
 		return PersistResult{}, tx.InsertSyncRun(payloadSyncRunInput{
 			CorrelationID:               strings.TrimSpace(correlationID),
-			EventType:                   "pull_request",
+			EventType:                   mode,
 			Status:                      "failed",
 			LastError:                   failure.Error(),
 			Subject:                     fmt.Sprintf("%s#%d", strings.TrimSpace(req.Repository), req.Number),

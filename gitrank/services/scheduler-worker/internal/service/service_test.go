@@ -437,6 +437,61 @@ func TestRunNextExecutesPullRequestJobAndCompletes(t *testing.T) {
 	}
 }
 
+func TestRunNextExecutesReviewJobAndCompletes(t *testing.T) {
+	now := time.Date(2026, time.May, 6, 12, 47, 0, 0, time.UTC)
+	var observed contracts.SyncRequest
+	var observedPath string
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		observedPath = r.URL.Path
+		if err := json.NewDecoder(r.Body).Decode(&observed); err != nil {
+			t.Fatalf("decode request: %v", err)
+		}
+		_ = json.NewEncoder(w).Encode(contracts.GitHubSyncExecutionResponse{
+			Status:        "completed",
+			Mode:          "review",
+			Repository:    observed.Repository,
+			Number:        observed.Number,
+			CorrelationID: r.Header.Get("X-Request-ID"),
+			StartedAt:     now,
+			FinishedAt:    now.Add(3 * time.Second),
+			Fetched:       map[string]int{"reviews": 1, "review_comments": 1},
+			Persisted:     map[string]int{"reviews": 1, "review_comments": 1},
+		})
+	}))
+	defer server.Close()
+
+	cfg := testServiceConfig()
+	cfg.Services.GitHubIngestorBaseURL = server.URL
+	cfg.Services.RequestTimeout = time.Second
+	scheduler := New(cfg)
+
+	enqueue, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "review", Repository: "octo/repo", Number: 7}, "review-correlation", now)
+	if err != nil {
+		t.Fatalf("EnqueueSync() error = %v", err)
+	}
+
+	run, err := scheduler.RunNext(context.Background(), now)
+	if err != nil {
+		t.Fatalf("RunNext() error = %v", err)
+	}
+	if run.Status != "completed" {
+		t.Fatalf("run status = %q, want completed", run.Status)
+	}
+	if run.Execution == nil || run.Execution.Mode != "review" || run.Execution.Number != 7 {
+		t.Fatalf("run execution = %+v, want completed review execution", run.Execution)
+	}
+	if observedPath != "/v1/sync/review/execute" {
+		t.Fatalf("observed path = %q, want %q", observedPath, "/v1/sync/review/execute")
+	}
+	if observed.Repository != "octo/repo" || observed.Number != 7 || observed.Mode != "review" {
+		t.Fatalf("observed request = %+v, want repo octo/repo number 7", observed)
+	}
+	if run.Job == nil || run.Job.ID != enqueue.JobIDs[0] {
+		t.Fatalf("run job = %+v, want executed job id %q", run.Job, enqueue.JobIDs[0])
+	}
+}
+
 func TestRunNextExecutesIssueJobAndCompletes(t *testing.T) {
 	now := time.Date(2026, time.May, 6, 12, 50, 0, 0, time.UTC)
 	var observed contracts.SyncRequest

@@ -564,6 +564,150 @@ func TestExecutorSyncPullRequestFetchesAndPersistsBoundedPullRequestData(t *test
 	assertCount(t, ctx, pool, "pull_request_review_comments", "SELECT COUNT(*) FROM pull_request_review_comments WHERE github_review_comment_id = 901", 1)
 }
 
+func TestExecutorSyncReviewFetchesAndPersistsBoundedReviewSurface(t *testing.T) {
+	databaseURL := strings.TrimSpace(os.Getenv("GITRANK_INGESTOR_DATABASE_URL"))
+	if databaseURL == "" {
+		t.Skip("GITRANK_INGESTOR_DATABASE_URL is not set")
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		switch r.URL.Path {
+		case "/repos/octo/repo":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id":                101,
+				"name":              "repo",
+				"full_name":         "octo/repo",
+				"private":           false,
+				"fork":              false,
+				"language":          "Go",
+				"default_branch":    "main",
+				"stargazers_count":  25,
+				"forks_count":       4,
+				"open_issues_count": 3,
+				"archived":          false,
+				"disabled":          false,
+				"owner": map[string]any{
+					"login": "octo",
+					"type":  "User",
+				},
+			})
+		case "/repos/octo/repo/pulls/7":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id":            201,
+				"number":        7,
+				"title":         "fix: tighten review executor",
+				"state":         "closed",
+				"draft":         false,
+				"merged":        true,
+				"merged_at":     "2026-05-06T12:00:00Z",
+				"created_at":    "2026-05-05T12:00:00Z",
+				"updated_at":    "2026-05-06T12:00:00Z",
+				"closed_at":     "2026-05-06T12:00:00Z",
+				"changed_files": 2,
+				"additions":     40,
+				"deletions":     8,
+				"commits":       2,
+				"user": map[string]any{
+					"id":    501,
+					"login": "octocat",
+				},
+				"base": map[string]any{"ref": "main"},
+				"head": map[string]any{"ref": "feature/review-exec"},
+				"labels": []map[string]any{
+					{"id": 601, "name": "bug", "color": "d73a4a", "default": true},
+				},
+			})
+		case "/repos/octo/repo/pulls/7/reviews":
+			_ = json.NewEncoder(w).Encode([]map[string]any{
+				{
+					"id":           701,
+					"state":        "APPROVED",
+					"submitted_at": "2026-05-06T12:30:00Z",
+					"body":         "Looks good",
+					"user": map[string]any{
+						"id":    501,
+						"login": "octocat",
+					},
+				},
+			})
+		case "/repos/octo/repo/pulls/7/comments":
+			_ = json.NewEncoder(w).Encode([]map[string]any{
+				{
+					"id":                     901,
+					"pull_request_review_id": 701,
+					"path":                   "internal/executor.go",
+					"position":               12,
+					"body":                   "please add coverage",
+					"created_at":             "2026-05-06T12:31:00Z",
+					"user": map[string]any{
+						"id":    501,
+						"login": "octocat",
+					},
+				},
+			})
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, databaseURL)
+	if err != nil {
+		t.Fatalf("pgxpool.New() error = %v", err)
+	}
+	defer pool.Close()
+
+	client, err := githubapi.NewRESTClient(githubapi.ClientConfig{
+		BaseURL:          server.URL,
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		HTTPClient:       server.Client(),
+		SecondaryBackoff: time.Second,
+		MaxConcurrency:   4,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	executor := NewExecutor(config.App{
+		GitHub: config.GitHub{
+			MaxPageSize: 50,
+		},
+	}, pool, client)
+	now := time.Now().UTC()
+
+	result, err := executor.SyncReview(ctx, contracts.SyncRequest{
+		Mode:       "review",
+		Repository: "octo/repo",
+		Number:     7,
+	}, SyncRequestActor{
+		Subject:     "review-sync-executor",
+		GitHubLogin: "octocat",
+	}, "sync-review-executor-1", now)
+	if err != nil {
+		t.Fatalf("SyncReview() error = %v", err)
+	}
+
+	if result.Status != "completed" {
+		t.Fatalf("Status = %q, want completed", result.Status)
+	}
+	if result.Mode != "review" || result.Repository != "octo/repo" || result.Number != 7 {
+		t.Fatalf("result = %+v, want review mode repo octo/repo number 7", result)
+	}
+	if result.Fetched["reviews"] != 1 {
+		t.Fatalf("Fetched[reviews] = %d, want 1", result.Fetched["reviews"])
+	}
+	if result.Fetched["review_comments"] != 1 {
+		t.Fatalf("Fetched[review_comments] = %d, want 1", result.Fetched["review_comments"])
+	}
+
+	assertCount(t, ctx, pool, "pull_request_reviews", "SELECT COUNT(*) FROM pull_request_reviews WHERE github_review_id = 701", 1)
+	assertCount(t, ctx, pool, "pull_request_review_comments", "SELECT COUNT(*) FROM pull_request_review_comments WHERE github_review_comment_id = 901", 1)
+}
+
 func TestExecutorSyncIssueFetchesAndPersistsBoundedIssueData(t *testing.T) {
 	databaseURL := strings.TrimSpace(os.Getenv("GITRANK_INGESTOR_DATABASE_URL"))
 	if databaseURL == "" {
