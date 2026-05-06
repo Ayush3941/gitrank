@@ -46,6 +46,15 @@ func TestAnalyzePullRequestReturnsValidatedEnvelope(t *testing.T) {
 	if payload.ValidationStatus != contracts.AnalysisValidationValidated {
 		t.Fatalf("ValidationStatus = %q, want %q", payload.ValidationStatus, contracts.AnalysisValidationValidated)
 	}
+	if payload.PrimaryDetectedLanguage != "Go" {
+		t.Fatalf("PrimaryDetectedLanguage = %q, want Go", payload.PrimaryDetectedLanguage)
+	}
+	if payload.ReviewCycles != 0 {
+		t.Fatalf("ReviewCycles = %d, want 0", payload.ReviewCycles)
+	}
+	if len(payload.CriticalityTags) == 0 || payload.CriticalityTags[0] != "auth_identity" {
+		t.Fatalf("CriticalityTags = %v, want auth_identity", payload.CriticalityTags)
+	}
 }
 
 func TestAnalyzePullRequestRejectsInvalidRequest(t *testing.T) {

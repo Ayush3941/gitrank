@@ -1,0 +1,144 @@
+[
+  {
+    "name": "docs_only_installation_note",
+    "risk_type": "false_positive",
+    "note": "Docs-only PRs should stay documentation-focused and should not drift into generic feature classification.",
+    "request": {
+      "repository": { "full_name": "octo/repo" },
+      "pull_request": {
+        "title": "docs: clarify installation for #14",
+        "body": "Refs #14 with setup steps.",
+        "changed_files": 2,
+        "files": [
+          { "path": "README.md" },
+          { "path": "docs/setup.md" }
+        ]
+      }
+    },
+    "want_category": "documentation",
+    "want_languages": ["Markdown"],
+    "want_issue_references": ["#14"],
+    "want_criticality_tags": [],
+    "want_review_cycles": 0,
+    "want_flags": ["docs_only"]
+  },
+  {
+    "name": "security_auth_review_cycle",
+    "risk_type": "false_negative",
+    "note": "Authentication-sensitive changes with requested changes should keep the security classification and surface review rework.",
+    "request": {
+      "repository": { "full_name": "octo/repo", "primary_language": "Go" },
+      "pull_request": {
+        "title": "security: rotate OAuth token validation",
+        "body": "Fixes #41 after member review.",
+        "changed_files": 2,
+        "files": [
+          { "path": "internal/auth/token.go" },
+          { "path": "internal/auth/token_test.go" }
+        ],
+        "reviews": [
+          { "state": "CHANGES_REQUESTED", "author_association": "MEMBER" },
+          { "state": "APPROVED", "author_association": "MEMBER" }
+        ]
+      }
+    },
+    "want_category": "security",
+    "want_languages": ["Go"],
+    "want_issue_references": ["#41"],
+    "want_criticality_tags": ["auth_identity"],
+    "want_review_cycles": 1,
+    "want_flags": ["review_rework_cycle", "critical_path_change"]
+  },
+  {
+    "name": "sql_bugfix_migration",
+    "risk_type": "false_negative",
+    "note": "Migration and SQL changes tied to a fix should preserve the bug-fix category and data-persistence signal.",
+    "request": {
+      "repository": { "full_name": "octo/repo" },
+      "pull_request": {
+        "title": "fix: correct rollback for user sync #44",
+        "changed_files": 2,
+        "files": [
+          { "path": "deployments/migrations/0006_fix_sync.sql" },
+          { "path": "services/auth-service/internal/service/store.go" }
+        ]
+      }
+    },
+    "want_category": "bug_fix",
+    "want_languages": ["SQL", "Go"],
+    "want_issue_references": ["#44"],
+    "want_criticality_tags": ["data_persistence"],
+    "want_review_cycles": 0,
+    "want_flags": ["critical_path_change", "polyglot_change"]
+  },
+  {
+    "name": "workflow_and_terraform_infra",
+    "risk_type": "false_positive",
+    "note": "Workflow and Terraform changes should stay infrastructure rather than being mistaken for product features.",
+    "request": {
+      "repository": { "full_name": "octo/repo" },
+      "pull_request": {
+        "title": "infra: harden CI and deploy plan",
+        "changed_files": 2,
+        "files": [
+          { "path": ".github/workflows/release.yml" },
+          { "path": "deployments/terraform/main.tf" }
+        ]
+      }
+    },
+    "want_category": "infrastructure",
+    "want_languages": ["YAML", "Terraform"],
+    "want_issue_references": [],
+    "want_criticality_tags": ["delivery_ops"],
+    "want_review_cycles": 0,
+    "want_flags": ["critical_path_change", "polyglot_change"]
+  },
+  {
+    "name": "typescript_api_feature",
+    "risk_type": "false_negative",
+    "note": "API route work should keep feature classification while surfacing the public API surface tag.",
+    "request": {
+      "repository": { "full_name": "octo/repo", "primary_language": "TypeScript" },
+      "pull_request": {
+        "title": "feat: expose public profile card endpoint",
+        "body": "Closes octo/repo#77.",
+        "changed_files": 2,
+        "files": [
+          { "path": "frontend/app/api/profile/public/[username]/card/route.ts" },
+          { "path": "frontend/lib/api/gateway-server.ts" }
+        ],
+        "reviews": [
+          { "state": "COMMENTED", "author_association": "MEMBER" }
+        ]
+      }
+    },
+    "want_category": "feature",
+    "want_languages": ["TypeScript"],
+    "want_issue_references": ["octo/repo#77"],
+    "want_criticality_tags": ["api_surface"],
+    "want_review_cycles": 0,
+    "want_flags": ["critical_path_change"]
+  },
+  {
+    "name": "runtime_refactor_bootstrap",
+    "risk_type": "false_positive",
+    "note": "Startup refactors should stay refactors while surfacing runtime bootstrap sensitivity.",
+    "request": {
+      "repository": { "full_name": "octo/repo", "primary_language": "Go" },
+      "pull_request": {
+        "title": "refactor: simplify service bootstrap",
+        "changed_files": 2,
+        "files": [
+          { "path": "cmd/api-gateway/main.go" },
+          { "path": "internal/bootstrap/runtime.go" }
+        ]
+      }
+    },
+    "want_category": "refactor",
+    "want_languages": ["Go"],
+    "want_issue_references": [],
+    "want_criticality_tags": ["runtime_bootstrap"],
+    "want_review_cycles": 0,
+    "want_flags": ["critical_path_change"]
+  }
+]

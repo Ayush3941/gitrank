@@ -61,23 +61,28 @@ type ReviewSignal struct {
 }
 
 type PullRequestAnalysisResponse struct {
-	SchemaVersion    string        `json:"schema_version,omitempty"`
-	AnalyzerVersion  string        `json:"analyzer_version,omitempty"`
-	AnalysisSource   string        `json:"analysis_source,omitempty"`
-	PromptVersion    string        `json:"prompt_version,omitempty"`
-	ModelName        string        `json:"model_name,omitempty"`
-	ValidationStatus string        `json:"validation_status,omitempty"`
-	FallbackReason   string        `json:"fallback_reason,omitempty"`
-	Category         string        `json:"category"`
-	Summary          string        `json:"summary"`
-	Confidence       float64       `json:"confidence"`
-	TechnicalDepth   float64       `json:"technical_depth"`
-	ReviewStrength   float64       `json:"review_strength"`
-	Signals          []string      `json:"signals,omitempty"`
-	Skills           []string      `json:"skills,omitempty"`
-	Flags            []string      `json:"flags,omitempty"`
-	FileBreakdown    FileBreakdown `json:"file_breakdown"`
-	PromptSuggested  bool          `json:"prompt_suggested,omitempty"`
+	SchemaVersion           string        `json:"schema_version,omitempty"`
+	AnalyzerVersion         string        `json:"analyzer_version,omitempty"`
+	AnalysisSource          string        `json:"analysis_source,omitempty"`
+	PromptVersion           string        `json:"prompt_version,omitempty"`
+	ModelName               string        `json:"model_name,omitempty"`
+	ValidationStatus        string        `json:"validation_status,omitempty"`
+	FallbackReason          string        `json:"fallback_reason,omitempty"`
+	Category                string        `json:"category"`
+	Summary                 string        `json:"summary"`
+	Confidence              float64       `json:"confidence"`
+	TechnicalDepth          float64       `json:"technical_depth"`
+	ReviewStrength          float64       `json:"review_strength"`
+	DetectedLanguages       []string      `json:"detected_languages,omitempty"`
+	PrimaryDetectedLanguage string        `json:"primary_detected_language,omitempty"`
+	CriticalityTags         []string      `json:"criticality_tags,omitempty"`
+	IssueReferences         []string      `json:"issue_references,omitempty"`
+	ReviewCycles            int           `json:"review_cycles,omitempty"`
+	Signals                 []string      `json:"signals,omitempty"`
+	Skills                  []string      `json:"skills,omitempty"`
+	Flags                   []string      `json:"flags,omitempty"`
+	FileBreakdown           FileBreakdown `json:"file_breakdown"`
+	PromptSuggested         bool          `json:"prompt_suggested,omitempty"`
 }
 
 type FileBreakdown struct {
@@ -191,6 +196,23 @@ func (resp PullRequestAnalysisResponse) validate(requireFullEnvelope bool) error
 	}
 	if err := validateAnalysisStrings(canonical.Flags, "flags"); err != nil {
 		return err
+	}
+	if err := validateAnalysisStrings(canonical.DetectedLanguages, "detected_languages"); err != nil {
+		return err
+	}
+	if err := validateAnalysisStrings(canonical.CriticalityTags, "criticality_tags"); err != nil {
+		return err
+	}
+	if err := validateAnalysisStrings(canonical.IssueReferences, "issue_references"); err != nil {
+		return err
+	}
+	if canonical.PrimaryDetectedLanguage != "" {
+		if err := validateAnalysisStrings([]string{canonical.PrimaryDetectedLanguage}, "primary_detected_language"); err != nil {
+			return err
+		}
+	}
+	if canonical.ReviewCycles < 0 {
+		return errors.New("review_cycles must be non-negative")
 	}
 	if canonical.FileBreakdown.Docs < 0 || canonical.FileBreakdown.Tests < 0 || canonical.FileBreakdown.Source < 0 || canonical.FileBreakdown.Infra < 0 || canonical.FileBreakdown.Config < 0 {
 		return errors.New("file_breakdown values must be non-negative")

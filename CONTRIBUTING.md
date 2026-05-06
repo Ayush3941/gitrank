@@ -491,15 +491,15 @@ This service should combine deterministic feature extraction with AI assistance.
 Deterministic feature extraction:
 
 - [x] file change classification
-- [ ] language detection
+- [x] language detection
 - [x] docs-only detection
 - [x] test-change detection
 - [x] config or infra change detection
 - [x] refactor heuristics
 - [x] code churn normalization
-- [ ] directory criticality tagging
-- [ ] issue linkage extraction
-- [ ] review cycle counting
+- [x] directory criticality tagging
+- [x] issue linkage extraction
+- [x] review cycle counting
 - [x] requested-changes detection
 - [x] maintainer interaction signals
 
@@ -517,9 +517,9 @@ AI-assisted analysis:
 
 Quality bar:
 
-- [ ] representative evaluation dataset exists
-- [ ] regression tests for classification exist
-- [ ] false positive and false negative cases are tracked
+- [x] representative evaluation dataset exists
+- [x] regression tests for classification exist
+- [x] false positive and false negative cases are tracked
 - [x] model output is never trusted without schema validation
 - [x] AI does not directly write final scores without deterministic scoring logic
 

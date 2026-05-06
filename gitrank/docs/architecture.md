@@ -73,6 +73,7 @@ flowchart LR
 - deterministic PR feature extraction
 - AI-assisted categorization
 - classification output validation
+- derived language, issue-link, review-cycle, and critical-path signals for downstream scoring
 
 ### Scoring Engine
 
