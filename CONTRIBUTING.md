@@ -613,6 +613,9 @@ Current preview state:
 
 - recurring backfill plans can be created, paused, resumed, manually ticked, and deleted through `scheduler-worker`
 - queue inspection supports filters for user, repository, installation, status, type, subject, and correlation ID
+- the in-process worker can execute bounded `sync.repository` jobs through `github-ingestor`, with completion, retry, and dead-letter behavior surfaced on the scheduler queue
+- manual worker execution is exposed through `POST /v1/jobs/run-once`
+- non-repository sync types still remain queued preview work until additional executors are implemented
 - recurring plan state is still in-memory only and is not durable across process restarts
 
 ## 12. Shared Packages Checklist

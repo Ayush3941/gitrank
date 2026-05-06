@@ -1,6 +1,10 @@
 package service
 
 import (
+	"context"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -254,6 +258,141 @@ func TestLeaseFailRetryAndCompleteLifecycle(t *testing.T) {
 	}
 }
 
+func TestRunNextExecutesRepositoryJobAndCompletes(t *testing.T) {
+	now := time.Date(2026, time.May, 6, 12, 0, 0, 0, time.UTC)
+	var observed contracts.SyncRequest
+	var observedRequestID string
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		observedRequestID = r.Header.Get("X-Request-ID")
+		if r.URL.Path != "/v1/sync/repository/execute" {
+			t.Fatalf("path = %q, want %q", r.URL.Path, "/v1/sync/repository/execute")
+		}
+		if err := json.NewDecoder(r.Body).Decode(&observed); err != nil {
+			t.Fatalf("decode request: %v", err)
+		}
+		_ = json.NewEncoder(w).Encode(contracts.GitHubSyncExecutionResponse{
+			Status:        "completed",
+			Mode:          "repository",
+			Repository:    observed.Repository,
+			CorrelationID: observedRequestID,
+			StartedAt:     now,
+			FinishedAt:    now.Add(2 * time.Second),
+			Fetched:       map[string]int{"pull_requests": 2},
+			Persisted:     map[string]int{"pull_requests": 2},
+		})
+	}))
+	defer server.Close()
+
+	cfg := testServiceConfig()
+	cfg.Services.GitHubIngestorBaseURL = server.URL
+	cfg.Services.RequestTimeout = time.Second
+	scheduler := New(cfg)
+
+	enqueue, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "repository", Repository: "octo/repo"}, "repo-correlation", now)
+	if err != nil {
+		t.Fatalf("EnqueueSync() error = %v", err)
+	}
+	if len(enqueue.JobIDs) != 1 {
+		t.Fatalf("job ids len = %d, want 1", len(enqueue.JobIDs))
+	}
+
+	run, err := scheduler.RunNext(context.Background(), now)
+	if err != nil {
+		t.Fatalf("RunNext() error = %v", err)
+	}
+	if run.Status != "completed" {
+		t.Fatalf("run status = %q, want completed", run.Status)
+	}
+	if run.Job == nil || run.Job.ID != enqueue.JobIDs[0] {
+		t.Fatalf("run job = %+v, want executed job id %q", run.Job, enqueue.JobIDs[0])
+	}
+	if run.Execution == nil || run.Execution.Repository != "octo/repo" {
+		t.Fatalf("run execution = %+v, want repository octo/repo", run.Execution)
+	}
+	if observed.Repository != "octo/repo" || observed.Mode != "repository" {
+		t.Fatalf("observed request = %+v, want repository mode request", observed)
+	}
+	if observedRequestID != "repo-correlation" {
+		t.Fatalf("observed request id = %q, want %q", observedRequestID, "repo-correlation")
+	}
+
+	queue := scheduler.QueueStatus(now, contracts.SchedulerJobFilter{})
+	if queue.QueueDepth != 0 {
+		t.Fatalf("queue depth = %d, want 0", queue.QueueDepth)
+	}
+}
+
+func TestRunNextRetriesRepositoryJobOnUpstreamFailure(t *testing.T) {
+	now := time.Date(2026, time.May, 6, 13, 0, 0, 0, time.UTC)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusBadGateway)
+		_ = json.NewEncoder(w).Encode(contracts.NewErrorResponse("upstream_failed", "temporary github outage", ""))
+	}))
+	defer server.Close()
+
+	cfg := testServiceConfig()
+	cfg.Services.GitHubIngestorBaseURL = server.URL
+	cfg.Services.RequestTimeout = time.Second
+	cfg.Scheduler.RetryBackoff = time.Second
+	scheduler := New(cfg)
+
+	enqueue, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "repository", Repository: "octo/repo"}, "retry-correlation", now)
+	if err != nil {
+		t.Fatalf("EnqueueSync() error = %v", err)
+	}
+
+	run, err := scheduler.RunNext(context.Background(), now)
+	if err != nil {
+		t.Fatalf("RunNext() error = %v", err)
+	}
+	if run.Status != "failed" {
+		t.Fatalf("run status = %q, want failed", run.Status)
+	}
+	if run.Job == nil || run.Job.AttemptCount != 1 {
+		t.Fatalf("run job = %+v, want attempt_count=1", run.Job)
+	}
+	if run.Execution != nil {
+		t.Fatalf("run execution = %+v, want nil on failure", run.Execution)
+	}
+	if run.Job.ID != enqueue.JobIDs[0] {
+		t.Fatalf("run job id = %q, want %q", run.Job.ID, enqueue.JobIDs[0])
+	}
+
+	queue := scheduler.QueueStatus(now, contracts.SchedulerJobFilter{Repository: "octo/repo"})
+	if queue.QueueDepth != 1 {
+		t.Fatalf("queue depth = %d, want 1 after retry scheduling", queue.QueueDepth)
+	}
+	if len(queue.Jobs) != 1 || queue.Jobs[0].LastError == "" {
+		t.Fatalf("queued jobs = %+v, want one job with last_error", queue.Jobs)
+	}
+}
+
+func TestRunNextLeavesUnsupportedJobsQueued(t *testing.T) {
+	now := time.Date(2026, time.May, 6, 14, 0, 0, 0, time.UTC)
+	scheduler := New(testServiceConfig())
+
+	if _, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "user", User: "octocat"}, "user-correlation", now); err != nil {
+		t.Fatalf("EnqueueSync() error = %v", err)
+	}
+
+	run, err := scheduler.RunNext(context.Background(), now)
+	if err != nil {
+		t.Fatalf("RunNext() error = %v", err)
+	}
+	if run.Status != "idle" {
+		t.Fatalf("run status = %q, want idle", run.Status)
+	}
+	if run.Job != nil {
+		t.Fatalf("run job = %+v, want nil", run.Job)
+	}
+
+	queue := scheduler.QueueStatus(now, contracts.SchedulerJobFilter{User: "octocat"})
+	if queue.QueueDepth != 1 || len(queue.Jobs) != 1 {
+		t.Fatalf("queue = %+v, want one still-queued user job", queue)
+	}
+}
+
 func testServiceConfig() config.App {
 	return config.App{
 		ServiceName: "scheduler-worker",
@@ -276,6 +415,9 @@ func testServiceConfig() config.App {
 			PerUserRateMax:            6,
 			PerInstallationRateWindow: time.Minute,
 			PerInstallationRateMax:    10,
+		},
+		Services: config.Services{
+			RequestTimeout: time.Second,
 		},
 	}
 }

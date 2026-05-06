@@ -49,17 +49,38 @@ func newTickCounters() *tickCounters {
 }
 
 func (s *Service) Run(ctx context.Context) {
-	ticker := time.NewTicker(s.cfg.Scheduler.PollInterval)
-	defer ticker.Stop()
+	var workers sync.WaitGroup
 
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case now := <-ticker.C:
-			_, _ = s.Tick(now.UTC())
+	workers.Add(1)
+	go func() {
+		defer workers.Done()
+		ticker := time.NewTicker(s.cfg.Scheduler.PollInterval)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case now := <-ticker.C:
+				_, _ = s.Tick(now.UTC())
+			}
 		}
+	}()
+
+	workerCount := s.cfg.Scheduler.WorkerConcurrency
+	if workerCount <= 0 {
+		workerCount = 1
 	}
+	for range workerCount {
+		workers.Add(1)
+		go func() {
+			defer workers.Done()
+			s.runWorkerLoop(ctx)
+		}()
+	}
+
+	<-ctx.Done()
+	workers.Wait()
 }
 
 func (s *Service) CreateBackfillPlan(req contracts.SchedulerBackfillPlanRequest, now time.Time) (contracts.SchedulerBackfillPlanView, error) {

@@ -21,6 +21,7 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 			{Method: "POST", Path: "/v1/jobs/sync", Summary: "Schedule a sync job", Status: "implemented"},
 			{Method: "POST", Path: "/v1/jobs/tick", Summary: "Trigger one scheduler evaluation tick", Status: "implemented"},
 			{Method: "POST", Path: "/v1/jobs/lease", Summary: "Lease ready jobs up to the configured concurrency limit", Status: "implemented"},
+			{Method: "POST", Path: "/v1/jobs/run-once", Summary: "Execute the next ready in-process scheduler job", Status: "implemented"},
 			{Method: "GET", Path: "/v1/jobs/backfills", Summary: "List recurring backfill plans", Status: "implemented"},
 			{Method: "POST", Path: "/v1/jobs/backfills", Summary: "Create a recurring backfill plan", Status: "implemented"},
 			{Method: "POST", Path: "/v1/jobs/backfills/{plan_id}/pause", Summary: "Pause a recurring backfill plan", Status: "implemented"},
@@ -35,7 +36,7 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 			{Method: "POST", Path: "/v1/jobs/dead-letters/{record_id}/replay", Summary: "Replay a dead-lettered job", Status: "implemented"},
 		},
 		Dependencies: []contracts.DependencySpec{
-			{Name: "In-memory queue preview", Kind: "queue", Purpose: "Local scheduler state, recurring plans, retries, and dead letters", Critical: true, Status: "implemented"},
+			{Name: "In-memory queue and worker state", Kind: "queue", Purpose: "Local scheduler state, recurring plans, retries, dead letters, and bounded repository job execution", Critical: true, Status: "implemented"},
 			{Name: "Redis", Kind: "queue", Purpose: "Job state and coordination", Critical: true, Status: "planned"},
 			{Name: "PostgreSQL", Kind: "database", Purpose: "Persistent job leases, cursors, and dead letters", Critical: true, Status: "planned"},
 			{Name: "github-ingestor", Kind: "internal_http", BaseURL: cfg.Services.GitHubIngestorBaseURL, Purpose: "Repository and PR sync flows", Auth: "service_to_service", Critical: true, Status: "configured"},

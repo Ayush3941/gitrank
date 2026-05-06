@@ -25,6 +25,8 @@ type Service struct {
 	userLimiter         *scopeRateLimiter
 	installationLimiter *scopeRateLimiter
 	ticks               *tickCounters
+	repositoryRunner    repositorySyncExecutor
+	runs                *executionCounters
 }
 
 func New(cfg config.App) *Service {
@@ -35,6 +37,8 @@ func New(cfg config.App) *Service {
 		userLimiter:         newScopeRateLimiter(cfg.Scheduler.PerUserRateWindow, cfg.Scheduler.PerUserRateMax),
 		installationLimiter: newScopeRateLimiter(cfg.Scheduler.PerInstallationRateWindow, cfg.Scheduler.PerInstallationRateMax),
 		ticks:               newTickCounters(),
+		repositoryRunner:    newRepositorySyncExecutor(cfg),
+		runs:                newExecutionCounters(),
 	}
 }
 
@@ -266,6 +270,10 @@ func (s *Service) WritePrometheus(w io.Writer) {
 	_, _ = fmt.Fprintf(w, "# TYPE gitrank_scheduler_rate_limited_targets_total counter\n")
 	_, _ = fmt.Fprintf(w, "# HELP gitrank_scheduler_last_tick_unix Last scheduler tick timestamp as a Unix time.\n")
 	_, _ = fmt.Fprintf(w, "# TYPE gitrank_scheduler_last_tick_unix gauge\n")
+	_, _ = fmt.Fprintf(w, "# HELP gitrank_scheduler_job_runs_total Total scheduler jobs executed by the in-process worker.\n")
+	_, _ = fmt.Fprintf(w, "# TYPE gitrank_scheduler_job_runs_total counter\n")
+	_, _ = fmt.Fprintf(w, "# HELP gitrank_scheduler_last_job_run_unix Last completed scheduler worker execution timestamp as a Unix time.\n")
+	_, _ = fmt.Fprintf(w, "# TYPE gitrank_scheduler_last_job_run_unix gauge\n")
 	_, _ = fmt.Fprintf(w, `gitrank_scheduler_queue_depth{service=%q,queue=%q} %d`+"\n", s.cfg.ServiceName, primaryQueueName, snapshot.Queued)
 	_, _ = fmt.Fprintf(w, `gitrank_scheduler_active_leases{service=%q,queue=%q} %d`+"\n", s.cfg.ServiceName, primaryQueueName, snapshot.ActiveLeases)
 	_, _ = fmt.Fprintf(w, `gitrank_scheduler_dead_letters{service=%q,queue=%q} %d`+"\n", s.cfg.ServiceName, s.cfg.Scheduler.DeadLetterQueue, snapshot.DeadLetters)
@@ -304,6 +312,31 @@ func (s *Service) WritePrometheus(w io.Writer) {
 		sort.Strings(scopes)
 		for _, scope := range scopes {
 			_, _ = fmt.Fprintf(w, `gitrank_scheduler_rate_limited_by_scope_total{service=%q,scope=%q} %d`+"\n", s.cfg.ServiceName, scope, rateLimitedByScope[scope])
+		}
+	}
+
+	if s.runs != nil {
+		s.runs.mu.Lock()
+		lastRunAt := int64(0)
+		if !s.runs.lastRunAt.IsZero() {
+			lastRunAt = s.runs.lastRunAt.Unix()
+		}
+		byOutcome := make(map[string]int, len(s.runs.byOutcome))
+		for key, count := range s.runs.byOutcome {
+			byOutcome[key] = count
+		}
+		s.runs.mu.Unlock()
+
+		_, _ = fmt.Fprintf(w, `gitrank_scheduler_last_job_run_unix{service=%q} %d`+"\n", s.cfg.ServiceName, lastRunAt)
+
+		keys := make([]string, 0, len(byOutcome))
+		for key := range byOutcome {
+			keys = append(keys, key)
+		}
+		sort.Strings(keys)
+		for _, key := range keys {
+			jobType, status := splitExecutionMetricKey(key)
+			_, _ = fmt.Fprintf(w, `gitrank_scheduler_job_runs_total{service=%q,job_type=%q,status=%q} %d`+"\n", s.cfg.ServiceName, jobType, status, byOutcome[key])
 		}
 	}
 

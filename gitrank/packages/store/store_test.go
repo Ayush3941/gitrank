@@ -216,6 +216,43 @@ func TestInMemoryJobQueueLeasePauseResumeAndReplay(t *testing.T) {
 	}
 }
 
+func TestInMemoryJobQueueLeaseJobTargetsReadyJob(t *testing.T) {
+	queue := NewInMemoryJobQueue()
+	readyAt := time.Date(2026, 5, 5, 12, 0, 0, 0, time.UTC)
+
+	job, err := NewQueueJob(QueueJobInput{
+		QueueName:   "github-sync",
+		Type:        SyncRepositoryJob,
+		Repository:  "octo/repo",
+		DedupeKey:   "repository:octo/repo",
+		MaxAttempts: 2,
+		ScheduledAt: readyAt,
+		NotBefore:   readyAt,
+		Payload: map[string]string{
+			"repository": "octo/repo",
+			"mode":       "repository",
+		},
+	})
+	if err != nil {
+		t.Fatalf("NewQueueJob() error = %v", err)
+	}
+	if _, _, err := queue.EnqueueUnique(job); err != nil {
+		t.Fatalf("EnqueueUnique() error = %v", err)
+	}
+
+	leased, err := queue.LeaseJob(job.ID, readyAt, 1, time.Minute)
+	if err != nil {
+		t.Fatalf("LeaseJob() error = %v", err)
+	}
+	if leased.Status != JobLeased {
+		t.Fatalf("leased status = %q, want %q", leased.Status, JobLeased)
+	}
+
+	if _, err := queue.LeaseJob(job.ID, readyAt, 1, time.Minute); err == nil {
+		t.Fatal("second LeaseJob() error = nil, want not ready error")
+	}
+}
+
 var errBoom = boomError("boom")
 
 type boomError string

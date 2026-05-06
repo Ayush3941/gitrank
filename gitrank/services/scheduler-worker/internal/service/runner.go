@@ -1,0 +1,251 @@
+package service
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"strings"
+	"sync"
+	"time"
+
+	"github.com/Ayush3941/gitrank/packages/config"
+	"github.com/Ayush3941/gitrank/packages/contracts"
+	"github.com/Ayush3941/gitrank/packages/store"
+)
+
+type repositorySyncExecutor interface {
+	SyncRepository(ctx context.Context, req contracts.SyncRequest, correlationID string) (contracts.GitHubSyncExecutionResponse, error)
+}
+
+type httpRepositorySyncExecutor struct {
+	baseURL string
+	client  *http.Client
+}
+
+type executionCounters struct {
+	mu        sync.Mutex
+	lastRunAt time.Time
+	byOutcome map[string]int
+}
+
+func newRepositorySyncExecutor(cfg config.App) repositorySyncExecutor {
+	baseURL := strings.TrimRight(strings.TrimSpace(cfg.Services.GitHubIngestorBaseURL), "/")
+	if baseURL == "" {
+		return nil
+	}
+	return &httpRepositorySyncExecutor{
+		baseURL: baseURL,
+		client: &http.Client{
+			Timeout: cfg.Services.RequestTimeout,
+		},
+	}
+}
+
+func newExecutionCounters() *executionCounters {
+	return &executionCounters{
+		byOutcome: make(map[string]int),
+	}
+}
+
+func (s *Service) RunNext(ctx context.Context, now time.Time) (contracts.SchedulerRunResponse, error) {
+	now = now.UTC()
+	response := contracts.SchedulerRunResponse{
+		QueueName:     primaryQueueName,
+		Status:        "idle",
+		LastUpdatedAt: now,
+	}
+
+	job, ok, err := s.leaseNextExecutableJob(now)
+	if err != nil || !ok {
+		return response, err
+	}
+
+	finishedAt := time.Now().UTC()
+	execution, err := s.executeLeasedJob(ctx, job)
+	if err != nil {
+		action, actionErr := s.Fail(job.ID, err.Error(), finishedAt)
+		if actionErr != nil {
+			return response, actionErr
+		}
+		response.Status = action.Status
+		response.LastUpdatedAt = action.LastUpdatedAt
+		response.Job = schedulerJobPointer(action.Job)
+		s.recordExecution(job.Type, action.Status, finishedAt)
+		return response, nil
+	}
+
+	action, err := s.Complete(job.ID, finishedAt)
+	if err != nil {
+		return response, err
+	}
+	response.Status = action.Status
+	response.LastUpdatedAt = action.LastUpdatedAt
+	response.Job = schedulerJobPointer(action.Job)
+	response.Execution = &execution
+	s.recordExecution(job.Type, action.Status, finishedAt)
+	return response, nil
+}
+
+func (s *Service) leaseNextExecutableJob(now time.Time) (store.QueueJob, bool, error) {
+	jobs := s.queue.Jobs()
+	for _, job := range jobs {
+		if !isExecutableJob(job, now) {
+			continue
+		}
+		leased, err := s.queue.LeaseJob(job.ID, now, s.cfg.Scheduler.WorkerConcurrency, s.cfg.Scheduler.LeaseTTL)
+		if err == nil {
+			return leased, true, nil
+		}
+		switch {
+		case strings.Contains(err.Error(), "worker concurrency reached"):
+			return store.QueueJob{}, false, nil
+		case strings.Contains(err.Error(), "job is not ready"), strings.Contains(err.Error(), "job not found"):
+			continue
+		default:
+			return store.QueueJob{}, false, err
+		}
+	}
+	return store.QueueJob{}, false, nil
+}
+
+func (s *Service) executeLeasedJob(ctx context.Context, job store.QueueJob) (contracts.GitHubSyncExecutionResponse, error) {
+	if s.repositoryRunner == nil {
+		return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf("repository sync runner is not configured")
+	}
+
+	switch job.Type {
+	case store.SyncRepositoryJob:
+		req, err := syncRequestFromJob(job)
+		if err != nil {
+			return contracts.GitHubSyncExecutionResponse{}, err
+		}
+		return s.repositoryRunner.SyncRepository(ctx, req, correlationIDForJob(job))
+	default:
+		return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf("job type %s is not executable by the in-process worker", job.Type)
+	}
+}
+
+func (e *httpRepositorySyncExecutor) SyncRepository(ctx context.Context, req contracts.SyncRequest, correlationID string) (contracts.GitHubSyncExecutionResponse, error) {
+	req.Mode = "repository"
+	req.Repository = strings.TrimSpace(req.Repository)
+	if req.Repository == "" {
+		return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf("repository is required")
+	}
+
+	body, err := json.Marshal(req)
+	if err != nil {
+		return contracts.GitHubSyncExecutionResponse{}, err
+	}
+
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, e.baseURL+"/v1/sync/repository/execute", bytes.NewReader(body))
+	if err != nil {
+		return contracts.GitHubSyncExecutionResponse{}, err
+	}
+	request.Header.Set("Accept", "application/json")
+	request.Header.Set("Content-Type", "application/json")
+	if strings.TrimSpace(correlationID) != "" {
+		request.Header.Set("X-Request-ID", strings.TrimSpace(correlationID))
+	}
+
+	response, err := e.client.Do(request)
+	if err != nil {
+		return contracts.GitHubSyncExecutionResponse{}, err
+	}
+	defer response.Body.Close()
+
+	payload, err := io.ReadAll(io.LimitReader(response.Body, 1<<20))
+	if err != nil {
+		return contracts.GitHubSyncExecutionResponse{}, err
+	}
+	if response.StatusCode != http.StatusOK {
+		var apiErr contracts.ErrorResponse
+		if err := json.Unmarshal(payload, &apiErr); err == nil && strings.TrimSpace(apiErr.Error.Message) != "" {
+			return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf("github-ingestor repository sync failed: %s", apiErr.Error.Message)
+		}
+		return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf("github-ingestor repository sync failed with status %d", response.StatusCode)
+	}
+
+	var execution contracts.GitHubSyncExecutionResponse
+	if err := json.Unmarshal(payload, &execution); err != nil {
+		return contracts.GitHubSyncExecutionResponse{}, err
+	}
+	if strings.TrimSpace(execution.Status) == "" || execution.StartedAt.IsZero() || execution.FinishedAt.IsZero() {
+		return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf("github-ingestor returned an invalid repository sync contract")
+	}
+	return execution, nil
+}
+
+func (s *Service) runWorkerLoop(ctx context.Context) {
+	ticker := time.NewTicker(s.cfg.Scheduler.PollInterval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case now := <-ticker.C:
+			_, _ = s.RunNext(ctx, now.UTC())
+		}
+	}
+}
+
+func (s *Service) recordExecution(jobType store.SyncJobType, status string, now time.Time) {
+	if s.runs == nil {
+		return
+	}
+	s.runs.mu.Lock()
+	defer s.runs.mu.Unlock()
+	s.runs.lastRunAt = now.UTC()
+	s.runs.byOutcome[executionMetricKey(jobType, status)]++
+}
+
+func executionMetricKey(jobType store.SyncJobType, status string) string {
+	return string(jobType) + "|" + strings.TrimSpace(status)
+}
+
+func splitExecutionMetricKey(key string) (string, string) {
+	jobType, status, found := strings.Cut(key, "|")
+	if !found {
+		return key, ""
+	}
+	return jobType, status
+}
+
+func isExecutableJob(job store.QueueJob, now time.Time) bool {
+	return job.Type == store.SyncRepositoryJob &&
+		job.Status == store.JobPending &&
+		!job.NotBefore.After(now.UTC())
+}
+
+func syncRequestFromJob(job store.QueueJob) (contracts.SyncRequest, error) {
+	var req contracts.SyncRequest
+	if len(job.Payload) > 0 {
+		if err := json.Unmarshal(job.Payload, &req); err != nil {
+			return contracts.SyncRequest{}, fmt.Errorf("decode job payload: %w", err)
+		}
+	}
+	if strings.TrimSpace(req.Repository) == "" {
+		req.Repository = strings.TrimSpace(job.Repository)
+	}
+	req.Mode = "repository"
+	req.Repository = strings.TrimSpace(req.Repository)
+	if req.Repository == "" {
+		return contracts.SyncRequest{}, fmt.Errorf("repository is required")
+	}
+	return req, nil
+}
+
+func correlationIDForJob(job store.QueueJob) string {
+	if strings.TrimSpace(job.CorrelationID) != "" {
+		return strings.TrimSpace(job.CorrelationID)
+	}
+	return job.ID
+}
+
+func schedulerJobPointer(view contracts.SchedulerJobView) *contracts.SchedulerJobView {
+	copy := view
+	return &copy
+}

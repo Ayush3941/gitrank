@@ -212,6 +212,65 @@ func TestSchedulerLeaseAndCompleteLifecycle(t *testing.T) {
 	}
 }
 
+func TestSchedulerRunOnceExecutesRepositoryJob(t *testing.T) {
+	var observedPath string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		observedPath = r.URL.Path
+		_ = json.NewEncoder(w).Encode(contracts.GitHubSyncExecutionResponse{
+			Status:        "completed",
+			Mode:          "repository",
+			Repository:    "octo/repo",
+			CorrelationID: r.Header.Get("X-Request-ID"),
+			StartedAt:     time.Now().UTC(),
+			FinishedAt:    time.Now().UTC().Add(time.Second),
+			Fetched:       map[string]int{"repositories": 1},
+			Persisted:     map[string]int{"repositories": 1},
+		})
+	}))
+	defer server.Close()
+
+	cfg := testConfig()
+	cfg.Services.GitHubIngestorBaseURL = server.URL
+	router := newTestRouter(cfg)
+
+	enqueueResponse := httptest.NewRecorder()
+	enqueueRequest := httptest.NewRequest(http.MethodPost, "/v1/jobs/sync", strings.NewReader(`{"mode":"repository","repository":"octo/repo"}`))
+	enqueueRequest.Header.Set("Content-Type", "application/json")
+	router.ServeHTTP(enqueueResponse, enqueueRequest)
+	if enqueueResponse.Code != http.StatusAccepted {
+		t.Fatalf("enqueue status = %d, want %d, body=%s", enqueueResponse.Code, http.StatusAccepted, enqueueResponse.Body.String())
+	}
+
+	runResponse := httptest.NewRecorder()
+	router.ServeHTTP(runResponse, httptest.NewRequest(http.MethodPost, "/v1/jobs/run-once", nil))
+	if runResponse.Code != http.StatusOK {
+		t.Fatalf("run status = %d, want %d, body=%s", runResponse.Code, http.StatusOK, runResponse.Body.String())
+	}
+
+	var runOut contracts.SchedulerRunResponse
+	if err := json.Unmarshal(runResponse.Body.Bytes(), &runOut); err != nil {
+		t.Fatalf("unmarshal run response: %v", err)
+	}
+	if runOut.Status != "completed" {
+		t.Fatalf("run status = %q, want completed", runOut.Status)
+	}
+	if runOut.Execution == nil || runOut.Execution.Repository != "octo/repo" {
+		t.Fatalf("run execution = %+v, want repository octo/repo", runOut.Execution)
+	}
+	if observedPath != "/v1/sync/repository/execute" {
+		t.Fatalf("observed path = %q, want %q", observedPath, "/v1/sync/repository/execute")
+	}
+
+	metricsResponse := httptest.NewRecorder()
+	router.ServeHTTP(metricsResponse, httptest.NewRequest(http.MethodGet, "/metrics", nil))
+	if metricsResponse.Code != http.StatusOK {
+		t.Fatalf("metrics status = %d, want %d", metricsResponse.Code, http.StatusOK)
+	}
+	if !strings.Contains(metricsResponse.Body.String(), `gitrank_scheduler_job_runs_total{service="scheduler-worker",job_type="sync.repository",status="completed"} 1`) {
+		t.Fatalf("metrics body missing scheduler run counter: %s", metricsResponse.Body.String())
+	}
+}
+
 func TestSchedulerQueueStatusFiltersByUserAndRepository(t *testing.T) {
 	router := newTestRouter(testConfig())
 

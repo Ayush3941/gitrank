@@ -241,6 +241,43 @@ func (q *InMemoryJobQueue) LeaseReady(now time.Time, limit, maxConcurrency int, 
 	return leased
 }
 
+func (q *InMemoryJobQueue) LeaseJob(jobID string, now time.Time, maxConcurrency int, leaseTTL time.Duration) (QueueJob, error) {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+
+	now = now.UTC()
+	q.reapExpiredLeasesLocked(now)
+
+	if maxConcurrency > 0 {
+		activeLeases := 0
+		for _, job := range q.jobs {
+			if job.Status == JobLeased || job.Status == JobRunning {
+				activeLeases++
+			}
+		}
+		if activeLeases >= maxConcurrency {
+			return QueueJob{}, errors.New("worker concurrency reached")
+		}
+	}
+
+	index := q.jobIndexLocked(jobID)
+	if index < 0 {
+		return QueueJob{}, errors.New("job not found")
+	}
+
+	job := q.jobs[index]
+	if job.Status != JobPending || job.NotBefore.After(now) {
+		return QueueJob{}, errors.New("job is not ready")
+	}
+
+	job.Status = JobLeased
+	if leaseTTL > 0 {
+		job.LeaseExpiresAt = now.Add(leaseTTL)
+	}
+	q.jobs[index] = job
+	return job, nil
+}
+
 func (q *InMemoryJobQueue) Complete(jobID string) (QueueJob, error) {
 	q.mu.Lock()
 	defer q.mu.Unlock()

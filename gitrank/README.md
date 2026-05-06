@@ -337,6 +337,7 @@ Responsibilities:
 - enqueue and deduplicate internal sync jobs
 - trigger recurring backfill plans from cron schedules
 - lease ready work with bounded concurrency
+- execute bounded in-process repository sync jobs against `github-ingestor`
 - apply retry and exponential backoff policy
 - throttle repeated sync generation per user and installation
 - expose filtered queue inspection for user, repository, installation, and correlation tracing
@@ -565,7 +566,7 @@ Implemented service routes today:
 - `POST /v1/analyze/pull-request` on `pr-analyzer`
 - `POST /v1/score/contribution`, `POST /v1/score/users/{user_id}/replay`, `GET /v1/score/users/{user_id}/snapshot`, and `GET /v1/score/users/{user_id}/events` on `scoring-engine`
 - `GET /v1/profile/schema`, `GET /v1/users/{handle}`, `GET /v1/users/{handle}/card`, `GET /v1/me/profile`, and profile privacy update routes on `profile-service`
-- `GET /v1/jobs`, `POST /v1/jobs/sync`, `POST /v1/jobs/tick`, `GET|POST /v1/jobs/backfills`, recurring-plan pause/resume/delete routes, `POST /v1/jobs/lease`, `GET /v1/jobs/dead-letters`, job control routes, and dead-letter replay routes on `scheduler-worker`
+- `GET /v1/jobs`, `POST /v1/jobs/sync`, `POST /v1/jobs/tick`, `POST /v1/jobs/lease`, `POST /v1/jobs/run-once`, `GET|POST /v1/jobs/backfills`, recurring-plan pause/resume/delete routes, `GET /v1/jobs/dead-letters`, job control routes, and dead-letter replay routes on `scheduler-worker`
 
 ## Local Development
 
@@ -729,7 +730,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 - optional PostgreSQL-backed webhook delivery persistence for durable dedupe and requeue state in the GitHub ingestor
 - deterministic PR analysis and deterministic contribution scoring services, with schema-validated analysis envelopes, grounded-language and summary guardrails for future AI-assisted outputs, deterministic language and critical-path heuristics, issue-link and review-cycle extraction, regression datasets, scorer-side artifact validation before XP computation, and persisted replay runs with immutable score events plus historical score snapshots
 - a snapshot-backed profile-service read model with privacy controls, repository visibility, caching, and share-card data
-- an in-memory scheduler-worker orchestration layer with deduplicated enqueue, recurring backfill plans, plan pause/resume/delete controls, per-scope throttling, leasing, retries, dead letters, pause/cancel controls, and manual replay
+- an in-memory scheduler-worker orchestration layer with deduplicated enqueue, recurring backfill plans, plan pause/resume/delete controls, per-scope throttling, leasing, retries, dead letters, pause/cancel controls, manual replay, and bounded in-process execution for `sync.repository` jobs
 - live profile route integration through api-gateway plus frontend BFF routes for public profile and settings pages, including settings-triggered sync, GitHub disconnect, and self-service account deletion
 - metrics endpoints and shared request instrumentation across the Go services, including queue depth, cache hit rate, sync duration, score computation duration, PR analysis breakdowns, GitHub rate-limit tracking, and HTTP error counters
 - PostgreSQL migrations for core entities, GitHub ingestion state, and auth/session security tables
@@ -741,7 +742,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 
 Major gaps remain:
 
-- no end-to-end persistent ingestion worker yet
+- no persistent cross-process ingestion worker yet, and only `sync.repository` jobs currently auto-execute inside `scheduler-worker`
 - most non-profile frontend routes still use mock data
 - no distributed tracing or deployed observability stack yet; dashboards and alert rules are committed but not wired into runtime infrastructure
 - the committed Kubernetes assets are still only a minimal namespace/layout baseline and do not yet include per-service Deployments, Services, ingress, or secret-manager wiring

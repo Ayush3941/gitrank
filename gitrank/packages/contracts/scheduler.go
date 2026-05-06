@@ -77,6 +77,14 @@ type SchedulerJobActionResponse struct {
 	LastUpdatedAt time.Time        `json:"last_updated_at"`
 }
 
+type SchedulerRunResponse struct {
+	QueueName     string                       `json:"queue_name"`
+	Status        string                       `json:"status"`
+	Job           *SchedulerJobView            `json:"job,omitempty"`
+	Execution     *GitHubSyncExecutionResponse `json:"execution,omitempty"`
+	LastUpdatedAt time.Time                    `json:"last_updated_at"`
+}
+
 type SchedulerDeadLetterListResponse struct {
 	QueueName     string                 `json:"queue_name"`
 	Records       []DeadLetterRecordView `json:"records,omitempty"`

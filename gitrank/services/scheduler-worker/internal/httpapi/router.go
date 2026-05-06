@@ -96,6 +96,15 @@ func NewRouter(cfg config.App, scheduler *service.Service, log *slog.Logger, ver
 		httpkit.WriteJSON(w, http.StatusOK, scheduler.Lease(req.Limit, time.Now().UTC()))
 	})))
 
+	mux.Handle("/v1/jobs/run-once", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		response, err := scheduler.RunNext(r.Context(), time.Now().UTC())
+		if err != nil {
+			writeSchedulerError(w, r, err)
+			return
+		}
+		httpkit.WriteJSON(w, http.StatusOK, response)
+	})))
+
 	mux.Handle("/v1/jobs/backfills", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:

@@ -310,6 +310,7 @@ Implemented routes:
 - `POST /v1/jobs/sync`
 - `POST /v1/jobs/tick`
 - `POST /v1/jobs/lease`
+- `POST /v1/jobs/run-once`
 - `GET /v1/jobs/backfills`
 - `POST /v1/jobs/backfills`
 - `POST /v1/jobs/backfills/{plan_id}/pause`
@@ -330,11 +331,13 @@ Current state:
 - sync jobs are deduplicated by `dedupe_key`
 - queue inspection supports filters for `user`, `repository`, `installation_id`, `status`, `type`, `subject`, and `correlation_id`
 - ready jobs can be leased up to the configured worker concurrency
+- the in-process worker can execute ready `sync.repository` jobs by calling `github-ingestor /v1/sync/repository/execute`
 - retries apply exponential backoff before the next eligible lease
 - poison jobs move into a dead-letter queue and can be manually replayed
 - recurring cron plans can enqueue normalized sync targets on each scheduler tick
 - recurring plans can be paused, resumed, or deleted through the scheduler control plane
 - per-user and per-installation rate limits throttle repeated sync generation
+- non-repository sync job types are still queued for future executors rather than run automatically
 - persistent queue storage, cross-process coordination, and durable backfill plan storage are still pending
 
 ## Browser Auth Scheme
