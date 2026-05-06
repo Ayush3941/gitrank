@@ -18,6 +18,7 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 			{Method: "POST", Path: "/webhooks/github", Summary: "Validate, deduplicate, and queue GitHub webhook deliveries", Status: "implemented"},
 			{Method: "POST", Path: "/v1/webhooks/github/deliveries/{delivery_id}/requeue", Summary: "Manually requeue a stored GitHub webhook delivery", Status: "implemented"},
 			{Method: "POST", Path: "/v1/sync/preview", Summary: "Build a sync event preview without queueing it", Status: "implemented"},
+			{Method: "GET", Path: "/v1/sync/runs", Summary: "List persisted webhook and manual sync run records with user, repository, subject, or correlation filters", Status: "implemented"},
 			{Method: "POST", Path: "/v1/sync/installation", Summary: "Queue an installation sync", Status: "implemented"},
 			{Method: "POST", Path: "/v1/sync/user", Summary: "Queue a user history sync", Status: "implemented"},
 			{Method: "POST", Path: "/v1/sync/repository", Summary: "Queue a repository sync", Status: "implemented"},

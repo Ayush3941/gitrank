@@ -8,7 +8,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Ayush3941/gitrank/packages/contracts"
 	"github.com/Ayush3941/gitrank/packages/githubapi"
+	"github.com/Ayush3941/gitrank/packages/store"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -190,6 +192,38 @@ func TestPersistWebhookNormalizesEntitiesIdempotently(t *testing.T) {
 		t.Fatalf("PersistWebhook(push) error = %v", err)
 	}
 
+	queuedJobs, err := store.BuildSyncJobs(contracts.SyncRequest{
+		Mode:       "repository",
+		Repository: repositoryFullName,
+	}, "github-sync", "req-manual", 3)
+	if err != nil {
+		t.Fatalf("BuildSyncJobs(repository) error = %v", err)
+	}
+	if err := svc.RecordQueuedSyncRequest(ctx, contracts.SyncRequest{
+		Mode:       "repository",
+		Repository: repositoryFullName,
+	}, SyncRequestActor{
+		Subject:     userID,
+		GitHubLogin: fmt.Sprintf("ingestor-%d", suffix),
+	}, queuedJobs, "req-manual", now.Add(5*time.Minute)); err != nil {
+		t.Fatalf("RecordQueuedSyncRequest(repository) error = %v", err)
+	}
+
+	runs, err := svc.ListSyncRuns(ctx, contracts.GitHubSyncRunFilter{
+		Repository: repositoryFullName,
+		User:       "",
+		Limit:      10,
+	})
+	if err != nil {
+		t.Fatalf("ListSyncRuns(repository) error = %v", err)
+	}
+	if len(runs.Runs) == 0 {
+		t.Fatal("ListSyncRuns(repository) returned no runs, want at least one")
+	}
+	if runs.Runs[0].RequestedRepository != repositoryFullName {
+		t.Fatalf("RequestedRepository = %q, want %q", runs.Runs[0].RequestedRepository, repositoryFullName)
+	}
+
 	assertCount(t, ctx, pool, "github_installations", "SELECT COUNT(*) FROM github_installations WHERE github_installation_id = 12001", 1)
 	assertCount(t, ctx, pool, "repositories", "SELECT COUNT(*) FROM repositories WHERE github_repository_id = 22001", 1)
 	assertCount(t, ctx, pool, "pull_requests", "SELECT COUNT(*) FROM pull_requests WHERE github_pull_request_id = 33001", 1)
@@ -200,7 +234,7 @@ func TestPersistWebhookNormalizesEntitiesIdempotently(t *testing.T) {
 	assertCount(t, ctx, pool, "pull_request_labels", "SELECT COUNT(*) FROM pull_request_labels", 1)
 	assertCount(t, ctx, pool, "repository_issue_labels", "SELECT COUNT(*) FROM repository_issue_labels", 2)
 	assertCount(t, ctx, pool, "repository_commits", "SELECT COUNT(*) FROM repository_commits WHERE repository_id = (SELECT id FROM repositories WHERE github_repository_id = 22001)", 2)
-	assertCount(t, ctx, pool, "github_sync_runs", "SELECT COUNT(*) FROM github_sync_runs WHERE github_delivery_id LIKE 'delivery-%'", 5)
+	assertCount(t, ctx, pool, "github_sync_runs", "SELECT COUNT(*) FROM github_sync_runs WHERE github_delivery_id LIKE 'delivery-%' OR correlation_id = 'req-manual'", 6)
 
 	var persistedAuthor string
 	if err := pool.QueryRow(ctx, `SELECT COALESCE(author_github_account_id::text, '') FROM pull_requests WHERE github_pull_request_id = 33001`).Scan(&persistedAuthor); err != nil {

@@ -197,6 +197,7 @@ Implemented routes:
 - `POST /webhooks/github`
 - `POST /v1/webhooks/github/deliveries/{delivery_id}/requeue`
 - `POST /v1/sync/preview`
+- `GET /v1/sync/runs`
 - `POST /v1/sync/installation`
 - `POST /v1/sync/user`
 - `POST /v1/sync/repository`
@@ -211,7 +212,8 @@ Current state:
 - stored webhook deliveries can be manually requeued for recovery
 - webhook delivery deduplication and requeue state persist in PostgreSQL when `DATABASE_URL` is configured
 - webhook-driven repository, PR, review, issue, label, commit, installation, and sync-run entities persist idempotently in PostgreSQL when `DATABASE_URL` is configured
-- sync requests currently enqueue in-memory preview jobs
+- manual sync requests persist queued sync-run records and can be queried through `GET /v1/sync/runs` with user, repository, subject, requester, correlation, and delivery filters
+- sync requests still enqueue in-memory preview jobs for execution
 - persistent worker execution and historical backfill orchestration are still pending
 
 ### PR Analyzer

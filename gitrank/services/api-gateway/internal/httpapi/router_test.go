@@ -203,9 +203,13 @@ func TestSyncRouteDefaultsToAuthenticatedGitHubLogin(t *testing.T) {
 	auth := stubAuthServer()
 	defer auth.Close()
 
+	var forwardedSubject string
+	var forwardedGitHubLogin string
 	ingestor := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var body contracts.SyncRequest
 		_ = json.NewDecoder(r.Body).Decode(&body)
+		forwardedSubject = r.Header.Get("X-GitRank-Subject")
+		forwardedGitHubLogin = r.Header.Get("X-GitRank-GitHub-Login")
 		w.WriteHeader(http.StatusAccepted)
 		_ = json.NewEncoder(w).Encode(contracts.GitHubQueuePreview{
 			Status:        "queued",
@@ -246,6 +250,12 @@ func TestSyncRouteDefaultsToAuthenticatedGitHubLogin(t *testing.T) {
 	}
 	if observed.CorrelationID != "/v1/sync/user:octocat" {
 		t.Fatalf("correlation_id = %q, want %q", observed.CorrelationID, "/v1/sync/user:octocat")
+	}
+	if forwardedSubject != "user-1" {
+		t.Fatalf("X-GitRank-Subject = %q, want %q", forwardedSubject, "user-1")
+	}
+	if forwardedGitHubLogin != "octocat" {
+		t.Fatalf("X-GitRank-GitHub-Login = %q, want %q", forwardedGitHubLogin, "octocat")
 	}
 }
 

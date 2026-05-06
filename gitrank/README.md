@@ -560,7 +560,7 @@ Implemented service routes today:
 
 - `GET /v1/meta/manifest` and `GET /metrics` on every service
 - `GET /oauth/github/start`, `GET /oauth/github/callback`, `GET /v1/session/me`, `POST /v1/session/refresh`, and `POST /v1/session/logout` on `auth-service`
-- `POST /webhooks/github`, `POST /v1/webhooks/github/deliveries/{delivery_id}/requeue`, `POST /v1/sync/preview`, and the normalized `POST /v1/sync/*` routes on `github-ingestor`
+- `POST /webhooks/github`, `POST /v1/webhooks/github/deliveries/{delivery_id}/requeue`, `POST /v1/sync/preview`, `GET /v1/sync/runs`, and the normalized `POST /v1/sync/*` routes on `github-ingestor`
 - `POST /v1/analyze/pull-request` on `pr-analyzer`
 - `POST /v1/score/contribution`, `POST /v1/score/users/{user_id}/replay`, `GET /v1/score/users/{user_id}/snapshot`, and `GET /v1/score/users/{user_id}/events` on `scoring-engine`
 - `GET /v1/profile/schema`, `GET /v1/users/{handle}`, `GET /v1/users/{handle}/card`, `GET /v1/me/profile`, and profile privacy update routes on `profile-service`
@@ -723,7 +723,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 - a frozen v1 production decision register plus maintainer, privacy, AI-governance, analytics, and infrastructure policy docs
 - DCO workflow enforcement plus PR-template sign-off reminders
 - real auth-service session, OAuth, token refresh, linking, unlinking, and audit logic
-- webhook intake plus normalized repository, PR, review, issue, label, commit, installation, and sync-run persistence in the GitHub ingestor
+- webhook intake plus normalized repository, PR, review, issue, label, commit, installation, and sync-run persistence in the GitHub ingestor, including queryable manual sync traceability by user, repository, requester, and correlation ID
 - optional PostgreSQL-backed webhook delivery persistence for durable dedupe and requeue state in the GitHub ingestor
 - deterministic PR analysis and deterministic contribution scoring services, with schema-validated analysis envelopes, grounded-language and summary guardrails for future AI-assisted outputs, deterministic language and critical-path heuristics, issue-link and review-cycle extraction, regression datasets, scorer-side artifact validation before XP computation, and persisted replay runs with immutable score events plus historical score snapshots
 - a snapshot-backed profile-service read model with privacy controls, repository visibility, caching, and share-card data

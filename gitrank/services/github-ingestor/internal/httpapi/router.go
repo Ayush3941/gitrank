@@ -255,13 +255,46 @@ func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQ
 		httpkit.WriteJSON(w, http.StatusOK, queuePreview("preview", jobs, false))
 	})))
 
-	registerSyncRoute(mux, cfg, jobQueue, syncMetrics, "/v1/sync/installation", "installation")
-	registerSyncRoute(mux, cfg, jobQueue, syncMetrics, "/v1/sync/user", "user")
-	registerSyncRoute(mux, cfg, jobQueue, syncMetrics, "/v1/sync/repository", "repository")
-	registerSyncRoute(mux, cfg, jobQueue, syncMetrics, "/v1/sync/pull-request", "pull_request")
-	registerSyncRoute(mux, cfg, jobQueue, syncMetrics, "/v1/sync/review", "review")
-	registerSyncRoute(mux, cfg, jobQueue, syncMetrics, "/v1/sync/issue", "issue")
-	registerSyncRoute(mux, cfg, jobQueue, syncMetrics, "/v1/sync/commit", "commit")
+	mux.Handle("/v1/sync/runs", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if persistence == nil {
+			httpkit.WriteError(w, http.StatusServiceUnavailable, "github_persistence_unavailable", "sync run persistence is not configured", httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		filter := contracts.GitHubSyncRunFilter{
+			RunType:                r.URL.Query().Get("run_type"),
+			Status:                 r.URL.Query().Get("status"),
+			Subject:                r.URL.Query().Get("subject"),
+			Repository:             r.URL.Query().Get("repository"),
+			User:                   r.URL.Query().Get("user"),
+			RequestedBySubject:     r.URL.Query().Get("requested_by_subject"),
+			RequestedByGitHubLogin: r.URL.Query().Get("requested_by_github_login"),
+			CorrelationID:          r.URL.Query().Get("correlation_id"),
+			DeliveryID:             r.URL.Query().Get("delivery_id"),
+		}
+		if rawLimit := strings.TrimSpace(r.URL.Query().Get("limit")); rawLimit != "" {
+			limit, err := strconv.Atoi(rawLimit)
+			if err != nil || limit <= 0 {
+				httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_filter", "limit must be a positive integer", httpkit.RequestIDFromContext(r.Context()))
+				return
+			}
+			filter.Limit = limit
+		}
+
+		response, err := persistence.ListSyncRuns(r.Context(), filter)
+		if err != nil {
+			httpkit.WriteError(w, http.StatusInternalServerError, "sync_run_query_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		httpkit.WriteJSON(w, http.StatusOK, response)
+	})))
+
+	registerSyncRoute(mux, cfg, jobQueue, persistence, syncMetrics, "/v1/sync/installation", "installation")
+	registerSyncRoute(mux, cfg, jobQueue, persistence, syncMetrics, "/v1/sync/user", "user")
+	registerSyncRoute(mux, cfg, jobQueue, persistence, syncMetrics, "/v1/sync/repository", "repository")
+	registerSyncRoute(mux, cfg, jobQueue, persistence, syncMetrics, "/v1/sync/pull-request", "pull_request")
+	registerSyncRoute(mux, cfg, jobQueue, persistence, syncMetrics, "/v1/sync/review", "review")
+	registerSyncRoute(mux, cfg, jobQueue, persistence, syncMetrics, "/v1/sync/issue", "issue")
+	registerSyncRoute(mux, cfg, jobQueue, persistence, syncMetrics, "/v1/sync/commit", "commit")
 
 	return httpkit.Chain(mux, httpkit.RequestID, httpkit.Instrument(metrics), httpkit.AccessLog(log), httpkit.Recoverer(log))
 }
@@ -379,7 +412,7 @@ func webhookJobs(cfg config.App, envelope githubapi.WebhookEnvelope, correlation
 	return []store.QueueJob{job}, nil
 }
 
-func registerSyncRoute(mux *http.ServeMux, cfg config.App, queue *store.InMemoryJobQueue, syncMetrics *syncMetricsSource, path, mode string) {
+func registerSyncRoute(mux *http.ServeMux, cfg config.App, queue *store.InMemoryJobQueue, persistence *service.Service, syncMetrics *syncMetricsSource, path, mode string) {
 	mux.Handle(path, httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		status := "queued"
@@ -405,6 +438,17 @@ func registerSyncRoute(mux *http.ServeMux, cfg config.App, queue *store.InMemory
 			status = "enqueue_failed"
 			httpkit.WriteError(w, http.StatusInternalServerError, "queue_enqueue_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
+		}
+		if persistence != nil {
+			actor := service.SyncRequestActor{
+				Subject:     strings.TrimSpace(r.Header.Get("X-GitRank-Subject")),
+				GitHubLogin: strings.TrimSpace(r.Header.Get("X-GitRank-GitHub-Login")),
+			}
+			if err := persistence.RecordQueuedSyncRequest(r.Context(), req, actor, jobs, httpkit.RequestIDFromContext(r.Context()), start.UTC()); err != nil {
+				status = "traceability_failed"
+				httpkit.WriteError(w, http.StatusInternalServerError, "sync_traceability_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+				return
+			}
 		}
 		httpkit.WriteJSON(w, http.StatusAccepted, queuePreview("queued", jobs, false))
 	})))

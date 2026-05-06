@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
+	"github.com/Ayush3941/gitrank/packages/contracts"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -21,14 +23,21 @@ type TxStore struct {
 }
 
 type payloadSyncRunInput struct {
-	CorrelationID  string
-	DeliveryID     string
-	EventType      string
-	InstallationID string
-	RepositoryID   string
-	Result         PersistResult
-	StartedAt      time.Time
-	FinishedAt     time.Time
+	CorrelationID               string
+	DeliveryID                  string
+	EventType                   string
+	Status                      string
+	Subject                     string
+	InstallationID              string
+	InstallationSourceID        int64
+	RepositoryID                string
+	RequestedUserLogin          string
+	RequestedRepositoryFullName string
+	RequestedBySubject          string
+	RequestedByGitHubLogin      string
+	Result                      PersistResult
+	StartedAt                   time.Time
+	FinishedAt                  *time.Time
 }
 
 func NewStore(pool *pgxpool.Pool) *Store {
@@ -602,13 +611,19 @@ func (s *TxStore) UpsertCommits(payload map[string]any, repositoryID string, now
 
 func (s *TxStore) InsertSyncRun(input payloadSyncRunInput) error {
 	metricsJSON := encodeJSON(input.Result.EntityCounts())
+	status := defaultString(strings.TrimSpace(input.Status), "completed")
 	_, err := s.tx.Exec(s.context(), `
 		INSERT INTO github_sync_runs (
 			run_type,
 			status,
+			subject,
 			installation_id,
 			repository_id,
 			github_delivery_id,
+			requested_user_login,
+			requested_repository_full_name,
+			requested_by_subject,
+			requested_by_github_login,
 			correlation_id,
 			started_at,
 			finished_at,
@@ -616,18 +631,138 @@ func (s *TxStore) InsertSyncRun(input payloadSyncRunInput) error {
 			metrics_jsonb
 		) VALUES (
 			$1,
-			'completed',
-			NULLIF($2, '')::uuid,
-			NULLIF($3, '')::uuid,
-			$4,
-			$5,
+			$2,
+			$3,
+			NULLIF($4, '')::uuid,
+			NULLIF($5, '')::uuid,
 			$6,
 			$7,
+			$8,
+			$9,
+			$10,
+			$11,
+			$12,
+			$13,
 			'',
-			$8::jsonb
+			$14::jsonb
 		)
-	`, input.EventType, input.InstallationID, input.RepositoryID, input.DeliveryID, input.CorrelationID, input.StartedAt.UTC(), input.FinishedAt.UTC(), metricsJSON)
+	`,
+		input.EventType,
+		status,
+		strings.TrimSpace(input.Subject),
+		input.InstallationID,
+		input.RepositoryID,
+		input.DeliveryID,
+		strings.TrimSpace(input.RequestedUserLogin),
+		strings.TrimSpace(input.RequestedRepositoryFullName),
+		strings.TrimSpace(input.RequestedBySubject),
+		strings.TrimSpace(input.RequestedByGitHubLogin),
+		input.CorrelationID,
+		input.StartedAt.UTC(),
+		nullableTime(input.FinishedAt),
+		metricsJSON,
+	)
 	return err
+}
+
+func (s *Store) ListSyncRuns(ctx context.Context, filter contracts.GitHubSyncRunFilter) ([]contracts.GitHubSyncRunView, error) {
+	if s == nil || s.pool == nil {
+		return nil, ErrUnavailable
+	}
+
+	limit := filter.Limit
+	if limit <= 0 {
+		limit = 50
+	}
+	if limit > 200 {
+		limit = 200
+	}
+
+	conditions := []string{"1=1"}
+	args := make([]any, 0, 8)
+	add := func(condition string, value string) {
+		value = strings.TrimSpace(value)
+		if value == "" {
+			return
+		}
+		args = append(args, value)
+		conditions = append(conditions, fmt.Sprintf(condition, len(args)))
+	}
+
+	add("runs.run_type = $%d", filter.RunType)
+	add("runs.status = $%d", filter.Status)
+	add("runs.subject = $%d", filter.Subject)
+	add("runs.requested_repository_full_name = $%d", filter.Repository)
+	add("runs.requested_user_login = $%d", filter.User)
+	add("runs.requested_by_subject = $%d", filter.RequestedBySubject)
+	add("runs.requested_by_github_login = $%d", filter.RequestedByGitHubLogin)
+	add("runs.correlation_id = $%d", filter.CorrelationID)
+	add("runs.github_delivery_id = $%d", filter.DeliveryID)
+
+	args = append(args, limit)
+	query := `
+		SELECT
+			runs.id::text,
+			runs.run_type,
+			runs.status,
+			runs.subject,
+			runs.requested_repository_full_name,
+			runs.requested_user_login,
+			runs.requested_by_subject,
+			runs.requested_by_github_login,
+			COALESCE(src.github_installation_id, 0),
+			runs.github_delivery_id,
+			runs.correlation_id,
+			runs.started_at,
+			runs.finished_at,
+			runs.last_error,
+			runs.metrics_jsonb
+		FROM github_sync_runs runs
+		LEFT JOIN github_installations src ON src.id = runs.installation_id
+		WHERE ` + strings.Join(conditions, " AND ") + `
+		ORDER BY started_at DESC, id DESC
+		LIMIT $` + fmt.Sprintf("%d", len(args))
+
+	rows, err := s.pool.Query(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	runs := make([]contracts.GitHubSyncRunView, 0, limit)
+	for rows.Next() {
+		var run contracts.GitHubSyncRunView
+		var metricsJSON []byte
+		if err := rows.Scan(
+			&run.ID,
+			&run.RunType,
+			&run.Status,
+			&run.Subject,
+			&run.RequestedRepository,
+			&run.RequestedUser,
+			&run.RequestedBySubject,
+			&run.RequestedByGitHubLogin,
+			&run.Installation,
+			&run.DeliveryID,
+			&run.CorrelationID,
+			&run.StartedAt,
+			&run.FinishedAt,
+			&run.LastError,
+			&metricsJSON,
+		); err != nil {
+			return nil, err
+		}
+		if len(metricsJSON) > 0 {
+			if err := json.Unmarshal(metricsJSON, &run.Metrics); err != nil {
+				return nil, err
+			}
+		}
+		runs = append(runs, run)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return runs, nil
 }
 
 func (s *TxStore) syncPullRequestLabels(pullRequestID, repositoryID string, labels []map[string]any, now time.Time) (int, error) {
@@ -952,4 +1087,53 @@ func (s *TxStore) context() context.Context {
 		return s.ctx
 	}
 	return context.Background()
+}
+
+func (s *TxStore) lookupRepositoryIDByFullName(fullName string) (string, error) {
+	fullName = strings.TrimSpace(fullName)
+	if fullName == "" {
+		return "", nil
+	}
+	row := s.tx.QueryRow(s.context(), `
+		SELECT id::text
+		FROM repositories
+		WHERE full_name = $1
+		LIMIT 1
+	`, fullName)
+	var repositoryID string
+	if err := row.Scan(&repositoryID); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", nil
+		}
+		return "", err
+	}
+	return repositoryID, nil
+}
+
+func (s *TxStore) lookupInstallationIDByGitHubID(githubInstallationID int64) (string, error) {
+	if githubInstallationID <= 0 {
+		return "", nil
+	}
+	row := s.tx.QueryRow(s.context(), `
+		SELECT id::text
+		FROM github_installations
+		WHERE github_installation_id = $1
+		LIMIT 1
+	`, githubInstallationID)
+	var installationID string
+	if err := row.Scan(&installationID); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", nil
+		}
+		return "", err
+	}
+	return installationID, nil
+}
+
+func nullableTime(value *time.Time) *time.Time {
+	if value == nil {
+		return nil
+	}
+	utc := value.UTC()
+	return &utc
 }

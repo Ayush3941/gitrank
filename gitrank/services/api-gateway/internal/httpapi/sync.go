@@ -36,6 +36,8 @@ func handleSyncRequest(w http.ResponseWriter, r *http.Request, client *http.Clie
 
 	headers := defaultForwardHeaders(r)
 	headers["Content-Type"] = "application/json"
+	headers["X-GitRank-Subject"] = principal.Subject
+	headers["X-GitRank-GitHub-Login"] = principal.GitHubLogin
 
 	body, _ := json.Marshal(req)
 	r.Body = io.NopCloser(bytes.NewReader(body))

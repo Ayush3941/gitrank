@@ -240,6 +240,26 @@ func TestSyncCommitRouteAccepts(t *testing.T) {
 	}
 }
 
+func TestSyncRunsRequirePersistence(t *testing.T) {
+	router := NewRouter(testConfig(), testLogger(), "test")
+	request := httptest.NewRequest(http.MethodGet, "/v1/sync/runs?repository=octo/repo", nil)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusServiceUnavailable {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusServiceUnavailable, response.Body.String())
+	}
+
+	var out contracts.ErrorResponse
+	if err := json.Unmarshal(response.Body.Bytes(), &out); err != nil {
+		t.Fatalf("unmarshal error response: %v", err)
+	}
+	if out.Error.Code != "github_persistence_unavailable" {
+		t.Fatalf("error code = %q, want %q", out.Error.Code, "github_persistence_unavailable")
+	}
+}
+
 func testConfig() config.App {
 	return config.App{
 		ServiceName: "github-ingestor",

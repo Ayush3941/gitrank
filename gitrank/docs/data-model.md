@@ -325,9 +325,14 @@ This is the initial relational model direction for PostgreSQL.
 - `sync_job_id` nullable foreign key
 - `run_type`
 - `status`
+- `subject`
 - `installation_id` nullable foreign key
 - `repository_id` nullable foreign key
 - `github_delivery_id`
+- `requested_user_login`
+- `requested_repository_full_name`
+- `requested_by_subject`
+- `requested_by_github_login`
 - `correlation_id`
 - `started_at`
 - `finished_at`

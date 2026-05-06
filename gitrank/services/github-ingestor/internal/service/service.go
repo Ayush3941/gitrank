@@ -8,7 +8,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Ayush3941/gitrank/packages/contracts"
 	"github.com/Ayush3941/gitrank/packages/githubapi"
+	"github.com/Ayush3941/gitrank/packages/store"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -27,6 +29,11 @@ type PersistResult struct {
 	IssueCount         int
 	LabelCount         int
 	CommitCount        int
+}
+
+type SyncRequestActor struct {
+	Subject     string
+	GitHubLogin string
 }
 
 func New(pool *pgxpool.Pool) *Service {
@@ -155,19 +162,83 @@ func (s *Service) PersistWebhook(ctx context.Context, envelope githubapi.Webhook
 		}
 
 		if err := tx.InsertSyncRun(payloadSyncRunInput{
-			CorrelationID:  strings.TrimSpace(correlationID),
-			DeliveryID:     envelope.DeliveryID,
-			EventType:      envelope.EventType,
-			InstallationID: installationID,
-			RepositoryID:   repositoryID,
-			Result:         result,
-			StartedAt:      now.UTC(),
-			FinishedAt:     now.UTC(),
+			CorrelationID:               strings.TrimSpace(correlationID),
+			DeliveryID:                  envelope.DeliveryID,
+			EventType:                   envelope.EventType,
+			Status:                      "completed",
+			Subject:                     webhookSubject(envelope),
+			InstallationID:              installationID,
+			InstallationSourceID:        envelope.Installation,
+			RepositoryID:                repositoryID,
+			RequestedRepositoryFullName: envelope.Repository,
+			Result:                      result,
+			StartedAt:                   now.UTC(),
+			FinishedAt:                  timePointer(now.UTC()),
 		}); err != nil {
 			return PersistResult{}, err
 		}
 		return result, nil
 	})
+}
+
+func (s *Service) RecordQueuedSyncRequest(
+	ctx context.Context,
+	req contracts.SyncRequest,
+	actor SyncRequestActor,
+	jobs []store.QueueJob,
+	correlationID string,
+	now time.Time,
+) error {
+	if s == nil || s.store == nil || s.store.pool == nil {
+		return nil
+	}
+
+	_, err := s.store.WithTx(ctx, func(tx *TxStore) (PersistResult, error) {
+		repositoryID, err := tx.lookupRepositoryIDByFullName(req.Repository)
+		if err != nil {
+			return PersistResult{}, err
+		}
+		installationID, err := tx.lookupInstallationIDByGitHubID(req.InstallationID)
+		if err != nil {
+			return PersistResult{}, err
+		}
+
+		for _, job := range jobs {
+			if err := tx.InsertSyncRun(payloadSyncRunInput{
+				CorrelationID:               strings.TrimSpace(correlationID),
+				EventType:                   req.Mode,
+				Status:                      "queued",
+				Subject:                     strings.TrimSpace(job.Subject),
+				InstallationID:              installationID,
+				InstallationSourceID:        req.InstallationID,
+				RepositoryID:                repositoryID,
+				RequestedUserLogin:          req.User,
+				RequestedRepositoryFullName: req.Repository,
+				RequestedBySubject:          actor.Subject,
+				RequestedByGitHubLogin:      actor.GitHubLogin,
+				StartedAt:                   now.UTC(),
+			}); err != nil {
+				return PersistResult{}, err
+			}
+		}
+		return PersistResult{}, nil
+	})
+	return err
+}
+
+func (s *Service) ListSyncRuns(ctx context.Context, filter contracts.GitHubSyncRunFilter) (contracts.GitHubSyncRunListResponse, error) {
+	if s == nil || s.store == nil || s.store.pool == nil {
+		return contracts.GitHubSyncRunListResponse{}, ErrUnavailable
+	}
+	runs, err := s.store.ListSyncRuns(ctx, filter)
+	if err != nil {
+		return contracts.GitHubSyncRunListResponse{}, err
+	}
+	return contracts.GitHubSyncRunListResponse{
+		Runs:          runs,
+		AppliedFilter: normalizeSyncRunFilter(filter),
+		LastUpdatedAt: time.Now().UTC(),
+	}, nil
 }
 
 func (r PersistResult) EntityCounts() map[string]int {
@@ -195,4 +266,43 @@ func (r PersistResult) Summary() string {
 		r.LabelCount,
 		r.CommitCount,
 	)
+}
+
+func normalizeSyncRunFilter(filter contracts.GitHubSyncRunFilter) contracts.GitHubSyncRunFilter {
+	filter.RunType = strings.TrimSpace(filter.RunType)
+	filter.Status = strings.TrimSpace(filter.Status)
+	filter.Subject = strings.TrimSpace(filter.Subject)
+	filter.Repository = strings.TrimSpace(filter.Repository)
+	filter.User = strings.TrimSpace(filter.User)
+	filter.RequestedBySubject = strings.TrimSpace(filter.RequestedBySubject)
+	filter.RequestedByGitHubLogin = strings.TrimSpace(filter.RequestedByGitHubLogin)
+	filter.CorrelationID = strings.TrimSpace(filter.CorrelationID)
+	filter.DeliveryID = strings.TrimSpace(filter.DeliveryID)
+	if filter.Limit <= 0 {
+		filter.Limit = 50
+	}
+	if filter.Limit > 200 {
+		filter.Limit = 200
+	}
+	return filter
+}
+
+func webhookSubject(envelope githubapi.WebhookEnvelope) string {
+	switch {
+	case envelope.Repository != "" && envelope.Number > 0:
+		return fmt.Sprintf("%s#%d", envelope.Repository, envelope.Number)
+	case envelope.Repository != "" && envelope.CommitSHA != "":
+		return envelope.Repository + "@" + envelope.CommitSHA
+	case envelope.Repository != "":
+		return envelope.Repository
+	case envelope.Installation > 0:
+		return fmt.Sprintf("%d", envelope.Installation)
+	default:
+		return envelope.EventType
+	}
+}
+
+func timePointer(value time.Time) *time.Time {
+	utc := value.UTC()
+	return &utc
 }
