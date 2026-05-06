@@ -19,6 +19,7 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 			{Method: "POST", Path: "/v1/webhooks/github/deliveries/{delivery_id}/requeue", Summary: "Manually requeue a stored GitHub webhook delivery", Status: "implemented"},
 			{Method: "POST", Path: "/v1/sync/preview", Summary: "Build a sync event preview without queueing it", Status: "implemented"},
 			{Method: "GET", Path: "/v1/sync/runs", Summary: "List persisted webhook and manual sync run records with user, repository, subject, or correlation filters", Status: "implemented"},
+			{Method: "POST", Path: "/v1/sync/installation/execute", Summary: "Replay a bounded installation sync across repositories already associated with a persisted installation record", Status: "implemented"},
 			{Method: "POST", Path: "/v1/sync/user/execute", Summary: "Fetch and persist a bounded live user sync across recent public repositories owned by a GitHub login", Status: "implemented"},
 			{Method: "POST", Path: "/v1/sync/repository/execute", Summary: "Fetch and persist a bounded live repository sync directly from the GitHub REST API", Status: "implemented"},
 			{Method: "POST", Path: "/v1/sync/pull-request/execute", Summary: "Fetch and persist a bounded live pull request sync with reviews and review comments", Status: "implemented"},

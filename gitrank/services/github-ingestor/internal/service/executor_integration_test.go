@@ -416,6 +416,193 @@ func TestExecutorSyncUserFetchesRecentOwnedRepositories(t *testing.T) {
 	}
 }
 
+func TestExecutorSyncInstallationReplaysPersistedInstallationRepositories(t *testing.T) {
+	databaseURL := strings.TrimSpace(os.Getenv("GITRANK_INGESTOR_DATABASE_URL"))
+	if databaseURL == "" {
+		t.Skip("GITRANK_INGESTOR_DATABASE_URL is not set")
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		switch r.URL.Path {
+		case "/repos/octo/repo-one":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id":                301,
+				"name":              "repo-one",
+				"full_name":         "octo/repo-one",
+				"private":           false,
+				"fork":              false,
+				"language":          "Go",
+				"default_branch":    "main",
+				"stargazers_count":  5,
+				"forks_count":       1,
+				"open_issues_count": 0,
+				"archived":          false,
+				"disabled":          false,
+				"owner": map[string]any{
+					"login": "octo",
+					"type":  "Organization",
+				},
+			})
+		case "/repos/octo/repo-two":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id":                302,
+				"name":              "repo-two",
+				"full_name":         "octo/repo-two",
+				"private":           false,
+				"fork":              false,
+				"language":          "TypeScript",
+				"default_branch":    "main",
+				"stargazers_count":  3,
+				"forks_count":       1,
+				"open_issues_count": 1,
+				"archived":          false,
+				"disabled":          false,
+				"owner": map[string]any{
+					"login": "octo",
+					"type":  "Organization",
+				},
+			})
+		case "/repos/octo/repo-one/pulls", "/repos/octo/repo-two/pulls":
+			_ = json.NewEncoder(w).Encode([]map[string]any{})
+		case "/repos/octo/repo-one/issues", "/repos/octo/repo-two/issues":
+			_ = json.NewEncoder(w).Encode([]map[string]any{})
+		case "/repos/octo/repo-one/commits", "/repos/octo/repo-two/commits":
+			_ = json.NewEncoder(w).Encode([]map[string]any{})
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, databaseURL)
+	if err != nil {
+		t.Fatalf("pgxpool.New() error = %v", err)
+	}
+	defer pool.Close()
+
+	now := time.Now().UTC()
+	persistence := NewStore(pool)
+	_, err = persistence.WithTx(ctx, func(tx *TxStore) (PersistResult, error) {
+		_, _, err := tx.UpsertInstallation(map[string]any{
+			"installation": map[string]any{
+				"id":                   12001,
+				"app_id":               0,
+				"app_slug":             "",
+				"target_type":          "Organization",
+				"repository_selection": "selected",
+				"account": map[string]any{
+					"login": "octo",
+					"type":  "Organization",
+				},
+			},
+			"repositories": []map[string]any{
+				{
+					"id":                301,
+					"name":              "repo-one",
+					"full_name":         "octo/repo-one",
+					"private":           false,
+					"fork":              false,
+					"language":          "Go",
+					"default_branch":    "main",
+					"stargazers_count":  5,
+					"forks_count":       1,
+					"open_issues_count": 0,
+					"archived":          false,
+					"disabled":          false,
+					"owner": map[string]any{
+						"login": "octo",
+						"type":  "Organization",
+					},
+				},
+				{
+					"id":                302,
+					"name":              "repo-two",
+					"full_name":         "octo/repo-two",
+					"private":           false,
+					"fork":              false,
+					"language":          "TypeScript",
+					"default_branch":    "main",
+					"stargazers_count":  3,
+					"forks_count":       1,
+					"open_issues_count": 1,
+					"archived":          false,
+					"disabled":          false,
+					"owner": map[string]any{
+						"login": "octo",
+						"type":  "Organization",
+					},
+				},
+			},
+		}, now)
+		return PersistResult{}, err
+	})
+	if err != nil {
+		t.Fatalf("persist installation fixture: %v", err)
+	}
+
+	client, err := githubapi.NewRESTClient(githubapi.ClientConfig{
+		BaseURL:          server.URL,
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		HTTPClient:       server.Client(),
+		SecondaryBackoff: time.Second,
+		MaxConcurrency:   4,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	executor := NewExecutor(config.App{
+		GitHub: config.GitHub{
+			MaxPageSize: 50,
+		},
+	}, pool, client)
+
+	result, err := executor.SyncInstallation(ctx, contracts.SyncRequest{
+		Mode:           "installation",
+		InstallationID: 12001,
+	}, SyncRequestActor{
+		Subject:     "installation-sync-executor",
+		GitHubLogin: "octocat",
+	}, "sync-installation-executor-1", now)
+	if err != nil {
+		t.Fatalf("SyncInstallation() error = %v", err)
+	}
+
+	if result.Status != "completed" {
+		t.Fatalf("Status = %q, want completed", result.Status)
+	}
+	if result.Installation != 12001 {
+		t.Fatalf("Installation = %d, want 12001", result.Installation)
+	}
+	if result.Fetched["repositories_selected"] != 2 {
+		t.Fatalf("Fetched[repositories_selected] = %d, want 2", result.Fetched["repositories_selected"])
+	}
+	if result.Persisted["repositories"] != 2 {
+		t.Fatalf("Persisted[repositories] = %d, want 2", result.Persisted["repositories"])
+	}
+
+	assertCount(t, ctx, pool, "repositories", "SELECT COUNT(*) FROM repositories WHERE github_repository_id IN (301, 302)", 2)
+
+	var requestedInstallation int64
+	if err := pool.QueryRow(ctx, `
+		SELECT github_installation_id
+		FROM github_sync_runs runs
+		JOIN github_installations installations ON installations.id = runs.installation_id
+		WHERE runs.correlation_id = 'sync-installation-executor-1'
+		ORDER BY runs.started_at DESC
+		LIMIT 1
+	`).Scan(&requestedInstallation); err != nil {
+		t.Fatalf("select github_sync_runs installation: %v", err)
+	}
+	if requestedInstallation != 12001 {
+		t.Fatalf("github_installation_id = %d, want 12001", requestedInstallation)
+	}
+}
+
 func TestExecutorSyncPullRequestFetchesAndPersistsBoundedPullRequestData(t *testing.T) {
 	databaseURL := strings.TrimSpace(os.Getenv("GITRANK_INGESTOR_DATABASE_URL"))
 	if databaseURL == "" {

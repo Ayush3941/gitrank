@@ -72,6 +72,65 @@ func (s *Store) WithTx(ctx context.Context, fn func(*TxStore) (PersistResult, er
 	return result, nil
 }
 
+func (s *Store) ActiveInstallationRepositories(ctx context.Context, githubInstallationID int64) (string, []string, error) {
+	if s == nil || s.pool == nil {
+		return "", nil, ErrUnavailable
+	}
+	if githubInstallationID <= 0 {
+		return "", nil, errors.New("installation ID is required")
+	}
+
+	var installationID string
+	if err := s.pool.QueryRow(ctx, `
+		SELECT id::text
+		FROM github_installations
+		WHERE github_installation_id = $1
+		LIMIT 1
+	`, githubInstallationID).Scan(&installationID); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", nil, errors.New("installation not found")
+		}
+		return "", nil, err
+	}
+
+	rows, err := s.pool.Query(ctx, `
+		SELECT r.full_name
+		FROM github_installation_repositories gir
+		JOIN repositories r ON r.id = gir.repository_id
+		WHERE gir.installation_id = $1::uuid
+		  AND gir.removed_at IS NULL
+		  AND r.full_name <> ''
+		ORDER BY gir.selected_at DESC, r.full_name ASC
+	`, installationID)
+	if err != nil {
+		return installationID, nil, err
+	}
+	defer rows.Close()
+
+	repositories := make([]string, 0)
+	seen := make(map[string]struct{})
+	for rows.Next() {
+		var fullName string
+		if err := rows.Scan(&fullName); err != nil {
+			return installationID, nil, err
+		}
+		fullName = strings.TrimSpace(fullName)
+		if fullName == "" {
+			continue
+		}
+		if _, ok := seen[fullName]; ok {
+			continue
+		}
+		seen[fullName] = struct{}{}
+		repositories = append(repositories, fullName)
+	}
+	if err := rows.Err(); err != nil {
+		return installationID, nil, err
+	}
+
+	return installationID, repositories, nil
+}
+
 func (s *TxStore) UpsertInstallation(payload map[string]any, now time.Time) (string, bool, error) {
 	installation := object(payload["installation"])
 	if installation == nil {

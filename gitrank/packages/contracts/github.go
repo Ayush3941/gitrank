@@ -68,6 +68,7 @@ type GitHubSyncExecutionResponse struct {
 	Mode          string         `json:"mode"`
 	User          string         `json:"user,omitempty"`
 	Repository    string         `json:"repository,omitempty"`
+	Installation  int64          `json:"installation,omitempty"`
 	Number        int            `json:"number,omitempty"`
 	SHA           string         `json:"sha,omitempty"`
 	CorrelationID string         `json:"correlation_id,omitempty"`

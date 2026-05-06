@@ -17,6 +17,7 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 			{Method: "GET", Path: "/v1/meta/manifest", Summary: "Service route and dependency manifest", Status: "implemented"},
 			{Method: "GET", Path: "/v1/meta/dependencies", Summary: "Internal and external API dependency map", Status: "implemented"},
 			{Method: "POST", Path: "/v1/sync", Summary: "Request a contribution sync", Status: "implemented"},
+			{Method: "POST", Path: "/v1/sync/installation/execute", Summary: "Execute a bounded installation sync through repositories already associated with a persisted installation record", Status: "implemented"},
 			{Method: "POST", Path: "/v1/sync/repository/execute", Summary: "Execute a bounded live repository sync through the GitHub ingestor", Status: "implemented"},
 			{Method: "POST", Path: "/v1/me/account/unlink", Summary: "Disconnect the authenticated GitHub account", Status: "implemented"},
 			{Method: "POST", Path: "/v1/me/account/delete", Summary: "Delete the authenticated account", Status: "implemented"},

@@ -288,6 +288,88 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /v1/sync/installation/execute:
+    post:
+      tags: [Sync]
+      summary: Execute a bounded installation sync from persisted installation associations
+      description: |
+        Replays repositories already associated with a persisted GitHub installation record and delegates each one to the
+        bounded repository executor.
+
+        This route does not perform live GitHub App installation discovery and is intentionally scoped to the OAuth-only
+        v1 production baseline.
+      operationId: executeInstallationSync
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SyncRequest"
+            example:
+              mode: installation
+              installation_id: 42
+      responses:
+        "200":
+          description: Installation sync completed
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Cache-Control:
+              $ref: "#/components/headers/PrivateNoStoreCacheControl"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GitHubSyncExecutionResponse"
+        "400":
+          description: Invalid installation sync request or JSON payload
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Invalid or missing CSRF token
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limit exceeded
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Retry-After:
+              $ref: "#/components/headers/RetryAfter"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "502":
+          description: GitHub ingestor could not complete the bounded installation sync
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /v1/me/account/unlink:
     post:
       tags: [Account]
@@ -680,7 +762,7 @@ components:
       type: apiKey
       in: cookie
       name: gitrank_session
-      description: Session cookie issued by `auth-service`.
+      description: "Session cookie issued by `auth-service`."
     csrfHeader:
       type: apiKey
       in: header
@@ -783,10 +865,10 @@ components:
       properties:
         user:
           type: string
-          description: GitHub login to sync when `mode=user`.
+          description: "GitHub login to sync when `mode=user`."
         repository:
           type: string
-          description: `owner/repo` identifier for repository, PR, review, issue, and commit sync modes.
+          description: "`owner/repo` identifier for repository, PR, review, issue, and commit sync modes."
         mode:
           type: string
           enum: [installation, user, repository, pull_request, review, issue, commit]
@@ -821,6 +903,9 @@ components:
         mode:
           type: string
           example: repository
+        installation:
+          type: integer
+          format: int64
         repository:
           type: string
           example: Ayush3941/gitrank

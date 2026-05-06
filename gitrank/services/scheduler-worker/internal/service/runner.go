@@ -17,6 +17,7 @@ import (
 )
 
 type boundedSyncExecutor interface {
+	SyncInstallation(ctx context.Context, req contracts.SyncRequest, correlationID string) (contracts.GitHubSyncExecutionResponse, error)
 	SyncRepository(ctx context.Context, req contracts.SyncRequest, correlationID string) (contracts.GitHubSyncExecutionResponse, error)
 	SyncUser(ctx context.Context, req contracts.SyncRequest, correlationID string) (contracts.GitHubSyncExecutionResponse, error)
 	SyncPullRequest(ctx context.Context, req contracts.SyncRequest, correlationID string) (contracts.GitHubSyncExecutionResponse, error)
@@ -122,6 +123,12 @@ func (s *Service) executeLeasedJob(ctx context.Context, job store.QueueJob) (con
 	}
 
 	switch job.Type {
+	case store.SyncInstallationJob:
+		req, err := syncRequestFromJob(job)
+		if err != nil {
+			return contracts.GitHubSyncExecutionResponse{}, err
+		}
+		return s.repositoryRunner.SyncInstallation(ctx, req, correlationIDForJob(job))
 	case store.SyncRepositoryJob:
 		req, err := syncRequestFromJob(job)
 		if err != nil {
@@ -170,6 +177,14 @@ func (e *httpBoundedSyncExecutor) SyncRepository(ctx context.Context, req contra
 		return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf("repository is required")
 	}
 	return e.execute(ctx, req, "/v1/sync/repository/execute", "repository", correlationID)
+}
+
+func (e *httpBoundedSyncExecutor) SyncInstallation(ctx context.Context, req contracts.SyncRequest, correlationID string) (contracts.GitHubSyncExecutionResponse, error) {
+	req.Mode = "installation"
+	if req.InstallationID <= 0 {
+		return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf("installation_id is required")
+	}
+	return e.execute(ctx, req, "/v1/sync/installation/execute", "installation", correlationID)
 }
 
 func (e *httpBoundedSyncExecutor) SyncUser(ctx context.Context, req contracts.SyncRequest, correlationID string) (contracts.GitHubSyncExecutionResponse, error) {
@@ -299,7 +314,7 @@ func splitExecutionMetricKey(key string) (string, string) {
 }
 
 func isExecutableJob(job store.QueueJob, now time.Time) bool {
-	return (job.Type == store.SyncRepositoryJob || job.Type == store.SyncUserHistoryJob || job.Type == store.SyncPullRequestJob || job.Type == store.SyncReviewJob || job.Type == store.SyncIssueJob || job.Type == store.SyncCommitJob) &&
+	return (job.Type == store.SyncInstallationJob || job.Type == store.SyncRepositoryJob || job.Type == store.SyncUserHistoryJob || job.Type == store.SyncPullRequestJob || job.Type == store.SyncReviewJob || job.Type == store.SyncIssueJob || job.Type == store.SyncCommitJob) &&
 		job.Status == store.JobPending &&
 		!job.NotBefore.After(now.UTC())
 }
@@ -312,6 +327,14 @@ func syncRequestFromJob(job store.QueueJob) (contracts.SyncRequest, error) {
 		}
 	}
 	switch job.Type {
+	case store.SyncInstallationJob:
+		if req.InstallationID <= 0 {
+			req.InstallationID = job.InstallationID
+		}
+		req.Mode = "installation"
+		if req.InstallationID <= 0 {
+			return contracts.SyncRequest{}, fmt.Errorf("installation_id is required")
+		}
 	case store.SyncRepositoryJob:
 		if strings.TrimSpace(req.Repository) == "" {
 			req.Repository = strings.TrimSpace(job.Repository)

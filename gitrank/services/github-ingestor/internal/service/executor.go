@@ -270,6 +270,86 @@ func (e *Executor) SyncUser(
 	return response, nil
 }
 
+func (e *Executor) SyncInstallation(
+	ctx context.Context,
+	req contracts.SyncRequest,
+	actor SyncRequestActor,
+	correlationID string,
+	now time.Time,
+) (contracts.GitHubSyncExecutionResponse, error) {
+	startedAt := now.UTC()
+	response := contracts.GitHubSyncExecutionResponse{
+		Status:        "failed",
+		Mode:          "installation",
+		Installation:  req.InstallationID,
+		CorrelationID: strings.TrimSpace(correlationID),
+		StartedAt:     startedAt,
+		FinishedAt:    startedAt,
+		Fetched:       map[string]int{},
+		Persisted:     map[string]int{},
+	}
+
+	if e == nil || e.store == nil || e.store.pool == nil || e.client == nil {
+		return response, ErrUnavailable
+	}
+	if req.InstallationID <= 0 {
+		return response, fmt.Errorf("installation_id is required")
+	}
+
+	installationID, repositories, err := e.store.ActiveInstallationRepositories(ctx, req.InstallationID)
+	if err != nil {
+		_ = e.recordFailedInstallationSyncRun(ctx, req, actor, correlationID, startedAt, installationID, err, PersistResult{})
+		return response, err
+	}
+
+	aggregatePersisted := PersistResult{}
+	response.Fetched["repositories_selected"] = len(repositories)
+	baseCorrelationID := strings.TrimSpace(correlationID)
+	if baseCorrelationID == "" {
+		baseCorrelationID = "sync-installation:" + fmt.Sprintf("%d", req.InstallationID)
+	}
+
+	for index, repository := range repositories {
+		child, err := e.SyncRepository(ctx, contracts.SyncRequest{
+			Mode:       "repository",
+			Repository: repository,
+		}, actor, fmt.Sprintf("%s:repo:%d", baseCorrelationID, index+1), time.Now().UTC())
+		if err != nil {
+			response.FinishedAt = time.Now().UTC()
+			_ = e.recordFailedInstallationSyncRun(ctx, req, actor, correlationID, startedAt, installationID, err, aggregatePersisted)
+			return response, err
+		}
+		response.Fetched = mergeCountMaps(response.Fetched, child.Fetched)
+		response.Persisted = mergeCountMaps(response.Persisted, child.Persisted)
+		aggregatePersisted = addPersistResult(aggregatePersisted, persistResultFromCountMap(child.Persisted))
+	}
+
+	finishedAt := time.Now().UTC()
+	_, err = e.store.WithTx(ctx, func(tx *TxStore) (PersistResult, error) {
+		return aggregatePersisted, tx.InsertSyncRun(payloadSyncRunInput{
+			CorrelationID:          strings.TrimSpace(correlationID),
+			EventType:              "installation",
+			Status:                 "completed",
+			Subject:                fmt.Sprintf("%d", req.InstallationID),
+			InstallationID:         installationID,
+			InstallationSourceID:   req.InstallationID,
+			RequestedBySubject:     actor.Subject,
+			RequestedByGitHubLogin: actor.GitHubLogin,
+			Result:                 aggregatePersisted,
+			StartedAt:              startedAt,
+			FinishedAt:             timePointer(finishedAt),
+		})
+	})
+	if err != nil {
+		_ = e.recordFailedInstallationSyncRun(ctx, req, actor, correlationID, startedAt, installationID, err, aggregatePersisted)
+		return response, err
+	}
+
+	response.Status = "completed"
+	response.FinishedAt = finishedAt
+	return response, nil
+}
+
 func (e *Executor) SyncPullRequest(
 	ctx context.Context,
 	req contracts.SyncRequest,
@@ -683,6 +763,39 @@ func (e *Executor) recordFailedUserSyncRun(
 			LastError:              failure.Error(),
 			Subject:                strings.TrimSpace(user),
 			RequestedUserLogin:     strings.TrimSpace(req.User),
+			RequestedBySubject:     actor.Subject,
+			RequestedByGitHubLogin: actor.GitHubLogin,
+			Result:                 result,
+			StartedAt:              startedAt,
+			FinishedAt:             timePointer(time.Now().UTC()),
+		})
+	})
+	return err
+}
+
+func (e *Executor) recordFailedInstallationSyncRun(
+	ctx context.Context,
+	req contracts.SyncRequest,
+	actor SyncRequestActor,
+	correlationID string,
+	startedAt time.Time,
+	installationID string,
+	failure error,
+	result PersistResult,
+) error {
+	if e == nil || e.store == nil || e.store.pool == nil {
+		return nil
+	}
+
+	_, err := e.store.WithTx(ctx, func(tx *TxStore) (PersistResult, error) {
+		return result, tx.InsertSyncRun(payloadSyncRunInput{
+			CorrelationID:          strings.TrimSpace(correlationID),
+			EventType:              "installation",
+			Status:                 "failed",
+			LastError:              failure.Error(),
+			Subject:                fmt.Sprintf("%d", req.InstallationID),
+			InstallationID:         installationID,
+			InstallationSourceID:   req.InstallationID,
 			RequestedBySubject:     actor.Subject,
 			RequestedByGitHubLogin: actor.GitHubLogin,
 			Result:                 result,

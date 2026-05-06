@@ -323,6 +323,70 @@ func TestRepositorySyncExecutionRouteProxiesExecutionContract(t *testing.T) {
 	}
 }
 
+func TestInstallationSyncExecutionRouteProxiesExecutionContract(t *testing.T) {
+	auth := stubAuthServer()
+	defer auth.Close()
+
+	var observedPath string
+	var observedBody contracts.SyncRequest
+	var forwardedSubject string
+	var forwardedGitHubLogin string
+	ingestor := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		observedPath = r.URL.Path
+		forwardedSubject = r.Header.Get("X-GitRank-Subject")
+		forwardedGitHubLogin = r.Header.Get("X-GitRank-GitHub-Login")
+		_ = json.NewDecoder(r.Body).Decode(&observedBody)
+		_ = json.NewEncoder(w).Encode(contracts.GitHubSyncExecutionResponse{
+			Status:        "completed",
+			Mode:          "installation",
+			Installation:  42,
+			CorrelationID: "req-2",
+			StartedAt:     time.Date(2026, 5, 6, 10, 0, 0, 0, time.UTC),
+			FinishedAt:    time.Date(2026, 5, 6, 10, 0, 4, 0, time.UTC),
+			Fetched:       map[string]int{"repositories_selected": 2},
+			Persisted:     map[string]int{"repositories": 2},
+		})
+	}))
+	defer ingestor.Close()
+
+	router := NewRouter(testConfig(stubProfileServer().URL, auth.URL, ingestor.URL), testLogger(), "test")
+	request := httptest.NewRequest(http.MethodPost, "/v1/sync/installation/execute", strings.NewReader(`{"installation_id":42}`))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Cookie", "gitrank_session=session-original; gitrank_csrf=csrf-original")
+	csrfToken, err := authkit.DoubleSubmitCSRFFromToken([]byte("test-session-secret"), "session-original")
+	if err != nil {
+		t.Fatalf("csrf token: %v", err)
+	}
+	request.Header.Set("X-CSRF-Token", csrfToken)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusOK, response.Body.String())
+	}
+	if observedPath != "/v1/sync/installation/execute" {
+		t.Fatalf("path = %q, want %q", observedPath, "/v1/sync/installation/execute")
+	}
+	if observedBody.Mode != "installation" || observedBody.InstallationID != 42 {
+		t.Fatalf("observed body = %+v, want installation sync request", observedBody)
+	}
+	if forwardedSubject != "user-1" {
+		t.Fatalf("X-GitRank-Subject = %q, want %q", forwardedSubject, "user-1")
+	}
+	if forwardedGitHubLogin != "octocat" {
+		t.Fatalf("X-GitRank-GitHub-Login = %q, want %q", forwardedGitHubLogin, "octocat")
+	}
+
+	var observed contracts.GitHubSyncExecutionResponse
+	if err := json.Unmarshal(response.Body.Bytes(), &observed); err != nil {
+		t.Fatalf("unmarshal response: %v", err)
+	}
+	if observed.Status != "completed" || observed.Installation != 42 {
+		t.Fatalf("execution response = %+v", observed)
+	}
+}
+
 func TestSyncRoutePropagatesRetryAfterFromUpstream(t *testing.T) {
 	auth := stubAuthServer()
 	defer auth.Close()

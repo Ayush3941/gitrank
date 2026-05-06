@@ -481,6 +481,7 @@ Current preview state:
 - webhook-driven repository, PR, review, issue, label, commit, installation, and sync-run entities persist idempotently in PostgreSQL when `DATABASE_URL` is configured
 - `POST /v1/sync/repository/execute` now performs a bounded live repository sync against the public GitHub REST API and persists repository, pull request, review, issue, and commit data directly
 - `POST /v1/sync/user/execute` now performs a bounded live user sync by walking recent public repositories owned by the requested GitHub login and delegating to the repository executor
+- `POST /v1/sync/installation/execute` now replays repositories already associated with a persisted installation record and delegates each repository to the bounded repository executor without requiring GitHub App installation auth in the v1 baseline
 - `POST /v1/sync/pull-request/execute` now performs a bounded live pull-request sync and persists the PR, its reviews, and its review comments directly
 - `POST /v1/sync/review/execute` now performs a bounded live review sync by refreshing the review surface for one PR number and persisting its reviews and review comments directly
 - `POST /v1/sync/issue/execute` now performs a bounded live issue sync and persists one standalone issue plus its labels directly
@@ -618,11 +619,11 @@ Current preview state:
 
 - recurring backfill plans can be created, paused, resumed, manually ticked, and deleted through `scheduler-worker`
 - queue inspection supports filters for user, repository, installation, status, type, subject, and correlation ID
-- the in-process worker can execute bounded `sync.repository`, `sync.user_history`, `sync.pull_request`, `sync.review`, `sync.issue`, and `sync.commit` jobs through `github-ingestor`, with completion, retry, and dead-letter behavior surfaced on the scheduler queue
+- the in-process worker can execute bounded `sync.installation`, `sync.repository`, `sync.user_history`, `sync.pull_request`, `sync.review`, `sync.issue`, and `sync.commit` jobs through `github-ingestor`, with completion, retry, and dead-letter behavior surfaced on the scheduler queue
+- bounded installation execution currently means replaying repositories already associated with a persisted installation record, not discovering repositories from live GitHub App installation APIs
 - bounded user execution currently means recent public repositories owned by the requested GitHub login, not a full cross-repository authored-PR search
 - bounded review execution currently means "refresh the reviews and review comments for one PR number", not a review-id-specific sync
 - manual worker execution is exposed through `POST /v1/jobs/run-once`
-- installation sync still remains queued preview work until an additional executor is implemented
 - queue, dead-letter, rate-limit window, and recurring plan state checkpoint to PostgreSQL when `DATABASE_URL` is configured; multi-instance cross-process coordination is still not implemented
 
 ## 12. Shared Packages Checklist

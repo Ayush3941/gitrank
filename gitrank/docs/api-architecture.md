@@ -131,6 +131,7 @@ Implemented routes:
 - `GET /v1/meta/manifest`
 - `GET /v1/meta/dependencies`
 - `POST /v1/sync`
+- `POST /v1/sync/installation/execute`
 - `POST /v1/sync/repository/execute`
 - `GET /v1/me/profile`
 - `PATCH /v1/me/profile`
@@ -199,6 +200,7 @@ Implemented routes:
 - `POST /v1/webhooks/github/deliveries/{delivery_id}/requeue`
 - `POST /v1/sync/preview`
 - `GET /v1/sync/runs`
+- `POST /v1/sync/installation/execute`
 - `POST /v1/sync/user/execute`
 - `POST /v1/sync/repository/execute`
 - `POST /v1/sync/pull-request/execute`
@@ -219,6 +221,7 @@ Current state:
 - stored webhook deliveries can be manually requeued for recovery
 - webhook delivery deduplication and requeue state persist in PostgreSQL when `DATABASE_URL` is configured
 - webhook-driven repository, PR, review, issue, label, commit, installation, and sync-run entities persist idempotently in PostgreSQL when `DATABASE_URL` is configured
+- `POST /v1/sync/installation/execute` replays repositories already associated with a persisted installation record and delegates them through the bounded repository executor without requiring GitHub App installation auth in the v1 baseline
 - `POST /v1/sync/user/execute` performs a bounded live user sync by walking recent public repositories owned by the requested GitHub login and delegating to the repository executor
 - `POST /v1/sync/repository/execute` performs a bounded live repository sync through the public GitHub REST API and persists repository, pull request, review, issue, and commit data in PostgreSQL
 - `POST /v1/sync/pull-request/execute` performs a bounded live pull-request sync and persists the PR, its reviews, and its review comments in PostgreSQL
@@ -342,12 +345,14 @@ Current state:
 - sync jobs are deduplicated by `dedupe_key`
 - queue inspection supports filters for `user`, `repository`, `installation_id`, `status`, `type`, `subject`, and `correlation_id`
 - ready jobs can be leased up to the configured worker concurrency
+- the in-process worker can execute ready `sync.installation` jobs by calling `github-ingestor /v1/sync/installation/execute`
 - the in-process worker can execute ready `sync.repository` jobs by calling `github-ingestor /v1/sync/repository/execute`
 - the in-process worker can execute ready `sync.user_history` jobs by calling `github-ingestor /v1/sync/user/execute`
 - the in-process worker can execute ready `sync.pull_request` jobs by calling `github-ingestor /v1/sync/pull-request/execute`
 - the in-process worker can execute ready `sync.review` jobs by calling `github-ingestor /v1/sync/review/execute`
 - the in-process worker can execute ready `sync.issue` jobs by calling `github-ingestor /v1/sync/issue/execute`
 - the in-process worker can execute ready `sync.commit` jobs by calling `github-ingestor /v1/sync/commit/execute`
+- bounded installation execution currently means replaying repositories already associated with a persisted installation record, not discovering repositories from live GitHub App installation APIs
 - bounded user execution currently means recent public repositories owned by the requested GitHub login, not a full authored-PR history search
 - bounded review execution currently means "refresh the reviews and review comments for one PR number", not a review-id-specific sync
 - retries apply exponential backoff before the next eligible lease
@@ -355,7 +360,6 @@ Current state:
 - recurring cron plans can enqueue normalized sync targets on each scheduler tick
 - recurring plans can be paused, resumed, or deleted through the scheduler control plane
 - per-user and per-installation rate limits throttle repeated sync generation
-- installation sync job types are still queued for a future executor rather than run automatically
 - cross-process coordination and multi-instance scheduler leadership are still pending
 
 ## Browser Auth Scheme

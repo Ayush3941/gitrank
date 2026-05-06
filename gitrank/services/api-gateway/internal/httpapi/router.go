@@ -204,6 +204,21 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		handleRepositorySyncExecution(w, r, client, ingestorBaseURL)
 	})))
 
+	mux.Handle("/v1/sync/installation/execute", sessionAuth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			writeMethodNotAllowed(w, r)
+			return
+		}
+		if err := validateSessionCSRF(r, cfg.Auth.SessionCookieName, []byte(cfg.Auth.SessionSecret)); err != nil {
+			httpkit.WriteError(w, http.StatusForbidden, "invalid_csrf", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		if !allowRateLimit(w, r, writeLimiter, "sync_execute_installation") {
+			return
+		}
+		handleInstallationSyncExecution(w, r, client, ingestorBaseURL)
+	})))
+
 	return httpkit.Chain(
 		mux,
 		httpkit.RequestID,

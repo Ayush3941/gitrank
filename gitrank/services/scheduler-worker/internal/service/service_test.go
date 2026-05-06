@@ -382,6 +382,65 @@ func TestRunNextExecutesUserJobAndCompletes(t *testing.T) {
 	}
 }
 
+func TestRunNextExecutesInstallationJobAndCompletes(t *testing.T) {
+	now := time.Date(2026, time.May, 6, 12, 40, 0, 0, time.UTC)
+	var observed contracts.SyncRequest
+	var observedPath string
+	var observedRequestID string
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		observedPath = r.URL.Path
+		observedRequestID = r.Header.Get("X-Request-ID")
+		if err := json.NewDecoder(r.Body).Decode(&observed); err != nil {
+			t.Fatalf("decode request: %v", err)
+		}
+		_ = json.NewEncoder(w).Encode(contracts.GitHubSyncExecutionResponse{
+			Status:        "completed",
+			Mode:          "installation",
+			Installation:  observed.InstallationID,
+			CorrelationID: observedRequestID,
+			StartedAt:     now,
+			FinishedAt:    now.Add(3 * time.Second),
+			Fetched:       map[string]int{"repositories_selected": 2},
+			Persisted:     map[string]int{"repositories": 2},
+		})
+	}))
+	defer server.Close()
+
+	cfg := testServiceConfig()
+	cfg.Services.GitHubIngestorBaseURL = server.URL
+	cfg.Services.RequestTimeout = time.Second
+	scheduler := New(cfg)
+
+	enqueue, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "installation", InstallationID: 42}, "installation-correlation", now)
+	if err != nil {
+		t.Fatalf("EnqueueSync() error = %v", err)
+	}
+
+	run, err := scheduler.RunNext(context.Background(), now)
+	if err != nil {
+		t.Fatalf("RunNext() error = %v", err)
+	}
+	if run.Status != "completed" {
+		t.Fatalf("run status = %q, want completed", run.Status)
+	}
+	if run.Execution == nil || run.Execution.Mode != "installation" || run.Execution.Installation != 42 {
+		t.Fatalf("run execution = %+v, want completed installation execution", run.Execution)
+	}
+	if observedPath != "/v1/sync/installation/execute" {
+		t.Fatalf("observed path = %q, want %q", observedPath, "/v1/sync/installation/execute")
+	}
+	if observed.InstallationID != 42 || observed.Mode != "installation" {
+		t.Fatalf("observed request = %+v, want installation 42", observed)
+	}
+	if observedRequestID != "installation-correlation" {
+		t.Fatalf("observed request id = %q, want %q", observedRequestID, "installation-correlation")
+	}
+	if run.Job == nil || run.Job.ID != enqueue.JobIDs[0] {
+		t.Fatalf("run job = %+v, want executed job id %q", run.Job, enqueue.JobIDs[0])
+	}
+}
+
 func TestRunNextExecutesPullRequestJobAndCompletes(t *testing.T) {
 	now := time.Date(2026, time.May, 6, 12, 45, 0, 0, time.UTC)
 	var observed contracts.SyncRequest
@@ -651,8 +710,19 @@ func TestRunNextLeavesUnsupportedJobsQueued(t *testing.T) {
 	now := time.Date(2026, time.May, 6, 14, 0, 0, 0, time.UTC)
 	scheduler := New(testServiceConfig())
 
-	if _, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "installation", InstallationID: 42}, "installation-correlation", now); err != nil {
-		t.Fatalf("EnqueueSync() error = %v", err)
+	if err := scheduler.queue.Enqueue(store.QueueJob{
+		ID:            "repair-1",
+		QueueName:     primaryQueueName,
+		Type:          store.RepairWebhookJob,
+		Status:        store.JobPending,
+		CorrelationID: "repair-correlation",
+		Subject:       "delivery-1",
+		DedupeKey:     "repair:delivery-1",
+		MaxAttempts:   1,
+		ScheduledAt:   now,
+		NotBefore:     now,
+	}); err != nil {
+		t.Fatalf("queue.Enqueue() error = %v", err)
 	}
 
 	run, err := scheduler.RunNext(context.Background(), now)
@@ -666,9 +736,9 @@ func TestRunNextLeavesUnsupportedJobsQueued(t *testing.T) {
 		t.Fatalf("run job = %+v, want nil", run.Job)
 	}
 
-	queue := scheduler.QueueStatus(now, contracts.SchedulerJobFilter{InstallationID: 42})
+	queue := scheduler.QueueStatus(now, contracts.SchedulerJobFilter{Type: string(store.RepairWebhookJob)})
 	if queue.QueueDepth != 1 || len(queue.Jobs) != 1 {
-		t.Fatalf("queue = %+v, want one still-queued installation job", queue)
+		t.Fatalf("queue = %+v, want one still-queued unsupported job", queue)
 	}
 }
 
