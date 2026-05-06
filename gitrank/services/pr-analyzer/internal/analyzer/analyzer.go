@@ -54,6 +54,9 @@ func (Service) Analyze(req contracts.PullRequestAnalysisRequest) (contracts.Pull
 		Flags:                   flags,
 		FileBreakdown:           breakdown,
 	}
+	if err := applyHallucinationGuardrails(req, breakdown, features, response); err != nil {
+		return contracts.PullRequestAnalysisResponse{}, errors.New("analysis response failed guardrails: " + err.Error())
+	}
 	if err := response.Validate(); err != nil {
 		return contracts.PullRequestAnalysisResponse{}, errors.New("analysis response failed validation: " + err.Error())
 	}

@@ -232,6 +232,7 @@ Current behavior:
 
 - validates normalized PR analysis input before classification
 - emits schema-versioned analysis envelopes with analyzer version, source, validation status, and deterministic fallback metadata
+- enforces hallucination guardrails so future AI-assisted outputs cannot invent unsupported languages, issue links, criticality tags, flags, skills, or certainty-heavy summary phrasing
 - derives detected languages, primary changed language, linked issue references, review-cycle counts, and criticality tags from normalized PR evidence
 - ships a regression dataset for false-positive and false-negative analyzer cases under package testdata
 - does not call a live AI provider yet; current output is deterministic and marked as such

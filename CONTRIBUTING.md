@@ -513,7 +513,7 @@ AI-assisted analysis:
 - [x] output validation implemented
 - [x] confidence or uncertainty handling defined
 - [x] prompt and response retention policy defined
-- [ ] hallucination guardrails implemented
+- [x] hallucination guardrails implemented
 - [x] token and cost budgets defined
 
 Quality bar:
