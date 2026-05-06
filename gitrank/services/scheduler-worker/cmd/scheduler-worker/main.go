@@ -11,6 +11,7 @@ import (
 	"github.com/Ayush3941/gitrank/packages/logger"
 	"github.com/Ayush3941/gitrank/services/scheduler-worker/internal/httpapi"
 	"github.com/Ayush3941/gitrank/services/scheduler-worker/internal/service"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 const version = "dev"
@@ -32,7 +33,26 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	scheduler := service.New(cfg)
+	var (
+		scheduler *service.Service
+		pool      *pgxpool.Pool
+	)
+	if cfg.Database.URL != "" {
+		pool, err = pgxpool.New(ctx, cfg.Database.URL)
+		if err != nil {
+			log.Error("scheduler state pool init failed", "error", err)
+			os.Exit(1)
+		}
+		defer pool.Close()
+
+		scheduler, err = service.NewPersistent(cfg, pool)
+		if err != nil {
+			log.Error("scheduler state restore failed", "error", err)
+			os.Exit(1)
+		}
+	} else {
+		scheduler = service.New(cfg)
+	}
 	go scheduler.Run(ctx)
 
 	server := httpkit.NewServer(cfg.Addr, httpapi.NewRouter(cfg, scheduler, log, version), cfg.ShutdownTimeout, log)

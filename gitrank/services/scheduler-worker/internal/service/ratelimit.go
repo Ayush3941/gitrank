@@ -19,6 +19,10 @@ type scopeWindow struct {
 	count     int
 }
 
+type scopeRateLimiterState struct {
+	Hits map[string]scopeWindow `json:"hits,omitempty"`
+}
+
 type RateLimitError struct {
 	Scope      string
 	Key        string
@@ -62,4 +66,33 @@ func (l *scopeRateLimiter) Allow(key string, now time.Time) (bool, time.Duration
 	current.count++
 	l.hits[key] = current
 	return true, 0
+}
+
+func (l *scopeRateLimiter) snapshot() scopeRateLimiterState {
+	if l == nil {
+		return scopeRateLimiterState{}
+	}
+
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	state := scopeRateLimiterState{Hits: make(map[string]scopeWindow, len(l.hits))}
+	for key, window := range l.hits {
+		state.Hits[key] = window
+	}
+	return state
+}
+
+func (l *scopeRateLimiter) restore(state scopeRateLimiterState) {
+	if l == nil {
+		return
+	}
+
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	l.hits = make(map[string]scopeWindow, len(state.Hits))
+	for key, window := range state.Hits {
+		l.hits[key] = window
+	}
 }

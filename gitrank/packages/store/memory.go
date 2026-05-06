@@ -124,6 +124,14 @@ type JobQueueSnapshot struct {
 	ByStatus     map[SyncJobStatus]int
 }
 
+type JobQueueState struct {
+	Jobs         []QueueJob
+	DeadLetters  []DeadLetterRecord
+	RetryCount   int
+	FailureCount int
+	ReplayCount  int
+}
+
 func NewInMemoryJobQueue() *InMemoryJobQueue {
 	return &InMemoryJobQueue{}
 }
@@ -471,6 +479,33 @@ func (q *InMemoryJobQueue) Snapshot() JobQueueSnapshot {
 	return snapshot
 }
 
+func (q *InMemoryJobQueue) ExportState() JobQueueState {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+
+	now := time.Now().UTC()
+	q.reapExpiredLeasesLocked(now)
+
+	return JobQueueState{
+		Jobs:         cloneJobs(q.jobs),
+		DeadLetters:  cloneDeadLetters(q.deadLetters),
+		RetryCount:   q.retryCount,
+		FailureCount: q.failureCount,
+		ReplayCount:  q.replayCount,
+	}
+}
+
+func (q *InMemoryJobQueue) RestoreState(state JobQueueState) {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+
+	q.jobs = cloneJobs(state.Jobs)
+	q.deadLetters = cloneDeadLetters(state.DeadLetters)
+	q.retryCount = state.RetryCount
+	q.failureCount = state.FailureCount
+	q.replayCount = state.ReplayCount
+}
+
 func (q *InMemoryJobQueue) jobIndexLocked(jobID string) int {
 	for index, job := range q.jobs {
 		if job.ID == jobID {
@@ -530,4 +565,22 @@ func isTerminalJobStatus(status SyncJobStatus) bool {
 	default:
 		return false
 	}
+}
+
+func cloneJobs(in []QueueJob) []QueueJob {
+	out := make([]QueueJob, 0, len(in))
+	for _, job := range in {
+		job.Payload = append([]byte(nil), job.Payload...)
+		out = append(out, job)
+	}
+	return out
+}
+
+func cloneDeadLetters(in []DeadLetterRecord) []DeadLetterRecord {
+	out := make([]DeadLetterRecord, 0, len(in))
+	for _, record := range in {
+		record.Payload = append([]byte(nil), record.Payload...)
+		out = append(out, record)
+	}
+	return out
 }

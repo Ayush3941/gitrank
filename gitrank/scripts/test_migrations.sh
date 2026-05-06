@@ -97,6 +97,8 @@ assert_true "score_replay_runs table exists" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'score_replay_runs');"
 assert_true "score_snapshots table exists" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'score_snapshots');"
+assert_true "scheduler_runtime_states table exists" \
+  "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'scheduler_runtime_states');"
 assert_true "webhook delivery persistence column exists" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'github_webhook_deliveries' AND column_name = 'github_installation_id');"
 assert_true "auth session token hash column exists" \
@@ -145,6 +147,14 @@ assert_true "local seed score snapshot exists exactly once" \
   TMPDIR="$root_dir/.tmp" \
     GOCACHE="$root_dir/.gocache" \
     GITRANK_INGESTOR_DATABASE_URL="postgres://${db_user}:${db_password}@127.0.0.1:${host_port}/${db_name}?sslmode=disable" \
+    go test ./...
+)
+
+(
+  cd "$root_dir/services/scheduler-worker/internal/service"
+  TMPDIR="$root_dir/.tmp" \
+    GOCACHE="$root_dir/.gocache" \
+    GITRANK_SCHEDULER_DATABASE_URL="postgres://${db_user}:${db_password}@127.0.0.1:${host_port}/${db_name}?sslmode=disable" \
     go test ./...
 )
 

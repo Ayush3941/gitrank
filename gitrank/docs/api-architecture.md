@@ -338,6 +338,7 @@ Implemented routes:
 Current state:
 
 - in-memory queue orchestration is implemented for local and integration use
+- queue, dead-letter, rate-limit window, and recurring backfill plan state checkpoint to PostgreSQL when `DATABASE_URL` is configured
 - sync jobs are deduplicated by `dedupe_key`
 - queue inspection supports filters for `user`, `repository`, `installation_id`, `status`, `type`, `subject`, and `correlation_id`
 - ready jobs can be leased up to the configured worker concurrency
@@ -354,8 +355,8 @@ Current state:
 - recurring cron plans can enqueue normalized sync targets on each scheduler tick
 - recurring plans can be paused, resumed, or deleted through the scheduler control plane
 - per-user and per-installation rate limits throttle repeated sync generation
-- installation, review, issue, and commit sync job types are still queued for future executors rather than run automatically
-- persistent queue storage, cross-process coordination, and durable backfill plan storage are still pending
+- installation sync job types are still queued for a future executor rather than run automatically
+- cross-process coordination and multi-instance scheduler leadership are still pending
 
 ## Browser Auth Scheme
 

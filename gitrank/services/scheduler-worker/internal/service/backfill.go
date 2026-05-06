@@ -44,8 +44,64 @@ type tickCounters struct {
 	rateLimitedByScope map[string]int
 }
 
+type tickCountersState struct {
+	Runs               int            `json:"runs"`
+	DuePlans           int            `json:"due_plans"`
+	ExecutedPlans      int            `json:"executed_plans"`
+	QueuedJobs         int            `json:"queued_jobs"`
+	DeduplicatedJobs   int            `json:"deduplicated_jobs"`
+	RateLimitedTargets int            `json:"rate_limited_targets"`
+	LastTickAt         time.Time      `json:"last_tick_at"`
+	RateLimitedByScope map[string]int `json:"rate_limited_by_scope,omitempty"`
+}
+
 func newTickCounters() *tickCounters {
 	return &tickCounters{rateLimitedByScope: make(map[string]int)}
+}
+
+func (t *tickCounters) snapshot() tickCountersState {
+	if t == nil {
+		return tickCountersState{}
+	}
+
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	state := tickCountersState{
+		Runs:               t.runs,
+		DuePlans:           t.duePlans,
+		ExecutedPlans:      t.executedPlans,
+		QueuedJobs:         t.queuedJobs,
+		DeduplicatedJobs:   t.deduplicatedJobs,
+		RateLimitedTargets: t.rateLimitedTargets,
+		LastTickAt:         t.lastTickAt,
+		RateLimitedByScope: make(map[string]int, len(t.rateLimitedByScope)),
+	}
+	for scope, count := range t.rateLimitedByScope {
+		state.RateLimitedByScope[scope] = count
+	}
+	return state
+}
+
+func (t *tickCounters) restore(state tickCountersState) {
+	if t == nil {
+		return
+	}
+
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	t.runs = state.Runs
+	t.duePlans = state.DuePlans
+	t.executedPlans = state.ExecutedPlans
+	t.queuedJobs = state.QueuedJobs
+	t.deduplicatedJobs = state.DeduplicatedJobs
+	t.rateLimitedTargets = state.RateLimitedTargets
+	t.lastTickAt = state.LastTickAt
+	t.rateLimitedByScope = make(map[string]int, len(state.RateLimitedByScope))
+	for scope, count := range state.RateLimitedByScope {
+		t.rateLimitedByScope[scope] = count
+	}
 }
 
 func (s *Service) Run(ctx context.Context) {
@@ -88,11 +144,16 @@ func (s *Service) CreateBackfillPlan(req contracts.SchedulerBackfillPlanRequest,
 	if err != nil {
 		return contracts.SchedulerBackfillPlanView{}, err
 	}
+	before := s.captureDurableState()
 
 	s.mu.Lock()
-	defer s.mu.Unlock()
 	s.plans[plan.ID] = plan
-	return plan.view(), nil
+	view := plan.view()
+	s.mu.Unlock()
+	if err := s.persistDurableStateWithRollback(before, now); err != nil {
+		return contracts.SchedulerBackfillPlanView{}, err
+	}
+	return view, nil
 }
 
 func (s *Service) BackfillPlans(now time.Time) contracts.SchedulerBackfillPlanListResponse {
@@ -116,63 +177,82 @@ func (s *Service) BackfillPlans(now time.Time) contracts.SchedulerBackfillPlanLi
 }
 
 func (s *Service) PauseBackfillPlan(planID string, now time.Time) (contracts.SchedulerBackfillPlanActionResponse, error) {
+	before := s.captureDurableState()
 	s.mu.Lock()
-	defer s.mu.Unlock()
 
 	plan, err := s.planByIDLocked(planID)
 	if err != nil {
+		s.mu.Unlock()
 		return contracts.SchedulerBackfillPlanActionResponse{}, err
 	}
 
 	plan.Enabled = false
 	plan.NextRunAt = time.Time{}
 	plan.UpdatedAt = now.UTC()
-	return contracts.SchedulerBackfillPlanActionResponse{
+	response := contracts.SchedulerBackfillPlanActionResponse{
 		Status:        "paused",
 		Plan:          plan.view(),
 		LastUpdatedAt: now.UTC(),
-	}, nil
+	}
+	s.mu.Unlock()
+	if err := s.persistDurableStateWithRollback(before, now); err != nil {
+		return contracts.SchedulerBackfillPlanActionResponse{}, err
+	}
+	return response, nil
 }
 
 func (s *Service) ResumeBackfillPlan(planID string, now time.Time) (contracts.SchedulerBackfillPlanActionResponse, error) {
+	before := s.captureDurableState()
 	s.mu.Lock()
-	defer s.mu.Unlock()
 
 	plan, err := s.planByIDLocked(planID)
 	if err != nil {
+		s.mu.Unlock()
 		return contracts.SchedulerBackfillPlanActionResponse{}, err
 	}
 
 	plan.Enabled = true
 	plan.NextRunAt = plan.schedule.Next(now.UTC())
 	plan.UpdatedAt = now.UTC()
-	return contracts.SchedulerBackfillPlanActionResponse{
+	response := contracts.SchedulerBackfillPlanActionResponse{
 		Status:        "resumed",
 		Plan:          plan.view(),
 		LastUpdatedAt: now.UTC(),
-	}, nil
+	}
+	s.mu.Unlock()
+	if err := s.persistDurableStateWithRollback(before, now); err != nil {
+		return contracts.SchedulerBackfillPlanActionResponse{}, err
+	}
+	return response, nil
 }
 
 func (s *Service) DeleteBackfillPlan(planID string, now time.Time) (contracts.SchedulerBackfillPlanActionResponse, error) {
+	before := s.captureDurableState()
 	s.mu.Lock()
-	defer s.mu.Unlock()
 
 	plan, err := s.planByIDLocked(planID)
 	if err != nil {
+		s.mu.Unlock()
 		return contracts.SchedulerBackfillPlanActionResponse{}, err
 	}
 
 	view := plan.view()
 	delete(s.plans, planID)
-	return contracts.SchedulerBackfillPlanActionResponse{
+	response := contracts.SchedulerBackfillPlanActionResponse{
 		Status:        "deleted",
 		Plan:          view,
 		LastUpdatedAt: now.UTC(),
-	}, nil
+	}
+	s.mu.Unlock()
+	if err := s.persistDurableStateWithRollback(before, now); err != nil {
+		return contracts.SchedulerBackfillPlanActionResponse{}, err
+	}
+	return response, nil
 }
 
 func (s *Service) Tick(now time.Time) (contracts.SchedulerTickResponse, error) {
 	now = now.UTC()
+	before := s.captureDurableState()
 
 	s.mu.Lock()
 	duePlans := make([]*backfillPlan, 0)
@@ -203,7 +283,7 @@ func (s *Service) Tick(now time.Time) (contracts.SchedulerTickResponse, error) {
 		rateLimitedForPlan := 0
 
 		for _, target := range plan.Targets {
-			enqueued, err := s.enqueueSyncRequest(target, correlationID, now)
+			enqueued, err := s.enqueueSyncRequest(target, correlationID, now, false)
 			if err != nil {
 				var rateLimitErr *RateLimitError
 				if errors.As(err, &rateLimitErr) {
@@ -242,6 +322,9 @@ func (s *Service) Tick(now time.Time) (contracts.SchedulerTickResponse, error) {
 		response.Status = "ran_due_plans"
 	}
 	s.recordTick(response)
+	if err := s.persistDurableStateWithRollback(before, now); err != nil {
+		return contracts.SchedulerTickResponse{}, err
+	}
 	return response, nil
 }
 

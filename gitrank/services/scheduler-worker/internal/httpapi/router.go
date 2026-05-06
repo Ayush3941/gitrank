@@ -21,12 +21,20 @@ func NewRouter(cfg config.App, scheduler *service.Service, log *slog.Logger, ver
 	metrics := httpkit.NewMetrics(cfg.ServiceName)
 
 	mux.Handle("/healthz", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		workerDetails := "in-memory scheduler orchestration online"
+		if cfg.Database.URL != "" {
+			workerDetails = "postgres-backed scheduler state enabled"
+		}
 		httpkit.WriteJSON(w, http.StatusOK, contracts.NewHealthResponse(cfg.ServiceName, string(cfg.Env), version, map[string]contracts.ComponentCheck{
-			"worker": {Status: "ok", Details: "in-memory scheduler orchestration online"},
+			"worker": {Status: "ok", Details: workerDetails},
 		}))
 	})))
 
-	mux.Handle("/readyz", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+	mux.Handle("/readyz", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := scheduler.Ready(r.Context()); err != nil {
+			httpkit.WriteError(w, http.StatusServiceUnavailable, "scheduler_state_unavailable", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
 		httpkit.WriteJSON(w, http.StatusOK, contracts.NewHealthResponse(cfg.ServiceName, string(cfg.Env), version, nil))
 	})))
 

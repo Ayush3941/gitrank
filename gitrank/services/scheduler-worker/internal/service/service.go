@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -13,6 +14,7 @@ import (
 	"github.com/Ayush3941/gitrank/packages/contracts"
 	"github.com/Ayush3941/gitrank/packages/httpkit"
 	"github.com/Ayush3941/gitrank/packages/store"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 const primaryQueueName = "github-sync"
@@ -27,9 +29,23 @@ type Service struct {
 	ticks               *tickCounters
 	repositoryRunner    boundedSyncExecutor
 	runs                *executionCounters
+	stateStore          *schedulerStateStore
 }
 
 func New(cfg config.App) *Service {
+	return newService(cfg, nil)
+}
+
+func NewPersistent(cfg config.App, pool *pgxpool.Pool) (*Service, error) {
+	stateStore := newSchedulerStateStore(pool, cfg.ServiceName)
+	scheduler := newService(cfg, stateStore)
+	if err := scheduler.restorePersistedState(context.Background()); err != nil {
+		return nil, err
+	}
+	return scheduler, nil
+}
+
+func newService(cfg config.App, stateStore *schedulerStateStore) *Service {
 	return &Service{
 		cfg:                 cfg,
 		queue:               store.NewInMemoryJobQueue(),
@@ -39,7 +55,15 @@ func New(cfg config.App) *Service {
 		ticks:               newTickCounters(),
 		repositoryRunner:    newBoundedSyncExecutor(cfg),
 		runs:                newExecutionCounters(),
+		stateStore:          stateStore,
 	}
+}
+
+func (s *Service) Ready(ctx context.Context) error {
+	if s == nil || s.stateStore == nil {
+		return nil
+	}
+	return s.stateStore.Ready(ctx)
 }
 
 func (s *Service) MetricsSource() httpkit.PrometheusSource {
@@ -104,16 +128,17 @@ func (s *Service) Lease(limit int, now time.Time) contracts.SchedulerLeaseRespon
 }
 
 func (s *Service) EnqueueSync(req contracts.SyncRequest, correlationID string, now time.Time) (contracts.SchedulerEnqueueResponse, error) {
-	return s.enqueueSyncRequest(req, correlationID, now)
+	return s.enqueueSyncRequest(req, correlationID, now, true)
 }
 
-func (s *Service) enqueueSyncRequest(req contracts.SyncRequest, correlationID string, now time.Time) (contracts.SchedulerEnqueueResponse, error) {
-	if err := s.allowScopedRates(req, now); err != nil {
-		return contracts.SchedulerEnqueueResponse{}, err
-	}
+func (s *Service) enqueueSyncRequest(req contracts.SyncRequest, correlationID string, now time.Time, checkpoint bool) (contracts.SchedulerEnqueueResponse, error) {
+	before := s.captureDurableState()
 
 	jobs, err := store.BuildSyncJobs(req, primaryQueueName, correlationID, s.cfg.Scheduler.MaxAttempts)
 	if err != nil {
+		return contracts.SchedulerEnqueueResponse{}, err
+	}
+	if err := s.allowScopedRates(req, now); err != nil {
 		return contracts.SchedulerEnqueueResponse{}, err
 	}
 
@@ -134,33 +159,45 @@ func (s *Service) enqueueSyncRequest(req contracts.SyncRequest, correlationID st
 	if deduplicated {
 		status = "deduplicated"
 	}
-	return contracts.SchedulerEnqueueResponse{
+	response := contracts.SchedulerEnqueueResponse{
 		Status:        status,
 		JobIDs:        jobIDs,
 		QueueName:     primaryQueueName,
 		CorrelationID: correlationID,
 		Deduplicated:  deduplicated,
 		AcceptedAt:    now.UTC(),
-	}, nil
+	}
+	if checkpoint {
+		if err := s.persistDurableStateWithRollback(before, now); err != nil {
+			return contracts.SchedulerEnqueueResponse{}, err
+		}
+	}
+	return response, nil
 }
 
 func (s *Service) Complete(jobID string, now time.Time) (contracts.SchedulerJobActionResponse, error) {
+	before := s.captureDurableState()
 	job, err := s.queue.Complete(jobID)
 	if err != nil {
 		return contracts.SchedulerJobActionResponse{}, err
 	}
-	return contracts.SchedulerJobActionResponse{
+	response := contracts.SchedulerJobActionResponse{
 		QueueName:     primaryQueueName,
 		Status:        "completed",
 		Job:           jobView(job),
 		LastUpdatedAt: now.UTC(),
-	}, nil
+	}
+	if err := s.persistDurableStateWithRollback(before, now); err != nil {
+		return contracts.SchedulerJobActionResponse{}, err
+	}
+	return response, nil
 }
 
 func (s *Service) Fail(jobID, errorMessage string, now time.Time) (contracts.SchedulerJobActionResponse, error) {
 	if errorMessage == "" {
 		errorMessage = "job failed"
 	}
+	before := s.captureDurableState()
 	job, deadLetter, err := s.queue.Fail(jobID, errors.New(errorMessage), now, s.cfg.Scheduler.RetryBackoff)
 	if err != nil {
 		return contracts.SchedulerJobActionResponse{}, err
@@ -175,46 +212,64 @@ func (s *Service) Fail(jobID, errorMessage string, now time.Time) (contracts.Sch
 		response.Status = "dead_lettered"
 		response.DeadLetterID = deadLetter.ID
 	}
+	if err := s.persistDurableStateWithRollback(before, now); err != nil {
+		return contracts.SchedulerJobActionResponse{}, err
+	}
 	return response, nil
 }
 
 func (s *Service) Pause(jobID string, now time.Time) (contracts.SchedulerJobActionResponse, error) {
+	before := s.captureDurableState()
 	job, err := s.queue.Pause(jobID)
 	if err != nil {
 		return contracts.SchedulerJobActionResponse{}, err
 	}
-	return contracts.SchedulerJobActionResponse{
+	response := contracts.SchedulerJobActionResponse{
 		QueueName:     primaryQueueName,
 		Status:        "paused",
 		Job:           jobView(job),
 		LastUpdatedAt: now.UTC(),
-	}, nil
+	}
+	if err := s.persistDurableStateWithRollback(before, now); err != nil {
+		return contracts.SchedulerJobActionResponse{}, err
+	}
+	return response, nil
 }
 
 func (s *Service) Resume(jobID string, now time.Time) (contracts.SchedulerJobActionResponse, error) {
+	before := s.captureDurableState()
 	job, err := s.queue.Resume(jobID, now)
 	if err != nil {
 		return contracts.SchedulerJobActionResponse{}, err
 	}
-	return contracts.SchedulerJobActionResponse{
+	response := contracts.SchedulerJobActionResponse{
 		QueueName:     primaryQueueName,
 		Status:        "resumed",
 		Job:           jobView(job),
 		LastUpdatedAt: now.UTC(),
-	}, nil
+	}
+	if err := s.persistDurableStateWithRollback(before, now); err != nil {
+		return contracts.SchedulerJobActionResponse{}, err
+	}
+	return response, nil
 }
 
 func (s *Service) Cancel(jobID string, now time.Time) (contracts.SchedulerJobActionResponse, error) {
+	before := s.captureDurableState()
 	job, err := s.queue.Cancel(jobID)
 	if err != nil {
 		return contracts.SchedulerJobActionResponse{}, err
 	}
-	return contracts.SchedulerJobActionResponse{
+	response := contracts.SchedulerJobActionResponse{
 		QueueName:     primaryQueueName,
 		Status:        "canceled",
 		Job:           jobView(job),
 		LastUpdatedAt: now.UTC(),
-	}, nil
+	}
+	if err := s.persistDurableStateWithRollback(before, now); err != nil {
+		return contracts.SchedulerJobActionResponse{}, err
+	}
+	return response, nil
 }
 
 func (s *Service) DeadLetters(now time.Time) contracts.SchedulerDeadLetterListResponse {
@@ -226,6 +281,7 @@ func (s *Service) DeadLetters(now time.Time) contracts.SchedulerDeadLetterListRe
 }
 
 func (s *Service) ReplayDeadLetter(recordID, correlationID string, now time.Time) (contracts.SchedulerJobActionResponse, error) {
+	before := s.captureDurableState()
 	job, duplicate, err := s.queue.ReplayDeadLetter(recordID, correlationID, now)
 	if err != nil {
 		return contracts.SchedulerJobActionResponse{}, err
@@ -240,7 +296,7 @@ func (s *Service) ReplayDeadLetter(recordID, correlationID string, now time.Time
 		Deduplicated:  duplicate,
 		Job:           jobView(job),
 		LastUpdatedAt: now.UTC(),
-	}, nil
+	}, s.persistDurableStateWithRollback(before, now)
 }
 
 func (s *Service) WritePrometheus(w io.Writer) {
