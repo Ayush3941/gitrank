@@ -470,7 +470,7 @@ GitHub-specific requirements:
 
 Operational requirements:
 
-- [ ] ingestion failures are visible in metrics and alerts
+- [x] ingestion failures are visible in metrics and alerts
 - [x] manual requeue exists
 - [ ] backfill jobs are cancelable
 - [ ] sync jobs are traceable per user and per repo
@@ -840,11 +840,11 @@ Tracing:
 
 Dashboards and alerts:
 
-- [ ] service health dashboards
-- [ ] error budget or SLO dashboards
-- [ ] alerts for sync backlog
-- [ ] alerts for webhook failures
-- [ ] alerts for auth failures
+- [x] service health dashboards
+- [x] error budget or SLO dashboards
+- [x] alerts for sync backlog
+- [x] alerts for webhook failures
+- [x] alerts for auth failures
 - [ ] alerts for elevated AI cost
 - [ ] alerts for scoring job failures
 
@@ -1045,7 +1045,7 @@ Do not call the project production ready until:
 - [x] AI outputs are validated and bounded
 - [x] score explanations are user-visible
 - [x] deletion and retention policies exist
-- [ ] dashboards, alerts, and runbooks exist
+- [x] dashboards, alerts, and runbooks exist
 - [x] the unsigned v1 release flow is traceable
 - [ ] rollback procedures are documented and tested
 - [x] at least two-person review is required for production release decisions

@@ -721,6 +721,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 - PostgreSQL migrations for core entities, GitHub ingestion state, and auth/session security tables
 - generic OCI build packaging under `deployments/docker/` and a release workflow that builds binaries, publishes GitHub Releases, and pushes per-service OCI images
 - a Kubernetes deployment baseline under `deployments/k8s/` with namespace and kustomization scaffolding
+- committed observability assets under `deployments/observability/`, including Grafana dashboards, Prometheus alert rules, and service runbooks
 - a substantial Next.js frontend with dashboard, profile, leaderboard, quest, badge, onboarding, and PR-report flows, with live profile/settings/account actions and mock-backed dashboard, leaderboard, quest, badge, and PR-report surfaces
 - CI, release-artifact, dependency-review, CodeQL, Scorecard, repo-level secret scanning, pinned Trivy filesystem and service-image scanning, plus frontend-specific CI and Trivy/secret scanning in the nested frontend repo
 
@@ -728,7 +729,7 @@ Major gaps remain:
 
 - no end-to-end persistent ingestion worker yet
 - most non-profile frontend routes still use mock data
-- no distributed tracing, alerting, dashboards, or production runtime operations layer yet
+- no distributed tracing or deployed observability stack yet; dashboards and alert rules are committed but not wired into runtime infrastructure
 - the committed Kubernetes assets are still only a minimal namespace/layout baseline and do not yet include per-service Deployments, Services, ingress, or secret-manager wiring
 
 ## License

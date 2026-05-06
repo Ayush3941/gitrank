@@ -1,0 +1,221 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "targets": [
+        {
+          "expr": "(sum(rate(gitrank_http_requests_total{service=\"api-gateway\"}[30m])) - sum(rate(gitrank_http_errors_total{service=\"api-gateway\"}[30m]))) / clamp_min(sum(rate(gitrank_http_requests_total{service=\"api-gateway\"}[30m])), 1)",
+          "legendFormat": "gateway success ratio",
+          "refId": "A"
+        }
+      ],
+      "title": "API Gateway Success Ratio",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 0
+      },
+      "id": 2,
+      "targets": [
+        {
+          "expr": "(sum(rate(gitrank_http_requests_total{service=\"auth-service\"}[30m])) - sum(rate(gitrank_http_errors_total{service=\"auth-service\"}[30m]))) / clamp_min(sum(rate(gitrank_http_requests_total{service=\"auth-service\"}[30m])), 1)",
+          "legendFormat": "auth success ratio",
+          "refId": "A"
+        }
+      ],
+      "title": "Auth Service Success Ratio",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 0
+      },
+      "id": 3,
+      "targets": [
+        {
+          "expr": "(sum(rate(gitrank_http_requests_total{service=\"profile-service\"}[30m])) - sum(rate(gitrank_http_errors_total{service=\"profile-service\"}[30m]))) / clamp_min(sum(rate(gitrank_http_requests_total{service=\"profile-service\"}[30m])), 1)",
+          "legendFormat": "profile success ratio",
+          "refId": "A"
+        }
+      ],
+      "title": "Profile Service Success Ratio",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 4,
+      "targets": [
+        {
+          "expr": "sum(rate(gitrank_http_errors_total[30m])) / clamp_min(sum(rate(gitrank_http_requests_total[30m])), 1)",
+          "legendFormat": "global error budget burn",
+          "refId": "A"
+        }
+      ],
+      "title": "Global Error Ratio",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 5,
+      "targets": [
+        {
+          "expr": "rate(gitrank_score_suspicious_total{service=\"scoring-engine\"}[30m]) / clamp_min(rate(gitrank_score_computations_total{service=\"scoring-engine\"}[30m]), 1)",
+          "legendFormat": "suspicious score ratio",
+          "refId": "A"
+        }
+      ],
+      "title": "Suspicious Score Ratio",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 6,
+      "targets": [
+        {
+          "expr": "gitrank_queue_depth{service=\"github-ingestor\",queue=\"github-sync\"}",
+          "legendFormat": "ingestor backlog",
+          "refId": "A"
+        },
+        {
+          "expr": "gitrank_scheduler_dead_letters{service=\"scheduler-worker\",queue=\"github-sync-dead\"}",
+          "legendFormat": "dead letters",
+          "refId": "B"
+        }
+      ],
+      "title": "Sync Reliability Pressure",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 7,
+      "targets": [
+        {
+          "expr": "gitrank_github_rate_limit_remaining{service=\"auth-service\",resource=\"core\"}",
+          "legendFormat": "core rate limit remaining",
+          "refId": "A"
+        }
+      ],
+      "title": "GitHub API Headroom",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": [
+    "gitrank",
+    "slo"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "GitRank SLOs",
+  "uid": "gitrank-slos",
+  "version": 1,
+  "weekStart": ""
+}
