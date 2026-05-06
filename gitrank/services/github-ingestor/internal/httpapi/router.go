@@ -348,6 +348,36 @@ func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQ
 		httpkit.WriteJSON(w, http.StatusOK, response)
 	})))
 
+	mux.Handle("/v1/sync/pull-request/execute", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if executor == nil {
+			httpkit.WriteError(w, http.StatusServiceUnavailable, "github_sync_unavailable", "pull request sync execution is not configured", httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+
+		var req contracts.SyncRequest
+		if err := httpkit.DecodeJSON(r, &req, 1<<20); err != nil {
+			httpkit.WriteError(w, http.StatusBadRequest, "invalid_json", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		req.Mode = "pull_request"
+		req.Repository = strings.TrimSpace(req.Repository)
+		if req.Repository == "" || req.Number <= 0 {
+			httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", "repository and number are required when mode=pull_request", httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+
+		startedAt := time.Now().UTC()
+		response, err := executor.SyncPullRequest(r.Context(), req, service.SyncRequestActor{
+			Subject:     strings.TrimSpace(r.Header.Get("X-GitRank-Subject")),
+			GitHubLogin: strings.TrimSpace(r.Header.Get("X-GitRank-GitHub-Login")),
+		}, httpkit.RequestIDFromContext(r.Context()), startedAt)
+		if err != nil {
+			httpkit.WriteError(w, http.StatusBadGateway, "github_pull_request_sync_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		httpkit.WriteJSON(w, http.StatusOK, response)
+	})))
+
 	registerSyncRoute(mux, cfg, jobQueue, persistence, syncMetrics, "/v1/sync/installation", "installation")
 	registerSyncRoute(mux, cfg, jobQueue, persistence, syncMetrics, "/v1/sync/user", "user")
 	registerSyncRoute(mux, cfg, jobQueue, persistence, syncMetrics, "/v1/sync/repository", "repository")

@@ -19,6 +19,7 @@ import (
 type boundedSyncExecutor interface {
 	SyncRepository(ctx context.Context, req contracts.SyncRequest, correlationID string) (contracts.GitHubSyncExecutionResponse, error)
 	SyncUser(ctx context.Context, req contracts.SyncRequest, correlationID string) (contracts.GitHubSyncExecutionResponse, error)
+	SyncPullRequest(ctx context.Context, req contracts.SyncRequest, correlationID string) (contracts.GitHubSyncExecutionResponse, error)
 }
 
 type httpBoundedSyncExecutor struct {
@@ -130,6 +131,12 @@ func (s *Service) executeLeasedJob(ctx context.Context, job store.QueueJob) (con
 			return contracts.GitHubSyncExecutionResponse{}, err
 		}
 		return s.repositoryRunner.SyncUser(ctx, req, correlationIDForJob(job))
+	case store.SyncPullRequestJob:
+		req, err := syncRequestFromJob(job)
+		if err != nil {
+			return contracts.GitHubSyncExecutionResponse{}, err
+		}
+		return s.repositoryRunner.SyncPullRequest(ctx, req, correlationIDForJob(job))
 	default:
 		return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf("job type %s is not executable by the in-process worker", job.Type)
 	}
@@ -151,6 +158,15 @@ func (e *httpBoundedSyncExecutor) SyncUser(ctx context.Context, req contracts.Sy
 		return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf("user is required")
 	}
 	return e.execute(ctx, req, "/v1/sync/user/execute", "user", correlationID)
+}
+
+func (e *httpBoundedSyncExecutor) SyncPullRequest(ctx context.Context, req contracts.SyncRequest, correlationID string) (contracts.GitHubSyncExecutionResponse, error) {
+	req.Mode = "pull_request"
+	req.Repository = strings.TrimSpace(req.Repository)
+	if req.Repository == "" || req.Number <= 0 {
+		return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf("repository and number are required")
+	}
+	return e.execute(ctx, req, "/v1/sync/pull-request/execute", "pull_request", correlationID)
 }
 
 func (e *httpBoundedSyncExecutor) execute(ctx context.Context, req contracts.SyncRequest, path, mode, correlationID string) (contracts.GitHubSyncExecutionResponse, error) {
@@ -234,7 +250,7 @@ func splitExecutionMetricKey(key string) (string, string) {
 }
 
 func isExecutableJob(job store.QueueJob, now time.Time) bool {
-	return (job.Type == store.SyncRepositoryJob || job.Type == store.SyncUserHistoryJob) &&
+	return (job.Type == store.SyncRepositoryJob || job.Type == store.SyncUserHistoryJob || job.Type == store.SyncPullRequestJob) &&
 		job.Status == store.JobPending &&
 		!job.NotBefore.After(now.UTC())
 }
@@ -264,6 +280,15 @@ func syncRequestFromJob(job store.QueueJob) (contracts.SyncRequest, error) {
 		req.User = strings.TrimSpace(req.User)
 		if req.User == "" {
 			return contracts.SyncRequest{}, fmt.Errorf("user is required")
+		}
+	case store.SyncPullRequestJob:
+		if strings.TrimSpace(req.Repository) == "" {
+			req.Repository = strings.TrimSpace(job.Repository)
+		}
+		req.Mode = "pull_request"
+		req.Repository = strings.TrimSpace(req.Repository)
+		if req.Repository == "" || req.Number <= 0 {
+			return contracts.SyncRequest{}, fmt.Errorf("repository and number are required")
 		}
 	default:
 		return contracts.SyncRequest{}, fmt.Errorf("job type %s is not executable by the in-process worker", job.Type)
