@@ -16,6 +16,7 @@ import (
 const (
 	defaultRepositorySyncPageSize = 20
 	defaultCommitSyncPageSize     = 50
+	defaultUserRepositoryLimit    = 10
 )
 
 type Executor struct {
@@ -185,6 +186,90 @@ func (e *Executor) SyncRepository(
 	return response, nil
 }
 
+func (e *Executor) SyncUser(
+	ctx context.Context,
+	req contracts.SyncRequest,
+	actor SyncRequestActor,
+	correlationID string,
+	now time.Time,
+) (contracts.GitHubSyncExecutionResponse, error) {
+	startedAt := now.UTC()
+	user := strings.TrimSpace(req.User)
+	response := contracts.GitHubSyncExecutionResponse{
+		Status:        "failed",
+		Mode:          "user",
+		User:          user,
+		CorrelationID: strings.TrimSpace(correlationID),
+		StartedAt:     startedAt,
+		FinishedAt:    startedAt,
+		Fetched:       map[string]int{},
+		Persisted:     map[string]int{},
+	}
+
+	if e == nil || e.store == nil || e.store.pool == nil || e.client == nil {
+		return response, ErrUnavailable
+	}
+	if user == "" {
+		return response, fmt.Errorf("user is required")
+	}
+
+	repositories, err := e.fetchUserRepositories(ctx, user)
+	if err != nil {
+		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, PersistResult{})
+		return response, err
+	}
+
+	aggregatePersisted := PersistResult{}
+	response.Fetched["repositories_selected"] = len(repositories)
+	baseCorrelationID := strings.TrimSpace(correlationID)
+	if baseCorrelationID == "" {
+		baseCorrelationID = "sync-user:" + user
+	}
+
+	for index, repository := range repositories {
+		fullName := strings.TrimSpace(stringValue(repository["full_name"]))
+		if fullName == "" {
+			continue
+		}
+		child, err := e.SyncRepository(ctx, contracts.SyncRequest{
+			Mode:       "repository",
+			Repository: fullName,
+		}, actor, fmt.Sprintf("%s:repo:%d", baseCorrelationID, index+1), time.Now().UTC())
+		if err != nil {
+			response.FinishedAt = time.Now().UTC()
+			_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, aggregatePersisted)
+			return response, err
+		}
+		response.Fetched = mergeCountMaps(response.Fetched, child.Fetched)
+		response.Persisted = mergeCountMaps(response.Persisted, child.Persisted)
+		aggregatePersisted = addPersistResult(aggregatePersisted, persistResultFromCountMap(child.Persisted))
+	}
+
+	finishedAt := time.Now().UTC()
+	_, err = e.store.WithTx(ctx, func(tx *TxStore) (PersistResult, error) {
+		return aggregatePersisted, tx.InsertSyncRun(payloadSyncRunInput{
+			CorrelationID:          strings.TrimSpace(correlationID),
+			EventType:              "user",
+			Status:                 "completed",
+			Subject:                user,
+			RequestedUserLogin:     user,
+			RequestedBySubject:     actor.Subject,
+			RequestedByGitHubLogin: actor.GitHubLogin,
+			Result:                 aggregatePersisted,
+			StartedAt:              startedAt,
+			FinishedAt:             timePointer(finishedAt),
+		})
+	})
+	if err != nil {
+		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, aggregatePersisted)
+		return response, err
+	}
+
+	response.Status = "completed"
+	response.FinishedAt = finishedAt
+	return response, nil
+}
+
 func (e *Executor) recordFailedSyncRun(
 	ctx context.Context,
 	subject string,
@@ -219,6 +304,67 @@ func (e *Executor) recordFailedSyncRun(
 		})
 	})
 	return err
+}
+
+func (e *Executor) recordFailedUserSyncRun(
+	ctx context.Context,
+	user string,
+	req contracts.SyncRequest,
+	actor SyncRequestActor,
+	correlationID string,
+	startedAt time.Time,
+	failure error,
+	result PersistResult,
+) error {
+	if e == nil || e.store == nil || e.store.pool == nil {
+		return nil
+	}
+
+	_, err := e.store.WithTx(ctx, func(tx *TxStore) (PersistResult, error) {
+		return result, tx.InsertSyncRun(payloadSyncRunInput{
+			CorrelationID:          strings.TrimSpace(correlationID),
+			EventType:              "user",
+			Status:                 "failed",
+			LastError:              failure.Error(),
+			Subject:                strings.TrimSpace(user),
+			RequestedUserLogin:     strings.TrimSpace(req.User),
+			RequestedBySubject:     actor.Subject,
+			RequestedByGitHubLogin: actor.GitHubLogin,
+			Result:                 result,
+			StartedAt:              startedAt,
+			FinishedAt:             timePointer(time.Now().UTC()),
+		})
+	})
+	return err
+}
+
+func (e *Executor) fetchUserRepositories(ctx context.Context, user string) ([]map[string]any, error) {
+	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, defaultUserRepositoryLimit)
+	var repositories []map[string]any
+	_, err := e.client.GetJSON(ctx, fmt.Sprintf("/users/%s/repos", user), url.Values{
+		"type":      []string{"owner"},
+		"sort":      []string{"updated"},
+		"direction": []string{"desc"},
+		"per_page":  []string{fmt.Sprintf("%d", perPage)},
+	}, githubapi.ConditionalRequest{}, &repositories)
+	if err != nil {
+		return nil, err
+	}
+
+	filtered := make([]map[string]any, 0, len(repositories))
+	for _, repository := range repositories {
+		if repository == nil {
+			continue
+		}
+		if boolValue(repository["archived"]) || boolValue(repository["disabled"]) {
+			continue
+		}
+		if strings.TrimSpace(stringValue(repository["full_name"])) == "" {
+			continue
+		}
+		filtered = append(filtered, repository)
+	}
+	return filtered, nil
 }
 
 func (e *Executor) fetchRepository(ctx context.Context, owner, name string) (map[string]any, error) {
@@ -359,4 +505,39 @@ func countReviewMaps(reviewsByNumber map[int][]map[string]any) int {
 		total += len(reviews)
 	}
 	return total
+}
+
+func mergeCountMaps(dst, src map[string]int) map[string]int {
+	if dst == nil {
+		dst = map[string]int{}
+	}
+	for key, value := range src {
+		dst[key] += value
+	}
+	return dst
+}
+
+func persistResultFromCountMap(counts map[string]int) PersistResult {
+	return PersistResult{
+		RepositoryCount:    counts["repositories"],
+		InstallationCount:  counts["installations"],
+		PullRequestCount:   counts["pull_requests"],
+		ReviewCount:        counts["reviews"],
+		ReviewCommentCount: counts["review_comments"],
+		IssueCount:         counts["issues"],
+		LabelCount:         counts["labels"],
+		CommitCount:        counts["commits"],
+	}
+}
+
+func addPersistResult(dst, src PersistResult) PersistResult {
+	dst.RepositoryCount += src.RepositoryCount
+	dst.InstallationCount += src.InstallationCount
+	dst.PullRequestCount += src.PullRequestCount
+	dst.ReviewCount += src.ReviewCount
+	dst.ReviewCommentCount += src.ReviewCommentCount
+	dst.IssueCount += src.IssueCount
+	dst.LabelCount += src.LabelCount
+	dst.CommitCount += src.CommitCount
+	return dst
 }

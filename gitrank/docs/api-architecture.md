@@ -199,6 +199,7 @@ Implemented routes:
 - `POST /v1/webhooks/github/deliveries/{delivery_id}/requeue`
 - `POST /v1/sync/preview`
 - `GET /v1/sync/runs`
+- `POST /v1/sync/user/execute`
 - `POST /v1/sync/repository/execute`
 - `POST /v1/sync/installation`
 - `POST /v1/sync/user`
@@ -214,6 +215,7 @@ Current state:
 - stored webhook deliveries can be manually requeued for recovery
 - webhook delivery deduplication and requeue state persist in PostgreSQL when `DATABASE_URL` is configured
 - webhook-driven repository, PR, review, issue, label, commit, installation, and sync-run entities persist idempotently in PostgreSQL when `DATABASE_URL` is configured
+- `POST /v1/sync/user/execute` performs a bounded live user sync by walking recent public repositories owned by the requested GitHub login and delegating to the repository executor
 - `POST /v1/sync/repository/execute` performs a bounded live repository sync through the public GitHub REST API and persists repository, pull request, review, issue, and commit data in PostgreSQL
 - manual sync requests persist queued sync-run records and can be queried through `GET /v1/sync/runs` with user, repository, subject, requester, correlation, and delivery filters
 - sync requests still enqueue in-memory preview jobs for execution
@@ -332,12 +334,14 @@ Current state:
 - queue inspection supports filters for `user`, `repository`, `installation_id`, `status`, `type`, `subject`, and `correlation_id`
 - ready jobs can be leased up to the configured worker concurrency
 - the in-process worker can execute ready `sync.repository` jobs by calling `github-ingestor /v1/sync/repository/execute`
+- the in-process worker can execute ready `sync.user_history` jobs by calling `github-ingestor /v1/sync/user/execute`
+- bounded user execution currently means recent public repositories owned by the requested GitHub login, not a full authored-PR history search
 - retries apply exponential backoff before the next eligible lease
 - poison jobs move into a dead-letter queue and can be manually replayed
 - recurring cron plans can enqueue normalized sync targets on each scheduler tick
 - recurring plans can be paused, resumed, or deleted through the scheduler control plane
 - per-user and per-installation rate limits throttle repeated sync generation
-- non-repository sync job types are still queued for future executors rather than run automatically
+- installation, pull request, review, issue, and commit sync job types are still queued for future executors rather than run automatically
 - persistent queue storage, cross-process coordination, and durable backfill plan storage are still pending
 
 ## Browser Auth Scheme

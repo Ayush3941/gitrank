@@ -323,6 +323,65 @@ func TestRunNextExecutesRepositoryJobAndCompletes(t *testing.T) {
 	}
 }
 
+func TestRunNextExecutesUserJobAndCompletes(t *testing.T) {
+	now := time.Date(2026, time.May, 6, 12, 30, 0, 0, time.UTC)
+	var observed contracts.SyncRequest
+	var observedPath string
+	var observedRequestID string
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		observedPath = r.URL.Path
+		observedRequestID = r.Header.Get("X-Request-ID")
+		if err := json.NewDecoder(r.Body).Decode(&observed); err != nil {
+			t.Fatalf("decode request: %v", err)
+		}
+		_ = json.NewEncoder(w).Encode(contracts.GitHubSyncExecutionResponse{
+			Status:        "completed",
+			Mode:          "user",
+			User:          observed.User,
+			CorrelationID: observedRequestID,
+			StartedAt:     now,
+			FinishedAt:    now.Add(3 * time.Second),
+			Fetched:       map[string]int{"repositories_selected": 2},
+			Persisted:     map[string]int{"repositories": 2},
+		})
+	}))
+	defer server.Close()
+
+	cfg := testServiceConfig()
+	cfg.Services.GitHubIngestorBaseURL = server.URL
+	cfg.Services.RequestTimeout = time.Second
+	scheduler := New(cfg)
+
+	enqueue, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "user", User: "octocat"}, "user-correlation", now)
+	if err != nil {
+		t.Fatalf("EnqueueSync() error = %v", err)
+	}
+
+	run, err := scheduler.RunNext(context.Background(), now)
+	if err != nil {
+		t.Fatalf("RunNext() error = %v", err)
+	}
+	if run.Status != "completed" {
+		t.Fatalf("run status = %q, want completed", run.Status)
+	}
+	if run.Execution == nil || run.Execution.User != "octocat" || run.Execution.Mode != "user" {
+		t.Fatalf("run execution = %+v, want completed user execution", run.Execution)
+	}
+	if observedPath != "/v1/sync/user/execute" {
+		t.Fatalf("observed path = %q, want %q", observedPath, "/v1/sync/user/execute")
+	}
+	if observed.User != "octocat" || observed.Mode != "user" {
+		t.Fatalf("observed request = %+v, want octocat user sync", observed)
+	}
+	if observedRequestID != "user-correlation" {
+		t.Fatalf("observed request id = %q, want %q", observedRequestID, "user-correlation")
+	}
+	if run.Job == nil || run.Job.ID != enqueue.JobIDs[0] {
+		t.Fatalf("run job = %+v, want executed job id %q", run.Job, enqueue.JobIDs[0])
+	}
+}
+
 func TestRunNextRetriesRepositoryJobOnUpstreamFailure(t *testing.T) {
 	now := time.Date(2026, time.May, 6, 13, 0, 0, 0, time.UTC)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
@@ -372,7 +431,7 @@ func TestRunNextLeavesUnsupportedJobsQueued(t *testing.T) {
 	now := time.Date(2026, time.May, 6, 14, 0, 0, 0, time.UTC)
 	scheduler := New(testServiceConfig())
 
-	if _, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "user", User: "octocat"}, "user-correlation", now); err != nil {
+	if _, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "installation", InstallationID: 42}, "installation-correlation", now); err != nil {
 		t.Fatalf("EnqueueSync() error = %v", err)
 	}
 
@@ -387,9 +446,9 @@ func TestRunNextLeavesUnsupportedJobsQueued(t *testing.T) {
 		t.Fatalf("run job = %+v, want nil", run.Job)
 	}
 
-	queue := scheduler.QueueStatus(now, contracts.SchedulerJobFilter{User: "octocat"})
+	queue := scheduler.QueueStatus(now, contracts.SchedulerJobFilter{InstallationID: 42})
 	if queue.QueueDepth != 1 || len(queue.Jobs) != 1 {
-		t.Fatalf("queue = %+v, want one still-queued user job", queue)
+		t.Fatalf("queue = %+v, want one still-queued installation job", queue)
 	}
 }
 

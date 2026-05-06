@@ -66,6 +66,7 @@ type GitHubSyncRunListResponse struct {
 type GitHubSyncExecutionResponse struct {
 	Status        string         `json:"status"`
 	Mode          string         `json:"mode"`
+	User          string         `json:"user,omitempty"`
 	Repository    string         `json:"repository,omitempty"`
 	CorrelationID string         `json:"correlation_id,omitempty"`
 	StartedAt     time.Time      `json:"started_at"`

@@ -16,11 +16,12 @@ import (
 	"github.com/Ayush3941/gitrank/packages/store"
 )
 
-type repositorySyncExecutor interface {
+type boundedSyncExecutor interface {
 	SyncRepository(ctx context.Context, req contracts.SyncRequest, correlationID string) (contracts.GitHubSyncExecutionResponse, error)
+	SyncUser(ctx context.Context, req contracts.SyncRequest, correlationID string) (contracts.GitHubSyncExecutionResponse, error)
 }
 
-type httpRepositorySyncExecutor struct {
+type httpBoundedSyncExecutor struct {
 	baseURL string
 	client  *http.Client
 }
@@ -31,12 +32,12 @@ type executionCounters struct {
 	byOutcome map[string]int
 }
 
-func newRepositorySyncExecutor(cfg config.App) repositorySyncExecutor {
+func newBoundedSyncExecutor(cfg config.App) boundedSyncExecutor {
 	baseURL := strings.TrimRight(strings.TrimSpace(cfg.Services.GitHubIngestorBaseURL), "/")
 	if baseURL == "" {
 		return nil
 	}
-	return &httpRepositorySyncExecutor{
+	return &httpBoundedSyncExecutor{
 		baseURL: baseURL,
 		client: &http.Client{
 			Timeout: cfg.Services.RequestTimeout,
@@ -113,7 +114,7 @@ func (s *Service) leaseNextExecutableJob(now time.Time) (store.QueueJob, bool, e
 
 func (s *Service) executeLeasedJob(ctx context.Context, job store.QueueJob) (contracts.GitHubSyncExecutionResponse, error) {
 	if s.repositoryRunner == nil {
-		return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf("repository sync runner is not configured")
+		return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf("bounded sync runner is not configured")
 	}
 
 	switch job.Type {
@@ -123,24 +124,42 @@ func (s *Service) executeLeasedJob(ctx context.Context, job store.QueueJob) (con
 			return contracts.GitHubSyncExecutionResponse{}, err
 		}
 		return s.repositoryRunner.SyncRepository(ctx, req, correlationIDForJob(job))
+	case store.SyncUserHistoryJob:
+		req, err := syncRequestFromJob(job)
+		if err != nil {
+			return contracts.GitHubSyncExecutionResponse{}, err
+		}
+		return s.repositoryRunner.SyncUser(ctx, req, correlationIDForJob(job))
 	default:
 		return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf("job type %s is not executable by the in-process worker", job.Type)
 	}
 }
 
-func (e *httpRepositorySyncExecutor) SyncRepository(ctx context.Context, req contracts.SyncRequest, correlationID string) (contracts.GitHubSyncExecutionResponse, error) {
+func (e *httpBoundedSyncExecutor) SyncRepository(ctx context.Context, req contracts.SyncRequest, correlationID string) (contracts.GitHubSyncExecutionResponse, error) {
 	req.Mode = "repository"
 	req.Repository = strings.TrimSpace(req.Repository)
 	if req.Repository == "" {
 		return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf("repository is required")
 	}
+	return e.execute(ctx, req, "/v1/sync/repository/execute", "repository", correlationID)
+}
 
+func (e *httpBoundedSyncExecutor) SyncUser(ctx context.Context, req contracts.SyncRequest, correlationID string) (contracts.GitHubSyncExecutionResponse, error) {
+	req.Mode = "user"
+	req.User = strings.TrimSpace(req.User)
+	if req.User == "" {
+		return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf("user is required")
+	}
+	return e.execute(ctx, req, "/v1/sync/user/execute", "user", correlationID)
+}
+
+func (e *httpBoundedSyncExecutor) execute(ctx context.Context, req contracts.SyncRequest, path, mode, correlationID string) (contracts.GitHubSyncExecutionResponse, error) {
 	body, err := json.Marshal(req)
 	if err != nil {
 		return contracts.GitHubSyncExecutionResponse{}, err
 	}
 
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, e.baseURL+"/v1/sync/repository/execute", bytes.NewReader(body))
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, e.baseURL+path, bytes.NewReader(body))
 	if err != nil {
 		return contracts.GitHubSyncExecutionResponse{}, err
 	}
@@ -163,9 +182,9 @@ func (e *httpRepositorySyncExecutor) SyncRepository(ctx context.Context, req con
 	if response.StatusCode != http.StatusOK {
 		var apiErr contracts.ErrorResponse
 		if err := json.Unmarshal(payload, &apiErr); err == nil && strings.TrimSpace(apiErr.Error.Message) != "" {
-			return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf("github-ingestor repository sync failed: %s", apiErr.Error.Message)
+			return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf("github-ingestor %s sync failed: %s", mode, apiErr.Error.Message)
 		}
-		return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf("github-ingestor repository sync failed with status %d", response.StatusCode)
+		return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf("github-ingestor %s sync failed with status %d", mode, response.StatusCode)
 	}
 
 	var execution contracts.GitHubSyncExecutionResponse
@@ -173,7 +192,7 @@ func (e *httpRepositorySyncExecutor) SyncRepository(ctx context.Context, req con
 		return contracts.GitHubSyncExecutionResponse{}, err
 	}
 	if strings.TrimSpace(execution.Status) == "" || execution.StartedAt.IsZero() || execution.FinishedAt.IsZero() {
-		return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf("github-ingestor returned an invalid repository sync contract")
+		return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf("github-ingestor returned an invalid %s sync contract", mode)
 	}
 	return execution, nil
 }
@@ -215,7 +234,7 @@ func splitExecutionMetricKey(key string) (string, string) {
 }
 
 func isExecutableJob(job store.QueueJob, now time.Time) bool {
-	return job.Type == store.SyncRepositoryJob &&
+	return (job.Type == store.SyncRepositoryJob || job.Type == store.SyncUserHistoryJob) &&
 		job.Status == store.JobPending &&
 		!job.NotBefore.After(now.UTC())
 }
@@ -227,13 +246,27 @@ func syncRequestFromJob(job store.QueueJob) (contracts.SyncRequest, error) {
 			return contracts.SyncRequest{}, fmt.Errorf("decode job payload: %w", err)
 		}
 	}
-	if strings.TrimSpace(req.Repository) == "" {
-		req.Repository = strings.TrimSpace(job.Repository)
-	}
-	req.Mode = "repository"
-	req.Repository = strings.TrimSpace(req.Repository)
-	if req.Repository == "" {
-		return contracts.SyncRequest{}, fmt.Errorf("repository is required")
+	switch job.Type {
+	case store.SyncRepositoryJob:
+		if strings.TrimSpace(req.Repository) == "" {
+			req.Repository = strings.TrimSpace(job.Repository)
+		}
+		req.Mode = "repository"
+		req.Repository = strings.TrimSpace(req.Repository)
+		if req.Repository == "" {
+			return contracts.SyncRequest{}, fmt.Errorf("repository is required")
+		}
+	case store.SyncUserHistoryJob:
+		if strings.TrimSpace(req.User) == "" {
+			req.User = strings.TrimSpace(job.Subject)
+		}
+		req.Mode = "user"
+		req.User = strings.TrimSpace(req.User)
+		if req.User == "" {
+			return contracts.SyncRequest{}, fmt.Errorf("user is required")
+		}
+	default:
+		return contracts.SyncRequest{}, fmt.Errorf("job type %s is not executable by the in-process worker", job.Type)
 	}
 	return req, nil
 }

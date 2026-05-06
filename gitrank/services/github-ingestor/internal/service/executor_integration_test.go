@@ -227,3 +227,191 @@ func TestExecutorSyncRepositoryFetchesAndPersistsBoundedRepositoryData(t *testin
 		t.Fatalf("requested_repository_full_name = %q, want octo/repo", requestedRepository)
 	}
 }
+
+func TestExecutorSyncUserFetchesRecentOwnedRepositories(t *testing.T) {
+	databaseURL := strings.TrimSpace(os.Getenv("GITRANK_INGESTOR_DATABASE_URL"))
+	if databaseURL == "" {
+		t.Skip("GITRANK_INGESTOR_DATABASE_URL is not set")
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		switch r.URL.Path {
+		case "/users/octocat/repos":
+			_ = json.NewEncoder(w).Encode([]map[string]any{
+				{
+					"id":         301,
+					"name":       "repo",
+					"full_name":  "octo/repo",
+					"private":    false,
+					"fork":       false,
+					"archived":   false,
+					"disabled":   false,
+					"updated_at": "2026-05-06T12:00:00Z",
+					"owner": map[string]any{
+						"login": "octocat",
+						"type":  "User",
+					},
+				},
+				{
+					"id":         302,
+					"name":       "archived-repo",
+					"full_name":  "octo/archived-repo",
+					"private":    false,
+					"fork":       false,
+					"archived":   true,
+					"disabled":   false,
+					"updated_at": "2026-05-05T12:00:00Z",
+					"owner": map[string]any{
+						"login": "octocat",
+						"type":  "User",
+					},
+				},
+			})
+		case "/repos/octo/repo":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id":                101,
+				"name":              "repo",
+				"full_name":         "octo/repo",
+				"private":           false,
+				"fork":              false,
+				"language":          "Go",
+				"default_branch":    "main",
+				"stargazers_count":  25,
+				"forks_count":       4,
+				"open_issues_count": 3,
+				"archived":          false,
+				"disabled":          false,
+				"owner": map[string]any{
+					"login": "octocat",
+					"type":  "User",
+				},
+			})
+		case "/repos/octo/repo/pulls":
+			_ = json.NewEncoder(w).Encode([]map[string]any{
+				{"number": 7},
+			})
+		case "/repos/octo/repo/pulls/7":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id":            201,
+				"number":        7,
+				"title":         "feat: owned repository sync",
+				"state":         "closed",
+				"draft":         false,
+				"merged_at":     "2026-05-06T12:00:00Z",
+				"created_at":    "2026-05-05T12:00:00Z",
+				"updated_at":    "2026-05-06T12:00:00Z",
+				"closed_at":     "2026-05-06T12:00:00Z",
+				"changed_files": 1,
+				"additions":     12,
+				"deletions":     1,
+				"commits":       1,
+				"user": map[string]any{
+					"id":    501,
+					"login": "octocat",
+				},
+				"base": map[string]any{"ref": "main"},
+				"head": map[string]any{"ref": "feature/user-sync"},
+				"labels": []map[string]any{
+					{"id": 601, "name": "feature", "color": "0e8a16", "default": false},
+				},
+			})
+		case "/repos/octo/repo/pulls/7/reviews":
+			_ = json.NewEncoder(w).Encode([]map[string]any{})
+		case "/repos/octo/repo/issues":
+			_ = json.NewEncoder(w).Encode([]map[string]any{
+				{
+					"id":         801,
+					"number":     3,
+					"title":      "Track owned repository sync",
+					"state":      "open",
+					"locked":     false,
+					"created_at": "2026-05-05T10:00:00Z",
+					"updated_at": "2026-05-06T10:00:00Z",
+					"user": map[string]any{
+						"id":    501,
+						"login": "octocat",
+					},
+				},
+			})
+		case "/repos/octo/repo/commits":
+			_ = json.NewEncoder(w).Encode([]map[string]any{
+				{
+					"sha": "abc123",
+					"commit": map[string]any{
+						"message": "seed owned repository state",
+						"author":  map[string]any{"date": "2026-05-06T09:00:00Z"},
+					},
+				},
+			})
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, databaseURL)
+	if err != nil {
+		t.Fatalf("pgxpool.New() error = %v", err)
+	}
+	defer pool.Close()
+
+	client, err := githubapi.NewRESTClient(githubapi.ClientConfig{
+		BaseURL:          server.URL,
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		HTTPClient:       server.Client(),
+		SecondaryBackoff: time.Second,
+		MaxConcurrency:   4,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	executor := NewExecutor(config.App{
+		GitHub: config.GitHub{
+			MaxPageSize: 50,
+		},
+	}, pool, client)
+	now := time.Now().UTC()
+
+	result, err := executor.SyncUser(ctx, contracts.SyncRequest{
+		Mode: "user",
+		User: "octocat",
+	}, SyncRequestActor{
+		Subject:     "user-sync-executor",
+		GitHubLogin: "octocat",
+	}, "sync-user-executor-1", now)
+	if err != nil {
+		t.Fatalf("SyncUser() error = %v", err)
+	}
+
+	if result.Status != "completed" {
+		t.Fatalf("Status = %q, want completed", result.Status)
+	}
+	if result.User != "octocat" {
+		t.Fatalf("User = %q, want octocat", result.User)
+	}
+	if result.Fetched["repositories_selected"] != 1 {
+		t.Fatalf("Fetched[repositories_selected] = %d, want 1", result.Fetched["repositories_selected"])
+	}
+	if result.Persisted["repositories"] != 1 {
+		t.Fatalf("Persisted[repositories] = %d, want 1", result.Persisted["repositories"])
+	}
+
+	var requestedUser string
+	if err := pool.QueryRow(ctx, `
+		SELECT requested_user_login
+		FROM github_sync_runs
+		WHERE correlation_id = 'sync-user-executor-1'
+		ORDER BY started_at DESC
+		LIMIT 1
+	`).Scan(&requestedUser); err != nil {
+		t.Fatalf("select github_sync_runs.requested_user_login: %v", err)
+	}
+	if requestedUser != "octocat" {
+		t.Fatalf("requested_user_login = %q, want octocat", requestedUser)
+	}
+}
