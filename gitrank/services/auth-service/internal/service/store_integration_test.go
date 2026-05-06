@@ -119,6 +119,25 @@ func TestDeleteAccountIntegration(t *testing.T) {
 	}
 
 	_, err = pool.Exec(ctx, `
+		INSERT INTO score_replay_runs (
+			user_id,
+			score_version,
+			trigger_type,
+			status,
+			source_watermark,
+			event_count,
+			aggregate_total_xp,
+			aggregate_skill_jsonb,
+			created_at
+		) VALUES (
+			$1::uuid, 'v1', 'replay', 'completed', $2, 1, 25, '{}'::jsonb, $2
+		)
+	`, userID, now)
+	if err != nil {
+		t.Fatalf("insert score replay run: %v", err)
+	}
+
+	_, err = pool.Exec(ctx, `
 		INSERT INTO profile_snapshots (
 			user_id,
 			snapshot_version,
@@ -143,18 +162,61 @@ func TestDeleteAccountIntegration(t *testing.T) {
 	_, err = pool.Exec(ctx, `
 		INSERT INTO score_events (
 			user_id,
+			replay_run_id,
+			event_key,
 			score_version,
 			event_type,
 			delta_total_xp,
+			metadata_jsonb,
 			delta_skill_jsonb,
 			explanation_jsonb,
 			created_at
 		) VALUES (
-			$1::uuid, 'v1', 'score.computed', 25, '{}'::jsonb, '{}'::jsonb, $2
+			$1::uuid,
+			(SELECT id FROM score_replay_runs WHERE user_id = $1::uuid ORDER BY created_at DESC LIMIT 1),
+			'pr:test:analysis:test:score:v1',
+			'v1',
+			'score.computed',
+			25,
+			'{}'::jsonb,
+			'{}'::jsonb,
+			'{}'::jsonb,
+			$2
 		)
 	`, userID, now)
 	if err != nil {
 		t.Fatalf("insert score event: %v", err)
+	}
+
+	_, err = pool.Exec(ctx, `
+		INSERT INTO score_snapshots (
+			replay_run_id,
+			user_id,
+			score_version,
+			total_xp,
+			level,
+			rank_tier,
+			top_skills_jsonb,
+			badge_keys_jsonb,
+			contribution_count,
+			suspicious_events,
+			created_at
+		) VALUES (
+			(SELECT id FROM score_replay_runs WHERE user_id = $1::uuid ORDER BY created_at DESC LIMIT 1),
+			$1::uuid,
+			'v1',
+			25,
+			'Explorer',
+			'Bronze I',
+			'[]'::jsonb,
+			'[]'::jsonb,
+			1,
+			0,
+			$2
+		)
+	`, userID, now)
+	if err != nil {
+		t.Fatalf("insert score snapshot: %v", err)
 	}
 
 	_, err = pool.Exec(ctx, `
@@ -175,7 +237,9 @@ func TestDeleteAccountIntegration(t *testing.T) {
 	assertZeroRows(t, ctx, pool, "auth_sessions", "SELECT COUNT(*) FROM auth_sessions WHERE user_id = $1::uuid", userID)
 	assertZeroRows(t, ctx, pool, "user_profile_settings", "SELECT COUNT(*) FROM user_profile_settings WHERE user_id = $1::uuid", userID)
 	assertZeroRows(t, ctx, pool, "profile_snapshots", "SELECT COUNT(*) FROM profile_snapshots WHERE user_id = $1::uuid", userID)
+	assertZeroRows(t, ctx, pool, "score_replay_runs", "SELECT COUNT(*) FROM score_replay_runs WHERE user_id = $1::uuid", userID)
 	assertZeroRows(t, ctx, pool, "score_events", "SELECT COUNT(*) FROM score_events WHERE user_id = $1::uuid", userID)
+	assertZeroRows(t, ctx, pool, "score_snapshots", "SELECT COUNT(*) FROM score_snapshots WHERE user_id = $1::uuid", userID)
 	assertZeroRows(t, ctx, pool, "user_badges", "SELECT COUNT(*) FROM user_badges WHERE user_id = $1::uuid", userID)
 
 	var metadataRaw []byte

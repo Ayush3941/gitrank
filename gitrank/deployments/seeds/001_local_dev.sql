@@ -214,38 +214,120 @@ SET pull_request_id = EXCLUDED.pull_request_id,
     summary = EXCLUDED.summary,
     signals_jsonb = EXCLUDED.signals_jsonb;
 
+INSERT INTO score_replay_runs (
+    id,
+    user_id,
+    score_version,
+    trigger_type,
+    status,
+    source_watermark,
+    event_count,
+    aggregate_total_xp,
+    aggregate_skill_jsonb,
+    created_at
+) VALUES (
+    '99999999-9999-9999-9999-999999999999',
+    '11111111-1111-1111-1111-111111111111',
+    'v1alpha1',
+    'replay',
+    'completed',
+    NOW() - INTERVAL '7 days',
+    1,
+    148,
+    '{"backend":74,"api_design":74}'::jsonb,
+    NOW() - INTERVAL '7 days'
+)
+ON CONFLICT (id) DO UPDATE
+SET score_version = EXCLUDED.score_version,
+    trigger_type = EXCLUDED.trigger_type,
+    status = EXCLUDED.status,
+    source_watermark = EXCLUDED.source_watermark,
+    event_count = EXCLUDED.event_count,
+    aggregate_total_xp = EXCLUDED.aggregate_total_xp,
+    aggregate_skill_jsonb = EXCLUDED.aggregate_skill_jsonb,
+    created_at = EXCLUDED.created_at;
+
 INSERT INTO score_events (
     id,
     user_id,
     pull_request_id,
     analysis_id,
+    replay_run_id,
+    event_key,
     score_version,
     event_type,
     delta_total_xp,
     delta_skill_jsonb,
     explanation_jsonb,
+    metadata_jsonb,
     created_at
 ) VALUES (
     '66666666-6666-6666-6666-666666666666',
     '11111111-1111-1111-1111-111111111111',
     '44444444-4444-4444-4444-444444444444',
     '55555555-5555-5555-5555-555555555555',
+    '99999999-9999-9999-9999-999999999999',
+    'pr:44444444-4444-4444-4444-444444444444:analysis:55555555-5555-5555-5555-555555555555:score:v1alpha1',
     'v1alpha1',
     'score.computed',
     148,
     '{"backend":74,"api_design":74}'::jsonb,
     '{"summary":["score version v1alpha1","merged outcome increased the result","critical path touched"]}'::jsonb,
+    '{"suspicious":false,"trigger_type":"replay","repository_full_name":"octo/gitrank-demo","merged":true}'::jsonb,
     NOW() - INTERVAL '7 days'
 )
 ON CONFLICT (id) DO UPDATE
 SET user_id = EXCLUDED.user_id,
     pull_request_id = EXCLUDED.pull_request_id,
     analysis_id = EXCLUDED.analysis_id,
+    replay_run_id = EXCLUDED.replay_run_id,
+    event_key = EXCLUDED.event_key,
     score_version = EXCLUDED.score_version,
     event_type = EXCLUDED.event_type,
     delta_total_xp = EXCLUDED.delta_total_xp,
     delta_skill_jsonb = EXCLUDED.delta_skill_jsonb,
-    explanation_jsonb = EXCLUDED.explanation_jsonb;
+    explanation_jsonb = EXCLUDED.explanation_jsonb,
+    metadata_jsonb = EXCLUDED.metadata_jsonb;
+
+INSERT INTO score_snapshots (
+    id,
+    replay_run_id,
+    user_id,
+    score_version,
+    total_xp,
+    level,
+    rank_tier,
+    top_skills_jsonb,
+    badge_keys_jsonb,
+    contribution_count,
+    suspicious_events,
+    created_at
+) VALUES (
+    'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    '99999999-9999-9999-9999-999999999999',
+    '11111111-1111-1111-1111-111111111111',
+    'v1alpha1',
+    148,
+    'Specialist',
+    'Bronze I',
+    '[{"key":"backend","total_xp":74,"percentage":50},{"key":"api_design","total_xp":74,"percentage":50}]'::jsonb,
+    '["critical-path-contributor"]'::jsonb,
+    1,
+    0,
+    NOW() - INTERVAL '7 days'
+)
+ON CONFLICT (id) DO UPDATE
+SET replay_run_id = EXCLUDED.replay_run_id,
+    user_id = EXCLUDED.user_id,
+    score_version = EXCLUDED.score_version,
+    total_xp = EXCLUDED.total_xp,
+    level = EXCLUDED.level,
+    rank_tier = EXCLUDED.rank_tier,
+    top_skills_jsonb = EXCLUDED.top_skills_jsonb,
+    badge_keys_jsonb = EXCLUDED.badge_keys_jsonb,
+    contribution_count = EXCLUDED.contribution_count,
+    suspicious_events = EXCLUDED.suspicious_events,
+    created_at = EXCLUDED.created_at;
 
 INSERT INTO user_badges (
     id,

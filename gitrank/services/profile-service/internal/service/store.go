@@ -62,6 +62,11 @@ type scoreRow struct {
 	PRMerged    bool
 }
 
+type scoreSelection struct {
+	ReplayRunID  string
+	ScoreVersion string
+}
+
 type badgeRecord struct {
 	Key       string
 	AwardedAt time.Time
@@ -177,8 +182,24 @@ func (s *Store) LoadSessionPrincipal(ctx context.Context, sessionTokenHash strin
 	return principal, nil
 }
 
-func (s *Store) LoadLatestScoreVersion(ctx context.Context, userID string) (string, error) {
+func (s *Store) LoadLatestScoreSelection(ctx context.Context, userID string) (scoreSelection, error) {
 	row := s.pool.QueryRow(ctx, `
+		SELECT id::text, score_version
+		FROM score_replay_runs
+		WHERE user_id = $1::uuid
+		  AND status = 'completed'
+		ORDER BY created_at DESC
+		LIMIT 1
+	`, userID)
+
+	var selection scoreSelection
+	if err := row.Scan(&selection.ReplayRunID, &selection.ScoreVersion); err == nil {
+		return selection, nil
+	} else if !errors.Is(err, pgx.ErrNoRows) {
+		return scoreSelection{}, err
+	}
+
+	row = s.pool.QueryRow(ctx, `
 		SELECT COALESCE(score_version, '')
 		FROM score_events
 		WHERE user_id = $1::uuid
@@ -186,22 +207,21 @@ func (s *Store) LoadLatestScoreVersion(ctx context.Context, userID string) (stri
 		LIMIT 1
 	`, userID)
 
-	var scoreVersion string
-	if err := row.Scan(&scoreVersion); err != nil {
+	if err := row.Scan(&selection.ScoreVersion); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return "", nil
+			return scoreSelection{}, nil
 		}
-		return "", err
+		return scoreSelection{}, err
 	}
-	return scoreVersion, nil
+	return selection, nil
 }
 
-func (s *Store) LoadScoreRows(ctx context.Context, userID, scoreVersion string) ([]scoreRow, error) {
-	if strings.TrimSpace(scoreVersion) == "" {
+func (s *Store) LoadScoreRows(ctx context.Context, userID string, selection scoreSelection) ([]scoreRow, error) {
+	if strings.TrimSpace(selection.ScoreVersion) == "" {
 		return []scoreRow{}, nil
 	}
 
-	rows, err := s.pool.Query(ctx, `
+	query := `
 		SELECT
 			se.id::text,
 			se.event_type,
@@ -219,9 +239,19 @@ func (s *Store) LoadScoreRows(ctx context.Context, userID, scoreVersion string) 
 		LEFT JOIN pull_requests pr ON pr.id = se.pull_request_id
 		LEFT JOIN repositories r ON r.id = pr.repository_id
 		WHERE se.user_id = $1::uuid
-		  AND se.score_version = $2
+	`
+	args := []any{userID}
+	if strings.TrimSpace(selection.ReplayRunID) != "" {
+		query += ` AND se.replay_run_id = $2::uuid`
+		args = append(args, selection.ReplayRunID)
+	} else {
+		query += ` AND se.score_version = $2`
+		args = append(args, selection.ScoreVersion)
+	}
+	query += `
 		ORDER BY se.created_at DESC
-	`, userID, scoreVersion)
+	`
+	rows, err := s.pool.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}

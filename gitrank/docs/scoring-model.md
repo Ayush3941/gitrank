@@ -113,7 +113,8 @@ ContributionScore =
   * RepositoryContext
   * OutcomeWeight
   * ConsistencyModifier
-  - SpamPenalty
+  * DiminishingReturnsModifier
+  * max(0.35, 1 - SpamPenalty)
 ```
 
 ## Explainability Requirement
@@ -177,3 +178,20 @@ Score events should also map to skill dimensions, for example:
 - The formula must be versioned.
 - Re-scoring must be replayable after model or formula changes.
 - Excluded work should be filtered before scoring, not merely penalized after scoring.
+
+## Replay And Storage
+
+Recomputing scores from stored evidence requires more than a single aggregate table.
+
+GitRank v1 persists:
+
+- immutable `score_events` rows for each replay run
+- `score_replay_runs` rows that identify the active recomputation pass
+- `score_snapshots` rows for historical aggregate states
+- derived `user_badges` issued from the replay result
+
+This lets GitRank:
+
+- rebuild the latest score for a user from stored PR evidence
+- keep a historical trail of aggregate score states
+- avoid hidden score overrides while still allowing formula-version upgrades

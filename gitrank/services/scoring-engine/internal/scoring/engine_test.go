@@ -62,3 +62,51 @@ func TestScoreSmallDocsChangeGetsPenalty(t *testing.T) {
 		t.Fatalf("SpamPenalty = %.2f, want > 0", resp.SpamPenalty)
 	}
 }
+
+func TestScoreRepeatedSimilarContributionGetsDiminishingReturns(t *testing.T) {
+	engine := New()
+
+	baseline := engine.Score(contracts.ScoreContributionRequest{
+		Repository: contracts.RepositoryContext{FullName: "octo/repo"},
+		PullRequest: contracts.PullRequestContext{
+			Merged:       true,
+			ChangedFiles: 3,
+			Additions:    80,
+			Deletions:    20,
+		},
+		Analysis: contracts.PullRequestAnalysisResponse{
+			Category:       "feature",
+			TechnicalDepth: 1.2,
+			ReviewStrength: 1.1,
+			Skills:         []string{"backend"},
+		},
+	})
+
+	repeated := engine.Score(contracts.ScoreContributionRequest{
+		Repository: contracts.RepositoryContext{FullName: "octo/repo"},
+		PullRequest: contracts.PullRequestContext{
+			Merged:       true,
+			ChangedFiles: 3,
+			Additions:    80,
+			Deletions:    20,
+		},
+		Analysis: contracts.PullRequestAnalysisResponse{
+			Category:       "feature",
+			TechnicalDepth: 1.2,
+			ReviewStrength: 1.1,
+			Skills:         []string{"backend"},
+		},
+		Contributor: contracts.ContributorContext{
+			RecentRepositoryPullRequests: 6,
+			RecentCategoryPullRequests:   5,
+			RecentSimilarPullRequests:    3,
+		},
+	})
+
+	if repeated.DiminishingReturnsModifier >= 1 {
+		t.Fatalf("DiminishingReturnsModifier = %.2f, want < 1", repeated.DiminishingReturnsModifier)
+	}
+	if repeated.TotalXP >= baseline.TotalXP {
+		t.Fatalf("repeated TotalXP = %d, want < baseline %d", repeated.TotalXP, baseline.TotalXP)
+	}
+}

@@ -248,12 +248,17 @@ Implemented routes:
 - `GET /metrics`
 - `GET /v1/meta/manifest`
 - `POST /v1/score/contribution`
+- `POST /v1/score/users/{user_id}/replay`
+- `GET /v1/score/users/{user_id}/snapshot`
+- `GET /v1/score/users/{user_id}/events`
 
 Current behavior:
 
 - validates incoming analysis artifacts before deterministic scoring
 - rejects unsupported categories, invalid AI-assisted envelope metadata, and score-override style strings in analysis hints
 - remains deterministic even when future AI-assisted analysis metadata is present
+- recomputes a user's score ledger from stored PR, review, file, repository, and analysis evidence
+- persists immutable replay runs, score events, derived badges, and historical aggregate snapshots in PostgreSQL
 
 ### Profile Service
 

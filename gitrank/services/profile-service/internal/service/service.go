@@ -232,11 +232,11 @@ func (s *Service) ensureSnapshot(ctx context.Context, user userRecord, now time.
 		return snapshotRecord{}, err
 	}
 
-	scoreVersion, err := s.store.LoadLatestScoreVersion(ctx, user.ID)
+	scoreSelection, err := s.store.LoadLatestScoreSelection(ctx, user.ID)
 	if err != nil {
 		return snapshotRecord{}, err
 	}
-	scoreRows, err := s.store.LoadScoreRows(ctx, user.ID, scoreVersion)
+	scoreRows, err := s.store.LoadScoreRows(ctx, user.ID, scoreSelection)
 	if err != nil {
 		if existing.ID != "" {
 			return existing, nil

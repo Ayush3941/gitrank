@@ -122,11 +122,42 @@ This is the initial relational model direction for PostgreSQL.
 - `user_id` foreign key
 - `pull_request_id` nullable foreign key
 - `analysis_id` nullable foreign key
+- `replay_run_id` nullable foreign key
+- `event_key`
 - `score_version`
 - `event_type`
 - `delta_total_xp`
 - `delta_skill_jsonb`
 - `explanation_jsonb`
+- `metadata_jsonb`
+- `created_at`
+
+### `score_replay_runs`
+
+- `id` UUID primary key
+- `user_id` foreign key
+- `score_version`
+- `trigger_type`
+- `status`
+- `source_watermark`
+- `event_count`
+- `aggregate_total_xp`
+- `aggregate_skill_jsonb`
+- `created_at`
+
+### `score_snapshots`
+
+- `id` UUID primary key
+- `replay_run_id` foreign key
+- `user_id` foreign key
+- `score_version`
+- `total_xp`
+- `level`
+- `rank_tier`
+- `top_skills_jsonb`
+- `badge_keys_jsonb`
+- `contribution_count`
+- `suspicious_events`
 - `created_at`
 
 ### `user_badges`

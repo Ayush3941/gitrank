@@ -93,18 +93,28 @@ assert_true "user_profile_settings table exists" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'user_profile_settings');"
 assert_true "user_repository_visibility table exists" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'user_repository_visibility');"
+assert_true "score_replay_runs table exists" \
+  "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'score_replay_runs');"
+assert_true "score_snapshots table exists" \
+  "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'score_snapshots');"
 assert_true "webhook delivery persistence column exists" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'github_webhook_deliveries' AND column_name = 'github_installation_id');"
 assert_true "auth session token hash column exists" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'auth_sessions' AND column_name = 'session_token_hash');"
 assert_true "profile snapshot freshness columns exist" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'profile_snapshots' AND column_name = 'refreshed_at');"
+assert_true "score events replay column exists" \
+  "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'score_events' AND column_name = 'replay_run_id');"
 assert_true "local seed user exists exactly once" \
   "SELECT COUNT(*) = 1 FROM users WHERE id = '11111111-1111-1111-1111-111111111111'::uuid;"
 assert_true "local seed repository exists exactly once" \
   "SELECT COUNT(*) = 1 FROM repositories WHERE id = '33333333-3333-3333-3333-333333333333'::uuid;"
 assert_true "local seed profile snapshot exists exactly once" \
   "SELECT COUNT(*) = 1 FROM profile_snapshots WHERE id = '88888888-8888-8888-8888-888888888888'::uuid;"
+assert_true "local seed score replay run exists exactly once" \
+  "SELECT COUNT(*) = 1 FROM score_replay_runs WHERE id = '99999999-9999-9999-9999-999999999999'::uuid;"
+assert_true "local seed score snapshot exists exactly once" \
+  "SELECT COUNT(*) = 1 FROM score_snapshots WHERE id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'::uuid;"
 
 (
   cd "$root_dir/services/auth-service/internal/service"
@@ -119,6 +129,14 @@ assert_true "local seed profile snapshot exists exactly once" \
   TMPDIR="$root_dir/.tmp" \
     GOCACHE="$root_dir/.gocache" \
     GITRANK_STORE_DATABASE_URL="postgres://${db_user}:${db_password}@127.0.0.1:${host_port}/${db_name}?sslmode=disable" \
+    go test ./...
+)
+
+(
+  cd "$root_dir/services/scoring-engine/internal/service"
+  TMPDIR="$root_dir/.tmp" \
+    GOCACHE="$root_dir/.gocache" \
+    GITRANK_SCORING_DATABASE_URL="postgres://${db_user}:${db_password}@127.0.0.1:${host_port}/${db_name}?sslmode=disable" \
     go test ./...
 )
 

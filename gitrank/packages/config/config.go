@@ -520,6 +520,13 @@ func (a App) ValidateProfileService() error {
 	return errors.New(strings.Join(problems, "; "))
 }
 
+func (a App) ValidateScoringService() error {
+	if strings.TrimSpace(a.Database.URL) == "" {
+		return errors.New("DATABASE_URL is required")
+	}
+	return nil
+}
+
 func (a App) GitHubUserClientID() string {
 	if a.GitHub.AppClientID != "" {
 		return a.GitHub.AppClientID

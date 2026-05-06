@@ -8,7 +8,7 @@ import (
 	"github.com/Ayush3941/gitrank/packages/contracts"
 )
 
-const scoreVersion = "v1alpha1"
+const ScoreVersion = "v1alpha1"
 
 type Engine struct{}
 
@@ -21,6 +21,7 @@ func (Engine) Score(req contracts.ScoreContributionRequest) contracts.ScoreContr
 	repositoryWeight := repositoryWeight(req.Repository)
 	outcomeWeight := outcomeWeight(req.PullRequest)
 	consistencyModifier := consistencyModifier(req.Contributor)
+	diminishingReturnsModifier := diminishingReturnsModifier(req.Contributor)
 	spamPenalty := spamPenalty(req)
 	multiplier := categoryWeight *
 		req.Analysis.TechnicalDepth *
@@ -28,6 +29,7 @@ func (Engine) Score(req contracts.ScoreContributionRequest) contracts.ScoreContr
 		repositoryWeight *
 		outcomeWeight *
 		consistencyModifier *
+		diminishingReturnsModifier *
 		max(0.35, 1.0-spamPenalty)
 
 	totalXP := int(math.Round(100 * multiplier))
@@ -38,19 +40,20 @@ func (Engine) Score(req contracts.ScoreContributionRequest) contracts.ScoreContr
 	skillXP := distributeSkillXP(req.Analysis.Skills, totalXP)
 
 	return contracts.ScoreContributionResponse{
-		ScoreVersion:        scoreVersion,
-		TotalXP:             totalXP,
-		Level:               levelForXP(totalXP),
-		CategoryWeight:      categoryWeight,
-		TechnicalDepth:      req.Analysis.TechnicalDepth,
-		ReviewStrength:      req.Analysis.ReviewStrength,
-		RepositoryWeight:    repositoryWeight,
-		OutcomeWeight:       outcomeWeight,
-		ConsistencyModifier: consistencyModifier,
-		SpamPenalty:         spamPenalty,
-		SkillXP:             skillXP,
-		Explanation:         buildExplanation(req, totalXP, spamPenalty),
-		SuspiciousActivity:  spamPenalty >= 0.2,
+		ScoreVersion:               ScoreVersion,
+		TotalXP:                    totalXP,
+		Level:                      LevelForXP(totalXP),
+		CategoryWeight:             categoryWeight,
+		TechnicalDepth:             req.Analysis.TechnicalDepth,
+		ReviewStrength:             req.Analysis.ReviewStrength,
+		RepositoryWeight:           repositoryWeight,
+		OutcomeWeight:              outcomeWeight,
+		ConsistencyModifier:        consistencyModifier,
+		DiminishingReturnsModifier: diminishingReturnsModifier,
+		SpamPenalty:                spamPenalty,
+		SkillXP:                    skillXP,
+		Explanation:                buildExplanation(req, totalXP, spamPenalty, diminishingReturnsModifier),
+		SuspiciousActivity:         spamPenalty >= 0.2,
 	}
 }
 
@@ -128,6 +131,19 @@ func consistencyModifier(contributor contracts.ContributorContext) float64 {
 	return modifier
 }
 
+func diminishingReturnsModifier(contributor contracts.ContributorContext) float64 {
+	modifier := 1.0
+	modifier -= float64(min(contributor.RecentSimilarPullRequests, 5)) * 0.08
+	modifier -= float64(min(contributor.RecentCategoryPullRequests, 8)) * 0.025
+	if contributor.RecentRepositoryPullRequests >= 6 {
+		modifier -= 0.1
+	}
+	if modifier < 0.6 {
+		return 0.6
+	}
+	return modifier
+}
+
 func spamPenalty(req contracts.ScoreContributionRequest) float64 {
 	penalty := 0.0
 	if req.Analysis.Category == "documentation" && req.PullRequest.Additions+req.PullRequest.Deletions < 20 {
@@ -163,14 +179,17 @@ func distributeSkillXP(skills []string, totalXP int) map[string]int {
 	return result
 }
 
-func buildExplanation(req contracts.ScoreContributionRequest, totalXP int, spamPenalty float64) []string {
+func buildExplanation(req contracts.ScoreContributionRequest, totalXP int, spamPenalty, diminishingReturns float64) []string {
 	explanation := []string{
-		"score version " + scoreVersion,
+		"score version " + ScoreVersion,
 		"category " + strings.ReplaceAll(req.Analysis.Category, "_", " "),
 		"technical depth and review strength were applied deterministically",
 	}
 	if req.PullRequest.Merged {
 		explanation = append(explanation, "merged outcome increased the result")
+	}
+	if diminishingReturns < 1 {
+		explanation = append(explanation, "recent similar contribution patterns triggered diminishing returns")
 	}
 	if spamPenalty > 0 {
 		explanation = append(explanation, "small-change or docs-heavy penalties reduced the result")
@@ -179,7 +198,7 @@ func buildExplanation(req contracts.ScoreContributionRequest, totalXP int, spamP
 	return explanation
 }
 
-func levelForXP(xp int) string {
+func LevelForXP(xp int) string {
 	switch {
 	case xp >= 250:
 		return "Architect"

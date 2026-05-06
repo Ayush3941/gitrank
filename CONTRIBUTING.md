@@ -537,24 +537,24 @@ Must be implemented:
 - [x] versioned scoring formula
 - [x] weighted factors defined in code and docs
 - [x] explainability output for each scored contribution
-- [ ] user-level aggregate score computation
+- [x] user-level aggregate score computation
 - [x] skill dimension computation
-- [ ] badge issuance logic
+- [x] badge issuance logic
 - [x] level progression logic
 - [x] anti-spam penalties
-- [ ] diminishing returns rules
+- [x] diminishing returns rules
 - [x] consistency multiplier rules
 - [x] repository weighting rules
 - [x] merge outcome weighting rules
-- [ ] re-score and replay jobs
-- [ ] score event ledger
-- [ ] historical score snapshots
+- [x] re-score and replay jobs
+- [x] score event ledger
+- [x] historical score snapshots
 
 Credibility requirements:
 
 - [x] a user can see why a contribution was scored the way it was
 - [x] formula changes are versioned
-- [ ] scores can be recomputed from stored evidence
+- [x] scores can be recomputed from stored evidence
 - [x] hidden manual overrides are prohibited or tightly audited
 - [x] score disputes have an operational path
 

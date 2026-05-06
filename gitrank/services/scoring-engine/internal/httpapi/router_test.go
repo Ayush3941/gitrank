@@ -10,10 +10,11 @@ import (
 	"time"
 
 	"github.com/Ayush3941/gitrank/packages/config"
+	"github.com/Ayush3941/gitrank/services/scoring-engine/internal/service"
 )
 
 func TestMetricsIncludeScoreComputationDuration(t *testing.T) {
-	router := NewRouter(testConfig(), testLogger(), "test")
+	router := testRouter(t)
 	request := httptest.NewRequest(http.MethodPost, "/v1/score/contribution", strings.NewReader(`{
 		"repository":{"full_name":"octo/repo","maintainers":4,"stars":1200},
 		"pull_request":{"merged":true,"changed_files":1,"additions":4,"deletions":2},
@@ -47,7 +48,7 @@ func TestMetricsIncludeScoreComputationDuration(t *testing.T) {
 }
 
 func TestScoreContributionRejectsInvalidAnalysisEnvelope(t *testing.T) {
-	router := NewRouter(testConfig(), testLogger(), "test")
+	router := testRouter(t)
 	request := httptest.NewRequest(http.MethodPost, "/v1/score/contribution", strings.NewReader(`{
 		"repository":{"full_name":"octo/repo"},
 		"pull_request":{"changed_files":1,"additions":4,"deletions":2},
@@ -67,6 +68,18 @@ func TestScoreContributionRejectsInvalidAnalysisEnvelope(t *testing.T) {
 	}
 }
 
+func TestReplayRouteUnavailableWithoutDatabase(t *testing.T) {
+	router := testRouter(t)
+	request := httptest.NewRequest(http.MethodPost, "/v1/score/users/00000000-0000-0000-0000-000000000001/replay", strings.NewReader(`{}`))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+	if response.Code != http.StatusServiceUnavailable {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusServiceUnavailable, response.Body.String())
+	}
+}
+
 func testConfig() config.App {
 	return config.App{
 		ServiceName: "scoring-engine",
@@ -82,4 +95,14 @@ func testConfig() config.App {
 
 func testLogger() *slog.Logger {
 	return slog.New(slog.NewTextHandler(io.Discard, nil))
+}
+
+func testRouter(t *testing.T) http.Handler {
+	t.Helper()
+
+	svc, err := service.New(testConfig(), nil, testLogger())
+	if err != nil {
+		t.Fatalf("service.New() error = %v", err)
+	}
+	return NewRouter(testConfig(), svc, testLogger(), "test")
 }
