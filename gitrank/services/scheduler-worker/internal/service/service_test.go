@@ -492,6 +492,61 @@ func TestRunNextExecutesIssueJobAndCompletes(t *testing.T) {
 	}
 }
 
+func TestRunNextExecutesCommitJobAndCompletes(t *testing.T) {
+	now := time.Date(2026, time.May, 6, 12, 55, 0, 0, time.UTC)
+	var observed contracts.SyncRequest
+	var observedPath string
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		observedPath = r.URL.Path
+		if err := json.NewDecoder(r.Body).Decode(&observed); err != nil {
+			t.Fatalf("decode request: %v", err)
+		}
+		_ = json.NewEncoder(w).Encode(contracts.GitHubSyncExecutionResponse{
+			Status:        "completed",
+			Mode:          "commit",
+			Repository:    observed.Repository,
+			SHA:           observed.SHA,
+			CorrelationID: r.Header.Get("X-Request-ID"),
+			StartedAt:     now,
+			FinishedAt:    now.Add(2 * time.Second),
+			Fetched:       map[string]int{"commits": 1},
+			Persisted:     map[string]int{"commits": 1},
+		})
+	}))
+	defer server.Close()
+
+	cfg := testServiceConfig()
+	cfg.Services.GitHubIngestorBaseURL = server.URL
+	cfg.Services.RequestTimeout = time.Second
+	scheduler := New(cfg)
+
+	enqueue, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "commit", Repository: "octo/repo", SHA: "abc123"}, "commit-correlation", now)
+	if err != nil {
+		t.Fatalf("EnqueueSync() error = %v", err)
+	}
+
+	run, err := scheduler.RunNext(context.Background(), now)
+	if err != nil {
+		t.Fatalf("RunNext() error = %v", err)
+	}
+	if run.Status != "completed" {
+		t.Fatalf("run status = %q, want completed", run.Status)
+	}
+	if run.Execution == nil || run.Execution.Mode != "commit" || run.Execution.SHA != "abc123" {
+		t.Fatalf("run execution = %+v, want completed commit execution", run.Execution)
+	}
+	if observedPath != "/v1/sync/commit/execute" {
+		t.Fatalf("observed path = %q, want %q", observedPath, "/v1/sync/commit/execute")
+	}
+	if observed.Repository != "octo/repo" || observed.SHA != "abc123" || observed.Mode != "commit" {
+		t.Fatalf("observed request = %+v, want repo octo/repo sha abc123", observed)
+	}
+	if run.Job == nil || run.Job.ID != enqueue.JobIDs[0] {
+		t.Fatalf("run job = %+v, want executed job id %q", run.Job, enqueue.JobIDs[0])
+	}
+}
+
 func TestRunNextRetriesRepositoryJobOnUpstreamFailure(t *testing.T) {
 	now := time.Date(2026, time.May, 6, 13, 0, 0, 0, time.UTC)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {

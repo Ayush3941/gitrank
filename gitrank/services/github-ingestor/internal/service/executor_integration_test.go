@@ -683,3 +683,114 @@ func TestExecutorSyncIssueFetchesAndPersistsBoundedIssueData(t *testing.T) {
 		t.Fatalf("requested_repository_full_name = %q, want octo/repo", requestedRepository)
 	}
 }
+
+func TestExecutorSyncCommitFetchesAndPersistsBoundedCommitData(t *testing.T) {
+	databaseURL := strings.TrimSpace(os.Getenv("GITRANK_INGESTOR_DATABASE_URL"))
+	if databaseURL == "" {
+		t.Skip("GITRANK_INGESTOR_DATABASE_URL is not set")
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		switch r.URL.Path {
+		case "/repos/octo/repo":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id":                101,
+				"name":              "repo",
+				"full_name":         "octo/repo",
+				"private":           false,
+				"fork":              false,
+				"language":          "Go",
+				"default_branch":    "main",
+				"stargazers_count":  25,
+				"forks_count":       4,
+				"open_issues_count": 3,
+				"archived":          false,
+				"disabled":          false,
+				"owner": map[string]any{
+					"login": "octo",
+					"type":  "User",
+				},
+			})
+		case "/repos/octo/repo/commits/abc123":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"sha": "abc123",
+				"commit": map[string]any{
+					"message": "seed repository state",
+					"author":  map[string]any{"date": "2026-05-06T09:00:00Z"},
+				},
+			})
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, databaseURL)
+	if err != nil {
+		t.Fatalf("pgxpool.New() error = %v", err)
+	}
+	defer pool.Close()
+
+	client, err := githubapi.NewRESTClient(githubapi.ClientConfig{
+		BaseURL:          server.URL,
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		HTTPClient:       server.Client(),
+		SecondaryBackoff: time.Second,
+		MaxConcurrency:   4,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	executor := NewExecutor(config.App{
+		GitHub: config.GitHub{
+			MaxPageSize: 50,
+		},
+	}, pool, client)
+	now := time.Now().UTC()
+
+	result, err := executor.SyncCommit(ctx, contracts.SyncRequest{
+		Mode:       "commit",
+		Repository: "octo/repo",
+		SHA:        "abc123",
+	}, SyncRequestActor{
+		Subject:     "commit-sync-executor",
+		GitHubLogin: "octocat",
+	}, "sync-commit-executor-1", now)
+	if err != nil {
+		t.Fatalf("SyncCommit() error = %v", err)
+	}
+
+	if result.Status != "completed" {
+		t.Fatalf("Status = %q, want completed", result.Status)
+	}
+	if result.Repository != "octo/repo" || result.SHA != "abc123" {
+		t.Fatalf("result = %+v, want repo octo/repo sha abc123", result)
+	}
+	if result.Fetched["commits"] != 1 {
+		t.Fatalf("Fetched[commits] = %d, want 1", result.Fetched["commits"])
+	}
+	if result.Persisted["commits"] != 1 {
+		t.Fatalf("Persisted[commits] = %d, want 1", result.Persisted["commits"])
+	}
+
+	assertCount(t, ctx, pool, "repository_commits", "SELECT COUNT(*) FROM repository_commits WHERE sha = 'abc123'", 1)
+
+	var requestedRepository string
+	if err := pool.QueryRow(ctx, `
+		SELECT requested_repository_full_name
+		FROM github_sync_runs
+		WHERE correlation_id = 'sync-commit-executor-1'
+		ORDER BY started_at DESC
+		LIMIT 1
+	`).Scan(&requestedRepository); err != nil {
+		t.Fatalf("select github_sync_runs.requested_repository_full_name: %v", err)
+	}
+	if requestedRepository != "octo/repo" {
+		t.Fatalf("requested_repository_full_name = %q, want octo/repo", requestedRepository)
+	}
+}
