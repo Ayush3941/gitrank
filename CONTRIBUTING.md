@@ -479,6 +479,7 @@ Current preview state:
 
 - webhook delivery deduplication and requeue state persist in PostgreSQL when `DATABASE_URL` is configured
 - webhook-driven repository, PR, review, issue, label, commit, installation, and sync-run entities persist idempotently in PostgreSQL when `DATABASE_URL` is configured
+- `POST /v1/sync/repository/execute` now performs a bounded live repository sync against the public GitHub REST API and persists repository, pull request, review, issue, and commit data directly
 - manual sync requests also persist queued sync-run records and are queryable by user, repository, subject, requester, correlation ID, and delivery ID
 - manual sync and backfill execution still remain an in-memory queue preview and are not yet durable across process restarts
 

@@ -62,3 +62,14 @@ type GitHubSyncRunListResponse struct {
 	AppliedFilter GitHubSyncRunFilter `json:"applied_filter,omitempty"`
 	LastUpdatedAt time.Time           `json:"last_updated_at"`
 }
+
+type GitHubSyncExecutionResponse struct {
+	Status        string         `json:"status"`
+	Mode          string         `json:"mode"`
+	Repository    string         `json:"repository,omitempty"`
+	CorrelationID string         `json:"correlation_id,omitempty"`
+	StartedAt     time.Time      `json:"started_at"`
+	FinishedAt    time.Time      `json:"finished_at"`
+	Fetched       map[string]int `json:"fetched,omitempty"`
+	Persisted     map[string]int `json:"persisted,omitempty"`
+}

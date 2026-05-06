@@ -1,0 +1,229 @@
+package service
+
+import (
+	"context"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/Ayush3941/gitrank/packages/config"
+	"github.com/Ayush3941/gitrank/packages/contracts"
+	"github.com/Ayush3941/gitrank/packages/githubapi"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+func TestExecutorSyncRepositoryFetchesAndPersistsBoundedRepositoryData(t *testing.T) {
+	databaseURL := strings.TrimSpace(os.Getenv("GITRANK_INGESTOR_DATABASE_URL"))
+	if databaseURL == "" {
+		t.Skip("GITRANK_INGESTOR_DATABASE_URL is not set")
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		switch r.URL.Path {
+		case "/repos/octo/repo":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id":                101,
+				"name":              "repo",
+				"full_name":         "octo/repo",
+				"private":           false,
+				"fork":              false,
+				"language":          "Go",
+				"default_branch":    "main",
+				"stargazers_count":  25,
+				"forks_count":       4,
+				"open_issues_count": 3,
+				"archived":          false,
+				"disabled":          false,
+				"owner": map[string]any{
+					"login": "octo",
+					"type":  "User",
+				},
+			})
+		case "/repos/octo/repo/pulls":
+			_ = json.NewEncoder(w).Encode([]map[string]any{
+				{"number": 7},
+				{"number": 8},
+			})
+		case "/repos/octo/repo/pulls/7":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id":            201,
+				"number":        7,
+				"title":         "fix: tighten sync replay path",
+				"state":         "closed",
+				"draft":         false,
+				"merged_at":     "2026-05-06T12:00:00Z",
+				"created_at":    "2026-05-05T12:00:00Z",
+				"updated_at":    "2026-05-06T12:00:00Z",
+				"closed_at":     "2026-05-06T12:00:00Z",
+				"changed_files": 2,
+				"additions":     40,
+				"deletions":     8,
+				"commits":       2,
+				"user": map[string]any{
+					"id":    501,
+					"login": "octocat",
+				},
+				"base": map[string]any{"ref": "main"},
+				"head": map[string]any{"ref": "feature/sync"},
+				"labels": []map[string]any{
+					{"id": 601, "name": "bug", "color": "d73a4a", "default": true},
+				},
+			})
+		case "/repos/octo/repo/pulls/8":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id":            202,
+				"number":        8,
+				"title":         "feat: add repository sync trace",
+				"state":         "open",
+				"draft":         false,
+				"merged_at":     nil,
+				"created_at":    "2026-05-05T16:00:00Z",
+				"updated_at":    "2026-05-06T13:00:00Z",
+				"closed_at":     nil,
+				"changed_files": 1,
+				"additions":     18,
+				"deletions":     0,
+				"commits":       1,
+				"user": map[string]any{
+					"id":    502,
+					"login": "hubot",
+				},
+				"base": map[string]any{"ref": "main"},
+				"head": map[string]any{"ref": "feature/trace"},
+				"labels": []map[string]any{
+					{"id": 602, "name": "feature", "color": "0e8a16", "default": false},
+				},
+			})
+		case "/repos/octo/repo/pulls/7/reviews":
+			_ = json.NewEncoder(w).Encode([]map[string]any{
+				{
+					"id":           701,
+					"state":        "APPROVED",
+					"submitted_at": "2026-05-06T12:30:00Z",
+					"body":         "Looks good",
+					"user": map[string]any{
+						"id":    501,
+						"login": "octocat",
+					},
+				},
+			})
+		case "/repos/octo/repo/pulls/8/reviews":
+			_ = json.NewEncoder(w).Encode([]map[string]any{})
+		case "/repos/octo/repo/issues":
+			_ = json.NewEncoder(w).Encode([]map[string]any{
+				{
+					"id":         801,
+					"number":     3,
+					"title":      "Track sync backlog",
+					"state":      "open",
+					"locked":     false,
+					"created_at": "2026-05-05T10:00:00Z",
+					"updated_at": "2026-05-06T10:00:00Z",
+					"user": map[string]any{
+						"id":    501,
+						"login": "octocat",
+					},
+					"labels": []map[string]any{
+						{"id": 603, "name": "tracking", "color": "0366d6", "default": false},
+					},
+				},
+				{
+					"id":           802,
+					"number":       9,
+					"title":        "PR mirror should be ignored",
+					"state":        "open",
+					"pull_request": map[string]any{"url": "https://api.github.test/repos/octo/repo/pulls/9"},
+				},
+			})
+		case "/repos/octo/repo/commits":
+			_ = json.NewEncoder(w).Encode([]map[string]any{
+				{
+					"sha": "abc123",
+					"commit": map[string]any{
+						"message": "seed repository state",
+						"author":  map[string]any{"date": "2026-05-06T09:00:00Z"},
+					},
+				},
+			})
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, databaseURL)
+	if err != nil {
+		t.Fatalf("pgxpool.New() error = %v", err)
+	}
+	defer pool.Close()
+
+	client, err := githubapi.NewRESTClient(githubapi.ClientConfig{
+		BaseURL:          server.URL,
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		HTTPClient:       server.Client(),
+		SecondaryBackoff: time.Second,
+		MaxConcurrency:   4,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	executor := NewExecutor(config.App{
+		GitHub: config.GitHub{
+			MaxPageSize: 50,
+		},
+	}, pool, client)
+	now := time.Now().UTC()
+
+	result, err := executor.SyncRepository(ctx, contracts.SyncRequest{
+		Mode:       "repository",
+		Repository: "octo/repo",
+	}, SyncRequestActor{
+		Subject:     "user-sync-executor",
+		GitHubLogin: "octocat",
+	}, "sync-executor-1", now)
+	if err != nil {
+		t.Fatalf("SyncRepository() error = %v", err)
+	}
+
+	if result.Status != "completed" {
+		t.Fatalf("Status = %q, want completed", result.Status)
+	}
+	if result.Repository != "octo/repo" {
+		t.Fatalf("Repository = %q, want octo/repo", result.Repository)
+	}
+	if result.Fetched["pull_requests"] != 2 {
+		t.Fatalf("Fetched[pull_requests] = %d, want 2", result.Fetched["pull_requests"])
+	}
+	if result.Persisted["pull_requests"] != 2 {
+		t.Fatalf("Persisted[pull_requests] = %d, want 2", result.Persisted["pull_requests"])
+	}
+
+	assertCount(t, ctx, pool, "repositories", "SELECT COUNT(*) FROM repositories WHERE github_repository_id = 101", 1)
+	assertCount(t, ctx, pool, "pull_requests", "SELECT COUNT(*) FROM pull_requests WHERE github_pull_request_id IN (201, 202)", 2)
+	assertCount(t, ctx, pool, "pull_request_reviews", "SELECT COUNT(*) FROM pull_request_reviews WHERE github_review_id = 701", 1)
+	assertCount(t, ctx, pool, "repository_issues", "SELECT COUNT(*) FROM repository_issues WHERE github_issue_id = 801", 1)
+	assertCount(t, ctx, pool, "repository_commits", "SELECT COUNT(*) FROM repository_commits WHERE sha = 'abc123'", 1)
+
+	var requestedRepository string
+	if err := pool.QueryRow(ctx, `
+		SELECT requested_repository_full_name
+		FROM github_sync_runs
+		WHERE correlation_id = 'sync-executor-1'
+		ORDER BY started_at DESC
+		LIMIT 1
+	`).Scan(&requestedRepository); err != nil {
+		t.Fatalf("select github_sync_runs.requested_repository_full_name: %v", err)
+	}
+	if requestedRepository != "octo/repo" {
+		t.Fatalf("requested_repository_full_name = %q, want octo/repo", requestedRepository)
+	}
+}

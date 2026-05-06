@@ -231,8 +231,8 @@ func TestPersistWebhookNormalizesEntitiesIdempotently(t *testing.T) {
 	assertCount(t, ctx, pool, "pull_request_review_comments", "SELECT COUNT(*) FROM pull_request_review_comments WHERE github_review_comment_id = 66001", 1)
 	assertCount(t, ctx, pool, "repository_issues", "SELECT COUNT(*) FROM repository_issues WHERE github_issue_id = 77001", 1)
 	assertCount(t, ctx, pool, "repository_labels", "SELECT COUNT(*) FROM repository_labels WHERE github_label_id IN (44001, 44002)", 2)
-	assertCount(t, ctx, pool, "pull_request_labels", "SELECT COUNT(*) FROM pull_request_labels", 1)
-	assertCount(t, ctx, pool, "repository_issue_labels", "SELECT COUNT(*) FROM repository_issue_labels", 2)
+	assertCount(t, ctx, pool, "pull_request_labels", "SELECT COUNT(*) FROM pull_request_labels WHERE pull_request_id = (SELECT id FROM pull_requests WHERE github_pull_request_id = 33001)", 1)
+	assertCount(t, ctx, pool, "repository_issue_labels", "SELECT COUNT(*) FROM repository_issue_labels WHERE issue_id = (SELECT id FROM repository_issues WHERE github_issue_id = 77001)", 2)
 	assertCount(t, ctx, pool, "repository_commits", "SELECT COUNT(*) FROM repository_commits WHERE repository_id = (SELECT id FROM repositories WHERE github_repository_id = 22001)", 2)
 	assertCount(t, ctx, pool, "github_sync_runs", "SELECT COUNT(*) FROM github_sync_runs WHERE github_delivery_id LIKE 'delivery-%' OR correlation_id = 'req-manual'", 6)
 

@@ -27,6 +27,7 @@ type payloadSyncRunInput struct {
 	DeliveryID                  string
 	EventType                   string
 	Status                      string
+	LastError                   string
 	Subject                     string
 	InstallationID              string
 	InstallationSourceID        int64
@@ -643,8 +644,8 @@ func (s *TxStore) InsertSyncRun(input payloadSyncRunInput) error {
 			$11,
 			$12,
 			$13,
-			'',
-			$14::jsonb
+			$14,
+			$15::jsonb
 		)
 	`,
 		input.EventType,
@@ -660,6 +661,7 @@ func (s *TxStore) InsertSyncRun(input payloadSyncRunInput) error {
 		input.CorrelationID,
 		input.StartedAt.UTC(),
 		nullableTime(input.FinishedAt),
+		strings.TrimSpace(input.LastError),
 		metricsJSON,
 	)
 	return err
@@ -970,6 +972,9 @@ func object(value any) map[string]any {
 }
 
 func objectArray(value any) []map[string]any {
+	if typed, ok := value.([]map[string]any); ok {
+		return typed
+	}
 	raw, ok := value.([]any)
 	if !ok {
 		return nil

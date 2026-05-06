@@ -207,6 +207,87 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /v1/sync/repository/execute:
+    post:
+      tags: [Sync]
+      summary: Execute a bounded live repository sync
+      description: |
+        Fetches recent public repository, pull request, review, issue, and commit data directly through the GitHub ingestor
+        and persists it through the normalized PostgreSQL model.
+
+        This route is intentionally bounded and is not a historical backfill API.
+      operationId: executeRepositorySync
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SyncRequest"
+            example:
+              mode: repository
+              repository: Ayush3941/gitrank
+      responses:
+        "200":
+          description: Repository sync completed
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Cache-Control:
+              $ref: "#/components/headers/PrivateNoStoreCacheControl"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GitHubSyncExecutionResponse"
+        "400":
+          description: Invalid repository sync request or JSON payload
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Invalid or missing CSRF token
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limit exceeded
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Retry-After:
+              $ref: "#/components/headers/RetryAfter"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "502":
+          description: GitHub ingestor could not complete the live repository sync
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /v1/me/account/unlink:
     post:
       tags: [Account]
@@ -730,6 +811,37 @@ components:
         accepted_at:
           type: string
           format: date-time
+    GitHubSyncExecutionResponse:
+      type: object
+      required: [status, mode, started_at, finished_at]
+      properties:
+        status:
+          type: string
+          example: completed
+        mode:
+          type: string
+          example: repository
+        repository:
+          type: string
+          example: Ayush3941/gitrank
+        correlation_id:
+          type: string
+        started_at:
+          type: string
+          format: date-time
+        finished_at:
+          type: string
+          format: date-time
+        fetched:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int32
+        persisted:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int32
     DeleteAccountRequest:
       type: object
       required: [confirmation]

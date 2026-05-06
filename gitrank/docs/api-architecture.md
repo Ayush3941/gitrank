@@ -131,6 +131,7 @@ Implemented routes:
 - `GET /v1/meta/manifest`
 - `GET /v1/meta/dependencies`
 - `POST /v1/sync`
+- `POST /v1/sync/repository/execute`
 - `GET /v1/me/profile`
 - `PATCH /v1/me/profile`
 - `PATCH /v1/me/profile/repositories/{owner}/{repo}`
@@ -198,6 +199,7 @@ Implemented routes:
 - `POST /v1/webhooks/github/deliveries/{delivery_id}/requeue`
 - `POST /v1/sync/preview`
 - `GET /v1/sync/runs`
+- `POST /v1/sync/repository/execute`
 - `POST /v1/sync/installation`
 - `POST /v1/sync/user`
 - `POST /v1/sync/repository`
@@ -212,6 +214,7 @@ Current state:
 - stored webhook deliveries can be manually requeued for recovery
 - webhook delivery deduplication and requeue state persist in PostgreSQL when `DATABASE_URL` is configured
 - webhook-driven repository, PR, review, issue, label, commit, installation, and sync-run entities persist idempotently in PostgreSQL when `DATABASE_URL` is configured
+- `POST /v1/sync/repository/execute` performs a bounded live repository sync through the public GitHub REST API and persists repository, pull request, review, issue, and commit data in PostgreSQL
 - manual sync requests persist queued sync-run records and can be queried through `GET /v1/sync/runs` with user, repository, subject, requester, correlation, and delivery filters
 - sync requests still enqueue in-memory preview jobs for execution
 - persistent worker execution and historical backfill orchestration are still pending

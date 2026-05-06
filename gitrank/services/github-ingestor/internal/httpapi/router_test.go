@@ -260,6 +260,27 @@ func TestSyncRunsRequirePersistence(t *testing.T) {
 	}
 }
 
+func TestRepositorySyncExecutionRequiresExecutor(t *testing.T) {
+	router := NewRouter(testConfig(), testLogger(), "test")
+	request := httptest.NewRequest(http.MethodPost, "/v1/sync/repository/execute", bytes.NewReader([]byte(`{"repository":"octo/repo"}`)))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusServiceUnavailable {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusServiceUnavailable, response.Body.String())
+	}
+
+	var out contracts.ErrorResponse
+	if err := json.Unmarshal(response.Body.Bytes(), &out); err != nil {
+		t.Fatalf("unmarshal error response: %v", err)
+	}
+	if out.Error.Code != "github_sync_unavailable" {
+		t.Fatalf("error code = %q, want %q", out.Error.Code, "github_sync_unavailable")
+	}
+}
+
 func testConfig() config.App {
 	return config.App{
 		ServiceName: "github-ingestor",
