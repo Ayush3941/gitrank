@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Ayush3941/gitrank/packages/store"
+	"github.com/Ayush3941/gitrank/services/github-ingestor/internal/service"
 )
 
 type queueMetricsSource struct {
@@ -24,6 +25,15 @@ type syncMetricsSource struct {
 	entries map[syncMetricKey]*syncMetricValue
 }
 
+type persistenceMetricsSource struct {
+	service string
+
+	mu             sync.Mutex
+	byEntity       map[string]uint64
+	byEventType    map[string]uint64
+	failureByEvent map[string]uint64
+}
+
 type syncMetricKey struct {
 	mode   string
 	status string
@@ -38,6 +48,15 @@ func newSyncMetricsSource(service string) *syncMetricsSource {
 	return &syncMetricsSource{
 		service: service,
 		entries: make(map[syncMetricKey]*syncMetricValue),
+	}
+}
+
+func newPersistenceMetricsSource(service string) *persistenceMetricsSource {
+	return &persistenceMetricsSource{
+		service:        service,
+		byEntity:       make(map[string]uint64),
+		byEventType:    make(map[string]uint64),
+		failureByEvent: make(map[string]uint64),
 	}
 }
 
@@ -117,6 +136,80 @@ func (s *syncMetricsSource) WritePrometheus(w io.Writer) {
 			float64(snapshot.value.durationTotal.Microseconds())/1000.0,
 		)
 	}
+}
+
+func (s *persistenceMetricsSource) Observe(eventType string, result service.PersistResult) {
+	if s == nil {
+		return
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.byEventType[eventType]++
+	for entity, count := range result.EntityCounts() {
+		if count > 0 {
+			s.byEntity[entity] += uint64(count)
+		}
+	}
+}
+
+func (s *persistenceMetricsSource) ObserveFailure(eventType string) {
+	if s == nil {
+		return
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.failureByEvent[eventType]++
+}
+
+func (s *persistenceMetricsSource) WritePrometheus(w io.Writer) {
+	if s == nil {
+		return
+	}
+
+	_, _ = fmt.Fprintf(w, "# HELP gitrank_github_entities_persisted_total Total normalized GitHub entities persisted by entity type.\n")
+	_, _ = fmt.Fprintf(w, "# TYPE gitrank_github_entities_persisted_total counter\n")
+	_, _ = fmt.Fprintf(w, "# HELP gitrank_github_webhook_persistence_total Total persisted webhook deliveries by event type.\n")
+	_, _ = fmt.Fprintf(w, "# TYPE gitrank_github_webhook_persistence_total counter\n")
+	_, _ = fmt.Fprintf(w, "# HELP gitrank_github_webhook_persistence_failures_total Total webhook persistence failures by event type.\n")
+	_, _ = fmt.Fprintf(w, "# TYPE gitrank_github_webhook_persistence_failures_total counter\n")
+
+	s.mu.Lock()
+	entityKeys := sortedKeysUint64(s.byEntity)
+	eventKeys := sortedKeysUint64(s.byEventType)
+	failureKeys := sortedKeysUint64(s.failureByEvent)
+	serviceName := s.service
+	entities := cloneMap(s.byEntity)
+	events := cloneMap(s.byEventType)
+	failures := cloneMap(s.failureByEvent)
+	s.mu.Unlock()
+
+	for _, key := range entityKeys {
+		_, _ = fmt.Fprintf(w, `gitrank_github_entities_persisted_total{service=%q,entity=%q} %d`+"\n", serviceName, key, entities[key])
+	}
+	for _, key := range eventKeys {
+		_, _ = fmt.Fprintf(w, `gitrank_github_webhook_persistence_total{service=%q,event_type=%q} %d`+"\n", serviceName, key, events[key])
+	}
+	for _, key := range failureKeys {
+		_, _ = fmt.Fprintf(w, `gitrank_github_webhook_persistence_failures_total{service=%q,event_type=%q} %d`+"\n", serviceName, key, failures[key])
+	}
+}
+
+func sortedKeysUint64(values map[string]uint64) []string {
+	keys := make([]string, 0, len(values))
+	for key := range values {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+func cloneMap(values map[string]uint64) map[string]uint64 {
+	out := make(map[string]uint64, len(values))
+	for key, value := range values {
+		out[key] = value
+	}
+	return out
 }
 
 func (s queueMetricsSource) WritePrometheus(w io.Writer) {

@@ -132,12 +132,22 @@ func ParseWebhookEnvelope(headers http.Header, body []byte) (WebhookEnvelope, er
 			envelope.Installation = value
 		}
 	}
-	if pullRequest, ok := payload["pull_request"].(map[string]any); ok {
-		switch value := pullRequest["number"].(type) {
+	if number, ok := payload["number"]; ok {
+		switch value := number.(type) {
 		case float64:
 			envelope.Number = int(value)
 		case int:
 			envelope.Number = value
+		}
+	}
+	if pullRequest, ok := payload["pull_request"].(map[string]any); ok {
+		if envelope.Number == 0 {
+			switch value := pullRequest["number"].(type) {
+			case float64:
+				envelope.Number = int(value)
+			case int:
+				envelope.Number = value
+			}
 		}
 		if head, ok := pullRequest["head"].(map[string]any); ok {
 			if sha, ok := head["sha"].(string); ok {

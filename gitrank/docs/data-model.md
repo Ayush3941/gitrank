@@ -54,6 +54,33 @@ This is the initial relational model direction for PostgreSQL.
 - `metadata_jsonb`
 - `synced_at`
 
+### `github_installations`
+
+- `id` UUID primary key
+- `github_installation_id` unique
+- `github_app_id`
+- `app_slug`
+- `account_login`
+- `account_type`
+- `target_type`
+- `repository_selection`
+- `permissions_jsonb`
+- `events`
+- `suspended_at_source`
+- `installed_at_source`
+- `updated_at_source`
+- `created_at`
+- `updated_at`
+
+### `github_installation_repositories`
+
+- `id` UUID primary key
+- `installation_id` foreign key
+- `repository_id` foreign key
+- `permissions_jsonb`
+- `selected_at`
+- `removed_at`
+
 ### `pull_requests`
 
 - `id` UUID primary key
@@ -101,6 +128,84 @@ This is the initial relational model direction for PostgreSQL.
 - `body`
 - `created_at_source`
 - `payload_jsonb`
+
+### `repository_labels`
+
+- `id` UUID primary key
+- `github_label_id` unique
+- `repository_id` foreign key
+- `name`
+- `color`
+- `description`
+- `is_default`
+- `updated_at_source`
+- `payload_jsonb`
+
+### `repository_issues`
+
+- `id` UUID primary key
+- `github_issue_id` unique
+- `repository_id` foreign key
+- `author_github_account_id` nullable foreign key
+- `number`
+- `title`
+- `state`
+- `locked`
+- `created_at_source`
+- `updated_at_source`
+- `closed_at_source`
+- `payload_jsonb`
+- `synced_at`
+
+### `repository_issue_labels`
+
+- `issue_id` foreign key
+- `label_id` foreign key
+- primary key `(issue_id, label_id)`
+
+### `pull_request_labels`
+
+- `pull_request_id` foreign key
+- `label_id` foreign key
+- primary key `(pull_request_id, label_id)`
+
+### `repository_commits`
+
+- `id` UUID primary key
+- `repository_id` foreign key
+- `sha`
+- `author_github_account_id` nullable foreign key
+- `committer_github_account_id` nullable foreign key
+- `authored_at_source`
+- `committed_at_source`
+- `message`
+- `verified`
+- `additions`
+- `deletions`
+- `changed_files`
+- `payload_jsonb`
+- `synced_at`
+
+### `pull_request_files`
+
+- `id` UUID primary key
+- `pull_request_id` foreign key
+- `path`
+- `previous_path`
+- `status`
+- `additions`
+- `deletions`
+- `changes`
+- `patch`
+- `blob_url`
+- `raw_url`
+- `payload_jsonb`
+
+### `pull_request_commits`
+
+- `pull_request_id` foreign key
+- `commit_id` foreign key
+- primary key `(pull_request_id, commit_id)`
 
 ### `contribution_analyses`
 
@@ -194,6 +299,40 @@ This is the initial relational model direction for PostgreSQL.
 - `started_at`
 - `finished_at`
 - `payload_jsonb`
+
+### `github_webhook_deliveries`
+
+- `id` UUID primary key
+- `github_delivery_id` unique
+- `event_type`
+- `action`
+- `installation_id` nullable foreign key
+- `github_installation_id`
+- `repository_id` nullable foreign key
+- `repository_full_name`
+- `signature_sha256`
+- `payload_sha256`
+- `status`
+- `redelivery`
+- `first_received_at`
+- `last_received_at`
+- `last_error`
+- `payload_jsonb`
+
+### `github_sync_runs`
+
+- `id` UUID primary key
+- `sync_job_id` nullable foreign key
+- `run_type`
+- `status`
+- `installation_id` nullable foreign key
+- `repository_id` nullable foreign key
+- `github_delivery_id`
+- `correlation_id`
+- `started_at`
+- `finished_at`
+- `last_error`
+- `metrics_jsonb`
 
 ### `audit_logs`
 

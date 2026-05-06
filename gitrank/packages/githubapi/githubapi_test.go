@@ -40,7 +40,7 @@ func TestParseWebhookEnvelope(t *testing.T) {
 	headers.Set("X-GitHub-Event", "pull_request")
 	headers.Set("X-Hub-Signature-256", "sha256=sig")
 
-	env, err := ParseWebhookEnvelope(headers, []byte(`{"action":"opened","repository":{"id":99,"full_name":"octo/repo"},"installation":{"id":12},"pull_request":{"number":7,"head":{"sha":"abc123"}},"review":{"id":44}}`))
+	env, err := ParseWebhookEnvelope(headers, []byte(`{"action":"opened","number":7,"repository":{"id":99,"full_name":"octo/repo"},"installation":{"id":12},"pull_request":{"head":{"sha":"abc123"}},"review":{"id":44}}`))
 	if err != nil {
 		t.Fatalf("ParseWebhookEnvelope() error = %v", err)
 	}

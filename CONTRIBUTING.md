@@ -450,12 +450,12 @@ Must be implemented:
 - [x] rate limit tracking
 - [x] secondary rate limit backoff
 - [ ] queue-based backfill jobs
-- [ ] repository sync logic
-- [ ] pull request sync logic
-- [ ] review sync logic
-- [ ] issue and label sync logic
-- [ ] commit metadata sync logic
-- [ ] normalized persistence layer
+- [x] repository sync logic
+- [x] pull request sync logic
+- [x] review sync logic
+- [x] issue and label sync logic
+- [x] commit metadata sync logic
+- [x] normalized persistence layer
 - [ ] dead-letter handling for poison jobs
 
 GitHub-specific requirements:
@@ -478,7 +478,8 @@ Operational requirements:
 Current preview state:
 
 - webhook delivery deduplication and requeue state persist in PostgreSQL when `DATABASE_URL` is configured
-- sync job execution remains an in-memory queue preview and is not yet durable across process restarts
+- webhook-driven repository, PR, review, issue, label, commit, installation, and sync-run entities persist idempotently in PostgreSQL when `DATABASE_URL` is configured
+- manual sync and backfill execution still remain an in-memory queue preview and are not yet durable across process restarts
 
 ## 8. PR Analyzer Checklist
 
@@ -1024,7 +1025,7 @@ Do not call the project public alpha until these are done:
 - [x] users can sign in with GitHub
 - [ ] at least one full sync path works end to end
 - [x] webhook validation is implemented
-- [ ] PR data is persisted with migrations
+- [x] PR data is persisted with migrations
 - [x] one deterministic scoring path works
 - [x] profile pages render real data
 - [x] CI runs tests and security checks

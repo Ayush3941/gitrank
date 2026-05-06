@@ -15,6 +15,7 @@ import (
 	"github.com/Ayush3941/gitrank/packages/httpkit"
 	"github.com/Ayush3941/gitrank/packages/store"
 	"github.com/Ayush3941/gitrank/services/github-ingestor/internal/app"
+	"github.com/Ayush3941/gitrank/services/github-ingestor/internal/service"
 )
 
 const githubSyncQueueName = "github-sync"
@@ -22,10 +23,10 @@ const githubSyncQueueName = "github-sync"
 var errWebhookPayloadTooLarge = errors.New("webhook payload exceeds configured maximum")
 
 func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
-	return NewRouterWithStores(cfg, store.NewInMemoryDeliveryStore(cfg.GitHub.DedupeTTL), store.NewInMemoryJobQueue(), log, version)
+	return NewRouterWithStores(cfg, store.NewInMemoryDeliveryStore(cfg.GitHub.DedupeTTL), store.NewInMemoryJobQueue(), nil, log, version)
 }
 
-func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQueue *store.InMemoryJobQueue, log *slog.Logger, version string) http.Handler {
+func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQueue *store.InMemoryJobQueue, persistence *service.Service, log *slog.Logger, version string) http.Handler {
 	manifest := app.Manifest(cfg, version)
 	mux := http.NewServeMux()
 	metrics := httpkit.NewMetrics(cfg.ServiceName)
@@ -36,6 +37,7 @@ func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQ
 		jobQueue:      jobQueue,
 	}
 	syncMetrics := newSyncMetricsSource(cfg.ServiceName)
+	persistenceMetrics := newPersistenceMetricsSource(cfg.ServiceName)
 
 	mux.Handle("/healthz", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		checks := map[string]contracts.ComponentCheck{
@@ -48,7 +50,13 @@ func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQ
 		httpkit.WriteJSON(w, http.StatusOK, contracts.NewHealthResponse(cfg.ServiceName, string(cfg.Env), version, checks))
 	})))
 
-	mux.Handle("/readyz", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+	mux.Handle("/readyz", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if persistence != nil {
+			if err := persistence.Ready(r.Context()); err != nil {
+				httpkit.WriteError(w, http.StatusServiceUnavailable, "github_persistence_unavailable", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+				return
+			}
+		}
 		httpkit.WriteJSON(w, http.StatusOK, contracts.NewHealthResponse(cfg.ServiceName, string(cfg.Env), version, nil))
 	})))
 
@@ -56,7 +64,7 @@ func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQ
 		httpkit.WriteJSON(w, http.StatusOK, manifest)
 	})))
 
-	mux.Handle("/metrics", httpkit.RequireMethod(http.MethodGet, httpkit.MetricsHandler(metrics, queueMetrics, syncMetrics)))
+	mux.Handle("/metrics", httpkit.RequireMethod(http.MethodGet, httpkit.MetricsHandler(metrics, queueMetrics, syncMetrics, persistenceMetrics)))
 
 	mux.Handle("/webhooks/github", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, err := readWebhookBody(r, cfg.GitHub.MaxBodyBytes)
@@ -118,6 +126,17 @@ func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQ
 			return
 		}
 
+		if persistence != nil {
+			result, err := persistence.PersistWebhook(r.Context(), envelope, httpkit.RequestIDFromContext(r.Context()), time.Now().UTC())
+			if err != nil {
+				_ = deliveryStore.MarkStatus(envelope.DeliveryID, store.DeliveryFailed, err)
+				persistenceMetrics.ObserveFailure(envelope.EventType)
+				httpkit.WriteError(w, http.StatusInternalServerError, "github_persistence_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+				return
+			}
+			persistenceMetrics.Observe(envelope.EventType, result)
+		}
+
 		jobs, err := webhookJobs(cfg, envelope, httpkit.RequestIDFromContext(r.Context()))
 		if err != nil {
 			_ = deliveryStore.MarkStatus(envelope.DeliveryID, store.DeliveryFailed, err)
@@ -168,6 +187,16 @@ func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQ
 		if err != nil {
 			httpkit.WriteError(w, http.StatusInternalServerError, "delivery_requeue_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
+		}
+		if persistence != nil {
+			result, err := persistence.PersistWebhook(r.Context(), envelope, httpkit.RequestIDFromContext(r.Context()), time.Now().UTC())
+			if err != nil {
+				_ = deliveryStore.MarkStatus(delivery.DeliveryID, store.DeliveryFailed, err)
+				persistenceMetrics.ObserveFailure(envelope.EventType)
+				httpkit.WriteError(w, http.StatusInternalServerError, "github_persistence_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+				return
+			}
+			persistenceMetrics.Observe(envelope.EventType, result)
 		}
 		jobs, err := webhookJobs(cfg, envelope, httpkit.RequestIDFromContext(r.Context()))
 		if err != nil {

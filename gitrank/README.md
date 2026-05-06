@@ -723,7 +723,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 - a frozen v1 production decision register plus maintainer, privacy, AI-governance, analytics, and infrastructure policy docs
 - DCO workflow enforcement plus PR-template sign-off reminders
 - real auth-service session, OAuth, token refresh, linking, unlinking, and audit logic
-- webhook intake and sync-job preview routes in the GitHub ingestor
+- webhook intake plus normalized repository, PR, review, issue, label, commit, installation, and sync-run persistence in the GitHub ingestor
 - optional PostgreSQL-backed webhook delivery persistence for durable dedupe and requeue state in the GitHub ingestor
 - deterministic PR analysis and deterministic contribution scoring services, with schema-validated analysis envelopes, deterministic language and critical-path heuristics, issue-link and review-cycle extraction, regression datasets, scorer-side artifact validation before XP computation, and persisted replay runs with immutable score events plus historical score snapshots
 - a snapshot-backed profile-service read model with privacy controls, repository visibility, caching, and share-card data

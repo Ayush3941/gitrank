@@ -11,6 +11,7 @@ import (
 	"github.com/Ayush3941/gitrank/packages/logger"
 	"github.com/Ayush3941/gitrank/packages/store"
 	"github.com/Ayush3941/gitrank/services/github-ingestor/internal/httpapi"
+	"github.com/Ayush3941/gitrank/services/github-ingestor/internal/service"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -35,6 +36,7 @@ func main() {
 
 	deliveryStore := store.DeliveryStore(store.NewInMemoryDeliveryStore(cfg.GitHub.DedupeTTL))
 	jobQueue := store.NewInMemoryJobQueue()
+	persistence := service.New(nil)
 	if cfg.Database.URL != "" {
 		dbpool, err := pgxpool.New(ctx, cfg.Database.URL)
 		if err != nil {
@@ -42,9 +44,10 @@ func main() {
 		}
 		defer dbpool.Close()
 		deliveryStore = store.NewPostgresDeliveryStore(dbpool, cfg.Services.RequestTimeout)
+		persistence = service.New(dbpool)
 	}
 
-	server := httpkit.NewServer(cfg.Addr, httpapi.NewRouterWithStores(cfg, deliveryStore, jobQueue, log, version), cfg.ShutdownTimeout, log)
+	server := httpkit.NewServer(cfg.Addr, httpapi.NewRouterWithStores(cfg, deliveryStore, jobQueue, persistence, log, version), cfg.ShutdownTimeout, log)
 	log.Info("starting service", "addr", cfg.Addr, "version", version)
 	if err := server.Run(ctx); err != nil {
 		log.Error("server exited", "error", err)

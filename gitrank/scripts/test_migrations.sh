@@ -140,4 +140,12 @@ assert_true "local seed score snapshot exists exactly once" \
     go test ./...
 )
 
+(
+  cd "$root_dir/services/github-ingestor/internal/service"
+  TMPDIR="$root_dir/.tmp" \
+    GOCACHE="$root_dir/.gocache" \
+    GITRANK_INGESTOR_DATABASE_URL="postgres://${db_user}:${db_password}@127.0.0.1:${host_port}/${db_name}?sslmode=disable" \
+    go test ./...
+)
+
 echo "migration smoke test passed"

@@ -1,0 +1,955 @@
+package service
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"strings"
+	"time"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+type Store struct {
+	pool *pgxpool.Pool
+}
+
+type TxStore struct {
+	ctx context.Context
+	tx  pgx.Tx
+}
+
+type payloadSyncRunInput struct {
+	CorrelationID  string
+	DeliveryID     string
+	EventType      string
+	InstallationID string
+	RepositoryID   string
+	Result         PersistResult
+	StartedAt      time.Time
+	FinishedAt     time.Time
+}
+
+func NewStore(pool *pgxpool.Pool) *Store {
+	return &Store{pool: pool}
+}
+
+func (s *Store) Ping(ctx context.Context) error {
+	if s == nil || s.pool == nil {
+		return nil
+	}
+	return s.pool.Ping(ctx)
+}
+
+func (s *Store) WithTx(ctx context.Context, fn func(*TxStore) (PersistResult, error)) (PersistResult, error) {
+	if s == nil || s.pool == nil {
+		return PersistResult{}, ErrUnavailable
+	}
+	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return PersistResult{}, err
+	}
+	defer tx.Rollback(ctx)
+
+	result, err := fn(&TxStore{ctx: ctx, tx: tx})
+	if err != nil {
+		return PersistResult{}, err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return PersistResult{}, err
+	}
+	return result, nil
+}
+
+func (s *TxStore) UpsertInstallation(payload map[string]any, now time.Time) (string, bool, error) {
+	installation := object(payload["installation"])
+	if installation == nil {
+		return "", false, nil
+	}
+	githubInstallationID := int64Value(installation["id"])
+	if githubInstallationID == 0 {
+		return "", false, nil
+	}
+
+	account := object(installation["account"])
+	permissionsJSON := encodeJSON(installation["permissions"])
+	eventsJSON := textArray(installation["events"])
+
+	var installationID string
+	err := s.tx.QueryRow(s.context(), `
+		INSERT INTO github_installations (
+			github_installation_id,
+			github_app_id,
+			app_slug,
+			account_login,
+			account_type,
+			target_type,
+			repository_selection,
+			permissions_jsonb,
+			events,
+			suspended_at_source,
+			installed_at_source,
+			updated_at_source,
+			created_at,
+			updated_at
+		) VALUES (
+			$1, NULLIF($2, 0), $3, $4, $5, $6, $7, $8::jsonb, $9::text[], $10, $11, $12, $12, $12
+		)
+		ON CONFLICT (github_installation_id) DO UPDATE SET
+			github_app_id = EXCLUDED.github_app_id,
+			app_slug = EXCLUDED.app_slug,
+			account_login = EXCLUDED.account_login,
+			account_type = EXCLUDED.account_type,
+			target_type = EXCLUDED.target_type,
+			repository_selection = EXCLUDED.repository_selection,
+			permissions_jsonb = EXCLUDED.permissions_jsonb,
+			events = EXCLUDED.events,
+			suspended_at_source = EXCLUDED.suspended_at_source,
+			installed_at_source = COALESCE(EXCLUDED.installed_at_source, github_installations.installed_at_source),
+			updated_at_source = EXCLUDED.updated_at_source,
+			updated_at = EXCLUDED.updated_at
+		RETURNING id::text
+	`,
+		githubInstallationID,
+		int64Value(installation["app_id"]),
+		stringValue(installation["app_slug"]),
+		stringValue(account["login"]),
+		stringValue(account["type"]),
+		stringValue(installation["target_type"]),
+		defaultString(stringValue(installation["repository_selection"]), "all"),
+		permissionsJSON,
+		eventsJSON,
+		parseGitHubTime(installation["suspended_at"]),
+		parseGitHubTime(installation["created_at"]),
+		now.UTC(),
+	).Scan(&installationID)
+	if err != nil {
+		return "", false, err
+	}
+
+	if err := s.syncInstallationRepositories(installationID, payload, now.UTC()); err != nil {
+		return "", false, err
+	}
+	return installationID, true, nil
+}
+
+func (s *TxStore) UpsertRepository(payload map[string]any, now time.Time) (string, bool, error) {
+	repository := object(payload["repository"])
+	if repository == nil {
+		return "", false, nil
+	}
+	githubRepositoryID := int64Value(repository["id"])
+	if githubRepositoryID == 0 {
+		return "", false, nil
+	}
+
+	owner := object(repository["owner"])
+	var repositoryID string
+	err := s.tx.QueryRow(s.context(), `
+		INSERT INTO repositories (
+			github_repository_id,
+			owner_login,
+			name,
+			full_name,
+			is_private,
+			is_fork,
+			primary_language,
+			default_branch,
+			stars_count,
+			forks_count,
+			open_issues_count,
+			archived,
+			disabled,
+			metadata_jsonb,
+			synced_at
+		) VALUES (
+			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14::jsonb, $15
+		)
+		ON CONFLICT (github_repository_id) DO UPDATE SET
+			owner_login = EXCLUDED.owner_login,
+			name = EXCLUDED.name,
+			full_name = EXCLUDED.full_name,
+			is_private = EXCLUDED.is_private,
+			is_fork = EXCLUDED.is_fork,
+			primary_language = EXCLUDED.primary_language,
+			default_branch = EXCLUDED.default_branch,
+			stars_count = EXCLUDED.stars_count,
+			forks_count = EXCLUDED.forks_count,
+			open_issues_count = EXCLUDED.open_issues_count,
+			archived = EXCLUDED.archived,
+			disabled = EXCLUDED.disabled,
+			metadata_jsonb = EXCLUDED.metadata_jsonb,
+			synced_at = EXCLUDED.synced_at
+		RETURNING id::text
+	`,
+		githubRepositoryID,
+		stringValue(owner["login"]),
+		stringValue(repository["name"]),
+		stringValue(repository["full_name"]),
+		boolValue(repository["private"]),
+		boolValue(repository["fork"]),
+		stringValue(repository["language"]),
+		defaultString(stringValue(repository["default_branch"]), "main"),
+		intValue(repository["stargazers_count"]),
+		intValue(repository["forks_count"]),
+		intValue(repository["open_issues_count"]),
+		boolValue(repository["archived"]),
+		boolValue(repository["disabled"]),
+		encodeJSON(repository),
+		now.UTC(),
+	).Scan(&repositoryID)
+	if err != nil {
+		return "", false, err
+	}
+	return repositoryID, true, nil
+}
+
+func (s *TxStore) UpsertRepositoryLists(payload map[string]any, now time.Time) (int, error) {
+	count := 0
+	for _, key := range []string{"repositories", "repositories_added", "repositories_removed"} {
+		for _, item := range objectArray(payload[key]) {
+			if _, touched, err := s.UpsertRepository(map[string]any{"repository": item}, now.UTC()); err != nil {
+				return count, err
+			} else if touched {
+				count++
+			}
+		}
+	}
+	return count, nil
+}
+
+func (s *TxStore) UpsertPullRequest(payload map[string]any, repositoryID string, now time.Time) (string, bool, int, error) {
+	pr := object(payload["pull_request"])
+	if pr == nil || strings.TrimSpace(repositoryID) == "" {
+		return "", false, 0, nil
+	}
+	githubPullRequestID := int64Value(pr["id"])
+	if githubPullRequestID == 0 {
+		return "", false, 0, nil
+	}
+
+	authorAccountID, err := s.lookupAccountIDByGitHubUserID(int64Value(object(pr["user"])["id"]))
+	if err != nil {
+		return "", false, 0, err
+	}
+
+	var pullRequestID string
+	err = s.tx.QueryRow(s.context(), `
+		INSERT INTO pull_requests (
+			github_pull_request_id,
+			repository_id,
+			author_github_account_id,
+			number,
+			title,
+			state,
+			draft,
+			merged,
+			merged_at,
+			created_at_source,
+			updated_at_source,
+			closed_at_source,
+			base_branch,
+			head_branch,
+			changed_files,
+			additions,
+			deletions,
+			commits,
+			payload_jsonb,
+			synced_at
+		) VALUES (
+			$1,
+			$2::uuid,
+			NULLIF($3, '')::uuid,
+			$4,
+			$5,
+			$6,
+			$7,
+			$8,
+			$9,
+			$10,
+			$11,
+			$12,
+			$13,
+			$14,
+			$15,
+			$16,
+			$17,
+			$18,
+			$19::jsonb,
+			$20
+		)
+		ON CONFLICT (github_pull_request_id) DO UPDATE SET
+			repository_id = EXCLUDED.repository_id,
+			author_github_account_id = EXCLUDED.author_github_account_id,
+			number = EXCLUDED.number,
+			title = EXCLUDED.title,
+			state = EXCLUDED.state,
+			draft = EXCLUDED.draft,
+			merged = EXCLUDED.merged,
+			merged_at = EXCLUDED.merged_at,
+			created_at_source = EXCLUDED.created_at_source,
+			updated_at_source = EXCLUDED.updated_at_source,
+			closed_at_source = EXCLUDED.closed_at_source,
+			base_branch = EXCLUDED.base_branch,
+			head_branch = EXCLUDED.head_branch,
+			changed_files = EXCLUDED.changed_files,
+			additions = EXCLUDED.additions,
+			deletions = EXCLUDED.deletions,
+			commits = EXCLUDED.commits,
+			payload_jsonb = EXCLUDED.payload_jsonb,
+			synced_at = EXCLUDED.synced_at
+		RETURNING id::text
+	`,
+		githubPullRequestID,
+		repositoryID,
+		authorAccountID,
+		firstPositiveInt(intValue(payload["number"]), intValue(pr["number"])),
+		stringValue(pr["title"]),
+		stringValue(pr["state"]),
+		boolValue(pr["draft"]),
+		boolValue(pr["merged"]),
+		parseGitHubTime(pr["merged_at"]),
+		coalesceTime(parseGitHubTime(pr["created_at"]), now.UTC()),
+		coalesceTime(parseGitHubTime(pr["updated_at"]), now.UTC()),
+		parseGitHubTime(pr["closed_at"]),
+		stringValue(object(pr["base"])["ref"]),
+		stringValue(object(pr["head"])["ref"]),
+		intValue(pr["changed_files"]),
+		intValue(pr["additions"]),
+		intValue(pr["deletions"]),
+		intValue(pr["commits"]),
+		encodeJSON(pr),
+		now.UTC(),
+	).Scan(&pullRequestID)
+	if err != nil {
+		return "", false, 0, err
+	}
+
+	labelCount, err := s.syncPullRequestLabels(pullRequestID, repositoryID, objectArray(pr["labels"]), now.UTC())
+	if err != nil {
+		return "", false, 0, err
+	}
+	return pullRequestID, true, labelCount, nil
+}
+
+func (s *TxStore) UpsertReview(payload map[string]any, pullRequestID string, now time.Time) (bool, error) {
+	review := object(payload["review"])
+	if review == nil || strings.TrimSpace(pullRequestID) == "" {
+		return false, nil
+	}
+	githubReviewID := int64Value(review["id"])
+	if githubReviewID == 0 {
+		return false, nil
+	}
+	reviewerAccountID, err := s.lookupAccountIDByGitHubUserID(int64Value(object(review["user"])["id"]))
+	if err != nil {
+		return false, err
+	}
+	_, err = s.tx.Exec(s.context(), `
+		INSERT INTO pull_request_reviews (
+			github_review_id,
+			pull_request_id,
+			reviewer_github_account_id,
+			state,
+			submitted_at_source,
+			body,
+			payload_jsonb
+		) VALUES (
+			$1,
+			$2::uuid,
+			NULLIF($3, '')::uuid,
+			$4,
+			$5,
+			$6,
+			$7::jsonb
+		)
+		ON CONFLICT (github_review_id) DO UPDATE SET
+			pull_request_id = EXCLUDED.pull_request_id,
+			reviewer_github_account_id = EXCLUDED.reviewer_github_account_id,
+			state = EXCLUDED.state,
+			submitted_at_source = EXCLUDED.submitted_at_source,
+			body = EXCLUDED.body,
+			payload_jsonb = EXCLUDED.payload_jsonb
+	`,
+		githubReviewID,
+		pullRequestID,
+		reviewerAccountID,
+		strings.ToUpper(defaultString(stringValue(review["state"]), "COMMENTED")),
+		parseGitHubTime(review["submitted_at"]),
+		stringValue(review["body"]),
+		encodeJSON(review),
+	)
+	return err == nil, err
+}
+
+func (s *TxStore) UpsertReviewFromComment(payload map[string]any, pullRequestID string, now time.Time) (bool, string, error) {
+	review := object(payload["review"])
+	if review != nil {
+		touched, err := s.UpsertReview(payload, pullRequestID, now.UTC())
+		if err != nil {
+			return false, "", err
+		}
+		reviewID, err := s.lookupReviewIDByGitHubID(int64Value(review["id"]))
+		return touched, reviewID, err
+	}
+	comment := object(payload["comment"])
+	if comment == nil {
+		return false, "", nil
+	}
+	reviewID, err := s.lookupReviewIDByGitHubID(int64Value(comment["pull_request_review_id"]))
+	return false, reviewID, err
+}
+
+func (s *TxStore) UpsertReviewComment(payload map[string]any, pullRequestID, reviewID string, now time.Time) (bool, error) {
+	comment := object(payload["comment"])
+	if comment == nil || strings.TrimSpace(pullRequestID) == "" {
+		return false, nil
+	}
+	githubCommentID := int64Value(comment["id"])
+	if githubCommentID == 0 {
+		return false, nil
+	}
+	authorAccountID, err := s.lookupAccountIDByGitHubUserID(int64Value(object(comment["user"])["id"]))
+	if err != nil {
+		return false, err
+	}
+	_, err = s.tx.Exec(s.context(), `
+		INSERT INTO pull_request_review_comments (
+			github_review_comment_id,
+			pull_request_id,
+			review_id,
+			author_github_account_id,
+			path,
+			position,
+			body,
+			created_at_source,
+			payload_jsonb
+		) VALUES (
+			$1,
+			$2::uuid,
+			NULLIF($3, '')::uuid,
+			NULLIF($4, '')::uuid,
+			$5,
+			NULLIF($6, 0),
+			$7,
+			$8,
+			$9::jsonb
+		)
+		ON CONFLICT (github_review_comment_id) DO UPDATE SET
+			pull_request_id = EXCLUDED.pull_request_id,
+			review_id = EXCLUDED.review_id,
+			author_github_account_id = EXCLUDED.author_github_account_id,
+			path = EXCLUDED.path,
+			position = EXCLUDED.position,
+			body = EXCLUDED.body,
+			created_at_source = EXCLUDED.created_at_source,
+			payload_jsonb = EXCLUDED.payload_jsonb
+	`,
+		githubCommentID,
+		pullRequestID,
+		reviewID,
+		authorAccountID,
+		stringValue(comment["path"]),
+		intValue(comment["position"]),
+		stringValue(comment["body"]),
+		parseGitHubTime(comment["created_at"]),
+		encodeJSON(comment),
+	)
+	return err == nil, err
+}
+
+func (s *TxStore) UpsertIssue(payload map[string]any, repositoryID string, now time.Time) (bool, int, error) {
+	issue := object(payload["issue"])
+	if issue == nil || strings.TrimSpace(repositoryID) == "" {
+		return false, 0, nil
+	}
+	githubIssueID := int64Value(issue["id"])
+	if githubIssueID == 0 {
+		return false, 0, nil
+	}
+	authorAccountID, err := s.lookupAccountIDByGitHubUserID(int64Value(object(issue["user"])["id"]))
+	if err != nil {
+		return false, 0, err
+	}
+	var issueID string
+	err = s.tx.QueryRow(s.context(), `
+		INSERT INTO repository_issues (
+			github_issue_id,
+			repository_id,
+			author_github_account_id,
+			number,
+			title,
+			state,
+			locked,
+			created_at_source,
+			updated_at_source,
+			closed_at_source,
+			payload_jsonb,
+			synced_at
+		) VALUES (
+			$1,
+			$2::uuid,
+			NULLIF($3, '')::uuid,
+			$4,
+			$5,
+			$6,
+			$7,
+			$8,
+			$9,
+			$10,
+			$11::jsonb,
+			$12
+		)
+		ON CONFLICT (github_issue_id) DO UPDATE SET
+			repository_id = EXCLUDED.repository_id,
+			author_github_account_id = EXCLUDED.author_github_account_id,
+			number = EXCLUDED.number,
+			title = EXCLUDED.title,
+			state = EXCLUDED.state,
+			locked = EXCLUDED.locked,
+			created_at_source = EXCLUDED.created_at_source,
+			updated_at_source = EXCLUDED.updated_at_source,
+			closed_at_source = EXCLUDED.closed_at_source,
+			payload_jsonb = EXCLUDED.payload_jsonb,
+			synced_at = EXCLUDED.synced_at
+		RETURNING id::text
+	`,
+		githubIssueID,
+		repositoryID,
+		authorAccountID,
+		intValue(issue["number"]),
+		stringValue(issue["title"]),
+		stringValue(issue["state"]),
+		boolValue(issue["locked"]),
+		coalesceTime(parseGitHubTime(issue["created_at"]), now.UTC()),
+		coalesceTime(parseGitHubTime(issue["updated_at"]), now.UTC()),
+		parseGitHubTime(issue["closed_at"]),
+		encodeJSON(issue),
+		now.UTC(),
+	).Scan(&issueID)
+	if err != nil {
+		return false, 0, err
+	}
+	labelCount, err := s.syncIssueLabels(issueID, repositoryID, objectArray(issue["labels"]), now.UTC())
+	if err != nil {
+		return false, 0, err
+	}
+	return true, labelCount, nil
+}
+
+func (s *TxStore) UpsertTopLevelLabel(payload map[string]any, repositoryID string, now time.Time) (bool, error) {
+	if strings.TrimSpace(repositoryID) == "" {
+		return false, nil
+	}
+	_, touched, err := s.upsertLabelObject(repositoryID, object(payload["label"]), now.UTC())
+	return touched, err
+}
+
+func (s *TxStore) UpsertCommits(payload map[string]any, repositoryID string, now time.Time) (int, error) {
+	if strings.TrimSpace(repositoryID) == "" {
+		return 0, nil
+	}
+
+	commits := objectArray(payload["commits"])
+	if len(commits) == 0 {
+		if sha := strings.TrimSpace(stringValue(payload["after"])); sha != "" && sha != strings.Repeat("0", len(sha)) {
+			commits = append(commits, map[string]any{"id": sha, "timestamp": now.UTC().Format(time.RFC3339)})
+		} else if checkRun := object(payload["check_run"]); checkRun != nil {
+			if headSHA := strings.TrimSpace(stringValue(checkRun["head_sha"])); headSHA != "" {
+				commits = append(commits, map[string]any{"id": headSHA, "timestamp": now.UTC().Format(time.RFC3339)})
+			}
+		}
+	}
+
+	count := 0
+	for _, commit := range commits {
+		sha := strings.TrimSpace(stringValue(commit["id"]))
+		if sha == "" {
+			continue
+		}
+		authoredAt := parseGitHubTime(commit["timestamp"])
+		_, err := s.tx.Exec(s.context(), `
+			INSERT INTO repository_commits (
+				repository_id,
+				sha,
+				authored_at_source,
+				committed_at_source,
+				message,
+				verified,
+				additions,
+				deletions,
+				changed_files,
+				payload_jsonb,
+				synced_at
+			) VALUES (
+				$1::uuid, $2, $3, $3, $4, FALSE, 0, 0, 0, $5::jsonb, $6
+			)
+			ON CONFLICT (repository_id, sha) DO UPDATE SET
+				authored_at_source = COALESCE(EXCLUDED.authored_at_source, repository_commits.authored_at_source),
+				committed_at_source = COALESCE(EXCLUDED.committed_at_source, repository_commits.committed_at_source),
+				message = EXCLUDED.message,
+				payload_jsonb = EXCLUDED.payload_jsonb,
+				synced_at = EXCLUDED.synced_at
+		`, repositoryID, sha, authoredAt, stringValue(commit["message"]), encodeJSON(commit), now.UTC())
+		if err != nil {
+			return count, err
+		}
+		count++
+	}
+	return count, nil
+}
+
+func (s *TxStore) InsertSyncRun(input payloadSyncRunInput) error {
+	metricsJSON := encodeJSON(input.Result.EntityCounts())
+	_, err := s.tx.Exec(s.context(), `
+		INSERT INTO github_sync_runs (
+			run_type,
+			status,
+			installation_id,
+			repository_id,
+			github_delivery_id,
+			correlation_id,
+			started_at,
+			finished_at,
+			last_error,
+			metrics_jsonb
+		) VALUES (
+			$1,
+			'completed',
+			NULLIF($2, '')::uuid,
+			NULLIF($3, '')::uuid,
+			$4,
+			$5,
+			$6,
+			$7,
+			'',
+			$8::jsonb
+		)
+	`, input.EventType, input.InstallationID, input.RepositoryID, input.DeliveryID, input.CorrelationID, input.StartedAt.UTC(), input.FinishedAt.UTC(), metricsJSON)
+	return err
+}
+
+func (s *TxStore) syncPullRequestLabels(pullRequestID, repositoryID string, labels []map[string]any, now time.Time) (int, error) {
+	count := 0
+	for _, label := range labels {
+		labelID, touched, err := s.upsertLabelObject(repositoryID, label, now.UTC())
+		if err != nil {
+			return count, err
+		}
+		if touched {
+			count++
+		}
+		if strings.TrimSpace(labelID) == "" {
+			continue
+		}
+		if _, err := s.tx.Exec(s.context(), `
+			INSERT INTO pull_request_labels (pull_request_id, label_id)
+			VALUES ($1::uuid, $2::uuid)
+			ON CONFLICT DO NOTHING
+		`, pullRequestID, labelID); err != nil {
+			return count, err
+		}
+	}
+	return count, nil
+}
+
+func (s *TxStore) syncIssueLabels(issueID, repositoryID string, labels []map[string]any, now time.Time) (int, error) {
+	count := 0
+	for _, label := range labels {
+		labelID, touched, err := s.upsertLabelObject(repositoryID, label, now.UTC())
+		if err != nil {
+			return count, err
+		}
+		if touched {
+			count++
+		}
+		if strings.TrimSpace(labelID) == "" {
+			continue
+		}
+		if _, err := s.tx.Exec(s.context(), `
+			INSERT INTO repository_issue_labels (issue_id, label_id)
+			VALUES ($1::uuid, $2::uuid)
+			ON CONFLICT DO NOTHING
+		`, issueID, labelID); err != nil {
+			return count, err
+		}
+	}
+	return count, nil
+}
+
+func (s *TxStore) upsertLabelObject(repositoryID string, label map[string]any, now time.Time) (string, bool, error) {
+	if label == nil || strings.TrimSpace(repositoryID) == "" {
+		return "", false, nil
+	}
+	githubLabelID := int64Value(label["id"])
+	if githubLabelID == 0 {
+		return "", false, nil
+	}
+	var labelID string
+	err := s.tx.QueryRow(s.context(), `
+		INSERT INTO repository_labels (
+			github_label_id,
+			repository_id,
+			name,
+			color,
+			description,
+			is_default,
+			updated_at_source,
+			payload_jsonb
+		) VALUES (
+			$1, $2::uuid, $3, $4, $5, $6, $7, $8::jsonb
+		)
+		ON CONFLICT (github_label_id) DO UPDATE SET
+			repository_id = EXCLUDED.repository_id,
+			name = EXCLUDED.name,
+			color = EXCLUDED.color,
+			description = EXCLUDED.description,
+			is_default = EXCLUDED.is_default,
+			updated_at_source = EXCLUDED.updated_at_source,
+			payload_jsonb = EXCLUDED.payload_jsonb
+		RETURNING id::text
+	`, githubLabelID, repositoryID, stringValue(label["name"]), stringValue(label["color"]), stringValue(label["description"]), boolValue(label["default"]), now.UTC(), encodeJSON(label)).Scan(&labelID)
+	return labelID, err == nil, err
+}
+
+func (s *TxStore) syncInstallationRepositories(installationID string, payload map[string]any, now time.Time) error {
+	if strings.TrimSpace(installationID) == "" {
+		return nil
+	}
+	for _, repo := range objectArray(payload["repositories"]) {
+		repositoryID, _, err := s.UpsertRepository(map[string]any{"repository": repo}, now.UTC())
+		if err != nil {
+			return err
+		}
+		if strings.TrimSpace(repositoryID) == "" {
+			continue
+		}
+		if _, err := s.tx.Exec(s.context(), `
+			INSERT INTO github_installation_repositories (
+				installation_id,
+				repository_id,
+				permissions_jsonb,
+				selected_at,
+				removed_at
+			) VALUES (
+				$1::uuid, $2::uuid, '{}'::jsonb, $3, NULL
+			)
+			ON CONFLICT (installation_id, repository_id) DO UPDATE SET
+				removed_at = NULL,
+				selected_at = EXCLUDED.selected_at
+		`, installationID, repositoryID, now.UTC()); err != nil {
+			return err
+		}
+	}
+	for _, repo := range objectArray(payload["repositories_added"]) {
+		repositoryID, _, err := s.UpsertRepository(map[string]any{"repository": repo}, now.UTC())
+		if err != nil {
+			return err
+		}
+		if strings.TrimSpace(repositoryID) == "" {
+			continue
+		}
+		if _, err := s.tx.Exec(s.context(), `
+			INSERT INTO github_installation_repositories (
+				installation_id,
+				repository_id,
+				permissions_jsonb,
+				selected_at,
+				removed_at
+			) VALUES (
+				$1::uuid, $2::uuid, '{}'::jsonb, $3, NULL
+			)
+			ON CONFLICT (installation_id, repository_id) DO UPDATE SET
+				removed_at = NULL,
+				selected_at = EXCLUDED.selected_at
+		`, installationID, repositoryID, now.UTC()); err != nil {
+			return err
+		}
+	}
+	for _, repo := range objectArray(payload["repositories_removed"]) {
+		repositoryID, _, err := s.UpsertRepository(map[string]any{"repository": repo}, now.UTC())
+		if err != nil {
+			return err
+		}
+		if strings.TrimSpace(repositoryID) == "" {
+			continue
+		}
+		if _, err := s.tx.Exec(s.context(), `
+			UPDATE github_installation_repositories
+			SET removed_at = $3
+			WHERE installation_id = $1::uuid
+			  AND repository_id = $2::uuid
+		`, installationID, repositoryID, now.UTC()); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (s *TxStore) lookupAccountIDByGitHubUserID(githubUserID int64) (string, error) {
+	if githubUserID == 0 {
+		return "", nil
+	}
+	row := s.tx.QueryRow(s.context(), `
+		SELECT id::text
+		FROM github_accounts
+		WHERE github_user_id = $1
+		LIMIT 1
+	`, githubUserID)
+	var accountID string
+	if err := row.Scan(&accountID); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", nil
+		}
+		return "", err
+	}
+	return accountID, nil
+}
+
+func (s *TxStore) lookupReviewIDByGitHubID(githubReviewID int64) (string, error) {
+	if githubReviewID == 0 {
+		return "", nil
+	}
+	row := s.tx.QueryRow(s.context(), `
+		SELECT id::text
+		FROM pull_request_reviews
+		WHERE github_review_id = $1
+		LIMIT 1
+	`, githubReviewID)
+	var reviewID string
+	if err := row.Scan(&reviewID); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", nil
+		}
+		return "", err
+	}
+	return reviewID, nil
+}
+
+func object(value any) map[string]any {
+	if cast, ok := value.(map[string]any); ok {
+		return cast
+	}
+	return nil
+}
+
+func objectArray(value any) []map[string]any {
+	raw, ok := value.([]any)
+	if !ok {
+		return nil
+	}
+	out := make([]map[string]any, 0, len(raw))
+	for _, item := range raw {
+		if cast, ok := item.(map[string]any); ok {
+			out = append(out, cast)
+		}
+	}
+	return out
+}
+
+func stringValue(value any) string {
+	if cast, ok := value.(string); ok {
+		return strings.TrimSpace(cast)
+	}
+	return ""
+}
+
+func boolValue(value any) bool {
+	if cast, ok := value.(bool); ok {
+		return cast
+	}
+	return false
+}
+
+func intValue(value any) int {
+	switch cast := value.(type) {
+	case int:
+		return cast
+	case int64:
+		return int(cast)
+	case float64:
+		return int(cast)
+	default:
+		return 0
+	}
+}
+
+func int64Value(value any) int64 {
+	switch cast := value.(type) {
+	case int:
+		return int64(cast)
+	case int64:
+		return cast
+	case float64:
+		return int64(cast)
+	default:
+		return 0
+	}
+}
+
+func encodeJSON(value any) string {
+	if value == nil {
+		return "{}"
+	}
+	if bytes, err := json.Marshal(value); err == nil {
+		return string(bytes)
+	}
+	return "{}"
+}
+
+func textArray(value any) []string {
+	items, ok := value.([]any)
+	if !ok {
+		return []string{}
+	}
+	out := make([]string, 0, len(items))
+	for _, item := range items {
+		if text := stringValue(item); text != "" {
+			out = append(out, text)
+		}
+	}
+	return out
+}
+
+func parseGitHubTime(value any) *time.Time {
+	text := stringValue(value)
+	if text == "" {
+		return nil
+	}
+	if parsed, err := time.Parse(time.RFC3339, text); err == nil {
+		utc := parsed.UTC()
+		return &utc
+	}
+	return nil
+}
+
+func coalesceTime(value *time.Time, fallback time.Time) time.Time {
+	if value != nil {
+		return value.UTC()
+	}
+	return fallback.UTC()
+}
+
+func firstPositiveInt(values ...int) int {
+	for _, value := range values {
+		if value > 0 {
+			return value
+		}
+	}
+	return 0
+}
+
+func defaultString(value, fallback string) string {
+	if strings.TrimSpace(value) == "" {
+		return fallback
+	}
+	return value
+}
+
+func (s *TxStore) context() context.Context {
+	if s != nil && s.ctx != nil {
+		return s.ctx
+	}
+	return context.Background()
+}
