@@ -140,6 +140,21 @@ func (s *Service) Run(ctx context.Context) {
 }
 
 func (s *Service) CreateBackfillPlan(req contracts.SchedulerBackfillPlanRequest, now time.Time) (contracts.SchedulerBackfillPlanView, error) {
+	if s.stateStore != nil {
+		var view contracts.SchedulerBackfillPlanView
+		err := s.withDurableMutation(context.Background(), now, func() error {
+			plan, err := newBackfillPlan(req, defaultSchedule(req.Cron, s.cfg.Scheduler.SyncCron), now)
+			if err != nil {
+				return err
+			}
+			s.mu.Lock()
+			s.plans[plan.ID] = plan
+			view = plan.view()
+			s.mu.Unlock()
+			return nil
+		})
+		return view, err
+	}
 	plan, err := newBackfillPlan(req, defaultSchedule(req.Cron, s.cfg.Scheduler.SyncCron), now)
 	if err != nil {
 		return contracts.SchedulerBackfillPlanView{}, err
@@ -157,6 +172,7 @@ func (s *Service) CreateBackfillPlan(req contracts.SchedulerBackfillPlanRequest,
 }
 
 func (s *Service) BackfillPlans(now time.Time) contracts.SchedulerBackfillPlanListResponse {
+	s.tryRefreshDurableState()
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -177,6 +193,29 @@ func (s *Service) BackfillPlans(now time.Time) contracts.SchedulerBackfillPlanLi
 }
 
 func (s *Service) PauseBackfillPlan(planID string, now time.Time) (contracts.SchedulerBackfillPlanActionResponse, error) {
+	if s.stateStore != nil {
+		var response contracts.SchedulerBackfillPlanActionResponse
+		err := s.withDurableMutation(context.Background(), now, func() error {
+			s.mu.Lock()
+			defer s.mu.Unlock()
+
+			plan, err := s.planByIDLocked(planID)
+			if err != nil {
+				return err
+			}
+
+			plan.Enabled = false
+			plan.NextRunAt = time.Time{}
+			plan.UpdatedAt = now.UTC()
+			response = contracts.SchedulerBackfillPlanActionResponse{
+				Status:        "paused",
+				Plan:          plan.view(),
+				LastUpdatedAt: now.UTC(),
+			}
+			return nil
+		})
+		return response, err
+	}
 	before := s.captureDurableState()
 	s.mu.Lock()
 
@@ -202,6 +241,29 @@ func (s *Service) PauseBackfillPlan(planID string, now time.Time) (contracts.Sch
 }
 
 func (s *Service) ResumeBackfillPlan(planID string, now time.Time) (contracts.SchedulerBackfillPlanActionResponse, error) {
+	if s.stateStore != nil {
+		var response contracts.SchedulerBackfillPlanActionResponse
+		err := s.withDurableMutation(context.Background(), now, func() error {
+			s.mu.Lock()
+			defer s.mu.Unlock()
+
+			plan, err := s.planByIDLocked(planID)
+			if err != nil {
+				return err
+			}
+
+			plan.Enabled = true
+			plan.NextRunAt = plan.schedule.Next(now.UTC())
+			plan.UpdatedAt = now.UTC()
+			response = contracts.SchedulerBackfillPlanActionResponse{
+				Status:        "resumed",
+				Plan:          plan.view(),
+				LastUpdatedAt: now.UTC(),
+			}
+			return nil
+		})
+		return response, err
+	}
 	before := s.captureDurableState()
 	s.mu.Lock()
 
@@ -227,6 +289,28 @@ func (s *Service) ResumeBackfillPlan(planID string, now time.Time) (contracts.Sc
 }
 
 func (s *Service) DeleteBackfillPlan(planID string, now time.Time) (contracts.SchedulerBackfillPlanActionResponse, error) {
+	if s.stateStore != nil {
+		var response contracts.SchedulerBackfillPlanActionResponse
+		err := s.withDurableMutation(context.Background(), now, func() error {
+			s.mu.Lock()
+			defer s.mu.Unlock()
+
+			plan, err := s.planByIDLocked(planID)
+			if err != nil {
+				return err
+			}
+
+			view := plan.view()
+			delete(s.plans, planID)
+			response = contracts.SchedulerBackfillPlanActionResponse{
+				Status:        "deleted",
+				Plan:          view,
+				LastUpdatedAt: now.UTC(),
+			}
+			return nil
+		})
+		return response, err
+	}
 	before := s.captureDurableState()
 	s.mu.Lock()
 
@@ -252,6 +336,19 @@ func (s *Service) DeleteBackfillPlan(planID string, now time.Time) (contracts.Sc
 
 func (s *Service) Tick(now time.Time) (contracts.SchedulerTickResponse, error) {
 	now = now.UTC()
+	if s.stateStore != nil {
+		var response contracts.SchedulerTickResponse
+		err := s.withDurableMutation(context.Background(), now, func() error {
+			var innerErr error
+			response, innerErr = s.tickLocal(now, false)
+			return innerErr
+		})
+		return response, err
+	}
+	return s.tickLocal(now, true)
+}
+
+func (s *Service) tickLocal(now time.Time, checkpoint bool) (contracts.SchedulerTickResponse, error) {
 	before := s.captureDurableState()
 
 	s.mu.Lock()
@@ -322,8 +419,10 @@ func (s *Service) Tick(now time.Time) (contracts.SchedulerTickResponse, error) {
 		response.Status = "ran_due_plans"
 	}
 	s.recordTick(response)
-	if err := s.persistDurableStateWithRollback(before, now); err != nil {
-		return contracts.SchedulerTickResponse{}, err
+	if checkpoint {
+		if err := s.persistDurableStateWithRollback(before, now); err != nil {
+			return contracts.SchedulerTickResponse{}, err
+		}
 	}
 	return response, nil
 }

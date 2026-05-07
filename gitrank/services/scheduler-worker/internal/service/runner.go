@@ -96,6 +96,22 @@ func (s *Service) RunNext(ctx context.Context, now time.Time) (contracts.Schedul
 }
 
 func (s *Service) leaseNextExecutableJob(now time.Time) (store.QueueJob, bool, error) {
+	if s.stateStore != nil {
+		var (
+			job store.QueueJob
+			ok  bool
+		)
+		err := s.withDurableMutation(context.Background(), now, func() error {
+			var innerErr error
+			job, ok, innerErr = s.leaseNextExecutableJobLocal(now)
+			return innerErr
+		})
+		return job, ok, err
+	}
+	return s.leaseNextExecutableJobLocal(now)
+}
+
+func (s *Service) leaseNextExecutableJobLocal(now time.Time) (store.QueueJob, bool, error) {
 	jobs := s.queue.Jobs()
 	for _, job := range jobs {
 		if !isExecutableJob(job, now) {

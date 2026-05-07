@@ -101,7 +101,12 @@ func NewRouter(cfg config.App, scheduler *service.Service, log *slog.Logger, ver
 				return
 			}
 		}
-		httpkit.WriteJSON(w, http.StatusOK, scheduler.Lease(req.Limit, time.Now().UTC()))
+		response, err := scheduler.Lease(req.Limit, time.Now().UTC())
+		if err != nil {
+			writeSchedulerError(w, r, err)
+			return
+		}
+		httpkit.WriteJSON(w, http.StatusOK, response)
 	})))
 
 	mux.Handle("/v1/jobs/run-once", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

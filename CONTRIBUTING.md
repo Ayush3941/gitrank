@@ -487,7 +487,7 @@ Current preview state:
 - `POST /v1/sync/issue/execute` now performs a bounded live issue sync and persists one standalone issue plus its labels directly
 - `POST /v1/sync/commit/execute` now performs a bounded live commit sync and persists one public commit directly
 - manual sync requests also persist queued sync-run records and are queryable by user, repository, subject, requester, correlation ID, and delivery ID
-- scheduler-worker queue, dead-letter, rate-limit window, and recurring backfill plan state now checkpoint to PostgreSQL when `DATABASE_URL` is configured and survive process restarts
+- scheduler-worker queue, dead-letter, rate-limit window, and recurring backfill plan state now checkpoint to PostgreSQL when `DATABASE_URL` is configured, survive process restarts, and serialize leases, ticks, plan updates, and queue mutations across scheduler instances
 
 ## 8. PR Analyzer Checklist
 
@@ -624,7 +624,8 @@ Current preview state:
 - bounded user execution currently means recent public repositories owned by the requested GitHub login, not a full cross-repository authored-PR search
 - bounded review execution currently means "refresh the reviews and review comments for one PR number", not a review-id-specific sync
 - manual worker execution is exposed through `POST /v1/jobs/run-once`
-- queue, dead-letter, rate-limit window, and recurring plan state checkpoint to PostgreSQL when `DATABASE_URL` is configured; multi-instance cross-process coordination is still not implemented
+- queue, dead-letter, rate-limit window, and recurring plan state checkpoint to PostgreSQL when `DATABASE_URL` is configured, and persistent mode now serializes multi-instance leases, ticks, and control-plane mutations through the shared runtime-state row
+- scheduler runtime state is still stored as a single JSONB snapshot row, not dedicated normalized queue tables
 
 ## 12. Shared Packages Checklist
 

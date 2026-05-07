@@ -22,6 +22,7 @@ const primaryQueueName = "github-sync"
 type Service struct {
 	cfg                 config.App
 	queue               *store.InMemoryJobQueue
+	durableMu           sync.Mutex
 	mu                  sync.Mutex
 	plans               map[string]*backfillPlan
 	userLimiter         *scopeRateLimiter
@@ -88,6 +89,7 @@ func (s *Service) Config() contracts.SchedulerConfigResponse {
 }
 
 func (s *Service) DeadLetterConfig(now time.Time) contracts.DeadLetterQueueStatus {
+	s.tryRefreshDurableState()
 	snapshot := s.queue.Snapshot()
 	return contracts.DeadLetterQueueStatus{
 		QueueName:     s.cfg.Scheduler.DeadLetterQueue,
@@ -97,6 +99,7 @@ func (s *Service) DeadLetterConfig(now time.Time) contracts.DeadLetterQueueStatu
 }
 
 func (s *Service) QueueStatus(now time.Time, filter contracts.SchedulerJobFilter) contracts.SchedulerQueueStatusResponse {
+	s.tryRefreshDurableState()
 	snapshot := s.queue.Snapshot()
 	jobs := s.queue.Jobs()
 	filtered := filterJobs(jobs, filter)
@@ -115,19 +118,43 @@ func (s *Service) QueueStatus(now time.Time, filter contracts.SchedulerJobFilter
 	}
 }
 
-func (s *Service) Lease(limit int, now time.Time) contracts.SchedulerLeaseResponse {
-	leased := s.queue.LeaseReady(now, limit, s.cfg.Scheduler.WorkerConcurrency, s.cfg.Scheduler.LeaseTTL)
-	snapshot := s.queue.Snapshot()
+func (s *Service) Lease(limit int, now time.Time) (contracts.SchedulerLeaseResponse, error) {
+	var (
+		leased   []store.QueueJob
+		snapshot store.JobQueueSnapshot
+	)
+	if s.stateStore != nil {
+		err := s.withDurableMutation(context.Background(), now, func() error {
+			leased = s.queue.LeaseReady(now, limit, s.cfg.Scheduler.WorkerConcurrency, s.cfg.Scheduler.LeaseTTL)
+			snapshot = s.queue.Snapshot()
+			return nil
+		})
+		if err != nil {
+			return contracts.SchedulerLeaseResponse{}, err
+		}
+	} else {
+		leased = s.queue.LeaseReady(now, limit, s.cfg.Scheduler.WorkerConcurrency, s.cfg.Scheduler.LeaseTTL)
+		snapshot = s.queue.Snapshot()
+	}
 	return contracts.SchedulerLeaseResponse{
 		QueueName:     primaryQueueName,
 		QueueDepth:    snapshot.Queued,
 		ActiveLeases:  snapshot.ActiveLeases,
 		Jobs:          jobViews(leased),
 		LastUpdatedAt: now.UTC(),
-	}
+	}, nil
 }
 
 func (s *Service) EnqueueSync(req contracts.SyncRequest, correlationID string, now time.Time) (contracts.SchedulerEnqueueResponse, error) {
+	if s.stateStore != nil {
+		var response contracts.SchedulerEnqueueResponse
+		err := s.withDurableMutation(context.Background(), now, func() error {
+			var innerErr error
+			response, innerErr = s.enqueueSyncRequest(req, correlationID, now, false)
+			return innerErr
+		})
+		return response, err
+	}
 	return s.enqueueSyncRequest(req, correlationID, now, true)
 }
 
@@ -176,6 +203,23 @@ func (s *Service) enqueueSyncRequest(req contracts.SyncRequest, correlationID st
 }
 
 func (s *Service) Complete(jobID string, now time.Time) (contracts.SchedulerJobActionResponse, error) {
+	if s.stateStore != nil {
+		var response contracts.SchedulerJobActionResponse
+		err := s.withDurableMutation(context.Background(), now, func() error {
+			job, err := s.queue.Complete(jobID)
+			if err != nil {
+				return err
+			}
+			response = contracts.SchedulerJobActionResponse{
+				QueueName:     primaryQueueName,
+				Status:        "completed",
+				Job:           jobView(job),
+				LastUpdatedAt: now.UTC(),
+			}
+			return nil
+		})
+		return response, err
+	}
 	before := s.captureDurableState()
 	job, err := s.queue.Complete(jobID)
 	if err != nil {
@@ -196,6 +240,27 @@ func (s *Service) Complete(jobID string, now time.Time) (contracts.SchedulerJobA
 func (s *Service) Fail(jobID, errorMessage string, now time.Time) (contracts.SchedulerJobActionResponse, error) {
 	if errorMessage == "" {
 		errorMessage = "job failed"
+	}
+	if s.stateStore != nil {
+		var response contracts.SchedulerJobActionResponse
+		err := s.withDurableMutation(context.Background(), now, func() error {
+			job, deadLetter, err := s.queue.Fail(jobID, errors.New(errorMessage), now, s.cfg.Scheduler.RetryBackoff)
+			if err != nil {
+				return err
+			}
+			response = contracts.SchedulerJobActionResponse{
+				QueueName:     primaryQueueName,
+				Status:        "failed",
+				Job:           jobView(job),
+				LastUpdatedAt: now.UTC(),
+			}
+			if deadLetter != nil {
+				response.Status = "dead_lettered"
+				response.DeadLetterID = deadLetter.ID
+			}
+			return nil
+		})
+		return response, err
 	}
 	before := s.captureDurableState()
 	job, deadLetter, err := s.queue.Fail(jobID, errors.New(errorMessage), now, s.cfg.Scheduler.RetryBackoff)
@@ -219,6 +284,23 @@ func (s *Service) Fail(jobID, errorMessage string, now time.Time) (contracts.Sch
 }
 
 func (s *Service) Pause(jobID string, now time.Time) (contracts.SchedulerJobActionResponse, error) {
+	if s.stateStore != nil {
+		var response contracts.SchedulerJobActionResponse
+		err := s.withDurableMutation(context.Background(), now, func() error {
+			job, err := s.queue.Pause(jobID)
+			if err != nil {
+				return err
+			}
+			response = contracts.SchedulerJobActionResponse{
+				QueueName:     primaryQueueName,
+				Status:        "paused",
+				Job:           jobView(job),
+				LastUpdatedAt: now.UTC(),
+			}
+			return nil
+		})
+		return response, err
+	}
 	before := s.captureDurableState()
 	job, err := s.queue.Pause(jobID)
 	if err != nil {
@@ -237,6 +319,23 @@ func (s *Service) Pause(jobID string, now time.Time) (contracts.SchedulerJobActi
 }
 
 func (s *Service) Resume(jobID string, now time.Time) (contracts.SchedulerJobActionResponse, error) {
+	if s.stateStore != nil {
+		var response contracts.SchedulerJobActionResponse
+		err := s.withDurableMutation(context.Background(), now, func() error {
+			job, err := s.queue.Resume(jobID, now)
+			if err != nil {
+				return err
+			}
+			response = contracts.SchedulerJobActionResponse{
+				QueueName:     primaryQueueName,
+				Status:        "resumed",
+				Job:           jobView(job),
+				LastUpdatedAt: now.UTC(),
+			}
+			return nil
+		})
+		return response, err
+	}
 	before := s.captureDurableState()
 	job, err := s.queue.Resume(jobID, now)
 	if err != nil {
@@ -255,6 +354,23 @@ func (s *Service) Resume(jobID string, now time.Time) (contracts.SchedulerJobAct
 }
 
 func (s *Service) Cancel(jobID string, now time.Time) (contracts.SchedulerJobActionResponse, error) {
+	if s.stateStore != nil {
+		var response contracts.SchedulerJobActionResponse
+		err := s.withDurableMutation(context.Background(), now, func() error {
+			job, err := s.queue.Cancel(jobID)
+			if err != nil {
+				return err
+			}
+			response = contracts.SchedulerJobActionResponse{
+				QueueName:     primaryQueueName,
+				Status:        "canceled",
+				Job:           jobView(job),
+				LastUpdatedAt: now.UTC(),
+			}
+			return nil
+		})
+		return response, err
+	}
 	before := s.captureDurableState()
 	job, err := s.queue.Cancel(jobID)
 	if err != nil {
@@ -273,6 +389,7 @@ func (s *Service) Cancel(jobID string, now time.Time) (contracts.SchedulerJobAct
 }
 
 func (s *Service) DeadLetters(now time.Time) contracts.SchedulerDeadLetterListResponse {
+	s.tryRefreshDurableState()
 	return contracts.SchedulerDeadLetterListResponse{
 		QueueName:     s.cfg.Scheduler.DeadLetterQueue,
 		Records:       deadLetterViews(s.queue.DeadLetters()),
@@ -281,6 +398,28 @@ func (s *Service) DeadLetters(now time.Time) contracts.SchedulerDeadLetterListRe
 }
 
 func (s *Service) ReplayDeadLetter(recordID, correlationID string, now time.Time) (contracts.SchedulerJobActionResponse, error) {
+	if s.stateStore != nil {
+		var response contracts.SchedulerJobActionResponse
+		err := s.withDurableMutation(context.Background(), now, func() error {
+			job, duplicate, err := s.queue.ReplayDeadLetter(recordID, correlationID, now)
+			if err != nil {
+				return err
+			}
+			status := "replayed"
+			if duplicate {
+				status = "deduplicated"
+			}
+			response = contracts.SchedulerJobActionResponse{
+				QueueName:     primaryQueueName,
+				Status:        status,
+				Deduplicated:  duplicate,
+				Job:           jobView(job),
+				LastUpdatedAt: now.UTC(),
+			}
+			return nil
+		})
+		return response, err
+	}
 	before := s.captureDurableState()
 	job, duplicate, err := s.queue.ReplayDeadLetter(recordID, correlationID, now)
 	if err != nil {
@@ -300,6 +439,7 @@ func (s *Service) ReplayDeadLetter(recordID, correlationID string, now time.Time
 }
 
 func (s *Service) WritePrometheus(w io.Writer) {
+	s.tryRefreshDurableState()
 	snapshot := s.queue.Snapshot()
 
 	_, _ = fmt.Fprintf(w, "# HELP gitrank_scheduler_queue_depth Current queued scheduler jobs.\n")

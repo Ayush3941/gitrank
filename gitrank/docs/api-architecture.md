@@ -229,8 +229,8 @@ Current state:
 - `POST /v1/sync/issue/execute` performs a bounded live issue sync and persists one standalone issue plus its labels in PostgreSQL
 - `POST /v1/sync/commit/execute` performs a bounded live commit sync and persists one public commit in PostgreSQL
 - manual sync requests persist queued sync-run records and can be queried through `GET /v1/sync/runs` with user, repository, subject, requester, correlation, and delivery filters
-- sync requests still enqueue in-memory preview jobs for execution
-- persistent worker execution and historical backfill orchestration are still pending
+- sync requests still enqueue scheduler runtime-state jobs rather than a dedicated normalized job table
+- historical backfill orchestration is still pending beyond the current bounded scheduler execution paths
 
 ### PR Analyzer
 
@@ -342,6 +342,7 @@ Current state:
 
 - in-memory queue orchestration is implemented for local and integration use
 - queue, dead-letter, rate-limit window, and recurring backfill plan state checkpoint to PostgreSQL when `DATABASE_URL` is configured
+- persistent mode reloads the latest runtime state before reads and serializes leases, ticks, and control-plane mutations through the shared PostgreSQL runtime-state row
 - sync jobs are deduplicated by `dedupe_key`
 - queue inspection supports filters for `user`, `repository`, `installation_id`, `status`, `type`, `subject`, and `correlation_id`
 - ready jobs can be leased up to the configured worker concurrency
@@ -360,7 +361,7 @@ Current state:
 - recurring cron plans can enqueue normalized sync targets on each scheduler tick
 - recurring plans can be paused, resumed, or deleted through the scheduler control plane
 - per-user and per-installation rate limits throttle repeated sync generation
-- cross-process coordination and multi-instance scheduler leadership are still pending
+- runtime state is still stored as a single JSONB snapshot row rather than dedicated normalized queue tables
 
 ## Browser Auth Scheme
 

@@ -118,6 +118,86 @@ func (s *schedulerStateStore) Save(ctx context.Context, state durableSchedulerSt
 	return err
 }
 
+func (s *schedulerStateStore) Mutate(ctx context.Context, now time.Time, fn func(durableSchedulerState) (durableSchedulerState, error)) error {
+	if s == nil || s.pool == nil {
+		_, err := fn(durableSchedulerState{})
+		return err
+	}
+
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	if _, err := tx.Exec(ctx, `
+		INSERT INTO scheduler_runtime_states (
+			service_name,
+			state_key,
+			state_jsonb,
+			created_at,
+			updated_at
+		) VALUES (
+			$1, $2, '{}'::jsonb, $3, $3
+		)
+		ON CONFLICT (service_name, state_key) DO NOTHING
+	`, s.serviceKey, schedulerStateKey, now.UTC()); err != nil {
+		return err
+	}
+
+	state, err := s.loadForUpdate(ctx, tx)
+	if err != nil {
+		return err
+	}
+
+	next, err := fn(state)
+	if err != nil {
+		return err
+	}
+
+	if err := s.saveTx(ctx, tx, next, now); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
+
+func (s *schedulerStateStore) loadForUpdate(ctx context.Context, tx pgx.Tx) (durableSchedulerState, error) {
+	var payload string
+	if err := tx.QueryRow(ctx, `
+		SELECT state_jsonb::text
+		FROM scheduler_runtime_states
+		WHERE service_name = $1 AND state_key = $2
+		FOR UPDATE
+	`, s.serviceKey, schedulerStateKey).Scan(&payload); err != nil {
+		return durableSchedulerState{}, err
+	}
+
+	if strings.TrimSpace(payload) == "" {
+		return durableSchedulerState{}, nil
+	}
+
+	var state durableSchedulerState
+	if err := json.Unmarshal([]byte(payload), &state); err != nil {
+		return durableSchedulerState{}, err
+	}
+	return state, nil
+}
+
+func (s *schedulerStateStore) saveTx(ctx context.Context, tx pgx.Tx, state durableSchedulerState, now time.Time) error {
+	payload, err := json.Marshal(state)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx, `
+		UPDATE scheduler_runtime_states
+		SET state_jsonb = $3::jsonb,
+			updated_at = $4
+		WHERE service_name = $1 AND state_key = $2
+	`, s.serviceKey, schedulerStateKey, payload, now.UTC())
+	return err
+}
+
 func (s *Service) captureDurableState() durableSchedulerState {
 	if s == nil {
 		return durableSchedulerState{}

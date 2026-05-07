@@ -206,7 +206,10 @@ func TestLeaseFailRetryAndCompleteLifecycle(t *testing.T) {
 	}
 	jobID := enqueue.JobIDs[0]
 
-	firstLease := scheduler.Lease(1, leaseAt)
+	firstLease, err := scheduler.Lease(1, leaseAt)
+	if err != nil {
+		t.Fatalf("Lease() error = %v", err)
+	}
 	if len(firstLease.Jobs) != 1 {
 		t.Fatalf("first lease jobs = %d, want 1", len(firstLease.Jobs))
 	}
@@ -225,12 +228,18 @@ func TestLeaseFailRetryAndCompleteLifecycle(t *testing.T) {
 		t.Fatalf("attempt count = %d, want 1", failed.Job.AttemptCount)
 	}
 
-	earlyLease := scheduler.Lease(1, leaseAt.Add(500*time.Millisecond))
+	earlyLease, err := scheduler.Lease(1, leaseAt.Add(500*time.Millisecond))
+	if err != nil {
+		t.Fatalf("Lease() error = %v", err)
+	}
 	if len(earlyLease.Jobs) != 0 {
 		t.Fatalf("early lease jobs = %d, want 0 before backoff expires", len(earlyLease.Jobs))
 	}
 
-	retryLease := scheduler.Lease(1, leaseAt.Add(1100*time.Millisecond))
+	retryLease, err := scheduler.Lease(1, leaseAt.Add(1100*time.Millisecond))
+	if err != nil {
+		t.Fatalf("Lease() error = %v", err)
+	}
 	if len(retryLease.Jobs) != 1 {
 		t.Fatalf("retry lease jobs = %d, want 1", len(retryLease.Jobs))
 	}
@@ -259,7 +268,7 @@ func TestLeaseFailRetryAndCompleteLifecycle(t *testing.T) {
 }
 
 func TestRunNextExecutesRepositoryJobAndCompletes(t *testing.T) {
-	now := time.Date(2026, time.May, 6, 12, 0, 0, 0, time.UTC)
+	now := time.Now().UTC().Add(2 * time.Second).Truncate(time.Second)
 	var observed contracts.SyncRequest
 	var observedRequestID string
 
@@ -324,7 +333,7 @@ func TestRunNextExecutesRepositoryJobAndCompletes(t *testing.T) {
 }
 
 func TestRunNextExecutesUserJobAndCompletes(t *testing.T) {
-	now := time.Date(2026, time.May, 6, 12, 30, 0, 0, time.UTC)
+	now := time.Now().UTC().Add(30 * time.Second).Truncate(time.Second)
 	var observed contracts.SyncRequest
 	var observedPath string
 	var observedRequestID string
@@ -383,7 +392,7 @@ func TestRunNextExecutesUserJobAndCompletes(t *testing.T) {
 }
 
 func TestRunNextExecutesInstallationJobAndCompletes(t *testing.T) {
-	now := time.Date(2026, time.May, 6, 12, 40, 0, 0, time.UTC)
+	now := time.Now().UTC().Add(40 * time.Second).Truncate(time.Second)
 	var observed contracts.SyncRequest
 	var observedPath string
 	var observedRequestID string
@@ -442,7 +451,7 @@ func TestRunNextExecutesInstallationJobAndCompletes(t *testing.T) {
 }
 
 func TestRunNextExecutesPullRequestJobAndCompletes(t *testing.T) {
-	now := time.Date(2026, time.May, 6, 12, 45, 0, 0, time.UTC)
+	now := time.Now().UTC().Add(45 * time.Second).Truncate(time.Second)
 	var observed contracts.SyncRequest
 	var observedPath string
 
@@ -497,7 +506,7 @@ func TestRunNextExecutesPullRequestJobAndCompletes(t *testing.T) {
 }
 
 func TestRunNextExecutesReviewJobAndCompletes(t *testing.T) {
-	now := time.Date(2026, time.May, 6, 12, 47, 0, 0, time.UTC)
+	now := time.Now().UTC().Add(47 * time.Second).Truncate(time.Second)
 	var observed contracts.SyncRequest
 	var observedPath string
 
@@ -552,7 +561,7 @@ func TestRunNextExecutesReviewJobAndCompletes(t *testing.T) {
 }
 
 func TestRunNextExecutesIssueJobAndCompletes(t *testing.T) {
-	now := time.Date(2026, time.May, 6, 12, 50, 0, 0, time.UTC)
+	now := time.Now().UTC().Add(50 * time.Second).Truncate(time.Second)
 	var observed contracts.SyncRequest
 	var observedPath string
 
@@ -607,7 +616,7 @@ func TestRunNextExecutesIssueJobAndCompletes(t *testing.T) {
 }
 
 func TestRunNextExecutesCommitJobAndCompletes(t *testing.T) {
-	now := time.Date(2026, time.May, 6, 12, 55, 0, 0, time.UTC)
+	now := time.Now().UTC().Add(55 * time.Second).Truncate(time.Second)
 	var observed contracts.SyncRequest
 	var observedPath string
 
@@ -662,7 +671,7 @@ func TestRunNextExecutesCommitJobAndCompletes(t *testing.T) {
 }
 
 func TestRunNextRetriesRepositoryJobOnUpstreamFailure(t *testing.T) {
-	now := time.Date(2026, time.May, 6, 13, 0, 0, 0, time.UTC)
+	now := time.Now().UTC().Add(time.Minute).Truncate(time.Second)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusBadGateway)
 		_ = json.NewEncoder(w).Encode(contracts.NewErrorResponse("upstream_failed", "temporary github outage", ""))
