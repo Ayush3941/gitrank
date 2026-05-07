@@ -162,6 +162,66 @@ func TestPauseResumeAndDeleteBackfillPlan(t *testing.T) {
 	}
 }
 
+func TestCancelBackfillPlanJobsCancelsLatestRun(t *testing.T) {
+	cfg := testServiceConfig()
+	cfg.Scheduler.SyncCron = "*/5 * * * *"
+	scheduler := New(cfg)
+	createdAt := time.Date(2026, time.May, 5, 13, 0, 0, 0, time.UTC)
+
+	plan, err := scheduler.CreateBackfillPlan(contracts.SchedulerBackfillPlanRequest{
+		Name: "cancelable-plan",
+		Targets: []contracts.SyncRequest{
+			{Mode: "user", User: "octocat"},
+			{Mode: "repository", Repository: "octo/repo"},
+		},
+	}, createdAt)
+	if err != nil {
+		t.Fatalf("CreateBackfillPlan() error = %v", err)
+	}
+
+	tickAt := createdAt.Add(5 * time.Minute)
+	if _, err := scheduler.Tick(tickAt); err != nil {
+		t.Fatalf("Tick() error = %v", err)
+	}
+
+	plans := scheduler.BackfillPlans(tickAt)
+	if len(plans.Plans) != 1 {
+		t.Fatalf("plan count = %d, want 1", len(plans.Plans))
+	}
+	if plans.Plans[0].LastCorrelationID == "" {
+		t.Fatal("last correlation id is empty after tick")
+	}
+
+	canceled, err := scheduler.CancelBackfillPlanJobs(plan.ID, tickAt.Add(time.Minute))
+	if err != nil {
+		t.Fatalf("CancelBackfillPlanJobs() error = %v", err)
+	}
+	if canceled.Status != "canceled_jobs" {
+		t.Fatalf("cancel status = %q, want canceled_jobs", canceled.Status)
+	}
+	if canceled.CorrelationID == "" {
+		t.Fatal("cancel correlation id is empty")
+	}
+	if canceled.CorrelationID != plans.Plans[0].LastCorrelationID {
+		t.Fatalf("cancel correlation id = %q, want %q", canceled.CorrelationID, plans.Plans[0].LastCorrelationID)
+	}
+	if canceled.AffectedJobs != 2 {
+		t.Fatalf("affected jobs = %d, want 2", canceled.AffectedJobs)
+	}
+
+	queue := scheduler.QueueStatus(tickAt.Add(time.Minute), contracts.SchedulerJobFilter{
+		CorrelationID: canceled.CorrelationID,
+	})
+	if queue.VisibleJobs != 2 {
+		t.Fatalf("visible jobs = %d, want 2", queue.VisibleJobs)
+	}
+	for _, job := range queue.Jobs {
+		if job.Status != string(store.JobCanceled) {
+			t.Fatalf("job status = %q, want %q", job.Status, store.JobCanceled)
+		}
+	}
+}
+
 func TestQueueStatusFiltersJobsByUserAndRepository(t *testing.T) {
 	cfg := testServiceConfig()
 	scheduler := New(cfg)
@@ -264,6 +324,45 @@ func TestLeaseFailRetryAndCompleteLifecycle(t *testing.T) {
 	}
 	if queue.Retried != 1 {
 		t.Fatalf("retried = %d, want 1", queue.Retried)
+	}
+}
+
+func TestCompletePreservesCanceledStatus(t *testing.T) {
+	cfg := testServiceConfig()
+	scheduler := New(cfg)
+	now := time.Now().UTC().Add(2 * time.Second).Truncate(time.Second)
+
+	enqueue, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "user", User: "octocat"}, "cancel-before-complete", now)
+	if err != nil {
+		t.Fatalf("EnqueueSync() error = %v", err)
+	}
+	jobID := enqueue.JobIDs[0]
+
+	lease, err := scheduler.Lease(1, now.Add(time.Second))
+	if err != nil {
+		t.Fatalf("Lease() error = %v", err)
+	}
+	if len(lease.Jobs) != 1 || lease.Jobs[0].ID != jobID {
+		t.Fatalf("leased jobs = %+v, want job %q", lease.Jobs, jobID)
+	}
+
+	canceled, err := scheduler.Cancel(jobID, now.Add(2*time.Second))
+	if err != nil {
+		t.Fatalf("Cancel() error = %v", err)
+	}
+	if canceled.Status != "canceled" {
+		t.Fatalf("cancel status = %q, want canceled", canceled.Status)
+	}
+
+	completed, err := scheduler.Complete(jobID, now.Add(3*time.Second))
+	if err != nil {
+		t.Fatalf("Complete() error = %v", err)
+	}
+	if completed.Status != "canceled" {
+		t.Fatalf("complete status = %q, want canceled", completed.Status)
+	}
+	if completed.Job.Status != string(store.JobCanceled) {
+		t.Fatalf("complete job status = %q, want %q", completed.Job.Status, store.JobCanceled)
 	}
 }
 

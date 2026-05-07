@@ -169,6 +169,13 @@ func NewRouter(cfg config.App, scheduler *service.Service, log *slog.Logger, ver
 				return
 			}
 			httpkit.WriteJSON(w, http.StatusOK, response)
+		case r.Method == http.MethodPost && action == "cancel":
+			response, err := scheduler.CancelBackfillPlanJobs(planID, now)
+			if err != nil {
+				writeSchedulerError(w, r, err)
+				return
+			}
+			httpkit.WriteJSON(w, http.StatusOK, response)
 		default:
 			writeMethodNotAllowed(w, r)
 		}

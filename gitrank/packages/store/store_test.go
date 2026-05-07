@@ -216,6 +216,116 @@ func TestInMemoryJobQueueLeasePauseResumeAndReplay(t *testing.T) {
 	}
 }
 
+func TestInMemoryJobQueueCancelByCorrelationCancelsOnlyActiveJobs(t *testing.T) {
+	queue := NewInMemoryJobQueue()
+	now := time.Date(2026, 5, 5, 12, 0, 0, 0, time.UTC)
+
+	queuedJob, err := NewQueueJob(QueueJobInput{
+		QueueName:     "github-sync",
+		Type:          SyncRepositoryJob,
+		CorrelationID: "backfill:plan:run-1",
+		Repository:    "octo/repo",
+		DedupeKey:     "repository:octo/repo",
+		MaxAttempts:   2,
+		ScheduledAt:   now,
+		NotBefore:     now,
+		Payload: map[string]string{
+			"repository": "octo/repo",
+			"mode":       "repository",
+		},
+	})
+	if err != nil {
+		t.Fatalf("NewQueueJob() queued error = %v", err)
+	}
+	if _, _, err := queue.EnqueueUnique(queuedJob); err != nil {
+		t.Fatalf("EnqueueUnique() queued error = %v", err)
+	}
+
+	leasedJob, err := NewQueueJob(QueueJobInput{
+		QueueName:     "github-sync",
+		Type:          SyncUserHistoryJob,
+		CorrelationID: "backfill:plan:run-1",
+		Subject:       "octocat",
+		DedupeKey:     "user:octocat",
+		MaxAttempts:   2,
+		ScheduledAt:   now,
+		NotBefore:     now,
+		Payload: map[string]string{
+			"user": "octocat",
+			"mode": "user",
+		},
+	})
+	if err != nil {
+		t.Fatalf("NewQueueJob() leased error = %v", err)
+	}
+	if _, _, err := queue.EnqueueUnique(leasedJob); err != nil {
+		t.Fatalf("EnqueueUnique() leased error = %v", err)
+	}
+	if _, err := queue.LeaseJob(leasedJob.ID, now, 2, time.Minute); err != nil {
+		t.Fatalf("LeaseJob() error = %v", err)
+	}
+
+	otherJob, err := NewQueueJob(QueueJobInput{
+		QueueName:     "github-sync",
+		Type:          SyncIssueJob,
+		CorrelationID: "backfill:plan:run-2",
+		Repository:    "octo/repo",
+		Subject:       "#12",
+		DedupeKey:     "issue:octo/repo:12",
+		MaxAttempts:   2,
+		ScheduledAt:   now,
+		NotBefore:     now,
+		Payload: map[string]any{
+			"repository": "octo/repo",
+			"number":     12,
+			"mode":       "issue",
+		},
+	})
+	if err != nil {
+		t.Fatalf("NewQueueJob() other error = %v", err)
+	}
+	if _, _, err := queue.EnqueueUnique(otherJob); err != nil {
+		t.Fatalf("EnqueueUnique() other error = %v", err)
+	}
+
+	canceled := queue.CancelByCorrelation(" backfill:plan:run-1 ")
+	if len(canceled) != 2 {
+		t.Fatalf("canceled len = %d, want 2", len(canceled))
+	}
+	for _, job := range canceled {
+		if job.Status != JobCanceled {
+			t.Fatalf("canceled job status = %q, want %q", job.Status, JobCanceled)
+		}
+	}
+
+	loadedQueued, ok := queue.Job(queuedJob.ID)
+	if !ok {
+		t.Fatal("queued job missing after cancellation")
+	}
+	if loadedQueued.Status != JobCanceled {
+		t.Fatalf("queued job status = %q, want %q", loadedQueued.Status, JobCanceled)
+	}
+
+	loadedLeased, ok := queue.Job(leasedJob.ID)
+	if !ok {
+		t.Fatal("leased job missing after cancellation")
+	}
+	if loadedLeased.Status != JobCanceled {
+		t.Fatalf("leased job status = %q, want %q", loadedLeased.Status, JobCanceled)
+	}
+	if !loadedLeased.LeaseExpiresAt.IsZero() {
+		t.Fatalf("leased job lease expiry = %v, want zero", loadedLeased.LeaseExpiresAt)
+	}
+
+	loadedOther, ok := queue.Job(otherJob.ID)
+	if !ok {
+		t.Fatal("other job missing after cancellation")
+	}
+	if loadedOther.Status != JobPending {
+		t.Fatalf("other job status = %q, want %q", loadedOther.Status, JobPending)
+	}
+}
+
 func TestInMemoryJobQueueLeaseJobTargetsReadyJob(t *testing.T) {
 	queue := NewInMemoryJobQueue()
 	readyAt := time.Date(2026, 5, 5, 12, 0, 0, 0, time.UTC)

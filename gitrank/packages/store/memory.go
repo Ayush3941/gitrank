@@ -3,6 +3,7 @@ package store
 import (
 	"errors"
 	"slices"
+	"strings"
 	"sync"
 	"time"
 )
@@ -358,6 +359,28 @@ func (q *InMemoryJobQueue) Cancel(jobID string) (QueueJob, error) {
 	job.LeaseExpiresAt = time.Time{}
 	q.jobs[index] = job
 	return job, nil
+}
+
+func (q *InMemoryJobQueue) CancelByCorrelation(correlationID string) []QueueJob {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+
+	correlationID = strings.TrimSpace(correlationID)
+	if correlationID == "" {
+		return nil
+	}
+
+	canceled := make([]QueueJob, 0)
+	for index, job := range q.jobs {
+		if job.CorrelationID != correlationID || isTerminalJobStatus(job.Status) {
+			continue
+		}
+		job.Status = JobCanceled
+		job.LeaseExpiresAt = time.Time{}
+		q.jobs[index] = job
+		canceled = append(canceled, job)
+	}
+	return canceled
 }
 
 func (q *InMemoryJobQueue) Fail(jobID string, err error, now time.Time, baseBackoff time.Duration) (QueueJob, *DeadLetterRecord, error) {

@@ -334,6 +334,67 @@ func (s *Service) DeleteBackfillPlan(planID string, now time.Time) (contracts.Sc
 	return response, nil
 }
 
+func (s *Service) CancelBackfillPlanJobs(planID string, now time.Time) (contracts.SchedulerBackfillPlanActionResponse, error) {
+	if s.stateStore != nil {
+		var response contracts.SchedulerBackfillPlanActionResponse
+		err := s.withDurableMutation(context.Background(), now, func() error {
+			var innerErr error
+			response, innerErr = s.cancelBackfillPlanJobsLocal(planID, now, false)
+			return innerErr
+		})
+		return response, err
+	}
+	return s.cancelBackfillPlanJobsLocal(planID, now, true)
+}
+
+func (s *Service) cancelBackfillPlanJobsLocal(planID string, now time.Time, checkpoint bool) (contracts.SchedulerBackfillPlanActionResponse, error) {
+	before := s.captureDurableState()
+
+	s.mu.Lock()
+	plan, err := s.planByIDLocked(planID)
+	if err != nil {
+		s.mu.Unlock()
+		return contracts.SchedulerBackfillPlanActionResponse{}, err
+	}
+	correlationID := strings.TrimSpace(plan.LastCorrelationID)
+	if correlationID == "" {
+		s.mu.Unlock()
+		return contracts.SchedulerBackfillPlanActionResponse{}, errors.New("backfill plan has no recorded run correlation")
+	}
+	plan.UpdatedAt = now.UTC()
+	s.mu.Unlock()
+
+	canceledJobs := s.queue.CancelByCorrelation(correlationID)
+
+	s.mu.Lock()
+	plan, err = s.planByIDLocked(planID)
+	if err != nil {
+		s.mu.Unlock()
+		return contracts.SchedulerBackfillPlanActionResponse{}, err
+	}
+	plan.UpdatedAt = now.UTC()
+	view := plan.view()
+	s.mu.Unlock()
+
+	status := "canceled_jobs"
+	if len(canceledJobs) == 0 {
+		status = "no_active_jobs"
+	}
+	response := contracts.SchedulerBackfillPlanActionResponse{
+		Status:        status,
+		Plan:          view,
+		CorrelationID: correlationID,
+		AffectedJobs:  len(canceledJobs),
+		LastUpdatedAt: now.UTC(),
+	}
+	if checkpoint {
+		if err := s.persistDurableStateWithRollback(before, now); err != nil {
+			return contracts.SchedulerBackfillPlanActionResponse{}, err
+		}
+	}
+	return response, nil
+}
+
 func (s *Service) Tick(now time.Time) (contracts.SchedulerTickResponse, error) {
 	now = now.UTC()
 	if s.stateStore != nil {

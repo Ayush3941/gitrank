@@ -99,6 +99,8 @@ type SchedulerBackfillPlanListResponse struct {
 type SchedulerBackfillPlanActionResponse struct {
 	Status        string                    `json:"status"`
 	Plan          SchedulerBackfillPlanView `json:"plan"`
+	CorrelationID string                    `json:"correlation_id,omitempty"`
+	AffectedJobs  int                       `json:"affected_jobs,omitempty"`
 	LastUpdatedAt time.Time                 `json:"last_updated_at"`
 }
 

@@ -328,6 +328,7 @@ Implemented routes:
 - `POST /v1/jobs/backfills`
 - `POST /v1/jobs/backfills/{plan_id}/pause`
 - `POST /v1/jobs/backfills/{plan_id}/resume`
+- `POST /v1/jobs/backfills/{plan_id}/cancel`
 - `DELETE /v1/jobs/backfills/{plan_id}`
 - `POST /v1/jobs/{job_id}/complete`
 - `POST /v1/jobs/{job_id}/fail`
@@ -343,6 +344,7 @@ Current state:
 - in-memory queue orchestration is implemented for local and integration use
 - queue, dead-letter, rate-limit window, and recurring backfill plan state checkpoint to PostgreSQL when `DATABASE_URL` is configured
 - persistent mode reloads the latest runtime state before reads and serializes leases, ticks, and control-plane mutations through the shared PostgreSQL runtime-state row
+- recurring backfill plans now retain the latest run correlation and can cancel queued or leased jobs for that run without overwriting the canceled terminal state when a worker reports completion afterward
 - sync jobs are deduplicated by `dedupe_key`
 - queue inspection supports filters for `user`, `repository`, `installation_id`, `status`, `type`, `subject`, and `correlation_id`
 - ready jobs can be leased up to the configured worker concurrency

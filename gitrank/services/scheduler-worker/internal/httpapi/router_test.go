@@ -427,6 +427,71 @@ func TestSchedulerBackfillPlanPauseResumeAndDelete(t *testing.T) {
 	}
 }
 
+func TestSchedulerBackfillPlanCancelLatestRun(t *testing.T) {
+	cfg := testConfig()
+	cfg.Scheduler.SyncCron = "*/5 * * * *"
+	scheduler := service.New(cfg)
+	router := NewRouter(cfg, scheduler, slog.New(slog.NewTextHandler(io.Discard, nil)), "test")
+
+	createdAt := time.Now().UTC().Add(-10 * time.Minute).Truncate(time.Minute)
+	created, err := scheduler.CreateBackfillPlan(contracts.SchedulerBackfillPlanRequest{
+		Name: "cancel-latest-run",
+		Cron: "*/5 * * * *",
+		Targets: []contracts.SyncRequest{
+			{Mode: "user", User: "octocat"},
+			{Mode: "repository", Repository: "octo/repo"},
+		},
+	}, createdAt)
+	if err != nil {
+		t.Fatalf("CreateBackfillPlan() error = %v", err)
+	}
+
+	tickResponse := httptest.NewRecorder()
+	router.ServeHTTP(tickResponse, httptest.NewRequest(http.MethodPost, "/v1/jobs/tick", nil))
+	if tickResponse.Code != http.StatusOK {
+		t.Fatalf("tick status = %d, want %d, body=%s", tickResponse.Code, http.StatusOK, tickResponse.Body.String())
+	}
+
+	cancelResponse := httptest.NewRecorder()
+	router.ServeHTTP(cancelResponse, httptest.NewRequest(http.MethodPost, "/v1/jobs/backfills/"+created.ID+"/cancel", nil))
+	if cancelResponse.Code != http.StatusOK {
+		t.Fatalf("cancel status = %d, want %d, body=%s", cancelResponse.Code, http.StatusOK, cancelResponse.Body.String())
+	}
+
+	var canceled contracts.SchedulerBackfillPlanActionResponse
+	if err := json.Unmarshal(cancelResponse.Body.Bytes(), &canceled); err != nil {
+		t.Fatalf("unmarshal cancel response: %v", err)
+	}
+	if canceled.Status != "canceled_jobs" {
+		t.Fatalf("cancel status = %q, want canceled_jobs", canceled.Status)
+	}
+	if canceled.CorrelationID == "" {
+		t.Fatal("cancel correlation id is empty")
+	}
+	if canceled.AffectedJobs != 2 {
+		t.Fatalf("affected jobs = %d, want 2", canceled.AffectedJobs)
+	}
+
+	queueResponse := httptest.NewRecorder()
+	router.ServeHTTP(queueResponse, httptest.NewRequest(http.MethodGet, "/v1/jobs?correlation_id="+canceled.CorrelationID, nil))
+	if queueResponse.Code != http.StatusOK {
+		t.Fatalf("queue status = %d, want %d, body=%s", queueResponse.Code, http.StatusOK, queueResponse.Body.String())
+	}
+
+	var queueOut contracts.SchedulerQueueStatusResponse
+	if err := json.Unmarshal(queueResponse.Body.Bytes(), &queueOut); err != nil {
+		t.Fatalf("unmarshal queue response: %v", err)
+	}
+	if queueOut.VisibleJobs != 2 {
+		t.Fatalf("visible jobs = %d, want 2", queueOut.VisibleJobs)
+	}
+	for _, job := range queueOut.Jobs {
+		if job.Status != "canceled" {
+			t.Fatalf("job status = %q, want canceled", job.Status)
+		}
+	}
+}
+
 func TestSchedulerBackfillPlanTicksAndQueuesTargets(t *testing.T) {
 	cfg := testConfig()
 	cfg.Scheduler.SyncCron = "*/5 * * * *"

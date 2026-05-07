@@ -212,7 +212,7 @@ func (s *Service) Complete(jobID string, now time.Time) (contracts.SchedulerJobA
 			}
 			response = contracts.SchedulerJobActionResponse{
 				QueueName:     primaryQueueName,
-				Status:        "completed",
+				Status:        completionResponseStatus(job.Status),
 				Job:           jobView(job),
 				LastUpdatedAt: now.UTC(),
 			}
@@ -227,7 +227,7 @@ func (s *Service) Complete(jobID string, now time.Time) (contracts.SchedulerJobA
 	}
 	response := contracts.SchedulerJobActionResponse{
 		QueueName:     primaryQueueName,
-		Status:        "completed",
+		Status:        completionResponseStatus(job.Status),
 		Job:           jobView(job),
 		LastUpdatedAt: now.UTC(),
 	}
@@ -235,6 +235,19 @@ func (s *Service) Complete(jobID string, now time.Time) (contracts.SchedulerJobA
 		return contracts.SchedulerJobActionResponse{}, err
 	}
 	return response, nil
+}
+
+func completionResponseStatus(status store.SyncJobStatus) string {
+	switch status {
+	case store.JobCanceled:
+		return "canceled"
+	case store.JobDeadLetter:
+		return "dead_lettered"
+	case store.JobSucceeded:
+		return "completed"
+	default:
+		return "completed"
+	}
 }
 
 func (s *Service) Fail(jobID, errorMessage string, now time.Time) (contracts.SchedulerJobActionResponse, error) {

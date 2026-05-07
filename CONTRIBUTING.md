@@ -472,7 +472,7 @@ Operational requirements:
 
 - [x] ingestion failures are visible in metrics and alerts
 - [x] manual requeue exists
-- [ ] backfill jobs are cancelable
+- [x] backfill jobs are cancelable
 - [x] sync jobs are traceable per user and per repo
 
 Current preview state:
@@ -488,6 +488,7 @@ Current preview state:
 - `POST /v1/sync/commit/execute` now performs a bounded live commit sync and persists one public commit directly
 - manual sync requests also persist queued sync-run records and are queryable by user, repository, subject, requester, correlation ID, and delivery ID
 - scheduler-worker queue, dead-letter, rate-limit window, and recurring backfill plan state now checkpoint to PostgreSQL when `DATABASE_URL` is configured, survive process restarts, and serialize leases, ticks, plan updates, and queue mutations across scheduler instances
+- the latest queued or leased recurring backfill run can now be canceled per plan via its recorded correlation ID, and worker completion preserves that canceled terminal state instead of silently marking it completed
 
 ## 8. PR Analyzer Checklist
 
@@ -617,7 +618,7 @@ Must be implemented:
 
 Current preview state:
 
-- recurring backfill plans can be created, paused, resumed, manually ticked, and deleted through `scheduler-worker`
+- recurring backfill plans can be created, paused, resumed, canceled for their latest queued run, manually ticked, and deleted through `scheduler-worker`
 - queue inspection supports filters for user, repository, installation, status, type, subject, and correlation ID
 - the in-process worker can execute bounded `sync.installation`, `sync.repository`, `sync.user_history`, `sync.pull_request`, `sync.review`, `sync.issue`, and `sync.commit` jobs through `github-ingestor`, with completion, retry, and dead-letter behavior surfaced on the scheduler queue
 - bounded installation execution currently means replaying repositories already associated with a persisted installation record, not discovering repositories from live GitHub App installation APIs
