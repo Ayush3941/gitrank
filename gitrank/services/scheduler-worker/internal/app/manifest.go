@@ -39,7 +39,7 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 		Dependencies: []contracts.DependencySpec{
 			{Name: "In-memory queue and worker state", Kind: "queue", Purpose: "Local runtime scheduler state, recurring plans, retries, dead letters, and bounded sync job execution", Critical: true, Status: "implemented"},
 			{Name: "Redis", Kind: "queue", Purpose: "Job state and coordination", Critical: true, Status: "planned"},
-			{Name: "PostgreSQL", Kind: "database", Purpose: "Durable scheduler queue, dead-letter, and recurring backfill state checkpoints", Critical: true, Status: "implemented"},
+			{Name: "PostgreSQL", Kind: "database", Purpose: "Durable scheduler jobs, dead letters, recurring backfill plans, rate-limit windows, and scheduler counters", Critical: true, Status: "implemented"},
 			{Name: "github-ingestor", Kind: "internal_http", BaseURL: cfg.Services.GitHubIngestorBaseURL, Purpose: "Repository and PR sync flows", Auth: "service_to_service", Critical: true, Status: "configured"},
 			{Name: "scoring-engine", Kind: "internal_http", BaseURL: cfg.Services.ScoringBaseURL, Purpose: "Re-score requests and repair flows", Auth: "service_to_service", Critical: true, Status: "configured"},
 		},

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -11,6 +12,24 @@ import (
 	"github.com/Ayush3941/gitrank/packages/contracts"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+func clearSchedulerPersistentState(t *testing.T, ctx context.Context, pool *pgxpool.Pool, serviceName string) {
+	t.Helper()
+
+	for _, statement := range []string{
+		`DELETE FROM scheduler_tick_scope_totals WHERE service_name = $1`,
+		`DELETE FROM scheduler_rate_limit_windows WHERE service_name = $1`,
+		`DELETE FROM scheduler_backfill_plans WHERE service_name = $1`,
+		`DELETE FROM scheduler_dead_letters WHERE service_name = $1`,
+		`DELETE FROM scheduler_jobs WHERE service_name = $1`,
+		`DELETE FROM scheduler_runtime_counters WHERE service_name = $1`,
+		`DELETE FROM scheduler_runtime_states WHERE service_name = $1`,
+	} {
+		if _, err := pool.Exec(ctx, statement, serviceName); err != nil {
+			t.Fatalf("clear persistent scheduler state %q: %v", statement, err)
+		}
+	}
+}
 
 func TestPersistentSchedulerRestoresQueueAndBackfillState(t *testing.T) {
 	databaseURL := strings.TrimSpace(os.Getenv("GITRANK_SCHEDULER_DATABASE_URL"))
@@ -26,9 +45,7 @@ func TestPersistentSchedulerRestoresQueueAndBackfillState(t *testing.T) {
 	defer pool.Close()
 
 	serviceName := fmt.Sprintf("scheduler-worker-persist-%d", time.Now().UnixNano())
-	if _, err := pool.Exec(ctx, `DELETE FROM scheduler_runtime_states WHERE service_name = $1`, serviceName); err != nil {
-		t.Fatalf("delete scheduler_runtime_states: %v", err)
-	}
+	clearSchedulerPersistentState(t, ctx, pool, serviceName)
 
 	cfg := testServiceConfig()
 	cfg.ServiceName = serviceName
@@ -66,6 +83,30 @@ func TestPersistentSchedulerRestoresQueueAndBackfillState(t *testing.T) {
 		t.Fatalf("fail status = %q, want dead_lettered", failed.Status)
 	}
 
+	var (
+		planRows       int
+		deadLetterRows int
+		counterRows    int
+	)
+	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM scheduler_backfill_plans WHERE service_name = $1`, serviceName).Scan(&planRows); err != nil {
+		t.Fatalf("count scheduler_backfill_plans: %v", err)
+	}
+	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM scheduler_dead_letters WHERE service_name = $1`, serviceName).Scan(&deadLetterRows); err != nil {
+		t.Fatalf("count scheduler_dead_letters: %v", err)
+	}
+	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM scheduler_runtime_counters WHERE service_name = $1`, serviceName).Scan(&counterRows); err != nil {
+		t.Fatalf("count scheduler_runtime_counters: %v", err)
+	}
+	if planRows != 1 {
+		t.Fatalf("scheduler_backfill_plans rows = %d, want 1", planRows)
+	}
+	if deadLetterRows != 1 {
+		t.Fatalf("scheduler_dead_letters rows = %d, want 1", deadLetterRows)
+	}
+	if counterRows != 1 {
+		t.Fatalf("scheduler_runtime_counters rows = %d, want 1", counterRows)
+	}
+
 	restored, err := NewPersistent(cfg, pool)
 	if err != nil {
 		t.Fatalf("NewPersistent() restore error = %v", err)
@@ -96,6 +137,99 @@ func TestPersistentSchedulerRestoresQueueAndBackfillState(t *testing.T) {
 	}
 }
 
+func TestPersistentSchedulerMigratesLegacySnapshotToNormalizedTables(t *testing.T) {
+	databaseURL := strings.TrimSpace(os.Getenv("GITRANK_SCHEDULER_DATABASE_URL"))
+	if databaseURL == "" {
+		t.Skip("GITRANK_SCHEDULER_DATABASE_URL is not set")
+	}
+
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, databaseURL)
+	if err != nil {
+		t.Fatalf("pgxpool.New() error = %v", err)
+	}
+	defer pool.Close()
+
+	serviceName := fmt.Sprintf("scheduler-worker-legacy-%d", time.Now().UnixNano())
+	clearSchedulerPersistentState(t, ctx, pool, serviceName)
+
+	cfg := testServiceConfig()
+	cfg.ServiceName = serviceName
+	now := time.Now().UTC().Add(2 * time.Second).Truncate(time.Second)
+
+	legacyScheduler := New(cfg)
+	plan, err := legacyScheduler.CreateBackfillPlan(contracts.SchedulerBackfillPlanRequest{
+		Name: "legacy-backfill",
+		Targets: []contracts.SyncRequest{
+			{Mode: "repository", Repository: "octo/repo"},
+		},
+	}, now)
+	if err != nil {
+		t.Fatalf("CreateBackfillPlan() legacy error = %v", err)
+	}
+	enqueue, err := legacyScheduler.EnqueueSync(contracts.SyncRequest{Mode: "repository", Repository: "octo/repo"}, "legacy-correlation", now)
+	if err != nil {
+		t.Fatalf("EnqueueSync() legacy error = %v", err)
+	}
+	if len(enqueue.JobIDs) != 1 {
+		t.Fatalf("legacy job ids len = %d, want 1", len(enqueue.JobIDs))
+	}
+
+	payload, err := json.Marshal(legacyScheduler.captureDurableState())
+	if err != nil {
+		t.Fatalf("json.Marshal() legacy state error = %v", err)
+	}
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO scheduler_runtime_states (
+			service_name,
+			state_key,
+			state_jsonb,
+			created_at,
+			updated_at
+		) VALUES ($1, $2, $3::jsonb, $4, $4)
+	`, serviceName, schedulerStateKey, string(payload), now); err != nil {
+		t.Fatalf("insert legacy scheduler_runtime_states: %v", err)
+	}
+
+	restored, err := NewPersistent(cfg, pool)
+	if err != nil {
+		t.Fatalf("NewPersistent() migrate error = %v", err)
+	}
+
+	plans := restored.BackfillPlans(now)
+	if len(plans.Plans) != 1 || plans.Plans[0].ID != plan.ID {
+		t.Fatalf("restored plans = %+v, want migrated plan %q", plans.Plans, plan.ID)
+	}
+	queue := restored.QueueStatus(now, contracts.SchedulerJobFilter{Repository: "octo/repo"})
+	if queue.QueueDepth != 1 || len(queue.Jobs) != 1 || queue.Jobs[0].ID != enqueue.JobIDs[0] {
+		t.Fatalf("restored queue = %+v, want migrated queued job %q", queue, enqueue.JobIDs[0])
+	}
+
+	var (
+		jobRows    int
+		planRows   int
+		legacyRows int
+	)
+	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM scheduler_jobs WHERE service_name = $1`, serviceName).Scan(&jobRows); err != nil {
+		t.Fatalf("count scheduler_jobs: %v", err)
+	}
+	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM scheduler_backfill_plans WHERE service_name = $1`, serviceName).Scan(&planRows); err != nil {
+		t.Fatalf("count scheduler_backfill_plans: %v", err)
+	}
+	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM scheduler_runtime_states WHERE service_name = $1`, serviceName).Scan(&legacyRows); err != nil {
+		t.Fatalf("count scheduler_runtime_states: %v", err)
+	}
+	if jobRows != 1 {
+		t.Fatalf("scheduler_jobs rows = %d, want 1", jobRows)
+	}
+	if planRows != 1 {
+		t.Fatalf("scheduler_backfill_plans rows = %d, want 1", planRows)
+	}
+	if legacyRows != 0 {
+		t.Fatalf("scheduler_runtime_states rows = %d, want 0 after migration", legacyRows)
+	}
+}
+
 func TestPersistentSchedulerSharesLeasesAcrossInstances(t *testing.T) {
 	databaseURL := strings.TrimSpace(os.Getenv("GITRANK_SCHEDULER_DATABASE_URL"))
 	if databaseURL == "" {
@@ -110,9 +244,7 @@ func TestPersistentSchedulerSharesLeasesAcrossInstances(t *testing.T) {
 	defer pool.Close()
 
 	serviceName := fmt.Sprintf("scheduler-worker-shared-%d", time.Now().UnixNano())
-	if _, err := pool.Exec(ctx, `DELETE FROM scheduler_runtime_states WHERE service_name = $1`, serviceName); err != nil {
-		t.Fatalf("delete scheduler_runtime_states: %v", err)
-	}
+	clearSchedulerPersistentState(t, ctx, pool, serviceName)
 
 	cfg := testServiceConfig()
 	cfg.ServiceName = serviceName
@@ -175,9 +307,7 @@ func TestPersistentSchedulerSerializesDuePlanTicksAcrossInstances(t *testing.T) 
 	defer pool.Close()
 
 	serviceName := fmt.Sprintf("scheduler-worker-tick-%d", time.Now().UnixNano())
-	if _, err := pool.Exec(ctx, `DELETE FROM scheduler_runtime_states WHERE service_name = $1`, serviceName); err != nil {
-		t.Fatalf("delete scheduler_runtime_states: %v", err)
-	}
+	clearSchedulerPersistentState(t, ctx, pool, serviceName)
 
 	cfg := testServiceConfig()
 	cfg.ServiceName = serviceName

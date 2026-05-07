@@ -99,6 +99,18 @@ assert_true "score_snapshots table exists" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'score_snapshots');"
 assert_true "scheduler_runtime_states table exists" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'scheduler_runtime_states');"
+assert_true "scheduler_jobs table exists" \
+  "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'scheduler_jobs');"
+assert_true "scheduler_dead_letters table exists" \
+  "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'scheduler_dead_letters');"
+assert_true "scheduler_backfill_plans table exists" \
+  "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'scheduler_backfill_plans');"
+assert_true "scheduler_rate_limit_windows table exists" \
+  "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'scheduler_rate_limit_windows');"
+assert_true "scheduler_runtime_counters table exists" \
+  "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'scheduler_runtime_counters');"
+assert_true "scheduler_tick_scope_totals table exists" \
+  "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'scheduler_tick_scope_totals');"
 assert_true "webhook delivery persistence column exists" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'github_webhook_deliveries' AND column_name = 'github_installation_id');"
 assert_true "auth session token hash column exists" \

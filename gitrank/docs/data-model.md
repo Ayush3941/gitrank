@@ -258,6 +258,93 @@ This is the initial relational model direction for PostgreSQL.
 - `score_version`
 - `total_xp`
 - `level`
+
+### `scheduler_jobs`
+
+- composite primary key `(service_name, job_id)`
+- `queue_name`
+- `job_type`
+- `status`
+- `correlation_id`
+- `delivery_id`
+- `installation_id`
+- `repository`
+- `subject`
+- `dedupe_key`
+- `attempt_count`
+- `max_attempts`
+- `scheduled_at`
+- `not_before`
+- `lease_expires_at`
+- `last_error`
+- `payload_jsonb`
+- `created_at`
+- `updated_at`
+
+### `scheduler_dead_letters`
+
+- composite primary key `(service_name, record_id)`
+- `job_id`
+- `queue_name`
+- `job_type`
+- `delivery_id`
+- `correlation_id`
+- `installation_id`
+- `repository`
+- `subject`
+- `dedupe_key`
+- `attempts`
+- `max_attempts`
+- `error_message`
+- `payload_jsonb`
+- `created_at`
+- `replayed_at`
+- `updated_at`
+
+### `scheduler_backfill_plans`
+
+- composite primary key `(service_name, plan_id)`
+- `name`
+- `cron`
+- `enabled`
+- `targets_jsonb`
+- `last_run_at`
+- `next_run_at`
+- `queued_jobs_total`
+- `deduplicated_total`
+- `rate_limited_total`
+- `created_at`
+- `updated_at`
+- `last_correlation_id`
+
+### `scheduler_rate_limit_windows`
+
+- composite primary key `(service_name, scope, scope_key)`
+- `started_at`
+- `hit_count`
+- `updated_at`
+
+### `scheduler_runtime_counters`
+
+- primary key `service_name`
+- `queue_retry_count`
+- `queue_failure_count`
+- `queue_replay_count`
+- `tick_runs`
+- `due_plans`
+- `executed_plans`
+- `queued_jobs`
+- `deduplicated_jobs`
+- `rate_limited_targets`
+- `last_tick_at`
+- `created_at`
+- `updated_at`
+
+### `scheduler_tick_scope_totals`
+
+- composite primary key `(service_name, scope)`
+- `total_count`
+- `updated_at`
 - `rank_tier`
 - `top_skills_jsonb`
 - `badge_keys_jsonb`

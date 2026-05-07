@@ -342,8 +342,8 @@ Implemented routes:
 Current state:
 
 - in-memory queue orchestration is implemented for local and integration use
-- queue, dead-letter, rate-limit window, and recurring backfill plan state checkpoint to PostgreSQL when `DATABASE_URL` is configured
-- persistent mode reloads the latest runtime state before reads and serializes leases, ticks, and control-plane mutations through the shared PostgreSQL runtime-state row
+- queue jobs, dead letters, recurring backfill plans, rate-limit windows, and scheduler counters persist in dedicated PostgreSQL tables when `DATABASE_URL` is configured
+- persistent mode reloads the latest scheduler state before reads and serializes leases, ticks, and control-plane mutations through the shared PostgreSQL scheduler counters row
 - recurring backfill plans now retain the latest run correlation and can cancel queued or leased jobs for that run without overwriting the canceled terminal state when a worker reports completion afterward
 - sync jobs are deduplicated by `dedupe_key`
 - queue inspection supports filters for `user`, `repository`, `installation_id`, `status`, `type`, `subject`, and `correlation_id`
@@ -361,9 +361,9 @@ Current state:
 - retries apply exponential backoff before the next eligible lease
 - poison jobs move into a dead-letter queue and can be manually replayed
 - recurring cron plans can enqueue normalized sync targets on each scheduler tick
-- recurring plans can be paused, resumed, or deleted through the scheduler control plane
+- recurring plans can be paused, resumed, canceled for their latest queued run, or deleted through the scheduler control plane
 - per-user and per-installation rate limits throttle repeated sync generation
-- runtime state is still stored as a single JSONB snapshot row rather than dedicated normalized queue tables
+- persistent mode stores jobs, dead letters, recurring plans, rate-limit windows, and scheduler counters in dedicated PostgreSQL tables, with the legacy JSONB snapshot row kept only for compatibility import
 
 ## Browser Auth Scheme
 
