@@ -107,6 +107,7 @@ func NewRouter(cfg config.App, scoringService *service.Service, log *slog.Logger
 			}
 			response, err := scoringService.ReplayUser(r.Context(), userID, req, now)
 			if err != nil {
+				scoreMetrics.ObserveReplayFailure(scoringErrorReason(err))
 				writeScoringError(w, r, err)
 				return
 			}
@@ -144,14 +145,27 @@ func NewRouter(cfg config.App, scoringService *service.Service, log *slog.Logger
 
 func writeScoringError(w http.ResponseWriter, r *http.Request, err error) {
 	requestID := httpkit.RequestIDFromContext(r.Context())
-	switch {
-	case errors.Is(err, service.ErrNotFound):
+	switch scoringErrorReason(err) {
+	case "not_found":
 		httpkit.WriteError(w, http.StatusNotFound, "score_not_found", "scored evidence not found", requestID)
-	case errors.Is(err, service.ErrInvalidRequest):
+	case "invalid_request":
 		httpkit.WriteError(w, http.StatusBadRequest, "invalid_request", err.Error(), requestID)
-	case errors.Is(err, service.ErrUnavailable):
+	case "unavailable":
 		httpkit.WriteError(w, http.StatusServiceUnavailable, "scoring_unavailable", err.Error(), requestID)
 	default:
 		httpkit.WriteError(w, http.StatusInternalServerError, "scoring_error", err.Error(), requestID)
+	}
+}
+
+func scoringErrorReason(err error) string {
+	switch {
+	case errors.Is(err, service.ErrNotFound):
+		return "not_found"
+	case errors.Is(err, service.ErrInvalidRequest):
+		return "invalid_request"
+	case errors.Is(err, service.ErrUnavailable):
+		return "unavailable"
+	default:
+		return "internal"
 	}
 }

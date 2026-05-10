@@ -78,6 +78,15 @@ func TestReplayRouteUnavailableWithoutDatabase(t *testing.T) {
 	if response.Code != http.StatusServiceUnavailable {
 		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusServiceUnavailable, response.Body.String())
 	}
+
+	metricsResponse := httptest.NewRecorder()
+	router.ServeHTTP(metricsResponse, httptest.NewRequest(http.MethodGet, "/metrics", nil))
+	if metricsResponse.Code != http.StatusOK {
+		t.Fatalf("metrics status = %d, want %d", metricsResponse.Code, http.StatusOK)
+	}
+	if body := metricsResponse.Body.String(); !strings.Contains(body, `gitrank_score_replay_failures_total{service="scoring-engine",reason="unavailable"} 1`) {
+		t.Fatalf("metrics body missing replay failure count: %s", body)
+	}
 }
 
 func testConfig() config.App {

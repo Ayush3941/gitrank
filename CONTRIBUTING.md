@@ -862,7 +862,7 @@ Dashboards and alerts:
 - [x] alerts for webhook failures
 - [x] alerts for auth failures
 - [x] alerts for elevated AI cost
-- [ ] alerts for scoring job failures
+- [x] alerts for scoring job failures
 
 ## 19. Reliability and SRE Checklist
 

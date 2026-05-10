@@ -67,6 +67,17 @@ groups:
           description: The scoring-engine is returning 5xx responses for score requests and may be unable to compute contribution scores.
           runbook: docs/runbooks/scoring-failures.md
 
+      - alert: GitRankScoringReplayFailuresHigh
+        expr: sum(rate(gitrank_score_replay_failures_total{service="scoring-engine"}[15m])) > 0.05
+        for: 10m
+        labels:
+          severity: critical
+          team: ops
+        annotations:
+          summary: Score replay failures are elevated
+          description: Persisted score replay jobs are failing and may leave user scores stale.
+          runbook: docs/runbooks/scoring-failures.md
+
       - alert: GitRankAICostEstimateHigh
         expr: sum(increase(gitrank_pr_analysis_estimated_cost_usd_total{service="pr-analyzer",source!="deterministic"}[1h])) > 10
         for: 15m
