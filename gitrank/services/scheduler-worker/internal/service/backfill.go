@@ -451,9 +451,10 @@ func (s *Service) tickLocal(now time.Time, checkpoint bool) (contracts.Scheduler
 				return response, err
 			}
 			executed = true
-			queuedForPlan += len(enqueued.JobIDs)
 			if enqueued.Deduplicated {
 				deduplicatedForPlan += len(enqueued.JobIDs)
+			} else {
+				queuedForPlan += len(enqueued.JobIDs)
 			}
 		}
 

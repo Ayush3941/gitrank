@@ -464,7 +464,7 @@ GitHub-specific requirements:
 - [x] record GitHub delivery IDs for idempotency
 - [x] document and request the minimum OAuth scopes needed in v1
 - [x] support re-sync after missed webhooks
-- [ ] support historical backfill without double-counting
+- [x] support historical backfill without double-counting
 - [x] document REST versus GraphQL usage rules
 - [x] document GitHub API rate-limit strategy
 

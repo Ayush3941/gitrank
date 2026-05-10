@@ -111,6 +111,54 @@ func TestTickTracksInstallationRateLimitedTargets(t *testing.T) {
 	}
 }
 
+func TestRepeatedBackfillTicksDeduplicateActiveTargetsWithoutDoubleCounting(t *testing.T) {
+	cfg := testServiceConfig()
+	cfg.Scheduler.SyncCron = "*/5 * * * *"
+	scheduler := New(cfg)
+	createdAt := time.Date(2026, time.May, 5, 12, 30, 0, 0, time.UTC)
+
+	_, err := scheduler.CreateBackfillPlan(contracts.SchedulerBackfillPlanRequest{
+		Name: "repeated-backfill",
+		Targets: []contracts.SyncRequest{
+			{Mode: "repository", Repository: "octo/repo"},
+		},
+	}, createdAt)
+	if err != nil {
+		t.Fatalf("CreateBackfillPlan() error = %v", err)
+	}
+
+	firstTickAt := createdAt.Add(5 * time.Minute)
+	first, err := scheduler.Tick(firstTickAt)
+	if err != nil {
+		t.Fatalf("Tick(first) error = %v", err)
+	}
+	if first.QueuedJobs != 1 || first.DeduplicatedJobs != 0 {
+		t.Fatalf("first tick = %+v, want one queued and zero deduplicated", first)
+	}
+
+	secondTickAt := createdAt.Add(10 * time.Minute)
+	second, err := scheduler.Tick(secondTickAt)
+	if err != nil {
+		t.Fatalf("Tick(second) error = %v", err)
+	}
+	if second.QueuedJobs != 0 || second.DeduplicatedJobs != 1 {
+		t.Fatalf("second tick = %+v, want zero queued and one deduplicated", second)
+	}
+
+	queue := scheduler.QueueStatus(secondTickAt, contracts.SchedulerJobFilter{Repository: "octo/repo"})
+	if queue.QueueDepth != 1 || len(queue.Jobs) != 1 {
+		t.Fatalf("queue = %+v, want one active repository job", queue)
+	}
+
+	plans := scheduler.BackfillPlans(secondTickAt)
+	if len(plans.Plans) != 1 {
+		t.Fatalf("plan count = %d, want 1", len(plans.Plans))
+	}
+	if plans.Plans[0].QueuedJobsTotal != 1 || plans.Plans[0].DeduplicatedTotal != 1 {
+		t.Fatalf("plan totals = queued %d deduplicated %d, want 1 and 1", plans.Plans[0].QueuedJobsTotal, plans.Plans[0].DeduplicatedTotal)
+	}
+}
+
 func TestPauseResumeAndDeleteBackfillPlan(t *testing.T) {
 	cfg := testServiceConfig()
 	cfg.Scheduler.SyncCron = "*/5 * * * *"
