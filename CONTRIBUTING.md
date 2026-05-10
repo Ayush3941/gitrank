@@ -66,6 +66,8 @@ Current state:
 - [x] Maintainer guide exists.
 - [x] DCO enforcement workflow exists.
 
+Production observability remains unchecked until the committed Prometheus and Grafana assets are deployed to a live environment and verified with `gitrank/docs/runbooks/production-observability.md`.
+
 ## Repository Layout
 
 The backend workspace lives under `gitrank/`. The frontend lives under `frontend/`.

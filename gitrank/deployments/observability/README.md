@@ -29,3 +29,4 @@ Deployment note:
 - these files are not yet applied to a live Grafana/Prometheus stack
 - create `GRAFANA_ADMIN_USER` and `GRAFANA_ADMIN_PASSWORD` in `gitrank-runtime-secrets` before applying the Grafana deployment
 - trace context propagation is present, but an OTLP collector/exporter deployment is still required before production traces exist in a backend
+- use `docs/runbooks/production-observability.md` to deploy, validate, and record live observability evidence

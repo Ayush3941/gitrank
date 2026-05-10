@@ -85,6 +85,7 @@ Required telemetry shape:
 - W3C `traceparent` propagation across synchronous HTTP, scheduler-triggered async execution, GitHub/OAuth calls, and AI request builders, ready for an OpenTelemetry collector or compatible proxy
 - dashboards for auth, sync, backlog, scoring, AI, and profile freshness
 - alerts for backlog growth, webhook failures, auth failures, AI cost spikes, and scoring failures
+- prove live observability with `docs/runbooks/production-observability.md` before production launch
 
 ## Reliability Behavior
 
