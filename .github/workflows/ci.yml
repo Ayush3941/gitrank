@@ -39,6 +39,9 @@ jobs:
       - name: Run tests
         run: find . -name go.mod -execdir sh -c 'go test ./...' \;
 
+      - name: Verify critical path test coverage map
+        run: ./scripts/verify_critical_path_tests.sh
+
       - name: Run migration smoke test
         run: ./scripts/test_migrations.sh
 

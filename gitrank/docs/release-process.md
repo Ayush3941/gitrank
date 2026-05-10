@@ -5,6 +5,7 @@ This process applies once deployable artifacts exist.
 ## Release Preconditions
 
 - all required CI checks are green
+- `scripts/verify_critical_path_tests.sh` passes and the referenced tests still cover OAuth, sync, PR ingestion, analysis, scoring, profile projection, and webhook idempotency paths
 - migrations are reviewed
 - rollback notes exist
 - release notes are drafted

@@ -758,7 +758,7 @@ Specialized tests:
 
 Release gate:
 
-- [ ] no production release without automated tests on critical paths
+- [x] no production release without automated tests on critical paths
 
 ## 16. Security Checklist
 
@@ -1038,7 +1038,7 @@ The safest order for production work is:
 Do not call the project public alpha until these are done:
 
 - [x] users can sign in with GitHub
-- [ ] at least one full sync path works end to end
+- [x] at least one full sync path works end to end
 - [x] webhook validation is implemented
 - [x] PR data is persisted with migrations
 - [x] one deterministic scoring path works
@@ -1052,11 +1052,11 @@ Do not call the project public alpha until these are done:
 
 Do not call the project production ready until:
 
-- [ ] critical paths are covered by automated tests
+- [x] critical paths are covered by automated tests
 - [ ] default branch protections or rulesets are enforced
 - [x] security scanning is active
 - [x] dependency review is enforced on PRs
-- [ ] webhook ingestion is reliable and idempotent
+- [x] webhook ingestion is reliable and idempotent
 - [x] GitHub rate-limit handling is proven
 - [x] AI outputs are validated and bounded
 - [x] score explanations are user-visible
