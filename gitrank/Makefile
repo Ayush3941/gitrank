@@ -2,7 +2,7 @@ SHELL := /bin/sh
 TMPDIR ?= $(CURDIR)/.tmp
 GOCACHE ?= $(CURDIR)/.gocache
 
-.PHONY: fmt test test-migrations test-critical-path-flows race vet audit-go-safety verify-critical-path-tests verify-rollback-procedure verify-observability-manifests verify-secret-policy verify-github-repository-controls bench-ingestion tidy compose-up compose-down seed-local
+.PHONY: fmt test test-migrations test-critical-path-flows race vet audit-go-safety verify-critical-path-tests verify-rollback-procedure verify-observability-manifests verify-secret-policy apply-github-repository-controls verify-github-repository-controls bench-ingestion tidy compose-up compose-down seed-local
 
 fmt:
 	mkdir -p "$(TMPDIR)" "$(GOCACHE)"
@@ -40,6 +40,9 @@ verify-observability-manifests:
 
 verify-secret-policy:
 	TMPDIR="$(TMPDIR)" ./scripts/verify_secret_policy.sh
+
+apply-github-repository-controls:
+	TMPDIR="$(TMPDIR)" ./scripts/apply_github_repository_controls.sh
 
 verify-github-repository-controls:
 	TMPDIR="$(TMPDIR)" ./scripts/verify_github_repository_controls.sh

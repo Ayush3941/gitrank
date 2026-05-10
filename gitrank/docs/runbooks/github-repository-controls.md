@@ -8,7 +8,9 @@ actual repository.
 Official references:
 
 - GitHub protected branches: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches
+- GitHub branch protection REST API: https://docs.github.com/en/rest/branches/branch-protection
 - GitHub Dependabot alerts: https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/secure-your-dependencies/configuring-dependabot-alerts
+- GitHub vulnerability-alerts REST API: https://docs.github.com/en/rest/repos/repos#enable-vulnerability-alerts
 - GitHub dependency graph SBOM API: https://docs.github.com/en/rest/dependency-graph/sboms
 
 ## Required State
@@ -38,6 +40,25 @@ Required checks should include at least the critical root gates:
 
 If GitHub displays different check names, use the exact names shown on the most
 recent successful pull request for this repository.
+
+## Apply Through Script
+
+Use this path only with a token that has repository administration write
+permission. The script refuses to mutate live settings unless both the
+confirmation flag and exact status check names are provided.
+
+```bash
+cd gitrank
+GITHUB_REPOSITORY=Ayush3941/gitrank \
+GITHUB_TOKEN=... \
+GITRANK_APPLY_REPOSITORY_CONTROLS=yes \
+GITRANK_REQUIRED_STATUS_CHECKS="CI / go-checks,Frontend CI / frontend-checks,DCO / verify-signoff,Dependency Review / dependency-review,CodeQL / analyze,Secret Scan / gitleaks,Trivy Scan / filesystem-scan,Scorecard / analysis" \
+make apply-github-repository-controls
+```
+
+Use the exact check names from GitHub's branch-protection UI or a recent
+successful pull request. Incorrect names can block merging because GitHub will
+wait for checks that never report.
 
 ## Apply Through GitHub UI
 
@@ -75,5 +96,5 @@ alone; use this verifier or an equivalent GitHub settings export.
 The available repository connector can confirm that the authenticated user has
 admin permission on `Ayush3941/gitrank`, but it does not expose branch
 protection, repository ruleset, dependency graph, or Dependabot-alert mutation
-endpoints. Use the GitHub UI or a separately provisioned GitHub token for the
-settings themselves.
+endpoints. Use the scripted `curl` path above, the GitHub UI, or another
+separately provisioned GitHub token workflow for the settings themselves.

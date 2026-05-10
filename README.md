@@ -768,7 +768,7 @@ Major gaps remain:
 
 - no external worker backend yet; scheduler-worker persistent mode now uses dedicated PostgreSQL tables for jobs, dead letters, backfill plans, rate-limit windows, and scheduler counters, but only bounded `sync.installation`, `sync.repository`, owned-repository `sync.user_history`, direct `sync.pull_request`, PR-surface `sync.review`, direct `sync.issue`, and direct `sync.commit` jobs currently auto-execute inside `scheduler-worker`
 - quest and PR-report frontend routes still use mock data because live backend contracts for those product surfaces are not defined yet
-- live GitHub repository controls still need to be applied in GitHub settings and verified with `make verify-github-repository-controls`
+- live GitHub repository controls still need to be applied with `make apply-github-repository-controls` or GitHub settings, then verified with `make verify-github-repository-controls`
 - no deployed tracing backend or observability stack yet; dashboards and alert rules are committed, and `gitrank/docs/runbooks/production-observability.md` defines the live verification path
 - rollback wiring is locally verified, but a real staging or production-like rollback drill still has to be executed and recorded
 - the Kubernetes assets are still provider-neutral and require a real `gitrank-runtime-secrets` source, TLS Secret, ingress controller, managed PostgreSQL, managed Redis, and registry owner/tag substitution before production apply
