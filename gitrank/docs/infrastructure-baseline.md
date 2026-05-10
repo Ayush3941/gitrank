@@ -36,8 +36,9 @@ Promotion path:
 
 - use Kubernetes secrets plus a cloud secret manager integration where available
 - materialize the `gitrank-runtime-secrets` contract before applying service Deployments
-- separate prod and non-prod credentials
-- rotate auth, GitHub, AI, and database credentials through documented procedures
+- separate prod and non-prod credentials with environment-specific remote paths such as `gitrank/staging/<secret-name>` and `gitrank/production/<secret-name>`
+- rotate auth, GitHub, AI, database, and observability credentials through `docs/runbooks/secret-rotation.md`
+- run `make verify-secret-policy` after changing Kubernetes secret examples or rotation documentation
 
 ## Networking and Public Edge
 

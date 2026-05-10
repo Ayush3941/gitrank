@@ -16,10 +16,12 @@ Current committed assets in this directory include:
 - `overlays/production/`
 - `examples/runtime-secret.example.yaml`
 - `examples/external-secret.example.yaml`
+- `examples/external-secret.staging.example.yaml`
+- `examples/external-secret.production.example.yaml`
 
 The base deploys the seven Go services, ClusterIP Services, an ingress for `api-gateway` and `auth-service`, and a migration Job. Staging and production overlays set namespaces, public URLs, ingress hosts, and image replacement points.
 
-Before applying the manifests, create or sync a `gitrank-runtime-secrets` Secret in the target namespace. The example manifests show both a direct Kubernetes Secret shape and an External Secrets Operator shape, but neither example is included in the base kustomization.
+Before applying the manifests, create or sync a `gitrank-runtime-secrets` Secret in the target namespace. The example manifests show both a direct Kubernetes Secret shape and External Secrets Operator shapes, but no secret example is included in the base kustomization. Use distinct remote secret paths for staging and production.
 
 Render locally:
 
@@ -56,3 +58,9 @@ make verify-observability-manifests
 ```
 
 Create `GRAFANA_ADMIN_USER` and `GRAFANA_ADMIN_PASSWORD` in `gitrank-runtime-secrets` before applying the Grafana deployment.
+
+Secret separation and rotation guidance lives in `docs/runbooks/secret-rotation.md` and is statically checked by:
+
+```bash
+make verify-secret-policy
+```

@@ -2,7 +2,7 @@ SHELL := /bin/sh
 TMPDIR ?= $(CURDIR)/.tmp
 GOCACHE ?= $(CURDIR)/.gocache
 
-.PHONY: fmt test test-migrations race vet audit-go-safety verify-critical-path-tests verify-rollback-procedure verify-observability-manifests bench-ingestion tidy compose-up compose-down seed-local
+.PHONY: fmt test test-migrations race vet audit-go-safety verify-critical-path-tests verify-rollback-procedure verify-observability-manifests verify-secret-policy bench-ingestion tidy compose-up compose-down seed-local
 
 fmt:
 	mkdir -p "$(TMPDIR)" "$(GOCACHE)"
@@ -34,6 +34,9 @@ verify-rollback-procedure:
 
 verify-observability-manifests:
 	./scripts/verify_observability_manifests.sh
+
+verify-secret-policy:
+	./scripts/verify_secret_policy.sh
 
 bench-ingestion:
 	mkdir -p "$(TMPDIR)" "$(GOCACHE)"

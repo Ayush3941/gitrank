@@ -785,11 +785,13 @@ Application security:
 - [x] protect against SSRF in webhook or callback flows
 - [x] encrypt secrets at rest
 - [ ] rotate secrets safely
-- [ ] separate prod and non-prod credentials
+- [x] separate prod and non-prod credentials
 - [x] redact secrets from logs
 - [x] define incident response flow
 - [x] define vulnerability disclosure flow
 - [x] define abuse and fraud response flow
+
+Staging and production ExternalSecret examples use distinct remote secret-manager paths and are checked by `make verify-secret-policy`. Secret rotation remains unchecked until live rotations are rehearsed or dual-key support exists for session/JWT/token-encryption material.
 
 Go-specific security:
 
