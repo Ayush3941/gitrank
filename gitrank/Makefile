@@ -2,7 +2,7 @@ SHELL := /bin/sh
 TMPDIR ?= $(CURDIR)/.tmp
 GOCACHE ?= $(CURDIR)/.gocache
 
-.PHONY: fmt test test-migrations race vet audit-go-safety tidy compose-up compose-down seed-local
+.PHONY: fmt test test-migrations race vet audit-go-safety bench-ingestion tidy compose-up compose-down seed-local
 
 fmt:
 	mkdir -p "$(TMPDIR)" "$(GOCACHE)"
@@ -25,6 +25,10 @@ vet:
 
 audit-go-safety:
 	./scripts/audit_go_safety.sh
+
+bench-ingestion:
+	mkdir -p "$(TMPDIR)" "$(GOCACHE)"
+	TMPDIR="$(TMPDIR)" GOCACHE="$(GOCACHE)" go test ./services/github-ingestor/internal/service -run '^$$' -bench 'BenchmarkPersistWebhookPullRequestThroughput' -benchmem
 
 tidy:
 	find . -name go.mod -execdir go mod tidy \;

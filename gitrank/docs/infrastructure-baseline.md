@@ -93,6 +93,12 @@ Required telemetry shape:
 - lower-priority syncs should be paused when GitHub rate limits become risky
 - stale or partial indicators must remain visible to users
 
+## Performance Proofs
+
+- `make bench-ingestion` benchmarks PostgreSQL-backed pull-request webhook persistence when `GITRANK_INGESTOR_DATABASE_URL` points at a migrated test database.
+- `go test ./services/scoring-engine/internal/scoring -bench BenchmarkScoreContribution -benchmem` benchmarks deterministic score computation.
+- `go test ./services/profile-service/internal/service -bench BenchmarkPublicProfileResponseFromSnapshot -benchmem` benchmarks public profile projection latency.
+
 ## Scaling Direction
 
 - scale stateless API and worker pods horizontally

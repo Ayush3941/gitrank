@@ -739,6 +739,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 - a bounded live review sync execution path that refreshes the review surface for one PR number and persists its reviews and review comments through `github-ingestor`
 - a bounded live issue sync execution path that fetches one standalone public issue plus its labels and persists it directly through `github-ingestor`
 - a bounded live commit sync execution path that fetches one public commit and persists it directly through `github-ingestor`
+- an ingestion throughput benchmark target, `make bench-ingestion`, for PostgreSQL-backed pull-request webhook persistence when `GITRANK_INGESTOR_DATABASE_URL` is configured
 - optional PostgreSQL-backed webhook delivery persistence for durable dedupe and requeue state in the GitHub ingestor
 - deterministic PR analysis and deterministic contribution scoring services, with schema-validated analysis envelopes, grounded-language and summary guardrails for future AI-assisted outputs, deterministic language and critical-path heuristics, issue-link and review-cycle extraction, regression datasets, scorer-side artifact validation before XP computation, and persisted replay runs with immutable score events plus historical score snapshots
 - a snapshot-backed profile-service read model with privacy controls, repository visibility, caching, and share-card data

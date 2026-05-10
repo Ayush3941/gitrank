@@ -879,7 +879,7 @@ Dashboards and alerts:
 
 ## 20. Performance and Scalability Checklist
 
-- [ ] benchmark ingestion throughput
+- [x] benchmark ingestion throughput
 - [x] benchmark scoring throughput
 - [x] benchmark profile read latency
 - [ ] batch GitHub API calls where possible
