@@ -200,3 +200,44 @@ func TestSkillXPDistributionPreservesTotal(t *testing.T) {
 		t.Fatalf("remainder distribution changed: skill XP = %#v", resp.SkillXP)
 	}
 }
+
+func BenchmarkScoreContribution(b *testing.B) {
+	engine := New()
+	req := contracts.ScoreContributionRequest{
+		Repository: contracts.RepositoryContext{
+			FullName:    "octo/repo",
+			Maintainers: 6,
+			Stars:       2400,
+		},
+		PullRequest: contracts.PullRequestContext{
+			Merged:       true,
+			ChangedFiles: 9,
+			Additions:    420,
+			Deletions:    110,
+			Reviews: []contracts.ReviewSignal{
+				{State: "APPROVED", AuthorAssociation: "MEMBER"},
+				{State: "COMMENTED", AuthorAssociation: "COLLABORATOR"},
+			},
+		},
+		Analysis: contracts.PullRequestAnalysisResponse{
+			Category:       "feature",
+			TechnicalDepth: 1.6,
+			ReviewStrength: 1.2,
+			Skills:         []string{"backend", "api_design", "testing"},
+			FileBreakdown: contracts.FileBreakdown{
+				Source: 7,
+				Tests:  2,
+			},
+		},
+		Contributor: contracts.ContributorContext{
+			RecentMergedPullRequests:    8,
+			ConsecutiveActiveWeeks:      10,
+			MeaningfulContributionRatio: 0.85,
+		},
+	}
+
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_ = engine.Score(req)
+	}
+}

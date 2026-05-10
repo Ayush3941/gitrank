@@ -83,6 +83,47 @@ func TestPublicResponseFiltersHiddenRepositories(t *testing.T) {
 	}
 }
 
+func BenchmarkPublicProfileResponseFromSnapshot(b *testing.B) {
+	now := time.Date(2026, 5, 5, 13, 0, 0, 0, time.UTC)
+	snapshot := snapshotRecord{
+		ID:        "snap-1",
+		Summary:   structSummary("Ayush3941", now),
+		ShareCard: shareCard("Ayush3941", now),
+		Timeline:  emptyTimeline(now),
+		TopSkills: skillAreaFixtures{
+			{Key: "Backend", TotalXP: 4200},
+			{Key: "Testing", TotalXP: 1700},
+			{Key: "Security", TotalXP: 900},
+		}.toViews(),
+		Repositories: topRepositoryFixtures{
+			{FullName: "Ayush3941/gitrank", Visibility: "public"},
+			{FullName: "Ayush3941/profile-service", Visibility: "public"},
+			{FullName: "Ayush3941/private-lab", Visibility: "public"},
+		}.toViews(),
+		Badges: []contracts.BadgeView{
+			{Key: "backend-builder", Name: "Backend Builder", AwardedAt: now.AddDate(0, 0, -14)},
+			{Key: "test-builder", Name: "Test Builder", AwardedAt: now.AddDate(0, 0, -7)},
+		},
+		ScoreHistory: []contracts.ScoreHistoryEntry{
+			{EventID: "score-1", EventType: "contribution", DeltaXP: 1200, CreatedAt: now.AddDate(0, 0, -21)},
+			{EventID: "score-2", EventType: "contribution", DeltaXP: 1400, CreatedAt: now.AddDate(0, 0, -14)},
+			{EventID: "score-3", EventType: "contribution", DeltaXP: 1600, CreatedAt: now.AddDate(0, 0, -7)},
+		},
+		StaleAfter:      now.Add(time.Hour),
+		RefreshedAt:     now,
+		SourceWatermark: now,
+	}
+	settings := contractsDefaults()
+	visibility := []repositoryVisibilityRecord{
+		{FullName: "Ayush3941/private-lab", Visibility: "hidden"},
+	}
+
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_ = publicResponseFromSnapshot(snapshot, settings, visibility, now)
+	}
+}
+
 type skillAreaFixture struct {
 	Key     string
 	TotalXP int

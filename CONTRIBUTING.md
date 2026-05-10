@@ -880,8 +880,8 @@ Dashboards and alerts:
 ## 20. Performance and Scalability Checklist
 
 - [ ] benchmark ingestion throughput
-- [ ] benchmark scoring throughput
-- [ ] benchmark profile read latency
+- [x] benchmark scoring throughput
+- [x] benchmark profile read latency
 - [ ] batch GitHub API calls where possible
 - [ ] cache stable repository metadata
 - [ ] avoid N+1 query patterns
