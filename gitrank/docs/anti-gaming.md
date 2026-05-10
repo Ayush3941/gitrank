@@ -23,6 +23,7 @@ Repeated tiny contributions in a narrow window should score progressively less u
 Maintainer-reviewed and merged work should count more than unreviewed or self-merged work.
 
 Self-merged pull requests should be excluded from score-bearing reputation events entirely.
+The scoring replay path detects a self-merge when the stored PR author login matches the stored `merged_by.login`, writes `self_merged=true` into score-event metadata, marks the event suspicious for monitoring, and assigns zero XP.
 
 ### Noise discounting
 

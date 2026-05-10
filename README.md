@@ -188,7 +188,7 @@ Eligibility rules:
 - only public repositories are in scope for scoring
 - public repositories owned by organizations are treated like any other public repository
 - private repositories do not count toward GitRank
-- self-merged pull requests do not count toward GitRank
+- self-merged pull requests are monitored through score-event metadata and receive zero XP
 - bot-authored and bot-assisted pull requests do not count toward GitRank
 
 ## Frozen V1 Decisions

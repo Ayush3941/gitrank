@@ -983,7 +983,7 @@ GitRank must assume users will try to optimize for score.
 - [x] detect cosmetic change inflation
 - [x] detect mass low-value repository targeting
 - [x] discount repetitive low-signal contribution patterns
-- [ ] monitor suspicious self-merge patterns
+- [x] monitor suspicious self-merge patterns
 - [x] decide how to treat bot-generated contributions
 - [x] decide how to treat organization-internal review loops
 - [x] decide how to treat repository ownership conflicts of interest

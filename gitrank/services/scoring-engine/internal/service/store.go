@@ -31,6 +31,8 @@ type replayCandidate struct {
 	Confidence        float64
 	Summary           string
 	SignalHints       []string
+	AuthorLogin       string
+	MergedByLogin     string
 }
 
 type scoreEventRecord struct {
@@ -126,6 +128,8 @@ func (s *Store) LoadReplayCandidates(ctx context.Context, userID string) ([]repl
 			pr.number,
 			pr.title,
 			COALESCE(pr.payload_jsonb->>'body', ''),
+			COALESCE(pr.payload_jsonb #>> '{user,login}', ''),
+			COALESCE(pr.payload_jsonb #>> '{merged_by,login}', ''),
 			pr.state,
 			pr.merged,
 			pr.draft,
@@ -216,6 +220,8 @@ func (s *Store) LoadReplayCandidates(ctx context.Context, userID string) ([]repl
 			&candidate.PullRequest.Number,
 			&candidate.PullRequest.Title,
 			&candidate.PullRequest.Body,
+			&candidate.AuthorLogin,
+			&candidate.MergedByLogin,
 			&candidate.PullRequest.State,
 			&candidate.PullRequest.Merged,
 			&candidate.PullRequest.Draft,

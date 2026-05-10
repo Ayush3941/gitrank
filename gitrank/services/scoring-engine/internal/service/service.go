@@ -183,6 +183,13 @@ func (s *Service) buildReplay(userID, triggerType string, candidates []replayCan
 			Analysis:    analysis,
 			Contributor: deriveContributorContext(history, candidate),
 		})
+		selfMerged := candidate.SelfMerged()
+		if selfMerged {
+			response.TotalXP = 0
+			response.SkillXP = map[string]int{}
+			response.Explanation = append(response.Explanation, "self-merged pull request excluded from score")
+			response.SuspiciousActivity = true
+		}
 
 		event := scoreEventRecord{
 			EventKey:      fmt.Sprintf("pr:%s:analysis:%s:score:%s", candidate.PullRequestID, candidate.AnalysisID, response.ScoreVersion),
@@ -203,6 +210,7 @@ func (s *Service) buildReplay(userID, triggerType string, candidates []replayCan
 				"diminishing_returns":  response.DiminishingReturnsModifier,
 				"repository_full_name": candidate.Repository.FullName,
 				"merged":               candidate.PullRequest.Merged,
+				"self_merged":          selfMerged,
 			},
 			CreatedAt:  candidate.OccurredAt.UTC(),
 			Suspicious: response.SuspiciousActivity,
@@ -244,6 +252,15 @@ func (s *Service) buildReplay(userID, triggerType string, candidates []replayCan
 		ComputedAt:        now.UTC(),
 	}
 	return events, snapshot, badges, aggregateSkills, sourceWatermark.UTC()
+}
+
+func (c replayCandidate) SelfMerged() bool {
+	if !c.PullRequest.Merged {
+		return false
+	}
+	author := strings.ToLower(strings.TrimSpace(c.AuthorLogin))
+	mergedBy := strings.ToLower(strings.TrimSpace(c.MergedByLogin))
+	return author != "" && mergedBy != "" && author == mergedBy
 }
 
 func buildReplayAnalysis(candidate replayCandidate) contracts.PullRequestAnalysisResponse {
@@ -540,6 +557,9 @@ func issueBadges(events []scoreEventRecord, aggregateSkills map[string]int) []ba
 	firstMergedAt := time.Time{}
 
 	for _, event := range events {
+		if event.Suspicious {
+			continue
+		}
 		repositories[event.Repository] = struct{}{}
 		activeWeeks[startOfWeek(event.CreatedAt)] = struct{}{}
 		if merged, _ := event.Metadata["merged"].(bool); merged && (firstMergedAt.IsZero() || event.CreatedAt.Before(firstMergedAt)) {
