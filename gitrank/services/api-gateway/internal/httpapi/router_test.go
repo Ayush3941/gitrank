@@ -115,6 +115,53 @@ func TestProxyPublicProfileRequest(t *testing.T) {
 	if observed.TraceParent == "" {
 		t.Fatal("traceparent header missing")
 	}
+
+	metricsResponse := httptest.NewRecorder()
+	router.ServeHTTP(metricsResponse, httptest.NewRequest(http.MethodGet, "/metrics", nil))
+	if !strings.Contains(metricsResponse.Body.String(), `gitrank_product_analytics_events_total{service="api-gateway",event_name="profile.viewed",status="success"} 1`) {
+		t.Fatalf("metrics missing profile viewed analytics counter: %s", metricsResponse.Body.String())
+	}
+}
+
+func TestAnalyticsEventsRouteTracksAllowedEvents(t *testing.T) {
+	router := NewRouter(testConfig(stubProfileServer().URL, stubAuthServer().URL, stubIngestorServer().URL), testLogger(), "test")
+	request := httptest.NewRequest(http.MethodPost, "/v1/analytics/events", strings.NewReader(`{
+		"event_name":"score_explanation.opened",
+		"source":"profile_page",
+		"target":"score-card-secret",
+		"status":"success"
+	}`))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusAccepted {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusAccepted, response.Body.String())
+	}
+
+	metricsResponse := httptest.NewRecorder()
+	router.ServeHTTP(metricsResponse, httptest.NewRequest(http.MethodGet, "/metrics", nil))
+	body := metricsResponse.Body.String()
+	if !strings.Contains(body, `gitrank_product_analytics_events_total{service="api-gateway",event_name="score_explanation.opened",status="success"} 1`) {
+		t.Fatalf("metrics missing score explanation analytics counter: %s", body)
+	}
+	if strings.Contains(body, "score-card-secret") {
+		t.Fatalf("metrics leaked analytics target field: %s", body)
+	}
+}
+
+func TestAnalyticsEventsRouteRejectsUnsupportedEvents(t *testing.T) {
+	router := NewRouter(testConfig(stubProfileServer().URL, stubAuthServer().URL, stubIngestorServer().URL), testLogger(), "test")
+	request := httptest.NewRequest(http.MethodPost, "/v1/analytics/events", strings.NewReader(`{"event_name":"raw_code.pasted"}`))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusBadRequest, response.Body.String())
+	}
 }
 
 func TestProxyPrivateProfileGetSetsPrivateCacheControl(t *testing.T) {
@@ -261,6 +308,12 @@ func TestSyncRouteDefaultsToAuthenticatedGitHubLogin(t *testing.T) {
 	}
 	if forwardedGitHubLogin != "octocat" {
 		t.Fatalf("X-GitRank-GitHub-Login = %q, want %q", forwardedGitHubLogin, "octocat")
+	}
+
+	metricsResponse := httptest.NewRecorder()
+	router.ServeHTTP(metricsResponse, httptest.NewRequest(http.MethodGet, "/metrics", nil))
+	if !strings.Contains(metricsResponse.Body.String(), `gitrank_product_analytics_events_total{service="api-gateway",event_name="sync.succeeded",status="success"} 1`) {
+		t.Fatalf("metrics missing sync success analytics counter: %s", metricsResponse.Body.String())
 	}
 }
 

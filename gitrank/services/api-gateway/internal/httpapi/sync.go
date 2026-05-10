@@ -15,7 +15,7 @@ import (
 	"github.com/Ayush3941/gitrank/packages/httpkit"
 )
 
-func handleSyncRequest(w http.ResponseWriter, r *http.Request, client *http.Client, ingestorBaseURL string) {
+func handleSyncRequest(w http.ResponseWriter, r *http.Request, client *http.Client, ingestorBaseURL string, analytics *analyticsMetricsSource) {
 	var req contracts.SyncRequest
 	if err := httpkit.DecodeJSON(r, &req, 1<<20); err != nil {
 		httpkit.WriteError(w, http.StatusBadRequest, "invalid_json", err.Error(), httpkit.RequestIDFromContext(r.Context()))
@@ -49,9 +49,13 @@ func handleSyncRequest(w http.ResponseWriter, r *http.Request, client *http.Clie
 			"Cache-Control": "private, no-store",
 		},
 		Transform: func(response *http.Response, payload []byte) (int, []byte, map[string]string, error) {
+			if response.StatusCode >= http.StatusBadRequest {
+				analytics.Observe("sync.failed", "api-gateway", req.Mode, "failure")
+			}
 			if response.StatusCode != http.StatusAccepted {
 				return response.StatusCode, payload, nil, nil
 			}
+			analytics.Observe("sync.succeeded", "api-gateway", req.Mode, "success")
 			var preview contracts.GitHubQueuePreview
 			if err := json.Unmarshal(payload, &preview); err != nil {
 				return 0, nil, nil, err

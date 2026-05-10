@@ -966,11 +966,11 @@ Deployment assets to add:
 
 - [x] define what usage analytics are collected
 - [x] define opt-in or opt-out policy where needed
-- [ ] track onboarding completion
-- [ ] track sync success rate
-- [ ] track profile view behavior
-- [ ] track score explanation usage
-- [ ] track badge engagement carefully
+- [x] track onboarding completion
+- [x] track sync success rate
+- [x] track profile view behavior
+- [x] track score explanation usage
+- [x] track badge engagement carefully
 - [x] avoid collecting more analytics than needed
 - [x] define feedback loop for incorrect scores or classifications
 

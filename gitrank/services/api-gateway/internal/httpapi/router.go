@@ -17,6 +17,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 	manifest := app.Manifest(cfg, version)
 	mux := http.NewServeMux()
 	metrics := httpkit.NewMetrics(cfg.ServiceName)
+	analytics := newAnalyticsMetricsSource(cfg.ServiceName, log)
 
 	profileBaseURL := strings.TrimRight(cfg.Services.ProfileBaseURL, "/")
 	authBaseURL := strings.TrimRight(cfg.Services.AuthBaseURL, "/")
@@ -54,7 +55,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		httpkit.WriteJSON(w, http.StatusOK, contracts.NewHealthResponse(cfg.ServiceName, string(cfg.Env), version, checks))
 	})))
 
-	mux.Handle("/metrics", httpkit.RequireMethod(http.MethodGet, metrics.Handler()))
+	mux.Handle("/metrics", httpkit.RequireMethod(http.MethodGet, httpkit.MetricsHandler(metrics, analytics)))
 
 	mux.Handle("/v1/meta/manifest", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		httpkit.WriteJSON(w, http.StatusOK, manifest)
@@ -87,6 +88,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			ResponseHeaders: map[string]string{
 				"Cache-Control": "public, max-age=60, stale-while-revalidate=300",
 			},
+			Transform: analyticsProfileTransform(analytics, suffix),
 		})
 	}))
 
@@ -105,11 +107,16 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			return
 		}
 
+		var transform func(*http.Response, []byte) (int, []byte, map[string]string, error)
+		if r.Method == http.MethodGet {
+			transform = analyticsProfileTransform(analytics, "self")
+		}
 		proxyRequest(w, r, client, profileBaseURL, r.URL.Path, proxyOptions{
 			ForwardHeaders: defaultForwardHeaders(r),
 			ResponseHeaders: map[string]string{
 				"Cache-Control": "private, no-store",
 			},
+			Transform: transform,
 		})
 	})))
 
@@ -194,7 +201,14 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		if !allowRateLimit(w, r, writeLimiter, "sync_trigger") {
 			return
 		}
-		handleSyncRequest(w, r, client, ingestorBaseURL)
+		handleSyncRequest(w, r, client, ingestorBaseURL, analytics)
+	})))
+
+	mux.Handle("/v1/analytics/events", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !allowRateLimit(w, r, writeLimiter, "analytics_event") {
+			return
+		}
+		handleAnalyticsEvent(w, r, analytics)
 	})))
 
 	mux.Handle("/v1/sync/repository/execute", sessionAuth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

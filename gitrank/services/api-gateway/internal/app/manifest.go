@@ -16,6 +16,7 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 			{Method: "GET", Path: "/metrics", Summary: "Prometheus-style service metrics", Status: "implemented"},
 			{Method: "GET", Path: "/v1/meta/manifest", Summary: "Service route and dependency manifest", Status: "implemented"},
 			{Method: "GET", Path: "/v1/meta/dependencies", Summary: "Internal and external API dependency map", Status: "implemented"},
+			{Method: "POST", Path: "/v1/analytics/events", Summary: "Accept bounded product analytics events without code, token, or secret payloads", Status: "implemented"},
 			{Method: "POST", Path: "/v1/sync", Summary: "Request a contribution sync", Status: "implemented"},
 			{Method: "POST", Path: "/v1/sync/installation/execute", Summary: "Execute a bounded installation sync through repositories already associated with a persisted installation record", Status: "implemented"},
 			{Method: "POST", Path: "/v1/sync/repository/execute", Summary: "Execute a bounded live repository sync through the GitHub ingestor", Status: "implemented"},
