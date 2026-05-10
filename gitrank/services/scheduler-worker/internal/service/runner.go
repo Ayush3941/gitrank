@@ -13,6 +13,7 @@ import (
 
 	"github.com/Ayush3941/gitrank/packages/config"
 	"github.com/Ayush3941/gitrank/packages/contracts"
+	"github.com/Ayush3941/gitrank/packages/httpkit"
 	"github.com/Ayush3941/gitrank/packages/store"
 )
 
@@ -250,6 +251,7 @@ func (e *httpBoundedSyncExecutor) SyncCommit(ctx context.Context, req contracts.
 }
 
 func (e *httpBoundedSyncExecutor) execute(ctx context.Context, req contracts.SyncRequest, path, mode, correlationID string) (contracts.GitHubSyncExecutionResponse, error) {
+	ctx = httpkit.EnsureTraceContext(ctx)
 	body, err := json.Marshal(req)
 	if err != nil {
 		return contracts.GitHubSyncExecutionResponse{}, err
@@ -264,6 +266,7 @@ func (e *httpBoundedSyncExecutor) execute(ctx context.Context, req contracts.Syn
 	if strings.TrimSpace(correlationID) != "" {
 		request.Header.Set("X-Request-ID", strings.TrimSpace(correlationID))
 	}
+	httpkit.InjectTraceContext(ctx, request.Header)
 
 	response, err := e.client.Do(request)
 	if err != nil {

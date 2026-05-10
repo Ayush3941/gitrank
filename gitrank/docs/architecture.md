@@ -129,6 +129,10 @@ Every HTTP request and async job should carry:
 - `correlation_id`
 - `service_name`
 - `job_id` when async
+- W3C `traceparent`
+
+HTTP handlers continue incoming `traceparent` values or create a new trace when absent.
+Outbound internal calls, scheduler-triggered async execution, GitHub API calls, OAuth token calls, and AI request builders inject child `traceparent` headers so traces can be stitched by an OpenTelemetry collector or compatible proxy later.
 
 ## Idempotency Strategy
 

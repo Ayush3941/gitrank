@@ -79,7 +79,7 @@ Required telemetry shape:
 
 - structured logs across all services
 - service, queue, GitHub, scoring, AI, and cache metrics
-- OpenTelemetry-based tracing across synchronous and async boundaries
+- W3C `traceparent` propagation across synchronous HTTP, scheduler-triggered async execution, GitHub/OAuth calls, and AI request builders, ready for an OpenTelemetry collector or compatible proxy
 - dashboards for auth, sync, backlog, scoring, AI, and profile freshness
 - alerts for backlog growth, webhook failures, auth failures, AI cost spikes, and scoring failures
 

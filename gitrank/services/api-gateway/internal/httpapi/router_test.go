@@ -75,14 +75,16 @@ func TestCORSPreflightAllowsConfiguredOrigin(t *testing.T) {
 
 func TestProxyPublicProfileRequest(t *testing.T) {
 	type observedRequest struct {
-		Method string `json:"method"`
-		Path   string `json:"path"`
+		Method      string `json:"method"`
+		Path        string `json:"path"`
+		TraceParent string `json:"trace_parent"`
 	}
 
 	profile := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_ = json.NewEncoder(w).Encode(observedRequest{
-			Method: r.Method,
-			Path:   r.URL.Path,
+			Method:      r.Method,
+			Path:        r.URL.Path,
+			TraceParent: r.Header.Get("traceparent"),
 		})
 	}))
 	defer profile.Close()
@@ -109,6 +111,9 @@ func TestProxyPublicProfileRequest(t *testing.T) {
 	}
 	if observed.Path != "/v1/users/Ayush3941" {
 		t.Fatalf("path = %q, want %q", observed.Path, "/v1/users/Ayush3941")
+	}
+	if observed.TraceParent == "" {
+		t.Fatal("traceparent header missing")
 	}
 }
 

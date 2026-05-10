@@ -850,9 +850,9 @@ Metrics:
 
 Tracing:
 
-- [ ] distributed traces across gateway, ingestion, analysis, scoring, and profile services
-- [ ] trace async job boundaries
-- [ ] trace external GitHub and AI provider calls
+- [x] distributed traces across gateway, ingestion, analysis, scoring, and profile services
+- [x] trace async job boundaries
+- [x] trace external GitHub and AI provider calls
 
 Dashboards and alerts:
 

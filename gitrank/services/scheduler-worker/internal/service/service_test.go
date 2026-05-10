@@ -515,9 +515,11 @@ func TestRunNextExecutesRepositoryJobAndCompletes(t *testing.T) {
 	now := time.Now().UTC().Add(2 * time.Second).Truncate(time.Second)
 	var observed contracts.SyncRequest
 	var observedRequestID string
+	var observedTraceParent string
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		observedRequestID = r.Header.Get("X-Request-ID")
+		observedTraceParent = r.Header.Get("traceparent")
 		if r.URL.Path != "/v1/sync/repository/execute" {
 			t.Fatalf("path = %q, want %q", r.URL.Path, "/v1/sync/repository/execute")
 		}
@@ -568,6 +570,9 @@ func TestRunNextExecutesRepositoryJobAndCompletes(t *testing.T) {
 	}
 	if observedRequestID != "repo-correlation" {
 		t.Fatalf("observed request id = %q, want %q", observedRequestID, "repo-correlation")
+	}
+	if observedTraceParent == "" {
+		t.Fatal("observed traceparent header missing")
 	}
 
 	queue := scheduler.QueueStatus(now, contracts.SchedulerJobFilter{})

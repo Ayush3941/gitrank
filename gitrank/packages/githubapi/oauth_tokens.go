@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Ayush3941/gitrank/packages/tracekit"
 )
 
 type UserAccessTokenRequest struct {
@@ -102,6 +104,7 @@ func doTokenRequest(
 	}
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	request.Header.Set("Accept", "application/json")
+	tracekit.Inject(ctx, request.Header.Set)
 
 	response, err := httpClient.Do(request)
 	if err != nil {

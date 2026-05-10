@@ -70,6 +70,7 @@ func (a *sessionAuthenticator) authorize(ctx context.Context, w http.ResponseWri
 	copyHeaderIfPresent(request.Header, "Cookie", r.Header.Get("Cookie"))
 	copyHeaderIfPresent(request.Header, "User-Agent", r.UserAgent())
 	copyHeaderIfPresent(request.Header, "X-Request-ID", httpkit.RequestIDFromContext(ctx))
+	httpkit.InjectTraceContext(ctx, request.Header)
 
 	response, err := a.client.Do(request)
 	if err != nil {

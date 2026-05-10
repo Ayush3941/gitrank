@@ -15,6 +15,9 @@ func TestRequestIDMiddlewareSetsHeader(t *testing.T) {
 		if RequestIDFromContext(r.Context()) == "" {
 			t.Fatal("request ID missing from context")
 		}
+		if TraceParentFromContext(r.Context()) == "" {
+			t.Fatal("traceparent missing from context")
+		}
 		w.WriteHeader(http.StatusNoContent)
 	}))
 
@@ -25,6 +28,28 @@ func TestRequestIDMiddlewareSetsHeader(t *testing.T) {
 
 	if rec.Header().Get("X-Request-ID") == "" {
 		t.Fatal("X-Request-ID header missing")
+	}
+	if rec.Header().Get("traceparent") == "" {
+		t.Fatal("traceparent header missing")
+	}
+}
+
+func TestRequestIDMiddlewareContinuesTraceParent(t *testing.T) {
+	parent := "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+	handler := RequestID(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		InjectTraceContext(r.Context(), w.Header())
+		w.WriteHeader(http.StatusNoContent)
+	}))
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req.Header.Set("traceparent", parent)
+	rec := httptest.NewRecorder()
+
+	handler.ServeHTTP(rec, req)
+
+	traceparent := rec.Header().Get("traceparent")
+	if !strings.Contains(traceparent, "4bf92f3577b34da6a3ce929d0e0e4736") {
+		t.Fatalf("traceparent = %q, want propagated trace id", traceparent)
 	}
 }
 

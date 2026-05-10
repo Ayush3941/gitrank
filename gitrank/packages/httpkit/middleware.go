@@ -7,6 +7,8 @@ import (
 	"log/slog"
 	"net/http"
 	"time"
+
+	"github.com/Ayush3941/gitrank/packages/tracekit"
 )
 
 type contextKey string
@@ -21,7 +23,9 @@ func RequestID(next http.Handler) http.Handler {
 		}
 
 		ctx := context.WithValue(r.Context(), requestIDContextKey, requestID)
+		ctx, trace := tracekit.ExtractOrNew(ctx, r.Header.Get("traceparent"))
 		w.Header().Set("X-Request-ID", requestID)
+		w.Header().Set("traceparent", trace.Header())
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -31,6 +35,22 @@ func RequestIDFromContext(ctx context.Context) string {
 		return value
 	}
 	return ""
+}
+
+func TraceParentFromContext(ctx context.Context) string {
+	if trace, ok := tracekit.FromContext(ctx); ok {
+		return trace.Header()
+	}
+	return ""
+}
+
+func EnsureTraceContext(ctx context.Context) context.Context {
+	ctx, _ = tracekit.Ensure(ctx)
+	return ctx
+}
+
+func InjectTraceContext(ctx context.Context, header http.Header) {
+	tracekit.Inject(ctx, header.Set)
 }
 
 func Recoverer(log *slog.Logger) Middleware {
@@ -60,6 +80,7 @@ func AccessLog(log *slog.Logger) Middleware {
 			next.ServeHTTP(recorder, r)
 			log.Info("http_request",
 				"request_id", RequestIDFromContext(r.Context()),
+				"traceparent", TraceParentFromContext(r.Context()),
 				"method", r.Method,
 				"path", r.URL.Path,
 				"status", recorder.status,

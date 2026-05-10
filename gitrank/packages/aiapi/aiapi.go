@@ -1,6 +1,7 @@
 package aiapi
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -8,6 +9,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/Ayush3941/gitrank/packages/tracekit"
 )
 
 type Config struct {
@@ -33,6 +36,10 @@ type HTTPRequest struct {
 }
 
 func BuildResponsesRequest(cfg Config, req ResponsesRequest) (HTTPRequest, error) {
+	return BuildResponsesRequestWithContext(context.Background(), cfg, req)
+}
+
+func BuildResponsesRequestWithContext(ctx context.Context, cfg Config, req ResponsesRequest) (HTTPRequest, error) {
 	if cfg.BaseURL == "" {
 		return HTTPRequest{}, errors.New("AI base URL is required")
 	}
@@ -66,6 +73,7 @@ func BuildResponsesRequest(cfg Config, req ResponsesRequest) (HTTPRequest, error
 	headers := http.Header{}
 	headers.Set("Authorization", "Bearer "+cfg.APIKey)
 	headers.Set("Content-Type", "application/json")
+	tracekit.Inject(ctx, headers.Set)
 
 	return HTTPRequest{
 		Method:  http.MethodPost,

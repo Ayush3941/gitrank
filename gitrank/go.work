@@ -11,6 +11,7 @@ use (
 	./packages/httpkit
 	./packages/logger
 	./packages/store
+	./packages/tracekit
 	./services/api-gateway
 	./services/auth-service
 	./services/github-ingestor

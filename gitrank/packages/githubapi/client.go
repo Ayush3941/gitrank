@@ -12,6 +12,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/Ayush3941/gitrank/packages/tracekit"
 )
 
 type TokenSource interface {
@@ -236,6 +238,7 @@ func (c *RESTClient) once(
 	request.Header.Set("Accept", "application/vnd.github+json")
 	request.Header.Set("User-Agent", c.userAgent)
 	request.Header.Set("X-GitHub-Api-Version", c.apiVersion)
+	tracekit.Inject(ctx, request.Header.Set)
 	if len(payload) > 0 {
 		request.Header.Set("Content-Type", "application/json")
 	}
@@ -460,6 +463,7 @@ func (c *GraphQLClient) once(
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("User-Agent", c.userAgent)
 	request.Header.Set("X-GitHub-Api-Version", c.apiVersion)
+	tracekit.Inject(ctx, request.Header.Set)
 	if c.tokenSource != nil {
 		token, err := c.tokenSource.Token(ctx)
 		if err != nil {

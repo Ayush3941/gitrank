@@ -26,6 +26,7 @@ func dependencyReady(ctx context.Context, client *http.Client, baseURL string) e
 	if err != nil {
 		return err
 	}
+	httpkit.InjectTraceContext(ctx, request.Header)
 	response, err := client.Do(request)
 	if err != nil {
 		return err
@@ -61,6 +62,7 @@ func proxyRequest(w http.ResponseWriter, r *http.Request, client *http.Client, b
 		copyHeaderIfPresent(request.Header, name, value)
 	}
 	copyHeaderIfPresent(request.Header, "X-Request-ID", requestID)
+	httpkit.InjectTraceContext(r.Context(), request.Header)
 
 	response, err := client.Do(request)
 	if err != nil {

@@ -54,6 +54,9 @@ func TestRESTClientGetJSON(t *testing.T) {
 		if r.URL.RawQuery != "page=2" {
 			t.Fatalf("RawQuery = %q, want page=2", r.URL.RawQuery)
 		}
+		if r.Header.Get("traceparent") == "" {
+			t.Fatal("traceparent header missing")
+		}
 
 		w.Header().Set("ETag", "\"etag-2\"")
 		w.Header().Set("Last-Modified", "Tue, 05 May 2026 12:00:00 GMT")
