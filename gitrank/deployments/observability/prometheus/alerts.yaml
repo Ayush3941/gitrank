@@ -67,6 +67,17 @@ groups:
           description: The scoring-engine is returning 5xx responses for score requests and may be unable to compute contribution scores.
           runbook: docs/runbooks/scoring-failures.md
 
+      - alert: GitRankAICostEstimateHigh
+        expr: sum(increase(gitrank_pr_analysis_estimated_cost_usd_total{service="pr-analyzer",source!="deterministic"}[1h])) > 10
+        for: 15m
+        labels:
+          severity: warning
+          team: ops
+        annotations:
+          summary: AI analysis cost estimate is elevated
+          description: Estimated non-deterministic PR-analysis provider spend exceeded 10 USD in the last hour.
+          runbook: docs/runbooks/scoring-failures.md
+
       - alert: GitRankSuspiciousScoresSpike
         expr: rate(gitrank_score_suspicious_total{service="scoring-engine"}[15m]) > 0.5
         for: 15m

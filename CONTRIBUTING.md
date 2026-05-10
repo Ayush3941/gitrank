@@ -843,7 +843,7 @@ Metrics:
 - [x] job retries
 - [x] GitHub API rate-limit usage
 - [x] sync duration
-- [ ] analysis cost and token usage
+- [x] analysis cost and token usage
 - [x] score computation duration
 - [x] cache hit rate
 - [x] error rate by service
@@ -861,7 +861,7 @@ Dashboards and alerts:
 - [x] alerts for sync backlog
 - [x] alerts for webhook failures
 - [x] alerts for auth failures
-- [ ] alerts for elevated AI cost
+- [x] alerts for elevated AI cost
 - [ ] alerts for scoring job failures
 
 ## 19. Reliability and SRE Checklist

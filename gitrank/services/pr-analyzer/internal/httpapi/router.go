@@ -60,7 +60,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			httpkit.WriteError(w, http.StatusInternalServerError, "analysis_validation_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
-		analysisMetrics.Observe(response.Category, time.Since(start))
+		analysisMetrics.Observe(response.Category, time.Since(start), estimateAnalysisUsage(req, response, cfg.AI.Provider, cfg.AI.Model))
 		httpkit.WriteJSON(w, http.StatusOK, response)
 	})))
 

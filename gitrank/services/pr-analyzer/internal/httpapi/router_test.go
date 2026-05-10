@@ -55,6 +55,22 @@ func TestAnalyzePullRequestReturnsValidatedEnvelope(t *testing.T) {
 	if len(payload.CriticalityTags) == 0 || payload.CriticalityTags[0] != "auth_identity" {
 		t.Fatalf("CriticalityTags = %v, want auth_identity", payload.CriticalityTags)
 	}
+
+	metricsResponse := httptest.NewRecorder()
+	router.ServeHTTP(metricsResponse, httptest.NewRequest(http.MethodGet, "/metrics", nil))
+	if metricsResponse.Code != http.StatusOK {
+		t.Fatalf("metrics status = %d, want %d", metricsResponse.Code, http.StatusOK)
+	}
+	metrics := metricsResponse.Body.String()
+	if !strings.Contains(metrics, `gitrank_pr_analysis_requests_total{service="pr-analyzer",category="security"} 1`) {
+		t.Fatalf("metrics body missing analysis count: %s", metrics)
+	}
+	if !strings.Contains(metrics, `gitrank_pr_analysis_estimated_tokens_total{service="pr-analyzer",provider="none",model="deterministic",source="deterministic",phase="total"}`) {
+		t.Fatalf("metrics body missing analysis token estimate: %s", metrics)
+	}
+	if !strings.Contains(metrics, `gitrank_pr_analysis_estimated_cost_usd_total{service="pr-analyzer",provider="none",model="deterministic",source="deterministic"} 0.000000`) {
+		t.Fatalf("metrics body missing deterministic cost estimate: %s", metrics)
+	}
 }
 
 func TestAnalyzePullRequestRejectsInvalidRequest(t *testing.T) {
