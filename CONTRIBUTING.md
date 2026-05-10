@@ -884,8 +884,8 @@ Dashboards and alerts:
 - [x] benchmark profile read latency
 - [ ] batch GitHub API calls where possible
 - [x] cache stable repository metadata
-- [ ] avoid N+1 query patterns
-- [ ] tune DB indexes against real query shapes
+- [x] avoid N+1 query patterns
+- [x] tune DB indexes against real query shapes
 - [x] plan for backfills at scale
 - [x] plan for horizontal worker scaling
 - [x] cap AI cost per PR or per sync run

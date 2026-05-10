@@ -9,6 +9,13 @@ This is the initial relational model direction for PostgreSQL.
 - Evidence tables should stay explainable and replayable.
 - User-facing aggregates should be rebuildable from source and derived evidence.
 
+## Query Shape and Index Rules
+
+- Public profile reads load users, latest score selection, score rows, badges, repository visibility, and snapshots with bounded bulk queries rather than row-by-row repository or badge lookups.
+- Scoring replay loads pull requests, latest analyses, files, and reviews in one candidate query using lateral aggregate subqueries to avoid application-level N+1 query loops.
+- Migration `0009_query_shape_indexes.sql` adds indexes for the concrete profile, scoring, auth-session, sync-replay, and installation-replay access patterns used by the services.
+- New service queries should either reuse these indexed shapes or add a matching migration and migration smoke assertion in the same change.
+
 ## Core Tables
 
 ### `users`

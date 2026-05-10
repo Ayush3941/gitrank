@@ -129,6 +129,22 @@ assert_true "local seed score replay run exists exactly once" \
   "SELECT COUNT(*) = 1 FROM score_replay_runs WHERE id = '99999999-9999-9999-9999-999999999999'::uuid;"
 assert_true "local seed score snapshot exists exactly once" \
   "SELECT COUNT(*) = 1 FROM score_snapshots WHERE id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'::uuid;"
+assert_true "public handle lookup index exists" \
+  "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_users_public_handle_lower');"
+assert_true "linked GitHub account ordering index exists" \
+  "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_github_accounts_user_linked_at');"
+assert_true "completed score replay lookup index exists" \
+  "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_score_replay_runs_user_completed_created');"
+assert_true "score event version lookup index exists" \
+  "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_score_events_user_version_created');"
+assert_true "user badge listing index exists" \
+  "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_user_badges_user_awarded');"
+assert_true "pull request review ordering index exists" \
+  "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_pull_request_reviews_pr_submitted');"
+assert_true "pull request author timeline index exists" \
+  "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_pull_requests_author_timeline');"
+assert_true "active installation repository index exists" \
+  "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_installation_repositories_active_selected');"
 
 (
   cd "$root_dir/services/auth-service/internal/service"

@@ -99,6 +99,8 @@ Required telemetry shape:
 - `go test ./services/scoring-engine/internal/scoring -bench BenchmarkScoreContribution -benchmem` benchmarks deterministic score computation.
 - `go test ./services/profile-service/internal/service -bench BenchmarkPublicProfileResponseFromSnapshot -benchmem` benchmarks public profile projection latency.
 - `github-ingestor` caches stable repository metadata for `GITHUB_REPOSITORY_CACHE_TTL` to avoid repeated repository detail calls within bounded sync waves.
+- Migration `0009_query_shape_indexes.sql` backs the concrete profile, scoring, auth-session, sync-run, and installation-replay query shapes with targeted indexes.
+- Profile and scoring stores use bulk reads and SQL-side lateral aggregation for score rows, files, and reviews instead of application-level N+1 loops.
 
 ## Scaling Direction
 
