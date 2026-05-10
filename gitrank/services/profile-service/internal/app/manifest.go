@@ -20,6 +20,7 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 			{Method: "GET", Path: "/v1/users/{handle}", Summary: "Public profile read model", Status: "implemented"},
 			{Method: "GET", Path: "/v1/users/{handle}/card", Summary: "Shareable public profile card data", Status: "implemented"},
 			{Method: "GET", Path: "/v1/me/profile", Summary: "Authenticated profile read model", Status: "implemented"},
+			{Method: "GET", Path: "/v1/me/quests", Summary: "Authenticated live quest recommendations from profile evidence", Status: "implemented"},
 			{Method: "PATCH", Path: "/v1/me/profile", Summary: "Update profile privacy controls", Status: "implemented"},
 			{Method: "PATCH", Path: "/v1/me/profile/repositories/{owner}/{repo}", Summary: "Update per-repository visibility", Status: "implemented"},
 		},

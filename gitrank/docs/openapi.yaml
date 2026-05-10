@@ -585,6 +585,48 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /v1/me/quests:
+    get:
+      tags: [Profiles]
+      summary: Return authenticated quest recommendations derived from profile score evidence
+      description: |
+        Quest recommendations are a live read model over the latest profile snapshot and score history.
+        They are directional recommendations, not proof that a reward has been granted.
+      operationId: getMyQuests
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Current authenticated quest board
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Cache-Control:
+              $ref: "#/components/headers/PrivateNoStoreCacheControl"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserQuestsResponse"
+        "401":
+          description: Authentication required
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limit exceeded
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Retry-After:
+              $ref: "#/components/headers/RetryAfter"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /v1/me/profile/repositories/{owner}/{repo}:
     patch:
       tags: [Profiles]
@@ -1200,6 +1242,83 @@ components:
           type: array
           items:
             type: string
+    QuestEvidenceReference:
+      type: object
+      required: [event_id, kind, occurred_at]
+      properties:
+        event_id:
+          type: string
+        kind:
+          type: string
+          enum: [score_event]
+        repository:
+          type: string
+        number:
+          type: integer
+        title:
+          type: string
+        occurred_at:
+          type: string
+          format: date-time
+    QuestView:
+      type: object
+      required: [id, title, description, status, cadence, reward_xp, progress, goal, why_recommended]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [Active, Completed, Locked]
+        cadence:
+          type: string
+          enum: [Daily, Weekly, Long-term, Skill-based]
+        reward_xp:
+          type: integer
+          description: Proposed quest reward. Reward grants require a future completion ledger.
+        reward_badge_key:
+          type: string
+        progress:
+          type: integer
+          minimum: 0
+        goal:
+          type: integer
+          minimum: 1
+        weak_area_target:
+          type: string
+        why_recommended:
+          type: string
+        evidence_signals:
+          type: array
+          items:
+            type: string
+        linked_contribution_ids:
+          type: array
+          items:
+            type: string
+        evidence_references:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuestEvidenceReference"
+        expires_at:
+          type: string
+          format: date-time
+    UserQuestsResponse:
+      type: object
+      required: [quests, generated_at, staleness]
+      properties:
+        quests:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuestView"
+        generated_at:
+          type: string
+          format: date-time
+        staleness:
+          $ref: "#/components/schemas/ProfileStaleness"
     ProfilePrivacySettings:
       type: object
       required: [public_profile_enabled, show_exact_prs, show_ai_summaries, show_leaderboard_participation]

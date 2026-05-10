@@ -18,7 +18,7 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
       <div className="space-y-3">
         {quests.length === 0 ? (
           <div className="rounded-[1.75rem] border border-dashed border-white/12 bg-white/4 p-4 text-sm text-muted">
-            Quest recommendations are not part of the live profile contract yet. They stay in demo mode until the backend exposes a quest model.
+            No live quests are available for this profile snapshot yet. Run a sync or wait for new scored evidence to refresh the quest board.
           </div>
         ) : null}
         {quests.slice(0, 3).map((quest) => {

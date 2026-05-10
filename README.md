@@ -554,6 +554,7 @@ Current gateway routes:
 - `POST /v1/sync/installation/execute`
 - `POST /v1/sync/repository/execute`
 - `GET /v1/me/profile`
+- `GET /v1/me/quests`
 - `PATCH /v1/me/profile`
 - `PATCH /v1/me/profile/repositories/{owner}/{repo}`
 - `GET /v1/leaderboard`
@@ -567,7 +568,7 @@ Implemented service routes today:
 - `POST /webhooks/github`, `POST /v1/webhooks/github/deliveries/{delivery_id}/requeue`, `POST /v1/sync/preview`, `GET /v1/sync/runs`, `POST /v1/sync/installation/execute`, `POST /v1/sync/user/execute`, `POST /v1/sync/repository/execute`, `POST /v1/sync/pull-request/execute`, `POST /v1/sync/review/execute`, `POST /v1/sync/issue/execute`, `POST /v1/sync/commit/execute`, and the normalized `POST /v1/sync/*` routes on `github-ingestor`
 - `POST /v1/analyze/pull-request` on `pr-analyzer`
 - `POST /v1/score/contribution`, `POST /v1/score/users/{user_id}/replay`, `GET /v1/score/users/{user_id}/snapshot`, and `GET /v1/score/users/{user_id}/events` on `scoring-engine`
-- `GET /v1/profile/schema`, `GET /v1/leaderboard`, `GET /v1/users/{handle}`, `GET /v1/users/{handle}/card`, `GET /v1/me/profile`, and profile privacy update routes on `profile-service`
+- `GET /v1/profile/schema`, `GET /v1/leaderboard`, `GET /v1/users/{handle}`, `GET /v1/users/{handle}/card`, `GET /v1/me/profile`, `GET /v1/me/quests`, and profile privacy update routes on `profile-service`
 - `GET /v1/jobs`, `POST /v1/jobs/sync`, `POST /v1/jobs/tick`, `POST /v1/jobs/lease`, `POST /v1/jobs/run-once`, `GET|POST /v1/jobs/backfills`, recurring-plan pause/resume/cancel/delete routes, `GET /v1/jobs/dead-letters`, job control routes, and dead-letter replay routes on `scheduler-worker`
 
 ## Local Development
@@ -759,7 +760,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 - generic OCI build packaging under `deployments/docker/` and a release workflow that builds binaries, publishes GitHub Releases, and pushes per-service OCI images
 - a Kubernetes deployment baseline under `deployments/k8s/` with per-service Deployments, Services, gateway/auth ingress, staging and production overlays, runtime secret contracts, and migration Job wiring
 - committed observability assets under `deployments/observability/`, including Grafana dashboards, Prometheus alert rules, and service runbooks
-- a substantial Next.js frontend with dashboard, profile, leaderboard, quest, badge, onboarding, and PR-report flows, with live profile/settings/account actions, live dashboard/badge/contribution data from the authenticated profile snapshot, live leaderboard data from public profile snapshots, season/rank progression presentation, player-card public profiles, badge rarity styling, a local reduced-gamification preference, and mock-backed quest and PR-report surfaces
+- a substantial Next.js frontend with dashboard, profile, leaderboard, quest, badge, onboarding, and PR-report flows, with live profile/settings/account actions, live dashboard/badge/contribution data from the authenticated profile snapshot, live quest recommendations from profile score evidence, live leaderboard data from public profile snapshots, season/rank progression presentation, player-card public profiles, badge rarity styling, a local reduced-gamification preference, and a mock-backed PR-report surface
 - CI, frontend CI, release-artifact, Kubernetes deployment, dependency-review, CodeQL for Go and TypeScript, Scorecard, repo-level secret scanning, pinned Trivy filesystem and service-image scanning
 - a CI-enforced critical-path test coverage map plus Docker-backed local flow tests covering OAuth, sync, PR ingestion, analysis, scoring, profile projection, and webhook idempotency paths
 - a GitHub repository-controls runbook and token-based verifier for proving live branch protection, required checks, dependency graph, and Dependabot alerts
@@ -767,7 +768,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 Major gaps remain:
 
 - no external worker backend yet; scheduler-worker persistent mode now uses dedicated PostgreSQL tables for jobs, dead letters, backfill plans, rate-limit windows, and scheduler counters, but only bounded `sync.installation`, `sync.repository`, owned-repository `sync.user_history`, direct `sync.pull_request`, PR-surface `sync.review`, direct `sync.issue`, and direct `sync.commit` jobs currently auto-execute inside `scheduler-worker`
-- quest and PR-report frontend routes still use mock data because live backend contracts for those product surfaces are not defined yet
+- PR-report frontend routes still use mock data because a live backend report contract is not defined yet; quests now use a live profile-owned read model, but persistent quest definitions, assignments, completion ledgers, reward grants, and audit records are still pending
 - live GitHub repository controls still need to be applied with `make apply-github-repository-controls` or GitHub settings, then verified with `make verify-github-repository-controls`
 - no deployed tracing backend or observability stack yet; dashboards and alert rules are committed, and `gitrank/docs/runbooks/production-observability.md` defines the live verification path
 - rollback wiring is locally verified, but a real staging or production-like rollback drill still has to be executed and recorded

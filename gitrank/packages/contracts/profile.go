@@ -95,6 +95,39 @@ type ScoreHistoryEntry struct {
 	Explanation []string              `json:"explanation,omitempty"`
 }
 
+type QuestEvidenceReference struct {
+	EventID    string    `json:"event_id"`
+	Kind       string    `json:"kind"`
+	Repository string    `json:"repository,omitempty"`
+	Number     int       `json:"number,omitempty"`
+	Title      string    `json:"title,omitempty"`
+	OccurredAt time.Time `json:"occurred_at"`
+}
+
+type QuestView struct {
+	ID                    string                   `json:"id"`
+	Title                 string                   `json:"title"`
+	Description           string                   `json:"description"`
+	Status                string                   `json:"status"`
+	Cadence               string                   `json:"cadence"`
+	RewardXP              int                      `json:"reward_xp"`
+	RewardBadgeKey        string                   `json:"reward_badge_key,omitempty"`
+	Progress              int                      `json:"progress"`
+	Goal                  int                      `json:"goal"`
+	WeakAreaTarget        string                   `json:"weak_area_target,omitempty"`
+	WhyRecommended        string                   `json:"why_recommended"`
+	EvidenceSignals       []string                 `json:"evidence_signals,omitempty"`
+	LinkedContributionIDs []string                 `json:"linked_contribution_ids,omitempty"`
+	EvidenceReferences    []QuestEvidenceReference `json:"evidence_references,omitempty"`
+	ExpiresAt             *time.Time               `json:"expires_at,omitempty"`
+}
+
+type UserQuestsResponse struct {
+	Quests      []QuestView      `json:"quests"`
+	GeneratedAt time.Time        `json:"generated_at"`
+	Staleness   ProfileStaleness `json:"staleness"`
+}
+
 type LeaderboardEntryView struct {
 	Rank        int       `json:"rank"`
 	Handle      string    `json:"handle"`

@@ -56,6 +56,7 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 				{Key: "badges", Summary: "Evidence-backed badge listing", Status: "implemented"},
 				{Key: "timeline", Summary: "Time-windowed XP trend view", Status: "implemented"},
 				{Key: "repositories", Summary: "Top repositories with visibility-aware projection", Status: "implemented"},
+				{Key: "quests", Summary: "Authenticated quest recommendations derived from profile score evidence", Status: "implemented"},
 			},
 		})
 	})))
@@ -139,6 +140,16 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 			httpkit.WriteError(w, http.StatusMethodNotAllowed, "method_not_allowed", "method not allowed", httpkit.RequestIDFromContext(r.Context()))
 		}
 	}))
+
+	mux.Handle("/v1/me/quests", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sessionCookie, _ := r.Cookie(cfg.Auth.SessionCookieName)
+		response, err := profileService.PrivateQuests(r.Context(), cookieValue(sessionCookie), time.Now().UTC())
+		if err != nil {
+			writeProfileError(w, r, err)
+			return
+		}
+		httpkit.WriteJSON(w, http.StatusOK, response)
+	})))
 
 	mux.Handle("/v1/me/profile/repositories/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPatch {

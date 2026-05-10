@@ -209,6 +209,41 @@ func TestProxyPrivateProfileGetSetsPrivateCacheControl(t *testing.T) {
 	}
 }
 
+func TestProxyPrivateQuestsGetSetsPrivateCacheControl(t *testing.T) {
+	auth := stubAuthServer()
+	defer auth.Close()
+
+	var observedPath string
+	profile := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		observedPath = r.URL.Path
+		w.Header().Set("Cache-Control", "public, max-age=120")
+		_ = json.NewEncoder(w).Encode(contracts.UserQuestsResponse{
+			Quests: []contracts.QuestView{
+				{ID: "quest-review", Title: "Land maintainer-reviewed work", Status: "Active", Cadence: "Weekly", RewardXP: 320, Progress: 1, Goal: 3},
+			},
+			GeneratedAt: time.Date(2026, 5, 10, 14, 0, 0, 0, time.UTC),
+		})
+	}))
+	defer profile.Close()
+
+	router := NewRouter(testConfig(profile.URL, auth.URL, stubIngestorServer().URL), testLogger(), "test")
+	request := httptest.NewRequest(http.MethodGet, "/v1/me/quests", nil)
+	request.Header.Set("Cookie", "gitrank_session=session-original")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusOK, response.Body.String())
+	}
+	if observedPath != "/v1/me/quests" {
+		t.Fatalf("path = %q, want /v1/me/quests", observedPath)
+	}
+	if response.Header().Get("Cache-Control") != "private, no-store" {
+		t.Fatalf("cache-control = %q, want private, no-store", response.Header().Get("Cache-Control"))
+	}
+}
+
 func TestProxyPrivateProfilePatchForwardsRotatedCookiesAndCSRF(t *testing.T) {
 	type observedRequest struct {
 		Cookie    string `json:"cookie"`
