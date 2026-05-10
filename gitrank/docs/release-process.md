@@ -6,6 +6,7 @@ This process applies once deployable artifacts exist.
 
 - all required CI checks are green
 - `scripts/verify_critical_path_tests.sh` passes and the referenced tests still cover OAuth, sync, PR ingestion, analysis, scoring, profile projection, and webhook idempotency paths
+- `scripts/test_critical_path_flows.sh` passes against a migrated temporary PostgreSQL database
 - migrations are reviewed
 - rollback notes exist
 - release notes are drafted

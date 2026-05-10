@@ -759,7 +759,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 - committed observability assets under `deployments/observability/`, including Grafana dashboards, Prometheus alert rules, and service runbooks
 - a substantial Next.js frontend with dashboard, profile, leaderboard, quest, badge, onboarding, and PR-report flows, with live profile/settings/account actions and mock-backed dashboard, leaderboard, quest, badge, and PR-report surfaces
 - CI, release-artifact, Kubernetes deployment, dependency-review, CodeQL, Scorecard, repo-level secret scanning, pinned Trivy filesystem and service-image scanning, plus frontend-specific CI and Trivy/secret scanning in the nested frontend repo
-- a CI-enforced critical-path test coverage map covering OAuth, sync, PR ingestion, analysis, scoring, profile projection, and webhook idempotency tests
+- a CI-enforced critical-path test coverage map plus Docker-backed local flow tests covering OAuth, sync, PR ingestion, analysis, scoring, profile projection, and webhook idempotency paths
 
 Major gaps remain:
 

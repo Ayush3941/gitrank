@@ -45,6 +45,9 @@ jobs:
       - name: Run migration smoke test
         run: ./scripts/test_migrations.sh
 
+      - name: Run critical path flow tests
+        run: ./scripts/test_critical_path_flows.sh
+
       - name: Run builds
         run: find . -name go.mod -execdir sh -c 'go build ./...' \;
 

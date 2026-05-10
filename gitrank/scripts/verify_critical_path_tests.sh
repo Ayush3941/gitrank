@@ -3,6 +3,8 @@ set -eu
 
 root_dir="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 
+test -x "$root_dir/scripts/test_critical_path_flows.sh"
+
 require_test() {
   label="$1"
   pattern="$2"

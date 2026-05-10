@@ -2,7 +2,7 @@ SHELL := /bin/sh
 TMPDIR ?= $(CURDIR)/.tmp
 GOCACHE ?= $(CURDIR)/.gocache
 
-.PHONY: fmt test test-migrations race vet audit-go-safety verify-critical-path-tests verify-rollback-procedure verify-observability-manifests verify-secret-policy bench-ingestion tidy compose-up compose-down seed-local
+.PHONY: fmt test test-migrations test-critical-path-flows race vet audit-go-safety verify-critical-path-tests verify-rollback-procedure verify-observability-manifests verify-secret-policy bench-ingestion tidy compose-up compose-down seed-local
 
 fmt:
 	mkdir -p "$(TMPDIR)" "$(GOCACHE)"
@@ -14,6 +14,9 @@ test:
 
 test-migrations:
 	./scripts/test_migrations.sh
+
+test-critical-path-flows:
+	./scripts/test_critical_path_flows.sh
 
 race:
 	mkdir -p "$(TMPDIR)" "$(GOCACHE)"

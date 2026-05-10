@@ -741,12 +741,14 @@ Contract tests:
 
 End-to-end tests:
 
-- [ ] GitHub sign-in
-- [ ] initial sync
-- [ ] PR ingestion
-- [ ] analysis
-- [ ] score generation
-- [ ] profile rendering
+- [x] GitHub sign-in
+- [x] initial sync
+- [x] PR ingestion
+- [x] analysis
+- [x] score generation
+- [x] profile rendering
+
+These are covered by local critical-path flow tests, not a live browser test against GitHub production OAuth. `make test-critical-path-flows` starts a temporary PostgreSQL container, applies migrations, and runs the targeted OAuth, sync, ingestion, analysis, scoring, and profile tests used by the CI release gate.
 
 Specialized tests:
 
