@@ -752,9 +752,9 @@ Specialized tests:
 
 - [x] fuzz tests for parsers and webhook validation paths
 - [x] regression tests for scoring edge cases
-- [ ] load tests for sync bursts
+- [x] load tests for sync bursts
 - [x] race detection in concurrent components
-- [ ] failure injection for retries and backoffs
+- [x] failure injection for retries and backoffs
 
 Release gate:
 
@@ -869,7 +869,7 @@ Dashboards and alerts:
 - [x] define SLOs and SLIs
 - [x] define RTO and RPO expectations
 - [x] add graceful shutdown to all services
-- [ ] ensure idempotent retries
+- [x] ensure idempotent retries
 - [x] define backpressure behavior
 - [ ] add circuit breaker or equivalent protections where needed
 - [x] define degraded-mode behavior if AI provider is unavailable

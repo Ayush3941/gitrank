@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -324,6 +325,102 @@ func TestLeaseFailRetryAndCompleteLifecycle(t *testing.T) {
 	}
 	if queue.Retried != 1 {
 		t.Fatalf("retried = %d, want 1", queue.Retried)
+	}
+}
+
+func TestRetryBackoffDeduplicatesAndDeadLettersAfterMaxAttempts(t *testing.T) {
+	cfg := testServiceConfig()
+	cfg.Scheduler.MaxAttempts = 3
+	cfg.Scheduler.RetryBackoff = time.Second
+	scheduler := New(cfg)
+	start := time.Now().UTC().Add(2 * time.Second).Truncate(time.Second)
+
+	enqueue, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "repository", Repository: "octo/repo"}, "retry-dedupe-1", start)
+	if err != nil {
+		t.Fatalf("EnqueueSync() error = %v", err)
+	}
+	if len(enqueue.JobIDs) != 1 {
+		t.Fatalf("job ids len = %d, want 1", len(enqueue.JobIDs))
+	}
+	jobID := enqueue.JobIDs[0]
+
+	lease, err := scheduler.Lease(1, start)
+	if err != nil {
+		t.Fatalf("Lease() error = %v", err)
+	}
+	if len(lease.Jobs) != 1 || lease.Jobs[0].ID != jobID {
+		t.Fatalf("lease jobs = %+v, want job %q", lease.Jobs, jobID)
+	}
+
+	firstFailure, err := scheduler.Fail(jobID, "temporary outage", start)
+	if err != nil {
+		t.Fatalf("Fail(first) error = %v", err)
+	}
+	if firstFailure.Status != "failed" {
+		t.Fatalf("first failure status = %q, want failed", firstFailure.Status)
+	}
+	if got, want := firstFailure.Job.NotBefore, start.Add(time.Second); !got.Equal(want) {
+		t.Fatalf("first retry not_before = %v, want %v", got, want)
+	}
+
+	duplicate, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "repository", Repository: "octo/repo"}, "retry-dedupe-2", start.Add(100*time.Millisecond))
+	if err != nil {
+		t.Fatalf("EnqueueSync(duplicate) error = %v", err)
+	}
+	if !duplicate.Deduplicated || len(duplicate.JobIDs) != 1 || duplicate.JobIDs[0] != jobID {
+		t.Fatalf("duplicate enqueue = %+v, want same retry job %q", duplicate, jobID)
+	}
+
+	earlyLease, err := scheduler.Lease(1, start.Add(500*time.Millisecond))
+	if err != nil {
+		t.Fatalf("Lease(early) error = %v", err)
+	}
+	if len(earlyLease.Jobs) != 0 {
+		t.Fatalf("early lease jobs = %d, want 0 before first backoff", len(earlyLease.Jobs))
+	}
+
+	secondLeaseAt := start.Add(time.Second)
+	secondLease, err := scheduler.Lease(1, secondLeaseAt)
+	if err != nil {
+		t.Fatalf("Lease(second) error = %v", err)
+	}
+	if len(secondLease.Jobs) != 1 || secondLease.Jobs[0].ID != jobID {
+		t.Fatalf("second lease jobs = %+v, want job %q", secondLease.Jobs, jobID)
+	}
+	secondFailure, err := scheduler.Fail(jobID, "temporary outage again", secondLeaseAt)
+	if err != nil {
+		t.Fatalf("Fail(second) error = %v", err)
+	}
+	if got, want := secondFailure.Job.NotBefore, secondLeaseAt.Add(2*time.Second); !got.Equal(want) {
+		t.Fatalf("second retry not_before = %v, want %v", got, want)
+	}
+
+	finalLeaseAt := secondLeaseAt.Add(2 * time.Second)
+	finalLease, err := scheduler.Lease(1, finalLeaseAt)
+	if err != nil {
+		t.Fatalf("Lease(final) error = %v", err)
+	}
+	if len(finalLease.Jobs) != 1 || finalLease.Jobs[0].ID != jobID {
+		t.Fatalf("final lease jobs = %+v, want job %q", finalLease.Jobs, jobID)
+	}
+	deadLettered, err := scheduler.Fail(jobID, "poison job", finalLeaseAt)
+	if err != nil {
+		t.Fatalf("Fail(final) error = %v", err)
+	}
+	if deadLettered.Status != "dead_lettered" {
+		t.Fatalf("final failure status = %q, want dead_lettered", deadLettered.Status)
+	}
+	if deadLettered.DeadLetterID == "" {
+		t.Fatal("dead letter id is empty")
+	}
+
+	queue := scheduler.QueueStatus(finalLeaseAt, contracts.SchedulerJobFilter{Repository: "octo/repo"})
+	if queue.QueueDepth != 0 || queue.DeadLetters != 1 || queue.Retried != 2 || queue.Failures != 1 {
+		t.Fatalf("queue after dead letter = %+v, want depth 0 dead_letters 1 retried 2 failures 1", queue)
+	}
+	records := scheduler.DeadLetters(finalLeaseAt)
+	if len(records.Records) != 1 || records.Records[0].JobID != jobID {
+		t.Fatalf("dead letter records = %+v, want one record for job %q", records.Records, jobID)
 	}
 }
 
@@ -847,6 +944,35 @@ func TestRunNextLeavesUnsupportedJobsQueued(t *testing.T) {
 	queue := scheduler.QueueStatus(now, contracts.SchedulerJobFilter{Type: string(store.RepairWebhookJob)})
 	if queue.QueueDepth != 1 || len(queue.Jobs) != 1 {
 		t.Fatalf("queue = %+v, want one still-queued unsupported job", queue)
+	}
+}
+
+func BenchmarkEnqueueSyncBurst(b *testing.B) {
+	cfg := testServiceConfig()
+	cfg.Scheduler.PerUserRateMax = 1_000_000
+	cfg.Scheduler.PerInstallationRateMax = 1_000_000
+	now := time.Date(2026, time.May, 6, 16, 0, 0, 0, time.UTC)
+
+	for _, burstSize := range []int{100, 1000} {
+		b.Run(fmt.Sprintf("repositories_%d", burstSize), func(b *testing.B) {
+			requests := make([]contracts.SyncRequest, burstSize)
+			for i := range requests {
+				requests[i] = contracts.SyncRequest{
+					Mode:       "repository",
+					Repository: fmt.Sprintf("octo/repo-%d", i),
+				}
+			}
+
+			b.ReportAllocs()
+			for i := 0; i < b.N; i++ {
+				scheduler := New(cfg)
+				for index, req := range requests {
+					if _, err := scheduler.EnqueueSync(req, fmt.Sprintf("burst-%d-%d", i, index), now); err != nil {
+						b.Fatalf("EnqueueSync() error = %v", err)
+					}
+				}
+			}
+		})
 	}
 }
 
