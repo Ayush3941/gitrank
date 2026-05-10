@@ -779,6 +779,8 @@ Repository security:
 - [ ] require status checks before merge
 - [x] keep `CODEOWNERS`, but do not require CODEOWNERS approval in v1
 
+Apply and verify live GitHub repository-admin controls with `gitrank/docs/runbooks/github-repository-controls.md` and `make verify-github-repository-controls`. These boxes must stay unchecked until the live GitHub settings are applied and verified against the actual repository.
+
 Application security:
 
 - [x] threat model the full system
@@ -956,6 +958,8 @@ Deployment assets to add:
 - [x] use an unsigned v1 release flow and defer signing
 - [ ] enforce required checks before merge
 - [ ] prevent direct pushes to protected branches
+
+Required-check enforcement is a live GitHub branch-protection or ruleset setting. Use `gitrank/docs/runbooks/github-repository-controls.md` and `make verify-github-repository-controls` before checking these items.
 
 ## 24. Documentation Checklist
 

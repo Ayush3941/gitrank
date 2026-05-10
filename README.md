@@ -761,11 +761,13 @@ The repository currently contains a working foundation, not just an empty scaffo
 - a substantial Next.js frontend with dashboard, profile, leaderboard, quest, badge, onboarding, and PR-report flows, with live profile/settings/account actions and mock-backed dashboard, leaderboard, quest, badge, and PR-report surfaces
 - CI, release-artifact, Kubernetes deployment, dependency-review, CodeQL, Scorecard, repo-level secret scanning, pinned Trivy filesystem and service-image scanning, plus frontend-specific CI and Trivy/secret scanning in the nested frontend repo
 - a CI-enforced critical-path test coverage map plus Docker-backed local flow tests covering OAuth, sync, PR ingestion, analysis, scoring, profile projection, and webhook idempotency paths
+- a GitHub repository-controls runbook and token-based verifier for proving live branch protection, required checks, dependency graph, and Dependabot alerts
 
 Major gaps remain:
 
 - no external worker backend yet; scheduler-worker persistent mode now uses dedicated PostgreSQL tables for jobs, dead letters, backfill plans, rate-limit windows, and scheduler counters, but only bounded `sync.installation`, `sync.repository`, owned-repository `sync.user_history`, direct `sync.pull_request`, PR-surface `sync.review`, direct `sync.issue`, and direct `sync.commit` jobs currently auto-execute inside `scheduler-worker`
 - most non-profile frontend routes still use mock data
+- live GitHub repository controls still need to be applied in GitHub settings and verified with `make verify-github-repository-controls`
 - no deployed tracing backend or observability stack yet; dashboards and alert rules are committed but not wired into runtime infrastructure
 - the Kubernetes assets are still provider-neutral and require a real `gitrank-runtime-secrets` source, TLS Secret, ingress controller, managed PostgreSQL, managed Redis, and registry owner/tag substitution before production apply
 

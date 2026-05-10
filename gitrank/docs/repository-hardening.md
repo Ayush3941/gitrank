@@ -2,6 +2,16 @@
 
 Some repository controls cannot be committed as code and must be configured manually in GitHub.
 
+Operational runbook:
+
+- `docs/runbooks/github-repository-controls.md`
+
+Machine verification after applying the live settings:
+
+```bash
+GITHUB_TOKEN=... make verify-github-repository-controls
+```
+
 ## Required GitHub Settings
 
 - enable branch protection or repository rulesets on the default branch
