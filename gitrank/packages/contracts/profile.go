@@ -95,6 +95,27 @@ type ScoreHistoryEntry struct {
 	Explanation []string              `json:"explanation,omitempty"`
 }
 
+type LeaderboardEntryView struct {
+	Rank        int       `json:"rank"`
+	Handle      string    `json:"handle"`
+	DisplayName string    `json:"display_name"`
+	AvatarURL   string    `json:"avatar_url,omitempty"`
+	LevelLabel  string    `json:"level_label"`
+	RankTier    string    `json:"rank_tier"`
+	TotalXP     int       `json:"total_xp"`
+	WeeklyXP    int       `json:"weekly_xp"`
+	Movement    int       `json:"movement"`
+	Focus       string    `json:"focus,omitempty"`
+	RefreshedAt time.Time `json:"refreshed_at"`
+	IsStale     bool      `json:"is_stale"`
+}
+
+type LeaderboardResponse struct {
+	Entries     []LeaderboardEntryView `json:"entries"`
+	Window      ProfileTimeWindow      `json:"window"`
+	GeneratedAt time.Time              `json:"generated_at"`
+}
+
 type ProfilePrivacySettings struct {
 	PublicProfileEnabled         bool `json:"public_profile_enabled"`
 	ShowExactPRs                 bool `json:"show_exact_prs"`

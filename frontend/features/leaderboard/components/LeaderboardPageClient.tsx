@@ -8,12 +8,13 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LeaderboardArena } from "@/features/leaderboard/components/LeaderboardArena";
 import { useLeaderboard } from "@/hooks/use-leaderboard";
+import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
 import type { PreviewMode } from "@/types/gitrank";
 
-const tabs = ["Global", "India", "College", "Backend", "Testing", "Documentation", "Weekly XP", "Rising Contributors"] as const;
+const tabs: LeaderboardTab[] = ["Global", "Backend", "Testing", "Documentation", "Weekly XP"];
 
 export function LeaderboardPageClient({ preview }: { preview?: PreviewMode }) {
-  const [tab, setTab] = useState<(typeof tabs)[number]>("Global");
+  const [tab, setTab] = useState<LeaderboardTab>("Global");
   const { data, isLoading, isError } = useLeaderboard(tab, preview);
 
   return (
@@ -22,7 +23,7 @@ export function LeaderboardPageClient({ preview }: { preview?: PreviewMode }) {
         title="Leaderboard arena"
         description="A time-windowed ranking snapshot weighted by meaningful merged work, review depth, tests, and project context."
       />
-      <Tabs value={tab} onValueChange={(value) => setTab(value as (typeof tabs)[number])}>
+      <Tabs value={tab} onValueChange={(value) => setTab(value as LeaderboardTab)}>
         <TabsList className="scrollbar-thin w-full overflow-x-auto whitespace-nowrap">
           {tabs.map((item) => (
             <TabsTrigger key={item} value={item}>

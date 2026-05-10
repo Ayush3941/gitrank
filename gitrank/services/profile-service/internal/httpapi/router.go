@@ -60,6 +60,15 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 		})
 	})))
 
+	mux.Handle("/v1/leaderboard", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		response, err := profileService.Leaderboard(r.Context(), 50, time.Now().UTC())
+		if err != nil {
+			writeProfileError(w, r, err)
+			return
+		}
+		httpkit.WriteJSON(w, http.StatusOK, response)
+	})))
+
 	mux.Handle("/v1/users/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			httpkit.WriteError(w, http.StatusMethodNotAllowed, "method_not_allowed", "method not allowed", httpkit.RequestIDFromContext(r.Context()))

@@ -117,6 +117,44 @@ func (s *Service) PublicProfileCard(ctx context.Context, handle string, now time
 	return profile.ShareCard, nil
 }
 
+func (s *Service) Leaderboard(ctx context.Context, limit int, now time.Time) (contracts.LeaderboardResponse, error) {
+	if limit <= 0 {
+		limit = 50
+	}
+	if limit > 100 {
+		limit = 100
+	}
+
+	snapshots, err := s.store.LoadLeaderboardSnapshots(ctx, limit)
+	if err != nil {
+		return contracts.LeaderboardResponse{}, err
+	}
+
+	entries := make([]contracts.LeaderboardEntryView, 0, len(snapshots))
+	var window contracts.ProfileTimeWindow
+	for i, snapshot := range snapshots {
+		if i == 0 {
+			window = snapshot.Timeline.Window
+		}
+		entries = append(entries, leaderboardEntryFromSnapshot(snapshot, i+1, now.UTC()))
+	}
+
+	if window.Label == "" {
+		window = contracts.ProfileTimeWindow{
+			Label:   "last_6_weeks",
+			Bucket:  "week",
+			StartAt: now.UTC().AddDate(0, 0, -42),
+			EndAt:   now.UTC(),
+		}
+	}
+
+	return contracts.LeaderboardResponse{
+		Entries:     entries,
+		Window:      window,
+		GeneratedAt: now.UTC(),
+	}, nil
+}
+
 func (s *Service) PrivateProfile(ctx context.Context, sessionToken string, now time.Time) (contracts.PrivateProfileResponse, error) {
 	principal, err := s.authenticate(ctx, sessionToken, now.UTC())
 	if err != nil {

@@ -73,6 +73,58 @@ func TestPrivateProfileRoutePassesThroughPrivateProfileContract(t *testing.T) {
 	}
 }
 
+func TestLeaderboardRoutePassesThroughLeaderboardContract(t *testing.T) {
+	now := time.Date(2026, 5, 5, 15, 4, 0, 0, time.UTC)
+	expected := contracts.LeaderboardResponse{
+		Entries: []contracts.LeaderboardEntryView{
+			{
+				Rank:        1,
+				Handle:      "octocat",
+				DisplayName: "Octo Cat",
+				LevelLabel:  "Builder",
+				RankTier:    "Silver II",
+				TotalXP:     1800,
+				WeeklyXP:    250,
+				Focus:       "backend",
+				RefreshedAt: now,
+			},
+		},
+		Window: contracts.ProfileTimeWindow{
+			Label:   "last_6_weeks",
+			Bucket:  "week",
+			StartAt: now.AddDate(0, 0, -42),
+			EndAt:   now,
+		},
+		GeneratedAt: now,
+	}
+	profile := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/leaderboard" {
+			t.Fatalf("upstream path = %q, want /v1/leaderboard", r.URL.Path)
+		}
+		_ = json.NewEncoder(w).Encode(expected)
+	}))
+	defer profile.Close()
+
+	router := NewRouter(testConfig(profile.URL, stubAuthServer().URL, stubIngestorServer().URL), testLogger(), "test")
+	response := httptest.NewRecorder()
+	router.ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/v1/leaderboard", nil))
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusOK, response.Body.String())
+	}
+	if response.Header().Get("Cache-Control") != "public, max-age=60, stale-while-revalidate=300" {
+		t.Fatalf("cache-control = %q", response.Header().Get("Cache-Control"))
+	}
+
+	var observed contracts.LeaderboardResponse
+	if err := json.Unmarshal(response.Body.Bytes(), &observed); err != nil {
+		t.Fatalf("unmarshal response: %v", err)
+	}
+	if !reflect.DeepEqual(observed, expected) {
+		t.Fatalf("leaderboard mismatch: got %+v want %+v", observed, expected)
+	}
+}
+
 func TestPrivateProfileRouteRejectsInvalidAuthServiceContract(t *testing.T) {
 	auth := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_ = json.NewEncoder(w).Encode(contracts.SessionEnvelope{})

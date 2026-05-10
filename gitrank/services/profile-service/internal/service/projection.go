@@ -311,6 +311,52 @@ func buildTimeline(scoreRows []scoreRow, sourceWatermark time.Time) contracts.Pr
 	}
 }
 
+func leaderboardEntryFromSnapshot(snapshot snapshotRecord, rank int, now time.Time) contracts.LeaderboardEntryView {
+	handle := strings.TrimSpace(snapshot.Summary.Handle)
+	if handle == "" {
+		handle = strings.TrimSpace(snapshot.ShareCard.Handle)
+	}
+	displayName := strings.TrimSpace(snapshot.Summary.DisplayName)
+	if displayName == "" {
+		displayName = strings.TrimSpace(snapshot.ShareCard.DisplayName)
+	}
+	if displayName == "" {
+		displayName = handle
+	}
+
+	level := snapshot.ShareCard.Level
+	if level.Label == "" {
+		level = levelViewForXP(snapshot.TotalXP)
+	}
+
+	focus := ""
+	if len(snapshot.Summary.TopSkills) > 0 {
+		focus = snapshot.Summary.TopSkills[0]
+	} else if len(snapshot.TopSkills) > 0 {
+		focus = snapshot.TopSkills[0].Key
+	}
+
+	weeklyXP := 0
+	if points := snapshot.Timeline.Points; len(points) > 0 {
+		weeklyXP = points[len(points)-1].DeltaXP
+	}
+
+	return contracts.LeaderboardEntryView{
+		Rank:        rank,
+		Handle:      handle,
+		DisplayName: displayName,
+		AvatarURL:   strings.TrimSpace(snapshot.Summary.AvatarURL),
+		LevelLabel:  level.Label,
+		RankTier:    level.RankTier,
+		TotalXP:     snapshot.TotalXP,
+		WeeklyXP:    weeklyXP,
+		Movement:    0,
+		Focus:       focus,
+		RefreshedAt: snapshot.RefreshedAt.UTC(),
+		IsStale:     now.UTC().After(snapshot.StaleAfter.UTC()),
+	}
+}
+
 func startOfWeek(value time.Time) time.Time {
 	value = value.UTC()
 	offset := (int(value.Weekday()) + 6) % 7

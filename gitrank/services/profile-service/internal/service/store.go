@@ -485,6 +485,85 @@ func (s *Store) LoadLatestSnapshot(ctx context.Context, userID string) (snapshot
 		LIMIT 1
 	`, userID)
 
+	record, err := scanSnapshot(row)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return snapshotRecord{}, ErrNotFound
+		}
+		return snapshotRecord{}, err
+	}
+	return record, nil
+}
+
+func (s *Store) LoadLeaderboardSnapshots(ctx context.Context, limit int) ([]snapshotRecord, error) {
+	rows, err := s.pool.Query(ctx, `
+		WITH latest_snapshots AS (
+			SELECT DISTINCT ON (ps.user_id)
+				ps.id,
+				ps.user_id,
+				ps.snapshot_version,
+				ps.total_score,
+				ps.level,
+				ps.summary_jsonb,
+				ps.top_skills_jsonb,
+				ps.badges_jsonb,
+				ps.trend_jsonb,
+				ps.repositories_jsonb,
+				ps.score_history_jsonb,
+				ps.share_card_jsonb,
+				ps.refreshed_at,
+				COALESCE(ps.stale_after, ps.refreshed_at) AS stale_after,
+				COALESCE(ps.source_watermark, ps.refreshed_at) AS source_watermark,
+				ps.created_at
+			FROM profile_snapshots ps
+			ORDER BY ps.user_id, ps.refreshed_at DESC, ps.created_at DESC
+		)
+		SELECT
+			ls.id::text,
+			ls.user_id::text,
+			ls.snapshot_version,
+			ls.total_score,
+			ls.level,
+			ls.summary_jsonb,
+			ls.top_skills_jsonb,
+			ls.badges_jsonb,
+			ls.trend_jsonb,
+			ls.repositories_jsonb,
+			ls.score_history_jsonb,
+			ls.share_card_jsonb,
+			ls.refreshed_at,
+			ls.stale_after,
+			ls.source_watermark
+		FROM latest_snapshots ls
+		JOIN users u ON u.id = ls.user_id
+		LEFT JOIN user_profile_settings ups ON ups.user_id = u.id
+		WHERE LOWER(COALESCE(u.profile_visibility, 'public')) = 'public'
+		  AND COALESCE(u.public_handle, '') <> ''
+		  AND COALESCE(ups.show_leaderboard_participation, TRUE)
+		ORDER BY ls.total_score DESC, ls.refreshed_at DESC, ls.created_at DESC, ls.user_id
+		LIMIT $1
+	`, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	out := make([]snapshotRecord, 0)
+	for rows.Next() {
+		record, err := scanSnapshot(rows)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, record)
+	}
+	return out, rows.Err()
+}
+
+type rowScanner interface {
+	Scan(dest ...any) error
+}
+
+func scanSnapshot(row rowScanner) (snapshotRecord, error) {
 	var record snapshotRecord
 	var summaryRaw, skillsRaw, badgesRaw, timelineRaw, reposRaw, historyRaw, cardRaw []byte
 	if err := row.Scan(
@@ -504,12 +583,8 @@ func (s *Store) LoadLatestSnapshot(ctx context.Context, userID string) (snapshot
 		&record.StaleAfter,
 		&record.SourceWatermark,
 	); err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return snapshotRecord{}, ErrNotFound
-		}
 		return snapshotRecord{}, err
 	}
-
 	_ = json.Unmarshal(summaryRaw, &record.Summary)
 	_ = json.Unmarshal(skillsRaw, &record.TopSkills)
 	_ = json.Unmarshal(badgesRaw, &record.Badges)

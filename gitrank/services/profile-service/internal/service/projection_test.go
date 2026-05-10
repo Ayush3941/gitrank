@@ -83,6 +83,47 @@ func TestPublicResponseFiltersHiddenRepositories(t *testing.T) {
 	}
 }
 
+func TestLeaderboardEntryFromSnapshotUsesProfileSnapshotEvidence(t *testing.T) {
+	now := time.Date(2026, 5, 5, 13, 0, 0, 0, time.UTC)
+	snapshot := snapshotRecord{
+		TotalXP: 4200,
+		Summary: contracts.PublicProfileSummary{
+			Handle:      "octocat",
+			DisplayName: "Octo Cat",
+			AvatarURL:   "https://avatars.githubusercontent.com/u/1?v=4",
+			TopSkills:   []string{"backend"},
+		},
+		ShareCard: contracts.ShareableProfileCard{
+			Level: levelViewForXP(4200),
+		},
+		Timeline: contracts.ProfileTimeline{
+			Points: []contracts.ProfileTimelinePoint{
+				{DeltaXP: 120, TotalXP: 4080},
+				{DeltaXP: 220, TotalXP: 4200},
+			},
+		},
+		RefreshedAt: now.Add(-time.Hour),
+		StaleAfter:  now.Add(time.Hour),
+	}
+
+	entry := leaderboardEntryFromSnapshot(snapshot, 3, now)
+	if entry.Rank != 3 {
+		t.Fatalf("Rank = %d, want 3", entry.Rank)
+	}
+	if entry.Handle != "octocat" || entry.DisplayName != "Octo Cat" {
+		t.Fatalf("identity = %q/%q, want octocat/Octo Cat", entry.Handle, entry.DisplayName)
+	}
+	if entry.TotalXP != 4200 || entry.WeeklyXP != 220 {
+		t.Fatalf("xp = total %d weekly %d, want total 4200 weekly 220", entry.TotalXP, entry.WeeklyXP)
+	}
+	if entry.Focus != "backend" {
+		t.Fatalf("Focus = %q, want backend", entry.Focus)
+	}
+	if entry.IsStale {
+		t.Fatal("IsStale = true, want false")
+	}
+}
+
 func BenchmarkPublicProfileResponseFromSnapshot(b *testing.B) {
 	now := time.Date(2026, 5, 5, 13, 0, 0, 0, time.UTC)
 	snapshot := snapshotRecord{

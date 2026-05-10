@@ -139,6 +139,7 @@ Implemented routes:
 - `PATCH /v1/me/profile/repositories/{owner}/{repo}`
 - `POST /v1/me/account/unlink`
 - `POST /v1/me/account/delete`
+- `GET /v1/leaderboard`
 - `GET /v1/users/{handle}`
 - `GET /v1/users/{handle}/card`
 
@@ -152,7 +153,7 @@ Gateway behavior:
 - rotates downstream cookies if `auth-service` rotates the session
 - forwards downstream session-clearing `Set-Cookie` headers from `auth-service`
 - requires `X-CSRF-Token` on state-changing browser routes
-- returns short-lived public caching headers for public profiles
+- returns short-lived public caching headers for public profiles and leaderboard reads
 - returns `Cache-Control: private, no-store` for authenticated profile, sync, and account-action routes
 
 ### Auth Service
@@ -294,6 +295,7 @@ Implemented routes:
 - `GET /metrics`
 - `GET /v1/meta/manifest`
 - `GET /v1/profile/schema`
+- `GET /v1/leaderboard`
 - `GET /v1/users/{handle}`
 - `GET /v1/users/{handle}/card`
 - `GET /v1/me/profile`

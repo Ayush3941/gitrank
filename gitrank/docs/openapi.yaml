@@ -704,6 +704,37 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /v1/leaderboard:
+    get:
+      tags: [Profiles]
+      summary: Return the public GitRank leaderboard
+      description: |
+        The leaderboard is built from public, leaderboard-enabled profile snapshots and ranks by total XP.
+        Placement is directional and formula-versioned, not an absolute measure of engineering ability.
+      operationId: getLeaderboard
+      responses:
+        "200":
+          description: Public leaderboard snapshot
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Cache-Control:
+              $ref: "#/components/headers/PublicProfileCacheControl"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeaderboardResponse"
+        "429":
+          description: Rate limit exceeded
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Retry-After:
+              $ref: "#/components/headers/RetryAfter"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /v1/users/{handle}/card:
     get:
       tags: [Profiles]
@@ -1079,6 +1110,51 @@ components:
           type: integer
         rank_tier:
           type: string
+    LeaderboardEntryView:
+      type: object
+      required: [rank, handle, display_name, level_label, rank_tier, total_xp, weekly_xp, movement, refreshed_at, is_stale]
+      properties:
+        rank:
+          type: integer
+          minimum: 1
+        handle:
+          type: string
+        display_name:
+          type: string
+        avatar_url:
+          type: string
+        level_label:
+          type: string
+        rank_tier:
+          type: string
+        total_xp:
+          type: integer
+        weekly_xp:
+          type: integer
+        movement:
+          type: integer
+          description: Directional rank delta from the previous comparable snapshot when available.
+        focus:
+          type: string
+          description: Primary evidence-backed skill area from the profile snapshot.
+        refreshed_at:
+          type: string
+          format: date-time
+        is_stale:
+          type: boolean
+    LeaderboardResponse:
+      type: object
+      required: [entries, window, generated_at]
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeaderboardEntryView"
+        window:
+          $ref: "#/components/schemas/ProfileTimeWindow"
+        generated_at:
+          type: string
+          format: date-time
     BadgeView:
       type: object
       required: [key, name, awarded_at]

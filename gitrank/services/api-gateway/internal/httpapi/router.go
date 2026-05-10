@@ -66,6 +66,18 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		httpkit.WriteJSON(w, http.StatusOK, manifest.Dependencies)
 	})))
 
+	mux.Handle("/v1/leaderboard", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !allowRateLimit(w, r, publicReadLimiter, "leaderboard") {
+			return
+		}
+		proxyRequest(w, r, client, profileBaseURL, r.URL.Path, proxyOptions{
+			ForwardHeaders: defaultForwardHeaders(r),
+			ResponseHeaders: map[string]string{
+				"Cache-Control": "public, max-age=60, stale-while-revalidate=300",
+			},
+		})
+	})))
+
 	mux.Handle("/v1/users/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			writeMethodNotAllowed(w, r)
@@ -75,11 +87,12 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			return
 		}
 		suffix := strings.TrimPrefix(r.URL.Path, "/v1/users/")
-		if strings.TrimSpace(suffix) == "" {
+		handle, matched, err := publicProfileHandleFromSuffix(suffix)
+		if strings.TrimSpace(suffix) == "" || !matched {
 			httpkit.WriteError(w, http.StatusNotFound, "not_found", "resource not found", httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
-		if _, err := contracts.NormalizeGitHubLogin(suffix); err != nil {
+		if err != nil {
 			httpkit.WriteError(w, http.StatusBadRequest, "invalid_profile_target", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
@@ -89,7 +102,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			ResponseHeaders: map[string]string{
 				"Cache-Control": "public, max-age=60, stale-while-revalidate=300",
 			},
-			Transform: analyticsProfileTransform(analytics, suffix),
+			Transform: analyticsProfileTransform(analytics, handle),
 		})
 	}))
 
@@ -256,6 +269,20 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		httpkit.AccessLog(log),
 		httpkit.Recoverer(log),
 	)
+}
+
+func publicProfileHandleFromSuffix(suffix string) (string, bool, error) {
+	parts := strings.Split(strings.Trim(suffix, "/"), "/")
+	switch {
+	case len(parts) == 1:
+		handle, err := contracts.NormalizeGitHubLogin(parts[0])
+		return handle, true, err
+	case len(parts) == 2 && parts[1] == "card":
+		handle, err := contracts.NormalizeGitHubLogin(parts[0])
+		return handle, true, err
+	default:
+		return "", false, nil
+	}
 }
 
 func checkDependency(ctx context.Context, client *http.Client, baseURL, name string, checks map[string]contracts.ComponentCheck) error {

@@ -123,6 +123,26 @@ func TestProxyPublicProfileRequest(t *testing.T) {
 	}
 }
 
+func TestProxyPublicProfileCardRequest(t *testing.T) {
+	profile := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/users/Ayush3941/card" {
+			t.Fatalf("path = %q, want /v1/users/Ayush3941/card", r.URL.Path)
+		}
+		_ = json.NewEncoder(w).Encode(contracts.ShareableProfileCard{Handle: "Ayush3941"})
+	}))
+	defer profile.Close()
+
+	router := NewRouter(testConfig(profile.URL, stubAuthServer().URL, stubIngestorServer().URL), testLogger(), "test")
+	request := httptest.NewRequest(http.MethodGet, "/v1/users/Ayush3941/card", nil)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusOK, response.Body.String())
+	}
+}
+
 func TestAnalyticsEventsRouteTracksAllowedEvents(t *testing.T) {
 	router := NewRouter(testConfig(stubProfileServer().URL, stubAuthServer().URL, stubIngestorServer().URL), testLogger(), "test")
 	request := httptest.NewRequest(http.MethodPost, "/v1/analytics/events", strings.NewReader(`{
