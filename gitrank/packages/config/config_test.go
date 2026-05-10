@@ -47,6 +47,9 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.GitHub.CircuitBreakerHalfOpenMax != 1 {
 		t.Fatalf("GitHub.CircuitBreakerHalfOpenMax = %d, want 1", cfg.GitHub.CircuitBreakerHalfOpenMax)
 	}
+	if cfg.GitHub.RepositoryCacheTTL != 10*time.Minute {
+		t.Fatalf("GitHub.RepositoryCacheTTL = %v, want 10m", cfg.GitHub.RepositoryCacheTTL)
+	}
 	if cfg.Auth.SessionCookieName != "gitrank_session" {
 		t.Fatalf("Auth.SessionCookieName = %q, want gitrank_session", cfg.Auth.SessionCookieName)
 	}
@@ -72,6 +75,7 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	t.Setenv("GITHUB_CIRCUIT_BREAKER_FAILURE_THRESHOLD", "7")
 	t.Setenv("GITHUB_CIRCUIT_BREAKER_OPEN_INTERVAL", "45s")
 	t.Setenv("GITHUB_CIRCUIT_BREAKER_HALF_OPEN_MAX_REQUESTS", "2")
+	t.Setenv("GITHUB_REPOSITORY_CACHE_TTL", "30m")
 	t.Setenv("JOB_WORKER_CONCURRENCY", "9")
 	t.Setenv("JOB_DEAD_LETTER_QUEUE", "custom-dead-letter")
 	t.Setenv("JOB_PER_USER_RATE_MAX", "3")
@@ -123,6 +127,9 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	}
 	if cfg.GitHub.CircuitBreakerHalfOpenMax != 2 {
 		t.Fatalf("GitHub.CircuitBreakerHalfOpenMax = %d, want 2", cfg.GitHub.CircuitBreakerHalfOpenMax)
+	}
+	if cfg.GitHub.RepositoryCacheTTL != 30*time.Minute {
+		t.Fatalf("GitHub.RepositoryCacheTTL = %v, want 30m", cfg.GitHub.RepositoryCacheTTL)
 	}
 	if cfg.Scheduler.WorkerConcurrency != 9 {
 		t.Fatalf("Scheduler.WorkerConcurrency = %d, want 9", cfg.Scheduler.WorkerConcurrency)

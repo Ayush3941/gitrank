@@ -883,7 +883,7 @@ Dashboards and alerts:
 - [x] benchmark scoring throughput
 - [x] benchmark profile read latency
 - [ ] batch GitHub API calls where possible
-- [ ] cache stable repository metadata
+- [x] cache stable repository metadata
 - [ ] avoid N+1 query patterns
 - [ ] tune DB indexes against real query shapes
 - [x] plan for backfills at scale

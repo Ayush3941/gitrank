@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Ayush3941/gitrank/packages/config"
@@ -20,16 +21,18 @@ const (
 )
 
 type Executor struct {
-	cfg    config.App
-	store  *Store
-	client *githubapi.RESTClient
+	cfg             config.App
+	store           *Store
+	client          *githubapi.RESTClient
+	repositoryCache *repositoryMetadataCache
 }
 
 func NewExecutor(cfg config.App, pool *pgxpool.Pool, client *githubapi.RESTClient) *Executor {
 	return &Executor{
-		cfg:    cfg,
-		store:  NewStore(pool),
-		client: client,
+		cfg:             cfg,
+		store:           NewStore(pool),
+		client:          client,
+		repositoryCache: newRepositoryMetadataCache(cfg.GitHub.RepositoryCacheTTL),
 	}
 }
 
@@ -993,8 +996,18 @@ func (e *Executor) fetchCommit(ctx context.Context, owner, name, sha string) (ma
 }
 
 func (e *Executor) fetchRepository(ctx context.Context, owner, name string) (map[string]any, error) {
+	cacheKey := repositoryCacheKey(owner, name)
+	if e.repositoryCache != nil {
+		if repository, ok := e.repositoryCache.Get(cacheKey, time.Now()); ok {
+			return repository, nil
+		}
+	}
+
 	var repository map[string]any
 	_, err := e.client.GetJSON(ctx, fmt.Sprintf("/repos/%s/%s", owner, name), nil, githubapi.ConditionalRequest{}, &repository)
+	if err == nil && e.repositoryCache != nil {
+		e.repositoryCache.Set(cacheKey, repository, time.Now())
+	}
 	return repository, err
 }
 
@@ -1089,6 +1102,95 @@ func boundedPageSize(configured, fallback int) int {
 		return 20
 	}
 	return fallback
+}
+
+type repositoryMetadataCache struct {
+	mu      sync.Mutex
+	ttl     time.Duration
+	entries map[string]repositoryMetadataCacheEntry
+}
+
+type repositoryMetadataCacheEntry struct {
+	repository map[string]any
+	expiresAt  time.Time
+}
+
+func newRepositoryMetadataCache(ttl time.Duration) *repositoryMetadataCache {
+	if ttl <= 0 {
+		return nil
+	}
+	return &repositoryMetadataCache{
+		ttl:     ttl,
+		entries: make(map[string]repositoryMetadataCacheEntry),
+	}
+}
+
+func (c *repositoryMetadataCache) Get(key string, now time.Time) (map[string]any, bool) {
+	if c == nil || strings.TrimSpace(key) == "" {
+		return nil, false
+	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	entry, ok := c.entries[key]
+	if !ok {
+		return nil, false
+	}
+	if !entry.expiresAt.IsZero() && now.After(entry.expiresAt) {
+		delete(c.entries, key)
+		return nil, false
+	}
+	return cloneJSONMap(entry.repository), true
+}
+
+func (c *repositoryMetadataCache) Set(key string, repository map[string]any, now time.Time) {
+	if c == nil || strings.TrimSpace(key) == "" || repository == nil {
+		return
+	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.entries[key] = repositoryMetadataCacheEntry{
+		repository: cloneJSONMap(repository),
+		expiresAt:  now.Add(c.ttl),
+	}
+}
+
+func repositoryCacheKey(owner, name string) string {
+	return strings.ToLower(strings.TrimSpace(owner) + "/" + strings.TrimSpace(name))
+}
+
+func cloneJSONMap(source map[string]any) map[string]any {
+	if source == nil {
+		return nil
+	}
+	out := make(map[string]any, len(source))
+	for key, value := range source {
+		out[key] = cloneJSONValue(value)
+	}
+	return out
+}
+
+func cloneJSONSlice(source []any) []any {
+	if source == nil {
+		return nil
+	}
+	out := make([]any, len(source))
+	for index, value := range source {
+		out[index] = cloneJSONValue(value)
+	}
+	return out
+}
+
+func cloneJSONValue(value any) any {
+	switch typed := value.(type) {
+	case map[string]any:
+		return cloneJSONMap(typed)
+	case []any:
+		return cloneJSONSlice(typed)
+	default:
+		return typed
+	}
 }
 
 func normalizePullRequest(pullRequest map[string]any) map[string]any {

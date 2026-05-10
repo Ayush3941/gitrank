@@ -106,6 +106,7 @@ type GitHub struct {
 	FailedLookback                 time.Duration
 	RefreshSkew                    time.Duration
 	SecondaryBackoff               time.Duration
+	RepositoryCacheTTL             time.Duration
 	MaxConcurrency                 int
 	CircuitBreakerFailureThreshold int
 	CircuitBreakerOpenInterval     time.Duration
@@ -216,6 +217,7 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			FailedLookback:                 getDuration("GITHUB_FAILED_DELIVERY_LOOKBACK", 72*time.Hour),
 			RefreshSkew:                    getDuration("GITHUB_INSTALLATION_TOKEN_REFRESH_SKEW", 5*time.Minute),
 			SecondaryBackoff:               getDuration("GITHUB_SECONDARY_RATE_LIMIT_BACKOFF", time.Minute),
+			RepositoryCacheTTL:             getDuration("GITHUB_REPOSITORY_CACHE_TTL", 10*time.Minute),
 			MaxConcurrency:                 getInt("GITHUB_MAX_CONCURRENT_REQUESTS", 8),
 			CircuitBreakerFailureThreshold: getInt("GITHUB_CIRCUIT_BREAKER_FAILURE_THRESHOLD", 5),
 			CircuitBreakerOpenInterval:     getDuration("GITHUB_CIRCUIT_BREAKER_OPEN_INTERVAL", 30*time.Second),
@@ -355,6 +357,9 @@ func (a App) ValidateBase() error {
 	}
 	if a.GitHub.SecondaryBackoff <= 0 {
 		problems = append(problems, "GITHUB_SECONDARY_RATE_LIMIT_BACKOFF must be positive")
+	}
+	if a.GitHub.RepositoryCacheTTL < 0 {
+		problems = append(problems, "GITHUB_REPOSITORY_CACHE_TTL must not be negative")
 	}
 	if a.GitHub.MaxConcurrency <= 0 {
 		problems = append(problems, "GITHUB_MAX_CONCURRENT_REQUESTS must be positive")

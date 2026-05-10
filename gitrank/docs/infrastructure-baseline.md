@@ -98,6 +98,7 @@ Required telemetry shape:
 - `make bench-ingestion` benchmarks PostgreSQL-backed pull-request webhook persistence when `GITRANK_INGESTOR_DATABASE_URL` points at a migrated test database.
 - `go test ./services/scoring-engine/internal/scoring -bench BenchmarkScoreContribution -benchmem` benchmarks deterministic score computation.
 - `go test ./services/profile-service/internal/service -bench BenchmarkPublicProfileResponseFromSnapshot -benchmem` benchmarks public profile projection latency.
+- `github-ingestor` caches stable repository metadata for `GITHUB_REPOSITORY_CACHE_TTL` to avoid repeated repository detail calls within bounded sync waves.
 
 ## Scaling Direction
 
