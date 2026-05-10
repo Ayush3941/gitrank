@@ -2,7 +2,7 @@ SHELL := /bin/sh
 TMPDIR ?= $(CURDIR)/.tmp
 GOCACHE ?= $(CURDIR)/.gocache
 
-.PHONY: fmt test test-migrations race vet tidy compose-up compose-down seed-local
+.PHONY: fmt test test-migrations race vet audit-go-safety tidy compose-up compose-down seed-local
 
 fmt:
 	mkdir -p "$(TMPDIR)" "$(GOCACHE)"
@@ -22,6 +22,9 @@ race:
 vet:
 	mkdir -p "$(TMPDIR)" "$(GOCACHE)"
 	find . -name go.mod -execdir sh -c 'TMPDIR="$(TMPDIR)" GOCACHE="$(GOCACHE)" go vet ./...' \;
+
+audit-go-safety:
+	./scripts/audit_go_safety.sh
 
 tidy:
 	find . -name go.mod -execdir go mod tidy \;

@@ -794,7 +794,7 @@ Application security:
 Go-specific security:
 
 - [x] run `govulncheck`
-- [ ] audit unsafe or reflection-heavy code paths
+- [x] audit unsafe or reflection-heavy code paths
 - [x] avoid insecure random sources for secrets or nonces
 - [x] use timeouts on network clients
 - [x] avoid unbounded request bodies
