@@ -8,6 +8,10 @@ import (
 )
 
 func BuildSyncJobs(req contracts.SyncRequest, queueName, correlationID string, maxAttempts int) ([]QueueJob, error) {
+	if err := req.Normalize(); err != nil {
+		return nil, err
+	}
+
 	switch req.Mode {
 	case "installation":
 		if req.InstallationID <= 0 {

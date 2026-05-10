@@ -323,6 +323,30 @@ func TestRepositorySyncExecutionRouteProxiesExecutionContract(t *testing.T) {
 	}
 }
 
+func TestRepositorySyncExecutionRejectsUnsafeRepository(t *testing.T) {
+	auth := stubAuthServer()
+	defer auth.Close()
+	ingestor := stubIngestorServer()
+	defer ingestor.Close()
+
+	router := NewRouter(testConfig(stubProfileServer().URL, auth.URL, ingestor.URL), testLogger(), "test")
+	request := httptest.NewRequest(http.MethodPost, "/v1/sync/repository/execute", strings.NewReader(`{"repository":"https://github.com/octo/repo"}`))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Cookie", "gitrank_session=session-original; gitrank_csrf=csrf-original")
+	csrfToken, err := authkit.DoubleSubmitCSRFFromToken([]byte("test-session-secret"), "session-original")
+	if err != nil {
+		t.Fatalf("csrf token: %v", err)
+	}
+	request.Header.Set("X-CSRF-Token", csrfToken)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusBadRequest, response.Body.String())
+	}
+}
+
 func TestInstallationSyncExecutionRouteProxiesExecutionContract(t *testing.T) {
 	auth := stubAuthServer()
 	defer auth.Close()
@@ -553,6 +577,18 @@ func TestAccountDeleteRoutePassesThroughDeletionResponse(t *testing.T) {
 	}
 	if observed.Status != "deleted" || !observed.DeletedAt.Equal(deletedAt) {
 		t.Fatalf("deletion response = %+v", observed)
+	}
+}
+
+func TestBuildProxyURLRejectsUnsafeBaseAndPath(t *testing.T) {
+	if _, err := buildProxyURL("file://metadata/latest", "/readyz", ""); err == nil {
+		t.Fatal("buildProxyURL() error = nil, want unsafe scheme rejection")
+	}
+	if _, err := buildProxyURL("http://user:pass@internal", "/readyz", ""); err == nil {
+		t.Fatal("buildProxyURL() error = nil, want userinfo rejection")
+	}
+	if _, err := buildProxyURL("http://profile-service", "//evil.example/path", ""); err == nil {
+		t.Fatal("buildProxyURL() error = nil, want path-relative URL rejection")
 	}
 }
 

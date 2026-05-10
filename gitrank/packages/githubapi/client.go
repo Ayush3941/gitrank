@@ -80,7 +80,7 @@ func NewRESTClient(cfg ClientConfig) (*RESTClient, error) {
 	if strings.TrimSpace(cfg.BaseURL) == "" {
 		return nil, errors.New("base URL is required")
 	}
-	parsed, err := url.Parse(cfg.BaseURL)
+	parsed, err := parseOutboundHTTPURL(cfg.BaseURL, "base URL")
 	if err != nil {
 		return nil, err
 	}
@@ -320,6 +320,10 @@ func NewGraphQLClient(cfg ClientConfig) (*GraphQLClient, error) {
 	if strings.TrimSpace(cfg.BaseURL) == "" {
 		return nil, errors.New("GraphQL endpoint is required")
 	}
+	endpoint, err := parseOutboundHTTPURL(cfg.BaseURL, "GraphQL endpoint")
+	if err != nil {
+		return nil, err
+	}
 	if strings.TrimSpace(cfg.APIVersion) == "" {
 		return nil, errors.New("API version is required")
 	}
@@ -336,7 +340,7 @@ func NewGraphQLClient(cfg ClientConfig) (*GraphQLClient, error) {
 		cfg.MaxConcurrency = 8
 	}
 	return &GraphQLClient{
-		endpoint:         strings.TrimSpace(cfg.BaseURL),
+		endpoint:         endpoint.String(),
 		apiVersion:       cfg.APIVersion,
 		userAgent:        cfg.UserAgent,
 		tokenSource:      cfg.TokenSource,
@@ -345,6 +349,29 @@ func NewGraphQLClient(cfg ClientConfig) (*GraphQLClient, error) {
 		sem:              make(chan struct{}, cfg.MaxConcurrency),
 		circuit:          newCircuitBreaker(cfg.CircuitBreakerFailureThreshold, cfg.CircuitBreakerOpenInterval, cfg.CircuitBreakerHalfOpenMax),
 	}, nil
+}
+
+func parseOutboundHTTPURL(raw string, label string) (*url.URL, error) {
+	parsed, err := url.Parse(strings.TrimSpace(raw))
+	if err != nil {
+		return nil, err
+	}
+	if parsed.Scheme != "http" && parsed.Scheme != "https" {
+		return nil, fmt.Errorf("%s must use http or https", label)
+	}
+	if parsed.Host == "" {
+		return nil, fmt.Errorf("%s must include host", label)
+	}
+	if parsed.User != nil {
+		return nil, fmt.Errorf("%s must not include userinfo", label)
+	}
+	if parsed.RawQuery != "" {
+		return nil, fmt.Errorf("%s must not include a query string", label)
+	}
+	if parsed.Fragment != "" {
+		return nil, fmt.Errorf("%s must not include fragment", label)
+	}
+	return parsed, nil
 }
 
 func (c *GraphQLClient) QueryJSON(

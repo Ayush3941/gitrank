@@ -18,3 +18,16 @@ func TestBuildResponsesRequest(t *testing.T) {
 		t.Fatalf("URL = %q, want responses endpoint", req.URL)
 	}
 }
+
+func TestBuildResponsesRequestRejectsUnsafeBaseURL(t *testing.T) {
+	_, err := BuildResponsesRequest(Config{
+		BaseURL: "http://token@127.0.0.1:11434/v1",
+		APIKey:  "key",
+		Model:   "gpt-5.5",
+	}, ResponsesRequest{
+		Input: "classify this pull request",
+	})
+	if err == nil {
+		t.Fatal("BuildResponsesRequest() error = nil, want unsafe base URL rejection")
+	}
+}

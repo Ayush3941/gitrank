@@ -138,6 +138,24 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	}
 }
 
+func TestLoadRejectsUnsafeHTTPURLs(t *testing.T) {
+	t.Setenv("GITHUB_API_BASE_URL", "file://metadata/latest")
+
+	_, err := Load("api-gateway", "API_GATEWAY_ADDR")
+	if err == nil {
+		t.Fatal("Load() error = nil, want unsafe URL rejection")
+	}
+}
+
+func TestLoadRejectsBaseURLWithUserinfo(t *testing.T) {
+	t.Setenv("AUTH_SERVICE_BASE_URL", "https://user:pass@auth.example.com")
+
+	_, err := Load("api-gateway", "API_GATEWAY_ADDR")
+	if err == nil {
+		t.Fatal("Load() error = nil, want userinfo URL rejection")
+	}
+}
+
 func TestValidateOAuth(t *testing.T) {
 	cfg, err := Load("auth-service", "AUTH_SERVICE_ADDR")
 	if err != nil {

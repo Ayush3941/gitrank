@@ -75,6 +75,11 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 		if strings.HasSuffix(path, "/card") {
 			handle := strings.TrimSuffix(path, "/card")
 			handle = strings.TrimSuffix(handle, "/")
+			handle, err := contracts.NormalizeGitHubLogin(handle)
+			if err != nil {
+				httpkit.WriteError(w, http.StatusBadRequest, "invalid_profile_target", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+				return
+			}
 			card, err := profileService.PublicProfileCard(r.Context(), handle, time.Now().UTC())
 			if err != nil {
 				writeProfileError(w, r, err)
@@ -85,6 +90,11 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 		}
 
 		handle := strings.TrimSuffix(path, "/")
+		handle, err := contracts.NormalizeGitHubLogin(handle)
+		if err != nil {
+			httpkit.WriteError(w, http.StatusBadRequest, "invalid_profile_target", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
 		response, err := profileService.PublicProfile(r.Context(), handle, time.Now().UTC())
 		if err != nil {
 			writeProfileError(w, r, err)
@@ -134,6 +144,11 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 			httpkit.WriteError(w, http.StatusBadRequest, "invalid_repository", "repository path must be owner/repo", httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
+		fullName, err := contracts.NormalizeGitHubRepository(parts[0] + "/" + parts[1])
+		if err != nil {
+			httpkit.WriteError(w, http.StatusBadRequest, "invalid_repository", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
 
 		var req contracts.UpdateRepositoryVisibilityRequest
 		if err := httpkit.DecodeJSON(r, &req, 1<<20); err != nil {
@@ -141,7 +156,6 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 			return
 		}
 
-		fullName := parts[0] + "/" + parts[1]
 		sessionCookie, _ := r.Cookie(cfg.Auth.SessionCookieName)
 		response, err := profileService.UpdateRepositoryVisibility(r.Context(), cookieValue(sessionCookie), r.Header.Get("X-CSRF-Token"), fullName, req, time.Now().UTC())
 		if err != nil {

@@ -728,6 +728,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 - real auth-service session, OAuth, token refresh, linking, unlinking, and audit logic
 - webhook intake plus normalized repository, PR, review, issue, label, commit, installation, and sync-run persistence in the GitHub ingestor, including queryable manual sync traceability by user, repository, requester, and correlation ID
 - GitHub REST and GraphQL client protections with bounded concurrency, secondary-rate-limit backoff, and provider-failure circuit breakers
+- GitHub login, repository, and commit sync target validation plus HTTP(S)-only outbound URL guards for gateway, GitHub, and AI clients
 - a bounded live user sync execution path that walks recent public repositories owned by a GitHub login and persists them through the repository executor in `github-ingestor`
 - a bounded installation sync execution path that replays repositories already associated with a persisted installation record and delegates them through the repository executor without requiring GitHub App installation auth in the v1 baseline
 - a bounded live repository sync execution path that fetches recent repository, PR, review, issue, and commit data from the public GitHub REST API and persists it directly through `github-ingestor`

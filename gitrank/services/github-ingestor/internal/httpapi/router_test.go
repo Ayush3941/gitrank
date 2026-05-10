@@ -240,6 +240,19 @@ func TestSyncCommitRouteAccepts(t *testing.T) {
 	}
 }
 
+func TestSyncRepositoryRouteRejectsUnsafeRepository(t *testing.T) {
+	router := NewRouter(testConfig(), testLogger(), "test")
+	request := httptest.NewRequest(http.MethodPost, "/v1/sync/repository", bytes.NewReader([]byte(`{"repository":"octo/repo/extra"}`)))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusBadRequest, response.Body.String())
+	}
+}
+
 func TestSyncRunsRequirePersistence(t *testing.T) {
 	router := NewRouter(testConfig(), testLogger(), "test")
 	request := httptest.NewRequest(http.MethodGet, "/v1/sync/runs?repository=octo/repo", nil)

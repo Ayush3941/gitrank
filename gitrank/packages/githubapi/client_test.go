@@ -151,6 +151,22 @@ func TestRESTClientCircuitBreakerOpensAfterProviderFailures(t *testing.T) {
 	}
 }
 
+func TestRESTClientRejectsUnsafeBaseURL(t *testing.T) {
+	_, err := NewRESTClient(ClientConfig{
+		BaseURL:                        "file://metadata/latest",
+		APIVersion:                     "2026-03-10",
+		UserAgent:                      "GitRank/test",
+		SecondaryBackoff:               time.Millisecond,
+		MaxConcurrency:                 1,
+		CircuitBreakerFailureThreshold: 1,
+		CircuitBreakerOpenInterval:     time.Second,
+		CircuitBreakerHalfOpenMax:      1,
+	})
+	if err == nil {
+		t.Fatal("NewRESTClient() error = nil, want unsafe base URL rejection")
+	}
+}
+
 func TestRESTClientCircuitBreakerClosesAfterReachableHalfOpenResponse(t *testing.T) {
 	requests := 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {

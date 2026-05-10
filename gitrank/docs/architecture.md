@@ -170,6 +170,12 @@ Baseline retry policy:
 - AI calls: retry only on transport failures, `429`, and `5xx`; do not retry schema-validation failures or deterministic prompt contract failures
 - synchronous user-facing reads: avoid automatic fan-out retries in the gateway; fail fast and surface partial degradation instead of amplifying load
 
+Outbound request safety:
+
+- sync targets are normalized as GitHub logins, `owner/repo` identifiers, numeric issue/PR/review IDs, and hexadecimal commit IDs before they can shape GitHub API paths
+- configured outbound HTTP clients reject non-HTTP(S) schemes, userinfo, query strings, and fragments in base URLs
+- api-gateway proxy paths must remain absolute paths relative to the configured service base URL and cannot be path-relative URLs such as `//host/path`
+
 Retry classes:
 
 - at-most-once: non-idempotent external mutations without a stable request token

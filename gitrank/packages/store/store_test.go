@@ -96,6 +96,16 @@ func TestBuildSyncJobsRepository(t *testing.T) {
 	}
 }
 
+func TestBuildSyncJobsRejectsUnsafeRepository(t *testing.T) {
+	_, err := BuildSyncJobs(contracts.SyncRequest{
+		Mode:       "repository",
+		Repository: "https://github.com/octo/repo",
+	}, "github-sync", "req-1", 5)
+	if err == nil {
+		t.Fatal("BuildSyncJobs() error = nil, want unsafe repository rejection")
+	}
+}
+
 func TestInMemoryJobQueueFailRetriesThenDeadLetters(t *testing.T) {
 	queue := NewInMemoryJobQueue()
 	job, err := NewQueueJob(QueueJobInput{

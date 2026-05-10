@@ -77,6 +77,10 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			httpkit.WriteError(w, http.StatusNotFound, "not_found", "resource not found", httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
+		if _, err := contracts.NormalizeGitHubLogin(suffix); err != nil {
+			httpkit.WriteError(w, http.StatusBadRequest, "invalid_profile_target", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
 
 		proxyRequest(w, r, client, profileBaseURL, r.URL.Path, proxyOptions{
 			ForwardHeaders: defaultForwardHeaders(r),
@@ -121,6 +125,10 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		suffix := strings.TrimPrefix(r.URL.Path, "/v1/me/profile/repositories/")
 		if countPathSegments(suffix) != 2 {
 			httpkit.WriteError(w, http.StatusNotFound, "not_found", "repository target not found", httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		if _, err := contracts.NormalizeGitHubRepository(suffix); err != nil {
+			httpkit.WriteError(w, http.StatusBadRequest, "invalid_repository_target", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
 

@@ -780,9 +780,9 @@ Repository security:
 Application security:
 
 - [x] threat model the full system
-- [ ] validate all external input
-- [ ] constrain outbound network behavior where possible
-- [ ] protect against SSRF in webhook or callback flows
+- [x] validate all external input
+- [x] constrain outbound network behavior where possible
+- [x] protect against SSRF in webhook or callback flows
 - [x] encrypt secrets at rest
 - [ ] rotate secrets safely
 - [ ] separate prod and non-prod credentials

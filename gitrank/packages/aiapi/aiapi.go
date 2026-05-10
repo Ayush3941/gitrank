@@ -3,6 +3,7 @@ package aiapi
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -45,10 +46,13 @@ func BuildResponsesRequest(cfg Config, req ResponsesRequest) (HTTPRequest, error
 		return HTTPRequest{}, errors.New("responses input is required")
 	}
 
-	endpoint, err := url.Parse(strings.TrimRight(cfg.BaseURL, "/") + "/responses")
+	baseURL, err := parseBaseURL(cfg.BaseURL)
 	if err != nil {
 		return HTTPRequest{}, err
 	}
+	baseURL.Path = strings.TrimRight(baseURL.Path, "/") + "/responses"
+	baseURL.RawQuery = ""
+	baseURL.Fragment = ""
 
 	if req.Model == "" {
 		req.Model = cfg.Model
@@ -65,8 +69,31 @@ func BuildResponsesRequest(cfg Config, req ResponsesRequest) (HTTPRequest, error
 
 	return HTTPRequest{
 		Method:  http.MethodPost,
-		URL:     endpoint.String(),
+		URL:     baseURL.String(),
 		Headers: headers,
 		Body:    body,
 	}, nil
+}
+
+func parseBaseURL(raw string) (*url.URL, error) {
+	parsed, err := url.Parse(strings.TrimSpace(raw))
+	if err != nil {
+		return nil, err
+	}
+	if parsed.Scheme != "http" && parsed.Scheme != "https" {
+		return nil, fmt.Errorf("AI base URL must use http or https")
+	}
+	if parsed.Host == "" {
+		return nil, fmt.Errorf("AI base URL must include host")
+	}
+	if parsed.User != nil {
+		return nil, fmt.Errorf("AI base URL must not include userinfo")
+	}
+	if parsed.RawQuery != "" {
+		return nil, fmt.Errorf("AI base URL must not include a query string")
+	}
+	if parsed.Fragment != "" {
+		return nil, fmt.Errorf("AI base URL must not include fragment")
+	}
+	return parsed, nil
 }

@@ -301,8 +301,8 @@ func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQ
 		}
 		req.Mode = "repository"
 		req.Repository = strings.TrimSpace(req.Repository)
-		if req.Repository == "" {
-			httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", "repository is required when mode=repository", httpkit.RequestIDFromContext(r.Context()))
+		if err := req.Normalize(); err != nil {
+			httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
 
@@ -331,8 +331,8 @@ func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQ
 		}
 		req.Mode = "user"
 		req.User = strings.TrimSpace(req.User)
-		if req.User == "" {
-			httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", "user is required when mode=user", httpkit.RequestIDFromContext(r.Context()))
+		if err := req.Normalize(); err != nil {
+			httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
 
@@ -360,8 +360,8 @@ func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQ
 			return
 		}
 		req.Mode = "installation"
-		if req.InstallationID <= 0 {
-			httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", "installation_id is required when mode=installation", httpkit.RequestIDFromContext(r.Context()))
+		if err := req.Normalize(); err != nil {
+			httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
 
@@ -390,8 +390,8 @@ func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQ
 		}
 		req.Mode = "pull_request"
 		req.Repository = strings.TrimSpace(req.Repository)
-		if req.Repository == "" || req.Number <= 0 {
-			httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", "repository and number are required when mode=pull_request", httpkit.RequestIDFromContext(r.Context()))
+		if err := req.Normalize(); err != nil {
+			httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
 
@@ -420,8 +420,8 @@ func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQ
 		}
 		req.Mode = "review"
 		req.Repository = strings.TrimSpace(req.Repository)
-		if req.Repository == "" || req.Number <= 0 {
-			httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", "repository and number are required when mode=review", httpkit.RequestIDFromContext(r.Context()))
+		if err := req.Normalize(); err != nil {
+			httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
 
@@ -450,8 +450,8 @@ func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQ
 		}
 		req.Mode = "issue"
 		req.Repository = strings.TrimSpace(req.Repository)
-		if req.Repository == "" || req.Number <= 0 {
-			httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", "repository and number are required when mode=issue", httpkit.RequestIDFromContext(r.Context()))
+		if err := req.Normalize(); err != nil {
+			httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
 
@@ -481,8 +481,8 @@ func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQ
 		req.Mode = "commit"
 		req.Repository = strings.TrimSpace(req.Repository)
 		req.SHA = strings.TrimSpace(req.SHA)
-		if req.Repository == "" || req.SHA == "" {
-			httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", "repository and sha are required when mode=commit", httpkit.RequestIDFromContext(r.Context()))
+		if err := req.Normalize(); err != nil {
+			httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
 

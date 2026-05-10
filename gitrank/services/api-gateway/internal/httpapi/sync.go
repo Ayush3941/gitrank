@@ -89,8 +89,8 @@ func handleRepositorySyncExecution(w http.ResponseWriter, r *http.Request, clien
 	principal, _ := authkit.PrincipalFromContext(r.Context())
 	req.Mode = "repository"
 	req.Repository = strings.TrimSpace(req.Repository)
-	if req.Repository == "" {
-		httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", "repository is required when mode=repository", httpkit.RequestIDFromContext(r.Context()))
+	if err := req.Normalize(); err != nil {
+		httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 		return
 	}
 
@@ -139,8 +139,8 @@ func handleInstallationSyncExecution(w http.ResponseWriter, r *http.Request, cli
 
 	principal, _ := authkit.PrincipalFromContext(r.Context())
 	req.Mode = "installation"
-	if req.InstallationID <= 0 {
-		httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", "installation_id is required when mode=installation", httpkit.RequestIDFromContext(r.Context()))
+	if err := req.Normalize(); err != nil {
+		httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 		return
 	}
 
@@ -193,31 +193,7 @@ func normalizeSyncRequest(req *contracts.SyncRequest, principal authkit.Principa
 		req.User = strings.TrimSpace(principal.GitHubLogin)
 	}
 
-	switch req.Mode {
-	case "installation":
-		if req.InstallationID <= 0 {
-			return errors.New("installation_id is required when mode=installation")
-		}
-	case "user":
-		if req.User == "" {
-			return errors.New("user is required when mode=user")
-		}
-	case "repository":
-		if req.Repository == "" {
-			return errors.New("repository is required when mode=repository")
-		}
-	case "pull_request", "review", "issue":
-		if req.Repository == "" || req.Number <= 0 {
-			return errors.New("repository and number are required for pull_request, review, and issue modes")
-		}
-	case "commit":
-		if req.Repository == "" || req.SHA == "" {
-			return errors.New("repository and sha are required when mode=commit")
-		}
-	default:
-		return errors.New("unsupported sync mode")
-	}
-	return nil
+	return req.Normalize()
 }
 
 func validateQueuePreview(preview contracts.GitHubQueuePreview) error {

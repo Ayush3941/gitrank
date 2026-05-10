@@ -164,11 +164,43 @@ func cookieValue(cookies []*http.Cookie, name string) string {
 }
 
 func buildProxyURL(baseURL, path, rawQuery string) (string, error) {
-	parsed, err := url.Parse(baseURL)
+	parsed, err := url.Parse(strings.TrimSpace(baseURL))
+	if err != nil {
+		return "", err
+	}
+	if parsed.Scheme != "http" && parsed.Scheme != "https" {
+		return "", errors.New("upstream URL must use http or https")
+	}
+	if parsed.Host == "" {
+		return "", errors.New("upstream URL must include host")
+	}
+	if parsed.User != nil {
+		return "", errors.New("upstream URL must not include userinfo")
+	}
+	if parsed.RawQuery != "" {
+		return "", errors.New("upstream URL must not include query string")
+	}
+	if parsed.Fragment != "" {
+		return "", errors.New("upstream URL must not include fragment")
+	}
+	path, err = safeProxyPath(path)
 	if err != nil {
 		return "", err
 	}
 	parsed.Path = strings.TrimRight(parsed.Path, "/") + path
+	parsed.RawPath = ""
 	parsed.RawQuery = rawQuery
+	parsed.Fragment = ""
 	return parsed.String(), nil
+}
+
+func safeProxyPath(path string) (string, error) {
+	path = strings.TrimSpace(path)
+	if path == "" || !strings.HasPrefix(path, "/") {
+		return "", errors.New("upstream path must be absolute")
+	}
+	if strings.HasPrefix(path, "//") || strings.Contains(path, `\`) || strings.Contains(path, "://") {
+		return "", errors.New("upstream path must stay relative to the configured base URL")
+	}
+	return path, nil
 }

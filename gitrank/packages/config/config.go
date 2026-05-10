@@ -670,12 +670,25 @@ func getCSVWithDefault(key string, fallback []string) []string {
 }
 
 func validateURL(raw string) error {
+	raw = strings.TrimSpace(raw)
 	parsed, err := url.Parse(raw)
 	if err != nil {
 		return err
 	}
 	if parsed.Scheme == "" || parsed.Host == "" {
 		return fmt.Errorf("must include scheme and host")
+	}
+	if parsed.Scheme != "http" && parsed.Scheme != "https" {
+		return fmt.Errorf("must use http or https")
+	}
+	if parsed.User != nil {
+		return fmt.Errorf("must not include userinfo")
+	}
+	if parsed.RawQuery != "" {
+		return fmt.Errorf("must not include a query string")
+	}
+	if parsed.Fragment != "" {
+		return fmt.Errorf("must not include a fragment")
 	}
 	return nil
 }
