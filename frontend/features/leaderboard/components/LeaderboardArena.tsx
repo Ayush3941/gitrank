@@ -1,12 +1,35 @@
 import type { ReactNode } from "react";
-import { ArrowDownRight, ArrowUpRight } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, CalendarClock, Flame, ShieldCheck } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { RankBadge } from "@/components/shared/RankBadge";
-import type { LeaderboardEntry } from "@/types/gitrank";
+import type { LeaderboardSnapshot } from "@/types/gitrank";
 
-export function LeaderboardArena({ rows }: { rows: LeaderboardEntry[] }) {
+export function LeaderboardArena({ snapshot }: { snapshot: LeaderboardSnapshot }) {
+  const rows = snapshot.rows;
+
   return (
     <div className="grid gap-4">
+      <GlowCard strong className="season-arena-card overflow-hidden">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/24 bg-primary/12 px-3 py-1.5 text-xs font-semibold tracking-[0.22em] text-primary uppercase">
+              <CalendarClock className="h-3.5 w-3.5" />
+              {snapshot.season.status} season
+            </div>
+            <h2 className="mt-4 text-3xl font-semibold text-white">{snapshot.season.name}</h2>
+            <p className="mt-2 text-sm leading-7 text-slate-200/82">{snapshot.season.explanation}</p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[32rem]">
+            <Metric label="Window" value={snapshot.season.windowLabel} />
+            <Metric label="Formula" value={snapshot.season.scoringVersion} />
+            <Metric label="Current rank" value={snapshot.currentUser ? `#${snapshot.currentUser.rank}` : "Unranked"} />
+          </div>
+        </div>
+        <div className="mt-5 grid gap-3 md:grid-cols-2">
+          <Rule icon={<Flame className="h-4 w-4" />} label="Promotion" value={snapshot.season.promotionRule} />
+          <Rule icon={<ShieldCheck className="h-4 w-4" />} label="Reset" value={snapshot.season.resetRule} />
+        </div>
+      </GlowCard>
       {rows.map((row) => {
         const positive = row.movement >= 0;
         return (
@@ -30,10 +53,17 @@ export function LeaderboardArena({ rows }: { rows: LeaderboardEntry[] }) {
                     ) : null}
                   </div>
                   <p className="mt-1 text-sm text-muted">@{row.username} • {row.title}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Pill>{row.division}</Pill>
+                    {row.promotionZone ? <Pill tone="success">Promotion zone</Pill> : null}
+                    {row.demotionRisk ? <Pill tone="warning">Safety watch</Pill> : null}
+                  </div>
+                  <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-200/76">{row.evidenceSummary}</p>
                 </div>
               </div>
-              <div className="grid gap-3 sm:grid-cols-3">
-                <Metric label="Weekly XP" value={row.weeklyXp} />
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <Metric label="Season XP" value={row.seasonXp} />
+                <Metric label="To next rank" value={row.xpToNextRank ? `${row.xpToNextRank} XP` : "Lead"} />
                 <Metric label="Total XP" value={row.totalXp} />
                 <Metric
                   label="Movement"
@@ -46,6 +76,46 @@ export function LeaderboardArena({ rows }: { rows: LeaderboardEntry[] }) {
         );
       })}
     </div>
+  );
+}
+
+function Rule({
+  icon,
+  label,
+  value,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-[1.5rem] border border-white/8 bg-white/5 px-4 py-3">
+      <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-primary uppercase">
+        {icon}
+        {label}
+      </div>
+      <p className="mt-2 text-sm leading-6 text-slate-200/80">{value}</p>
+    </div>
+  );
+}
+
+function Pill({
+  children,
+  tone = "neutral",
+}: {
+  children: ReactNode;
+  tone?: "neutral" | "success" | "warning";
+}) {
+  const toneClass = {
+    neutral: "border-white/8 bg-white/5 text-slate-200",
+    success: "border-emerald-400/22 bg-emerald-400/10 text-emerald-100",
+    warning: "border-amber-400/24 bg-amber-400/10 text-amber-100",
+  }[tone];
+
+  return (
+    <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${toneClass}`}>
+      {children}
+    </span>
   );
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Download, FolderGit2, RefreshCcw, Trash2 } from "lucide-react";
+import { Download, FolderGit2, RefreshCcw, Sparkles, Trash2 } from "lucide-react";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -20,6 +20,7 @@ import {
   useUpdateProfilePrivacy,
   useUpdateRepositoryVisibility,
 } from "@/hooks/use-profile";
+import { useGamificationPreference } from "@/hooks/use-gamification-preference";
 import type { PreviewMode, PrivacySettings } from "@/types/gitrank";
 
 type BackedPrivacyKey =
@@ -35,6 +36,7 @@ export function SettingsPageClient({ preview }: { preview?: PreviewMode }) {
   const requestSync = useRequestProfileSync();
   const unlinkAccount = useUnlinkMyAccount();
   const deleteAccount = useDeleteMyAccount();
+  const { reducedGamification, setReducedGamification } = useGamificationPreference();
   const isPreview = Boolean(preview);
   const [previewSettings, setPreviewSettings] = useState<PrivacySettings | null>(null);
   const [actionNotice, setActionNotice] = useState("");
@@ -170,6 +172,27 @@ export function SettingsPageClient({ preview }: { preview?: PreviewMode }) {
           ["Show leaderboard participation", currentSettings.showLeaderboardParticipation, (checked) => handlePrivacyToggle("showLeaderboardParticipation", checked)],
         ]}
       />
+
+      <GlowCard className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="max-w-2xl">
+            <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <p className="mt-4 text-xs tracking-[0.24em] text-primary uppercase">Display preference</p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">Reduced gamification</h2>
+            <p className="mt-2 text-sm leading-6 text-muted">
+              Lowers animated XP ticks, badge shimmer, glow intensity, and rank effects on this device only. Scores,
+              badges, leaderboard placement, and privacy visibility do not change.
+            </p>
+          </div>
+          <Switch
+            id="reduced-gamification"
+            checked={reducedGamification}
+            onCheckedChange={setReducedGamification}
+          />
+        </div>
+      </GlowCard>
 
       <GlowCard className="space-y-4">
         <div>

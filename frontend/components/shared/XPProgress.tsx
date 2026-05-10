@@ -1,7 +1,8 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import { Progress } from "@/components/ui/progress";
+import { useReducedGamification } from "@/hooks/use-gamification-preference";
 import { cn } from "@/lib/cn";
 
 export function XPProgress({
@@ -13,7 +14,7 @@ export function XPProgress({
   next: number;
   className?: string;
 }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useReducedGamification();
   const progress = Math.min(100, Math.round((current / next) * 100));
 
   return (

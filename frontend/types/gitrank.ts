@@ -70,6 +70,30 @@ export interface GitRankLevel {
   rankTier: RankTier;
 }
 
+export interface LeaderboardSeason {
+  id: string;
+  name: string;
+  windowLabel: string;
+  startsAt: string;
+  endsAt: string;
+  status: "Active" | "Locked" | "Preview";
+  scoringVersion: string;
+  promotionRule: string;
+  resetRule: string;
+  explanation: string;
+}
+
+export interface RankProgress {
+  season: LeaderboardSeason;
+  currentTier: RankTier;
+  nextTier?: RankTier;
+  seasonXp: number;
+  xpToNextTier: number;
+  promotionCutoffRank: number;
+  safetyCutoffRank: number;
+  evidenceSignals: string[];
+}
+
 export interface SkillNode {
   category: SkillCategory;
   score: number;
@@ -133,6 +157,7 @@ export interface Badge {
   earnedAt?: string;
   progress?: number;
   evidencePrIds: string[];
+  rarityScore?: number;
 }
 
 export interface Quest {
@@ -146,6 +171,9 @@ export interface Quest {
   progress: number;
   goal: number;
   weakAreaTarget?: SkillCategory;
+  whyRecommended: string;
+  evidenceSignals: string[];
+  linkedContributionIds: string[];
 }
 
 export interface SyncStatus {
@@ -167,6 +195,19 @@ export interface LeaderboardEntry {
   movement: number;
   focus: SkillCategory;
   isCurrentUser?: boolean;
+  division: string;
+  seasonXp: number;
+  xpToNextRank: number;
+  promotionZone: boolean;
+  demotionRisk: boolean;
+  evidenceSummary: string;
+  scoreFormulaVersion: string;
+}
+
+export interface LeaderboardSnapshot {
+  season: LeaderboardSeason;
+  rows: LeaderboardEntry[];
+  currentUser?: LeaderboardEntry;
 }
 
 export interface PrivacySettings {
@@ -177,6 +218,7 @@ export interface PrivacySettings {
   badgeUnlockedNotifications: boolean;
   levelUpNotifications: boolean;
   weeklyReportNotifications: boolean;
+  reducedGamification: boolean;
 }
 
 export interface RepositoryVisibility {
@@ -221,6 +263,7 @@ export interface UserProfile {
   strongestSignals: SkillCategory[];
   topSkills: SkillCategory[];
   level: GitRankLevel;
+  rankProgress: RankProgress;
   skillTree: SkillNode[];
   contributions: Contribution[];
   badges: Badge[];

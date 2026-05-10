@@ -1,4 +1,4 @@
-import { Flag, Gift } from "lucide-react";
+import { Flag, Gift, Link2 } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Progress } from "@/components/ui/progress";
 import type { Quest } from "@/types/gitrank";
@@ -16,6 +16,7 @@ export function QuestCard({ quest }: { quest: Quest }) {
           </div>
           <h2 className="text-xl font-semibold text-white">{quest.title}</h2>
           <p className="text-sm text-muted">{quest.description}</p>
+          <p className="text-sm leading-6 text-slate-200/76">{quest.whyRecommended}</p>
         </div>
         <div className="rounded-3xl bg-primary/12 px-3 py-2 text-sm font-medium text-primary">
           +{quest.rewardXp} XP
@@ -25,6 +26,17 @@ export function QuestCard({ quest }: { quest: Quest }) {
       <div className="flex items-center justify-between text-sm text-muted">
         <span>{quest.progress} / {quest.goal}</span>
         <span>{quest.status}</span>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {quest.evidenceSignals.map((signal) => (
+          <span key={signal} className="rounded-full border border-white/8 bg-white/5 px-3 py-1 text-xs text-slate-200">
+            {signal}
+          </span>
+        ))}
+        <span className="inline-flex items-center gap-1 rounded-full border border-white/8 bg-white/5 px-3 py-1 text-xs text-muted">
+          <Link2 className="h-3 w-3" />
+          {quest.linkedContributionIds.length} evidence PRs
+        </span>
       </div>
       {quest.rewardBadgeId ? (
         <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-sm text-amber-100">

@@ -1,10 +1,11 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { useReducedGamification } from "@/hooks/use-gamification-preference";
 
 export function LoadingState({ message }: { message: string }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useReducedGamification();
 
   return (
     <GlowCard className="space-y-4">

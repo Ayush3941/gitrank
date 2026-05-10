@@ -32,6 +32,11 @@ export function BadgeDetailDialog({
           <GlowCard className="space-y-3 border border-white/8 bg-white/5 p-4">
             <p className="text-xs tracking-[0.24em] text-primary uppercase">Unlock condition</p>
             <p className="text-sm text-slate-200">{badge.unlockCondition}</p>
+            {typeof badge.rarityScore === "number" ? (
+              <p className="text-sm text-muted">
+                Rarity index {badge.rarityScore}/100 from the current badge rules.
+              </p>
+            ) : null}
             {typeof badge.progress === "number" ? (
               <p className="text-sm text-primary">{badge.progress}% progress</p>
             ) : null}

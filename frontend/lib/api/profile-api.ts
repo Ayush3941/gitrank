@@ -6,10 +6,12 @@ import type {
   BadgeRarity,
   Contribution,
   FeaturedContribution,
+  LeaderboardSeason,
   PRCategory,
   PreviewMode,
   PrivacySettings,
   ProfileRepositorySummary,
+  RankTier,
   ProfileViewData,
   RepositoryVisibility,
   SkillCategory,
@@ -118,6 +120,7 @@ type ApiPrivacy = {
   show_exact_prs: boolean;
   show_ai_summaries: boolean;
   show_leaderboard_participation: boolean;
+  reduced_gamification?: boolean;
 };
 
 type ApiRepositoryVisibility = {
@@ -272,6 +275,7 @@ function toProfileViewData(
   const skillTree = toSkillTree(response.top_skill_areas ?? []);
   const featuredContributions = toFeaturedContributions(response.score_history ?? []);
   const contributions = toContributions(response.score_history ?? []);
+  const scoringVersion = scoreVersionFromHistory(response.score_history ?? []);
   const repositories =
     mode === "private" && "repository_visibility" in response
       ? toRepositoryVisibility(response.repository_visibility ?? [])
@@ -302,7 +306,19 @@ function toProfileViewData(
       title: response.level.label,
       currentXp: response.level.current_xp,
       nextLevelXp: response.level.next_level_xp,
-      rankTier: response.level.rank_tier as UserProfile["level"]["rankTier"],
+      rankTier: normalizeRankTier(response.level.rank_tier),
+    },
+    rankProgress: {
+      season: seasonFromRefreshedAt(response.staleness.refreshed_at, scoringVersion),
+      currentTier: normalizeRankTier(response.level.rank_tier),
+      nextTier: nextRankTier(normalizeRankTier(response.level.rank_tier)),
+      seasonXp: lastBucket?.delta_xp ?? 0,
+      xpToNextTier: Math.max(0, response.level.next_level_xp - response.level.current_xp),
+      promotionCutoffRank: 25,
+      safetyCutoffRank: 75,
+      evidenceSignals: topSkills.length
+        ? topSkills.slice(0, 3).map((skill) => `${skill} evidence`)
+        : ["Verified profile snapshot"],
     },
     skillTree,
     contributions,
@@ -520,7 +536,69 @@ function toPrivacySettings(source?: ApiPrivacy): PrivacySettings {
     badgeUnlockedNotifications: false,
     levelUpNotifications: false,
     weeklyReportNotifications: false,
+    reducedGamification: source?.reduced_gamification ?? false,
   };
+}
+
+function seasonFromRefreshedAt(refreshedAt: string, scoringVersion: string): LeaderboardSeason {
+  const refreshed = Number.isNaN(Date.parse(refreshedAt)) ? new Date() : new Date(refreshedAt);
+  const day = refreshed.getUTCDay();
+  const distanceFromMonday = (day + 6) % 7;
+  const startsAt = new Date(refreshed);
+  startsAt.setUTCDate(refreshed.getUTCDate() - distanceFromMonday);
+  startsAt.setUTCHours(0, 0, 0, 0);
+  const endsAt = new Date(startsAt);
+  endsAt.setUTCDate(startsAt.getUTCDate() + 6);
+  endsAt.setUTCHours(23, 59, 59, 999);
+
+  return {
+    id: `weekly-${startsAt.toISOString().slice(0, 10)}`,
+    name: `Weekly arena ${formatShortDate(startsAt.toISOString())}`,
+    windowLabel: `${formatShortDate(startsAt.toISOString())} - ${formatShortDate(endsAt.toISOString())}`,
+    startsAt: startsAt.toISOString(),
+    endsAt: endsAt.toISOString(),
+    status: "Active",
+    scoringVersion,
+    promotionRule: "Top 25 in the active tier move toward promotion review.",
+    resetRule: "Season XP resets weekly; profile evidence and total XP stay preserved.",
+    explanation:
+      "Season progress is derived from the latest profile snapshot and current score-event window.",
+  };
+}
+
+function scoreVersionFromHistory(entries: ApiScoreHistoryEntry[]): string {
+  for (const entry of entries) {
+    const line = entry.explanation?.find((item) => item.toLowerCase().startsWith("score version "));
+    if (line) {
+      const parsed = line.replace(/^score version\s+/i, "").trim();
+      if (parsed.length > 0) {
+        return parsed;
+      }
+    }
+  }
+  return "v1alpha1";
+}
+
+function nextRankTier(rankTier: RankTier): RankTier | undefined {
+  const order: RankTier[] = ["Bronze I", "Silver II", "Gold III", "Platinum I", "Diamond"];
+  const index = order.indexOf(rankTier);
+  return index >= 0 ? order[index + 1] : undefined;
+}
+
+function normalizeRankTier(value: string): RankTier {
+  const normalized = value.trim().toLowerCase();
+  const mapped: Record<string, RankTier> = {
+    bronze: "Bronze I",
+    "bronze i": "Bronze I",
+    silver: "Silver II",
+    "silver ii": "Silver II",
+    gold: "Gold III",
+    "gold iii": "Gold III",
+    platinum: "Platinum I",
+    "platinum i": "Platinum I",
+    diamond: "Diamond",
+  };
+  return mapped[normalized] ?? "Bronze I";
 }
 
 function badgeRarityForKey(key: string): BadgeRarity {

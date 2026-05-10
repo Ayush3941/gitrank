@@ -1,7 +1,8 @@
 "use client";
 
-import { animate, motion, useMotionValue, useReducedMotion } from "motion/react";
+import { animate, motion, useMotionValue } from "motion/react";
 import { useEffect, useState } from "react";
+import { useReducedGamification } from "@/hooks/use-gamification-preference";
 
 export function AnimatedNumber({
   value,
@@ -10,7 +11,7 @@ export function AnimatedNumber({
   value: number;
   prefix?: string;
 }) {
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useReducedGamification();
   const motionValue = useMotionValue(value);
   const [display, setDisplay] = useState(value);
   const shownValue = reducedMotion ? value : display;

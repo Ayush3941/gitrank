@@ -35,6 +35,16 @@ export function EvidenceSignalsCard({ report }: { report: PullRequestAnalysis })
           );
         })}
       </div>
+      <div className="rounded-[1.75rem] border border-white/8 bg-white/5 p-4">
+        <p className="text-xs tracking-[0.24em] text-primary uppercase">Stored evidence labels</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {contribution.evidenceSignals.map((signal) => (
+            <span key={signal} className="rounded-full border border-white/8 bg-white/5 px-3 py-1 text-xs text-slate-200">
+              {signal}
+            </span>
+          ))}
+        </div>
+      </div>
     </GlowCard>
   );
 }

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Star } from "lucide-react";
+import { ArrowRight, Sparkles, Star } from "lucide-react";
 import { AnimatedNumber } from "@/components/shared/AnimatedNumber";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { RankBadge } from "@/components/shared/RankBadge";
@@ -10,16 +10,18 @@ import type { UserProfile } from "@/types/gitrank";
 
 export function DashboardHeroRankCard({ user }: { user: UserProfile }) {
   return (
-    <GlowCard strong className="space-y-6">
+    <GlowCard strong className="player-card-shell space-y-6 overflow-hidden">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-4">
-          <Image
-            src={user.avatarUrl}
-            alt={`${user.displayName} avatar`}
-            width={72}
-            height={72}
-            className="h-[72px] w-[72px] rounded-[1.75rem] border border-white/10 bg-white/6"
-          />
+          <div className="rank-orbit rounded-[2rem] p-[2px]">
+            <Image
+              src={user.avatarUrl}
+              alt={`${user.displayName} avatar`}
+              width={72}
+              height={72}
+              className="h-[72px] w-[72px] rounded-[1.85rem] border border-white/10 bg-white/6"
+            />
+          </div>
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-3">
               <p className="text-2xl font-semibold text-white">{user.displayName}</p>
@@ -56,6 +58,19 @@ export function DashboardHeroRankCard({ user }: { user: UserProfile }) {
         </div>
       </div>
       <XPProgress current={user.level.currentXp} next={user.level.nextLevelXp} />
+      <div className="rounded-[1.75rem] border border-emerald-400/16 bg-emerald-400/8 p-4">
+        <div className="flex items-start gap-3">
+          <Sparkles className="mt-0.5 h-4 w-4 text-emerald-200" />
+          <div>
+            <p className="text-sm font-semibold text-white">Rank-up preview</p>
+            <p className="mt-1 text-sm leading-6 text-slate-200/78">
+              {user.rankProgress.nextTier
+                ? `This season needs ${user.rankProgress.xpToNextTier.toLocaleString("en-US")} more evidence-backed XP before ${user.rankProgress.nextTier} review.`
+                : "The current profile is already at the highest configured rank tier."}
+            </p>
+          </div>
+        </div>
+      </div>
       <div className="space-y-3">
         <p className="text-xs tracking-[0.24em] text-primary uppercase">Top observed signals in this snapshot</p>
         <div className="flex flex-wrap gap-2">

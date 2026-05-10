@@ -11,7 +11,14 @@ import { useLeaderboard } from "@/hooks/use-leaderboard";
 import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
 import type { PreviewMode } from "@/types/gitrank";
 
-const tabs: LeaderboardTab[] = ["Global", "Backend", "Testing", "Documentation", "Weekly XP"];
+const tabs: LeaderboardTab[] = [
+  "Global",
+  "Backend",
+  "Testing",
+  "Documentation",
+  "Weekly XP",
+  "Rising Contributors",
+];
 
 export function LeaderboardPageClient({ preview }: { preview?: PreviewMode }) {
   const [tab, setTab] = useState<LeaderboardTab>("Global");
@@ -42,14 +49,14 @@ export function LeaderboardPageClient({ preview }: { preview?: PreviewMode }) {
           description="The ranking snapshot could not be refreshed. Retry or keep browsing your existing public profile."
         />
       ) : null}
-      {!isLoading && !isError && data?.length === 0 ? (
+      {!isLoading && !isError && data?.rows.length === 0 ? (
         <EmptyState
           title="Leaderboard unlocks after your first verified score."
           description="Meaningful merged work is required before a profile joins the arena."
           actionLabel="Go to onboarding"
         />
       ) : null}
-      {!isLoading && !isError && data?.length ? <LeaderboardArena rows={data} /> : null}
+      {!isLoading && !isError && data?.rows.length ? <LeaderboardArena snapshot={data} /> : null}
     </div>
   );
 }

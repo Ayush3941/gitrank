@@ -20,7 +20,7 @@ export function RarityBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold tracking-[0.2em] uppercase",
+        "rarity-badge inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold tracking-[0.2em] uppercase",
         rarityStyles[rarity],
         className,
       )}

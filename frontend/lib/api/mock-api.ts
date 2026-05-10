@@ -1,13 +1,13 @@
 import {
   ayushProfile,
   dashboardData,
-  leaderboardByTab,
+  leaderboardSnapshots,
   prAnalyses,
 } from "@/lib/mock-data/gitrank";
 import type {
   Badge,
   DashboardData,
-  LeaderboardEntry,
+  LeaderboardSnapshot,
   PreviewMode,
   PullRequestAnalysis,
   Quest,
@@ -146,10 +146,15 @@ export async function getQuests(preview?: PreviewMode): Promise<Quest[]> {
 }
 
 export async function getLeaderboard(
-  tab: keyof typeof leaderboardByTab,
+  tab: keyof typeof leaderboardSnapshots,
   preview?: PreviewMode,
-): Promise<LeaderboardEntry[]> {
-  return withPreview(leaderboardByTab[tab] ?? leaderboardByTab.Global, preview, []);
+): Promise<LeaderboardSnapshot> {
+  const empty = {
+    ...(leaderboardSnapshots[tab] ?? leaderboardSnapshots.Global),
+    rows: [],
+    currentUser: undefined,
+  };
+  return withPreview(leaderboardSnapshots[tab] ?? leaderboardSnapshots.Global, preview, empty);
 }
 
 export async function getPrReport(

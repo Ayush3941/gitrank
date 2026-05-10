@@ -2,13 +2,45 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import type { PullRequestAnalysis } from "@/types/gitrank";
 
 export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
+  const contribution = report.contribution;
   const rows = [
-    { label: "Base PR value", value: report.baseValue },
-    { label: "Merged bonus", value: report.mergedBonus },
-    { label: "Review depth bonus", value: report.reviewBonus },
-    { label: "Test impact bonus", value: report.testBonus },
-    { label: "Repo weight bonus", value: report.repoBonus },
-    { label: "AI confidence estimate", value: `${Math.round(report.aiConfidence * 100)}%` },
+    {
+      label: "Base PR value",
+      value: report.baseValue,
+      detail: `${contribution.difficultyScore}/100 difficulty and ${contribution.impactScore}/100 impact.`,
+    },
+    {
+      label: "Merged bonus",
+      value: report.mergedBonus,
+      detail:
+        contribution.status === "merged"
+          ? "Merged work receives full verification weight."
+          : "Open work earns provisional value only.",
+    },
+    {
+      label: "Review depth bonus",
+      value: report.reviewBonus,
+      detail: contribution.maintainerReviewed
+        ? "Maintainer review was detected."
+        : "No maintainer review detected yet.",
+    },
+    {
+      label: "Test impact bonus",
+      value: report.testBonus,
+      detail: contribution.ciPassed
+        ? "CI passed and test signal contributed."
+        : "CI proof was missing or incomplete.",
+    },
+    {
+      label: "Repo weight bonus",
+      value: report.repoBonus,
+      detail: `Repository context multiplier ${contribution.repoWeight.toFixed(2)}x.`,
+    },
+    {
+      label: "AI confidence estimate",
+      value: `${Math.round(report.aiConfidence * 100)}%`,
+      detail: "AI assists classification only; deterministic scoring owns final XP.",
+    },
   ];
 
   return (
@@ -19,15 +51,36 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
       </div>
       <div className="space-y-3">
         {rows.map((row) => (
-          <div key={row.label} className="flex items-center justify-between rounded-[1.75rem] border border-white/8 bg-white/5 px-4 py-4">
-            <p className="text-sm text-slate-200">{row.label}</p>
-            <p className="text-sm font-semibold text-white">{row.value}</p>
+          <div key={row.label} className="rounded-[1.75rem] border border-white/8 bg-white/5 px-4 py-4">
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-sm text-slate-200">{row.label}</p>
+              <p className="text-sm font-semibold text-white">{row.value}</p>
+            </div>
+            <p className="mt-2 text-xs leading-5 text-muted">{row.detail}</p>
           </div>
         ))}
+        <div className="rounded-[1.75rem] border border-amber-400/18 bg-amber-400/8 px-4 py-4">
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-sm text-amber-50">Anti-spam multiplier</p>
+            <p className="text-sm font-semibold text-amber-100">{contribution.antiSpamMultiplier.toFixed(2)}x</p>
+          </div>
+          <p className="mt-2 text-xs leading-5 text-amber-100/72">
+            Repeated, shallow, or unreviewed work is capped so XP stays tied to meaningful evidence.
+          </p>
+        </div>
+        <div className="rounded-[1.75rem] border border-emerald-400/18 bg-emerald-400/8 px-4 py-4">
+          <p className="text-sm font-semibold text-white">Evidence lock</p>
+          <p className="mt-2 text-xs leading-5 text-emerald-100/76">
+            This report links XP to PR facts: changed files, review depth, CI state, issue linkage, and category signals.
+          </p>
+        </div>
         {report.penalties.map((penalty) => (
-          <div key={penalty.label} className="flex items-center justify-between rounded-[1.75rem] border border-rose-400/18 bg-rose-400/8 px-4 py-4">
-            <p className="text-sm text-rose-50">{penalty.label}</p>
-            <p className="text-sm font-semibold text-rose-100">{penalty.deltaXp} XP</p>
+          <div key={penalty.label} className="rounded-[1.75rem] border border-rose-400/18 bg-rose-400/8 px-4 py-4">
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-sm text-rose-50">{penalty.label}</p>
+              <p className="text-sm font-semibold text-rose-100">{penalty.deltaXp} XP</p>
+            </div>
+            <p className="mt-2 text-xs leading-5 text-rose-100/72">{penalty.reason}</p>
           </div>
         ))}
       </div>

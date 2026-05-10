@@ -71,6 +71,10 @@ The public profile page, authenticated dashboard overview, badge shelf, contribu
 - session and CSRF cookies stay same-origin to the frontend
 - dashboard badge and contribution screens derive from the authenticated profile snapshot instead of mock PR-analysis detail
 
+The gamified UI adds season metadata, rank-progress cards, player-card profile presentation, quest recommendation evidence, badge rarity styling, and PR battle-report explanation panels. Live leaderboard season metadata is derived from the gateway response timestamp and displayed as presentation context; final scoring still comes from backend score/profile snapshots.
+
+The settings page includes a local reduced-gamification display preference. It is stored in browser `localStorage`, respects OS reduced-motion intent in animated components, and lowers decorative glow/motion on that device only. It does not change score, privacy, badge, or leaderboard state.
+
 The settings page also has live authenticated account actions:
 
 - `/api/sync` proxies to the Go sync trigger route

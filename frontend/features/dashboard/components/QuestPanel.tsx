@@ -1,4 +1,4 @@
-import { Target } from "lucide-react";
+import { Link2, Target } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Progress } from "@/components/ui/progress";
 import type { Quest } from "@/types/gitrank";
@@ -29,6 +29,7 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
                 <div>
                   <p className="text-lg font-medium text-white">{quest.title}</p>
                   <p className="text-sm text-muted">{quest.description}</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-200/72">{quest.whyRecommended}</p>
                 </div>
                 <div className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-sm text-primary">
                   +{quest.rewardXp} XP
@@ -38,6 +39,17 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
               <div className="mt-2 flex items-center justify-between text-xs text-muted">
                 <span>{quest.progress} / {quest.goal}</span>
                 <span>{quest.weakAreaTarget ? `Targets ${quest.weakAreaTarget}` : quest.cadence}</span>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {quest.evidenceSignals.slice(0, 3).map((signal) => (
+                  <span key={signal} className="rounded-full border border-white/8 bg-white/5 px-3 py-1 text-xs text-slate-200">
+                    {signal}
+                  </span>
+                ))}
+                <span className="inline-flex items-center gap-1 rounded-full border border-white/8 bg-white/5 px-3 py-1 text-xs text-muted">
+                  <Link2 className="h-3 w-3" />
+                  {quest.linkedContributionIds.length} linked PRs
+                </span>
               </div>
             </div>
           );

@@ -676,7 +676,7 @@ Current preview state:
 
 ## 13. Frontend and User Experience Checklist
 
-The repo now contains a tracked Next.js frontend with root-level frontend CI plus repo-wide secret and Trivy scanning. Public profile reads plus authenticated dashboard, badge, contribution, leaderboard, settings, sync, disconnect, and account-deletion flows are live. Quest and PR-report product surfaces still use mock data until live backend contracts exist for those surfaces.
+The repo now contains a tracked Next.js frontend with root-level frontend CI plus repo-wide secret and Trivy scanning. Public profile reads plus authenticated dashboard, badge, contribution, leaderboard, settings, sync, disconnect, and account-deletion flows are live. The frontend also has season/rank progression presentation, player-card public profiles, quest recommendation evidence, badge rarity styling, PR battle-report explanation panels, and a local reduced-gamification display preference. Quest and PR-report product surfaces still use mock data until live backend contracts exist for those surfaces.
 
 Must be defined or built:
 
@@ -689,6 +689,10 @@ Must be defined or built:
 - [x] contribution drill-down UI
 - [x] score explanation UI
 - [x] badge and level UI
+- [x] season leaderboard and rank-progress UI
+- [x] profile player-card UI
+- [x] quest panel recommendation evidence
+- [x] reduced-gamification display preference
 - [x] privacy controls UI
 - [x] empty, loading, error, and stale states
 - [x] mobile-responsive layout

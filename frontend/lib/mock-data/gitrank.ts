@@ -3,11 +3,27 @@ import type {
   Contribution,
   DashboardData,
   LeaderboardEntry,
+  LeaderboardSeason,
+  LeaderboardSnapshot,
   PullRequestAnalysis,
   Quest,
   ScoreBreakdown,
   UserProfile,
 } from "@/types/gitrank";
+
+export const currentSeason: LeaderboardSeason = {
+  id: "season-2026-05-week-2",
+  name: "May Forge Sprint",
+  windowLabel: "May 5 - May 11, 2026",
+  startsAt: "2026-05-05T00:00:00.000Z",
+  endsAt: "2026-05-11T23:59:59.000Z",
+  status: "Active",
+  scoringVersion: "v1alpha1",
+  promotionRule: "Top 25 in Gold promote toward Platinum review.",
+  resetRule: "Weekly XP resets each Monday; total XP and evidence stay preserved.",
+  explanation:
+    "Season placement uses verified profile snapshots, weekly XP, anti-spam multipliers, and score-event evidence.",
+};
 
 const contributions: Contribution[] = [
   {
@@ -169,25 +185,25 @@ const contributions: Contribution[] = [
 ];
 
 const badges: Badge[] = [
-  { id: "docs-architect", name: "Docs Architect", rarity: "Rare", description: "Earned from high-context documentation that changes contributor behavior.", unlockCondition: "Merge 3 documentation PRs with maintainer review.", icon: "scroll", unlocked: true, earnedAt: "2026-05-02", evidencePrIds: ["pr-241", "pr-207"] },
-  { id: "test-builder", name: "Test Builder", rarity: "Epic", description: "Signals repeated test depth on risky system paths.", unlockCondition: "Land 2 regression-heavy test PRs.", icon: "flask", unlocked: true, earnedAt: "2026-04-20", evidencePrIds: ["pr-228", "pr-219"] },
-  { id: "backend-signal-1", name: "Backend Signal I", rarity: "Uncommon", description: "Verified backend systems impact.", unlockCondition: "Reach 1,200 backend XP.", icon: "server", unlocked: true, earnedAt: "2026-04-14", evidencePrIds: ["pr-233", "pr-213"] },
-  { id: "review-grinder", name: "Review Grinder", rarity: "Rare", description: "Maintainers had to think with you, not after you.", unlockCondition: "Accumulate 6 deep review cycles.", icon: "messages", unlocked: true, earnedAt: "2026-05-01", evidencePrIds: ["pr-241", "pr-233", "pr-228"] },
-  { id: "infra-surgeon", name: "Infra Surgeon", rarity: "Epic", description: "Surgical infrastructure changes with low blast radius.", unlockCondition: "Merge one high-difficulty infrastructure PR.", icon: "wrench", unlocked: true, earnedAt: "2026-04-27", evidencePrIds: ["pr-233"] },
-  { id: "systems-builder", name: "Systems Builder", rarity: "Legendary", description: "Balanced signals across docs, tests, runtime, and architecture.", unlockCondition: "Reach level 25 with four skill tracks above 70.", icon: "crown", unlocked: true, earnedAt: "2026-05-03", evidencePrIds: ["pr-233", "pr-228", "pr-241"] },
-  { id: "consistent-contributor", name: "Consistent Contributor", rarity: "Rare", description: "A month of meaningful work without spammy drop-off.", unlockCondition: "Contribute across 4 active weeks.", icon: "calendar", unlocked: true, earnedAt: "2026-04-30", evidencePrIds: ["pr-213", "pr-219", "pr-228", "pr-241"] },
-  { id: "maintainer-signal-1", name: "Maintainer Signal I", rarity: "Epic", description: "Trusted enough that maintainers merge without defensive rewrites.", unlockCondition: "Land 5 maintainer-reviewed PRs at Gold tier.", icon: "shield", unlocked: false, progress: 72, evidencePrIds: ["pr-241", "pr-233", "pr-228", "pr-213"] },
-  { id: "performance-optimizer", name: "Performance Optimizer", rarity: "Legendary", description: "Reserved for measurable runtime wins.", unlockCondition: "Merge one performance PR with benchmark evidence.", icon: "bolt", unlocked: false, progress: 14, evidencePrIds: [] },
-  { id: "security-contributor", name: "Security Contributor", rarity: "Mythic", description: "Awarded only for security-sensitive fixes and review proof.", unlockCondition: "Land 2 reviewed security fixes with test coverage.", icon: "lock", unlocked: false, progress: 8, evidencePrIds: [] },
+  { id: "docs-architect", name: "Docs Architect", rarity: "Rare", description: "Earned from high-context documentation that changes contributor behavior.", unlockCondition: "Merge 3 documentation PRs with maintainer review.", icon: "scroll", unlocked: true, earnedAt: "2026-05-02", evidencePrIds: ["pr-241", "pr-207"], rarityScore: 68 },
+  { id: "test-builder", name: "Test Builder", rarity: "Epic", description: "Signals repeated test depth on risky system paths.", unlockCondition: "Land 2 regression-heavy test PRs.", icon: "flask", unlocked: true, earnedAt: "2026-04-20", evidencePrIds: ["pr-228", "pr-219"], rarityScore: 82 },
+  { id: "backend-signal-1", name: "Backend Signal I", rarity: "Uncommon", description: "Verified backend systems impact.", unlockCondition: "Reach 1,200 backend XP.", icon: "server", unlocked: true, earnedAt: "2026-04-14", evidencePrIds: ["pr-233", "pr-213"], rarityScore: 41 },
+  { id: "review-grinder", name: "Review Grinder", rarity: "Rare", description: "Maintainers had to think with you, not after you.", unlockCondition: "Accumulate 6 deep review cycles.", icon: "messages", unlocked: true, earnedAt: "2026-05-01", evidencePrIds: ["pr-241", "pr-233", "pr-228"], rarityScore: 72 },
+  { id: "infra-surgeon", name: "Infra Surgeon", rarity: "Epic", description: "Surgical infrastructure changes with low blast radius.", unlockCondition: "Merge one high-difficulty infrastructure PR.", icon: "wrench", unlocked: true, earnedAt: "2026-04-27", evidencePrIds: ["pr-233"], rarityScore: 84 },
+  { id: "systems-builder", name: "Systems Builder", rarity: "Legendary", description: "Balanced signals across docs, tests, runtime, and architecture.", unlockCondition: "Reach level 25 with four skill tracks above 70.", icon: "crown", unlocked: true, earnedAt: "2026-05-03", evidencePrIds: ["pr-233", "pr-228", "pr-241"], rarityScore: 94 },
+  { id: "consistent-contributor", name: "Consistent Contributor", rarity: "Rare", description: "A month of meaningful work without spammy drop-off.", unlockCondition: "Contribute across 4 active weeks.", icon: "calendar", unlocked: true, earnedAt: "2026-04-30", evidencePrIds: ["pr-213", "pr-219", "pr-228", "pr-241"], rarityScore: 70 },
+  { id: "maintainer-signal-1", name: "Maintainer Signal I", rarity: "Epic", description: "Trusted enough that maintainers merge without defensive rewrites.", unlockCondition: "Land 5 maintainer-reviewed PRs at Gold tier.", icon: "shield", unlocked: false, progress: 72, evidencePrIds: ["pr-241", "pr-233", "pr-228", "pr-213"], rarityScore: 88 },
+  { id: "performance-optimizer", name: "Performance Optimizer", rarity: "Legendary", description: "Reserved for measurable runtime wins.", unlockCondition: "Merge one performance PR with benchmark evidence.", icon: "bolt", unlocked: false, progress: 14, evidencePrIds: [], rarityScore: 92 },
+  { id: "security-contributor", name: "Security Contributor", rarity: "Mythic", description: "Awarded only for security-sensitive fixes and review proof.", unlockCondition: "Land 2 reviewed security fixes with test coverage.", icon: "lock", unlocked: false, progress: 8, evidencePrIds: [], rarityScore: 99 },
 ];
 
 const quests: Quest[] = [
-  { id: "quest-security-review", title: "Ship one security-sensitive patch", description: "Target a permission, auth, or dependency-hardening issue to strengthen your weakest lane.", status: "Active", cadence: "Skill-based", rewardXp: 620, progress: 1, goal: 5, weakAreaTarget: "Security" },
-  { id: "quest-maintainer-review", title: "Merge one PR with maintainer review", description: "Push a contribution deep enough to trigger real maintainer feedback.", status: "Active", cadence: "Weekly", rewardXp: 320, progress: 2, goal: 3 },
-  { id: "quest-docs-high-context", title: "Improve docs in a high-context repo", description: "Write docs that remove operational ambiguity for future contributors.", status: "Active", cadence: "Weekly", rewardXp: 280, progress: 6, goal: 10, weakAreaTarget: "Architecture" },
-  { id: "quest-regression-tests", title: "Add regression tests to one bug-fix PR", description: "Prove the failure and lock it down with tests.", status: "Completed", cadence: "Daily", rewardXp: 190, progress: 1, goal: 1, rewardBadgeId: "test-builder" },
-  { id: "quest-review-one-pr", title: "Review one open PR", description: "Comment on an open contribution with a concrete technical observation.", status: "Locked", cadence: "Daily", rewardXp: 110, progress: 0, goal: 1, weakAreaTarget: "Review" },
-  { id: "quest-ci-improvement", title: "Add CI or build-system improvement", description: "Strengthen delivery paths instead of only touching product code.", status: "Active", cadence: "Long-term", rewardXp: 540, progress: 3, goal: 7, weakAreaTarget: "DevOps" },
+  { id: "quest-security-review", title: "Ship one security-sensitive patch", description: "Target a permission, auth, or dependency-hardening issue to strengthen your weakest lane.", status: "Active", cadence: "Skill-based", rewardXp: 620, progress: 1, goal: 5, weakAreaTarget: "Security", whyRecommended: "Security is the lowest observed skill lane in this profile snapshot.", evidenceSignals: ["Security score 32", "No security badge unlocked", "Recent backend work suggests adjacent context"], linkedContributionIds: ["pr-233", "pr-213"] },
+  { id: "quest-maintainer-review", title: "Merge one PR with maintainer review", description: "Push a contribution deep enough to trigger real maintainer feedback.", status: "Active", cadence: "Weekly", rewardXp: 320, progress: 2, goal: 3, whyRecommended: "Maintainer-reviewed PRs are the clearest trust signal for the current Gold tier.", evidenceSignals: ["4 reviewed PRs this window", "Review Grinder badge progress", "Gold III promotion path"], linkedContributionIds: ["pr-241", "pr-233", "pr-228"] },
+  { id: "quest-docs-high-context", title: "Improve docs in a high-context repo", description: "Write docs that remove operational ambiguity for future contributors.", status: "Active", cadence: "Weekly", rewardXp: 280, progress: 6, goal: 10, weakAreaTarget: "Architecture", whyRecommended: "Documentation is already strong; this quest converts that strength into repeatable architecture signal.", evidenceSignals: ["Docs Architect badge earned", "Architecture score 78", "Recent runtime guide"], linkedContributionIds: ["pr-241", "pr-207"] },
+  { id: "quest-regression-tests", title: "Add regression tests to one bug-fix PR", description: "Prove the failure and lock it down with tests.", status: "Completed", cadence: "Daily", rewardXp: 190, progress: 1, goal: 1, rewardBadgeId: "test-builder", whyRecommended: "The profile had high replay-risk work, so regression coverage created durable evidence.", evidenceSignals: ["Tests added", "Regression coverage", "CI passed"], linkedContributionIds: ["pr-228", "pr-219"] },
+  { id: "quest-review-one-pr", title: "Review one open PR", description: "Comment on an open contribution with a concrete technical observation.", status: "Locked", cadence: "Daily", rewardXp: 110, progress: 0, goal: 1, weakAreaTarget: "Review", whyRecommended: "Unlocks after the profile has one more reviewed contribution to avoid low-context review farming.", evidenceSignals: ["Review score 61", "Needs more reciprocal review evidence"], linkedContributionIds: [] },
+  { id: "quest-ci-improvement", title: "Add CI or build-system improvement", description: "Strengthen delivery paths instead of only touching product code.", status: "Active", cadence: "Long-term", rewardXp: 540, progress: 3, goal: 7, weakAreaTarget: "DevOps", whyRecommended: "Infra work is strong enough to turn into a delivery reliability lane.", evidenceSignals: ["Infra Surgeon badge earned", "DevOps score 64", "CI-passed infrastructure PR"], linkedContributionIds: ["pr-233"] },
 ];
 
 const scoreChanges: ScoreBreakdown[] = [
@@ -211,6 +227,16 @@ export const ayushProfile: UserProfile = {
   strongestSignals: ["Documentation", "Backend", "Testing", "Architecture"],
   topSkills: ["Documentation", "Backend", "Testing"],
   level: { currentLevel: 27, title: "Systems Builder", currentXp: 7840, nextLevelXp: 9000, rankTier: "Gold III" },
+  rankProgress: {
+    season: currentSeason,
+    currentTier: "Gold III",
+    nextTier: "Platinum I",
+    seasonXp: 1164,
+    xpToNextTier: 1160,
+    promotionCutoffRank: 25,
+    safetyCutoffRank: 75,
+    evidenceSignals: ["Maintainer-reviewed PRs", "Regression tests", "High-context docs"],
+  },
   skillTree: [
     { category: "Documentation", score: 86, delta: 8, note: "High-context service guides and operational docs." },
     { category: "Testing", score: 83, delta: 11, note: "Regression coverage around replay and sync edges." },
@@ -251,6 +277,7 @@ export const ayushProfile: UserProfile = {
     badgeUnlockedNotifications: true,
     levelUpNotifications: true,
     weeklyReportNotifications: false,
+    reducedGamification: false,
   },
 };
 
@@ -271,14 +298,14 @@ export const prAnalyses: PullRequestAnalysis[] = ayushProfile.contributions.map(
 }));
 
 const baseLeaderboard: LeaderboardEntry[] = [
-  { rank: 1, username: "maintainer_monk", displayName: "Shivangi Rao", title: "Runtime Cartographer", rankTier: "Diamond", weeklyXp: 1880, totalXp: 12640, movement: 1, focus: "Architecture" },
-  { rank: 2, username: "byteharvest", displayName: "Rohit Sen", title: "Build Tactician", rankTier: "Platinum I", weeklyXp: 1604, totalXp: 11980, movement: -1, focus: "DevOps" },
-  { rank: 3, username: "ayesha-tests", displayName: "Ayesha Khan", title: "Regression Marshal", rankTier: "Platinum I", weeklyXp: 1542, totalXp: 11040, movement: 2, focus: "Testing" },
-  { rank: 42, username: "Ayush3941", displayName: "Ayush Kumar Gaur", title: "Systems Builder", rankTier: "Gold III", weeklyXp: 1164, totalXp: 7840, movement: 7, focus: "Backend", isCurrentUser: true },
-  { rank: 43, username: "samdocs", displayName: "Samir Das", title: "Docs Forger", rankTier: "Gold III", weeklyXp: 1128, totalXp: 7765, movement: 3, focus: "Documentation" },
+  { rank: 1, username: "maintainer_monk", displayName: "Shivangi Rao", title: "Runtime Cartographer", rankTier: "Diamond", weeklyXp: 1880, totalXp: 12640, movement: 1, focus: "Architecture", division: "Diamond Arena", seasonXp: 1880, xpToNextRank: 0, promotionZone: true, demotionRisk: false, evidenceSummary: "Architecture-heavy reviewed PRs with sustained repo impact.", scoreFormulaVersion: currentSeason.scoringVersion },
+  { rank: 2, username: "byteharvest", displayName: "Rohit Sen", title: "Build Tactician", rankTier: "Platinum I", weeklyXp: 1604, totalXp: 11980, movement: -1, focus: "DevOps", division: "Platinum Crucible", seasonXp: 1604, xpToNextRank: 277, promotionZone: true, demotionRisk: false, evidenceSummary: "CI and deployment work with high delivery-path signal.", scoreFormulaVersion: currentSeason.scoringVersion },
+  { rank: 3, username: "ayesha-tests", displayName: "Ayesha Khan", title: "Regression Marshal", rankTier: "Platinum I", weeklyXp: 1542, totalXp: 11040, movement: 2, focus: "Testing", division: "Platinum Crucible", seasonXp: 1542, xpToNextRank: 63, promotionZone: true, demotionRisk: false, evidenceSummary: "Regression coverage and maintainer-reviewed test depth.", scoreFormulaVersion: currentSeason.scoringVersion },
+  { rank: 42, username: "Ayush3941", displayName: "Ayush Kumar Gaur", title: "Systems Builder", rankTier: "Gold III", weeklyXp: 1164, totalXp: 7840, movement: 7, focus: "Backend", isCurrentUser: true, division: "Gold Forge", seasonXp: 1164, xpToNextRank: 379, promotionZone: false, demotionRisk: false, evidenceSummary: "Backend, docs, and regression evidence across the active season.", scoreFormulaVersion: currentSeason.scoringVersion },
+  { rank: 43, username: "samdocs", displayName: "Samir Das", title: "Docs Forger", rankTier: "Gold III", weeklyXp: 1128, totalXp: 7765, movement: 3, focus: "Documentation", division: "Gold Forge", seasonXp: 1128, xpToNextRank: 37, promotionZone: false, demotionRisk: false, evidenceSummary: "Documentation-heavy PRs with clear reviewer context.", scoreFormulaVersion: currentSeason.scoringVersion },
 ];
 
-export const leaderboardByTab = {
+export const leaderboardByTab: Record<string, LeaderboardEntry[]> = {
   Global: baseLeaderboard,
   India: baseLeaderboard,
   College: baseLeaderboard.slice(2),
@@ -288,6 +315,17 @@ export const leaderboardByTab = {
   "Weekly XP": baseLeaderboard.slice().sort((a, b) => b.weeklyXp - a.weeklyXp),
   "Rising Contributors": baseLeaderboard.slice().sort((a, b) => b.movement - a.movement),
 };
+
+export const leaderboardSnapshots: Record<string, LeaderboardSnapshot> = Object.fromEntries(
+  Object.entries(leaderboardByTab).map(([tab, rows]) => [
+    tab,
+    {
+      season: currentSeason,
+      rows,
+      currentUser: rows.find((row) => row.isCurrentUser),
+    },
+  ]),
+);
 
 export const dashboardData: DashboardData = {
   user: ayushProfile,
