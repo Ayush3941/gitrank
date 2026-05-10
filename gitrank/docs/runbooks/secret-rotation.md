@@ -13,12 +13,22 @@ The Kubernetes examples under `deployments/k8s/examples/` include separate Exter
 
 ## Standard Rotation
 
-1. Create the replacement secret in the secret manager under the same environment path.
-2. Confirm the External Secrets controller has reconciled the Kubernetes Secret.
-3. Restart only the workloads that consume the rotated secret.
-4. Verify `/readyz`, `/healthz`, auth/session behavior, sync execution, and dashboard health.
-5. Revoke or delete the old upstream credential after the replacement is verified.
-6. Record the rotation time, rotated keys, verifier, and rollback notes in maintainer operations notes.
+1. Move the current value into the matching `PREVIOUS_*` key when the service supports key-ring rotation.
+2. Create the replacement primary secret in the secret manager under the same environment path.
+3. Confirm the External Secrets controller has reconciled the Kubernetes Secret.
+4. Restart only the workloads that consume the rotated secret.
+5. Verify `/readyz`, `/healthz`, auth/session behavior, sync execution, and dashboard health.
+6. Revoke or delete the old upstream credential after the overlap window is verified complete.
+7. Record the rotation time, rotated keys, verifier, and rollback notes in maintainer operations notes.
+
+## Key-Ring Rotation
+
+`auth-service`, `api-gateway`, and GitHub ingestion support a current-plus-previous key ring for auth-sensitive material. Primary keys are always used for new state, sessions, CSRF values, and encrypted GitHub token writes. Previous keys are accepted only to keep existing sessions, OAuth browser-state records, and encrypted OAuth tokens usable during a planned rotation window.
+
+- `GITRANK_PREVIOUS_SESSION_SECRETS`: comma-separated previous session secrets. Keep the old secret here until the maximum of `AUTH_SESSION_TTL`, `AUTH_SESSION_IDLE_TTL`, and `AUTH_OAUTH_STATE_TTL` has elapsed, then remove it and roll the services again.
+- `GITHUB_PREVIOUS_TOKEN_ENCRYPTION_KEYS`: comma-separated previous base64-encoded 32-byte AES keys. Keep old keys here until linked GitHub tokens have been refreshed/re-encrypted or affected users have relinked accounts.
+- Do not put future keys into `PREVIOUS_*`; the first key remains the only write key.
+- Keep staging and production rotation windows separate. Never copy previous production secrets into staging or local `.env` files.
 
 ## Secret-Specific Notes
 
@@ -28,8 +38,9 @@ The Kubernetes examples under `deployments/k8s/examples/` include separate Exter
 - `GITHUB_WEBHOOK_SECRET`: GitHub sends signatures with one configured secret at a time. Rotate by updating GitHub webhook configuration and `github-ingestor` close together.
 - `OPENAI_API_KEY`: roll `pr-analyzer` after the ExternalSecret refresh.
 - `GRAFANA_ADMIN_PASSWORD`: roll `gitrank-grafana` after the ExternalSecret refresh.
-- `GITRANK_SESSION_SECRET` and `GITRANK_JWT_SIGNING_KEY`: current v1 rotation invalidates existing browser/session material. Use a maintenance window unless dual-key validation is added later.
-- `GITHUB_TOKEN_ENCRYPTION_KEY`: do not rotate blindly. Current v1 requires either a token re-encryption migration or revoking linked GitHub tokens and forcing users to relink accounts.
+- `GITRANK_SESSION_SECRET`: move the previous value into `GITRANK_PREVIOUS_SESSION_SECRETS`, deploy the new primary value, then rely on normal session rotation to reissue primary-key material.
+- `GITRANK_JWT_SIGNING_KEY`: no current JWT issuer depends on this key for browser sessions. If JWT issuance is added later, add a `kid`-based signing-key ring before rotating without invalidation.
+- `GITHUB_TOKEN_ENCRYPTION_KEY`: move the previous base64 key into `GITHUB_PREVIOUS_TOKEN_ENCRYPTION_KEYS`, deploy the new primary key, then let token refresh/re-encryption migrate active linked accounts. Force relink only if decrypt fails after the overlap window.
 
 ## Emergency Rotation
 

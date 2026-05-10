@@ -25,7 +25,7 @@ type Executor struct {
 	store                *Store
 	client               *githubapi.RESTClient
 	repositoryCache      *repositoryMetadataCache
-	oauthTokenKey        []byte
+	oauthTokenKeys       [][]byte
 	graphqlClientFactory githubGraphQLClientFactory
 	graphqlTokenSource   githubGraphQLTokenSource
 }
@@ -36,7 +36,7 @@ func NewExecutor(cfg config.App, pool *pgxpool.Pool, client *githubapi.RESTClien
 		store:                NewStore(pool),
 		client:               client,
 		repositoryCache:      newRepositoryMetadataCache(cfg.GitHub.RepositoryCacheTTL),
-		oauthTokenKey:        decodeOptionalOAuthTokenKey(cfg),
+		oauthTokenKeys:       decodeOptionalOAuthTokenKeys(cfg),
 		graphqlClientFactory: newGitHubGraphQLClientFactory(cfg),
 	}
 	executor.graphqlTokenSource = executor.graphQLTokenSourceForActor

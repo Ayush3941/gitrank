@@ -524,6 +524,34 @@ func TestSyncRouteRejectsInvalidCSRF(t *testing.T) {
 	}
 }
 
+func TestSyncRouteAcceptsPreviousSessionSecretCSRF(t *testing.T) {
+	profile := stubProfileServer()
+	defer profile.Close()
+	auth := stubAuthServer()
+	defer auth.Close()
+	ingestor := stubIngestorServer()
+	defer ingestor.Close()
+
+	cfg := testConfig(profile.URL, auth.URL, ingestor.URL)
+	cfg.Auth.PreviousSessionSecrets = []string{"previous-session-secret"}
+	router := NewRouter(cfg, testLogger(), "test")
+	request := httptest.NewRequest(http.MethodPost, "/v1/sync", strings.NewReader(`{}`))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Cookie", "gitrank_session=session-original; gitrank_csrf=csrf-original")
+	csrfToken, err := authkit.DoubleSubmitCSRFFromToken([]byte("previous-session-secret"), "session-original")
+	if err != nil {
+		t.Fatalf("csrf token: %v", err)
+	}
+	request.Header.Set("X-CSRF-Token", csrfToken)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code == http.StatusForbidden {
+		t.Fatalf("status = %d, want previous session secret to pass CSRF validation, body=%s", response.Code, response.Body.String())
+	}
+}
+
 func TestAccountUnlinkRouteForwardsCookiesAndPrivateCacheControl(t *testing.T) {
 	auth := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {

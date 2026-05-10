@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Ayush3941/gitrank/packages/authkit"
 	"github.com/Ayush3941/gitrank/packages/config"
 	"github.com/Ayush3941/gitrank/packages/githubapi"
 )
@@ -51,6 +52,40 @@ func TestNormalizeReturnToRejectsExternalOrigins(t *testing.T) {
 		if got := svc.normalizeReturnTo(raw, intentLogin); got != "https://app.gitrank.dev/dashboard" {
 			t.Fatalf("return_to %q normalized to %q", raw, got)
 		}
+	}
+}
+
+func TestValidateCSRFAcceptsPreviousSessionSecret(t *testing.T) {
+	svc := &Service{
+		sessionSecrets: [][]byte{[]byte("current-secret"), []byte("previous-secret")},
+	}
+	csrf, err := authkit.DoubleSubmitCSRFFromToken([]byte("previous-secret"), "session-token")
+	if err != nil {
+		t.Fatalf("DoubleSubmitCSRFFromToken() error = %v", err)
+	}
+
+	if err := svc.validateCSRF("session-token", csrf); err != nil {
+		t.Fatalf("validateCSRF() error = %v", err)
+	}
+}
+
+func TestNewSessionSecretsUsesPrimarySecret(t *testing.T) {
+	svc := &Service{
+		sessionSecrets: [][]byte{[]byte("current-secret"), []byte("previous-secret")},
+	}
+
+	sessionToken, csrfToken, sessionHash, csrfHash, err := svc.newSessionSecrets()
+	if err != nil {
+		t.Fatalf("newSessionSecrets() error = %v", err)
+	}
+	if sessionToken == "" || csrfToken == "" || sessionHash == "" || csrfHash == "" {
+		t.Fatalf("newSessionSecrets() returned empty fields: token=%q csrf=%q hash=%q csrfHash=%q", sessionToken, csrfToken, sessionHash, csrfHash)
+	}
+	if err := authkit.ValidateDoubleSubmitCSRF([][]byte{[]byte("current-secret")}, sessionToken, csrfToken); err != nil {
+		t.Fatalf("csrf token was not issued with primary secret: %v", err)
+	}
+	if err := authkit.ValidateDoubleSubmitCSRF([][]byte{[]byte("previous-secret")}, sessionToken, csrfToken); err == nil {
+		t.Fatal("csrf token validated with previous secret, want primary-only issuance")
 	}
 }
 

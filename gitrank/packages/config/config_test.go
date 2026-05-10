@@ -202,7 +202,9 @@ func TestGitHubClientFallbacksAndInstallURL(t *testing.T) {
 func TestValidateAuthService(t *testing.T) {
 	t.Setenv("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/gitrank?sslmode=disable")
 	t.Setenv("GITRANK_SESSION_SECRET", "super-secret")
+	t.Setenv("GITRANK_PREVIOUS_SESSION_SECRETS", "old-secret")
 	t.Setenv("GITHUB_TOKEN_ENCRYPTION_KEY", "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=")
+	t.Setenv("GITHUB_PREVIOUS_TOKEN_ENCRYPTION_KEYS", "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoxMjM0NTY=")
 	t.Setenv("GITHUB_CLIENT_ID", "client")
 	t.Setenv("GITHUB_CLIENT_SECRET", "secret")
 	t.Setenv("GITHUB_OAUTH_REDIRECT_URL", "https://example.com/callback")
@@ -214,5 +216,15 @@ func TestValidateAuthService(t *testing.T) {
 
 	if err := cfg.ValidateAuthService(); err != nil {
 		t.Fatalf("ValidateAuthService() error = %v", err)
+	}
+	if got := cfg.SessionSecretRing(); len(got) != 2 || string(got[1]) != "old-secret" {
+		t.Fatalf("SessionSecretRing() = %#v, want primary plus previous", got)
+	}
+	keys, err := cfg.TokenEncryptionKeyRing()
+	if err != nil {
+		t.Fatalf("TokenEncryptionKeyRing() error = %v", err)
+	}
+	if len(keys) != 2 {
+		t.Fatalf("TokenEncryptionKeyRing() len = %d, want 2", len(keys))
 	}
 }

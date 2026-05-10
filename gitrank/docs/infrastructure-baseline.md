@@ -38,6 +38,7 @@ Promotion path:
 - materialize the `gitrank-runtime-secrets` contract before applying service Deployments
 - separate prod and non-prod credentials with environment-specific remote paths such as `gitrank/staging/<secret-name>` and `gitrank/production/<secret-name>`
 - rotate auth, GitHub, AI, database, and observability credentials through `docs/runbooks/secret-rotation.md`
+- keep auth/session and GitHub OAuth token-encryption rotations key-ring based by moving the retiring value into the matching `PREVIOUS_*` secret before replacing the primary value
 - run `make verify-secret-policy` after changing Kubernetes secret examples or rotation documentation
 
 ## Networking and Public Edge

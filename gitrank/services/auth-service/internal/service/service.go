@@ -28,14 +28,14 @@ const (
 )
 
 type Service struct {
-	cfg           config.App
-	log           *slog.Logger
-	store         *Store
-	limiter       *RateLimiter
-	httpClient    *http.Client
-	sessionSecret []byte
-	tokenKey      []byte
-	githubMetrics *githubRateLimitMetrics
+	cfg            config.App
+	log            *slog.Logger
+	store          *Store
+	limiter        *RateLimiter
+	httpClient     *http.Client
+	sessionSecrets [][]byte
+	tokenKeys      [][]byte
+	githubMetrics  *githubRateLimitMetrics
 }
 
 type OAuthStartResult struct {
@@ -68,19 +68,23 @@ func New(cfg config.App, pool *pgxpool.Pool, log *slog.Logger) (*Service, error)
 	if err := cfg.ValidateAuthService(); err != nil {
 		return nil, err
 	}
-	tokenKey, err := authkit.DecodeBase64Key(cfg.Auth.TokenEncryptionKey)
+	tokenKeys, err := cfg.TokenEncryptionKeyRing()
 	if err != nil {
 		return nil, err
 	}
+	sessionSecrets := cfg.SessionSecretRing()
+	if len(sessionSecrets) == 0 {
+		return nil, errors.New("at least one session secret is required")
+	}
 	return &Service{
-		cfg:           cfg,
-		log:           log,
-		store:         NewStore(pool),
-		limiter:       NewRateLimiter(cfg.Auth.RateLimitWindow, cfg.Auth.RateLimitMaxAttempts),
-		httpClient:    &http.Client{Timeout: cfg.GitHub.RequestTimeout},
-		sessionSecret: []byte(cfg.Auth.SessionSecret),
-		tokenKey:      tokenKey,
-		githubMetrics: newGitHubRateLimitMetrics(cfg.ServiceName),
+		cfg:            cfg,
+		log:            log,
+		store:          NewStore(pool),
+		limiter:        NewRateLimiter(cfg.Auth.RateLimitWindow, cfg.Auth.RateLimitMaxAttempts),
+		httpClient:     &http.Client{Timeout: cfg.GitHub.RequestTimeout},
+		sessionSecrets: sessionSecrets,
+		tokenKeys:      tokenKeys,
+		githubMetrics:  newGitHubRateLimitMetrics(cfg.ServiceName),
 	}, nil
 }
 
@@ -138,18 +142,14 @@ func (s *Service) HandleCallback(ctx context.Context, stateToken, code, browserT
 		return OAuthCallbackResult{}, errors.New("missing OAuth browser token")
 	}
 
-	stateClaims, err := authkit.ValidateStateToken(s.sessionSecret, stateToken, now)
+	stateClaims, _, err := authkit.ValidateStateTokenAny(s.sessionSecrets, stateToken, now)
 	if err != nil {
 		_ = s.store.Audit(ctx, "anonymous", "", "auth.oauth_callback_failed", "oauth_state", "", map[string]any{
 			"reason": "invalid_state",
 		})
 		return OAuthCallbackResult{}, err
 	}
-	browserHash, err := authkit.HashOpaqueToken(s.sessionSecret, browserToken)
-	if err != nil {
-		return OAuthCallbackResult{}, err
-	}
-	state, err := s.store.ConsumeOAuthState(ctx, stateClaims.Nonce, browserHash, now)
+	state, err := s.consumeOAuthState(ctx, stateClaims.Nonce, browserToken, now)
 	if err != nil {
 		_ = s.store.Audit(ctx, "anonymous", "", "auth.oauth_callback_failed", "oauth_state", stateClaims.Nonce, map[string]any{
 			"reason": "state_replay_or_expired",
@@ -204,7 +204,7 @@ func (s *Service) HandleCallback(ctx context.Context, stateToken, code, browserT
 	if err != nil {
 		return OAuthCallbackResult{}, err
 	}
-	accessEncrypted, refreshEncrypted, err := buildEncryptedTokenFields(s.tokenKey, token.AccessToken, token.RefreshToken)
+	accessEncrypted, refreshEncrypted, err := buildEncryptedTokenFields(s.primaryTokenKey(), token.AccessToken, token.RefreshToken)
 	if err != nil {
 		return OAuthCallbackResult{}, err
 	}
@@ -383,11 +383,11 @@ func (s *Service) startOAuth(ctx context.Context, intent, linkingUserID, returnT
 	if err != nil {
 		return OAuthStartResult{}, err
 	}
-	stateToken, err := authkit.NewStateToken(s.sessionSecret, stateNonce, s.cfg.Auth.OAuthStateTTL, now)
+	stateToken, err := authkit.NewStateToken(s.primarySessionSecret(), stateNonce, s.cfg.Auth.OAuthStateTTL, now)
 	if err != nil {
 		return OAuthStartResult{}, err
 	}
-	browserHash, err := authkit.HashOpaqueToken(s.sessionSecret, browserToken)
+	browserHash, err := authkit.HashOpaqueToken(s.primarySessionSecret(), browserToken)
 	if err != nil {
 		return OAuthStartResult{}, err
 	}
@@ -432,11 +432,7 @@ func (s *Service) authenticateSession(ctx context.Context, sessionToken string, 
 	if strings.TrimSpace(sessionToken) == "" {
 		return SessionView{}, nil, ErrSessionNotFound
 	}
-	sessionHash, err := authkit.HashOpaqueToken(s.sessionSecret, sessionToken)
-	if err != nil {
-		return SessionView{}, nil, err
-	}
-	session, err := s.store.LoadSessionByTokenHash(ctx, sessionHash, now)
+	session, matchedSecretIndex, err := s.loadSessionByToken(ctx, sessionToken, now)
 	if err != nil {
 		return SessionView{}, nil, err
 	}
@@ -450,7 +446,7 @@ func (s *Service) authenticateSession(ctx context.Context, sessionToken string, 
 		return SessionView{}, nil, err
 	}
 
-	if allowRotation && now.UTC().Sub(session.SessionRotatedAt) >= s.cfg.Auth.SessionRotationInterval {
+	if allowRotation && (matchedSecretIndex > 0 || now.UTC().Sub(session.SessionRotatedAt) >= s.cfg.Auth.SessionRotationInterval) {
 		newSessionToken, newCSRFToken, sessionTokenHash, csrfTokenHash, err := s.newSessionSecrets()
 		if err != nil {
 			return SessionView{}, nil, err
@@ -470,8 +466,12 @@ func (s *Service) authenticateSession(ctx context.Context, sessionToken string, 
 		if err != nil {
 			return SessionView{}, nil, err
 		}
+		reason := "rotation_interval_elapsed"
+		if matchedSecretIndex > 0 {
+			reason = "previous_session_secret_used"
+		}
 		if err := s.store.Audit(ctx, "user", session.UserID, "auth.session_rotated", "session", session.SessionID, map[string]any{
-			"reason": "rotation_interval_elapsed",
+			"reason": reason,
 		}); err != nil {
 			s.log.Warn("audit failed", "error", err, "action", "auth.session_rotated")
 		}
@@ -507,7 +507,7 @@ func (s *Service) ensureGitHubAuthorization(ctx context.Context, session *Sessio
 		return nil
 	}
 
-	refreshToken, err := authkit.DecryptSecret(s.tokenKey, tokenRecord.RefreshTokenEncrypted)
+	refreshToken, matchedTokenKeyIndex, err := authkit.DecryptSecretAny(s.tokenKeys, tokenRecord.RefreshTokenEncrypted)
 	if err != nil {
 		return err
 	}
@@ -522,12 +522,19 @@ func (s *Service) ensureGitHubAuthorization(ctx context.Context, session *Sessio
 		return nil
 	}
 
-	accessEncrypted, refreshEncrypted, err := buildEncryptedTokenFields(s.tokenKey, refreshed.AccessToken, refreshed.RefreshToken)
+	accessEncrypted, refreshEncrypted, err := buildEncryptedTokenFields(s.primaryTokenKey(), refreshed.AccessToken, refreshed.RefreshToken)
 	if err != nil {
 		return err
 	}
 	if refreshed.RefreshToken == "" {
-		refreshEncrypted = tokenRecord.RefreshTokenEncrypted
+		if matchedTokenKeyIndex > 0 {
+			refreshEncrypted, err = authkit.EncryptSecret(s.primaryTokenKey(), refreshToken)
+			if err != nil {
+				return err
+			}
+		} else {
+			refreshEncrypted = tokenRecord.RefreshTokenEncrypted
+		}
 	}
 	accessExpiresAt := optionalDeadline(now, refreshed.ExpiresIn)
 	refreshExpiresAt := optionalDeadline(now, refreshed.RefreshTokenExpiresIn)
@@ -585,12 +592,66 @@ func (s *Service) observeGitHubRateLimit(meta githubapi.ResponseMetadata) {
 	s.githubMetrics.Observe(meta.RateLimit)
 }
 
-func (s *Service) validateCSRF(sessionToken, provided string) error {
-	expected, err := authkit.DoubleSubmitCSRFFromToken(s.sessionSecret, sessionToken)
-	if err != nil {
-		return err
+func (s *Service) primarySessionSecret() []byte {
+	if len(s.sessionSecrets) == 0 {
+		return nil
 	}
-	if strings.TrimSpace(provided) == "" || provided != expected {
+	return s.sessionSecrets[0]
+}
+
+func (s *Service) primaryTokenKey() []byte {
+	if len(s.tokenKeys) == 0 {
+		return nil
+	}
+	return s.tokenKeys[0]
+}
+
+func (s *Service) consumeOAuthState(ctx context.Context, nonce, browserToken string, now time.Time) (OAuthStateRecord, error) {
+	hashes, err := authkit.HashOpaqueTokenCandidates(s.sessionSecrets, browserToken)
+	if err != nil {
+		return OAuthStateRecord{}, err
+	}
+	var lastErr error
+	for _, browserHash := range hashes {
+		state, err := s.store.ConsumeOAuthState(ctx, nonce, browserHash, now)
+		if err == nil {
+			return state, nil
+		}
+		lastErr = err
+		if !errors.Is(err, ErrStateNotUsable) {
+			return OAuthStateRecord{}, err
+		}
+	}
+	if lastErr == nil {
+		lastErr = ErrStateNotUsable
+	}
+	return OAuthStateRecord{}, lastErr
+}
+
+func (s *Service) loadSessionByToken(ctx context.Context, sessionToken string, now time.Time) (SessionView, int, error) {
+	hashes, err := authkit.HashOpaqueTokenCandidates(s.sessionSecrets, sessionToken)
+	if err != nil {
+		return SessionView{}, -1, err
+	}
+	var lastErr error
+	for index, sessionHash := range hashes {
+		session, err := s.store.LoadSessionByTokenHash(ctx, sessionHash, now)
+		if err == nil {
+			return session, index, nil
+		}
+		lastErr = err
+		if !errors.Is(err, ErrSessionNotFound) {
+			return SessionView{}, -1, err
+		}
+	}
+	if lastErr == nil {
+		lastErr = ErrSessionNotFound
+	}
+	return SessionView{}, -1, lastErr
+}
+
+func (s *Service) validateCSRF(sessionToken, provided string) error {
+	if err := authkit.ValidateDoubleSubmitCSRF(s.sessionSecrets, sessionToken, provided); err != nil {
 		return ErrInvalidCSRF
 	}
 	return nil
@@ -601,11 +662,11 @@ func (s *Service) newSessionSecrets() (string, string, string, string, error) {
 	if err != nil {
 		return "", "", "", "", err
 	}
-	csrfToken, err := authkit.DoubleSubmitCSRFFromToken(s.sessionSecret, sessionToken)
+	csrfToken, err := authkit.DoubleSubmitCSRFFromToken(s.primarySessionSecret(), sessionToken)
 	if err != nil {
 		return "", "", "", "", err
 	}
-	sessionHash, err := authkit.HashOpaqueToken(s.sessionSecret, sessionToken)
+	sessionHash, err := authkit.HashOpaqueToken(s.primarySessionSecret(), sessionToken)
 	if err != nil {
 		return "", "", "", "", err
 	}

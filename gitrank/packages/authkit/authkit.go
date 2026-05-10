@@ -121,6 +121,24 @@ func ValidateStateToken(secret []byte, token string, now time.Time) (StateClaims
 	return claims, nil
 }
 
+func ValidateStateTokenAny(secrets [][]byte, token string, now time.Time) (StateClaims, int, error) {
+	if len(secrets) == 0 {
+		return StateClaims{}, -1, errors.New("at least one secret is required")
+	}
+	var lastErr error
+	for index, secret := range secrets {
+		claims, err := ValidateStateToken(secret, token, now)
+		if err == nil {
+			return claims, index, nil
+		}
+		lastErr = err
+	}
+	if lastErr == nil {
+		lastErr = errors.New("invalid state token")
+	}
+	return StateClaims{}, -1, lastErr
+}
+
 func NewOpaqueToken(size int) (string, error) {
 	if size <= 0 {
 		return "", errors.New("size must be positive")
@@ -140,6 +158,26 @@ func HashOpaqueToken(secret []byte, token string) (string, error) {
 		return "", errors.New("token is required")
 	}
 	return encode(sign(secret, []byte(strings.TrimSpace(token)))), nil
+}
+
+func HashOpaqueTokenCandidates(secrets [][]byte, token string) ([]string, error) {
+	if len(secrets) == 0 {
+		return nil, errors.New("at least one secret is required")
+	}
+	out := make([]string, 0, len(secrets))
+	seen := make(map[string]struct{}, len(secrets))
+	for _, secret := range secrets {
+		hash, err := HashOpaqueToken(secret, token)
+		if err != nil {
+			return nil, err
+		}
+		if _, ok := seen[hash]; ok {
+			continue
+		}
+		seen[hash] = struct{}{}
+		out = append(out, hash)
+	}
+	return out, nil
 }
 
 func EncryptSecret(key []byte, plaintext string) (string, error) {
@@ -202,6 +240,24 @@ func DecryptSecret(key []byte, ciphertext string) (string, error) {
 	return string(plain), nil
 }
 
+func DecryptSecretAny(keys [][]byte, ciphertext string) (string, int, error) {
+	if len(keys) == 0 {
+		return "", -1, errors.New("at least one encryption key is required")
+	}
+	var lastErr error
+	for index, key := range keys {
+		plaintext, err := DecryptSecret(key, ciphertext)
+		if err == nil {
+			return plaintext, index, nil
+		}
+		lastErr = err
+	}
+	if lastErr == nil {
+		lastErr = errors.New("secret could not be decrypted")
+	}
+	return "", -1, lastErr
+}
+
 func DecodeBase64Key(value string) ([]byte, error) {
 	value = strings.TrimSpace(value)
 	if value == "" {
@@ -222,6 +278,23 @@ func DecodeBase64Key(value string) ([]byte, error) {
 
 func DoubleSubmitCSRFFromToken(secret []byte, sessionToken string) (string, error) {
 	return HashOpaqueToken(secret, sessionToken)
+}
+
+func ValidateDoubleSubmitCSRF(secrets [][]byte, sessionToken, provided string) error {
+	provided = strings.TrimSpace(provided)
+	if provided == "" {
+		return errors.New("missing CSRF token")
+	}
+	candidates, err := HashOpaqueTokenCandidates(secrets, sessionToken)
+	if err != nil {
+		return err
+	}
+	for _, expected := range candidates {
+		if hmac.Equal([]byte(provided), []byte(expected)) {
+			return nil
+		}
+	}
+	return errors.New("invalid CSRF token")
 }
 
 func SameSiteFromString(value string) http.SameSite {

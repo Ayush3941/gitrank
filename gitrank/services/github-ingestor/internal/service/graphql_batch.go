@@ -135,12 +135,12 @@ type githubGraphQLReview struct {
 	AuthorAssociation string              `json:"authorAssociation"`
 }
 
-func decodeOptionalOAuthTokenKey(cfg config.App) []byte {
-	key, err := authkit.DecodeBase64Key(cfg.Auth.TokenEncryptionKey)
+func decodeOptionalOAuthTokenKeys(cfg config.App) [][]byte {
+	keys, err := cfg.TokenEncryptionKeyRing()
 	if err != nil {
 		return nil
 	}
-	return key
+	return keys
 }
 
 func newGitHubGraphQLClientFactory(cfg config.App) githubGraphQLClientFactory {
@@ -161,7 +161,7 @@ func newGitHubGraphQLClientFactory(cfg config.App) githubGraphQLClientFactory {
 }
 
 func (e *Executor) graphQLTokenSourceForActor(ctx context.Context, actor SyncRequestActor, now time.Time) (githubapi.TokenSource, bool, error) {
-	if e == nil || e.store == nil || e.store.pool == nil || len(e.oauthTokenKey) != 32 {
+	if e == nil || e.store == nil || e.store.pool == nil || len(e.oauthTokenKeys) == 0 {
 		return nil, false, nil
 	}
 	githubLogin := strings.TrimSpace(actor.GitHubLogin)
@@ -173,7 +173,7 @@ func (e *Executor) graphQLTokenSourceForActor(ctx context.Context, actor SyncReq
 	if err != nil || !ok {
 		return nil, false, err
 	}
-	accessToken, err := authkit.DecryptSecret(e.oauthTokenKey, encryptedToken)
+	accessToken, _, err := authkit.DecryptSecretAny(e.oauthTokenKeys, encryptedToken)
 	if err != nil {
 		return nil, false, err
 	}

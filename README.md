@@ -736,7 +736,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 - W3C `traceparent` propagation across service HTTP boundaries, scheduler-triggered async sync execution, GitHub API calls, OAuth token calls, and AI request builders
 - renderable Prometheus and Grafana Kubernetes manifests that mount the committed alert rules and dashboards, with a local `make verify-observability-manifests` check
 - Kubernetes deployment rollback workflow support plus a local `make verify-rollback-procedure` check for manifest rendering and rollback wiring
-- environment-separated ExternalSecret examples plus a secret-rotation runbook verified by `make verify-secret-policy`
+- environment-separated ExternalSecret examples plus key-ring-aware auth/token secret rotation runbooks verified by `make verify-secret-policy`
 - a bounded live user sync execution path that walks recent public repositories owned by a GitHub login and persists them through the repository executor in `github-ingestor`
 - a bounded installation sync execution path that replays repositories already associated with a persisted installation record and delegates them through the repository executor without requiring GitHub App installation auth in the v1 baseline
 - a bounded live repository sync execution path that fetches recent repository, PR, review, issue, and commit data from the public GitHub REST API and persists it directly through `github-ingestor`

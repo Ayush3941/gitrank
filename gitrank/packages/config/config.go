@@ -61,22 +61,24 @@ type Redis struct {
 }
 
 type Auth struct {
-	SessionSecret           string
-	JWTSigningKey           string
-	SessionCookieName       string
-	CSRFCookieName          string
-	SessionCookieDomain     string
-	SessionCookieSecure     bool
-	SessionCookieSameSite   string
-	SessionTTL              time.Duration
-	SessionIdleTTL          time.Duration
-	SessionRotationInterval time.Duration
-	OAuthStateTTL           time.Duration
-	TokenEncryptionKey      string
-	AdminGitHubLogins       []string
-	MaintainerGitHubLogins  []string
-	RateLimitWindow         time.Duration
-	RateLimitMaxAttempts    int
+	SessionSecret               string
+	PreviousSessionSecrets      []string
+	JWTSigningKey               string
+	SessionCookieName           string
+	CSRFCookieName              string
+	SessionCookieDomain         string
+	SessionCookieSecure         bool
+	SessionCookieSameSite       string
+	SessionTTL                  time.Duration
+	SessionIdleTTL              time.Duration
+	SessionRotationInterval     time.Duration
+	OAuthStateTTL               time.Duration
+	TokenEncryptionKey          string
+	PreviousTokenEncryptionKeys []string
+	AdminGitHubLogins           []string
+	MaintainerGitHubLogins      []string
+	RateLimitWindow             time.Duration
+	RateLimitMaxAttempts        int
 }
 
 type GitHub struct {
@@ -173,22 +175,24 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			URL: getEnv("REDIS_URL", ""),
 		},
 		Auth: Auth{
-			SessionSecret:           getEnv("GITRANK_SESSION_SECRET", ""),
-			JWTSigningKey:           getEnv("GITRANK_JWT_SIGNING_KEY", ""),
-			SessionCookieName:       getEnv("AUTH_SESSION_COOKIE_NAME", "gitrank_session"),
-			CSRFCookieName:          getEnv("AUTH_CSRF_COOKIE_NAME", "gitrank_csrf"),
-			SessionCookieDomain:     getEnv("AUTH_COOKIE_DOMAIN", ""),
-			SessionCookieSecure:     getBool("AUTH_COOKIE_SECURE", false),
-			SessionCookieSameSite:   strings.ToLower(getEnv("AUTH_COOKIE_SAME_SITE", "lax")),
-			SessionTTL:              getDuration("AUTH_SESSION_TTL", 30*24*time.Hour),
-			SessionIdleTTL:          getDuration("AUTH_SESSION_IDLE_TTL", 72*time.Hour),
-			SessionRotationInterval: getDuration("AUTH_SESSION_ROTATION_INTERVAL", 24*time.Hour),
-			OAuthStateTTL:           getDuration("AUTH_OAUTH_STATE_TTL", 10*time.Minute),
-			TokenEncryptionKey:      getEnv("GITHUB_TOKEN_ENCRYPTION_KEY", ""),
-			AdminGitHubLogins:       getCSV("AUTH_ADMIN_GITHUB_LOGINS"),
-			MaintainerGitHubLogins:  getCSV("AUTH_MAINTAINER_GITHUB_LOGINS"),
-			RateLimitWindow:         getDuration("AUTH_RATE_LIMIT_WINDOW", time.Minute),
-			RateLimitMaxAttempts:    getInt("AUTH_RATE_LIMIT_MAX_ATTEMPTS", 30),
+			SessionSecret:               getEnv("GITRANK_SESSION_SECRET", ""),
+			PreviousSessionSecrets:      getCSV("GITRANK_PREVIOUS_SESSION_SECRETS"),
+			JWTSigningKey:               getEnv("GITRANK_JWT_SIGNING_KEY", ""),
+			SessionCookieName:           getEnv("AUTH_SESSION_COOKIE_NAME", "gitrank_session"),
+			CSRFCookieName:              getEnv("AUTH_CSRF_COOKIE_NAME", "gitrank_csrf"),
+			SessionCookieDomain:         getEnv("AUTH_COOKIE_DOMAIN", ""),
+			SessionCookieSecure:         getBool("AUTH_COOKIE_SECURE", false),
+			SessionCookieSameSite:       strings.ToLower(getEnv("AUTH_COOKIE_SAME_SITE", "lax")),
+			SessionTTL:                  getDuration("AUTH_SESSION_TTL", 30*24*time.Hour),
+			SessionIdleTTL:              getDuration("AUTH_SESSION_IDLE_TTL", 72*time.Hour),
+			SessionRotationInterval:     getDuration("AUTH_SESSION_ROTATION_INTERVAL", 24*time.Hour),
+			OAuthStateTTL:               getDuration("AUTH_OAUTH_STATE_TTL", 10*time.Minute),
+			TokenEncryptionKey:          getEnv("GITHUB_TOKEN_ENCRYPTION_KEY", ""),
+			PreviousTokenEncryptionKeys: getCSV("GITHUB_PREVIOUS_TOKEN_ENCRYPTION_KEYS"),
+			AdminGitHubLogins:           getCSV("AUTH_ADMIN_GITHUB_LOGINS"),
+			MaintainerGitHubLogins:      getCSV("AUTH_MAINTAINER_GITHUB_LOGINS"),
+			RateLimitWindow:             getDuration("AUTH_RATE_LIMIT_WINDOW", time.Minute),
+			RateLimitMaxAttempts:        getInt("AUTH_RATE_LIMIT_MAX_ATTEMPTS", 30),
 		},
 		GitHub: GitHub{
 			ClientID:                       getEnv("GITHUB_CLIENT_ID", ""),
@@ -497,16 +501,14 @@ func (a App) ValidateAuthService() error {
 	}
 	if strings.TrimSpace(a.Auth.TokenEncryptionKey) == "" {
 		problems = append(problems, "GITHUB_TOKEN_ENCRYPTION_KEY is required")
-	} else if raw, err := base64.RawStdEncoding.DecodeString(a.Auth.TokenEncryptionKey); err == nil {
-		if len(raw) != 32 {
-			problems = append(problems, "GITHUB_TOKEN_ENCRYPTION_KEY must decode to 32 bytes")
-		}
-	} else if raw, err := base64.StdEncoding.DecodeString(a.Auth.TokenEncryptionKey); err == nil {
-		if len(raw) != 32 {
-			problems = append(problems, "GITHUB_TOKEN_ENCRYPTION_KEY must decode to 32 bytes")
-		}
-	} else {
+	} else if _, err := decodeBase64Key(a.Auth.TokenEncryptionKey); err != nil {
 		problems = append(problems, "GITHUB_TOKEN_ENCRYPTION_KEY must be base64-encoded 32 bytes")
+	}
+	for _, key := range a.Auth.PreviousTokenEncryptionKeys {
+		if _, err := decodeBase64Key(key); err != nil {
+			problems = append(problems, "GITHUB_PREVIOUS_TOKEN_ENCRYPTION_KEYS entries must be base64-encoded 32-byte keys")
+			break
+		}
 	}
 	if err := a.ValidateOAuth(); err != nil {
 		problems = append(problems, err.Error())
@@ -578,6 +580,37 @@ func (a App) GitHubUserClientMode() string {
 	return "oauth_app"
 }
 
+func (a App) SessionSecretRing() [][]byte {
+	out := make([][]byte, 0, 1+len(a.Auth.PreviousSessionSecrets))
+	if strings.TrimSpace(a.Auth.SessionSecret) != "" {
+		out = append(out, []byte(strings.TrimSpace(a.Auth.SessionSecret)))
+	}
+	for _, secret := range a.Auth.PreviousSessionSecrets {
+		secret = strings.TrimSpace(secret)
+		if secret == "" {
+			continue
+		}
+		out = append(out, []byte(secret))
+	}
+	return out
+}
+
+func (a App) TokenEncryptionKeyRing() ([][]byte, error) {
+	primary, err := decodeBase64Key(a.Auth.TokenEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+	out := [][]byte{primary}
+	for _, encoded := range a.Auth.PreviousTokenEncryptionKeys {
+		key, err := decodeBase64Key(encoded)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, key)
+	}
+	return out, nil
+}
+
 func (a App) GitHubUserAuthorizeScopes() []string {
 	if a.GitHubUserClientMode() == "github_app" {
 		return nil
@@ -600,6 +633,24 @@ func (a App) ValidateAI() error {
 
 func (a App) IsProduction() bool {
 	return a.Env == Production
+}
+
+func decodeBase64Key(value string) ([]byte, error) {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return nil, errors.New("key is required")
+	}
+	raw, err := base64.RawStdEncoding.DecodeString(value)
+	if err != nil {
+		raw, err = base64.StdEncoding.DecodeString(value)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if len(raw) != 32 {
+		return nil, errors.New("decoded key must be 32 bytes")
+	}
+	return raw, nil
 }
 
 func getEnv(key, fallback string) string {

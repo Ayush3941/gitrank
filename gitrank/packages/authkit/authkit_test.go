@@ -36,6 +36,25 @@ func TestStateTokenRoundTrip(t *testing.T) {
 	}
 }
 
+func TestValidateStateTokenAnyAcceptsPreviousSecret(t *testing.T) {
+	now := time.Now().UTC()
+	token, err := NewStateToken([]byte("previous-secret"), "nonce-previous", time.Minute, now)
+	if err != nil {
+		t.Fatalf("NewStateToken() error = %v", err)
+	}
+
+	claims, index, err := ValidateStateTokenAny([][]byte{[]byte("current-secret"), []byte("previous-secret")}, token, now)
+	if err != nil {
+		t.Fatalf("ValidateStateTokenAny() error = %v", err)
+	}
+	if index != 1 {
+		t.Fatalf("matched index = %d, want previous secret index 1", index)
+	}
+	if claims.Nonce != "nonce-previous" {
+		t.Fatalf("Nonce = %q, want nonce-previous", claims.Nonce)
+	}
+}
+
 func TestBearerMiddleware(t *testing.T) {
 	authenticator := func(_ context.Context, token string) (*Principal, error) {
 		return &Principal{Subject: token}, nil
@@ -82,6 +101,19 @@ func TestOpaqueTokenRoundTrip(t *testing.T) {
 	}
 }
 
+func TestValidateDoubleSubmitCSRFAcceptsPreviousSecret(t *testing.T) {
+	sessionToken := "session-token"
+	csrf, err := DoubleSubmitCSRFFromToken([]byte("previous-secret"), sessionToken)
+	if err != nil {
+		t.Fatalf("DoubleSubmitCSRFFromToken() error = %v", err)
+	}
+
+	err = ValidateDoubleSubmitCSRF([][]byte{[]byte("current-secret"), []byte("previous-secret")}, sessionToken, csrf)
+	if err != nil {
+		t.Fatalf("ValidateDoubleSubmitCSRF() error = %v", err)
+	}
+}
+
 func TestEncryptDecryptSecret(t *testing.T) {
 	key, err := DecodeBase64Key("MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=")
 	if err != nil {
@@ -102,6 +134,29 @@ func TestEncryptDecryptSecret(t *testing.T) {
 	}
 	if decrypted != "ghu_example_token" {
 		t.Fatalf("DecryptSecret() = %q, want ghu_example_token", decrypted)
+	}
+}
+
+func TestDecryptSecretAnyAcceptsPreviousKey(t *testing.T) {
+	current, err := DecodeBase64Key("MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=")
+	if err != nil {
+		t.Fatalf("DecodeBase64Key(current) error = %v", err)
+	}
+	previous := []byte("abcdefghijklmnopqrstuvwxyz123456")
+	encrypted, err := EncryptSecret(previous, "ghu_previous_key_token")
+	if err != nil {
+		t.Fatalf("EncryptSecret() error = %v", err)
+	}
+
+	decrypted, index, err := DecryptSecretAny([][]byte{current, previous}, encrypted)
+	if err != nil {
+		t.Fatalf("DecryptSecretAny() error = %v", err)
+	}
+	if index != 1 {
+		t.Fatalf("matched index = %d, want previous key index 1", index)
+	}
+	if decrypted != "ghu_previous_key_token" {
+		t.Fatalf("DecryptSecretAny() = %q, want previous token", decrypted)
 	}
 }
 

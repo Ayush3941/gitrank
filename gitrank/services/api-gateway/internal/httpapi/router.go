@@ -23,6 +23,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 	authBaseURL := strings.TrimRight(cfg.Services.AuthBaseURL, "/")
 	ingestorBaseURL := strings.TrimRight(cfg.Services.GitHubIngestorBaseURL, "/")
 	client := &http.Client{Timeout: cfg.Services.RequestTimeout}
+	sessionSecrets := cfg.SessionSecretRing()
 
 	sessionAuth := newSessionAuthenticator(client, authBaseURL, cfg.Auth.SessionCookieName, cfg.Auth.CSRFCookieName)
 	publicReadLimiter := newRateLimiter(time.Minute, 180)
@@ -152,7 +153,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			writeMethodNotAllowed(w, r)
 			return
 		}
-		if err := validateSessionCSRF(r, cfg.Auth.SessionCookieName, []byte(cfg.Auth.SessionSecret)); err != nil {
+		if err := validateSessionCSRF(r, cfg.Auth.SessionCookieName, sessionSecrets); err != nil {
 			httpkit.WriteError(w, http.StatusForbidden, "invalid_csrf", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
@@ -173,7 +174,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			writeMethodNotAllowed(w, r)
 			return
 		}
-		if err := validateSessionCSRF(r, cfg.Auth.SessionCookieName, []byte(cfg.Auth.SessionSecret)); err != nil {
+		if err := validateSessionCSRF(r, cfg.Auth.SessionCookieName, sessionSecrets); err != nil {
 			httpkit.WriteError(w, http.StatusForbidden, "invalid_csrf", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
@@ -194,7 +195,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			writeMethodNotAllowed(w, r)
 			return
 		}
-		if err := validateSessionCSRF(r, cfg.Auth.SessionCookieName, []byte(cfg.Auth.SessionSecret)); err != nil {
+		if err := validateSessionCSRF(r, cfg.Auth.SessionCookieName, sessionSecrets); err != nil {
 			httpkit.WriteError(w, http.StatusForbidden, "invalid_csrf", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
@@ -216,7 +217,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			writeMethodNotAllowed(w, r)
 			return
 		}
-		if err := validateSessionCSRF(r, cfg.Auth.SessionCookieName, []byte(cfg.Auth.SessionSecret)); err != nil {
+		if err := validateSessionCSRF(r, cfg.Auth.SessionCookieName, sessionSecrets); err != nil {
 			httpkit.WriteError(w, http.StatusForbidden, "invalid_csrf", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
@@ -231,7 +232,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			writeMethodNotAllowed(w, r)
 			return
 		}
-		if err := validateSessionCSRF(r, cfg.Auth.SessionCookieName, []byte(cfg.Auth.SessionSecret)); err != nil {
+		if err := validateSessionCSRF(r, cfg.Auth.SessionCookieName, sessionSecrets); err != nil {
 			httpkit.WriteError(w, http.StatusForbidden, "invalid_csrf", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}

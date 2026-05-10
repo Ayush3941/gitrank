@@ -21,7 +21,7 @@ Current committed assets in this directory include:
 
 The base deploys the seven Go services, ClusterIP Services, an ingress for `api-gateway` and `auth-service`, and a migration Job. Staging and production overlays set namespaces, public URLs, ingress hosts, and image replacement points.
 
-Before applying the manifests, create or sync a `gitrank-runtime-secrets` Secret in the target namespace. The example manifests show both a direct Kubernetes Secret shape and External Secrets Operator shapes, but no secret example is included in the base kustomization. Use distinct remote secret paths for staging and production.
+Before applying the manifests, create or sync a `gitrank-runtime-secrets` Secret in the target namespace. The example manifests show both a direct Kubernetes Secret shape and External Secrets Operator shapes, but no secret example is included in the base kustomization. Use distinct remote secret paths for staging and production, including separate `PREVIOUS_*` paths for planned auth/session and GitHub token-encryption key overlap windows.
 
 Render locally:
 

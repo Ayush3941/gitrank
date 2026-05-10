@@ -231,18 +231,14 @@ func syncRoute(mode string) (string, error) {
 	}
 }
 
-func validateSessionCSRF(r *http.Request, sessionCookieName string, sessionSecret []byte) error {
+func validateSessionCSRF(r *http.Request, sessionCookieName string, sessionSecrets [][]byte) error {
 	sessionCookie, err := r.Cookie(strings.TrimSpace(sessionCookieName))
 	if err != nil || strings.TrimSpace(sessionCookie.Value) == "" {
 		return errors.New("missing session cookie")
 	}
 
-	expected, err := authkit.DoubleSubmitCSRFFromToken(sessionSecret, sessionCookie.Value)
-	if err != nil {
-		return err
-	}
 	provided := strings.TrimSpace(r.Header.Get("X-CSRF-Token"))
-	if provided == "" || provided != expected {
+	if err := authkit.ValidateDoubleSubmitCSRF(sessionSecrets, sessionCookie.Value, provided); err != nil {
 		return errors.New("invalid CSRF token")
 	}
 	return nil

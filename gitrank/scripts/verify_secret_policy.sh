@@ -12,7 +12,7 @@ for file in "$template" "$staging" "$production" "$runbook"; do
 	test -s "$file"
 done
 
-for key in DATABASE_URL REDIS_URL GITRANK_SESSION_SECRET GITRANK_JWT_SIGNING_KEY GITHUB_TOKEN_ENCRYPTION_KEY GITHUB_CLIENT_ID GITHUB_CLIENT_SECRET GITHUB_WEBHOOK_SECRET OPENAI_API_KEY GRAFANA_ADMIN_USER GRAFANA_ADMIN_PASSWORD; do
+for key in DATABASE_URL REDIS_URL GITRANK_SESSION_SECRET GITRANK_PREVIOUS_SESSION_SECRETS GITRANK_JWT_SIGNING_KEY GITHUB_TOKEN_ENCRYPTION_KEY GITHUB_PREVIOUS_TOKEN_ENCRYPTION_KEYS GITHUB_CLIENT_ID GITHUB_CLIENT_SECRET GITHUB_WEBHOOK_SECRET OPENAI_API_KEY GRAFANA_ADMIN_USER GRAFANA_ADMIN_PASSWORD; do
 	grep -q "secretKey: $key" "$staging"
 	grep -q "secretKey: $key" "$production"
 done
@@ -34,7 +34,8 @@ fi
 
 grep -q "replace-environment" "$template"
 grep -q "GITHUB_TOKEN_ENCRYPTION_KEY" "$runbook"
-grep -q "do not rotate blindly" "$runbook"
+grep -q "GITHUB_PREVIOUS_TOKEN_ENCRYPTION_KEYS" "$runbook"
+grep -q "GITRANK_PREVIOUS_SESSION_SECRETS" "$runbook"
 grep -q "make verify-secret-policy" "$runbook"
 
 echo "secret policy verification passed"

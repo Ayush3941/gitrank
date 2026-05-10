@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Ayush3941/gitrank/packages/authkit"
 	"github.com/Ayush3941/gitrank/packages/config"
 	"github.com/Ayush3941/gitrank/packages/githubapi"
 )
@@ -72,6 +73,30 @@ func TestExecutorFetchRepositoryUsesStableMetadataCache(t *testing.T) {
 	}
 	if intValue(second["stargazers_count"]) != 1 {
 		t.Fatalf("stargazers_count = %v, want first response", second["stargazers_count"])
+	}
+}
+
+func TestDecodeOptionalOAuthTokenKeysIncludesPreviousKeys(t *testing.T) {
+	keys := decodeOptionalOAuthTokenKeys(config.App{
+		Auth: config.Auth{
+			TokenEncryptionKey:          "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=",
+			PreviousTokenEncryptionKeys: []string{"YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoxMjM0NTY="},
+		},
+	})
+	if len(keys) != 2 {
+		t.Fatalf("keys len = %d, want current plus previous", len(keys))
+	}
+
+	encrypted, err := authkit.EncryptSecret(keys[1], "ghu_previous")
+	if err != nil {
+		t.Fatalf("EncryptSecret() error = %v", err)
+	}
+	decrypted, index, err := authkit.DecryptSecretAny(keys, encrypted)
+	if err != nil {
+		t.Fatalf("DecryptSecretAny() error = %v", err)
+	}
+	if index != 1 || decrypted != "ghu_previous" {
+		t.Fatalf("DecryptSecretAny() = %q index %d, want previous token at index 1", decrypted, index)
 	}
 }
 

@@ -20,7 +20,7 @@ type Service struct {
 	log             *slog.Logger
 	store           *Store
 	cache           *Cache
-	sessionSecret   []byte
+	sessionSecrets  [][]byte
 	publicCacheTTL  time.Duration
 	privateCacheTTL time.Duration
 }
@@ -38,7 +38,7 @@ func New(cfg config.App, pool *pgxpool.Pool, cache *Cache, log *slog.Logger) (*S
 		log:             log,
 		store:           NewStore(pool),
 		cache:           cache,
-		sessionSecret:   []byte(cfg.Auth.SessionSecret),
+		sessionSecrets:  cfg.SessionSecretRing(),
 		publicCacheTTL:  5 * time.Minute,
 		privateCacheTTL: 2 * time.Minute,
 	}, nil
@@ -205,19 +205,29 @@ func (s *Service) authenticate(ctx context.Context, sessionToken string, now tim
 	if strings.TrimSpace(sessionToken) == "" {
 		return sessionPrincipal{}, ErrUnauthorized
 	}
-	sessionHash, err := authkit.HashOpaqueToken(s.sessionSecret, sessionToken)
+	sessionHashes, err := authkit.HashOpaqueTokenCandidates(s.sessionSecrets, sessionToken)
 	if err != nil {
 		return sessionPrincipal{}, err
 	}
-	return s.store.LoadSessionPrincipal(ctx, sessionHash, now.UTC())
+	var lastErr error
+	for _, sessionHash := range sessionHashes {
+		principal, err := s.store.LoadSessionPrincipal(ctx, sessionHash, now.UTC())
+		if err == nil {
+			return principal, nil
+		}
+		lastErr = err
+		if !errors.Is(err, ErrUnauthorized) {
+			return sessionPrincipal{}, err
+		}
+	}
+	if lastErr == nil {
+		lastErr = ErrUnauthorized
+	}
+	return sessionPrincipal{}, lastErr
 }
 
 func (s *Service) validateCSRF(sessionToken, provided string) error {
-	expected, err := authkit.DoubleSubmitCSRFFromToken(s.sessionSecret, sessionToken)
-	if err != nil {
-		return err
-	}
-	if strings.TrimSpace(provided) == "" || provided != expected {
+	if err := authkit.ValidateDoubleSubmitCSRF(s.sessionSecrets, sessionToken, provided); err != nil {
 		return ErrInvalidCSRF
 	}
 	return nil
