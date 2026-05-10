@@ -18,12 +18,12 @@ Track product behavior for:
 - sync success and failure outcomes through API-gateway server-side `sync.succeeded` and `sync.failed`
 - dashboard visits and section engagement
 - public and authenticated profile views through API-gateway server-side `profile.viewed`
-- share-card actions as a future client event after the frontend submodule is writable from this repo
+- share-card actions as a future client event after the tracked frontend adds a share interaction contract
 - leaderboard visits and ranking filters
 - contribution drill-down and PR report views
 - score explanation openings through `score_explanation.opened`
 - badge engagement through `badge.viewed`
-- quest and progression engagement as future client events after the frontend submodule is writable from this repo
+- quest and progression engagement as future client events after live quest and progression contracts exist
 - dispute or report submission flows
 
 ## API Gateway Tracking Surface

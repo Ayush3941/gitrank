@@ -21,6 +21,7 @@ jobs:
       matrix:
         language:
           - go
+          - javascript-typescript
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -31,6 +32,7 @@ jobs:
           languages: ${{ matrix.language }}
 
       - name: Setup Go
+        if: matrix.language == 'go'
         uses: actions/setup-go@v6
         with:
           go-version: "1.26.2"
@@ -40,6 +42,7 @@ jobs:
             gitrank/**/go.sum
 
       - name: Build workspace
+        if: matrix.language == 'go'
         working-directory: gitrank
         run: |
           go work sync

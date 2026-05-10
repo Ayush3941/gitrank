@@ -136,6 +136,14 @@ updates:
       go-deps:
         patterns:
           - "*"
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: weekly
+    groups:
+      frontend-deps:
+        patterns:
+          - "*"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
