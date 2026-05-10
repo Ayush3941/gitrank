@@ -60,14 +60,15 @@ The root GitHub Actions workflows run the same lint/build checks plus repo-wide 
 
 ## Data Sources
 
-Most dashboard, leaderboard, badge, quest, contribution, and PR-report screens still read from `lib/api/mock-api.ts`.
+Leaderboard, quest, and PR-report screens still read from `lib/api/mock-api.ts` because the Go gateway does not expose live contracts for those product surfaces yet.
 
-The public profile page and dashboard settings page now use live profile data when no demo query param is present:
+The public profile page, authenticated dashboard overview, badge shelf, contribution drill-down, and dashboard settings page now use live profile data when no demo query param is present:
 
 - browser queries call frontend BFF routes under `app/api/profile/*`
 - those BFF routes proxy to the Go `api-gateway`
 - the gateway proxies to `profile-service`
 - session and CSRF cookies stay same-origin to the frontend
+- dashboard badge and contribution screens derive from the authenticated profile snapshot instead of mock PR-analysis detail
 
 The settings page also has live authenticated account actions:
 

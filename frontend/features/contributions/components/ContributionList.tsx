@@ -24,33 +24,55 @@ export function ContributionList({ items }: { items: Contribution[] }) {
               <p className="mt-2 text-3xl font-semibold text-white">{item.xpEarned} XP</p>
             </div>
           </div>
-          <div className="grid gap-3 md:grid-cols-4">
-            <Metric label="Difficulty" value={item.difficultyScore} />
-            <Metric label="Impact" value={item.impactScore} />
-            <Metric label="Review depth" value={item.reviewDepthScore} />
-            <Metric label="Test signal" value={item.testSignalScore} />
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted">
-            <div className="flex flex-wrap gap-4">
-              <span className="inline-flex items-center gap-2">
-                <GitMerge className="h-4 w-4 text-primary" />
-                Repo weight {item.repoWeight.toFixed(2)}
-              </span>
-              <span className="inline-flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-primary" />
-                Anti-spam {item.antiSpamMultiplier.toFixed(2)}x
-              </span>
+          {hasDetailedMetrics(item) ? (
+            <div className="grid gap-3 md:grid-cols-4">
+              <Metric label="Difficulty" value={item.difficultyScore} />
+              <Metric label="Impact" value={item.impactScore} />
+              <Metric label="Review depth" value={item.reviewDepthScore} />
+              <Metric label="Test signal" value={item.testSignalScore} />
             </div>
-            <Button asChild variant="secondary" size="sm">
-              <Link href={`/pr/${item.owner}/${item.repo}/${item.number}`}>
-                View battle report
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
+          ) : (
+            <div className="rounded-[1.75rem] border border-dashed border-white/12 bg-white/4 p-4 text-sm text-muted">
+              This live profile row comes from score-history evidence. Detailed PR metrics are shown only after a battle-report contract is available.
+            </div>
+          )}
+          <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted">
+            {hasDetailedMetrics(item) ? (
+              <>
+                <div className="flex flex-wrap gap-4">
+                  <span className="inline-flex items-center gap-2">
+                    <GitMerge className="h-4 w-4 text-primary" />
+                    Repo weight {item.repoWeight.toFixed(2)}
+                  </span>
+                  <span className="inline-flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4 text-primary" />
+                    Anti-spam {item.antiSpamMultiplier.toFixed(2)}x
+                  </span>
+                </div>
+                <Button asChild variant="secondary" size="sm">
+                  <Link href={`/pr/${item.owner}/${item.repo}/${item.number}`}>
+                    View battle report
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </>
+            ) : (
+              <span>Score-history snapshot evidence</span>
+            )}
           </div>
         </GlowCard>
       ))}
     </div>
+  );
+}
+
+function hasDetailedMetrics(item: Contribution) {
+  return (
+    item.difficultyScore > 0 ||
+    item.impactScore > 0 ||
+    item.reviewDepthScore > 0 ||
+    item.testSignalScore > 0 ||
+    item.changedFilesCount > 0
   );
 }
 

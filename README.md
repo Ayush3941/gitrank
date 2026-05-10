@@ -758,7 +758,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 - generic OCI build packaging under `deployments/docker/` and a release workflow that builds binaries, publishes GitHub Releases, and pushes per-service OCI images
 - a Kubernetes deployment baseline under `deployments/k8s/` with per-service Deployments, Services, gateway/auth ingress, staging and production overlays, runtime secret contracts, and migration Job wiring
 - committed observability assets under `deployments/observability/`, including Grafana dashboards, Prometheus alert rules, and service runbooks
-- a substantial Next.js frontend with dashboard, profile, leaderboard, quest, badge, onboarding, and PR-report flows, with live profile/settings/account actions and mock-backed dashboard, leaderboard, quest, badge, and PR-report surfaces
+- a substantial Next.js frontend with dashboard, profile, leaderboard, quest, badge, onboarding, and PR-report flows, with live profile/settings/account actions, live dashboard/badge/contribution data from the authenticated profile snapshot, and mock-backed leaderboard, quest, and PR-report surfaces
 - CI, frontend CI, release-artifact, Kubernetes deployment, dependency-review, CodeQL for Go and TypeScript, Scorecard, repo-level secret scanning, pinned Trivy filesystem and service-image scanning
 - a CI-enforced critical-path test coverage map plus Docker-backed local flow tests covering OAuth, sync, PR ingestion, analysis, scoring, profile projection, and webhook idempotency paths
 - a GitHub repository-controls runbook and token-based verifier for proving live branch protection, required checks, dependency graph, and Dependabot alerts
@@ -766,7 +766,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 Major gaps remain:
 
 - no external worker backend yet; scheduler-worker persistent mode now uses dedicated PostgreSQL tables for jobs, dead letters, backfill plans, rate-limit windows, and scheduler counters, but only bounded `sync.installation`, `sync.repository`, owned-repository `sync.user_history`, direct `sync.pull_request`, PR-surface `sync.review`, direct `sync.issue`, and direct `sync.commit` jobs currently auto-execute inside `scheduler-worker`
-- most non-profile frontend routes still use mock data
+- leaderboard, quest, and PR-report frontend routes still use mock data because live backend contracts for those product surfaces are not defined yet
 - live GitHub repository controls still need to be applied in GitHub settings and verified with `make verify-github-repository-controls`
 - no deployed tracing backend or observability stack yet; dashboards and alert rules are committed, and `gitrank/docs/runbooks/production-observability.md` defines the live verification path
 - rollback wiring is locally verified, but a real staging or production-like rollback drill still has to be executed and recorded

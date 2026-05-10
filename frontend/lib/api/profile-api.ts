@@ -4,7 +4,9 @@ import type {
   Badge,
   BadgeIcon,
   BadgeRarity,
+  Contribution,
   FeaturedContribution,
+  PRCategory,
   PreviewMode,
   PrivacySettings,
   ProfileRepositorySummary,
@@ -269,6 +271,7 @@ function toProfileViewData(
   const topSkills = (response.top_skill_areas ?? []).map((skill) => normalizeSkillCategory(skill.key));
   const skillTree = toSkillTree(response.top_skill_areas ?? []);
   const featuredContributions = toFeaturedContributions(response.score_history ?? []);
+  const contributions = toContributions(response.score_history ?? []);
   const repositories =
     mode === "private" && "repository_visibility" in response
       ? toRepositoryVisibility(response.repository_visibility ?? [])
@@ -302,7 +305,7 @@ function toProfileViewData(
       rankTier: response.level.rank_tier as UserProfile["level"]["rankTier"],
     },
     skillTree,
-    contributions: [],
+    contributions,
     badges: toBadges(response.badges ?? []),
     quests: [],
     scoreChanges: featuredContributions.slice(0, 5).map((item) => ({
@@ -408,6 +411,54 @@ function toFeaturedContributions(entries: ApiScoreHistoryEntry[]): FeaturedContr
         happenedAt: entry.created_at,
       };
     });
+}
+
+function toContributions(entries: ApiScoreHistoryEntry[]): Contribution[] {
+  return entries
+    .filter((entry) => entry.pull_request)
+    .map((entry) => {
+      const [owner, repo] = splitRepositoryName(entry.pull_request?.repository || "");
+      return {
+        id: entry.event_id,
+        owner,
+        repo,
+        number: entry.pull_request?.number ?? 0,
+        title: entry.pull_request?.title || "Contribution",
+        status: "merged",
+        category: inferPRCategory(entry),
+        difficultyScore: 0,
+        impactScore: 0,
+        reviewDepthScore: 0,
+        testSignalScore: 0,
+        repoWeight: 1,
+        antiSpamMultiplier: 1,
+        xpEarned: entry.delta_xp,
+        additions: 0,
+        deletions: 0,
+        changedFilesCount: 0,
+        mergedAt: entry.created_at,
+        maintainerReviewed: false,
+        linkedIssue: false,
+        ciPassed: false,
+        aiSummary:
+          entry.explanation?.find((line) => line.trim().length > 0) ||
+          "Profile snapshot evidence does not include detailed PR analysis metrics yet.",
+        evidenceSignals: entry.explanation ?? [],
+      };
+    });
+}
+
+function inferPRCategory(entry: ApiScoreHistoryEntry): PRCategory {
+  const text = `${entry.pull_request?.title ?? ""} ${(entry.explanation ?? []).join(" ")}`.toLowerCase();
+  if (text.includes("security")) return "Security";
+  if (text.includes("performance")) return "Performance";
+  if (text.includes("test")) return "Testing";
+  if (text.includes("doc")) return "Documentation";
+  if (text.includes("infra") || text.includes("deploy") || text.includes("kubernetes")) return "Infrastructure";
+  if (text.includes("review")) return "Review";
+  if (text.includes("architecture")) return "Architecture";
+  if (text.includes("bug") || text.includes("fix")) return "Bug Fix";
+  return "Backend";
 }
 
 function toBadges(source: ApiBadge[]): Badge[] {

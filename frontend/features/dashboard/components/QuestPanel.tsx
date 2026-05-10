@@ -16,6 +16,11 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
         </div>
       </div>
       <div className="space-y-3">
+        {quests.length === 0 ? (
+          <div className="rounded-[1.75rem] border border-dashed border-white/12 bg-white/4 p-4 text-sm text-muted">
+            Quest recommendations are not part of the live profile contract yet. They stay in demo mode until the backend exposes a quest model.
+          </div>
+        ) : null}
         {quests.slice(0, 3).map((quest) => {
           const progress = Math.round((quest.progress / quest.goal) * 100);
           return (

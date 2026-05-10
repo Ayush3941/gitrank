@@ -676,7 +676,7 @@ Current preview state:
 
 ## 13. Frontend and User Experience Checklist
 
-The repo now contains a tracked Next.js frontend with root-level frontend CI plus repo-wide secret and Trivy scanning. Public profile reads plus authenticated settings, sync, disconnect, and account-deletion flows are live. Most other product surfaces still use mock data.
+The repo now contains a tracked Next.js frontend with root-level frontend CI plus repo-wide secret and Trivy scanning. Public profile reads plus authenticated dashboard, badge, contribution, settings, sync, disconnect, and account-deletion flows are live. Leaderboard, quest, and PR-report product surfaces still use mock data until live backend contracts exist for those surfaces.
 
 Must be defined or built:
 

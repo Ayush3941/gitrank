@@ -12,6 +12,11 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
         <h2 className="mt-2 text-2xl font-semibold text-white">High-signal PRs from the last cycle</h2>
       </div>
       <div className="grid gap-3">
+        {reports.length === 0 ? (
+          <div className="rounded-[1.75rem] border border-dashed border-white/12 bg-white/4 p-4 text-sm text-muted">
+            Detailed PR battle reports are not exposed by the live profile API yet. The dashboard is showing verified profile snapshot evidence instead of mock report metrics.
+          </div>
+        ) : null}
         {reports.map((report) => (
           <div key={report.contribution.id} className="rounded-[1.75rem] border border-white/8 bg-white/5 p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">

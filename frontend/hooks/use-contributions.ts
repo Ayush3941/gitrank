@@ -1,8 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { getContributions } from "@/lib/api/mock-api";
-import type { PreviewMode } from "@/types/gitrank";
+import { getMyProfile } from "@/lib/api/profile-api";
+import type { Contribution, PreviewMode } from "@/types/gitrank";
 
 type ContributionParams = {
   filter?: string;
@@ -14,6 +14,42 @@ type ContributionParams = {
 export function useContributions(params: ContributionParams) {
   return useQuery({
     queryKey: ["contributions", params],
-    queryFn: () => getContributions(params),
+    queryFn: async () => {
+      const profile = await getMyProfile(params.preview);
+      return filterContributions(profile.user.contributions, params);
+    },
   });
+}
+
+function filterContributions(rows: Contribution[], params: ContributionParams) {
+  const normalizedFilter = (params.filter ?? "All").toLowerCase();
+  const term = (params.search ?? "").trim().toLowerCase();
+  const sort = params.sort ?? "Newest";
+
+  const filtered = rows.filter((item) => {
+    const categoryMatch =
+      normalizedFilter === "all" ||
+      normalizedFilter === "high xp" ||
+      normalizedFilter === item.status ||
+      normalizedFilter === item.category.toLowerCase();
+
+    const highXpMatch = normalizedFilter !== "high xp" || item.xpEarned >= 500;
+    const searchMatch =
+      term.length === 0 ||
+      item.title.toLowerCase().includes(term) ||
+      `${item.owner}/${item.repo}`.toLowerCase().includes(term);
+
+    return categoryMatch && highXpMatch && searchMatch;
+  });
+
+  const sorters = {
+    Newest: (a: Contribution, b: Contribution) =>
+      new Date(b.mergedAt).getTime() - new Date(a.mergedAt).getTime(),
+    "Highest XP": (a: Contribution, b: Contribution) => b.xpEarned - a.xpEarned,
+    "Highest Difficulty": (a: Contribution, b: Contribution) =>
+      b.difficultyScore - a.difficultyScore,
+    "Highest Impact": (a: Contribution, b: Contribution) => b.impactScore - a.impactScore,
+  };
+
+  return [...filtered].sort(sorters[sort]);
 }
