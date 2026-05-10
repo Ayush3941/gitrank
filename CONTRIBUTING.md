@@ -882,13 +882,15 @@ Dashboards and alerts:
 - [x] benchmark ingestion throughput
 - [x] benchmark scoring throughput
 - [x] benchmark profile read latency
-- [ ] batch GitHub API calls where possible
+- [x] batch GitHub API calls where possible
 - [x] cache stable repository metadata
 - [x] avoid N+1 query patterns
 - [x] tune DB indexes against real query shapes
 - [x] plan for backfills at scale
 - [x] plan for horizontal worker scaling
 - [x] cap AI cost per PR or per sync run
+
+Repository sync batches PR detail and review hydration through GitHub GraphQL when the requester has a valid linked OAuth token. It keeps one public REST PR list call for numeric IDs and label enrichment, then falls back to the existing REST hydration path when no usable linked token is available.
 
 ## 21. Privacy, Data Handling, and Compliance Checklist
 

@@ -730,6 +730,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 - GitHub REST and GraphQL client protections with bounded concurrency, secondary-rate-limit backoff, and provider-failure circuit breakers
 - GitHub REST and GraphQL fault-injection tests that prove secondary-rate-limit recovery and `Retry-After` handling on the shared client path
 - configurable `github-ingestor` repository metadata caching for stable `/repos/{owner}/{repo}` responses during bounded sync execution
+- OAuth-token-backed GraphQL batching in `github-ingestor` for repository PR details and reviews, with public REST list enrichment and REST fallback when the requester has no usable linked OAuth token
 - GitHub login, repository, and commit sync target validation plus HTTP(S)-only outbound URL guards for gateway, GitHub, and AI clients
 - a CI-backed Go safety audit that fails on non-test `unsafe` or reflection-heavy code paths unless they are reviewed explicitly
 - W3C `traceparent` propagation across service HTTP boundaries, scheduler-triggered async sync execution, GitHub API calls, OAuth token calls, and AI request builders

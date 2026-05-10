@@ -131,6 +131,37 @@ func (s *Store) ActiveInstallationRepositories(ctx context.Context, githubInstal
 	return installationID, repositories, nil
 }
 
+func (s *Store) ActiveGitHubAccessTokenByLogin(ctx context.Context, githubLogin string, validAfter time.Time) (string, bool, error) {
+	if s == nil || s.pool == nil {
+		return "", false, ErrUnavailable
+	}
+	githubLogin = strings.TrimSpace(githubLogin)
+	if githubLogin == "" {
+		return "", false, nil
+	}
+
+	var encryptedToken string
+	err := s.pool.QueryRow(ctx, `
+		SELECT gut.access_token_encrypted
+		FROM github_accounts ga
+		JOIN github_user_tokens gut ON gut.github_account_id = ga.id
+		WHERE LOWER(ga.login) = LOWER($1)
+		  AND COALESCE(ga.link_status, 'linked') = 'linked'
+		  AND gut.access_token_encrypted <> ''
+		  AND gut.revoked_at IS NULL
+		  AND (gut.expires_at IS NULL OR gut.expires_at > $2)
+		ORDER BY ga.linked_at DESC
+		LIMIT 1
+	`, githubLogin, validAfter.UTC()).Scan(&encryptedToken)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", false, nil
+		}
+		return "", false, err
+	}
+	return encryptedToken, true, nil
+}
+
 func (s *TxStore) UpsertInstallation(payload map[string]any, now time.Time) (string, bool, error) {
 	installation := object(payload["installation"])
 	if installation == nil {
@@ -298,7 +329,7 @@ func (s *TxStore) UpsertPullRequest(payload map[string]any, repositoryID string,
 		return "", false, 0, nil
 	}
 
-	authorAccountID, err := s.lookupAccountIDByGitHubUserID(int64Value(object(pr["user"])["id"]))
+	authorAccountID, err := s.lookupAccountIDByGitHubIdentity(object(pr["user"]))
 	if err != nil {
 		return "", false, 0, err
 	}
@@ -411,7 +442,7 @@ func (s *TxStore) UpsertReview(payload map[string]any, pullRequestID string, now
 	if githubReviewID == 0 {
 		return false, nil
 	}
-	reviewerAccountID, err := s.lookupAccountIDByGitHubUserID(int64Value(object(review["user"])["id"]))
+	reviewerAccountID, err := s.lookupAccountIDByGitHubIdentity(object(review["user"]))
 	if err != nil {
 		return false, err
 	}
@@ -479,7 +510,7 @@ func (s *TxStore) UpsertReviewComment(payload map[string]any, pullRequestID, rev
 	if githubCommentID == 0 {
 		return false, nil
 	}
-	authorAccountID, err := s.lookupAccountIDByGitHubUserID(int64Value(object(comment["user"])["id"]))
+	authorAccountID, err := s.lookupAccountIDByGitHubIdentity(object(comment["user"]))
 	if err != nil {
 		return false, err
 	}
@@ -537,7 +568,7 @@ func (s *TxStore) UpsertIssue(payload map[string]any, repositoryID string, now t
 	if githubIssueID == 0 {
 		return false, 0, nil
 	}
-	authorAccountID, err := s.lookupAccountIDByGitHubUserID(int64Value(object(issue["user"])["id"]))
+	authorAccountID, err := s.lookupAccountIDByGitHubIdentity(object(issue["user"]))
 	if err != nil {
 		return false, 0, err
 	}
@@ -993,6 +1024,36 @@ func (s *TxStore) lookupAccountIDByGitHubUserID(githubUserID int64) (string, err
 		WHERE github_user_id = $1
 		LIMIT 1
 	`, githubUserID)
+	var accountID string
+	if err := row.Scan(&accountID); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", nil
+		}
+		return "", err
+	}
+	return accountID, nil
+}
+
+func (s *TxStore) lookupAccountIDByGitHubIdentity(identity map[string]any) (string, error) {
+	accountID, err := s.lookupAccountIDByGitHubUserID(int64Value(identity["id"]))
+	if err != nil || strings.TrimSpace(accountID) != "" {
+		return accountID, err
+	}
+	return s.lookupAccountIDByGitHubLogin(stringValue(identity["login"]))
+}
+
+func (s *TxStore) lookupAccountIDByGitHubLogin(githubLogin string) (string, error) {
+	githubLogin = strings.TrimSpace(githubLogin)
+	if githubLogin == "" {
+		return "", nil
+	}
+	row := s.tx.QueryRow(s.context(), `
+		SELECT id::text
+		FROM github_accounts
+		WHERE LOWER(login) = LOWER($1)
+		  AND COALESCE(link_status, 'linked') = 'linked'
+		LIMIT 1
+	`, githubLogin)
 	var accountID string
 	if err := row.Scan(&accountID); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

@@ -74,3 +74,180 @@ func TestExecutorFetchRepositoryUsesStableMetadataCache(t *testing.T) {
 		t.Fatalf("stargazers_count = %v, want first response", second["stargazers_count"])
 	}
 }
+
+func TestExecutorFetchPullRequestsUsesGraphQLBatchWhenTokenAvailable(t *testing.T) {
+	restRequests := make(map[string]int)
+	restServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		restRequests[r.URL.Path]++
+		if r.URL.Path != "/repos/octo/repo/pulls" {
+			t.Fatalf("unexpected REST path %q; GraphQL batch should avoid per-PR REST hydration", r.URL.Path)
+		}
+		if r.URL.Query().Get("per_page") != "20" {
+			t.Fatalf("per_page = %q, want GraphQL-bounded page size 20", r.URL.Query().Get("per_page"))
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode([]map[string]any{
+			{
+				"id":     7007,
+				"number": 7,
+				"user": map[string]any{
+					"id":    1001,
+					"login": "alice",
+				},
+				"labels": []map[string]any{
+					{
+						"id":          9901,
+						"name":        "bug",
+						"color":       "d73a4a",
+						"description": "Something is not working",
+						"default":     true,
+					},
+				},
+			},
+		})
+	}))
+	defer restServer.Close()
+
+	graphqlRequests := 0
+	graphqlServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		graphqlRequests++
+		if r.Method != http.MethodPost {
+			t.Fatalf("GraphQL method = %q, want POST", r.Method)
+		}
+		if r.Header.Get("Authorization") != "Bearer user-token" {
+			t.Fatalf("Authorization = %q, want user token", r.Header.Get("Authorization"))
+		}
+		var request githubapi.GraphQLRequest
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			t.Fatalf("decode GraphQL request: %v", err)
+		}
+		variables, ok := request.Variables.(map[string]any)
+		if !ok {
+			t.Fatalf("variables type = %T, want map[string]any", request.Variables)
+		}
+		if variables["owner"] != "octo" || variables["name"] != "repo" {
+			t.Fatalf("variables owner/name = %v/%v, want octo/repo", variables["owner"], variables["name"])
+		}
+		if variables["first"] != float64(1) || variables["reviewsFirst"] != float64(20) {
+			t.Fatalf("variables first/reviewsFirst = %v/%v, want 1/20", variables["first"], variables["reviewsFirst"])
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"data": map[string]any{
+				"repository": map[string]any{
+					"pullRequests": map[string]any{
+						"nodes": []map[string]any{
+							{
+								"databaseId":              7007,
+								"number":                  7,
+								"title":                   "Fix parser panic",
+								"state":                   "MERGED",
+								"isDraft":                 false,
+								"merged":                  true,
+								"mergedAt":                "2026-05-01T12:00:00Z",
+								"createdAt":               "2026-04-30T12:00:00Z",
+								"updatedAt":               "2026-05-01T12:01:00Z",
+								"closedAt":                "2026-05-01T12:00:00Z",
+								"changedFilesIfAvailable": 3,
+								"additions":               40,
+								"deletions":               5,
+								"commits":                 map[string]any{"totalCount": 2},
+								"author":                  map[string]any{"login": "alice"},
+								"baseRefName":             "main",
+								"headRefName":             "fix-parser",
+								"labels":                  map[string]any{"nodes": []map[string]any{{"name": "bug", "color": "d73a4a", "description": "Something is not working", "isDefault": true}}},
+								"reviews": map[string]any{
+									"nodes": []map[string]any{
+										{
+											"databaseId":        701,
+											"state":             "APPROVED",
+											"submittedAt":       "2026-05-01T11:30:00Z",
+											"body":              "Looks good",
+											"author":            map[string]any{"login": "bob"},
+											"authorAssociation": "MEMBER",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		})
+	}))
+	defer graphqlServer.Close()
+
+	restClient, err := githubapi.NewRESTClient(githubapi.ClientConfig{
+		BaseURL:          restServer.URL,
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		HTTPClient:       restServer.Client(),
+		SecondaryBackoff: time.Millisecond,
+		MaxConcurrency:   1,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	executor := NewExecutor(config.App{
+		GitHub: config.GitHub{
+			GraphQLURL:       graphqlServer.URL,
+			APIVersion:       "2026-03-10",
+			UserAgent:        "GitRank/test",
+			RequestTimeout:   time.Second,
+			MaxPageSize:      50,
+			GraphQLPageSize:  20,
+			SecondaryBackoff: time.Millisecond,
+			MaxConcurrency:   1,
+		},
+	}, nil, restClient)
+	executor.graphqlTokenSource = func(context.Context, SyncRequestActor, time.Time) (githubapi.TokenSource, bool, error) {
+		return githubapi.StaticTokenSource("user-token"), true, nil
+	}
+	executor.graphqlClientFactory = func(tokenSource githubapi.TokenSource) (*githubapi.GraphQLClient, error) {
+		return githubapi.NewGraphQLClient(githubapi.ClientConfig{
+			BaseURL:          graphqlServer.URL,
+			APIVersion:       "2026-03-10",
+			UserAgent:        "GitRank/test",
+			TokenSource:      tokenSource,
+			HTTPClient:       graphqlServer.Client(),
+			SecondaryBackoff: time.Millisecond,
+			MaxConcurrency:   1,
+		})
+	}
+
+	pullRequests, reviewsByNumber, err := executor.fetchPullRequests(context.Background(), "octo", "repo", SyncRequestActor{GitHubLogin: "alice"})
+	if err != nil {
+		t.Fatalf("fetchPullRequests() error = %v", err)
+	}
+	if restRequests["/repos/octo/repo/pulls"] != 1 {
+		t.Fatalf("REST list requests = %d, want 1", restRequests["/repos/octo/repo/pulls"])
+	}
+	if graphqlRequests != 1 {
+		t.Fatalf("GraphQL requests = %d, want 1", graphqlRequests)
+	}
+	if len(pullRequests) != 1 {
+		t.Fatalf("pullRequests len = %d, want 1", len(pullRequests))
+	}
+	pr := pullRequests[0]
+	if intValue(pr["changed_files"]) != 3 || intValue(pr["commits"]) != 2 {
+		t.Fatalf("batched PR metrics = changed_files %v commits %v, want 3/2", pr["changed_files"], pr["commits"])
+	}
+	if state := stringValue(pr["state"]); state != "closed" {
+		t.Fatalf("state = %q, want REST-compatible closed", state)
+	}
+	if userID := intValue(object(pr["user"])["id"]); userID != 1001 {
+		t.Fatalf("merged user id = %d, want REST summary user id", userID)
+	}
+	if labels := objectArray(pr["labels"]); len(labels) != 1 || intValue(labels[0]["id"]) != 9901 {
+		t.Fatalf("merged labels = %#v, want REST summary label with numeric GitHub ID", labels)
+	}
+	reviews := reviewsByNumber[7]
+	if len(reviews) != 1 {
+		t.Fatalf("reviews len = %d, want 1", len(reviews))
+	}
+	if int64Value(reviews[0]["id"]) != 701 || stringValue(object(reviews[0]["user"])["login"]) != "bob" {
+		t.Fatalf("review = %#v, want GraphQL review mapped to REST shape", reviews[0])
+	}
+}

@@ -21,19 +21,26 @@ const (
 )
 
 type Executor struct {
-	cfg             config.App
-	store           *Store
-	client          *githubapi.RESTClient
-	repositoryCache *repositoryMetadataCache
+	cfg                  config.App
+	store                *Store
+	client               *githubapi.RESTClient
+	repositoryCache      *repositoryMetadataCache
+	oauthTokenKey        []byte
+	graphqlClientFactory githubGraphQLClientFactory
+	graphqlTokenSource   githubGraphQLTokenSource
 }
 
 func NewExecutor(cfg config.App, pool *pgxpool.Pool, client *githubapi.RESTClient) *Executor {
-	return &Executor{
-		cfg:             cfg,
-		store:           NewStore(pool),
-		client:          client,
-		repositoryCache: newRepositoryMetadataCache(cfg.GitHub.RepositoryCacheTTL),
+	executor := &Executor{
+		cfg:                  cfg,
+		store:                NewStore(pool),
+		client:               client,
+		repositoryCache:      newRepositoryMetadataCache(cfg.GitHub.RepositoryCacheTTL),
+		oauthTokenKey:        decodeOptionalOAuthTokenKey(cfg),
+		graphqlClientFactory: newGitHubGraphQLClientFactory(cfg),
 	}
+	executor.graphqlTokenSource = executor.graphQLTokenSourceForActor
+	return executor
 }
 
 func (e *Executor) Ready(ctx context.Context) error {
@@ -77,7 +84,7 @@ func (e *Executor) SyncRepository(
 		return response, err
 	}
 
-	pullRequests, reviewsByNumber, err := e.fetchPullRequests(ctx, owner, name)
+	pullRequests, reviewsByNumber, err := e.fetchPullRequests(ctx, owner, name, actor)
 	if err != nil {
 		_ = e.recordFailedSyncRun(ctx, req.Repository, req, actor, correlationID, startedAt, err)
 		return response, err
@@ -1011,8 +1018,30 @@ func (e *Executor) fetchRepository(ctx context.Context, owner, name string) (map
 	return repository, err
 }
 
-func (e *Executor) fetchPullRequests(ctx context.Context, owner, name string) ([]map[string]any, map[int][]map[string]any, error) {
+func (e *Executor) fetchPullRequests(ctx context.Context, owner, name string, actor SyncRequestActor) ([]map[string]any, map[int][]map[string]any, error) {
+	graphqlClient, useGraphQL, err := e.graphQLClientForActor(ctx, actor, time.Now().UTC())
+	if err != nil {
+		return nil, nil, err
+	}
+
 	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, defaultRepositorySyncPageSize)
+	if useGraphQL {
+		perPage = min(perPage, boundedPageSize(e.cfg.GitHub.GraphQLPageSize, defaultRepositorySyncPageSize))
+	}
+	summaries, err := e.fetchPullRequestSummaries(ctx, owner, name, perPage)
+	if err != nil {
+		return nil, nil, err
+	}
+	if len(summaries) == 0 {
+		return []map[string]any{}, map[int][]map[string]any{}, nil
+	}
+	if useGraphQL {
+		return e.fetchPullRequestsGraphQL(ctx, graphqlClient, owner, name, summaries, perPage)
+	}
+	return e.fetchPullRequestsRESTDetails(ctx, owner, name, summaries, perPage)
+}
+
+func (e *Executor) fetchPullRequestSummaries(ctx context.Context, owner, name string, perPage int) ([]map[string]any, error) {
 	var summaries []map[string]any
 	_, err := e.client.GetJSON(ctx, fmt.Sprintf("/repos/%s/%s/pulls", owner, name), url.Values{
 		"state":     []string{"all"},
@@ -1021,9 +1050,12 @@ func (e *Executor) fetchPullRequests(ctx context.Context, owner, name string) ([
 		"per_page":  []string{fmt.Sprintf("%d", perPage)},
 	}, githubapi.ConditionalRequest{}, &summaries)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
+	return summaries, nil
+}
 
+func (e *Executor) fetchPullRequestsRESTDetails(ctx context.Context, owner, name string, summaries []map[string]any, perPage int) ([]map[string]any, map[int][]map[string]any, error) {
 	pullRequests := make([]map[string]any, 0, len(summaries))
 	reviewsByNumber := make(map[int][]map[string]any, len(summaries))
 	for _, summary := range summaries {
