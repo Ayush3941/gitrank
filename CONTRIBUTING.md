@@ -925,6 +925,8 @@ GitRank may expose reputational data about real people. That increases the stand
 - [x] define zero-downtime migration strategy
 - [x] define cost monitoring and budget alerts
 
+Kubernetes rollback wiring is locally verified by `make verify-rollback-procedure`, which renders staging and production overlays and checks the manual deploy workflow contains rollout history, undo, and status gates. A live production rollback drill is still required before checking the final production-readiness rollback gate.
+
 Deployment assets to add:
 
 - [x] `gitrank/deployments/compose/` for local stack

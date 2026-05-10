@@ -19,6 +19,16 @@ on:
         required: true
         type: boolean
         default: false
+      rollback:
+        description: "Rollback deployments in the selected environment instead of applying manifests"
+        required: true
+        type: boolean
+        default: false
+      rollback_revision:
+        description: "Optional Kubernetes rollout revision to roll back to; empty uses the previous revision"
+        required: false
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -36,7 +46,16 @@ jobs:
         with:
           version: v1.33.4
 
+      - name: Validate deploy mode
+        run: |
+          set -eu
+          if [ "${{ inputs.apply }}" = "true" ] && [ "${{ inputs.rollback }}" = "true" ]; then
+            echo "apply and rollback cannot both be true" >&2
+            exit 1
+          fi
+
       - name: Prepare image references
+        if: inputs.rollback != true
         working-directory: gitrank/deployments/k8s/overlays/${{ inputs.environment }}
         run: |
           set -eu
@@ -45,13 +64,14 @@ jobs:
           sed -i "s#newTag: ${{ inputs.environment }}#newTag: ${{ inputs.image_tag }}#g" kustomization.yaml
 
       - name: Render manifests
+        if: inputs.rollback != true
         run: |
           set -eu
           kubectl kustomize "gitrank/deployments/k8s/overlays/${{ inputs.environment }}" > rendered-k8s.yaml
           test -s rendered-k8s.yaml
 
       - name: Configure kubeconfig
-        if: inputs.apply == true
+        if: inputs.apply == true || inputs.rollback == true
         env:
           KUBE_CONFIG_B64: ${{ secrets.KUBE_CONFIG_B64 }}
         run: |
@@ -62,7 +82,7 @@ jobs:
           chmod 600 "$HOME/.kube/config"
 
       - name: Apply manifests
-        if: inputs.apply == true
+        if: inputs.apply == true && inputs.rollback != true
         run: |
           set -eu
           namespace="gitrank-${{ inputs.environment }}"
@@ -72,5 +92,21 @@ jobs:
           kubectl apply -f rendered-k8s.yaml
           kubectl wait --for=condition=complete job/gitrank-migrate --namespace "$namespace" --timeout=180s
           for deployment in api-gateway auth-service github-ingestor pr-analyzer profile-service scoring-engine scheduler-worker; do
+            kubectl rollout status "deployment/${deployment}" --namespace "$namespace" --timeout=180s
+          done
+
+      - name: Rollback deployments
+        if: inputs.rollback == true
+        run: |
+          set -eu
+          namespace="gitrank-${{ inputs.environment }}"
+          revision="${{ inputs.rollback_revision }}"
+          for deployment in api-gateway auth-service github-ingestor pr-analyzer profile-service scoring-engine scheduler-worker; do
+            kubectl rollout history "deployment/${deployment}" --namespace "$namespace"
+            if [ -n "$revision" ]; then
+              kubectl rollout undo "deployment/${deployment}" --namespace "$namespace" --to-revision="$revision"
+            else
+              kubectl rollout undo "deployment/${deployment}" --namespace "$namespace"
+            fi
             kubectl rollout status "deployment/${deployment}" --namespace "$namespace" --timeout=180s
           done

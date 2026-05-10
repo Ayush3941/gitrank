@@ -28,6 +28,22 @@ kubectl kustomize deployments/k8s/overlays/staging
 kubectl kustomize deployments/k8s/overlays/production
 ```
 
-Deployments can also be rendered or applied through the manual `Deploy Kubernetes` GitHub Actions workflow. Its default mode only renders manifests; cluster apply requires `KUBE_CONFIG_B64` and the `apply` input.
+Deployments can also be rendered, applied, or rolled back through the manual `Deploy Kubernetes` GitHub Actions workflow. Its default mode only renders manifests; cluster apply or rollback requires `KUBE_CONFIG_B64`.
+
+Rollback procedure:
+
+1. Open the `Deploy Kubernetes` workflow.
+2. Select the `staging` or `production` environment.
+3. Set `rollback` to `true` and leave `apply` as `false`.
+4. Optionally set `rollback_revision` to a Kubernetes deployment revision; leave it empty to roll back each deployment to its previous revision.
+5. Confirm every service reports a successful `kubectl rollout status`.
+
+Rollback scope is application deployment rollback only. Database migrations are forward-only in v1; use the documented backup and restore process if a data rollback is required.
+
+Verify the local rollback wiring and manifest render path with:
+
+```bash
+make verify-rollback-procedure
+```
 
 Managed PostgreSQL and managed Redis are preferred instead of running stateful databases inside the cluster.
