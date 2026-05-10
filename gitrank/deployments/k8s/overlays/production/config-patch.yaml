@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gitrank-runtime-config
+data:
+  GITRANK_ENV: production
+  GITRANK_PUBLIC_BASE_URL: https://gitrank.example.com
+  GITRANK_API_BASE_URL: https://api.gitrank.example.com
+  AUTH_COOKIE_DOMAIN: .gitrank.example.com
+  GITHUB_OAUTH_REDIRECT_URL: https://auth.gitrank.example.com/oauth/github/callback
+  GITHUB_USER_AGENT: GitRank/production

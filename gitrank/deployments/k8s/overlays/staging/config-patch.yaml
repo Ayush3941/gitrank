@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gitrank-runtime-config
+data:
+  GITRANK_ENV: staging
+  GITRANK_PUBLIC_BASE_URL: https://staging.gitrank.example.com
+  GITRANK_API_BASE_URL: https://api.staging.gitrank.example.com
+  AUTH_COOKIE_DOMAIN: .staging.gitrank.example.com
+  GITHUB_OAUTH_REDIRECT_URL: https://auth.staging.gitrank.example.com/oauth/github/callback
+  GITHUB_USER_AGENT: GitRank/staging

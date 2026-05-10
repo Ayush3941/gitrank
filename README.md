@@ -742,17 +742,17 @@ The repository currently contains a working foundation, not just an empty scaffo
 - metrics endpoints and shared request instrumentation across the Go services, including queue depth, cache hit rate, sync duration, score computation duration, PR analysis breakdowns, GitHub rate-limit tracking, and HTTP error counters
 - PostgreSQL migrations for core entities, GitHub ingestion state, and auth/session security tables
 - generic OCI build packaging under `deployments/docker/` and a release workflow that builds binaries, publishes GitHub Releases, and pushes per-service OCI images
-- a Kubernetes deployment baseline under `deployments/k8s/` with namespace and kustomization scaffolding
+- a Kubernetes deployment baseline under `deployments/k8s/` with per-service Deployments, Services, gateway/auth ingress, staging and production overlays, runtime secret contracts, and migration Job wiring
 - committed observability assets under `deployments/observability/`, including Grafana dashboards, Prometheus alert rules, and service runbooks
 - a substantial Next.js frontend with dashboard, profile, leaderboard, quest, badge, onboarding, and PR-report flows, with live profile/settings/account actions and mock-backed dashboard, leaderboard, quest, badge, and PR-report surfaces
-- CI, release-artifact, dependency-review, CodeQL, Scorecard, repo-level secret scanning, pinned Trivy filesystem and service-image scanning, plus frontend-specific CI and Trivy/secret scanning in the nested frontend repo
+- CI, release-artifact, Kubernetes deployment, dependency-review, CodeQL, Scorecard, repo-level secret scanning, pinned Trivy filesystem and service-image scanning, plus frontend-specific CI and Trivy/secret scanning in the nested frontend repo
 
 Major gaps remain:
 
 - no external worker backend yet; scheduler-worker persistent mode now uses dedicated PostgreSQL tables for jobs, dead letters, backfill plans, rate-limit windows, and scheduler counters, but only bounded `sync.installation`, `sync.repository`, owned-repository `sync.user_history`, direct `sync.pull_request`, PR-surface `sync.review`, direct `sync.issue`, and direct `sync.commit` jobs currently auto-execute inside `scheduler-worker`
 - most non-profile frontend routes still use mock data
 - no distributed tracing or deployed observability stack yet; dashboards and alert rules are committed but not wired into runtime infrastructure
-- the committed Kubernetes assets are still only a minimal namespace/layout baseline and do not yet include per-service Deployments, Services, ingress, or secret-manager wiring
+- the Kubernetes assets are still provider-neutral and require a real `gitrank-runtime-secrets` source, TLS Secret, ingress controller, managed PostgreSQL, managed Redis, and registry owner/tag substitution before production apply
 
 ## License
 

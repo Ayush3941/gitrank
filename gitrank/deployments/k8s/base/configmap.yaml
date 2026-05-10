@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gitrank-runtime-config
+  labels:
+    app.kubernetes.io/name: gitrank-runtime-config
+    app.kubernetes.io/part-of: gitrank
+data:
+  GITRANK_ENV: production
+  GITRANK_LOG_LEVEL: info
+  GITRANK_LOG_FORMAT: json
+  GITRANK_SHUTDOWN_TIMEOUT: 10s
+  GITRANK_PUBLIC_BASE_URL: https://app.gitrank.example.com
+  GITRANK_API_BASE_URL: https://api.gitrank.example.com
+  AUTH_SERVICE_BASE_URL: http://auth-service:8081
+  GITHUB_INGESTOR_BASE_URL: http://github-ingestor:8082
+  PR_ANALYZER_BASE_URL: http://pr-analyzer:8083
+  PROFILE_SERVICE_BASE_URL: http://profile-service:8084
+  SCORING_ENGINE_BASE_URL: http://scoring-engine:8085
+  SCHEDULER_WORKER_BASE_URL: http://scheduler-worker:8086
+  INTERNAL_API_REQUEST_TIMEOUT: 5s
+  AUTH_SESSION_COOKIE_NAME: gitrank_session
+  AUTH_CSRF_COOKIE_NAME: gitrank_csrf
+  AUTH_COOKIE_DOMAIN: .gitrank.example.com
+  AUTH_COOKIE_SECURE: "true"
+  AUTH_COOKIE_SAME_SITE: lax
+  AUTH_SESSION_TTL: 720h
+  AUTH_SESSION_IDLE_TTL: 72h
+  AUTH_SESSION_ROTATION_INTERVAL: 24h
+  AUTH_OAUTH_STATE_TTL: 10m
+  AUTH_RATE_LIMIT_WINDOW: 1m
+  AUTH_RATE_LIMIT_MAX_ATTEMPTS: "30"
+  GITHUB_OAUTH_AUTHORIZE_URL: https://github.com/login/oauth/authorize
+  GITHUB_OAUTH_TOKEN_URL: https://github.com/login/oauth/access_token
+  GITHUB_OAUTH_DEVICE_URL: https://github.com/login/device/code
+  GITHUB_OAUTH_REDIRECT_URL: https://auth.gitrank.example.com/oauth/github/callback
+  GITHUB_OAUTH_SCOPES: read:user,user:email
+  GITHUB_APP_ID: "0"
+  GITHUB_API_BASE_URL: https://api.github.com
+  GITHUB_GRAPHQL_URL: https://api.github.com/graphql
+  GITHUB_API_VERSION: "2026-03-10"
+  GITHUB_USER_AGENT: GitRank/prod
+  GITHUB_REQUEST_TIMEOUT: 10s
+  GITHUB_MAX_PAGE_SIZE: "100"
+  GITHUB_GRAPHQL_PAGE_SIZE: "100"
+  GITHUB_WEBHOOK_MAX_BODY_BYTES: "1048576"
+  GITHUB_WEBHOOK_DEDUPE_TTL: 168h
+  GITHUB_FAILED_DELIVERY_LOOKBACK: 72h
+  GITHUB_INSTALLATION_TOKEN_REFRESH_SKEW: 5m
+  GITHUB_SECONDARY_RATE_LIMIT_BACKOFF: 1m
+  GITHUB_MAX_CONCURRENT_REQUESTS: "8"
+  AI_PROVIDER: openai
+  OPENAI_MODEL: gpt-5.5
+  OPENAI_BASE_URL: https://api.openai.com/v1
+  AI_REQUEST_TIMEOUT: 20s
+  OPENAI_MODERATION_MODEL: omni-moderation-latest
+  OPENAI_EMBEDDING_MODEL: text-embedding-3-small
+  OTEL_ENABLED: "false"
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+  OTEL_SERVICE_NAMESPACE: gitrank
+  OTEL_METRICS_ENABLED: "true"
+  OTEL_TRACES_ENABLED: "false"
+  SCHEDULER_SYNC_CRON: 0 */6 * * *
+  JOB_MAX_ATTEMPTS: "10"
+  JOB_RETRY_BACKOFF: 30s
+  JOB_WORKER_CONCURRENCY: "4"
+  JOB_LEASE_TTL: 2m
+  JOB_POLL_INTERVAL: 5s
+  JOB_DEAD_LETTER_QUEUE: github-sync-dead-letter
+  JOB_PER_USER_RATE_WINDOW: 15m
+  JOB_PER_USER_RATE_MAX: "6"
+  JOB_PER_INSTALLATION_RATE_WINDOW: 15m
+  JOB_PER_INSTALLATION_RATE_MAX: "18"

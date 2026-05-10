@@ -12,8 +12,9 @@ This document defines the v1 infrastructure, observability, and reliability base
 
 Current committed state:
 
-- `deployments/k8s/` currently contains only the namespace and kustomization layout baseline
-- per-service Deployments, Services, ingress, overlays, and secret-manager wiring are still pending follow-up work
+- `deployments/k8s/` contains a base kustomization with namespace, service account, runtime config, per-service Deployments, ClusterIP Services, gateway/auth ingress, and a migration Job
+- staging and production overlays set environment-specific namespaces, public URLs, ingress hosts, and image replacement points
+- runtime secrets are expected to be materialized as `gitrank-runtime-secrets` by Kubernetes Secret creation or an external secret controller before rollout
 
 ## Environments
 
@@ -34,6 +35,7 @@ Promotion path:
 ## Secrets and Access
 
 - use Kubernetes secrets plus a cloud secret manager integration where available
+- materialize the `gitrank-runtime-secrets` contract before applying service Deployments
 - separate prod and non-prod credentials
 - rotate auth, GitHub, AI, and database credentials through documented procedures
 

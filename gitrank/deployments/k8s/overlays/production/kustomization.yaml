@@ -1,0 +1,40 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: gitrank-production
+resources:
+  - ../../base
+images:
+  - name: gitrank-api-gateway
+    newName: ghcr.io/replace-me/gitrank-api-gateway
+    newTag: production
+  - name: gitrank-auth-service
+    newName: ghcr.io/replace-me/gitrank-auth-service
+    newTag: production
+  - name: gitrank-github-ingestor
+    newName: ghcr.io/replace-me/gitrank-github-ingestor
+    newTag: production
+  - name: gitrank-pr-analyzer
+    newName: ghcr.io/replace-me/gitrank-pr-analyzer
+    newTag: production
+  - name: gitrank-profile-service
+    newName: ghcr.io/replace-me/gitrank-profile-service
+    newTag: production
+  - name: gitrank-scoring-engine
+    newName: ghcr.io/replace-me/gitrank-scoring-engine
+    newTag: production
+  - name: gitrank-scheduler-worker
+    newName: ghcr.io/replace-me/gitrank-scheduler-worker
+    newTag: production
+  - name: gitrank-migrator
+    newName: ghcr.io/replace-me/gitrank-migrator
+    newTag: production
+patches:
+  - target:
+      kind: Namespace
+      name: gitrank
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: gitrank-production
+  - path: config-patch.yaml
+  - path: ingress-patch.yaml

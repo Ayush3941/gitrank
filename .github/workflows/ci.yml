@@ -63,22 +63,46 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        service:
-          - api-gateway
-          - auth-service
-          - github-ingestor
-          - pr-analyzer
-          - profile-service
-          - scoring-engine
-          - scheduler-worker
+        include:
+          - image: api-gateway
+            dockerfile: gitrank/deployments/docker/Dockerfile
+            service: api-gateway
+          - image: auth-service
+            dockerfile: gitrank/deployments/docker/Dockerfile
+            service: auth-service
+          - image: github-ingestor
+            dockerfile: gitrank/deployments/docker/Dockerfile
+            service: github-ingestor
+          - image: pr-analyzer
+            dockerfile: gitrank/deployments/docker/Dockerfile
+            service: pr-analyzer
+          - image: profile-service
+            dockerfile: gitrank/deployments/docker/Dockerfile
+            service: profile-service
+          - image: scoring-engine
+            dockerfile: gitrank/deployments/docker/Dockerfile
+            service: scoring-engine
+          - image: scheduler-worker
+            dockerfile: gitrank/deployments/docker/Dockerfile
+            service: scheduler-worker
+          - image: migrator
+            dockerfile: gitrank/deployments/docker/migrator.Dockerfile
+            service: ""
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
       - name: Build service container
         run: |
-          docker build \
-            -f gitrank/deployments/docker/Dockerfile \
-            --build-arg SERVICE=${{ matrix.service }} \
-            -t gitrank/${{ matrix.service }}:ci \
-            .
+          if [ -n "${{ matrix.service }}" ]; then
+            docker build \
+              -f "${{ matrix.dockerfile }}" \
+              --build-arg SERVICE="${{ matrix.service }}" \
+              -t "gitrank/${{ matrix.image }}:ci" \
+              .
+          else
+            docker build \
+              -f "${{ matrix.dockerfile }}" \
+              -t "gitrank/${{ matrix.image }}:ci" \
+              .
+          fi

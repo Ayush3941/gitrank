@@ -910,7 +910,7 @@ GitRank may expose reputational data about real people. That increases the stand
 
 - [x] choose cloud or self-host baseline
 - [x] choose runtime packaging strategy
-- [ ] add IaC
+- [x] add IaC
 - [x] define dev, staging, and prod environments
 - [x] define environment promotion process
 - [x] define secret management system
@@ -927,7 +927,7 @@ Deployment assets to add:
 
 - [x] `gitrank/deployments/compose/` for local stack
 - [x] `gitrank/deployments/k8s/` or equivalent if Kubernetes is chosen
-- [ ] CI deployment workflows
+- [x] CI deployment workflows
 - [x] environment sample files
 
 ## 23. CI/CD Checklist

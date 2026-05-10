@@ -68,14 +68,31 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        service:
-          - api-gateway
-          - auth-service
-          - github-ingestor
-          - pr-analyzer
-          - profile-service
-          - scoring-engine
-          - scheduler-worker
+        include:
+          - image: api-gateway
+            dockerfile: gitrank/deployments/docker/Dockerfile
+            service: api-gateway
+          - image: auth-service
+            dockerfile: gitrank/deployments/docker/Dockerfile
+            service: auth-service
+          - image: github-ingestor
+            dockerfile: gitrank/deployments/docker/Dockerfile
+            service: github-ingestor
+          - image: pr-analyzer
+            dockerfile: gitrank/deployments/docker/Dockerfile
+            service: pr-analyzer
+          - image: profile-service
+            dockerfile: gitrank/deployments/docker/Dockerfile
+            service: profile-service
+          - image: scoring-engine
+            dockerfile: gitrank/deployments/docker/Dockerfile
+            service: scoring-engine
+          - image: scheduler-worker
+            dockerfile: gitrank/deployments/docker/Dockerfile
+            service: scheduler-worker
+          - image: migrator
+            dockerfile: gitrank/deployments/docker/migrator.Dockerfile
+            service: ""
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -90,12 +107,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
+      - name: Normalize image owner
+        run: echo "IMAGE_OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_ENV"
+
       - name: Build and push OCI image
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: gitrank/deployments/docker/Dockerfile
+          file: ${{ matrix.dockerfile }}
           build-args: |
             SERVICE=${{ matrix.service }}
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/gitrank-${{ matrix.service }}:${{ github.ref_name }}
+          tags: ghcr.io/${{ env.IMAGE_OWNER }}/gitrank-${{ matrix.image }}:${{ github.ref_name }}

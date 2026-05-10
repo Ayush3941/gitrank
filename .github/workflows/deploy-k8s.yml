@@ -1,0 +1,76 @@
+name: Deploy Kubernetes
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Kubernetes overlay to deploy"
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      image_tag:
+        description: "OCI image tag to deploy"
+        required: true
+        default: "latest"
+      apply:
+        description: "Apply manifests to the cluster"
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.33.4
+
+      - name: Prepare image references
+        working-directory: gitrank/deployments/k8s/overlays/${{ inputs.environment }}
+        run: |
+          set -eu
+          image_owner="${GITHUB_REPOSITORY_OWNER,,}"
+          sed -i "s#ghcr.io/replace-me/gitrank-#ghcr.io/${image_owner}/gitrank-#g" kustomization.yaml
+          sed -i "s#newTag: ${{ inputs.environment }}#newTag: ${{ inputs.image_tag }}#g" kustomization.yaml
+
+      - name: Render manifests
+        run: |
+          set -eu
+          kubectl kustomize "gitrank/deployments/k8s/overlays/${{ inputs.environment }}" > rendered-k8s.yaml
+          test -s rendered-k8s.yaml
+
+      - name: Configure kubeconfig
+        if: inputs.apply == true
+        env:
+          KUBE_CONFIG_B64: ${{ secrets.KUBE_CONFIG_B64 }}
+        run: |
+          set -eu
+          test -n "$KUBE_CONFIG_B64"
+          mkdir -p "$HOME/.kube"
+          printf '%s' "$KUBE_CONFIG_B64" | base64 -d > "$HOME/.kube/config"
+          chmod 600 "$HOME/.kube/config"
+
+      - name: Apply manifests
+        if: inputs.apply == true
+        run: |
+          set -eu
+          namespace="gitrank-${{ inputs.environment }}"
+          if kubectl get namespace "$namespace" >/dev/null 2>&1; then
+            kubectl delete job gitrank-migrate --namespace "$namespace" --ignore-not-found
+          fi
+          kubectl apply -f rendered-k8s.yaml
+          kubectl wait --for=condition=complete job/gitrank-migrate --namespace "$namespace" --timeout=180s
+          for deployment in api-gateway auth-service github-ingestor pr-analyzer profile-service scoring-engine scheduler-worker; do
+            kubectl rollout status "deployment/${deployment}" --namespace "$namespace" --timeout=180s
+          done
