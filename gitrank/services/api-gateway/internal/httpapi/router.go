@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -103,6 +104,27 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 				"Cache-Control": "public, max-age=60, stale-while-revalidate=300",
 			},
 			Transform: analyticsProfileTransform(analytics, handle),
+		})
+	}))
+
+	mux.Handle("/v1/pr/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			writeMethodNotAllowed(w, r)
+			return
+		}
+		if !allowRateLimit(w, r, publicReadLimiter, "pr_report") {
+			return
+		}
+		if !validPullRequestReportPath(r.URL.Path) {
+			httpkit.WriteError(w, http.StatusNotFound, "not_found", "pull request report not found", httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+
+		proxyRequest(w, r, client, profileBaseURL, r.URL.Path, proxyOptions{
+			ForwardHeaders: defaultForwardHeaders(r),
+			ResponseHeaders: map[string]string{
+				"Cache-Control": "public, max-age=60, stale-while-revalidate=300",
+			},
 		})
 	}))
 
@@ -308,4 +330,17 @@ func checkDependency(ctx context.Context, client *http.Client, baseURL, name str
 	}
 	checks[name] = contracts.ComponentCheck{Status: "ok", Details: baseURL}
 	return nil
+}
+
+func validPullRequestReportPath(path string) bool {
+	trimmed := strings.Trim(strings.TrimPrefix(path, "/v1/pr/"), "/")
+	parts := strings.Split(trimmed, "/")
+	if len(parts) != 4 || parts[3] != "report" {
+		return false
+	}
+	if _, err := contracts.NormalizeGitHubRepository(parts[0] + "/" + parts[1]); err != nil {
+		return false
+	}
+	number, err := strconv.Atoi(parts[2])
+	return err == nil && number > 0
 }

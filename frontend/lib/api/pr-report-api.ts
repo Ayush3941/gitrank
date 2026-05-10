@@ -1,0 +1,169 @@
+import type {
+  Contribution,
+  PRCategory,
+  PullRequestAnalysis,
+  ScoreBreakdown,
+} from "@/types/gitrank";
+
+type ApiPRReportContribution = {
+  id: string;
+  owner: string;
+  repo: string;
+  number: number;
+  title: string;
+  status: string;
+  category: string;
+  difficulty_score: number;
+  impact_score: number;
+  review_depth_score: number;
+  test_signal_score: number;
+  repo_weight: number;
+  anti_spam_multiplier: number;
+  xp_earned: number;
+  additions: number;
+  deletions: number;
+  changed_files_count: number;
+  merged_at: string;
+  maintainer_reviewed: boolean;
+  linked_issue: boolean;
+  ci_passed: boolean;
+  ai_summary: string;
+  evidence_signals?: string[];
+};
+
+type ApiScoreBreakdown = {
+  label: string;
+  delta_xp: number;
+  type: string;
+  reason: string;
+};
+
+type ApiPRReportResponse = {
+  contribution: ApiPRReportContribution;
+  base_value: number;
+  merged_bonus: number;
+  review_bonus: number;
+  test_bonus: number;
+  repo_bonus: number;
+  ai_confidence: number;
+  penalties?: ApiScoreBreakdown[];
+  suggested_quest_id: string;
+};
+
+type ApiErrorResponse = {
+  error?: {
+    message?: string;
+  };
+};
+
+export async function getLivePrReport(
+  owner: string,
+  repo: string,
+  number: number,
+): Promise<PullRequestAnalysis | null> {
+  const response = await fetch(
+    `/api/pr/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${encodeURIComponent(String(number))}/report`,
+    {
+      cache: "no-store",
+      credentials: "same-origin",
+    },
+  );
+  if (response.status === 404) {
+    return null;
+  }
+  if (!response.ok) {
+    throw new Error(await responseErrorMessage(response));
+  }
+
+  const payload = (await response.json()) as ApiPRReportResponse;
+  return toPullRequestAnalysis(payload);
+}
+
+function toPullRequestAnalysis(report: ApiPRReportResponse): PullRequestAnalysis {
+  return {
+    contribution: toContribution(report.contribution),
+    baseValue: report.base_value,
+    mergedBonus: report.merged_bonus,
+    reviewBonus: report.review_bonus,
+    testBonus: report.test_bonus,
+    repoBonus: report.repo_bonus,
+    aiConfidence: report.ai_confidence,
+    penalties: (report.penalties ?? []).map(toScoreBreakdown),
+    suggestedQuestId: report.suggested_quest_id,
+  };
+}
+
+function toContribution(source: ApiPRReportContribution): Contribution {
+  return {
+    id: source.id,
+    owner: source.owner,
+    repo: source.repo,
+    number: source.number,
+    title: source.title,
+    status: normalizeStatus(source.status),
+    category: normalizeCategory(source.category),
+    difficultyScore: source.difficulty_score,
+    impactScore: source.impact_score,
+    reviewDepthScore: source.review_depth_score,
+    testSignalScore: source.test_signal_score,
+    repoWeight: source.repo_weight,
+    antiSpamMultiplier: source.anti_spam_multiplier,
+    xpEarned: source.xp_earned,
+    additions: source.additions,
+    deletions: source.deletions,
+    changedFilesCount: source.changed_files_count,
+    mergedAt: source.merged_at,
+    maintainerReviewed: source.maintainer_reviewed,
+    linkedIssue: source.linked_issue,
+    ciPassed: source.ci_passed,
+    aiSummary: source.ai_summary,
+    evidenceSignals: source.evidence_signals ?? [],
+  };
+}
+
+function toScoreBreakdown(source: ApiScoreBreakdown): ScoreBreakdown {
+  return {
+    label: source.label,
+    deltaXp: source.delta_xp,
+    type: source.type === "penalty" ? "penalty" : "gain",
+    reason: source.reason,
+  };
+}
+
+function normalizeStatus(value: string): Contribution["status"] {
+  const normalized = value.trim().toLowerCase();
+  if (normalized === "closed") return "closed";
+  if (normalized === "open") return "open";
+  return "merged";
+}
+
+function normalizeCategory(value: string): PRCategory {
+  const normalized = value.trim().toLowerCase();
+  const mapped: Record<string, PRCategory> = {
+    architecture: "Architecture",
+    backend: "Backend",
+    "bug fix": "Bug Fix",
+    bugfix: "Bug Fix",
+    documentation: "Documentation",
+    docs: "Documentation",
+    frontend: "Backend",
+    infrastructure: "Infrastructure",
+    devops: "Infrastructure",
+    performance: "Performance",
+    review: "Review",
+    security: "Security",
+    testing: "Testing",
+    tests: "Testing",
+  };
+  return mapped[normalized] ?? "Backend";
+}
+
+async function responseErrorMessage(response: Response): Promise<string> {
+  const fallback = `PR report request failed with status ${response.status}.`;
+  try {
+    const body = (await response.json()) as ApiErrorResponse;
+    return body.error?.message?.trim() || fallback;
+  } catch {
+    return fallback;
+  }
+}

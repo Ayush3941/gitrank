@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -63,6 +64,20 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 
 	mux.Handle("/v1/leaderboard", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response, err := profileService.Leaderboard(r.Context(), 50, time.Now().UTC())
+		if err != nil {
+			writeProfileError(w, r, err)
+			return
+		}
+		httpkit.WriteJSON(w, http.StatusOK, response)
+	})))
+
+	mux.Handle("/v1/pr/", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		owner, repo, number, ok := parsePullRequestReportPath(r.URL.Path)
+		if !ok {
+			httpkit.WriteError(w, http.StatusNotFound, "not_found", "pull request report not found", httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		response, err := profileService.PublicPullRequestReport(r.Context(), owner, repo, number, time.Now().UTC())
 		if err != nil {
 			writeProfileError(w, r, err)
 			return
@@ -209,4 +224,22 @@ func cookieValue(cookie *http.Cookie) string {
 		return ""
 	}
 	return cookie.Value
+}
+
+func parsePullRequestReportPath(path string) (string, string, int, bool) {
+	trimmed := strings.Trim(strings.TrimPrefix(path, "/v1/pr/"), "/")
+	parts := strings.Split(trimmed, "/")
+	if len(parts) != 4 || parts[3] != "report" {
+		return "", "", 0, false
+	}
+	fullName, err := contracts.NormalizeGitHubRepository(parts[0] + "/" + parts[1])
+	if err != nil {
+		return "", "", 0, false
+	}
+	number, err := strconv.Atoi(parts[2])
+	if err != nil || number <= 0 {
+		return "", "", 0, false
+	}
+	repoParts := strings.SplitN(fullName, "/", 2)
+	return repoParts[0], repoParts[1], number, true
 }

@@ -60,12 +60,13 @@ The root GitHub Actions workflows run the same lint/build checks plus repo-wide 
 
 ## Data Sources
 
-Quest screens now read the live `GET /v1/me/quests` contract through the frontend BFF when no demo query param is present. PR-report screens still read from `lib/api/mock-api.ts` because the Go gateway does not expose a live report contract for that product surface yet.
+Quest screens now read the live `GET /v1/me/quests` contract through the frontend BFF when no demo query param is present. PR-report screens now read the live `GET /v1/pr/{owner}/{repo}/{number}/report` contract through the frontend BFF when no demo query param is present.
 
 The public profile page, authenticated dashboard overview, badge shelf, contribution drill-down, leaderboard, and dashboard settings page now use live profile data when no demo query param is present:
 
 - browser queries call frontend BFF routes under `app/api/profile/*`
 - quest queries call the frontend BFF route at `app/api/profile/me/quests`
+- PR report queries call the frontend BFF route at `app/api/pr/[owner]/[repo]/[number]/report`
 - leaderboard queries call the frontend BFF route at `app/api/leaderboard`
 - those BFF routes proxy to the Go `api-gateway`
 - the gateway proxies to `profile-service`

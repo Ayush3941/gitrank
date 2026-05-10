@@ -1,0 +1,542 @@
+package service
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"math"
+	"strings"
+	"time"
+
+	"github.com/Ayush3941/gitrank/packages/contracts"
+	"github.com/jackc/pgx/v5"
+)
+
+type pullRequestReportRecord struct {
+	PullRequestID      string
+	Owner              string
+	Repo               string
+	FullName           string
+	Stars              int
+	Number             int
+	Title              string
+	Body               string
+	State              string
+	Merged             bool
+	Additions          int
+	Deletions          int
+	ChangedFiles       int
+	OccurredAt         time.Time
+	UpdatedAt          time.Time
+	AnalysisID         string
+	AnalysisVersion    string
+	AnalysisSource     string
+	Category           string
+	AIConfidence       float64
+	Summary            string
+	AnalysisSignals    []string
+	ScoreEventID       string
+	ScoreVersion       string
+	XP                 int
+	ScoreExplanation   []string
+	ScoreMetadata      map[string]any
+	FileCount          int
+	TestFiles          int
+	DocsFiles          int
+	ReviewCount        int
+	ApprovalCount      int
+	ChangesRequested   int
+	ReviewCommentCount int
+}
+
+func (s *Service) PublicPullRequestReport(ctx context.Context, owner, repo string, number int, now time.Time) (contracts.PullRequestReportResponse, error) {
+	if strings.TrimSpace(owner) == "" || strings.TrimSpace(repo) == "" || number <= 0 {
+		return contracts.PullRequestReportResponse{}, ErrInvalidRequest
+	}
+	record, err := s.store.LoadPullRequestReport(ctx, owner, repo, number)
+	if err != nil {
+		return contracts.PullRequestReportResponse{}, err
+	}
+	return pullRequestReportFromRecord(record, now.UTC()), nil
+}
+
+func (s *Store) LoadPullRequestReport(ctx context.Context, owner, repo string, number int) (pullRequestReportRecord, error) {
+	row := s.pool.QueryRow(ctx, `
+		SELECT
+			pr.id::text,
+			r.owner_login,
+			r.name,
+			r.full_name,
+			r.stars_count,
+			pr.number,
+			pr.title,
+			COALESCE(pr.payload_jsonb->>'body', ''),
+			pr.state,
+			pr.merged,
+			pr.additions,
+			pr.deletions,
+			pr.changed_files,
+			COALESCE(pr.merged_at, pr.closed_at_source, pr.updated_at_source, pr.created_at_source),
+			pr.updated_at_source,
+			COALESCE(ca.id::text, ''),
+			COALESCE(ca.analyzer_version, ''),
+			COALESCE(ca.analysis_source, ''),
+			COALESCE(ca.classification, ''),
+			COALESCE(ca.confidence::float8, 0),
+			COALESCE(ca.summary, ''),
+			COALESCE(ca.signals_jsonb, '[]'::jsonb),
+			COALESCE(se.id::text, ''),
+			COALESCE(se.score_version, ''),
+			COALESCE(se.delta_total_xp, 0),
+			COALESCE(se.explanation_jsonb, '[]'::jsonb),
+			COALESCE(se.metadata_jsonb, '{}'::jsonb),
+			COALESCE(files.file_count, 0),
+			COALESCE(files.test_files, 0),
+			COALESCE(files.docs_files, 0),
+			COALESCE(reviews.review_count, 0),
+			COALESCE(reviews.approval_count, 0),
+			COALESCE(reviews.changes_requested_count, 0),
+			COALESCE(review_comments.comment_count, 0)
+		FROM repositories r
+		INNER JOIN pull_requests pr ON pr.repository_id = r.id
+		LEFT JOIN LATERAL (
+			SELECT id, analyzer_version, analysis_source, classification, confidence, summary, signals_jsonb
+			FROM contribution_analyses
+			WHERE pull_request_id = pr.id
+			ORDER BY created_at DESC
+			LIMIT 1
+		) ca ON true
+		LEFT JOIN LATERAL (
+			SELECT id, score_version, delta_total_xp, explanation_jsonb, metadata_jsonb
+			FROM score_events
+			WHERE pull_request_id = pr.id
+			ORDER BY created_at DESC
+			LIMIT 1
+		) se ON true
+		LEFT JOIN LATERAL (
+			SELECT
+				COUNT(*)::int AS file_count,
+				COUNT(*) FILTER (WHERE path ~* '(^|/)(test|tests|__tests__)/|(_test\.|\.test\.|\.spec\.)')::int AS test_files,
+				COUNT(*) FILTER (WHERE path ~* '(^|/)(docs?|documentation)/|\.md$|\.mdx$')::int AS docs_files
+			FROM pull_request_files
+			WHERE pull_request_id = pr.id
+		) files ON true
+		LEFT JOIN LATERAL (
+			SELECT
+				COUNT(*)::int AS review_count,
+				COUNT(*) FILTER (WHERE UPPER(state) = 'APPROVED')::int AS approval_count,
+				COUNT(*) FILTER (WHERE UPPER(state) = 'CHANGES_REQUESTED')::int AS changes_requested_count
+			FROM pull_request_reviews
+			WHERE pull_request_id = pr.id
+		) reviews ON true
+		LEFT JOIN LATERAL (
+			SELECT COUNT(*)::int AS comment_count
+			FROM pull_request_review_comments
+			WHERE pull_request_id = pr.id
+		) review_comments ON true
+		WHERE LOWER(r.owner_login) = LOWER($1)
+		  AND LOWER(r.name) = LOWER($2)
+		  AND pr.number = $3
+		  AND r.is_private = FALSE
+	`, owner, repo, number)
+
+	var record pullRequestReportRecord
+	var signalsRaw, explanationRaw, metadataRaw []byte
+	if err := row.Scan(
+		&record.PullRequestID,
+		&record.Owner,
+		&record.Repo,
+		&record.FullName,
+		&record.Stars,
+		&record.Number,
+		&record.Title,
+		&record.Body,
+		&record.State,
+		&record.Merged,
+		&record.Additions,
+		&record.Deletions,
+		&record.ChangedFiles,
+		&record.OccurredAt,
+		&record.UpdatedAt,
+		&record.AnalysisID,
+		&record.AnalysisVersion,
+		&record.AnalysisSource,
+		&record.Category,
+		&record.AIConfidence,
+		&record.Summary,
+		&signalsRaw,
+		&record.ScoreEventID,
+		&record.ScoreVersion,
+		&record.XP,
+		&explanationRaw,
+		&metadataRaw,
+		&record.FileCount,
+		&record.TestFiles,
+		&record.DocsFiles,
+		&record.ReviewCount,
+		&record.ApprovalCount,
+		&record.ChangesRequested,
+		&record.ReviewCommentCount,
+	); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return pullRequestReportRecord{}, ErrNotFound
+		}
+		return pullRequestReportRecord{}, err
+	}
+	record.AnalysisSignals = decodeReportStrings(signalsRaw)
+	record.ScoreExplanation = decodeReportStrings(explanationRaw)
+	record.ScoreMetadata = decodeReportMap(metadataRaw)
+	return record, nil
+}
+
+func pullRequestReportFromRecord(record pullRequestReportRecord, now time.Time) contracts.PullRequestReportResponse {
+	category := firstNonEmpty(stringFromMap(record.ScoreMetadata, "category"), record.Category, inferReportCategory(record))
+	difficulty := scorePercent(numberFromMap(record.ScoreMetadata, "technical_depth"), derivedDifficulty(record))
+	reviewDepth := scorePercent(numberFromMap(record.ScoreMetadata, "review_strength"), derivedReviewDepth(record))
+	testSignal := derivedTestSignal(record)
+	impact := derivedImpact(record)
+	repoWeight := repositoryWeight(record.Stars)
+	antiSpam := numberFromMap(record.ScoreMetadata, "diminishing_returns")
+	if antiSpam <= 0 {
+		antiSpam = 1
+	}
+
+	mergedBonus := 0
+	if record.Merged {
+		mergedBonus = 90
+	}
+	reviewBonus := int(math.Round(float64(reviewDepth) * 1.2))
+	testBonus := int(math.Round(float64(testSignal) * 0.9))
+	repoBonus := int(math.Round((repoWeight - 1) * 180))
+	baseValue := record.XP - mergedBonus - reviewBonus - testBonus - repoBonus
+	if baseValue < 0 {
+		baseValue = 0
+	}
+
+	penalties := make([]contracts.PRReportScoreBreakdown, 0)
+	if record.ScoreEventID == "" {
+		penalties = append(penalties, contracts.PRReportScoreBreakdown{
+			Label:   "No persisted score event",
+			DeltaXP: 0,
+			Type:    "penalty",
+			Reason:  "This PR has not completed the scoring pipeline yet.",
+		})
+	}
+	if record.ChangesRequested > 0 && !record.Merged {
+		penalties = append(penalties, contracts.PRReportScoreBreakdown{
+			Label:   "Pending requested changes",
+			DeltaXP: -35,
+			Type:    "penalty",
+			Reason:  "Requested changes are present and the PR is not merged yet.",
+		})
+	}
+
+	return contracts.PullRequestReportResponse{
+		Contribution: contracts.PRReportContribution{
+			ID:                 reportContributionID(record),
+			Owner:              record.Owner,
+			Repo:               record.Repo,
+			Number:             record.Number,
+			Title:              record.Title,
+			Status:             reportStatus(record),
+			Category:           category,
+			DifficultyScore:    difficulty,
+			ImpactScore:        impact,
+			ReviewDepthScore:   reviewDepth,
+			TestSignalScore:    testSignal,
+			RepoWeight:         repoWeight,
+			AntiSpamMultiplier: antiSpam,
+			XPEarned:           record.XP,
+			Additions:          record.Additions,
+			Deletions:          record.Deletions,
+			ChangedFilesCount:  maxInt(record.ChangedFiles, record.FileCount),
+			MergedAt:           record.OccurredAt.UTC(),
+			MaintainerReviewed: record.ReviewCount > 0 || record.ReviewCommentCount > 0,
+			LinkedIssue:        reportHasLinkedIssue(record),
+			CIPassed:           reportHasSignal(record, "ci passed", "checks passed"),
+			AISummary:          firstNonEmpty(record.Summary, firstReportExplanation(record), "No analysis summary has been persisted for this PR yet."),
+			EvidenceSignals:    reportEvidenceSignals(record),
+		},
+		BaseValue:        baseValue,
+		MergedBonus:      mergedBonus,
+		ReviewBonus:      reviewBonus,
+		TestBonus:        testBonus,
+		RepoBonus:        repoBonus,
+		AIConfidence:     record.AIConfidence,
+		Penalties:        penalties,
+		SuggestedQuestID: suggestedQuestID(record, category, testSignal, reviewDepth),
+		ScoreVersion:     record.ScoreVersion,
+		AnalysisVersion:  record.AnalysisVersion,
+		SourceUpdatedAt:  latestTime(record.UpdatedAt, record.OccurredAt),
+		GeneratedAt:      now.UTC(),
+		IsStale:          record.ScoreEventID == "" || record.AnalysisID == "",
+	}
+}
+
+func decodeReportStrings(raw []byte) []string {
+	if len(raw) == 0 {
+		return nil
+	}
+	var values []string
+	if err := json.Unmarshal(raw, &values); err == nil {
+		return compactStrings(values)
+	}
+	var object map[string]any
+	if err := json.Unmarshal(raw, &object); err == nil {
+		out := make([]string, 0, len(object))
+		for key, value := range object {
+			switch typed := value.(type) {
+			case []any:
+				for _, item := range typed {
+					if text := strings.TrimSpace(fmt.Sprint(item)); text != "" {
+						out = append(out, text)
+					}
+				}
+			default:
+				if text := strings.TrimSpace(fmt.Sprintf("%s: %v", key, typed)); text != "" {
+					out = append(out, text)
+				}
+			}
+		}
+		return compactStrings(out)
+	}
+	return nil
+}
+
+func decodeReportMap(raw []byte) map[string]any {
+	out := map[string]any{}
+	if len(raw) == 0 {
+		return out
+	}
+	_ = json.Unmarshal(raw, &out)
+	return out
+}
+
+func reportEvidenceSignals(record pullRequestReportRecord) []string {
+	signals := []string{}
+	signals = append(signals, record.AnalysisSignals...)
+	signals = append(signals, record.ScoreExplanation...)
+	if record.FileCount > 0 {
+		signals = append(signals, fmt.Sprintf("%d changed files persisted", record.FileCount))
+	}
+	if record.ReviewCount > 0 {
+		signals = append(signals, fmt.Sprintf("%d review events persisted", record.ReviewCount))
+	}
+	if record.ScoreVersion != "" {
+		signals = append(signals, "score version "+record.ScoreVersion)
+	}
+	return compactStrings(signals)
+}
+
+func firstReportExplanation(record pullRequestReportRecord) string {
+	for _, line := range record.ScoreExplanation {
+		if strings.TrimSpace(line) != "" {
+			return line
+		}
+	}
+	return ""
+}
+
+func reportContributionID(record pullRequestReportRecord) string {
+	if record.ScoreEventID != "" {
+		return record.ScoreEventID
+	}
+	if record.PullRequestID != "" {
+		return record.PullRequestID
+	}
+	return fmt.Sprintf("%s/%s#%d", record.Owner, record.Repo, record.Number)
+}
+
+func reportStatus(record pullRequestReportRecord) string {
+	if record.Merged {
+		return "merged"
+	}
+	switch strings.ToLower(record.State) {
+	case "closed":
+		return "closed"
+	default:
+		return "open"
+	}
+}
+
+func inferReportCategory(record pullRequestReportRecord) string {
+	text := strings.ToLower(record.Title + " " + record.Body + " " + strings.Join(record.AnalysisSignals, " "))
+	switch {
+	case strings.Contains(text, "security") || strings.Contains(text, "auth"):
+		return "Security"
+	case strings.Contains(text, "perf") || strings.Contains(text, "benchmark"):
+		return "Performance"
+	case record.TestFiles > 0 || strings.Contains(text, "test"):
+		return "Testing"
+	case record.DocsFiles > 0 || strings.Contains(text, "doc"):
+		return "Documentation"
+	case strings.Contains(text, "infra") || strings.Contains(text, "ci") || strings.Contains(text, "deploy"):
+		return "Infrastructure"
+	case strings.Contains(text, "review"):
+		return "Review"
+	case strings.Contains(text, "architecture") || strings.Contains(text, "schema"):
+		return "Architecture"
+	case strings.Contains(text, "fix") || strings.Contains(text, "bug"):
+		return "Bug Fix"
+	default:
+		return "Backend"
+	}
+}
+
+func derivedDifficulty(record pullRequestReportRecord) int {
+	return clampInt(20+record.ChangedFiles*4+(record.Additions+record.Deletions)/25, 0, 100)
+}
+
+func derivedImpact(record pullRequestReportRecord) int {
+	fromXP := record.XP / 8
+	fromSize := record.ChangedFiles*3 + (record.Additions+record.Deletions)/40
+	return clampInt(25+fromXP+fromSize, 0, 100)
+}
+
+func derivedReviewDepth(record pullRequestReportRecord) int {
+	score := record.ReviewCount*18 + record.ReviewCommentCount*5 + record.ApprovalCount*20
+	return clampInt(score, 0, 100)
+}
+
+func derivedTestSignal(record pullRequestReportRecord) int {
+	score := record.TestFiles * 35
+	if reportHasSignal(record, "test", "regression", "coverage") {
+		score += 25
+	}
+	if reportHasSignal(record, "ci passed", "checks passed") {
+		score += 20
+	}
+	return clampInt(score, 0, 100)
+}
+
+func repositoryWeight(stars int) float64 {
+	if stars <= 0 {
+		return 1
+	}
+	return math.Round((1+math.Min(0.35, math.Log10(float64(stars)+1)/20))*100) / 100
+}
+
+func reportHasLinkedIssue(record pullRequestReportRecord) bool {
+	text := strings.ToLower(record.Title + " " + record.Body + " " + strings.Join(record.AnalysisSignals, " ") + " " + strings.Join(record.ScoreExplanation, " "))
+	return strings.Contains(text, "fixes #") || strings.Contains(text, "closes #") || strings.Contains(text, "linked issue")
+}
+
+func reportHasSignal(record pullRequestReportRecord, needles ...string) bool {
+	text := strings.ToLower(record.Title + " " + record.Body + " " + strings.Join(record.AnalysisSignals, " ") + " " + strings.Join(record.ScoreExplanation, " "))
+	for _, needle := range needles {
+		if strings.Contains(text, strings.ToLower(needle)) {
+			return true
+		}
+	}
+	return false
+}
+
+func suggestedQuestID(record pullRequestReportRecord, category string, testSignal, reviewDepth int) string {
+	if testSignal < 50 {
+		return "quest-regression-tests"
+	}
+	if reviewDepth < 50 {
+		return "quest-maintainer-review"
+	}
+	if strings.EqualFold(category, "Security") {
+		return "quest-performance-benchmark"
+	}
+	return "quest-weak-lane-security"
+}
+
+func firstNonEmpty(values ...string) string {
+	for _, value := range values {
+		if strings.TrimSpace(value) != "" {
+			return strings.TrimSpace(value)
+		}
+	}
+	return ""
+}
+
+func stringFromMap(values map[string]any, key string) string {
+	if value, ok := values[key]; ok {
+		return strings.TrimSpace(fmt.Sprint(value))
+	}
+	return ""
+}
+
+func numberFromMap(values map[string]any, key string) float64 {
+	value, ok := values[key]
+	if !ok {
+		return 0
+	}
+	switch typed := value.(type) {
+	case float64:
+		return typed
+	case float32:
+		return float64(typed)
+	case int:
+		return float64(typed)
+	case int64:
+		return float64(typed)
+	case json.Number:
+		out, _ := typed.Float64()
+		return out
+	default:
+		return 0
+	}
+}
+
+func scorePercent(value float64, fallback int) int {
+	if value <= 0 {
+		return fallback
+	}
+	if value <= 1 {
+		value *= 100
+	}
+	return clampInt(int(math.Round(value)), 0, 100)
+}
+
+func compactStrings(values []string) []string {
+	out := make([]string, 0, len(values))
+	seen := map[string]struct{}{}
+	for _, value := range values {
+		trimmed := strings.TrimSpace(value)
+		if trimmed == "" {
+			continue
+		}
+		key := strings.ToLower(trimmed)
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		out = append(out, trimmed)
+		seen[key] = struct{}{}
+		if len(out) >= 12 {
+			break
+		}
+	}
+	return out
+}
+
+func clampInt(value, minValue, maxValue int) int {
+	if value < minValue {
+		return minValue
+	}
+	if value > maxValue {
+		return maxValue
+	}
+	return value
+}
+
+func maxInt(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func latestTime(values ...time.Time) time.Time {
+	var latest time.Time
+	for _, value := range values {
+		if value.After(latest) {
+			latest = value
+		}
+	}
+	return latest.UTC()
+}

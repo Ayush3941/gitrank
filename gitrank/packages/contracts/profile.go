@@ -128,6 +128,56 @@ type UserQuestsResponse struct {
 	Staleness   ProfileStaleness `json:"staleness"`
 }
 
+type PRReportContribution struct {
+	ID                 string    `json:"id"`
+	Owner              string    `json:"owner"`
+	Repo               string    `json:"repo"`
+	Number             int       `json:"number"`
+	Title              string    `json:"title"`
+	Status             string    `json:"status"`
+	Category           string    `json:"category"`
+	DifficultyScore    int       `json:"difficulty_score"`
+	ImpactScore        int       `json:"impact_score"`
+	ReviewDepthScore   int       `json:"review_depth_score"`
+	TestSignalScore    int       `json:"test_signal_score"`
+	RepoWeight         float64   `json:"repo_weight"`
+	AntiSpamMultiplier float64   `json:"anti_spam_multiplier"`
+	XPEarned           int       `json:"xp_earned"`
+	Additions          int       `json:"additions"`
+	Deletions          int       `json:"deletions"`
+	ChangedFilesCount  int       `json:"changed_files_count"`
+	MergedAt           time.Time `json:"merged_at"`
+	MaintainerReviewed bool      `json:"maintainer_reviewed"`
+	LinkedIssue        bool      `json:"linked_issue"`
+	CIPassed           bool      `json:"ci_passed"`
+	AISummary          string    `json:"ai_summary"`
+	EvidenceSignals    []string  `json:"evidence_signals,omitempty"`
+}
+
+type PRReportScoreBreakdown struct {
+	Label   string `json:"label"`
+	DeltaXP int    `json:"delta_xp"`
+	Type    string `json:"type"`
+	Reason  string `json:"reason"`
+}
+
+type PullRequestReportResponse struct {
+	Contribution     PRReportContribution     `json:"contribution"`
+	BaseValue        int                      `json:"base_value"`
+	MergedBonus      int                      `json:"merged_bonus"`
+	ReviewBonus      int                      `json:"review_bonus"`
+	TestBonus        int                      `json:"test_bonus"`
+	RepoBonus        int                      `json:"repo_bonus"`
+	AIConfidence     float64                  `json:"ai_confidence"`
+	Penalties        []PRReportScoreBreakdown `json:"penalties,omitempty"`
+	SuggestedQuestID string                   `json:"suggested_quest_id"`
+	ScoreVersion     string                   `json:"score_version,omitempty"`
+	AnalysisVersion  string                   `json:"analysis_version,omitempty"`
+	SourceUpdatedAt  time.Time                `json:"source_updated_at"`
+	GeneratedAt      time.Time                `json:"generated_at"`
+	IsStale          bool                     `json:"is_stale"`
+}
+
 type LeaderboardEntryView struct {
 	Rank        int       `json:"rank"`
 	Handle      string    `json:"handle"`

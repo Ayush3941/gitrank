@@ -627,6 +627,60 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /v1/pr/{owner}/{repo}/{number}/report:
+    get:
+      tags: [Profiles]
+      summary: Return a public PR battle report from persisted analysis and score evidence
+      operationId: getPullRequestReport
+      parameters:
+        - name: owner
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: repo
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: number
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        "200":
+          description: Public pull request report
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Cache-Control:
+              $ref: "#/components/headers/PublicProfileCacheControl"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PullRequestReportResponse"
+        "404":
+          description: Pull request report not found or not public
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limit exceeded
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Retry-After:
+              $ref: "#/components/headers/RetryAfter"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /v1/me/profile/repositories/{owner}/{repo}:
     patch:
       tags: [Profiles]
@@ -1319,6 +1373,153 @@ components:
           format: date-time
         staleness:
           $ref: "#/components/schemas/ProfileStaleness"
+    PRReportContribution:
+      type: object
+      required:
+        - id
+        - owner
+        - repo
+        - number
+        - title
+        - status
+        - category
+        - difficulty_score
+        - impact_score
+        - review_depth_score
+        - test_signal_score
+        - repo_weight
+        - anti_spam_multiplier
+        - xp_earned
+        - additions
+        - deletions
+        - changed_files_count
+        - merged_at
+        - maintainer_reviewed
+        - linked_issue
+        - ci_passed
+        - ai_summary
+      properties:
+        id:
+          type: string
+        owner:
+          type: string
+        repo:
+          type: string
+        number:
+          type: integer
+        title:
+          type: string
+        status:
+          type: string
+          enum: [merged, open, closed]
+        category:
+          type: string
+        difficulty_score:
+          type: integer
+          minimum: 0
+          maximum: 100
+        impact_score:
+          type: integer
+          minimum: 0
+          maximum: 100
+        review_depth_score:
+          type: integer
+          minimum: 0
+          maximum: 100
+        test_signal_score:
+          type: integer
+          minimum: 0
+          maximum: 100
+        repo_weight:
+          type: number
+          format: double
+        anti_spam_multiplier:
+          type: number
+          format: double
+        xp_earned:
+          type: integer
+        additions:
+          type: integer
+        deletions:
+          type: integer
+        changed_files_count:
+          type: integer
+        merged_at:
+          type: string
+          format: date-time
+        maintainer_reviewed:
+          type: boolean
+        linked_issue:
+          type: boolean
+        ci_passed:
+          type: boolean
+        ai_summary:
+          type: string
+        evidence_signals:
+          type: array
+          items:
+            type: string
+    PRReportScoreBreakdown:
+      type: object
+      required: [label, delta_xp, type, reason]
+      properties:
+        label:
+          type: string
+        delta_xp:
+          type: integer
+        type:
+          type: string
+          enum: [gain, penalty]
+        reason:
+          type: string
+    PullRequestReportResponse:
+      type: object
+      required:
+        - contribution
+        - base_value
+        - merged_bonus
+        - review_bonus
+        - test_bonus
+        - repo_bonus
+        - ai_confidence
+        - suggested_quest_id
+        - source_updated_at
+        - generated_at
+        - is_stale
+      properties:
+        contribution:
+          $ref: "#/components/schemas/PRReportContribution"
+        base_value:
+          type: integer
+        merged_bonus:
+          type: integer
+        review_bonus:
+          type: integer
+        test_bonus:
+          type: integer
+        repo_bonus:
+          type: integer
+        ai_confidence:
+          type: number
+          format: double
+        penalties:
+          type: array
+          items:
+            $ref: "#/components/schemas/PRReportScoreBreakdown"
+        suggested_quest_id:
+          type: string
+        score_version:
+          type: string
+        analysis_version:
+          type: string
+        source_updated_at:
+          type: string
+          format: date-time
+        generated_at:
+          type: string
+          format: date-time
+        is_stale:
+          type: boolean
     ProfilePrivacySettings:
       type: object
       required: [public_profile_enabled, show_exact_prs, show_ai_summaries, show_leaderboard_participation]

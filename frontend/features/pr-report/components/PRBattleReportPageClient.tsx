@@ -12,7 +12,6 @@ import { EvidenceSignalsCard } from "@/features/pr-report/components/EvidenceSig
 import { ScoreMatrixCard } from "@/features/pr-report/components/ScoreMatrixCard";
 import { XPBreakdownCard } from "@/features/pr-report/components/XPBreakdownCard";
 import { usePrReport } from "@/hooks/use-pr-report";
-import { ayushProfile } from "@/lib/mock-data/gitrank";
 import type { PreviewMode } from "@/types/gitrank";
 
 export function PRBattleReportPageClient({
@@ -45,12 +44,10 @@ export function PRBattleReportPageClient({
     return (
       <EmptyState
         title="Battle report not found"
-        description="This PR either does not exist in the current mock dataset or has not been analyzed yet."
+        description="This PR either has not been synced, is private, or has not produced a persisted analysis and score report yet."
       />
     );
   }
-
-  const nextQuest = ayushProfile.quests.find((quest) => quest.id === data.suggestedQuestId);
 
   return (
     <div className="space-y-6">
@@ -86,15 +83,17 @@ export function PRBattleReportPageClient({
         <p className="text-base leading-8 text-slate-200">{data.contribution.aiSummary}</p>
       </GlowCard>
       <EvidenceSignalsCard report={data} />
-      {nextQuest ? (
+      {data.suggestedQuestId ? (
         <GlowCard className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-semibold tracking-[0.24em] text-primary uppercase">
               <Swords className="h-3.5 w-3.5" />
               Suggested next quest
             </div>
-            <h2 className="mt-3 text-2xl font-semibold text-white">{nextQuest.title}</h2>
-            <p className="mt-2 text-sm text-muted">{nextQuest.description}</p>
+            <h2 className="mt-3 text-2xl font-semibold text-white">Open the live quest board</h2>
+            <p className="mt-2 text-sm text-muted">
+              Suggested quest key: {data.suggestedQuestId}. The quest board resolves this against the latest profile evidence.
+            </p>
           </div>
           <Button asChild variant="secondary">
             <Link href="/dashboard/quests">

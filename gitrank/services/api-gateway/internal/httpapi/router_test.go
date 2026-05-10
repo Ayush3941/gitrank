@@ -143,6 +143,37 @@ func TestProxyPublicProfileCardRequest(t *testing.T) {
 	}
 }
 
+func TestProxyPullRequestReportRequest(t *testing.T) {
+	profile := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/pr/octo/repo/42/report" {
+			t.Fatalf("path = %q, want /v1/pr/octo/repo/42/report", r.URL.Path)
+		}
+		_ = json.NewEncoder(w).Encode(contracts.PullRequestReportResponse{
+			Contribution: contracts.PRReportContribution{
+				ID:     "score-1",
+				Owner:  "octo",
+				Repo:   "repo",
+				Number: 42,
+				Title:  "test: cover replay",
+				Status: "merged",
+			},
+			GeneratedAt: time.Date(2026, 5, 10, 14, 0, 0, 0, time.UTC),
+		})
+	}))
+	defer profile.Close()
+
+	router := NewRouter(testConfig(profile.URL, stubAuthServer().URL, stubIngestorServer().URL), testLogger(), "test")
+	response := httptest.NewRecorder()
+	router.ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/v1/pr/octo/repo/42/report", nil))
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusOK, response.Body.String())
+	}
+	if response.Header().Get("Cache-Control") != "public, max-age=60, stale-while-revalidate=300" {
+		t.Fatalf("cache-control = %q", response.Header().Get("Cache-Control"))
+	}
+}
+
 func TestAnalyticsEventsRouteTracksAllowedEvents(t *testing.T) {
 	router := NewRouter(testConfig(stubProfileServer().URL, stubAuthServer().URL, stubIngestorServer().URL), testLogger(), "test")
 	request := httptest.NewRequest(http.MethodPost, "/v1/analytics/events", strings.NewReader(`{
