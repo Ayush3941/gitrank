@@ -769,6 +769,7 @@ Major gaps remain:
 - most non-profile frontend routes still use mock data
 - live GitHub repository controls still need to be applied in GitHub settings and verified with `make verify-github-repository-controls`
 - no deployed tracing backend or observability stack yet; dashboards and alert rules are committed but not wired into runtime infrastructure
+- rollback wiring is locally verified, but a real staging or production-like rollback drill still has to be executed and recorded
 - the Kubernetes assets are still provider-neutral and require a real `gitrank-runtime-secrets` source, TLS Secret, ingress controller, managed PostgreSQL, managed Redis, and registry owner/tag substitution before production apply
 
 ## License

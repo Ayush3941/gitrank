@@ -48,6 +48,10 @@ Verify the local rollback wiring and manifest render path with:
 make verify-rollback-procedure
 ```
 
+The production-readiness rollback gate also requires a real staging or
+production-like drill. Use `docs/runbooks/production-rollback-drill.md` to record
+rollout history, rollback status, critical product checks, and follow-up actions.
+
 Managed PostgreSQL and managed Redis are preferred instead of running stateful databases inside the cluster.
 
 Observability manifests are rendered separately from the application baseline:

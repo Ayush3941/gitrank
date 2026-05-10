@@ -40,3 +40,4 @@ V1 policy note:
 - rollback application code first if possible
 - never skip migration compatibility review
 - preserve incident notes in a release issue or runbook update
+- use `docs/runbooks/production-rollback-drill.md` for staging and production-like rollback drills

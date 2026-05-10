@@ -934,6 +934,7 @@ GitRank may expose reputational data about real people. That increases the stand
 - [x] define cost monitoring and budget alerts
 
 Kubernetes rollback wiring is locally verified by `make verify-rollback-procedure`, which renders staging and production overlays using the configured `TMPDIR` and checks the manual deploy workflow contains rollout history, undo, and status gates. A live production rollback drill is still required before checking the final production-readiness rollback gate.
+Use `gitrank/docs/runbooks/production-rollback-drill.md` for the live drill and attach the completed evidence record to the release issue or maintainer operations notes.
 
 Deployment assets to add:
 

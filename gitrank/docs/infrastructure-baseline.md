@@ -53,6 +53,7 @@ Promotion path:
 - document rollback before every release with migrations
 - prefer expand-and-contract schema changes for zero-downtime compatibility
 - rollback application code first when feasible
+- prove rollback readiness with `docs/runbooks/production-rollback-drill.md` before production launch
 
 ## SLO, SLI, RTO, and RPO
 
