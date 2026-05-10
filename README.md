@@ -773,6 +773,11 @@ Major gaps remain:
 - rollback wiring is locally verified, but a real staging or production-like rollback drill still has to be executed and recorded
 - the Kubernetes assets are still provider-neutral and require a real `gitrank-runtime-secrets` source, TLS Secret, ingress controller, managed PostgreSQL, managed Redis, and registry owner/tag substitution before production apply
 
+V2 direction:
+
+- replace every production mock and demo-only product path with real backend contracts, persistence, orchestration, and verification
+- see `CONTRIBUTING.md` for the V1 limitations inventory and V2 no-mock checklist
+
 ## License
 
 This project is licensed under the MIT License.

@@ -1087,6 +1087,94 @@ Do not call the project production ready until:
 - [ ] rollback procedures are documented and tested
 - [x] at least two-person review is required for production release decisions
 
+## V1 Limitations and V2 Checklist
+
+V2 theme:
+
+```txt
+Replace every production mock, demo-only product path, and hand-wired preview surface with real backend contracts, persistence, orchestration, and verification.
+```
+
+Known v1 limitations:
+
+- Quest recommendations are still mock-backed through `frontend/lib/api/mock-api.ts` and do not have a live backend quest model, assignment table, progress tracker, or completion ledger.
+- The public PR battle-report route is still mock-backed through `frontend/hooks/use-pr-report.ts` and does not read a live PR report contract from the gateway.
+- The dashboard recent battle reports panel falls back to verified profile snapshot evidence because detailed live PR report metrics are not exposed by the profile API yet.
+- The frontend still exposes `?demo=` preview states that force mock loading, error, empty, and stale data paths for design inspection.
+- Marketing, onboarding reveal, dashboard top bar, and feature-local data exports still import the static sample profile or mock datasets.
+- The live PR ingestion path can persist bounded PR metadata, reviews, and review comments, but there is no seamless production pipeline that turns one synced PR into persisted files or diff-derived features, a stored `contribution_analyses` record, score events, profile refresh, and a live battle report in one user-facing flow.
+- Direct live PR sync does not yet prove bounded `/pulls/{number}/files` or diff-hunk feature persistence for battle-report evidence; V1 scoring can use persisted file rows when they exist, but the direct sync path does not make that evidence complete by itself.
+- User sync is bounded to recent public repositories owned by the requested GitHub login, not a full authored-PR search across every public repository, fork, organization, or contribution surface where the user has participated.
+- Private repositories remain out of scope for scoring and analysis.
+- GitHub OAuth is the only v1 identity path; GitHub App installation support is deferred, limiting webhook scale, organization installation sync, and deeper repository access.
+- Scheduler execution is still bounded and in-process; there is no separate production worker fleet for all long-running sync, analysis, scoring, profile, and notification work.
+- Leaderboard season metadata and rank-progression presentation exist in the frontend, but V1 does not yet have an authoritative backend season table, rank movement ledger, promotion/demotion job, or historical season archive.
+- Reduced gamification is a local browser display preference; it is not an account-level cross-device preference.
+- Settings export remains pending in the frontend.
+- AI-assisted analysis is governed and bounded, but V1 primarily relies on deterministic analysis paths; production AI enrichment over bounded public PR diffs still needs a complete persistence, budget, retry, and explanation loop before it can replace deterministic-only behavior.
+- Production observability assets are committed, but the stack is not deployed against live traffic yet.
+- Repository branch protection, required checks, dependency graph, and Dependabot alert settings still need live apply and verification.
+- Rollback wiring is locally verified, but a real staging or production-like rollback drill still has to be executed and recorded.
+- Kubernetes assets are provider-neutral and still require real runtime secrets, TLS, ingress, managed PostgreSQL, managed Redis, registry owner/tag substitution, and environment-specific rollout proof.
+
+V2 product contract checklist:
+
+- [ ] Define `quest-service` or profile-owned quest contracts for active quests, completed quests, locked quests, quest recommendations, rewards, expiration, and evidence references.
+- [ ] Add PostgreSQL migrations for quest definitions, user quest assignments, progress events, completion events, reward grants, and quest audit records.
+- [ ] Expose authenticated quest routes through the gateway and frontend BFF instead of reading quests from `frontend/lib/api/mock-api.ts`.
+- [ ] Define a live PR battle-report read model with PR metadata, evidence signals, formula version, XP breakdown, penalties, badge unlocks, suggested next quest, stale state, and source timestamps.
+- [ ] Add a PR report route through the gateway and frontend BFF so `/pr/[owner]/[repo]/[number]` never depends on mock data in production.
+- [ ] Add an orchestration path for `sync PR -> fetch bounded files/diff features -> analyze -> persist contribution_analyses -> score -> refresh profile -> materialize PR report`.
+- [ ] Persist bounded changed-file metadata and derived diff features needed for scoring and explanation without storing full repository files.
+- [ ] Add hard size, file-count, diff-hunk, token, and cost limits before any AI-assisted PR analysis call.
+- [ ] Add a live suggested-next-quest contract that derives from score gaps, weak skill lanes, stale data, and real contribution evidence.
+- [ ] Add account-level user preference storage for reduced gamification if the setting should follow a user across devices.
+- [ ] Add an account data export endpoint and frontend flow that returns user-owned profile, score, badge, session, visibility, and audit data without leaking secrets or private code.
+
+V2 ingestion and coverage checklist:
+
+- [ ] Replace owned-repository-only user sync with a bounded authored-PR discovery strategy for public repositories where GitHub APIs expose the user's contributions.
+- [ ] Add GitHub App support for installation-scoped repository sync, organization-scale webhooks, and more reliable repository inventory.
+- [ ] Keep OAuth for sign-in and account linking while using GitHub App installation permissions for scalable ingestion where users or organizations opt in.
+- [ ] Add direct PR file-list fetching for live PR sync and store only approved bounded metadata or public diff excerpts.
+- [ ] Add retry, idempotency, and dedupe keys that cover each analysis and scoring step in the PR grading pipeline.
+- [ ] Add backfill jobs for historical PR reports, quests, season rankings, badges, and score history.
+- [ ] Add dead-letter replay runbooks for sync, file-feature extraction, analysis, scoring, profile refresh, quest update, and report materialization jobs.
+- [ ] Add external worker deployment topology for long-running ingestion, analyzer, scoring, profile, leaderboard, and quest jobs.
+
+V2 frontend no-mock checklist:
+
+- [ ] Remove production imports from `frontend/lib/mock-data/gitrank.ts` outside marketing samples, tests, stories, or explicitly dev-only preview modules.
+- [ ] Remove production imports from `frontend/lib/api/mock-api.ts` for dashboard, quests, PR reports, leaderboard, profile, settings, badges, and contributions.
+- [ ] Gate `?demo=` preview modes behind a development-only flag or move them to test/storybook fixtures.
+- [ ] Make the dashboard top bar read the authenticated profile instead of `ayushProfile`.
+- [ ] Make onboarding reveal use the authenticated user's real post-sync profile or a clearly marked development-only sample route.
+- [ ] Make marketing sample data isolated from production app routes and impossible to confuse with signed-in user data.
+- [ ] Replace `features/*/data` mock exports with live repositories, typed fixtures for tests, or removed files.
+- [ ] Add a CI check that fails if production app, hook, feature, or API modules import `frontend/lib/mock-data/gitrank.ts` or `frontend/lib/api/mock-api.ts`.
+- [ ] Add Playwright or equivalent smoke coverage proving quests, PR reports, dashboard, profile, leaderboard, and settings render from live test fixtures rather than mock API functions.
+
+V2 scoring and evidence checklist:
+
+- [ ] Every XP value must link to a persisted score event, formula version, PR evidence, and analysis artifact.
+- [ ] Every badge unlock must link to a persisted badge award, unlock rule version, and evidence PR set.
+- [ ] Every quest reward must link to quest completion evidence and avoid rewarding unverified or duplicate work.
+- [ ] Every leaderboard rank must link to a season snapshot, rank movement event, score version, and freshness timestamp.
+- [ ] Every skill claim must distinguish deterministic evidence, AI-assisted classification, confidence, and stale or partial states.
+- [ ] PR battle reports must show when evidence is incomplete, stale, rate-limited, deterministic-only, or AI-fallback.
+- [ ] Score replay must be reproducible from stored evidence for a selected user, repository, date range, and formula version.
+- [ ] No AI output may directly write final scores; scoring remains deterministic and rule-based.
+
+V2 operational readiness checklist:
+
+- [ ] Deploy and verify production observability against real traffic, including sync, analysis, scoring, profile, quest, PR report, leaderboard, queue, GitHub, and AI dashboards.
+- [ ] Apply and verify live GitHub repository controls before V2 release branches are cut.
+- [ ] Run and record staging rollback and restore drills.
+- [ ] Replace provider-neutral Kubernetes placeholders with environment-specific secrets, TLS, ingress, managed PostgreSQL, managed Redis, registry, and autoscaling configuration.
+- [ ] Add release gates that fail when mock-backed production routes, demo-only imports, missing OpenAPI entries, or unverified worker paths remain.
+- [ ] Add a V2 staging seed that uses synthetic GitHub-like evidence through real APIs and persistence, not frontend mock functions.
+- [ ] Add V2 release notes that clearly state which v1 limitations were removed and which limitations remain intentionally out of scope.
+
 ## Suggested Early Issues
 
 High-value issues to open next:
