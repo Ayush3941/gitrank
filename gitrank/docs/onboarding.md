@@ -10,7 +10,7 @@
 
 ## Setup
 
-1. Install Go `1.26.2`.
+1. Install Go `1.26.3`.
 2. Start PostgreSQL and Redis with `make compose-up`.
 3. Copy `.env.example` to `.env`.
 4. Replace placeholder secrets and API keys.

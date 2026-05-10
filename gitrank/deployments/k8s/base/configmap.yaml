@@ -31,7 +31,7 @@ data:
   AUTH_RATE_LIMIT_WINDOW: 1m
   AUTH_RATE_LIMIT_MAX_ATTEMPTS: "30"
   GITHUB_OAUTH_AUTHORIZE_URL: https://github.com/login/oauth/authorize
-  GITHUB_OAUTH_TOKEN_URL: https://github.com/login/oauth/access_token
+  GITHUB_OAUTH_EXCHANGE_URL: https://github.com/login/oauth/access_token
   GITHUB_OAUTH_DEVICE_URL: https://github.com/login/device/code
   GITHUB_OAUTH_REDIRECT_URL: https://auth.gitrank.example.com/oauth/github/callback
   GITHUB_OAUTH_SCOPES: read:user,user:email
@@ -46,7 +46,7 @@ data:
   GITHUB_WEBHOOK_MAX_BODY_BYTES: "1048576"
   GITHUB_WEBHOOK_DEDUPE_TTL: 168h
   GITHUB_FAILED_DELIVERY_LOOKBACK: 72h
-  GITHUB_INSTALLATION_TOKEN_REFRESH_SKEW: 5m
+  GITHUB_INSTALLATION_REFRESH_SKEW: 5m
   GITHUB_SECONDARY_RATE_LIMIT_BACKOFF: 1m
   GITHUB_REPOSITORY_CACHE_TTL: 10m
   GITHUB_MAX_CONCURRENT_REQUESTS: "8"

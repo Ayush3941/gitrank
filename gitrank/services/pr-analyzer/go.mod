@@ -1,6 +1,6 @@
 module github.com/Ayush3941/gitrank/services/pr-analyzer
 
-go 1.26.2
+go 1.26.3
 
 require (
 	github.com/Ayush3941/gitrank/packages/config v0.0.0

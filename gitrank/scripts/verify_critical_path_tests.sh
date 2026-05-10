@@ -10,7 +10,13 @@ require_test() {
   pattern="$2"
   path="$3"
 
-  if ! rg -n "$pattern" "$root_dir/$path" >/dev/null; then
+  if command -v rg >/dev/null 2>&1; then
+    found="$(rg -n "$pattern" "$root_dir/$path" || true)"
+  else
+    found="$(grep -R -n -- "$pattern" "$root_dir/$path" || true)"
+  fi
+
+  if [ -z "$found" ]; then
     echo "missing critical-path test: $label" >&2
     echo "pattern: $pattern" >&2
     echo "path: $path" >&2

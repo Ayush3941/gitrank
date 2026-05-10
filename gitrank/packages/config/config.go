@@ -198,7 +198,7 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			ClientID:                       getEnv("GITHUB_CLIENT_ID", ""),
 			ClientSecret:                   getEnv("GITHUB_CLIENT_SECRET", ""),
 			AuthorizeURL:                   getEnv("GITHUB_OAUTH_AUTHORIZE_URL", "https://github.com/login/oauth/authorize"),
-			TokenURL:                       getEnv("GITHUB_OAUTH_TOKEN_URL", "https://github.com/login/oauth/access_token"),
+			TokenURL:                       getEnv("GITHUB_OAUTH_EXCHANGE_URL", getEnv("GITHUB_OAUTH_TOKEN_URL", "https://github.com/login/oauth/access_token")),
 			DeviceURL:                      getEnv("GITHUB_OAUTH_DEVICE_URL", "https://github.com/login/device/code"),
 			OAuthRedirectURL:               getEnv("GITHUB_OAUTH_REDIRECT_URL", ""),
 			AppID:                          getEnv("GITHUB_APP_ID", ""),
@@ -219,7 +219,7 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			MaxBodyBytes:                   getInt("GITHUB_WEBHOOK_MAX_BODY_BYTES", 1<<20),
 			DedupeTTL:                      getDuration("GITHUB_WEBHOOK_DEDUPE_TTL", 7*24*time.Hour),
 			FailedLookback:                 getDuration("GITHUB_FAILED_DELIVERY_LOOKBACK", 72*time.Hour),
-			RefreshSkew:                    getDuration("GITHUB_INSTALLATION_TOKEN_REFRESH_SKEW", 5*time.Minute),
+			RefreshSkew:                    getDuration("GITHUB_INSTALLATION_REFRESH_SKEW", getDuration("GITHUB_INSTALLATION_TOKEN_REFRESH_SKEW", 5*time.Minute)),
 			SecondaryBackoff:               getDuration("GITHUB_SECONDARY_RATE_LIMIT_BACKOFF", time.Minute),
 			RepositoryCacheTTL:             getDuration("GITHUB_REPOSITORY_CACHE_TTL", 10*time.Minute),
 			MaxConcurrency:                 getInt("GITHUB_MAX_CONCURRENT_REQUESTS", 8),
@@ -293,7 +293,7 @@ func (a App) ValidateBase() error {
 		"SCORING_ENGINE_BASE_URL":    a.Services.ScoringBaseURL,
 		"SCHEDULER_WORKER_BASE_URL":  a.Services.SchedulerBaseURL,
 		"GITHUB_OAUTH_AUTHORIZE_URL": a.GitHub.AuthorizeURL,
-		"GITHUB_OAUTH_TOKEN_URL":     a.GitHub.TokenURL,
+		"GITHUB_OAUTH_EXCHANGE_URL":  a.GitHub.TokenURL,
 		"GITHUB_OAUTH_DEVICE_URL":    a.GitHub.DeviceURL,
 	}
 	for name, value := range internalURLs {
@@ -357,7 +357,7 @@ func (a App) ValidateBase() error {
 		problems = append(problems, "GITHUB_FAILED_DELIVERY_LOOKBACK must be positive")
 	}
 	if a.GitHub.RefreshSkew <= 0 {
-		problems = append(problems, "GITHUB_INSTALLATION_TOKEN_REFRESH_SKEW must be positive")
+		problems = append(problems, "GITHUB_INSTALLATION_REFRESH_SKEW must be positive")
 	}
 	if a.GitHub.SecondaryBackoff <= 0 {
 		problems = append(problems, "GITHUB_SECONDARY_RATE_LIMIT_BACKOFF must be positive")

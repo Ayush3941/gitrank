@@ -1,6 +1,8 @@
 package config
 
 import (
+	"encoding/base64"
+	"strings"
 	"testing"
 	"time"
 )
@@ -71,11 +73,13 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	t.Setenv("AUTH_ADMIN_GITHUB_LOGINS", "Ayush3941,octocat")
 	t.Setenv("GITHUB_API_VERSION", "2022-11-28")
 	t.Setenv("GITHUB_USER_AGENT", "GitRank/test")
+	t.Setenv("GITHUB_OAUTH_EXCHANGE_URL", "https://github.example.com/login/oauth/access_token")
 	t.Setenv("GITHUB_OAUTH_SCOPES", "read:user,user:email")
 	t.Setenv("GITHUB_CIRCUIT_BREAKER_FAILURE_THRESHOLD", "7")
 	t.Setenv("GITHUB_CIRCUIT_BREAKER_OPEN_INTERVAL", "45s")
 	t.Setenv("GITHUB_CIRCUIT_BREAKER_HALF_OPEN_MAX_REQUESTS", "2")
 	t.Setenv("GITHUB_REPOSITORY_CACHE_TTL", "30m")
+	t.Setenv("GITHUB_INSTALLATION_REFRESH_SKEW", "7m")
 	t.Setenv("JOB_WORKER_CONCURRENCY", "9")
 	t.Setenv("JOB_DEAD_LETTER_QUEUE", "custom-dead-letter")
 	t.Setenv("JOB_PER_USER_RATE_MAX", "3")
@@ -116,8 +120,14 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	if cfg.GitHub.UserAgent != "GitRank/test" {
 		t.Fatalf("GitHub.UserAgent = %q, want GitRank/test", cfg.GitHub.UserAgent)
 	}
+	if cfg.GitHub.TokenURL != "https://github.example.com/login/oauth/access_token" {
+		t.Fatalf("GitHub.TokenURL = %q, want override", cfg.GitHub.TokenURL)
+	}
 	if len(cfg.GitHub.OAuthScopes) != 2 || cfg.GitHub.OAuthScopes[0] != "read:user" {
 		t.Fatalf("GitHub.OAuthScopes = %v, want read:user,user:email", cfg.GitHub.OAuthScopes)
+	}
+	if cfg.GitHub.RefreshSkew != 7*time.Minute {
+		t.Fatalf("GitHub.RefreshSkew = %v, want 7m", cfg.GitHub.RefreshSkew)
 	}
 	if cfg.GitHub.CircuitBreakerFailureThreshold != 7 {
 		t.Fatalf("GitHub.CircuitBreakerFailureThreshold = %d, want 7", cfg.GitHub.CircuitBreakerFailureThreshold)
@@ -200,11 +210,14 @@ func TestGitHubClientFallbacksAndInstallURL(t *testing.T) {
 }
 
 func TestValidateAuthService(t *testing.T) {
+	primaryEncryptionKey := base64.StdEncoding.EncodeToString([]byte(strings.Repeat("a", 32)))
+	previousEncryptionKey := base64.StdEncoding.EncodeToString([]byte(strings.Repeat("b", 32)))
+
 	t.Setenv("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/gitrank?sslmode=disable")
 	t.Setenv("GITRANK_SESSION_SECRET", "super-secret")
 	t.Setenv("GITRANK_PREVIOUS_SESSION_SECRETS", "old-secret")
-	t.Setenv("GITHUB_TOKEN_ENCRYPTION_KEY", "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=")
-	t.Setenv("GITHUB_PREVIOUS_TOKEN_ENCRYPTION_KEYS", "YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoxMjM0NTY=")
+	t.Setenv("GITHUB_TOKEN_ENCRYPTION_KEY", primaryEncryptionKey)
+	t.Setenv("GITHUB_PREVIOUS_TOKEN_ENCRYPTION_KEYS", previousEncryptionKey)
 	t.Setenv("GITHUB_CLIENT_ID", "client")
 	t.Setenv("GITHUB_CLIENT_SECRET", "secret")
 	t.Setenv("GITHUB_OAUTH_REDIRECT_URL", "https://example.com/callback")

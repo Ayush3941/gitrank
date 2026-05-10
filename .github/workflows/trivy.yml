@@ -39,11 +39,13 @@ jobs:
             --ignore-unfixed \
             --severity HIGH,CRITICAL \
             --scanners vuln,secret,misconfig \
+            --timeout 15m \
             --format sarif \
             --output trivy-fs.sarif \
             .
 
       - name: Upload filesystem SARIF
+        if: always() && hashFiles('trivy-fs.sarif') != ''
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: trivy-fs.sarif
@@ -89,12 +91,14 @@ jobs:
             --ignore-unfixed \
             --severity HIGH,CRITICAL \
             --scanners vuln,secret,misconfig \
+            --timeout 15m \
             --format sarif \
-            --output trivy-image-${{ matrix.service }}.sarif \
+            --output trivy-image.sarif \
             gitrank/${{ matrix.service }}:trivy
 
       - name: Upload image SARIF
+        if: always() && hashFiles('trivy-image.sarif') != ''
         uses: github/codeql-action/upload-sarif@v4
         with:
-          sarif_file: trivy-image-${{ matrix.service }}.sarif
+          sarif_file: trivy-image.sarif
           category: trivy-image-${{ matrix.service }}

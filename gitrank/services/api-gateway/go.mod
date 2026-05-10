@@ -1,6 +1,6 @@
 module github.com/Ayush3941/gitrank/services/api-gateway
 
-go 1.26.2
+go 1.26.3
 
 require (
 	github.com/Ayush3941/gitrank/packages/authkit v0.0.0
