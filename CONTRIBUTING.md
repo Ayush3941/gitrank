@@ -751,7 +751,7 @@ End-to-end tests:
 Specialized tests:
 
 - [x] fuzz tests for parsers and webhook validation paths
-- [ ] regression tests for scoring edge cases
+- [x] regression tests for scoring edge cases
 - [ ] load tests for sync bursts
 - [x] race detection in concurrent components
 - [ ] failure injection for retries and backoffs
