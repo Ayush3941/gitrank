@@ -728,6 +728,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 - real auth-service session, OAuth, token refresh, linking, unlinking, and audit logic
 - webhook intake plus normalized repository, PR, review, issue, label, commit, installation, and sync-run persistence in the GitHub ingestor, including queryable manual sync traceability by user, repository, requester, and correlation ID
 - GitHub REST and GraphQL client protections with bounded concurrency, secondary-rate-limit backoff, and provider-failure circuit breakers
+- GitHub REST and GraphQL fault-injection tests that prove secondary-rate-limit recovery and `Retry-After` handling on the shared client path
 - GitHub login, repository, and commit sync target validation plus HTTP(S)-only outbound URL guards for gateway, GitHub, and AI clients
 - a CI-backed Go safety audit that fails on non-test `unsafe` or reflection-heavy code paths unless they are reviewed explicitly
 - W3C `traceparent` propagation across service HTTP boundaries, scheduler-triggered async sync execution, GitHub API calls, OAuth token calls, and AI request builders
@@ -755,7 +756,7 @@ Major gaps remain:
 
 - no external worker backend yet; scheduler-worker persistent mode now uses dedicated PostgreSQL tables for jobs, dead letters, backfill plans, rate-limit windows, and scheduler counters, but only bounded `sync.installation`, `sync.repository`, owned-repository `sync.user_history`, direct `sync.pull_request`, PR-surface `sync.review`, direct `sync.issue`, and direct `sync.commit` jobs currently auto-execute inside `scheduler-worker`
 - most non-profile frontend routes still use mock data
-- no distributed tracing or deployed observability stack yet; dashboards and alert rules are committed but not wired into runtime infrastructure
+- no deployed tracing backend or observability stack yet; dashboards and alert rules are committed but not wired into runtime infrastructure
 - the Kubernetes assets are still provider-neutral and require a real `gitrank-runtime-secrets` source, TLS Secret, ingress controller, managed PostgreSQL, managed Redis, and registry owner/tag substitution before production apply
 
 ## License

@@ -363,6 +363,8 @@ This architecture baseline is informed by:
   Sources:
   <https://docs.github.com/en/graphql/guides/using-pagination-in-the-graphql-api>
   <https://docs.github.com/en/graphql/overview/rate-limits-and-query-limits-for-the-graphql-api>
+
+GitRank's shared GitHub REST and GraphQL clients include fault-injection tests for secondary-rate-limit responses, bounded retries, final metadata capture, and `Retry-After` precedence.
 - AWS guidance to use caller-provided idempotency identifiers and semantically equivalent responses for duplicate requests
   Source: <https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-apis/>
 - AWS guidance to choose timeouts deliberately and use backoff with jitter

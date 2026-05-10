@@ -875,7 +875,7 @@ Dashboards and alerts:
 - [x] define degraded-mode behavior if AI provider is unavailable
 - [x] define degraded-mode behavior if GitHub API is rate-limited
 - [x] create runbooks for common failure modes
-- [ ] add chaos or fault-injection tests for critical paths
+- [x] add chaos or fault-injection tests for critical paths
 
 ## 20. Performance and Scalability Checklist
 
@@ -1057,7 +1057,7 @@ Do not call the project production ready until:
 - [x] security scanning is active
 - [x] dependency review is enforced on PRs
 - [ ] webhook ingestion is reliable and idempotent
-- [ ] GitHub rate-limit handling is proven
+- [x] GitHub rate-limit handling is proven
 - [x] AI outputs are validated and bounded
 - [x] score explanations are user-visible
 - [x] deletion and retention policies exist

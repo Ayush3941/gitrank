@@ -218,6 +218,67 @@ func TestRESTClientCircuitBreakerClosesAfterReachableHalfOpenResponse(t *testing
 	}
 }
 
+func TestRESTClientRetriesSecondaryRateLimitBeforeSuccess(t *testing.T) {
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		requests++
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("X-RateLimit-Limit", "5000")
+		w.Header().Set("X-RateLimit-Resource", "core")
+		if requests < 3 {
+			w.Header().Set("X-RateLimit-Remaining", "4990")
+			w.WriteHeader(http.StatusForbidden)
+			_ = json.NewEncoder(w).Encode(map[string]string{
+				"message": "You have exceeded a secondary rate limit. Please retry later.",
+			})
+			return
+		}
+
+		w.Header().Set("X-RateLimit-Remaining", "4989")
+		_ = json.NewEncoder(w).Encode(map[string]string{"status": "recovered"})
+	}))
+	defer server.Close()
+
+	client, err := NewRESTClient(ClientConfig{
+		BaseURL:                        server.URL + "/",
+		APIVersion:                     "2026-03-10",
+		UserAgent:                      "GitRank/test",
+		HTTPClient:                     server.Client(),
+		SecondaryBackoff:               time.Millisecond,
+		MaxConcurrency:                 1,
+		CircuitBreakerFailureThreshold: 2,
+		CircuitBreakerOpenInterval:     time.Hour,
+		CircuitBreakerHalfOpenMax:      1,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	var payload struct {
+		Status string `json:"status"`
+	}
+	meta, err := client.GetJSON(context.Background(), "/repos/octo/repo", nil, ConditionalRequest{}, &payload)
+	if err != nil {
+		t.Fatalf("GetJSON() error = %v", err)
+	}
+	if payload.Status != "recovered" {
+		t.Fatalf("payload status = %q, want recovered", payload.Status)
+	}
+	if requests != 3 {
+		t.Fatalf("server requests = %d, want two retries then success", requests)
+	}
+	if meta.RateLimit.Remaining != 4989 {
+		t.Fatalf("remaining = %d, want final response rate-limit metadata", meta.RateLimit.Remaining)
+	}
+}
+
+func TestRESTClientBackoffDelayHonorsRetryAfterHeader(t *testing.T) {
+	client := &RESTClient{secondaryBackoff: time.Hour}
+	if got := client.backoffDelay(2, "7"); got != 7*time.Second {
+		t.Fatalf("backoffDelay() = %v, want Retry-After value", got)
+	}
+}
+
 func TestGraphQLClientCircuitBreakerOpensAfterProviderFailures(t *testing.T) {
 	requests := 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
@@ -353,5 +414,76 @@ func TestGraphQLClientQueryJSON(t *testing.T) {
 	}
 	if meta.RateLimit.Remaining != 4998 {
 		t.Fatalf("remaining = %d, want 4998", meta.RateLimit.Remaining)
+	}
+}
+
+func TestGraphQLClientRetriesSecondaryRateLimitBeforeSuccess(t *testing.T) {
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		requests++
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("X-GitHub-Request-Id", "graphql-rate-limit")
+		w.Header().Set("X-RateLimit-Limit", "5000")
+		if requests < 3 {
+			w.Header().Set("X-RateLimit-Remaining", "4990")
+			_ = json.NewEncoder(w).Encode(GraphQLResponse[map[string]any]{
+				Errors: []GraphQLError{{
+					Message: "You have exceeded a secondary rate limit. Please retry later.",
+				}},
+			})
+			return
+		}
+
+		w.Header().Set("X-RateLimit-Remaining", "4988")
+		_ = json.NewEncoder(w).Encode(GraphQLResponse[struct {
+			Viewer struct {
+				Login string `json:"login"`
+			} `json:"viewer"`
+		}]{
+			Data: struct {
+				Viewer struct {
+					Login string `json:"login"`
+				} `json:"viewer"`
+			}{
+				Viewer: struct {
+					Login string `json:"login"`
+				}{Login: "octocat"},
+			},
+		})
+	}))
+	defer server.Close()
+
+	client, err := NewGraphQLClient(ClientConfig{
+		BaseURL:                        server.URL,
+		APIVersion:                     "2026-03-10",
+		UserAgent:                      "GitRank/test",
+		HTTPClient:                     server.Client(),
+		SecondaryBackoff:               time.Millisecond,
+		MaxConcurrency:                 1,
+		CircuitBreakerFailureThreshold: 2,
+		CircuitBreakerOpenInterval:     time.Hour,
+		CircuitBreakerHalfOpenMax:      1,
+	})
+	if err != nil {
+		t.Fatalf("NewGraphQLClient() error = %v", err)
+	}
+
+	var response GraphQLResponse[struct {
+		Viewer struct {
+			Login string `json:"login"`
+		} `json:"viewer"`
+	}]
+	meta, err := client.QueryJSON(context.Background(), "query { viewer { login } }", nil, &response)
+	if err != nil {
+		t.Fatalf("QueryJSON() error = %v", err)
+	}
+	if response.Data.Viewer.Login != "octocat" {
+		t.Fatalf("viewer login = %q, want octocat", response.Data.Viewer.Login)
+	}
+	if requests != 3 {
+		t.Fatalf("server requests = %d, want two retries then success", requests)
+	}
+	if meta.RateLimit.Remaining != 4988 {
+		t.Fatalf("remaining = %d, want final response rate-limit metadata", meta.RateLimit.Remaining)
 	}
 }
