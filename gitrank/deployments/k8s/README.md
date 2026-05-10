@@ -47,3 +47,12 @@ make verify-rollback-procedure
 ```
 
 Managed PostgreSQL and managed Redis are preferred instead of running stateful databases inside the cluster.
+
+Observability manifests are rendered separately from the application baseline:
+
+```bash
+kubectl kustomize deployments/observability
+make verify-observability-manifests
+```
+
+Create `GRAFANA_ADMIN_USER` and `GRAFANA_ADMIN_PASSWORD` in `gitrank-runtime-secrets` before applying the Grafana deployment.

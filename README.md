@@ -734,6 +734,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 - GitHub login, repository, and commit sync target validation plus HTTP(S)-only outbound URL guards for gateway, GitHub, and AI clients
 - a CI-backed Go safety audit that fails on non-test `unsafe` or reflection-heavy code paths unless they are reviewed explicitly
 - W3C `traceparent` propagation across service HTTP boundaries, scheduler-triggered async sync execution, GitHub API calls, OAuth token calls, and AI request builders
+- renderable Prometheus and Grafana Kubernetes manifests that mount the committed alert rules and dashboards, with a local `make verify-observability-manifests` check
 - Kubernetes deployment rollback workflow support plus a local `make verify-rollback-procedure` check for manifest rendering and rollback wiring
 - a bounded live user sync execution path that walks recent public repositories owned by a GitHub login and persists them through the repository executor in `github-ingestor`
 - a bounded installation sync execution path that replays repositories already associated with a persisted installation record and delegates them through the repository executor without requiring GitHub App installation auth in the v1 baseline

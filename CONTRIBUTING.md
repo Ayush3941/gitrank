@@ -864,6 +864,8 @@ Dashboards and alerts:
 - [x] alerts for elevated AI cost
 - [x] alerts for scoring job failures
 
+Prometheus and Grafana Kubernetes manifests are rendered by `kubectl kustomize gitrank/deployments/observability` and verified by `make verify-observability-manifests`. Production observability remains unchecked until the stack is actually deployed and connected to production traffic.
+
 ## 19. Reliability and SRE Checklist
 
 - [x] define SLOs and SLIs

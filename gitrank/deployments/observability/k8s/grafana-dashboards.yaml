@@ -1,0 +1,12 @@
+apiVersion: 1
+
+providers:
+  - name: GitRank
+    orgId: 1
+    folder: GitRank
+    type: file
+    disableDeletion: true
+    updateIntervalSeconds: 60
+    allowUiUpdates: false
+    options:
+      path: /var/lib/grafana/dashboards
