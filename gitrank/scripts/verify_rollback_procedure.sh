@@ -5,6 +5,8 @@ root_dir="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 repo_dir="$(CDPATH= cd -- "$root_dir/.." && pwd)"
 workflow="$repo_dir/.github/workflows/deploy-k8s.yml"
 k8s_readme="$root_dir/deployments/k8s/README.md"
+tmp_dir="${TMPDIR:-$root_dir/.tmp}"
+mkdir -p "$tmp_dir"
 
 command -v kubectl >/dev/null 2>&1 || {
 	echo "kubectl is required to verify Kubernetes rollback manifests" >&2
@@ -12,7 +14,7 @@ command -v kubectl >/dev/null 2>&1 || {
 }
 
 for overlay in staging production; do
-	rendered="$(mktemp)"
+	rendered="$(TMPDIR="$tmp_dir" mktemp)"
 	kubectl kustomize "$root_dir/deployments/k8s/overlays/$overlay" >"$rendered"
 	test -s "$rendered"
 	grep -q "kind: Deployment" "$rendered"

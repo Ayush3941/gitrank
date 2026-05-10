@@ -13,10 +13,10 @@ test:
 	find . -name go.mod -execdir sh -c 'TMPDIR="$(TMPDIR)" GOCACHE="$(GOCACHE)" go test ./...' \;
 
 test-migrations:
-	./scripts/test_migrations.sh
+	TMPDIR="$(TMPDIR)" ./scripts/test_migrations.sh
 
 test-critical-path-flows:
-	./scripts/test_critical_path_flows.sh
+	TMPDIR="$(TMPDIR)" GOCACHE="$(GOCACHE)" ./scripts/test_critical_path_flows.sh
 
 race:
 	mkdir -p "$(TMPDIR)" "$(GOCACHE)"
@@ -30,16 +30,16 @@ audit-go-safety:
 	./scripts/audit_go_safety.sh
 
 verify-critical-path-tests:
-	./scripts/verify_critical_path_tests.sh
+	TMPDIR="$(TMPDIR)" ./scripts/verify_critical_path_tests.sh
 
 verify-rollback-procedure:
-	./scripts/verify_rollback_procedure.sh
+	TMPDIR="$(TMPDIR)" ./scripts/verify_rollback_procedure.sh
 
 verify-observability-manifests:
-	./scripts/verify_observability_manifests.sh
+	TMPDIR="$(TMPDIR)" ./scripts/verify_observability_manifests.sh
 
 verify-secret-policy:
-	./scripts/verify_secret_policy.sh
+	TMPDIR="$(TMPDIR)" ./scripts/verify_secret_policy.sh
 
 bench-ingestion:
 	mkdir -p "$(TMPDIR)" "$(GOCACHE)"

@@ -2,7 +2,9 @@
 set -eu
 
 root_dir="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
-rendered="$(mktemp)"
+tmp_dir="${TMPDIR:-$root_dir/.tmp}"
+mkdir -p "$tmp_dir"
+rendered="$(TMPDIR="$tmp_dir" mktemp)"
 trap 'rm -f "$rendered"' EXIT
 
 command -v kubectl >/dev/null 2>&1 || {

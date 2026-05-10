@@ -868,7 +868,7 @@ Dashboards and alerts:
 - [x] alerts for elevated AI cost
 - [x] alerts for scoring job failures
 
-Prometheus and Grafana Kubernetes manifests are rendered by `kubectl kustomize gitrank/deployments/observability` and verified by `make verify-observability-manifests`. Production observability remains unchecked until the stack is actually deployed and connected to production traffic.
+Prometheus and Grafana Kubernetes manifests are rendered by `kubectl kustomize gitrank/deployments/observability` and verified by `make verify-observability-manifests`. The Makefile verification targets pass `TMPDIR` through to avoid relying on small system `/tmp` mounts. Production observability remains unchecked until the stack is actually deployed and connected to production traffic.
 
 ## 19. Reliability and SRE Checklist
 
@@ -931,7 +931,7 @@ GitRank may expose reputational data about real people. That increases the stand
 - [x] define zero-downtime migration strategy
 - [x] define cost monitoring and budget alerts
 
-Kubernetes rollback wiring is locally verified by `make verify-rollback-procedure`, which renders staging and production overlays and checks the manual deploy workflow contains rollout history, undo, and status gates. A live production rollback drill is still required before checking the final production-readiness rollback gate.
+Kubernetes rollback wiring is locally verified by `make verify-rollback-procedure`, which renders staging and production overlays using the configured `TMPDIR` and checks the manual deploy workflow contains rollout history, undo, and status gates. A live production rollback drill is still required before checking the final production-readiness rollback gate.
 
 Deployment assets to add:
 
