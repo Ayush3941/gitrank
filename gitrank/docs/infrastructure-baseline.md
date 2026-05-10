@@ -86,6 +86,7 @@ Required telemetry shape:
 ## Reliability Behavior
 
 - retries should be idempotent where evidence or score state is written
+- GitHub outbound REST and GraphQL clients use a configurable circuit breaker for repeated provider-side failures
 - backpressure should pause lower-priority sync and backfill work first
 - deterministic-only mode should be used when AI is unavailable
 - lower-priority syncs should be paused when GitHub rate limits become risky

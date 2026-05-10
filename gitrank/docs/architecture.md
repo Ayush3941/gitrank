@@ -165,6 +165,7 @@ Baseline retry policy:
 - GitHub webhooks: no inline business retry in the request handler; acknowledge quickly after validation, persistence, and enqueue
 - internal queue jobs: bounded retries with exponential backoff and jitter, then dead-letter after `JOB_MAX_ATTEMPTS`
 - GitHub REST and GraphQL reads: retry transient transport failures, `403` secondary-rate-limit responses, `429`, and `5xx`
+- GitHub REST and GraphQL reads: open a circuit breaker after repeated provider-side failures, then fail fast until the configured cool-down interval allows a half-open probe
 - GitHub mutating requests: retry only when protected by an idempotent request contract
 - AI calls: retry only on transport failures, `429`, and `5xx`; do not retry schema-validation failures or deterministic prompt contract failures
 - synchronous user-facing reads: avoid automatic fan-out retries in the gateway; fail fast and surface partial degradation instead of amplifying load

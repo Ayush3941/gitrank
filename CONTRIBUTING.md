@@ -871,7 +871,7 @@ Dashboards and alerts:
 - [x] add graceful shutdown to all services
 - [x] ensure idempotent retries
 - [x] define backpressure behavior
-- [ ] add circuit breaker or equivalent protections where needed
+- [x] add circuit breaker or equivalent protections where needed
 - [x] define degraded-mode behavior if AI provider is unavailable
 - [x] define degraded-mode behavior if GitHub API is rate-limited
 - [x] create runbooks for common failure modes

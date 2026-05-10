@@ -38,6 +38,15 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.Scheduler.PerInstallationRateMax != 18 {
 		t.Fatalf("Scheduler.PerInstallationRateMax = %d, want 18", cfg.Scheduler.PerInstallationRateMax)
 	}
+	if cfg.GitHub.CircuitBreakerFailureThreshold != 5 {
+		t.Fatalf("GitHub.CircuitBreakerFailureThreshold = %d, want 5", cfg.GitHub.CircuitBreakerFailureThreshold)
+	}
+	if cfg.GitHub.CircuitBreakerOpenInterval != 30*time.Second {
+		t.Fatalf("GitHub.CircuitBreakerOpenInterval = %v, want 30s", cfg.GitHub.CircuitBreakerOpenInterval)
+	}
+	if cfg.GitHub.CircuitBreakerHalfOpenMax != 1 {
+		t.Fatalf("GitHub.CircuitBreakerHalfOpenMax = %d, want 1", cfg.GitHub.CircuitBreakerHalfOpenMax)
+	}
 	if cfg.Auth.SessionCookieName != "gitrank_session" {
 		t.Fatalf("Auth.SessionCookieName = %q, want gitrank_session", cfg.Auth.SessionCookieName)
 	}
@@ -60,6 +69,9 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	t.Setenv("GITHUB_API_VERSION", "2022-11-28")
 	t.Setenv("GITHUB_USER_AGENT", "GitRank/test")
 	t.Setenv("GITHUB_OAUTH_SCOPES", "read:user,user:email")
+	t.Setenv("GITHUB_CIRCUIT_BREAKER_FAILURE_THRESHOLD", "7")
+	t.Setenv("GITHUB_CIRCUIT_BREAKER_OPEN_INTERVAL", "45s")
+	t.Setenv("GITHUB_CIRCUIT_BREAKER_HALF_OPEN_MAX_REQUESTS", "2")
 	t.Setenv("JOB_WORKER_CONCURRENCY", "9")
 	t.Setenv("JOB_DEAD_LETTER_QUEUE", "custom-dead-letter")
 	t.Setenv("JOB_PER_USER_RATE_MAX", "3")
@@ -102,6 +114,15 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	}
 	if len(cfg.GitHub.OAuthScopes) != 2 || cfg.GitHub.OAuthScopes[0] != "read:user" {
 		t.Fatalf("GitHub.OAuthScopes = %v, want read:user,user:email", cfg.GitHub.OAuthScopes)
+	}
+	if cfg.GitHub.CircuitBreakerFailureThreshold != 7 {
+		t.Fatalf("GitHub.CircuitBreakerFailureThreshold = %d, want 7", cfg.GitHub.CircuitBreakerFailureThreshold)
+	}
+	if cfg.GitHub.CircuitBreakerOpenInterval != 45*time.Second {
+		t.Fatalf("GitHub.CircuitBreakerOpenInterval = %v, want 45s", cfg.GitHub.CircuitBreakerOpenInterval)
+	}
+	if cfg.GitHub.CircuitBreakerHalfOpenMax != 2 {
+		t.Fatalf("GitHub.CircuitBreakerHalfOpenMax = %d, want 2", cfg.GitHub.CircuitBreakerHalfOpenMax)
 	}
 	if cfg.Scheduler.WorkerConcurrency != 9 {
 		t.Fatalf("Scheduler.WorkerConcurrency = %d, want 9", cfg.Scheduler.WorkerConcurrency)

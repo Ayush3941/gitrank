@@ -53,13 +53,16 @@ type ResponseMetadata struct {
 }
 
 type ClientConfig struct {
-	BaseURL          string
-	APIVersion       string
-	UserAgent        string
-	TokenSource      TokenSource
-	HTTPClient       *http.Client
-	SecondaryBackoff time.Duration
-	MaxConcurrency   int
+	BaseURL                        string
+	APIVersion                     string
+	UserAgent                      string
+	TokenSource                    TokenSource
+	HTTPClient                     *http.Client
+	SecondaryBackoff               time.Duration
+	MaxConcurrency                 int
+	CircuitBreakerFailureThreshold int
+	CircuitBreakerOpenInterval     time.Duration
+	CircuitBreakerHalfOpenMax      int
 }
 
 type RESTClient struct {
@@ -70,6 +73,7 @@ type RESTClient struct {
 	httpClient       *http.Client
 	secondaryBackoff time.Duration
 	sem              chan struct{}
+	circuit          *circuitBreaker
 }
 
 func NewRESTClient(cfg ClientConfig) (*RESTClient, error) {
@@ -104,6 +108,7 @@ func NewRESTClient(cfg ClientConfig) (*RESTClient, error) {
 		httpClient:       cfg.HTTPClient,
 		secondaryBackoff: cfg.SecondaryBackoff,
 		sem:              make(chan struct{}, cfg.MaxConcurrency),
+		circuit:          newCircuitBreaker(cfg.CircuitBreakerFailureThreshold, cfg.CircuitBreakerOpenInterval, cfg.CircuitBreakerHalfOpenMax),
 	}, nil
 }
 
@@ -167,20 +172,38 @@ func (c *RESTClient) do(
 			return nil, ResponseMetadata{}, err
 		}
 	}
+	if err := c.circuit.before(time.Now()); err != nil {
+		return nil, ResponseMetadata{}, err
+	}
 
 	var lastErr error
+	var lastMeta ResponseMetadata
 	for attempt := 0; attempt < 3; attempt++ {
 		responseBody, meta, retry, err := c.once(ctx, method, path, query, conditional, payload)
 		if err == nil {
+			c.circuit.success()
 			return responseBody, meta, nil
 		}
 		lastErr = err
+		lastMeta = meta
 		if !retry {
+			c.observeCircuitResult(meta)
 			return nil, meta, err
 		}
 		time.Sleep(c.backoffDelay(attempt, meta.RateLimit.RetryAfter))
 	}
-	return nil, ResponseMetadata{}, lastErr
+	c.observeCircuitResult(lastMeta)
+	return nil, lastMeta, lastErr
+}
+
+func (c *RESTClient) observeCircuitResult(meta ResponseMetadata) {
+	if isCircuitFailureStatus(meta.StatusCode) {
+		c.circuit.failure(time.Now())
+		return
+	}
+	if meta.StatusCode > 0 {
+		c.circuit.success()
+	}
 }
 
 func (c *RESTClient) once(
@@ -275,6 +298,7 @@ type GraphQLClient struct {
 	httpClient       *http.Client
 	secondaryBackoff time.Duration
 	sem              chan struct{}
+	circuit          *circuitBreaker
 }
 
 type GraphQLRequest struct {
@@ -319,6 +343,7 @@ func NewGraphQLClient(cfg ClientConfig) (*GraphQLClient, error) {
 		httpClient:       cfg.HTTPClient,
 		secondaryBackoff: cfg.SecondaryBackoff,
 		sem:              make(chan struct{}, cfg.MaxConcurrency),
+		circuit:          newCircuitBreaker(cfg.CircuitBreakerFailureThreshold, cfg.CircuitBreakerOpenInterval, cfg.CircuitBreakerHalfOpenMax),
 	}, nil
 }
 
@@ -336,37 +361,61 @@ func (c *GraphQLClient) QueryJSON(
 	if err != nil {
 		return ResponseMetadata{}, err
 	}
+	if err := c.circuit.before(time.Now()); err != nil {
+		return ResponseMetadata{}, err
+	}
 
 	var lastErr error
+	var lastMeta ResponseMetadata
 	for attempt := 0; attempt < 3; attempt++ {
 		responseBody, meta, retry, err := c.once(ctx, payload)
+		lastMeta = meta
 		if err == nil {
 			var probe struct {
 				Errors []GraphQLError `json:"errors,omitempty"`
 			}
 			if err := json.Unmarshal(responseBody, &probe); err != nil {
+				c.observeCircuitResult(meta)
 				return meta, err
 			}
 			if out != nil {
 				if err := json.Unmarshal(responseBody, out); err != nil {
+					c.observeCircuitResult(meta)
 					return meta, err
 				}
 			}
 			if isGraphQLRateLimit(probe.Errors) {
 				lastErr = errors.New("GitHub GraphQL secondary rate limit")
 			} else {
+				c.circuit.success()
 				return meta, nil
 			}
 		} else {
 			lastErr = err
 			if !retry {
+				c.observeCircuitResult(meta)
 				return meta, err
 			}
 		}
 		time.Sleep(c.backoffDelay(attempt, meta.RateLimit.RetryAfter))
 	}
 
-	return ResponseMetadata{}, lastErr
+	c.observeCircuitResult(lastMeta)
+	return lastMeta, lastErr
+}
+
+func (c *GraphQLClient) observeCircuitResult(meta ResponseMetadata) {
+	if isCircuitFailureStatus(meta.StatusCode) {
+		c.circuit.failure(time.Now())
+		return
+	}
+	if meta.StatusCode > 0 {
+		c.circuit.success()
+	}
+}
+
+func isCircuitFailureStatus(statusCode int) bool {
+	return statusCode == 0 || statusCode == http.StatusTooManyRequests || statusCode >= http.StatusInternalServerError
 }
 
 func (c *GraphQLClient) once(

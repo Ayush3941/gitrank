@@ -80,33 +80,36 @@ type Auth struct {
 }
 
 type GitHub struct {
-	ClientID         string
-	ClientSecret     string
-	AuthorizeURL     string
-	TokenURL         string
-	DeviceURL        string
-	OAuthRedirectURL string
-	AppID            string
-	AppSlug          string
-	AppInstallURL    string
-	AppClientID      string
-	AppClientSecret  string
-	AppPrivateKeyPEM string
-	WebhookSecret    string
-	APIBaseURL       string
-	GraphQLURL       string
-	APIVersion       string
-	UserAgent        string
-	OAuthScopes      []string
-	RequestTimeout   time.Duration
-	MaxPageSize      int
-	GraphQLPageSize  int
-	MaxBodyBytes     int
-	DedupeTTL        time.Duration
-	FailedLookback   time.Duration
-	RefreshSkew      time.Duration
-	SecondaryBackoff time.Duration
-	MaxConcurrency   int
+	ClientID                       string
+	ClientSecret                   string
+	AuthorizeURL                   string
+	TokenURL                       string
+	DeviceURL                      string
+	OAuthRedirectURL               string
+	AppID                          string
+	AppSlug                        string
+	AppInstallURL                  string
+	AppClientID                    string
+	AppClientSecret                string
+	AppPrivateKeyPEM               string
+	WebhookSecret                  string
+	APIBaseURL                     string
+	GraphQLURL                     string
+	APIVersion                     string
+	UserAgent                      string
+	OAuthScopes                    []string
+	RequestTimeout                 time.Duration
+	MaxPageSize                    int
+	GraphQLPageSize                int
+	MaxBodyBytes                   int
+	DedupeTTL                      time.Duration
+	FailedLookback                 time.Duration
+	RefreshSkew                    time.Duration
+	SecondaryBackoff               time.Duration
+	MaxConcurrency                 int
+	CircuitBreakerFailureThreshold int
+	CircuitBreakerOpenInterval     time.Duration
+	CircuitBreakerHalfOpenMax      int
 }
 
 type AI struct {
@@ -187,33 +190,36 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			RateLimitMaxAttempts:    getInt("AUTH_RATE_LIMIT_MAX_ATTEMPTS", 30),
 		},
 		GitHub: GitHub{
-			ClientID:         getEnv("GITHUB_CLIENT_ID", ""),
-			ClientSecret:     getEnv("GITHUB_CLIENT_SECRET", ""),
-			AuthorizeURL:     getEnv("GITHUB_OAUTH_AUTHORIZE_URL", "https://github.com/login/oauth/authorize"),
-			TokenURL:         getEnv("GITHUB_OAUTH_TOKEN_URL", "https://github.com/login/oauth/access_token"),
-			DeviceURL:        getEnv("GITHUB_OAUTH_DEVICE_URL", "https://github.com/login/device/code"),
-			OAuthRedirectURL: getEnv("GITHUB_OAUTH_REDIRECT_URL", ""),
-			AppID:            getEnv("GITHUB_APP_ID", ""),
-			AppSlug:          getEnv("GITHUB_APP_SLUG", ""),
-			AppInstallURL:    getEnv("GITHUB_APP_INSTALL_URL", ""),
-			AppClientID:      getEnv("GITHUB_APP_CLIENT_ID", ""),
-			AppClientSecret:  getEnv("GITHUB_APP_CLIENT_SECRET", ""),
-			AppPrivateKeyPEM: getEnv("GITHUB_APP_PRIVATE_KEY_PEM_PATH", ""),
-			WebhookSecret:    getEnv("GITHUB_WEBHOOK_SECRET", ""),
-			APIBaseURL:       getEnv("GITHUB_API_BASE_URL", "https://api.github.com"),
-			GraphQLURL:       getEnv("GITHUB_GRAPHQL_URL", "https://api.github.com/graphql"),
-			APIVersion:       getEnv("GITHUB_API_VERSION", "2026-03-10"),
-			UserAgent:        getEnv("GITHUB_USER_AGENT", "GitRank/dev"),
-			OAuthScopes:      getCSVWithDefault("GITHUB_OAUTH_SCOPES", []string{"read:user", "user:email"}),
-			RequestTimeout:   getDuration("GITHUB_REQUEST_TIMEOUT", 10*time.Second),
-			MaxPageSize:      getInt("GITHUB_MAX_PAGE_SIZE", 100),
-			GraphQLPageSize:  getInt("GITHUB_GRAPHQL_PAGE_SIZE", 100),
-			MaxBodyBytes:     getInt("GITHUB_WEBHOOK_MAX_BODY_BYTES", 1<<20),
-			DedupeTTL:        getDuration("GITHUB_WEBHOOK_DEDUPE_TTL", 7*24*time.Hour),
-			FailedLookback:   getDuration("GITHUB_FAILED_DELIVERY_LOOKBACK", 72*time.Hour),
-			RefreshSkew:      getDuration("GITHUB_INSTALLATION_TOKEN_REFRESH_SKEW", 5*time.Minute),
-			SecondaryBackoff: getDuration("GITHUB_SECONDARY_RATE_LIMIT_BACKOFF", time.Minute),
-			MaxConcurrency:   getInt("GITHUB_MAX_CONCURRENT_REQUESTS", 8),
+			ClientID:                       getEnv("GITHUB_CLIENT_ID", ""),
+			ClientSecret:                   getEnv("GITHUB_CLIENT_SECRET", ""),
+			AuthorizeURL:                   getEnv("GITHUB_OAUTH_AUTHORIZE_URL", "https://github.com/login/oauth/authorize"),
+			TokenURL:                       getEnv("GITHUB_OAUTH_TOKEN_URL", "https://github.com/login/oauth/access_token"),
+			DeviceURL:                      getEnv("GITHUB_OAUTH_DEVICE_URL", "https://github.com/login/device/code"),
+			OAuthRedirectURL:               getEnv("GITHUB_OAUTH_REDIRECT_URL", ""),
+			AppID:                          getEnv("GITHUB_APP_ID", ""),
+			AppSlug:                        getEnv("GITHUB_APP_SLUG", ""),
+			AppInstallURL:                  getEnv("GITHUB_APP_INSTALL_URL", ""),
+			AppClientID:                    getEnv("GITHUB_APP_CLIENT_ID", ""),
+			AppClientSecret:                getEnv("GITHUB_APP_CLIENT_SECRET", ""),
+			AppPrivateKeyPEM:               getEnv("GITHUB_APP_PRIVATE_KEY_PEM_PATH", ""),
+			WebhookSecret:                  getEnv("GITHUB_WEBHOOK_SECRET", ""),
+			APIBaseURL:                     getEnv("GITHUB_API_BASE_URL", "https://api.github.com"),
+			GraphQLURL:                     getEnv("GITHUB_GRAPHQL_URL", "https://api.github.com/graphql"),
+			APIVersion:                     getEnv("GITHUB_API_VERSION", "2026-03-10"),
+			UserAgent:                      getEnv("GITHUB_USER_AGENT", "GitRank/dev"),
+			OAuthScopes:                    getCSVWithDefault("GITHUB_OAUTH_SCOPES", []string{"read:user", "user:email"}),
+			RequestTimeout:                 getDuration("GITHUB_REQUEST_TIMEOUT", 10*time.Second),
+			MaxPageSize:                    getInt("GITHUB_MAX_PAGE_SIZE", 100),
+			GraphQLPageSize:                getInt("GITHUB_GRAPHQL_PAGE_SIZE", 100),
+			MaxBodyBytes:                   getInt("GITHUB_WEBHOOK_MAX_BODY_BYTES", 1<<20),
+			DedupeTTL:                      getDuration("GITHUB_WEBHOOK_DEDUPE_TTL", 7*24*time.Hour),
+			FailedLookback:                 getDuration("GITHUB_FAILED_DELIVERY_LOOKBACK", 72*time.Hour),
+			RefreshSkew:                    getDuration("GITHUB_INSTALLATION_TOKEN_REFRESH_SKEW", 5*time.Minute),
+			SecondaryBackoff:               getDuration("GITHUB_SECONDARY_RATE_LIMIT_BACKOFF", time.Minute),
+			MaxConcurrency:                 getInt("GITHUB_MAX_CONCURRENT_REQUESTS", 8),
+			CircuitBreakerFailureThreshold: getInt("GITHUB_CIRCUIT_BREAKER_FAILURE_THRESHOLD", 5),
+			CircuitBreakerOpenInterval:     getDuration("GITHUB_CIRCUIT_BREAKER_OPEN_INTERVAL", 30*time.Second),
+			CircuitBreakerHalfOpenMax:      getInt("GITHUB_CIRCUIT_BREAKER_HALF_OPEN_MAX_REQUESTS", 1),
 		},
 		AI: AI{
 			Provider:        getEnv("AI_PROVIDER", "openai"),
@@ -352,6 +358,15 @@ func (a App) ValidateBase() error {
 	}
 	if a.GitHub.MaxConcurrency <= 0 {
 		problems = append(problems, "GITHUB_MAX_CONCURRENT_REQUESTS must be positive")
+	}
+	if a.GitHub.CircuitBreakerFailureThreshold <= 0 {
+		problems = append(problems, "GITHUB_CIRCUIT_BREAKER_FAILURE_THRESHOLD must be positive")
+	}
+	if a.GitHub.CircuitBreakerOpenInterval <= 0 {
+		problems = append(problems, "GITHUB_CIRCUIT_BREAKER_OPEN_INTERVAL must be positive")
+	}
+	if a.GitHub.CircuitBreakerHalfOpenMax <= 0 {
+		problems = append(problems, "GITHUB_CIRCUIT_BREAKER_HALF_OPEN_MAX_REQUESTS must be positive")
 	}
 	if a.AI.RequestTimeout <= 0 {
 		problems = append(problems, "AI_REQUEST_TIMEOUT must be positive")

@@ -3,6 +3,7 @@ package githubapi
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -109,6 +110,130 @@ func TestRESTClientGetJSON(t *testing.T) {
 	}
 	if meta.Links["next"] == "" {
 		t.Fatal("meta.Links missing next page")
+	}
+}
+
+func TestRESTClientCircuitBreakerOpensAfterProviderFailures(t *testing.T) {
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		requests++
+		w.WriteHeader(http.StatusBadGateway)
+		_ = json.NewEncoder(w).Encode(map[string]string{"message": "github unavailable"})
+	}))
+	defer server.Close()
+
+	client, err := NewRESTClient(ClientConfig{
+		BaseURL:                        server.URL + "/",
+		APIVersion:                     "2026-03-10",
+		UserAgent:                      "GitRank/test",
+		HTTPClient:                     server.Client(),
+		SecondaryBackoff:               time.Millisecond,
+		MaxConcurrency:                 1,
+		CircuitBreakerFailureThreshold: 2,
+		CircuitBreakerOpenInterval:     time.Hour,
+		CircuitBreakerHalfOpenMax:      1,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	for i := 0; i < 2; i++ {
+		if _, err := client.GetJSON(context.Background(), "/repos/octo/repo", nil, ConditionalRequest{}, nil); err == nil {
+			t.Fatal("GetJSON() expected upstream error")
+		}
+	}
+
+	if _, err := client.GetJSON(context.Background(), "/repos/octo/repo", nil, ConditionalRequest{}, nil); !errors.Is(err, ErrCircuitOpen) {
+		t.Fatalf("GetJSON() error = %v, want ErrCircuitOpen", err)
+	}
+	if requests != 2 {
+		t.Fatalf("server requests = %d, want 2 before circuit opened", requests)
+	}
+}
+
+func TestRESTClientCircuitBreakerClosesAfterReachableHalfOpenResponse(t *testing.T) {
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		requests++
+		if requests == 1 {
+			w.WriteHeader(http.StatusBadGateway)
+			_ = json.NewEncoder(w).Encode(map[string]string{"message": "github unavailable"})
+			return
+		}
+		w.WriteHeader(http.StatusNotFound)
+		_ = json.NewEncoder(w).Encode(map[string]string{"message": "not found"})
+	}))
+	defer server.Close()
+
+	client, err := NewRESTClient(ClientConfig{
+		BaseURL:                        server.URL + "/",
+		APIVersion:                     "2026-03-10",
+		UserAgent:                      "GitRank/test",
+		HTTPClient:                     server.Client(),
+		SecondaryBackoff:               time.Millisecond,
+		MaxConcurrency:                 1,
+		CircuitBreakerFailureThreshold: 1,
+		CircuitBreakerOpenInterval:     time.Millisecond,
+		CircuitBreakerHalfOpenMax:      1,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	if _, err := client.GetJSON(context.Background(), "/repos/octo/repo", nil, ConditionalRequest{}, nil); err == nil {
+		t.Fatal("GetJSON() expected upstream error")
+	}
+	if _, err := client.GetJSON(context.Background(), "/repos/octo/repo", nil, ConditionalRequest{}, nil); !errors.Is(err, ErrCircuitOpen) {
+		t.Fatalf("GetJSON() error = %v, want ErrCircuitOpen", err)
+	}
+
+	time.Sleep(2 * time.Millisecond)
+	if _, err := client.GetJSON(context.Background(), "/repos/octo/repo", nil, ConditionalRequest{}, nil); errors.Is(err, ErrCircuitOpen) {
+		t.Fatalf("GetJSON() error = %v, want reachable 404 to close half-open circuit", err)
+	}
+	if _, err := client.GetJSON(context.Background(), "/repos/octo/repo", nil, ConditionalRequest{}, nil); errors.Is(err, ErrCircuitOpen) {
+		t.Fatalf("GetJSON() error = %v, want circuit to remain closed after reachable response", err)
+	}
+	if requests != 3 {
+		t.Fatalf("server requests = %d, want 3", requests)
+	}
+}
+
+func TestGraphQLClientCircuitBreakerOpensAfterProviderFailures(t *testing.T) {
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		requests++
+		w.WriteHeader(http.StatusBadGateway)
+		_ = json.NewEncoder(w).Encode(map[string]string{"message": "github unavailable"})
+	}))
+	defer server.Close()
+
+	client, err := NewGraphQLClient(ClientConfig{
+		BaseURL:                        server.URL,
+		APIVersion:                     "2026-03-10",
+		UserAgent:                      "GitRank/test",
+		HTTPClient:                     server.Client(),
+		SecondaryBackoff:               time.Millisecond,
+		MaxConcurrency:                 1,
+		CircuitBreakerFailureThreshold: 2,
+		CircuitBreakerOpenInterval:     time.Hour,
+		CircuitBreakerHalfOpenMax:      1,
+	})
+	if err != nil {
+		t.Fatalf("NewGraphQLClient() error = %v", err)
+	}
+
+	for i := 0; i < 2; i++ {
+		if _, err := client.QueryJSON(context.Background(), "query { viewer { login } }", nil, nil); err == nil {
+			t.Fatal("QueryJSON() expected upstream error")
+		}
+	}
+
+	if _, err := client.QueryJSON(context.Background(), "query { viewer { login } }", nil, nil); !errors.Is(err, ErrCircuitOpen) {
+		t.Fatalf("QueryJSON() error = %v, want ErrCircuitOpen", err)
+	}
+	if requests != 2 {
+		t.Fatalf("server requests = %d, want 2 before circuit opened", requests)
 	}
 }
 

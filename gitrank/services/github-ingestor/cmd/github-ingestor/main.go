@@ -41,12 +41,15 @@ func main() {
 	persistence := service.New(nil)
 	var executor *service.Executor
 	restClient, err := githubapi.NewRESTClient(githubapi.ClientConfig{
-		BaseURL:          cfg.GitHub.APIBaseURL,
-		APIVersion:       cfg.GitHub.APIVersion,
-		UserAgent:        cfg.GitHub.UserAgent,
-		HTTPClient:       &http.Client{Timeout: cfg.GitHub.RequestTimeout},
-		SecondaryBackoff: cfg.GitHub.SecondaryBackoff,
-		MaxConcurrency:   cfg.GitHub.MaxConcurrency,
+		BaseURL:                        cfg.GitHub.APIBaseURL,
+		APIVersion:                     cfg.GitHub.APIVersion,
+		UserAgent:                      cfg.GitHub.UserAgent,
+		HTTPClient:                     &http.Client{Timeout: cfg.GitHub.RequestTimeout},
+		SecondaryBackoff:               cfg.GitHub.SecondaryBackoff,
+		MaxConcurrency:                 cfg.GitHub.MaxConcurrency,
+		CircuitBreakerFailureThreshold: cfg.GitHub.CircuitBreakerFailureThreshold,
+		CircuitBreakerOpenInterval:     cfg.GitHub.CircuitBreakerOpenInterval,
+		CircuitBreakerHalfOpenMax:      cfg.GitHub.CircuitBreakerHalfOpenMax,
 	})
 	if err != nil {
 		panic(err)
