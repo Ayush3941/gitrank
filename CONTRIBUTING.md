@@ -1157,7 +1157,7 @@ V2 frontend no-mock checklist:
 V2 scoring and evidence checklist:
 
 - [ ] Every XP value must link to a persisted score event, formula version, PR evidence, and analysis artifact. PR battle reports now expose score-event formula components for newly replayed scores; remaining profile, leaderboard, quest, and historical-event surfaces still need full linkage.
-- [ ] Every badge unlock must link to a persisted badge award, unlock rule version, and evidence PR set. Scoring-engine badge awards now include `rule_version`, `evidence_pr_ids`, and bounded `evidence_prs`; remaining quest reward badges and historical badge rows need the same guarantee.
+- [ ] Every badge unlock must link to a persisted badge award, unlock rule version, and evidence PR set. Scoring-engine badge awards now include `rule_version`, `evidence_pr_ids`, and bounded `evidence_prs`, with indexed badge-evidence lookups for PR reports; remaining quest reward badges and historical badge rows need the same guarantee.
 - [ ] Every quest reward must link to quest completion evidence and avoid rewarding unverified or duplicate work.
 - [ ] Every leaderboard rank must link to a season snapshot, rank movement event, score version, and freshness timestamp.
 - [ ] Every skill claim must distinguish deterministic evidence, AI-assisted classification, confidence, and stale or partial states.

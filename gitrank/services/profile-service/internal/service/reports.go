@@ -137,11 +137,7 @@ func (s *Store) LoadPullRequestReport(ctx context.Context, owner, repo string, n
 			FROM user_badges ub
 			WHERE author_ga.user_id IS NOT NULL
 			  AND ub.user_id = author_ga.user_id
-			  AND EXISTS (
-			      SELECT 1
-			      FROM jsonb_array_elements_text(COALESCE(ub.evidence_jsonb->'evidence_pr_ids', '[]'::jsonb)) evidence_pr(id)
-			      WHERE evidence_pr.id = pr.id::text
-			  )
+			  AND COALESCE(ub.evidence_jsonb->'evidence_pr_ids', '[]'::jsonb) ? pr.id::text
 		) badges ON true
 		LEFT JOIN LATERAL (
 			SELECT
@@ -286,11 +282,7 @@ func (s *Store) LoadRecentPullRequestReportsForUser(ctx context.Context, userID 
 			FROM user_badges ub
 			WHERE author_ga.user_id IS NOT NULL
 			  AND ub.user_id = author_ga.user_id
-			  AND EXISTS (
-			      SELECT 1
-			      FROM jsonb_array_elements_text(COALESCE(ub.evidence_jsonb->'evidence_pr_ids', '[]'::jsonb)) evidence_pr(id)
-			      WHERE evidence_pr.id = pr.id::text
-			  )
+			  AND COALESCE(ub.evidence_jsonb->'evidence_pr_ids', '[]'::jsonb) ? pr.id::text
 		) badges ON true
 		LEFT JOIN LATERAL (
 			SELECT
