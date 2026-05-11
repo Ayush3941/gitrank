@@ -38,7 +38,7 @@ Dark-first Next.js frontend for GitRank, an evidence-backed open-source reputati
 - `features/*/data/`: feature-local constants and clearly labeled marketing sample data
 - `hooks/`: TanStack Query hooks
 - `lib/demo/preview-api.ts`: development-gated preview adapter for mock loading, error, empty, and stale states
-- `lib/api/mock-api.ts`: mock data access layer used only by the preview adapter
+- `lib/demo/mock-api.ts`: mock data access layer used only by the preview adapter
 - `lib/mock-data/gitrank.ts`: main mock domain dataset for Ayush3941
 - `types/gitrank.ts`: domain model types
 

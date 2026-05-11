@@ -1144,14 +1144,14 @@ V2 ingestion and coverage checklist:
 
 V2 frontend no-mock checklist:
 
-- [ ] Remove production imports from `frontend/lib/mock-data/gitrank.ts` outside marketing samples, tests, stories, or explicitly dev-only preview modules.
-- [x] Remove production imports from `frontend/lib/api/mock-api.ts` for dashboard, quests, PR reports, leaderboard, profile, settings, badges, and contributions. Preview-only mock access is isolated behind `frontend/lib/demo/preview-api.ts`, and `?demo=` is production-disabled by default.
+- [x] Remove production imports from `frontend/lib/mock-data/gitrank.ts` outside marketing samples, tests, stories, or explicitly dev-only preview modules.
+- [x] Remove production imports from `frontend/lib/api/mock-api.ts` for dashboard, quests, PR reports, leaderboard, profile, settings, badges, and contributions. Preview-only mock access is isolated under `frontend/lib/demo/`, and `?demo=` is production-disabled by default.
 - [x] Gate `?demo=` preview modes behind a development-only flag or move them to test/storybook fixtures.
 - [x] Make the dashboard top bar read the authenticated profile instead of `ayushProfile`.
 - [x] Make onboarding reveal use the authenticated user's real post-sync profile or a clearly marked development-only sample route.
 - [x] Make marketing sample data isolated from production app routes and impossible to confuse with signed-in user data.
 - [x] Replace `features/*/data` mock exports with live repositories, typed fixtures for tests, or removed files.
-- [x] Add a CI check that fails if production app, hook, feature, or API modules import `frontend/lib/mock-data/gitrank.ts` or `frontend/lib/api/mock-api.ts`.
+- [x] Add a CI check that fails if production app, hook, feature, or API modules import mock datasets or preview-only mock APIs.
 - [ ] Add Playwright or equivalent smoke coverage proving quests, PR reports, dashboard, profile, leaderboard, and settings render from live test fixtures rather than mock API functions.
 
 V2 scoring and evidence checklist:

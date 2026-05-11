@@ -3,11 +3,9 @@ import path from "node:path";
 
 const root = process.cwd();
 const scanRoots = ["app", "hooks", "features", "lib/api"];
-const allowedFiles = new Set([
-  "lib/api/mock-api.ts",
-]);
 const blockedImports = [
   "@/lib/api/mock-api",
+  "@/lib/demo/mock-api",
   "@/lib/mock-data/gitrank",
 ];
 
@@ -41,8 +39,6 @@ function walk(entry) {
   if (!/\.[cm]?[jt]sx?$/.test(entry)) return;
 
   const relative = path.relative(root, entry).split(path.sep).join("/");
-  if (allowedFiles.has(relative)) return;
-
   const source = readFileSync(entry, "utf8");
   for (const importPath of blockedImports) {
     if (source.includes(importPath)) {

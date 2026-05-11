@@ -4,7 +4,7 @@ import {
   getPrReport,
   getQuests,
   getUserProfile,
-} from "@/lib/api/mock-api";
+} from "@/lib/demo/mock-api";
 import { prAnalyses } from "@/lib/mock-data/gitrank";
 import type {
   DashboardData,
