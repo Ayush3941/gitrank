@@ -42,6 +42,7 @@ type pullRequestReportRecord struct {
 	ScoreExplanation   []string
 	ScoreMetadata      map[string]any
 	FileCount          int
+	FeatureCount       int
 	TestFiles          int
 	DocsFiles          int
 	ReviewCount        int
@@ -92,6 +93,7 @@ func (s *Store) LoadPullRequestReport(ctx context.Context, owner, repo string, n
 			COALESCE(se.explanation_jsonb, '[]'::jsonb),
 			COALESCE(se.metadata_jsonb, '{}'::jsonb),
 			COALESCE(files.file_count, 0),
+			COALESCE(files.feature_count, 0),
 			COALESCE(files.test_files, 0),
 			COALESCE(files.docs_files, 0),
 			COALESCE(reviews.review_count, 0),
@@ -117,6 +119,7 @@ func (s *Store) LoadPullRequestReport(ctx context.Context, owner, repo string, n
 		LEFT JOIN LATERAL (
 			SELECT
 				COUNT(*)::int AS file_count,
+				COUNT(*) FILTER (WHERE feature_jsonb <> '{}'::jsonb)::int AS feature_count,
 				COUNT(*) FILTER (WHERE path ~* '(^|/)(test|tests|__tests__)/|(_test\.|\.test\.|\.spec\.)')::int AS test_files,
 				COUNT(*) FILTER (WHERE path ~* '(^|/)(docs?|documentation)/|\.md$|\.mdx$')::int AS docs_files
 			FROM pull_request_files
@@ -225,6 +228,7 @@ func (s *Store) LoadRecentPullRequestReportsForUser(ctx context.Context, userID 
 			COALESCE(se.explanation_jsonb, '[]'::jsonb),
 			COALESCE(se.metadata_jsonb, '{}'::jsonb),
 			COALESCE(files.file_count, 0),
+			COALESCE(files.feature_count, 0),
 			COALESCE(files.test_files, 0),
 			COALESCE(files.docs_files, 0),
 			COALESCE(reviews.review_count, 0),
@@ -244,6 +248,7 @@ func (s *Store) LoadRecentPullRequestReportsForUser(ctx context.Context, userID 
 		LEFT JOIN LATERAL (
 			SELECT
 				COUNT(*)::int AS file_count,
+				COUNT(*) FILTER (WHERE feature_jsonb <> '{}'::jsonb)::int AS feature_count,
 				COUNT(*) FILTER (WHERE path ~* '(^|/)(test|tests|__tests__)/|(_test\.|\.test\.|\.spec\.)')::int AS test_files,
 				COUNT(*) FILTER (WHERE path ~* '(^|/)(docs?|documentation)/|\.md$|\.mdx$')::int AS docs_files
 			FROM pull_request_files
@@ -313,6 +318,7 @@ func scanPullRequestReport(row rowScanner) (pullRequestReportRecord, error) {
 		&explanationRaw,
 		&metadataRaw,
 		&record.FileCount,
+		&record.FeatureCount,
 		&record.TestFiles,
 		&record.DocsFiles,
 		&record.ReviewCount,
@@ -465,6 +471,9 @@ func reportEvidenceSignals(record pullRequestReportRecord) []string {
 	signals = append(signals, record.ScoreExplanation...)
 	if record.FileCount > 0 {
 		signals = append(signals, fmt.Sprintf("%d changed files persisted", record.FileCount))
+	}
+	if record.FeatureCount > 0 {
+		signals = append(signals, fmt.Sprintf("%d changed-file feature records persisted", record.FeatureCount))
 	}
 	if record.ReviewCount > 0 {
 		signals = append(signals, fmt.Sprintf("%d review events persisted", record.ReviewCount))

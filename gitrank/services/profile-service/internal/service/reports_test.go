@@ -34,6 +34,7 @@ func TestPullRequestReportFromRecordUsesPersistedScoreAndAnalysisEvidence(t *tes
 		XP:                 420,
 		ScoreMetadata:      map[string]any{"technical_depth": 0.72, "review_strength": 0.5, "diminishing_returns": 0.97},
 		FileCount:          4,
+		FeatureCount:       4,
 		TestFiles:          2,
 		ReviewCount:        1,
 		ApprovalCount:      1,
@@ -54,6 +55,9 @@ func TestPullRequestReportFromRecordUsesPersistedScoreAndAnalysisEvidence(t *tes
 	}
 	if !report.Contribution.MaintainerReviewed || !report.Contribution.LinkedIssue || !report.Contribution.CIPassed {
 		t.Fatalf("expected maintainer review, linked issue, and CI evidence: %+v", report.Contribution)
+	}
+	if !containsString(report.Contribution.EvidenceSignals, "4 changed-file feature records persisted") {
+		t.Fatalf("EvidenceSignals = %+v, want persisted feature signal", report.Contribution.EvidenceSignals)
 	}
 	if report.IsStale {
 		t.Fatal("IsStale = true, want false with analysis and score event")
@@ -79,4 +83,13 @@ func TestPullRequestReportFromRecordMarksUnscoredReportStale(t *testing.T) {
 	if len(report.Penalties) == 0 || report.Penalties[0].Label != "No persisted score event" {
 		t.Fatalf("penalties = %+v, want no persisted score event", report.Penalties)
 	}
+}
+
+func containsString(values []string, expected string) bool {
+	for _, value := range values {
+		if value == expected {
+			return true
+		}
+	}
+	return false
 }

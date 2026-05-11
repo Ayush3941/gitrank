@@ -189,6 +189,39 @@ func TestSanitizedPullRequestFilePayloadBoundsPatchAndDropsContents(t *testing.T
 	}
 }
 
+func TestDerivePullRequestFileFeaturesUsesBoundedPatchEvidence(t *testing.T) {
+	rawPatch := strings.Join([]string{
+		"@@ -1,2 +1,3 @@",
+		" context",
+		"-old",
+		"+new",
+		"+added",
+	}, "\n")
+	file := map[string]any{
+		"filename":  "services/auth/session_test.go",
+		"status":    "modified",
+		"additions": 2,
+		"deletions": 1,
+		"changes":   3,
+		"patch":     rawPatch,
+	}
+
+	features := derivePullRequestFileFeatures(file, pullRequestFilePath(file), rawPatch, rawPatch)
+
+	if features["file_type"] != "test" {
+		t.Fatalf("file_type = %v, want test", features["file_type"])
+	}
+	if features["path_extension"] != ".go" {
+		t.Fatalf("path_extension = %v, want .go", features["path_extension"])
+	}
+	if features["patch_hunks"] != 1 || features["patch_added_lines"] != 2 || features["patch_removed_lines"] != 1 {
+		t.Fatalf("patch stats = %+v, want 1 hunk, 2 added, 1 removed", features)
+	}
+	if features["patch_truncated"] != false || features["binary_or_large_patch"] != false {
+		t.Fatalf("patch bounds flags = %+v, want not truncated and not binary", features)
+	}
+}
+
 func TestBoundedStringBytesKeepsValidUTF8(t *testing.T) {
 	if got := boundedStringBytes("aé", 2); got != "a" {
 		t.Fatalf("boundedStringBytes() = %q, want a", got)

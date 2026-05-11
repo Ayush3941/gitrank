@@ -784,12 +784,19 @@ func TestExecutorSyncPullRequestFetchesAndPersistsBoundedPullRequestData(t *test
 	var patchLength int
 	var hasContent bool
 	var hasContents bool
+	var featureType string
+	var patchTruncated bool
 	if err := pool.QueryRow(ctx, `
-		SELECT length(patch), payload_jsonb ? 'content', payload_jsonb ? 'contents'
+		SELECT
+			length(patch),
+			payload_jsonb ? 'content',
+			payload_jsonb ? 'contents',
+			feature_jsonb->>'file_type',
+			COALESCE((feature_jsonb->>'patch_truncated')::boolean, false)
 		FROM pull_request_files
 		WHERE path = 'internal/executor.go'
 		LIMIT 1
-	`).Scan(&patchLength, &hasContent, &hasContents); err != nil {
+	`).Scan(&patchLength, &hasContent, &hasContents, &featureType, &patchTruncated); err != nil {
 		t.Fatalf("select pull_request_files bounded payload: %v", err)
 	}
 	if patchLength != maxStoredPullRequestFilePatchBytes {
@@ -797,6 +804,9 @@ func TestExecutorSyncPullRequestFetchesAndPersistsBoundedPullRequestData(t *test
 	}
 	if hasContent || hasContents {
 		t.Fatalf("sanitized payload retained content fields: content=%v contents=%v", hasContent, hasContents)
+	}
+	if featureType != "source" || !patchTruncated {
+		t.Fatalf("feature_jsonb = type %q truncated %v, want source/truncated", featureType, patchTruncated)
 	}
 }
 

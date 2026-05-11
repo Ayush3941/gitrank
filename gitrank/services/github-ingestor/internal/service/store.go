@@ -444,8 +444,10 @@ func (s *TxStore) UpsertPullRequestFile(file map[string]any, pullRequestID strin
 		return false, nil
 	}
 
-	patch := pullRequestFilePatch(file)
+	rawPatch := rawStringValue(file["patch"])
+	patch := boundedStringBytes(rawPatch, maxStoredPullRequestFilePatchBytes)
 	sanitized := sanitizedPullRequestFilePayload(file, patch)
+	features := derivePullRequestFileFeatures(file, path, rawPatch, patch)
 
 	tag, err := s.tx.Exec(s.context(), `
 		INSERT INTO pull_request_files (
@@ -459,6 +461,7 @@ func (s *TxStore) UpsertPullRequestFile(file map[string]any, pullRequestID strin
 			patch,
 			blob_url,
 			raw_url,
+			feature_jsonb,
 			payload_jsonb
 		) VALUES (
 			$1::uuid,
@@ -471,7 +474,8 @@ func (s *TxStore) UpsertPullRequestFile(file map[string]any, pullRequestID strin
 			$8,
 			$9,
 			$10,
-			$11::jsonb
+			$11::jsonb,
+			$12::jsonb
 		)
 		ON CONFLICT (pull_request_id, path) DO UPDATE SET
 			previous_path = EXCLUDED.previous_path,
@@ -482,6 +486,7 @@ func (s *TxStore) UpsertPullRequestFile(file map[string]any, pullRequestID strin
 			patch = EXCLUDED.patch,
 			blob_url = EXCLUDED.blob_url,
 			raw_url = EXCLUDED.raw_url,
+			feature_jsonb = EXCLUDED.feature_jsonb,
 			payload_jsonb = EXCLUDED.payload_jsonb
 	`, pullRequestID,
 		path,
@@ -493,6 +498,7 @@ func (s *TxStore) UpsertPullRequestFile(file map[string]any, pullRequestID strin
 		patch,
 		stringValue(file["blob_url"]),
 		stringValue(file["raw_url"]),
+		encodeJSON(features),
 		encodeJSON(sanitized),
 	)
 	if err != nil {
@@ -1296,6 +1302,113 @@ func sanitizedPullRequestFilePayload(file map[string]any, patch string) map[stri
 	delete(sanitized, "contents")
 	delete(sanitized, "content")
 	return sanitized
+}
+
+type patchLineStats struct {
+	Hunks        int
+	AddedLines   int
+	RemovedLines int
+	ContextLines int
+}
+
+func derivePullRequestFileFeatures(file map[string]any, path, rawPatch, storedPatch string) map[string]any {
+	fileType := classifyPullRequestFilePath(path)
+	stats := patchStats(storedPatch)
+	additions := intValue(file["additions"])
+	deletions := intValue(file["deletions"])
+	changes := firstPositiveInt(intValue(file["changes"]), additions+deletions)
+
+	return map[string]any{
+		"path_extension":        pathExtension(path),
+		"file_type":             fileType,
+		"status":                stringValue(file["status"]),
+		"additions":             additions,
+		"deletions":             deletions,
+		"changes":               changes,
+		"has_patch":             storedPatch != "",
+		"patch_hunks":           stats.Hunks,
+		"patch_added_lines":     stats.AddedLines,
+		"patch_removed_lines":   stats.RemovedLines,
+		"patch_context_lines":   stats.ContextLines,
+		"patch_truncated":       len(rawPatch) > len(storedPatch),
+		"binary_or_large_patch": rawPatch == "" && changes > 0,
+		"is_test":               fileType == "test",
+		"is_docs":               fileType == "docs",
+		"is_infra":              fileType == "infra",
+		"is_config":             fileType == "config",
+	}
+}
+
+func patchStats(patch string) patchLineStats {
+	var stats patchLineStats
+	for _, line := range strings.Split(patch, "\n") {
+		switch {
+		case strings.HasPrefix(line, "@@"):
+			stats.Hunks++
+		case strings.HasPrefix(line, "+++") || strings.HasPrefix(line, "---"):
+			continue
+		case strings.HasPrefix(line, "+"):
+			stats.AddedLines++
+		case strings.HasPrefix(line, "-"):
+			stats.RemovedLines++
+		case strings.HasPrefix(line, " "):
+			stats.ContextLines++
+		}
+	}
+	return stats
+}
+
+func classifyPullRequestFilePath(path string) string {
+	normalized := strings.ToLower(strings.TrimSpace(path))
+	extension := pathExtension(normalized)
+	switch {
+	case normalized == "":
+		return "unknown"
+	case strings.Contains(normalized, "/test/") ||
+		strings.Contains(normalized, "/tests/") ||
+		strings.Contains(normalized, "/__tests__/") ||
+		strings.HasPrefix(normalized, "test/") ||
+		strings.HasPrefix(normalized, "tests/") ||
+		strings.Contains(normalized, "_test.") ||
+		strings.Contains(normalized, ".test.") ||
+		strings.Contains(normalized, ".spec."):
+		return "test"
+	case strings.HasPrefix(normalized, "docs/") ||
+		strings.Contains(normalized, "/docs/") ||
+		strings.Contains(normalized, "/documentation/") ||
+		extension == ".md" ||
+		extension == ".mdx" ||
+		extension == ".rst":
+		return "docs"
+	case strings.HasPrefix(normalized, ".github/") ||
+		strings.HasPrefix(normalized, "deployments/") ||
+		strings.HasPrefix(normalized, "k8s/") ||
+		strings.HasPrefix(normalized, "helm/") ||
+		strings.Contains(normalized, "/terraform/") ||
+		extension == ".tf" ||
+		extension == ".yaml" ||
+		extension == ".yml" ||
+		extension == ".dockerfile":
+		return "infra"
+	case strings.HasPrefix(normalized, "config/") ||
+		strings.HasSuffix(normalized, ".json") ||
+		strings.HasSuffix(normalized, ".toml") ||
+		strings.HasSuffix(normalized, ".ini") ||
+		strings.HasSuffix(normalized, ".env.example"):
+		return "config"
+	default:
+		return "source"
+	}
+}
+
+func pathExtension(path string) string {
+	trimmed := strings.TrimSpace(path)
+	slash := strings.LastIndex(trimmed, "/")
+	dot := strings.LastIndex(trimmed, ".")
+	if dot <= slash || dot == len(trimmed)-1 {
+		return ""
+	}
+	return strings.ToLower(trimmed[dot:])
 }
 
 func rawStringValue(value any) string {
