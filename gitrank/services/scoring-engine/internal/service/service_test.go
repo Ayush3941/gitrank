@@ -85,3 +85,39 @@ func TestBuildReplayMonitorsAndExcludesSelfMergedPullRequests(t *testing.T) {
 		t.Fatalf("badges = %+v, want no first-merged badge for self-merged PR", badges)
 	}
 }
+
+func TestIssueBadgesLinksPersistedPREvidence(t *testing.T) {
+	now := time.Date(2026, time.May, 10, 12, 0, 0, 0, time.UTC)
+	badges := issueBadges([]scoreEventRecord{
+		{
+			EventKey:      "pr:pr-1:analysis:a-1:score:v1alpha1",
+			PullRequestID: "pr-1",
+			DeltaXP:       180,
+			SkillXP:       map[string]int{"testing": 120},
+			Metadata:      map[string]any{"merged": true},
+			CreatedAt:     now,
+			Repository:    "octo/repo",
+			PRNumber:      7,
+			PRTitle:       "test: add replay coverage",
+		},
+	}, map[string]int{"testing": 120})
+
+	if len(badges) != 2 {
+		t.Fatalf("badges len = %d, want first merge and test builder", len(badges))
+	}
+	first := badges[0]
+	if first.Key != "first_merged_pr" {
+		t.Fatalf("first badge = %q, want first_merged_pr", first.Key)
+	}
+	if version, _ := first.Evidence["rule_version"].(string); version != "badges/v1" {
+		t.Fatalf("rule_version = %q, want badges/v1", version)
+	}
+	ids, ok := first.Evidence["evidence_pr_ids"].([]string)
+	if !ok || len(ids) != 1 || ids[0] != "pr-1" {
+		t.Fatalf("evidence_pr_ids = %#v, want pr-1", first.Evidence["evidence_pr_ids"])
+	}
+	prs, ok := first.Evidence["evidence_prs"].([]map[string]any)
+	if !ok || len(prs) != 1 || prs[0]["repository"] != "octo/repo" {
+		t.Fatalf("evidence_prs = %#v, want linked PR evidence", first.Evidence["evidence_prs"])
+	}
+}

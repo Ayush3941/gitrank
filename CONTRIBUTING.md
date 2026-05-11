@@ -1098,7 +1098,7 @@ Replace every production mock, demo-only product path, hand-wired preview surfac
 Known v1 limitations:
 
 - Quest recommendations now have a live profile-owned read model at `GET /v1/me/quests` and the production quest/dashboard flows read it through the gateway and frontend BFF. PostgreSQL tables now exist for quest definitions, assignments, progress events, completion events, reward grants, and audit events, but the live quest service still derives current quests from profile snapshots until assignment/reward writers are implemented.
-- The public PR battle-report route now reads a live gateway/BFF contract backed by persisted public PR, analysis, score-event, file, and review evidence. New score events persist real scoring-engine formula components for report rendering. The report still returns stale/unscored state when analysis or scoring has not completed.
+- The public PR battle-report route now reads a live gateway/BFF contract backed by persisted public PR, analysis, score-event, file, review, and badge-award evidence. New score events persist real scoring-engine formula components for report rendering, and new badge awards carry bounded PR evidence references for report badge-unlock details. The report still returns stale/unscored state when analysis or scoring has not completed.
 - The dashboard recent battle reports panel now reads live `recent_pr_reports` from the authenticated profile response when persisted PR report evidence exists.
 - The frontend keeps `?demo=` preview states for design inspection, but they are disabled in production by default and only resolve when `NODE_ENV !== "production"` or `GITRANK_ENABLE_DEMO_PREVIEWS=true` is set.
 - The marketing landing page uses a dedicated sample fixture that is separate from authenticated user data. The dashboard top bar and onboarding reveal now read the authenticated profile through the live profile BFF, and unused feature-local mock re-exports have been removed.
@@ -1122,7 +1122,7 @@ V2 product contract checklist:
 - [x] Define `quest-service` or profile-owned quest contracts for active quests, completed quests, locked quests, quest recommendations, rewards, expiration, and evidence references.
 - [x] Add PostgreSQL migrations for quest definitions, user quest assignments, progress events, completion events, reward grants, and quest audit records.
 - [x] Expose authenticated quest routes through the gateway and frontend BFF instead of reading quests from `frontend/lib/api/mock-api.ts`.
-- [ ] Define a live PR battle-report read model with PR metadata, evidence signals, formula version, XP breakdown, penalties, badge unlocks, suggested next quest, stale state, and source timestamps. A first live read model and route now exist, authenticated profiles now expose recent persisted PR reports for dashboard rendering, PR reports now include materialized suggested-next-quest objects, and new score events now expose persisted scorer components. Badge-unlock details remain pending before this item is complete.
+- [x] Define a live PR battle-report read model with PR metadata, evidence signals, formula version, XP breakdown, penalties, badge unlocks, suggested next quest, stale state, and source timestamps. The live read model and route exist, authenticated profiles expose recent persisted PR reports for dashboard rendering, PR reports include materialized suggested-next-quest objects, newly replayed score events expose persisted scorer components, and newly replayed badge awards expose bounded PR-linked badge unlocks.
 - [x] Add a PR report route through the gateway and frontend BFF so `/pr/[owner]/[repo]/[number]` never depends on mock data in production.
 - [ ] Add an orchestration path for `sync PR -> fetch bounded files/diff features -> analyze -> persist contribution_analyses -> score -> refresh profile -> materialize PR report`.
 - [x] Persist bounded changed-file metadata and derived diff features needed for scoring and explanation without storing full repository files.
@@ -1157,7 +1157,7 @@ V2 frontend no-mock checklist:
 V2 scoring and evidence checklist:
 
 - [ ] Every XP value must link to a persisted score event, formula version, PR evidence, and analysis artifact. PR battle reports now expose score-event formula components for newly replayed scores; remaining profile, leaderboard, quest, and historical-event surfaces still need full linkage.
-- [ ] Every badge unlock must link to a persisted badge award, unlock rule version, and evidence PR set.
+- [ ] Every badge unlock must link to a persisted badge award, unlock rule version, and evidence PR set. Scoring-engine badge awards now include `rule_version`, `evidence_pr_ids`, and bounded `evidence_prs`; remaining quest reward badges and historical badge rows need the same guarantee.
 - [ ] Every quest reward must link to quest completion evidence and avoid rewarding unverified or duplicate work.
 - [ ] Every leaderboard rank must link to a season snapshot, rank movement event, score version, and freshness timestamp.
 - [ ] Every skill claim must distinguish deterministic evidence, AI-assisted classification, confidence, and stale or partial states.

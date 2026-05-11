@@ -299,6 +299,7 @@ export const prAnalyses: PullRequestAnalysis[] = ayushProfile.contributions.map(
       reason: "Development-only preview data is isolated from production routes.",
     },
   ],
+  badgeUnlocks: [],
   penalties:
     contribution.status === "open"
       ? [{ label: "Pending maintainer verification", deltaXp: -48, type: "penalty", reason: "Open PRs receive reduced trust until review depth is known." }]

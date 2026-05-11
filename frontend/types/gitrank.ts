@@ -117,6 +117,17 @@ export interface ScoreComponent {
   reason: string;
 }
 
+export interface PRBadgeUnlock {
+  key: string;
+  name: string;
+  description?: string;
+  awardedAt: string;
+  rule?: string;
+  ruleVersion?: string;
+  evidenceSignals: string[];
+  evidencePrIds: string[];
+}
+
 export interface Contribution {
   id: string;
   owner: string;
@@ -153,6 +164,7 @@ export interface PullRequestAnalysis {
   aiConfidence: number;
   penalties: ScoreBreakdown[];
   scoreComponents: ScoreComponent[];
+  badgeUnlocks: PRBadgeUnlock[];
   suggestedQuestId: string;
   suggestedQuest?: PRSuggestedQuest;
 }

@@ -45,6 +45,16 @@ func TestPullRequestReportFromRecordUsesPersistedScoreAndAnalysisEvidence(t *tes
 			"diminishing_returns_modifier": 0.97,
 			"spam_penalty":                 0.05,
 		},
+		BadgeUnlocks: []badgeUnlockRecord{{
+			Key:       "test_builder",
+			AwardedAt: now.Add(-20 * time.Minute),
+			Evidence: map[string]any{
+				"rule":            "test_builder",
+				"rule_version":    "badges/v1",
+				"testing_xp":      120,
+				"evidence_pr_ids": []any{"pr-db-1"},
+			},
+		}},
 		FileCount:          4,
 		FeatureCount:       4,
 		TestFiles:          2,
@@ -82,6 +92,12 @@ func TestPullRequestReportFromRecordUsesPersistedScoreAndAnalysisEvidence(t *tes
 	}
 	if !containsScoreComponent(report.ScoreComponents, "spam_penalty", "-5%") {
 		t.Fatalf("ScoreComponents = %+v, want persisted spam penalty", report.ScoreComponents)
+	}
+	if len(report.BadgeUnlocks) != 1 || report.BadgeUnlocks[0].Key != "test_builder" {
+		t.Fatalf("BadgeUnlocks = %+v, want linked test_builder badge", report.BadgeUnlocks)
+	}
+	if !containsString(report.BadgeUnlocks[0].EvidenceSignals, "testing_xp=120") {
+		t.Fatalf("BadgeUnlocks[0].EvidenceSignals = %+v, want testing XP signal", report.BadgeUnlocks[0].EvidenceSignals)
 	}
 	if report.IsStale {
 		t.Fatal("IsStale = true, want false with analysis and score event")

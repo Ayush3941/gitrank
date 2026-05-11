@@ -1697,6 +1697,31 @@ components:
           type: string
         reason:
           type: string
+    PRReportBadgeUnlock:
+      type: object
+      required: [key, name, awarded_at]
+      properties:
+        key:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        awarded_at:
+          type: string
+          format: date-time
+        rule:
+          type: string
+        rule_version:
+          type: string
+        evidence_signals:
+          type: array
+          items:
+            type: string
+        evidence_pr_ids:
+          type: array
+          items:
+            type: string
     PRReportSuggestedQuest:
       type: object
       required: [id, title, description, status, why_recommended]
@@ -1755,6 +1780,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/PRReportScoreComponent"
+        badge_unlocks:
+          type: array
+          items:
+            $ref: "#/components/schemas/PRReportBadgeUnlock"
         suggested_quest_id:
           type: string
         suggested_quest:

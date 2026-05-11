@@ -1,6 +1,7 @@
 import type {
   Contribution,
   PRCategory,
+  PRBadgeUnlock,
   PullRequestAnalysis,
   ScoreBreakdown,
   ScoreComponent,
@@ -49,6 +50,17 @@ export type ApiScoreComponent = {
   reason: string;
 };
 
+export type ApiPRReportBadgeUnlock = {
+  key: string;
+  name: string;
+  description?: string;
+  awarded_at: string;
+  rule?: string;
+  rule_version?: string;
+  evidence_signals?: string[];
+  evidence_pr_ids?: string[];
+};
+
 export type ApiPRReportSuggestedQuest = {
   id: string;
   title: string;
@@ -69,6 +81,7 @@ export type ApiPRReportResponse = {
   ai_confidence: number;
   penalties?: ApiScoreBreakdown[];
   score_components?: ApiScoreComponent[];
+  badge_unlocks?: ApiPRReportBadgeUnlock[];
   suggested_quest_id: string;
   suggested_quest?: ApiPRReportSuggestedQuest;
 };
@@ -115,6 +128,7 @@ export function toPullRequestAnalysis(
     aiConfidence: report.ai_confidence,
     penalties: (report.penalties ?? []).map(toScoreBreakdown),
     scoreComponents: (report.score_components ?? []).map(toScoreComponent),
+    badgeUnlocks: (report.badge_unlocks ?? []).map(toBadgeUnlock),
     suggestedQuestId: report.suggested_quest_id,
     suggestedQuest: report.suggested_quest
       ? {
@@ -157,6 +171,19 @@ function toContribution(source: ApiPRReportContribution): Contribution {
     ciPassed: source.ci_passed,
     aiSummary: source.ai_summary,
     evidenceSignals: source.evidence_signals ?? [],
+  };
+}
+
+function toBadgeUnlock(source: ApiPRReportBadgeUnlock): PRBadgeUnlock {
+  return {
+    key: source.key,
+    name: source.name,
+    description: source.description,
+    awardedAt: source.awarded_at,
+    rule: source.rule,
+    ruleVersion: source.rule_version,
+    evidenceSignals: source.evidence_signals ?? [],
+    evidencePrIds: source.evidence_pr_ids ?? [],
   };
 }
 

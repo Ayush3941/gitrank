@@ -170,6 +170,17 @@ type PRReportScoreComponent struct {
 	Reason       string  `json:"reason"`
 }
 
+type PRReportBadgeUnlock struct {
+	Key             string    `json:"key"`
+	Name            string    `json:"name"`
+	Description     string    `json:"description,omitempty"`
+	AwardedAt       time.Time `json:"awarded_at"`
+	Rule            string    `json:"rule,omitempty"`
+	RuleVersion     string    `json:"rule_version,omitempty"`
+	EvidenceSignals []string  `json:"evidence_signals,omitempty"`
+	EvidencePRIDs   []string  `json:"evidence_pr_ids,omitempty"`
+}
+
 type PRReportSuggestedQuest struct {
 	ID              string   `json:"id"`
 	Title           string   `json:"title"`
@@ -190,6 +201,7 @@ type PullRequestReportResponse struct {
 	AIConfidence     float64                  `json:"ai_confidence"`
 	Penalties        []PRReportScoreBreakdown `json:"penalties,omitempty"`
 	ScoreComponents  []PRReportScoreComponent `json:"score_components,omitempty"`
+	BadgeUnlocks     []PRReportBadgeUnlock    `json:"badge_unlocks,omitempty"`
 	SuggestedQuestID string                   `json:"suggested_quest_id"`
 	SuggestedQuest   *PRReportSuggestedQuest  `json:"suggested_quest,omitempty"`
 	ScoreVersion     string                   `json:"score_version,omitempty"`

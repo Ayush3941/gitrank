@@ -91,6 +91,7 @@ describe("live fixture frontend smoke coverage", () => {
         "Final deterministic XP recorded by the scoring engine. Source: score_event_metadata.",
       ),
     ).toBeTruthy();
+    expect(await screen.findByText("Live Test Builder")).toBeTruthy();
     expect(requestedPaths).toEqual(["/api/pr/octo/gitrank/42/report"]);
   });
 
@@ -375,6 +376,18 @@ const prReportFixture = {
       display_value: "1.50x",
       source: "score_event_metadata",
       reason: "Category-specific multiplier selected by the scoring engine.",
+    },
+  ],
+  badge_unlocks: [
+    {
+      key: "test_builder",
+      name: "Live Test Builder",
+      description: "Unlocked from persisted badge evidence tied to this PR.",
+      awarded_at: now,
+      rule: "test_builder",
+      rule_version: "badges/v1",
+      evidence_signals: ["testing_xp=120", "rule=test_builder"],
+      evidence_pr_ids: ["pr-db-1"],
     },
   ],
   suggested_quest_id: "quest-live-skill-sprint",

@@ -566,6 +566,7 @@ func issueBadges(events []scoreEventRecord, aggregateSkills map[string]int) []ba
 	repositories := make(map[string]struct{})
 	activeWeeks := make(map[time.Time]struct{})
 	firstMergedAt := time.Time{}
+	var firstMergedEvent *scoreEventRecord
 
 	for _, event := range events {
 		if event.Suspicious {
@@ -575,17 +576,22 @@ func issueBadges(events []scoreEventRecord, aggregateSkills map[string]int) []ba
 		activeWeeks[startOfWeek(event.CreatedAt)] = struct{}{}
 		if merged, _ := event.Metadata["merged"].(bool); merged && (firstMergedAt.IsZero() || event.CreatedAt.Before(firstMergedAt)) {
 			firstMergedAt = event.CreatedAt.UTC()
+			eventCopy := event
+			firstMergedEvent = &eventCopy
 		}
 	}
 
-	if !firstMergedAt.IsZero() {
+	if firstMergedEvent != nil {
 		badges = append(badges, badgeAward{
 			Key:       "first_merged_pr",
 			AwardedAt: firstMergedAt.UTC(),
 			Evidence: map[string]any{
-				"issuer":      "scoring-engine",
-				"rule":        "first_merged_pr",
-				"awarded_for": "first accepted scored contribution",
+				"issuer":          "scoring-engine",
+				"rule":            "first_merged_pr",
+				"rule_version":    "badges/v1",
+				"awarded_for":     "first accepted scored contribution",
+				"evidence_pr_ids": []string{firstMergedEvent.PullRequestID},
+				"evidence_prs":    badgeEvidenceEvents([]scoreEventRecord{*firstMergedEvent}, 1),
 			},
 		})
 	}
@@ -596,8 +602,11 @@ func issueBadges(events []scoreEventRecord, aggregateSkills map[string]int) []ba
 			Evidence: map[string]any{
 				"issuer":            "scoring-engine",
 				"rule":              "multi_repo_operator",
+				"rule_version":      "badges/v1",
 				"repository_count":  len(repositories),
 				"contribution_span": len(events),
+				"evidence_pr_ids":   badgeEvidencePRIDs(events, 5),
+				"evidence_prs":      badgeEvidenceEvents(events, 5),
 			},
 		})
 	}
@@ -606,9 +615,12 @@ func issueBadges(events []scoreEventRecord, aggregateSkills map[string]int) []ba
 			Key:       "security_signal_1",
 			AwardedAt: latestEventAt(events),
 			Evidence: map[string]any{
-				"issuer":      "scoring-engine",
-				"rule":        "security_signal_1",
-				"security_xp": aggregateSkills["security"],
+				"issuer":          "scoring-engine",
+				"rule":            "security_signal_1",
+				"rule_version":    "badges/v1",
+				"security_xp":     aggregateSkills["security"],
+				"evidence_pr_ids": badgeEvidencePRIDs(skillEvents(events, "security"), 5),
+				"evidence_prs":    badgeEvidenceEvents(skillEvents(events, "security"), 5),
 			},
 		})
 	}
@@ -617,9 +629,12 @@ func issueBadges(events []scoreEventRecord, aggregateSkills map[string]int) []ba
 			Key:       "test_builder",
 			AwardedAt: latestEventAt(events),
 			Evidence: map[string]any{
-				"issuer":     "scoring-engine",
-				"rule":       "test_builder",
-				"testing_xp": aggregateSkills["testing"],
+				"issuer":          "scoring-engine",
+				"rule":            "test_builder",
+				"rule_version":    "badges/v1",
+				"testing_xp":      aggregateSkills["testing"],
+				"evidence_pr_ids": badgeEvidencePRIDs(skillEvents(events, "testing"), 5),
+				"evidence_prs":    badgeEvidenceEvents(skillEvents(events, "testing"), 5),
 			},
 		})
 	}
@@ -628,13 +643,65 @@ func issueBadges(events []scoreEventRecord, aggregateSkills map[string]int) []ba
 			Key:       "consistency_4w",
 			AwardedAt: latestEventAt(events),
 			Evidence: map[string]any{
-				"issuer":       "scoring-engine",
-				"rule":         "consistency_4w",
-				"active_weeks": longestWeekStreak(activeWeeks),
+				"issuer":          "scoring-engine",
+				"rule":            "consistency_4w",
+				"rule_version":    "badges/v1",
+				"active_weeks":    longestWeekStreak(activeWeeks),
+				"evidence_pr_ids": badgeEvidencePRIDs(events, 5),
+				"evidence_prs":    badgeEvidenceEvents(events, 5),
 			},
 		})
 	}
 	return badges
+}
+
+func skillEvents(events []scoreEventRecord, skill string) []scoreEventRecord {
+	out := make([]scoreEventRecord, 0, len(events))
+	for _, event := range events {
+		if event.Suspicious {
+			continue
+		}
+		if event.SkillXP[skill] > 0 {
+			out = append(out, event)
+		}
+	}
+	return out
+}
+
+func badgeEvidencePRIDs(events []scoreEventRecord, limit int) []string {
+	refs := badgeEvidenceEvents(events, limit)
+	out := make([]string, 0, len(refs))
+	for _, ref := range refs {
+		if id, _ := ref["pull_request_id"].(string); id != "" {
+			out = append(out, id)
+		}
+	}
+	return out
+}
+
+func badgeEvidenceEvents(events []scoreEventRecord, limit int) []map[string]any {
+	if limit <= 0 {
+		limit = 5
+	}
+	out := make([]map[string]any, 0, min(len(events), limit))
+	for _, event := range events {
+		if event.Suspicious || event.PullRequestID == "" {
+			continue
+		}
+		out = append(out, map[string]any{
+			"score_event_key": event.EventKey,
+			"pull_request_id": event.PullRequestID,
+			"repository":      event.Repository,
+			"number":          event.PRNumber,
+			"title":           event.PRTitle,
+			"delta_xp":        event.DeltaXP,
+			"created_at":      event.CreatedAt.UTC().Format(time.RFC3339),
+		})
+		if len(out) >= limit {
+			break
+		}
+	}
+	return out
 }
 
 func longestWeekStreak(weeks map[time.Time]struct{}) int {

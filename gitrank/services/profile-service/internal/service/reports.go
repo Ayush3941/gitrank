@@ -41,6 +41,7 @@ type pullRequestReportRecord struct {
 	XP                 int
 	ScoreExplanation   []string
 	ScoreMetadata      map[string]any
+	BadgeUnlocks       []badgeUnlockRecord
 	FileCount          int
 	FeatureCount       int
 	TestFiles          int
@@ -49,6 +50,12 @@ type pullRequestReportRecord struct {
 	ApprovalCount      int
 	ChangesRequested   int
 	ReviewCommentCount int
+}
+
+type badgeUnlockRecord struct {
+	Key       string
+	AwardedAt time.Time
+	Evidence  map[string]any
 }
 
 func (s *Service) PublicPullRequestReport(ctx context.Context, owner, repo string, number int, now time.Time) (contracts.PullRequestReportResponse, error) {
@@ -92,6 +99,7 @@ func (s *Store) LoadPullRequestReport(ctx context.Context, owner, repo string, n
 			COALESCE(se.delta_total_xp, 0),
 			COALESCE(se.explanation_jsonb, '[]'::jsonb),
 			COALESCE(se.metadata_jsonb, '{}'::jsonb),
+			COALESCE(badges.badge_unlocks_jsonb, '[]'::jsonb),
 			COALESCE(files.file_count, 0),
 			COALESCE(files.feature_count, 0),
 			COALESCE(files.test_files, 0),
@@ -102,6 +110,7 @@ func (s *Store) LoadPullRequestReport(ctx context.Context, owner, repo string, n
 			COALESCE(review_comments.comment_count, 0)
 		FROM repositories r
 		INNER JOIN pull_requests pr ON pr.repository_id = r.id
+		LEFT JOIN github_accounts author_ga ON author_ga.id = pr.author_github_account_id
 		LEFT JOIN LATERAL (
 			SELECT id, analyzer_version, analysis_source, classification, confidence, summary, signals_jsonb
 			FROM contribution_analyses
@@ -116,6 +125,24 @@ func (s *Store) LoadPullRequestReport(ctx context.Context, owner, repo string, n
 			ORDER BY created_at DESC
 			LIMIT 1
 		) se ON true
+		LEFT JOIN LATERAL (
+			SELECT jsonb_agg(
+				jsonb_build_object(
+					'key', ub.badge_key,
+					'awarded_at', ub.awarded_at,
+					'evidence', ub.evidence_jsonb
+				)
+				ORDER BY ub.awarded_at DESC, ub.badge_key
+			) AS badge_unlocks_jsonb
+			FROM user_badges ub
+			WHERE author_ga.user_id IS NOT NULL
+			  AND ub.user_id = author_ga.user_id
+			  AND EXISTS (
+			      SELECT 1
+			      FROM jsonb_array_elements_text(COALESCE(ub.evidence_jsonb->'evidence_pr_ids', '[]'::jsonb)) evidence_pr(id)
+			      WHERE evidence_pr.id = pr.id::text
+			  )
+		) badges ON true
 		LEFT JOIN LATERAL (
 			SELECT
 				COUNT(*)::int AS file_count,
@@ -227,6 +254,7 @@ func (s *Store) LoadRecentPullRequestReportsForUser(ctx context.Context, userID 
 			COALESCE(se.delta_total_xp, 0),
 			COALESCE(se.explanation_jsonb, '[]'::jsonb),
 			COALESCE(se.metadata_jsonb, '{}'::jsonb),
+			COALESCE(badges.badge_unlocks_jsonb, '[]'::jsonb),
 			COALESCE(files.file_count, 0),
 			COALESCE(files.feature_count, 0),
 			COALESCE(files.test_files, 0),
@@ -238,6 +266,7 @@ func (s *Store) LoadRecentPullRequestReportsForUser(ctx context.Context, userID 
 		FROM recent_score_events se
 		INNER JOIN pull_requests pr ON pr.id = se.pull_request_id
 		INNER JOIN repositories r ON r.id = pr.repository_id
+		LEFT JOIN github_accounts author_ga ON author_ga.id = pr.author_github_account_id
 		LEFT JOIN LATERAL (
 			SELECT id, analyzer_version, analysis_source, classification, confidence, summary, signals_jsonb
 			FROM contribution_analyses
@@ -245,6 +274,24 @@ func (s *Store) LoadRecentPullRequestReportsForUser(ctx context.Context, userID 
 			ORDER BY created_at DESC
 			LIMIT 1
 		) ca ON true
+		LEFT JOIN LATERAL (
+			SELECT jsonb_agg(
+				jsonb_build_object(
+					'key', ub.badge_key,
+					'awarded_at', ub.awarded_at,
+					'evidence', ub.evidence_jsonb
+				)
+				ORDER BY ub.awarded_at DESC, ub.badge_key
+			) AS badge_unlocks_jsonb
+			FROM user_badges ub
+			WHERE author_ga.user_id IS NOT NULL
+			  AND ub.user_id = author_ga.user_id
+			  AND EXISTS (
+			      SELECT 1
+			      FROM jsonb_array_elements_text(COALESCE(ub.evidence_jsonb->'evidence_pr_ids', '[]'::jsonb)) evidence_pr(id)
+			      WHERE evidence_pr.id = pr.id::text
+			  )
+		) badges ON true
 		LEFT JOIN LATERAL (
 			SELECT
 				COUNT(*)::int AS file_count,
@@ -288,7 +335,7 @@ func (s *Store) LoadRecentPullRequestReportsForUser(ctx context.Context, userID 
 
 func scanPullRequestReport(row rowScanner) (pullRequestReportRecord, error) {
 	var record pullRequestReportRecord
-	var signalsRaw, explanationRaw, metadataRaw []byte
+	var signalsRaw, explanationRaw, metadataRaw, badgesRaw []byte
 	if err := row.Scan(
 		&record.PullRequestID,
 		&record.Owner,
@@ -317,6 +364,7 @@ func scanPullRequestReport(row rowScanner) (pullRequestReportRecord, error) {
 		&record.XP,
 		&explanationRaw,
 		&metadataRaw,
+		&badgesRaw,
 		&record.FileCount,
 		&record.FeatureCount,
 		&record.TestFiles,
@@ -331,6 +379,7 @@ func scanPullRequestReport(row rowScanner) (pullRequestReportRecord, error) {
 	record.AnalysisSignals = decodeReportStrings(signalsRaw)
 	record.ScoreExplanation = decodeReportStrings(explanationRaw)
 	record.ScoreMetadata = decodeReportMap(metadataRaw)
+	record.BadgeUnlocks = decodeBadgeUnlocks(badgesRaw)
 	return record, nil
 }
 
@@ -377,6 +426,7 @@ func pullRequestReportFromRecord(record pullRequestReportRecord, now time.Time) 
 	}
 	suggestedQuest := suggestedQuest(record, category, testSignal, reviewDepth)
 	scoreComponents := scoreComponentsForReport(record)
+	badgeUnlocks := badgeUnlocksForReport(record)
 
 	return contracts.PullRequestReportResponse{
 		Contribution: contracts.PRReportContribution{
@@ -412,6 +462,7 @@ func pullRequestReportFromRecord(record pullRequestReportRecord, now time.Time) 
 		AIConfidence:     record.AIConfidence,
 		Penalties:        penalties,
 		ScoreComponents:  scoreComponents,
+		BadgeUnlocks:     badgeUnlocks,
 		SuggestedQuestID: suggestedQuest.ID,
 		SuggestedQuest:   &suggestedQuest,
 		ScoreVersion:     record.ScoreVersion,
@@ -467,6 +518,71 @@ func decodeReportMap(raw []byte) map[string]any {
 	}
 	_ = json.Unmarshal(raw, &out)
 	return out
+}
+
+func decodeBadgeUnlocks(raw []byte) []badgeUnlockRecord {
+	if len(raw) == 0 {
+		return nil
+	}
+	var payload []struct {
+		Key       string         `json:"key"`
+		AwardedAt time.Time      `json:"awarded_at"`
+		Evidence  map[string]any `json:"evidence"`
+	}
+	if err := json.Unmarshal(raw, &payload); err != nil {
+		return nil
+	}
+	out := make([]badgeUnlockRecord, 0, len(payload))
+	for _, item := range payload {
+		if strings.TrimSpace(item.Key) == "" {
+			continue
+		}
+		if item.Evidence == nil {
+			item.Evidence = map[string]any{}
+		}
+		out = append(out, badgeUnlockRecord{
+			Key:       item.Key,
+			AwardedAt: item.AwardedAt.UTC(),
+			Evidence:  item.Evidence,
+		})
+	}
+	return out
+}
+
+func badgeUnlocksForReport(record pullRequestReportRecord) []contracts.PRReportBadgeUnlock {
+	out := make([]contracts.PRReportBadgeUnlock, 0, len(record.BadgeUnlocks))
+	for _, badge := range record.BadgeUnlocks {
+		out = append(out, contracts.PRReportBadgeUnlock{
+			Key:             badge.Key,
+			Name:            humanizeBadgeKey(badge.Key),
+			Description:     badgeDescription(badge.Key),
+			AwardedAt:       badge.AwardedAt.UTC(),
+			Rule:            stringFromMap(badge.Evidence, "rule"),
+			RuleVersion:     stringFromMap(badge.Evidence, "rule_version"),
+			EvidenceSignals: badgeEvidenceSignals(badge.Evidence),
+			EvidencePRIDs:   stringSliceFromMap(badge.Evidence, "evidence_pr_ids"),
+		})
+	}
+	return out
+}
+
+func badgeEvidenceSignals(evidence map[string]any) []string {
+	signals := []string{}
+	if awardedFor := stringFromMap(evidence, "awarded_for"); awardedFor != "" {
+		signals = append(signals, awardedFor)
+	}
+	for _, key := range []string{"repository_count", "contribution_span", "security_xp", "testing_xp", "active_weeks"} {
+		if value, ok := numberEntryFromMap(evidence, key); ok {
+			signals = append(signals, fmt.Sprintf("%s=%d", key, int(math.Round(value))))
+		}
+	}
+	if rule := stringFromMap(evidence, "rule"); rule != "" {
+		signals = append(signals, "rule="+rule)
+	}
+	if version := stringFromMap(evidence, "rule_version"); version != "" {
+		signals = append(signals, "rule_version="+version)
+	}
+	return compactStrings(signals)
 }
 
 func scoreComponentsForReport(record pullRequestReportRecord) []contracts.PRReportScoreComponent {
@@ -759,6 +875,31 @@ func stringFromMap(values map[string]any, key string) string {
 		return strings.TrimSpace(fmt.Sprint(value))
 	}
 	return ""
+}
+
+func stringSliceFromMap(values map[string]any, key string) []string {
+	value, ok := values[key]
+	if !ok {
+		return nil
+	}
+	switch typed := value.(type) {
+	case []string:
+		return compactStrings(typed)
+	case []any:
+		out := make([]string, 0, len(typed))
+		for _, item := range typed {
+			if text := strings.TrimSpace(fmt.Sprint(item)); text != "" {
+				out = append(out, text)
+			}
+		}
+		return compactStrings(out)
+	default:
+		text := strings.TrimSpace(fmt.Sprint(typed))
+		if text == "" {
+			return nil
+		}
+		return []string{text}
+	}
 }
 
 func numberEntryFromMap(values map[string]any, key string) (float64, bool) {

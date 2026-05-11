@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, ShieldCheck, Swords } from "lucide-react";
+import { ArrowRight, Award, ShieldCheck, Swords } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -85,6 +85,34 @@ export function PRBattleReportPageClient({
         <p className="text-base leading-8 text-slate-200">{data.contribution.aiSummary}</p>
       </GlowCard>
       <EvidenceSignalsCard report={data} />
+      {data.badgeUnlocks.length ? (
+        <GlowCard className="space-y-4">
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold tracking-[0.24em] text-emerald-100 uppercase">
+            <Award className="h-3.5 w-3.5" />
+            Badge unlocks
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            {data.badgeUnlocks.map((badge) => (
+              <div key={badge.key} className="rounded-[1.75rem] border border-white/8 bg-white/5 p-4">
+                <p className="text-lg font-semibold text-white">{badge.name}</p>
+                {badge.description ? <p className="mt-2 text-sm text-muted">{badge.description}</p> : null}
+                <p className="mt-3 text-xs text-emerald-100">
+                  Rule {badge.ruleVersion ?? badge.rule ?? "persisted badge evidence"}
+                </p>
+                {badge.evidenceSignals.length ? (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {badge.evidenceSignals.slice(0, 3).map((signal) => (
+                      <span key={signal} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-200">
+                        {signal}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </GlowCard>
+      ) : null}
       {data.suggestedQuestId ? (
         <GlowCard className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
