@@ -1,16 +1,17 @@
 SHELL := /bin/sh
 TMPDIR ?= $(CURDIR)/.tmp
 GOCACHE ?= $(CURDIR)/.gocache
+GO_MODULE_FIND := find . \( -path './.tmp' -o -path './.gocache' \) -prune -o -name go.mod
 
 .PHONY: fmt test test-migrations test-critical-path-flows race vet audit-go-safety verify-critical-path-tests verify-rollback-procedure verify-observability-manifests verify-secret-policy apply-github-repository-controls verify-github-repository-controls bench-ingestion tidy compose-up compose-down seed-local
 
 fmt:
 	mkdir -p "$(TMPDIR)" "$(GOCACHE)"
-	find . -name go.mod -execdir sh -c 'go fmt ./...' \;
+	$(GO_MODULE_FIND) -execdir sh -c 'go fmt ./...' \;
 
 test:
 	mkdir -p "$(TMPDIR)" "$(GOCACHE)"
-	find . -name go.mod -execdir sh -c 'TMPDIR="$(TMPDIR)" GOCACHE="$(GOCACHE)" go test ./...' \;
+	$(GO_MODULE_FIND) -execdir sh -c 'TMPDIR="$(TMPDIR)" GOCACHE="$(GOCACHE)" go test ./...' \;
 
 test-migrations:
 	TMPDIR="$(TMPDIR)" ./scripts/test_migrations.sh
@@ -20,11 +21,11 @@ test-critical-path-flows:
 
 race:
 	mkdir -p "$(TMPDIR)" "$(GOCACHE)"
-	find . -name go.mod -execdir sh -c 'TMPDIR="$(TMPDIR)" GOCACHE="$(GOCACHE)" go test -race ./...' \;
+	$(GO_MODULE_FIND) -execdir sh -c 'TMPDIR="$(TMPDIR)" GOCACHE="$(GOCACHE)" go test -race ./...' \;
 
 vet:
 	mkdir -p "$(TMPDIR)" "$(GOCACHE)"
-	find . -name go.mod -execdir sh -c 'TMPDIR="$(TMPDIR)" GOCACHE="$(GOCACHE)" go vet ./...' \;
+	$(GO_MODULE_FIND) -execdir sh -c 'TMPDIR="$(TMPDIR)" GOCACHE="$(GOCACHE)" go vet ./...' \;
 
 audit-go-safety:
 	./scripts/audit_go_safety.sh
@@ -52,7 +53,7 @@ bench-ingestion:
 	TMPDIR="$(TMPDIR)" GOCACHE="$(GOCACHE)" go test ./services/github-ingestor/internal/service -run '^$$' -bench 'BenchmarkPersistWebhookPullRequestThroughput' -benchmem
 
 tidy:
-	find . -name go.mod -execdir go mod tidy \;
+	$(GO_MODULE_FIND) -execdir go mod tidy \;
 
 compose-up:
 	cd deployments/compose && docker compose up -d

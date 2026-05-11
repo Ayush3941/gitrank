@@ -21,14 +21,15 @@ type Service struct {
 }
 
 type PersistResult struct {
-	RepositoryCount    int
-	InstallationCount  int
-	PullRequestCount   int
-	ReviewCount        int
-	ReviewCommentCount int
-	IssueCount         int
-	LabelCount         int
-	CommitCount        int
+	RepositoryCount      int
+	InstallationCount    int
+	PullRequestCount     int
+	PullRequestFileCount int
+	ReviewCount          int
+	ReviewCommentCount   int
+	IssueCount           int
+	LabelCount           int
+	CommitCount          int
 }
 
 type SyncRequestActor struct {
@@ -243,23 +244,25 @@ func (s *Service) ListSyncRuns(ctx context.Context, filter contracts.GitHubSyncR
 
 func (r PersistResult) EntityCounts() map[string]int {
 	return map[string]int{
-		"repositories":    r.RepositoryCount,
-		"installations":   r.InstallationCount,
-		"pull_requests":   r.PullRequestCount,
-		"reviews":         r.ReviewCount,
-		"review_comments": r.ReviewCommentCount,
-		"issues":          r.IssueCount,
-		"labels":          r.LabelCount,
-		"commits":         r.CommitCount,
+		"repositories":       r.RepositoryCount,
+		"installations":      r.InstallationCount,
+		"pull_requests":      r.PullRequestCount,
+		"pull_request_files": r.PullRequestFileCount,
+		"reviews":            r.ReviewCount,
+		"review_comments":    r.ReviewCommentCount,
+		"issues":             r.IssueCount,
+		"labels":             r.LabelCount,
+		"commits":            r.CommitCount,
 	}
 }
 
 func (r PersistResult) Summary() string {
 	return fmt.Sprintf(
-		"repos=%d installations=%d prs=%d reviews=%d review_comments=%d issues=%d labels=%d commits=%d",
+		"repos=%d installations=%d prs=%d pr_files=%d reviews=%d review_comments=%d issues=%d labels=%d commits=%d",
 		r.RepositoryCount,
 		r.InstallationCount,
 		r.PullRequestCount,
+		r.PullRequestFileCount,
 		r.ReviewCount,
 		r.ReviewCommentCount,
 		r.IssueCount,

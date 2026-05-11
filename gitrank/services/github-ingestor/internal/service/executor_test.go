@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -97,6 +98,100 @@ func TestDecodeOptionalOAuthTokenKeysIncludesPreviousKeys(t *testing.T) {
 	}
 	if index != 1 || decrypted != "ghu_previous" {
 		t.Fatalf("DecryptSecretAny() = %q index %d, want previous token at index 1", decrypted, index)
+	}
+}
+
+func TestExecutorFetchPullRequestFilesUsesBoundedRESTEndpoint(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/repos/octo/repo/pulls/7/files" {
+			t.Fatalf("path = %q, want /repos/octo/repo/pulls/7/files", r.URL.Path)
+		}
+		if r.URL.Query().Get("per_page") != "7" {
+			t.Fatalf("per_page = %q, want 7", r.URL.Query().Get("per_page"))
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode([]map[string]any{
+			{
+				"filename":  "internal/service.go",
+				"status":    "modified",
+				"additions": 12,
+				"deletions": 3,
+				"patch":     "@@ -1 +1 @@\n-old\n+new",
+			},
+		})
+	}))
+	defer server.Close()
+
+	client, err := githubapi.NewRESTClient(githubapi.ClientConfig{
+		BaseURL:          server.URL,
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		HTTPClient:       server.Client(),
+		SecondaryBackoff: time.Millisecond,
+		MaxConcurrency:   1,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	executor := NewExecutor(config.App{
+		GitHub: config.GitHub{
+			MaxPageSize: 7,
+		},
+	}, nil, client)
+
+	files, err := executor.fetchPullRequestFiles(context.Background(), "octo", "repo", 7)
+	if err != nil {
+		t.Fatalf("fetchPullRequestFiles() error = %v", err)
+	}
+	if len(files) != 1 {
+		t.Fatalf("files len = %d, want 1", len(files))
+	}
+	if path := stringValue(files[0]["filename"]); path != "internal/service.go" {
+		t.Fatalf("filename = %q, want internal/service.go", path)
+	}
+}
+
+func TestSanitizedPullRequestFilePayloadBoundsPatchAndDropsContents(t *testing.T) {
+	longPatch := strings.Repeat("a", maxStoredPullRequestFilePatchBytes+20)
+	file := map[string]any{
+		"filename": "internal/service.go",
+		"patch":    longPatch,
+		"contents": "full file should not be stored",
+		"content":  "raw file should not be stored",
+		"nested": map[string]any{
+			"value": "keep",
+		},
+	}
+
+	patch := pullRequestFilePatch(file)
+	if len(patch) != maxStoredPullRequestFilePatchBytes {
+		t.Fatalf("patch bytes = %d, want %d", len(patch), maxStoredPullRequestFilePatchBytes)
+	}
+
+	payload := sanitizedPullRequestFilePayload(file, patch)
+	if _, ok := payload["contents"]; ok {
+		t.Fatal("sanitized payload kept contents field")
+	}
+	if _, ok := payload["content"]; ok {
+		t.Fatal("sanitized payload kept content field")
+	}
+	if rawStringValue(payload["patch"]) != patch {
+		t.Fatal("sanitized payload did not use bounded patch")
+	}
+	if rawStringValue(file["patch"]) != longPatch {
+		t.Fatal("sanitization mutated original patch")
+	}
+
+	object(payload["nested"])["value"] = "changed"
+	if got := stringValue(object(file["nested"])["value"]); got != "keep" {
+		t.Fatalf("nested original value = %q, want keep", got)
+	}
+}
+
+func TestBoundedStringBytesKeepsValidUTF8(t *testing.T) {
+	if got := boundedStringBytes("aé", 2); got != "a" {
+		t.Fatalf("boundedStringBytes() = %q, want a", got)
 	}
 }
 

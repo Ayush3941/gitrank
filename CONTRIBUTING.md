@@ -213,7 +213,7 @@ Useful commands from `gitrank/`:
 ```bash
 go env GOWORK
 go work sync
-find . -name go.mod -execdir sh -c 'go test ./...' \;
+make -C gitrank test
 ```
 
 When working on one module in isolation:
@@ -1102,8 +1102,8 @@ Known v1 limitations:
 - The dashboard recent battle reports panel still does not list live PR reports from the profile API; detailed reports are available by direct PR report URL.
 - The frontend still exposes `?demo=` preview states that force mock loading, error, empty, and stale data paths for design inspection.
 - Marketing, onboarding reveal, dashboard top bar, and feature-local data exports still import the static sample profile or mock datasets.
-- The live PR ingestion path can persist bounded PR metadata, reviews, and review comments, but there is no seamless production pipeline that turns one synced PR into persisted files or diff-derived features, a stored `contribution_analyses` record, score events, profile refresh, and a live battle report in one user-facing flow.
-- Direct live PR sync does not yet prove bounded `/pulls/{number}/files` or diff-hunk feature persistence for battle-report evidence; V1 scoring can use persisted file rows when they exist, but the direct sync path does not make that evidence complete by itself.
+- The live PR ingestion path can persist bounded PR metadata, changed-file metadata, public patch excerpts, reviews, and review comments, but there is no seamless production pipeline that turns one synced PR into diff-derived features, a stored `contribution_analyses` record, score events, profile refresh, and a live battle report in one user-facing flow.
+- Direct live PR sync now fetches `/pulls/{number}/files` and stores bounded file metadata or public patch excerpts without full repository files. Diff-hunk feature extraction and downstream analysis/scoring orchestration still remain pending.
 - User sync is bounded to recent public repositories owned by the requested GitHub login, not a full authored-PR search across every public repository, fork, organization, or contribution surface where the user has participated.
 - Private repositories remain out of scope for scoring and analysis.
 - GitHub OAuth is the only v1 identity path; GitHub App installation support is deferred, limiting webhook scale, organization installation sync, and deeper repository access.
@@ -1125,7 +1125,7 @@ V2 product contract checklist:
 - [ ] Define a live PR battle-report read model with PR metadata, evidence signals, formula version, XP breakdown, penalties, badge unlocks, suggested next quest, stale state, and source timestamps. A first live read model and route now exist; badge-unlock details and exact materialized scorer breakdowns remain pending.
 - [x] Add a PR report route through the gateway and frontend BFF so `/pr/[owner]/[repo]/[number]` never depends on mock data in production.
 - [ ] Add an orchestration path for `sync PR -> fetch bounded files/diff features -> analyze -> persist contribution_analyses -> score -> refresh profile -> materialize PR report`.
-- [ ] Persist bounded changed-file metadata and derived diff features needed for scoring and explanation without storing full repository files.
+- [ ] Persist bounded changed-file metadata and derived diff features needed for scoring and explanation without storing full repository files. Direct PR sync now persists bounded changed-file metadata and public patch excerpts; derived diff-feature extraction remains pending.
 - [ ] Add hard size, file-count, diff-hunk, token, and cost limits before any AI-assisted PR analysis call.
 - [ ] Add a live suggested-next-quest contract that derives from score gaps, weak skill lanes, stale data, and real contribution evidence. The live quest board now derives recommendations from weak skill lanes and profile evidence, but PR-report-level suggested-next-quest wiring and stale-state decisioning remain pending.
 - [ ] Add account-level user preference storage for reduced gamification if the setting should follow a user across devices.
@@ -1136,7 +1136,7 @@ V2 ingestion and coverage checklist:
 - [ ] Replace owned-repository-only user sync with a bounded authored-PR discovery strategy for public repositories where GitHub APIs expose the user's contributions.
 - [ ] Add GitHub App support for installation-scoped repository sync, organization-scale webhooks, and more reliable repository inventory.
 - [ ] Keep OAuth for sign-in and account linking while using GitHub App installation permissions for scalable ingestion where users or organizations opt in.
-- [ ] Add direct PR file-list fetching for live PR sync and store only approved bounded metadata or public diff excerpts.
+- [x] Add direct PR file-list fetching for live PR sync and store only approved bounded metadata or public diff excerpts.
 - [ ] Add retry, idempotency, and dedupe keys that cover each analysis and scoring step in the PR grading pipeline.
 - [ ] Add backfill jobs for historical PR reports, quests, season rankings, badges, and score history.
 - [ ] Add dead-letter replay runbooks for sync, file-feature extraction, analysis, scoring, profile refresh, quest update, and report materialization jobs.

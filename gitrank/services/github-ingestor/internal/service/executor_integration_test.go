@@ -686,6 +686,30 @@ func TestExecutorSyncPullRequestFetchesAndPersistsBoundedPullRequestData(t *test
 					},
 				},
 			})
+		case "/repos/octo/repo/pulls/7/files":
+			_ = json.NewEncoder(w).Encode([]map[string]any{
+				{
+					"filename":  "internal/executor.go",
+					"status":    "modified",
+					"additions": 30,
+					"deletions": 6,
+					"changes":   36,
+					"patch":     strings.Repeat("+", maxStoredPullRequestFilePatchBytes+50),
+					"blob_url":  "https://github.test/octo/repo/blob/abc/internal/executor.go",
+					"raw_url":   "https://github.test/octo/repo/raw/abc/internal/executor.go",
+					"content":   "full file should not be stored",
+					"contents":  "full file should not be stored",
+				},
+				{
+					"filename":          "README.md",
+					"previous_filename": "docs/README.md",
+					"status":            "renamed",
+					"additions":         10,
+					"deletions":         2,
+					"changes":           12,
+					"patch":             "@@ -1 +1 @@\n-old\n+new",
+				},
+			})
 		default:
 			http.NotFound(w, r)
 		}
@@ -742,13 +766,38 @@ func TestExecutorSyncPullRequestFetchesAndPersistsBoundedPullRequestData(t *test
 	if result.Fetched["review_comments"] != 1 {
 		t.Fatalf("Fetched[review_comments] = %d, want 1", result.Fetched["review_comments"])
 	}
+	if result.Fetched["pull_request_files"] != 2 {
+		t.Fatalf("Fetched[pull_request_files] = %d, want 2", result.Fetched["pull_request_files"])
+	}
 	if result.Persisted["pull_requests"] != 1 {
 		t.Fatalf("Persisted[pull_requests] = %d, want 1", result.Persisted["pull_requests"])
 	}
+	if result.Persisted["pull_request_files"] != 2 {
+		t.Fatalf("Persisted[pull_request_files] = %d, want 2", result.Persisted["pull_request_files"])
+	}
 
 	assertCount(t, ctx, pool, "pull_requests", "SELECT COUNT(*) FROM pull_requests WHERE github_pull_request_id = 201", 1)
+	assertCount(t, ctx, pool, "pull_request_files", "SELECT COUNT(*) FROM pull_request_files WHERE pull_request_id = (SELECT id FROM pull_requests WHERE github_pull_request_id = 201)", 2)
 	assertCount(t, ctx, pool, "pull_request_reviews", "SELECT COUNT(*) FROM pull_request_reviews WHERE github_review_id = 701", 1)
 	assertCount(t, ctx, pool, "pull_request_review_comments", "SELECT COUNT(*) FROM pull_request_review_comments WHERE github_review_comment_id = 901", 1)
+
+	var patchLength int
+	var hasContent bool
+	var hasContents bool
+	if err := pool.QueryRow(ctx, `
+		SELECT length(patch), payload_jsonb ? 'content', payload_jsonb ? 'contents'
+		FROM pull_request_files
+		WHERE path = 'internal/executor.go'
+		LIMIT 1
+	`).Scan(&patchLength, &hasContent, &hasContents); err != nil {
+		t.Fatalf("select pull_request_files bounded payload: %v", err)
+	}
+	if patchLength != maxStoredPullRequestFilePatchBytes {
+		t.Fatalf("stored patch length = %d, want %d", patchLength, maxStoredPullRequestFilePatchBytes)
+	}
+	if hasContent || hasContents {
+		t.Fatalf("sanitized payload retained content fields: content=%v contents=%v", hasContent, hasContents)
+	}
 }
 
 func TestExecutorSyncReviewFetchesAndPersistsBoundedReviewSurface(t *testing.T) {
@@ -834,6 +883,8 @@ func TestExecutorSyncReviewFetchesAndPersistsBoundedReviewSurface(t *testing.T) 
 					},
 				},
 			})
+		case "/repos/octo/repo/pulls/7/files":
+			_ = json.NewEncoder(w).Encode([]map[string]any{})
 		default:
 			http.NotFound(w, r)
 		}

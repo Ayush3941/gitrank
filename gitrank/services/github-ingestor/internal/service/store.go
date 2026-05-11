@@ -22,6 +22,8 @@ type TxStore struct {
 	tx  pgx.Tx
 }
 
+const maxStoredPullRequestFilePatchBytes = 12000
+
 type payloadSyncRunInput struct {
 	CorrelationID               string
 	DeliveryID                  string
@@ -431,6 +433,72 @@ func (s *TxStore) UpsertPullRequest(payload map[string]any, repositoryID string,
 		return "", false, 0, err
 	}
 	return pullRequestID, true, labelCount, nil
+}
+
+func (s *TxStore) UpsertPullRequestFile(file map[string]any, pullRequestID string) (bool, error) {
+	if file == nil || strings.TrimSpace(pullRequestID) == "" {
+		return false, nil
+	}
+	path := pullRequestFilePath(file)
+	if path == "" {
+		return false, nil
+	}
+
+	patch := pullRequestFilePatch(file)
+	sanitized := sanitizedPullRequestFilePayload(file, patch)
+
+	tag, err := s.tx.Exec(s.context(), `
+		INSERT INTO pull_request_files (
+			pull_request_id,
+			path,
+			previous_path,
+			status,
+			additions,
+			deletions,
+			changes,
+			patch,
+			blob_url,
+			raw_url,
+			payload_jsonb
+		) VALUES (
+			$1::uuid,
+			$2,
+			$3,
+			$4,
+			$5,
+			$6,
+			$7,
+			$8,
+			$9,
+			$10,
+			$11::jsonb
+		)
+		ON CONFLICT (pull_request_id, path) DO UPDATE SET
+			previous_path = EXCLUDED.previous_path,
+			status = EXCLUDED.status,
+			additions = EXCLUDED.additions,
+			deletions = EXCLUDED.deletions,
+			changes = EXCLUDED.changes,
+			patch = EXCLUDED.patch,
+			blob_url = EXCLUDED.blob_url,
+			raw_url = EXCLUDED.raw_url,
+			payload_jsonb = EXCLUDED.payload_jsonb
+	`, pullRequestID,
+		path,
+		stringValue(file["previous_filename"]),
+		stringValue(file["status"]),
+		intValue(file["additions"]),
+		intValue(file["deletions"]),
+		intValue(file["changes"]),
+		patch,
+		stringValue(file["blob_url"]),
+		stringValue(file["raw_url"]),
+		encodeJSON(sanitized),
+	)
+	if err != nil {
+		return false, err
+	}
+	return tag.RowsAffected() > 0, nil
 }
 
 func (s *TxStore) UpsertReview(payload map[string]any, pullRequestID string, now time.Time) (bool, error) {
@@ -1205,6 +1273,51 @@ func defaultString(value, fallback string) string {
 		return fallback
 	}
 	return value
+}
+
+func pullRequestFilePath(file map[string]any) string {
+	path := strings.TrimSpace(stringValue(file["filename"]))
+	if path == "" {
+		path = strings.TrimSpace(stringValue(file["path"]))
+	}
+	return path
+}
+
+func pullRequestFilePatch(file map[string]any) string {
+	return boundedStringBytes(rawStringValue(file["patch"]), maxStoredPullRequestFilePatchBytes)
+}
+
+func sanitizedPullRequestFilePayload(file map[string]any, patch string) map[string]any {
+	sanitized := cloneJSONMap(file)
+	if sanitized == nil {
+		sanitized = map[string]any{}
+	}
+	sanitized["patch"] = patch
+	delete(sanitized, "contents")
+	delete(sanitized, "content")
+	return sanitized
+}
+
+func rawStringValue(value any) string {
+	if cast, ok := value.(string); ok {
+		return cast
+	}
+	return ""
+}
+
+func boundedStringBytes(value string, limit int) string {
+	if limit <= 0 || len(value) <= limit {
+		return value
+	}
+
+	end := 0
+	for index := range value {
+		if index > limit {
+			break
+		}
+		end = index
+	}
+	return value[:end]
 }
 
 func (s *TxStore) context() context.Context {

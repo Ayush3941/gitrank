@@ -432,6 +432,11 @@ func (e *Executor) syncPullRequestSurface(
 		_ = e.recordFailedPullRequestSurfaceSyncRun(ctx, req, actor, correlationID, startedAt, mode, err)
 		return response, err
 	}
+	files, err := e.fetchPullRequestFiles(ctx, owner, name, req.Number)
+	if err != nil {
+		_ = e.recordFailedPullRequestSurfaceSyncRun(ctx, req, actor, correlationID, startedAt, mode, err)
+		return response, err
+	}
 
 	finishedAt := time.Now().UTC()
 	persisted, err := e.store.WithTx(ctx, func(tx *TxStore) (PersistResult, error) {
@@ -458,6 +463,16 @@ func (e *Executor) syncPullRequestSurface(
 			result.PullRequestCount++
 		}
 		result.LabelCount += labelCount
+
+		for _, file := range files {
+			fileTouched, err := tx.UpsertPullRequestFile(file, pullRequestID)
+			if err != nil {
+				return PersistResult{}, err
+			}
+			if fileTouched {
+				result.PullRequestFileCount++
+			}
+		}
 
 		for _, review := range reviews {
 			reviewTouched, err := tx.UpsertReview(map[string]any{"review": review}, pullRequestID, finishedAt)
@@ -513,10 +528,11 @@ func (e *Executor) syncPullRequestSurface(
 	response.FinishedAt = finishedAt
 	response.Persisted = persisted.EntityCounts()
 	response.Fetched = map[string]int{
-		"repositories":    1,
-		"pull_requests":   1,
-		"reviews":         len(reviews),
-		"review_comments": len(reviewComments),
+		"repositories":       1,
+		"pull_requests":      1,
+		"pull_request_files": len(files),
+		"reviews":            len(reviews),
+		"review_comments":    len(reviewComments),
 	}
 	return response, nil
 }
@@ -981,6 +997,18 @@ func (e *Executor) fetchPullRequestReviewComments(ctx context.Context, owner, na
 	return comments, nil
 }
 
+func (e *Executor) fetchPullRequestFiles(ctx context.Context, owner, name string, number int) ([]map[string]any, error) {
+	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, defaultRepositorySyncPageSize)
+	var files []map[string]any
+	_, err := e.client.GetJSON(ctx, fmt.Sprintf("/repos/%s/%s/pulls/%d/files", owner, name, number), url.Values{
+		"per_page": []string{fmt.Sprintf("%d", perPage)},
+	}, githubapi.ConditionalRequest{}, &files)
+	if err != nil {
+		return nil, err
+	}
+	return files, nil
+}
+
 func (e *Executor) fetchIssue(ctx context.Context, owner, name string, number int) (map[string]any, error) {
 	var issue map[string]any
 	_, err := e.client.GetJSON(ctx, fmt.Sprintf("/repos/%s/%s/issues/%d", owner, name, number), nil, githubapi.ConditionalRequest{}, &issue)
@@ -1278,14 +1306,15 @@ func mergeCountMaps(dst, src map[string]int) map[string]int {
 
 func persistResultFromCountMap(counts map[string]int) PersistResult {
 	return PersistResult{
-		RepositoryCount:    counts["repositories"],
-		InstallationCount:  counts["installations"],
-		PullRequestCount:   counts["pull_requests"],
-		ReviewCount:        counts["reviews"],
-		ReviewCommentCount: counts["review_comments"],
-		IssueCount:         counts["issues"],
-		LabelCount:         counts["labels"],
-		CommitCount:        counts["commits"],
+		RepositoryCount:      counts["repositories"],
+		InstallationCount:    counts["installations"],
+		PullRequestCount:     counts["pull_requests"],
+		PullRequestFileCount: counts["pull_request_files"],
+		ReviewCount:          counts["reviews"],
+		ReviewCommentCount:   counts["review_comments"],
+		IssueCount:           counts["issues"],
+		LabelCount:           counts["labels"],
+		CommitCount:          counts["commits"],
 	}
 }
 
@@ -1293,6 +1322,7 @@ func addPersistResult(dst, src PersistResult) PersistResult {
 	dst.RepositoryCount += src.RepositoryCount
 	dst.InstallationCount += src.InstallationCount
 	dst.PullRequestCount += src.PullRequestCount
+	dst.PullRequestFileCount += src.PullRequestFileCount
 	dst.ReviewCount += src.ReviewCount
 	dst.ReviewCommentCount += src.ReviewCommentCount
 	dst.IssueCount += src.IssueCount
