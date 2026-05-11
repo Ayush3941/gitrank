@@ -35,7 +35,7 @@ Dark-first Next.js frontend for GitRank, an evidence-backed open-source reputati
 - `components/ui/`: reusable primitives
 - `components/shared/`: layout shell, cards, charts, states, and navigation
 - `features/*/components/`: page and feature modules
-- `features/*/data/`: feature-local exports and constants
+- `features/*/data/`: feature-local constants and clearly labeled marketing sample data
 - `hooks/`: TanStack Query hooks
 - `lib/demo/preview-api.ts`: development-gated preview adapter for mock loading, error, empty, and stale states
 - `lib/api/mock-api.ts`: mock data access layer used only by the preview adapter
@@ -77,6 +77,8 @@ The public profile page, authenticated dashboard overview, onboarding reveal, ba
 - `npm run check:no-production-mocks` fails CI if production app, hook, feature, or API modules import the mock API or mock domain dataset directly
 
 The gamified UI adds season metadata, rank-progress cards, player-card profile presentation, quest recommendation evidence, badge rarity styling, and PR battle-report explanation panels. Live leaderboard season metadata is derived from the gateway response timestamp and displayed as presentation context; final scoring still comes from backend score/profile snapshots.
+
+The marketing landing page uses a dedicated sample fixture under `features/marketing/data/`; it does not import the mock authenticated profile dataset.
 
 The settings page includes a local reduced-gamification display preference. It is stored in browser `localStorage`, respects OS reduced-motion intent in animated components, and lowers decorative glow/motion on that device only. It does not change score, privacy, badge, or leaderboard state.
 

@@ -6,7 +6,7 @@ import { RankBadge } from "@/components/shared/RankBadge";
 import { RarityBadge } from "@/components/shared/RarityBadge";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { Button } from "@/components/ui/button";
-import { dashboardData } from "@/lib/mock-data/gitrank";
+import { marketingSample } from "@/features/marketing/data/sample";
 
 const loop = [
   "Connect GitHub",
@@ -18,8 +18,7 @@ const loop = [
 ];
 
 export function LandingPage() {
-  const report = dashboardData.recentReports[1];
-  const highlightedBadges = dashboardData.user.badges.slice(0, 5);
+  const { highlightedBadges, report, user } = marketingSample;
 
   return (
     <main className="space-y-8">
@@ -57,26 +56,26 @@ export function LandingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs tracking-[0.24em] text-primary uppercase">Sample rank card</p>
-                <h2 className="mt-2 text-2xl font-semibold text-white">{dashboardData.user.displayName}</h2>
+                <h2 className="mt-2 text-2xl font-semibold text-white">{user.displayName}</h2>
               </div>
-              <RankBadge rank={dashboardData.user.level.rankTier} />
+              <RankBadge rank={user.level.rankTier} />
             </div>
             <div className="flex items-center gap-4">
               <Image
-                src={dashboardData.user.avatarUrl}
-                alt="Ayush Kumar Gaur avatar"
+                src={user.avatarUrl}
+                alt={`${user.displayName} sample avatar`}
                 width={72}
                 height={72}
                 className="h-[72px] w-[72px] rounded-3xl border border-white/10 bg-white/6"
               />
               <div className="space-y-1">
-                <p className="text-sm text-muted">@{dashboardData.user.username}</p>
-                <p className="text-3xl font-semibold text-white">Level {dashboardData.user.level.currentLevel}</p>
-                <p className="text-sm text-slate-200">{dashboardData.user.title}</p>
+                <p className="text-sm text-muted">@{user.username}</p>
+                <p className="text-3xl font-semibold text-white">Level {user.level.currentLevel}</p>
+                <p className="text-sm text-slate-200">{user.title}</p>
               </div>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
-              {dashboardData.user.strongestSignals.map((skill) => (
+              {user.strongestSignals.map((skill) => (
                 <div key={skill} className="rounded-3xl border border-white/8 bg-white/5 px-4 py-3 text-sm text-slate-200">
                   {skill}
                 </div>
@@ -159,20 +158,20 @@ export function LandingPage() {
           <div className="rounded-[1.75rem] border border-white/8 bg-black/20 p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-sm text-muted">{report.contribution.owner}/{report.contribution.repo} #{report.contribution.number}</p>
-                <h3 className="mt-2 text-xl font-semibold text-white">{report.contribution.title}</h3>
+                <p className="text-sm text-muted">{report.owner}/{report.repo} #{report.number}</p>
+                <h3 className="mt-2 text-xl font-semibold text-white">{report.title}</h3>
               </div>
               <div className="text-right">
-                <p className="text-xs tracking-[0.24em] text-primary uppercase">{report.contribution.category}</p>
-                <p className="mt-2 text-3xl font-semibold text-white">{report.contribution.xpEarned} XP</p>
+                <p className="text-xs tracking-[0.24em] text-primary uppercase">{report.category}</p>
+                <p className="mt-2 text-3xl font-semibold text-white">{report.xpEarned} XP</p>
               </div>
             </div>
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
-              <Metric label="Difficulty" value={report.contribution.difficultyScore} />
-              <Metric label="Impact" value={report.contribution.impactScore} />
-              <Metric label="Review depth" value={report.contribution.reviewDepthScore} />
+              <Metric label="Difficulty" value={report.difficultyScore} />
+              <Metric label="Impact" value={report.impactScore} />
+              <Metric label="Review depth" value={report.reviewDepthScore} />
             </div>
-            <p className="mt-5 text-sm text-muted">{report.contribution.aiSummary}</p>
+            <p className="mt-5 text-sm text-muted">{report.aiSummary}</p>
           </div>
         </GlowCard>
 

@@ -4,7 +4,6 @@ import path from "node:path";
 const root = process.cwd();
 const scanRoots = ["app", "hooks", "features", "lib/api"];
 const allowedFiles = new Set([
-  "features/marketing/components/LandingPage.tsx",
   "lib/api/mock-api.ts",
 ]);
 const blockedImports = [
