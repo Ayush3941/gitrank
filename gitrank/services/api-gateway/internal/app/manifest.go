@@ -26,6 +26,7 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 			{Method: "POST", Path: "/v1/me/account/delete", Summary: "Delete the authenticated account", Status: "implemented"},
 			{Method: "GET", Path: "/v1/me/profile", Summary: "Get the authenticated user's profile summary", Status: "implemented"},
 			{Method: "GET", Path: "/v1/me/quests", Summary: "Get authenticated live quest recommendations from profile evidence", Status: "implemented"},
+			{Method: "GET", Path: "/v1/me/account/export", Summary: "Export authenticated account data without token secrets", Status: "implemented"},
 			{Method: "PATCH", Path: "/v1/me/profile", Summary: "Update authenticated profile privacy settings", Status: "implemented"},
 			{Method: "PATCH", Path: "/v1/me/profile/repositories/{owner}/{repo}", Summary: "Update per-repository public visibility", Status: "implemented"},
 			{Method: "GET", Path: "/v1/users/{handle}", Summary: "Get a public GitRank profile", Status: "implemented"},

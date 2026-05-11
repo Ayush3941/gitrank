@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { PrivacyRepositoryToggleList } from "@/features/settings/components/PrivacyRepositoryToggleList";
 import {
   useDeleteMyAccount,
+  useExportMyAccountData,
   useRequestProfileSync,
   useUnlinkMyAccount,
 } from "@/hooks/use-account-actions";
@@ -41,6 +42,7 @@ export function SettingsPageClient({ preview }: { preview?: PreviewMode }) {
   const requestSync = useRequestProfileSync();
   const unlinkAccount = useUnlinkMyAccount();
   const deleteAccount = useDeleteMyAccount();
+  const exportAccount = useExportMyAccountData();
   const { setReducedGamification } = useGamificationPreference();
   useAccountGamificationPreference(isPreview ? null : data);
   const [previewSettings, setPreviewSettings] = useState<PrivacySettings | null>(null);
@@ -69,9 +71,10 @@ export function SettingsPageClient({ preview }: { preview?: PreviewMode }) {
     (requestSync.error as Error | null)?.message ||
     (unlinkAccount.error as Error | null)?.message ||
     (deleteAccount.error as Error | null)?.message ||
+    (exportAccount.error as Error | null)?.message ||
     "";
   const isSaving = updatePrivacy.isPending || updateRepositoryVisibility.isPending;
-  const isActing = requestSync.isPending || unlinkAccount.isPending || deleteAccount.isPending;
+  const isActing = requestSync.isPending || unlinkAccount.isPending || deleteAccount.isPending || exportAccount.isPending;
   const pendingRepository = updateRepositoryVisibility.variables?.fullName ?? null;
 
   function handlePrivacyToggle(key: BackedPrivacyKey, checked: boolean) {
@@ -137,6 +140,24 @@ export function SettingsPageClient({ preview }: { preview?: PreviewMode }) {
     });
   }
 
+  function handleExportAccountData() {
+    if (isPreview || isActing) {
+      return;
+    }
+    setActionNotice("");
+    exportAccount.mutate(undefined, {
+      onSuccess: (payload) => {
+        const generatedAt = new Date(payload.generated_at);
+        const exportDate = Number.isNaN(generatedAt.getTime())
+          ? new Date().toISOString().slice(0, 10)
+          : generatedAt.toISOString().slice(0, 10);
+        const handle = data?.user.username || payload.user.public_handle || "account";
+        downloadJSON(payload, `gitrank-account-export-${handle}-${exportDate}.json`);
+        setActionNotice("Account export generated. Token secrets and secret hashes are excluded from the file.");
+      },
+    });
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -162,7 +183,7 @@ export function SettingsPageClient({ preview }: { preview?: PreviewMode }) {
           </Button>
         </div>
         <p className="text-sm text-muted">
-          Profile privacy controls, sync, disconnect, and deletion are live. Export remains pending in this frontend.
+          Profile privacy controls, sync, export, disconnect, and deletion are live. Export excludes token secrets and secret hashes.
         </p>
         {actionNotice ? <p className="text-sm text-sky-100">{actionNotice}</p> : null}
         {actionError ? <p className="text-sm text-rose-200">{actionError}</p> : null}
@@ -234,7 +255,10 @@ export function SettingsPageClient({ preview }: { preview?: PreviewMode }) {
             <RefreshCcw className="h-4 w-4" />
             {requestSync.isPending ? "Queueing refresh..." : "Refresh analysis"}
           </Button>
-          <Button variant="secondary" disabled><Download className="h-4 w-4" />Export data</Button>
+          <Button variant="secondary" disabled={isPreview || isActing} onClick={handleExportAccountData}>
+            <Download className="h-4 w-4" />
+            {exportAccount.isPending ? "Exporting..." : "Export data"}
+          </Button>
           <Button variant="danger" disabled={isPreview || isActing} onClick={handleDeleteAccount}>
             <Trash2 className="h-4 w-4" />
             {deleteAccount.isPending ? "Deleting account..." : "Delete account"}
@@ -277,4 +301,18 @@ function SettingSection({
       </div>
     </GlowCard>
   );
+}
+
+function downloadJSON(payload: unknown, filename: string) {
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
 }

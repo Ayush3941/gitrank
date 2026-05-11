@@ -173,6 +173,23 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		})
 	})))
 
+	mux.Handle("/v1/me/account/export", sessionAuth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			writeMethodNotAllowed(w, r)
+			return
+		}
+		if !allowRateLimit(w, r, privateReadLimiter, "account_export") {
+			return
+		}
+
+		proxyRequest(w, r, client, profileBaseURL, r.URL.Path, proxyOptions{
+			ForwardHeaders: defaultForwardHeaders(r),
+			ResponseHeaders: map[string]string{
+				"Cache-Control": "private, no-store",
+			},
+		})
+	})))
+
 	mux.Handle("/v1/me/profile/repositories/", sessionAuth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPatch {
 			writeMethodNotAllowed(w, r)

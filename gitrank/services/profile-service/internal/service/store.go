@@ -47,6 +47,14 @@ type repositoryVisibilityRecord struct {
 	UpdatedAt    time.Time
 }
 
+type accountExportRecord struct {
+	User           contracts.AccountExportUser
+	GitHubAccounts []contracts.AccountExportGitHubAccount
+	Sessions       []contracts.AccountExportSession
+	AuditEvents    []contracts.AccountExportAuditEvent
+	RedactionNotes []string
+}
+
 type scoreRow struct {
 	EventID     string
 	EventType   string
@@ -467,6 +475,237 @@ func (s *Store) UpsertRepositoryVisibility(ctx context.Context, userID, fullName
 	return record, nil
 }
 
+func (s *Store) LoadAccountExport(ctx context.Context, userID string) (accountExportRecord, error) {
+	user, err := s.loadAccountExportUser(ctx, userID)
+	if err != nil {
+		return accountExportRecord{}, err
+	}
+	accounts, err := s.loadAccountExportGitHubAccounts(ctx, userID)
+	if err != nil {
+		return accountExportRecord{}, err
+	}
+	sessions, err := s.loadAccountExportSessions(ctx, userID)
+	if err != nil {
+		return accountExportRecord{}, err
+	}
+	auditEvents, redactions, err := s.loadAccountExportAuditEvents(ctx, userID, 200)
+	if err != nil {
+		return accountExportRecord{}, err
+	}
+
+	return accountExportRecord{
+		User:           user,
+		GitHubAccounts: accounts,
+		Sessions:       sessions,
+		AuditEvents:    auditEvents,
+		RedactionNotes: redactions,
+	}, nil
+}
+
+func (s *Store) loadAccountExportUser(ctx context.Context, userID string) (contracts.AccountExportUser, error) {
+	row := s.pool.QueryRow(ctx, `
+		SELECT
+			id::text,
+			COALESCE(public_handle, ''),
+			display_name,
+			avatar_url,
+			bio,
+			status,
+			profile_visibility,
+			created_at,
+			updated_at
+		FROM users
+		WHERE id = $1::uuid
+	`, userID)
+
+	var user contracts.AccountExportUser
+	if err := row.Scan(
+		&user.UserID,
+		&user.PublicHandle,
+		&user.DisplayName,
+		&user.AvatarURL,
+		&user.Bio,
+		&user.Status,
+		&user.ProfileVisibility,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return contracts.AccountExportUser{}, ErrNotFound
+		}
+		return contracts.AccountExportUser{}, err
+	}
+	return user, nil
+}
+
+func (s *Store) loadAccountExportGitHubAccounts(ctx context.Context, userID string) ([]contracts.AccountExportGitHubAccount, error) {
+	rows, err := s.pool.Query(ctx, `
+		SELECT
+			id::text,
+			github_user_id,
+			login,
+			display_name,
+			email,
+			avatar_url,
+			user_type,
+			access_mode,
+			oauth_scopes,
+			installation_count,
+			link_status,
+			linked_at,
+			COALESCE(unlinked_at, TIMESTAMPTZ 'epoch'),
+			unlinked_at IS NOT NULL,
+			created_at,
+			updated_at
+		FROM github_accounts
+		WHERE user_id = $1::uuid
+		ORDER BY linked_at DESC, created_at DESC
+	`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	accounts := make([]contracts.AccountExportGitHubAccount, 0)
+	for rows.Next() {
+		var account contracts.AccountExportGitHubAccount
+		var unlinkedAt time.Time
+		var hasUnlinkedAt bool
+		if err := rows.Scan(
+			&account.GitHubAccountID,
+			&account.GitHubUserID,
+			&account.Login,
+			&account.DisplayName,
+			&account.Email,
+			&account.AvatarURL,
+			&account.UserType,
+			&account.AccessMode,
+			&account.OAuthScopes,
+			&account.InstallationCount,
+			&account.LinkStatus,
+			&account.LinkedAt,
+			&unlinkedAt,
+			&hasUnlinkedAt,
+			&account.CreatedAt,
+			&account.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		account.UnlinkedAt = optionalTime(hasUnlinkedAt, unlinkedAt)
+		accounts = append(accounts, account)
+	}
+	return accounts, rows.Err()
+}
+
+func (s *Store) loadAccountExportSessions(ctx context.Context, userID string) ([]contracts.AccountExportSession, error) {
+	rows, err := s.pool.Query(ctx, `
+		SELECT
+			id::text,
+			github_account_id::text,
+			roles,
+			request_ip,
+			user_agent,
+			github_authorization_status,
+			created_at,
+			last_seen_at,
+			last_refreshed_at,
+			rotated_at,
+			expires_at,
+			idle_expires_at,
+			COALESCE(invalidated_at, TIMESTAMPTZ 'epoch'),
+			invalidated_at IS NOT NULL,
+			invalidated_reason
+		FROM auth_sessions
+		WHERE user_id = $1::uuid
+		ORDER BY created_at DESC
+	`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	sessions := make([]contracts.AccountExportSession, 0)
+	for rows.Next() {
+		var session contracts.AccountExportSession
+		var invalidatedAt time.Time
+		var hasInvalidatedAt bool
+		if err := rows.Scan(
+			&session.SessionID,
+			&session.GitHubAccountID,
+			&session.Roles,
+			&session.RequestIP,
+			&session.UserAgent,
+			&session.GitHubAuthorizationStatus,
+			&session.CreatedAt,
+			&session.LastSeenAt,
+			&session.LastRefreshedAt,
+			&session.RotatedAt,
+			&session.ExpiresAt,
+			&session.IdleExpiresAt,
+			&invalidatedAt,
+			&hasInvalidatedAt,
+			&session.InvalidatedReason,
+		); err != nil {
+			return nil, err
+		}
+		session.InvalidatedAt = optionalTime(hasInvalidatedAt, invalidatedAt)
+		sessions = append(sessions, session)
+	}
+	return sessions, rows.Err()
+}
+
+func (s *Store) loadAccountExportAuditEvents(ctx context.Context, userID string, limit int) ([]contracts.AccountExportAuditEvent, []string, error) {
+	if limit <= 0 {
+		limit = 200
+	}
+	rows, err := s.pool.Query(ctx, `
+		SELECT
+			id::text,
+			actor_type,
+			actor_id,
+			action,
+			target_type,
+			target_id,
+			metadata_jsonb,
+			created_at
+		FROM audit_logs
+		WHERE actor_id = $1
+		   OR target_id = $1
+		ORDER BY created_at DESC
+		LIMIT $2
+	`, userID, limit)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer rows.Close()
+
+	events := make([]contracts.AccountExportAuditEvent, 0)
+	redactions := make([]string, 0)
+	for rows.Next() {
+		var event contracts.AccountExportAuditEvent
+		var rawMetadata []byte
+		if err := rows.Scan(
+			&event.ID,
+			&event.ActorType,
+			&event.ActorID,
+			&event.Action,
+			&event.TargetType,
+			&event.TargetID,
+			&rawMetadata,
+			&event.CreatedAt,
+		); err != nil {
+			return nil, nil, err
+		}
+		metadata := map[string]any{}
+		if len(rawMetadata) > 0 {
+			_ = json.Unmarshal(rawMetadata, &metadata)
+		}
+		event.Metadata = sanitizeAccountExportMetadata(metadata, &redactions)
+		events = append(events, event)
+	}
+	return events, redactions, rows.Err()
+}
+
 func (s *Store) LoadLatestSnapshot(ctx context.Context, userID string) (snapshotRecord, error) {
 	row := s.pool.QueryRow(ctx, `
 		SELECT
@@ -714,4 +953,73 @@ func decodeExplanation(raw []byte) []string {
 	}
 
 	return nil
+}
+
+func optionalTime(ok bool, value time.Time) *time.Time {
+	if !ok {
+		return nil
+	}
+	value = value.UTC()
+	return &value
+}
+
+func sanitizeAccountExportMetadata(metadata map[string]any, redactions *[]string) map[string]any {
+	if len(metadata) == 0 {
+		return nil
+	}
+	out := make(map[string]any, len(metadata))
+	for key, value := range metadata {
+		out[key] = sanitizeAccountExportValue(key, value, redactions)
+	}
+	return out
+}
+
+func sanitizeAccountExportValue(path string, value any, redactions *[]string) any {
+	if shouldRedactExportKey(path) {
+		if redactions != nil {
+			*redactions = append(*redactions, path)
+		}
+		return "[redacted]"
+	}
+
+	switch typed := value.(type) {
+	case map[string]any:
+		nested := make(map[string]any, len(typed))
+		for key, nestedValue := range typed {
+			nested[key] = sanitizeAccountExportValue(path+"."+key, nestedValue, redactions)
+		}
+		return nested
+	case []any:
+		nested := make([]any, 0, len(typed))
+		for i, nestedValue := range typed {
+			nested = append(nested, sanitizeAccountExportValue(fmt.Sprintf("%s[%d]", path, i), nestedValue, redactions))
+		}
+		return nested
+	default:
+		return value
+	}
+}
+
+func shouldRedactExportKey(key string) bool {
+	normalized := strings.ToLower(strings.TrimSpace(key))
+	sensitiveFragments := []string{
+		"access_token",
+		"authorization",
+		"browser_token",
+		"client_secret",
+		"code_verifier",
+		"cookie",
+		"csrf",
+		"refresh_token",
+		"secret",
+		"session_token",
+		"state_nonce",
+		"token_hash",
+	}
+	for _, fragment := range sensitiveFragments {
+		if strings.Contains(normalized, fragment) {
+			return true
+		}
+	}
+	return false
 }

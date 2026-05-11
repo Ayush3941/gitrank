@@ -259,6 +259,75 @@ type PrivateProfileResponse struct {
 	Staleness            ProfileStaleness           `json:"staleness"`
 }
 
+type AccountExportUser struct {
+	UserID            string    `json:"user_id"`
+	PublicHandle      string    `json:"public_handle"`
+	DisplayName       string    `json:"display_name"`
+	AvatarURL         string    `json:"avatar_url,omitempty"`
+	Bio               string    `json:"bio,omitempty"`
+	Status            string    `json:"status"`
+	ProfileVisibility string    `json:"profile_visibility"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
+}
+
+type AccountExportGitHubAccount struct {
+	GitHubAccountID   string     `json:"github_account_id"`
+	GitHubUserID      int64      `json:"github_user_id"`
+	Login             string     `json:"login"`
+	DisplayName       string     `json:"display_name,omitempty"`
+	Email             string     `json:"email,omitempty"`
+	AvatarURL         string     `json:"avatar_url,omitempty"`
+	UserType          string     `json:"user_type,omitempty"`
+	AccessMode        string     `json:"access_mode"`
+	OAuthScopes       []string   `json:"oauth_scopes,omitempty"`
+	InstallationCount int        `json:"installation_count"`
+	LinkStatus        string     `json:"link_status"`
+	LinkedAt          time.Time  `json:"linked_at"`
+	UnlinkedAt        *time.Time `json:"unlinked_at,omitempty"`
+	CreatedAt         time.Time  `json:"created_at"`
+	UpdatedAt         time.Time  `json:"updated_at"`
+}
+
+type AccountExportSession struct {
+	SessionID                 string     `json:"session_id"`
+	GitHubAccountID           string     `json:"github_account_id"`
+	Roles                     []string   `json:"roles,omitempty"`
+	RequestIP                 string     `json:"request_ip,omitempty"`
+	UserAgent                 string     `json:"user_agent,omitempty"`
+	GitHubAuthorizationStatus string     `json:"github_authorization_status"`
+	CreatedAt                 time.Time  `json:"created_at"`
+	LastSeenAt                time.Time  `json:"last_seen_at"`
+	LastRefreshedAt           time.Time  `json:"last_refreshed_at"`
+	RotatedAt                 time.Time  `json:"rotated_at"`
+	ExpiresAt                 time.Time  `json:"expires_at"`
+	IdleExpiresAt             time.Time  `json:"idle_expires_at"`
+	InvalidatedAt             *time.Time `json:"invalidated_at,omitempty"`
+	InvalidatedReason         string     `json:"invalidated_reason,omitempty"`
+}
+
+type AccountExportAuditEvent struct {
+	ID         string         `json:"id"`
+	ActorType  string         `json:"actor_type"`
+	ActorID    string         `json:"actor_id,omitempty"`
+	Action     string         `json:"action"`
+	TargetType string         `json:"target_type"`
+	TargetID   string         `json:"target_id,omitempty"`
+	Metadata   map[string]any `json:"metadata,omitempty"`
+	CreatedAt  time.Time      `json:"created_at"`
+}
+
+type AccountDataExportResponse struct {
+	ExportVersion  string                       `json:"export_version"`
+	GeneratedAt    time.Time                    `json:"generated_at"`
+	User           AccountExportUser            `json:"user"`
+	GitHubAccounts []AccountExportGitHubAccount `json:"github_accounts,omitempty"`
+	Profile        PrivateProfileResponse       `json:"profile"`
+	Sessions       []AccountExportSession       `json:"sessions,omitempty"`
+	AuditEvents    []AccountExportAuditEvent    `json:"audit_events,omitempty"`
+	Redactions     []string                     `json:"redactions,omitempty"`
+}
+
 type UpdateProfilePrivacyRequest struct {
 	PublicProfileEnabled         *bool `json:"public_profile_enabled,omitempty"`
 	ShowExactPRs                 *bool `json:"show_exact_prs,omitempty"`

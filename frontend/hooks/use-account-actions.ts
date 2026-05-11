@@ -3,6 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   deleteMyAccount,
+  exportMyAccountData,
   requestProfileSync,
   unlinkMyAccount,
 } from "@/lib/api/account-api";
@@ -38,5 +39,11 @@ export function useDeleteMyAccount() {
     onSuccess: () => {
       queryClient.removeQueries({ queryKey: myProfileQueryKey });
     },
+  });
+}
+
+export function useExportMyAccountData() {
+  return useMutation({
+    mutationFn: exportMyAccountData,
   });
 }

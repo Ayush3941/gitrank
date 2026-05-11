@@ -275,6 +275,51 @@ func TestProxyPrivateQuestsGetSetsPrivateCacheControl(t *testing.T) {
 	}
 }
 
+func TestProxyAccountExportGetSetsPrivateCacheControl(t *testing.T) {
+	auth := stubAuthServer()
+	defer auth.Close()
+
+	var observedPath string
+	profile := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		observedPath = r.URL.Path
+		w.Header().Set("Cache-Control", "public, max-age=120")
+		_ = json.NewEncoder(w).Encode(contracts.AccountDataExportResponse{
+			ExportVersion: "account-export/v1",
+			GeneratedAt:   time.Date(2026, 5, 10, 14, 0, 0, 0, time.UTC),
+			User: contracts.AccountExportUser{
+				UserID:       "11111111-1111-1111-1111-111111111111",
+				PublicHandle: "octocat",
+				DisplayName:  "Octo Cat",
+			},
+			Profile: samplePrivateProfileResponse(),
+			Redactions: []string{
+				"session_token_hash, csrf_token_hash, encrypted GitHub access tokens, and encrypted refresh tokens are intentionally excluded",
+			},
+		})
+	}))
+	defer profile.Close()
+
+	router := NewRouter(testConfig(profile.URL, auth.URL, stubIngestorServer().URL), testLogger(), "test")
+	request := httptest.NewRequest(http.MethodGet, "/v1/me/account/export", nil)
+	request.Header.Set("Cookie", "gitrank_session=session-original")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusOK, response.Body.String())
+	}
+	if observedPath != "/v1/me/account/export" {
+		t.Fatalf("path = %q, want /v1/me/account/export", observedPath)
+	}
+	if response.Header().Get("Cache-Control") != "private, no-store" {
+		t.Fatalf("cache-control = %q, want private, no-store", response.Header().Get("Cache-Control"))
+	}
+	if strings.Contains(response.Body.String(), "session_token_hash") && !strings.Contains(response.Body.String(), "intentionally excluded") {
+		t.Fatalf("export response appears to expose token hash fields: %s", response.Body.String())
+	}
+}
+
 func TestProxyPrivateProfilePatchForwardsRotatedCookiesAndCSRF(t *testing.T) {
 	type observedRequest struct {
 		Cookie    string `json:"cookie"`

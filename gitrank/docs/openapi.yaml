@@ -419,6 +419,50 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /v1/me/account/export:
+    get:
+      tags: [Account]
+      summary: Export authenticated account-owned GitRank data without token secrets
+      description: |
+        Returns the authenticated user's profile, score history, badges, repository visibility,
+        linked GitHub account metadata, sanitized session metadata, and sanitized audit events.
+        Raw session tokens, token hashes, CSRF hashes, encrypted GitHub tokens, and refresh tokens
+        are intentionally excluded.
+      operationId: exportMyAccountData
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Account data export generated
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Cache-Control:
+              $ref: "#/components/headers/PrivateNoStoreCacheControl"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountDataExportResponse"
+        "401":
+          description: Authentication required
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limit exceeded
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Retry-After:
+              $ref: "#/components/headers/RetryAfter"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /v1/me/account/delete:
     post:
       tags: [Account]
@@ -1082,6 +1126,170 @@ components:
         logged_out:
           type: boolean
         deleted_at:
+          type: string
+          format: date-time
+    AccountDataExportResponse:
+      type: object
+      required: [export_version, generated_at, user, profile]
+      properties:
+        export_version:
+          type: string
+          example: account-export/v1
+        generated_at:
+          type: string
+          format: date-time
+        user:
+          $ref: "#/components/schemas/AccountExportUser"
+        github_accounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/AccountExportGitHubAccount"
+        profile:
+          $ref: "#/components/schemas/PrivateProfileResponse"
+        sessions:
+          type: array
+          items:
+            $ref: "#/components/schemas/AccountExportSession"
+        audit_events:
+          type: array
+          items:
+            $ref: "#/components/schemas/AccountExportAuditEvent"
+        redactions:
+          type: array
+          items:
+            type: string
+          description: Human-readable notes for omitted or redacted secret-bearing fields.
+    AccountExportUser:
+      type: object
+      required: [user_id, public_handle, display_name, status, profile_visibility, created_at, updated_at]
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        public_handle:
+          type: string
+        display_name:
+          type: string
+        avatar_url:
+          type: string
+        bio:
+          type: string
+        status:
+          type: string
+        profile_visibility:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    AccountExportGitHubAccount:
+      type: object
+      required: [github_account_id, github_user_id, login, access_mode, installation_count, link_status, linked_at, created_at, updated_at]
+      properties:
+        github_account_id:
+          type: string
+          format: uuid
+        github_user_id:
+          type: integer
+          format: int64
+        login:
+          type: string
+        display_name:
+          type: string
+        email:
+          type: string
+        avatar_url:
+          type: string
+        user_type:
+          type: string
+        access_mode:
+          type: string
+        oauth_scopes:
+          type: array
+          items:
+            type: string
+        installation_count:
+          type: integer
+        link_status:
+          type: string
+        linked_at:
+          type: string
+          format: date-time
+        unlinked_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    AccountExportSession:
+      type: object
+      required: [session_id, github_account_id, github_authorization_status, created_at, last_seen_at, last_refreshed_at, rotated_at, expires_at, idle_expires_at]
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        github_account_id:
+          type: string
+          format: uuid
+        roles:
+          type: array
+          items:
+            type: string
+        request_ip:
+          type: string
+        user_agent:
+          type: string
+        github_authorization_status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        last_seen_at:
+          type: string
+          format: date-time
+        last_refreshed_at:
+          type: string
+          format: date-time
+        rotated_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+        idle_expires_at:
+          type: string
+          format: date-time
+        invalidated_at:
+          type: string
+          format: date-time
+        invalidated_reason:
+          type: string
+    AccountExportAuditEvent:
+      type: object
+      required: [id, actor_type, action, target_type, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        actor_type:
+          type: string
+        actor_id:
+          type: string
+        action:
+          type: string
+        target_type:
+          type: string
+        target_id:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+        created_at:
           type: string
           format: date-time
     PublicProfileSummary:

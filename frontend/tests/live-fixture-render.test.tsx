@@ -1,6 +1,6 @@
 import React, { type ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DashboardPageClient } from "@/features/dashboard/components/DashboardPageClient";
 import { LeaderboardPageClient } from "@/features/leaderboard/components/LeaderboardPageClient";
@@ -93,7 +93,9 @@ describe("live fixture frontend smoke coverage", () => {
     expect(await screen.findByText("@live-maintainer")).toBeTruthy();
     expect(await screen.findByText("octo/gitrank")).toBeTruthy();
     await waitFor(() => expect(localStorage.getItem("gitrank:reduced-gamification")).toBe("true"));
-    expect(requestedPaths).toEqual(["/api/profile/me"]);
+    fireEvent.click(await screen.findByText("Export data"));
+    expect(await screen.findByText("Account export generated. Token secrets and secret hashes are excluded from the file.")).toBeTruthy();
+    expect(requestedPaths).toEqual(["/api/profile/me", "/api/account/export"]);
   });
 });
 
@@ -136,6 +138,9 @@ async function liveFixtureFetch(input: RequestInfo | URL): Promise<Response> {
   }
   if (path === "/api/leaderboard") {
     return jsonResponse(leaderboardFixture);
+  }
+  if (path === "/api/account/export") {
+    return jsonResponse(accountExportFixture);
   }
 
   return jsonResponse(
@@ -355,5 +360,64 @@ const leaderboardFixture = {
       refreshed_at: now,
       is_stale: false,
     },
+  ],
+};
+
+const accountExportFixture = {
+  export_version: "account-export/v1",
+  generated_at: now,
+  user: {
+    user_id: "11111111-1111-1111-1111-111111111111",
+    public_handle: "live-maintainer",
+    display_name: "Live Fixture Maintainer",
+    status: "active",
+    profile_visibility: "public",
+    created_at: now,
+    updated_at: now,
+  },
+  github_accounts: [
+    {
+      github_account_id: "22222222-2222-2222-2222-222222222222",
+      github_user_id: 42,
+      login: "live-maintainer",
+      access_mode: "oauth",
+      installation_count: 0,
+      link_status: "linked",
+      linked_at: now,
+      created_at: now,
+      updated_at: now,
+    },
+  ],
+  profile: privateProfileFixture,
+  sessions: [
+    {
+      session_id: "33333333-3333-3333-3333-333333333333",
+      github_account_id: "22222222-2222-2222-2222-222222222222",
+      roles: ["user"],
+      github_authorization_status: "active",
+      created_at: now,
+      last_seen_at: now,
+      last_refreshed_at: now,
+      rotated_at: now,
+      expires_at: "2026-05-11T12:00:00Z",
+      idle_expires_at: "2026-05-10T13:00:00Z",
+    },
+  ],
+  audit_events: [
+    {
+      id: "44444444-4444-4444-4444-444444444444",
+      actor_type: "user",
+      actor_id: "11111111-1111-1111-1111-111111111111",
+      action: "auth.login.success",
+      target_type: "github_account",
+      target_id: "22222222-2222-2222-2222-222222222222",
+      metadata: {
+        github_login: "live-maintainer",
+      },
+      created_at: now,
+    },
+  ],
+  redactions: [
+    "session_token_hash, csrf_token_hash, encrypted GitHub access tokens, and encrypted refresh tokens are intentionally excluded",
   ],
 };

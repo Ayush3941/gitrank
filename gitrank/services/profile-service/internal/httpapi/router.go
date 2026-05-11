@@ -166,6 +166,17 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 		httpkit.WriteJSON(w, http.StatusOK, response)
 	})))
 
+	mux.Handle("/v1/me/account/export", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sessionCookie, _ := r.Cookie(cfg.Auth.SessionCookieName)
+		response, err := profileService.AccountDataExport(r.Context(), cookieValue(sessionCookie), time.Now().UTC())
+		if err != nil {
+			writeProfileError(w, r, err)
+			return
+		}
+		w.Header().Set("Cache-Control", "private, no-store")
+		httpkit.WriteJSON(w, http.StatusOK, response)
+	})))
+
 	mux.Handle("/v1/me/profile/repositories/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPatch {
 			httpkit.WriteError(w, http.StatusMethodNotAllowed, "method_not_allowed", "method not allowed", httpkit.RequestIDFromContext(r.Context()))

@@ -26,6 +26,20 @@ type ApiAccountDeletionResponse = {
   deleted_at: string;
 };
 
+export type AccountDataExport = {
+  export_version: string;
+  generated_at: string;
+  user: {
+    public_handle: string;
+    display_name: string;
+  };
+  profile: unknown;
+  github_accounts?: unknown[];
+  sessions?: unknown[];
+  audit_events?: unknown[];
+  redactions?: string[];
+};
+
 export async function requestProfileSync(): Promise<ApiSyncResponse> {
   const csrfToken = requireCSRFToken();
   const response = await fetch("/api/sync", {
@@ -71,6 +85,15 @@ export async function deleteMyAccount(): Promise<ApiAccountDeletionResponse> {
     }),
   });
   return adaptJSON<ApiAccountDeletionResponse>(response, "Account deletion failed.");
+}
+
+export async function exportMyAccountData(): Promise<AccountDataExport> {
+  const response = await fetch("/api/account/export", {
+    method: "GET",
+    credentials: "same-origin",
+    cache: "no-store",
+  });
+  return adaptJSON<AccountDataExport>(response, "Account export failed.");
 }
 
 async function adaptJSON<T>(response: Response, fallback: string): Promise<T> {

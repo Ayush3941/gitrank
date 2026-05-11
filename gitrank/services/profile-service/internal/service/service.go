@@ -239,6 +239,41 @@ func (s *Service) UpdateRepositoryVisibility(ctx context.Context, sessionToken, 
 	return s.PrivateProfile(ctx, sessionToken, now.UTC())
 }
 
+func (s *Service) AccountDataExport(ctx context.Context, sessionToken string, now time.Time) (contracts.AccountDataExportResponse, error) {
+	principal, err := s.authenticate(ctx, sessionToken, now.UTC())
+	if err != nil {
+		return contracts.AccountDataExportResponse{}, err
+	}
+
+	profile, err := s.PrivateProfile(ctx, sessionToken, now.UTC())
+	if err != nil {
+		return contracts.AccountDataExportResponse{}, err
+	}
+
+	exportRecord, err := s.store.LoadAccountExport(ctx, principal.UserID)
+	if err != nil {
+		return contracts.AccountDataExportResponse{}, err
+	}
+
+	redactions := []string{
+		"session_token_hash, csrf_token_hash, encrypted GitHub access tokens, and encrypted refresh tokens are intentionally excluded",
+	}
+	for _, key := range exportRecord.RedactionNotes {
+		redactions = append(redactions, "audit metadata key redacted: "+key)
+	}
+
+	return contracts.AccountDataExportResponse{
+		ExportVersion:  "account-export/v1",
+		GeneratedAt:    now.UTC(),
+		User:           exportRecord.User,
+		GitHubAccounts: exportRecord.GitHubAccounts,
+		Profile:        profile,
+		Sessions:       exportRecord.Sessions,
+		AuditEvents:    exportRecord.AuditEvents,
+		Redactions:     redactions,
+	}, nil
+}
+
 func (s *Service) authenticate(ctx context.Context, sessionToken string, now time.Time) (sessionPrincipal, error) {
 	if strings.TrimSpace(sessionToken) == "" {
 		return sessionPrincipal{}, ErrUnauthorized

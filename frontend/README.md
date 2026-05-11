@@ -87,6 +87,7 @@ The settings page includes an account-backed reduced-gamification display prefer
 The settings page also has live authenticated account actions:
 
 - `/api/sync` proxies to the Go sync trigger route
+- `/api/account/export` proxies to the Go account export route and downloads a JSON file with token secrets and secret hashes excluded
 - `/api/account/unlink` proxies to the Go account disconnect route
 - `/api/account/delete` proxies to the Go account deletion route
 
