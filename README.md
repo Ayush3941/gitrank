@@ -784,6 +784,7 @@ V2 direction:
 - scoring-engine now has a non-mutating replay verifier for selected user, repository, date range, and formula version checks against persisted evidence
 - profile skill areas expose evidence source, confidence, and freshness state so skill claims remain bounded to real scored evidence
 - PR battle reports expose and render structured evidence state for incomplete, stale, rate-limited, deterministic-only, and AI-fallback conditions
+- analysis envelopes reject score-override language before scoring, keeping final XP deterministic and rule-based
 - see `CONTRIBUTING.md` for the V1 limitations inventory and V2 no-mock checklist
 
 ## License

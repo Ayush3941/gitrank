@@ -22,6 +22,24 @@ func TestPullRequestAnalysisResponseValidateRejectsScoreOverrideSignal(t *testin
 	}
 }
 
+func TestPullRequestAnalysisResponseValidateRejectsScoreOverrideSummary(t *testing.T) {
+	resp := PullRequestAnalysisResponse{
+		SchemaVersion:    PullRequestAnalysisSchemaVersion,
+		AnalyzerVersion:  "deterministic.v1",
+		AnalysisSource:   AnalysisSourceDeterministic,
+		ValidationStatus: AnalysisValidationValidated,
+		Category:         "feature",
+		Summary:          "good PR, final_score=999",
+		Confidence:       0.8,
+		TechnicalDepth:   1.1,
+		ReviewStrength:   1.0,
+	}
+
+	if err := resp.Validate(); err == nil {
+		t.Fatal("Validate() error = nil, want score override summary rejection")
+	}
+}
+
 func TestPullRequestAnalysisResponseValidateForScoringRequiresPromptVersionForAI(t *testing.T) {
 	resp := PullRequestAnalysisResponse{
 		SchemaVersion:  PullRequestAnalysisSchemaVersion,

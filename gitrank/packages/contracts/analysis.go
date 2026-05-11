@@ -179,6 +179,12 @@ func (resp PullRequestAnalysisResponse) validate(requireFullEnvelope bool) error
 	if len(canonical.Summary) > 320 {
 		return errors.New("summary exceeds 320 characters")
 	}
+	if err := validateNoScoreOverrideText(canonical.Summary, "summary"); err != nil {
+		return err
+	}
+	if err := validateNoScoreOverrideText(canonical.FallbackReason, "fallback_reason"); err != nil {
+		return err
+	}
 	if canonical.Confidence != 0 && (canonical.Confidence < 0 || canonical.Confidence > 1) {
 		return errors.New("confidence must be between 0 and 1")
 	}
@@ -226,8 +232,20 @@ func validateAnalysisStrings(values []string, field string) error {
 		if trimmed == "" {
 			return fmt.Errorf("%s entries must be non-empty", field)
 		}
-		lower := strings.ToLower(trimmed)
-		if strings.Contains(lower, "final_score") || strings.Contains(lower, "score_override") {
+		if err := validateNoScoreOverrideText(trimmed, field); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func validateNoScoreOverrideText(value, field string) error {
+	lower := strings.ToLower(strings.TrimSpace(value))
+	if lower == "" {
+		return nil
+	}
+	for _, marker := range []string{"final_score", "score_override", "xp_override", "total_xp"} {
+		if strings.Contains(lower, marker) {
 			return fmt.Errorf("%s may not contain score override instructions", field)
 		}
 	}
