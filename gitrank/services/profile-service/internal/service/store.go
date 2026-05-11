@@ -59,6 +59,10 @@ type scoreRow struct {
 	EventID            string
 	EventType          string
 	DeltaXP            int
+	ScoreVersion       string
+	FormulaVersion     string
+	PullRequestID      string
+	AnalysisID         string
 	Skills             map[string]int
 	Explanation        []string
 	CreatedAt          time.Time
@@ -236,6 +240,10 @@ func (s *Store) LoadScoreRows(ctx context.Context, userID string, selection scor
 			se.id::text,
 			se.event_type,
 			se.delta_total_xp,
+			se.score_version,
+			COALESCE(NULLIF(se.metadata_jsonb->>'score_formula_inputs_version', ''), ''),
+			COALESCE(se.pull_request_id::text, ''),
+			COALESCE(se.analysis_id::text, ''),
 			se.delta_skill_jsonb,
 			se.explanation_jsonb,
 			se.created_at,
@@ -279,6 +287,10 @@ func (s *Store) LoadScoreRows(ctx context.Context, userID string, selection scor
 			&record.EventID,
 			&record.EventType,
 			&record.DeltaXP,
+			&record.ScoreVersion,
+			&record.FormulaVersion,
+			&record.PullRequestID,
+			&record.AnalysisID,
 			&skillsRaw,
 			&explanationRaw,
 			&record.CreatedAt,

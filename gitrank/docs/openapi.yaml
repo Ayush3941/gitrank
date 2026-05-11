@@ -1509,6 +1509,21 @@ components:
         created_at:
           type: string
           format: date-time
+        score_version:
+          type: string
+        formula_version:
+          type: string
+        pull_request_id:
+          type: string
+        analysis_id:
+          type: string
+        evidence_state:
+          type: string
+          enum: [complete, partial]
+        evidence_missing:
+          type: array
+          items:
+            type: string
         pull_request:
           $ref: "#/components/schemas/PullRequestReference"
         explanation:

@@ -26,6 +26,9 @@ export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
                   </p>
                   <h3 className="mt-2 text-lg font-medium text-white">{report.title}</h3>
                   <p className="mt-2 text-sm text-muted">{report.summary}</p>
+                  <p className="mt-2 text-xs text-muted">
+                    Evidence {report.evidenceState || "partial"} / Formula {report.formulaVersion || "not recorded"}
+                  </p>
                 </div>
                 <div className="text-right">
                   <p className="text-xs tracking-[0.24em] text-primary uppercase">XP</p>

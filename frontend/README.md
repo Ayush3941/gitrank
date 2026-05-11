@@ -75,6 +75,7 @@ The public profile page, authenticated dashboard overview, onboarding reveal, ba
 - the gateway proxies to `profile-service`
 - session and CSRF cookies stay same-origin to the frontend
 - dashboard badge, contribution, and recent battle-report panels derive from the authenticated profile snapshot instead of mock PR-analysis detail
+- contribution rows surface score-history evidence state plus score/formula version linkage when the backend provides it
 - `npm run check:no-production-mocks` fails CI if production app, hook, feature, or API modules import the mock API or mock domain dataset directly
 - `npm run test:smoke` renders dashboard, quest, PR-report, profile, leaderboard, and settings flows from live-shaped BFF fixtures instead of preview mock API functions
 

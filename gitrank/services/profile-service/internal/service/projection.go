@@ -311,12 +311,19 @@ func buildScoreHistory(scoreRows []scoreRow) []contracts.ScoreHistoryEntry {
 	out := make([]contracts.ScoreHistoryEntry, 0, limit)
 	for i := 0; i < limit; i++ {
 		row := scoreRows[i]
+		evidenceState, evidenceMissing := scoreHistoryEvidenceState(row)
 		entry := contracts.ScoreHistoryEntry{
-			EventID:     row.EventID,
-			EventType:   row.EventType,
-			DeltaXP:     row.DeltaXP,
-			CreatedAt:   row.CreatedAt.UTC(),
-			Explanation: row.Explanation,
+			EventID:         row.EventID,
+			EventType:       row.EventType,
+			DeltaXP:         row.DeltaXP,
+			CreatedAt:       row.CreatedAt.UTC(),
+			ScoreVersion:    row.ScoreVersion,
+			FormulaVersion:  row.FormulaVersion,
+			PullRequestID:   row.PullRequestID,
+			AnalysisID:      row.AnalysisID,
+			EvidenceState:   evidenceState,
+			EvidenceMissing: evidenceMissing,
+			Explanation:     row.Explanation,
 		}
 		if row.Repository != "" && row.PRNumber > 0 {
 			entry.PullRequest = &contracts.PullRequestReference{
@@ -328,6 +335,26 @@ func buildScoreHistory(scoreRows []scoreRow) []contracts.ScoreHistoryEntry {
 		out = append(out, entry)
 	}
 	return out
+}
+
+func scoreHistoryEvidenceState(row scoreRow) (string, []string) {
+	missing := make([]string, 0, 4)
+	if strings.TrimSpace(row.ScoreVersion) == "" {
+		missing = append(missing, "score_version")
+	}
+	if strings.TrimSpace(row.FormulaVersion) == "" {
+		missing = append(missing, "formula_version")
+	}
+	if strings.TrimSpace(row.PullRequestID) == "" || strings.TrimSpace(row.Repository) == "" || row.PRNumber <= 0 {
+		missing = append(missing, "pull_request_evidence")
+	}
+	if strings.TrimSpace(row.AnalysisID) == "" {
+		missing = append(missing, "analysis_artifact")
+	}
+	if len(missing) > 0 {
+		return "partial", missing
+	}
+	return "complete", nil
 }
 
 func buildTimeline(scoreRows []scoreRow, sourceWatermark time.Time) contracts.ProfileTimeline {

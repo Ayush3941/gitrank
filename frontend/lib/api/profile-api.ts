@@ -86,6 +86,12 @@ type ApiScoreHistoryEntry = {
   event_type: string;
   delta_xp: number;
   created_at: string;
+  score_version?: string;
+  formula_version?: string;
+  pull_request_id?: string;
+  analysis_id?: string;
+  evidence_state?: "complete" | "partial";
+  evidence_missing?: string[];
   pull_request?: ApiPullRequestReference;
   explanation?: string[];
 };
@@ -408,6 +414,13 @@ function toFeaturedContributions(entries: ApiScoreHistoryEntry[]): FeaturedContr
       const [owner, repo] = splitRepositoryName(entry.pull_request?.repository || "");
       return {
         id: entry.event_id,
+        scoreEventId: entry.event_id,
+        scoreVersion: entry.score_version,
+        formulaVersion: entry.formula_version,
+        pullRequestId: entry.pull_request_id,
+        analysisId: entry.analysis_id,
+        evidenceState: entry.evidence_state,
+        evidenceMissing: entry.evidence_missing,
         owner,
         repo,
         number: entry.pull_request?.number ?? 0,
@@ -428,6 +441,13 @@ function toContributions(entries: ApiScoreHistoryEntry[]): Contribution[] {
       const [owner, repo] = splitRepositoryName(entry.pull_request?.repository || "");
       return {
         id: entry.event_id,
+        scoreEventId: entry.event_id,
+        scoreVersion: entry.score_version,
+        formulaVersion: entry.formula_version,
+        pullRequestId: entry.pull_request_id,
+        analysisId: entry.analysis_id,
+        evidenceState: entry.evidence_state,
+        evidenceMissing: entry.evidence_missing,
         owner,
         repo,
         number: entry.pull_request?.number ?? 0,
@@ -560,6 +580,9 @@ function seasonFromRefreshedAt(refreshedAt: string, scoringVersion: string): Lea
 
 function scoreVersionFromHistory(entries: ApiScoreHistoryEntry[]): string {
   for (const entry of entries) {
+    if (entry.score_version) {
+      return entry.score_version;
+    }
     const line = entry.explanation?.find((item) => item.toLowerCase().startsWith("score version "));
     if (line) {
       const parsed = line.replace(/^score version\s+/i, "").trim();

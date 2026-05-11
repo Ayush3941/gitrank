@@ -88,6 +88,57 @@ func TestBuildSkillAreasIncludesEvidenceProvenance(t *testing.T) {
 	}
 }
 
+func TestBuildScoreHistoryIncludesEvidenceLinks(t *testing.T) {
+	now := time.Date(2026, 5, 5, 13, 0, 0, 0, time.UTC)
+	history := buildScoreHistory([]scoreRow{
+		{
+			EventID:        "score-event-1",
+			EventType:      "score.computed",
+			DeltaXP:        120,
+			ScoreVersion:   "v1alpha1",
+			FormulaVersion: "score-components/v1",
+			PullRequestID:  "pr-1",
+			AnalysisID:     "analysis-1",
+			CreatedAt:      now,
+			Repository:     "octo/repo",
+			PRNumber:       42,
+			PRTitle:        "Persist score history evidence",
+			Explanation:    []string{"Linked persisted score evidence."},
+		},
+		{
+			EventID:   "legacy-event",
+			EventType: "score.computed",
+			DeltaXP:   40,
+			CreatedAt: now.Add(-time.Hour),
+		},
+	})
+
+	if len(history) != 2 {
+		t.Fatalf("len(history) = %d, want 2", len(history))
+	}
+	linked := history[0]
+	if linked.ScoreVersion != "v1alpha1" || linked.FormulaVersion != "score-components/v1" {
+		t.Fatalf("score/formula version = %q/%q, want persisted versions", linked.ScoreVersion, linked.FormulaVersion)
+	}
+	if linked.PullRequestID != "pr-1" || linked.AnalysisID != "analysis-1" {
+		t.Fatalf("evidence ids = %q/%q, want PR and analysis IDs", linked.PullRequestID, linked.AnalysisID)
+	}
+	if linked.EvidenceState != "complete" || len(linked.EvidenceMissing) != 0 {
+		t.Fatalf("linked evidence = %q missing %+v, want complete", linked.EvidenceState, linked.EvidenceMissing)
+	}
+	if linked.PullRequest == nil || linked.PullRequest.Repository != "octo/repo" || linked.PullRequest.Number != 42 {
+		t.Fatalf("pull request reference = %+v, want octo/repo#42", linked.PullRequest)
+	}
+
+	legacy := history[1]
+	if legacy.EvidenceState != "partial" {
+		t.Fatalf("legacy evidence state = %q, want partial", legacy.EvidenceState)
+	}
+	if len(legacy.EvidenceMissing) != 4 {
+		t.Fatalf("legacy missing = %+v, want score, formula, PR, and analysis gaps", legacy.EvidenceMissing)
+	}
+}
+
 func TestPublicResponseMarksSkillEvidenceStale(t *testing.T) {
 	now := time.Date(2026, 5, 5, 13, 0, 0, 0, time.UTC)
 	snapshot := snapshotRecord{

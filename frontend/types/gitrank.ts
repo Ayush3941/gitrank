@@ -133,6 +133,13 @@ export interface PRBadgeUnlock {
 
 export interface Contribution {
   id: string;
+  scoreEventId?: string;
+  scoreVersion?: string;
+  formulaVersion?: string;
+  pullRequestId?: string;
+  analysisId?: string;
+  evidenceState?: "complete" | "partial";
+  evidenceMissing?: string[];
   owner: string;
   repo: string;
   number: number;
@@ -285,6 +292,13 @@ export interface RepositoryVisibility {
 
 export interface FeaturedContribution {
   id: string;
+  scoreEventId?: string;
+  scoreVersion?: string;
+  formulaVersion?: string;
+  pullRequestId?: string;
+  analysisId?: string;
+  evidenceState?: "complete" | "partial";
+  evidenceMissing?: string[];
   owner: string;
   repo: string;
   number: number;

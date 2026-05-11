@@ -17,6 +17,11 @@ export function ContributionList({ items }: { items: Contribution[] }) {
                 <span className="rounded-full border border-white/8 bg-white/5 px-3 py-1.5">{item.category}</span>
                 <span className="rounded-full border border-white/8 bg-white/5 px-3 py-1.5">{item.status}</span>
                 <span className="rounded-full border border-white/8 bg-white/5 px-3 py-1.5">{item.changedFilesCount} files changed</span>
+                {item.evidenceState ? (
+                  <span className="rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-primary">
+                    Evidence {item.evidenceState}
+                  </span>
+                ) : null}
               </div>
             </div>
             <div className="text-right">
@@ -33,7 +38,11 @@ export function ContributionList({ items }: { items: Contribution[] }) {
             </div>
           ) : (
             <div className="rounded-[1.75rem] border border-dashed border-white/12 bg-white/4 p-4 text-sm text-muted">
-              This live profile row comes from score-history evidence. Detailed PR metrics are shown only after a battle-report contract is available.
+              This live profile row comes from persisted score-history evidence. Formula version:{" "}
+              {item.formulaVersion || "not recorded"}.{" "}
+              {item.evidenceMissing?.length
+                ? `Missing evidence links: ${item.evidenceMissing.join(", ")}.`
+                : "Score event, PR, and analysis links are present."}
             </div>
           )}
           <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted">

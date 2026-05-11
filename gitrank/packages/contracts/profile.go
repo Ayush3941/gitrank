@@ -90,12 +90,18 @@ type PullRequestReference struct {
 }
 
 type ScoreHistoryEntry struct {
-	EventID     string                `json:"event_id"`
-	EventType   string                `json:"event_type"`
-	DeltaXP     int                   `json:"delta_xp"`
-	CreatedAt   time.Time             `json:"created_at"`
-	PullRequest *PullRequestReference `json:"pull_request,omitempty"`
-	Explanation []string              `json:"explanation,omitempty"`
+	EventID         string                `json:"event_id"`
+	EventType       string                `json:"event_type"`
+	DeltaXP         int                   `json:"delta_xp"`
+	CreatedAt       time.Time             `json:"created_at"`
+	ScoreVersion    string                `json:"score_version,omitempty"`
+	FormulaVersion  string                `json:"formula_version,omitempty"`
+	PullRequestID   string                `json:"pull_request_id,omitempty"`
+	AnalysisID      string                `json:"analysis_id,omitempty"`
+	EvidenceState   string                `json:"evidence_state,omitempty"`
+	EvidenceMissing []string              `json:"evidence_missing,omitempty"`
+	PullRequest     *PullRequestReference `json:"pull_request,omitempty"`
+	Explanation     []string              `json:"explanation,omitempty"`
 }
 
 type QuestEvidenceReference struct {
