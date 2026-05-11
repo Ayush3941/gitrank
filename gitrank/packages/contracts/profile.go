@@ -194,6 +194,18 @@ type PRReportSuggestedQuest struct {
 	EvidenceSignals []string `json:"evidence_signals,omitempty"`
 }
 
+type PRReportEvidenceState struct {
+	Status             string   `json:"status"`
+	Reasons            []string `json:"reasons,omitempty"`
+	MissingEvidence    []string `json:"missing_evidence,omitempty"`
+	AnalysisSource     string   `json:"analysis_source,omitempty"`
+	AnalysisConfidence float64  `json:"analysis_confidence,omitempty"`
+	DeterministicOnly  bool     `json:"deterministic_only,omitempty"`
+	AIFallback         bool     `json:"ai_fallback,omitempty"`
+	RateLimited        bool     `json:"rate_limited,omitempty"`
+	Stale              bool     `json:"stale,omitempty"`
+}
+
 type PullRequestReportResponse struct {
 	Contribution     PRReportContribution     `json:"contribution"`
 	BaseValue        int                      `json:"base_value"`
@@ -207,6 +219,7 @@ type PullRequestReportResponse struct {
 	BadgeUnlocks     []PRReportBadgeUnlock    `json:"badge_unlocks,omitempty"`
 	SuggestedQuestID string                   `json:"suggested_quest_id"`
 	SuggestedQuest   *PRReportSuggestedQuest  `json:"suggested_quest,omitempty"`
+	EvidenceState    PRReportEvidenceState    `json:"evidence_state"`
 	ScoreVersion     string                   `json:"score_version,omitempty"`
 	AnalysisVersion  string                   `json:"analysis_version,omitempty"`
 	SourceUpdatedAt  time.Time                `json:"source_updated_at"`

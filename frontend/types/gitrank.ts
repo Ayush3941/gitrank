@@ -170,6 +170,25 @@ export interface PullRequestAnalysis {
   badgeUnlocks: PRBadgeUnlock[];
   suggestedQuestId: string;
   suggestedQuest?: PRSuggestedQuest;
+  evidenceState: PREvidenceState;
+}
+
+export interface PREvidenceState {
+  status:
+    | "complete"
+    | "incomplete"
+    | "stale"
+    | "deterministic_only"
+    | "ai_fallback"
+    | "rate_limited";
+  reasons: string[];
+  missingEvidence: string[];
+  analysisSource?: string;
+  analysisConfidence?: number;
+  deterministicOnly: boolean;
+  aiFallback: boolean;
+  rateLimited: boolean;
+  stale: boolean;
 }
 
 export interface PRSuggestedQuest {

@@ -306,6 +306,17 @@ export const prAnalyses: PullRequestAnalysis[] = ayushProfile.contributions.map(
       : [],
   suggestedQuestId:
     contribution.category === "Documentation" ? "quest-maintainer-review" : "quest-security-review",
+  evidenceState: {
+    status: "deterministic_only",
+    reasons: ["Development-only preview fixture; production reports use live persisted evidence state."],
+    missingEvidence: [],
+    analysisSource: "deterministic",
+    analysisConfidence: contribution.status === "open" ? 0.78 : 0.92,
+    deterministicOnly: true,
+    aiFallback: false,
+    rateLimited: false,
+    stale: false,
+  },
 }));
 
 const baseLeaderboard: LeaderboardEntry[] = [

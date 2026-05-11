@@ -419,6 +419,7 @@ func pullRequestReportFromRecord(record pullRequestReportRecord, now time.Time) 
 	suggestedQuest := suggestedQuest(record, category, testSignal, reviewDepth)
 	scoreComponents := scoreComponentsForReport(record)
 	badgeUnlocks := badgeUnlocksForReport(record)
+	evidenceState := reportEvidenceState(record)
 
 	return contracts.PullRequestReportResponse{
 		Contribution: contracts.PRReportContribution{
@@ -457,11 +458,12 @@ func pullRequestReportFromRecord(record pullRequestReportRecord, now time.Time) 
 		BadgeUnlocks:     badgeUnlocks,
 		SuggestedQuestID: suggestedQuest.ID,
 		SuggestedQuest:   &suggestedQuest,
+		EvidenceState:    evidenceState,
 		ScoreVersion:     record.ScoreVersion,
 		AnalysisVersion:  record.AnalysisVersion,
 		SourceUpdatedAt:  latestTime(record.UpdatedAt, record.OccurredAt),
 		GeneratedAt:      now.UTC(),
-		IsStale:          record.ScoreEventID == "" || record.AnalysisID == "",
+		IsStale:          evidenceState.Stale,
 	}
 }
 
@@ -667,6 +669,74 @@ func reportEvidenceSignals(record pullRequestReportRecord) []string {
 		signals = append(signals, "score version "+record.ScoreVersion)
 	}
 	return compactStrings(signals)
+}
+
+func reportEvidenceState(record pullRequestReportRecord) contracts.PRReportEvidenceState {
+	missing := make([]string, 0, 3)
+	reasons := make([]string, 0, 5)
+	if strings.TrimSpace(record.AnalysisID) == "" {
+		missing = append(missing, "analysis")
+		reasons = append(reasons, "analysis has not been persisted")
+	}
+	if strings.TrimSpace(record.ScoreEventID) == "" {
+		missing = append(missing, "score_event")
+		reasons = append(reasons, "score event has not been persisted")
+	}
+	if record.FileCount == 0 {
+		missing = append(missing, "changed_files")
+		reasons = append(reasons, "changed-file evidence has not been persisted")
+	}
+
+	analysisSource := normalizeReportAnalysisSource(record.AnalysisSource)
+	deterministicOnly := analysisSource == "deterministic"
+	aiFallback := stringFromMap(record.ScoreMetadata, "fallback_reason") != "" || reportHasSignal(record, "ai fallback", "deterministic fallback", "fallback_reason")
+	rateLimited := boolFromMap(record.ScoreMetadata, "rate_limited") || reportHasSignal(record, "rate limited", "rate_limit", "github rate")
+	stale := strings.TrimSpace(record.AnalysisID) == "" || strings.TrimSpace(record.ScoreEventID) == ""
+
+	status := "complete"
+	switch {
+	case rateLimited:
+		status = "rate_limited"
+		reasons = append(reasons, "upstream rate-limit evidence is attached to this report")
+	case stale:
+		status = "stale"
+		reasons = append(reasons, "report is stale until analysis and scoring both complete")
+	case len(missing) > 0:
+		status = "incomplete"
+	case aiFallback:
+		status = "ai_fallback"
+		reasons = append(reasons, "AI-assisted analysis fell back to deterministic evidence")
+	case deterministicOnly:
+		status = "deterministic_only"
+		reasons = append(reasons, "analysis is deterministic-only; no AI enrichment is attached")
+	}
+
+	return contracts.PRReportEvidenceState{
+		Status:             status,
+		Reasons:            compactStrings(reasons),
+		MissingEvidence:    compactStrings(missing),
+		AnalysisSource:     analysisSource,
+		AnalysisConfidence: record.AIConfidence,
+		DeterministicOnly:  deterministicOnly,
+		AIFallback:         aiFallback,
+		RateLimited:        rateLimited,
+		Stale:              stale,
+	}
+}
+
+func normalizeReportAnalysisSource(source string) string {
+	switch strings.ToLower(strings.TrimSpace(source)) {
+	case "ai", "ai_assisted", "llm":
+		return "ai_assisted"
+	case "hybrid":
+		return "hybrid"
+	case "deterministic", "rules":
+		return "deterministic"
+	case "":
+		return "unknown"
+	default:
+		return strings.ToLower(strings.TrimSpace(source))
+	}
 }
 
 func firstReportExplanation(record pullRequestReportRecord) string {
@@ -923,6 +993,11 @@ func boolEntryFromMap(values map[string]any, key string) (bool, bool) {
 	}
 	typed, ok := value.(bool)
 	return typed, ok
+}
+
+func boolFromMap(values map[string]any, key string) bool {
+	value, ok := boolEntryFromMap(values, key)
+	return ok && value
 }
 
 func numberFromMap(values map[string]any, key string) float64 {

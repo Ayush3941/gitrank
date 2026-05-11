@@ -2,6 +2,7 @@ import type {
   Contribution,
   PRCategory,
   PRBadgeUnlock,
+  PREvidenceState,
   PullRequestAnalysis,
   ScoreBreakdown,
   ScoreComponent,
@@ -71,6 +72,18 @@ export type ApiPRReportSuggestedQuest = {
   evidence_signals?: string[];
 };
 
+export type ApiPRReportEvidenceState = {
+  status: PREvidenceState["status"];
+  reasons?: string[];
+  missing_evidence?: string[];
+  analysis_source?: string;
+  analysis_confidence?: number;
+  deterministic_only?: boolean;
+  ai_fallback?: boolean;
+  rate_limited?: boolean;
+  stale?: boolean;
+};
+
 export type ApiPRReportResponse = {
   contribution: ApiPRReportContribution;
   base_value: number;
@@ -84,6 +97,7 @@ export type ApiPRReportResponse = {
   badge_unlocks?: ApiPRReportBadgeUnlock[];
   suggested_quest_id: string;
   suggested_quest?: ApiPRReportSuggestedQuest;
+  evidence_state?: ApiPRReportEvidenceState;
 };
 
 type ApiErrorResponse = {
@@ -130,6 +144,7 @@ export function toPullRequestAnalysis(
     scoreComponents: (report.score_components ?? []).map(toScoreComponent),
     badgeUnlocks: (report.badge_unlocks ?? []).map(toBadgeUnlock),
     suggestedQuestId: report.suggested_quest_id,
+    evidenceState: toEvidenceState(report.evidence_state),
     suggestedQuest: report.suggested_quest
       ? {
           id: report.suggested_quest.id,
@@ -143,6 +158,20 @@ export function toPullRequestAnalysis(
           evidenceSignals: report.suggested_quest.evidence_signals ?? [],
         }
       : undefined,
+  };
+}
+
+function toEvidenceState(source?: ApiPRReportEvidenceState): PREvidenceState {
+  return {
+    status: source?.status ?? "incomplete",
+    reasons: source?.reasons ?? [],
+    missingEvidence: source?.missing_evidence ?? [],
+    analysisSource: source?.analysis_source,
+    analysisConfidence: source?.analysis_confidence,
+    deterministicOnly: source?.deterministic_only ?? false,
+    aiFallback: source?.ai_fallback ?? false,
+    rateLimited: source?.rate_limited ?? false,
+    stale: source?.stale ?? false,
   };
 }
 

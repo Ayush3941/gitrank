@@ -1161,7 +1161,7 @@ V2 scoring and evidence checklist:
 - [ ] Every quest reward must link to quest completion evidence and avoid rewarding unverified or duplicate work.
 - [ ] Every leaderboard rank must link to a season snapshot, rank movement event, score version, and freshness timestamp.
 - [x] Every skill claim must distinguish deterministic evidence, AI-assisted classification, confidence, and stale or partial states. Profile `top_skill_areas` now carry `evidence_source`, weighted `confidence`, and `evidence_state`, and frontend skill notes include that provenance instead of presenting skill labels as unsupported certainty.
-- [ ] PR battle reports must show when evidence is incomplete, stale, rate-limited, deterministic-only, or AI-fallback.
+- [x] PR battle reports must show when evidence is incomplete, stale, rate-limited, deterministic-only, or AI-fallback. The report contract now includes structured `evidence_state` flags and reasons, and the PR report UI renders the state, missing evidence, analysis source, and confidence from the live report payload.
 - [x] Score replay must be reproducible from stored evidence for a selected user, repository, date range, and formula version. `POST /v1/score/users/{user_id}/replay/verify` recomputes from persisted PR, analysis, file, review, and repository evidence, returns event-level score details, and does not mutate replay runs, score events, snapshots, or badge awards.
 - [ ] No AI output may directly write final scores; scoring remains deterministic and rule-based.
 

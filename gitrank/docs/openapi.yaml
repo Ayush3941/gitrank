@@ -1753,6 +1753,36 @@ components:
           type: array
           items:
             type: string
+    PRReportEvidenceState:
+      type: object
+      required: [status, deterministic_only, ai_fallback, rate_limited, stale]
+      properties:
+        status:
+          type: string
+          enum: [complete, incomplete, stale, deterministic_only, ai_fallback, rate_limited]
+        reasons:
+          type: array
+          items:
+            type: string
+        missing_evidence:
+          type: array
+          items:
+            type: string
+        analysis_source:
+          type: string
+        analysis_confidence:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 1
+        deterministic_only:
+          type: boolean
+        ai_fallback:
+          type: boolean
+        rate_limited:
+          type: boolean
+        stale:
+          type: boolean
     PullRequestReportResponse:
       type: object
       required:
@@ -1764,6 +1794,7 @@ components:
         - repo_bonus
         - ai_confidence
         - suggested_quest_id
+        - evidence_state
         - source_updated_at
         - generated_at
         - is_stale
@@ -1799,6 +1830,8 @@ components:
           type: string
         suggested_quest:
           $ref: "#/components/schemas/PRReportSuggestedQuest"
+        evidence_state:
+          $ref: "#/components/schemas/PRReportEvidenceState"
         score_version:
           type: string
         analysis_version:

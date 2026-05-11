@@ -27,6 +27,7 @@ func TestPullRequestReportFromRecordUsesPersistedScoreAndAnalysisEvidence(t *tes
 		UpdatedAt:       now.Add(-30 * time.Minute),
 		AnalysisID:      "analysis-1",
 		AnalysisVersion: "deterministic/v1",
+		AnalysisSource:  "deterministic",
 		Category:        "Testing",
 		AIConfidence:    0.91,
 		Summary:         "Added replay regression coverage.",
@@ -102,6 +103,12 @@ func TestPullRequestReportFromRecordUsesPersistedScoreAndAnalysisEvidence(t *tes
 	if report.IsStale {
 		t.Fatal("IsStale = true, want false with analysis and score event")
 	}
+	if report.EvidenceState.Status != "deterministic_only" || !report.EvidenceState.DeterministicOnly {
+		t.Fatalf("EvidenceState = %+v, want deterministic_only", report.EvidenceState)
+	}
+	if report.EvidenceState.AnalysisSource != "deterministic" || report.EvidenceState.AnalysisConfidence != 0.91 {
+		t.Fatalf("EvidenceState analysis = %q/%.2f, want deterministic/0.91", report.EvidenceState.AnalysisSource, report.EvidenceState.AnalysisConfidence)
+	}
 }
 
 func TestPullRequestReportFromRecordMarksUnscoredReportStale(t *testing.T) {
@@ -119,6 +126,9 @@ func TestPullRequestReportFromRecordMarksUnscoredReportStale(t *testing.T) {
 
 	if !report.IsStale {
 		t.Fatal("IsStale = false, want true without analysis and score event")
+	}
+	if report.EvidenceState.Status != "stale" || !containsString(report.EvidenceState.MissingEvidence, "analysis") || !containsString(report.EvidenceState.MissingEvidence, "score_event") {
+		t.Fatalf("EvidenceState = %+v, want stale with missing analysis and score_event", report.EvidenceState)
 	}
 	if len(report.Penalties) == 0 || report.Penalties[0].Label != "No persisted score event" {
 		t.Fatalf("penalties = %+v, want no persisted score event", report.Penalties)
