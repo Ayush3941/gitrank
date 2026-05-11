@@ -68,6 +68,7 @@ describe("live fixture frontend smoke coverage", () => {
 
     expect(await screen.findByText("Live PR fixture report")).toBeTruthy();
     expect(await screen.findByText("Live bounded diff summary from persisted evidence.")).toBeTruthy();
+    expect(await screen.findByText("Backed by live PR report evidence.")).toBeTruthy();
     expect(requestedPaths).toEqual(["/api/pr/octo/gitrank/42/report"]);
   });
 
@@ -323,6 +324,15 @@ const prReportFixture = {
     },
   ],
   suggested_quest_id: "quest-live-skill-sprint",
+  suggested_quest: {
+    id: "quest-live-skill-sprint",
+    title: "Live Skill Sprint",
+    description: "Complete one backend PR with review evidence.",
+    status: "active",
+    weak_area_target: "backend",
+    why_recommended: "Backed by live PR report evidence.",
+    evidence_signals: ["test_signal=74", "review_depth=66"],
+  },
 };
 
 const privateProfileFixture = {

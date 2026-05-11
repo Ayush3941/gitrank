@@ -144,6 +144,17 @@ export interface PullRequestAnalysis {
   aiConfidence: number;
   penalties: ScoreBreakdown[];
   suggestedQuestId: string;
+  suggestedQuest?: PRSuggestedQuest;
+}
+
+export interface PRSuggestedQuest {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  weakAreaTarget?: SkillCategory;
+  whyRecommended: string;
+  evidenceSignals: string[];
 }
 
 export interface Badge {

@@ -59,6 +59,9 @@ func TestPullRequestReportFromRecordUsesPersistedScoreAndAnalysisEvidence(t *tes
 	if !containsString(report.Contribution.EvidenceSignals, "4 changed-file feature records persisted") {
 		t.Fatalf("EvidenceSignals = %+v, want persisted feature signal", report.Contribution.EvidenceSignals)
 	}
+	if report.SuggestedQuest == nil || report.SuggestedQuest.ID == "" || report.SuggestedQuest.WhyRecommended == "" {
+		t.Fatalf("SuggestedQuest = %+v, want materialized suggested quest", report.SuggestedQuest)
+	}
 	if report.IsStale {
 		t.Fatal("IsStale = true, want false with analysis and score event")
 	}
@@ -82,6 +85,9 @@ func TestPullRequestReportFromRecordMarksUnscoredReportStale(t *testing.T) {
 	}
 	if len(report.Penalties) == 0 || report.Penalties[0].Label != "No persisted score event" {
 		t.Fatalf("penalties = %+v, want no persisted score event", report.Penalties)
+	}
+	if report.SuggestedQuest == nil || report.SuggestedQuest.ID != "quest-sync-first-evidence" {
+		t.Fatalf("SuggestedQuest = %+v, want sync-first-evidence for stale report", report.SuggestedQuest)
 	}
 }
 

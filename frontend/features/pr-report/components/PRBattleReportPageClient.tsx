@@ -49,6 +49,8 @@ export function PRBattleReportPageClient({
     );
   }
 
+  const suggestedQuest = data.suggestedQuest;
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -90,10 +92,22 @@ export function PRBattleReportPageClient({
               <Swords className="h-3.5 w-3.5" />
               Suggested next quest
             </div>
-            <h2 className="mt-3 text-2xl font-semibold text-white">Open the live quest board</h2>
+            <h2 className="mt-3 text-2xl font-semibold text-white">
+              {suggestedQuest?.title ?? "Open the live quest board"}
+            </h2>
             <p className="mt-2 text-sm text-muted">
-              Suggested quest key: {data.suggestedQuestId}. The quest board resolves this against the latest profile evidence.
+              {suggestedQuest?.whyRecommended ??
+                `Suggested quest key: ${data.suggestedQuestId}. The quest board resolves this against the latest profile evidence.`}
             </p>
+            {suggestedQuest?.evidenceSignals.length ? (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {suggestedQuest.evidenceSignals.slice(0, 3).map((signal) => (
+                  <span key={signal} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-200">
+                    {signal}
+                  </span>
+                ))}
+              </div>
+            ) : null}
           </div>
           <Button asChild variant="secondary">
             <Link href="/dashboard/quests">

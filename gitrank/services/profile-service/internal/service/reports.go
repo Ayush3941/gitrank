@@ -375,6 +375,7 @@ func pullRequestReportFromRecord(record pullRequestReportRecord, now time.Time) 
 			Reason:  "Requested changes are present and the PR is not merged yet.",
 		})
 	}
+	suggestedQuest := suggestedQuest(record, category, testSignal, reviewDepth)
 
 	return contracts.PullRequestReportResponse{
 		Contribution: contracts.PRReportContribution{
@@ -409,7 +410,8 @@ func pullRequestReportFromRecord(record pullRequestReportRecord, now time.Time) 
 		RepoBonus:        repoBonus,
 		AIConfidence:     record.AIConfidence,
 		Penalties:        penalties,
-		SuggestedQuestID: suggestedQuestID(record, category, testSignal, reviewDepth),
+		SuggestedQuestID: suggestedQuest.ID,
+		SuggestedQuest:   &suggestedQuest,
 		ScoreVersion:     record.ScoreVersion,
 		AnalysisVersion:  record.AnalysisVersion,
 		SourceUpdatedAt:  latestTime(record.UpdatedAt, record.OccurredAt),
@@ -587,17 +589,85 @@ func reportHasSignal(record pullRequestReportRecord, needles ...string) bool {
 	return false
 }
 
-func suggestedQuestID(record pullRequestReportRecord, category string, testSignal, reviewDepth int) string {
+func suggestedQuest(record pullRequestReportRecord, category string, testSignal, reviewDepth int) contracts.PRReportSuggestedQuest {
+	if record.ScoreEventID == "" || record.AnalysisID == "" {
+		return contracts.PRReportSuggestedQuest{
+			ID:             "quest-sync-first-evidence",
+			Title:          "Finish evidence sync",
+			Description:    "Complete analysis and scoring so this PR can produce verified progression evidence.",
+			Status:         "active",
+			WhyRecommended: "This report is stale or incomplete because persisted analysis or score evidence is missing.",
+			EvidenceSignals: compactStrings([]string{
+				"missing_analysis=" + boolText(record.AnalysisID == ""),
+				"missing_score_event=" + boolText(record.ScoreEventID == ""),
+			}),
+		}
+	}
 	if testSignal < 50 {
-		return "quest-regression-tests"
+		return contracts.PRReportSuggestedQuest{
+			ID:             "quest-regression-tests",
+			Title:          "Add regression proof",
+			Description:    "Turn the next similar PR into stronger evidence by adding or improving test coverage.",
+			Status:         "active",
+			WeakAreaTarget: "Testing",
+			WhyRecommended: fmt.Sprintf("This PR has a %d/100 test signal, so more regression evidence would improve confidence.", testSignal),
+			EvidenceSignals: compactStrings([]string{
+				fmt.Sprintf("test_signal=%d", testSignal),
+				fmt.Sprintf("test_files=%d", record.TestFiles),
+				fmt.Sprintf("changed_file_features=%d", record.FeatureCount),
+			}),
+		}
 	}
 	if reviewDepth < 50 {
-		return "quest-maintainer-review"
+		return contracts.PRReportSuggestedQuest{
+			ID:             "quest-maintainer-review",
+			Title:          "Earn maintainer review signal",
+			Description:    "Aim for explicit maintainer review, approval, or high-signal review discussion on the next contribution.",
+			Status:         "active",
+			WeakAreaTarget: "Review",
+			WhyRecommended: fmt.Sprintf("This PR has a %d/100 review-depth signal, so stronger review evidence would make the score easier to trust.", reviewDepth),
+			EvidenceSignals: compactStrings([]string{
+				fmt.Sprintf("review_depth=%d", reviewDepth),
+				fmt.Sprintf("reviews=%d", record.ReviewCount),
+				fmt.Sprintf("review_comments=%d", record.ReviewCommentCount),
+			}),
+		}
 	}
 	if strings.EqualFold(category, "Security") {
-		return "quest-performance-benchmark"
+		return contracts.PRReportSuggestedQuest{
+			ID:             "quest-performance-benchmark",
+			Title:          "Pair risk work with performance proof",
+			Description:    "For security-sensitive changes, add benchmark or runtime evidence when performance could be affected.",
+			Status:         "active",
+			WeakAreaTarget: "Performance",
+			WhyRecommended: "Security changes are stronger when their operational impact is bounded and explainable.",
+			EvidenceSignals: compactStrings([]string{
+				"category=Security",
+				fmt.Sprintf("changed_files=%d", maxInt(record.ChangedFiles, record.FileCount)),
+				fmt.Sprintf("diff_lines=%d", record.Additions+record.Deletions),
+			}),
+		}
 	}
-	return "quest-weak-lane-security"
+	return contracts.PRReportSuggestedQuest{
+		ID:             "quest-weak-lane-security",
+		Title:          "Strengthen a weak skill lane",
+		Description:    "Use the next contribution to add security, reliability, or edge-case evidence that broadens the profile.",
+		Status:         "active",
+		WeakAreaTarget: "Security",
+		WhyRecommended: "This PR already has enough test and review signal, so the next useful growth path is broader skill evidence.",
+		EvidenceSignals: compactStrings([]string{
+			"test_and_review_thresholds_met",
+			fmt.Sprintf("category=%s", category),
+			fmt.Sprintf("score_version=%s", firstNonEmpty(record.ScoreVersion, "unknown")),
+		}),
+	}
+}
+
+func boolText(value bool) string {
+	if value {
+		return "true"
+	}
+	return "false"
 }
 
 func firstNonEmpty(values ...string) string {

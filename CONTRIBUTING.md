@@ -1122,12 +1122,12 @@ V2 product contract checklist:
 - [x] Define `quest-service` or profile-owned quest contracts for active quests, completed quests, locked quests, quest recommendations, rewards, expiration, and evidence references.
 - [x] Add PostgreSQL migrations for quest definitions, user quest assignments, progress events, completion events, reward grants, and quest audit records.
 - [x] Expose authenticated quest routes through the gateway and frontend BFF instead of reading quests from `frontend/lib/api/mock-api.ts`.
-- [ ] Define a live PR battle-report read model with PR metadata, evidence signals, formula version, XP breakdown, penalties, badge unlocks, suggested next quest, stale state, and source timestamps. A first live read model and route now exist, and authenticated profiles now expose recent persisted PR reports for dashboard rendering. Badge-unlock details and exact materialized scorer breakdowns remain pending.
+- [ ] Define a live PR battle-report read model with PR metadata, evidence signals, formula version, XP breakdown, penalties, badge unlocks, suggested next quest, stale state, and source timestamps. A first live read model and route now exist, authenticated profiles now expose recent persisted PR reports for dashboard rendering, and PR reports now include a materialized suggested-next-quest object. Badge-unlock details and exact materialized scorer breakdowns remain pending.
 - [x] Add a PR report route through the gateway and frontend BFF so `/pr/[owner]/[repo]/[number]` never depends on mock data in production.
 - [ ] Add an orchestration path for `sync PR -> fetch bounded files/diff features -> analyze -> persist contribution_analyses -> score -> refresh profile -> materialize PR report`.
 - [x] Persist bounded changed-file metadata and derived diff features needed for scoring and explanation without storing full repository files.
 - [x] Add hard size, file-count, diff-hunk, token, and cost limits before any AI-assisted PR analysis call.
-- [ ] Add a live suggested-next-quest contract that derives from score gaps, weak skill lanes, stale data, and real contribution evidence. The live quest board now derives recommendations from weak skill lanes and profile evidence, but PR-report-level suggested-next-quest wiring and stale-state decisioning remain pending.
+- [x] Add a live suggested-next-quest contract that derives from score gaps, weak skill lanes, stale data, and real contribution evidence.
 - [x] Add account-level user preference storage for reduced gamification if the setting should follow a user across devices.
 - [x] Add an account data export endpoint and frontend flow that returns user-owned profile, score, badge, session, visibility, and audit data without leaking secrets or private code.
 

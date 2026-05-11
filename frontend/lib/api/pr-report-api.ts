@@ -3,6 +3,7 @@ import type {
   PRCategory,
   PullRequestAnalysis,
   ScoreBreakdown,
+  SkillCategory,
 } from "@/types/gitrank";
 
 export type ApiPRReportContribution = {
@@ -38,6 +39,16 @@ export type ApiScoreBreakdown = {
   reason: string;
 };
 
+export type ApiPRReportSuggestedQuest = {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  weak_area_target?: string;
+  why_recommended: string;
+  evidence_signals?: string[];
+};
+
 export type ApiPRReportResponse = {
   contribution: ApiPRReportContribution;
   base_value: number;
@@ -48,6 +59,7 @@ export type ApiPRReportResponse = {
   ai_confidence: number;
   penalties?: ApiScoreBreakdown[];
   suggested_quest_id: string;
+  suggested_quest?: ApiPRReportSuggestedQuest;
 };
 
 type ApiErrorResponse = {
@@ -90,6 +102,19 @@ export function toPullRequestAnalysis(report: ApiPRReportResponse): PullRequestA
     aiConfidence: report.ai_confidence,
     penalties: (report.penalties ?? []).map(toScoreBreakdown),
     suggestedQuestId: report.suggested_quest_id,
+    suggestedQuest: report.suggested_quest
+      ? {
+          id: report.suggested_quest.id,
+          title: report.suggested_quest.title,
+          description: report.suggested_quest.description,
+          status: report.suggested_quest.status,
+          weakAreaTarget: report.suggested_quest.weak_area_target
+            ? normalizeSkillCategory(report.suggested_quest.weak_area_target)
+            : undefined,
+          whyRecommended: report.suggested_quest.why_recommended,
+          evidenceSignals: report.suggested_quest.evidence_signals ?? [],
+        }
+      : undefined,
   };
 }
 
@@ -149,6 +174,25 @@ function normalizeCategory(value: string): PRCategory {
     frontend: "Backend",
     infrastructure: "Infrastructure",
     devops: "Infrastructure",
+    performance: "Performance",
+    review: "Review",
+    security: "Security",
+    testing: "Testing",
+    tests: "Testing",
+  };
+  return mapped[normalized] ?? "Backend";
+}
+
+function normalizeSkillCategory(value: string): SkillCategory {
+  const normalized = value.trim().toLowerCase();
+  const mapped: Record<string, SkillCategory> = {
+    architecture: "Architecture",
+    backend: "Backend",
+    documentation: "Documentation",
+    docs: "Documentation",
+    frontend: "Frontend",
+    infrastructure: "DevOps",
+    devops: "DevOps",
     performance: "Performance",
     review: "Review",
     security: "Security",

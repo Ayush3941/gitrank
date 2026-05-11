@@ -1680,6 +1680,26 @@ components:
           enum: [gain, penalty]
         reason:
           type: string
+    PRReportSuggestedQuest:
+      type: object
+      required: [id, title, description, status, why_recommended]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+        weak_area_target:
+          type: string
+        why_recommended:
+          type: string
+        evidence_signals:
+          type: array
+          items:
+            type: string
     PullRequestReportResponse:
       type: object
       required:
@@ -1716,6 +1736,8 @@ components:
             $ref: "#/components/schemas/PRReportScoreBreakdown"
         suggested_quest_id:
           type: string
+        suggested_quest:
+          $ref: "#/components/schemas/PRReportSuggestedQuest"
         score_version:
           type: string
         analysis_version:
