@@ -18,7 +18,13 @@ const (
 	defaultRepositorySyncPageSize = 20
 	defaultCommitSyncPageSize     = 50
 	defaultUserRepositoryLimit    = 10
+	defaultAuthoredPRSearchLimit  = 20
 )
+
+type authoredPullRequestTarget struct {
+	Repository string
+	Number     int
+}
 
 type Executor struct {
 	cfg                  config.App
@@ -222,8 +228,16 @@ func (e *Executor) SyncUser(
 	if user == "" {
 		return response, fmt.Errorf("user is required")
 	}
+	if !isValidGitHubLogin(user) {
+		return response, fmt.Errorf("user must be a GitHub login")
+	}
 
 	repositories, err := e.fetchUserRepositories(ctx, user)
+	if err != nil {
+		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, PersistResult{})
+		return response, err
+	}
+	authoredPullRequests, authoredSearchIncomplete, err := e.fetchAuthoredPullRequestTargets(ctx, user)
 	if err != nil {
 		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, PersistResult{})
 		return response, err
@@ -231,6 +245,10 @@ func (e *Executor) SyncUser(
 
 	aggregatePersisted := PersistResult{}
 	response.Fetched["repositories_selected"] = len(repositories)
+	response.Fetched["authored_pull_requests_selected"] = len(authoredPullRequests)
+	if authoredSearchIncomplete {
+		response.Fetched["authored_pull_request_search_incomplete"] = 1
+	}
 	baseCorrelationID := strings.TrimSpace(correlationID)
 	if baseCorrelationID == "" {
 		baseCorrelationID = "sync-user:" + user
@@ -245,6 +263,25 @@ func (e *Executor) SyncUser(
 			Mode:       "repository",
 			Repository: fullName,
 		}, actor, fmt.Sprintf("%s:repo:%d", baseCorrelationID, index+1), time.Now().UTC())
+		if err != nil {
+			response.FinishedAt = time.Now().UTC()
+			_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, aggregatePersisted)
+			return response, err
+		}
+		response.Fetched = mergeCountMaps(response.Fetched, child.Fetched)
+		response.Persisted = mergeCountMaps(response.Persisted, child.Persisted)
+		aggregatePersisted = addPersistResult(aggregatePersisted, persistResultFromCountMap(child.Persisted))
+	}
+
+	for index, target := range authoredPullRequests {
+		if target.Repository == "" || target.Number <= 0 {
+			continue
+		}
+		child, err := e.SyncPullRequest(ctx, contracts.SyncRequest{
+			Mode:       "pull_request",
+			Repository: target.Repository,
+			Number:     target.Number,
+		}, actor, fmt.Sprintf("%s:authored-pr:%d", baseCorrelationID, index+1), time.Now().UTC())
 		if err != nil {
 			response.FinishedAt = time.Now().UTC()
 			_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, aggregatePersisted)
@@ -938,7 +975,7 @@ func (e *Executor) recordFailedCommitSyncRun(
 func (e *Executor) fetchUserRepositories(ctx context.Context, user string) ([]map[string]any, error) {
 	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, defaultUserRepositoryLimit)
 	var repositories []map[string]any
-	_, err := e.client.GetJSON(ctx, fmt.Sprintf("/users/%s/repos", user), url.Values{
+	_, err := e.client.GetJSON(ctx, fmt.Sprintf("/users/%s/repos", url.PathEscape(user)), url.Values{
 		"type":      []string{"owner"},
 		"sort":      []string{"updated"},
 		"direction": []string{"desc"},
@@ -962,6 +999,80 @@ func (e *Executor) fetchUserRepositories(ctx context.Context, user string) ([]ma
 		filtered = append(filtered, repository)
 	}
 	return filtered, nil
+}
+
+func (e *Executor) fetchAuthoredPullRequestTargets(ctx context.Context, user string) ([]authoredPullRequestTarget, bool, error) {
+	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, defaultAuthoredPRSearchLimit)
+	result, _, err := githubapi.SearchIssuesAndPullRequests(ctx, e.client, githubapi.IssueSearchRequest{
+		Query:   fmt.Sprintf("author:%s type:pr archived:false", user),
+		Sort:    "updated",
+		Order:   "desc",
+		PerPage: perPage,
+	})
+	if err != nil {
+		return nil, false, err
+	}
+
+	targets := make([]authoredPullRequestTarget, 0, len(result.Items))
+	seen := make(map[string]struct{}, len(result.Items))
+	for _, item := range result.Items {
+		target, ok := authoredPullRequestTargetFromSearchItem(item)
+		if !ok {
+			continue
+		}
+		key := strings.ToLower(fmt.Sprintf("%s#%d", target.Repository, target.Number))
+		if _, exists := seen[key]; exists {
+			continue
+		}
+		seen[key] = struct{}{}
+		targets = append(targets, target)
+	}
+	return targets, result.IncompleteResults, nil
+}
+
+func authoredPullRequestTargetFromSearchItem(item githubapi.IssueSearchResultItem) (authoredPullRequestTarget, bool) {
+	if item.PullRequest == nil || item.Number <= 0 {
+		return authoredPullRequestTarget{}, false
+	}
+	if item.Repository != nil {
+		if item.Repository.Private || item.Repository.Archived || item.Repository.Disabled {
+			return authoredPullRequestTarget{}, false
+		}
+		if repository := strings.TrimSpace(item.Repository.FullName); repository != "" {
+			if _, _, err := splitRepositoryFullName(repository); err == nil {
+				return authoredPullRequestTarget{Repository: repository, Number: item.Number}, true
+			}
+		}
+	}
+	repository, ok := repositoryFullNameFromRepositoryURL(item.RepositoryURL)
+	if !ok {
+		return authoredPullRequestTarget{}, false
+	}
+	return authoredPullRequestTarget{Repository: repository, Number: item.Number}, true
+}
+
+func repositoryFullNameFromRepositoryURL(rawURL string) (string, bool) {
+	parsed, err := url.Parse(strings.TrimSpace(rawURL))
+	if err != nil {
+		return "", false
+	}
+	segments := strings.Split(strings.Trim(parsed.Path, "/"), "/")
+	for index, segment := range segments {
+		if segment != "repos" || index+2 >= len(segments) {
+			continue
+		}
+		owner, ownerErr := url.PathUnescape(segments[index+1])
+		name, nameErr := url.PathUnescape(segments[index+2])
+		if ownerErr != nil || nameErr != nil {
+			return "", false
+		}
+		repository := strings.TrimSpace(owner) + "/" + strings.TrimSpace(name)
+		if _, _, err := splitRepositoryFullName(repository); err != nil {
+			return "", false
+		}
+		return repository, true
+	}
+	return "", false
 }
 
 func (e *Executor) fetchPullRequest(ctx context.Context, owner, name string, number int) (map[string]any, error) {
@@ -1152,6 +1263,32 @@ func splitRepositoryFullName(fullName string) (string, string, error) {
 		return "", "", fmt.Errorf("repository must be in owner/name form")
 	}
 	return parts[0], parts[1], nil
+}
+
+func isValidGitHubLogin(login string) bool {
+	login = strings.TrimSpace(login)
+	if len(login) == 0 || len(login) > 39 {
+		return false
+	}
+	if login[0] == '-' || login[len(login)-1] == '-' {
+		return false
+	}
+	for _, r := range login {
+		if r >= 'a' && r <= 'z' {
+			continue
+		}
+		if r >= 'A' && r <= 'Z' {
+			continue
+		}
+		if r >= '0' && r <= '9' {
+			continue
+		}
+		if r == '-' {
+			continue
+		}
+		return false
+	}
+	return true
 }
 
 func boundedPageSize(configured, fallback int) int {

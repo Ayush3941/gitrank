@@ -71,7 +71,7 @@ run_go_test ./packages/githubapi 'Test(BuildAuthorizeURL|ExchangeUserAccessToken
 run_go_test ./packages/authkit 'Test(StateTokenRoundTrip|SameSiteAndCookies)$'
 run_go_test ./services/api-gateway/internal/httpapi 'Test(SyncRouteDefaultsToAuthenticatedGitHubLogin|PublicProfileRoutePassesThroughPublicProfileContract)$'
 run_go_test ./services/github-ingestor/internal/httpapi 'TestWebhookAcceptedAndDeduplicated$'
-run_go_test ./services/github-ingestor/internal/service 'Test(PersistWebhookNormalizesEntitiesIdempotently|ExecutorSyncRepositoryFetchesAndPersistsBoundedRepositoryData|ExecutorSyncPullRequestFetchesAndPersistsBoundedPullRequestData)$'
+run_go_test ./services/github-ingestor/internal/service 'Test(PersistWebhookNormalizesEntitiesIdempotently|ExecutorSyncRepositoryFetchesAndPersistsBoundedRepositoryData|ExecutorSyncUserFetchesOwnedRepositoriesAndAuthoredPullRequests|ExecutorSyncPullRequestFetchesAndPersistsBoundedPullRequestData)$'
 run_go_test ./services/pr-analyzer/internal/httpapi 'TestAnalyzePullRequestReturnsValidatedEnvelope$'
 run_go_test ./services/scoring-engine/internal/scoring 'TestScoreMergedSecurityContribution$'
 run_go_test ./services/scoring-engine/internal/service 'TestReplayUserPersistsLedgerAndSnapshot$'

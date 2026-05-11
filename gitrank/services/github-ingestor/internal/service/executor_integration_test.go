@@ -228,7 +228,7 @@ func TestExecutorSyncRepositoryFetchesAndPersistsBoundedRepositoryData(t *testin
 	}
 }
 
-func TestExecutorSyncUserFetchesRecentOwnedRepositories(t *testing.T) {
+func TestExecutorSyncUserFetchesOwnedRepositoriesAndAuthoredPullRequests(t *testing.T) {
 	databaseURL := strings.TrimSpace(os.Getenv("GITRANK_INGESTOR_DATABASE_URL"))
 	if databaseURL == "" {
 		t.Skip("GITRANK_INGESTOR_DATABASE_URL is not set")
@@ -269,6 +269,24 @@ func TestExecutorSyncUserFetchesRecentOwnedRepositories(t *testing.T) {
 					},
 				},
 			})
+		case "/search/issues":
+			query := r.URL.Query()
+			if got := query.Get("q"); got != "author:octocat type:pr archived:false" {
+				t.Fatalf("q = %q, want authored PR search", got)
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"total_count":        1,
+				"incomplete_results": false,
+				"items": []map[string]any{
+					{
+						"number":         11,
+						"repository_url": "https://api.github.com/repos/octo/contrib",
+						"pull_request": map[string]any{
+							"url": "https://api.github.com/repos/octo/contrib/pulls/11",
+						},
+					},
+				},
+			})
 		case "/repos/octo/repo":
 			_ = json.NewEncoder(w).Encode(map[string]any{
 				"id":                101,
@@ -286,6 +304,25 @@ func TestExecutorSyncUserFetchesRecentOwnedRepositories(t *testing.T) {
 				"owner": map[string]any{
 					"login": "octocat",
 					"type":  "User",
+				},
+			})
+		case "/repos/octo/contrib":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id":                102,
+				"name":              "contrib",
+				"full_name":         "octo/contrib",
+				"private":           false,
+				"fork":              false,
+				"language":          "TypeScript",
+				"default_branch":    "main",
+				"stargazers_count":  80,
+				"forks_count":       9,
+				"open_issues_count": 5,
+				"archived":          false,
+				"disabled":          false,
+				"owner": map[string]any{
+					"login": "octo",
+					"type":  "Organization",
 				},
 			})
 		case "/repos/octo/repo/pulls":
@@ -319,6 +356,43 @@ func TestExecutorSyncUserFetchesRecentOwnedRepositories(t *testing.T) {
 			})
 		case "/repos/octo/repo/pulls/7/reviews":
 			_ = json.NewEncoder(w).Encode([]map[string]any{})
+		case "/repos/octo/contrib/pulls/11":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id":            211,
+				"number":        11,
+				"title":         "fix: external contribution",
+				"state":         "closed",
+				"draft":         false,
+				"merged_at":     "2026-05-07T12:00:00Z",
+				"created_at":    "2026-05-07T09:00:00Z",
+				"updated_at":    "2026-05-07T12:00:00Z",
+				"closed_at":     "2026-05-07T12:00:00Z",
+				"changed_files": 1,
+				"additions":     8,
+				"deletions":     2,
+				"commits":       1,
+				"user": map[string]any{
+					"id":    501,
+					"login": "octocat",
+				},
+				"base": map[string]any{"ref": "main"},
+				"head": map[string]any{"ref": "fix/external"},
+			})
+		case "/repos/octo/contrib/pulls/11/reviews":
+			_ = json.NewEncoder(w).Encode([]map[string]any{})
+		case "/repos/octo/contrib/pulls/11/comments":
+			_ = json.NewEncoder(w).Encode([]map[string]any{})
+		case "/repos/octo/contrib/pulls/11/files":
+			_ = json.NewEncoder(w).Encode([]map[string]any{
+				{
+					"filename":  "src/external.ts",
+					"status":    "modified",
+					"additions": 8,
+					"deletions": 2,
+					"changes":   10,
+					"patch":     "@@ -1 +1 @@\n-old\n+new",
+				},
+			})
 		case "/repos/octo/repo/issues":
 			_ = json.NewEncoder(w).Encode([]map[string]any{
 				{
@@ -397,8 +471,17 @@ func TestExecutorSyncUserFetchesRecentOwnedRepositories(t *testing.T) {
 	if result.Fetched["repositories_selected"] != 1 {
 		t.Fatalf("Fetched[repositories_selected] = %d, want 1", result.Fetched["repositories_selected"])
 	}
-	if result.Persisted["repositories"] != 1 {
-		t.Fatalf("Persisted[repositories] = %d, want 1", result.Persisted["repositories"])
+	if result.Fetched["authored_pull_requests_selected"] != 1 {
+		t.Fatalf("Fetched[authored_pull_requests_selected] = %d, want 1", result.Fetched["authored_pull_requests_selected"])
+	}
+	if result.Persisted["repositories"] != 2 {
+		t.Fatalf("Persisted[repositories] = %d, want 2", result.Persisted["repositories"])
+	}
+	if result.Persisted["pull_requests"] != 2 {
+		t.Fatalf("Persisted[pull_requests] = %d, want 2", result.Persisted["pull_requests"])
+	}
+	if result.Persisted["pull_request_files"] != 1 {
+		t.Fatalf("Persisted[pull_request_files] = %d, want 1", result.Persisted["pull_request_files"])
 	}
 
 	var requestedUser string

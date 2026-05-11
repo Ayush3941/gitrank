@@ -741,7 +741,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 - Kubernetes deployment rollback workflow support plus a local `make verify-rollback-procedure` check for manifest rendering and rollback wiring
 - environment-separated ExternalSecret examples plus key-ring-aware auth/token secret rotation runbooks verified by `make verify-secret-policy`
 - local verification Makefile targets pass `TMPDIR` through so manifest render checks do not depend on limited system `/tmp` space
-- a bounded live user sync execution path that walks recent public repositories owned by a GitHub login and persists them through the repository executor in `github-ingestor`
+- a bounded live user sync execution path that walks recent public repositories owned by a GitHub login, discovers recent authored public PRs through GitHub issue/PR search, and persists those concrete PR targets through the same repository and PR executors in `github-ingestor`
 - a bounded installation sync execution path that replays repositories already associated with a persisted installation record and delegates them through the repository executor without requiring GitHub App installation auth in the v1 baseline
 - a bounded live repository sync execution path that fetches recent repository, PR, review, issue, and commit data from the public GitHub REST API and persists it directly through `github-ingestor`
 - a bounded live pull-request sync execution path that fetches one public PR plus its reviews and review comments and persists them directly through `github-ingestor`
@@ -768,7 +768,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 
 Major gaps remain:
 
-- no external worker backend yet; scheduler-worker persistent mode now uses dedicated PostgreSQL tables for jobs, dead letters, backfill plans, rate-limit windows, and scheduler counters, but only bounded `sync.installation`, `sync.repository`, owned-repository `sync.user_history`, direct `sync.pull_request`, PR-surface `sync.review`, direct `sync.issue`, and direct `sync.commit` jobs currently auto-execute inside `scheduler-worker`
+- no external worker backend yet; scheduler-worker persistent mode now uses dedicated PostgreSQL tables for jobs, dead letters, backfill plans, rate-limit windows, and scheduler counters, but only bounded `sync.installation`, `sync.repository`, authored-PR-aware `sync.user_history`, direct `sync.pull_request`, PR-surface `sync.review`, direct `sync.issue`, and direct `sync.commit` jobs currently auto-execute inside `scheduler-worker`
 - PR report pages now use a live read model with report-level suggested quest guidance, authenticated profiles expose recent persisted PR reports for dashboard rendering, and direct PR sync persists bounded changed-file metadata, derived file/diff features, and public patch excerpts for report evidence. The report still depends on analysis and score events already being persisted; exact scorer-component materialization, badge-unlock details, and full pipeline orchestration remain pending. Quests now use a live profile-owned read model and have persistence tables for definitions, assignments, progress events, completions, rewards, and audit events, but assignment/reward writers are still pending
 - live GitHub repository controls still need to be applied with `make apply-github-repository-controls` or GitHub settings, then verified with `make verify-github-repository-controls`
 - no deployed tracing backend or observability stack yet; dashboards and alert rules are committed, and `gitrank/docs/runbooks/production-observability.md` defines the live verification path
@@ -778,6 +778,7 @@ Major gaps remain:
 V2 direction:
 
 - replace every production mock, demo-only product path, and derived-only product claim with real backend contracts, persistence, orchestration, and verification
+- user sync now supplements owned-repository traversal with bounded authored-PR discovery, so real public PRs in repositories the user does not own can enter the persisted PR evidence path
 - frontend CI now includes a live-fixture smoke suite that renders dashboard, quests, PR reports, profile, leaderboard, and settings without using frontend mock API functions
 - newly replayed PR battle reports expose persisted scoring-engine formula components instead of relying only on profile-side display heuristics
 - newly replayed badge awards carry bounded PR evidence references so PR reports can show real badge unlocks

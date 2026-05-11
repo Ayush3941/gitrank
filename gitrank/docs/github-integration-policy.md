@@ -33,6 +33,7 @@ Use GitHub REST when:
 
 - webhook payloads map directly to REST resource identities
 - pagination over resource collections is straightforward
+- bounded user sync needs a public authored-PR discovery pass through issue/PR search before hydrating concrete PRs
 - conditional requests or ETag support are useful
 
 Use GitHub GraphQL when:
@@ -56,6 +57,7 @@ Avoid mixing both within the same hot path unless there is a measured reason.
 - re-sync and backfill must key writes by stable GitHub identifiers
 - replay must be idempotent
 - duplicate webhook deliveries must not create duplicate evidence or scores
+- user-history sync may discover concrete `owner/repo#number` targets through GitHub issue/PR search, but hydration and scoring evidence still flow through the normal PR persistence path
 
 ## Future Upgrade Boundary
 

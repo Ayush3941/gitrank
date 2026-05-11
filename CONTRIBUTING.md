@@ -482,7 +482,7 @@ Current preview state:
 - webhook delivery deduplication and requeue state persist in PostgreSQL when `DATABASE_URL` is configured
 - webhook-driven repository, PR, review, issue, label, commit, installation, and sync-run entities persist idempotently in PostgreSQL when `DATABASE_URL` is configured
 - `POST /v1/sync/repository/execute` now performs a bounded live repository sync against the public GitHub REST API and persists repository, pull request, review, issue, and commit data directly
-- `POST /v1/sync/user/execute` now performs a bounded live user sync by walking recent public repositories owned by the requested GitHub login and delegating to the repository executor
+- `POST /v1/sync/user/execute` now performs a bounded live user sync by walking recent public repositories owned by the requested GitHub login, discovering recent authored public PRs through GitHub issue/PR search, and delegating concrete repositories and PRs to the existing repository and PR executors
 - `POST /v1/sync/installation/execute` now replays repositories already associated with a persisted installation record and delegates each repository to the bounded repository executor without requiring GitHub App installation auth in the v1 baseline
 - `POST /v1/sync/pull-request/execute` now performs a bounded live pull-request sync and persists the PR, bounded changed-file metadata, public patch excerpts, reviews, and review comments directly
 - `POST /v1/sync/review/execute` now performs a bounded live review sync by refreshing the review surface for one PR number and persisting bounded changed-file metadata, public patch excerpts, reviews, and review comments directly
@@ -624,7 +624,7 @@ Current preview state:
 - queue inspection supports filters for user, repository, installation, status, type, subject, and correlation ID
 - the in-process worker can execute bounded `sync.installation`, `sync.repository`, `sync.user_history`, `sync.pull_request`, `sync.review`, `sync.issue`, and `sync.commit` jobs through `github-ingestor`, with completion, retry, and dead-letter behavior surfaced on the scheduler queue
 - bounded installation execution currently means replaying repositories already associated with a persisted installation record, not discovering repositories from live GitHub App installation APIs
-- bounded user execution currently means recent public repositories owned by the requested GitHub login, not a full cross-repository authored-PR search
+- bounded user execution currently means recent public owned repositories plus recent public authored PRs discoverable through GitHub issue/PR search, not a full GitHub-wide historical contribution backfill
 - bounded review execution currently means "refresh the reviews and review comments for one PR number", not a review-id-specific sync
 - manual worker execution is exposed through `POST /v1/jobs/run-once`
 - queue jobs, dead letters, recurring plans, rate-limit windows, and scheduler counters persist in dedicated PostgreSQL tables when `DATABASE_URL` is configured, and persistent mode serializes multi-instance leases, ticks, and control-plane mutations through the shared counters row
@@ -1104,7 +1104,7 @@ Known v1 limitations:
 - The marketing landing page uses a dedicated sample fixture that is separate from authenticated user data. The dashboard top bar and onboarding reveal now read the authenticated profile through the live profile BFF, and unused feature-local mock re-exports have been removed.
 - The live PR ingestion path can persist bounded PR metadata, changed-file metadata, public patch excerpts, reviews, and review comments, and the scoring engine can now verify deterministic score replay over selected persisted evidence without writing new score state. There is still no seamless production pipeline that turns one synced PR into diff-derived features, a stored `contribution_analyses` record, score events, profile refresh, and a live battle report in one user-facing flow.
 - Direct live PR sync now fetches `/pulls/{number}/files` and stores bounded file metadata, public patch excerpts, and derived file/diff features without full repository files. Downstream analysis/scoring orchestration still remains pending.
-- User sync is bounded to recent public repositories owned by the requested GitHub login, not a full authored-PR search across every public repository, fork, organization, or contribution surface where the user has participated.
+- User sync is bounded to recent public repositories owned by the requested GitHub login plus recent public authored PRs discoverable through GitHub issue/PR search. It is not yet a full historical contribution search across every public repository, fork, organization, issue, commit, review, or discussion surface where the user has participated.
 - Private repositories remain out of scope for scoring and analysis.
 - GitHub OAuth is the only v1 identity path; GitHub App installation support is deferred, limiting webhook scale, organization installation sync, and deeper repository access.
 - Scheduler execution is still bounded and in-process; there is no separate production worker fleet for all long-running sync, analysis, scoring, profile, and notification work.
@@ -1133,7 +1133,7 @@ V2 product contract checklist:
 
 V2 ingestion and coverage checklist:
 
-- [ ] Replace owned-repository-only user sync with a bounded authored-PR discovery strategy for public repositories where GitHub APIs expose the user's contributions.
+- [x] Replace owned-repository-only user sync with a bounded authored-PR discovery strategy for public repositories where GitHub APIs expose the user's contributions. User sync now runs a bounded `author:<login> type:pr archived:false` GitHub Search query, dedupes `owner/repo#number` targets, skips private/archived/disabled repository results when exposed by the API, sends each concrete PR through the persisted direct PR sync path, and is covered by the Docker-backed critical-path flow test script.
 - [ ] Add GitHub App support for installation-scoped repository sync, organization-scale webhooks, and more reliable repository inventory.
 - [ ] Keep OAuth for sign-in and account linking while using GitHub App installation permissions for scalable ingestion where users or organizations opt in.
 - [x] Add direct PR file-list fetching for live PR sync and store only approved bounded metadata or public diff excerpts.

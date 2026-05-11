@@ -152,6 +152,106 @@ func TestExecutorFetchPullRequestFilesUsesBoundedRESTEndpoint(t *testing.T) {
 	}
 }
 
+func TestExecutorFetchAuthoredPullRequestTargetsUsesGitHubSearch(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/search/issues" {
+			t.Fatalf("path = %q, want /search/issues", r.URL.Path)
+		}
+		query := r.URL.Query()
+		if got := query.Get("q"); got != "author:alice type:pr archived:false" {
+			t.Fatalf("q = %q, want authored PR search", got)
+		}
+		if query.Get("sort") != "updated" || query.Get("order") != "desc" {
+			t.Fatalf("sort/order = %q/%q, want updated/desc", query.Get("sort"), query.Get("order"))
+		}
+		if query.Get("per_page") != "9" {
+			t.Fatalf("per_page = %q, want 9", query.Get("per_page"))
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"total_count":        5,
+			"incomplete_results": true,
+			"items": []map[string]any{
+				{
+					"number": 12,
+					"pull_request": map[string]any{
+						"url": "https://api.github.com/repos/octo/external/pulls/12",
+					},
+					"repository": map[string]any{
+						"full_name": "octo/external",
+						"private":   false,
+					},
+				},
+				{
+					"number":         12,
+					"repository_url": "https://api.github.com/repos/octo/external",
+					"pull_request": map[string]any{
+						"url": "https://api.github.com/repos/octo/external/pulls/12",
+					},
+				},
+				{
+					"number":         7,
+					"repository_url": "https://api.github.com/repos/team/utility",
+					"pull_request": map[string]any{
+						"url": "https://api.github.com/repos/team/utility/pulls/7",
+					},
+				},
+				{
+					"number":         55,
+					"repository_url": "https://api.github.com/repos/team/issue-only",
+				},
+				{
+					"number": 8,
+					"pull_request": map[string]any{
+						"url": "https://api.github.com/repos/private/repo/pulls/8",
+					},
+					"repository": map[string]any{
+						"full_name": "private/repo",
+						"private":   true,
+					},
+				},
+			},
+		})
+	}))
+	defer server.Close()
+
+	client, err := githubapi.NewRESTClient(githubapi.ClientConfig{
+		BaseURL:          server.URL,
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		HTTPClient:       server.Client(),
+		SecondaryBackoff: time.Millisecond,
+		MaxConcurrency:   1,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	executor := NewExecutor(config.App{
+		GitHub: config.GitHub{
+			MaxPageSize: 9,
+		},
+	}, nil, client)
+
+	targets, incomplete, err := executor.fetchAuthoredPullRequestTargets(context.Background(), "alice")
+	if err != nil {
+		t.Fatalf("fetchAuthoredPullRequestTargets() error = %v", err)
+	}
+	if !incomplete {
+		t.Fatal("incomplete = false, want GitHub search incompleteness surfaced")
+	}
+	if len(targets) != 2 {
+		t.Fatalf("targets len = %d, want 2 after dedupe and filtering: %+v", len(targets), targets)
+	}
+	if targets[0] != (authoredPullRequestTarget{Repository: "octo/external", Number: 12}) {
+		t.Fatalf("first target = %+v, want octo/external#12", targets[0])
+	}
+	if targets[1] != (authoredPullRequestTarget{Repository: "team/utility", Number: 7}) {
+		t.Fatalf("second target = %+v, want team/utility#7", targets[1])
+	}
+}
+
 func TestSanitizedPullRequestFilePayloadBoundsPatchAndDropsContents(t *testing.T) {
 	longPatch := strings.Repeat("a", maxStoredPullRequestFilePatchBytes+20)
 	file := map[string]any{

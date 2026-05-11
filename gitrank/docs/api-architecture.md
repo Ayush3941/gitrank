@@ -233,7 +233,7 @@ Current state:
 - webhook delivery deduplication and requeue state persist in PostgreSQL when `DATABASE_URL` is configured
 - webhook-driven repository, PR, review, issue, label, commit, installation, and sync-run entities persist idempotently in PostgreSQL when `DATABASE_URL` is configured
 - `POST /v1/sync/installation/execute` replays repositories already associated with a persisted installation record and delegates them through the bounded repository executor without requiring GitHub App installation auth in the v1 baseline
-- `POST /v1/sync/user/execute` performs a bounded live user sync by walking recent public repositories owned by the requested GitHub login and delegating to the repository executor
+- `POST /v1/sync/user/execute` performs a bounded live user sync by walking recent public repositories owned by the requested GitHub login, discovering recent public PRs authored by that login through GitHub issue/PR search, and delegating concrete repositories and PRs to the repository and PR executors
 - `POST /v1/sync/repository/execute` performs a bounded live repository sync through the public GitHub REST API and persists repository, pull request, review, issue, and commit data in PostgreSQL
 - `POST /v1/sync/pull-request/execute` performs a bounded live pull-request sync and persists the PR, its reviews, and its review comments in PostgreSQL
 - `POST /v1/sync/review/execute` performs a bounded live review sync by refreshing the review surface for one PR number and persists its reviews and review comments in PostgreSQL
@@ -370,7 +370,7 @@ Current state:
 - the in-process worker can execute ready `sync.issue` jobs by calling `github-ingestor /v1/sync/issue/execute`
 - the in-process worker can execute ready `sync.commit` jobs by calling `github-ingestor /v1/sync/commit/execute`
 - bounded installation execution currently means replaying repositories already associated with a persisted installation record, not discovering repositories from live GitHub App installation APIs
-- bounded user execution currently means recent public repositories owned by the requested GitHub login, not a full authored-PR history search
+- bounded user execution currently means recent public owned repositories plus recent public authored PRs discoverable through GitHub issue/PR search, not a full historical search across every contribution surface
 - bounded review execution currently means "refresh the reviews and review comments for one PR number", not a review-id-specific sync
 - retries apply exponential backoff before the next eligible lease
 - poison jobs move into a dead-letter queue and can be manually replayed
