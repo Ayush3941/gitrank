@@ -1101,7 +1101,7 @@ Known v1 limitations:
 - The public PR battle-report route now reads a live gateway/BFF contract backed by persisted public PR, analysis, score-event, file, and review evidence. It still reports stale/unscored state when analysis or scoring has not completed.
 - The dashboard recent battle reports panel still does not list live PR reports from the profile API; detailed reports are available by direct PR report URL.
 - The frontend keeps `?demo=` preview states for design inspection, but they are disabled in production by default and only resolve when `NODE_ENV !== "production"` or `GITRANK_ENABLE_DEMO_PREVIEWS=true` is set.
-- Marketing, onboarding reveal, and feature-local data exports still import the static sample profile or mock datasets. The dashboard top bar now reads the authenticated profile through the live profile BFF.
+- The marketing landing page still imports an isolated sample card from the mock dataset. The dashboard top bar and onboarding reveal now read the authenticated profile through the live profile BFF, and unused feature-local mock re-exports have been removed.
 - The live PR ingestion path can persist bounded PR metadata, changed-file metadata, public patch excerpts, reviews, and review comments, but there is no seamless production pipeline that turns one synced PR into diff-derived features, a stored `contribution_analyses` record, score events, profile refresh, and a live battle report in one user-facing flow.
 - Direct live PR sync now fetches `/pulls/{number}/files` and stores bounded file metadata or public patch excerpts without full repository files. Diff-hunk feature extraction and downstream analysis/scoring orchestration still remain pending.
 - User sync is bounded to recent public repositories owned by the requested GitHub login, not a full authored-PR search across every public repository, fork, organization, or contribution surface where the user has participated.
@@ -1148,10 +1148,10 @@ V2 frontend no-mock checklist:
 - [x] Remove production imports from `frontend/lib/api/mock-api.ts` for dashboard, quests, PR reports, leaderboard, profile, settings, badges, and contributions. Preview-only mock access is isolated behind `frontend/lib/demo/preview-api.ts`, and `?demo=` is production-disabled by default.
 - [x] Gate `?demo=` preview modes behind a development-only flag or move them to test/storybook fixtures.
 - [x] Make the dashboard top bar read the authenticated profile instead of `ayushProfile`.
-- [ ] Make onboarding reveal use the authenticated user's real post-sync profile or a clearly marked development-only sample route.
-- [ ] Make marketing sample data isolated from production app routes and impossible to confuse with signed-in user data.
-- [ ] Replace `features/*/data` mock exports with live repositories, typed fixtures for tests, or removed files.
-- [ ] Add a CI check that fails if production app, hook, feature, or API modules import `frontend/lib/mock-data/gitrank.ts` or `frontend/lib/api/mock-api.ts`.
+- [x] Make onboarding reveal use the authenticated user's real post-sync profile or a clearly marked development-only sample route.
+- [ ] Make marketing sample data isolated from production app routes and impossible to confuse with signed-in user data. The remaining marketing sample import is allowlisted by the production mock-import check until a dedicated sample fixture replaces it.
+- [x] Replace `features/*/data` mock exports with live repositories, typed fixtures for tests, or removed files.
+- [x] Add a CI check that fails if production app, hook, feature, or API modules import `frontend/lib/mock-data/gitrank.ts` or `frontend/lib/api/mock-api.ts`.
 - [ ] Add Playwright or equivalent smoke coverage proving quests, PR reports, dashboard, profile, leaderboard, and settings render from live test fixtures rather than mock API functions.
 
 V2 scoring and evidence checklist:

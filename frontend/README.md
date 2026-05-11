@@ -54,6 +54,7 @@ npm run dev
 
 ```bash
 npm run lint
+npm run check:no-production-mocks
 npm run build
 ```
 
@@ -63,7 +64,7 @@ The root GitHub Actions workflows run the same lint/build checks plus repo-wide 
 
 Quest screens now read the live `GET /v1/me/quests` contract through the frontend BFF when no demo query param is present. PR-report screens now read the live `GET /v1/pr/{owner}/{repo}/{number}/report` contract through the frontend BFF when no demo query param is present.
 
-The public profile page, authenticated dashboard overview, badge shelf, contribution drill-down, leaderboard, and dashboard settings page now use live profile data when no demo query param is present:
+The public profile page, authenticated dashboard overview, onboarding reveal, badge shelf, contribution drill-down, leaderboard, and dashboard settings page now use live profile data when no demo query param is present:
 
 - browser queries call frontend BFF routes under `app/api/profile/*`
 - quest queries call the frontend BFF route at `app/api/profile/me/quests`
@@ -73,6 +74,7 @@ The public profile page, authenticated dashboard overview, badge shelf, contribu
 - the gateway proxies to `profile-service`
 - session and CSRF cookies stay same-origin to the frontend
 - dashboard badge and contribution screens derive from the authenticated profile snapshot instead of mock PR-analysis detail
+- `npm run check:no-production-mocks` fails CI if production app, hook, feature, or API modules import the mock API or mock domain dataset directly
 
 The gamified UI adds season metadata, rank-progress cards, player-card profile presentation, quest recommendation evidence, badge rarity styling, and PR battle-report explanation panels. Live leaderboard season metadata is derived from the gateway response timestamp and displayed as presentation context; final scoring still comes from backend score/profile snapshots.
 

@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:no-production-mocks": "node scripts/check-no-production-mocks.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

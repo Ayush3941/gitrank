@@ -1,5 +1,5 @@
-import { RevealPanel } from "@/features/onboarding/components/RevealPanel";
+import { RevealPanelContainer } from "@/features/onboarding/components/RevealPanelContainer";
 
 export default function RevealPage() {
-  return <RevealPanel />;
+  return <RevealPanelContainer />;
 }
