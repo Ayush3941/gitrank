@@ -63,6 +63,7 @@ function previewProfileView(user: UserProfile): ProfileViewData {
     user,
     featuredContributions: previewFeaturedContributions(),
     topRepositories: previewTopRepositories(user),
+    recentReports: prAnalyses.slice(0, 4),
     shareHeadline: user.title,
     trendWindowLabel: "Last 6 weeks",
     refreshedAt: user.syncStatus.lastSyncedAt ?? new Date().toISOString(),

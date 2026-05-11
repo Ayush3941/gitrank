@@ -16,6 +16,10 @@ import type {
   SkillNode,
   UserProfile,
 } from "@/types/gitrank";
+import {
+  type ApiPRReportResponse,
+  toPullRequestAnalysis,
+} from "@/lib/api/pr-report-api";
 
 const DEFAULT_CSRF_COOKIE_NAME =
   process.env.NEXT_PUBLIC_GITRANK_CSRF_COOKIE_NAME ?? "gitrank_csrf";
@@ -142,6 +146,7 @@ type ApiPublicProfileResponse = {
 type ApiPrivateProfileResponse = ApiPublicProfileResponse & {
   privacy: ApiPrivacy;
   repository_visibility?: ApiRepositoryVisibility[];
+  recent_pr_reports?: ApiPRReportResponse[];
 };
 
 type ApiErrorResponse = {
@@ -269,6 +274,10 @@ function toProfileViewData(
   const skillTree = toSkillTree(response.top_skill_areas ?? []);
   const featuredContributions = toFeaturedContributions(response.score_history ?? []);
   const contributions = toContributions(response.score_history ?? []);
+  const recentReports =
+    "recent_pr_reports" in response
+      ? (response.recent_pr_reports ?? []).map(toPullRequestAnalysis)
+      : [];
   const scoringVersion = scoreVersionFromHistory(response.score_history ?? []);
   const repositories =
     mode === "private" && "repository_visibility" in response
@@ -350,6 +359,7 @@ function toProfileViewData(
     user,
     featuredContributions,
     topRepositories: toTopRepositories(response.top_repositories ?? []),
+    recentReports,
     shareHeadline: response.share_card.headline,
     trendWindowLabel: response.timeline.window.label,
     refreshedAt: response.staleness.refreshed_at,

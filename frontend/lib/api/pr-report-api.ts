@@ -5,7 +5,7 @@ import type {
   ScoreBreakdown,
 } from "@/types/gitrank";
 
-type ApiPRReportContribution = {
+export type ApiPRReportContribution = {
   id: string;
   owner: string;
   repo: string;
@@ -31,14 +31,14 @@ type ApiPRReportContribution = {
   evidence_signals?: string[];
 };
 
-type ApiScoreBreakdown = {
+export type ApiScoreBreakdown = {
   label: string;
   delta_xp: number;
   type: string;
   reason: string;
 };
 
-type ApiPRReportResponse = {
+export type ApiPRReportResponse = {
   contribution: ApiPRReportContribution;
   base_value: number;
   merged_bonus: number;
@@ -79,7 +79,7 @@ export async function getLivePrReport(
   return toPullRequestAnalysis(payload);
 }
 
-function toPullRequestAnalysis(report: ApiPRReportResponse): PullRequestAnalysis {
+export function toPullRequestAnalysis(report: ApiPRReportResponse): PullRequestAnalysis {
   return {
     contribution: toContribution(report.contribution),
     baseValue: report.base_value,

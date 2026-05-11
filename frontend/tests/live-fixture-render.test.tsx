@@ -52,6 +52,7 @@ describe("live fixture frontend smoke coverage", () => {
     );
     expect(await screen.findByText("Live Fixture Maintainer", undefined, { timeout: 5000 })).toBeTruthy();
     expect(await screen.findByText("Live Skill Sprint")).toBeTruthy();
+    expect(await screen.findByText("Live PR fixture report")).toBeTruthy();
   });
 
   it("renders quest board from the live quest fixture route", async () => {
@@ -261,24 +262,6 @@ const publicProfileFixture = {
   },
 };
 
-const privateProfileFixture = {
-  ...publicProfileFixture,
-  privacy: {
-    public_profile_enabled: true,
-    show_exact_prs: true,
-    show_ai_summaries: true,
-    show_leaderboard_participation: true,
-    reduced_gamification: true,
-  },
-  repository_visibility: [
-    {
-      full_name: "octo/gitrank",
-      visibility: "public",
-      reason: "Visible because it has verified live fixture score evidence.",
-    },
-  ],
-};
-
 const questFixture = {
   quests: [
     {
@@ -340,6 +323,25 @@ const prReportFixture = {
     },
   ],
   suggested_quest_id: "quest-live-skill-sprint",
+};
+
+const privateProfileFixture = {
+  ...publicProfileFixture,
+  recent_pr_reports: [prReportFixture],
+  privacy: {
+    public_profile_enabled: true,
+    show_exact_prs: true,
+    show_ai_summaries: true,
+    show_leaderboard_participation: true,
+    reduced_gamification: true,
+  },
+  repository_visibility: [
+    {
+      full_name: "octo/gitrank",
+      visibility: "public",
+      reason: "Visible because it has verified live fixture score evidence.",
+    },
+  ],
 };
 
 const leaderboardFixture = {

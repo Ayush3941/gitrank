@@ -141,6 +141,147 @@ func (s *Store) LoadPullRequestReport(ctx context.Context, owner, repo string, n
 		  AND r.is_private = FALSE
 	`, owner, repo, number)
 
+	record, err := scanPullRequestReport(row)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return pullRequestReportRecord{}, ErrNotFound
+		}
+		return pullRequestReportRecord{}, err
+	}
+	return record, nil
+}
+
+func (s *Store) LoadRecentPullRequestReportsForUser(ctx context.Context, userID string, limit int) ([]pullRequestReportRecord, error) {
+	if limit <= 0 {
+		limit = 4
+	}
+	if limit > 10 {
+		limit = 10
+	}
+
+	selection, err := s.LoadLatestScoreSelection(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	if strings.TrimSpace(selection.ScoreVersion) == "" {
+		return []pullRequestReportRecord{}, nil
+	}
+
+	scoreFilter := "se.score_version = $2"
+	args := []any{userID, selection.ScoreVersion, limit}
+	if strings.TrimSpace(selection.ReplayRunID) != "" {
+		scoreFilter = "se.replay_run_id = $2::uuid"
+		args[1] = selection.ReplayRunID
+	}
+
+	rows, err := s.pool.Query(ctx, fmt.Sprintf(`
+		WITH selected_score_events AS (
+			SELECT DISTINCT ON (se.pull_request_id)
+				se.id,
+				se.pull_request_id,
+				se.score_version,
+				se.delta_total_xp,
+				se.explanation_jsonb,
+				se.metadata_jsonb,
+				se.created_at
+			FROM score_events se
+			WHERE se.user_id = $1::uuid
+			  AND se.pull_request_id IS NOT NULL
+			  AND %s
+			ORDER BY se.pull_request_id, se.created_at DESC
+		),
+		recent_score_events AS (
+			SELECT *
+			FROM selected_score_events
+			ORDER BY created_at DESC
+			LIMIT $3
+		)
+		SELECT
+			pr.id::text,
+			r.owner_login,
+			r.name,
+			r.full_name,
+			r.stars_count,
+			pr.number,
+			pr.title,
+			COALESCE(pr.payload_jsonb->>'body', ''),
+			pr.state,
+			pr.merged,
+			pr.additions,
+			pr.deletions,
+			pr.changed_files,
+			COALESCE(pr.merged_at, pr.closed_at_source, pr.updated_at_source, pr.created_at_source),
+			pr.updated_at_source,
+			COALESCE(ca.id::text, ''),
+			COALESCE(ca.analyzer_version, ''),
+			COALESCE(ca.analysis_source, ''),
+			COALESCE(ca.classification, ''),
+			COALESCE(ca.confidence::float8, 0),
+			COALESCE(ca.summary, ''),
+			COALESCE(ca.signals_jsonb, '[]'::jsonb),
+			se.id::text,
+			COALESCE(se.score_version, ''),
+			COALESCE(se.delta_total_xp, 0),
+			COALESCE(se.explanation_jsonb, '[]'::jsonb),
+			COALESCE(se.metadata_jsonb, '{}'::jsonb),
+			COALESCE(files.file_count, 0),
+			COALESCE(files.test_files, 0),
+			COALESCE(files.docs_files, 0),
+			COALESCE(reviews.review_count, 0),
+			COALESCE(reviews.approval_count, 0),
+			COALESCE(reviews.changes_requested_count, 0),
+			COALESCE(review_comments.comment_count, 0)
+		FROM recent_score_events se
+		INNER JOIN pull_requests pr ON pr.id = se.pull_request_id
+		INNER JOIN repositories r ON r.id = pr.repository_id
+		LEFT JOIN LATERAL (
+			SELECT id, analyzer_version, analysis_source, classification, confidence, summary, signals_jsonb
+			FROM contribution_analyses
+			WHERE pull_request_id = pr.id
+			ORDER BY created_at DESC
+			LIMIT 1
+		) ca ON true
+		LEFT JOIN LATERAL (
+			SELECT
+				COUNT(*)::int AS file_count,
+				COUNT(*) FILTER (WHERE path ~* '(^|/)(test|tests|__tests__)/|(_test\.|\.test\.|\.spec\.)')::int AS test_files,
+				COUNT(*) FILTER (WHERE path ~* '(^|/)(docs?|documentation)/|\.md$|\.mdx$')::int AS docs_files
+			FROM pull_request_files
+			WHERE pull_request_id = pr.id
+		) files ON true
+		LEFT JOIN LATERAL (
+			SELECT
+				COUNT(*)::int AS review_count,
+				COUNT(*) FILTER (WHERE UPPER(state) = 'APPROVED')::int AS approval_count,
+				COUNT(*) FILTER (WHERE UPPER(state) = 'CHANGES_REQUESTED')::int AS changes_requested_count
+			FROM pull_request_reviews
+			WHERE pull_request_id = pr.id
+		) reviews ON true
+		LEFT JOIN LATERAL (
+			SELECT COUNT(*)::int AS comment_count
+			FROM pull_request_review_comments
+			WHERE pull_request_id = pr.id
+		) review_comments ON true
+		WHERE r.is_private = FALSE
+		ORDER BY se.created_at DESC
+	`, scoreFilter), args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	records := make([]pullRequestReportRecord, 0, limit)
+	for rows.Next() {
+		record, err := scanPullRequestReport(rows)
+		if err != nil {
+			return nil, err
+		}
+		records = append(records, record)
+	}
+	return records, rows.Err()
+}
+
+func scanPullRequestReport(row rowScanner) (pullRequestReportRecord, error) {
 	var record pullRequestReportRecord
 	var signalsRaw, explanationRaw, metadataRaw []byte
 	if err := row.Scan(
@@ -179,9 +320,6 @@ func (s *Store) LoadPullRequestReport(ctx context.Context, owner, repo string, n
 		&record.ChangesRequested,
 		&record.ReviewCommentCount,
 	); err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return pullRequestReportRecord{}, ErrNotFound
-		}
 		return pullRequestReportRecord{}, err
 	}
 	record.AnalysisSignals = decodeReportStrings(signalsRaw)
@@ -272,6 +410,14 @@ func pullRequestReportFromRecord(record pullRequestReportRecord, now time.Time) 
 		GeneratedAt:      now.UTC(),
 		IsStale:          record.ScoreEventID == "" || record.AnalysisID == "",
 	}
+}
+
+func pullRequestReportsFromRecords(records []pullRequestReportRecord, now time.Time) []contracts.PullRequestReportResponse {
+	reports := make([]contracts.PullRequestReportResponse, 0, len(records))
+	for _, record := range records {
+		reports = append(reports, pullRequestReportFromRecord(record, now.UTC()))
+	}
+	return reports
 }
 
 func decodeReportStrings(raw []byte) []string {

@@ -195,7 +195,18 @@ func (s *Service) PrivateProfile(ctx context.Context, sessionToken string, now t
 		s.log.Warn("profile cache read failed", "error", err, "cache_key", cacheKey)
 	}
 
-	response := privateResponseFromSnapshot(snapshot, settings.Settings, visibility, now.UTC())
+	recentReportRecords, err := s.store.LoadRecentPullRequestReportsForUser(ctx, user.ID, 4)
+	if err != nil {
+		return contracts.PrivateProfileResponse{}, err
+	}
+
+	response := privateResponseFromSnapshot(
+		snapshot,
+		settings.Settings,
+		visibility,
+		pullRequestReportsFromRecords(recentReportRecords, now.UTC()),
+		now.UTC(),
+	)
 	if err := s.cache.SetJSON(ctx, cacheKey, response, s.privateCacheTTL); err != nil {
 		s.log.Warn("profile cache write failed", "error", err, "cache_key", cacheKey)
 	}
@@ -381,7 +392,7 @@ func publicResponseFromSnapshot(snapshot snapshotRecord, settings contracts.Prof
 	}
 }
 
-func privateResponseFromSnapshot(snapshot snapshotRecord, settings contracts.ProfilePrivacySettings, visibility []repositoryVisibilityRecord, now time.Time) contracts.PrivateProfileResponse {
+func privateResponseFromSnapshot(snapshot snapshotRecord, settings contracts.ProfilePrivacySettings, visibility []repositoryVisibilityRecord, recentReports []contracts.PullRequestReportResponse, now time.Time) contracts.PrivateProfileResponse {
 	repoMap := visibilityMap(visibility)
 	privateRepos := make([]contracts.TopRepositoryView, 0, len(snapshot.Repositories))
 	for _, repository := range snapshot.Repositories {
@@ -425,6 +436,7 @@ func privateResponseFromSnapshot(snapshot snapshotRecord, settings contracts.Pro
 		Badges:               snapshot.Badges,
 		Timeline:             snapshot.Timeline,
 		ScoreHistory:         snapshot.ScoreHistory,
+		RecentPRReports:      recentReports,
 		Privacy:              settings,
 		RepositoryVisibility: visibilityViews,
 		ShareCard:            snapshot.ShareCard,

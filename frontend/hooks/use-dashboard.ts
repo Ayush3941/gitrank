@@ -19,7 +19,7 @@ export function useDashboard(preview?: PreviewMode) {
           ...profile.user,
           quests,
         },
-        recentReports: [],
+        recentReports: profile.recentReports,
       };
     },
   });

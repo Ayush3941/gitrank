@@ -74,7 +74,7 @@ The public profile page, authenticated dashboard overview, onboarding reveal, ba
 - those BFF routes proxy to the Go `api-gateway`
 - the gateway proxies to `profile-service`
 - session and CSRF cookies stay same-origin to the frontend
-- dashboard badge and contribution screens derive from the authenticated profile snapshot instead of mock PR-analysis detail
+- dashboard badge, contribution, and recent battle-report panels derive from the authenticated profile snapshot instead of mock PR-analysis detail
 - `npm run check:no-production-mocks` fails CI if production app, hook, feature, or API modules import the mock API or mock domain dataset directly
 - `npm run test:smoke` renders dashboard, quest, PR-report, profile, leaderboard, and settings flows from live-shaped BFF fixtures instead of preview mock API functions
 

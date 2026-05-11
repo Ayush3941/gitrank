@@ -282,6 +282,7 @@ export interface ProfileViewData {
   user: UserProfile;
   featuredContributions: FeaturedContribution[];
   topRepositories: ProfileRepositorySummary[];
+  recentReports: PullRequestAnalysis[];
   shareHeadline: string;
   trendWindowLabel: string;
   refreshedAt: string;

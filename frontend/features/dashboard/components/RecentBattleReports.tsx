@@ -14,7 +14,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
       <div className="grid gap-3">
         {reports.length === 0 ? (
           <div className="rounded-[1.75rem] border border-dashed border-white/12 bg-white/4 p-4 text-sm text-muted">
-            Detailed PR battle reports are not exposed by the live profile API yet. The dashboard is showing verified profile snapshot evidence instead of mock report metrics.
+            No persisted PR battle reports are attached to this profile snapshot yet. Direct report URLs will appear here after scoring writes score events with public PR evidence.
           </div>
         ) : null}
         {reports.map((report) => (

@@ -246,17 +246,18 @@ type PublicProfileResponse struct {
 }
 
 type PrivateProfileResponse struct {
-	Summary              PublicProfileSummary       `json:"summary"`
-	TopSkillAreas        []SkillAreaView            `json:"top_skill_areas,omitempty"`
-	TopRepositories      []TopRepositoryView        `json:"top_repositories,omitempty"`
-	Level                ProfileLevelView           `json:"level"`
-	Badges               []BadgeView                `json:"badges,omitempty"`
-	Timeline             ProfileTimeline            `json:"timeline"`
-	ScoreHistory         []ScoreHistoryEntry        `json:"score_history,omitempty"`
-	Privacy              ProfilePrivacySettings     `json:"privacy"`
-	RepositoryVisibility []RepositoryVisibilityView `json:"repository_visibility,omitempty"`
-	ShareCard            ShareableProfileCard       `json:"share_card"`
-	Staleness            ProfileStaleness           `json:"staleness"`
+	Summary              PublicProfileSummary        `json:"summary"`
+	TopSkillAreas        []SkillAreaView             `json:"top_skill_areas,omitempty"`
+	TopRepositories      []TopRepositoryView         `json:"top_repositories,omitempty"`
+	Level                ProfileLevelView            `json:"level"`
+	Badges               []BadgeView                 `json:"badges,omitempty"`
+	Timeline             ProfileTimeline             `json:"timeline"`
+	ScoreHistory         []ScoreHistoryEntry         `json:"score_history,omitempty"`
+	RecentPRReports      []PullRequestReportResponse `json:"recent_pr_reports,omitempty"`
+	Privacy              ProfilePrivacySettings      `json:"privacy"`
+	RepositoryVisibility []RepositoryVisibilityView  `json:"repository_visibility,omitempty"`
+	ShareCard            ShareableProfileCard        `json:"share_card"`
+	Staleness            ProfileStaleness            `json:"staleness"`
 }
 
 type AccountExportUser struct {

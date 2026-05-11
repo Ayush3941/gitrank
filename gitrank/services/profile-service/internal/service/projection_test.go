@@ -83,6 +83,42 @@ func TestPublicResponseFiltersHiddenRepositories(t *testing.T) {
 	}
 }
 
+func TestPrivateResponseIncludesRecentPullRequestReports(t *testing.T) {
+	now := time.Date(2026, 5, 5, 13, 0, 0, 0, time.UTC)
+	snapshot := snapshotRecord{
+		ID:              "snap-1",
+		Summary:         structSummary("Ayush3941", now),
+		ShareCard:       shareCard("Ayush3941", now),
+		Timeline:        emptyTimeline(now),
+		StaleAfter:      now.Add(time.Hour),
+		RefreshedAt:     now,
+		SourceWatermark: now,
+	}
+	reports := []contracts.PullRequestReportResponse{
+		{
+			Contribution: contracts.PRReportContribution{
+				ID:     "score-1",
+				Owner:  "Ayush3941",
+				Repo:   "gitrank",
+				Number: 42,
+				Title:  "Persist recent PR report",
+			},
+			ScoreVersion:    "v1alpha1",
+			SourceUpdatedAt: now,
+			GeneratedAt:     now,
+		},
+	}
+
+	response := privateResponseFromSnapshot(snapshot, contractsDefaults(), nil, reports, now)
+
+	if len(response.RecentPRReports) != 1 {
+		t.Fatalf("len(RecentPRReports) = %d, want 1", len(response.RecentPRReports))
+	}
+	if response.RecentPRReports[0].Contribution.ID != "score-1" {
+		t.Fatalf("recent report ID = %q, want score-1", response.RecentPRReports[0].Contribution.ID)
+	}
+}
+
 func TestLeaderboardEntryFromSnapshotUsesProfileSnapshotEvidence(t *testing.T) {
 	now := time.Date(2026, 5, 5, 13, 0, 0, 0, time.UTC)
 	snapshot := snapshotRecord{

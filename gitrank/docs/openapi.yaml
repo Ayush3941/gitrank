@@ -1853,6 +1853,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ScoreHistoryEntry"
+        recent_pr_reports:
+          type: array
+          items:
+            $ref: "#/components/schemas/PullRequestReportResponse"
         privacy:
           $ref: "#/components/schemas/ProfilePrivacySettings"
         repository_visibility:
