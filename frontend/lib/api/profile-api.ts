@@ -1,5 +1,3 @@
-import { getUserProfile as getMockUserProfile } from "@/lib/api/mock-api";
-import { prAnalyses } from "@/lib/mock-data/gitrank";
 import type {
   Badge,
   BadgeIcon,
@@ -165,11 +163,8 @@ export async function getPublicProfile(
   preview?: PreviewMode,
 ): Promise<ProfileViewData | null> {
   if (preview) {
-    const mockProfile = await getMockUserProfile(username, preview);
-    if (!mockProfile) {
-      return null;
-    }
-    return mockProfileView(mockProfile);
+    const { getPreviewPublicProfile } = await import("@/lib/demo/preview-api");
+    return getPreviewPublicProfile(username, preview);
   }
 
   const response = await fetch(`/api/profile/public/${encodeURIComponent(username)}`, {
@@ -184,11 +179,8 @@ export async function getPublicProfile(
 
 export async function getMyProfile(preview?: PreviewMode): Promise<ProfileViewData> {
   if (preview) {
-    const mockProfile = await getMockUserProfile("Ayush3941", preview);
-    if (!mockProfile) {
-      throw new Error("Mock profile is unavailable.");
-    }
-    return mockProfileView(mockProfile);
+    const { getPreviewMyProfile } = await import("@/lib/demo/preview-api");
+    return getPreviewMyProfile(preview);
   }
 
   const response = await fetch("/api/profile/me", {
@@ -361,41 +353,6 @@ function toProfileViewData(
     refreshedAt: response.staleness.refreshed_at,
     isStale: response.staleness.is_stale,
     partialProfileAvailable: response.staleness.partial_profile_available,
-  };
-}
-
-function mockProfileView(user: UserProfile): ProfileViewData {
-  return {
-    user,
-    featuredContributions: prAnalyses.slice(0, 5).map((report) => ({
-      id: report.contribution.id,
-      owner: report.contribution.owner,
-      repo: report.contribution.repo,
-      number: report.contribution.number,
-      title: report.contribution.title,
-      summary: report.contribution.aiSummary,
-      xpEarned: report.contribution.xpEarned,
-      happenedAt: report.contribution.mergedAt,
-    })),
-    topRepositories: user.repositories.map((repository) => {
-      const [owner, repo] = splitRepositoryName(repository.name);
-      return {
-        name: repository.name,
-        owner,
-        repo,
-        totalXp: user.gitRankScore,
-        contributionCount: user.contributions.filter(
-          (contribution) => `${contribution.owner}/${contribution.repo}` === repository.name,
-        ).length,
-        visibility: repository.visibility,
-        primarySkill: user.topSkills[0],
-      };
-    }),
-    shareHeadline: user.title,
-    trendWindowLabel: "Last 6 weeks",
-    refreshedAt: user.syncStatus.lastSyncedAt ?? new Date().toISOString(),
-    isStale: user.syncStatus.state === "stale",
-    partialProfileAvailable: user.syncStatus.partialProfileAvailable,
   };
 }
 

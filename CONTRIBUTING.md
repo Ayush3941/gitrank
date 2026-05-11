@@ -1145,7 +1145,7 @@ V2 ingestion and coverage checklist:
 V2 frontend no-mock checklist:
 
 - [ ] Remove production imports from `frontend/lib/mock-data/gitrank.ts` outside marketing samples, tests, stories, or explicitly dev-only preview modules.
-- [ ] Remove production imports from `frontend/lib/api/mock-api.ts` for dashboard, quests, PR reports, leaderboard, profile, settings, badges, and contributions. Dashboard, quests, and PR reports now use live routes in normal production flow and import mock data only behind the explicit preview branch; leaderboard/profile preview branches and demo fixtures still need isolation.
+- [x] Remove production imports from `frontend/lib/api/mock-api.ts` for dashboard, quests, PR reports, leaderboard, profile, settings, badges, and contributions. Preview-only mock access is isolated behind `frontend/lib/demo/preview-api.ts`, and `?demo=` is production-disabled by default.
 - [x] Gate `?demo=` preview modes behind a development-only flag or move them to test/storybook fixtures.
 - [x] Make the dashboard top bar read the authenticated profile instead of `ayushProfile`.
 - [ ] Make onboarding reveal use the authenticated user's real post-sync profile or a clearly marked development-only sample route.

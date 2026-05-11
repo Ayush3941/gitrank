@@ -1,4 +1,3 @@
-import { getLeaderboard as getMockLeaderboard } from "@/lib/api/mock-api";
 import type {
   LeaderboardEntry,
   LeaderboardSeason,
@@ -48,7 +47,8 @@ export async function getLeaderboard(
   preview?: PreviewMode,
 ): Promise<LeaderboardSnapshot> {
   if (preview) {
-    return getMockLeaderboard(tab, preview);
+    const { getPreviewLeaderboard } = await import("@/lib/demo/preview-api");
+    return getPreviewLeaderboard(tab, preview);
   }
 
   const response = await fetch("/api/leaderboard", {

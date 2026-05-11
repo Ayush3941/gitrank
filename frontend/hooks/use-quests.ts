@@ -9,8 +9,8 @@ export function useQuests(preview?: PreviewMode) {
     queryKey: ["quests", preview],
     queryFn: async () => {
       if (preview) {
-        const { getQuests } = await import("@/lib/api/mock-api");
-        return getQuests(preview);
+        const { getPreviewQuests } = await import("@/lib/demo/preview-api");
+        return getPreviewQuests(preview);
       }
       return getMyQuests();
     },

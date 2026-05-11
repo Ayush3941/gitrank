@@ -14,8 +14,8 @@ export function usePrReport(
     queryKey: ["pr-report", owner, repo, number, preview],
     queryFn: async () => {
       if (preview) {
-        const { getPrReport } = await import("@/lib/api/mock-api");
-        return getPrReport(owner, repo, number, preview);
+        const { getPreviewPrReport } = await import("@/lib/demo/preview-api");
+        return getPreviewPrReport(owner, repo, number, preview);
       }
       return getLivePrReport(owner, repo, number);
     },

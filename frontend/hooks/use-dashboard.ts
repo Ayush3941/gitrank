@@ -10,8 +10,8 @@ export function useDashboard(preview?: PreviewMode) {
     queryKey: ["dashboard", preview],
     queryFn: async () => {
       if (preview) {
-        const { getDashboardData } = await import("@/lib/api/mock-api");
-        return getDashboardData(preview);
+        const { getPreviewDashboardData } = await import("@/lib/demo/preview-api");
+        return getPreviewDashboardData(preview);
       }
       const [profile, quests] = await Promise.all([getMyProfile(), getMyQuests()]);
       return {
