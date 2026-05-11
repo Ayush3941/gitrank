@@ -1097,7 +1097,7 @@ Replace every production mock, demo-only product path, and hand-wired preview su
 
 Known v1 limitations:
 
-- Quest recommendations now have a live profile-owned read model at `GET /v1/me/quests` and the production quest/dashboard flows read it through the gateway and frontend BFF. Persistent quest definitions, assignment tables, progress trackers, completion ledgers, reward grants, and audit records remain pending.
+- Quest recommendations now have a live profile-owned read model at `GET /v1/me/quests` and the production quest/dashboard flows read it through the gateway and frontend BFF. PostgreSQL tables now exist for quest definitions, assignments, progress events, completion events, reward grants, and audit events, but the live quest service still derives current quests from profile snapshots until assignment/reward writers are implemented.
 - The public PR battle-report route now reads a live gateway/BFF contract backed by persisted public PR, analysis, score-event, file, and review evidence. It still reports stale/unscored state when analysis or scoring has not completed.
 - The dashboard recent battle reports panel still does not list live PR reports from the profile API; detailed reports are available by direct PR report URL.
 - The frontend keeps `?demo=` preview states for design inspection, but they are disabled in production by default and only resolve when `NODE_ENV !== "production"` or `GITRANK_ENABLE_DEMO_PREVIEWS=true` is set.
@@ -1120,7 +1120,7 @@ Known v1 limitations:
 V2 product contract checklist:
 
 - [x] Define `quest-service` or profile-owned quest contracts for active quests, completed quests, locked quests, quest recommendations, rewards, expiration, and evidence references.
-- [ ] Add PostgreSQL migrations for quest definitions, user quest assignments, progress events, completion events, reward grants, and quest audit records.
+- [x] Add PostgreSQL migrations for quest definitions, user quest assignments, progress events, completion events, reward grants, and quest audit records.
 - [x] Expose authenticated quest routes through the gateway and frontend BFF instead of reading quests from `frontend/lib/api/mock-api.ts`.
 - [ ] Define a live PR battle-report read model with PR metadata, evidence signals, formula version, XP breakdown, penalties, badge unlocks, suggested next quest, stale state, and source timestamps. A first live read model and route now exist; badge-unlock details and exact materialized scorer breakdowns remain pending.
 - [x] Add a PR report route through the gateway and frontend BFF so `/pr/[owner]/[repo]/[number]` never depends on mock data in production.

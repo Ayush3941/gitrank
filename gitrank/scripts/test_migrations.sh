@@ -111,6 +111,18 @@ assert_true "scheduler_runtime_counters table exists" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'scheduler_runtime_counters');"
 assert_true "scheduler_tick_scope_totals table exists" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'scheduler_tick_scope_totals');"
+assert_true "quest_definitions table exists" \
+  "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'quest_definitions');"
+assert_true "user_quest_assignments table exists" \
+  "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'user_quest_assignments');"
+assert_true "user_quest_progress_events table exists" \
+  "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'user_quest_progress_events');"
+assert_true "user_quest_completion_events table exists" \
+  "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'user_quest_completion_events');"
+assert_true "user_quest_reward_grants table exists" \
+  "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'user_quest_reward_grants');"
+assert_true "quest_audit_events table exists" \
+  "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'quest_audit_events');"
 assert_true "webhook delivery persistence column exists" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'github_webhook_deliveries' AND column_name = 'github_installation_id');"
 assert_true "auth session token hash column exists" \
@@ -145,6 +157,14 @@ assert_true "pull request author timeline index exists" \
   "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_pull_requests_author_timeline');"
 assert_true "active installation repository index exists" \
   "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_installation_repositories_active_selected');"
+assert_true "quest assignment user status index exists" \
+  "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_user_quest_assignments_user_status');"
+assert_true "quest progress assignment index exists" \
+  "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_user_quest_progress_assignment_occurred');"
+assert_true "quest reward user status index exists" \
+  "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_user_quest_rewards_user_status');"
+assert_true "quest audit action index exists" \
+  "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_quest_audit_events_created_action');"
 
 (
   cd "$root_dir/services/auth-service/internal/service"
