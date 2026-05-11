@@ -89,6 +89,18 @@ func TestReplayRouteUnavailableWithoutDatabase(t *testing.T) {
 	}
 }
 
+func TestReplayVerifyRouteUnavailableWithoutDatabase(t *testing.T) {
+	router := testRouter(t)
+	request := httptest.NewRequest(http.MethodPost, "/v1/score/users/00000000-0000-0000-0000-000000000001/replay/verify", strings.NewReader(`{"repository":"octo/repo"}`))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+	if response.Code != http.StatusServiceUnavailable {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusServiceUnavailable, response.Body.String())
+	}
+}
+
 func testConfig() config.App {
 	return config.App{
 		ServiceName: "scoring-engine",

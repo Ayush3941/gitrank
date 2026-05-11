@@ -65,6 +65,8 @@ func TestReplayUserPersistsLedgerAndSnapshot(t *testing.T) {
 	}
 
 	var repositoryID string
+	repositoryOwner := fmt.Sprintf("owner-%d", suffix)
+	repositoryFullName := fmt.Sprintf("%s/replay-repo", repositoryOwner)
 	if err := pool.QueryRow(ctx, `
 		INSERT INTO repositories (
 			github_repository_id,
@@ -79,7 +81,7 @@ func TestReplayUserPersistsLedgerAndSnapshot(t *testing.T) {
 			$1, $2, $3, $4, FALSE, 'Go', 'main', 900
 		)
 		RETURNING id::text
-	`, 910000+suffix%100000, fmt.Sprintf("owner-%d", suffix), "replay-repo", fmt.Sprintf("owner-%d/replay-repo", suffix)).Scan(&repositoryID); err != nil {
+	`, 910000+suffix%100000, repositoryOwner, "replay-repo", repositoryFullName).Scan(&repositoryID); err != nil {
 		t.Fatalf("insert repository: %v", err)
 	}
 
@@ -192,6 +194,43 @@ func TestReplayUserPersistsLedgerAndSnapshot(t *testing.T) {
 	}
 	if events.Events[0].PullRequest == nil || events.Events[0].PullRequest.Number != 17 {
 		t.Fatalf("Events() pull request = %+v, want #17", events.Events[0].PullRequest)
+	}
+
+	verification, err := svc.VerifyReplay(ctx, userID, contracts.VerifyScoreReplayRequest{
+		Repository:   repositoryFullName,
+		From:         occurredAt.Add(-time.Hour),
+		To:           occurredAt.Add(time.Hour),
+		ScoreVersion: firstRun.Snapshot.ScoreVersion,
+	}, now.Add(3*time.Minute))
+	if err != nil {
+		t.Fatalf("VerifyReplay() error = %v", err)
+	}
+	if verification.Persisted {
+		t.Fatalf("VerifyReplay() persisted = true, want false")
+	}
+	if verification.TotalXP != firstRun.Snapshot.TotalXP {
+		t.Fatalf("VerifyReplay() total_xp = %d, want %d", verification.TotalXP, firstRun.Snapshot.TotalXP)
+	}
+	if verification.ContributionCount != 1 || len(verification.Events) != 1 {
+		t.Fatalf("VerifyReplay() contributions/events = %d/%d, want 1/1", verification.ContributionCount, len(verification.Events))
+	}
+	if verification.Events[0].PullRequest == nil || verification.Events[0].PullRequest.Repository != repositoryFullName || verification.Events[0].PullRequest.Number != 17 {
+		t.Fatalf("VerifyReplay() event PR = %+v, want %s#17", verification.Events[0].PullRequest, repositoryFullName)
+	}
+	if verification.From == nil || verification.To == nil {
+		t.Fatalf("VerifyReplay() window = %v..%v, want populated pointers", verification.From, verification.To)
+	}
+
+	emptyWindow, err := svc.VerifyReplay(ctx, userID, contracts.VerifyScoreReplayRequest{
+		From:         now.Add(-time.Hour),
+		To:           now,
+		ScoreVersion: firstRun.Snapshot.ScoreVersion,
+	}, now.Add(4*time.Minute))
+	if err != nil {
+		t.Fatalf("VerifyReplay() empty window error = %v", err)
+	}
+	if emptyWindow.Persisted || emptyWindow.TotalXP != 0 || emptyWindow.ContributionCount != 0 || len(emptyWindow.Events) != 0 {
+		t.Fatalf("VerifyReplay() empty window = %+v, want non-persisted empty result", emptyWindow)
 	}
 
 	assertCount(t, ctx, pool, "score_replay_runs", "SELECT COUNT(*) FROM score_replay_runs WHERE user_id = $1::uuid", userID, 2)

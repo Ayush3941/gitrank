@@ -280,6 +280,7 @@ Implemented routes:
 - `GET /v1/meta/manifest`
 - `POST /v1/score/contribution`
 - `POST /v1/score/users/{user_id}/replay`
+- `POST /v1/score/users/{user_id}/replay/verify`
 - `GET /v1/score/users/{user_id}/snapshot`
 - `GET /v1/score/users/{user_id}/events`
 
@@ -290,6 +291,7 @@ Current behavior:
 - remains deterministic even when future AI-assisted analysis metadata is present
 - recomputes a user's score ledger from stored PR, review, file, repository, and analysis evidence
 - persists immutable replay runs, score events, derived badges, and historical aggregate snapshots in PostgreSQL
+- verifies score replay for a selected user, repository, date range, and supported formula version without mutating replay runs, score events, snapshots, or badge awards
 
 ### Profile Service
 

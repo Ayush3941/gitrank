@@ -781,6 +781,7 @@ V2 direction:
 - frontend CI now includes a live-fixture smoke suite that renders dashboard, quests, PR reports, profile, leaderboard, and settings without using frontend mock API functions
 - newly replayed PR battle reports expose persisted scoring-engine formula components instead of relying only on profile-side display heuristics
 - newly replayed badge awards carry bounded PR evidence references so PR reports can show real badge unlocks
+- scoring-engine now has a non-mutating replay verifier for selected user, repository, date range, and formula version checks against persisted evidence
 - see `CONTRIBUTING.md` for the V1 limitations inventory and V2 no-mock checklist
 
 ## License

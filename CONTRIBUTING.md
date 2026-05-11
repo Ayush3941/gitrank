@@ -1102,7 +1102,7 @@ Known v1 limitations:
 - The dashboard recent battle reports panel now reads live `recent_pr_reports` from the authenticated profile response when persisted PR report evidence exists.
 - The frontend keeps `?demo=` preview states for design inspection, but they are disabled in production by default and only resolve when `NODE_ENV !== "production"` or `GITRANK_ENABLE_DEMO_PREVIEWS=true` is set.
 - The marketing landing page uses a dedicated sample fixture that is separate from authenticated user data. The dashboard top bar and onboarding reveal now read the authenticated profile through the live profile BFF, and unused feature-local mock re-exports have been removed.
-- The live PR ingestion path can persist bounded PR metadata, changed-file metadata, public patch excerpts, reviews, and review comments, but there is no seamless production pipeline that turns one synced PR into diff-derived features, a stored `contribution_analyses` record, score events, profile refresh, and a live battle report in one user-facing flow.
+- The live PR ingestion path can persist bounded PR metadata, changed-file metadata, public patch excerpts, reviews, and review comments, and the scoring engine can now verify deterministic score replay over selected persisted evidence without writing new score state. There is still no seamless production pipeline that turns one synced PR into diff-derived features, a stored `contribution_analyses` record, score events, profile refresh, and a live battle report in one user-facing flow.
 - Direct live PR sync now fetches `/pulls/{number}/files` and stores bounded file metadata, public patch excerpts, and derived file/diff features without full repository files. Downstream analysis/scoring orchestration still remains pending.
 - User sync is bounded to recent public repositories owned by the requested GitHub login, not a full authored-PR search across every public repository, fork, organization, or contribution surface where the user has participated.
 - Private repositories remain out of scope for scoring and analysis.
@@ -1162,7 +1162,7 @@ V2 scoring and evidence checklist:
 - [ ] Every leaderboard rank must link to a season snapshot, rank movement event, score version, and freshness timestamp.
 - [ ] Every skill claim must distinguish deterministic evidence, AI-assisted classification, confidence, and stale or partial states.
 - [ ] PR battle reports must show when evidence is incomplete, stale, rate-limited, deterministic-only, or AI-fallback.
-- [ ] Score replay must be reproducible from stored evidence for a selected user, repository, date range, and formula version.
+- [x] Score replay must be reproducible from stored evidence for a selected user, repository, date range, and formula version. `POST /v1/score/users/{user_id}/replay/verify` recomputes from persisted PR, analysis, file, review, and repository evidence, returns event-level score details, and does not mutate replay runs, score events, snapshots, or badge awards.
 - [ ] No AI output may directly write final scores; scoring remains deterministic and rule-based.
 
 V2 operational readiness checklist:

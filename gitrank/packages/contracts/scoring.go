@@ -43,6 +43,13 @@ type ReplayUserScoresRequest struct {
 	TriggerType string `json:"trigger_type,omitempty"`
 }
 
+type VerifyScoreReplayRequest struct {
+	Repository   string    `json:"repository,omitempty"`
+	From         time.Time `json:"from,omitempty"`
+	To           time.Time `json:"to,omitempty"`
+	ScoreVersion string    `json:"score_version,omitempty"`
+}
+
 type UserScoreSnapshotResponse struct {
 	ReplayRunID       string          `json:"replay_run_id"`
 	UserID            string          `json:"user_id"`
@@ -63,6 +70,25 @@ type ReplayUserScoresResponse struct {
 	Snapshot UserScoreSnapshotResponse `json:"snapshot"`
 	Badges   []BadgeView               `json:"badges,omitempty"`
 	Events   int                       `json:"events"`
+}
+
+type ScoreReplayVerificationResponse struct {
+	UserID            string           `json:"user_id"`
+	ScoreVersion      string           `json:"score_version"`
+	Repository        string           `json:"repository,omitempty"`
+	From              *time.Time       `json:"from,omitempty"`
+	To                *time.Time       `json:"to,omitempty"`
+	TotalXP           int              `json:"total_xp"`
+	Level             string           `json:"level"`
+	RankTier          string           `json:"rank_tier"`
+	TopSkills         []SkillAreaView  `json:"top_skills,omitempty"`
+	Badges            []BadgeView      `json:"badges,omitempty"`
+	Events            []ScoreEventView `json:"events,omitempty"`
+	ContributionCount int              `json:"contribution_count"`
+	SuspiciousEvents  int              `json:"suspicious_events"`
+	SourceWatermark   time.Time        `json:"source_watermark"`
+	GeneratedAt       time.Time        `json:"generated_at"`
+	Persisted         bool             `json:"persisted"`
 }
 
 type ScoreEventView struct {
@@ -115,6 +141,18 @@ func (req ReplayUserScoresRequest) Validate() error {
 	default:
 		return errors.New("trigger_type must be replay, backfill, or live")
 	}
+}
+
+func (req VerifyScoreReplayRequest) Validate() error {
+	if !req.From.IsZero() && !req.To.IsZero() && req.From.After(req.To) {
+		return errors.New("from must be before to")
+	}
+	if strings.TrimSpace(req.Repository) != "" {
+		if _, err := NormalizeGitHubRepository(req.Repository); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func validateScorePullRequestContext(pr PullRequestContext) error {

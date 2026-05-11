@@ -28,6 +28,7 @@ func NewRouter(cfg config.App, scoringService *service.Service, log *slog.Logger
 			{Method: "GET", Path: "/v1/meta/manifest", Summary: "Service route manifest", Status: "implemented"},
 			{Method: "POST", Path: "/v1/score/contribution", Summary: "Score an analyzed contribution", Status: "implemented"},
 			{Method: "POST", Path: "/v1/score/users/{user_id}/replay", Summary: "Recompute and persist a user's score ledger from stored evidence", Status: "implemented"},
+			{Method: "POST", Path: "/v1/score/users/{user_id}/replay/verify", Summary: "Verify deterministic score replay without mutating persisted scores", Status: "implemented"},
 			{Method: "GET", Path: "/v1/score/users/{user_id}/snapshot", Summary: "Read the latest persisted aggregate score snapshot for a user", Status: "implemented"},
 			{Method: "GET", Path: "/v1/score/users/{user_id}/events", Summary: "Read the latest persisted score event ledger for a user", Status: "implemented"},
 		},
@@ -93,6 +94,24 @@ func NewRouter(cfg config.App, scoringService *service.Service, log *slog.Logger
 
 		now := time.Now().UTC()
 		switch {
+		case len(parts) == 3 && parts[1] == "replay" && parts[2] == "verify":
+			if r.Method != http.MethodPost {
+				httpkit.WriteError(w, http.StatusMethodNotAllowed, "method_not_allowed", "method not allowed", httpkit.RequestIDFromContext(r.Context()))
+				return
+			}
+			var req contracts.VerifyScoreReplayRequest
+			if r.ContentLength != 0 {
+				if err := httpkit.DecodeJSON(r, &req, 1<<20); err != nil && !errors.Is(err, io.EOF) {
+					httpkit.WriteError(w, http.StatusBadRequest, "invalid_json", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+					return
+				}
+			}
+			response, err := scoringService.VerifyReplay(r.Context(), userID, req, now)
+			if err != nil {
+				writeScoringError(w, r, err)
+				return
+			}
+			httpkit.WriteJSON(w, http.StatusOK, response)
 		case len(parts) == 2 && parts[1] == "replay":
 			if r.Method != http.MethodPost {
 				httpkit.WriteError(w, http.StatusMethodNotAllowed, "method_not_allowed", "method not allowed", httpkit.RequestIDFromContext(r.Context()))

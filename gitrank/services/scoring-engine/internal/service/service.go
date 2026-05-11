@@ -92,6 +92,70 @@ func (s *Service) ReplayUser(ctx context.Context, userID string, req contracts.R
 	return response, nil
 }
 
+func (s *Service) VerifyReplay(ctx context.Context, userID string, req contracts.VerifyScoreReplayRequest, now time.Time) (contracts.ScoreReplayVerificationResponse, error) {
+	if s == nil || s.store == nil || s.store.pool == nil {
+		return contracts.ScoreReplayVerificationResponse{}, ErrUnavailable
+	}
+	if strings.TrimSpace(userID) == "" {
+		return contracts.ScoreReplayVerificationResponse{}, ErrInvalidRequest
+	}
+	if err := req.Validate(); err != nil {
+		return contracts.ScoreReplayVerificationResponse{}, fmt.Errorf("%w: %v", ErrInvalidRequest, err)
+	}
+	if version := strings.TrimSpace(req.ScoreVersion); version != "" && version != scoring.ScoreVersion {
+		return contracts.ScoreReplayVerificationResponse{}, fmt.Errorf("%w: score_version must be %s", ErrInvalidRequest, scoring.ScoreVersion)
+	}
+	if err := s.store.EnsureUser(ctx, userID); err != nil {
+		return contracts.ScoreReplayVerificationResponse{}, err
+	}
+
+	repository := strings.TrimSpace(req.Repository)
+	if repository != "" {
+		normalized, err := contracts.NormalizeGitHubRepository(repository)
+		if err != nil {
+			return contracts.ScoreReplayVerificationResponse{}, err
+		}
+		repository = normalized
+	}
+
+	candidates, err := s.store.LoadReplayCandidatesFiltered(ctx, userID, replayCandidateFilter{
+		Repository: repository,
+		From:       req.From,
+		To:         req.To,
+	})
+	if err != nil {
+		return contracts.ScoreReplayVerificationResponse{}, err
+	}
+
+	events, snapshot, badges, _, sourceWatermark := s.buildReplay(userID, "verification", candidates, now.UTC())
+	return contracts.ScoreReplayVerificationResponse{
+		UserID:            userID,
+		ScoreVersion:      scoring.ScoreVersion,
+		Repository:        repository,
+		From:              optionalUTCTime(req.From),
+		To:                optionalUTCTime(req.To),
+		TotalXP:           snapshot.TotalXP,
+		Level:             snapshot.Level,
+		RankTier:          snapshot.RankTier,
+		TopSkills:         snapshot.TopSkills,
+		Badges:            badgeAwardsToViews(badges),
+		Events:            scoreEventsToViews(events),
+		ContributionCount: len(events),
+		SuspiciousEvents:  snapshot.SuspiciousEvents,
+		SourceWatermark:   sourceWatermark.UTC(),
+		GeneratedAt:       now.UTC(),
+		Persisted:         false,
+	}, nil
+}
+
+func optionalUTCTime(value time.Time) *time.Time {
+	if value.IsZero() {
+		return nil
+	}
+	utc := value.UTC()
+	return &utc
+}
+
 func (s *Service) LatestSnapshot(ctx context.Context, userID string, now time.Time) (contracts.UserScoreSnapshotResponse, error) {
 	if s == nil || s.store == nil || s.store.pool == nil {
 		return contracts.UserScoreSnapshotResponse{}, ErrUnavailable
@@ -782,6 +846,31 @@ func badgeAwardsToViews(badges []badgeAward) []contracts.BadgeView {
 			AwardedAt:   badge.AwardedAt.UTC(),
 			Evidence:    badge.Evidence,
 		})
+	}
+	return out
+}
+
+func scoreEventsToViews(events []scoreEventRecord) []contracts.ScoreEventView {
+	out := make([]contracts.ScoreEventView, 0, len(events))
+	for _, event := range events {
+		view := contracts.ScoreEventView{
+			EventKey:     event.EventKey,
+			ScoreVersion: event.ScoreVersion,
+			EventType:    event.EventType,
+			DeltaXP:      event.DeltaXP,
+			SkillXP:      event.SkillXP,
+			Explanation:  append([]string{}, event.Explanation...),
+			Suspicious:   event.Suspicious,
+			CreatedAt:    event.CreatedAt.UTC(),
+		}
+		if strings.TrimSpace(event.Repository) != "" && event.PRNumber > 0 {
+			view.PullRequest = &contracts.PullRequestReference{
+				Repository: event.Repository,
+				Number:     event.PRNumber,
+				Title:      event.PRTitle,
+			}
+		}
+		out = append(out, view)
 	}
 	return out
 }

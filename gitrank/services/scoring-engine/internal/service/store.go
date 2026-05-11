@@ -35,6 +35,12 @@ type replayCandidate struct {
 	MergedByLogin     string
 }
 
+type replayCandidateFilter struct {
+	Repository string
+	From       time.Time
+	To         time.Time
+}
+
 type scoreEventRecord struct {
 	EventKey      string
 	ScoreVersion  string
@@ -114,11 +120,43 @@ func (s *Store) EnsureUser(ctx context.Context, userID string) error {
 }
 
 func (s *Store) LoadReplayCandidates(ctx context.Context, userID string) ([]replayCandidate, error) {
+	return s.LoadReplayCandidatesFiltered(ctx, userID, replayCandidateFilter{})
+}
+
+func (s *Store) LoadReplayCandidatesFiltered(ctx context.Context, userID string, filter replayCandidateFilter) ([]replayCandidate, error) {
+	var from any
+	if !filter.From.IsZero() {
+		from = filter.From.UTC()
+	}
+	var to any
+	if !filter.To.IsZero() {
+		to = filter.To.UTC()
+	}
+
 	rows, err := s.pool.Query(ctx, `
+		WITH replay_candidates AS (
+			SELECT
+				pr.*,
+				r.full_name,
+				r.primary_language,
+				r.default_branch,
+				r.stars_count,
+				r.archived,
+				COALESCE(pr.merged_at, pr.closed_at_source, pr.updated_at_source, pr.created_at_source) AS occurred_at
+			FROM pull_requests pr
+			INNER JOIN repositories r ON r.id = pr.repository_id
+			INNER JOIN github_accounts ga ON ga.id = pr.author_github_account_id
+			WHERE ga.user_id = $1::uuid
+			  AND ga.link_status = 'linked'
+			  AND r.is_private = FALSE
+			  AND ($2 = '' OR LOWER(r.full_name) = LOWER($2))
+			  AND ($3::timestamptz IS NULL OR COALESCE(pr.merged_at, pr.closed_at_source, pr.updated_at_source, pr.created_at_source) >= $3::timestamptz)
+			  AND ($4::timestamptz IS NULL OR COALESCE(pr.merged_at, pr.closed_at_source, pr.updated_at_source, pr.created_at_source) <= $4::timestamptz)
+		)
 		SELECT
 			pr.id::text,
 			ca.id::text,
-			COALESCE(pr.merged_at, pr.closed_at_source, pr.updated_at_source, pr.created_at_source),
+			pr.occurred_at,
 			ca.created_at,
 			r.full_name,
 			COALESCE(r.primary_language, ''),
@@ -147,9 +185,8 @@ func (s *Store) LoadReplayCandidates(ctx context.Context, userID string) ([]repl
 			COALESCE(ca.signals_jsonb, '[]'::jsonb),
 			COALESCE(files.files_jsonb, '[]'::jsonb),
 			COALESCE(reviews.reviews_jsonb, '[]'::jsonb)
-		FROM pull_requests pr
+		FROM replay_candidates pr
 		INNER JOIN repositories r ON r.id = pr.repository_id
-		INNER JOIN github_accounts ga ON ga.id = pr.author_github_account_id
 		INNER JOIN LATERAL (
 			SELECT
 				id,
@@ -191,11 +228,8 @@ func (s *Store) LoadReplayCandidates(ctx context.Context, userID string) ([]repl
 			FROM pull_request_reviews
 			WHERE pull_request_id = pr.id
 		) reviews ON true
-		WHERE ga.user_id = $1::uuid
-		  AND ga.link_status = 'linked'
-		  AND r.is_private = FALSE
-		ORDER BY COALESCE(pr.merged_at, pr.closed_at_source, pr.updated_at_source, pr.created_at_source), pr.number
-	`, userID)
+		ORDER BY pr.occurred_at, pr.number
+	`, userID, strings.TrimSpace(filter.Repository), from, to)
 	if err != nil {
 		return nil, err
 	}
