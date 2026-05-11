@@ -1376,6 +1376,17 @@ components:
           format: double
         summary:
           type: string
+        evidence_source:
+          type: string
+          enum: [deterministic, ai_assisted, mixed, unknown]
+        confidence:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 1
+        evidence_state:
+          type: string
+          enum: [fresh, stale, partial]
     TopRepositoryView:
       type: object
       required: [full_name, owner, name, total_xp, contribution_count, merged_pull_requests, last_contribution_at, visibility]

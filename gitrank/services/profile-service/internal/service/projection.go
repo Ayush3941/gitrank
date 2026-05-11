@@ -16,13 +16,9 @@ const (
 
 func buildSnapshot(user userRecord, scoreRows []scoreRow, badges []badgeRecord, now time.Time) snapshotRecord {
 	totalXP := 0
-	skillTotals := make(map[string]int)
 	mergedPRs := make(map[string]struct{})
 	for _, row := range scoreRows {
 		totalXP += row.DeltaXP
-		for key, value := range row.Skills {
-			skillTotals[key] += value
-		}
 		if row.Repository != "" && row.PRNumber > 0 && row.PRMerged {
 			mergedPRs[fmt.Sprintf("%s#%d", row.Repository, row.PRNumber)] = struct{}{}
 		}
@@ -30,7 +26,7 @@ func buildSnapshot(user userRecord, scoreRows []scoreRow, badges []badgeRecord, 
 
 	sourceWatermark := latestWatermark(scoreRows, badges, now)
 	level := levelViewForXP(totalXP)
-	skills := buildSkillAreas(skillTotals)
+	skills := buildSkillAreas(scoreRows, "fresh")
 	timeline := buildTimeline(scoreRows, sourceWatermark)
 	repositories := buildTopRepositories(scoreRows)
 	badgeViews := buildBadgeViews(badges)
@@ -104,23 +100,59 @@ func latestWatermark(scoreRows []scoreRow, badges []badgeRecord, fallback time.T
 	return latest
 }
 
-func buildSkillAreas(skillTotals map[string]int) []contracts.SkillAreaView {
+func buildSkillAreas(scoreRows []scoreRow, evidenceState string) []contracts.SkillAreaView {
+	type aggregate struct {
+		totalXP            int
+		sources            map[string]struct{}
+		confidenceWeighted float64
+		confidenceWeight   int
+	}
+
+	skillTotals := make(map[string]*aggregate)
+	for _, row := range scoreRows {
+		source := normalizeSkillEvidenceSource(row.AnalysisSource)
+		for key, value := range row.Skills {
+			key = strings.TrimSpace(key)
+			if key == "" || value <= 0 {
+				continue
+			}
+			current, ok := skillTotals[key]
+			if !ok {
+				current = &aggregate{sources: map[string]struct{}{}}
+				skillTotals[key] = current
+			}
+			current.totalXP += value
+			current.sources[source] = struct{}{}
+			if row.AnalysisConfidence > 0 {
+				current.confidenceWeighted += row.AnalysisConfidence * float64(value)
+				current.confidenceWeight += value
+			}
+		}
+	}
+
 	total := 0
 	for _, value := range skillTotals {
-		total += value
+		total += value.totalXP
 	}
 
 	out := make([]contracts.SkillAreaView, 0, len(skillTotals))
 	for key, value := range skillTotals {
 		percentage := 0.0
 		if total > 0 {
-			percentage = float64(value) * 100 / float64(total)
+			percentage = float64(value.totalXP) * 100 / float64(total)
+		}
+		confidence := 0.0
+		if value.confidenceWeight > 0 {
+			confidence = value.confidenceWeighted / float64(value.confidenceWeight)
 		}
 		out = append(out, contracts.SkillAreaView{
-			Key:        key,
-			TotalXP:    value,
-			Percentage: percentage,
-			Summary:    skillSummary(key),
+			Key:            key,
+			TotalXP:        value.totalXP,
+			Percentage:     percentage,
+			Summary:        skillSummary(key),
+			EvidenceSource: skillEvidenceSource(value.sources),
+			Confidence:     confidence,
+			EvidenceState:  normalizeSkillEvidenceState(evidenceState),
 		})
 	}
 
@@ -131,6 +163,41 @@ func buildSkillAreas(skillTotals map[string]int) []contracts.SkillAreaView {
 		return out[i].TotalXP > out[j].TotalXP
 	})
 	return out
+}
+
+func normalizeSkillEvidenceSource(source string) string {
+	switch strings.ToLower(strings.TrimSpace(source)) {
+	case "ai", "ai_assisted", "llm":
+		return "ai_assisted"
+	case "deterministic", "rules":
+		return "deterministic"
+	case "":
+		return "unknown"
+	default:
+		return strings.ToLower(strings.TrimSpace(source))
+	}
+}
+
+func skillEvidenceSource(sources map[string]struct{}) string {
+	if len(sources) == 0 {
+		return "unknown"
+	}
+	if len(sources) > 1 {
+		return "mixed"
+	}
+	for source := range sources {
+		return source
+	}
+	return "unknown"
+}
+
+func normalizeSkillEvidenceState(state string) string {
+	switch strings.ToLower(strings.TrimSpace(state)) {
+	case "fresh", "stale", "partial":
+		return strings.ToLower(strings.TrimSpace(state))
+	default:
+		return "fresh"
+	}
 }
 
 func skillSummary(key string) string {

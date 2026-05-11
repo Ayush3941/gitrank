@@ -782,6 +782,7 @@ V2 direction:
 - newly replayed PR battle reports expose persisted scoring-engine formula components instead of relying only on profile-side display heuristics
 - newly replayed badge awards carry bounded PR evidence references so PR reports can show real badge unlocks
 - scoring-engine now has a non-mutating replay verifier for selected user, repository, date range, and formula version checks against persisted evidence
+- profile skill areas expose evidence source, confidence, and freshness state so skill claims remain bounded to real scored evidence
 - see `CONTRIBUTING.md` for the V1 limitations inventory and V2 no-mock checklist
 
 ## License

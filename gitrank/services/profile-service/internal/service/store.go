@@ -56,18 +56,20 @@ type accountExportRecord struct {
 }
 
 type scoreRow struct {
-	EventID     string
-	EventType   string
-	DeltaXP     int
-	Skills      map[string]int
-	Explanation []string
-	CreatedAt   time.Time
-	Repository  string
-	Owner       string
-	Name        string
-	PRNumber    int
-	PRTitle     string
-	PRMerged    bool
+	EventID            string
+	EventType          string
+	DeltaXP            int
+	Skills             map[string]int
+	Explanation        []string
+	CreatedAt          time.Time
+	Repository         string
+	Owner              string
+	Name               string
+	PRNumber           int
+	PRTitle            string
+	PRMerged           bool
+	AnalysisSource     string
+	AnalysisConfidence float64
 }
 
 type scoreSelection struct {
@@ -242,10 +244,13 @@ func (s *Store) LoadScoreRows(ctx context.Context, userID string, selection scor
 			COALESCE(r.name, ''),
 			COALESCE(pr.number, 0),
 			COALESCE(pr.title, ''),
-			COALESCE(pr.merged, FALSE)
+			COALESCE(pr.merged, FALSE),
+			COALESCE(NULLIF(se.metadata_jsonb->>'analysis_source', ''), ca.analysis_source, ''),
+			COALESCE((NULLIF(se.metadata_jsonb->>'confidence', ''))::double precision, ca.confidence::double precision, 0)
 		FROM score_events se
 		LEFT JOIN pull_requests pr ON pr.id = se.pull_request_id
 		LEFT JOIN repositories r ON r.id = pr.repository_id
+		LEFT JOIN contribution_analyses ca ON ca.id = se.analysis_id
 		WHERE se.user_id = $1::uuid
 	`
 	args := []any{userID}
@@ -283,6 +288,8 @@ func (s *Store) LoadScoreRows(ctx context.Context, userID string, selection scor
 			&record.PRNumber,
 			&record.PRTitle,
 			&record.PRMerged,
+			&record.AnalysisSource,
+			&record.AnalysisConfidence,
 		); err != nil {
 			return nil, err
 		}

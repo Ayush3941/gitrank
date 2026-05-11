@@ -379,16 +379,17 @@ func publicResponseFromSnapshot(snapshot snapshotRecord, settings contracts.Prof
 		}
 	}
 
+	staleness := snapshotStaleness(snapshot, now.UTC())
 	return contracts.PublicProfileResponse{
 		Summary:         snapshot.Summary,
-		TopSkillAreas:   snapshot.TopSkills,
+		TopSkillAreas:   skillAreasWithEvidenceState(snapshot.TopSkills, skillEvidenceStateFromStaleness(staleness)),
 		TopRepositories: publicRepos,
 		Level:           snapshot.ShareCard.Level,
 		Badges:          snapshot.Badges,
 		ScoreHistory:    publicHistory,
 		Timeline:        snapshot.Timeline,
 		ShareCard:       snapshot.ShareCard,
-		Staleness:       snapshotStaleness(snapshot, now.UTC()),
+		Staleness:       staleness,
 	}
 }
 
@@ -428,9 +429,10 @@ func privateResponseFromSnapshot(snapshot snapshotRecord, settings contracts.Pro
 	}
 
 	sortRepositoryVisibility(visibilityViews)
+	staleness := snapshotStaleness(snapshot, now.UTC())
 	return contracts.PrivateProfileResponse{
 		Summary:              snapshot.Summary,
-		TopSkillAreas:        snapshot.TopSkills,
+		TopSkillAreas:        skillAreasWithEvidenceState(snapshot.TopSkills, skillEvidenceStateFromStaleness(staleness)),
 		TopRepositories:      privateRepos,
 		Level:                snapshot.ShareCard.Level,
 		Badges:               snapshot.Badges,
@@ -440,7 +442,7 @@ func privateResponseFromSnapshot(snapshot snapshotRecord, settings contracts.Pro
 		Privacy:              settings,
 		RepositoryVisibility: visibilityViews,
 		ShareCard:            snapshot.ShareCard,
-		Staleness:            snapshotStaleness(snapshot, now.UTC()),
+		Staleness:            staleness,
 	}
 }
 
@@ -460,6 +462,32 @@ func snapshotStaleness(snapshot snapshotRecord, now time.Time) contracts.Profile
 		IsStale:                 now.UTC().After(snapshot.StaleAfter.UTC()),
 		PartialProfileAvailable: snapshot.ID != "",
 	}
+}
+
+func skillEvidenceStateFromStaleness(staleness contracts.ProfileStaleness) string {
+	if staleness.IsStale {
+		return "stale"
+	}
+	if staleness.PartialProfileAvailable && staleness.SourceWatermark.IsZero() {
+		return "partial"
+	}
+	return "fresh"
+}
+
+func skillAreasWithEvidenceState(skills []contracts.SkillAreaView, state string) []contracts.SkillAreaView {
+	if len(skills) == 0 {
+		return nil
+	}
+	out := make([]contracts.SkillAreaView, len(skills))
+	copy(out, skills)
+	normalized := normalizeSkillEvidenceState(state)
+	for i := range out {
+		if strings.TrimSpace(out[i].EvidenceSource) == "" {
+			out[i].EvidenceSource = "unknown"
+		}
+		out[i].EvidenceState = normalized
+	}
+	return out
 }
 
 func sortRepositoryVisibility(values []contracts.RepositoryVisibilityView) {

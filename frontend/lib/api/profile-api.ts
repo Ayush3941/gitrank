@@ -42,6 +42,9 @@ type ApiSkillArea = {
   total_xp: number;
   percentage: number;
   summary?: string;
+  evidence_source?: "deterministic" | "ai_assisted" | "mixed" | "unknown";
+  confidence?: number;
+  evidence_state?: "fresh" | "stale" | "partial";
 };
 
 type ApiRepository = {
@@ -373,8 +376,28 @@ function toSkillTree(skills: ApiSkillArea[]): SkillNode[] {
     category: normalizeSkillCategory(skill.key),
     score: Math.max(1, Math.round(skill.percentage)),
     delta: 0,
-    note: skill.summary || `${humanizeKey(skill.key)} contributes ${skill.total_xp} XP.`,
+    note: skillNote(skill),
+    evidenceSource: skill.evidence_source,
+    confidence: skill.confidence,
+    evidenceState: skill.evidence_state,
   }));
+}
+
+function skillNote(skill: ApiSkillArea): string {
+  const base =
+    skill.summary || `${humanizeKey(skill.key)} contributes ${skill.total_xp} XP.`;
+  const source = skill.evidence_source
+    ? skill.evidence_source.replace("_", " ")
+    : "unknown source";
+  const confidence =
+    typeof skill.confidence === "number" && skill.confidence > 0
+      ? `, confidence ${Math.round(skill.confidence * 100)}%`
+      : "";
+  const state =
+    skill.evidence_state && skill.evidence_state !== "fresh"
+      ? `, ${skill.evidence_state} evidence`
+      : "";
+  return `${base} Evidence source: ${source}${confidence}${state}.`;
 }
 
 function toFeaturedContributions(entries: ApiScoreHistoryEntry[]): FeaturedContribution[] {

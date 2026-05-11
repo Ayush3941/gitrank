@@ -268,6 +268,7 @@ func (s *Service) buildReplay(userID, triggerType string, candidates []replayCan
 			Metadata: map[string]any{
 				"category":                     analysis.Category,
 				"analysis_source":              analysis.AnalysisSource,
+				"confidence":                   analysis.Confidence,
 				"suspicious":                   response.SuspiciousActivity,
 				"trigger_type":                 triggerType,
 				"technical_depth":              analysis.TechnicalDepth,

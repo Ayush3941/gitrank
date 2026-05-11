@@ -46,10 +46,13 @@ type ProfileTimeline struct {
 }
 
 type SkillAreaView struct {
-	Key        string  `json:"key"`
-	TotalXP    int     `json:"total_xp"`
-	Percentage float64 `json:"percentage"`
-	Summary    string  `json:"summary,omitempty"`
+	Key            string  `json:"key"`
+	TotalXP        int     `json:"total_xp"`
+	Percentage     float64 `json:"percentage"`
+	Summary        string  `json:"summary,omitempty"`
+	EvidenceSource string  `json:"evidence_source,omitempty"`
+	Confidence     float64 `json:"confidence,omitempty"`
+	EvidenceState  string  `json:"evidence_state,omitempty"`
 }
 
 type TopRepositoryView struct {

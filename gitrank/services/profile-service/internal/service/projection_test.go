@@ -55,6 +55,70 @@ func TestBuildTimelineProducesSixWeeklyBuckets(t *testing.T) {
 	}
 }
 
+func TestBuildSkillAreasIncludesEvidenceProvenance(t *testing.T) {
+	rows := []scoreRow{
+		{
+			Skills:             map[string]int{"backend": 80},
+			AnalysisSource:     "deterministic",
+			AnalysisConfidence: 0.7,
+		},
+		{
+			Skills:             map[string]int{"backend": 20, "testing": 40},
+			AnalysisSource:     "ai_assisted",
+			AnalysisConfidence: 0.9,
+		},
+	}
+
+	skills := buildSkillAreas(rows, "fresh")
+	if len(skills) != 2 {
+		t.Fatalf("len(skills) = %d, want 2", len(skills))
+	}
+	backend := skills[0]
+	if backend.Key != "backend" {
+		t.Fatalf("top skill = %q, want backend", backend.Key)
+	}
+	if backend.EvidenceSource != "mixed" {
+		t.Fatalf("EvidenceSource = %q, want mixed", backend.EvidenceSource)
+	}
+	if backend.Confidence < 0.73 || backend.Confidence > 0.75 {
+		t.Fatalf("Confidence = %.4f, want weighted average around 0.74", backend.Confidence)
+	}
+	if backend.EvidenceState != "fresh" {
+		t.Fatalf("EvidenceState = %q, want fresh", backend.EvidenceState)
+	}
+}
+
+func TestPublicResponseMarksSkillEvidenceStale(t *testing.T) {
+	now := time.Date(2026, 5, 5, 13, 0, 0, 0, time.UTC)
+	snapshot := snapshotRecord{
+		ID:        "snap-1",
+		Summary:   structSummary("Ayush3941", now),
+		ShareCard: shareCard("Ayush3941", now),
+		Timeline:  emptyTimeline(now),
+		TopSkills: []contracts.SkillAreaView{
+			{
+				Key:            "backend",
+				TotalXP:        120,
+				Percentage:     100,
+				EvidenceSource: "deterministic",
+				Confidence:     0.82,
+				EvidenceState:  "fresh",
+			},
+		},
+		StaleAfter:      now.Add(-time.Minute),
+		RefreshedAt:     now.Add(-time.Hour),
+		SourceWatermark: now.Add(-time.Hour),
+	}
+
+	response := publicResponseFromSnapshot(snapshot, contractsDefaults(), nil, now)
+	if !response.Staleness.IsStale {
+		t.Fatal("Staleness.IsStale = false, want true")
+	}
+	if got := response.TopSkillAreas[0].EvidenceState; got != "stale" {
+		t.Fatalf("EvidenceState = %q, want stale", got)
+	}
+}
+
 func TestPublicResponseFiltersHiddenRepositories(t *testing.T) {
 	now := time.Date(2026, 5, 5, 13, 0, 0, 0, time.UTC)
 	snapshot := snapshotRecord{

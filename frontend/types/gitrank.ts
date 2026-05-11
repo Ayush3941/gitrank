@@ -99,6 +99,9 @@ export interface SkillNode {
   score: number;
   delta: number;
   note: string;
+  evidenceSource?: "deterministic" | "ai_assisted" | "mixed" | "unknown";
+  confidence?: number;
+  evidenceState?: "fresh" | "stale" | "partial";
 }
 
 export interface ScoreBreakdown {

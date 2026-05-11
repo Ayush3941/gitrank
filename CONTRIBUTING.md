@@ -1160,7 +1160,7 @@ V2 scoring and evidence checklist:
 - [ ] Every badge unlock must link to a persisted badge award, unlock rule version, and evidence PR set. Scoring-engine badge awards now include `rule_version`, `evidence_pr_ids`, and bounded `evidence_prs`, with indexed badge-evidence lookups for PR reports; remaining quest reward badges and historical badge rows need the same guarantee.
 - [ ] Every quest reward must link to quest completion evidence and avoid rewarding unverified or duplicate work.
 - [ ] Every leaderboard rank must link to a season snapshot, rank movement event, score version, and freshness timestamp.
-- [ ] Every skill claim must distinguish deterministic evidence, AI-assisted classification, confidence, and stale or partial states.
+- [x] Every skill claim must distinguish deterministic evidence, AI-assisted classification, confidence, and stale or partial states. Profile `top_skill_areas` now carry `evidence_source`, weighted `confidence`, and `evidence_state`, and frontend skill notes include that provenance instead of presenting skill labels as unsupported certainty.
 - [ ] PR battle reports must show when evidence is incomplete, stale, rate-limited, deterministic-only, or AI-fallback.
 - [x] Score replay must be reproducible from stored evidence for a selected user, repository, date range, and formula version. `POST /v1/score/users/{user_id}/replay/verify` recomputes from persisted PR, analysis, file, review, and repository evidence, returns event-level score details, and does not mutate replay runs, score events, snapshots, or badge awards.
 - [ ] No AI output may directly write final scores; scoring remains deterministic and rule-based.
