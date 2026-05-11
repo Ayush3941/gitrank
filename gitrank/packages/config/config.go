@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -116,13 +117,20 @@ type GitHub struct {
 }
 
 type AI struct {
-	Provider        string
-	APIKey          string
-	Model           string
-	BaseURL         string
-	RequestTimeout  time.Duration
-	ModerationModel string
-	EmbeddingModel  string
+	Provider                   string
+	APIKey                     string
+	Model                      string
+	BaseURL                    string
+	RequestTimeout             time.Duration
+	ModerationModel            string
+	EmbeddingModel             string
+	PRMaxChangedFiles          int
+	PRMaxFileRecords           int
+	PRMaxDiffLines             int
+	PRMaxInputChars            int
+	PRMaxEstimatedTokens       int
+	PRMaxEstimatedCostUSD      float64
+	EstimatedInputTokenCostUSD float64
 }
 
 type Observability struct {
@@ -228,13 +236,20 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			CircuitBreakerHalfOpenMax:      getInt("GITHUB_CIRCUIT_BREAKER_HALF_OPEN_MAX_REQUESTS", 1),
 		},
 		AI: AI{
-			Provider:        getEnv("AI_PROVIDER", "openai"),
-			APIKey:          getEnv("OPENAI_API_KEY", ""),
-			Model:           getEnv("OPENAI_MODEL", "gpt-5.5"),
-			BaseURL:         getEnv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
-			RequestTimeout:  getDuration("AI_REQUEST_TIMEOUT", 20*time.Second),
-			ModerationModel: getEnv("OPENAI_MODERATION_MODEL", "omni-moderation-latest"),
-			EmbeddingModel:  getEnv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"),
+			Provider:                   getEnv("AI_PROVIDER", "openai"),
+			APIKey:                     getEnv("OPENAI_API_KEY", ""),
+			Model:                      getEnv("OPENAI_MODEL", "gpt-5.5"),
+			BaseURL:                    getEnv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
+			RequestTimeout:             getDuration("AI_REQUEST_TIMEOUT", 20*time.Second),
+			ModerationModel:            getEnv("OPENAI_MODERATION_MODEL", "omni-moderation-latest"),
+			EmbeddingModel:             getEnv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"),
+			PRMaxChangedFiles:          getInt("AI_PR_MAX_CHANGED_FILES", 100),
+			PRMaxFileRecords:           getInt("AI_PR_MAX_FILE_RECORDS", 100),
+			PRMaxDiffLines:             getInt("AI_PR_MAX_DIFF_LINES", 5000),
+			PRMaxInputChars:            getInt("AI_PR_MAX_INPUT_CHARS", 120000),
+			PRMaxEstimatedTokens:       getInt("AI_PR_MAX_ESTIMATED_TOKENS", 30000),
+			PRMaxEstimatedCostUSD:      getFloat("AI_PR_MAX_ESTIMATED_COST_USD", 0.25),
+			EstimatedInputTokenCostUSD: getFloat("AI_ESTIMATED_INPUT_TOKEN_COST_USD", 0.000005),
 		},
 		Observability: Observability{
 			Enabled:           getBool("OTEL_ENABLED", false),
@@ -379,6 +394,27 @@ func (a App) ValidateBase() error {
 	}
 	if a.AI.RequestTimeout <= 0 {
 		problems = append(problems, "AI_REQUEST_TIMEOUT must be positive")
+	}
+	if a.AI.PRMaxChangedFiles <= 0 {
+		problems = append(problems, "AI_PR_MAX_CHANGED_FILES must be positive")
+	}
+	if a.AI.PRMaxFileRecords <= 0 {
+		problems = append(problems, "AI_PR_MAX_FILE_RECORDS must be positive")
+	}
+	if a.AI.PRMaxDiffLines <= 0 {
+		problems = append(problems, "AI_PR_MAX_DIFF_LINES must be positive")
+	}
+	if a.AI.PRMaxInputChars <= 0 {
+		problems = append(problems, "AI_PR_MAX_INPUT_CHARS must be positive")
+	}
+	if a.AI.PRMaxEstimatedTokens <= 0 {
+		problems = append(problems, "AI_PR_MAX_ESTIMATED_TOKENS must be positive")
+	}
+	if a.AI.PRMaxEstimatedCostUSD <= 0 {
+		problems = append(problems, "AI_PR_MAX_ESTIMATED_COST_USD must be positive")
+	}
+	if a.AI.EstimatedInputTokenCostUSD <= 0 {
+		problems = append(problems, "AI_ESTIMATED_INPUT_TOKEN_COST_USD must be positive")
 	}
 	if a.Scheduler.WorkerConcurrency <= 0 {
 		problems = append(problems, "JOB_WORKER_CONCURRENCY must be positive")
@@ -682,6 +718,19 @@ func getInt(key string, fallback int) int {
 
 	var parsed int
 	_, err := fmt.Sscanf(value, "%d", &parsed)
+	if err != nil {
+		return fallback
+	}
+	return parsed
+}
+
+func getFloat(key string, fallback float64) float64 {
+	value := getEnv(key, "")
+	if value == "" {
+		return fallback
+	}
+
+	parsed, err := strconv.ParseFloat(value, 64)
 	if err != nil {
 		return fallback
 	}

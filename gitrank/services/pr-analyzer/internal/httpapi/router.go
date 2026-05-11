@@ -54,6 +54,14 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			httpkit.WriteError(w, http.StatusBadRequest, "invalid_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
+		if err := enforceAnalysisLimits(req, cfg.AI); err != nil {
+			limitErr, ok := err.(analysisLimitError)
+			if !ok {
+				limitErr = analysisLimitError{code: "analysis_limit_exceeded", message: err.Error()}
+			}
+			httpkit.WriteError(w, http.StatusRequestEntityTooLarge, limitErr.code, limitErr.message, httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
 		start := time.Now()
 		response, err := service.Analyze(req)
 		if err != nil {

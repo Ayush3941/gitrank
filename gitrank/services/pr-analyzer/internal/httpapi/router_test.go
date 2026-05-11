@@ -88,6 +88,30 @@ func TestAnalyzePullRequestRejectsInvalidRequest(t *testing.T) {
 	}
 }
 
+func TestAnalyzePullRequestRejectsRequestsOverHardAILimits(t *testing.T) {
+	cfg := testConfig()
+	cfg.AI.PRMaxChangedFiles = 1
+	router := NewRouter(cfg, testLogger(), "test")
+	request := httptest.NewRequest(http.MethodPost, "/v1/analyze/pull-request", strings.NewReader(`{
+		"repository":{"full_name":"octo/repo"},
+		"pull_request":{
+			"title":"feat: large change",
+			"changed_files":2,
+			"files":[{"path":"a.go"},{"path":"b.go"}]
+		}
+	}`))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+	if response.Code != http.StatusRequestEntityTooLarge {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusRequestEntityTooLarge, response.Body.String())
+	}
+	if !strings.Contains(response.Body.String(), "changed_files_limit_exceeded") {
+		t.Fatalf("body = %s, want changed_files_limit_exceeded", response.Body.String())
+	}
+}
+
 func testConfig() config.App {
 	return config.App{
 		ServiceName: "pr-analyzer",
@@ -99,7 +123,14 @@ func testConfig() config.App {
 		},
 		ShutdownTimeout: time.Second,
 		AI: config.AI{
-			BaseURL: "https://api.openai.com/v1",
+			BaseURL:                    "https://api.openai.com/v1",
+			PRMaxChangedFiles:          100,
+			PRMaxFileRecords:           100,
+			PRMaxDiffLines:             5000,
+			PRMaxInputChars:            120000,
+			PRMaxEstimatedTokens:       30000,
+			PRMaxEstimatedCostUSD:      0.25,
+			EstimatedInputTokenCostUSD: 0.000005,
 		},
 	}
 }

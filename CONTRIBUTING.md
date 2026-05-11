@@ -1111,7 +1111,7 @@ Known v1 limitations:
 - Leaderboard season metadata and rank-progression presentation exist in the frontend, but V1 does not yet have an authoritative backend season table, rank movement ledger, promotion/demotion job, or historical season archive.
 - Reduced gamification is now part of the authenticated profile privacy settings and the dashboard/settings/reveal flows apply it from the live profile response. Anonymous public/marketing pages still use local browser preference only.
 - Settings export now uses a live authenticated account export endpoint that returns user-owned profile, score, badge, visibility, session, GitHub account, and sanitized audit metadata while excluding token secrets and secret hashes.
-- AI-assisted analysis is governed and bounded, but V1 primarily relies on deterministic analysis paths; production AI enrichment over bounded public PR diffs still needs a complete persistence, budget, retry, and explanation loop before it can replace deterministic-only behavior.
+- AI-assisted analysis is governed and bounded, and the analyzer now rejects PR inputs that exceed configured file-count, diff-line, token, input-size, or cost ceilings before analysis. V1 primarily relies on deterministic analysis paths; production AI enrichment over bounded public PR diffs still needs a complete persistence, retry, and explanation loop before it can replace deterministic-only behavior.
 - Production observability assets are committed, but the stack is not deployed against live traffic yet.
 - Repository branch protection, required checks, dependency graph, and Dependabot alert settings still need live apply and verification.
 - Rollback wiring is locally verified, but a real staging or production-like rollback drill still has to be executed and recorded.
@@ -1126,7 +1126,7 @@ V2 product contract checklist:
 - [x] Add a PR report route through the gateway and frontend BFF so `/pr/[owner]/[repo]/[number]` never depends on mock data in production.
 - [ ] Add an orchestration path for `sync PR -> fetch bounded files/diff features -> analyze -> persist contribution_analyses -> score -> refresh profile -> materialize PR report`.
 - [x] Persist bounded changed-file metadata and derived diff features needed for scoring and explanation without storing full repository files.
-- [ ] Add hard size, file-count, diff-hunk, token, and cost limits before any AI-assisted PR analysis call.
+- [x] Add hard size, file-count, diff-hunk, token, and cost limits before any AI-assisted PR analysis call.
 - [ ] Add a live suggested-next-quest contract that derives from score gaps, weak skill lanes, stale data, and real contribution evidence. The live quest board now derives recommendations from weak skill lanes and profile evidence, but PR-report-level suggested-next-quest wiring and stale-state decisioning remain pending.
 - [x] Add account-level user preference storage for reduced gamification if the setting should follow a user across devices.
 - [x] Add an account data export endpoint and frontend flow that returns user-owned profile, score, badge, session, visibility, and audit data without leaking secrets or private code.

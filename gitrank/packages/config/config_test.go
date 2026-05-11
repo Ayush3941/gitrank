@@ -52,6 +52,9 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.GitHub.RepositoryCacheTTL != 10*time.Minute {
 		t.Fatalf("GitHub.RepositoryCacheTTL = %v, want 10m", cfg.GitHub.RepositoryCacheTTL)
 	}
+	if cfg.AI.PRMaxChangedFiles != 100 || cfg.AI.PRMaxFileRecords != 100 || cfg.AI.PRMaxEstimatedTokens != 30000 {
+		t.Fatalf("AI PR limits = changed_files %d file_records %d tokens %d, want defaults", cfg.AI.PRMaxChangedFiles, cfg.AI.PRMaxFileRecords, cfg.AI.PRMaxEstimatedTokens)
+	}
 	if cfg.Auth.SessionCookieName != "gitrank_session" {
 		t.Fatalf("Auth.SessionCookieName = %q, want gitrank_session", cfg.Auth.SessionCookieName)
 	}
@@ -80,6 +83,13 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	t.Setenv("GITHUB_CIRCUIT_BREAKER_HALF_OPEN_MAX_REQUESTS", "2")
 	t.Setenv("GITHUB_REPOSITORY_CACHE_TTL", "30m")
 	t.Setenv("GITHUB_INSTALLATION_REFRESH_SKEW", "7m")
+	t.Setenv("AI_PR_MAX_CHANGED_FILES", "24")
+	t.Setenv("AI_PR_MAX_FILE_RECORDS", "30")
+	t.Setenv("AI_PR_MAX_DIFF_LINES", "900")
+	t.Setenv("AI_PR_MAX_INPUT_CHARS", "16000")
+	t.Setenv("AI_PR_MAX_ESTIMATED_TOKENS", "4000")
+	t.Setenv("AI_PR_MAX_ESTIMATED_COST_USD", "0.08")
+	t.Setenv("AI_ESTIMATED_INPUT_TOKEN_COST_USD", "0.00001")
 	t.Setenv("JOB_WORKER_CONCURRENCY", "9")
 	t.Setenv("JOB_DEAD_LETTER_QUEUE", "custom-dead-letter")
 	t.Setenv("JOB_PER_USER_RATE_MAX", "3")
@@ -140,6 +150,12 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	}
 	if cfg.GitHub.RepositoryCacheTTL != 30*time.Minute {
 		t.Fatalf("GitHub.RepositoryCacheTTL = %v, want 30m", cfg.GitHub.RepositoryCacheTTL)
+	}
+	if cfg.AI.PRMaxChangedFiles != 24 || cfg.AI.PRMaxFileRecords != 30 {
+		t.Fatalf("AI file limits = changed %d files %d, want 24/30", cfg.AI.PRMaxChangedFiles, cfg.AI.PRMaxFileRecords)
+	}
+	if cfg.AI.PRMaxEstimatedCostUSD != 0.08 || cfg.AI.EstimatedInputTokenCostUSD != 0.00001 {
+		t.Fatalf("AI cost limits = max %.5f token %.5f, want 0.08/0.00001", cfg.AI.PRMaxEstimatedCostUSD, cfg.AI.EstimatedInputTokenCostUSD)
 	}
 	if cfg.Scheduler.WorkerConcurrency != 9 {
 		t.Fatalf("Scheduler.WorkerConcurrency = %d, want 9", cfg.Scheduler.WorkerConcurrency)

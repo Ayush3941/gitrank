@@ -115,6 +115,15 @@ Config:
 - `OPENAI_API_KEY`
 - `OPENAI_MODEL`
 - `AI_REQUEST_TIMEOUT`
+- `AI_PR_MAX_CHANGED_FILES`
+- `AI_PR_MAX_FILE_RECORDS`
+- `AI_PR_MAX_DIFF_LINES`
+- `AI_PR_MAX_INPUT_CHARS`
+- `AI_PR_MAX_ESTIMATED_TOKENS`
+- `AI_PR_MAX_ESTIMATED_COST_USD`
+- `AI_ESTIMATED_INPUT_TOKEN_COST_USD`
+
+The analyzer enforces these hard limits before analysis so deterministic and future AI-assisted paths cannot silently process oversized PR input or exceed configured token/cost budgets.
 
 ## Internal Service APIs
 
