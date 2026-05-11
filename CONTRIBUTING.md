@@ -1152,7 +1152,7 @@ V2 frontend no-mock checklist:
 - [x] Make marketing sample data isolated from production app routes and impossible to confuse with signed-in user data.
 - [x] Replace `features/*/data` mock exports with live repositories, typed fixtures for tests, or removed files.
 - [x] Add a CI check that fails if production app, hook, feature, or API modules import mock datasets or preview-only mock APIs.
-- [ ] Add Playwright or equivalent smoke coverage proving quests, PR reports, dashboard, profile, leaderboard, and settings render from live test fixtures rather than mock API functions.
+- [x] Add Playwright or equivalent smoke coverage proving quests, PR reports, dashboard, profile, leaderboard, and settings render from live test fixtures rather than mock API functions. `npm run test:smoke` uses Vitest and React Testing Library to render those flows from live-shaped BFF fixtures, while `npm run check:no-production-mocks` guards production imports.
 
 V2 scoring and evidence checklist:
 

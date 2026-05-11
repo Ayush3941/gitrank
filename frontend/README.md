@@ -55,10 +55,11 @@ npm run dev
 ```bash
 npm run lint
 npm run check:no-production-mocks
+npm run test:smoke
 npm run build
 ```
 
-The root GitHub Actions workflows run the same lint/build checks plus repo-wide scheduled secret and Trivy filesystem scans.
+The root GitHub Actions workflows run the same lint, production-mock boundary, live-fixture smoke, and build checks plus repo-wide scheduled secret and Trivy filesystem scans.
 
 ## Data Sources
 
@@ -75,6 +76,7 @@ The public profile page, authenticated dashboard overview, onboarding reveal, ba
 - session and CSRF cookies stay same-origin to the frontend
 - dashboard badge and contribution screens derive from the authenticated profile snapshot instead of mock PR-analysis detail
 - `npm run check:no-production-mocks` fails CI if production app, hook, feature, or API modules import the mock API or mock domain dataset directly
+- `npm run test:smoke` renders dashboard, quest, PR-report, profile, leaderboard, and settings flows from live-shaped BFF fixtures instead of preview mock API functions
 
 The gamified UI adds season metadata, rank-progress cards, player-card profile presentation, quest recommendation evidence, badge rarity styling, and PR battle-report explanation panels. Live leaderboard season metadata is derived from the gateway response timestamp and displayed as presentation context; final scoring still comes from backend score/profile snapshots.
 

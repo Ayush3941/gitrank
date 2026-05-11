@@ -35,5 +35,8 @@ jobs:
       - name: Check production mock imports
         run: npm run check:no-production-mocks
 
+      - name: Run live fixture smoke tests
+        run: npm run test:smoke
+
       - name: Run build
         run: npm run build
