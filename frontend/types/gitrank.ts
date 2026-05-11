@@ -264,6 +264,11 @@ export interface LeaderboardEntry {
   demotionRisk: boolean;
   evidenceSummary: string;
   scoreFormulaVersion: string;
+  profileSnapshotId?: string;
+  profileSnapshotVersion?: string;
+  sourceWatermark?: string;
+  rankEvidenceState?: "complete" | "partial";
+  rankEvidenceMissing?: string[];
 }
 
 export interface LeaderboardSnapshot {

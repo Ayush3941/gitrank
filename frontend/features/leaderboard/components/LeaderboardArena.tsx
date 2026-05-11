@@ -57,8 +57,13 @@ export function LeaderboardArena({ snapshot }: { snapshot: LeaderboardSnapshot }
                     <Pill>{row.division}</Pill>
                     {row.promotionZone ? <Pill tone="success">Promotion zone</Pill> : null}
                     {row.demotionRisk ? <Pill tone="warning">Safety watch</Pill> : null}
+                    {row.rankEvidenceState ? <Pill tone="warning">Evidence {row.rankEvidenceState}</Pill> : null}
                   </div>
                   <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-200/76">{row.evidenceSummary}</p>
+                  <p className="mt-2 max-w-2xl text-xs text-muted">
+                    Snapshot {row.profileSnapshotVersion || "unknown"} / Score {row.scoreFormulaVersion}
+                    {row.sourceWatermark ? ` / Watermark ${new Date(row.sourceWatermark).toLocaleDateString()}` : ""}
+                  </p>
                 </div>
               </div>
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

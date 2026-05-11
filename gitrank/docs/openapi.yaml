@@ -1452,6 +1452,22 @@ components:
         focus:
           type: string
           description: Primary evidence-backed skill area from the profile snapshot.
+        profile_snapshot_id:
+          type: string
+        profile_snapshot_version:
+          type: string
+        score_version:
+          type: string
+        source_watermark:
+          type: string
+          format: date-time
+        rank_evidence_state:
+          type: string
+          enum: [complete, partial]
+        rank_evidence_missing:
+          type: array
+          items:
+            type: string
         refreshed_at:
           type: string
           format: date-time

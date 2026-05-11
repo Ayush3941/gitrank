@@ -237,7 +237,9 @@ func TestPrivateResponseIncludesRecentPullRequestReports(t *testing.T) {
 func TestLeaderboardEntryFromSnapshotUsesProfileSnapshotEvidence(t *testing.T) {
 	now := time.Date(2026, 5, 5, 13, 0, 0, 0, time.UTC)
 	snapshot := snapshotRecord{
-		TotalXP: 4200,
+		ID:              "profile-snapshot-1",
+		SnapshotVersion: profileSnapshotVersion,
+		TotalXP:         4200,
 		Summary: contracts.PublicProfileSummary{
 			Handle:      "octocat",
 			DisplayName: "Octo Cat",
@@ -253,8 +255,12 @@ func TestLeaderboardEntryFromSnapshotUsesProfileSnapshotEvidence(t *testing.T) {
 				{DeltaXP: 220, TotalXP: 4200},
 			},
 		},
-		RefreshedAt: now.Add(-time.Hour),
-		StaleAfter:  now.Add(time.Hour),
+		ScoreHistory: []contracts.ScoreHistoryEntry{
+			{EventID: "score-1", ScoreVersion: "v1alpha1"},
+		},
+		SourceWatermark: now.Add(-2 * time.Hour),
+		RefreshedAt:     now.Add(-time.Hour),
+		StaleAfter:      now.Add(time.Hour),
 	}
 
 	entry := leaderboardEntryFromSnapshot(snapshot, 3, now)
@@ -272,6 +278,21 @@ func TestLeaderboardEntryFromSnapshotUsesProfileSnapshotEvidence(t *testing.T) {
 	}
 	if entry.IsStale {
 		t.Fatal("IsStale = true, want false")
+	}
+	if entry.ProfileSnapshotID != "profile-snapshot-1" || entry.ProfileSnapshotVersion != profileSnapshotVersion {
+		t.Fatalf("profile snapshot evidence = %q/%q, want snapshot id and version", entry.ProfileSnapshotID, entry.ProfileSnapshotVersion)
+	}
+	if entry.ScoreVersion != "v1alpha1" {
+		t.Fatalf("ScoreVersion = %q, want v1alpha1", entry.ScoreVersion)
+	}
+	if !entry.SourceWatermark.Equal(now.Add(-2 * time.Hour)) {
+		t.Fatalf("SourceWatermark = %v, want %v", entry.SourceWatermark, now.Add(-2*time.Hour))
+	}
+	if entry.RankEvidenceState != "partial" {
+		t.Fatalf("RankEvidenceState = %q, want partial until season/rank ledgers exist", entry.RankEvidenceState)
+	}
+	if len(entry.RankEvidenceMissing) != 2 {
+		t.Fatalf("RankEvidenceMissing = %+v, want season snapshot and rank movement gaps", entry.RankEvidenceMissing)
 	}
 }
 

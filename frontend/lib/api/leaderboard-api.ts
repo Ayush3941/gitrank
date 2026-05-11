@@ -26,6 +26,12 @@ type ApiLeaderboardEntry = {
   weekly_xp: number;
   movement: number;
   focus?: string;
+  profile_snapshot_id?: string;
+  profile_snapshot_version?: string;
+  score_version?: string;
+  source_watermark?: string;
+  rank_evidence_state?: "complete" | "partial";
+  rank_evidence_missing?: string[];
   refreshed_at: string;
   is_stale: boolean;
 };
@@ -95,12 +101,24 @@ function toLeaderboardEntry(entry: ApiLeaderboardEntry): LeaderboardEntry {
     xpToNextRank: 0,
     promotionZone: false,
     demotionRisk: false,
-    evidenceSummary:
-      entry.is_stale
-        ? "Stale public profile snapshot; rank may lag behind recent work."
-        : "Verified public profile snapshot with bounded scoring evidence.",
-    scoreFormulaVersion: "unknown",
+    evidenceSummary: leaderboardEvidenceSummary(entry),
+    scoreFormulaVersion: entry.score_version || "unknown",
+    profileSnapshotId: entry.profile_snapshot_id,
+    profileSnapshotVersion: entry.profile_snapshot_version,
+    sourceWatermark: entry.source_watermark,
+    rankEvidenceState: entry.rank_evidence_state,
+    rankEvidenceMissing: entry.rank_evidence_missing,
   };
+}
+
+function leaderboardEvidenceSummary(entry: ApiLeaderboardEntry): string {
+  if (entry.is_stale) {
+    return "Stale public profile snapshot; rank may lag behind recent work.";
+  }
+  if (entry.rank_evidence_missing?.length) {
+    return `Profile snapshot rank with pending evidence ledgers: ${entry.rank_evidence_missing.join(", ")}.`;
+  }
+  return "Verified public profile snapshot with bounded scoring evidence.";
 }
 
 function rankForTab(

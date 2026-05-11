@@ -434,21 +434,55 @@ func leaderboardEntryFromSnapshot(snapshot snapshotRecord, rank int, now time.Ti
 	if points := snapshot.Timeline.Points; len(points) > 0 {
 		weeklyXP = points[len(points)-1].DeltaXP
 	}
+	scoreVersion := scoreVersionFromSnapshot(snapshot)
+	rankEvidenceState, rankEvidenceMissing := leaderboardRankEvidenceState(snapshot, scoreVersion)
 
 	return contracts.LeaderboardEntryView{
-		Rank:        rank,
-		Handle:      handle,
-		DisplayName: displayName,
-		AvatarURL:   strings.TrimSpace(snapshot.Summary.AvatarURL),
-		LevelLabel:  level.Label,
-		RankTier:    level.RankTier,
-		TotalXP:     snapshot.TotalXP,
-		WeeklyXP:    weeklyXP,
-		Movement:    0,
-		Focus:       focus,
-		RefreshedAt: snapshot.RefreshedAt.UTC(),
-		IsStale:     now.UTC().After(snapshot.StaleAfter.UTC()),
+		Rank:                   rank,
+		Handle:                 handle,
+		DisplayName:            displayName,
+		AvatarURL:              strings.TrimSpace(snapshot.Summary.AvatarURL),
+		LevelLabel:             level.Label,
+		RankTier:               level.RankTier,
+		TotalXP:                snapshot.TotalXP,
+		WeeklyXP:               weeklyXP,
+		Movement:               0,
+		Focus:                  focus,
+		ProfileSnapshotID:      snapshot.ID,
+		ProfileSnapshotVersion: snapshot.SnapshotVersion,
+		ScoreVersion:           scoreVersion,
+		SourceWatermark:        snapshot.SourceWatermark.UTC(),
+		RankEvidenceState:      rankEvidenceState,
+		RankEvidenceMissing:    rankEvidenceMissing,
+		RefreshedAt:            snapshot.RefreshedAt.UTC(),
+		IsStale:                now.UTC().After(snapshot.StaleAfter.UTC()),
 	}
+}
+
+func scoreVersionFromSnapshot(snapshot snapshotRecord) string {
+	for _, entry := range snapshot.ScoreHistory {
+		if version := strings.TrimSpace(entry.ScoreVersion); version != "" {
+			return version
+		}
+	}
+	return ""
+}
+
+func leaderboardRankEvidenceState(snapshot snapshotRecord, scoreVersion string) (string, []string) {
+	missing := []string{"season_snapshot", "rank_movement_event"}
+	if strings.TrimSpace(snapshot.ID) == "" {
+		missing = append(missing, "profile_snapshot")
+	}
+	if strings.TrimSpace(scoreVersion) == "" {
+		missing = append(missing, "score_version")
+	}
+	if snapshot.SourceWatermark.IsZero() {
+		missing = append(missing, "source_watermark")
+	}
+	if len(missing) > 0 {
+		return "partial", missing
+	}
+	return "complete", nil
 }
 
 func startOfWeek(value time.Time) time.Time {

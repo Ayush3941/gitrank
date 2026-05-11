@@ -234,18 +234,24 @@ type PullRequestReportResponse struct {
 }
 
 type LeaderboardEntryView struct {
-	Rank        int       `json:"rank"`
-	Handle      string    `json:"handle"`
-	DisplayName string    `json:"display_name"`
-	AvatarURL   string    `json:"avatar_url,omitempty"`
-	LevelLabel  string    `json:"level_label"`
-	RankTier    string    `json:"rank_tier"`
-	TotalXP     int       `json:"total_xp"`
-	WeeklyXP    int       `json:"weekly_xp"`
-	Movement    int       `json:"movement"`
-	Focus       string    `json:"focus,omitempty"`
-	RefreshedAt time.Time `json:"refreshed_at"`
-	IsStale     bool      `json:"is_stale"`
+	Rank                   int       `json:"rank"`
+	Handle                 string    `json:"handle"`
+	DisplayName            string    `json:"display_name"`
+	AvatarURL              string    `json:"avatar_url,omitempty"`
+	LevelLabel             string    `json:"level_label"`
+	RankTier               string    `json:"rank_tier"`
+	TotalXP                int       `json:"total_xp"`
+	WeeklyXP               int       `json:"weekly_xp"`
+	Movement               int       `json:"movement"`
+	Focus                  string    `json:"focus,omitempty"`
+	ProfileSnapshotID      string    `json:"profile_snapshot_id,omitempty"`
+	ProfileSnapshotVersion string    `json:"profile_snapshot_version,omitempty"`
+	ScoreVersion           string    `json:"score_version,omitempty"`
+	SourceWatermark        time.Time `json:"source_watermark"`
+	RankEvidenceState      string    `json:"rank_evidence_state,omitempty"`
+	RankEvidenceMissing    []string  `json:"rank_evidence_missing,omitempty"`
+	RefreshedAt            time.Time `json:"refreshed_at"`
+	IsStale                bool      `json:"is_stale"`
 }
 
 type LeaderboardResponse struct {
