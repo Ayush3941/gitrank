@@ -83,7 +83,7 @@ The settings page also has live authenticated account actions:
 - `/api/account/unlink` proxies to the Go account disconnect route
 - `/api/account/delete` proxies to the Go account deletion route
 
-The demo query params below still force mock preview states for live screens so design and error states remain easy to inspect.
+The demo query params below are development-gated. They force mock preview states only when `NODE_ENV !== "production"` or `GITRANK_ENABLE_DEMO_PREVIEWS=true` is set, so production URLs keep using live BFF routes by default.
 
 Supported preview query params:
 

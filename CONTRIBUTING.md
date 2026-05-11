@@ -484,8 +484,8 @@ Current preview state:
 - `POST /v1/sync/repository/execute` now performs a bounded live repository sync against the public GitHub REST API and persists repository, pull request, review, issue, and commit data directly
 - `POST /v1/sync/user/execute` now performs a bounded live user sync by walking recent public repositories owned by the requested GitHub login and delegating to the repository executor
 - `POST /v1/sync/installation/execute` now replays repositories already associated with a persisted installation record and delegates each repository to the bounded repository executor without requiring GitHub App installation auth in the v1 baseline
-- `POST /v1/sync/pull-request/execute` now performs a bounded live pull-request sync and persists the PR, its reviews, and its review comments directly
-- `POST /v1/sync/review/execute` now performs a bounded live review sync by refreshing the review surface for one PR number and persisting its reviews and review comments directly
+- `POST /v1/sync/pull-request/execute` now performs a bounded live pull-request sync and persists the PR, bounded changed-file metadata, public patch excerpts, reviews, and review comments directly
+- `POST /v1/sync/review/execute` now performs a bounded live review sync by refreshing the review surface for one PR number and persisting bounded changed-file metadata, public patch excerpts, reviews, and review comments directly
 - `POST /v1/sync/issue/execute` now performs a bounded live issue sync and persists one standalone issue plus its labels directly
 - `POST /v1/sync/commit/execute` now performs a bounded live commit sync and persists one public commit directly
 - manual sync requests also persist queued sync-run records and are queryable by user, repository, subject, requester, correlation ID, and delivery ID
@@ -676,7 +676,7 @@ Current preview state:
 
 ## 13. Frontend and User Experience Checklist
 
-The repo now contains a tracked Next.js frontend with root-level frontend CI plus repo-wide secret and Trivy scanning. Public profile reads plus authenticated dashboard, badge, contribution, leaderboard, settings, sync, disconnect, account-deletion, quest recommendation, and PR battle-report flows are live. The frontend also has season/rank progression presentation, player-card public profiles, quest recommendation evidence, badge rarity styling, PR battle-report explanation panels, and a local reduced-gamification display preference. Demo preview modes still use isolated mock data.
+The repo now contains a tracked Next.js frontend with root-level frontend CI plus repo-wide secret and Trivy scanning. Public profile reads plus authenticated dashboard, badge, contribution, leaderboard, settings, sync, disconnect, account-deletion, quest recommendation, and PR battle-report flows are live. The frontend also has season/rank progression presentation, player-card public profiles, quest recommendation evidence, badge rarity styling, PR battle-report explanation panels, and a local reduced-gamification display preference. Demo preview modes are development-gated and use isolated mock data only when explicitly enabled.
 
 Must be defined or built:
 
@@ -1100,7 +1100,7 @@ Known v1 limitations:
 - Quest recommendations now have a live profile-owned read model at `GET /v1/me/quests` and the production quest/dashboard flows read it through the gateway and frontend BFF. Persistent quest definitions, assignment tables, progress trackers, completion ledgers, reward grants, and audit records remain pending.
 - The public PR battle-report route now reads a live gateway/BFF contract backed by persisted public PR, analysis, score-event, file, and review evidence. It still reports stale/unscored state when analysis or scoring has not completed.
 - The dashboard recent battle reports panel still does not list live PR reports from the profile API; detailed reports are available by direct PR report URL.
-- The frontend still exposes `?demo=` preview states that force mock loading, error, empty, and stale data paths for design inspection.
+- The frontend keeps `?demo=` preview states for design inspection, but they are disabled in production by default and only resolve when `NODE_ENV !== "production"` or `GITRANK_ENABLE_DEMO_PREVIEWS=true` is set.
 - Marketing, onboarding reveal, and feature-local data exports still import the static sample profile or mock datasets. The dashboard top bar now reads the authenticated profile through the live profile BFF.
 - The live PR ingestion path can persist bounded PR metadata, changed-file metadata, public patch excerpts, reviews, and review comments, but there is no seamless production pipeline that turns one synced PR into diff-derived features, a stored `contribution_analyses` record, score events, profile refresh, and a live battle report in one user-facing flow.
 - Direct live PR sync now fetches `/pulls/{number}/files` and stores bounded file metadata or public patch excerpts without full repository files. Diff-hunk feature extraction and downstream analysis/scoring orchestration still remain pending.
@@ -1146,7 +1146,7 @@ V2 frontend no-mock checklist:
 
 - [ ] Remove production imports from `frontend/lib/mock-data/gitrank.ts` outside marketing samples, tests, stories, or explicitly dev-only preview modules.
 - [ ] Remove production imports from `frontend/lib/api/mock-api.ts` for dashboard, quests, PR reports, leaderboard, profile, settings, badges, and contributions. Dashboard, quests, and PR reports now use live routes in normal production flow and import mock data only behind the explicit preview branch; leaderboard/profile preview branches and demo fixtures still need isolation.
-- [ ] Gate `?demo=` preview modes behind a development-only flag or move them to test/storybook fixtures.
+- [x] Gate `?demo=` preview modes behind a development-only flag or move them to test/storybook fixtures.
 - [x] Make the dashboard top bar read the authenticated profile instead of `ayushProfile`.
 - [ ] Make onboarding reveal use the authenticated user's real post-sync profile or a clearly marked development-only sample route.
 - [ ] Make marketing sample data isolated from production app routes and impossible to confuse with signed-in user data.
