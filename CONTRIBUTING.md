@@ -1101,7 +1101,7 @@ Known v1 limitations:
 - The public PR battle-report route now reads a live gateway/BFF contract backed by persisted public PR, analysis, score-event, file, and review evidence. It still reports stale/unscored state when analysis or scoring has not completed.
 - The dashboard recent battle reports panel still does not list live PR reports from the profile API; detailed reports are available by direct PR report URL.
 - The frontend still exposes `?demo=` preview states that force mock loading, error, empty, and stale data paths for design inspection.
-- Marketing, onboarding reveal, dashboard top bar, and feature-local data exports still import the static sample profile or mock datasets.
+- Marketing, onboarding reveal, and feature-local data exports still import the static sample profile or mock datasets. The dashboard top bar now reads the authenticated profile through the live profile BFF.
 - The live PR ingestion path can persist bounded PR metadata, changed-file metadata, public patch excerpts, reviews, and review comments, but there is no seamless production pipeline that turns one synced PR into diff-derived features, a stored `contribution_analyses` record, score events, profile refresh, and a live battle report in one user-facing flow.
 - Direct live PR sync now fetches `/pulls/{number}/files` and stores bounded file metadata or public patch excerpts without full repository files. Diff-hunk feature extraction and downstream analysis/scoring orchestration still remain pending.
 - User sync is bounded to recent public repositories owned by the requested GitHub login, not a full authored-PR search across every public repository, fork, organization, or contribution surface where the user has participated.
@@ -1147,7 +1147,7 @@ V2 frontend no-mock checklist:
 - [ ] Remove production imports from `frontend/lib/mock-data/gitrank.ts` outside marketing samples, tests, stories, or explicitly dev-only preview modules.
 - [ ] Remove production imports from `frontend/lib/api/mock-api.ts` for dashboard, quests, PR reports, leaderboard, profile, settings, badges, and contributions. Dashboard, quests, and PR reports now use live routes in normal production flow and import mock data only behind the explicit preview branch; leaderboard/profile preview branches and demo fixtures still need isolation.
 - [ ] Gate `?demo=` preview modes behind a development-only flag or move them to test/storybook fixtures.
-- [ ] Make the dashboard top bar read the authenticated profile instead of `ayushProfile`.
+- [x] Make the dashboard top bar read the authenticated profile instead of `ayushProfile`.
 - [ ] Make onboarding reveal use the authenticated user's real post-sync profile or a clearly marked development-only sample route.
 - [ ] Make marketing sample data isolated from production app routes and impossible to confuse with signed-in user data.
 - [ ] Replace `features/*/data` mock exports with live repositories, typed fixtures for tests, or removed files.
