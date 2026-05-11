@@ -48,9 +48,15 @@ describe("live fixture frontend smoke coverage", () => {
     renderWithClient(<DashboardPageClient />);
 
     await waitFor(() =>
-      expect(requestedPaths).toEqual(expect.arrayContaining(["/api/profile/me", "/api/profile/me/quests"])),
+      expect(requestedPaths).toEqual(
+        expect.arrayContaining(["/api/profile/me", "/api/profile/me/quests"]),
+      ),
     );
-    expect(await screen.findByText("Live Fixture Maintainer", undefined, { timeout: 5000 })).toBeTruthy();
+    expect(
+      await screen.findByText("Live Fixture Maintainer", undefined, {
+        timeout: 5000,
+      }),
+    ).toBeTruthy();
     expect(await screen.findByText("Live Skill Sprint")).toBeTruthy();
     expect(await screen.findByText("Live PR fixture report")).toBeTruthy();
   });
@@ -59,16 +65,32 @@ describe("live fixture frontend smoke coverage", () => {
     renderWithClient(<QuestsPageClient />);
 
     expect(await screen.findByText("Live Skill Sprint")).toBeTruthy();
-    expect(await screen.findByText("Backed by live quest fixture evidence.")).toBeTruthy();
+    expect(
+      await screen.findByText("Backed by live quest fixture evidence."),
+    ).toBeTruthy();
     expect(requestedPaths).toEqual(["/api/profile/me/quests"]);
   });
 
   it("renders PR battle report from the live PR report fixture route", async () => {
-    renderWithClient(<PRBattleReportPageClient owner="octo" repo="gitrank" number={42} />);
+    renderWithClient(
+      <PRBattleReportPageClient owner="octo" repo="gitrank" number={42} />,
+    );
 
     expect(await screen.findByText("Live PR fixture report")).toBeTruthy();
-    expect(await screen.findByText("Live bounded diff summary from persisted evidence.")).toBeTruthy();
-    expect(await screen.findByText("Backed by live PR report evidence.")).toBeTruthy();
+    expect(
+      await screen.findByText(
+        "Live bounded diff summary from persisted evidence.",
+      ),
+    ).toBeTruthy();
+    expect(
+      await screen.findByText("Backed by live PR report evidence."),
+    ).toBeTruthy();
+    expect(await screen.findByText("Persisted scorer components")).toBeTruthy();
+    expect(
+      await screen.findByText(
+        "Final deterministic XP recorded by the scoring engine. Source: score_event_metadata.",
+      ),
+    ).toBeTruthy();
     expect(requestedPaths).toEqual(["/api/pr/octo/gitrank/42/report"]);
   });
 
@@ -76,7 +98,11 @@ describe("live fixture frontend smoke coverage", () => {
     renderWithClient(<PublicProfilePageClient username="live-maintainer" />);
 
     expect(await screen.findByText("Live Fixture Maintainer")).toBeTruthy();
-    expect(await screen.findByText("Live fixture profile rendered through BFF-shaped JSON.")).toBeTruthy();
+    expect(
+      await screen.findByText(
+        "Live fixture profile rendered through BFF-shaped JSON.",
+      ),
+    ).toBeTruthy();
     expect(requestedPaths).toEqual(["/api/profile/public/live-maintainer"]);
   });
 
@@ -94,9 +120,15 @@ describe("live fixture frontend smoke coverage", () => {
     expect(await screen.findByText("Settings and privacy")).toBeTruthy();
     expect(await screen.findByText("@live-maintainer")).toBeTruthy();
     expect(await screen.findByText("octo/gitrank")).toBeTruthy();
-    await waitFor(() => expect(localStorage.getItem("gitrank:reduced-gamification")).toBe("true"));
+    await waitFor(() =>
+      expect(localStorage.getItem("gitrank:reduced-gamification")).toBe("true"),
+    );
     fireEvent.click(await screen.findByText("Export data"));
-    expect(await screen.findByText("Account export generated. Token secrets and secret hashes are excluded from the file.")).toBeTruthy();
+    expect(
+      await screen.findByText(
+        "Account export generated. Token secrets and secret hashes are excluded from the file.",
+      ),
+    ).toBeTruthy();
     expect(requestedPaths).toEqual(["/api/profile/me", "/api/account/export"]);
   });
 });
@@ -114,15 +146,15 @@ function renderWithClient(ui: ReactNode) {
   });
 
   return render(
-    <QueryClientProvider client={queryClient}>
-      {ui}
-    </QueryClientProvider>,
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
   );
 }
 
 async function liveFixtureFetch(input: RequestInfo | URL): Promise<Response> {
   const rawURL =
-    typeof input === "string" || input instanceof URL ? input.toString() : input.url;
+    typeof input === "string" || input instanceof URL
+      ? input.toString()
+      : input.url;
   const path = new URL(rawURL, "http://gitrank.test").pathname;
   requestedPaths.push(path);
 
@@ -169,7 +201,8 @@ const publicProfileFixture = {
     avatar_url: "https://example.com/avatar.png",
     bio: "Live fixture profile rendered through BFF-shaped JSON.",
     total_xp: 2468,
-    strength_summary: "Backend and testing evidence from persisted score events.",
+    strength_summary:
+      "Backend and testing evidence from persisted score events.",
     top_skills: ["backend", "testing"],
     badges_earned: 1,
     merged_pull_requests: 12,
@@ -231,7 +264,10 @@ const publicProfileFixture = {
         number: 42,
         title: "Live PR fixture report",
       },
-      explanation: ["score version v2-smoke", "Live fixture score event with backend evidence."],
+      explanation: [
+        "score version v2-smoke",
+        "Live fixture score event with backend evidence.",
+      ],
     },
   ],
   timeline: {
@@ -321,6 +357,24 @@ const prReportFixture = {
       delta_xp: 0,
       type: "gain",
       reason: "Live fixture has sufficient review and test evidence.",
+    },
+  ],
+  score_components: [
+    {
+      key: "total_xp",
+      label: "Final XP",
+      value: 320,
+      display_value: "320 XP",
+      source: "score_event_metadata",
+      reason: "Final deterministic XP recorded by the scoring engine.",
+    },
+    {
+      key: "category_weight",
+      label: "Category weight",
+      value: 1.5,
+      display_value: "1.50x",
+      source: "score_event_metadata",
+      reason: "Category-specific multiplier selected by the scoring engine.",
     },
   ],
   suggested_quest_id: "quest-live-skill-sprint",

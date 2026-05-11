@@ -3,6 +3,7 @@ import type {
   PRCategory,
   PullRequestAnalysis,
   ScoreBreakdown,
+  ScoreComponent,
   SkillCategory,
 } from "@/types/gitrank";
 
@@ -39,6 +40,15 @@ export type ApiScoreBreakdown = {
   reason: string;
 };
 
+export type ApiScoreComponent = {
+  key: string;
+  label: string;
+  value: number;
+  display_value: string;
+  source: string;
+  reason: string;
+};
+
 export type ApiPRReportSuggestedQuest = {
   id: string;
   title: string;
@@ -58,6 +68,7 @@ export type ApiPRReportResponse = {
   repo_bonus: number;
   ai_confidence: number;
   penalties?: ApiScoreBreakdown[];
+  score_components?: ApiScoreComponent[];
   suggested_quest_id: string;
   suggested_quest?: ApiPRReportSuggestedQuest;
 };
@@ -91,7 +102,9 @@ export async function getLivePrReport(
   return toPullRequestAnalysis(payload);
 }
 
-export function toPullRequestAnalysis(report: ApiPRReportResponse): PullRequestAnalysis {
+export function toPullRequestAnalysis(
+  report: ApiPRReportResponse,
+): PullRequestAnalysis {
   return {
     contribution: toContribution(report.contribution),
     baseValue: report.base_value,
@@ -101,6 +114,7 @@ export function toPullRequestAnalysis(report: ApiPRReportResponse): PullRequestA
     repoBonus: report.repo_bonus,
     aiConfidence: report.ai_confidence,
     penalties: (report.penalties ?? []).map(toScoreBreakdown),
+    scoreComponents: (report.score_components ?? []).map(toScoreComponent),
     suggestedQuestId: report.suggested_quest_id,
     suggestedQuest: report.suggested_quest
       ? {
@@ -143,6 +157,17 @@ function toContribution(source: ApiPRReportContribution): Contribution {
     ciPassed: source.ci_passed,
     aiSummary: source.ai_summary,
     evidenceSignals: source.evidence_signals ?? [],
+  };
+}
+
+function toScoreComponent(source: ApiScoreComponent): ScoreComponent {
+  return {
+    key: source.key,
+    label: source.label,
+    value: source.value,
+    displayValue: source.display_value,
+    source: source.source,
+    reason: source.reason,
   };
 }
 

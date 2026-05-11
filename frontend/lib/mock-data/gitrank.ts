@@ -289,6 +289,16 @@ export const prAnalyses: PullRequestAnalysis[] = ayushProfile.contributions.map(
   testBonus: Math.round(contribution.testSignalScore * 0.9),
   repoBonus: Math.round((contribution.repoWeight - 1) * 180),
   aiConfidence: contribution.status === "open" ? 0.78 : 0.92,
+  scoreComponents: [
+    {
+      key: "preview_only",
+      label: "Preview-only sample",
+      value: contribution.xpEarned,
+      displayValue: `${contribution.xpEarned} XP`,
+      source: "dev_preview_fixture",
+      reason: "Development-only preview data is isolated from production routes.",
+    },
+  ],
   penalties:
     contribution.status === "open"
       ? [{ label: "Pending maintainer verification", deltaXp: -48, type: "penalty", reason: "Open PRs receive reduced trust until review depth is known." }]

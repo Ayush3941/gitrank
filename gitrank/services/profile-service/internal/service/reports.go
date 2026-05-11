@@ -376,6 +376,7 @@ func pullRequestReportFromRecord(record pullRequestReportRecord, now time.Time) 
 		})
 	}
 	suggestedQuest := suggestedQuest(record, category, testSignal, reviewDepth)
+	scoreComponents := scoreComponentsForReport(record)
 
 	return contracts.PullRequestReportResponse{
 		Contribution: contracts.PRReportContribution{
@@ -410,6 +411,7 @@ func pullRequestReportFromRecord(record pullRequestReportRecord, now time.Time) 
 		RepoBonus:        repoBonus,
 		AIConfidence:     record.AIConfidence,
 		Penalties:        penalties,
+		ScoreComponents:  scoreComponents,
 		SuggestedQuestID: suggestedQuest.ID,
 		SuggestedQuest:   &suggestedQuest,
 		ScoreVersion:     record.ScoreVersion,
@@ -465,6 +467,79 @@ func decodeReportMap(raw []byte) map[string]any {
 	}
 	_ = json.Unmarshal(raw, &out)
 	return out
+}
+
+func scoreComponentsForReport(record pullRequestReportRecord) []contracts.PRReportScoreComponent {
+	if record.ScoreEventID == "" {
+		return nil
+	}
+
+	components := make([]contracts.PRReportScoreComponent, 0, 10)
+	appendComponent := func(key, label string, value float64, source, reason string) {
+		components = append(components, contracts.PRReportScoreComponent{
+			Key:          key,
+			Label:        label,
+			Value:        value,
+			DisplayValue: scoreComponentDisplay(key, value),
+			Source:       source,
+			Reason:       reason,
+		})
+	}
+
+	if value, ok := numberEntryFromMap(record.ScoreMetadata, "total_xp"); ok {
+		appendComponent("total_xp", "Final XP", value, "score_event_metadata", "Final deterministic XP recorded by the scoring engine.")
+	} else {
+		appendComponent("total_xp", "Final XP", float64(record.XP), "score_events.delta_total_xp", "Final deterministic XP stored on the persisted score event.")
+	}
+	appendMetadataComponent(&components, record.ScoreMetadata, "category_weight", "Category weight", "category_weight", "Category-specific multiplier selected by the scoring engine.")
+	appendMetadataComponent(&components, record.ScoreMetadata, "technical_depth", "Technical depth", "technical_depth", "Persisted analysis depth input used by deterministic scoring.")
+	appendMetadataComponent(&components, record.ScoreMetadata, "review_strength", "Review strength", "review_strength", "Persisted review-strength input used by deterministic scoring.")
+	appendMetadataComponent(&components, record.ScoreMetadata, "repository_weight", "Repository weight", "repository_weight", "Repository-context multiplier applied by the scoring engine.")
+	appendMetadataComponent(&components, record.ScoreMetadata, "outcome_weight", "Outcome weight", "outcome_weight", "Merged, closed, draft, or open-state multiplier applied by the scoring engine.")
+	appendMetadataComponent(&components, record.ScoreMetadata, "consistency_modifier", "Consistency modifier", "consistency_modifier", "Contributor-history modifier applied during score replay.")
+	appendMetadataComponent(&components, record.ScoreMetadata, "diminishing_returns_modifier", "Diminishing returns", "diminishing_returns_modifier", "Anti-concentration modifier applied during score replay.")
+	if _, ok := numberEntryFromMap(record.ScoreMetadata, "diminishing_returns_modifier"); !ok {
+		appendMetadataComponent(&components, record.ScoreMetadata, "diminishing_returns_modifier", "Diminishing returns", "diminishing_returns", "Legacy score-event metadata for the anti-concentration modifier.")
+	}
+	appendMetadataComponent(&components, record.ScoreMetadata, "spam_penalty", "Spam penalty", "spam_penalty", "Small-change or docs-heavy penalty applied before final XP is written.")
+	if selfMerged, ok := boolEntryFromMap(record.ScoreMetadata, "self_merged"); ok && selfMerged {
+		appendComponent("self_merged_exclusion", "Self-merge exclusion", 0, "score_event_metadata", "Self-merged pull requests are monitored but excluded from XP.")
+	}
+	return components
+}
+
+func appendMetadataComponent(components *[]contracts.PRReportScoreComponent, metadata map[string]any, key, label, metadataKey, reason string) {
+	value, ok := numberEntryFromMap(metadata, metadataKey)
+	if !ok {
+		return
+	}
+	source := "score_event_metadata"
+	if metadataKey == "diminishing_returns" {
+		source = "legacy_score_event_metadata"
+	}
+	*components = append(*components, contracts.PRReportScoreComponent{
+		Key:          key,
+		Label:        label,
+		Value:        value,
+		DisplayValue: scoreComponentDisplay(key, value),
+		Source:       source,
+		Reason:       reason,
+	})
+}
+
+func scoreComponentDisplay(key string, value float64) string {
+	switch key {
+	case "total_xp":
+		return fmt.Sprintf("%d XP", int(math.Round(value)))
+	case "self_merged_exclusion":
+		return "0 XP"
+	case "technical_depth", "review_strength":
+		return fmt.Sprintf("%d%%", int(math.Round(value*100)))
+	case "spam_penalty":
+		return fmt.Sprintf("-%d%%", int(math.Round(value*100)))
+	default:
+		return fmt.Sprintf("%.2fx", value)
+	}
 }
 
 func reportEvidenceSignals(record pullRequestReportRecord) []string {
@@ -686,26 +761,43 @@ func stringFromMap(values map[string]any, key string) string {
 	return ""
 }
 
-func numberFromMap(values map[string]any, key string) float64 {
+func numberEntryFromMap(values map[string]any, key string) (float64, bool) {
 	value, ok := values[key]
 	if !ok {
-		return 0
+		return 0, false
 	}
 	switch typed := value.(type) {
 	case float64:
-		return typed
+		return typed, true
 	case float32:
-		return float64(typed)
+		return float64(typed), true
 	case int:
-		return float64(typed)
+		return float64(typed), true
 	case int64:
-		return float64(typed)
+		return float64(typed), true
 	case json.Number:
-		out, _ := typed.Float64()
-		return out
+		out, err := typed.Float64()
+		return out, err == nil
 	default:
+		return 0, false
+	}
+}
+
+func boolEntryFromMap(values map[string]any, key string) (bool, bool) {
+	value, ok := values[key]
+	if !ok {
+		return false, false
+	}
+	typed, ok := value.(bool)
+	return typed, ok
+}
+
+func numberFromMap(values map[string]any, key string) float64 {
+	value, ok := numberEntryFromMap(values, key)
+	if !ok {
 		return 0
 	}
+	return value
 }
 
 func scorePercent(value float64, fallback int) int {

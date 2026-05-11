@@ -63,6 +63,18 @@ func TestBuildReplayMonitorsAndExcludesSelfMergedPullRequests(t *testing.T) {
 	if selfMerged, _ := events[0].Metadata["self_merged"].(bool); !selfMerged {
 		t.Fatalf("metadata self_merged = %v, want true", events[0].Metadata["self_merged"])
 	}
+	if version, _ := events[0].Metadata["score_formula_inputs_version"].(string); version != "score-components/v1" {
+		t.Fatalf("score_formula_inputs_version = %q, want score-components/v1", version)
+	}
+	if totalXP, _ := events[0].Metadata["total_xp"].(int); totalXP != 0 {
+		t.Fatalf("metadata total_xp = %v, want 0 after self-merge exclusion", events[0].Metadata["total_xp"])
+	}
+	if rawXP, _ := events[0].Metadata["raw_formula_total_xp"].(int); rawXP <= 0 {
+		t.Fatalf("metadata raw_formula_total_xp = %v, want positive raw scorer value", events[0].Metadata["raw_formula_total_xp"])
+	}
+	if _, ok := events[0].Metadata["category_weight"].(float64); !ok {
+		t.Fatalf("metadata category_weight = %T, want float64", events[0].Metadata["category_weight"])
+	}
 	if snapshot.TotalXP != 0 {
 		t.Fatalf("snapshot TotalXP = %d, want 0", snapshot.TotalXP)
 	}

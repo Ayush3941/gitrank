@@ -777,8 +777,9 @@ Major gaps remain:
 
 V2 direction:
 
-- replace every production mock and demo-only product path with real backend contracts, persistence, orchestration, and verification
+- replace every production mock, demo-only product path, and derived-only product claim with real backend contracts, persistence, orchestration, and verification
 - frontend CI now includes a live-fixture smoke suite that renders dashboard, quests, PR reports, profile, leaderboard, and settings without using frontend mock API functions
+- newly replayed PR battle reports expose persisted scoring-engine formula components instead of relying only on profile-side display heuristics
 - see `CONTRIBUTING.md` for the V1 limitations inventory and V2 no-mock checklist
 
 ## License

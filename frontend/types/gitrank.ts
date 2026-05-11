@@ -108,6 +108,15 @@ export interface ScoreBreakdown {
   reason: string;
 }
 
+export interface ScoreComponent {
+  key: string;
+  label: string;
+  value: number;
+  displayValue: string;
+  source: string;
+  reason: string;
+}
+
 export interface Contribution {
   id: string;
   owner: string;
@@ -143,6 +152,7 @@ export interface PullRequestAnalysis {
   repoBonus: number;
   aiConfidence: number;
   penalties: ScoreBreakdown[];
+  scoreComponents: ScoreComponent[];
   suggestedQuestId: string;
   suggestedQuest?: PRSuggestedQuest;
 }

@@ -3,36 +3,48 @@ package service
 import (
 	"testing"
 	"time"
+
+	"github.com/Ayush3941/gitrank/packages/contracts"
 )
 
 func TestPullRequestReportFromRecordUsesPersistedScoreAndAnalysisEvidence(t *testing.T) {
 	now := time.Date(2026, 5, 10, 14, 0, 0, 0, time.UTC)
 	report := pullRequestReportFromRecord(pullRequestReportRecord{
-		PullRequestID:      "pr-db-1",
-		Owner:              "octo",
-		Repo:               "repo",
-		FullName:           "octo/repo",
-		Stars:              2500,
-		Number:             42,
-		Title:              "test: cover gateway replay",
-		Body:               "Fixes #12",
-		State:              "closed",
-		Merged:             true,
-		Additions:          120,
-		Deletions:          12,
-		ChangedFiles:       4,
-		OccurredAt:         now.Add(-time.Hour),
-		UpdatedAt:          now.Add(-30 * time.Minute),
-		AnalysisID:         "analysis-1",
-		AnalysisVersion:    "deterministic/v1",
-		Category:           "Testing",
-		AIConfidence:       0.91,
-		Summary:            "Added replay regression coverage.",
-		AnalysisSignals:    []string{"Regression coverage", "CI passed"},
-		ScoreEventID:       "score-1",
-		ScoreVersion:       "v1alpha1",
-		XP:                 420,
-		ScoreMetadata:      map[string]any{"technical_depth": 0.72, "review_strength": 0.5, "diminishing_returns": 0.97},
+		PullRequestID:   "pr-db-1",
+		Owner:           "octo",
+		Repo:            "repo",
+		FullName:        "octo/repo",
+		Stars:           2500,
+		Number:          42,
+		Title:           "test: cover gateway replay",
+		Body:            "Fixes #12",
+		State:           "closed",
+		Merged:          true,
+		Additions:       120,
+		Deletions:       12,
+		ChangedFiles:    4,
+		OccurredAt:      now.Add(-time.Hour),
+		UpdatedAt:       now.Add(-30 * time.Minute),
+		AnalysisID:      "analysis-1",
+		AnalysisVersion: "deterministic/v1",
+		Category:        "Testing",
+		AIConfidence:    0.91,
+		Summary:         "Added replay regression coverage.",
+		AnalysisSignals: []string{"Regression coverage", "CI passed"},
+		ScoreEventID:    "score-1",
+		ScoreVersion:    "v1alpha1",
+		XP:              420,
+		ScoreMetadata: map[string]any{
+			"total_xp":                     420,
+			"category_weight":              1.1,
+			"technical_depth":              0.72,
+			"review_strength":              0.5,
+			"repository_weight":            1.1,
+			"outcome_weight":               1.4,
+			"consistency_modifier":         1.04,
+			"diminishing_returns_modifier": 0.97,
+			"spam_penalty":                 0.05,
+		},
 		FileCount:          4,
 		FeatureCount:       4,
 		TestFiles:          2,
@@ -61,6 +73,15 @@ func TestPullRequestReportFromRecordUsesPersistedScoreAndAnalysisEvidence(t *tes
 	}
 	if report.SuggestedQuest == nil || report.SuggestedQuest.ID == "" || report.SuggestedQuest.WhyRecommended == "" {
 		t.Fatalf("SuggestedQuest = %+v, want materialized suggested quest", report.SuggestedQuest)
+	}
+	if !containsScoreComponent(report.ScoreComponents, "category_weight", "1.10x") {
+		t.Fatalf("ScoreComponents = %+v, want persisted category weight", report.ScoreComponents)
+	}
+	if !containsScoreComponent(report.ScoreComponents, "technical_depth", "72%") {
+		t.Fatalf("ScoreComponents = %+v, want persisted technical depth", report.ScoreComponents)
+	}
+	if !containsScoreComponent(report.ScoreComponents, "spam_penalty", "-5%") {
+		t.Fatalf("ScoreComponents = %+v, want persisted spam penalty", report.ScoreComponents)
 	}
 	if report.IsStale {
 		t.Fatal("IsStale = true, want false with analysis and score event")
@@ -94,6 +115,15 @@ func TestPullRequestReportFromRecordMarksUnscoredReportStale(t *testing.T) {
 func containsString(values []string, expected string) bool {
 	for _, value := range values {
 		if value == expected {
+			return true
+		}
+	}
+	return false
+}
+
+func containsScoreComponent(values []contracts.PRReportScoreComponent, key, display string) bool {
+	for _, value := range values {
+		if value.Key == key && value.DisplayValue == display && value.Source != "" {
 			return true
 		}
 	}

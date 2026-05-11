@@ -63,7 +63,7 @@ The root GitHub Actions workflows run the same lint, production-mock boundary, l
 
 ## Data Sources
 
-Quest screens now read the live `GET /v1/me/quests` contract through the frontend BFF when no demo query param is present. PR-report screens now read the live `GET /v1/pr/{owner}/{repo}/{number}/report` contract through the frontend BFF when no demo query param is present.
+Quest screens now read the live `GET /v1/me/quests` contract through the frontend BFF when no demo query param is present. PR-report screens now read the live `GET /v1/pr/{owner}/{repo}/{number}/report` contract through the frontend BFF when no demo query param is present, including persisted score-component metadata from newly replayed score events.
 
 The public profile page, authenticated dashboard overview, onboarding reveal, badge shelf, contribution drill-down, leaderboard, and dashboard settings page now use live profile data when no demo query param is present:
 

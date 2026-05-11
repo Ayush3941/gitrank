@@ -161,6 +161,15 @@ type PRReportScoreBreakdown struct {
 	Reason  string `json:"reason"`
 }
 
+type PRReportScoreComponent struct {
+	Key          string  `json:"key"`
+	Label        string  `json:"label"`
+	Value        float64 `json:"value"`
+	DisplayValue string  `json:"display_value"`
+	Source       string  `json:"source"`
+	Reason       string  `json:"reason"`
+}
+
 type PRReportSuggestedQuest struct {
 	ID              string   `json:"id"`
 	Title           string   `json:"title"`
@@ -180,6 +189,7 @@ type PullRequestReportResponse struct {
 	RepoBonus        int                      `json:"repo_bonus"`
 	AIConfidence     float64                  `json:"ai_confidence"`
 	Penalties        []PRReportScoreBreakdown `json:"penalties,omitempty"`
+	ScoreComponents  []PRReportScoreComponent `json:"score_components,omitempty"`
 	SuggestedQuestID string                   `json:"suggested_quest_id"`
 	SuggestedQuest   *PRReportSuggestedQuest  `json:"suggested_quest,omitempty"`
 	ScoreVersion     string                   `json:"score_version,omitempty"`
