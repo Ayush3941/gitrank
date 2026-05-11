@@ -5,10 +5,12 @@ import {
   DashboardTopBarSkeleton,
   DashboardTopBarUnavailable,
 } from "@/components/shared/DashboardTopBar";
+import { useAccountGamificationPreference } from "@/hooks/use-gamification-preference";
 import { useMyProfile } from "@/hooks/use-profile";
 
 export function DashboardTopBarContainer() {
   const { data, isError, isLoading } = useMyProfile();
+  useAccountGamificationPreference(data);
 
   if (isLoading) {
     return <DashboardTopBarSkeleton />;

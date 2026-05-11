@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { useReducedMotion } from "motion/react";
+import type { ProfileViewData } from "@/types/gitrank";
 
 const STORAGE_KEY = "gitrank:reduced-gamification";
 const CHANGE_EVENT = "gitrank:gamification-preference";
@@ -37,6 +38,18 @@ export function useApplyGamificationPreference() {
   useEffect(() => {
     applyGamificationPreference(reducedGamification);
   }, [reducedGamification]);
+}
+
+export function useAccountGamificationPreference(profile?: ProfileViewData | null) {
+  const { setReducedGamification } = useGamificationPreference();
+  const accountReducedGamification = profile?.user.privacy.reducedGamification;
+
+  useEffect(() => {
+    if (accountReducedGamification === undefined) {
+      return;
+    }
+    setReducedGamification(accountReducedGamification);
+  }, [accountReducedGamification, setReducedGamification]);
 }
 
 function subscribe(callback: () => void) {

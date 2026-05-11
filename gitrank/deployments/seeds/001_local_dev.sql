@@ -351,18 +351,21 @@ INSERT INTO user_profile_settings (
     show_exact_prs,
     show_ai_summaries,
     show_leaderboard_participation,
+    reduced_gamification,
     updated_at
 ) VALUES (
     '11111111-1111-1111-1111-111111111111',
     TRUE,
     TRUE,
     TRUE,
+    FALSE,
     NOW()
 )
 ON CONFLICT (user_id) DO UPDATE
 SET show_exact_prs = EXCLUDED.show_exact_prs,
     show_ai_summaries = EXCLUDED.show_ai_summaries,
     show_leaderboard_participation = EXCLUDED.show_leaderboard_participation,
+    reduced_gamification = EXCLUDED.reduced_gamification,
     updated_at = NOW();
 
 INSERT INTO user_repository_visibility (

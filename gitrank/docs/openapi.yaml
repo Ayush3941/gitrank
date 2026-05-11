@@ -1522,7 +1522,7 @@ components:
           type: boolean
     ProfilePrivacySettings:
       type: object
-      required: [public_profile_enabled, show_exact_prs, show_ai_summaries, show_leaderboard_participation]
+      required: [public_profile_enabled, show_exact_prs, show_ai_summaries, show_leaderboard_participation, reduced_gamification]
       properties:
         public_profile_enabled:
           type: boolean
@@ -1531,6 +1531,8 @@ components:
         show_ai_summaries:
           type: boolean
         show_leaderboard_participation:
+          type: boolean
+        reduced_gamification:
           type: boolean
     RepositoryVisibilityView:
       type: object
@@ -1663,6 +1665,8 @@ components:
         show_ai_summaries:
           type: boolean
         show_leaderboard_participation:
+          type: boolean
+        reduced_gamification:
           type: boolean
     UpdateRepositoryVisibilityRequest:
       type: object

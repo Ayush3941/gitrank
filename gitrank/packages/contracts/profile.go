@@ -204,6 +204,7 @@ type ProfilePrivacySettings struct {
 	ShowExactPRs                 bool `json:"show_exact_prs"`
 	ShowAISummaries              bool `json:"show_ai_summaries"`
 	ShowLeaderboardParticipation bool `json:"show_leaderboard_participation"`
+	ReducedGamification          bool `json:"reduced_gamification"`
 }
 
 type RepositoryVisibilityView struct {
@@ -263,6 +264,7 @@ type UpdateProfilePrivacyRequest struct {
 	ShowExactPRs                 *bool `json:"show_exact_prs,omitempty"`
 	ShowAISummaries              *bool `json:"show_ai_summaries,omitempty"`
 	ShowLeaderboardParticipation *bool `json:"show_leaderboard_participation,omitempty"`
+	ReducedGamification          *bool `json:"reduced_gamification,omitempty"`
 }
 
 type UpdateRepositoryVisibilityRequest struct {

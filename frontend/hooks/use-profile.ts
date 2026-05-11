@@ -18,6 +18,7 @@ type BackedPrivacySettings = Partial<
     | "showExactPRs"
     | "showAiSummaries"
     | "showLeaderboardParticipation"
+    | "reducedGamification"
   >
 >;
 

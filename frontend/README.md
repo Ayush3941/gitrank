@@ -80,7 +80,7 @@ The gamified UI adds season metadata, rank-progress cards, player-card profile p
 
 The marketing landing page uses a dedicated sample fixture under `features/marketing/data/`; it does not import the mock authenticated profile dataset.
 
-The settings page includes a local reduced-gamification display preference. It is stored in browser `localStorage`, respects OS reduced-motion intent in animated components, and lowers decorative glow/motion on that device only. It does not change score, privacy, badge, or leaderboard state.
+The settings page includes an account-backed reduced-gamification display preference. Authenticated dashboard and reveal flows apply the value from the live profile response, mirror it into browser `localStorage` for immediate rendering, respect OS reduced-motion intent in animated components, and do not change score, badge, or leaderboard state.
 
 The settings page also has live authenticated account actions:
 

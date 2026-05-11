@@ -129,6 +129,8 @@ assert_true "auth session token hash column exists" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'auth_sessions' AND column_name = 'session_token_hash');"
 assert_true "profile snapshot freshness columns exist" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'profile_snapshots' AND column_name = 'refreshed_at');"
+assert_true "profile reduced gamification column exists" \
+  "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'user_profile_settings' AND column_name = 'reduced_gamification');"
 assert_true "score events replay column exists" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'score_events' AND column_name = 'replay_run_id');"
 assert_true "local seed user exists exactly once" \
@@ -165,6 +167,8 @@ assert_true "quest reward user status index exists" \
   "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_user_quest_rewards_user_status');"
 assert_true "quest audit action index exists" \
   "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_quest_audit_events_created_action');"
+assert_true "reduced gamification profile settings index exists" \
+  "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_user_profile_settings_reduced_gamification');"
 
 (
   cd "$root_dir/services/auth-service/internal/service"

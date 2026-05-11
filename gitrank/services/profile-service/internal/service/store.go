@@ -328,6 +328,7 @@ func (s *Store) LoadProfileSettings(ctx context.Context, userID string) (profile
 			ps.show_exact_prs,
 			ps.show_ai_summaries,
 			ps.show_leaderboard_participation,
+			ps.reduced_gamification,
 			ps.updated_at
 		FROM users u
 		JOIN user_profile_settings ps ON ps.user_id = u.id
@@ -341,6 +342,7 @@ func (s *Store) LoadProfileSettings(ctx context.Context, userID string) (profile
 		&record.Settings.ShowExactPRs,
 		&record.Settings.ShowAISummaries,
 		&record.Settings.ShowLeaderboardParticipation,
+		&record.Settings.ReducedGamification,
 		&record.UpdatedAt,
 	); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -382,15 +384,19 @@ func (s *Store) UpdateProfileSettings(ctx context.Context, userID string, req co
 	if req.ShowLeaderboardParticipation != nil {
 		settings.Settings.ShowLeaderboardParticipation = *req.ShowLeaderboardParticipation
 	}
+	if req.ReducedGamification != nil {
+		settings.Settings.ReducedGamification = *req.ReducedGamification
+	}
 
 	if _, err := s.pool.Exec(ctx, `
 		UPDATE user_profile_settings
 		SET show_exact_prs = $2,
 		    show_ai_summaries = $3,
 		    show_leaderboard_participation = $4,
-		    updated_at = $5
+		    reduced_gamification = $5,
+		    updated_at = $6
 		WHERE user_id = $1::uuid
-	`, userID, settings.Settings.ShowExactPRs, settings.Settings.ShowAISummaries, settings.Settings.ShowLeaderboardParticipation, now.UTC()); err != nil {
+	`, userID, settings.Settings.ShowExactPRs, settings.Settings.ShowAISummaries, settings.Settings.ShowLeaderboardParticipation, settings.Settings.ReducedGamification, now.UTC()); err != nil {
 		return profileSettingsRecord{}, err
 	}
 

@@ -20,24 +20,29 @@ import {
   useUpdateProfilePrivacy,
   useUpdateRepositoryVisibility,
 } from "@/hooks/use-profile";
-import { useGamificationPreference } from "@/hooks/use-gamification-preference";
+import {
+  useAccountGamificationPreference,
+  useGamificationPreference,
+} from "@/hooks/use-gamification-preference";
 import type { PreviewMode, PrivacySettings } from "@/types/gitrank";
 
 type BackedPrivacyKey =
   | "publicProfileEnabled"
   | "showExactPRs"
   | "showAiSummaries"
-  | "showLeaderboardParticipation";
+  | "showLeaderboardParticipation"
+  | "reducedGamification";
 
 export function SettingsPageClient({ preview }: { preview?: PreviewMode }) {
   const { data, isLoading, isError } = useMyProfile(preview);
+  const isPreview = Boolean(preview);
   const updatePrivacy = useUpdateProfilePrivacy();
   const updateRepositoryVisibility = useUpdateRepositoryVisibility();
   const requestSync = useRequestProfileSync();
   const unlinkAccount = useUnlinkMyAccount();
   const deleteAccount = useDeleteMyAccount();
-  const { reducedGamification, setReducedGamification } = useGamificationPreference();
-  const isPreview = Boolean(preview);
+  const { setReducedGamification } = useGamificationPreference();
+  useAccountGamificationPreference(isPreview ? null : data);
   const [previewSettings, setPreviewSettings] = useState<PrivacySettings | null>(null);
   const [actionNotice, setActionNotice] = useState("");
   const currentSettings = isPreview ? previewSettings ?? data?.user.privacy ?? null : data?.user.privacy ?? null;
@@ -70,6 +75,9 @@ export function SettingsPageClient({ preview }: { preview?: PreviewMode }) {
   const pendingRepository = updateRepositoryVisibility.variables?.fullName ?? null;
 
   function handlePrivacyToggle(key: BackedPrivacyKey, checked: boolean) {
+    if (key === "reducedGamification") {
+      setReducedGamification(checked);
+    }
     if (isPreview) {
       setPreviewSettings((current) => ({
         ...(current ?? baselinePrivacy),
@@ -182,14 +190,15 @@ export function SettingsPageClient({ preview }: { preview?: PreviewMode }) {
             <p className="mt-4 text-xs tracking-[0.24em] text-primary uppercase">Display preference</p>
             <h2 className="mt-2 text-2xl font-semibold text-white">Reduced gamification</h2>
             <p className="mt-2 text-sm leading-6 text-muted">
-              Lowers animated XP ticks, badge shimmer, glow intensity, and rank effects on this device only. Scores,
+              Lowers animated XP ticks, badge shimmer, glow intensity, and rank effects for this account. Scores,
               badges, leaderboard placement, and privacy visibility do not change.
             </p>
           </div>
           <Switch
             id="reduced-gamification"
-            checked={reducedGamification}
-            onCheckedChange={setReducedGamification}
+            checked={currentSettings.reducedGamification}
+            disabled={isSaving}
+            onCheckedChange={(checked) => handlePrivacyToggle("reducedGamification", checked)}
           />
         </div>
       </GlowCard>
@@ -199,7 +208,7 @@ export function SettingsPageClient({ preview }: { preview?: PreviewMode }) {
           <p className="text-xs tracking-[0.24em] text-primary uppercase">Repository privacy</p>
           <h2 className="mt-2 text-2xl font-semibold text-white">Choose what stays on your public card</h2>
         </div>
-          <PrivacyRepositoryToggleList
+        <PrivacyRepositoryToggleList
           repositories={data.user.repositories}
           pendingRepository={isPreview ? null : pendingRepository}
           onToggle={

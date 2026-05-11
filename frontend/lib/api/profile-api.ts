@@ -156,6 +156,7 @@ type BackedPrivacySettings = Pick<
   | "showExactPRs"
   | "showAiSummaries"
   | "showLeaderboardParticipation"
+  | "reducedGamification"
 >;
 
 export async function getPublicProfile(
@@ -207,6 +208,7 @@ export async function updateMyProfilePrivacy(
       show_exact_prs: input.showExactPRs,
       show_ai_summaries: input.showAiSummaries,
       show_leaderboard_participation: input.showLeaderboardParticipation,
+      reduced_gamification: input.reducedGamification,
     }),
   });
   return adaptProfileResponse<ApiPrivateProfileResponse>(response, "private");
