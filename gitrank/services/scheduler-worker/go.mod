@@ -8,7 +8,7 @@ require (
 	github.com/Ayush3941/gitrank/packages/httpkit v0.0.0
 	github.com/Ayush3941/gitrank/packages/logger v0.0.0
 	github.com/Ayush3941/gitrank/packages/store v0.0.0
-	github.com/jackc/pgx/v5 v5.9.0
+	github.com/jackc/pgx/v5 v5.9.2
 	github.com/robfig/cron/v3 v3.0.1
 )
 
