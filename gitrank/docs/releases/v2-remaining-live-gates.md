@@ -14,6 +14,8 @@ For consolidated execution, use:
   successful verifier runs
 - `make verify-live-v2-inputs` as preflight for required live credentials and
   environment inputs
+- `make create-github-app-installation-token` to bootstrap short-lived GitHub
+  App installation tokens for repository-controls operations
 
 Optional persistent audit artifact:
 

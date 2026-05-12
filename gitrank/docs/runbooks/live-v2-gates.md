@@ -65,6 +65,17 @@ RUN_RELEASE_RENDER=true \
 make run-live-v2-gates-workflow
 ```
 
+If you need a short-lived token for repository-controls operations, use:
+
+```bash
+cd gitrank
+GITHUB_APP_ID=... \
+GITHUB_APP_INSTALLATION_ID=... \
+GITHUB_APP_PRIVATE_KEY_FILE=/path/to/app-private-key.pem \
+TOKEN_OUTPUT_FILE=/tmp/gitrank-app-token.txt \
+make create-github-app-installation-token
+```
+
 ## Local Static Workflow Check
 
 Use this before merge to ensure the workflow wiring remains intact:

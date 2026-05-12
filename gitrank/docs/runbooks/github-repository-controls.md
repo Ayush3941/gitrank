@@ -76,6 +76,25 @@ Use the exact check names from GitHub's branch-protection UI or a recent
 successful pull request. Incorrect names can block merging because GitHub will
 wait for checks that never report.
 
+### Optional: Bootstrap Token From GitHub App Credentials
+
+If you do not want to use a personal access token, mint a short-lived
+installation token first:
+
+```bash
+cd gitrank
+GITHUB_APP_ID=... \
+GITHUB_APP_INSTALLATION_ID=... \
+GITHUB_APP_PRIVATE_KEY_FILE=/path/to/app-private-key.pem \
+TOKEN_OUTPUT_FILE=/tmp/gitrank-app-token.txt \
+make create-github-app-installation-token
+
+GITHUB_REPOSITORY=OWNER/REPO \
+GITHUB_TOKEN="$(cat /tmp/gitrank-app-token.txt)" \
+GITRANK_APPLY_REPOSITORY_CONTROLS=yes \
+make apply-github-repository-controls-auto
+```
+
 ## Apply With Auto-Discovered Check Names
 
 This path discovers status checks from the current default-branch head commit
