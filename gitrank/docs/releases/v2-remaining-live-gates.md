@@ -5,6 +5,10 @@ code changes alone.
 
 All items here map to unchecked boxes in `CONTRIBUTING.md`.
 
+For consolidated execution, use:
+
+- `make verify-v2-live-readiness`
+
 ## 1) Production Observability On Live Traffic
 
 Checklist refs:

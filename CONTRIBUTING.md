@@ -1168,7 +1168,8 @@ V2 scoring and evidence checklist:
 V2 operational readiness checklist:
 
 See `gitrank/docs/releases/v2-remaining-live-gates.md` for the concrete
-completion sequence and evidence commands for each remaining live gate.
+completion sequence and evidence commands for each remaining live gate, plus
+the consolidated runner `make verify-v2-live-readiness`.
 
 - [ ] Deploy and verify production observability against real traffic, including sync, analysis, scoring, profile, quest, PR report, leaderboard, queue, GitHub, and AI dashboards. `make verify-live-observability` now automates Prometheus target/rule/metric checks plus Grafana dashboard presence, and `.github/workflows/verify-live-v2-gates.yml` can run it in GitHub Actions, but live endpoint credentials and traffic are still required.
 - [ ] Apply and verify live GitHub repository controls before V2 release branches are cut. `.github/workflows/verify-live-v2-gates.yml` can run auto-apply plus verification (`apply_github_controls=true`) with `GITRANK_REPO_ADMIN_TOKEN`.

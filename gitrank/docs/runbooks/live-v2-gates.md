@@ -57,3 +57,24 @@ Use this before merge to ensure the workflow wiring remains intact:
 cd gitrank
 make verify-live-v2-workflow
 ```
+
+## Local Orchestrated Gate Runner
+
+Use the orchestrator to run static gates and optional live gates from one
+command:
+
+```bash
+cd gitrank
+make verify-v2-live-readiness
+```
+
+Enable live checks by setting environment flags and required credentials:
+
+```bash
+RUN_GITHUB_CONTROLS=true \
+RUN_OBSERVABILITY=true \
+RUN_RELEASE_RENDER=true \
+K8S_ENVIRONMENT=staging \
+OUTPUT_FILE=/tmp/rendered-k8s.yaml \
+make verify-v2-live-readiness
+```
