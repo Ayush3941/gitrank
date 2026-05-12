@@ -3,7 +3,7 @@ TMPDIR ?= $(CURDIR)/.tmp
 GOCACHE ?= $(CURDIR)/.gocache
 GO_MODULE_FIND := find . \( -path './.tmp' -o -path './.gocache' \) -prune -o -name go.mod
 
-.PHONY: fmt test test-migrations test-critical-path-flows race vet audit-go-safety verify-critical-path-tests verify-v2-no-mock-release-gate verify-v2-staging-seed verify-rollback-procedure verify-observability-manifests verify-observability-evidence verify-rollback-drill-evidence verify-secret-policy verify-k8s-autoscaling discover-github-required-status-checks apply-github-repository-controls verify-github-repository-controls bench-ingestion tidy compose-up compose-down seed-local seed-v2-staging
+.PHONY: fmt test test-migrations test-critical-path-flows race vet audit-go-safety verify-critical-path-tests verify-v2-no-mock-release-gate verify-v2-staging-seed verify-rollback-procedure verify-observability-manifests verify-observability-evidence verify-rollback-drill-evidence verify-secret-policy verify-k8s-autoscaling discover-github-required-status-checks apply-github-repository-controls verify-github-repository-controls render-k8s-release-manifests bench-ingestion tidy compose-up compose-down seed-local seed-v2-staging
 
 fmt:
 	mkdir -p "$(TMPDIR)" "$(GOCACHE)"
@@ -67,6 +67,11 @@ apply-github-repository-controls:
 
 verify-github-repository-controls:
 	TMPDIR="$(TMPDIR)" ./scripts/verify_github_repository_controls.sh
+
+render-k8s-release-manifests:
+	test -n "$${K8S_ENVIRONMENT:-}" || (echo "K8S_ENVIRONMENT is required" >&2; exit 1)
+	test -n "$${OUTPUT_FILE:-}" || (echo "OUTPUT_FILE is required" >&2; exit 1)
+	TMPDIR="$(TMPDIR)" ./scripts/render_k8s_release_manifests.sh "$${K8S_ENVIRONMENT}" "$${OUTPUT_FILE}"
 
 bench-ingestion:
 	mkdir -p "$(TMPDIR)" "$(GOCACHE)"

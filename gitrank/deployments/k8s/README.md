@@ -34,7 +34,28 @@ kubectl kustomize deployments/k8s/overlays/staging
 kubectl kustomize deployments/k8s/overlays/production
 ```
 
+Render a release bundle with environment-specific runtime values and placeholder
+checks:
+
+```bash
+K8S_ENVIRONMENT=staging \
+OUTPUT_FILE=./rendered-k8s.yaml \
+IMAGE_TAG=2026.05.12 \
+IMAGE_REGISTRY_OWNER=ayush3941 \
+K8S_PUBLIC_BASE_URL=https://staging.gitrank.dev \
+K8S_API_BASE_URL=https://api.staging.gitrank.dev \
+K8S_AUTH_COOKIE_DOMAIN=.staging.gitrank.dev \
+K8S_GITHUB_OAUTH_REDIRECT_URL=https://auth.staging.gitrank.dev/oauth/github/callback \
+K8S_API_HOST=api.staging.gitrank.dev \
+K8S_AUTH_HOST=auth.staging.gitrank.dev \
+K8S_TLS_SECRET_NAME=gitrank-staging-tls \
+make render-k8s-release-manifests
+```
+
 Deployments can also be rendered, applied, or rolled back through the manual `Deploy Kubernetes` GitHub Actions workflow. Its default mode only renders manifests; cluster apply or rollback requires `KUBE_CONFIG_B64`.
+The workflow renders manifests through `make render-k8s-release-manifests` and
+expects environment-specific `K8S_*` runtime override values to be present in
+repository/environment variables or secrets.
 
 Rollback procedure:
 

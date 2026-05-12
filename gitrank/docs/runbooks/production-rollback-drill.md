@@ -37,6 +37,7 @@ PostgreSQL restore or PITR, not reverse SQL migrations.
   features.
 - The current deployed image tags and target rollback image tags are known.
 - Dashboards and alerts are reachable for the target environment, if deployed.
+- For candidate-release apply runs, the deploy workflow runtime override values are configured (`K8S_PUBLIC_BASE_URL`, `K8S_API_BASE_URL`, `K8S_AUTH_COOKIE_DOMAIN`, `K8S_GITHUB_OAUTH_REDIRECT_URL`, `K8S_API_HOST`, `K8S_AUTH_HOST`, `K8S_TLS_SECRET_NAME`) through repository or environment variables/secrets.
 
 ## Drill Procedure
 

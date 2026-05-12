@@ -54,21 +54,69 @@ jobs:
             exit 1
           fi
 
-      - name: Prepare image references
-        if: inputs.rollback != true
-        working-directory: gitrank/deployments/k8s/overlays/${{ inputs.environment }}
-        run: |
-          set -eu
-          image_owner="${GITHUB_REPOSITORY_OWNER,,}"
-          sed -i "s#ghcr.io/replace-me/gitrank-#ghcr.io/${image_owner}/gitrank-#g" kustomization.yaml
-          sed -i "s#newTag: ${{ inputs.environment }}#newTag: ${{ inputs.image_tag }}#g" kustomization.yaml
-
       - name: Render manifests
         if: inputs.rollback != true
+        working-directory: gitrank
+        env:
+          K8S_ENVIRONMENT: ${{ inputs.environment }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
+          IMAGE_REGISTRY_OWNER_OVERRIDE: ${{ vars.K8S_IMAGE_REGISTRY_OWNER }}
+          IMAGE_REGISTRY_OWNER_DEFAULT: ${{ github.repository_owner }}
+          K8S_PUBLIC_BASE_URL_VAR: ${{ vars.K8S_PUBLIC_BASE_URL }}
+          K8S_PUBLIC_BASE_URL_SECRET: ${{ secrets.K8S_PUBLIC_BASE_URL }}
+          K8S_API_BASE_URL_VAR: ${{ vars.K8S_API_BASE_URL }}
+          K8S_API_BASE_URL_SECRET: ${{ secrets.K8S_API_BASE_URL }}
+          K8S_AUTH_COOKIE_DOMAIN_VAR: ${{ vars.K8S_AUTH_COOKIE_DOMAIN }}
+          K8S_AUTH_COOKIE_DOMAIN_SECRET: ${{ secrets.K8S_AUTH_COOKIE_DOMAIN }}
+          K8S_GITHUB_OAUTH_REDIRECT_URL_VAR: ${{ vars.K8S_GITHUB_OAUTH_REDIRECT_URL }}
+          K8S_GITHUB_OAUTH_REDIRECT_URL_SECRET: ${{ secrets.K8S_GITHUB_OAUTH_REDIRECT_URL }}
+          K8S_API_HOST_VAR: ${{ vars.K8S_API_HOST }}
+          K8S_API_HOST_SECRET: ${{ secrets.K8S_API_HOST }}
+          K8S_AUTH_HOST_VAR: ${{ vars.K8S_AUTH_HOST }}
+          K8S_AUTH_HOST_SECRET: ${{ secrets.K8S_AUTH_HOST }}
+          K8S_TLS_SECRET_NAME_VAR: ${{ vars.K8S_TLS_SECRET_NAME }}
+          K8S_TLS_SECRET_NAME_SECRET: ${{ secrets.K8S_TLS_SECRET_NAME }}
+          K8S_GITHUB_USER_AGENT_VAR: ${{ vars.K8S_GITHUB_USER_AGENT }}
+          K8S_GITHUB_USER_AGENT_SECRET: ${{ secrets.K8S_GITHUB_USER_AGENT }}
         run: |
           set -eu
-          kubectl kustomize "gitrank/deployments/k8s/overlays/${{ inputs.environment }}" > rendered-k8s.yaml
-          test -s rendered-k8s.yaml
+          resolve_required() {
+            key=$1
+            primary=$2
+            secondary=$3
+            value=$primary
+            if [ -z "$value" ]; then
+              value=$secondary
+            fi
+            if [ -z "$value" ]; then
+              echo "$key must be configured through repository/environment variables or secrets" >&2
+              exit 1
+            fi
+            printf '%s' "$value"
+          }
+
+          IMAGE_REGISTRY_OWNER="${IMAGE_REGISTRY_OWNER_OVERRIDE:-$IMAGE_REGISTRY_OWNER_DEFAULT}"
+          IMAGE_REGISTRY_OWNER=$(printf '%s' "$IMAGE_REGISTRY_OWNER" | tr '[:upper:]' '[:lower:]')
+          export IMAGE_REGISTRY_OWNER
+
+          export K8S_PUBLIC_BASE_URL="$(resolve_required K8S_PUBLIC_BASE_URL "$K8S_PUBLIC_BASE_URL_VAR" "$K8S_PUBLIC_BASE_URL_SECRET")"
+          export K8S_API_BASE_URL="$(resolve_required K8S_API_BASE_URL "$K8S_API_BASE_URL_VAR" "$K8S_API_BASE_URL_SECRET")"
+          export K8S_AUTH_COOKIE_DOMAIN="$(resolve_required K8S_AUTH_COOKIE_DOMAIN "$K8S_AUTH_COOKIE_DOMAIN_VAR" "$K8S_AUTH_COOKIE_DOMAIN_SECRET")"
+          export K8S_GITHUB_OAUTH_REDIRECT_URL="$(resolve_required K8S_GITHUB_OAUTH_REDIRECT_URL "$K8S_GITHUB_OAUTH_REDIRECT_URL_VAR" "$K8S_GITHUB_OAUTH_REDIRECT_URL_SECRET")"
+          export K8S_API_HOST="$(resolve_required K8S_API_HOST "$K8S_API_HOST_VAR" "$K8S_API_HOST_SECRET")"
+          export K8S_AUTH_HOST="$(resolve_required K8S_AUTH_HOST "$K8S_AUTH_HOST_VAR" "$K8S_AUTH_HOST_SECRET")"
+          export K8S_TLS_SECRET_NAME="$(resolve_required K8S_TLS_SECRET_NAME "$K8S_TLS_SECRET_NAME_VAR" "$K8S_TLS_SECRET_NAME_SECRET")"
+
+          K8S_GITHUB_USER_AGENT="$K8S_GITHUB_USER_AGENT_VAR"
+          if [ -z "$K8S_GITHUB_USER_AGENT" ]; then
+            K8S_GITHUB_USER_AGENT="$K8S_GITHUB_USER_AGENT_SECRET"
+          fi
+          export K8S_GITHUB_USER_AGENT
+
+          output_file="${RUNNER_TEMP}/rendered-k8s.yaml"
+          OUTPUT_FILE="$output_file" make render-k8s-release-manifests
+          cp "$output_file" "$GITHUB_WORKSPACE/rendered-k8s.yaml"
+          test -s "$GITHUB_WORKSPACE/rendered-k8s.yaml"
 
       - name: Configure kubeconfig
         if: inputs.apply == true || inputs.rollback == true
