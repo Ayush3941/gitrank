@@ -44,6 +44,7 @@ for test_name in \
   "RefreshProfileByUserIDPersistsFreshSnapshot" \
   "MaterializePullRequestReportPersistsIdempotentSnapshot" \
   "MaterializeQuestBoardPersistsQuestEvidenceAndRewards" \
+  "LeaderboardMaterializesSeasonSnapshotsAndRankMovements" \
   "RunNextExecutesProfileRefreshJobAndCompletes" \
   "RunNextExecutesPullRequestReportMaterializationJobAndCompletes" \
   "RunNextExecutesPullRequestGradeJobAndCompletes" \

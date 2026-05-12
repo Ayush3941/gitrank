@@ -398,6 +398,59 @@ This is the initial relational model direction for PostgreSQL.
 - `trend_jsonb`
 - `created_at`
 
+### `leaderboard_seasons`
+
+- `id` UUID primary key
+- `season_key` unique business key, for example `weekly:2026-W20`
+- `season_type`
+- `status`
+- `snapshot_version`
+- `score_version`
+- `window_start_at`
+- `window_end_at`
+- `source_watermark`
+- `generated_at`
+- `entry_count`
+- `created_at`
+- `updated_at`
+
+### `leaderboard_season_snapshots`
+
+- `id` UUID primary key
+- `season_id` foreign key
+- `user_id` foreign key
+- `profile_snapshot_id` foreign key
+- `rank_movement_event_id` foreign key
+- `rank`
+- `rank_tier`
+- `total_xp`
+- `weekly_xp`
+- `movement`
+- `focus`
+- `score_version`
+- `profile_snapshot_version`
+- `source_watermark`
+- `refreshed_at`
+- `stale_after`
+- `snapshot_jsonb`
+- unique `(season_id, user_id)`
+
+### `leaderboard_rank_movement_events`
+
+- `id` UUID primary key
+- `season_id` foreign key
+- `user_id` foreign key
+- `profile_snapshot_id` foreign key
+- `event_key` unique idempotency key
+- `previous_rank`
+- `current_rank`
+- `movement_delta`
+- `previous_total_xp`
+- `current_total_xp`
+- `score_version`
+- `evidence_jsonb`
+- `created_at`
+
 ### `sync_jobs`
 
 - `id` UUID primary key
@@ -499,5 +552,8 @@ Likely high-value indexes:
 - `score_events(user_id, event_key)` for live quest reward idempotency
 - `pull_request_report_snapshots(pull_request_id, generated_at desc)`
 - `user_quest_assignments(source_snapshot_id, updated_at desc)`
+- `leaderboard_seasons(season_type, status, generated_at desc)`
+- `leaderboard_season_snapshots(season_id, rank asc, generated_at desc)`
+- `leaderboard_rank_movement_events(user_id, created_at desc)`
 - `profile_snapshots(user_id, created_at desc)`
 - `sync_jobs(status, scheduled_at)`

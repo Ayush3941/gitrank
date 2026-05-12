@@ -23,8 +23,8 @@ errors will dead-letter again.
 - Check whether the failure is transient, deterministic, rate-limit driven, or
   caused by missing upstream evidence.
 - Confirm the affected stage can be replayed idempotently without creating
-  duplicate GitHub entities, score events, profile snapshots, quest rewards, or
-  report rows.
+  duplicate GitHub entities, score events, profile snapshots, quest rewards,
+  leaderboard rank events, or report rows.
 - Prefer replaying the narrowest failed record over running a broad backfill.
 - Preserve the original dead-letter record and include the replay request ID in
   the incident notes.
@@ -40,6 +40,7 @@ errors will dead-letter again.
 | Profile refresh | `profile.refresh_user` scheduler job or direct `POST /v1/profile/users/{user_id}/refresh` for emergency manual repair | Replay the failed profile refresh job after score replay succeeds; use the direct refresh endpoint only when the scheduler path itself is unavailable. | Profile snapshots are rebuilt from persisted score and badge evidence and remain versioned by user, snapshot version, and source watermark. |
 | PR grading pipeline | `pipeline.grade_pull_request` scheduler job | Replay only after confirming the GitHub token, analyzer store, scoring store, profile store, and report snapshot/read model are healthy. | The job has a user-plus-PR dedupe key and each stage keeps its own idempotency guard. |
 | Quest update | Profile refresh/private quest materializer; future external `quest.update` job | Replay profile refresh after score history and quest evidence references are present. | Quest assignments, progress events, completion events, XP score events, badge awards, and reward grants must remain unique per user, quest, and evidence set. |
+| Leaderboard materialization | Profile-service current weekly materializer; future external `leaderboard.materialize_season` job | Replay the profile/leaderboard read path after profile snapshots and score versions are current. | `leaderboard_seasons.season_key`, `leaderboard_season_snapshots(season_id, user_id)`, and `leaderboard_rank_movement_events.event_key` must prevent duplicate rank evidence. |
 | PR report materialization | `report.materialize_pull_request` scheduler job or direct `POST /v1/pr/{owner}/{repo}/{number}/report/materialize` for emergency manual repair | Replay after PR, analysis, score-event, badge, and quest evidence are all present. | `pull_request_report_snapshots.idempotency_key` must prevent duplicate report rows while allowing evidence-derived replacement. |
 
 ## Replay Procedure
@@ -65,6 +66,7 @@ errors will dead-letter again.
    - profile: profile snapshot freshness is current; scheduler run output includes `profile_refresh.profile_snapshot_id`
    - PR grading pipeline: scheduler run output includes `grade.sync`, `grade.analysis`, `grade.score_replay`, `grade.profile_refresh`, `grade.report_materialization`, and `grade.report`
    - quest: quest evidence references, progress rows, completion rows, reward grants, `quest.reward` score events, and reward badge evidence are linked
+   - leaderboard: current `leaderboard_seasons`, `leaderboard_season_snapshots`, and `leaderboard_rank_movement_events` rows exist for the weekly season key
    - report: `pull_request_report_snapshots` has one current row for the PR evidence key, and the PR report returns complete or explicitly partial evidence state
 7. Close the incident only after dead-letter count stops increasing for one
    alert window.
@@ -75,5 +77,5 @@ errors will dead-letter again.
   stop and fix the data or code path before retrying.
 - If multiple stages are dead-lettered for the same PR, replay from the earliest
   missing evidence stage forward.
-- If score or quest rewards duplicated, freeze further replays for that user and
-  investigate idempotency before continuing.
+- If score, quest reward, or leaderboard rank evidence duplicated, freeze
+  further replays for that user and investigate idempotency before continuing.

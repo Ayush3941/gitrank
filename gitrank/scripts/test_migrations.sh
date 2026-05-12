@@ -125,6 +125,12 @@ assert_true "quest_audit_events table exists" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'quest_audit_events');"
 assert_true "pull_request_report_snapshots table exists" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'pull_request_report_snapshots');"
+assert_true "leaderboard_seasons table exists" \
+  "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'leaderboard_seasons');"
+assert_true "leaderboard_season_snapshots table exists" \
+  "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'leaderboard_season_snapshots');"
+assert_true "leaderboard_rank_movement_events table exists" \
+  "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'leaderboard_rank_movement_events');"
 assert_true "webhook delivery persistence column exists" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'github_webhook_deliveries' AND column_name = 'github_installation_id');"
 assert_true "auth session token hash column exists" \
@@ -177,6 +183,12 @@ assert_true "quest reward live score event idempotency index exists" \
   "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_score_events_user_live_event_key');"
 assert_true "quest assignment snapshot index exists" \
   "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_user_quest_assignments_snapshot');"
+assert_true "leaderboard season current index exists" \
+  "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_leaderboard_seasons_current');"
+assert_true "leaderboard season rank index exists" \
+  "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_leaderboard_season_snapshots_rank');"
+assert_true "leaderboard rank movement user index exists" \
+  "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_leaderboard_rank_movement_user_created');"
 
 (
   cd "$root_dir/services/auth-service/internal/service"

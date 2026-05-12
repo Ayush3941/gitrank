@@ -125,33 +125,41 @@ func (s *Service) Leaderboard(ctx context.Context, limit int, now time.Time) (co
 		limit = 100
 	}
 
-	snapshots, err := s.store.LoadLeaderboardSnapshots(ctx, limit)
+	season, entries, ok, err := s.store.LoadFreshLeaderboardSeason(ctx, now.UTC(), limit)
 	if err != nil {
 		return contracts.LeaderboardResponse{}, err
 	}
-
-	entries := make([]contracts.LeaderboardEntryView, 0, len(snapshots))
-	var window contracts.ProfileTimeWindow
-	for i, snapshot := range snapshots {
-		if i == 0 {
-			window = snapshot.Timeline.Window
+	if !ok {
+		materializeLimit := limit
+		if materializeLimit < leaderboardMaxMaterializedRows {
+			materializeLimit = leaderboardMaxMaterializedRows
 		}
-		entries = append(entries, leaderboardEntryFromSnapshot(snapshot, i+1, now.UTC()))
+		season, entries, err = s.store.MaterializeLeaderboardSeason(ctx, now.UTC(), materializeLimit)
+		if err != nil {
+			return contracts.LeaderboardResponse{}, err
+		}
+		if len(entries) > limit {
+			entries = entries[:limit]
+		}
 	}
 
-	if window.Label == "" {
-		window = contracts.ProfileTimeWindow{
-			Label:   "last_6_weeks",
-			Bucket:  "week",
-			StartAt: now.UTC().AddDate(0, 0, -42),
-			EndAt:   now.UTC(),
-		}
+	views := make([]contracts.LeaderboardEntryView, 0, len(entries))
+	for _, entry := range entries {
+		views = append(views, leaderboardEntryFromSeasonSnapshot(entry, now.UTC()))
 	}
 
 	return contracts.LeaderboardResponse{
-		Entries:     entries,
-		Window:      window,
-		GeneratedAt: now.UTC(),
+		Entries: views,
+		Window: contracts.ProfileTimeWindow{
+			Label:   season.SeasonKey,
+			Bucket:  "week",
+			StartAt: season.WindowStart.UTC(),
+			EndAt:   season.WindowEnd.UTC(),
+		},
+		GeneratedAt:           season.GeneratedAt.UTC(),
+		SeasonKey:             season.SeasonKey,
+		SeasonSnapshotVersion: season.SnapshotVersion,
+		ScoringVersion:        season.ScoreVersion,
 	}, nil
 }
 

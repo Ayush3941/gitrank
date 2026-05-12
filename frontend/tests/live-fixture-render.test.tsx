@@ -112,6 +112,9 @@ describe("live fixture frontend smoke coverage", () => {
 
     expect(await screen.findByText("v2-smoke")).toBeTruthy();
     expect(await screen.findByText("Live Leaderboard Maintainer")).toBeTruthy();
+    expect(
+      await screen.findByText("Verified season snapshot with rank movement and bounded scoring evidence."),
+    ).toBeTruthy();
     expect(requestedPaths).toEqual(["/api/leaderboard"]);
   });
 
@@ -423,6 +426,13 @@ const privateProfileFixture = {
 
 const leaderboardFixture = {
   generated_at: now,
+  season_key: "weekly:2026-W20",
+  window: {
+    label: "weekly:2026-W20",
+    bucket: "week",
+    start_at: now,
+    end_at: now,
+  },
   scoring_version: "v2-smoke",
   entries: [
     {
@@ -436,6 +446,14 @@ const leaderboardFixture = {
       weekly_xp: 320,
       movement: 3,
       focus: "backend",
+      profile_snapshot_id: "profile-snapshot-live",
+      profile_snapshot_version: "profile/v1",
+      season_key: "weekly:2026-W20",
+      season_snapshot_id: "leaderboard-season-snapshot-live",
+      rank_movement_event_id: "leaderboard-rank-movement-live",
+      score_version: "v2-smoke",
+      source_watermark: now,
+      rank_evidence_state: "complete",
       refreshed_at: now,
       is_stale: false,
     },

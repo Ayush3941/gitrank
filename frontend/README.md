@@ -74,12 +74,12 @@ The public profile page, authenticated dashboard overview, onboarding reveal, ba
 - session and CSRF cookies stay same-origin to the frontend
 - dashboard badge, contribution, and recent battle-report panels derive from the authenticated profile snapshot instead of mock PR-analysis detail
 - contribution rows surface score-history evidence state plus score/formula version linkage when the backend provides it
-- leaderboard rows surface profile-snapshot provenance, score version, source watermark, and missing rank-ledger evidence when the backend provides it
+- leaderboard rows surface season snapshot IDs, rank movement event IDs, profile-snapshot provenance, score version, source watermark, and missing rank-ledger evidence when the backend provides it
 - `npm run check:no-production-mocks` fails CI if production app, hook, feature, or API modules import mock datasets, preview adapters, or demo query plumbing
 - frontend CI also runs `../gitrank/scripts/verify_v2_no_mock_release_gate.sh` to verify critical OpenAPI entries, worker-flow coverage, and live fixture coverage stay wired
 - `npm run test:smoke` renders dashboard, quest, PR-report, profile, leaderboard, and settings flows from live-shaped BFF fixtures
 
-The gamified UI adds season metadata, rank-progress cards, player-card profile presentation, quest recommendation evidence, badge rarity styling, and PR battle-report explanation panels. Live leaderboard season metadata is derived from the gateway response timestamp and displayed as presentation context; final scoring still comes from backend score/profile snapshots.
+The gamified UI adds season metadata, rank-progress cards, player-card profile presentation, quest recommendation evidence, badge rarity styling, and PR battle-report explanation panels. Live leaderboard season metadata now comes from the gateway response window when available; final scoring still comes from backend score/profile snapshots.
 
 The marketing landing page uses a dedicated sample fixture under `features/marketing/data/`; it does not import authenticated profile data or any mock app route dataset.
 

@@ -265,6 +265,9 @@ export interface LeaderboardEntry {
   scoreFormulaVersion: string;
   profileSnapshotId?: string;
   profileSnapshotVersion?: string;
+  seasonKey?: string;
+  seasonSnapshotId?: string;
+  rankMovementEventId?: string;
   sourceWatermark?: string;
   rankEvidenceState?: "complete" | "partial";
   rankEvidenceMissing?: string[];

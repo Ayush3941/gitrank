@@ -58,6 +58,7 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 				{Key: "timeline", Summary: "Time-windowed XP trend view", Status: "implemented"},
 				{Key: "repositories", Summary: "Top repositories with visibility-aware projection", Status: "implemented"},
 				{Key: "quests", Summary: "Authenticated quest recommendations derived from profile score evidence", Status: "implemented"},
+				{Key: "leaderboard", Summary: "Weekly season snapshots with persisted rank movement evidence", Status: "implemented"},
 			},
 		})
 	})))

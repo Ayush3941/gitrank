@@ -41,6 +41,7 @@ require_test "scoring replay ledger" "func TestReplayUserPersistsLedgerAndSnapsh
 require_test "profile refresh persistence" "func TestRefreshProfileByUserIDPersistsFreshSnapshot" "services/profile-service/internal/service"
 require_test "PR report materialization persistence" "func TestMaterializePullRequestReportPersistsIdempotentSnapshot" "services/profile-service/internal/service"
 require_test "quest materialization persistence" "func TestMaterializeQuestBoardPersistsQuestEvidenceAndRewards" "services/profile-service/internal/service"
+require_test "leaderboard season materialization persistence" "func TestLeaderboardMaterializesSeasonSnapshotsAndRankMovements" "services/profile-service/internal/service"
 require_test "scheduler profile refresh execution" "func TestRunNextExecutesProfileRefreshJobAndCompletes" "services/scheduler-worker/internal/service"
 require_test "scheduler PR report materialization execution" "func TestRunNextExecutesPullRequestReportMaterializationJobAndCompletes" "services/scheduler-worker/internal/service"
 require_test "scheduler PR grading pipeline execution" "func TestRunNextExecutesPullRequestGradeJobAndCompletes" "services/scheduler-worker/internal/service"

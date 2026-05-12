@@ -264,6 +264,9 @@ type LeaderboardEntryView struct {
 	Focus                  string    `json:"focus,omitempty"`
 	ProfileSnapshotID      string    `json:"profile_snapshot_id,omitempty"`
 	ProfileSnapshotVersion string    `json:"profile_snapshot_version,omitempty"`
+	SeasonKey              string    `json:"season_key,omitempty"`
+	SeasonSnapshotID       string    `json:"season_snapshot_id,omitempty"`
+	RankMovementEventID    string    `json:"rank_movement_event_id,omitempty"`
 	ScoreVersion           string    `json:"score_version,omitempty"`
 	SourceWatermark        time.Time `json:"source_watermark"`
 	RankEvidenceState      string    `json:"rank_evidence_state,omitempty"`
@@ -273,9 +276,12 @@ type LeaderboardEntryView struct {
 }
 
 type LeaderboardResponse struct {
-	Entries     []LeaderboardEntryView `json:"entries"`
-	Window      ProfileTimeWindow      `json:"window"`
-	GeneratedAt time.Time              `json:"generated_at"`
+	Entries               []LeaderboardEntryView `json:"entries"`
+	Window                ProfileTimeWindow      `json:"window"`
+	GeneratedAt           time.Time              `json:"generated_at"`
+	SeasonKey             string                 `json:"season_key,omitempty"`
+	SeasonSnapshotVersion string                 `json:"season_snapshot_version,omitempty"`
+	ScoringVersion        string                 `json:"scoring_version,omitempty"`
 }
 
 type ProfilePrivacySettings struct {

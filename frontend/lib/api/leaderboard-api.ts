@@ -27,6 +27,9 @@ type ApiLeaderboardEntry = {
   focus?: string;
   profile_snapshot_id?: string;
   profile_snapshot_version?: string;
+  season_key?: string;
+  season_snapshot_id?: string;
+  rank_movement_event_id?: string;
   score_version?: string;
   source_watermark?: string;
   rank_evidence_state?: "complete" | "partial";
@@ -38,6 +41,13 @@ type ApiLeaderboardEntry = {
 type ApiLeaderboardResponse = {
   entries?: ApiLeaderboardEntry[];
   generated_at?: string;
+  season_key?: string;
+  window?: {
+    label?: string;
+    bucket?: string;
+    start_at?: string;
+    end_at?: string;
+  };
   scoring_version?: string;
 };
 
@@ -57,7 +67,7 @@ export async function getLeaderboard(tab: LeaderboardTab): Promise<LeaderboardSn
   }
 
   const payload = (await response.json()) as ApiLeaderboardResponse;
-  const season = seasonFromGeneratedAt(payload.generated_at, payload.scoring_version);
+  const season = seasonFromResponse(payload);
   const rows = rankForTab((payload.entries ?? []).map(toLeaderboardEntry), tab, season.scoringVersion);
   return {
     season,
@@ -96,6 +106,9 @@ function toLeaderboardEntry(entry: ApiLeaderboardEntry): LeaderboardEntry {
     scoreFormulaVersion: entry.score_version || "unknown",
     profileSnapshotId: entry.profile_snapshot_id,
     profileSnapshotVersion: entry.profile_snapshot_version,
+    seasonKey: entry.season_key,
+    seasonSnapshotId: entry.season_snapshot_id,
+    rankMovementEventId: entry.rank_movement_event_id,
     sourceWatermark: entry.source_watermark,
     rankEvidenceState: entry.rank_evidence_state,
     rankEvidenceMissing: entry.rank_evidence_missing,
@@ -109,7 +122,7 @@ function leaderboardEvidenceSummary(entry: ApiLeaderboardEntry): string {
   if (entry.rank_evidence_missing?.length) {
     return `Profile snapshot rank with pending evidence ledgers: ${entry.rank_evidence_missing.join(", ")}.`;
   }
-  return "Verified public profile snapshot with bounded scoring evidence.";
+  return "Verified season snapshot with rank movement and bounded scoring evidence.";
 }
 
 function rankForTab(
@@ -142,6 +155,38 @@ function rankForTab(
       scoreFormulaVersion: scoringVersion,
     };
   });
+}
+
+function seasonFromResponse(payload: ApiLeaderboardResponse): LeaderboardSeason {
+  if (payload.window?.start_at && payload.window?.end_at) {
+    const startsAt = new Date(payload.window.start_at);
+    const endsAt = new Date(payload.window.end_at);
+    if (!Number.isNaN(startsAt.getTime()) && !Number.isNaN(endsAt.getTime())) {
+      const labelEndsAt = new Date(endsAt);
+      if (
+        labelEndsAt.getUTCHours() === 0 &&
+        labelEndsAt.getUTCMinutes() === 0 &&
+        labelEndsAt.getUTCSeconds() === 0 &&
+        labelEndsAt.getUTCMilliseconds() === 0
+      ) {
+        labelEndsAt.setUTCDate(labelEndsAt.getUTCDate() - 1);
+      }
+      return {
+        id: payload.season_key ?? payload.window.label ?? `weekly-${startsAt.toISOString().slice(0, 10)}`,
+        name: `Weekly arena ${formatMonthDay(startsAt)}`,
+        windowLabel: `${formatMonthDay(startsAt)} - ${formatMonthDay(labelEndsAt)}`,
+        startsAt: startsAt.toISOString(),
+        endsAt: endsAt.toISOString(),
+        status: "Active",
+        scoringVersion: payload.scoring_version ?? "unknown",
+        promotionRule: "Top 25 move toward the next rank tier when the season locks.",
+        resetRule: "Weekly XP resets after the window; total XP and score evidence are retained.",
+        explanation:
+          "Leaderboard rows are backed by persisted season snapshots and rank movement events.",
+      };
+    }
+  }
+  return seasonFromGeneratedAt(payload.generated_at, payload.scoring_version);
 }
 
 function seasonFromGeneratedAt(generatedAt?: string, scoringVersion = "v1alpha1"): LeaderboardSeason {

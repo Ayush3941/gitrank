@@ -901,7 +901,8 @@ paths:
       tags: [Profiles]
       summary: Return the public GitRank leaderboard
       description: |
-        The leaderboard is built from public, leaderboard-enabled profile snapshots and ranks by total XP.
+        The leaderboard is built from public, leaderboard-enabled profile snapshots materialized into
+        weekly leaderboard season snapshots and rank movement events.
         Placement is directional and formula-versioned, not an absolute measure of engineering ability.
       operationId: getLeaderboard
       responses:
@@ -1508,6 +1509,12 @@ components:
           type: string
         profile_snapshot_version:
           type: string
+        season_key:
+          type: string
+        season_snapshot_id:
+          type: string
+        rank_movement_event_id:
+          type: string
         score_version:
           type: string
         source_watermark:
@@ -1538,6 +1545,12 @@ components:
         generated_at:
           type: string
           format: date-time
+        season_key:
+          type: string
+        season_snapshot_version:
+          type: string
+        scoring_version:
+          type: string
     BadgeView:
       type: object
       required: [key, name, awarded_at]

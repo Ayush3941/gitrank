@@ -321,6 +321,7 @@ Read-model behavior:
 
 - serves snapshot-backed public and authenticated profiles
 - can force a profile snapshot rebuild from persisted score events and badge evidence for scheduler-driven post-scoring refresh
+- materializes public leaderboard rows into weekly season snapshots and rank movement events before serving rank evidence
 - exposes explicit staleness metadata
 - applies privacy settings and per-repository visibility redaction
 - caches public and private profile responses in Redis when configured
