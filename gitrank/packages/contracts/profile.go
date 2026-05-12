@@ -287,6 +287,10 @@ type LeaderboardEntryView struct {
 	SeasonSnapshotID       string    `json:"season_snapshot_id,omitempty"`
 	RankMovementEventID    string    `json:"rank_movement_event_id,omitempty"`
 	ScoreVersion           string    `json:"score_version,omitempty"`
+	RankScoreEventID       string    `json:"rank_score_event_id,omitempty"`
+	RankFormulaVersion     string    `json:"rank_formula_version,omitempty"`
+	RankPullRequestID      string    `json:"rank_pull_request_id,omitempty"`
+	RankAnalysisID         string    `json:"rank_analysis_id,omitempty"`
 	SourceWatermark        time.Time `json:"source_watermark"`
 	RankEvidenceState      string    `json:"rank_evidence_state,omitempty"`
 	RankEvidenceMissing    []string  `json:"rank_evidence_missing,omitempty"`

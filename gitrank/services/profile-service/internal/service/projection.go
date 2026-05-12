@@ -435,6 +435,7 @@ func leaderboardEntryFromSnapshot(snapshot snapshotRecord, rank int, now time.Ti
 		weeklyXP = points[len(points)-1].DeltaXP
 	}
 	scoreVersion := scoreVersionFromSnapshot(snapshot)
+	rankEvidence := leaderboardRankEvidenceFromSnapshot(snapshot)
 	rankEvidenceState, rankEvidenceMissing := leaderboardRankEvidenceState(snapshot, scoreVersion)
 
 	return contracts.LeaderboardEntryView{
@@ -451,12 +452,57 @@ func leaderboardEntryFromSnapshot(snapshot snapshotRecord, rank int, now time.Ti
 		ProfileSnapshotID:      snapshot.ID,
 		ProfileSnapshotVersion: snapshot.SnapshotVersion,
 		ScoreVersion:           scoreVersion,
+		RankScoreEventID:       rankEvidence.ScoreEventID,
+		RankFormulaVersion:     rankEvidence.FormulaVersion,
+		RankPullRequestID:      rankEvidence.PullRequestID,
+		RankAnalysisID:         rankEvidence.AnalysisID,
 		SourceWatermark:        snapshot.SourceWatermark.UTC(),
 		RankEvidenceState:      rankEvidenceState,
 		RankEvidenceMissing:    rankEvidenceMissing,
 		RefreshedAt:            snapshot.RefreshedAt.UTC(),
 		IsStale:                now.UTC().After(snapshot.StaleAfter.UTC()),
 	}
+}
+
+type leaderboardRankEvidence struct {
+	ScoreEventID   string
+	FormulaVersion string
+	PullRequestID  string
+	AnalysisID     string
+}
+
+func leaderboardRankEvidenceFromSnapshot(snapshot snapshotRecord) leaderboardRankEvidence {
+	best := leaderboardRankEvidence{}
+	bestCompleteness := -1
+	for _, entry := range snapshot.ScoreHistory {
+		evidence := leaderboardRankEvidence{
+			ScoreEventID:   strings.TrimSpace(entry.EventID),
+			FormulaVersion: strings.TrimSpace(entry.FormulaVersion),
+			PullRequestID:  strings.TrimSpace(entry.PullRequestID),
+			AnalysisID:     strings.TrimSpace(entry.AnalysisID),
+		}
+		if evidence.ScoreEventID == "" {
+			continue
+		}
+		completeness := 1
+		if evidence.FormulaVersion != "" {
+			completeness++
+		}
+		if evidence.PullRequestID != "" {
+			completeness++
+		}
+		if evidence.AnalysisID != "" {
+			completeness++
+		}
+		if completeness == 4 {
+			return evidence
+		}
+		if completeness > bestCompleteness {
+			best = evidence
+			bestCompleteness = completeness
+		}
+	}
+	return best
 }
 
 func scoreVersionFromSnapshot(snapshot snapshotRecord) string {

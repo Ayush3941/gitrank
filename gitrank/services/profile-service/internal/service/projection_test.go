@@ -278,7 +278,14 @@ func TestLeaderboardEntryFromSnapshotUsesProfileSnapshotEvidence(t *testing.T) {
 			},
 		},
 		ScoreHistory: []contracts.ScoreHistoryEntry{
-			{EventID: "score-1", ScoreVersion: "v1alpha1"},
+			{EventID: "score-legacy", ScoreVersion: "v1alpha1"},
+			{
+				EventID:        "score-linked",
+				ScoreVersion:   "v1alpha1",
+				FormulaVersion: "score-components/v1",
+				PullRequestID:  "pr-42",
+				AnalysisID:     "analysis-42",
+			},
 		},
 		SourceWatermark: now.Add(-2 * time.Hour),
 		RefreshedAt:     now.Add(-time.Hour),
@@ -306,6 +313,15 @@ func TestLeaderboardEntryFromSnapshotUsesProfileSnapshotEvidence(t *testing.T) {
 	}
 	if entry.ScoreVersion != "v1alpha1" {
 		t.Fatalf("ScoreVersion = %q, want v1alpha1", entry.ScoreVersion)
+	}
+	if entry.RankScoreEventID != "score-linked" {
+		t.Fatalf("RankScoreEventID = %q, want score-linked", entry.RankScoreEventID)
+	}
+	if entry.RankFormulaVersion != "score-components/v1" {
+		t.Fatalf("RankFormulaVersion = %q, want score-components/v1", entry.RankFormulaVersion)
+	}
+	if entry.RankPullRequestID != "pr-42" || entry.RankAnalysisID != "analysis-42" {
+		t.Fatalf("rank evidence links = %q/%q, want pr-42/analysis-42", entry.RankPullRequestID, entry.RankAnalysisID)
 	}
 	if !entry.SourceWatermark.Equal(now.Add(-2 * time.Hour)) {
 		t.Fatalf("SourceWatermark = %v, want %v", entry.SourceWatermark, now.Add(-2*time.Hour))

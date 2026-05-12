@@ -1669,6 +1669,18 @@ components:
           type: string
         score_version:
           type: string
+        rank_score_event_id:
+          type: string
+          description: Persisted score-event identifier used to trace leaderboard XP to stored evidence.
+        rank_formula_version:
+          type: string
+          description: Score formula input version associated with `rank_score_event_id` when available.
+        rank_pull_request_id:
+          type: string
+          description: Pull request evidence linked from `rank_score_event_id` when available.
+        rank_analysis_id:
+          type: string
+          description: Contribution analysis artifact linked from `rank_score_event_id` when available.
         source_watermark:
           type: string
           format: date-time
