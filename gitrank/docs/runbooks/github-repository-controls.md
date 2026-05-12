@@ -56,6 +56,10 @@ GITRANK_REQUIRED_STATUS_CHECKS="CI / go-checks,Frontend CI / frontend-checks,DCO
 make apply-github-repository-controls
 ```
 
+`GITHUB_REPOSITORY` can be omitted when running from a Git clone whose
+`origin` points to `github.com/owner/repo(.git)`. `GH_TOKEN` is accepted as a
+fallback to `GITHUB_TOKEN`.
+
 Use the exact check names from GitHub's branch-protection UI or a recent
 successful pull request. Incorrect names can block merging because GitHub will
 wait for checks that never report.
@@ -77,8 +81,9 @@ wait for checks that never report.
 
 Run this from the repo root with a token that can read repository
 administration, branch protection, dependency graph, and Dependabot alert
-state. This verifier checks the branch-protection API path. If GitHub rulesets
-are used instead, export the ruleset and verify the same requirements manually.
+state. The verifier checks branch protection first and falls back to branch
+ruleset evaluation (`/rules/branches/{branch}`) when branch protection is not
+present.
 
 ```bash
 cd gitrank
@@ -86,6 +91,9 @@ GITHUB_REPOSITORY=OWNER/REPO \
 GITHUB_TOKEN=... \
 make verify-github-repository-controls
 ```
+
+`GITHUB_REPOSITORY` can be omitted when running from a Git clone whose `origin`
+targets this repository. `GH_TOKEN` is accepted as a fallback to `GITHUB_TOKEN`.
 
 The verifier intentionally fails closed if it cannot prove a required setting.
 Do not check the repository-admin boxes in `CONTRIBUTING.md` from inspection

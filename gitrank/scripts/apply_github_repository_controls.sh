@@ -2,6 +2,7 @@
 set -eu
 
 REPOSITORY="${GITHUB_REPOSITORY:-}"
+TOKEN="${GITHUB_TOKEN:-${GH_TOKEN:-}}"
 API_BASE="${GITHUB_API_URL:-https://api.github.com}"
 API_VERSION="${GITHUB_API_VERSION:-2026-03-10}"
 TMP_ROOT="${TMPDIR:-/tmp}"
@@ -17,12 +18,28 @@ require_command() {
   command -v "$1" >/dev/null 2>&1 || fail "missing required command: $1"
 }
 
+resolve_repository_from_git_remote() {
+  [ -n "$REPOSITORY" ] && return 0
+  command -v git >/dev/null 2>&1 || return 0
+  remote_url=$(git config --get remote.origin.url 2>/dev/null || true)
+  [ -n "$remote_url" ] || return 0
+  case "$remote_url" in
+    https://github.com/*) inferred_repo=${remote_url#https://github.com/} ;;
+    git@github.com:*) inferred_repo=${remote_url#git@github.com:} ;;
+    *) inferred_repo= ;;
+  esac
+  inferred_repo=${inferred_repo%.git}
+  [ -n "$inferred_repo" ] && REPOSITORY=$inferred_repo
+}
+
+resolve_repository_from_git_remote
+
 case "$REPOSITORY" in
   */*) ;;
-  *) fail "GITHUB_REPOSITORY must use owner/name form" ;;
+  *) fail "GITHUB_REPOSITORY must use owner/name form (or run from a clone with GitHub origin remote)" ;;
 esac
 
-[ -n "${GITHUB_TOKEN:-}" ] || fail "GITHUB_TOKEN is required with repository administration write access"
+[ -n "$TOKEN" ] || fail "GITHUB_TOKEN or GH_TOKEN is required with repository administration write access"
 [ "$APPLY_CONFIRMATION" = "yes" ] || fail "set GITRANK_APPLY_REPOSITORY_CONTROLS=yes to allow live GitHub mutations"
 [ -n "$STATUS_CHECKS" ] || fail "GITRANK_REQUIRED_STATUS_CHECKS is required; use exact check names from a recent successful PR"
 
@@ -43,7 +60,7 @@ github_request() {
   if [ -n "$data_file" ]; then
     API_STATUS=$(curl -sS -L -X "$method" -o "$body_file" -w '%{http_code}' \
       -H 'Accept: application/vnd.github+json' \
-      -H "Authorization: Bearer $GITHUB_TOKEN" \
+      -H "Authorization: Bearer $TOKEN" \
       -H "X-GitHub-Api-Version: $API_VERSION" \
       --data-binary "@$data_file" \
       "$API_BASE$path") || {
@@ -53,7 +70,7 @@ github_request() {
   else
     API_STATUS=$(curl -sS -L -X "$method" -o "$body_file" -w '%{http_code}' \
       -H 'Accept: application/vnd.github+json' \
-      -H "Authorization: Bearer $GITHUB_TOKEN" \
+      -H "Authorization: Bearer $TOKEN" \
       -H "X-GitHub-Api-Version: $API_VERSION" \
       "$API_BASE$path") || {
         rm -f "$body_file"
