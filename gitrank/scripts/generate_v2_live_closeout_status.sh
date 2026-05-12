@@ -93,7 +93,7 @@ fi
 
 run_and_capture "Essential Live Env Presence" \
   sh -c '
-for v in GITHUB_REPOSITORY GITRANK_REPO_ADMIN_TOKEN GITHUB_TOKEN GH_TOKEN PROMETHEUS_BASE_URL GRAFANA_BASE_URL GRAFANA_API_TOKEN OBS_EVIDENCE_FILE ROLLBACK_EVIDENCE_FILE RESTORE_EVIDENCE_FILE IMAGE_TAG IMAGE_REGISTRY_OWNER; do
+for v in GITHUB_REPOSITORY GITRANK_REPO_ADMIN_TOKEN GITHUB_TOKEN GH_TOKEN PROMETHEUS_BASE_URL GRAFANA_BASE_URL GRAFANA_API_TOKEN OBS_EVIDENCE_FILE ROLLBACK_EVIDENCE_FILE RESTORE_EVIDENCE_FILE IMAGE_TAG IMAGE_REGISTRY_OWNER REQUIRE_ENV_SPECIFIC_K8S_OVERRIDES STAGING_K8S_PUBLIC_BASE_URL PRODUCTION_K8S_PUBLIC_BASE_URL STAGING_K8S_API_BASE_URL PRODUCTION_K8S_API_BASE_URL STAGING_K8S_AUTH_COOKIE_DOMAIN PRODUCTION_K8S_AUTH_COOKIE_DOMAIN STAGING_K8S_GITHUB_OAUTH_REDIRECT_URL PRODUCTION_K8S_GITHUB_OAUTH_REDIRECT_URL STAGING_K8S_API_HOST PRODUCTION_K8S_API_HOST STAGING_K8S_AUTH_HOST PRODUCTION_K8S_AUTH_HOST STAGING_K8S_TLS_SECRET_NAME PRODUCTION_K8S_TLS_SECRET_NAME; do
   eval val="\${$v-}"
   if [ -n "$val" ]; then
     echo "$v=set"
@@ -133,6 +133,14 @@ for v in GITHUB_REPOSITORY PROMETHEUS_BASE_URL GRAFANA_BASE_URL GRAFANA_API_TOKE
   [ -n "$val" ] || add_missing_var "$v"
 done
 
+require_env_specific="${REQUIRE_ENV_SPECIFIC_K8S_OVERRIDES:-true}"
+if [ "$require_env_specific" = "true" ]; then
+  for v in STAGING_K8S_PUBLIC_BASE_URL PRODUCTION_K8S_PUBLIC_BASE_URL STAGING_K8S_API_BASE_URL PRODUCTION_K8S_API_BASE_URL STAGING_K8S_AUTH_COOKIE_DOMAIN PRODUCTION_K8S_AUTH_COOKIE_DOMAIN STAGING_K8S_GITHUB_OAUTH_REDIRECT_URL PRODUCTION_K8S_GITHUB_OAUTH_REDIRECT_URL STAGING_K8S_API_HOST PRODUCTION_K8S_API_HOST STAGING_K8S_AUTH_HOST PRODUCTION_K8S_AUTH_HOST STAGING_K8S_TLS_SECRET_NAME PRODUCTION_K8S_TLS_SECRET_NAME; do
+    eval val="\${$v-}"
+    [ -n "$val" ] || add_missing_var "$v"
+  done
+fi
+
 token_candidate="${GITRANK_REPO_ADMIN_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}"
 [ -n "$token_candidate" ] || add_missing_var "GITRANK_REPO_ADMIN_TOKEN_OR_GITHUB_TOKEN_OR_GH_TOKEN"
 
@@ -144,6 +152,7 @@ token_candidate="${GITRANK_REPO_ADMIN_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}"
   else
     printf 'Current missing vars: `none`.\n'
   fi
+  printf 'REQUIRE_ENV_SPECIFIC_K8S_OVERRIDES: `%s`.\n' "$require_env_specific"
   printf '\n'
   printf '2. Run public controls precheck and fix branch protection first if needed.\n'
   printf '\n'
@@ -188,6 +197,21 @@ token_candidate="${GITRANK_REPO_ADMIN_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}"
   printf '```bash\n'
   printf 'cd gitrank\n'
   printf 'CONFIRM_FINALIZE_V2=yes VERIFY_FROM_WORKFLOW=true RUN_GITHUB_CONTROLS=true RUN_OBSERVABILITY=true RUN_K8S_RUNTIME=true RUN_ROLLBACK_RESTORE=true \\\n'
+  printf 'REQUIRE_ENV_SPECIFIC_K8S_OVERRIDES=true \\\n'
+  printf 'STAGING_K8S_PUBLIC_BASE_URL=https://staging.example \\\n'
+  printf 'PRODUCTION_K8S_PUBLIC_BASE_URL=https://prod.example \\\n'
+  printf 'STAGING_K8S_API_BASE_URL=https://api.staging.example \\\n'
+  printf 'PRODUCTION_K8S_API_BASE_URL=https://api.prod.example \\\n'
+  printf 'STAGING_K8S_AUTH_COOKIE_DOMAIN=.staging.example \\\n'
+  printf 'PRODUCTION_K8S_AUTH_COOKIE_DOMAIN=.prod.example \\\n'
+  printf 'STAGING_K8S_GITHUB_OAUTH_REDIRECT_URL=https://auth.staging.example/oauth/github/callback \\\n'
+  printf 'PRODUCTION_K8S_GITHUB_OAUTH_REDIRECT_URL=https://auth.prod.example/oauth/github/callback \\\n'
+  printf 'STAGING_K8S_API_HOST=api.staging.example \\\n'
+  printf 'PRODUCTION_K8S_API_HOST=api.prod.example \\\n'
+  printf 'STAGING_K8S_AUTH_HOST=auth.staging.example \\\n'
+  printf 'PRODUCTION_K8S_AUTH_HOST=auth.prod.example \\\n'
+  printf 'STAGING_K8S_TLS_SECRET_NAME=staging-tls \\\n'
+  printf 'PRODUCTION_K8S_TLS_SECRET_NAME=production-tls \\\n'
   printf 'OBS_EVIDENCE_FILE=docs/evidence/observability-live-YYYY-MM-DD.txt \\\n'
   printf 'ROLLBACK_EVIDENCE_FILE=docs/evidence/rollback-drill-YYYY-MM-DD.txt \\\n'
   printf 'RESTORE_EVIDENCE_FILE=docs/evidence/database-restore-drill-YYYY-MM-DD.txt \\\n'

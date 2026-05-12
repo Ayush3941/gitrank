@@ -11,6 +11,7 @@ APPLY_GITHUB_CONTROLS="${APPLY_GITHUB_CONTROLS:-false}"
 RUN_OBSERVABILITY="${RUN_OBSERVABILITY:-true}"
 RUN_ROLLBACK_RESTORE="${RUN_ROLLBACK_RESTORE:-true}"
 RUN_K8S_RUNTIME="${RUN_K8S_RUNTIME:-true}"
+REQUIRE_ENV_SPECIFIC_K8S_OVERRIDES="${REQUIRE_ENV_SPECIFIC_K8S_OVERRIDES:-true}"
 RUN_LOCAL_STATIC="${RUN_LOCAL_STATIC:-true}"
 MARK_CHECKBOXES="${MARK_CHECKBOXES:-true}"
 VERIFY_FROM_WORKFLOW="${VERIFY_FROM_WORKFLOW:-false}"
@@ -56,6 +57,19 @@ get_prefixed_or_default() {
   fi
 }
 
+require_env_specific_k8s_overrides() {
+  [ "$RUN_K8S_RUNTIME" = "true" ] || return 0
+  [ "$VERIFY_FROM_WORKFLOW" != "true" ] || return 0
+  [ "$REQUIRE_ENV_SPECIFIC_K8S_OVERRIDES" = "true" ] || return 0
+
+  for prefix in STAGING PRODUCTION; do
+    for key in K8S_PUBLIC_BASE_URL K8S_API_BASE_URL K8S_AUTH_COOKIE_DOMAIN K8S_GITHUB_OAUTH_REDIRECT_URL K8S_API_HOST K8S_AUTH_HOST K8S_TLS_SECRET_NAME; do
+      eval value="\${${prefix}_${key}:-}"
+      [ -n "$value" ] || fail "${prefix}_${key} is required when REQUIRE_ENV_SPECIFIC_K8S_OVERRIDES=true"
+    done
+  done
+}
+
 render_for_environment() {
   prefix=$1
   env_name=$2
@@ -63,17 +77,25 @@ render_for_environment() {
 
   default_image_tag="${IMAGE_TAG:-}"
   default_registry_owner="${IMAGE_REGISTRY_OWNER:-}"
+  default_public_base_url="${K8S_PUBLIC_BASE_URL:-}"
+  default_api_base_url="${K8S_API_BASE_URL:-}"
+  default_auth_cookie_domain="${K8S_AUTH_COOKIE_DOMAIN:-}"
+  default_oauth_redirect_url="${K8S_GITHUB_OAUTH_REDIRECT_URL:-}"
+  default_api_host="${K8S_API_HOST:-}"
+  default_auth_host="${K8S_AUTH_HOST:-}"
+  default_tls_secret_name="${K8S_TLS_SECRET_NAME:-}"
+  default_github_user_agent="${K8S_GITHUB_USER_AGENT:-}"
 
   image_tag=$(get_prefixed_or_default "$prefix" "IMAGE_TAG" "$default_image_tag")
   image_registry_owner=$(get_prefixed_or_default "$prefix" "IMAGE_REGISTRY_OWNER" "$default_registry_owner")
-  public_base_url=$(get_prefixed_or_default "$prefix" "K8S_PUBLIC_BASE_URL" "")
-  api_base_url=$(get_prefixed_or_default "$prefix" "K8S_API_BASE_URL" "")
-  auth_cookie_domain=$(get_prefixed_or_default "$prefix" "K8S_AUTH_COOKIE_DOMAIN" "")
-  oauth_redirect_url=$(get_prefixed_or_default "$prefix" "K8S_GITHUB_OAUTH_REDIRECT_URL" "")
-  api_host=$(get_prefixed_or_default "$prefix" "K8S_API_HOST" "")
-  auth_host=$(get_prefixed_or_default "$prefix" "K8S_AUTH_HOST" "")
-  tls_secret_name=$(get_prefixed_or_default "$prefix" "K8S_TLS_SECRET_NAME" "")
-  github_user_agent=$(get_prefixed_or_default "$prefix" "K8S_GITHUB_USER_AGENT" "")
+  public_base_url=$(get_prefixed_or_default "$prefix" "K8S_PUBLIC_BASE_URL" "$default_public_base_url")
+  api_base_url=$(get_prefixed_or_default "$prefix" "K8S_API_BASE_URL" "$default_api_base_url")
+  auth_cookie_domain=$(get_prefixed_or_default "$prefix" "K8S_AUTH_COOKIE_DOMAIN" "$default_auth_cookie_domain")
+  oauth_redirect_url=$(get_prefixed_or_default "$prefix" "K8S_GITHUB_OAUTH_REDIRECT_URL" "$default_oauth_redirect_url")
+  api_host=$(get_prefixed_or_default "$prefix" "K8S_API_HOST" "$default_api_host")
+  auth_host=$(get_prefixed_or_default "$prefix" "K8S_AUTH_HOST" "$default_auth_host")
+  tls_secret_name=$(get_prefixed_or_default "$prefix" "K8S_TLS_SECRET_NAME" "$default_tls_secret_name")
+  github_user_agent=$(get_prefixed_or_default "$prefix" "K8S_GITHUB_USER_AGENT" "$default_github_user_agent")
 
   [ -n "$image_tag" ] || fail "${prefix}_IMAGE_TAG or IMAGE_TAG is required"
   [ -n "$image_registry_owner" ] || fail "${prefix}_IMAGE_REGISTRY_OWNER or IMAGE_REGISTRY_OWNER is required"
@@ -276,6 +298,7 @@ RESTORE_EVIDENCE_FILE="${RESTORE_EVIDENCE_FILE:-}" \
 run_make verify-v2-live-readiness
 
 if [ "$RUN_K8S_RUNTIME" = "true" ] && [ "$VERIFY_FROM_WORKFLOW" != "true" ]; then
+  require_env_specific_k8s_overrides
   render_for_environment STAGING staging "$STAGING_RENDER_OUTPUT"
   render_for_environment PRODUCTION production "$PRODUCTION_RENDER_OUTPUT"
 fi

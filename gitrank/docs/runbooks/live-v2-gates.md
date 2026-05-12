@@ -351,10 +351,10 @@ When `VERIFY_FROM_WORKFLOW=true`, finalization can auto-generate
 - `NAMESPACE`
 - `OPERATOR`
 
-Optional per-environment render overrides:
+Per-environment render overrides for finalizer runtime proof:
 
-- `STAGING_IMAGE_TAG`, `PRODUCTION_IMAGE_TAG`
-- `STAGING_IMAGE_REGISTRY_OWNER`, `PRODUCTION_IMAGE_REGISTRY_OWNER`
+- `REQUIRE_ENV_SPECIFIC_K8S_OVERRIDES=true` (default)
+- required when `RUN_K8S_RUNTIME=true` and `VERIFY_FROM_WORKFLOW!=true`:
 - `STAGING_K8S_PUBLIC_BASE_URL`, `PRODUCTION_K8S_PUBLIC_BASE_URL`
 - `STAGING_K8S_API_BASE_URL`, `PRODUCTION_K8S_API_BASE_URL`
 - `STAGING_K8S_AUTH_COOKIE_DOMAIN`, `PRODUCTION_K8S_AUTH_COOKIE_DOMAIN`
@@ -362,3 +362,7 @@ Optional per-environment render overrides:
 - `STAGING_K8S_API_HOST`, `PRODUCTION_K8S_API_HOST`
 - `STAGING_K8S_AUTH_HOST`, `PRODUCTION_K8S_AUTH_HOST`
 - `STAGING_K8S_TLS_SECRET_NAME`, `PRODUCTION_K8S_TLS_SECRET_NAME`
+- optional image overrides:
+- `STAGING_IMAGE_TAG`, `PRODUCTION_IMAGE_TAG`
+- `STAGING_IMAGE_REGISTRY_OWNER`, `PRODUCTION_IMAGE_REGISTRY_OWNER`
+- set `REQUIRE_ENV_SPECIFIC_K8S_OVERRIDES=false` only for temporary single-environment rehearsal runs where shared runtime values are intentional.

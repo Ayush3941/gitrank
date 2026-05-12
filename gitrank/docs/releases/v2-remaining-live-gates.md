@@ -154,5 +154,9 @@ Current local evidence:
 How to complete:
 
 1. Configure real `K8S_*` values and secret bindings for each environment.
-2. Run release render gate for staging and production.
-3. Attach rendered artifact + deployment/rollout proof to release evidence.
+2. Configure explicit staging and production runtime overrides for finalizer proof:
+   - `STAGING_K8S_*` and `PRODUCTION_K8S_*` for public base URL, API base URL,
+     auth cookie domain, GitHub OAuth redirect URL, API host, auth host, and TLS secret.
+   - `REQUIRE_ENV_SPECIFIC_K8S_OVERRIDES=true` (default) enforces these values.
+3. Run release render gate for staging and production.
+4. Attach rendered artifact + deployment/rollout proof to release evidence.

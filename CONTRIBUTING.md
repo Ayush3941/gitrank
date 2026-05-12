@@ -1196,6 +1196,11 @@ verification, evidence checks, checklist marking, and final audit from one
 command. The finalizer accepts `GITRANK_REPO_ADMIN_TOKEN` directly and can
 auto-bootstrap a short-lived GitHub App installation token when no token is
 pre-set and App credentials are provided.
+When `RUN_K8S_RUNTIME=true` and workflow evidence is not used, finalizer runtime
+proof now requires explicit staging and production `STAGING_K8S_*` /
+`PRODUCTION_K8S_*` overrides by default
+(`REQUIRE_ENV_SPECIFIC_K8S_OVERRIDES=true`) to prevent reusing one environment's
+runtime values for both renders.
 Use `gitrank/.env.v2-live-gates.example` as the environment-variable template.
 Use `AUDIT_REPORT_FILE=... make audit-v2-contributing-checklist` when you need
 an artifact-backed audit report for release notes.
