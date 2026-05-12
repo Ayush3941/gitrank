@@ -13,6 +13,8 @@ For consolidated execution, use:
 - `make verify-live-v2-workflow-run` to accept a successful
   `verify-live-v2-gates.yml` workflow run as evidence for GitHub controls,
   observability, and release-render gates
+- `make generate-observability-evidence-from-workflow-run` to create
+  `docs/evidence/observability-live-*.txt` from a verified workflow run
 - `CONFIRM_FINALIZE_V2=yes make finalize-v2-live-closeout` for one-command
   preflight + gate verification + checklist marking + audit
 - `make run-live-v2-gates-workflow` (requires token and live environment vars)

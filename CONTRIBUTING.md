@@ -1177,6 +1177,8 @@ Use `make verify-v2-unresolved-checklist-scope` to ensure unresolved checklist
 items stay limited to approved live gates.
 Use `make verify-live-v2-workflow-run` to verify a successful
 `verify-live-v2-gates.yml` run by run ID and reuse it as live-gate evidence.
+Use `make generate-observability-evidence-from-workflow-run` to generate a
+validated observability evidence file from a successful live-gates workflow run.
 Use `CONFIRM_FINALIZE_V2=yes make finalize-v2-live-closeout` to run preflight,
 verification, evidence checks, checklist marking, and final audit from one
 command. The finalizer accepts `GITRANK_REPO_ADMIN_TOKEN` directly and can

@@ -115,6 +115,20 @@ REQUIRE_RELEASE_RENDER=true \
 make verify-live-v2-workflow-run
 ```
 
+To generate an observability evidence record from a successful live-gates run:
+
+```bash
+cd gitrank
+GITHUB_REPOSITORY=OWNER/REPO \
+WORKFLOW_RUN_ID=12345678901 \
+OUTPUT_FILE=docs/evidence/observability-live-YYYY-MM-DD.txt \
+ENVIRONMENT=staging \
+CLUSTER=your-cluster \
+NAMESPACE=gitrank \
+OPERATOR=your-name \
+make generate-observability-evidence-from-workflow-run
+```
+
 Use this check to ensure unresolved `CONTRIBUTING.md` items remain constrained
 to the approved live-gate list:
 
