@@ -26,3 +26,7 @@ tmp/
 
 # OS and logs
 *.log
+
+# Generated V2 closeout status artifacts
+gitrank/docs/releases/v2-live-closeout-status-latest.md
+gitrank/docs/releases/v2-contributing-audit-latest.md
