@@ -9,6 +9,7 @@ For consolidated execution, use:
 
 - `make verify-v2-live-readiness`
 - `make run-live-v2-gates-workflow` (requires token and live environment vars)
+- `make audit-v2-contributing-checklist` for pass/fail against unchecked lines
 
 ## 1) Production Observability On Live Traffic
 
