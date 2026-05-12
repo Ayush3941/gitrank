@@ -227,6 +227,23 @@ func assertQuestMaterialization(t *testing.T, ctx context.Context, pool *pgxpool
 		t.Fatalf("quest rewards xp=%d badge=%d score_events=%d, want 1/1/1", xpGrants, badgeGrants, questRewardScores)
 	}
 
+	var questRewardHasPREvidence bool
+	if err := pool.QueryRow(ctx, `
+		SELECT EXISTS (
+			SELECT 1
+			FROM score_events se
+			WHERE se.user_id = $1::uuid
+			  AND se.event_type = 'quest.reward'
+			  AND se.metadata_jsonb->>'quest_id' = $2
+			  AND se.pull_request_id = $3::uuid
+		)
+	`, userID, questKey, pullRequestID).Scan(&questRewardHasPREvidence); err != nil {
+		t.Fatalf("load quest reward PR evidence: %v", err)
+	}
+	if !questRewardHasPREvidence {
+		t.Fatalf("quest reward score event is missing linked pull_request_id %s", pullRequestID)
+	}
+
 	var badgeHasPREvidence bool
 	if err := pool.QueryRow(ctx, `
 		SELECT COALESCE(evidence_jsonb->'evidence_pr_ids', '[]'::jsonb) ? $3

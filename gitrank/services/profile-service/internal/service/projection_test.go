@@ -111,10 +111,24 @@ func TestBuildScoreHistoryIncludesEvidenceLinks(t *testing.T) {
 			DeltaXP:   40,
 			CreatedAt: now.Add(-time.Hour),
 		},
+		{
+			EventID:               "quest-reward-1",
+			EventType:             "quest.reward",
+			DeltaXP:               240,
+			ScoreVersion:          "quest-rewards/v1",
+			FormulaVersion:        "quest-rewards/v1",
+			EvidenceScoreEventIDs: []string{"score-event-1"},
+			PullRequestID:         "pr-1",
+			AnalysisID:            "analysis-1",
+			Repository:            "octo/repo",
+			PRNumber:              42,
+			PRTitle:               "Persist score history evidence",
+			CreatedAt:             now.Add(-2 * time.Hour),
+		},
 	})
 
-	if len(history) != 2 {
-		t.Fatalf("len(history) = %d, want 2", len(history))
+	if len(history) != 3 {
+		t.Fatalf("len(history) = %d, want 3", len(history))
 	}
 	linked := history[0]
 	if linked.ScoreVersion != "v1alpha1" || linked.FormulaVersion != "score-components/v1" {
@@ -136,6 +150,14 @@ func TestBuildScoreHistoryIncludesEvidenceLinks(t *testing.T) {
 	}
 	if len(legacy.EvidenceMissing) != 4 {
 		t.Fatalf("legacy missing = %+v, want score, formula, PR, and analysis gaps", legacy.EvidenceMissing)
+	}
+
+	questReward := history[2]
+	if questReward.EventType != "quest.reward" {
+		t.Fatalf("quest reward event type = %q, want quest.reward", questReward.EventType)
+	}
+	if questReward.EvidenceState != "complete" || len(questReward.EvidenceMissing) != 0 {
+		t.Fatalf("quest reward evidence = %q missing %+v, want complete", questReward.EvidenceState, questReward.EvidenceMissing)
 	}
 }
 

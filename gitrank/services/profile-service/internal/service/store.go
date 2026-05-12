@@ -56,24 +56,25 @@ type accountExportRecord struct {
 }
 
 type scoreRow struct {
-	EventID            string
-	EventType          string
-	DeltaXP            int
-	ScoreVersion       string
-	FormulaVersion     string
-	PullRequestID      string
-	AnalysisID         string
-	Skills             map[string]int
-	Explanation        []string
-	CreatedAt          time.Time
-	Repository         string
-	Owner              string
-	Name               string
-	PRNumber           int
-	PRTitle            string
-	PRMerged           bool
-	AnalysisSource     string
-	AnalysisConfidence float64
+	EventID               string
+	EventType             string
+	DeltaXP               int
+	ScoreVersion          string
+	FormulaVersion        string
+	EvidenceScoreEventIDs []string
+	PullRequestID         string
+	AnalysisID            string
+	Skills                map[string]int
+	Explanation           []string
+	CreatedAt             time.Time
+	Repository            string
+	Owner                 string
+	Name                  string
+	PRNumber              int
+	PRTitle               string
+	PRMerged              bool
+	AnalysisSource        string
+	AnalysisConfidence    float64
 }
 
 type scoreSelection struct {
@@ -242,6 +243,7 @@ func (s *Store) LoadScoreRows(ctx context.Context, userID string, selection scor
 			se.delta_total_xp,
 			se.score_version,
 			COALESCE(NULLIF(se.metadata_jsonb->>'score_formula_inputs_version', ''), ''),
+			COALESCE(se.metadata_jsonb->'evidence_score_event_ids', '[]'::jsonb),
 			COALESCE(se.pull_request_id::text, ''),
 			COALESCE(se.analysis_id::text, ''),
 			se.delta_skill_jsonb,
@@ -263,7 +265,7 @@ func (s *Store) LoadScoreRows(ctx context.Context, userID string, selection scor
 	`
 	args := []any{userID}
 	if strings.TrimSpace(selection.ReplayRunID) != "" {
-		query += ` AND se.replay_run_id = $2::uuid`
+		query += ` AND (se.replay_run_id = $2::uuid OR se.event_type = 'quest.reward')`
 		args = append(args, selection.ReplayRunID)
 	} else {
 		query += ` AND se.score_version = $2`
@@ -281,6 +283,7 @@ func (s *Store) LoadScoreRows(ctx context.Context, userID string, selection scor
 	out := make([]scoreRow, 0)
 	for rows.Next() {
 		var record scoreRow
+		var evidenceIDsRaw []byte
 		var skillsRaw []byte
 		var explanationRaw []byte
 		if err := rows.Scan(
@@ -289,6 +292,7 @@ func (s *Store) LoadScoreRows(ctx context.Context, userID string, selection scor
 			&record.DeltaXP,
 			&record.ScoreVersion,
 			&record.FormulaVersion,
+			&evidenceIDsRaw,
 			&record.PullRequestID,
 			&record.AnalysisID,
 			&skillsRaw,
@@ -305,6 +309,7 @@ func (s *Store) LoadScoreRows(ctx context.Context, userID string, selection scor
 		); err != nil {
 			return nil, err
 		}
+		record.EvidenceScoreEventIDs = decodeStringSlice(evidenceIDsRaw)
 		record.Skills = decodeSkillMap(skillsRaw)
 		record.Explanation = decodeExplanation(explanationRaw)
 		out = append(out, record)
@@ -989,6 +994,33 @@ func sanitizeAccountExportMetadata(metadata map[string]any, redactions *[]string
 	out := make(map[string]any, len(metadata))
 	for key, value := range metadata {
 		out[key] = sanitizeAccountExportValue(key, value, redactions)
+	}
+	return out
+}
+
+func decodeStringSlice(raw []byte) []string {
+	if len(raw) == 0 {
+		return nil
+	}
+	var values []string
+	if err := json.Unmarshal(raw, &values); err == nil {
+		return values
+	}
+	var generic []any
+	if err := json.Unmarshal(raw, &generic); err != nil {
+		return nil
+	}
+	out := make([]string, 0, len(generic))
+	for _, value := range generic {
+		text, ok := value.(string)
+		if !ok {
+			continue
+		}
+		text = strings.TrimSpace(text)
+		if text == "" {
+			continue
+		}
+		out = append(out, text)
 	}
 	return out
 }

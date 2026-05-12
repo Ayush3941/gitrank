@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -482,6 +483,7 @@ func upsertQuestCompletion(ctx context.Context, tx pgx.Tx, userID, definitionID,
 func upsertQuestXPReward(ctx context.Context, tx pgx.Tx, userID, definitionID, assignmentID, completionID string, snapshot snapshotRecord, quest contracts.QuestView, now time.Time) error {
 	grantKey := questRewardGrantKey(assignmentID, "xp")
 	scoreVersion := firstNonEmpty(scoreVersionFromSnapshot(snapshot), questRewardVersion)
+	evidenceScoreEventIDs := questEvidenceScoreEventIDs(quest.EvidenceReferences)
 	skill := questRewardSkill(quest)
 	deltaSkill := map[string]int{}
 	if skill != "" {
@@ -495,6 +497,24 @@ func upsertQuestXPReward(ctx context.Context, tx pgx.Tx, userID, definitionID, a
 	if err != nil {
 		return err
 	}
+
+	evidencePullRequestID := ""
+	evidenceAnalysisID := ""
+	if len(evidenceScoreEventIDs) > 0 {
+		if err := tx.QueryRow(ctx, `
+			SELECT
+				COALESCE(se.pull_request_id::text, ''),
+				COALESCE(se.analysis_id::text, '')
+			FROM score_events se
+			WHERE se.user_id = $1::uuid
+			  AND se.id = ANY($2::uuid[])
+			ORDER BY se.created_at DESC
+			LIMIT 1
+		`, userID, evidenceScoreEventIDs).Scan(&evidencePullRequestID, &evidenceAnalysisID); err != nil && !errors.Is(err, pgx.ErrNoRows) {
+			return err
+		}
+	}
+
 	metadataRaw, err := json.Marshal(map[string]any{
 		"issuer":                       "profile-service",
 		"score_formula_inputs_version": questRewardVersion,
@@ -503,7 +523,7 @@ func upsertQuestXPReward(ctx context.Context, tx pgx.Tx, userID, definitionID, a
 		"assignment_id":                assignmentID,
 		"completion_event_id":          completionID,
 		"profile_snapshot_id":          snapshot.ID,
-		"evidence_score_event_ids":     questEvidenceScoreEventIDs(quest.EvidenceReferences),
+		"evidence_score_event_ids":     evidenceScoreEventIDs,
 	})
 	if err != nil {
 		return err
@@ -513,6 +533,8 @@ func upsertQuestXPReward(ctx context.Context, tx pgx.Tx, userID, definitionID, a
 	if err := tx.QueryRow(ctx, `
 		INSERT INTO score_events (
 			user_id,
+			pull_request_id,
+			analysis_id,
 			score_version,
 			event_type,
 			delta_total_xp,
@@ -522,15 +544,19 @@ func upsertQuestXPReward(ctx context.Context, tx pgx.Tx, userID, definitionID, a
 			event_key,
 			created_at
 		)
-		VALUES ($1::uuid, $2, 'quest.reward', $3, $4::jsonb, $5::jsonb, $6::jsonb, $7, $8)
+		VALUES ($1::uuid, NULLIF($2, '')::uuid, NULLIF($3, '')::uuid, $4, 'quest.reward', $5, $6::jsonb, $7::jsonb, $8::jsonb, $9, $10)
 		ON CONFLICT (user_id, event_key) WHERE replay_run_id IS NULL AND event_key <> '' DO UPDATE
 		SET
+			pull_request_id = COALESCE(score_events.pull_request_id, EXCLUDED.pull_request_id),
+			analysis_id = COALESCE(score_events.analysis_id, EXCLUDED.analysis_id),
 			delta_total_xp = EXCLUDED.delta_total_xp,
 			delta_skill_jsonb = EXCLUDED.delta_skill_jsonb,
 			explanation_jsonb = EXCLUDED.explanation_jsonb,
 			metadata_jsonb = EXCLUDED.metadata_jsonb
 		RETURNING id::text
 	`, userID,
+		evidencePullRequestID,
+		evidenceAnalysisID,
 		scoreVersion,
 		quest.RewardXP,
 		string(deltaSkillRaw),
@@ -547,7 +573,7 @@ func upsertQuestXPReward(ctx context.Context, tx pgx.Tx, userID, definitionID, a
 		"assignment_id":            assignmentID,
 		"completion_event_id":      completionID,
 		"score_event_id":           scoreEventID,
-		"evidence_score_event_ids": questEvidenceScoreEventIDs(quest.EvidenceReferences),
+		"evidence_score_event_ids": evidenceScoreEventIDs,
 	})
 	if err != nil {
 		return err
