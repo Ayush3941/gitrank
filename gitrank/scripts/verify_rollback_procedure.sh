@@ -24,9 +24,14 @@ done
 
 grep -q "rollback:" "$workflow"
 grep -q "rollback_revision:" "$workflow"
+grep -q "make render-k8s-release-manifests" "$workflow"
 grep -q "kubectl rollout history" "$workflow"
 grep -q "kubectl rollout undo" "$workflow"
 grep -q "kubectl rollout status" "$workflow"
+
+for key in K8S_PUBLIC_BASE_URL K8S_API_BASE_URL K8S_AUTH_COOKIE_DOMAIN K8S_GITHUB_OAUTH_REDIRECT_URL K8S_API_HOST K8S_AUTH_HOST K8S_TLS_SECRET_NAME; do
+	grep -q "$key" "$workflow"
+done
 
 for deployment in api-gateway auth-service github-ingestor pr-analyzer profile-service scoring-engine scheduler-worker scheduler-job-worker; do
 	grep -q "$deployment" "$workflow"
@@ -35,5 +40,6 @@ done
 grep -qi "Rollback" "$k8s_readme"
 grep -q "KUBE_CONFIG_B64" "$k8s_readme"
 grep -q "rollback_revision" "$k8s_readme"
+grep -q "render-k8s-release-manifests" "$k8s_readme"
 
 echo "rollback procedure verification passed"
