@@ -785,6 +785,7 @@ V2 direction:
 - scoring-engine now has a non-mutating replay verifier for selected user, repository, date range, and formula version checks against persisted evidence
 - profile score history now carries score-event, score-version, formula-version, pull-request, analysis, and missing-evidence state so XP rows are no longer anonymous display-only claims
 - leaderboard rows now expose profile snapshot provenance, score version, source watermark, and missing rank-ledger evidence instead of presenting snapshot-derived ranks as fully materialized season results
+- V2 no-mock release gate checks now run through `make verify-v2-no-mock-release-gate` and frontend CI to catch production mock imports, missing critical OpenAPI paths, and dropped critical worker/profile smoke coverage
 - profile skill areas expose evidence source, confidence, and freshness state so skill claims remain bounded to real scored evidence
 - PR battle reports expose and render structured evidence state for incomplete, stale, rate-limited, deterministic-only, and AI-fallback conditions
 - analysis envelopes reject score-override language before scoring, keeping final XP deterministic and rule-based

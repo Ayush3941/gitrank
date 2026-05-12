@@ -78,6 +78,7 @@ The public profile page, authenticated dashboard overview, onboarding reveal, ba
 - contribution rows surface score-history evidence state plus score/formula version linkage when the backend provides it
 - leaderboard rows surface profile-snapshot provenance, score version, source watermark, and missing rank-ledger evidence when the backend provides it
 - `npm run check:no-production-mocks` fails CI if production app, hook, feature, or API modules import the mock API or mock domain dataset directly
+- frontend CI also runs `../gitrank/scripts/verify_v2_no_mock_release_gate.sh` to verify critical OpenAPI entries, worker-flow coverage, and live fixture coverage stay wired
 - `npm run test:smoke` renders dashboard, quest, PR-report, profile, leaderboard, and settings flows from live-shaped BFF fixtures instead of preview mock API functions
 
 The gamified UI adds season metadata, rank-progress cards, player-card profile presentation, quest recommendation evidence, badge rarity styling, and PR battle-report explanation panels. Live leaderboard season metadata is derived from the gateway response timestamp and displayed as presentation context; final scoring still comes from backend score/profile snapshots.

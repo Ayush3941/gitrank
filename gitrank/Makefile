@@ -3,7 +3,7 @@ TMPDIR ?= $(CURDIR)/.tmp
 GOCACHE ?= $(CURDIR)/.gocache
 GO_MODULE_FIND := find . \( -path './.tmp' -o -path './.gocache' \) -prune -o -name go.mod
 
-.PHONY: fmt test test-migrations test-critical-path-flows race vet audit-go-safety verify-critical-path-tests verify-rollback-procedure verify-observability-manifests verify-secret-policy apply-github-repository-controls verify-github-repository-controls bench-ingestion tidy compose-up compose-down seed-local
+.PHONY: fmt test test-migrations test-critical-path-flows race vet audit-go-safety verify-critical-path-tests verify-v2-no-mock-release-gate verify-rollback-procedure verify-observability-manifests verify-secret-policy apply-github-repository-controls verify-github-repository-controls bench-ingestion tidy compose-up compose-down seed-local
 
 fmt:
 	mkdir -p "$(TMPDIR)" "$(GOCACHE)"
@@ -32,6 +32,9 @@ audit-go-safety:
 
 verify-critical-path-tests:
 	TMPDIR="$(TMPDIR)" ./scripts/verify_critical_path_tests.sh
+
+verify-v2-no-mock-release-gate:
+	TMPDIR="$(TMPDIR)" ./scripts/verify_v2_no_mock_release_gate.sh
 
 verify-rollback-procedure:
 	TMPDIR="$(TMPDIR)" ./scripts/verify_rollback_procedure.sh

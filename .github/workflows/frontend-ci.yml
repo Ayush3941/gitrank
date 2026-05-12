@@ -35,6 +35,9 @@ jobs:
       - name: Check production mock imports
         run: npm run check:no-production-mocks
 
+      - name: Verify V2 no-mock release gate
+        run: ../gitrank/scripts/verify_v2_no_mock_release_gate.sh
+
       - name: Run live fixture smoke tests
         run: npm run test:smoke
 
