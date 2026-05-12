@@ -15,6 +15,14 @@ For consolidated execution, use:
 - `make verify-live-v2-inputs` as preflight for required live credentials and
   environment inputs
 
+Optional persistent audit artifact:
+
+```bash
+cd gitrank
+AUDIT_REPORT_FILE=docs/releases/v2-contributing-audit-latest.md \
+make audit-v2-contributing-checklist
+```
+
 Use `.env.v2-live-gates.example` as the source template for required
 environment variables.
 
