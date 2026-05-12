@@ -88,6 +88,7 @@ type SchedulerRunResponse struct {
 	ReportMaterialization      *SchedulerPullRequestReportMaterializationResponse `json:"report_materialization,omitempty"`
 	ReportBackfill             *SchedulerPullRequestReportBackfillResponse        `json:"report_backfill,omitempty"`
 	LeaderboardMaterialization *SchedulerLeaderboardMaterializationResponse       `json:"leaderboard_materialization,omitempty"`
+	UserHistoryBackfill        *SchedulerUserHistoryBackfillResponse              `json:"user_history_backfill,omitempty"`
 	Grade                      *SchedulerPullRequestGradeResponse                 `json:"grade,omitempty"`
 	LastUpdatedAt              time.Time                                          `json:"last_updated_at"`
 }
@@ -207,6 +208,18 @@ type SchedulerPullRequestGradeResponse struct {
 	CorrelationID         string                                             `json:"correlation_id,omitempty"`
 	StartedAt             time.Time                                          `json:"started_at"`
 	FinishedAt            time.Time                                          `json:"finished_at"`
+}
+
+type SchedulerUserHistoryBackfillResponse struct {
+	Status                     string                                       `json:"status"`
+	UserID                     string                                       `json:"user_id"`
+	ScoreReplay                *SchedulerScoreReplayExecutionResponse       `json:"score_replay,omitempty"`
+	ProfileRefresh             *SchedulerProfileRefreshResponse             `json:"profile_refresh,omitempty"`
+	ReportBackfill             *SchedulerPullRequestReportBackfillResponse  `json:"report_backfill,omitempty"`
+	LeaderboardMaterialization *SchedulerLeaderboardMaterializationResponse `json:"leaderboard_materialization,omitempty"`
+	CorrelationID              string                                       `json:"correlation_id,omitempty"`
+	StartedAt                  time.Time                                    `json:"started_at"`
+	FinishedAt                 time.Time                                    `json:"finished_at"`
 }
 
 type SchedulerDeadLetterListResponse struct {

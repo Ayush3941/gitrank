@@ -124,6 +124,26 @@ func BuildSyncJobs(req contracts.SyncRequest, queueName, correlationID string, m
 			return nil, err
 		}
 		return []QueueJob{job}, nil
+	case "backfill_user_history":
+		if req.UserID == "" {
+			return nil, errors.New("user_id is required when mode=backfill_user_history")
+		}
+		job, err := NewQueueJob(QueueJobInput{
+			QueueName:     queueName,
+			Type:          BackfillUserHistoryJob,
+			CorrelationID: correlationID,
+			Subject:       req.UserID,
+			DedupeKey:     "backfill_user_history:" + req.UserID,
+			MaxAttempts:   maxAttempts,
+			Payload: map[string]string{
+				"mode":    "backfill_user_history",
+				"user_id": req.UserID,
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+		return []QueueJob{job}, nil
 	case "grade_pull_request":
 		if req.UserID == "" || req.Repository == "" || req.Number <= 0 {
 			return nil, errors.New("user_id, repository, and number are required when mode=grade_pull_request")

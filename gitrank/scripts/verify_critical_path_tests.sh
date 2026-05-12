@@ -45,6 +45,7 @@ require_test "leaderboard season materialization persistence" "func TestLeaderbo
 require_test "scheduler profile refresh execution" "func TestRunNextExecutesProfileRefreshJobAndCompletes" "services/scheduler-worker/internal/service"
 require_test "scheduler PR report materialization execution" "func TestRunNextExecutesPullRequestReportMaterializationJobAndCompletes" "services/scheduler-worker/internal/service"
 require_test "scheduler PR report backfill execution" "func TestRunNextExecutesPullRequestReportBackfillJobAndCompletes" "services/scheduler-worker/internal/service"
+require_test "scheduler user history backfill pipeline execution" "func TestRunNextExecutesUserHistoryBackfillJobAndCompletes" "services/scheduler-worker/internal/service"
 require_test "scheduler leaderboard materialization execution" "func TestRunNextExecutesLeaderboardMaterializationJobAndCompletes" "services/scheduler-worker/internal/service"
 require_test "scheduler PR grading pipeline execution" "func TestRunNextExecutesPullRequestGradeJobAndCompletes" "services/scheduler-worker/internal/service"
 require_test "public profile projection" "func TestPublicResponseFiltersHiddenRepositories" "services/profile-service/internal/service"

@@ -236,6 +236,29 @@ func TestBuildSyncJobsReportBackfillUserPullRequests(t *testing.T) {
 	}
 }
 
+func TestBuildSyncJobsBackfillUserHistory(t *testing.T) {
+	const userID = "8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4"
+	jobs, err := BuildSyncJobs(contracts.SyncRequest{
+		Mode:   "backfill_user_history",
+		UserID: userID,
+	}, "github-sync", "history-backfill-correlation", 5)
+	if err != nil {
+		t.Fatalf("BuildSyncJobs() error = %v", err)
+	}
+	if len(jobs) != 1 {
+		t.Fatalf("jobs len = %d, want 1", len(jobs))
+	}
+	if jobs[0].Type != BackfillUserHistoryJob {
+		t.Fatalf("job type = %q, want %q", jobs[0].Type, BackfillUserHistoryJob)
+	}
+	if jobs[0].Subject != userID {
+		t.Fatalf("subject = %q, want %q", jobs[0].Subject, userID)
+	}
+	if jobs[0].DedupeKey != "backfill_user_history:"+userID {
+		t.Fatalf("dedupe key = %q, want backfill_user_history:%s", jobs[0].DedupeKey, userID)
+	}
+}
+
 func TestBuildSyncJobsLeaderboardMaterializeSeason(t *testing.T) {
 	jobs, err := BuildSyncJobs(contracts.SyncRequest{
 		Mode: "leaderboard_materialize_season",

@@ -383,6 +383,7 @@ Current state:
 - the worker-mode scheduler process can execute ready `report.materialize_pull_request` jobs by calling `profile-service /v1/pr/{owner}/{repo}/{number}/report/materialize`
 - the worker-mode scheduler process can execute ready `report.backfill_user_pull_requests` jobs by calling `profile-service /v1/profile/users/{user_id}/pr-reports/backfill`
 - the worker-mode scheduler process can execute ready `leaderboard.materialize_season` jobs by calling `profile-service /v1/leaderboard/materialize`
+- the worker-mode scheduler process can execute ready `pipeline.backfill_user_history` jobs by chaining `score.replay_user`, `profile.refresh_user`, `report.backfill_user_pull_requests`, and `leaderboard.materialize_season` in one user-scoped durable run
 - the worker-mode scheduler process can execute ready `pipeline.grade_pull_request` jobs by chaining PR sync, persisted PR analysis, score replay, profile refresh, report materialization, and live PR-report verification for a known user and PR
 - bounded installation execution currently means replaying repositories already associated with a persisted installation record, not discovering repositories from live GitHub App installation APIs
 - bounded user execution currently means recent public owned repositories plus recent public authored PRs discoverable through GitHub issue/PR search, not a full historical search across every contribution surface

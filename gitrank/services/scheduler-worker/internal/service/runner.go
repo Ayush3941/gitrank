@@ -89,6 +89,7 @@ type jobExecution struct {
 	ReportMaterialization      *contracts.SchedulerPullRequestReportMaterializationResponse
 	ReportBackfill             *contracts.SchedulerPullRequestReportBackfillResponse
 	LeaderboardMaterialization *contracts.SchedulerLeaderboardMaterializationResponse
+	UserHistoryBackfill        *contracts.SchedulerUserHistoryBackfillResponse
 	Grade                      *contracts.SchedulerPullRequestGradeResponse
 }
 
@@ -223,6 +224,7 @@ func (s *Service) RunNext(ctx context.Context, now time.Time) (contracts.Schedul
 	response.ReportMaterialization = execution.ReportMaterialization
 	response.ReportBackfill = execution.ReportBackfill
 	response.LeaderboardMaterialization = execution.LeaderboardMaterialization
+	response.UserHistoryBackfill = execution.UserHistoryBackfill
 	response.Grade = execution.Grade
 	s.recordExecution(job.Type, action.Status, finishedAt)
 	return response, nil
@@ -405,6 +407,8 @@ func (s *Service) executeLeasedJob(ctx context.Context, job store.QueueJob) (job
 			return jobExecution{}, err
 		}
 		return jobExecution{LeaderboardMaterialization: &execution}, nil
+	case store.BackfillUserHistoryJob:
+		return s.executeUserHistoryBackfillJob(ctx, job)
 	case store.GradePullRequestJob:
 		return s.executePullRequestGradeJob(ctx, job)
 	default:
@@ -475,6 +479,57 @@ func (s *Service) executePullRequestGradeJob(ctx context.Context, job store.Queu
 		CorrelationID:         strings.TrimSpace(correlationID),
 		StartedAt:             startedAt,
 		FinishedAt:            time.Now().UTC(),
+	}}, nil
+}
+
+func (s *Service) executeUserHistoryBackfillJob(ctx context.Context, job store.QueueJob) (jobExecution, error) {
+	if s.scoreRunner == nil {
+		return jobExecution{}, fmt.Errorf("score replay runner is not configured")
+	}
+	if s.profileRunner == nil {
+		return jobExecution{}, fmt.Errorf("profile refresh runner is not configured")
+	}
+	if s.reportRunner == nil {
+		return jobExecution{}, fmt.Errorf("pull request report runner is not configured")
+	}
+	if s.leaderboardRunner == nil {
+		return jobExecution{}, fmt.Errorf("leaderboard runner is not configured")
+	}
+
+	req, err := syncRequestFromJob(job)
+	if err != nil {
+		return jobExecution{}, err
+	}
+
+	correlationID := correlationIDForJob(job)
+	startedAt := time.Now().UTC()
+	scoreExecution, err := s.scoreRunner.ReplayUser(ctx, req.UserID, correlationID)
+	if err != nil {
+		return jobExecution{}, err
+	}
+	profileExecution, err := s.profileRunner.RefreshProfile(ctx, req.UserID, correlationID)
+	if err != nil {
+		return jobExecution{}, err
+	}
+	reportBackfillExecution, err := s.reportRunner.BackfillPullRequestReports(ctx, req.UserID, correlationID)
+	if err != nil {
+		return jobExecution{}, err
+	}
+	leaderboardExecution, err := s.leaderboardRunner.MaterializeLeaderboard(ctx, correlationID)
+	if err != nil {
+		return jobExecution{}, err
+	}
+
+	return jobExecution{UserHistoryBackfill: &contracts.SchedulerUserHistoryBackfillResponse{
+		Status:                     "completed",
+		UserID:                     req.UserID,
+		ScoreReplay:                &scoreExecution,
+		ProfileRefresh:             &profileExecution,
+		ReportBackfill:             &reportBackfillExecution,
+		LeaderboardMaterialization: &leaderboardExecution,
+		CorrelationID:              strings.TrimSpace(correlationID),
+		StartedAt:                  startedAt,
+		FinishedAt:                 time.Now().UTC(),
 	}}, nil
 }
 
@@ -1121,7 +1176,7 @@ func splitExecutionMetricKey(key string) (string, string) {
 }
 
 func isExecutableJob(job store.QueueJob, now time.Time) bool {
-	return (job.Type == store.SyncInstallationJob || job.Type == store.SyncRepositoryJob || job.Type == store.SyncUserHistoryJob || job.Type == store.SyncPullRequestJob || job.Type == store.SyncReviewJob || job.Type == store.SyncIssueJob || job.Type == store.SyncCommitJob || job.Type == store.AnalysisPullRequestJob || job.Type == store.ScoreReplayUserJob || job.Type == store.ProfileRefreshUserJob || job.Type == store.ReportMaterializePRJob || job.Type == store.ReportBackfillUserPRsJob || job.Type == store.LeaderboardMaterializeJob || job.Type == store.GradePullRequestJob) &&
+	return (job.Type == store.SyncInstallationJob || job.Type == store.SyncRepositoryJob || job.Type == store.SyncUserHistoryJob || job.Type == store.SyncPullRequestJob || job.Type == store.SyncReviewJob || job.Type == store.SyncIssueJob || job.Type == store.SyncCommitJob || job.Type == store.AnalysisPullRequestJob || job.Type == store.ScoreReplayUserJob || job.Type == store.ProfileRefreshUserJob || job.Type == store.ReportMaterializePRJob || job.Type == store.ReportBackfillUserPRsJob || job.Type == store.LeaderboardMaterializeJob || job.Type == store.BackfillUserHistoryJob || job.Type == store.GradePullRequestJob) &&
 		job.Status == store.JobPending &&
 		!job.NotBefore.After(now.UTC())
 }
@@ -1245,6 +1300,16 @@ func syncRequestFromJob(job store.QueueJob) (contracts.SyncRequest, error) {
 			req.UserID = strings.TrimSpace(job.Subject)
 		}
 		req.Mode = "report_backfill_user_pull_requests"
+		userID, err := contracts.NormalizeUUID(req.UserID, "user_id")
+		if err != nil {
+			return contracts.SyncRequest{}, err
+		}
+		req.UserID = userID
+	case store.BackfillUserHistoryJob:
+		if strings.TrimSpace(req.UserID) == "" {
+			req.UserID = strings.TrimSpace(job.Subject)
+		}
+		req.Mode = "backfill_user_history"
 		userID, err := contracts.NormalizeUUID(req.UserID, "user_id")
 		if err != nil {
 			return contracts.SyncRequest{}, err

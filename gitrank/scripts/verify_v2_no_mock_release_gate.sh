@@ -50,6 +50,7 @@ for test_name in \
   "RunNextExecutesProfileRefreshJobAndCompletes" \
   "RunNextExecutesPullRequestReportMaterializationJobAndCompletes" \
   "RunNextExecutesPullRequestReportBackfillJobAndCompletes" \
+  "RunNextExecutesUserHistoryBackfillJobAndCompletes" \
   "RunNextExecutesLeaderboardMaterializationJobAndCompletes" \
   "RunNextExecutesPullRequestGradeJobAndCompletes" \
   "PublicResponseFiltersHiddenRepositories"; do

@@ -1280,6 +1280,140 @@ func TestRunNextExecutesPullRequestReportBackfillJobAndCompletes(t *testing.T) {
 	}
 }
 
+func TestRunNextExecutesUserHistoryBackfillJobAndCompletes(t *testing.T) {
+	now := time.Now().UTC().Add(4 * time.Minute).Truncate(time.Second)
+	const userID = "8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4"
+	observedPaths := make([]string, 0, 4)
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		observedPaths = append(observedPaths, r.Method+" "+r.URL.Path)
+		if got := r.Header.Get("X-Request-ID"); got != "history-backfill-correlation" {
+			t.Fatalf("request id = %q for %s, want history-backfill-correlation", got, r.URL.Path)
+		}
+		if r.Header.Get("traceparent") == "" {
+			t.Fatalf("traceparent header missing for %s", r.URL.Path)
+		}
+		switch r.URL.Path {
+		case "/v1/score/users/" + userID + "/replay":
+			var observed contracts.ReplayUserScoresRequest
+			if err := json.NewDecoder(r.Body).Decode(&observed); err != nil {
+				t.Fatalf("decode score request: %v", err)
+			}
+			if observed.TriggerType != "backfill" {
+				t.Fatalf("score trigger = %q, want backfill", observed.TriggerType)
+			}
+			w.WriteHeader(http.StatusAccepted)
+			_ = json.NewEncoder(w).Encode(contracts.ReplayUserScoresResponse{
+				Snapshot: contracts.UserScoreSnapshotResponse{
+					ReplayRunID:     "history-score-run-1",
+					UserID:          userID,
+					ScoreVersion:    "score/v1",
+					TriggerType:     "backfill",
+					TotalXP:         340,
+					Level:           "Explorer",
+					RankTier:        "Silver II",
+					SourceWatermark: now,
+					ComputedAt:      now.Add(time.Second),
+				},
+				Events: 2,
+				Badges: []contracts.BadgeView{{Key: "test-builder"}},
+			})
+		case "/v1/profile/users/" + userID + "/refresh":
+			w.WriteHeader(http.StatusAccepted)
+			_ = json.NewEncoder(w).Encode(contracts.ProfileRefreshResponse{
+				Status:                 "completed",
+				UserID:                 userID,
+				ProfileSnapshotID:      "profile-snapshot-history-1",
+				ProfileSnapshotVersion: "profile/v1",
+				ScoreVersion:           "score/v1",
+				TotalXP:                340,
+				LevelLabel:             "Explorer",
+				SourceWatermark:        now,
+				RefreshedAt:            now.Add(2 * time.Second),
+				StaleAfter:             now.Add(15 * time.Minute),
+			})
+		case "/v1/profile/users/" + userID + "/pr-reports/backfill":
+			w.WriteHeader(http.StatusAccepted)
+			_ = json.NewEncoder(w).Encode(contracts.PullRequestReportBackfillResponse{
+				Status:            "backfilled",
+				UserID:            userID,
+				Considered:        3,
+				Materialized:      3,
+				ReportSnapshotIDs: []string{"b2000000-0000-4000-8000-000000000010"},
+				GeneratedAt:       now.Add(3 * time.Second),
+			})
+		case "/v1/leaderboard/materialize":
+			w.WriteHeader(http.StatusAccepted)
+			_ = json.NewEncoder(w).Encode(contracts.LeaderboardMaterializationResponse{
+				Status:                "materialized",
+				SeasonKey:             "weekly:2026-W20",
+				SeasonSnapshotVersion: "leaderboard-season/v1",
+				ScoringVersion:        "score/v1",
+				EntryCount:            64,
+				Window: contracts.ProfileTimeWindow{
+					Label:   "weekly:2026-W20",
+					Bucket:  "week",
+					StartAt: now.AddDate(0, 0, -1),
+					EndAt:   now.AddDate(0, 0, 6),
+				},
+				SourceWatermark: now.Add(-time.Minute),
+				GeneratedAt:     now,
+			})
+		default:
+			t.Fatalf("unexpected path %s", r.URL.Path)
+		}
+	}))
+	defer server.Close()
+
+	cfg := testServiceConfig()
+	cfg.Services.ScoringBaseURL = server.URL
+	cfg.Services.ProfileBaseURL = server.URL
+	cfg.Services.RequestTimeout = time.Second
+	scheduler := New(cfg)
+
+	enqueue, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "backfill_user_history", UserID: userID}, "history-backfill-correlation", now)
+	if err != nil {
+		t.Fatalf("EnqueueSync() error = %v", err)
+	}
+
+	run, err := scheduler.RunNext(context.Background(), now)
+	if err != nil {
+		t.Fatalf("RunNext() error = %v", err)
+	}
+	if run.Status != "completed" {
+		t.Fatalf("run status = %q, want completed", run.Status)
+	}
+	if run.UserHistoryBackfill == nil || run.UserHistoryBackfill.UserID != userID {
+		t.Fatalf("user history backfill = %+v, want completed user history backfill", run.UserHistoryBackfill)
+	}
+	if run.UserHistoryBackfill.ScoreReplay == nil ||
+		run.UserHistoryBackfill.ProfileRefresh == nil ||
+		run.UserHistoryBackfill.ReportBackfill == nil ||
+		run.UserHistoryBackfill.LeaderboardMaterialization == nil {
+		t.Fatalf("user history backfill = %+v, want all stage responses", run.UserHistoryBackfill)
+	}
+	if run.UserHistoryBackfill.ReportBackfill.Materialized != 3 {
+		t.Fatalf("user history backfill report stage = %+v, want materialized=3", run.UserHistoryBackfill.ReportBackfill)
+	}
+	expectedPaths := []string{
+		"POST /v1/score/users/" + userID + "/replay",
+		"POST /v1/profile/users/" + userID + "/refresh",
+		"POST /v1/profile/users/" + userID + "/pr-reports/backfill",
+		"POST /v1/leaderboard/materialize",
+	}
+	if len(observedPaths) != len(expectedPaths) {
+		t.Fatalf("observed paths = %+v, want %+v", observedPaths, expectedPaths)
+	}
+	for i := range expectedPaths {
+		if observedPaths[i] != expectedPaths[i] {
+			t.Fatalf("observed paths = %+v, want %+v", observedPaths, expectedPaths)
+		}
+	}
+	if run.Job == nil || run.Job.ID != enqueue.JobIDs[0] || run.Job.Type != string(store.BackfillUserHistoryJob) {
+		t.Fatalf("run job = %+v, want executed user history backfill job id %q", run.Job, enqueue.JobIDs[0])
+	}
+}
+
 func TestRunNextExecutesLeaderboardMaterializationJobAndCompletes(t *testing.T) {
 	now := time.Now().UTC().Add(4 * time.Minute).Truncate(time.Second)
 	var observedPath string

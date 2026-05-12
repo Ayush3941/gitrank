@@ -1175,7 +1175,7 @@ components:
           description: "GitHub login to sync when `mode=user`."
         user_id:
           type: string
-          description: "User UUID for score replay, profile refresh, user PR-report backfill, and PR grading modes."
+          description: "User UUID for score replay, profile refresh, user PR-report backfill, user-history backfill, and PR grading modes."
         repository:
           type: string
           description: "`owner/repo` identifier for repository, PR, review, issue, and commit sync modes."
@@ -1195,6 +1195,7 @@ components:
             - report_materialize_pull_request
             - report_backfill_user_pull_requests
             - leaderboard_materialize_season
+            - backfill_user_history
             - grade_pull_request
         installation_id:
           type: integer
