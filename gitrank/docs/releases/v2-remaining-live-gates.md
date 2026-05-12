@@ -17,6 +17,9 @@ For consolidated execution, use:
   default-branch protection and required status-check visibility
 - `make generate-observability-evidence-from-workflow-run` to create
   `docs/evidence/observability-live-*.txt` from a verified workflow run
+- `make generate-rollback-drill-evidence` and
+  `make generate-database-restore-drill-evidence` to generate validated drill
+  evidence records from captured rollback/restore metadata
 - `make generate-v2-live-closeout-status` to generate one artifact with local
   readiness, unresolved checklist audit, env presence, public controls precheck,
   and workflow-evidence probe results

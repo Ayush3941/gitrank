@@ -1184,6 +1184,9 @@ Use `make generate-v2-live-closeout-status` to produce a single status artifact
 covering local readiness, checklist audit, env presence, and live-evidence probes.
 Use `make generate-observability-evidence-from-workflow-run` to generate a
 validated observability evidence file from a successful live-gates workflow run.
+Use `make generate-rollback-drill-evidence` and
+`make generate-database-restore-drill-evidence` to generate validated rollback
+and restore evidence files from recorded drill data.
 Use `make run-live-v2-workflow-evidence-pipeline` to dispatch live gates, verify
 workflow-run evidence, and generate observability evidence in one command.
 When `VERIFY_FROM_WORKFLOW=true`, `WORKFLOW_RUN_ID` may be omitted and will

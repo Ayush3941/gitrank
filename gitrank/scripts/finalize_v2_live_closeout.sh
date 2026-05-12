@@ -17,6 +17,7 @@ VERIFY_FROM_WORKFLOW="${VERIFY_FROM_WORKFLOW:-false}"
 WORKFLOW_RUN_ID="${WORKFLOW_RUN_ID:-}"
 WORKFLOW_EVENT="${WORKFLOW_EVENT:-workflow_dispatch}"
 AUTO_GENERATE_OBSERVABILITY_EVIDENCE="${AUTO_GENERATE_OBSERVABILITY_EVIDENCE:-true}"
+AUTO_GENERATE_ROLLBACK_RESTORE_EVIDENCE="${AUTO_GENERATE_ROLLBACK_RESTORE_EVIDENCE:-true}"
 AUDIT_REPORT_FILE="${AUDIT_REPORT_FILE:-$root_dir/docs/releases/v2-contributing-audit-latest.md}"
 AUTO_CREATE_GITHUB_APP_TOKEN="${AUTO_CREATE_GITHUB_APP_TOKEN:-true}"
 APP_TOKEN_OUTPUT_FILE="${APP_TOKEN_OUTPUT_FILE:-$tmp_root/gitrank-app-installation-token.txt}"
@@ -167,6 +168,60 @@ generate_observability_evidence_if_needed() {
   export OBS_EVIDENCE_FILE
 }
 
+generate_rollback_restore_evidence_if_needed() {
+  [ "$RUN_ROLLBACK_RESTORE" = "true" ] || return 0
+  [ "$MARK_CHECKBOXES" = "true" ] || return 0
+  [ "$AUTO_GENERATE_ROLLBACK_RESTORE_EVIDENCE" = "true" ] || return 0
+
+  if [ -z "${ROLLBACK_EVIDENCE_FILE:-}" ] || [ ! -s "${ROLLBACK_EVIDENCE_FILE:-}" ]; then
+    rollback_file="${ROLLBACK_EVIDENCE_FILE:-$root_dir/docs/evidence/rollback-drill-$(date -u +%F).txt}"
+    ROLLBACK_OUTPUT_FILE="$rollback_file" \
+    OUTPUT_FILE="$rollback_file" \
+    ENVIRONMENT="${ENVIRONMENT:-}" \
+    CLUSTER="${CLUSTER:-}" \
+    NAMESPACE="${NAMESPACE:-}" \
+    OPERATOR="${OPERATOR:-}" \
+    STARTING_COMMIT="${ROLLBACK_STARTING_COMMIT:-${STARTING_COMMIT:-}}" \
+    CANDIDATE_COMMIT="${ROLLBACK_CANDIDATE_COMMIT:-${CANDIDATE_COMMIT:-}}" \
+    ROLLBACK_TARGET_REVISION="${ROLLBACK_TARGET_REVISION:-}" \
+    DATABASE_BACKUP_MARKER="${ROLLBACK_DATABASE_BACKUP_MARKER:-${DATABASE_BACKUP_MARKER:-}}" \
+    WORKFLOW_RUN_URL="${ROLLBACK_WORKFLOW_RUN_URL:-${WORKFLOW_RUN_URL:-}}" \
+    ROLLOUT_HISTORY_CAPTURED="${ROLLBACK_HISTORY_CAPTURED:-}" \
+    ROLLBACK_MODE="${ROLLBACK_MODE:-${ROLLBACK_COMMAND_OR_WORKFLOW_MODE:-}}" \
+    ROLLOUT_STATUS_RESULTS="${ROLLBACK_STATUS_RESULTS:-}" \
+    CRITICAL_PRODUCT_CHECKS="${ROLLBACK_CRITICAL_PRODUCT_CHECKS:-${CRITICAL_PRODUCT_CHECKS:-}}" \
+    OBSERVED_ERRORS="${ROLLBACK_OBSERVED_ERRORS:-${OBSERVED_ERRORS:-none observed}}" \
+    FOLLOW_UP_ACTIONS="${ROLLBACK_FOLLOW_UP_ACTIONS:-${FOLLOW_UP_ACTIONS:-none}}" \
+    DECISION="${ROLLBACK_DECISION:-${DECISION:-pass}}" \
+    run_make generate-rollback-drill-evidence
+    ROLLBACK_EVIDENCE_FILE="$rollback_file"
+    export ROLLBACK_EVIDENCE_FILE
+  fi
+
+  if [ -z "${RESTORE_EVIDENCE_FILE:-}" ] || [ ! -s "${RESTORE_EVIDENCE_FILE:-}" ]; then
+    restore_file="${RESTORE_EVIDENCE_FILE:-$root_dir/docs/evidence/database-restore-drill-$(date -u +%F).txt}"
+    OUTPUT_FILE="$restore_file" \
+    ENVIRONMENT="${ENVIRONMENT:-}" \
+    CLUSTER="${CLUSTER:-}" \
+    NAMESPACE="${NAMESPACE:-}" \
+    OPERATOR="${OPERATOR:-}" \
+    RESTORE_SOURCE="${RESTORE_SOURCE:-}" \
+    RESTORE_TARGET="${RESTORE_TARGET:-}" \
+    BACKUP_IDENTIFIER="${RESTORE_BACKUP_IDENTIFIER:-${BACKUP_IDENTIFIER:-}}" \
+    RESTORE_START_TIMESTAMP="${RESTORE_START_TIMESTAMP:-}" \
+    RESTORE_COMPLETION_TIMESTAMP="${RESTORE_COMPLETION_TIMESTAMP:-}" \
+    RESTORE_COMMAND_OR_WORKFLOW="${RESTORE_COMMAND_OR_WORKFLOW:-}" \
+    SCHEMA_MIGRATION_STATE="${RESTORE_SCHEMA_MIGRATION_STATE:-${SCHEMA_MIGRATION_STATE:-}}" \
+    CRITICAL_PRODUCT_CHECKS="${RESTORE_CRITICAL_PRODUCT_CHECKS:-${CRITICAL_PRODUCT_CHECKS:-}}" \
+    OBSERVED_ERRORS="${RESTORE_OBSERVED_ERRORS:-${OBSERVED_ERRORS:-none observed}}" \
+    FOLLOW_UP_ACTIONS="${RESTORE_FOLLOW_UP_ACTIONS:-${FOLLOW_UP_ACTIONS:-none}}" \
+    DECISION="${RESTORE_DECISION:-${DECISION:-pass}}" \
+    run_make generate-database-restore-drill-evidence
+    RESTORE_EVIDENCE_FILE="$restore_file"
+    export RESTORE_EVIDENCE_FILE
+  fi
+}
+
 [ "$CONFIRM_FINALIZE_V2" = "yes" ] || fail "set CONFIRM_FINALIZE_V2=yes to run final closeout"
 
 readiness_run_github_controls="$RUN_GITHUB_CONTROLS"
@@ -197,6 +252,7 @@ if [ "$VERIFY_FROM_WORKFLOW" = "true" ]; then
 fi
 
 generate_observability_evidence_if_needed
+generate_rollback_restore_evidence_if_needed
 
 if [ "$RUN_GITHUB_CONTROLS" = "true" ] && [ "$VERIFY_FROM_WORKFLOW" != "true" ]; then
   resolve_github_admin_token

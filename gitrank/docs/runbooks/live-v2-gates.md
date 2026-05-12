@@ -132,6 +132,42 @@ OUTPUT_FILE=docs/releases/v2-live-closeout-status-latest.md \
 make generate-v2-live-closeout-status
 ```
 
+To generate rollback and restore evidence files from recorded drill metadata:
+
+```bash
+cd gitrank
+OUTPUT_FILE=docs/evidence/rollback-drill-YYYY-MM-DD.txt \
+ENVIRONMENT=staging \
+CLUSTER=your-cluster \
+NAMESPACE=gitrank \
+OPERATOR=your-name \
+STARTING_COMMIT=<sha> \
+CANDIDATE_COMMIT=<sha> \
+ROLLBACK_TARGET_REVISION=<revision> \
+DATABASE_BACKUP_MARKER=<backup-or-pitr-id> \
+WORKFLOW_RUN_URL=https://github.com/OWNER/REPO/actions/runs/<id> \
+ROLLOUT_HISTORY_CAPTURED=yes \
+ROLLBACK_MODE=deploy-workflow-rollback \
+ROLLOUT_STATUS_RESULTS=all-rollouts-healthy \
+CRITICAL_PRODUCT_CHECKS=all-pass \
+make generate-rollback-drill-evidence
+
+OUTPUT_FILE=docs/evidence/database-restore-drill-YYYY-MM-DD.txt \
+ENVIRONMENT=staging \
+CLUSTER=your-cluster \
+NAMESPACE=gitrank \
+OPERATOR=your-name \
+RESTORE_SOURCE=managed-postgres-backup \
+RESTORE_TARGET=staging-recovery-instance \
+BACKUP_IDENTIFIER=<backup-id> \
+RESTORE_START_TIMESTAMP=2026-05-12T10:00:00Z \
+RESTORE_COMPLETION_TIMESTAMP=2026-05-12T10:14:00Z \
+RESTORE_COMMAND_OR_WORKFLOW=cloud-provider-restore-workflow \
+SCHEMA_MIGRATION_STATE=up-to-date \
+CRITICAL_PRODUCT_CHECKS=all-pass \
+make generate-database-restore-drill-evidence
+```
+
 Optional strict filters:
 
 - `WORKFLOW_EVENT=workflow_dispatch` (default)
