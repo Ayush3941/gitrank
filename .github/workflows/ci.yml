@@ -51,6 +51,9 @@ jobs:
       - name: Verify unresolved checklist scope
         run: ./scripts/verify_v2_unresolved_checklist_scope.sh
 
+      - name: Verify checked contributing file references
+        run: ./scripts/verify_contributing_checked_file_refs.sh
+
       - name: Run builds
         run: find . \( -path './.tmp' -o -path './.gocache' \) -prune -o -name go.mod -execdir sh -c 'go build ./...' \;
 
