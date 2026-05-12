@@ -115,6 +115,16 @@ REQUIRE_RELEASE_RENDER=true \
 make verify-live-v2-workflow-run
 ```
 
+You can also resolve the most recent successful workflow-dispatch run:
+
+```bash
+cd gitrank
+GITHUB_REPOSITORY=OWNER/REPO \
+WORKFLOW_RUN_ID=latest \
+WORKFLOW_EVENT=workflow_dispatch \
+make verify-live-v2-workflow-run
+```
+
 To generate an observability evidence record from a successful live-gates run:
 
 ```bash
@@ -141,6 +151,24 @@ TARGET_ENVIRONMENT=staging \
 RUN_GITHUB_CONTROLS=true \
 RUN_OBSERVABILITY=true \
 RUN_RELEASE_RENDER=true \
+ENVIRONMENT=staging \
+CLUSTER=your-cluster \
+NAMESPACE=gitrank \
+OPERATOR=your-name \
+make run-live-v2-workflow-evidence-pipeline
+```
+
+If the workflow already ran and you only want evidence generation from the
+latest successful run:
+
+```bash
+cd gitrank
+CONFIRM_RUN_LIVE_V2_PIPELINE=yes \
+DISPATCH_WORKFLOW=false \
+USE_LATEST_SUCCESSFUL_RUN=true \
+VERIFY_WORKFLOW_RUN=true \
+GENERATE_OBSERVABILITY_EVIDENCE=true \
+GITHUB_REPOSITORY=OWNER/REPO \
 ENVIRONMENT=staging \
 CLUSTER=your-cluster \
 NAMESPACE=gitrank \
@@ -255,6 +283,14 @@ RUN_OBSERVABILITY=true \
 RUN_K8S_RUNTIME=true \
 make finalize-v2-live-closeout
 ```
+
+When `VERIFY_FROM_WORKFLOW=true`, finalization can auto-generate
+`OBS_EVIDENCE_FILE` (if unset) when these are provided:
+
+- `ENVIRONMENT`
+- `CLUSTER`
+- `NAMESPACE`
+- `OPERATOR`
 
 Optional per-environment render overrides:
 

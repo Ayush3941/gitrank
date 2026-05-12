@@ -15,6 +15,8 @@ RUN_LOCAL_STATIC="${RUN_LOCAL_STATIC:-true}"
 MARK_CHECKBOXES="${MARK_CHECKBOXES:-true}"
 VERIFY_FROM_WORKFLOW="${VERIFY_FROM_WORKFLOW:-false}"
 WORKFLOW_RUN_ID="${WORKFLOW_RUN_ID:-}"
+WORKFLOW_EVENT="${WORKFLOW_EVENT:-workflow_dispatch}"
+AUTO_GENERATE_OBSERVABILITY_EVIDENCE="${AUTO_GENERATE_OBSERVABILITY_EVIDENCE:-true}"
 AUDIT_REPORT_FILE="${AUDIT_REPORT_FILE:-$root_dir/docs/releases/v2-contributing-audit-latest.md}"
 AUTO_CREATE_GITHUB_APP_TOKEN="${AUTO_CREATE_GITHUB_APP_TOKEN:-true}"
 APP_TOKEN_OUTPUT_FILE="${APP_TOKEN_OUTPUT_FILE:-$tmp_root/gitrank-app-installation-token.txt}"
@@ -135,6 +137,36 @@ resolve_github_admin_token() {
   printf 'github admin token bootstrapped via GitHub App installation credentials\n'
 }
 
+generate_observability_evidence_if_needed() {
+  [ "$VERIFY_FROM_WORKFLOW" = "true" ] || return 0
+  [ "$RUN_OBSERVABILITY" = "true" ] || return 0
+  [ "$MARK_CHECKBOXES" = "true" ] || return 0
+  [ "$AUTO_GENERATE_OBSERVABILITY_EVIDENCE" = "true" ] || return 0
+  [ -n "$WORKFLOW_RUN_ID" ] || return 0
+
+  if [ -n "${OBS_EVIDENCE_FILE:-}" ] && [ -s "${OBS_EVIDENCE_FILE:-}" ]; then
+    return 0
+  fi
+
+  obs_file="${OBS_EVIDENCE_FILE:-$root_dir/docs/evidence/observability-live-$(date -u +%F).txt}"
+  [ -n "${ENVIRONMENT:-}" ] || fail "ENVIRONMENT is required to auto-generate observability evidence in workflow mode"
+  [ -n "${CLUSTER:-}" ] || fail "CLUSTER is required to auto-generate observability evidence in workflow mode"
+  [ -n "${NAMESPACE:-}" ] || fail "NAMESPACE is required to auto-generate observability evidence in workflow mode"
+  [ -n "${OPERATOR:-}" ] || fail "OPERATOR is required to auto-generate observability evidence in workflow mode"
+
+  WORKFLOW_RUN_ID="$WORKFLOW_RUN_ID" \
+  WORKFLOW_EVENT="$WORKFLOW_EVENT" \
+  OUTPUT_FILE="$obs_file" \
+  ENVIRONMENT="${ENVIRONMENT:-}" \
+  CLUSTER="${CLUSTER:-}" \
+  NAMESPACE="${NAMESPACE:-}" \
+  OPERATOR="${OPERATOR:-}" \
+  run_make generate-observability-evidence-from-workflow-run
+
+  OBS_EVIDENCE_FILE="$obs_file"
+  export OBS_EVIDENCE_FILE
+}
+
 [ "$CONFIRM_FINALIZE_V2" = "yes" ] || fail "set CONFIRM_FINALIZE_V2=yes to run final closeout"
 
 readiness_run_github_controls="$RUN_GITHUB_CONTROLS"
@@ -144,12 +176,15 @@ if [ "$VERIFY_FROM_WORKFLOW" = "true" ]; then
   [ -n "$WORKFLOW_RUN_ID" ] || fail "WORKFLOW_RUN_ID is required when VERIFY_FROM_WORKFLOW=true"
   run_make verify-live-v2-workflow-run \
     WORKFLOW_RUN_ID="$WORKFLOW_RUN_ID" \
+    WORKFLOW_EVENT="$WORKFLOW_EVENT" \
     REQUIRE_GITHUB_CONTROLS="$RUN_GITHUB_CONTROLS" \
     REQUIRE_OBSERVABILITY="$RUN_OBSERVABILITY" \
     REQUIRE_RELEASE_RENDER="$RUN_K8S_RUNTIME"
   readiness_run_github_controls=false
   readiness_run_observability=false
 fi
+
+generate_observability_evidence_if_needed
 
 if [ "$RUN_GITHUB_CONTROLS" = "true" ] && [ "$VERIFY_FROM_WORKFLOW" != "true" ]; then
   resolve_github_admin_token

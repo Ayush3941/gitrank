@@ -8,6 +8,8 @@ TOKEN="${GITHUB_TOKEN:-${GH_TOKEN:-${GITRANK_REPO_ADMIN_TOKEN:-}}}"
 API_BASE="${GITHUB_API_URL:-https://api.github.com}"
 API_VERSION="${GITHUB_API_VERSION:-2026-03-10}"
 WORKFLOW_RUN_ID="${WORKFLOW_RUN_ID:-}"
+USE_LATEST_SUCCESSFUL_RUN="${USE_LATEST_SUCCESSFUL_RUN:-false}"
+WORKFLOW_EVENT="${WORKFLOW_EVENT:-workflow_dispatch}"
 OUTPUT_FILE="${OUTPUT_FILE:-}"
 
 ENVIRONMENT="${ENVIRONMENT:-}"
@@ -58,7 +60,10 @@ case "$REPOSITORY" in
   *) fail "GITHUB_REPOSITORY must use owner/name form (or run from a clone with GitHub origin remote)" ;;
 esac
 
-[ -n "$WORKFLOW_RUN_ID" ] || fail "WORKFLOW_RUN_ID is required"
+if [ -z "$WORKFLOW_RUN_ID" ] && [ "$USE_LATEST_SUCCESSFUL_RUN" = "true" ]; then
+  WORKFLOW_RUN_ID=latest
+fi
+[ -n "$WORKFLOW_RUN_ID" ] || fail "WORKFLOW_RUN_ID is required (or set USE_LATEST_SUCCESSFUL_RUN=true)"
 [ -n "$OUTPUT_FILE" ] || fail "OUTPUT_FILE is required"
 [ -n "$ENVIRONMENT" ] || fail "ENVIRONMENT is required"
 [ -n "$CLUSTER" ] || fail "CLUSTER is required"
@@ -111,6 +116,7 @@ verify_script="$root_dir/scripts/verify_live_v2_workflow_run.sh"
 GITHUB_REPOSITORY="$REPOSITORY" \
 GITHUB_TOKEN="$TOKEN" \
 WORKFLOW_RUN_ID="$WORKFLOW_RUN_ID" \
+WORKFLOW_EVENT="$WORKFLOW_EVENT" \
 WORKFLOW_RUN_ID_OUTPUT_FILE="${TMPDIR:-/tmp}/gitrank-observability-workflow-run-id.$$.txt" \
 REQUIRE_GITHUB_CONTROLS=false \
 REQUIRE_OBSERVABILITY=true \

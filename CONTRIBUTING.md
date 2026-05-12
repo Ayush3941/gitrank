@@ -1176,7 +1176,8 @@ Use `make verify-live-v2-inputs` as preflight before running live gates.
 Use `make verify-v2-unresolved-checklist-scope` to ensure unresolved checklist
 items stay limited to approved live gates.
 Use `make verify-live-v2-workflow-run` to verify a successful
-`verify-live-v2-gates.yml` run by run ID and reuse it as live-gate evidence.
+`verify-live-v2-gates.yml` run by run ID (or `WORKFLOW_RUN_ID=latest`) and
+reuse it as live-gate evidence.
 Use `make generate-observability-evidence-from-workflow-run` to generate a
 validated observability evidence file from a successful live-gates workflow run.
 Use `make run-live-v2-workflow-evidence-pipeline` to dispatch live gates, verify
