@@ -12,20 +12,17 @@ import { EvidenceSignalsCard } from "@/features/pr-report/components/EvidenceSig
 import { ScoreMatrixCard } from "@/features/pr-report/components/ScoreMatrixCard";
 import { XPBreakdownCard } from "@/features/pr-report/components/XPBreakdownCard";
 import { usePrReport } from "@/hooks/use-pr-report";
-import type { PreviewMode } from "@/types/gitrank";
 
 export function PRBattleReportPageClient({
   owner,
   repo,
   number,
-  preview,
 }: {
   owner: string;
   repo: string;
   number: number;
-  preview?: PreviewMode;
 }) {
-  const { data, isLoading, isError } = usePrReport(owner, repo, number, preview);
+  const { data, isLoading, isError } = usePrReport(owner, repo, number);
 
   if (isLoading) {
     return <LoadingState message="Calculating PR intensity..." />;

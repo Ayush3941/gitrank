@@ -8,10 +8,10 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BadgeGrid } from "@/features/badges/components/BadgeGrid";
 import { useBadges } from "@/hooks/use-badges";
-import type { BadgeRarity, PreviewMode } from "@/types/gitrank";
+import type { BadgeRarity } from "@/types/gitrank";
 
-export function BadgesPageClient({ preview }: { preview?: PreviewMode }) {
-  const { data, isLoading, isError } = useBadges(preview);
+export function BadgesPageClient() {
+  const { data, isLoading, isError } = useBadges();
   const [rarity, setRarity] = useState<BadgeRarity | "All">("All");
   const [visibility, setVisibility] = useState<"All" | "Unlocked" | "Locked">("All");
 

@@ -7,12 +7,12 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { QuestCard } from "@/features/quests/components/QuestCard";
 import { useQuests } from "@/hooks/use-quests";
-import type { PreviewMode, Quest } from "@/types/gitrank";
+import type { Quest } from "@/types/gitrank";
 
 const groups: Array<Quest["cadence"]> = ["Daily", "Weekly", "Long-term", "Skill-based"];
 
-export function QuestsPageClient({ preview }: { preview?: PreviewMode }) {
-  const { data, isLoading, isError } = useQuests(preview);
+export function QuestsPageClient() {
+  const { data, isLoading, isError } = useQuests();
 
   return (
     <div className="space-y-6">

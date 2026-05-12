@@ -5,8 +5,10 @@ const root = process.cwd();
 const scanRoots = ["app", "hooks", "features", "lib/api"];
 const blockedImports = [
   "@/lib/api/mock-api",
+  "@/lib/demo/preview-api",
   "@/lib/demo/mock-api",
   "@/lib/mock-data/gitrank",
+  "@/lib/preview",
 ];
 
 const violations = [];
@@ -20,7 +22,7 @@ if (violations.length > 0) {
   for (const violation of violations) {
     console.error(`- ${violation.file}: ${violation.importPath}`);
   }
-  console.error("Move preview-only mock access behind frontend/lib/demo/preview-api.ts.");
+  console.error("Use live BFF routes in production modules; keep mock fixtures in tests only.");
   process.exit(1);
 }
 

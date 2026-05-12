@@ -779,6 +779,7 @@ V2 direction:
 
 - replace every production mock, demo-only product path, and derived-only product claim with real backend contracts, persistence, orchestration, and verification
 - user sync now supplements owned-repository traversal with bounded authored-PR discovery, so real public PRs in repositories the user does not own can enter the persisted PR evidence path
+- frontend routes no longer accept `?demo=` preview modes, and the old authenticated mock dataset plus preview mock API modules have been removed
 - frontend CI now includes a live-fixture smoke suite that renders dashboard, quests, PR reports, profile, leaderboard, and settings without using frontend mock API functions
 - newly replayed PR battle reports expose persisted scoring-engine formula components instead of relying only on profile-side display heuristics
 - newly replayed badge awards carry bounded PR evidence references so PR reports can show real badge unlocks

@@ -37,9 +37,7 @@ Dark-first Next.js frontend for GitRank, an evidence-backed open-source reputati
 - `features/*/components/`: page and feature modules
 - `features/*/data/`: feature-local constants and clearly labeled marketing sample data
 - `hooks/`: TanStack Query hooks
-- `lib/demo/preview-api.ts`: development-gated preview adapter for mock loading, error, empty, and stale states
-- `lib/demo/mock-api.ts`: mock data access layer used only by the preview adapter
-- `lib/mock-data/gitrank.ts`: main mock domain dataset for Ayush3941
+- `lib/api/`: live frontend BFF clients for profile, quests, leaderboard, account actions, sync, and PR reports
 - `types/gitrank.ts`: domain model types
 
 ## Run
@@ -63,9 +61,9 @@ The root GitHub Actions workflows run the same lint, production-mock boundary, l
 
 ## Data Sources
 
-Quest screens now read the live `GET /v1/me/quests` contract through the frontend BFF when no demo query param is present. PR-report screens now read the live `GET /v1/pr/{owner}/{repo}/{number}/report` contract through the frontend BFF when no demo query param is present, including persisted score-component metadata from newly replayed score events and PR-linked badge unlocks from newly replayed badge awards.
+Quest screens read the live `GET /v1/me/quests` contract through the frontend BFF. PR-report screens read the live `GET /v1/pr/{owner}/{repo}/{number}/report` contract through the frontend BFF, including persisted score-component metadata from newly replayed score events and PR-linked badge unlocks from newly replayed badge awards.
 
-The public profile page, authenticated dashboard overview, onboarding reveal, badge shelf, contribution drill-down, leaderboard, and dashboard settings page now use live profile data when no demo query param is present:
+The public profile page, authenticated dashboard overview, onboarding reveal, badge shelf, contribution drill-down, leaderboard, and dashboard settings page now use live profile data:
 
 - browser queries call frontend BFF routes under `app/api/profile/*`
 - quest queries call the frontend BFF route at `app/api/profile/me/quests`
@@ -77,13 +75,13 @@ The public profile page, authenticated dashboard overview, onboarding reveal, ba
 - dashboard badge, contribution, and recent battle-report panels derive from the authenticated profile snapshot instead of mock PR-analysis detail
 - contribution rows surface score-history evidence state plus score/formula version linkage when the backend provides it
 - leaderboard rows surface profile-snapshot provenance, score version, source watermark, and missing rank-ledger evidence when the backend provides it
-- `npm run check:no-production-mocks` fails CI if production app, hook, feature, or API modules import the mock API or mock domain dataset directly
+- `npm run check:no-production-mocks` fails CI if production app, hook, feature, or API modules import mock datasets, preview adapters, or demo query plumbing
 - frontend CI also runs `../gitrank/scripts/verify_v2_no_mock_release_gate.sh` to verify critical OpenAPI entries, worker-flow coverage, and live fixture coverage stay wired
-- `npm run test:smoke` renders dashboard, quest, PR-report, profile, leaderboard, and settings flows from live-shaped BFF fixtures instead of preview mock API functions
+- `npm run test:smoke` renders dashboard, quest, PR-report, profile, leaderboard, and settings flows from live-shaped BFF fixtures
 
 The gamified UI adds season metadata, rank-progress cards, player-card profile presentation, quest recommendation evidence, badge rarity styling, and PR battle-report explanation panels. Live leaderboard season metadata is derived from the gateway response timestamp and displayed as presentation context; final scoring still comes from backend score/profile snapshots.
 
-The marketing landing page uses a dedicated sample fixture under `features/marketing/data/`; it does not import the mock authenticated profile dataset.
+The marketing landing page uses a dedicated sample fixture under `features/marketing/data/`; it does not import authenticated profile data or any mock app route dataset.
 
 The settings page includes an account-backed reduced-gamification display preference. Authenticated dashboard and reveal flows apply the value from the live profile response, mirror it into browser `localStorage` for immediate rendering, respect OS reduced-motion intent in animated components, and do not change score, badge, or leaderboard state.
 
@@ -93,21 +91,6 @@ The settings page also has live authenticated account actions:
 - `/api/account/export` proxies to the Go account export route and downloads a JSON file with token secrets and secret hashes excluded
 - `/api/account/unlink` proxies to the Go account disconnect route
 - `/api/account/delete` proxies to the Go account deletion route
-
-The demo query params below are development-gated. They force mock preview states only when `NODE_ENV !== "production"` or `GITRANK_ENABLE_DEMO_PREVIEWS=true` is set, so production URLs keep using live BFF routes by default.
-
-Supported preview query params:
-
-- `?demo=loading`
-- `?demo=error`
-- `?demo=empty`
-- `?demo=stale`
-
-Example:
-
-```bash
-/dashboard?demo=stale
-```
 
 ## Backend Configuration
 

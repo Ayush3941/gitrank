@@ -48,7 +48,6 @@ export type SkillCategory =
   | "Architecture"
   | "Review";
 
-export type PreviewMode = "default" | "loading" | "error" | "empty" | "stale";
 export type BadgeIcon =
   | "bolt"
   | "book"

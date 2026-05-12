@@ -15,10 +15,9 @@ import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
-import type { PreviewMode } from "@/types/gitrank";
 
-export function DashboardPageClient({ preview }: { preview?: PreviewMode }) {
-  const { data, isLoading, isError } = useDashboard(preview);
+export function DashboardPageClient() {
+  const { data, isLoading, isError } = useDashboard();
 
   if (isLoading) {
     return <LoadingState message="Building your RPG dashboard..." />;

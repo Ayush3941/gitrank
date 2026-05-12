@@ -9,7 +9,6 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LeaderboardArena } from "@/features/leaderboard/components/LeaderboardArena";
 import { useLeaderboard } from "@/hooks/use-leaderboard";
 import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
-import type { PreviewMode } from "@/types/gitrank";
 
 const tabs: LeaderboardTab[] = [
   "Global",
@@ -20,9 +19,9 @@ const tabs: LeaderboardTab[] = [
   "Rising Contributors",
 ];
 
-export function LeaderboardPageClient({ preview }: { preview?: PreviewMode }) {
+export function LeaderboardPageClient() {
   const [tab, setTab] = useState<LeaderboardTab>("Global");
-  const { data, isLoading, isError } = useLeaderboard(tab, preview);
+  const { data, isLoading, isError } = useLeaderboard(tab);
 
   return (
     <div className="space-y-6">

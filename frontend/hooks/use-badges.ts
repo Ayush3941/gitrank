@@ -2,13 +2,12 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { getMyProfile } from "@/lib/api/profile-api";
-import type { PreviewMode } from "@/types/gitrank";
 
-export function useBadges(preview?: PreviewMode) {
+export function useBadges() {
   return useQuery({
-    queryKey: ["badges", preview],
+    queryKey: ["badges"],
     queryFn: async () => {
-      const profile = await getMyProfile(preview);
+      const profile = await getMyProfile();
       return profile.user.badges;
     },
   });

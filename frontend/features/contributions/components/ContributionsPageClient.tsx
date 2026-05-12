@@ -8,7 +8,6 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
 import { ContributionList } from "@/features/contributions/components/ContributionList";
 import { useContributions } from "@/hooks/use-contributions";
-import type { PreviewMode } from "@/types/gitrank";
 
 const filterMap: Record<string, string> = {
   All: "All",
@@ -23,7 +22,7 @@ const filterMap: Record<string, string> = {
   "High XP": "High XP",
 };
 
-export function ContributionsPageClient({ preview }: { preview?: PreviewMode }) {
+export function ContributionsPageClient() {
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact">("Newest");
@@ -31,7 +30,6 @@ export function ContributionsPageClient({ preview }: { preview?: PreviewMode }) 
     filter: filterMap[filter],
     search,
     sort,
-    preview,
   });
 
   return (

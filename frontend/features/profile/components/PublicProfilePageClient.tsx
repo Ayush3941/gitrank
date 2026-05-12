@@ -14,16 +14,13 @@ import { BestPRsPanel } from "@/features/profile/components/BestPRsPanel";
 import { PublicProfileHero } from "@/features/profile/components/PublicProfileHero";
 import { useProfile } from "@/hooks/use-profile";
 import { formatRelativeDays } from "@/lib/formatters";
-import type { PreviewMode } from "@/types/gitrank";
 
 export function PublicProfilePageClient({
   username,
-  preview,
 }: {
   username: string;
-  preview?: PreviewMode;
 }) {
-  const { data, isLoading, isError } = useProfile(username, preview);
+  const { data, isLoading, isError } = useProfile(username);
 
   if (isLoading) {
     return <LoadingState message="Preparing public reputation card..." />;

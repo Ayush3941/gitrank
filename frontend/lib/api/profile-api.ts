@@ -6,7 +6,6 @@ import type {
   FeaturedContribution,
   LeaderboardSeason,
   PRCategory,
-  PreviewMode,
   PrivacySettings,
   ProfileRepositorySummary,
   RankTier,
@@ -173,15 +172,7 @@ type BackedPrivacySettings = Pick<
   | "reducedGamification"
 >;
 
-export async function getPublicProfile(
-  username: string,
-  preview?: PreviewMode,
-): Promise<ProfileViewData | null> {
-  if (preview) {
-    const { getPreviewPublicProfile } = await import("@/lib/demo/preview-api");
-    return getPreviewPublicProfile(username, preview);
-  }
-
+export async function getPublicProfile(username: string): Promise<ProfileViewData | null> {
   const response = await fetch(`/api/profile/public/${encodeURIComponent(username)}`, {
     cache: "no-store",
     credentials: "same-origin",
@@ -192,12 +183,7 @@ export async function getPublicProfile(
   return adaptProfileResponse<ApiPublicProfileResponse>(response, "public");
 }
 
-export async function getMyProfile(preview?: PreviewMode): Promise<ProfileViewData> {
-  if (preview) {
-    const { getPreviewMyProfile } = await import("@/lib/demo/preview-api");
-    return getPreviewMyProfile(preview);
-  }
-
+export async function getMyProfile(): Promise<ProfileViewData> {
   const response = await fetch("/api/profile/me", {
     cache: "no-store",
     credentials: "same-origin",

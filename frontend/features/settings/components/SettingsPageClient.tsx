@@ -25,7 +25,6 @@ import {
   useAccountGamificationPreference,
   useGamificationPreference,
 } from "@/hooks/use-gamification-preference";
-import type { PreviewMode, PrivacySettings } from "@/types/gitrank";
 
 type BackedPrivacyKey =
   | "publicProfileEnabled"
@@ -34,9 +33,8 @@ type BackedPrivacyKey =
   | "showLeaderboardParticipation"
   | "reducedGamification";
 
-export function SettingsPageClient({ preview }: { preview?: PreviewMode }) {
-  const { data, isLoading, isError } = useMyProfile(preview);
-  const isPreview = Boolean(preview);
+export function SettingsPageClient() {
+  const { data, isLoading, isError } = useMyProfile();
   const updatePrivacy = useUpdateProfilePrivacy();
   const updateRepositoryVisibility = useUpdateRepositoryVisibility();
   const requestSync = useRequestProfileSync();
@@ -44,10 +42,9 @@ export function SettingsPageClient({ preview }: { preview?: PreviewMode }) {
   const deleteAccount = useDeleteMyAccount();
   const exportAccount = useExportMyAccountData();
   const { setReducedGamification } = useGamificationPreference();
-  useAccountGamificationPreference(isPreview ? null : data);
-  const [previewSettings, setPreviewSettings] = useState<PrivacySettings | null>(null);
+  useAccountGamificationPreference(data);
   const [actionNotice, setActionNotice] = useState("");
-  const currentSettings = isPreview ? previewSettings ?? data?.user.privacy ?? null : data?.user.privacy ?? null;
+  const currentSettings = data?.user.privacy ?? null;
 
   if (isLoading) {
     return <LoadingState message="Checking privacy controls..." />;
@@ -62,7 +59,6 @@ export function SettingsPageClient({ preview }: { preview?: PreviewMode }) {
     );
   }
 
-  const baselinePrivacy = data.user.privacy;
   const mutationError =
     (updatePrivacy.error as Error | null)?.message ||
     (updateRepositoryVisibility.error as Error | null)?.message ||
@@ -81,20 +77,10 @@ export function SettingsPageClient({ preview }: { preview?: PreviewMode }) {
     if (key === "reducedGamification") {
       setReducedGamification(checked);
     }
-    if (isPreview) {
-      setPreviewSettings((current) => ({
-        ...(current ?? baselinePrivacy),
-        [key]: checked,
-      }));
-      return;
-    }
     updatePrivacy.mutate({ [key]: checked });
   }
 
   function handleSyncRequest() {
-    if (isPreview) {
-      return;
-    }
     setActionNotice("");
     requestSync.mutate(undefined, {
       onSuccess: (result) => {
@@ -107,7 +93,7 @@ export function SettingsPageClient({ preview }: { preview?: PreviewMode }) {
   }
 
   function handleUnlinkAccount() {
-    if (isPreview || isActing) {
+    if (isActing) {
       return;
     }
     if (!window.confirm("Disconnect GitHub and sign out of this GitRank session?")) {
@@ -122,7 +108,7 @@ export function SettingsPageClient({ preview }: { preview?: PreviewMode }) {
   }
 
   function handleDeleteAccount() {
-    if (isPreview || isActing) {
+    if (isActing) {
       return;
     }
     if (
@@ -141,7 +127,7 @@ export function SettingsPageClient({ preview }: { preview?: PreviewMode }) {
   }
 
   function handleExportAccountData() {
-    if (isPreview || isActing) {
+    if (isActing) {
       return;
     }
     setActionNotice("");
@@ -173,11 +159,11 @@ export function SettingsPageClient({ preview }: { preview?: PreviewMode }) {
           <SyncStatusPill status={data.user.syncStatus} />
         </div>
         <div className="flex flex-wrap gap-3">
-          <Button disabled={isPreview || isActing} onClick={handleSyncRequest}>
+          <Button disabled={isActing} onClick={handleSyncRequest}>
             <RefreshCcw className="h-4 w-4" />
             {requestSync.isPending ? "Queueing sync..." : "Sync now"}
           </Button>
-          <Button variant="secondary" disabled={isPreview || isActing} onClick={handleUnlinkAccount}>
+          <Button variant="secondary" disabled={isActing} onClick={handleUnlinkAccount}>
             <FolderGit2 className="h-4 w-4" />
             {unlinkAccount.isPending ? "Disconnecting..." : "Disconnect"}
           </Button>
@@ -231,16 +217,14 @@ export function SettingsPageClient({ preview }: { preview?: PreviewMode }) {
         </div>
         <PrivacyRepositoryToggleList
           repositories={data.user.repositories}
-          pendingRepository={isPreview ? null : pendingRepository}
+          pendingRepository={pendingRepository}
           onToggle={
-            isPreview
-              ? undefined
-              : (repository, checked) =>
-                  updateRepositoryVisibility.mutate({
-                    fullName: repository.name,
-                    visibility: checked ? "Public" : "Hidden",
-                    reason: repository.reason,
-                  })
+            (repository, checked) =>
+              updateRepositoryVisibility.mutate({
+                fullName: repository.name,
+                visibility: checked ? "Public" : "Hidden",
+                reason: repository.reason,
+              })
           }
         />
       </GlowCard>
@@ -251,15 +235,15 @@ export function SettingsPageClient({ preview }: { preview?: PreviewMode }) {
           <h2 className="mt-2 text-2xl font-semibold text-white">Refresh, export, or remove account data</h2>
         </div>
         <div className="flex flex-wrap gap-3">
-          <Button disabled={isPreview || isActing} onClick={handleSyncRequest}>
+          <Button disabled={isActing} onClick={handleSyncRequest}>
             <RefreshCcw className="h-4 w-4" />
             {requestSync.isPending ? "Queueing refresh..." : "Refresh analysis"}
           </Button>
-          <Button variant="secondary" disabled={isPreview || isActing} onClick={handleExportAccountData}>
+          <Button variant="secondary" disabled={isActing} onClick={handleExportAccountData}>
             <Download className="h-4 w-4" />
             {exportAccount.isPending ? "Exporting..." : "Export data"}
           </Button>
-          <Button variant="danger" disabled={isPreview || isActing} onClick={handleDeleteAccount}>
+          <Button variant="danger" disabled={isActing} onClick={handleDeleteAccount}>
             <Trash2 className="h-4 w-4" />
             {deleteAccount.isPending ? "Deleting account..." : "Delete account"}
           </Button>

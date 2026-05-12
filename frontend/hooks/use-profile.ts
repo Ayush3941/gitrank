@@ -7,7 +7,7 @@ import {
   updateMyProfilePrivacy,
   updateMyProfileRepositoryVisibility,
 } from "@/lib/api/profile-api";
-import type { PreviewMode, PrivacySettings, RepositoryVisibility } from "@/types/gitrank";
+import type { PrivacySettings, RepositoryVisibility } from "@/types/gitrank";
 
 export const myProfileQueryKey = ["profile", "me"] as const;
 
@@ -22,17 +22,17 @@ type BackedPrivacySettings = Partial<
   >
 >;
 
-export function useProfile(username: string, preview?: PreviewMode) {
+export function useProfile(username: string) {
   return useQuery({
-    queryKey: ["profile", "public", username, preview],
-    queryFn: () => getPublicProfile(username, preview),
+    queryKey: ["profile", "public", username],
+    queryFn: () => getPublicProfile(username),
   });
 }
 
-export function useMyProfile(preview?: PreviewMode) {
+export function useMyProfile() {
   return useQuery({
-    queryKey: [...myProfileQueryKey, preview],
-    queryFn: () => getMyProfile(preview),
+    queryKey: myProfileQueryKey,
+    queryFn: getMyProfile,
   });
 }
 
@@ -43,7 +43,6 @@ export function useUpdateProfilePrivacy() {
     mutationFn: (input: BackedPrivacySettings) => updateMyProfilePrivacy(input),
     onSuccess: (data) => {
       queryClient.setQueryData(myProfileQueryKey, data);
-      queryClient.setQueryData([...myProfileQueryKey, undefined], data);
     },
   });
 }
@@ -63,7 +62,6 @@ export function useUpdateRepositoryVisibility() {
     }) => updateMyProfileRepositoryVisibility(fullName, visibility, reason),
     onSuccess: (data) => {
       queryClient.setQueryData(myProfileQueryKey, data);
-      queryClient.setQueryData([...myProfileQueryKey, undefined], data);
     },
   });
 }

@@ -2,7 +2,6 @@ import type {
   LeaderboardEntry,
   LeaderboardSeason,
   LeaderboardSnapshot,
-  PreviewMode,
   RankTier,
   SkillCategory,
 } from "@/types/gitrank";
@@ -48,15 +47,7 @@ type ApiErrorResponse = {
   };
 };
 
-export async function getLeaderboard(
-  tab: LeaderboardTab,
-  preview?: PreviewMode,
-): Promise<LeaderboardSnapshot> {
-  if (preview) {
-    const { getPreviewLeaderboard } = await import("@/lib/demo/preview-api");
-    return getPreviewLeaderboard(tab, preview);
-  }
-
+export async function getLeaderboard(tab: LeaderboardTab): Promise<LeaderboardSnapshot> {
   const response = await fetch("/api/leaderboard", {
     cache: "no-store",
     credentials: "same-origin",
