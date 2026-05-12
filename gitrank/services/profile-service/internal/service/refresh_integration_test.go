@@ -127,6 +127,85 @@ func TestRefreshProfileByUserIDPersistsFreshSnapshot(t *testing.T) {
 	assertProfileSnapshotCount(t, ctx, pool, userID, 2)
 }
 
+func TestRefreshProfileByUserIDNormalizesLegacyBadgeEvidence(t *testing.T) {
+	databaseURL := strings.TrimSpace(os.Getenv("GITRANK_PROFILE_DATABASE_URL"))
+	if databaseURL == "" {
+		t.Skip("GITRANK_PROFILE_DATABASE_URL is not set")
+	}
+
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, databaseURL)
+	if err != nil {
+		t.Fatalf("pgxpool.New() error = %v", err)
+	}
+	defer pool.Close()
+
+	cfg := config.App{
+		ServiceName: "profile-service",
+		Database:    config.Database{URL: databaseURL},
+		Auth: config.Auth{
+			SessionSecret:     "profile-refresh-badge-test-secret",
+			SessionCookieName: "gitrank_session",
+			CSRFCookieName:    "gitrank_csrf",
+		},
+	}
+	svc, err := New(cfg, pool, &Cache{}, profileTestLogger())
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+
+	now := time.Now().UTC()
+	suffix := now.UnixNano()
+	handle := fmt.Sprintf("refresh-badge-%d", suffix%1000000000)
+
+	var userID string
+	if err := pool.QueryRow(ctx, `
+		INSERT INTO users (display_name, public_handle, avatar_url)
+		VALUES ($1, $2, $3)
+		RETURNING id::text
+	`, "Profile Badge Normalization User", handle, "https://avatars.example.test/u/refresh-badge").Scan(&userID); err != nil {
+		t.Fatalf("insert user: %v", err)
+	}
+
+	const legacyPRID = "44444444-4444-4444-4444-444444444444"
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO user_badges (
+			user_id,
+			badge_key,
+			awarded_at,
+			evidence_jsonb
+		) VALUES (
+			$1::uuid,
+			$2,
+			$3,
+			$4::jsonb
+		)
+	`, userID, "legacy-badge", now.Add(-time.Hour), `{"pull_request_id":"`+legacyPRID+`"}`); err != nil {
+		t.Fatalf("insert legacy badge: %v", err)
+	}
+
+	if _, err := svc.RefreshProfileByUserID(ctx, userID, now); err != nil {
+		t.Fatalf("RefreshProfileByUserID() error = %v", err)
+	}
+
+	var rule, version string
+	var idsCount int
+	if err := pool.QueryRow(ctx, `
+		SELECT
+			COALESCE(evidence_jsonb->>'rule', ''),
+			COALESCE(evidence_jsonb->>'rule_version', ''),
+			COALESCE(jsonb_array_length(COALESCE(evidence_jsonb->'evidence_pr_ids', '[]'::jsonb)), 0)::int
+		FROM user_badges
+		WHERE user_id = $1::uuid
+		  AND badge_key = 'legacy-badge'
+	`, userID).Scan(&rule, &version, &idsCount); err != nil {
+		t.Fatalf("load normalized badge: %v", err)
+	}
+	if rule != "legacy-badge" || version != "badges/v1" || idsCount != 1 {
+		t.Fatalf("normalized badge evidence = rule=%q version=%q ids=%d, want legacy-badge/badges/v1/1", rule, version, idsCount)
+	}
+}
+
 func assertProfileSnapshotCount(t *testing.T, ctx context.Context, pool *pgxpool.Pool, userID string, want int) {
 	t.Helper()
 

@@ -340,7 +340,7 @@ INSERT INTO user_badges (
     '11111111-1111-1111-1111-111111111111',
     'critical-path-contributor',
     NOW() - INTERVAL '6 days',
-    '{"pull_request_id":"44444444-4444-4444-4444-444444444444","seeded":true}'::jsonb
+    '{"issuer":"scoring-engine","rule":"critical-path-contributor","rule_version":"badges/v1","pull_request_id":"44444444-4444-4444-4444-444444444444","evidence_pr_ids":["44444444-4444-4444-4444-444444444444"],"evidence_prs":[{"pull_request_id":"44444444-4444-4444-4444-444444444444","repository":"octo/seeded-repo","number":17}],"seeded":true}'::jsonb
 )
 ON CONFLICT (user_id, badge_key) DO UPDATE
 SET awarded_at = EXCLUDED.awarded_at,

@@ -453,7 +453,7 @@ func (s *Service) rebuildSnapshot(ctx context.Context, user userRecord, now time
 	if err != nil {
 		return snapshotRecord{}, err
 	}
-	badges, err := s.store.LoadBadges(ctx, user.ID)
+	badges, err := s.store.LoadBadges(ctx, user.ID, badgeFallbackPRIDs(scoreRows, 5))
 	if err != nil {
 		return snapshotRecord{}, err
 	}

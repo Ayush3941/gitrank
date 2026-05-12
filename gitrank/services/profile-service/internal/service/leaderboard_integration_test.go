@@ -76,7 +76,7 @@ func TestLeaderboardMaterializesSeasonSnapshotsAndRankMovements(t *testing.T) {
 		t.Fatalf("RefreshProfileByUserID(bravo second) error = %v", err)
 	}
 
-	second, err := svc.Leaderboard(ctx, 10, now.Add(10*time.Minute))
+	second, err := svc.Leaderboard(ctx, 10, now.Add(40*time.Minute))
 	if err != nil {
 		t.Fatalf("Leaderboard(second) error = %v", err)
 	}

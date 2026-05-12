@@ -317,7 +317,7 @@ func (s *Store) LoadScoreRows(ctx context.Context, userID string, selection scor
 	return out, rows.Err()
 }
 
-func (s *Store) LoadBadges(ctx context.Context, userID string) ([]badgeRecord, error) {
+func (s *Store) LoadBadges(ctx context.Context, userID string, fallbackPRIDs []string) ([]badgeRecord, error) {
 	rows, err := s.pool.Query(ctx, `
 		SELECT badge_key, awarded_at, evidence_jsonb
 		FROM user_badges
@@ -340,6 +340,22 @@ func (s *Store) LoadBadges(ctx context.Context, userID string) ([]badgeRecord, e
 		if len(evidenceRaw) > 0 {
 			_ = json.Unmarshal(evidenceRaw, &record.Evidence)
 		}
+		normalized, changed := normalizeBadgeEvidence(record.Key, record.Evidence, fallbackPRIDs)
+		if changed {
+			evidenceJSON, err := marshalBadgeEvidence(normalized)
+			if err != nil {
+				return nil, err
+			}
+			if _, err := s.pool.Exec(ctx, `
+				UPDATE user_badges
+				SET evidence_jsonb = $3::jsonb
+				WHERE user_id = $1::uuid
+				  AND badge_key = $2
+			`, userID, record.Key, evidenceJSON); err != nil {
+				return nil, err
+			}
+		}
+		record.Evidence = normalized
 		out = append(out, record)
 	}
 	return out, rows.Err()
