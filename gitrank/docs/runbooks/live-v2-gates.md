@@ -19,6 +19,12 @@ It does not execute the managed PostgreSQL restore drill; use
 - `GITRANK_REPO_ADMIN_TOKEN` (or `GITHUB_TOKEN`)
 - `GRAFANA_API_TOKEN`
 
+Optional GitHub App bootstrap secrets (used when repo-admin token secret is not set):
+
+- `GITRANK_GITHUB_APP_ID`
+- `GITRANK_GITHUB_APP_INSTALLATION_ID`
+- `GITRANK_GITHUB_APP_PRIVATE_KEY_PEM`
+
 ## Required Repository Or Environment Variables
 
 - `PROMETHEUS_BASE_URL`

@@ -86,6 +86,10 @@ How to complete:
    - `CONFIRM_FINALIZE_V2=yes RUN_GITHUB_CONTROLS=true make finalize-v2-live-closeout`
      can auto-create a short-lived token from GitHub App credentials when
      `GITHUB_APP_ID`, `GITHUB_APP_INSTALLATION_ID`, and private-key input are set.
+5. Optional GitHub Actions bootstrap:
+   - `.github/workflows/verify-live-v2-gates.yml` can mint a short-lived token
+     from `GITRANK_GITHUB_APP_ID`, `GITRANK_GITHUB_APP_INSTALLATION_ID`, and
+     `GITRANK_GITHUB_APP_PRIVATE_KEY_PEM` if `GITRANK_REPO_ADMIN_TOKEN` is unset.
 
 ## 3) Rollback And Restore Drills Executed And Recorded
 

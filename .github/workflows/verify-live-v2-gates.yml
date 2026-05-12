@@ -62,10 +62,24 @@ jobs:
         working-directory: gitrank
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_TOKEN: ${{ secrets.GITRANK_REPO_ADMIN_TOKEN }}
+          GITRANK_REPO_ADMIN_TOKEN: ${{ secrets.GITRANK_REPO_ADMIN_TOKEN }}
+          GITHUB_APP_ID: ${{ secrets.GITRANK_GITHUB_APP_ID }}
+          GITHUB_APP_INSTALLATION_ID: ${{ secrets.GITRANK_GITHUB_APP_INSTALLATION_ID }}
+          GITHUB_APP_PRIVATE_KEY_PEM: ${{ secrets.GITRANK_GITHUB_APP_PRIVATE_KEY_PEM }}
         run: |
           set -eu
-          test -n "$GITHUB_TOKEN"
+          token="${GITRANK_REPO_ADMIN_TOKEN:-}"
+          if [ -z "$token" ]; then
+            if [ -n "${GITHUB_APP_ID:-}" ] && [ -n "${GITHUB_APP_INSTALLATION_ID:-}" ] && [ -n "${GITHUB_APP_PRIVATE_KEY_PEM:-}" ]; then
+              token_file="$RUNNER_TEMP/gitrank-repo-admin-token.txt"
+              TOKEN_OUTPUT_FILE="$token_file" make create-github-app-installation-token
+              token="$(cat "$token_file")"
+            fi
+          fi
+
+          test -n "$token"
+          export GITHUB_TOKEN="$token"
+
           if [ "${{ inputs.apply_github_controls }}" = "true" ]; then
             GITRANK_APPLY_REPOSITORY_CONTROLS=yes make apply-github-repository-controls-auto
           fi
