@@ -55,6 +55,7 @@ run_and_capture() {
   else
     code=$?
   fi
+  RUN_CAPTURE_LAST_CODE=$code
   append_section "$title" "$code" "$out_file"
   rm -f "$out_file"
 }
@@ -73,10 +74,12 @@ mkdir -p "$(dirname "$OUTPUT_FILE")"
 
 run_and_capture "Local Readiness Gate" \
   sh -c "cd '$root_dir' && make verify-v2-live-readiness"
+local_readiness_code=$RUN_CAPTURE_LAST_CODE
 
 audit_report_tmp="${AUDIT_REPORT_FILE:-$tmp_root/v2-closeout-status-audit.$$.md}"
 run_and_capture "Contributing Checklist Audit" \
   sh -c "cd '$root_dir' && RUN_BASELINE_VERIFIERS=false AUDIT_REPORT_FILE='$audit_report_tmp' make audit-v2-contributing-checklist"
+audit_code=$RUN_CAPTURE_LAST_CODE
 
 if [ -s "$audit_report_tmp" ]; then
   {
@@ -99,16 +102,105 @@ for v in GITHUB_REPOSITORY GITRANK_REPO_ADMIN_TOKEN GITHUB_TOKEN GH_TOKEN PROMET
   fi
 done
 '
+env_presence_code=$RUN_CAPTURE_LAST_CODE
 
+public_controls_code=skip
 if [ "$CHECK_PUBLIC_GITHUB_CONTROLS" = "true" ]; then
   run_and_capture "Public GitHub Controls Precheck" \
     sh -c "cd '$root_dir' && GITHUB_REPOSITORY='${gitrank_repo:-}' make verify-github-repository-controls-public"
+  public_controls_code=$RUN_CAPTURE_LAST_CODE
 fi
 
+workflow_probe_code=skip
 if [ "$CHECK_WORKFLOW_EVIDENCE" = "true" ]; then
   run_and_capture "Latest Workflow Evidence Probe" \
     sh -c "cd '$root_dir' && GITHUB_REPOSITORY='${gitrank_repo:-}' WORKFLOW_RUN_ID='$WORKFLOW_RUN_ID' WORKFLOW_EVENT='$WORKFLOW_EVENT' REQUIRE_GITHUB_CONTROLS=true REQUIRE_OBSERVABILITY=true REQUIRE_RELEASE_RENDER=true make verify-live-v2-workflow-run"
+  workflow_probe_code=$RUN_CAPTURE_LAST_CODE
 fi
+
+missing_vars=
+add_missing_var() {
+  name=$1
+  if [ -n "$missing_vars" ]; then
+    missing_vars="${missing_vars}, $name"
+  else
+    missing_vars="$name"
+  fi
+}
+
+for v in GITHUB_REPOSITORY PROMETHEUS_BASE_URL GRAFANA_BASE_URL GRAFANA_API_TOKEN OBS_EVIDENCE_FILE ROLLBACK_EVIDENCE_FILE RESTORE_EVIDENCE_FILE IMAGE_TAG IMAGE_REGISTRY_OWNER; do
+  eval val="\${$v-}"
+  [ -n "$val" ] || add_missing_var "$v"
+done
+
+token_candidate="${GITRANK_REPO_ADMIN_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}"
+[ -n "$token_candidate" ] || add_missing_var "GITRANK_REPO_ADMIN_TOKEN_OR_GITHUB_TOKEN_OR_GH_TOKEN"
+
+{
+  printf '## Next Command Plan\n\n'
+  printf '1. Populate live environment inputs and export them.\n'
+  if [ -n "$missing_vars" ]; then
+    printf 'Current missing vars: `%s`.\n' "$missing_vars"
+  else
+    printf 'Current missing vars: `none`.\n'
+  fi
+  printf '\n'
+  printf '2. Run public controls precheck and fix branch protection first if needed.\n'
+  printf '\n'
+  printf '```bash\n'
+  printf 'cd gitrank\n'
+  printf 'GITHUB_REPOSITORY=%s make verify-github-repository-controls-public\n' "${gitrank_repo:-OWNER/REPO}"
+  printf '```\n\n'
+  printf '3. Run live-gates workflow evidence pipeline.\n\n'
+  printf '```bash\n'
+  printf 'cd gitrank\n'
+  printf 'CONFIRM_RUN_LIVE_V2_PIPELINE=yes \\\n'
+  printf 'GITHUB_REPOSITORY=%s \\\n' "${gitrank_repo:-OWNER/REPO}"
+  printf 'GITRANK_REPO_ADMIN_TOKEN=... \\\n'
+  printf 'TARGET_ENVIRONMENT=staging \\\n'
+  printf 'RUN_GITHUB_CONTROLS=true \\\n'
+  printf 'RUN_OBSERVABILITY=true \\\n'
+  printf 'RUN_RELEASE_RENDER=true \\\n'
+  printf 'ENVIRONMENT=staging \\\n'
+  printf 'CLUSTER=your-cluster \\\n'
+  printf 'NAMESPACE=gitrank \\\n'
+  printf 'OPERATOR=your-name \\\n'
+  printf 'make run-live-v2-workflow-evidence-pipeline\n'
+  printf '```\n\n'
+  printf '4. Generate rollback and restore drill evidence (or provide equivalent real drill records).\n\n'
+  printf '```bash\n'
+  printf 'cd gitrank\n'
+  printf 'OUTPUT_FILE=docs/evidence/rollback-drill-YYYY-MM-DD.txt \\\n'
+  printf 'ENVIRONMENT=staging CLUSTER=your-cluster NAMESPACE=gitrank OPERATOR=your-name \\\n'
+  printf 'STARTING_COMMIT=<sha> CANDIDATE_COMMIT=<sha> ROLLBACK_TARGET_REVISION=<revision> \\\n'
+  printf 'DATABASE_BACKUP_MARKER=<backup-id> WORKFLOW_RUN_URL=https://github.com/%s/actions/runs/<id> \\\n' "${gitrank_repo:-OWNER/REPO}"
+  printf 'ROLLOUT_HISTORY_CAPTURED=yes ROLLBACK_MODE=workflow ROLLOUT_STATUS_RESULTS=healthy \\\n'
+  printf 'CRITICAL_PRODUCT_CHECKS=pass make generate-rollback-drill-evidence\n'
+  printf '\n'
+  printf 'OUTPUT_FILE=docs/evidence/database-restore-drill-YYYY-MM-DD.txt \\\n'
+  printf 'ENVIRONMENT=staging CLUSTER=your-cluster NAMESPACE=gitrank OPERATOR=your-name \\\n'
+  printf 'RESTORE_SOURCE=managed-backup RESTORE_TARGET=staging-db BACKUP_IDENTIFIER=<backup-id> \\\n'
+  printf 'RESTORE_START_TIMESTAMP=2026-05-12T10:00:00Z RESTORE_COMPLETION_TIMESTAMP=2026-05-12T10:15:00Z \\\n'
+  printf 'RESTORE_COMMAND_OR_WORKFLOW=workflow SCHEMA_MIGRATION_STATE=up-to-date CRITICAL_PRODUCT_CHECKS=pass \\\n'
+  printf 'make generate-database-restore-drill-evidence\n'
+  printf '```\n\n'
+  printf '5. Finalize checklist marking and re-audit.\n\n'
+  printf '```bash\n'
+  printf 'cd gitrank\n'
+  printf 'CONFIRM_FINALIZE_V2=yes VERIFY_FROM_WORKFLOW=true RUN_GITHUB_CONTROLS=true RUN_OBSERVABILITY=true RUN_K8S_RUNTIME=true RUN_ROLLBACK_RESTORE=true \\\n'
+  printf 'OBS_EVIDENCE_FILE=docs/evidence/observability-live-YYYY-MM-DD.txt \\\n'
+  printf 'ROLLBACK_EVIDENCE_FILE=docs/evidence/rollback-drill-YYYY-MM-DD.txt \\\n'
+  printf 'RESTORE_EVIDENCE_FILE=docs/evidence/database-restore-drill-YYYY-MM-DD.txt \\\n'
+  printf 'make finalize-v2-live-closeout\n'
+  printf '```\n\n'
+  printf '### Probe Exit Codes\n\n'
+  printf '%s\n' "- Local readiness: \`$local_readiness_code\`"
+  printf '%s\n' "- Contributing audit: \`$audit_code\`"
+  printf '%s\n' "- Env presence probe: \`$env_presence_code\`"
+  printf '%s\n' "- Public controls precheck: \`$public_controls_code\`"
+  printf '%s\n' "- Workflow evidence probe: \`$workflow_probe_code\`"
+  printf '\n'
+} >>"$OUTPUT_FILE"
 
 printf 'v2 live closeout status report generated\n'
 printf 'report: %s\n' "$OUTPUT_FILE"
