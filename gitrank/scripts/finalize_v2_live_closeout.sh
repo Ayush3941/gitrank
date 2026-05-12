@@ -14,9 +14,12 @@ RUN_K8S_RUNTIME="${RUN_K8S_RUNTIME:-true}"
 RUN_LOCAL_STATIC="${RUN_LOCAL_STATIC:-true}"
 MARK_CHECKBOXES="${MARK_CHECKBOXES:-true}"
 AUDIT_REPORT_FILE="${AUDIT_REPORT_FILE:-$root_dir/docs/releases/v2-contributing-audit-latest.md}"
+AUTO_CREATE_GITHUB_APP_TOKEN="${AUTO_CREATE_GITHUB_APP_TOKEN:-true}"
+APP_TOKEN_OUTPUT_FILE="${APP_TOKEN_OUTPUT_FILE:-$tmp_root/gitrank-app-installation-token.txt}"
 
 STAGING_RENDER_OUTPUT="${STAGING_RENDER_OUTPUT:-$tmp_root/rendered-k8s-staging.yaml}"
 PRODUCTION_RENDER_OUTPUT="${PRODUCTION_RENDER_OUTPUT:-$tmp_root/rendered-k8s-production.yaml}"
+cleanup_app_token_file=false
 
 fail() {
   printf 'finalize v2 live closeout failed: %s\n' "$1" >&2
@@ -28,6 +31,13 @@ run_make() {
   shift || true
   (cd "$root_dir" && TMPDIR="$tmp_root" make "$target" "$@")
 }
+
+cleanup() {
+  if [ "$cleanup_app_token_file" = "true" ] && [ -f "$APP_TOKEN_OUTPUT_FILE" ]; then
+    rm -f "$APP_TOKEN_OUTPUT_FILE"
+  fi
+}
+trap cleanup EXIT
 
 get_prefixed_or_default() {
   prefix=$1
@@ -92,9 +102,41 @@ render_for_environment() {
   run_make render-k8s-release-manifests
 }
 
+resolve_github_admin_token() {
+  token_candidate="${GITHUB_TOKEN:-${GH_TOKEN:-${GITRANK_REPO_ADMIN_TOKEN:-}}}"
+  if [ -n "$token_candidate" ]; then
+    export GITHUB_TOKEN="$token_candidate"
+    export GH_TOKEN="$token_candidate"
+    export GITRANK_REPO_ADMIN_TOKEN="$token_candidate"
+    return 0
+  fi
+
+  if [ "$AUTO_CREATE_GITHUB_APP_TOKEN" != "true" ]; then
+    fail "GitHub controls enabled but no token provided; set GITHUB_TOKEN, GH_TOKEN, or GITRANK_REPO_ADMIN_TOKEN"
+  fi
+
+  if [ -z "${GITHUB_APP_ID:-}" ] || [ -z "${GITHUB_APP_INSTALLATION_ID:-}" ]; then
+    fail "GitHub controls enabled but no token is set and GitHub App credentials are incomplete"
+  fi
+
+  if [ -z "${GITHUB_APP_PRIVATE_KEY_FILE:-}" ] && [ -z "${GITHUB_APP_PRIVATE_KEY_PEM:-}" ]; then
+    fail "GitHub controls enabled but no token is set and GitHub App private key is missing"
+  fi
+
+  TOKEN_OUTPUT_FILE="$APP_TOKEN_OUTPUT_FILE" run_make create-github-app-installation-token
+  token_candidate=$(cat "$APP_TOKEN_OUTPUT_FILE" 2>/dev/null || true)
+  [ -n "$token_candidate" ] || fail "GitHub App token creation succeeded but no token file content was produced"
+  cleanup_app_token_file=true
+  export GITHUB_TOKEN="$token_candidate"
+  export GH_TOKEN="$token_candidate"
+  export GITRANK_REPO_ADMIN_TOKEN="$token_candidate"
+  printf 'github admin token bootstrapped via GitHub App installation credentials\n'
+}
+
 [ "$CONFIRM_FINALIZE_V2" = "yes" ] || fail "set CONFIRM_FINALIZE_V2=yes to run final closeout"
 
 if [ "$RUN_GITHUB_CONTROLS" = "true" ]; then
+  resolve_github_admin_token
   RUN_GITHUB_CONTROLS=true run_make verify-live-v2-inputs
 fi
 

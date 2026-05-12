@@ -1175,7 +1175,9 @@ the consolidated runner `make verify-v2-live-readiness` and audit command
 Use `make verify-live-v2-inputs` as preflight before running live gates.
 Use `CONFIRM_FINALIZE_V2=yes make finalize-v2-live-closeout` to run preflight,
 verification, evidence checks, checklist marking, and final audit from one
-command.
+command. The finalizer accepts `GITRANK_REPO_ADMIN_TOKEN` directly and can
+auto-bootstrap a short-lived GitHub App installation token when no token is
+pre-set and App credentials are provided.
 Use `gitrank/.env.v2-live-gates.example` as the environment-variable template.
 Use `AUDIT_REPORT_FILE=... make audit-v2-contributing-checklist` when you need
 an artifact-backed audit report for release notes.

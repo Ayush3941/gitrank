@@ -2,7 +2,7 @@
 set -eu
 
 REPOSITORY="${GITHUB_REPOSITORY:-}"
-TOKEN="${GITHUB_TOKEN:-${GH_TOKEN:-}}"
+TOKEN="${GITHUB_TOKEN:-${GH_TOKEN:-${GITRANK_REPO_ADMIN_TOKEN:-}}}"
 API_BASE="${GITHUB_API_URL:-https://api.github.com}"
 API_VERSION="${GITHUB_API_VERSION:-2026-03-10}"
 WORKFLOW_FILE="${WORKFLOW_FILE:-verify-live-v2-gates.yml}"
@@ -46,7 +46,7 @@ case "$REPOSITORY" in
   */*) ;;
   *) fail "GITHUB_REPOSITORY must use owner/name form (or run from a clone with GitHub origin remote)" ;;
 esac
-[ -n "$TOKEN" ] || fail "GITHUB_TOKEN or GH_TOKEN is required"
+[ -n "$TOKEN" ] || fail "GITHUB_TOKEN, GH_TOKEN, or GITRANK_REPO_ADMIN_TOKEN is required"
 
 require_command curl
 require_command jq

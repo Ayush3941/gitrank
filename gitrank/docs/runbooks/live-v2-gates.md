@@ -16,7 +16,7 @@ It does not execute the managed PostgreSQL restore drill; use
 
 ## Required Repository Or Environment Secrets
 
-- `GITRANK_REPO_ADMIN_TOKEN`
+- `GITRANK_REPO_ADMIN_TOKEN` (or `GITHUB_TOKEN`)
 - `GRAFANA_API_TOKEN`
 
 ## Required Repository Or Environment Variables
@@ -56,7 +56,7 @@ You can dispatch and optionally wait for completion from CLI:
 ```bash
 cd gitrank
 GITHUB_REPOSITORY=OWNER/REPO \
-GITHUB_TOKEN=... \
+GITRANK_REPO_ADMIN_TOKEN=... \
 TARGET_ENVIRONMENT=staging \
 RUN_OBSERVABILITY=true \
 RUN_GITHUB_CONTROLS=true \
@@ -157,6 +157,11 @@ set +a
 CONFIRM_FINALIZE_V2=yes \
 make finalize-v2-live-closeout
 ```
+
+If `RUN_GITHUB_CONTROLS=true` and no GitHub token is set, the finalizer can
+auto-bootstrap a short-lived installation token when
+`GITHUB_APP_ID`, `GITHUB_APP_INSTALLATION_ID`, and
+`GITHUB_APP_PRIVATE_KEY_FILE` (or `GITHUB_APP_PRIVATE_KEY_PEM`) are provided.
 
 Optional per-environment render overrides:
 

@@ -82,6 +82,10 @@ How to complete:
    - `GITRANK_APPLY_REPOSITORY_CONTROLS=yes make apply-github-repository-controls-auto`
 3. Verify:
    - `make verify-github-repository-controls`
+4. Optional finalizer bootstrap:
+   - `CONFIRM_FINALIZE_V2=yes RUN_GITHUB_CONTROLS=true make finalize-v2-live-closeout`
+     can auto-create a short-lived token from GitHub App credentials when
+     `GITHUB_APP_ID`, `GITHUB_APP_INSTALLATION_ID`, and private-key input are set.
 
 ## 3) Rollback And Restore Drills Executed And Recorded
 
