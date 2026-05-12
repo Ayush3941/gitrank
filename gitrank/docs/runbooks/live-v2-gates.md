@@ -94,3 +94,21 @@ K8S_ENVIRONMENT=staging \
 OUTPUT_FILE=/tmp/rendered-k8s.yaml \
 make verify-v2-live-readiness
 ```
+
+After live verifiers pass and evidence files are available, you can mark the
+corresponding `CONTRIBUTING.md` checkboxes with:
+
+```bash
+cd gitrank
+CONFIRM_MARK_CONTRIBUTING=yes \
+MARK_GITHUB_CONTROLS=true \
+MARK_OBSERVABILITY=true \
+OBS_EVIDENCE_FILE=docs/evidence/observability-live-YYYY-MM-DD.txt \
+MARK_ROLLBACK_RESTORE=true \
+ROLLBACK_EVIDENCE_FILE=docs/evidence/rollback-drill-YYYY-MM-DD.txt \
+RESTORE_EVIDENCE_FILE=docs/evidence/database-restore-drill-YYYY-MM-DD.txt \
+MARK_K8S_RUNTIME=true \
+STAGING_RENDER_OUTPUT=/tmp/staging-rendered-k8s.yaml \
+PRODUCTION_RENDER_OUTPUT=/tmp/production-rendered-k8s.yaml \
+make mark-v2-contributing-live-gates
+```
