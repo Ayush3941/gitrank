@@ -271,7 +271,7 @@ Rules:
 
 Operational approach:
 
-- the scheduler owns `score.replay_user`, `profile.refresh_user`, and `pipeline.grade_pull_request` job orchestration
+- the scheduler owns `score.replay_user`, `profile.refresh_user`, `report.materialize_pull_request`, and `pipeline.grade_pull_request` job orchestration
 - the scoring engine remains deterministic for a given input evidence set and `score_version`
 - rollback means switching the read model back to an older accepted score version and replaying snapshots from that version
 

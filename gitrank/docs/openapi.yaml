@@ -725,6 +725,58 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /v1/pr/{owner}/{repo}/{number}/report/materialize:
+    post:
+      tags: [Profiles]
+      summary: Persist an idempotent PR battle report snapshot from current evidence
+      operationId: materializePullRequestReport
+      parameters:
+        - name: owner
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: repo
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: number
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        "202":
+          description: Pull request report snapshot materialized
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PullRequestReportMaterializationResponse"
+        "404":
+          description: Pull request report not found or not public
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limit exceeded
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Retry-After:
+              $ref: "#/components/headers/RetryAfter"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /v1/me/profile/repositories/{owner}/{repo}:
     patch:
       tags: [Profiles]
@@ -1875,6 +1927,58 @@ components:
           format: date-time
         is_stale:
           type: boolean
+    PullRequestReportMaterializationResponse:
+      type: object
+      required:
+        - status
+        - repository
+        - number
+        - pull_request_id
+        - report_snapshot_id
+        - report_version
+        - is_stale
+        - source_updated_at
+        - generated_at
+      properties:
+        status:
+          type: string
+        repository:
+          type: string
+        number:
+          type: integer
+          minimum: 1
+        pull_request_id:
+          type: string
+          format: uuid
+        report_snapshot_id:
+          type: string
+          format: uuid
+        report_version:
+          type: string
+        score_event_id:
+          type: string
+          format: uuid
+        analysis_id:
+          type: string
+          format: uuid
+        score_version:
+          type: string
+        analysis_version:
+          type: string
+        evidence_status:
+          type: string
+        missing_evidence:
+          type: array
+          items:
+            type: string
+        is_stale:
+          type: boolean
+        source_updated_at:
+          type: string
+          format: date-time
+        generated_at:
+          type: string
+          format: date-time
     ProfilePrivacySettings:
       type: object
       required: [public_profile_enabled, show_exact_prs, show_ai_summaries, show_leaderboard_participation, reduced_gamification]

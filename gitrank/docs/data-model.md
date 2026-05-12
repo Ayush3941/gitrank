@@ -266,6 +266,25 @@ This is the initial relational model direction for PostgreSQL.
 - `total_xp`
 - `level`
 
+### `pull_request_report_snapshots`
+
+- `id` UUID primary key
+- `idempotency_key` unique non-empty text key
+- `pull_request_id` foreign key
+- `score_event_id` nullable foreign key
+- `analysis_id` nullable foreign key
+- `report_version`
+- `score_version`
+- `analysis_version`
+- `evidence_status`
+- `evidence_missing_jsonb`
+- `is_stale`
+- `report_jsonb`
+- `source_updated_at`
+- `generated_at`
+- `created_at`
+- `updated_at`
+
 ### `scheduler_jobs`
 
 - composite primary key `(service_name, job_id)`
@@ -477,5 +496,6 @@ Likely high-value indexes:
 - `pull_request_reviews(pull_request_id)`
 - `contribution_analyses(pull_request_id, created_at desc)`
 - `score_events(user_id, created_at desc)`
+- `pull_request_report_snapshots(pull_request_id, generated_at desc)`
 - `profile_snapshots(user_id, created_at desc)`
 - `sync_jobs(status, scheduled_at)`

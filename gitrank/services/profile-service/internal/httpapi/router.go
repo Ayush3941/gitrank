@@ -85,19 +85,36 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 		httpkit.WriteJSON(w, http.StatusAccepted, response)
 	})))
 
-	mux.Handle("/v1/pr/", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		owner, repo, number, ok := parsePullRequestReportPath(r.URL.Path)
-		if !ok {
-			httpkit.WriteError(w, http.StatusNotFound, "not_found", "pull request report not found", httpkit.RequestIDFromContext(r.Context()))
-			return
+	mux.Handle("/v1/pr/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			owner, repo, number, ok := parsePullRequestReportPath(r.URL.Path)
+			if !ok {
+				httpkit.WriteError(w, http.StatusNotFound, "not_found", "pull request report not found", httpkit.RequestIDFromContext(r.Context()))
+				return
+			}
+			response, err := profileService.PublicPullRequestReport(r.Context(), owner, repo, number, time.Now().UTC())
+			if err != nil {
+				writeProfileError(w, r, err)
+				return
+			}
+			httpkit.WriteJSON(w, http.StatusOK, response)
+		case http.MethodPost:
+			owner, repo, number, ok := parsePullRequestReportMaterializationPath(r.URL.Path)
+			if !ok {
+				httpkit.WriteError(w, http.StatusNotFound, "not_found", "pull request report materialization target not found", httpkit.RequestIDFromContext(r.Context()))
+				return
+			}
+			response, err := profileService.MaterializePullRequestReport(r.Context(), owner, repo, number, time.Now().UTC())
+			if err != nil {
+				writeProfileError(w, r, err)
+				return
+			}
+			httpkit.WriteJSON(w, http.StatusAccepted, response)
+		default:
+			httpkit.WriteError(w, http.StatusMethodNotAllowed, "method_not_allowed", "method not allowed", httpkit.RequestIDFromContext(r.Context()))
 		}
-		response, err := profileService.PublicPullRequestReport(r.Context(), owner, repo, number, time.Now().UTC())
-		if err != nil {
-			writeProfileError(w, r, err)
-			return
-		}
-		httpkit.WriteJSON(w, http.StatusOK, response)
-	})))
+	}))
 
 	mux.Handle("/v1/users/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -252,9 +269,24 @@ func cookieValue(cookie *http.Cookie) string {
 }
 
 func parsePullRequestReportPath(path string) (string, string, int, bool) {
+	return parsePullRequestReportPathWithSuffix(path, false)
+}
+
+func parsePullRequestReportMaterializationPath(path string) (string, string, int, bool) {
+	return parsePullRequestReportPathWithSuffix(path, true)
+}
+
+func parsePullRequestReportPathWithSuffix(path string, materialize bool) (string, string, int, bool) {
 	trimmed := strings.Trim(strings.TrimPrefix(path, "/v1/pr/"), "/")
 	parts := strings.Split(trimmed, "/")
-	if len(parts) != 4 || parts[3] != "report" {
+	expectedParts := 4
+	if materialize {
+		expectedParts = 5
+	}
+	if len(parts) != expectedParts || parts[3] != "report" {
+		return "", "", 0, false
+	}
+	if materialize && parts[4] != "materialize" {
 		return "", "", 0, false
 	}
 	fullName, err := contracts.NormalizeGitHubRepository(parts[0] + "/" + parts[1])

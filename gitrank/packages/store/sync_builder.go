@@ -99,6 +99,11 @@ func BuildSyncJobs(req contracts.SyncRequest, queueName, correlationID string, m
 			return nil, errors.New("repository and number are required when mode=analysis_pull_request")
 		}
 		return resourceJobs(queueName, correlationID, AnalysisPullRequestJob, req.Repository, req.Number, "", "analysis_pull_request", maxAttempts)
+	case "report_materialize_pull_request":
+		if req.Repository == "" || req.Number <= 0 {
+			return nil, errors.New("repository and number are required when mode=report_materialize_pull_request")
+		}
+		return resourceJobs(queueName, correlationID, ReportMaterializePRJob, req.Repository, req.Number, "", "report_materialize_pull_request", maxAttempts)
 	case "grade_pull_request":
 		if req.UserID == "" || req.Repository == "" || req.Number <= 0 {
 			return nil, errors.New("user_id, repository, and number are required when mode=grade_pull_request")

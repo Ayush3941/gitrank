@@ -97,13 +97,13 @@ func (req *SyncRequest) Normalize() error {
 			return err
 		}
 		req.Repository = repository
-	case "pull_request", "review", "issue", "analysis_pull_request":
+	case "pull_request", "review", "issue", "analysis_pull_request", "report_materialize_pull_request":
 		repository, err := NormalizeGitHubRepository(req.Repository)
 		if err != nil {
 			return err
 		}
 		if req.Number <= 0 {
-			return errors.New("repository and number are required for pull_request, review, issue, and analysis_pull_request modes")
+			return errors.New("repository and number are required for pull_request, review, issue, analysis_pull_request, and report_materialize_pull_request modes")
 		}
 		req.Repository = repository
 	case "grade_pull_request":

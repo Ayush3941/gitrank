@@ -233,6 +233,24 @@ type PullRequestReportResponse struct {
 	IsStale          bool                     `json:"is_stale"`
 }
 
+type PullRequestReportMaterializationResponse struct {
+	Status           string    `json:"status"`
+	Repository       string    `json:"repository"`
+	Number           int       `json:"number"`
+	PullRequestID    string    `json:"pull_request_id"`
+	ReportSnapshotID string    `json:"report_snapshot_id"`
+	ReportVersion    string    `json:"report_version"`
+	ScoreEventID     string    `json:"score_event_id,omitempty"`
+	AnalysisID       string    `json:"analysis_id,omitempty"`
+	ScoreVersion     string    `json:"score_version,omitempty"`
+	AnalysisVersion  string    `json:"analysis_version,omitempty"`
+	EvidenceStatus   string    `json:"evidence_status,omitempty"`
+	MissingEvidence  []string  `json:"missing_evidence,omitempty"`
+	IsStale          bool      `json:"is_stale"`
+	SourceUpdatedAt  time.Time `json:"source_updated_at"`
+	GeneratedAt      time.Time `json:"generated_at"`
+}
+
 type LeaderboardEntryView struct {
 	Rank                   int       `json:"rank"`
 	Handle                 string    `json:"handle"`

@@ -1143,6 +1143,77 @@ func TestRunNextExecutesProfileRefreshJobAndCompletes(t *testing.T) {
 	}
 }
 
+func TestRunNextExecutesPullRequestReportMaterializationJobAndCompletes(t *testing.T) {
+	now := time.Now().UTC().Add(3 * time.Minute).Truncate(time.Second)
+	var observedPath string
+	var observedRequestID string
+	var observedTraceParent string
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		observedPath = r.URL.Path
+		observedRequestID = r.Header.Get("X-Request-ID")
+		observedTraceParent = r.Header.Get("traceparent")
+		if r.Method != http.MethodPost {
+			t.Fatalf("method = %s, want POST", r.Method)
+		}
+		if r.URL.Path != "/v1/pr/octo/repo/7/report/materialize" {
+			t.Fatalf("path = %s, want materialization path", r.URL.Path)
+		}
+		w.WriteHeader(http.StatusAccepted)
+		_ = json.NewEncoder(w).Encode(contracts.PullRequestReportMaterializationResponse{
+			Status:           "materialized",
+			Repository:       "octo/repo",
+			Number:           7,
+			PullRequestID:    "b2000000-0000-4000-8000-000000000004",
+			ReportSnapshotID: "b2000000-0000-4000-8000-000000000006",
+			ReportVersion:    "pr-report/v1",
+			ScoreEventID:     "b2000000-0000-4000-8000-000000000007",
+			AnalysisID:       "b2000000-0000-4000-8000-000000000005",
+			ScoreVersion:     "score/v1",
+			AnalysisVersion:  "deterministic.v1",
+			EvidenceStatus:   "deterministic_only",
+			GeneratedAt:      now.Add(time.Second),
+		})
+	}))
+	defer server.Close()
+
+	cfg := testServiceConfig()
+	cfg.Services.ProfileBaseURL = server.URL
+	cfg.Services.RequestTimeout = time.Second
+	scheduler := New(cfg)
+
+	enqueue, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "report_materialize_pull_request", Repository: "octo/repo", Number: 7}, "report-correlation", now)
+	if err != nil {
+		t.Fatalf("EnqueueSync() error = %v", err)
+	}
+
+	run, err := scheduler.RunNext(context.Background(), now)
+	if err != nil {
+		t.Fatalf("RunNext() error = %v", err)
+	}
+	if run.Status != "completed" {
+		t.Fatalf("run status = %q, want completed", run.Status)
+	}
+	if run.ReportMaterialization == nil || run.ReportMaterialization.ReportSnapshotID != "b2000000-0000-4000-8000-000000000006" {
+		t.Fatalf("report materialization = %+v, want persisted snapshot response", run.ReportMaterialization)
+	}
+	if run.ReportMaterialization.EvidenceStatus != "deterministic_only" || run.ReportMaterialization.IsStale {
+		t.Fatalf("report materialization = %+v, want non-stale deterministic report", run.ReportMaterialization)
+	}
+	if observedPath != "/v1/pr/octo/repo/7/report/materialize" {
+		t.Fatalf("observed path = %q, want materialization path", observedPath)
+	}
+	if observedRequestID != "report-correlation" {
+		t.Fatalf("observed request id = %q, want report-correlation", observedRequestID)
+	}
+	if observedTraceParent == "" {
+		t.Fatal("observed traceparent header missing")
+	}
+	if run.Job == nil || run.Job.ID != enqueue.JobIDs[0] || run.Job.Type != string(store.ReportMaterializePRJob) {
+		t.Fatalf("run job = %+v, want executed report materialization job id %q", run.Job, enqueue.JobIDs[0])
+	}
+}
+
 func TestRunNextExecutesPullRequestGradeJobAndCompletes(t *testing.T) {
 	now := time.Now().UTC().Add(3 * time.Minute).Truncate(time.Second)
 	const userID = "8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4"
@@ -1233,6 +1304,25 @@ func TestRunNextExecutesPullRequestGradeJobAndCompletes(t *testing.T) {
 				RefreshedAt:            now.Add(3 * time.Second),
 				StaleAfter:             now.Add(15 * time.Minute),
 			})
+		case "/v1/pr/octo/repo/7/report/materialize":
+			if r.Method != http.MethodPost {
+				t.Fatalf("method = %s for materialization, want POST", r.Method)
+			}
+			w.WriteHeader(http.StatusAccepted)
+			_ = json.NewEncoder(w).Encode(contracts.PullRequestReportMaterializationResponse{
+				Status:           "materialized",
+				Repository:       "octo/repo",
+				Number:           7,
+				PullRequestID:    "b2000000-0000-4000-8000-000000000004",
+				ReportSnapshotID: "b2000000-0000-4000-8000-000000000006",
+				ReportVersion:    "pr-report/v1",
+				ScoreEventID:     "score-event-1",
+				AnalysisID:       "b2000000-0000-4000-8000-000000000005",
+				ScoreVersion:     "score/v1",
+				AnalysisVersion:  "deterministic.v1",
+				EvidenceStatus:   "deterministic_only",
+				GeneratedAt:      now.Add(4 * time.Second),
+			})
 		case "/v1/pr/octo/repo/7/report":
 			_ = json.NewEncoder(w).Encode(contracts.PullRequestReportResponse{
 				Contribution: contracts.PRReportContribution{
@@ -1245,7 +1335,7 @@ func TestRunNextExecutesPullRequestGradeJobAndCompletes(t *testing.T) {
 				EvidenceState:   contracts.PRReportEvidenceState{Status: "deterministic_only", DeterministicOnly: true},
 				ScoreVersion:    "score/v1",
 				AnalysisVersion: "deterministic.v1",
-				GeneratedAt:     now.Add(4 * time.Second),
+				GeneratedAt:     now.Add(5 * time.Second),
 			})
 		default:
 			t.Fatalf("unexpected path %s", r.URL.Path)
@@ -1276,8 +1366,11 @@ func TestRunNextExecutesPullRequestGradeJobAndCompletes(t *testing.T) {
 	if run.Grade == nil || run.Grade.UserID != userID || run.Grade.Repository != "octo/repo" || run.Grade.Number != 7 {
 		t.Fatalf("grade = %+v, want completed grade for octo/repo#7", run.Grade)
 	}
-	if run.Grade.Sync == nil || run.Grade.Analysis == nil || run.Grade.ScoreReplay == nil || run.Grade.ProfileRefresh == nil || run.Grade.Report == nil {
+	if run.Grade.Sync == nil || run.Grade.Analysis == nil || run.Grade.ScoreReplay == nil || run.Grade.ProfileRefresh == nil || run.Grade.ReportMaterialization == nil || run.Grade.Report == nil {
 		t.Fatalf("grade = %+v, want every pipeline stage response", run.Grade)
+	}
+	if run.Grade.ReportMaterialization.ReportSnapshotID != "b2000000-0000-4000-8000-000000000006" {
+		t.Fatalf("report materialization = %+v, want persisted snapshot id", run.Grade.ReportMaterialization)
 	}
 	if run.Grade.Report.EvidenceStatus != "deterministic_only" || run.Grade.Report.IsStale {
 		t.Fatalf("report = %+v, want non-stale deterministic report", run.Grade.Report)
@@ -1287,6 +1380,7 @@ func TestRunNextExecutesPullRequestGradeJobAndCompletes(t *testing.T) {
 		"POST /v1/analyze/pull-request/execute",
 		"POST /v1/score/users/" + userID + "/replay",
 		"POST /v1/profile/users/" + userID + "/refresh",
+		"POST /v1/pr/octo/repo/7/report/materialize",
 		"GET /v1/pr/octo/repo/7/report",
 	}
 	if len(observedPaths) != len(expectedPaths) {

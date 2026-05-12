@@ -30,6 +30,7 @@ for path in \
   "  /v1/sync/installation/execute:" \
   "  /v1/me/quests:" \
   "  /v1/pr/{owner}/{repo}/{number}/report:" \
+  "  /v1/pr/{owner}/{repo}/{number}/report/materialize:" \
   "  /v1/me/account/export:" \
   "  /v1/leaderboard:"; do
   require_contains "$openapi" "$path" "critical production route OpenAPI entry"
@@ -41,7 +42,9 @@ for test_name in \
   "ExecutorSyncPullRequestFetchesAndPersistsBoundedPullRequestData" \
   "ReplayUserPersistsLedgerAndSnapshot" \
   "RefreshProfileByUserIDPersistsFreshSnapshot" \
+  "MaterializePullRequestReportPersistsIdempotentSnapshot" \
   "RunNextExecutesProfileRefreshJobAndCompletes" \
+  "RunNextExecutesPullRequestReportMaterializationJobAndCompletes" \
   "RunNextExecutesPullRequestGradeJobAndCompletes" \
   "PublicResponseFiltersHiddenRepositories"; do
   require_contains "$critical_flows" "$test_name" "critical worker/profile flow verification"

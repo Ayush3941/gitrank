@@ -19,6 +19,7 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 			{Method: "POST", Path: "/v1/profile/users/{user_id}/refresh", Summary: "Force a profile snapshot rebuild from stored score and badge evidence", Status: "implemented"},
 			{Method: "GET", Path: "/v1/leaderboard", Summary: "Public leaderboard from profile snapshots", Status: "implemented"},
 			{Method: "GET", Path: "/v1/pr/{owner}/{repo}/{number}/report", Summary: "Public PR battle report from persisted analysis and score evidence", Status: "implemented"},
+			{Method: "POST", Path: "/v1/pr/{owner}/{repo}/{number}/report/materialize", Summary: "Persist an idempotent PR report snapshot from current evidence", Status: "implemented"},
 			{Method: "GET", Path: "/v1/users/{handle}", Summary: "Public profile read model", Status: "implemented"},
 			{Method: "GET", Path: "/v1/users/{handle}/card", Summary: "Shareable public profile card data", Status: "implemented"},
 			{Method: "GET", Path: "/v1/me/profile", Summary: "Authenticated profile read model", Status: "implemented"},

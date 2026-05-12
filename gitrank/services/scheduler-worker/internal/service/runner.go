@@ -39,6 +39,7 @@ type profileRefreshExecutor interface {
 
 type pullRequestReportExecutor interface {
 	LoadPullRequestReport(ctx context.Context, repository string, number int, correlationID string) (contracts.SchedulerPullRequestReportResponse, error)
+	MaterializePullRequestReport(ctx context.Context, repository string, number int, correlationID string) (contracts.SchedulerPullRequestReportMaterializationResponse, error)
 }
 
 type pullRequestAnalysisExecutor interface {
@@ -71,11 +72,12 @@ type httpPullRequestReportExecutor struct {
 }
 
 type jobExecution struct {
-	Sync           *contracts.GitHubSyncExecutionResponse
-	Analysis       *contracts.SchedulerPullRequestAnalysisResponse
-	ScoreReplay    *contracts.SchedulerScoreReplayExecutionResponse
-	ProfileRefresh *contracts.SchedulerProfileRefreshResponse
-	Grade          *contracts.SchedulerPullRequestGradeResponse
+	Sync                  *contracts.GitHubSyncExecutionResponse
+	Analysis              *contracts.SchedulerPullRequestAnalysisResponse
+	ScoreReplay           *contracts.SchedulerScoreReplayExecutionResponse
+	ProfileRefresh        *contracts.SchedulerProfileRefreshResponse
+	ReportMaterialization *contracts.SchedulerPullRequestReportMaterializationResponse
+	Grade                 *contracts.SchedulerPullRequestGradeResponse
 }
 
 type executionCounters struct {
@@ -193,6 +195,7 @@ func (s *Service) RunNext(ctx context.Context, now time.Time) (contracts.Schedul
 	response.Analysis = execution.Analysis
 	response.ScoreReplay = execution.ScoreReplay
 	response.ProfileRefresh = execution.ProfileRefresh
+	response.ReportMaterialization = execution.ReportMaterialization
 	response.Grade = execution.Grade
 	s.recordExecution(job.Type, action.Status, finishedAt)
 	return response, nil
@@ -340,6 +343,19 @@ func (s *Service) executeLeasedJob(ctx context.Context, job store.QueueJob) (job
 			return jobExecution{}, err
 		}
 		return jobExecution{ProfileRefresh: &execution}, nil
+	case store.ReportMaterializePRJob:
+		if s.reportRunner == nil {
+			return jobExecution{}, fmt.Errorf("pull request report runner is not configured")
+		}
+		req, err := syncRequestFromJob(job)
+		if err != nil {
+			return jobExecution{}, err
+		}
+		execution, err := s.reportRunner.MaterializePullRequestReport(ctx, req.Repository, req.Number, correlationIDForJob(job))
+		if err != nil {
+			return jobExecution{}, err
+		}
+		return jobExecution{ReportMaterialization: &execution}, nil
 	case store.GradePullRequestJob:
 		return s.executePullRequestGradeJob(ctx, job)
 	default:
@@ -387,24 +403,29 @@ func (s *Service) executePullRequestGradeJob(ctx context.Context, job store.Queu
 	if err != nil {
 		return jobExecution{}, err
 	}
+	reportMaterialization, err := s.reportRunner.MaterializePullRequestReport(ctx, req.Repository, req.Number, correlationID)
+	if err != nil {
+		return jobExecution{}, err
+	}
 	reportExecution, err := s.reportRunner.LoadPullRequestReport(ctx, req.Repository, req.Number, correlationID)
 	if err != nil {
 		return jobExecution{}, err
 	}
 
 	return jobExecution{Grade: &contracts.SchedulerPullRequestGradeResponse{
-		Status:         "completed",
-		Repository:     req.Repository,
-		Number:         req.Number,
-		UserID:         req.UserID,
-		Sync:           &syncExecution,
-		Analysis:       &analysisExecution,
-		ScoreReplay:    &scoreExecution,
-		ProfileRefresh: &profileExecution,
-		Report:         &reportExecution,
-		CorrelationID:  strings.TrimSpace(correlationID),
-		StartedAt:      startedAt,
-		FinishedAt:     time.Now().UTC(),
+		Status:                "completed",
+		Repository:            req.Repository,
+		Number:                req.Number,
+		UserID:                req.UserID,
+		Sync:                  &syncExecution,
+		Analysis:              &analysisExecution,
+		ScoreReplay:           &scoreExecution,
+		ProfileRefresh:        &profileExecution,
+		ReportMaterialization: &reportMaterialization,
+		Report:                &reportExecution,
+		CorrelationID:         strings.TrimSpace(correlationID),
+		StartedAt:             startedAt,
+		FinishedAt:            time.Now().UTC(),
 	}}, nil
 }
 
@@ -808,6 +829,87 @@ func (e *httpPullRequestReportExecutor) LoadPullRequestReport(ctx context.Contex
 	}, nil
 }
 
+func (e *httpPullRequestReportExecutor) MaterializePullRequestReport(ctx context.Context, repository string, number int, correlationID string) (contracts.SchedulerPullRequestReportMaterializationResponse, error) {
+	repository, err := contracts.NormalizeGitHubRepository(repository)
+	if err != nil {
+		return contracts.SchedulerPullRequestReportMaterializationResponse{}, err
+	}
+	if number <= 0 {
+		return contracts.SchedulerPullRequestReportMaterializationResponse{}, fmt.Errorf("pull request number is required")
+	}
+	owner, repo, _ := strings.Cut(repository, "/")
+
+	ctx = httpkit.EnsureTraceContext(ctx)
+	startedAt := time.Now().UTC()
+	request, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodPost,
+		e.baseURL+"/v1/pr/"+url.PathEscape(owner)+"/"+url.PathEscape(repo)+"/"+strconv.Itoa(number)+"/report/materialize",
+		nil,
+	)
+	if err != nil {
+		return contracts.SchedulerPullRequestReportMaterializationResponse{}, err
+	}
+	request.Header.Set("Accept", "application/json")
+	if strings.TrimSpace(correlationID) != "" {
+		request.Header.Set("X-Request-ID", strings.TrimSpace(correlationID))
+	}
+	httpkit.InjectTraceContext(ctx, request.Header)
+
+	response, err := e.client.Do(request)
+	if err != nil {
+		return contracts.SchedulerPullRequestReportMaterializationResponse{}, err
+	}
+	defer response.Body.Close()
+
+	payload, err := io.ReadAll(io.LimitReader(response.Body, 1<<20))
+	if err != nil {
+		return contracts.SchedulerPullRequestReportMaterializationResponse{}, err
+	}
+	if response.StatusCode != http.StatusAccepted && response.StatusCode != http.StatusOK {
+		var apiErr contracts.ErrorResponse
+		if err := json.Unmarshal(payload, &apiErr); err == nil && strings.TrimSpace(apiErr.Error.Message) != "" {
+			return contracts.SchedulerPullRequestReportMaterializationResponse{}, fmt.Errorf("profile-service PR report materialization failed: %s", apiErr.Error.Message)
+		}
+		return contracts.SchedulerPullRequestReportMaterializationResponse{}, fmt.Errorf("profile-service PR report materialization failed with status %d", response.StatusCode)
+	}
+
+	var materialized contracts.PullRequestReportMaterializationResponse
+	if err := json.Unmarshal(payload, &materialized); err != nil {
+		return contracts.SchedulerPullRequestReportMaterializationResponse{}, err
+	}
+	if strings.TrimSpace(materialized.PullRequestID) == "" ||
+		strings.TrimSpace(materialized.ReportSnapshotID) == "" ||
+		strings.TrimSpace(materialized.ReportVersion) == "" ||
+		strings.TrimSpace(materialized.Status) == "" ||
+		materialized.Number <= 0 ||
+		materialized.GeneratedAt.IsZero() {
+		return contracts.SchedulerPullRequestReportMaterializationResponse{}, fmt.Errorf("profile-service returned an invalid PR report materialization contract")
+	}
+	if !strings.EqualFold(materialized.Repository, repository) || materialized.Number != number {
+		return contracts.SchedulerPullRequestReportMaterializationResponse{}, fmt.Errorf("profile-service PR report materialization target mismatch")
+	}
+
+	return contracts.SchedulerPullRequestReportMaterializationResponse{
+		Status:           strings.TrimSpace(materialized.Status),
+		Repository:       repository,
+		Number:           number,
+		PullRequestID:    strings.TrimSpace(materialized.PullRequestID),
+		ReportSnapshotID: strings.TrimSpace(materialized.ReportSnapshotID),
+		ReportVersion:    strings.TrimSpace(materialized.ReportVersion),
+		ScoreEventID:     strings.TrimSpace(materialized.ScoreEventID),
+		AnalysisID:       strings.TrimSpace(materialized.AnalysisID),
+		ScoreVersion:     strings.TrimSpace(materialized.ScoreVersion),
+		AnalysisVersion:  strings.TrimSpace(materialized.AnalysisVersion),
+		EvidenceStatus:   strings.TrimSpace(materialized.EvidenceStatus),
+		IsStale:          materialized.IsStale,
+		GeneratedAt:      materialized.GeneratedAt.UTC(),
+		CorrelationID:    strings.TrimSpace(correlationID),
+		StartedAt:        startedAt,
+		FinishedAt:       time.Now().UTC(),
+	}, nil
+}
+
 func (s *Service) runWorkerLoop(ctx context.Context) {
 	ticker := time.NewTicker(s.cfg.Scheduler.PollInterval)
 	defer ticker.Stop()
@@ -845,7 +947,7 @@ func splitExecutionMetricKey(key string) (string, string) {
 }
 
 func isExecutableJob(job store.QueueJob, now time.Time) bool {
-	return (job.Type == store.SyncInstallationJob || job.Type == store.SyncRepositoryJob || job.Type == store.SyncUserHistoryJob || job.Type == store.SyncPullRequestJob || job.Type == store.SyncReviewJob || job.Type == store.SyncIssueJob || job.Type == store.SyncCommitJob || job.Type == store.AnalysisPullRequestJob || job.Type == store.ScoreReplayUserJob || job.Type == store.ProfileRefreshUserJob || job.Type == store.GradePullRequestJob) &&
+	return (job.Type == store.SyncInstallationJob || job.Type == store.SyncRepositoryJob || job.Type == store.SyncUserHistoryJob || job.Type == store.SyncPullRequestJob || job.Type == store.SyncReviewJob || job.Type == store.SyncIssueJob || job.Type == store.SyncCommitJob || job.Type == store.AnalysisPullRequestJob || job.Type == store.ScoreReplayUserJob || job.Type == store.ProfileRefreshUserJob || job.Type == store.ReportMaterializePRJob || job.Type == store.GradePullRequestJob) &&
 		job.Status == store.JobPending &&
 		!job.NotBefore.After(now.UTC())
 }
@@ -956,6 +1058,14 @@ func syncRequestFromJob(job store.QueueJob) (contracts.SyncRequest, error) {
 			return contracts.SyncRequest{}, err
 		}
 		req.UserID = userID
+	case store.ReportMaterializePRJob:
+		if strings.TrimSpace(req.Repository) == "" {
+			req.Repository = strings.TrimSpace(job.Repository)
+		}
+		req.Mode = "report_materialize_pull_request"
+		if err := req.Normalize(); err != nil {
+			return contracts.SyncRequest{}, err
+		}
 	case store.GradePullRequestJob:
 		if strings.TrimSpace(req.Repository) == "" {
 			req.Repository = strings.TrimSpace(job.Repository)

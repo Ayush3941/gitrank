@@ -190,6 +190,29 @@ func TestBuildSyncJobsAnalysisPullRequest(t *testing.T) {
 	}
 }
 
+func TestBuildSyncJobsReportMaterializePullRequest(t *testing.T) {
+	jobs, err := BuildSyncJobs(contracts.SyncRequest{
+		Mode:       "report_materialize_pull_request",
+		Repository: "octo/repo",
+		Number:     17,
+	}, "github-sync", "report-correlation", 5)
+	if err != nil {
+		t.Fatalf("BuildSyncJobs() error = %v", err)
+	}
+	if len(jobs) != 1 {
+		t.Fatalf("jobs len = %d, want 1", len(jobs))
+	}
+	if jobs[0].Type != ReportMaterializePRJob {
+		t.Fatalf("job type = %q, want %q", jobs[0].Type, ReportMaterializePRJob)
+	}
+	if jobs[0].Subject != "octo/repo#17" {
+		t.Fatalf("subject = %q, want octo/repo#17", jobs[0].Subject)
+	}
+	if jobs[0].DedupeKey != "report_materialize_pull_request:octo/repo#17" {
+		t.Fatalf("dedupe key = %q, want report_materialize_pull_request:octo/repo#17", jobs[0].DedupeKey)
+	}
+}
+
 func TestBuildSyncJobsPullRequestAndAnalysisHaveDistinctDedupeKeys(t *testing.T) {
 	syncJobs, err := BuildSyncJobs(contracts.SyncRequest{
 		Mode:       "pull_request",

@@ -78,15 +78,16 @@ type SchedulerJobActionResponse struct {
 }
 
 type SchedulerRunResponse struct {
-	QueueName      string                                 `json:"queue_name"`
-	Status         string                                 `json:"status"`
-	Job            *SchedulerJobView                      `json:"job,omitempty"`
-	Execution      *GitHubSyncExecutionResponse           `json:"execution,omitempty"`
-	Analysis       *SchedulerPullRequestAnalysisResponse  `json:"analysis,omitempty"`
-	ScoreReplay    *SchedulerScoreReplayExecutionResponse `json:"score_replay,omitempty"`
-	ProfileRefresh *SchedulerProfileRefreshResponse       `json:"profile_refresh,omitempty"`
-	Grade          *SchedulerPullRequestGradeResponse     `json:"grade,omitempty"`
-	LastUpdatedAt  time.Time                              `json:"last_updated_at"`
+	QueueName             string                                             `json:"queue_name"`
+	Status                string                                             `json:"status"`
+	Job                   *SchedulerJobView                                  `json:"job,omitempty"`
+	Execution             *GitHubSyncExecutionResponse                       `json:"execution,omitempty"`
+	Analysis              *SchedulerPullRequestAnalysisResponse              `json:"analysis,omitempty"`
+	ScoreReplay           *SchedulerScoreReplayExecutionResponse             `json:"score_replay,omitempty"`
+	ProfileRefresh        *SchedulerProfileRefreshResponse                   `json:"profile_refresh,omitempty"`
+	ReportMaterialization *SchedulerPullRequestReportMaterializationResponse `json:"report_materialization,omitempty"`
+	Grade                 *SchedulerPullRequestGradeResponse                 `json:"grade,omitempty"`
+	LastUpdatedAt         time.Time                                          `json:"last_updated_at"`
 }
 
 type SchedulerPullRequestAnalysisResponse struct {
@@ -145,19 +146,39 @@ type SchedulerPullRequestReportResponse struct {
 	GeneratedAt     time.Time `json:"generated_at"`
 }
 
+type SchedulerPullRequestReportMaterializationResponse struct {
+	Status           string    `json:"status"`
+	Repository       string    `json:"repository"`
+	Number           int       `json:"number"`
+	PullRequestID    string    `json:"pull_request_id"`
+	ReportSnapshotID string    `json:"report_snapshot_id"`
+	ReportVersion    string    `json:"report_version"`
+	ScoreEventID     string    `json:"score_event_id,omitempty"`
+	AnalysisID       string    `json:"analysis_id,omitempty"`
+	ScoreVersion     string    `json:"score_version,omitempty"`
+	AnalysisVersion  string    `json:"analysis_version,omitempty"`
+	EvidenceStatus   string    `json:"evidence_status,omitempty"`
+	IsStale          bool      `json:"is_stale"`
+	GeneratedAt      time.Time `json:"generated_at"`
+	CorrelationID    string    `json:"correlation_id,omitempty"`
+	StartedAt        time.Time `json:"started_at"`
+	FinishedAt       time.Time `json:"finished_at"`
+}
+
 type SchedulerPullRequestGradeResponse struct {
-	Status         string                                 `json:"status"`
-	Repository     string                                 `json:"repository"`
-	Number         int                                    `json:"number"`
-	UserID         string                                 `json:"user_id"`
-	Sync           *GitHubSyncExecutionResponse           `json:"sync,omitempty"`
-	Analysis       *SchedulerPullRequestAnalysisResponse  `json:"analysis,omitempty"`
-	ScoreReplay    *SchedulerScoreReplayExecutionResponse `json:"score_replay,omitempty"`
-	ProfileRefresh *SchedulerProfileRefreshResponse       `json:"profile_refresh,omitempty"`
-	Report         *SchedulerPullRequestReportResponse    `json:"report,omitempty"`
-	CorrelationID  string                                 `json:"correlation_id,omitempty"`
-	StartedAt      time.Time                              `json:"started_at"`
-	FinishedAt     time.Time                              `json:"finished_at"`
+	Status                string                                             `json:"status"`
+	Repository            string                                             `json:"repository"`
+	Number                int                                                `json:"number"`
+	UserID                string                                             `json:"user_id"`
+	Sync                  *GitHubSyncExecutionResponse                       `json:"sync,omitempty"`
+	Analysis              *SchedulerPullRequestAnalysisResponse              `json:"analysis,omitempty"`
+	ScoreReplay           *SchedulerScoreReplayExecutionResponse             `json:"score_replay,omitempty"`
+	ProfileRefresh        *SchedulerProfileRefreshResponse                   `json:"profile_refresh,omitempty"`
+	ReportMaterialization *SchedulerPullRequestReportMaterializationResponse `json:"report_materialization,omitempty"`
+	Report                *SchedulerPullRequestReportResponse                `json:"report,omitempty"`
+	CorrelationID         string                                             `json:"correlation_id,omitempty"`
+	StartedAt             time.Time                                          `json:"started_at"`
+	FinishedAt            time.Time                                          `json:"finished_at"`
 }
 
 type SchedulerDeadLetterListResponse struct {

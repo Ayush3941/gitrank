@@ -67,6 +67,20 @@ func TestSyncRequestNormalizeAcceptsAnalysisPullRequestTarget(t *testing.T) {
 	}
 }
 
+func TestSyncRequestNormalizeAcceptsReportMaterializePullRequestTarget(t *testing.T) {
+	req := SyncRequest{
+		Mode:       "report_materialize_pull_request",
+		Repository: "octo/repo",
+		Number:     17,
+	}
+	if err := req.Normalize(); err != nil {
+		t.Fatalf("Normalize() error = %v", err)
+	}
+	if req.Repository != "octo/repo" || req.Number != 17 {
+		t.Fatalf("request = %+v, want normalized report materialization PR target", req)
+	}
+}
+
 func TestSyncRequestNormalizeValidatesScoreReplayUserID(t *testing.T) {
 	req := SyncRequest{
 		Mode:   "score_replay",

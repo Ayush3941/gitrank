@@ -123,6 +123,8 @@ assert_true "user_quest_reward_grants table exists" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'user_quest_reward_grants');"
 assert_true "quest_audit_events table exists" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'quest_audit_events');"
+assert_true "pull_request_report_snapshots table exists" \
+  "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'pull_request_report_snapshots');"
 assert_true "webhook delivery persistence column exists" \
   "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'github_webhook_deliveries' AND column_name = 'github_installation_id');"
 assert_true "auth session token hash column exists" \
@@ -169,6 +171,8 @@ assert_true "quest audit action index exists" \
   "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_quest_audit_events_created_action');"
 assert_true "reduced gamification profile settings index exists" \
   "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_user_profile_settings_reduced_gamification');"
+assert_true "pull request report snapshot latest index exists" \
+  "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_pr_report_snapshots_pr_generated');"
 
 (
   cd "$root_dir/services/auth-service/internal/service"
@@ -199,6 +203,14 @@ assert_true "reduced gamification profile settings index exists" \
   TMPDIR="$root_dir/.tmp" \
     GOCACHE="$root_dir/.gocache" \
     GITRANK_INGESTOR_DATABASE_URL="postgres://${db_user}:${db_password}@127.0.0.1:${host_port}/${db_name}?sslmode=disable" \
+    go test ./...
+)
+
+(
+  cd "$root_dir/services/profile-service/internal/service"
+  TMPDIR="$root_dir/.tmp" \
+    GOCACHE="$root_dir/.gocache" \
+    GITRANK_PROFILE_DATABASE_URL="postgres://${db_user}:${db_password}@127.0.0.1:${host_port}/${db_name}?sslmode=disable" \
     go test ./...
 )
 

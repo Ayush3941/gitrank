@@ -13,6 +13,8 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+const pullRequestReportVersion = "pr-report/v1"
+
 type pullRequestReportRecord struct {
 	PullRequestID      string
 	Owner              string
@@ -58,6 +60,19 @@ type badgeUnlockRecord struct {
 	Evidence  map[string]any
 }
 
+type pullRequestReportSnapshotRecord struct {
+	ID              string
+	ReportVersion   string
+	ScoreEventID    string
+	AnalysisID      string
+	ScoreVersion    string
+	AnalysisVersion string
+	EvidenceStatus  string
+	IsStale         bool
+	SourceUpdatedAt time.Time
+	GeneratedAt     time.Time
+}
+
 func (s *Service) PublicPullRequestReport(ctx context.Context, owner, repo string, number int, now time.Time) (contracts.PullRequestReportResponse, error) {
 	if strings.TrimSpace(owner) == "" || strings.TrimSpace(repo) == "" || number <= 0 {
 		return contracts.PullRequestReportResponse{}, ErrInvalidRequest
@@ -67,6 +82,24 @@ func (s *Service) PublicPullRequestReport(ctx context.Context, owner, repo strin
 		return contracts.PullRequestReportResponse{}, err
 	}
 	return pullRequestReportFromRecord(record, now.UTC()), nil
+}
+
+func (s *Service) MaterializePullRequestReport(ctx context.Context, owner, repo string, number int, now time.Time) (contracts.PullRequestReportMaterializationResponse, error) {
+	if strings.TrimSpace(owner) == "" || strings.TrimSpace(repo) == "" || number <= 0 {
+		return contracts.PullRequestReportMaterializationResponse{}, ErrInvalidRequest
+	}
+
+	now = now.UTC()
+	record, err := s.store.LoadPullRequestReport(ctx, owner, repo, number)
+	if err != nil {
+		return contracts.PullRequestReportMaterializationResponse{}, err
+	}
+	report := pullRequestReportFromRecord(record, now)
+	snapshot, err := s.store.SavePullRequestReportSnapshot(ctx, record, report, now)
+	if err != nil {
+		return contracts.PullRequestReportMaterializationResponse{}, err
+	}
+	return pullRequestReportMaterializationResponse(record, snapshot, report), nil
 }
 
 func (s *Store) LoadPullRequestReport(ctx context.Context, owner, repo string, number int) (pullRequestReportRecord, error) {
@@ -325,6 +358,132 @@ func (s *Store) LoadRecentPullRequestReportsForUser(ctx context.Context, userID 
 	return records, rows.Err()
 }
 
+func (s *Store) SavePullRequestReportSnapshot(ctx context.Context, record pullRequestReportRecord, report contracts.PullRequestReportResponse, now time.Time) (pullRequestReportSnapshotRecord, error) {
+	pullRequestID := strings.TrimSpace(record.PullRequestID)
+	if pullRequestID == "" {
+		return pullRequestReportSnapshotRecord{}, ErrInvalidRequest
+	}
+
+	now = now.UTC()
+	if now.IsZero() {
+		now = time.Now().UTC()
+	}
+
+	generatedAt := report.GeneratedAt.UTC()
+	if generatedAt.IsZero() {
+		generatedAt = now
+		report.GeneratedAt = generatedAt
+	}
+
+	sourceUpdatedAt := report.SourceUpdatedAt.UTC()
+	if sourceUpdatedAt.IsZero() {
+		sourceUpdatedAt = latestTime(record.UpdatedAt, record.OccurredAt).UTC()
+	}
+	if sourceUpdatedAt.IsZero() {
+		sourceUpdatedAt = generatedAt
+	}
+
+	report.SourceUpdatedAt = sourceUpdatedAt
+	report.IsStale = report.EvidenceState.Stale
+
+	payload, err := json.Marshal(report)
+	if err != nil {
+		return pullRequestReportSnapshotRecord{}, err
+	}
+	missingEvidence, err := json.Marshal(report.EvidenceState.MissingEvidence)
+	if err != nil {
+		return pullRequestReportSnapshotRecord{}, err
+	}
+
+	idempotencyKey := pullRequestReportSnapshotKey(pullRequestID, record.ScoreEventID, record.AnalysisID, pullRequestReportVersion)
+	row := s.pool.QueryRow(ctx, `
+		INSERT INTO pull_request_report_snapshots (
+			idempotency_key,
+			pull_request_id,
+			score_event_id,
+			analysis_id,
+			report_version,
+			score_version,
+			analysis_version,
+			evidence_status,
+			evidence_missing_jsonb,
+			is_stale,
+			report_jsonb,
+			source_updated_at,
+			generated_at,
+			updated_at
+		)
+		VALUES (
+			$1,
+			$2::uuid,
+			NULLIF($3, '')::uuid,
+			NULLIF($4, '')::uuid,
+			$5,
+			$6,
+			$7,
+			$8,
+			$9::jsonb,
+			$10,
+			$11::jsonb,
+			$12,
+			$13,
+			$13
+		)
+		ON CONFLICT (idempotency_key) DO UPDATE
+		SET
+			score_version = EXCLUDED.score_version,
+			analysis_version = EXCLUDED.analysis_version,
+			evidence_status = EXCLUDED.evidence_status,
+			evidence_missing_jsonb = EXCLUDED.evidence_missing_jsonb,
+			is_stale = EXCLUDED.is_stale,
+			report_jsonb = EXCLUDED.report_jsonb,
+			source_updated_at = EXCLUDED.source_updated_at,
+			generated_at = EXCLUDED.generated_at,
+			updated_at = EXCLUDED.updated_at
+		RETURNING
+			id::text,
+			report_version,
+			COALESCE(score_event_id::text, ''),
+			COALESCE(analysis_id::text, ''),
+			score_version,
+			analysis_version,
+			evidence_status,
+			is_stale,
+			source_updated_at,
+			generated_at
+	`, idempotencyKey,
+		pullRequestID,
+		strings.TrimSpace(record.ScoreEventID),
+		strings.TrimSpace(record.AnalysisID),
+		pullRequestReportVersion,
+		strings.TrimSpace(report.ScoreVersion),
+		strings.TrimSpace(report.AnalysisVersion),
+		strings.TrimSpace(report.EvidenceState.Status),
+		string(missingEvidence),
+		report.IsStale,
+		string(payload),
+		sourceUpdatedAt,
+		generatedAt,
+	)
+
+	var snapshot pullRequestReportSnapshotRecord
+	if err := row.Scan(
+		&snapshot.ID,
+		&snapshot.ReportVersion,
+		&snapshot.ScoreEventID,
+		&snapshot.AnalysisID,
+		&snapshot.ScoreVersion,
+		&snapshot.AnalysisVersion,
+		&snapshot.EvidenceStatus,
+		&snapshot.IsStale,
+		&snapshot.SourceUpdatedAt,
+		&snapshot.GeneratedAt,
+	); err != nil {
+		return pullRequestReportSnapshotRecord{}, err
+	}
+	return snapshot, nil
+}
+
 func scanPullRequestReport(row rowScanner) (pullRequestReportRecord, error) {
 	var record pullRequestReportRecord
 	var signalsRaw, explanationRaw, metadataRaw, badgesRaw []byte
@@ -473,6 +632,48 @@ func pullRequestReportsFromRecords(records []pullRequestReportRecord, now time.T
 		reports = append(reports, pullRequestReportFromRecord(record, now.UTC()))
 	}
 	return reports
+}
+
+func pullRequestReportMaterializationResponse(record pullRequestReportRecord, snapshot pullRequestReportSnapshotRecord, report contracts.PullRequestReportResponse) contracts.PullRequestReportMaterializationResponse {
+	repository := strings.TrimSpace(record.FullName)
+	if repository == "" {
+		repository = strings.TrimSpace(record.Owner) + "/" + strings.TrimSpace(record.Repo)
+	}
+	return contracts.PullRequestReportMaterializationResponse{
+		Status:           "materialized",
+		Repository:       repository,
+		Number:           record.Number,
+		PullRequestID:    strings.TrimSpace(record.PullRequestID),
+		ReportSnapshotID: strings.TrimSpace(snapshot.ID),
+		ReportVersion:    strings.TrimSpace(snapshot.ReportVersion),
+		ScoreEventID:     strings.TrimSpace(snapshot.ScoreEventID),
+		AnalysisID:       strings.TrimSpace(snapshot.AnalysisID),
+		ScoreVersion:     strings.TrimSpace(snapshot.ScoreVersion),
+		AnalysisVersion:  strings.TrimSpace(snapshot.AnalysisVersion),
+		EvidenceStatus:   strings.TrimSpace(snapshot.EvidenceStatus),
+		MissingEvidence:  compactStrings(report.EvidenceState.MissingEvidence),
+		IsStale:          snapshot.IsStale,
+		SourceUpdatedAt:  snapshot.SourceUpdatedAt.UTC(),
+		GeneratedAt:      snapshot.GeneratedAt.UTC(),
+	}
+}
+
+func pullRequestReportSnapshotKey(pullRequestID, scoreEventID, analysisID, reportVersion string) string {
+	return strings.Join([]string{
+		"pr_report",
+		strings.TrimSpace(pullRequestID),
+		strings.TrimSpace(reportVersion),
+		reportSnapshotKeyPart(scoreEventID),
+		reportSnapshotKeyPart(analysisID),
+	}, ":")
+}
+
+func reportSnapshotKeyPart(value string) string {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return "none"
+	}
+	return value
 }
 
 func decodeReportStrings(raw []byte) []string {
