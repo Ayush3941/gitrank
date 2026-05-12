@@ -13,6 +13,8 @@ RUN_ROLLBACK_RESTORE="${RUN_ROLLBACK_RESTORE:-true}"
 RUN_K8S_RUNTIME="${RUN_K8S_RUNTIME:-true}"
 RUN_LOCAL_STATIC="${RUN_LOCAL_STATIC:-true}"
 MARK_CHECKBOXES="${MARK_CHECKBOXES:-true}"
+VERIFY_FROM_WORKFLOW="${VERIFY_FROM_WORKFLOW:-false}"
+WORKFLOW_RUN_ID="${WORKFLOW_RUN_ID:-}"
 AUDIT_REPORT_FILE="${AUDIT_REPORT_FILE:-$root_dir/docs/releases/v2-contributing-audit-latest.md}"
 AUTO_CREATE_GITHUB_APP_TOKEN="${AUTO_CREATE_GITHUB_APP_TOKEN:-true}"
 APP_TOKEN_OUTPUT_FILE="${APP_TOKEN_OUTPUT_FILE:-$tmp_root/gitrank-app-installation-token.txt}"
@@ -135,26 +137,40 @@ resolve_github_admin_token() {
 
 [ "$CONFIRM_FINALIZE_V2" = "yes" ] || fail "set CONFIRM_FINALIZE_V2=yes to run final closeout"
 
-if [ "$RUN_GITHUB_CONTROLS" = "true" ]; then
+readiness_run_github_controls="$RUN_GITHUB_CONTROLS"
+readiness_run_observability="$RUN_OBSERVABILITY"
+
+if [ "$VERIFY_FROM_WORKFLOW" = "true" ]; then
+  [ -n "$WORKFLOW_RUN_ID" ] || fail "WORKFLOW_RUN_ID is required when VERIFY_FROM_WORKFLOW=true"
+  run_make verify-live-v2-workflow-run \
+    WORKFLOW_RUN_ID="$WORKFLOW_RUN_ID" \
+    REQUIRE_GITHUB_CONTROLS="$RUN_GITHUB_CONTROLS" \
+    REQUIRE_OBSERVABILITY="$RUN_OBSERVABILITY" \
+    REQUIRE_RELEASE_RENDER="$RUN_K8S_RUNTIME"
+  readiness_run_github_controls=false
+  readiness_run_observability=false
+fi
+
+if [ "$RUN_GITHUB_CONTROLS" = "true" ] && [ "$VERIFY_FROM_WORKFLOW" != "true" ]; then
   resolve_github_admin_token
   RUN_GITHUB_CONTROLS=true run_make verify-live-v2-inputs
 fi
 
-if [ "$RUN_OBSERVABILITY" = "true" ]; then
+if [ "$RUN_OBSERVABILITY" = "true" ] && [ "$VERIFY_FROM_WORKFLOW" != "true" ]; then
   RUN_OBSERVABILITY=true run_make verify-live-v2-inputs
 fi
 
 RUN_LOCAL_STATIC="$RUN_LOCAL_STATIC" \
-RUN_GITHUB_CONTROLS="$RUN_GITHUB_CONTROLS" \
+RUN_GITHUB_CONTROLS="$readiness_run_github_controls" \
 APPLY_GITHUB_CONTROLS="$APPLY_GITHUB_CONTROLS" \
-RUN_OBSERVABILITY="$RUN_OBSERVABILITY" \
+RUN_OBSERVABILITY="$readiness_run_observability" \
 RUN_RELEASE_RENDER=false \
 OBS_EVIDENCE_FILE="${OBS_EVIDENCE_FILE:-}" \
 ROLLBACK_EVIDENCE_FILE="${ROLLBACK_EVIDENCE_FILE:-}" \
 RESTORE_EVIDENCE_FILE="${RESTORE_EVIDENCE_FILE:-}" \
 run_make verify-v2-live-readiness
 
-if [ "$RUN_K8S_RUNTIME" = "true" ]; then
+if [ "$RUN_K8S_RUNTIME" = "true" ] && [ "$VERIFY_FROM_WORKFLOW" != "true" ]; then
   render_for_environment STAGING staging "$STAGING_RENDER_OUTPUT"
   render_for_environment PRODUCTION production "$PRODUCTION_RENDER_OUTPUT"
 fi

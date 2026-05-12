@@ -101,6 +101,20 @@ cd gitrank
 make verify-v2-live-readiness
 ```
 
+To verify a completed Actions run as live-gate evidence (without rerunning
+those checks locally), use:
+
+```bash
+cd gitrank
+GITHUB_REPOSITORY=OWNER/REPO \
+GITRANK_REPO_ADMIN_TOKEN=... \
+WORKFLOW_RUN_ID=12345678901 \
+REQUIRE_GITHUB_CONTROLS=true \
+REQUIRE_OBSERVABILITY=true \
+REQUIRE_RELEASE_RENDER=true \
+make verify-live-v2-workflow-run
+```
+
 Use this check to ensure unresolved `CONTRIBUTING.md` items remain constrained
 to the approved live-gate list:
 
@@ -154,6 +168,24 @@ PRODUCTION_RENDER_OUTPUT=/tmp/production-rendered-k8s.yaml \
 make mark-v2-contributing-live-gates
 ```
 
+If these gates were already validated in Actions, you can verify from a
+workflow run ID while still enforcing rollback and restore evidence files:
+
+```bash
+cd gitrank
+CONFIRM_MARK_CONTRIBUTING=yes \
+VERIFY_FROM_WORKFLOW=true \
+WORKFLOW_RUN_ID=12345678901 \
+MARK_GITHUB_CONTROLS=true \
+MARK_OBSERVABILITY=true \
+OBS_EVIDENCE_FILE=docs/evidence/observability-live-YYYY-MM-DD.txt \
+MARK_ROLLBACK_RESTORE=true \
+ROLLBACK_EVIDENCE_FILE=docs/evidence/rollback-drill-YYYY-MM-DD.txt \
+RESTORE_EVIDENCE_FILE=docs/evidence/database-restore-drill-YYYY-MM-DD.txt \
+MARK_K8S_RUNTIME=true \
+make mark-v2-contributing-live-gates
+```
+
 ## One-Command Final Closeout
 
 Use the finalizer when you want one command to run verifier preflight, live
@@ -176,6 +208,20 @@ If `RUN_GITHUB_CONTROLS=true` and no GitHub token is set, the finalizer can
 auto-bootstrap a short-lived installation token when
 `GITHUB_APP_ID`, `GITHUB_APP_INSTALLATION_ID`, and
 `GITHUB_APP_PRIVATE_KEY_FILE` (or `GITHUB_APP_PRIVATE_KEY_PEM`) are provided.
+
+If those live checks already succeeded in GitHub Actions, you can use workflow
+run evidence during finalization:
+
+```bash
+cd gitrank
+CONFIRM_FINALIZE_V2=yes \
+VERIFY_FROM_WORKFLOW=true \
+WORKFLOW_RUN_ID=12345678901 \
+RUN_GITHUB_CONTROLS=true \
+RUN_OBSERVABILITY=true \
+RUN_K8S_RUNTIME=true \
+make finalize-v2-live-closeout
+```
 
 Optional per-environment render overrides:
 

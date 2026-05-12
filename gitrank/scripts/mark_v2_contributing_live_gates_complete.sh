@@ -10,7 +10,10 @@ MARK_GITHUB_CONTROLS="${MARK_GITHUB_CONTROLS:-false}"
 MARK_ROLLBACK_RESTORE="${MARK_ROLLBACK_RESTORE:-false}"
 MARK_K8S_RUNTIME="${MARK_K8S_RUNTIME:-false}"
 VERIFY_BEFORE_MARK="${VERIFY_BEFORE_MARK:-true}"
+VERIFY_FROM_WORKFLOW="${VERIFY_FROM_WORKFLOW:-false}"
+WORKFLOW_RUN_ID="${WORKFLOW_RUN_ID:-}"
 CONFIRM_MARK_CONTRIBUTING="${CONFIRM_MARK_CONTRIBUTING:-}"
+workflow_verified=false
 
 fail() {
   printf 'mark v2 contributing gates failed: %s\n' "$1" >&2
@@ -51,10 +54,27 @@ replace_checkbox_for_substring() {
 [ -s "$contributing_file" ] || fail "missing CONTRIBUTING.md at $contributing_file"
 [ "$CONFIRM_MARK_CONTRIBUTING" = "yes" ] || fail "set CONFIRM_MARK_CONTRIBUTING=yes to allow checklist mutations"
 
+verify_from_workflow_run_if_needed() {
+  [ "$VERIFY_BEFORE_MARK" = "true" ] || return 0
+  [ "$VERIFY_FROM_WORKFLOW" = "true" ] || return 0
+  [ "$workflow_verified" = "false" ] || return 0
+  [ -n "$WORKFLOW_RUN_ID" ] || fail "WORKFLOW_RUN_ID is required when VERIFY_FROM_WORKFLOW=true"
+  run_make verify-live-v2-workflow-run \
+    WORKFLOW_RUN_ID="$WORKFLOW_RUN_ID" \
+    REQUIRE_GITHUB_CONTROLS="$MARK_GITHUB_CONTROLS" \
+    REQUIRE_OBSERVABILITY="$MARK_OBSERVABILITY" \
+    REQUIRE_RELEASE_RENDER="$MARK_K8S_RUNTIME"
+  workflow_verified=true
+}
+
 if [ "$MARK_OBSERVABILITY" = "true" ]; then
   if [ "$VERIFY_BEFORE_MARK" = "true" ]; then
+    if [ "$VERIFY_FROM_WORKFLOW" = "true" ]; then
+      verify_from_workflow_run_if_needed
+    else
+      run_make verify-live-observability
+    fi
     [ -n "${OBS_EVIDENCE_FILE:-}" ] || fail "OBS_EVIDENCE_FILE is required when MARK_OBSERVABILITY=true"
-    run_make verify-live-observability
     run_make verify-observability-evidence EVIDENCE_FILE="$OBS_EVIDENCE_FILE"
   fi
   replace_checkbox_for_substring "Production observability exists." "$contributing_file"
@@ -63,10 +83,14 @@ fi
 
 if [ "$MARK_GITHUB_CONTROLS" = "true" ]; then
   if [ "$VERIFY_BEFORE_MARK" = "true" ]; then
-    if [ "${APPLY_GITHUB_CONTROLS:-false}" = "true" ]; then
-      GITRANK_APPLY_REPOSITORY_CONTROLS=yes run_make apply-github-repository-controls-auto
+    if [ "$VERIFY_FROM_WORKFLOW" = "true" ]; then
+      verify_from_workflow_run_if_needed
+    else
+      if [ "${APPLY_GITHUB_CONTROLS:-false}" = "true" ]; then
+        GITRANK_APPLY_REPOSITORY_CONTROLS=yes run_make apply-github-repository-controls-auto
+      fi
+      run_make verify-github-repository-controls
     fi
-    run_make verify-github-repository-controls
   fi
   replace_checkbox_for_substring "enable dependency graph" "$contributing_file"
   replace_checkbox_for_substring "enable Dependabot alerts" "$contributing_file"
@@ -92,10 +116,14 @@ fi
 
 if [ "$MARK_K8S_RUNTIME" = "true" ]; then
   if [ "$VERIFY_BEFORE_MARK" = "true" ]; then
-    [ -n "${STAGING_RENDER_OUTPUT:-}" ] || fail "STAGING_RENDER_OUTPUT is required when MARK_K8S_RUNTIME=true"
-    [ -n "${PRODUCTION_RENDER_OUTPUT:-}" ] || fail "PRODUCTION_RENDER_OUTPUT is required when MARK_K8S_RUNTIME=true"
-    K8S_ENVIRONMENT=staging OUTPUT_FILE="$STAGING_RENDER_OUTPUT" run_make render-k8s-release-manifests
-    K8S_ENVIRONMENT=production OUTPUT_FILE="$PRODUCTION_RENDER_OUTPUT" run_make render-k8s-release-manifests
+    if [ "$VERIFY_FROM_WORKFLOW" = "true" ]; then
+      verify_from_workflow_run_if_needed
+    else
+      [ -n "${STAGING_RENDER_OUTPUT:-}" ] || fail "STAGING_RENDER_OUTPUT is required when MARK_K8S_RUNTIME=true"
+      [ -n "${PRODUCTION_RENDER_OUTPUT:-}" ] || fail "PRODUCTION_RENDER_OUTPUT is required when MARK_K8S_RUNTIME=true"
+      K8S_ENVIRONMENT=staging OUTPUT_FILE="$STAGING_RENDER_OUTPUT" run_make render-k8s-release-manifests
+      K8S_ENVIRONMENT=production OUTPUT_FILE="$PRODUCTION_RENDER_OUTPUT" run_make render-k8s-release-manifests
+    fi
   fi
   replace_checkbox_for_substring "Replace provider-neutral Kubernetes placeholders with environment-specific secrets, TLS, ingress, managed PostgreSQL, managed Redis, registry, and environment-tuned autoscaling thresholds." "$contributing_file"
 fi

@@ -10,6 +10,9 @@ For consolidated execution, use:
 - `make verify-v2-live-readiness`
 - `make verify-v2-unresolved-checklist-scope` to ensure unresolved checklist
   items stay limited to approved live-only gates
+- `make verify-live-v2-workflow-run` to accept a successful
+  `verify-live-v2-gates.yml` workflow run as evidence for GitHub controls,
+  observability, and release-render gates
 - `CONFIRM_FINALIZE_V2=yes make finalize-v2-live-closeout` for one-command
   preflight + gate verification + checklist marking + audit
 - `make run-live-v2-gates-workflow` (requires token and live environment vars)
@@ -92,6 +95,11 @@ How to complete:
    - `.github/workflows/verify-live-v2-gates.yml` can mint a short-lived token
      from `GITRANK_GITHUB_APP_ID`, `GITRANK_GITHUB_APP_INSTALLATION_ID`, and
      `GITRANK_GITHUB_APP_PRIVATE_KEY_PEM` if `GITRANK_REPO_ADMIN_TOKEN` is unset.
+6. Optional workflow-run evidence:
+   - `make verify-live-v2-workflow-run` verifies a successful workflow run by
+     run ID, and `VERIFY_FROM_WORKFLOW=true` can be passed to
+     `make finalize-v2-live-closeout` or `make mark-v2-contributing-live-gates`
+     to reuse that evidence during checklist updates.
 
 ## 3) Rollback And Restore Drills Executed And Recorded
 
