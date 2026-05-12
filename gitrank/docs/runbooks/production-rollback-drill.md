@@ -5,6 +5,8 @@ The committed Kubernetes workflow already supports render, apply, and rollback
 modes, and `make verify-rollback-procedure` verifies that local wiring. The
 final production-readiness checkbox remains unchecked until a real staging or
 production-like cluster drill is executed and recorded.
+Database restore evidence is tracked separately in
+`docs/runbooks/database-restore-drill.md`.
 
 Official reference:
 

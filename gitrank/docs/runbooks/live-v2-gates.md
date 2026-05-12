@@ -11,6 +11,9 @@ The workflow is a reproducible gate runner for:
 - live observability verification
 - environment-specific release render verification with placeholder rejection
 
+It does not execute the managed PostgreSQL restore drill; use
+`docs/runbooks/database-restore-drill.md` for restore evidence.
+
 ## Required Repository Or Environment Secrets
 
 - `GITRANK_REPO_ADMIN_TOKEN`

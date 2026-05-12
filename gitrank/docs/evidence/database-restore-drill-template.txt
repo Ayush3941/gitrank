@@ -1,0 +1,16 @@
+Date:
+Environment:
+Cluster:
+Namespace:
+Operator:
+Restore source:
+Restore target:
+Backup identifier:
+Restore start timestamp:
+Restore completion timestamp:
+Restore command or workflow:
+Schema migration state after restore:
+Critical product checks:
+Observed errors:
+Follow-up actions:
+Decision:
