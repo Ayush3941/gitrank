@@ -39,7 +39,7 @@ errors will dead-letter again.
 | Scoring | `score.replay_user` scheduler job or direct `POST /v1/score/users/{user_id}/replay` for emergency manual repair | Replay the failed score job after the analysis artifact exists; use the direct replay endpoint only when the scheduler path itself is unavailable. | `score_events.event_key` and replay-run linkage must prevent duplicate XP rows. |
 | Profile refresh | `profile.refresh_user` scheduler job or direct `POST /v1/profile/users/{user_id}/refresh` for emergency manual repair | Replay the failed profile refresh job after score replay succeeds; use the direct refresh endpoint only when the scheduler path itself is unavailable. | Profile snapshots are rebuilt from persisted score and badge evidence and remain versioned by user, snapshot version, and source watermark. |
 | PR grading pipeline | `pipeline.grade_pull_request` scheduler job | Replay only after confirming the GitHub token, analyzer store, scoring store, profile store, and report snapshot/read model are healthy. | The job has a user-plus-PR dedupe key and each stage keeps its own idempotency guard. |
-| Quest update | Current profile-owned quest read model; future `quest.update` job | Replay only after score history and quest evidence references are present. | Quest completion and reward grants must remain unique per user, quest, and evidence set. |
+| Quest update | Profile refresh/private quest materializer; future external `quest.update` job | Replay profile refresh after score history and quest evidence references are present. | Quest assignments, progress events, completion events, XP score events, badge awards, and reward grants must remain unique per user, quest, and evidence set. |
 | PR report materialization | `report.materialize_pull_request` scheduler job or direct `POST /v1/pr/{owner}/{repo}/{number}/report/materialize` for emergency manual repair | Replay after PR, analysis, score-event, badge, and quest evidence are all present. | `pull_request_report_snapshots.idempotency_key` must prevent duplicate report rows while allowing evidence-derived replacement. |
 
 ## Replay Procedure
@@ -64,7 +64,7 @@ errors will dead-letter again.
    - scoring: score replay run, score events, badges, and snapshot exist; scheduler run output includes `score_replay.replay_run_id`
    - profile: profile snapshot freshness is current; scheduler run output includes `profile_refresh.profile_snapshot_id`
    - PR grading pipeline: scheduler run output includes `grade.sync`, `grade.analysis`, `grade.score_replay`, `grade.profile_refresh`, `grade.report_materialization`, and `grade.report`
-   - quest: quest evidence references and reward grants are linked
+   - quest: quest evidence references, progress rows, completion rows, reward grants, `quest.reward` score events, and reward badge evidence are linked
    - report: `pull_request_report_snapshots` has one current row for the PR evidence key, and the PR report returns complete or explicitly partial evidence state
 7. Close the incident only after dead-letter count stops increasing for one
    alert window.

@@ -634,8 +634,8 @@ paths:
       tags: [Profiles]
       summary: Return authenticated quest recommendations derived from profile score evidence
       description: |
-        Quest recommendations are a live read model over the latest profile snapshot and score history.
-        They are directional recommendations, not proof that a reward has been granted.
+        Quest recommendations are materialized from the latest profile snapshot and verified score history.
+        Completed quests write progress, completion, reward grant, badge, score-event, and audit evidence.
       operationId: getMyQuests
       security:
         - sessionCookie: []
@@ -1634,7 +1634,7 @@ components:
           enum: [Daily, Weekly, Long-term, Skill-based]
         reward_xp:
           type: integer
-          description: Proposed quest reward. Reward grants require a future completion ledger.
+          description: Quest XP reward. Completed quests link this value to a reward grant and quest.reward score event.
         reward_badge_key:
           type: string
         progress:

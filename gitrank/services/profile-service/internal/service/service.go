@@ -379,7 +379,14 @@ func (s *Service) rebuildSnapshot(ctx context.Context, user userRecord, now time
 	}
 
 	built := buildSnapshot(user, scoreRows, badges, now.UTC())
-	return s.store.InsertSnapshot(ctx, user.ID, built)
+	snapshot, err := s.store.InsertSnapshot(ctx, user.ID, built)
+	if err != nil {
+		return snapshotRecord{}, err
+	}
+	if _, err := s.store.MaterializeQuestBoard(ctx, user.ID, snapshot, buildQuestsFromSnapshot(snapshot, now.UTC()), now.UTC()); err != nil {
+		return snapshotRecord{}, err
+	}
+	return snapshot, nil
 }
 
 func publicResponseFromSnapshot(snapshot snapshotRecord, settings contracts.ProfilePrivacySettings, visibility []repositoryVisibilityRecord, now time.Time) contracts.PublicProfileResponse {

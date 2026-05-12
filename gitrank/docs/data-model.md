@@ -496,6 +496,8 @@ Likely high-value indexes:
 - `pull_request_reviews(pull_request_id)`
 - `contribution_analyses(pull_request_id, created_at desc)`
 - `score_events(user_id, created_at desc)`
+- `score_events(user_id, event_key)` for live quest reward idempotency
 - `pull_request_report_snapshots(pull_request_id, generated_at desc)`
+- `user_quest_assignments(source_snapshot_id, updated_at desc)`
 - `profile_snapshots(user_id, created_at desc)`
 - `sync_jobs(status, scheduled_at)`

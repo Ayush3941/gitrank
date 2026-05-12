@@ -78,7 +78,7 @@ run_go_test ./services/pr-analyzer/internal/analyzer 'TestStoreSavePullRequestAn
 run_go_test ./services/scheduler-worker/internal/service 'TestRunNextExecutesAnalysisPullRequestJobAndCompletes$'
 run_go_test ./services/scoring-engine/internal/scoring 'TestScoreMergedSecurityContribution$'
 run_go_test ./services/scoring-engine/internal/service 'TestReplayUserPersistsLedgerAndSnapshot$'
-run_go_test ./services/profile-service/internal/service 'Test(RefreshProfileByUserIDPersistsFreshSnapshot|MaterializePullRequestReportPersistsIdempotentSnapshot)$'
+run_go_test ./services/profile-service/internal/service 'Test(RefreshProfileByUserIDPersistsFreshSnapshot|MaterializePullRequestReportPersistsIdempotentSnapshot|MaterializeQuestBoardPersistsQuestEvidenceAndRewards)$'
 run_go_test ./services/scheduler-worker/internal/service 'TestRunNextExecutesProfileRefreshJobAndCompletes$'
 run_go_test ./services/scheduler-worker/internal/service 'TestRunNextExecutesPullRequestReportMaterializationJobAndCompletes$'
 run_go_test ./services/scheduler-worker/internal/service 'TestRunNextExecutesPullRequestGradeJobAndCompletes$'

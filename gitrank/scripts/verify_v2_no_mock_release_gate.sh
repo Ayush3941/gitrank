@@ -43,6 +43,7 @@ for test_name in \
   "ReplayUserPersistsLedgerAndSnapshot" \
   "RefreshProfileByUserIDPersistsFreshSnapshot" \
   "MaterializePullRequestReportPersistsIdempotentSnapshot" \
+  "MaterializeQuestBoardPersistsQuestEvidenceAndRewards" \
   "RunNextExecutesProfileRefreshJobAndCompletes" \
   "RunNextExecutesPullRequestReportMaterializationJobAndCompletes" \
   "RunNextExecutesPullRequestGradeJobAndCompletes" \

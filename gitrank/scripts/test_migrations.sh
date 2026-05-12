@@ -173,6 +173,10 @@ assert_true "reduced gamification profile settings index exists" \
   "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_user_profile_settings_reduced_gamification');"
 assert_true "pull request report snapshot latest index exists" \
   "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_pr_report_snapshots_pr_generated');"
+assert_true "quest reward live score event idempotency index exists" \
+  "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_score_events_user_live_event_key');"
+assert_true "quest assignment snapshot index exists" \
+  "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_user_quest_assignments_snapshot');"
 
 (
   cd "$root_dir/services/auth-service/internal/service"
