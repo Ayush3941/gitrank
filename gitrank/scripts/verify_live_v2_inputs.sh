@@ -33,15 +33,38 @@ fail() {
   exit 1
 }
 
+append_csv() {
+  current=$1
+  item=$2
+  if [ -n "$current" ]; then
+    printf '%s, %s' "$current" "$item"
+  else
+    printf '%s' "$item"
+  fi
+}
+
+missing_vars=
+missing_files=
+
 ensure_non_empty() {
   name=$1
   value=$2
-  [ -n "$value" ] || fail "$name is required"
+  if [ -z "$value" ]; then
+    missing_vars=$(append_csv "$missing_vars" "$name")
+  fi
+}
+
+ensure_file_non_empty() {
+  name=$1
+  value=$2
+  if [ ! -s "$value" ]; then
+    missing_files=$(append_csv "$missing_files" "$name")
+  fi
 }
 
 if [ "$RUN_GITHUB_CONTROLS" = "true" ]; then
   ensure_non_empty GITHUB_REPOSITORY "$GITHUB_REPOSITORY"
-  ensure_non_empty GITHUB_TOKEN "$GITHUB_TOKEN"
+  ensure_non_empty GITHUB_TOKEN_OR_GH_TOKEN_OR_GITRANK_REPO_ADMIN_TOKEN "$GITHUB_TOKEN"
 fi
 
 if [ "$RUN_OBSERVABILITY" = "true" ]; then
@@ -67,9 +90,23 @@ if [ "$RUN_EVIDENCE_VALIDATION" = "true" ]; then
   ensure_non_empty OBS_EVIDENCE_FILE "$OBS_EVIDENCE_FILE"
   ensure_non_empty ROLLBACK_EVIDENCE_FILE "$ROLLBACK_EVIDENCE_FILE"
   ensure_non_empty RESTORE_EVIDENCE_FILE "$RESTORE_EVIDENCE_FILE"
-  [ -s "$OBS_EVIDENCE_FILE" ] || fail "OBS_EVIDENCE_FILE does not exist or is empty"
-  [ -s "$ROLLBACK_EVIDENCE_FILE" ] || fail "ROLLBACK_EVIDENCE_FILE does not exist or is empty"
-  [ -s "$RESTORE_EVIDENCE_FILE" ] || fail "RESTORE_EVIDENCE_FILE does not exist or is empty"
+  if [ -n "$OBS_EVIDENCE_FILE" ]; then
+    ensure_file_non_empty OBS_EVIDENCE_FILE "$OBS_EVIDENCE_FILE"
+  fi
+  if [ -n "$ROLLBACK_EVIDENCE_FILE" ]; then
+    ensure_file_non_empty ROLLBACK_EVIDENCE_FILE "$ROLLBACK_EVIDENCE_FILE"
+  fi
+  if [ -n "$RESTORE_EVIDENCE_FILE" ]; then
+    ensure_file_non_empty RESTORE_EVIDENCE_FILE "$RESTORE_EVIDENCE_FILE"
+  fi
+fi
+
+if [ -n "$missing_vars" ]; then
+  fail "missing required environment variables: $missing_vars"
+fi
+
+if [ -n "$missing_files" ]; then
+  fail "required evidence files are missing or empty: $missing_files"
 fi
 
 printf 'live v2 input verification passed\n'
