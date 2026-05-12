@@ -6,6 +6,7 @@ resources:
   - serviceaccount.yaml
   - configmap.yaml
   - deployments.yaml
+  - hpa.yaml
   - services.yaml
   - ingress.yaml
   - migration-job.yaml

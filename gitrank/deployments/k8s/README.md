@@ -9,6 +9,7 @@ Current committed assets in this directory include:
 - `base/configmap.yaml`
 - `base/serviceaccount.yaml`
 - `base/deployments.yaml`
+- `base/hpa.yaml`
 - `base/services.yaml`
 - `base/ingress.yaml`
 - `base/migration-job.yaml`
@@ -20,6 +21,7 @@ Current committed assets in this directory include:
 - `examples/external-secret.production.example.yaml`
 
 The base deploys the seven Go service API deployments, a separate `scheduler-job-worker` execution deployment, ClusterIP Services, an ingress for `api-gateway` and `auth-service`, and a migration Job. Staging and production overlays set namespaces, public URLs, ingress hosts, and image replacement points.
+The base also defines HorizontalPodAutoscaler resources for every backend deployment.
 
 `scheduler-worker` runs with `SCHEDULER_RUN_MODE=api` and exposes scheduler HTTP operations through the `scheduler-worker` ClusterIP Service. `scheduler-job-worker` uses the same OCI image with `SCHEDULER_RUN_MODE=worker`, has no ClusterIP Service, and leases durable scheduler jobs directly from PostgreSQL for long-running sync, analysis, scoring, profile, PR-report, leaderboard, and quest materialization work.
 
@@ -48,6 +50,7 @@ Verify the local rollback wiring and manifest render path with:
 
 ```bash
 make verify-rollback-procedure
+make verify-k8s-autoscaling
 ```
 
 The production-readiness rollback gate also requires a real staging or
