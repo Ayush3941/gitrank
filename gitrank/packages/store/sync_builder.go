@@ -119,6 +119,26 @@ func BuildSyncJobs(req contracts.SyncRequest, queueName, correlationID string, m
 			return nil, err
 		}
 		return []QueueJob{job}, nil
+	case "profile_refresh":
+		if req.UserID == "" {
+			return nil, errors.New("user_id is required when mode=profile_refresh")
+		}
+		job, err := NewQueueJob(QueueJobInput{
+			QueueName:     queueName,
+			Type:          ProfileRefreshUserJob,
+			CorrelationID: correlationID,
+			Subject:       req.UserID,
+			DedupeKey:     "profile_refresh:" + req.UserID,
+			MaxAttempts:   maxAttempts,
+			Payload: map[string]string{
+				"mode":    "profile_refresh",
+				"user_id": req.UserID,
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+		return []QueueJob{job}, nil
 	default:
 		return nil, errors.New("unsupported sync mode")
 	}

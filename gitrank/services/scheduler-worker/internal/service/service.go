@@ -31,6 +31,7 @@ type Service struct {
 	repositoryRunner    boundedSyncExecutor
 	analysisRunner      pullRequestAnalysisExecutor
 	scoreRunner         scoreReplayExecutor
+	profileRunner       profileRefreshExecutor
 	runs                *executionCounters
 	stateStore          *schedulerStateStore
 }
@@ -59,6 +60,7 @@ func newService(cfg config.App, stateStore *schedulerStateStore) *Service {
 		repositoryRunner:    newBoundedSyncExecutor(cfg),
 		analysisRunner:      newPullRequestAnalysisExecutor(cfg),
 		scoreRunner:         newScoreReplayExecutor(cfg),
+		profileRunner:       newProfileRefreshExecutor(cfg),
 		runs:                newExecutionCounters(),
 		stateStore:          stateStore,
 	}

@@ -71,6 +71,20 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 		httpkit.WriteJSON(w, http.StatusOK, response)
 	})))
 
+	mux.Handle("/v1/profile/users/", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		userID, ok := parseProfileRefreshPath(r.URL.Path)
+		if !ok {
+			httpkit.WriteError(w, http.StatusNotFound, "not_found", "profile refresh target not found", httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		response, err := profileService.RefreshProfileByUserID(r.Context(), userID, time.Now().UTC())
+		if err != nil {
+			writeProfileError(w, r, err)
+			return
+		}
+		httpkit.WriteJSON(w, http.StatusAccepted, response)
+	})))
+
 	mux.Handle("/v1/pr/", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		owner, repo, number, ok := parsePullRequestReportPath(r.URL.Path)
 		if !ok {
@@ -253,4 +267,17 @@ func parsePullRequestReportPath(path string) (string, string, int, bool) {
 	}
 	repoParts := strings.SplitN(fullName, "/", 2)
 	return repoParts[0], repoParts[1], number, true
+}
+
+func parseProfileRefreshPath(path string) (string, bool) {
+	trimmed := strings.Trim(strings.TrimPrefix(path, "/v1/profile/users/"), "/")
+	parts := strings.Split(trimmed, "/")
+	if len(parts) != 2 || parts[1] != "refresh" {
+		return "", false
+	}
+	userID, err := contracts.NormalizeUUID(parts[0], "user_id")
+	if err != nil {
+		return "", false
+	}
+	return userID, true
 }

@@ -103,7 +103,7 @@ func (req *SyncRequest) Normalize() error {
 			return err
 		}
 		if req.Number <= 0 {
-			return errors.New("repository and number are required for pull_request, review, and issue modes")
+			return errors.New("repository and number are required for pull_request, review, issue, and analysis_pull_request modes")
 		}
 		req.Repository = repository
 	case "commit":
@@ -117,7 +117,7 @@ func (req *SyncRequest) Normalize() error {
 		}
 		req.Repository = repository
 		req.SHA = sha
-	case "score_replay":
+	case "score_replay", "profile_refresh":
 		userID, err := NormalizeUUID(req.UserID, "user_id")
 		if err != nil {
 			return err

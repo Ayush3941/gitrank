@@ -282,6 +282,19 @@ type ProfileStaleness struct {
 	PartialProfileAvailable bool      `json:"partial_profile_available"`
 }
 
+type ProfileRefreshResponse struct {
+	Status                 string    `json:"status"`
+	UserID                 string    `json:"user_id"`
+	ProfileSnapshotID      string    `json:"profile_snapshot_id"`
+	ProfileSnapshotVersion string    `json:"profile_snapshot_version"`
+	ScoreVersion           string    `json:"score_version,omitempty"`
+	TotalXP                int       `json:"total_xp"`
+	LevelLabel             string    `json:"level_label"`
+	SourceWatermark        time.Time `json:"source_watermark"`
+	RefreshedAt            time.Time `json:"refreshed_at"`
+	StaleAfter             time.Time `json:"stale_after"`
+}
+
 type ShareableProfileCard struct {
 	Handle      string           `json:"handle"`
 	DisplayName string           `json:"display_name"`

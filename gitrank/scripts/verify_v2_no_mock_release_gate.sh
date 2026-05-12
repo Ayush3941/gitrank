@@ -40,6 +40,8 @@ for test_name in \
   "ExecutorSyncUserFetchesOwnedRepositoriesAndAuthoredPullRequests" \
   "ExecutorSyncPullRequestFetchesAndPersistsBoundedPullRequestData" \
   "ReplayUserPersistsLedgerAndSnapshot" \
+  "RefreshProfileByUserIDPersistsFreshSnapshot" \
+  "RunNextExecutesProfileRefreshJobAndCompletes" \
   "PublicResponseFiltersHiddenRepositories"; do
   require_contains "$critical_flows" "$test_name" "critical worker/profile flow verification"
 done

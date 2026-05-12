@@ -309,6 +309,7 @@ Implemented routes:
 - `GET /metrics`
 - `GET /v1/meta/manifest`
 - `GET /v1/profile/schema`
+- `POST /v1/profile/users/{user_id}/refresh`
 - `GET /v1/leaderboard`
 - `GET /v1/users/{handle}`
 - `GET /v1/users/{handle}/card`
@@ -319,6 +320,7 @@ Implemented routes:
 Read-model behavior:
 
 - serves snapshot-backed public and authenticated profiles
+- can force a profile snapshot rebuild from persisted score events and badge evidence for scheduler-driven post-scoring refresh
 - exposes explicit staleness metadata
 - applies privacy settings and per-repository visibility redaction
 - caches public and private profile responses in Redis when configured
@@ -374,6 +376,7 @@ Current state:
 - the in-process worker can execute ready `sync.commit` jobs by calling `github-ingestor /v1/sync/commit/execute`
 - the in-process worker can execute ready `analysis.pull_request` jobs by calling `pr-analyzer /v1/analyze/pull-request/execute`
 - the in-process worker can execute ready `score.replay_user` jobs by calling `scoring-engine /v1/score/users/{user_id}/replay` with a `backfill` trigger
+- the in-process worker can execute ready `profile.refresh_user` jobs by calling `profile-service /v1/profile/users/{user_id}/refresh`
 - bounded installation execution currently means replaying repositories already associated with a persisted installation record, not discovering repositories from live GitHub App installation APIs
 - bounded user execution currently means recent public owned repositories plus recent public authored PRs discoverable through GitHub issue/PR search, not a full historical search across every contribution surface
 - bounded review execution currently means "refresh the reviews and review comments for one PR number", not a review-id-specific sync

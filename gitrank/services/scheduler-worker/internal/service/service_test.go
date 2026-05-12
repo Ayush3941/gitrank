@@ -1073,6 +1073,76 @@ func TestRunNextExecutesScoreReplayJobAndCompletes(t *testing.T) {
 	}
 }
 
+func TestRunNextExecutesProfileRefreshJobAndCompletes(t *testing.T) {
+	now := time.Now().UTC().Add(2 * time.Minute).Truncate(time.Second)
+	const userID = "8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4"
+	var observedPath string
+	var observedRequestID string
+	var observedTraceParent string
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		observedPath = r.URL.Path
+		observedRequestID = r.Header.Get("X-Request-ID")
+		observedTraceParent = r.Header.Get("traceparent")
+		w.WriteHeader(http.StatusAccepted)
+		_ = json.NewEncoder(w).Encode(contracts.ProfileRefreshResponse{
+			Status:                 "completed",
+			UserID:                 userID,
+			ProfileSnapshotID:      "snap-1",
+			ProfileSnapshotVersion: "profile/v1",
+			ScoreVersion:           "score/v1",
+			TotalXP:                180,
+			LevelLabel:             "Explorer",
+			SourceWatermark:        now,
+			RefreshedAt:            now,
+			StaleAfter:             now.Add(15 * time.Minute),
+		})
+	}))
+	defer server.Close()
+
+	cfg := testServiceConfig()
+	cfg.Services.ProfileBaseURL = server.URL
+	cfg.Services.RequestTimeout = time.Second
+	scheduler := New(cfg)
+
+	enqueue, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "profile_refresh", UserID: userID}, "profile-correlation", now)
+	if err != nil {
+		t.Fatalf("EnqueueSync() error = %v", err)
+	}
+
+	run, err := scheduler.RunNext(context.Background(), now)
+	if err != nil {
+		t.Fatalf("RunNext() error = %v", err)
+	}
+	if run.Status != "completed" {
+		t.Fatalf("run status = %q, want completed", run.Status)
+	}
+	if run.Execution != nil || run.Analysis != nil || run.ScoreReplay != nil {
+		t.Fatalf("run sync/analysis/score = %+v/%+v/%+v, want nil for profile refresh", run.Execution, run.Analysis, run.ScoreReplay)
+	}
+	if run.ProfileRefresh == nil || run.ProfileRefresh.UserID != userID || run.ProfileRefresh.ProfileSnapshotID != "snap-1" {
+		t.Fatalf("profile refresh = %+v, want persisted snapshot for user %s", run.ProfileRefresh, userID)
+	}
+	if run.ProfileRefresh.TotalXP != 180 || run.ProfileRefresh.ScoreVersion != "score/v1" {
+		t.Fatalf("profile refresh summary = %+v, want total_xp=180 score/v1", run.ProfileRefresh)
+	}
+	if run.ProfileRefresh.RefreshedAt.IsZero() || run.ProfileRefresh.StaleAfter.IsZero() {
+		t.Fatalf("profile refresh freshness = %+v, want refreshed/stale timestamps", run.ProfileRefresh)
+	}
+	if observedPath != "/v1/profile/users/"+userID+"/refresh" {
+		t.Fatalf("observed path = %q, want profile refresh path", observedPath)
+	}
+	if observedRequestID != "profile-correlation" {
+		t.Fatalf("observed request id = %q, want %q", observedRequestID, "profile-correlation")
+	}
+	if observedTraceParent == "" {
+		t.Fatal("observed traceparent header missing")
+	}
+	if run.Job == nil || run.Job.ID != enqueue.JobIDs[0] || run.Job.Type != string(store.ProfileRefreshUserJob) {
+		t.Fatalf("run job = %+v, want executed profile refresh job id %q", run.Job, enqueue.JobIDs[0])
+	}
+}
+
 func TestRunNextRetriesRepositoryJobOnUpstreamFailure(t *testing.T) {
 	now := time.Now().UTC().Add(time.Minute).Truncate(time.Second)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {

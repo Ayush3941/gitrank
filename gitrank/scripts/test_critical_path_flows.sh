@@ -78,6 +78,8 @@ run_go_test ./services/pr-analyzer/internal/analyzer 'TestStoreSavePullRequestAn
 run_go_test ./services/scheduler-worker/internal/service 'TestRunNextExecutesAnalysisPullRequestJobAndCompletes$'
 run_go_test ./services/scoring-engine/internal/scoring 'TestScoreMergedSecurityContribution$'
 run_go_test ./services/scoring-engine/internal/service 'TestReplayUserPersistsLedgerAndSnapshot$'
+run_go_test ./services/profile-service/internal/service 'TestRefreshProfileByUserIDPersistsFreshSnapshot$'
+run_go_test ./services/scheduler-worker/internal/service 'TestRunNextExecutesProfileRefreshJobAndCompletes$'
 run_go_test ./services/profile-service/internal/service 'TestPublicResponseFiltersHiddenRepositories$'
 
 echo "critical path flow tests passed"

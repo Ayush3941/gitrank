@@ -16,6 +16,7 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 			{Method: "GET", Path: "/metrics", Summary: "Prometheus-style service metrics", Status: "implemented"},
 			{Method: "GET", Path: "/v1/meta/manifest", Summary: "Service route manifest", Status: "implemented"},
 			{Method: "GET", Path: "/v1/profile/schema", Summary: "Public profile section schema", Status: "implemented"},
+			{Method: "POST", Path: "/v1/profile/users/{user_id}/refresh", Summary: "Force a profile snapshot rebuild from stored score and badge evidence", Status: "implemented"},
 			{Method: "GET", Path: "/v1/leaderboard", Summary: "Public leaderboard from profile snapshots", Status: "implemented"},
 			{Method: "GET", Path: "/v1/pr/{owner}/{repo}/{number}/report", Summary: "Public PR battle report from persisted analysis and score evidence", Status: "implemented"},
 			{Method: "GET", Path: "/v1/users/{handle}", Summary: "Public profile read model", Status: "implemented"},

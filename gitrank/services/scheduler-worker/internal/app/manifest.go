@@ -43,6 +43,7 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 			{Name: "github-ingestor", Kind: "internal_http", BaseURL: cfg.Services.GitHubIngestorBaseURL, Purpose: "Repository and PR sync flows", Auth: "service_to_service", Critical: true, Status: "configured"},
 			{Name: "pr-analyzer", Kind: "internal_http", BaseURL: cfg.Services.PRAnalyzerBaseURL, Purpose: "Executable persisted PR analysis jobs", Auth: "service_to_service", Critical: true, Status: "configured"},
 			{Name: "scoring-engine", Kind: "internal_http", BaseURL: cfg.Services.ScoringBaseURL, Purpose: "Executable score replay jobs for V2 backfills and repair flows", Auth: "service_to_service", Critical: true, Status: "configured"},
+			{Name: "profile-service", Kind: "internal_http", BaseURL: cfg.Services.ProfileBaseURL, Purpose: "Executable profile snapshot refresh jobs after scoring", Auth: "service_to_service", Critical: true, Status: "configured"},
 		},
 	}
 }

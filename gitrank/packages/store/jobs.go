@@ -21,6 +21,7 @@ const (
 	SyncCommitJob          SyncJobType = "sync.commit"
 	AnalysisPullRequestJob SyncJobType = "analysis.pull_request"
 	ScoreReplayUserJob     SyncJobType = "score.replay_user"
+	ProfileRefreshUserJob  SyncJobType = "profile.refresh_user"
 	RepairWebhookJob       SyncJobType = "repair.webhook_delivery"
 )
 
@@ -147,6 +148,7 @@ func SupportedSyncJobTypes() []SyncJobType {
 		SyncCommitJob,
 		AnalysisPullRequestJob,
 		ScoreReplayUserJob,
+		ProfileRefreshUserJob,
 		RepairWebhookJob,
 	}
 }

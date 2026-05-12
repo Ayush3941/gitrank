@@ -119,6 +119,29 @@ func TestBuildSyncJobsScoreReplayUser(t *testing.T) {
 	}
 }
 
+func TestBuildSyncJobsProfileRefreshUser(t *testing.T) {
+	const userID = "8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4"
+	jobs, err := BuildSyncJobs(contracts.SyncRequest{
+		Mode:   "profile_refresh",
+		UserID: userID,
+	}, "github-sync", "profile-correlation", 5)
+	if err != nil {
+		t.Fatalf("BuildSyncJobs() error = %v", err)
+	}
+	if len(jobs) != 1 {
+		t.Fatalf("jobs len = %d, want 1", len(jobs))
+	}
+	if jobs[0].Type != ProfileRefreshUserJob {
+		t.Fatalf("job type = %q, want %q", jobs[0].Type, ProfileRefreshUserJob)
+	}
+	if jobs[0].Subject != userID {
+		t.Fatalf("subject = %q, want %q", jobs[0].Subject, userID)
+	}
+	if jobs[0].DedupeKey != "profile_refresh:"+userID {
+		t.Fatalf("dedupe key = %q, want profile_refresh:%s", jobs[0].DedupeKey, userID)
+	}
+}
+
 func TestBuildSyncJobsAnalysisPullRequest(t *testing.T) {
 	jobs, err := BuildSyncJobs(contracts.SyncRequest{
 		Mode:       "analysis_pull_request",

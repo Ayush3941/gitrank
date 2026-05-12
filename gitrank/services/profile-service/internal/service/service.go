@@ -155,6 +155,34 @@ func (s *Service) Leaderboard(ctx context.Context, limit int, now time.Time) (co
 	}, nil
 }
 
+func (s *Service) RefreshProfileByUserID(ctx context.Context, userID string, now time.Time) (contracts.ProfileRefreshResponse, error) {
+	userID, err := contracts.NormalizeUUID(userID, "user_id")
+	if err != nil {
+		return contracts.ProfileRefreshResponse{}, ErrInvalidRequest
+	}
+	user, err := s.store.LoadUserByID(ctx, userID)
+	if err != nil {
+		return contracts.ProfileRefreshResponse{}, err
+	}
+
+	snapshot, err := s.rebuildSnapshot(ctx, user, now.UTC())
+	if err != nil {
+		return contracts.ProfileRefreshResponse{}, err
+	}
+	return contracts.ProfileRefreshResponse{
+		Status:                 "completed",
+		UserID:                 userID,
+		ProfileSnapshotID:      snapshot.ID,
+		ProfileSnapshotVersion: snapshot.SnapshotVersion,
+		ScoreVersion:           scoreVersionFromSnapshot(snapshot),
+		TotalXP:                snapshot.TotalXP,
+		LevelLabel:             snapshot.LevelLabel,
+		SourceWatermark:        snapshot.SourceWatermark.UTC(),
+		RefreshedAt:            snapshot.RefreshedAt.UTC(),
+		StaleAfter:             snapshot.StaleAfter.UTC(),
+	}, nil
+}
+
 func (s *Service) PrivateProfile(ctx context.Context, sessionToken string, now time.Time) (contracts.PrivateProfileResponse, error) {
 	principal, err := s.authenticate(ctx, sessionToken, now.UTC())
 	if err != nil {
@@ -326,27 +354,7 @@ func (s *Service) ensureSnapshot(ctx context.Context, user userRecord, now time.
 		return snapshotRecord{}, err
 	}
 
-	scoreSelection, err := s.store.LoadLatestScoreSelection(ctx, user.ID)
-	if err != nil {
-		return snapshotRecord{}, err
-	}
-	scoreRows, err := s.store.LoadScoreRows(ctx, user.ID, scoreSelection)
-	if err != nil {
-		if existing.ID != "" {
-			return existing, nil
-		}
-		return snapshotRecord{}, err
-	}
-	badges, err := s.store.LoadBadges(ctx, user.ID)
-	if err != nil {
-		if existing.ID != "" {
-			return existing, nil
-		}
-		return snapshotRecord{}, err
-	}
-
-	built := buildSnapshot(user, scoreRows, badges, now.UTC())
-	snapshot, err := s.store.InsertSnapshot(ctx, user.ID, built)
+	snapshot, err := s.rebuildSnapshot(ctx, user, now.UTC())
 	if err != nil {
 		if existing.ID != "" {
 			return existing, nil
@@ -354,6 +362,24 @@ func (s *Service) ensureSnapshot(ctx context.Context, user userRecord, now time.
 		return snapshotRecord{}, err
 	}
 	return snapshot, nil
+}
+
+func (s *Service) rebuildSnapshot(ctx context.Context, user userRecord, now time.Time) (snapshotRecord, error) {
+	scoreSelection, err := s.store.LoadLatestScoreSelection(ctx, user.ID)
+	if err != nil {
+		return snapshotRecord{}, err
+	}
+	scoreRows, err := s.store.LoadScoreRows(ctx, user.ID, scoreSelection)
+	if err != nil {
+		return snapshotRecord{}, err
+	}
+	badges, err := s.store.LoadBadges(ctx, user.ID)
+	if err != nil {
+		return snapshotRecord{}, err
+	}
+
+	built := buildSnapshot(user, scoreRows, badges, now.UTC())
+	return s.store.InsertSnapshot(ctx, user.ID, built)
 }
 
 func publicResponseFromSnapshot(snapshot snapshotRecord, settings contracts.ProfilePrivacySettings, visibility []repositoryVisibilityRecord, now time.Time) contracts.PublicProfileResponse {

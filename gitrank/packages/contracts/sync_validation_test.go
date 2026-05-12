@@ -84,3 +84,21 @@ func TestSyncRequestNormalizeValidatesScoreReplayUserID(t *testing.T) {
 		t.Fatal("Normalize() error = nil, want invalid user_id rejection")
 	}
 }
+
+func TestSyncRequestNormalizeValidatesProfileRefreshUserID(t *testing.T) {
+	req := SyncRequest{
+		Mode:   "profile_refresh",
+		UserID: "8F0C38C9-671F-499D-A1B7-1F9F4F57CBB4",
+	}
+	if err := req.Normalize(); err != nil {
+		t.Fatalf("Normalize() error = %v", err)
+	}
+	if req.UserID != "8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4" {
+		t.Fatalf("UserID = %q, want canonical lowercase UUID", req.UserID)
+	}
+
+	req = SyncRequest{Mode: "profile_refresh", UserID: "octocat"}
+	if err := req.Normalize(); err == nil {
+		t.Fatal("Normalize() error = nil, want invalid user_id rejection")
+	}
+}

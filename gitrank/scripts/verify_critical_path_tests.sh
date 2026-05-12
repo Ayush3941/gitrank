@@ -38,6 +38,8 @@ require_test "PR analyzer persisted artifact" "func TestStoreSavePullRequestAnal
 require_test "scheduler analysis execution" "func TestRunNextExecutesAnalysisPullRequestJobAndCompletes" "services/scheduler-worker/internal/service"
 require_test "deterministic scoring" "func TestScoreMergedSecurityContribution" "services/scoring-engine/internal/scoring"
 require_test "scoring replay ledger" "func TestReplayUserPersistsLedgerAndSnapshot" "services/scoring-engine/internal/service"
+require_test "profile refresh persistence" "func TestRefreshProfileByUserIDPersistsFreshSnapshot" "services/profile-service/internal/service"
+require_test "scheduler profile refresh execution" "func TestRunNextExecutesProfileRefreshJobAndCompletes" "services/scheduler-worker/internal/service"
 require_test "public profile projection" "func TestPublicResponseFiltersHiddenRepositories" "services/profile-service/internal/service"
 require_test "public profile API contract" "func TestPublicProfileRoutePassesThroughPublicProfileContract" "services/api-gateway/internal/httpapi"
 

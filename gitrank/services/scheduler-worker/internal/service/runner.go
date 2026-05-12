@@ -32,6 +32,10 @@ type scoreReplayExecutor interface {
 	ReplayUser(ctx context.Context, userID string, correlationID string) (contracts.SchedulerScoreReplayExecutionResponse, error)
 }
 
+type profileRefreshExecutor interface {
+	RefreshProfile(ctx context.Context, userID string, correlationID string) (contracts.SchedulerProfileRefreshResponse, error)
+}
+
 type pullRequestAnalysisExecutor interface {
 	AnalyzePullRequest(ctx context.Context, req contracts.SyncRequest, correlationID string) (contracts.SchedulerPullRequestAnalysisResponse, error)
 }
@@ -51,10 +55,16 @@ type httpScoreReplayExecutor struct {
 	client  *http.Client
 }
 
+type httpProfileRefreshExecutor struct {
+	baseURL string
+	client  *http.Client
+}
+
 type jobExecution struct {
-	Sync        *contracts.GitHubSyncExecutionResponse
-	Analysis    *contracts.SchedulerPullRequestAnalysisResponse
-	ScoreReplay *contracts.SchedulerScoreReplayExecutionResponse
+	Sync           *contracts.GitHubSyncExecutionResponse
+	Analysis       *contracts.SchedulerPullRequestAnalysisResponse
+	ScoreReplay    *contracts.SchedulerScoreReplayExecutionResponse
+	ProfileRefresh *contracts.SchedulerProfileRefreshResponse
 }
 
 type executionCounters struct {
@@ -95,6 +105,19 @@ func newPullRequestAnalysisExecutor(cfg config.App) pullRequestAnalysisExecutor 
 		return nil
 	}
 	return &httpPullRequestAnalysisExecutor{
+		baseURL: baseURL,
+		client: &http.Client{
+			Timeout: cfg.Services.RequestTimeout,
+		},
+	}
+}
+
+func newProfileRefreshExecutor(cfg config.App) profileRefreshExecutor {
+	baseURL := strings.TrimRight(strings.TrimSpace(cfg.Services.ProfileBaseURL), "/")
+	if baseURL == "" {
+		return nil
+	}
+	return &httpProfileRefreshExecutor{
 		baseURL: baseURL,
 		client: &http.Client{
 			Timeout: cfg.Services.RequestTimeout,
@@ -145,6 +168,7 @@ func (s *Service) RunNext(ctx context.Context, now time.Time) (contracts.Schedul
 	response.Execution = execution.Sync
 	response.Analysis = execution.Analysis
 	response.ScoreReplay = execution.ScoreReplay
+	response.ProfileRefresh = execution.ProfileRefresh
 	s.recordExecution(job.Type, action.Status, finishedAt)
 	return response, nil
 }
@@ -278,6 +302,19 @@ func (s *Service) executeLeasedJob(ctx context.Context, job store.QueueJob) (job
 			return jobExecution{}, err
 		}
 		return jobExecution{ScoreReplay: &execution}, nil
+	case store.ProfileRefreshUserJob:
+		if s.profileRunner == nil {
+			return jobExecution{}, fmt.Errorf("profile refresh runner is not configured")
+		}
+		req, err := syncRequestFromJob(job)
+		if err != nil {
+			return jobExecution{}, err
+		}
+		execution, err := s.profileRunner.RefreshProfile(ctx, req.UserID, correlationIDForJob(job))
+		if err != nil {
+			return jobExecution{}, err
+		}
+		return jobExecution{ProfileRefresh: &execution}, nil
 	default:
 		return jobExecution{}, fmt.Errorf("job type %s is not executable by the in-process worker", job.Type)
 	}
@@ -543,6 +580,75 @@ func (e *httpScoreReplayExecutor) ReplayUser(ctx context.Context, userID string,
 	}, nil
 }
 
+func (e *httpProfileRefreshExecutor) RefreshProfile(ctx context.Context, userID string, correlationID string) (contracts.SchedulerProfileRefreshResponse, error) {
+	userID, err := contracts.NormalizeUUID(userID, "user_id")
+	if err != nil {
+		return contracts.SchedulerProfileRefreshResponse{}, err
+	}
+
+	ctx = httpkit.EnsureTraceContext(ctx)
+	startedAt := time.Now().UTC()
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, e.baseURL+"/v1/profile/users/"+url.PathEscape(userID)+"/refresh", nil)
+	if err != nil {
+		return contracts.SchedulerProfileRefreshResponse{}, err
+	}
+	request.Header.Set("Accept", "application/json")
+	if strings.TrimSpace(correlationID) != "" {
+		request.Header.Set("X-Request-ID", strings.TrimSpace(correlationID))
+	}
+	httpkit.InjectTraceContext(ctx, request.Header)
+
+	response, err := e.client.Do(request)
+	if err != nil {
+		return contracts.SchedulerProfileRefreshResponse{}, err
+	}
+	defer response.Body.Close()
+
+	payload, err := io.ReadAll(io.LimitReader(response.Body, 1<<20))
+	if err != nil {
+		return contracts.SchedulerProfileRefreshResponse{}, err
+	}
+	if response.StatusCode != http.StatusAccepted && response.StatusCode != http.StatusOK {
+		var apiErr contracts.ErrorResponse
+		if err := json.Unmarshal(payload, &apiErr); err == nil && strings.TrimSpace(apiErr.Error.Message) != "" {
+			return contracts.SchedulerProfileRefreshResponse{}, fmt.Errorf("profile-service refresh failed: %s", apiErr.Error.Message)
+		}
+		return contracts.SchedulerProfileRefreshResponse{}, fmt.Errorf("profile-service refresh failed with status %d", response.StatusCode)
+	}
+
+	var refresh contracts.ProfileRefreshResponse
+	if err := json.Unmarshal(payload, &refresh); err != nil {
+		return contracts.SchedulerProfileRefreshResponse{}, err
+	}
+	if strings.TrimSpace(refresh.UserID) == "" ||
+		strings.TrimSpace(refresh.ProfileSnapshotID) == "" ||
+		strings.TrimSpace(refresh.ProfileSnapshotVersion) == "" ||
+		strings.TrimSpace(refresh.Status) == "" ||
+		refresh.RefreshedAt.IsZero() ||
+		refresh.StaleAfter.IsZero() {
+		return contracts.SchedulerProfileRefreshResponse{}, fmt.Errorf("profile-service returned an invalid refresh contract")
+	}
+	if refresh.UserID != userID {
+		return contracts.SchedulerProfileRefreshResponse{}, fmt.Errorf("profile-service refresh user_id mismatch")
+	}
+
+	return contracts.SchedulerProfileRefreshResponse{
+		Status:                 refresh.Status,
+		UserID:                 refresh.UserID,
+		ProfileSnapshotID:      strings.TrimSpace(refresh.ProfileSnapshotID),
+		ProfileSnapshotVersion: strings.TrimSpace(refresh.ProfileSnapshotVersion),
+		ScoreVersion:           strings.TrimSpace(refresh.ScoreVersion),
+		TotalXP:                refresh.TotalXP,
+		LevelLabel:             strings.TrimSpace(refresh.LevelLabel),
+		SourceWatermark:        refresh.SourceWatermark.UTC(),
+		RefreshedAt:            refresh.RefreshedAt.UTC(),
+		StaleAfter:             refresh.StaleAfter.UTC(),
+		CorrelationID:          strings.TrimSpace(correlationID),
+		StartedAt:              startedAt,
+		FinishedAt:             time.Now().UTC(),
+	}, nil
+}
+
 func (s *Service) runWorkerLoop(ctx context.Context) {
 	ticker := time.NewTicker(s.cfg.Scheduler.PollInterval)
 	defer ticker.Stop()
@@ -580,7 +686,7 @@ func splitExecutionMetricKey(key string) (string, string) {
 }
 
 func isExecutableJob(job store.QueueJob, now time.Time) bool {
-	return (job.Type == store.SyncInstallationJob || job.Type == store.SyncRepositoryJob || job.Type == store.SyncUserHistoryJob || job.Type == store.SyncPullRequestJob || job.Type == store.SyncReviewJob || job.Type == store.SyncIssueJob || job.Type == store.SyncCommitJob || job.Type == store.AnalysisPullRequestJob || job.Type == store.ScoreReplayUserJob) &&
+	return (job.Type == store.SyncInstallationJob || job.Type == store.SyncRepositoryJob || job.Type == store.SyncUserHistoryJob || job.Type == store.SyncPullRequestJob || job.Type == store.SyncReviewJob || job.Type == store.SyncIssueJob || job.Type == store.SyncCommitJob || job.Type == store.AnalysisPullRequestJob || job.Type == store.ScoreReplayUserJob || job.Type == store.ProfileRefreshUserJob) &&
 		job.Status == store.JobPending &&
 		!job.NotBefore.After(now.UTC())
 }
@@ -676,6 +782,16 @@ func syncRequestFromJob(job store.QueueJob) (contracts.SyncRequest, error) {
 			req.UserID = strings.TrimSpace(job.Subject)
 		}
 		req.Mode = "score_replay"
+		userID, err := contracts.NormalizeUUID(req.UserID, "user_id")
+		if err != nil {
+			return contracts.SyncRequest{}, err
+		}
+		req.UserID = userID
+	case store.ProfileRefreshUserJob:
+		if strings.TrimSpace(req.UserID) == "" {
+			req.UserID = strings.TrimSpace(job.Subject)
+		}
+		req.Mode = "profile_refresh"
 		userID, err := contracts.NormalizeUUID(req.UserID, "user_id")
 		if err != nil {
 			return contracts.SyncRequest{}, err

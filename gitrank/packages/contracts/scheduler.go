@@ -78,13 +78,14 @@ type SchedulerJobActionResponse struct {
 }
 
 type SchedulerRunResponse struct {
-	QueueName     string                                 `json:"queue_name"`
-	Status        string                                 `json:"status"`
-	Job           *SchedulerJobView                      `json:"job,omitempty"`
-	Execution     *GitHubSyncExecutionResponse           `json:"execution,omitempty"`
-	Analysis      *SchedulerPullRequestAnalysisResponse  `json:"analysis,omitempty"`
-	ScoreReplay   *SchedulerScoreReplayExecutionResponse `json:"score_replay,omitempty"`
-	LastUpdatedAt time.Time                              `json:"last_updated_at"`
+	QueueName      string                                 `json:"queue_name"`
+	Status         string                                 `json:"status"`
+	Job            *SchedulerJobView                      `json:"job,omitempty"`
+	Execution      *GitHubSyncExecutionResponse           `json:"execution,omitempty"`
+	Analysis       *SchedulerPullRequestAnalysisResponse  `json:"analysis,omitempty"`
+	ScoreReplay    *SchedulerScoreReplayExecutionResponse `json:"score_replay,omitempty"`
+	ProfileRefresh *SchedulerProfileRefreshResponse       `json:"profile_refresh,omitempty"`
+	LastUpdatedAt  time.Time                              `json:"last_updated_at"`
 }
 
 type SchedulerPullRequestAnalysisResponse struct {
@@ -113,6 +114,22 @@ type SchedulerScoreReplayExecutionResponse struct {
 	CorrelationID string    `json:"correlation_id,omitempty"`
 	StartedAt     time.Time `json:"started_at"`
 	FinishedAt    time.Time `json:"finished_at"`
+}
+
+type SchedulerProfileRefreshResponse struct {
+	Status                 string    `json:"status"`
+	UserID                 string    `json:"user_id"`
+	ProfileSnapshotID      string    `json:"profile_snapshot_id"`
+	ProfileSnapshotVersion string    `json:"profile_snapshot_version"`
+	ScoreVersion           string    `json:"score_version,omitempty"`
+	TotalXP                int       `json:"total_xp"`
+	LevelLabel             string    `json:"level_label"`
+	SourceWatermark        time.Time `json:"source_watermark"`
+	RefreshedAt            time.Time `json:"refreshed_at"`
+	StaleAfter             time.Time `json:"stale_after"`
+	CorrelationID          string    `json:"correlation_id,omitempty"`
+	StartedAt              time.Time `json:"started_at"`
+	FinishedAt             time.Time `json:"finished_at"`
 }
 
 type SchedulerDeadLetterListResponse struct {
