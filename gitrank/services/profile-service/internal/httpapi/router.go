@@ -82,9 +82,19 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 	})))
 
 	mux.Handle("/v1/profile/users/", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if userID, ok := parsePullRequestReportBackfillPath(r.URL.Path); ok {
+			response, err := profileService.BackfillPullRequestReportsForUser(r.Context(), userID, 100, time.Now().UTC())
+			if err != nil {
+				writeProfileError(w, r, err)
+				return
+			}
+			httpkit.WriteJSON(w, http.StatusAccepted, response)
+			return
+		}
+
 		userID, ok := parseProfileRefreshPath(r.URL.Path)
 		if !ok {
-			httpkit.WriteError(w, http.StatusNotFound, "not_found", "profile refresh target not found", httpkit.RequestIDFromContext(r.Context()))
+			httpkit.WriteError(w, http.StatusNotFound, "not_found", "profile operation target not found", httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
 		response, err := profileService.RefreshProfileByUserID(r.Context(), userID, time.Now().UTC())
@@ -315,6 +325,19 @@ func parseProfileRefreshPath(path string) (string, bool) {
 	trimmed := strings.Trim(strings.TrimPrefix(path, "/v1/profile/users/"), "/")
 	parts := strings.Split(trimmed, "/")
 	if len(parts) != 2 || parts[1] != "refresh" {
+		return "", false
+	}
+	userID, err := contracts.NormalizeUUID(parts[0], "user_id")
+	if err != nil {
+		return "", false
+	}
+	return userID, true
+}
+
+func parsePullRequestReportBackfillPath(path string) (string, bool) {
+	trimmed := strings.Trim(strings.TrimPrefix(path, "/v1/profile/users/"), "/")
+	parts := strings.Split(trimmed, "/")
+	if len(parts) != 3 || parts[1] != "pr-reports" || parts[2] != "backfill" {
 		return "", false
 	}
 	userID, err := contracts.NormalizeUUID(parts[0], "user_id")

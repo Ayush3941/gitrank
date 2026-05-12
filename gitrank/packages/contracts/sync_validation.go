@@ -131,7 +131,7 @@ func (req *SyncRequest) Normalize() error {
 		}
 		req.Repository = repository
 		req.SHA = sha
-	case "score_replay", "profile_refresh":
+	case "score_replay", "profile_refresh", "report_backfill_user_pull_requests":
 		userID, err := NormalizeUUID(req.UserID, "user_id")
 		if err != nil {
 			return err

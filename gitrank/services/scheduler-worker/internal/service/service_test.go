@@ -1214,6 +1214,72 @@ func TestRunNextExecutesPullRequestReportMaterializationJobAndCompletes(t *testi
 	}
 }
 
+func TestRunNextExecutesPullRequestReportBackfillJobAndCompletes(t *testing.T) {
+	now := time.Now().UTC().Add(4 * time.Minute).Truncate(time.Second)
+	const userID = "8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4"
+	var observedPath string
+	var observedRequestID string
+	var observedTraceParent string
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		observedPath = r.URL.Path
+		observedRequestID = r.Header.Get("X-Request-ID")
+		observedTraceParent = r.Header.Get("traceparent")
+		if r.Method != http.MethodPost {
+			t.Fatalf("method = %s, want POST", r.Method)
+		}
+		if r.URL.Path != "/v1/profile/users/"+userID+"/pr-reports/backfill" {
+			t.Fatalf("path = %s, want report backfill path", r.URL.Path)
+		}
+		w.WriteHeader(http.StatusAccepted)
+		_ = json.NewEncoder(w).Encode(contracts.PullRequestReportBackfillResponse{
+			Status:            "backfilled",
+			UserID:            userID,
+			Considered:        2,
+			Materialized:      2,
+			ReportSnapshotIDs: []string{"b2000000-0000-4000-8000-000000000006", "b2000000-0000-4000-8000-000000000008"},
+			GeneratedAt:       now.Add(time.Second),
+		})
+	}))
+	defer server.Close()
+
+	cfg := testServiceConfig()
+	cfg.Services.ProfileBaseURL = server.URL
+	cfg.Services.RequestTimeout = time.Second
+	scheduler := New(cfg)
+
+	enqueue, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "report_backfill_user_pull_requests", UserID: userID}, "report-backfill-correlation", now)
+	if err != nil {
+		t.Fatalf("EnqueueSync() error = %v", err)
+	}
+
+	run, err := scheduler.RunNext(context.Background(), now)
+	if err != nil {
+		t.Fatalf("RunNext() error = %v", err)
+	}
+	if run.Status != "completed" {
+		t.Fatalf("run status = %q, want completed", run.Status)
+	}
+	if run.ReportBackfill == nil || run.ReportBackfill.UserID != userID || run.ReportBackfill.Materialized != 2 {
+		t.Fatalf("report backfill = %+v, want materialized user PR reports", run.ReportBackfill)
+	}
+	if run.ReportBackfill.Considered != 2 || len(run.ReportBackfill.ReportSnapshotIDs) != 2 {
+		t.Fatalf("report backfill = %+v, want two considered snapshot IDs", run.ReportBackfill)
+	}
+	if observedPath != "/v1/profile/users/"+userID+"/pr-reports/backfill" {
+		t.Fatalf("observed path = %q, want report backfill path", observedPath)
+	}
+	if observedRequestID != "report-backfill-correlation" {
+		t.Fatalf("observed request id = %q, want report-backfill-correlation", observedRequestID)
+	}
+	if observedTraceParent == "" {
+		t.Fatal("observed traceparent header missing")
+	}
+	if run.Job == nil || run.Job.ID != enqueue.JobIDs[0] || run.Job.Type != string(store.ReportBackfillUserPRsJob) {
+		t.Fatalf("run job = %+v, want executed report backfill job id %q", run.Job, enqueue.JobIDs[0])
+	}
+}
+
 func TestRunNextExecutesLeaderboardMaterializationJobAndCompletes(t *testing.T) {
 	now := time.Now().UTC().Add(4 * time.Minute).Truncate(time.Second)
 	var observedPath string

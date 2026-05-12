@@ -81,6 +81,7 @@ run_go_test ./services/scoring-engine/internal/service 'TestReplayUserPersistsLe
 run_go_test ./services/profile-service/internal/service 'Test(RefreshProfileByUserIDPersistsFreshSnapshot|MaterializePullRequestReportPersistsIdempotentSnapshot|MaterializeQuestBoardPersistsQuestEvidenceAndRewards|LeaderboardMaterializesSeasonSnapshotsAndRankMovements)$'
 run_go_test ./services/scheduler-worker/internal/service 'TestRunNextExecutesProfileRefreshJobAndCompletes$'
 run_go_test ./services/scheduler-worker/internal/service 'TestRunNextExecutesPullRequestReportMaterializationJobAndCompletes$'
+run_go_test ./services/scheduler-worker/internal/service 'TestRunNextExecutesPullRequestReportBackfillJobAndCompletes$'
 run_go_test ./services/scheduler-worker/internal/service 'TestRunNextExecutesLeaderboardMaterializationJobAndCompletes$'
 run_go_test ./services/scheduler-worker/internal/service 'TestRunNextExecutesPullRequestGradeJobAndCompletes$'
 run_go_test ./services/profile-service/internal/service 'TestPublicResponseFiltersHiddenRepositories$'

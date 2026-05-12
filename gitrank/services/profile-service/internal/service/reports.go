@@ -73,6 +73,12 @@ type pullRequestReportSnapshotRecord struct {
 	GeneratedAt     time.Time
 }
 
+type pullRequestReportBackfillTarget struct {
+	Owner  string
+	Repo   string
+	Number int
+}
+
 func (s *Service) PublicPullRequestReport(ctx context.Context, owner, repo string, number int, now time.Time) (contracts.PullRequestReportResponse, error) {
 	if strings.TrimSpace(owner) == "" || strings.TrimSpace(repo) == "" || number <= 0 {
 		return contracts.PullRequestReportResponse{}, ErrInvalidRequest
@@ -100,6 +106,53 @@ func (s *Service) MaterializePullRequestReport(ctx context.Context, owner, repo 
 		return contracts.PullRequestReportMaterializationResponse{}, err
 	}
 	return pullRequestReportMaterializationResponse(record, snapshot, report), nil
+}
+
+func (s *Service) BackfillPullRequestReportsForUser(ctx context.Context, userID string, limit int, now time.Time) (contracts.PullRequestReportBackfillResponse, error) {
+	userID, err := contracts.NormalizeUUID(userID, "user_id")
+	if err != nil {
+		return contracts.PullRequestReportBackfillResponse{}, ErrInvalidRequest
+	}
+	if limit <= 0 {
+		limit = 50
+	}
+	if limit > 200 {
+		limit = 200
+	}
+
+	now = now.UTC()
+	targets, err := s.store.ListPullRequestReportBackfillTargets(ctx, userID, limit)
+	if err != nil {
+		return contracts.PullRequestReportBackfillResponse{}, err
+	}
+
+	snapshotIDs := make([]string, 0, len(targets))
+	skipped := 0
+	for _, target := range targets {
+		materialized, err := s.MaterializePullRequestReport(ctx, target.Owner, target.Repo, target.Number, now)
+		if err != nil {
+			if errors.Is(err, ErrNotFound) {
+				skipped++
+				continue
+			}
+			return contracts.PullRequestReportBackfillResponse{}, err
+		}
+		if strings.TrimSpace(materialized.ReportSnapshotID) == "" {
+			skipped++
+			continue
+		}
+		snapshotIDs = append(snapshotIDs, materialized.ReportSnapshotID)
+	}
+
+	return contracts.PullRequestReportBackfillResponse{
+		Status:            "backfilled",
+		UserID:            userID,
+		Considered:        len(targets),
+		Materialized:      len(snapshotIDs),
+		Skipped:           skipped,
+		ReportSnapshotIDs: snapshotIDs,
+		GeneratedAt:       now,
+	}, nil
 }
 
 func (s *Store) LoadPullRequestReport(ctx context.Context, owner, repo string, number int) (pullRequestReportRecord, error) {
@@ -208,6 +261,48 @@ func (s *Store) LoadPullRequestReport(ctx context.Context, owner, repo string, n
 		return pullRequestReportRecord{}, err
 	}
 	return record, nil
+}
+
+func (s *Store) ListPullRequestReportBackfillTargets(ctx context.Context, userID string, limit int) ([]pullRequestReportBackfillTarget, error) {
+	if limit <= 0 {
+		limit = 50
+	}
+	if limit > 200 {
+		limit = 200
+	}
+
+	rows, err := s.pool.Query(ctx, `
+		SELECT
+			r.owner_login,
+			r.name,
+			pr.number
+		FROM score_events se
+		INNER JOIN pull_requests pr ON pr.id = se.pull_request_id
+		INNER JOIN repositories r ON r.id = pr.repository_id
+		WHERE se.user_id = $1::uuid
+		  AND se.pull_request_id IS NOT NULL
+		  AND r.is_private = FALSE
+		GROUP BY r.owner_login, r.name, pr.number
+		ORDER BY MAX(se.created_at) DESC, r.owner_login, r.name, pr.number
+		LIMIT $2
+	`, userID, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	targets := make([]pullRequestReportBackfillTarget, 0)
+	for rows.Next() {
+		var target pullRequestReportBackfillTarget
+		if err := rows.Scan(&target.Owner, &target.Repo, &target.Number); err != nil {
+			return nil, err
+		}
+		targets = append(targets, target)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return targets, nil
 }
 
 func (s *Store) LoadRecentPullRequestReportsForUser(ctx context.Context, userID string, limit int) ([]pullRequestReportRecord, error) {

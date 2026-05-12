@@ -193,6 +193,137 @@ func TestMaterializePullRequestReportPersistsIdempotentSnapshot(t *testing.T) {
 	}
 
 	assertReportSnapshot(t, ctx, pool, first.ReportSnapshotID, pullRequestID, "feat: persist battle report snapshots", 1)
+
+	secondNumber := number + 10000
+	var secondPullRequestID string
+	if err := pool.QueryRow(ctx, `
+		INSERT INTO pull_requests (
+			github_pull_request_id,
+			repository_id,
+			author_github_account_id,
+			number,
+			title,
+			state,
+			merged,
+			merged_at,
+			created_at_source,
+			updated_at_source,
+			changed_files,
+			additions,
+			deletions,
+			payload_jsonb
+		) VALUES (
+			$1,
+			$2::uuid,
+			$3::uuid,
+			$4,
+			'fix: backfill historical report snapshot',
+			'closed',
+			true,
+			$5,
+			$6,
+			$7,
+			1,
+			40,
+			3,
+			'{"body":"Backfills a historical PR report."}'::jsonb
+		)
+		RETURNING id::text
+	`, 7100000000+suffix, repositoryID, githubAccountID, secondNumber, now.Add(-4*time.Hour), now.Add(-5*time.Hour), now.Add(-2*time.Hour)).Scan(&secondPullRequestID); err != nil {
+		t.Fatalf("insert second pull request: %v", err)
+	}
+
+	var secondAnalysisID string
+	if err := pool.QueryRow(ctx, `
+		INSERT INTO contribution_analyses (
+			pull_request_id,
+			analyzer_version,
+			prompt_version,
+			model_name,
+			analysis_source,
+			classification,
+			confidence,
+			summary,
+			signals_jsonb,
+			created_at
+		) VALUES (
+			$1::uuid,
+			'deterministic.v1',
+			'prompt.v1',
+			'',
+			'deterministic',
+			'bugfix',
+			0.81,
+			'Backfilled report snapshot evidence.',
+			'["Historical score event","Bounded PR evidence"]'::jsonb,
+			$2
+		)
+		RETURNING id::text
+	`, secondPullRequestID, now.Add(-90*time.Minute)).Scan(&secondAnalysisID); err != nil {
+		t.Fatalf("insert second analysis: %v", err)
+	}
+
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO score_events (
+			user_id,
+			pull_request_id,
+			analysis_id,
+			score_version,
+			event_type,
+			delta_total_xp,
+			delta_skill_jsonb,
+			explanation_jsonb,
+			metadata_jsonb,
+			created_at
+		) VALUES (
+			$1::uuid,
+			$2::uuid,
+			$3::uuid,
+			'score/v-report-test',
+			'score.computed',
+			110,
+			'{"backend":90,"maintenance":20}'::jsonb,
+			'["Backfill uses persisted score evidence."]'::jsonb,
+			'{"technical_depth":0.4,"review_strength":0.5,"category_weight":1.0}'::jsonb,
+			$4
+		)
+	`, userID, secondPullRequestID, secondAnalysisID, now.Add(-20*time.Minute)); err != nil {
+		t.Fatalf("insert second score event: %v", err)
+	}
+
+	backfilled, err := svc.BackfillPullRequestReportsForUser(ctx, userID, 10, now.Add(2*time.Minute))
+	if err != nil {
+		t.Fatalf("BackfillPullRequestReportsForUser() error = %v", err)
+	}
+	if backfilled.Status != "backfilled" || backfilled.UserID != userID || backfilled.Considered != 2 || backfilled.Materialized != 2 || backfilled.Skipped != 0 {
+		t.Fatalf("backfill = %+v, want two materialized PR report snapshots", backfilled)
+	}
+	if len(backfilled.ReportSnapshotIDs) != 2 {
+		t.Fatalf("backfill snapshot ids = %+v, want two ids", backfilled.ReportSnapshotIDs)
+	}
+
+	var secondSnapshotID string
+	if err := pool.QueryRow(ctx, `
+		SELECT id::text
+		FROM pull_request_report_snapshots
+		WHERE pull_request_id = $1::uuid
+		LIMIT 1
+	`, secondPullRequestID).Scan(&secondSnapshotID); err != nil {
+		t.Fatalf("load second report snapshot id: %v", err)
+	}
+	assertReportSnapshot(t, ctx, pool, secondSnapshotID, secondPullRequestID, "fix: backfill historical report snapshot", 1)
+
+	var totalSnapshots int
+	if err := pool.QueryRow(ctx, `
+		SELECT COUNT(*)::int
+		FROM pull_request_report_snapshots
+		WHERE pull_request_id IN ($1::uuid, $2::uuid)
+	`, pullRequestID, secondPullRequestID).Scan(&totalSnapshots); err != nil {
+		t.Fatalf("count report snapshots: %v", err)
+	}
+	if totalSnapshots != 2 {
+		t.Fatalf("total report snapshots = %d, want 2 idempotent rows", totalSnapshots)
+	}
 }
 
 func assertReportSnapshot(t *testing.T, ctx context.Context, pool *pgxpool.Pool, snapshotID, pullRequestID, wantTitle string, wantCount int) {

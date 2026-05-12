@@ -671,6 +671,60 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /v1/profile/users/{user_id}/pr-reports/backfill:
+    post:
+      tags: [Profiles]
+      summary: Backfill idempotent PR battle report snapshots for one user
+      description: |
+        Enumerates recent scored public pull requests for one user and materializes
+        PR report snapshots idempotently from persisted PR, analysis, score, and badge evidence.
+      operationId: backfillUserPullRequestReports
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "202":
+          description: PR report snapshots backfilled for the user
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PullRequestReportBackfillResponse"
+        "400":
+          description: Invalid user ID
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: User or profile evidence not found
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limit exceeded
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Retry-After:
+              $ref: "#/components/headers/RetryAfter"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /v1/pr/{owner}/{repo}/{number}/report:
     get:
       tags: [Profiles]
@@ -1121,7 +1175,7 @@ components:
           description: "GitHub login to sync when `mode=user`."
         user_id:
           type: string
-          description: "User UUID for score replay, profile refresh, and PR grading modes."
+          description: "User UUID for score replay, profile refresh, user PR-report backfill, and PR grading modes."
         repository:
           type: string
           description: "`owner/repo` identifier for repository, PR, review, issue, and commit sync modes."
@@ -1139,6 +1193,7 @@ components:
             - score_replay
             - profile_refresh
             - report_materialize_pull_request
+            - report_backfill_user_pull_requests
             - leaderboard_materialize_season
             - grade_pull_request
         installation_id:
@@ -2058,6 +2113,39 @@ components:
         source_updated_at:
           type: string
           format: date-time
+        generated_at:
+          type: string
+          format: date-time
+    PullRequestReportBackfillResponse:
+      type: object
+      required:
+        - status
+        - user_id
+        - considered
+        - materialized
+        - skipped
+        - generated_at
+      properties:
+        status:
+          type: string
+          enum: [backfilled]
+        user_id:
+          type: string
+          format: uuid
+        considered:
+          type: integer
+          minimum: 0
+        materialized:
+          type: integer
+          minimum: 0
+        skipped:
+          type: integer
+          minimum: 0
+        report_snapshot_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
         generated_at:
           type: string
           format: date-time

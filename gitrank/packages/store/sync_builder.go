@@ -104,6 +104,26 @@ func BuildSyncJobs(req contracts.SyncRequest, queueName, correlationID string, m
 			return nil, errors.New("repository and number are required when mode=report_materialize_pull_request")
 		}
 		return resourceJobs(queueName, correlationID, ReportMaterializePRJob, req.Repository, req.Number, "", "report_materialize_pull_request", maxAttempts)
+	case "report_backfill_user_pull_requests":
+		if req.UserID == "" {
+			return nil, errors.New("user_id is required when mode=report_backfill_user_pull_requests")
+		}
+		job, err := NewQueueJob(QueueJobInput{
+			QueueName:     queueName,
+			Type:          ReportBackfillUserPRsJob,
+			CorrelationID: correlationID,
+			Subject:       req.UserID,
+			DedupeKey:     "report_backfill_user_pull_requests:" + req.UserID,
+			MaxAttempts:   maxAttempts,
+			Payload: map[string]string{
+				"mode":    "report_backfill_user_pull_requests",
+				"user_id": req.UserID,
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+		return []QueueJob{job}, nil
 	case "grade_pull_request":
 		if req.UserID == "" || req.Repository == "" || req.Number <= 0 {
 			return nil, errors.New("user_id, repository, and number are required when mode=grade_pull_request")

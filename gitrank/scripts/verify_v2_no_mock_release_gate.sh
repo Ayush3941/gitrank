@@ -29,6 +29,7 @@ for path in \
   "  /v1/sync/repository/execute:" \
   "  /v1/sync/installation/execute:" \
   "  /v1/me/quests:" \
+  "  /v1/profile/users/{user_id}/pr-reports/backfill:" \
   "  /v1/pr/{owner}/{repo}/{number}/report:" \
   "  /v1/pr/{owner}/{repo}/{number}/report/materialize:" \
   "  /v1/me/account/export:" \
@@ -48,6 +49,7 @@ for test_name in \
   "LeaderboardMaterializesSeasonSnapshotsAndRankMovements" \
   "RunNextExecutesProfileRefreshJobAndCompletes" \
   "RunNextExecutesPullRequestReportMaterializationJobAndCompletes" \
+  "RunNextExecutesPullRequestReportBackfillJobAndCompletes" \
   "RunNextExecutesLeaderboardMaterializationJobAndCompletes" \
   "RunNextExecutesPullRequestGradeJobAndCompletes" \
   "PublicResponseFiltersHiddenRepositories"; do

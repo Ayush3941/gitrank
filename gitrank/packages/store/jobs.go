@@ -23,6 +23,7 @@ const (
 	ScoreReplayUserJob        SyncJobType = "score.replay_user"
 	ProfileRefreshUserJob     SyncJobType = "profile.refresh_user"
 	ReportMaterializePRJob    SyncJobType = "report.materialize_pull_request"
+	ReportBackfillUserPRsJob  SyncJobType = "report.backfill_user_pull_requests"
 	LeaderboardMaterializeJob SyncJobType = "leaderboard.materialize_season"
 	GradePullRequestJob       SyncJobType = "pipeline.grade_pull_request"
 	RepairWebhookJob          SyncJobType = "repair.webhook_delivery"
@@ -153,6 +154,7 @@ func SupportedSyncJobTypes() []SyncJobType {
 		ScoreReplayUserJob,
 		ProfileRefreshUserJob,
 		ReportMaterializePRJob,
+		ReportBackfillUserPRsJob,
 		LeaderboardMaterializeJob,
 		GradePullRequestJob,
 		RepairWebhookJob,

@@ -251,6 +251,16 @@ type PullRequestReportMaterializationResponse struct {
 	GeneratedAt      time.Time `json:"generated_at"`
 }
 
+type PullRequestReportBackfillResponse struct {
+	Status            string    `json:"status"`
+	UserID            string    `json:"user_id"`
+	Considered        int       `json:"considered"`
+	Materialized      int       `json:"materialized"`
+	Skipped           int       `json:"skipped"`
+	ReportSnapshotIDs []string  `json:"report_snapshot_ids,omitempty"`
+	GeneratedAt       time.Time `json:"generated_at"`
+}
+
 type LeaderboardEntryView struct {
 	Rank                   int       `json:"rank"`
 	Handle                 string    `json:"handle"`
