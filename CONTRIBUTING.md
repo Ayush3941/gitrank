@@ -66,7 +66,7 @@ Current state:
 - [x] Maintainer guide exists.
 - [x] DCO enforcement workflow exists.
 
-Production observability remains unchecked until the committed Prometheus and Grafana assets are deployed to a live environment, recorded with `gitrank/docs/evidence/observability-live-*.txt`, and validated via `make verify-observability-evidence` using `gitrank/docs/runbooks/production-observability.md`.
+Production observability remains unchecked until the committed Prometheus and Grafana assets are deployed to a live environment, validated with `make verify-live-observability`, recorded with `gitrank/docs/evidence/observability-live-*.txt`, and validated via `make verify-observability-evidence` using `gitrank/docs/runbooks/production-observability.md`.
 
 ## Repository Layout
 
@@ -1112,7 +1112,7 @@ Known v1 limitations:
 - Reduced gamification is now part of the authenticated profile privacy settings and the dashboard/settings/reveal flows apply it from the live profile response. Anonymous public/marketing pages still use local browser preference only.
 - Settings export now uses a live authenticated account export endpoint that returns user-owned profile, score, badge, visibility, session, GitHub account, and sanitized audit metadata while excluding token secrets and secret hashes.
 - AI-assisted analysis is governed and bounded, and the analyzer now rejects PR inputs that exceed configured file-count, diff-line, token, input-size, or cost ceilings before analysis. V1 primarily relies on deterministic analysis paths; production AI enrichment over bounded public PR diffs still needs a complete persistence, retry, and explanation loop before it can replace deterministic-only behavior.
-- Production observability assets are committed, and evidence templates plus `make verify-observability-evidence` are now available, but the stack is not deployed against live traffic yet.
+- Production observability assets are committed, and live plus evidence verifiers (`make verify-live-observability`, `make verify-observability-evidence`) are now available, but the stack is not deployed against live traffic yet.
 - Repository branch protection, required checks, dependency graph, and Dependabot alert settings still need live apply and verification.
 - Rollback wiring is locally verified, and evidence templates plus `make verify-rollback-drill-evidence` are now available, but a real staging or production-like rollback drill still has to be executed and recorded.
 - Kubernetes assets are provider-neutral and still require real runtime secrets, TLS, ingress, managed PostgreSQL, managed Redis, and environment-specific rollout proof. The release renderer now enforces registry owner/tag substitution plus runtime URL/host/TLS override injection through `make render-k8s-release-manifests`, and base HPAs are statically checked by `make verify-k8s-autoscaling`, but environment tuning still needs live traffic measurements.
@@ -1167,7 +1167,7 @@ V2 scoring and evidence checklist:
 
 V2 operational readiness checklist:
 
-- [ ] Deploy and verify production observability against real traffic, including sync, analysis, scoring, profile, quest, PR report, leaderboard, queue, GitHub, and AI dashboards.
+- [ ] Deploy and verify production observability against real traffic, including sync, analysis, scoring, profile, quest, PR report, leaderboard, queue, GitHub, and AI dashboards. `make verify-live-observability` now automates Prometheus target/rule/metric checks plus Grafana dashboard presence, but live endpoint credentials and traffic are still required.
 - [ ] Apply and verify live GitHub repository controls before V2 release branches are cut.
 - [ ] Run and record staging rollback and restore drills.
 - [ ] Replace provider-neutral Kubernetes placeholders with environment-specific secrets, TLS, ingress, managed PostgreSQL, managed Redis, registry, and environment-tuned autoscaling thresholds. `make render-k8s-release-manifests` now enforces runtime override injection and placeholder rejection for release manifests, but live environment values and rollout proof are still required.

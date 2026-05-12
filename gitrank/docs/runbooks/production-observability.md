@@ -38,6 +38,7 @@ Grafana dashboards, alert rules, and namespace-scoped Prometheus discovery RBAC.
   and Prometheus.
 - An alert routing destination exists if production paging or notifications are
   required.
+- A read-only Grafana API token exists for dashboard search validation.
 
 ## Deploy
 
@@ -83,6 +84,15 @@ Run these checks before marking production observability complete:
 - Alert evaluation is enabled and a test alert route is confirmed.
 - Dashboards show timestamps from the live environment, not only local test
   fixture data.
+
+Automated verification command:
+
+```bash
+PROMETHEUS_BASE_URL=https://prometheus.your-env.example \
+GRAFANA_BASE_URL=https://grafana.your-env.example \
+GRAFANA_API_TOKEN=... \
+make verify-live-observability
+```
 
 Useful local access commands:
 
