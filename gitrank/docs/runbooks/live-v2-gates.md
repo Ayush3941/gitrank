@@ -132,6 +132,15 @@ OUTPUT_FILE=docs/releases/v2-live-closeout-status-latest.md \
 make generate-v2-live-closeout-status
 ```
 
+To generate a full V2 completion matrix (checklist counts, unresolved lines,
+file-reference existence, `make` target mapping, and gate outputs):
+
+```bash
+cd gitrank
+OUTPUT_FILE=docs/releases/v2-completion-audit-latest.md \
+make generate-v2-completion-audit
+```
+
 To generate rollback and restore evidence files from recorded drill metadata:
 
 ```bash

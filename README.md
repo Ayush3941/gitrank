@@ -195,13 +195,13 @@ Eligibility rules:
 
 The production policy baseline is frozen in these docs:
 
-- [docs/production-decision-register.md](./docs/production-decision-register.md)
-- [docs/MAINTAINER_GUIDE.md](./docs/MAINTAINER_GUIDE.md)
-- [docs/github-integration-policy.md](./docs/github-integration-policy.md)
-- [docs/ai-governance.md](./docs/ai-governance.md)
-- [docs/privacy-and-data-handling.md](./docs/privacy-and-data-handling.md)
-- [docs/analytics-plan.md](./docs/analytics-plan.md)
-- [docs/infrastructure-baseline.md](./docs/infrastructure-baseline.md)
+- [gitrank/docs/production-decision-register.md](./gitrank/docs/production-decision-register.md)
+- [gitrank/docs/MAINTAINER_GUIDE.md](./gitrank/docs/MAINTAINER_GUIDE.md)
+- [gitrank/docs/github-integration-policy.md](./gitrank/docs/github-integration-policy.md)
+- [gitrank/docs/ai-governance.md](./gitrank/docs/ai-governance.md)
+- [gitrank/docs/privacy-and-data-handling.md](./gitrank/docs/privacy-and-data-handling.md)
+- [gitrank/docs/analytics-plan.md](./gitrank/docs/analytics-plan.md)
+- [gitrank/docs/infrastructure-baseline.md](./gitrank/docs/infrastructure-baseline.md)
 
 Important v1 decisions:
 

@@ -3,7 +3,7 @@ TMPDIR ?= $(CURDIR)/.tmp
 GOCACHE ?= $(CURDIR)/.gocache
 GO_MODULE_FIND := find . \( -path './.tmp' -o -path './.gocache' \) -prune -o -name go.mod
 
-.PHONY: fmt test test-migrations test-critical-path-flows race vet audit-go-safety audit-v2-contributing-checklist mark-v2-contributing-live-gates finalize-v2-live-closeout verify-v2-unresolved-checklist-scope verify-critical-path-tests verify-v2-no-mock-release-gate verify-v2-staging-seed verify-v2-live-readiness verify-live-v2-inputs verify-rollback-procedure verify-observability-manifests verify-observability-evidence verify-live-observability generate-observability-evidence-from-workflow-run generate-rollback-drill-evidence generate-database-restore-drill-evidence generate-v2-live-closeout-status verify-live-v2-workflow verify-live-v2-workflow-run run-live-v2-gates-workflow run-live-v2-workflow-evidence-pipeline create-github-app-installation-token verify-rollback-drill-evidence verify-database-restore-drill-evidence verify-secret-policy verify-k8s-autoscaling discover-github-required-status-checks apply-github-repository-controls apply-github-repository-controls-auto verify-github-repository-controls verify-github-repository-controls-public render-k8s-release-manifests bench-ingestion tidy compose-up compose-down seed-local seed-v2-staging
+.PHONY: fmt test test-migrations test-critical-path-flows race vet audit-go-safety audit-v2-contributing-checklist generate-v2-completion-audit mark-v2-contributing-live-gates finalize-v2-live-closeout verify-v2-unresolved-checklist-scope verify-critical-path-tests verify-v2-no-mock-release-gate verify-v2-staging-seed verify-v2-live-readiness verify-live-v2-inputs verify-rollback-procedure verify-observability-manifests verify-observability-evidence verify-live-observability generate-observability-evidence-from-workflow-run generate-rollback-drill-evidence generate-database-restore-drill-evidence generate-v2-live-closeout-status verify-live-v2-workflow verify-live-v2-workflow-run run-live-v2-gates-workflow run-live-v2-workflow-evidence-pipeline create-github-app-installation-token verify-rollback-drill-evidence verify-database-restore-drill-evidence verify-secret-policy verify-k8s-autoscaling discover-github-required-status-checks apply-github-repository-controls apply-github-repository-controls-auto verify-github-repository-controls verify-github-repository-controls-public render-k8s-release-manifests bench-ingestion tidy compose-up compose-down seed-local seed-v2-staging
 
 fmt:
 	mkdir -p "$(TMPDIR)" "$(GOCACHE)"
@@ -32,6 +32,9 @@ audit-go-safety:
 
 audit-v2-contributing-checklist:
 	TMPDIR="$(TMPDIR)" ./scripts/audit_v2_contributing_checklist.sh
+
+generate-v2-completion-audit:
+	TMPDIR="$(TMPDIR)" ./scripts/generate_v2_completion_audit.sh
 
 mark-v2-contributing-live-gates:
 	TMPDIR="$(TMPDIR)" ./scripts/mark_v2_contributing_live_gates_complete.sh

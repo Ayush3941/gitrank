@@ -1182,6 +1182,9 @@ Use `make verify-github-repository-controls-public` for a no-token public
 precheck of default-branch protection and required status-check visibility.
 Use `make generate-v2-live-closeout-status` to produce a single status artifact
 covering local readiness, checklist audit, env presence, and live-evidence probes.
+Use `make generate-v2-completion-audit` to produce a prompt-to-artifact matrix
+from this checklist, including unresolved lines, file-reference existence, `make`
+target mapping, and current gate exit codes.
 Use `make generate-observability-evidence-from-workflow-run` to generate a
 validated observability evidence file from a successful live-gates workflow run.
 Use `make generate-rollback-drill-evidence` and

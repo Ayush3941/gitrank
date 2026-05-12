@@ -30,3 +30,4 @@ tmp/
 # Generated V2 closeout status artifacts
 gitrank/docs/releases/v2-live-closeout-status-latest.md
 gitrank/docs/releases/v2-contributing-audit-latest.md
+gitrank/docs/releases/v2-completion-audit-latest.md

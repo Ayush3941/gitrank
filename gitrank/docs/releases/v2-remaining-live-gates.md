@@ -23,6 +23,9 @@ For consolidated execution, use:
 - `make generate-v2-live-closeout-status` to generate one artifact with local
   readiness, unresolved checklist audit, env presence, public controls precheck,
   and workflow-evidence probe results
+- `make generate-v2-completion-audit` to generate a prompt-to-artifact matrix
+  from `CONTRIBUTING.md` (checklist counts, unresolved requirements,
+  file-reference existence, `make` target mapping, and gate outputs)
 - `make run-live-v2-workflow-evidence-pipeline` to dispatch live gates, verify
   workflow-run evidence, and generate observability evidence in one sequence
 - `CONFIRM_FINALIZE_V2=yes make finalize-v2-live-closeout` for one-command
