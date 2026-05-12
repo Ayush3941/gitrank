@@ -1139,7 +1139,7 @@ V2 ingestion and coverage checklist:
 - [x] Add direct PR file-list fetching for live PR sync and store only approved bounded metadata or public diff excerpts.
 - [ ] Add retry, idempotency, and dedupe keys that cover each analysis and scoring step in the PR grading pipeline.
 - [ ] Add backfill jobs for historical PR reports, quests, season rankings, badges, and score history.
-- [ ] Add dead-letter replay runbooks for sync, file-feature extraction, analysis, scoring, profile refresh, quest update, and report materialization jobs.
+- [x] Add dead-letter replay runbooks for sync, file-feature extraction, analysis, scoring, profile refresh, quest update, and report materialization jobs. `gitrank/docs/runbooks/dead-letter-replay.md` covers the current scheduler replay endpoint, current sync and PR file-feature jobs, current manual scoring/profile/report recovery paths, and the future job names and idempotency requirements needed before those stages become external workers.
 - [ ] Add external worker deployment topology for long-running ingestion, analyzer, scoring, profile, leaderboard, and quest jobs.
 
 V2 frontend no-mock checklist:

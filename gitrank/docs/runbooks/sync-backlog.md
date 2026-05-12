@@ -33,7 +33,8 @@ Use this runbook when:
 ## Mitigation
 
 - Pause noisy recurring backfill plans if they are starving fresher work.
-- Replay dead letters after the root cause is fixed.
+- Replay dead letters after the root cause is fixed, using
+  `docs/runbooks/dead-letter-replay.md` for stage-specific checks.
 - Requeue failed webhook deliveries using the ingestor recovery route.
 
 ## Exit Criteria

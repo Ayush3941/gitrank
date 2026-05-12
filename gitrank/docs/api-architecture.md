@@ -373,7 +373,7 @@ Current state:
 - bounded user execution currently means recent public owned repositories plus recent public authored PRs discoverable through GitHub issue/PR search, not a full historical search across every contribution surface
 - bounded review execution currently means "refresh the reviews and review comments for one PR number", not a review-id-specific sync
 - retries apply exponential backoff before the next eligible lease
-- poison jobs move into a dead-letter queue and can be manually replayed
+- poison jobs move into a dead-letter queue and can be manually replayed; use `docs/runbooks/dead-letter-replay.md` for stage-specific replay order and idempotency checks
 - recurring cron plans can enqueue normalized sync targets on each scheduler tick
 - recurring plans can be paused, resumed, canceled for their latest queued run, or deleted through the scheduler control plane
 - per-user and per-installation rate limits throttle repeated sync generation
