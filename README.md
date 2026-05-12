@@ -633,6 +633,20 @@ make seed-local
 
 This seed path is intentionally local-only. It creates one deterministic sample user, repository, PR, score event, badge, and profile snapshot for profile and scoring development.
 
+V2 staging seed:
+
+```bash
+cd gitrank
+GITRANK_ENV=staging \
+ALLOW_V2_STAGING_SEED=1 \
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/gitrank?sslmode=disable \
+SCORING_ENGINE_BASE_URL=http://localhost:8085 \
+PROFILE_SERVICE_BASE_URL=http://localhost:8084 \
+make seed-v2-staging
+```
+
+The V2 staging seed inserts only synthetic GitHub-like evidence and deterministic analysis records, then uses the scoring/profile/PR-report APIs to generate score events, badges, snapshots, and report output. `make verify-v2-staging-seed` checks the SQL seed does not precompute score or profile artifacts.
+
 ## MVP Roadmap
 
 ### Phase 1: Foundation
@@ -788,6 +802,7 @@ V2 direction:
 - leaderboard rows now expose profile snapshot provenance, score version, source watermark, and missing rank-ledger evidence instead of presenting snapshot-derived ranks as fully materialized season results
 - V2 no-mock release gate checks now run through `make verify-v2-no-mock-release-gate` and frontend CI to catch production mock imports, missing critical OpenAPI paths, and dropped critical worker/profile smoke coverage
 - dead-letter replay guidance now exists in `gitrank/docs/runbooks/dead-letter-replay.md` for current scheduler replays and the future analysis, scoring, profile, quest, and PR-report worker stages
+- V2 staging seed support now inserts synthetic GitHub-like evidence and drives scoring/profile/PR-report verification through real service APIs instead of frontend mock functions
 - profile skill areas expose evidence source, confidence, and freshness state so skill claims remain bounded to real scored evidence
 - PR battle reports expose and render structured evidence state for incomplete, stale, rate-limited, deterministic-only, and AI-fallback conditions
 - analysis envelopes reject score-override language before scoring, keeping final XP deterministic and rule-based

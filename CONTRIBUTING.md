@@ -1172,7 +1172,7 @@ V2 operational readiness checklist:
 - [ ] Run and record staging rollback and restore drills.
 - [ ] Replace provider-neutral Kubernetes placeholders with environment-specific secrets, TLS, ingress, managed PostgreSQL, managed Redis, registry, and autoscaling configuration.
 - [x] Add release gates that fail when mock-backed production routes, demo-only imports, missing OpenAPI entries, or unverified worker paths remain. `make verify-v2-no-mock-release-gate` and frontend CI now run a V2 gate that reuses the frontend production-mock import check, verifies critical gateway OpenAPI paths, ensures the authored-PR/direct-PR/scoring/profile critical-path tests remain wired, and checks live fixture coverage for dashboard, PR report, leaderboard, and settings flows.
-- [ ] Add a V2 staging seed that uses synthetic GitHub-like evidence through real APIs and persistence, not frontend mock functions.
+- [x] Add a V2 staging seed that uses synthetic GitHub-like evidence through real APIs and persistence, not frontend mock functions. `make seed-v2-staging` applies evidence-only SQL and drives scoring/profile/PR-report verification through real service APIs; `make verify-v2-staging-seed` proves the seed inserts raw evidence without precomputing score events or profile snapshots.
 - [ ] Add V2 release notes that clearly state which v1 limitations were removed and which limitations remain intentionally out of scope.
 
 ## Suggested Early Issues
