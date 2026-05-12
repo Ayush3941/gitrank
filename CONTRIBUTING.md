@@ -1180,6 +1180,8 @@ Use `make verify-live-v2-workflow-run` to verify a successful
 reuse it as live-gate evidence.
 Use `make verify-github-repository-controls-public` for a no-token public
 precheck of default-branch protection and required status-check visibility.
+Use `make generate-v2-live-closeout-status` to produce a single status artifact
+covering local readiness, checklist audit, env presence, and live-evidence probes.
 Use `make generate-observability-evidence-from-workflow-run` to generate a
 validated observability evidence file from a successful live-gates workflow run.
 Use `make run-live-v2-workflow-evidence-pipeline` to dispatch live gates, verify

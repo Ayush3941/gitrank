@@ -123,6 +123,15 @@ GITHUB_REPOSITORY=OWNER/REPO \
 make verify-github-repository-controls-public
 ```
 
+To generate a single closeout status artifact (local gates + unresolved checklist
+audit + live-input and evidence probes):
+
+```bash
+cd gitrank
+OUTPUT_FILE=docs/releases/v2-live-closeout-status-latest.md \
+make generate-v2-live-closeout-status
+```
+
 Optional strict filters:
 
 - `WORKFLOW_EVENT=workflow_dispatch` (default)
