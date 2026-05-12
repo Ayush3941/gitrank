@@ -66,7 +66,7 @@ Current state:
 - [x] Maintainer guide exists.
 - [x] DCO enforcement workflow exists.
 
-Production observability remains unchecked until the committed Prometheus and Grafana assets are deployed to a live environment and verified with `gitrank/docs/runbooks/production-observability.md`.
+Production observability remains unchecked until the committed Prometheus and Grafana assets are deployed to a live environment, recorded with `gitrank/docs/evidence/observability-live-*.txt`, and validated via `make verify-observability-evidence` using `gitrank/docs/runbooks/production-observability.md`.
 
 ## Repository Layout
 
@@ -940,7 +940,7 @@ GitRank may expose reputational data about real people. That increases the stand
 - [x] define cost monitoring and budget alerts
 
 Kubernetes rollback wiring is locally verified by `make verify-rollback-procedure`, which renders staging and production overlays using the configured `TMPDIR` and checks the manual deploy workflow contains rollout history, undo, and status gates. A live production rollback drill is still required before checking the final production-readiness rollback gate.
-Use `gitrank/docs/runbooks/production-rollback-drill.md` for the live drill and attach the completed evidence record to the release issue or maintainer operations notes.
+Use `gitrank/docs/runbooks/production-rollback-drill.md` for the live drill, record evidence with `gitrank/docs/evidence/rollback-drill-*.txt`, and validate the filled record via `make verify-rollback-drill-evidence`.
 
 Deployment assets to add:
 
@@ -1112,9 +1112,9 @@ Known v1 limitations:
 - Reduced gamification is now part of the authenticated profile privacy settings and the dashboard/settings/reveal flows apply it from the live profile response. Anonymous public/marketing pages still use local browser preference only.
 - Settings export now uses a live authenticated account export endpoint that returns user-owned profile, score, badge, visibility, session, GitHub account, and sanitized audit metadata while excluding token secrets and secret hashes.
 - AI-assisted analysis is governed and bounded, and the analyzer now rejects PR inputs that exceed configured file-count, diff-line, token, input-size, or cost ceilings before analysis. V1 primarily relies on deterministic analysis paths; production AI enrichment over bounded public PR diffs still needs a complete persistence, retry, and explanation loop before it can replace deterministic-only behavior.
-- Production observability assets are committed, but the stack is not deployed against live traffic yet.
+- Production observability assets are committed, and evidence templates plus `make verify-observability-evidence` are now available, but the stack is not deployed against live traffic yet.
 - Repository branch protection, required checks, dependency graph, and Dependabot alert settings still need live apply and verification.
-- Rollback wiring is locally verified, but a real staging or production-like rollback drill still has to be executed and recorded.
+- Rollback wiring is locally verified, and evidence templates plus `make verify-rollback-drill-evidence` are now available, but a real staging or production-like rollback drill still has to be executed and recorded.
 - Kubernetes assets are provider-neutral and still require real runtime secrets, TLS, ingress, managed PostgreSQL, managed Redis, registry owner/tag substitution, and environment-specific rollout proof. Base HPAs now exist for all backend deployments and are statically checked by `make verify-k8s-autoscaling`, but environment tuning still needs live traffic measurements.
 
 V2 product contract checklist:

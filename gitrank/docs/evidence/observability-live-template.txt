@@ -1,0 +1,17 @@
+Date:
+Environment:
+Cluster:
+Namespace:
+Operator:
+Application commit:
+Observability commit:
+Prometheus rollout status:
+Grafana rollout status:
+Prometheus targets summary:
+Alert groups loaded:
+Grafana datasource verified:
+Grafana dashboards verified:
+Alert route tested:
+Known gaps:
+Follow-up actions:
+Decision:

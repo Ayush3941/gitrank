@@ -1,0 +1,17 @@
+Date:
+Environment:
+Cluster:
+Namespace:
+Operator:
+Starting commit:
+Candidate commit:
+Rollback target revision:
+Database backup or PITR marker:
+Workflow run URL:
+Rollout history captured:
+Rollback command or workflow mode:
+Rollout status results:
+Critical product checks:
+Observed errors:
+Follow-up actions:
+Decision:

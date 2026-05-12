@@ -116,26 +116,18 @@ kubectl -n gitrank-production rollout status deployment/scheduler-job-worker --t
 kubectl -n gitrank-production rollout status deployment/scoring-engine --timeout=180s
 ```
 
-## Evidence Template
+## Evidence Record
 
-```text
-Date:
-Environment:
-Cluster:
-Namespace:
-Operator:
-Starting commit:
-Candidate commit:
-Rollback target revision:
-Database backup or PITR marker:
-Workflow run URL:
-Rollout history captured:
-Rollback command or workflow mode:
-Rollout status results:
-Critical product checks:
-Observed errors:
-Follow-up actions:
-Decision:
+Start from:
+
+```bash
+cp docs/evidence/rollback-drill-template.txt docs/evidence/rollback-drill-YYYY-MM-DD.txt
+```
+
+Validate before marking the gate complete:
+
+```bash
+make verify-rollback-drill-evidence EVIDENCE_FILE=docs/evidence/rollback-drill-YYYY-MM-DD.txt
 ```
 
 Attach the completed evidence to the release issue or maintainer operations

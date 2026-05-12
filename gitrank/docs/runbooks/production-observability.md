@@ -99,26 +99,18 @@ curl -fsS http://localhost:9090/api/v1/targets
 curl -fsS http://localhost:9090/api/v1/rules
 ```
 
-## Evidence Template
+## Evidence Record
 
-```text
-Date:
-Environment:
-Cluster:
-Namespace:
-Operator:
-Application commit:
-Observability commit:
-Prometheus rollout status:
-Grafana rollout status:
-Prometheus targets summary:
-Alert groups loaded:
-Grafana datasource verified:
-Grafana dashboards verified:
-Alert route tested:
-Known gaps:
-Follow-up actions:
-Decision:
+Start from:
+
+```bash
+cp docs/evidence/observability-live-template.txt docs/evidence/observability-live-YYYY-MM-DD.txt
+```
+
+Validate before marking the gate complete:
+
+```bash
+make verify-observability-evidence EVIDENCE_FILE=docs/evidence/observability-live-YYYY-MM-DD.txt
 ```
 
 Attach the completed evidence to the release issue or maintainer operations
