@@ -76,6 +76,22 @@ Use the exact check names from GitHub's branch-protection UI or a recent
 successful pull request. Incorrect names can block merging because GitHub will
 wait for checks that never report.
 
+## Apply With Auto-Discovered Check Names
+
+This path discovers status checks from the current default-branch head commit
+and feeds them into the same live apply script.
+
+```bash
+cd gitrank
+GITHUB_REPOSITORY=OWNER/REPO \
+GITHUB_TOKEN=... \
+GITRANK_APPLY_REPOSITORY_CONTROLS=yes \
+make apply-github-repository-controls-auto
+```
+
+Use this only when the latest default-branch check set is the intended required
+merge gate set.
+
 ## Apply Through GitHub UI
 
 1. Open repository settings.
@@ -114,7 +130,8 @@ alone; use this verifier or an equivalent GitHub settings export.
 Equivalent GitHub Actions path:
 
 - run `.github/workflows/verify-live-v2-gates.yml` with
-  `run_github_controls=true` and `GITRANK_REPO_ADMIN_TOKEN` configured
+  `run_github_controls=true`, `GITRANK_REPO_ADMIN_TOKEN` configured, and
+  `apply_github_controls=true` when you intend to mutate live settings
 
 ## Current Tooling Limitation
 

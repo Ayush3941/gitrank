@@ -41,8 +41,10 @@ Optional observability tuning variables:
 1. Open Actions and run `Verify Live V2 Gates`.
 2. Select `staging` or `production`.
 3. Keep all toggles enabled unless you are intentionally isolating one gate.
-4. Review the run logs.
-5. Attach the run URL to release notes or maintainer operations notes.
+4. Set `apply_github_controls=true` only when you intend to mutate branch
+   protection and repository security settings in the selected environment.
+5. Review the run logs.
+6. Attach the run URL to release notes or maintainer operations notes.
 
 ## Local Static Workflow Check
 

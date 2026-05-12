@@ -20,6 +20,11 @@ on:
         required: true
         type: boolean
         default: true
+      apply_github_controls:
+        description: "Apply GitHub repository controls before verification"
+        required: true
+        type: boolean
+        default: false
       run_release_render:
         description: "Run release-manifest render verification"
         required: true
@@ -51,7 +56,9 @@ jobs:
         run: |
           set -eu
           test -n "$GITHUB_TOKEN"
-          make discover-github-required-status-checks
+          if [ "${{ inputs.apply_github_controls }}" = "true" ]; then
+            GITRANK_APPLY_REPOSITORY_CONTROLS=yes make apply-github-repository-controls-auto
+          fi
           make verify-github-repository-controls
 
       - name: Verify live observability
