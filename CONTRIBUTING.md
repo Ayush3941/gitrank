@@ -1175,6 +1175,9 @@ the consolidated runner `make verify-v2-live-readiness` and audit command
 Use `make verify-live-v2-inputs` as preflight before running live gates.
 Use `make verify-v2-unresolved-checklist-scope` to ensure unresolved checklist
 items stay limited to approved live gates.
+Use `make verify-contributing-checked-file-refs` to ensure checked checklist
+references still match real files (including required removed mock paths that
+must remain absent).
 Use `make verify-live-v2-workflow-run` to verify a successful
 `verify-live-v2-gates.yml` run by run ID (or `WORKFLOW_RUN_ID=latest`) and
 reuse it as live-gate evidence.

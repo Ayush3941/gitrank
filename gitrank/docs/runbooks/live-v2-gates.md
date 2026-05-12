@@ -252,6 +252,13 @@ cd gitrank
 make verify-v2-unresolved-checklist-scope
 ```
 
+Use this check to ensure checked checklist references remain truthful:
+
+```bash
+cd gitrank
+make verify-contributing-checked-file-refs
+```
+
 Use input preflight before live runs:
 
 ```bash

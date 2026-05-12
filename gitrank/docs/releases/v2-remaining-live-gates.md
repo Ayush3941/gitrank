@@ -10,6 +10,8 @@ For consolidated execution, use:
 - `make verify-v2-live-readiness`
 - `make verify-v2-unresolved-checklist-scope` to ensure unresolved checklist
   items stay limited to approved live-only gates
+- `make verify-contributing-checked-file-refs` to ensure checked checklist
+  references remain truthful against the current repository
 - `make verify-live-v2-workflow-run` to accept a successful
   `verify-live-v2-gates.yml` workflow run as evidence for GitHub controls,
   observability, and release-render gates (`WORKFLOW_RUN_ID=latest` supported)

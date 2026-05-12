@@ -23,6 +23,7 @@ run_make() {
 
 if [ "$RUN_LOCAL_STATIC" = "true" ]; then
   run_make verify-v2-no-mock-release-gate
+  run_make verify-contributing-checked-file-refs
   run_make verify-v2-unresolved-checklist-scope
   run_make verify-live-v2-workflow
   run_make verify-observability-manifests
