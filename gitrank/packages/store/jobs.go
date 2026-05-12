@@ -24,6 +24,7 @@ const (
 	ProfileRefreshUserJob     SyncJobType = "profile.refresh_user"
 	ReportMaterializePRJob    SyncJobType = "report.materialize_pull_request"
 	ReportBackfillUserPRsJob  SyncJobType = "report.backfill_user_pull_requests"
+	QuestBackfillUserJob      SyncJobType = "quest.backfill_user"
 	LeaderboardMaterializeJob SyncJobType = "leaderboard.materialize_season"
 	LeaderboardHistoryJob     SyncJobType = "leaderboard.backfill_history"
 	BackfillUserHistoryJob    SyncJobType = "pipeline.backfill_user_history"
@@ -157,6 +158,7 @@ func SupportedSyncJobTypes() []SyncJobType {
 		ProfileRefreshUserJob,
 		ReportMaterializePRJob,
 		ReportBackfillUserPRsJob,
+		QuestBackfillUserJob,
 		LeaderboardMaterializeJob,
 		LeaderboardHistoryJob,
 		BackfillUserHistoryJob,

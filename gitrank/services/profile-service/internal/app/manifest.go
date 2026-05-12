@@ -18,6 +18,7 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 			{Method: "GET", Path: "/v1/profile/schema", Summary: "Public profile section schema", Status: "implemented"},
 			{Method: "POST", Path: "/v1/profile/users/{user_id}/refresh", Summary: "Force a profile snapshot rebuild from stored score and badge evidence", Status: "implemented"},
 			{Method: "POST", Path: "/v1/profile/users/{user_id}/pr-reports/backfill", Summary: "Backfill idempotent PR report snapshots for scored public PR evidence", Status: "implemented"},
+			{Method: "POST", Path: "/v1/profile/users/{user_id}/quests/backfill", Summary: "Backfill quest assignments and reward evidence from profile score history", Status: "implemented"},
 			{Method: "GET", Path: "/v1/leaderboard", Summary: "Public leaderboard from materialized season snapshots", Status: "implemented"},
 			{Method: "POST", Path: "/v1/leaderboard/materialize", Summary: "Materialize current leaderboard season snapshots and rank movements", Status: "implemented"},
 			{Method: "POST", Path: "/v1/leaderboard/materialize/history", Summary: "Backfill historical weekly leaderboard season snapshots", Status: "implemented"},

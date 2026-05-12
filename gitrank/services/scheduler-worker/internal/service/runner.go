@@ -35,6 +35,7 @@ type scoreReplayExecutor interface {
 
 type profileRefreshExecutor interface {
 	RefreshProfile(ctx context.Context, userID string, correlationID string) (contracts.SchedulerProfileRefreshResponse, error)
+	BackfillQuests(ctx context.Context, userID string, correlationID string) (contracts.SchedulerQuestBackfillResponse, error)
 }
 
 type pullRequestReportExecutor interface {
@@ -89,6 +90,7 @@ type jobExecution struct {
 	ProfileRefresh             *contracts.SchedulerProfileRefreshResponse
 	ReportMaterialization      *contracts.SchedulerPullRequestReportMaterializationResponse
 	ReportBackfill             *contracts.SchedulerPullRequestReportBackfillResponse
+	QuestBackfill              *contracts.SchedulerQuestBackfillResponse
 	LeaderboardMaterialization *contracts.SchedulerLeaderboardMaterializationResponse
 	LeaderboardHistoryBackfill *contracts.SchedulerLeaderboardHistoryBackfillResponse
 	UserHistoryBackfill        *contracts.SchedulerUserHistoryBackfillResponse
@@ -225,6 +227,7 @@ func (s *Service) RunNext(ctx context.Context, now time.Time) (contracts.Schedul
 	response.ProfileRefresh = execution.ProfileRefresh
 	response.ReportMaterialization = execution.ReportMaterialization
 	response.ReportBackfill = execution.ReportBackfill
+	response.QuestBackfill = execution.QuestBackfill
 	response.LeaderboardMaterialization = execution.LeaderboardMaterialization
 	response.LeaderboardHistoryBackfill = execution.LeaderboardHistoryBackfill
 	response.UserHistoryBackfill = execution.UserHistoryBackfill
@@ -401,6 +404,19 @@ func (s *Service) executeLeasedJob(ctx context.Context, job store.QueueJob) (job
 			return jobExecution{}, err
 		}
 		return jobExecution{ReportBackfill: &execution}, nil
+	case store.QuestBackfillUserJob:
+		if s.profileRunner == nil {
+			return jobExecution{}, fmt.Errorf("profile refresh runner is not configured")
+		}
+		req, err := syncRequestFromJob(job)
+		if err != nil {
+			return jobExecution{}, err
+		}
+		execution, err := s.profileRunner.BackfillQuests(ctx, req.UserID, correlationIDForJob(job))
+		if err != nil {
+			return jobExecution{}, err
+		}
+		return jobExecution{QuestBackfill: &execution}, nil
 	case store.LeaderboardMaterializeJob:
 		if s.leaderboardRunner == nil {
 			return jobExecution{}, fmt.Errorf("leaderboard runner is not configured")
@@ -519,6 +535,13 @@ func (s *Service) executeUserHistoryBackfillJob(ctx context.Context, job store.Q
 	if err != nil {
 		return jobExecution{}, err
 	}
+	if _, err := s.profileRunner.RefreshProfile(ctx, req.UserID, correlationID); err != nil {
+		return jobExecution{}, err
+	}
+	questBackfillExecution, err := s.profileRunner.BackfillQuests(ctx, req.UserID, correlationID)
+	if err != nil {
+		return jobExecution{}, err
+	}
 	profileExecution, err := s.profileRunner.RefreshProfile(ctx, req.UserID, correlationID)
 	if err != nil {
 		return jobExecution{}, err
@@ -537,6 +560,7 @@ func (s *Service) executeUserHistoryBackfillJob(ctx context.Context, job store.Q
 		UserID:                     req.UserID,
 		ScoreReplay:                &scoreExecution,
 		ProfileRefresh:             &profileExecution,
+		QuestBackfill:              &questBackfillExecution,
 		ReportBackfill:             &reportBackfillExecution,
 		LeaderboardMaterialization: &leaderboardExecution,
 		CorrelationID:              strings.TrimSpace(correlationID),
@@ -871,6 +895,66 @@ func (e *httpProfileRefreshExecutor) RefreshProfile(ctx context.Context, userID 
 		CorrelationID:          strings.TrimSpace(correlationID),
 		StartedAt:              startedAt,
 		FinishedAt:             time.Now().UTC(),
+	}, nil
+}
+
+func (e *httpProfileRefreshExecutor) BackfillQuests(ctx context.Context, userID string, correlationID string) (contracts.SchedulerQuestBackfillResponse, error) {
+	userID, err := contracts.NormalizeUUID(userID, "user_id")
+	if err != nil {
+		return contracts.SchedulerQuestBackfillResponse{}, err
+	}
+
+	ctx = httpkit.EnsureTraceContext(ctx)
+	startedAt := time.Now().UTC()
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, e.baseURL+"/v1/profile/users/"+url.PathEscape(userID)+"/quests/backfill", nil)
+	if err != nil {
+		return contracts.SchedulerQuestBackfillResponse{}, err
+	}
+	request.Header.Set("Accept", "application/json")
+	if strings.TrimSpace(correlationID) != "" {
+		request.Header.Set("X-Request-ID", strings.TrimSpace(correlationID))
+	}
+	httpkit.InjectTraceContext(ctx, request.Header)
+
+	response, err := e.client.Do(request)
+	if err != nil {
+		return contracts.SchedulerQuestBackfillResponse{}, err
+	}
+	defer response.Body.Close()
+
+	payload, err := io.ReadAll(io.LimitReader(response.Body, 1<<20))
+	if err != nil {
+		return contracts.SchedulerQuestBackfillResponse{}, err
+	}
+	if response.StatusCode != http.StatusAccepted && response.StatusCode != http.StatusOK {
+		var apiErr contracts.ErrorResponse
+		if err := json.Unmarshal(payload, &apiErr); err == nil && strings.TrimSpace(apiErr.Error.Message) != "" {
+			return contracts.SchedulerQuestBackfillResponse{}, fmt.Errorf("profile-service quest backfill failed: %s", apiErr.Error.Message)
+		}
+		return contracts.SchedulerQuestBackfillResponse{}, fmt.Errorf("profile-service quest backfill failed with status %d", response.StatusCode)
+	}
+
+	var backfilled contracts.QuestBackfillResponse
+	if err := json.Unmarshal(payload, &backfilled); err != nil {
+		return contracts.SchedulerQuestBackfillResponse{}, err
+	}
+	if strings.TrimSpace(backfilled.Status) == "" || strings.TrimSpace(backfilled.UserID) == "" || backfilled.GeneratedAt.IsZero() {
+		return contracts.SchedulerQuestBackfillResponse{}, fmt.Errorf("profile-service returned an invalid quest backfill contract")
+	}
+	if backfilled.UserID != userID {
+		return contracts.SchedulerQuestBackfillResponse{}, fmt.Errorf("profile-service quest backfill user_id mismatch")
+	}
+
+	return contracts.SchedulerQuestBackfillResponse{
+		Status:        strings.TrimSpace(backfilled.Status),
+		UserID:        strings.TrimSpace(backfilled.UserID),
+		Materialized:  backfilled.Materialized,
+		Completed:     backfilled.Completed,
+		QuestIDs:      backfilled.QuestIDs,
+		GeneratedAt:   backfilled.GeneratedAt.UTC(),
+		CorrelationID: strings.TrimSpace(correlationID),
+		StartedAt:     startedAt,
+		FinishedAt:    time.Now().UTC(),
 	}, nil
 }
 
@@ -1249,7 +1333,7 @@ func splitExecutionMetricKey(key string) (string, string) {
 }
 
 func isExecutableJob(job store.QueueJob, now time.Time) bool {
-	return (job.Type == store.SyncInstallationJob || job.Type == store.SyncRepositoryJob || job.Type == store.SyncUserHistoryJob || job.Type == store.SyncPullRequestJob || job.Type == store.SyncReviewJob || job.Type == store.SyncIssueJob || job.Type == store.SyncCommitJob || job.Type == store.AnalysisPullRequestJob || job.Type == store.ScoreReplayUserJob || job.Type == store.ProfileRefreshUserJob || job.Type == store.ReportMaterializePRJob || job.Type == store.ReportBackfillUserPRsJob || job.Type == store.LeaderboardMaterializeJob || job.Type == store.LeaderboardHistoryJob || job.Type == store.BackfillUserHistoryJob || job.Type == store.GradePullRequestJob) &&
+	return (job.Type == store.SyncInstallationJob || job.Type == store.SyncRepositoryJob || job.Type == store.SyncUserHistoryJob || job.Type == store.SyncPullRequestJob || job.Type == store.SyncReviewJob || job.Type == store.SyncIssueJob || job.Type == store.SyncCommitJob || job.Type == store.AnalysisPullRequestJob || job.Type == store.ScoreReplayUserJob || job.Type == store.ProfileRefreshUserJob || job.Type == store.ReportMaterializePRJob || job.Type == store.ReportBackfillUserPRsJob || job.Type == store.QuestBackfillUserJob || job.Type == store.LeaderboardMaterializeJob || job.Type == store.LeaderboardHistoryJob || job.Type == store.BackfillUserHistoryJob || job.Type == store.GradePullRequestJob) &&
 		job.Status == store.JobPending &&
 		!job.NotBefore.After(now.UTC())
 }
@@ -1373,6 +1457,16 @@ func syncRequestFromJob(job store.QueueJob) (contracts.SyncRequest, error) {
 			req.UserID = strings.TrimSpace(job.Subject)
 		}
 		req.Mode = "report_backfill_user_pull_requests"
+		userID, err := contracts.NormalizeUUID(req.UserID, "user_id")
+		if err != nil {
+			return contracts.SyncRequest{}, err
+		}
+		req.UserID = userID
+	case store.QuestBackfillUserJob:
+		if strings.TrimSpace(req.UserID) == "" {
+			req.UserID = strings.TrimSpace(job.Subject)
+		}
+		req.Mode = "quest_backfill_user"
 		userID, err := contracts.NormalizeUUID(req.UserID, "user_id")
 		if err != nil {
 			return contracts.SyncRequest{}, err

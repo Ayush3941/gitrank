@@ -117,6 +117,24 @@ func TestSyncRequestNormalizeValidatesBackfillUserHistoryUserID(t *testing.T) {
 	}
 }
 
+func TestSyncRequestNormalizeValidatesQuestBackfillUserID(t *testing.T) {
+	req := SyncRequest{
+		Mode:   "quest_backfill_user",
+		UserID: "8F0C38C9-671F-499D-A1B7-1F9F4F57CBB4",
+	}
+	if err := req.Normalize(); err != nil {
+		t.Fatalf("Normalize() error = %v", err)
+	}
+	if req.UserID != "8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4" {
+		t.Fatalf("UserID = %q, want canonical lowercase UUID", req.UserID)
+	}
+
+	req = SyncRequest{Mode: "quest_backfill_user", UserID: "octocat"}
+	if err := req.Normalize(); err == nil {
+		t.Fatal("Normalize() error = nil, want invalid user_id rejection")
+	}
+}
+
 func TestSyncRequestNormalizeAcceptsLeaderboardMaterializeSeason(t *testing.T) {
 	req := SyncRequest{Mode: "leaderboard_materialize_season"}
 	if err := req.Normalize(); err != nil {

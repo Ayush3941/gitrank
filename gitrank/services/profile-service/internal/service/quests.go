@@ -108,6 +108,49 @@ func (s *Service) PrivateQuests(ctx context.Context, sessionToken string, now ti
 	return response, nil
 }
 
+func (s *Service) BackfillQuestsForUser(ctx context.Context, userID string, now time.Time) (contracts.QuestBackfillResponse, error) {
+	userID, err := contracts.NormalizeUUID(userID, "user_id")
+	if err != nil {
+		return contracts.QuestBackfillResponse{}, ErrInvalidRequest
+	}
+
+	user, err := s.store.LoadUserByID(ctx, userID)
+	if err != nil {
+		return contracts.QuestBackfillResponse{}, err
+	}
+
+	snapshot, err := s.ensureSnapshot(ctx, user, now.UTC())
+	if err != nil {
+		return contracts.QuestBackfillResponse{}, err
+	}
+
+	quests, err := s.store.MaterializeQuestBoard(ctx, user.ID, snapshot, buildQuestsFromSnapshot(snapshot, now.UTC()), now.UTC())
+	if err != nil {
+		return contracts.QuestBackfillResponse{}, err
+	}
+
+	questIDs := make([]string, 0, len(quests))
+	completed := 0
+	for _, quest := range quests {
+		if strings.TrimSpace(quest.ID) != "" {
+			questIDs = append(questIDs, strings.TrimSpace(quest.ID))
+		}
+		if strings.EqualFold(strings.TrimSpace(quest.Status), "Completed") {
+			completed++
+		}
+	}
+	sort.Strings(questIDs)
+
+	return contracts.QuestBackfillResponse{
+		Status:       "backfilled",
+		UserID:       userID,
+		Materialized: len(quests),
+		Completed:    completed,
+		QuestIDs:     questIDs,
+		GeneratedAt:  now.UTC(),
+	}, nil
+}
+
 func (s *Store) MaterializeQuestBoard(ctx context.Context, userID string, snapshot snapshotRecord, quests []contracts.QuestView, now time.Time) ([]contracts.QuestView, error) {
 	userID, err := contracts.NormalizeUUID(userID, "user_id")
 	if err != nil {

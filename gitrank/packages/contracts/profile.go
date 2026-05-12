@@ -137,6 +137,15 @@ type UserQuestsResponse struct {
 	Staleness   ProfileStaleness `json:"staleness"`
 }
 
+type QuestBackfillResponse struct {
+	Status       string    `json:"status"`
+	UserID       string    `json:"user_id"`
+	Materialized int       `json:"materialized"`
+	Completed    int       `json:"completed"`
+	QuestIDs     []string  `json:"quest_ids,omitempty"`
+	GeneratedAt  time.Time `json:"generated_at"`
+}
+
 type PRReportContribution struct {
 	ID                 string    `json:"id"`
 	Owner              string    `json:"owner"`

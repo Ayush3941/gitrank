@@ -1222,7 +1222,7 @@ components:
           description: "GitHub login to sync when `mode=user`."
         user_id:
           type: string
-          description: "User UUID for score replay, profile refresh, user PR-report backfill, user-history backfill, and PR grading modes."
+          description: "User UUID for score replay, profile refresh, quest backfill, user PR-report backfill, user-history backfill, and PR grading modes."
         repository:
           type: string
           description: "`owner/repo` identifier for repository, PR, review, issue, and commit sync modes."
@@ -1239,6 +1239,7 @@ components:
             - analysis_pull_request
             - score_replay
             - profile_refresh
+            - quest_backfill_user
             - report_materialize_pull_request
             - report_backfill_user_pull_requests
             - leaderboard_materialize_season

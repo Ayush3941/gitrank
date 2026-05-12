@@ -1280,10 +1280,76 @@ func TestRunNextExecutesPullRequestReportBackfillJobAndCompletes(t *testing.T) {
 	}
 }
 
+func TestRunNextExecutesQuestBackfillUserJobAndCompletes(t *testing.T) {
+	now := time.Now().UTC().Add(4 * time.Minute).Truncate(time.Second)
+	const userID = "8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4"
+	var observedPath string
+	var observedRequestID string
+	var observedTraceParent string
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		observedPath = r.URL.Path
+		observedRequestID = r.Header.Get("X-Request-ID")
+		observedTraceParent = r.Header.Get("traceparent")
+		if r.Method != http.MethodPost {
+			t.Fatalf("method = %s, want POST", r.Method)
+		}
+		if r.URL.Path != "/v1/profile/users/"+userID+"/quests/backfill" {
+			t.Fatalf("path = %s, want quest backfill path", r.URL.Path)
+		}
+		w.WriteHeader(http.StatusAccepted)
+		_ = json.NewEncoder(w).Encode(contracts.QuestBackfillResponse{
+			Status:       "backfilled",
+			UserID:       userID,
+			Materialized: 4,
+			Completed:    2,
+			QuestIDs:     []string{"quest-consistency", "quest-regression-tests"},
+			GeneratedAt:  now.Add(time.Second),
+		})
+	}))
+	defer server.Close()
+
+	cfg := testServiceConfig()
+	cfg.Services.ProfileBaseURL = server.URL
+	cfg.Services.RequestTimeout = time.Second
+	scheduler := New(cfg)
+
+	enqueue, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "quest_backfill_user", UserID: userID}, "quest-backfill-correlation", now)
+	if err != nil {
+		t.Fatalf("EnqueueSync() error = %v", err)
+	}
+
+	run, err := scheduler.RunNext(context.Background(), now)
+	if err != nil {
+		t.Fatalf("RunNext() error = %v", err)
+	}
+	if run.Status != "completed" {
+		t.Fatalf("run status = %q, want completed", run.Status)
+	}
+	if run.QuestBackfill == nil || run.QuestBackfill.UserID != userID {
+		t.Fatalf("quest backfill = %+v, want user-scoped quest backfill response", run.QuestBackfill)
+	}
+	if run.QuestBackfill.Materialized != 4 || run.QuestBackfill.Completed != 2 {
+		t.Fatalf("quest backfill = %+v, want materialized=4 completed=2", run.QuestBackfill)
+	}
+	if observedPath != "/v1/profile/users/"+userID+"/quests/backfill" {
+		t.Fatalf("observed path = %q, want quest backfill path", observedPath)
+	}
+	if observedRequestID != "quest-backfill-correlation" {
+		t.Fatalf("observed request id = %q, want quest-backfill-correlation", observedRequestID)
+	}
+	if observedTraceParent == "" {
+		t.Fatal("observed traceparent header missing")
+	}
+	if run.Job == nil || run.Job.ID != enqueue.JobIDs[0] || run.Job.Type != string(store.QuestBackfillUserJob) {
+		t.Fatalf("run job = %+v, want executed quest backfill job id %q", run.Job, enqueue.JobIDs[0])
+	}
+}
+
 func TestRunNextExecutesUserHistoryBackfillJobAndCompletes(t *testing.T) {
 	now := time.Now().UTC().Add(4 * time.Minute).Truncate(time.Second)
 	const userID = "8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4"
-	observedPaths := make([]string, 0, 4)
+	observedPaths := make([]string, 0, 6)
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		observedPaths = append(observedPaths, r.Method+" "+r.URL.Path)
@@ -1331,6 +1397,16 @@ func TestRunNextExecutesUserHistoryBackfillJobAndCompletes(t *testing.T) {
 				SourceWatermark:        now,
 				RefreshedAt:            now.Add(2 * time.Second),
 				StaleAfter:             now.Add(15 * time.Minute),
+			})
+		case "/v1/profile/users/" + userID + "/quests/backfill":
+			w.WriteHeader(http.StatusAccepted)
+			_ = json.NewEncoder(w).Encode(contracts.QuestBackfillResponse{
+				Status:       "backfilled",
+				UserID:       userID,
+				Materialized: 4,
+				Completed:    2,
+				QuestIDs:     []string{"quest-consistency", "quest-regression-tests"},
+				GeneratedAt:  now.Add(2 * time.Second),
 			})
 		case "/v1/profile/users/" + userID + "/pr-reports/backfill":
 			w.WriteHeader(http.StatusAccepted)
@@ -1388,15 +1464,21 @@ func TestRunNextExecutesUserHistoryBackfillJobAndCompletes(t *testing.T) {
 	}
 	if run.UserHistoryBackfill.ScoreReplay == nil ||
 		run.UserHistoryBackfill.ProfileRefresh == nil ||
+		run.UserHistoryBackfill.QuestBackfill == nil ||
 		run.UserHistoryBackfill.ReportBackfill == nil ||
 		run.UserHistoryBackfill.LeaderboardMaterialization == nil {
 		t.Fatalf("user history backfill = %+v, want all stage responses", run.UserHistoryBackfill)
+	}
+	if run.UserHistoryBackfill.QuestBackfill.Materialized != 4 || run.UserHistoryBackfill.QuestBackfill.Completed != 2 {
+		t.Fatalf("user history backfill quest stage = %+v, want materialized=4 completed=2", run.UserHistoryBackfill.QuestBackfill)
 	}
 	if run.UserHistoryBackfill.ReportBackfill.Materialized != 3 {
 		t.Fatalf("user history backfill report stage = %+v, want materialized=3", run.UserHistoryBackfill.ReportBackfill)
 	}
 	expectedPaths := []string{
 		"POST /v1/score/users/" + userID + "/replay",
+		"POST /v1/profile/users/" + userID + "/refresh",
+		"POST /v1/profile/users/" + userID + "/quests/backfill",
 		"POST /v1/profile/users/" + userID + "/refresh",
 		"POST /v1/profile/users/" + userID + "/pr-reports/backfill",
 		"POST /v1/leaderboard/materialize",

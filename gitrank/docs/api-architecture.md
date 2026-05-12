@@ -242,7 +242,7 @@ Current state:
 - `POST /v1/sync/commit/execute` performs a bounded live commit sync and persists one public commit in PostgreSQL
 - manual sync requests persist queued sync-run records and can be queried through `GET /v1/sync/runs` with user, repository, subject, requester, correlation, and delivery filters
 - sync requests still enqueue scheduler runtime-state jobs rather than a dedicated normalized job table
-- historical quest, badge-history, and score-history backfill orchestration is still pending beyond the current bounded scheduler execution paths
+- historical badge-history and score-history backfill orchestration is still pending beyond the current bounded scheduler execution paths
 
 ### PR Analyzer
 
@@ -311,6 +311,7 @@ Implemented routes:
 - `GET /v1/meta/manifest`
 - `GET /v1/profile/schema`
 - `POST /v1/profile/users/{user_id}/refresh`
+- `POST /v1/profile/users/{user_id}/quests/backfill`
 - `GET /v1/leaderboard`
 - `POST /v1/leaderboard/materialize`
 - `POST /v1/leaderboard/materialize/history`
@@ -324,6 +325,7 @@ Read-model behavior:
 
 - serves snapshot-backed public and authenticated profiles
 - can force a profile snapshot rebuild from persisted score events and badge evidence for scheduler-driven post-scoring refresh
+- can backfill user-scoped quest assignments, completion, and reward evidence from persisted profile score history
 - materializes public leaderboard rows into weekly season snapshots and rank movement events before serving rank evidence
 - exposes an explicit leaderboard materialization endpoint for scheduler-driven season refresh
 - exposes an explicit historical leaderboard materialization backfill endpoint for scheduler-driven weekly archive rebuilds
@@ -383,11 +385,12 @@ Current state:
 - the worker-mode scheduler process can execute ready `analysis.pull_request` jobs by calling `pr-analyzer /v1/analyze/pull-request/execute`
 - the worker-mode scheduler process can execute ready `score.replay_user` jobs by calling `scoring-engine /v1/score/users/{user_id}/replay` with a `backfill` trigger
 - the worker-mode scheduler process can execute ready `profile.refresh_user` jobs by calling `profile-service /v1/profile/users/{user_id}/refresh`
+- the worker-mode scheduler process can execute ready `quest.backfill_user` jobs by calling `profile-service /v1/profile/users/{user_id}/quests/backfill`
 - the worker-mode scheduler process can execute ready `report.materialize_pull_request` jobs by calling `profile-service /v1/pr/{owner}/{repo}/{number}/report/materialize`
 - the worker-mode scheduler process can execute ready `report.backfill_user_pull_requests` jobs by calling `profile-service /v1/profile/users/{user_id}/pr-reports/backfill`
 - the worker-mode scheduler process can execute ready `leaderboard.materialize_season` jobs by calling `profile-service /v1/leaderboard/materialize`
 - the worker-mode scheduler process can execute ready `leaderboard.backfill_history` jobs by calling `profile-service /v1/leaderboard/materialize/history?weeks=26`
-- the worker-mode scheduler process can execute ready `pipeline.backfill_user_history` jobs by chaining `score.replay_user`, `profile.refresh_user`, `report.backfill_user_pull_requests`, and `leaderboard.materialize_season` in one user-scoped durable run
+- the worker-mode scheduler process can execute ready `pipeline.backfill_user_history` jobs by chaining `score.replay_user`, `profile.refresh_user`, `quest.backfill_user`, `profile.refresh_user`, `report.backfill_user_pull_requests`, and `leaderboard.materialize_season` in one user-scoped durable run
 - the worker-mode scheduler process can execute ready `pipeline.grade_pull_request` jobs by chaining PR sync, persisted PR analysis, score replay, profile refresh, report materialization, and live PR-report verification for a known user and PR
 - bounded installation execution now supports live GitHub App installation repository discovery and installation-token-authenticated repository sync when App credentials are configured; persisted installation repositories remain the fallback path when App auth is unavailable
 - bounded user execution currently means recent public owned repositories plus recent public authored PRs discoverable through GitHub issue/PR search, not a full historical search across every contribution surface

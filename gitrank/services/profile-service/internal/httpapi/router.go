@@ -109,6 +109,15 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 			httpkit.WriteJSON(w, http.StatusAccepted, response)
 			return
 		}
+		if userID, ok := parseQuestBackfillPath(r.URL.Path); ok {
+			response, err := profileService.BackfillQuestsForUser(r.Context(), userID, time.Now().UTC())
+			if err != nil {
+				writeProfileError(w, r, err)
+				return
+			}
+			httpkit.WriteJSON(w, http.StatusAccepted, response)
+			return
+		}
 
 		userID, ok := parseProfileRefreshPath(r.URL.Path)
 		if !ok {
@@ -356,6 +365,19 @@ func parsePullRequestReportBackfillPath(path string) (string, bool) {
 	trimmed := strings.Trim(strings.TrimPrefix(path, "/v1/profile/users/"), "/")
 	parts := strings.Split(trimmed, "/")
 	if len(parts) != 3 || parts[1] != "pr-reports" || parts[2] != "backfill" {
+		return "", false
+	}
+	userID, err := contracts.NormalizeUUID(parts[0], "user_id")
+	if err != nil {
+		return "", false
+	}
+	return userID, true
+}
+
+func parseQuestBackfillPath(path string) (string, bool) {
+	trimmed := strings.Trim(strings.TrimPrefix(path, "/v1/profile/users/"), "/")
+	parts := strings.Split(trimmed, "/")
+	if len(parts) != 3 || parts[1] != "quests" || parts[2] != "backfill" {
 		return "", false
 	}
 	userID, err := contracts.NormalizeUUID(parts[0], "user_id")

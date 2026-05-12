@@ -87,6 +87,7 @@ type SchedulerRunResponse struct {
 	ProfileRefresh             *SchedulerProfileRefreshResponse                   `json:"profile_refresh,omitempty"`
 	ReportMaterialization      *SchedulerPullRequestReportMaterializationResponse `json:"report_materialization,omitempty"`
 	ReportBackfill             *SchedulerPullRequestReportBackfillResponse        `json:"report_backfill,omitempty"`
+	QuestBackfill              *SchedulerQuestBackfillResponse                    `json:"quest_backfill,omitempty"`
 	LeaderboardMaterialization *SchedulerLeaderboardMaterializationResponse       `json:"leaderboard_materialization,omitempty"`
 	LeaderboardHistoryBackfill *SchedulerLeaderboardHistoryBackfillResponse       `json:"leaderboard_history_backfill,omitempty"`
 	UserHistoryBackfill        *SchedulerUserHistoryBackfillResponse              `json:"user_history_backfill,omitempty"`
@@ -182,6 +183,18 @@ type SchedulerPullRequestReportBackfillResponse struct {
 	FinishedAt        time.Time `json:"finished_at"`
 }
 
+type SchedulerQuestBackfillResponse struct {
+	Status        string    `json:"status"`
+	UserID        string    `json:"user_id"`
+	Materialized  int       `json:"materialized"`
+	Completed     int       `json:"completed"`
+	QuestIDs      []string  `json:"quest_ids,omitempty"`
+	GeneratedAt   time.Time `json:"generated_at"`
+	CorrelationID string    `json:"correlation_id,omitempty"`
+	StartedAt     time.Time `json:"started_at"`
+	FinishedAt    time.Time `json:"finished_at"`
+}
+
 type SchedulerLeaderboardMaterializationResponse struct {
 	Status                string    `json:"status"`
 	SeasonKey             string    `json:"season_key"`
@@ -229,6 +242,7 @@ type SchedulerUserHistoryBackfillResponse struct {
 	UserID                     string                                       `json:"user_id"`
 	ScoreReplay                *SchedulerScoreReplayExecutionResponse       `json:"score_replay,omitempty"`
 	ProfileRefresh             *SchedulerProfileRefreshResponse             `json:"profile_refresh,omitempty"`
+	QuestBackfill              *SchedulerQuestBackfillResponse              `json:"quest_backfill,omitempty"`
 	ReportBackfill             *SchedulerPullRequestReportBackfillResponse  `json:"report_backfill,omitempty"`
 	LeaderboardMaterialization *SchedulerLeaderboardMaterializationResponse `json:"leaderboard_materialization,omitempty"`
 	CorrelationID              string                                       `json:"correlation_id,omitempty"`
