@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Ayush3941/gitrank/packages/authkit"
-	"github.com/Ayush3941/gitrank/packages/config"
-	"github.com/Ayush3941/gitrank/packages/githubapi"
+	"github.com/gitrank/gitrank/packages/authkit"
+	"github.com/gitrank/gitrank/packages/config"
+	"github.com/gitrank/gitrank/packages/githubapi"
 )
 
 func TestNormalizeReturnToDefaults(t *testing.T) {

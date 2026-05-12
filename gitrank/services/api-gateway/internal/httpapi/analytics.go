@@ -9,7 +9,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Ayush3941/gitrank/packages/httpkit"
+	"github.com/gitrank/gitrank/packages/httpkit"
 )
 
 var allowedAnalyticsEvents = map[string]struct{}{

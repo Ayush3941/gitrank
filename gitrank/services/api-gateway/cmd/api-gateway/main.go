@@ -6,10 +6,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/Ayush3941/gitrank/packages/config"
-	"github.com/Ayush3941/gitrank/packages/httpkit"
-	"github.com/Ayush3941/gitrank/packages/logger"
-	"github.com/Ayush3941/gitrank/services/api-gateway/internal/httpapi"
+	"github.com/gitrank/gitrank/packages/config"
+	"github.com/gitrank/gitrank/packages/httpkit"
+	"github.com/gitrank/gitrank/packages/logger"
+	"github.com/gitrank/gitrank/services/api-gateway/internal/httpapi"
 )
 
 const version = "dev"

@@ -6,7 +6,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Ayush3941/gitrank/packages/contracts"
+	"github.com/gitrank/gitrank/packages/contracts"
 )
 
 const analyzerVersion = "deterministic.v1"

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Ayush3941/gitrank/packages/tracekit"
+	"github.com/gitrank/gitrank/packages/tracekit"
 )
 
 type Config struct {

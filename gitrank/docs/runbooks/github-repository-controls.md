@@ -49,7 +49,7 @@ confirmation flag and exact status check names are provided.
 
 ```bash
 cd gitrank
-GITHUB_REPOSITORY=Ayush3941/gitrank \
+GITHUB_REPOSITORY=OWNER/REPO \
 GITHUB_TOKEN=... \
 GITRANK_APPLY_REPOSITORY_CONTROLS=yes \
 GITRANK_REQUIRED_STATUS_CHECKS="CI / go-checks,Frontend CI / frontend-checks,DCO / verify-signoff,Dependency Review / dependency-review,CodeQL / analyze,Secret Scan / gitleaks,Trivy Scan / filesystem-scan,Scorecard / analysis" \
@@ -82,7 +82,7 @@ are used instead, export the ruleset and verify the same requirements manually.
 
 ```bash
 cd gitrank
-GITHUB_REPOSITORY=Ayush3941/gitrank \
+GITHUB_REPOSITORY=OWNER/REPO \
 GITHUB_TOKEN=... \
 make verify-github-repository-controls
 ```
@@ -94,7 +94,7 @@ alone; use this verifier or an equivalent GitHub settings export.
 ## Current Tooling Limitation
 
 The available repository connector can confirm that the authenticated user has
-admin permission on `Ayush3941/gitrank`, but it does not expose branch
+admin permission on the target repository, but it does not expose branch
 protection, repository ruleset, dependency graph, or Dependabot-alert mutation
 endpoints. Use the scripted `curl` path above, the GitHub UI, or another
 separately provisioned GitHub token workflow for the settings themselves.

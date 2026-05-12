@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Ayush3941/gitrank/packages/githubapi"
+	"github.com/gitrank/gitrank/packages/githubapi"
 )
 
 type githubRateLimitMetrics struct {

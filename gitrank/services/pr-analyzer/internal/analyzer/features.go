@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/Ayush3941/gitrank/packages/contracts"
+	"github.com/gitrank/gitrank/packages/contracts"
 )
 
 type derivedFeatures struct {

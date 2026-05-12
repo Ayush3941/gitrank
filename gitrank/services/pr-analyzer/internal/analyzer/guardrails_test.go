@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Ayush3941/gitrank/packages/contracts"
+	"github.com/gitrank/gitrank/packages/contracts"
 )
 
 func TestHallucinationGuardrailsRejectUnsupportedLanguageClaims(t *testing.T) {

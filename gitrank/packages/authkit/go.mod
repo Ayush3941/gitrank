@@ -1,7 +1,7 @@
-module github.com/Ayush3941/gitrank/packages/authkit
+module github.com/gitrank/gitrank/packages/authkit
 
 go 1.26.3
 
-require github.com/Ayush3941/gitrank/packages/contracts v0.0.0
+require github.com/gitrank/gitrank/packages/contracts v0.0.0
 
-replace github.com/Ayush3941/gitrank/packages/contracts => ../contracts
+replace github.com/gitrank/gitrank/packages/contracts => ../contracts

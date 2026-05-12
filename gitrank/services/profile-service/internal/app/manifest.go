@@ -1,8 +1,8 @@
 package app
 
 import (
-	"github.com/Ayush3941/gitrank/packages/config"
-	"github.com/Ayush3941/gitrank/packages/contracts"
+	"github.com/gitrank/gitrank/packages/config"
+	"github.com/gitrank/gitrank/packages/contracts"
 )
 
 func Manifest(cfg config.App, version string) contracts.ServiceManifest {

@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Ayush3941/gitrank/packages/config"
-	"github.com/Ayush3941/gitrank/packages/contracts"
-	"github.com/Ayush3941/gitrank/packages/httpkit"
-	"github.com/Ayush3941/gitrank/services/pr-analyzer/internal/analyzer"
+	"github.com/gitrank/gitrank/packages/config"
+	"github.com/gitrank/gitrank/packages/contracts"
+	"github.com/gitrank/gitrank/packages/httpkit"
+	"github.com/gitrank/gitrank/services/pr-analyzer/internal/analyzer"
 )
 
 func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {

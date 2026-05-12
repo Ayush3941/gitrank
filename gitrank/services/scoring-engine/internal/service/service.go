@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Ayush3941/gitrank/packages/config"
-	"github.com/Ayush3941/gitrank/packages/contracts"
-	"github.com/Ayush3941/gitrank/services/scoring-engine/internal/scoring"
+	"github.com/gitrank/gitrank/packages/config"
+	"github.com/gitrank/gitrank/packages/contracts"
+	"github.com/gitrank/gitrank/services/scoring-engine/internal/scoring"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 

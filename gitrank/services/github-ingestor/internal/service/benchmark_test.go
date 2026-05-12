@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Ayush3941/gitrank/packages/githubapi"
+	"github.com/gitrank/gitrank/packages/githubapi"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 

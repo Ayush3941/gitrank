@@ -146,7 +146,7 @@ paths:
                 summary: Sync a pull request
                 value:
                   mode: pull_request
-                  repository: Ayush3941/gitrank
+                  repository: gitrank/gitrank
                   number: 42
       responses:
         "202":
@@ -228,7 +228,7 @@ paths:
               $ref: "#/components/schemas/SyncRequest"
             example:
               mode: repository
-              repository: Ayush3941/gitrank
+              repository: gitrank/gitrank
       responses:
         "200":
           description: Repository sync completed
@@ -1177,7 +1177,7 @@ components:
           format: int64
         repository:
           type: string
-          example: Ayush3941/gitrank
+          example: gitrank/gitrank
         correlation_id:
           type: string
         started_at:

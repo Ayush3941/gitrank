@@ -10,7 +10,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/Ayush3941/gitrank/packages/httpkit"
+	"github.com/gitrank/gitrank/packages/httpkit"
 	"github.com/redis/go-redis/v9"
 )
 

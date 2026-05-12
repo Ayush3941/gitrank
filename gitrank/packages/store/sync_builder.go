@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/Ayush3941/gitrank/packages/contracts"
+	"github.com/gitrank/gitrank/packages/contracts"
 )
 
 func BuildSyncJobs(req contracts.SyncRequest, queueName, correlationID string, maxAttempts int) ([]QueueJob, error) {

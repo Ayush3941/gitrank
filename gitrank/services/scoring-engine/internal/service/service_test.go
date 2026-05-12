@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Ayush3941/gitrank/packages/contracts"
-	"github.com/Ayush3941/gitrank/services/scoring-engine/internal/scoring"
+	"github.com/gitrank/gitrank/packages/contracts"
+	"github.com/gitrank/gitrank/services/scoring-engine/internal/scoring"
 )
 
 func TestBuildReplayMonitorsAndExcludesSelfMergedPullRequests(t *testing.T) {

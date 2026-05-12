@@ -1,12 +1,12 @@
-module github.com/Ayush3941/gitrank/services/scoring-engine
+module github.com/gitrank/gitrank/services/scoring-engine
 
 go 1.26.3
 
 require (
-	github.com/Ayush3941/gitrank/packages/config v0.0.0
-	github.com/Ayush3941/gitrank/packages/contracts v0.0.0
-	github.com/Ayush3941/gitrank/packages/httpkit v0.0.0
-	github.com/Ayush3941/gitrank/packages/logger v0.0.0
+	github.com/gitrank/gitrank/packages/config v0.0.0
+	github.com/gitrank/gitrank/packages/contracts v0.0.0
+	github.com/gitrank/gitrank/packages/httpkit v0.0.0
+	github.com/gitrank/gitrank/packages/logger v0.0.0
 	github.com/jackc/pgx/v5 v5.9.0
 )
 
@@ -18,10 +18,10 @@ require (
 	golang.org/x/text v0.29.0 // indirect
 )
 
-replace github.com/Ayush3941/gitrank/packages/config => ../../packages/config
+replace github.com/gitrank/gitrank/packages/config => ../../packages/config
 
-replace github.com/Ayush3941/gitrank/packages/contracts => ../../packages/contracts
+replace github.com/gitrank/gitrank/packages/contracts => ../../packages/contracts
 
-replace github.com/Ayush3941/gitrank/packages/logger => ../../packages/logger
+replace github.com/gitrank/gitrank/packages/logger => ../../packages/logger
 
-replace github.com/Ayush3941/gitrank/packages/httpkit => ../../packages/httpkit
+replace github.com/gitrank/gitrank/packages/httpkit => ../../packages/httpkit

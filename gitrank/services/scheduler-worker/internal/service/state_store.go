@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Ayush3941/gitrank/packages/contracts"
-	"github.com/Ayush3941/gitrank/packages/store"
+	"github.com/gitrank/gitrank/packages/contracts"
+	"github.com/gitrank/gitrank/packages/store"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/robfig/cron/v3"

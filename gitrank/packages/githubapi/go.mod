@@ -1,7 +1,7 @@
-module github.com/Ayush3941/gitrank/packages/githubapi
+module github.com/gitrank/gitrank/packages/githubapi
 
 go 1.26.3
 
-require github.com/Ayush3941/gitrank/packages/tracekit v0.0.0
+require github.com/gitrank/gitrank/packages/tracekit v0.0.0
 
-replace github.com/Ayush3941/gitrank/packages/tracekit => ../tracekit
+replace github.com/gitrank/gitrank/packages/tracekit => ../tracekit

@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Ayush3941/gitrank/packages/httpkit"
+	"github.com/gitrank/gitrank/packages/httpkit"
 )
 
 type proxyOptions struct {

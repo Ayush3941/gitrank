@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Ayush3941/gitrank/packages/config"
+	"github.com/gitrank/gitrank/packages/config"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 

@@ -9,13 +9,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Ayush3941/gitrank/packages/authkit"
-	"github.com/Ayush3941/gitrank/packages/config"
-	"github.com/Ayush3941/gitrank/packages/contracts"
-	"github.com/Ayush3941/gitrank/packages/githubapi"
-	"github.com/Ayush3941/gitrank/packages/httpkit"
-	"github.com/Ayush3941/gitrank/services/auth-service/internal/app"
-	"github.com/Ayush3941/gitrank/services/auth-service/internal/service"
+	"github.com/gitrank/gitrank/packages/authkit"
+	"github.com/gitrank/gitrank/packages/config"
+	"github.com/gitrank/gitrank/packages/contracts"
+	"github.com/gitrank/gitrank/packages/githubapi"
+	"github.com/gitrank/gitrank/packages/httpkit"
+	"github.com/gitrank/gitrank/services/auth-service/internal/app"
+	"github.com/gitrank/gitrank/services/auth-service/internal/service"
 )
 
 const oauthBrowserCookieName = "gitrank_oauth"

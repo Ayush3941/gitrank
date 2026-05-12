@@ -805,6 +805,7 @@ V2 direction:
 - scheduler-worker now supports real `leaderboard.materialize_season` jobs that call profile-service's leaderboard season materialization route
 - scheduler-worker now supports real `pipeline.grade_pull_request` jobs that run bounded PR sync, persisted analysis, score replay, profile refresh, PR-report materialization, and live PR-report verification in one worker execution
 - frontend routes no longer accept `?demo=` preview modes, and the old authenticated mock dataset plus preview mock API modules have been removed
+- production navigation no longer links to a hardcoded personal sample profile, and repository-control scripts require an explicit `GITHUB_REPOSITORY`
 - frontend CI now includes a live-fixture smoke suite that renders dashboard, quests, PR reports, profile, leaderboard, and settings without using frontend mock API functions
 - newly replayed PR battle reports expose persisted scoring-engine formula components instead of relying only on profile-side display heuristics
 - newly replayed badge awards carry bounded PR evidence references so PR reports can show real badge unlocks

@@ -1,9 +1,9 @@
-module github.com/Ayush3941/gitrank/packages/store
+module github.com/gitrank/gitrank/packages/store
 
 go 1.26.3
 
 require (
-	github.com/Ayush3941/gitrank/packages/contracts v0.0.0
+	github.com/gitrank/gitrank/packages/contracts v0.0.0
 	github.com/jackc/pgx/v5 v5.9.0
 )
 
@@ -15,4 +15,4 @@ require (
 	golang.org/x/text v0.29.0 // indirect
 )
 
-replace github.com/Ayush3941/gitrank/packages/contracts => ../contracts
+replace github.com/gitrank/gitrank/packages/contracts => ../contracts

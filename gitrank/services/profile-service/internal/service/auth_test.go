@@ -3,7 +3,7 @@ package service
 import (
 	"testing"
 
-	"github.com/Ayush3941/gitrank/packages/authkit"
+	"github.com/gitrank/gitrank/packages/authkit"
 )
 
 func TestValidateCSRFAcceptsPreviousSessionSecret(t *testing.T) {

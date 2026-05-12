@@ -7,13 +7,13 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/Ayush3941/gitrank/packages/config"
-	"github.com/Ayush3941/gitrank/packages/githubapi"
-	"github.com/Ayush3941/gitrank/packages/httpkit"
-	"github.com/Ayush3941/gitrank/packages/logger"
-	"github.com/Ayush3941/gitrank/packages/store"
-	"github.com/Ayush3941/gitrank/services/github-ingestor/internal/httpapi"
-	"github.com/Ayush3941/gitrank/services/github-ingestor/internal/service"
+	"github.com/gitrank/gitrank/packages/config"
+	"github.com/gitrank/gitrank/packages/githubapi"
+	"github.com/gitrank/gitrank/packages/httpkit"
+	"github.com/gitrank/gitrank/packages/logger"
+	"github.com/gitrank/gitrank/packages/store"
+	"github.com/gitrank/gitrank/services/github-ingestor/internal/httpapi"
+	"github.com/gitrank/gitrank/services/github-ingestor/internal/service"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 

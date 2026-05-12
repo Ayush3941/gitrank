@@ -1,3 +1,3 @@
-module github.com/Ayush3941/gitrank/packages/events
+module github.com/gitrank/gitrank/packages/events
 
 go 1.26.3

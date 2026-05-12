@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 set -eu
 
-REPOSITORY="${GITHUB_REPOSITORY:-Ayush3941/gitrank}"
+REPOSITORY="${GITHUB_REPOSITORY:-}"
 API_BASE="${GITHUB_API_URL:-https://api.github.com}"
 API_VERSION="${GITHUB_API_VERSION:-2026-03-10}"
 TMP_ROOT="${TMPDIR:-/tmp}"

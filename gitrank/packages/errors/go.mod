@@ -1,3 +1,3 @@
-module github.com/Ayush3941/gitrank/packages/errors
+module github.com/gitrank/gitrank/packages/errors
 
 go 1.26.3

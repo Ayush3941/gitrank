@@ -73,7 +73,7 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	t.Setenv("AUTH_SERVICE_BASE_URL", "https://auth.example.com")
 	t.Setenv("AUTH_COOKIE_SAME_SITE", "strict")
 	t.Setenv("AUTH_RATE_LIMIT_MAX_ATTEMPTS", "12")
-	t.Setenv("AUTH_ADMIN_GITHUB_LOGINS", "Ayush3941,octocat")
+	t.Setenv("AUTH_ADMIN_GITHUB_LOGINS", "admin-login,octocat")
 	t.Setenv("GITHUB_API_VERSION", "2022-11-28")
 	t.Setenv("GITHUB_USER_AGENT", "GitRank/test")
 	t.Setenv("GITHUB_OAUTH_EXCHANGE_URL", "https://github.example.com/login/oauth/access_token")
@@ -121,8 +121,8 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	if cfg.Auth.RateLimitMaxAttempts != 12 {
 		t.Fatalf("Auth.RateLimitMaxAttempts = %d, want 12", cfg.Auth.RateLimitMaxAttempts)
 	}
-	if len(cfg.Auth.AdminGitHubLogins) != 2 || cfg.Auth.AdminGitHubLogins[0] != "Ayush3941" {
-		t.Fatalf("Auth.AdminGitHubLogins = %v, want [Ayush3941 octocat]", cfg.Auth.AdminGitHubLogins)
+	if len(cfg.Auth.AdminGitHubLogins) != 2 || cfg.Auth.AdminGitHubLogins[0] != "admin-login" {
+		t.Fatalf("Auth.AdminGitHubLogins = %v, want [admin-login octocat]", cfg.Auth.AdminGitHubLogins)
 	}
 	if cfg.GitHub.APIVersion != "2022-11-28" {
 		t.Fatalf("GitHub.APIVersion = %q, want 2022-11-28", cfg.GitHub.APIVersion)

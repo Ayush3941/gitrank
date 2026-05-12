@@ -45,7 +45,7 @@ export function LandingPage() {
                 </Link>
               </Button>
               <Button asChild variant="secondary" size="lg">
-                <Link href="/u/Ayush3941">View sample profile</Link>
+                <Link href="/leaderboard">Explore leaderboard</Link>
               </Button>
             </div>
             <p className="max-w-2xl text-sm text-muted">

@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Ayush3941/gitrank/packages/config"
-	"github.com/Ayush3941/gitrank/packages/contracts"
-	"github.com/Ayush3941/gitrank/packages/store"
+	"github.com/gitrank/gitrank/packages/config"
+	"github.com/gitrank/gitrank/packages/contracts"
+	"github.com/gitrank/gitrank/packages/store"
 )
 
 func TestTickQueuesRecurringBackfillTargets(t *testing.T) {

@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Ayush3941/gitrank/packages/authkit"
-	"github.com/Ayush3941/gitrank/packages/githubapi"
+	"github.com/gitrank/gitrank/packages/authkit"
+	"github.com/gitrank/gitrank/packages/githubapi"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"

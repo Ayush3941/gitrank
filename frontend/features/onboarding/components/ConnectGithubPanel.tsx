@@ -33,7 +33,7 @@ export function ConnectGithubPanel() {
             <Link href="/onboarding/analyzing">Connect GitHub</Link>
           </Button>
           <Button asChild variant="secondary" size="lg">
-            <Link href="/u/Ayush3941">View a public profile first</Link>
+            <Link href="/leaderboard">Explore leaderboard first</Link>
           </Button>
         </div>
       </GlowCard>

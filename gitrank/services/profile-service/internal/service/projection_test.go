@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Ayush3941/gitrank/packages/contracts"
+	"github.com/gitrank/gitrank/packages/contracts"
 )
 
 func TestLevelViewForXP(t *testing.T) {
@@ -143,8 +143,8 @@ func TestPublicResponseMarksSkillEvidenceStale(t *testing.T) {
 	now := time.Date(2026, 5, 5, 13, 0, 0, 0, time.UTC)
 	snapshot := snapshotRecord{
 		ID:        "snap-1",
-		Summary:   structSummary("Ayush3941", now),
-		ShareCard: shareCard("Ayush3941", now),
+		Summary:   structSummary("octocat", now),
+		ShareCard: shareCard("octocat", now),
 		Timeline:  emptyTimeline(now),
 		TopSkills: []contracts.SkillAreaView{
 			{
@@ -174,12 +174,12 @@ func TestPublicResponseFiltersHiddenRepositories(t *testing.T) {
 	now := time.Date(2026, 5, 5, 13, 0, 0, 0, time.UTC)
 	snapshot := snapshotRecord{
 		ID:        "snap-1",
-		Summary:   structSummary("Ayush3941", now),
-		ShareCard: shareCard("Ayush3941", now),
+		Summary:   structSummary("octocat", now),
+		ShareCard: shareCard("octocat", now),
 		Timeline:  emptyTimeline(now),
 		Repositories: topRepositoryFixtures{
-			{FullName: "Ayush3941/gitrank", Visibility: "public"},
-			{FullName: "Ayush3941/private-lab", Visibility: "public"},
+			{FullName: "gitrank/gitrank", Visibility: "public"},
+			{FullName: "octocat/private-lab", Visibility: "public"},
 		}.toViews(),
 		StaleAfter:      now.Add(time.Hour),
 		RefreshedAt:     now,
@@ -187,14 +187,14 @@ func TestPublicResponseFiltersHiddenRepositories(t *testing.T) {
 	}
 
 	response := publicResponseFromSnapshot(snapshot, contractsDefaults(), []repositoryVisibilityRecord{
-		{FullName: "Ayush3941/private-lab", Visibility: "hidden"},
+		{FullName: "octocat/private-lab", Visibility: "hidden"},
 	}, now)
 
 	if len(response.TopRepositories) != 1 {
 		t.Fatalf("len(TopRepositories) = %d, want 1", len(response.TopRepositories))
 	}
-	if response.TopRepositories[0].FullName != "Ayush3941/gitrank" {
-		t.Fatalf("TopRepositories[0].FullName = %q, want Ayush3941/gitrank", response.TopRepositories[0].FullName)
+	if response.TopRepositories[0].FullName != "gitrank/gitrank" {
+		t.Fatalf("TopRepositories[0].FullName = %q, want gitrank/gitrank", response.TopRepositories[0].FullName)
 	}
 }
 
@@ -202,8 +202,8 @@ func TestPrivateResponseIncludesRecentPullRequestReports(t *testing.T) {
 	now := time.Date(2026, 5, 5, 13, 0, 0, 0, time.UTC)
 	snapshot := snapshotRecord{
 		ID:              "snap-1",
-		Summary:         structSummary("Ayush3941", now),
-		ShareCard:       shareCard("Ayush3941", now),
+		Summary:         structSummary("octocat", now),
+		ShareCard:       shareCard("octocat", now),
 		Timeline:        emptyTimeline(now),
 		StaleAfter:      now.Add(time.Hour),
 		RefreshedAt:     now,
@@ -213,7 +213,7 @@ func TestPrivateResponseIncludesRecentPullRequestReports(t *testing.T) {
 		{
 			Contribution: contracts.PRReportContribution{
 				ID:     "score-1",
-				Owner:  "Ayush3941",
+				Owner:  "octocat",
 				Repo:   "gitrank",
 				Number: 42,
 				Title:  "Persist recent PR report",
@@ -300,8 +300,8 @@ func BenchmarkPublicProfileResponseFromSnapshot(b *testing.B) {
 	now := time.Date(2026, 5, 5, 13, 0, 0, 0, time.UTC)
 	snapshot := snapshotRecord{
 		ID:        "snap-1",
-		Summary:   structSummary("Ayush3941", now),
-		ShareCard: shareCard("Ayush3941", now),
+		Summary:   structSummary("octocat", now),
+		ShareCard: shareCard("octocat", now),
 		Timeline:  emptyTimeline(now),
 		TopSkills: skillAreaFixtures{
 			{Key: "Backend", TotalXP: 4200},
@@ -309,9 +309,9 @@ func BenchmarkPublicProfileResponseFromSnapshot(b *testing.B) {
 			{Key: "Security", TotalXP: 900},
 		}.toViews(),
 		Repositories: topRepositoryFixtures{
-			{FullName: "Ayush3941/gitrank", Visibility: "public"},
-			{FullName: "Ayush3941/profile-service", Visibility: "public"},
-			{FullName: "Ayush3941/private-lab", Visibility: "public"},
+			{FullName: "gitrank/gitrank", Visibility: "public"},
+			{FullName: "octocat/profile-service", Visibility: "public"},
+			{FullName: "octocat/private-lab", Visibility: "public"},
 		}.toViews(),
 		Badges: []contracts.BadgeView{
 			{Key: "backend-builder", Name: "Backend Builder", AwardedAt: now.AddDate(0, 0, -14)},
@@ -328,7 +328,7 @@ func BenchmarkPublicProfileResponseFromSnapshot(b *testing.B) {
 	}
 	settings := contractsDefaults()
 	visibility := []repositoryVisibilityRecord{
-		{FullName: "Ayush3941/private-lab", Visibility: "hidden"},
+		{FullName: "octocat/private-lab", Visibility: "hidden"},
 	}
 
 	b.ReportAllocs()

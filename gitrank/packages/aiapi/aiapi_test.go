@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Ayush3941/gitrank/packages/tracekit"
+	"github.com/gitrank/gitrank/packages/tracekit"
 )
 
 func TestBuildResponsesRequest(t *testing.T) {

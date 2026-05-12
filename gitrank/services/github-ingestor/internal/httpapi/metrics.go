@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Ayush3941/gitrank/packages/store"
-	"github.com/Ayush3941/gitrank/services/github-ingestor/internal/service"
+	"github.com/gitrank/gitrank/packages/store"
+	"github.com/gitrank/gitrank/services/github-ingestor/internal/service"
 )
 
 type queueMetricsSource struct {

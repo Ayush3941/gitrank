@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Ayush3941/gitrank/packages/config"
-	"github.com/Ayush3941/gitrank/services/scoring-engine/internal/service"
+	"github.com/gitrank/gitrank/packages/config"
+	"github.com/gitrank/gitrank/services/scoring-engine/internal/service"
 )
 
 func TestMetricsIncludeScoreComputationDuration(t *testing.T) {

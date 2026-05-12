@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Ayush3941/gitrank/packages/contracts"
+	"github.com/gitrank/gitrank/packages/contracts"
 )
 
 type Middleware func(http.Handler) http.Handler

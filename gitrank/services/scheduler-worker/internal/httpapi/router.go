@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Ayush3941/gitrank/packages/config"
-	"github.com/Ayush3941/gitrank/packages/contracts"
-	"github.com/Ayush3941/gitrank/packages/httpkit"
-	"github.com/Ayush3941/gitrank/services/scheduler-worker/internal/app"
-	"github.com/Ayush3941/gitrank/services/scheduler-worker/internal/service"
+	"github.com/gitrank/gitrank/packages/config"
+	"github.com/gitrank/gitrank/packages/contracts"
+	"github.com/gitrank/gitrank/packages/httpkit"
+	"github.com/gitrank/gitrank/services/scheduler-worker/internal/app"
+	"github.com/gitrank/gitrank/services/scheduler-worker/internal/service"
 )
 
 func NewRouter(cfg config.App, scheduler *service.Service, log *slog.Logger, version string) http.Handler {

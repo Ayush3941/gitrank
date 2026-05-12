@@ -10,10 +10,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Ayush3941/gitrank/packages/authkit"
-	"github.com/Ayush3941/gitrank/packages/config"
-	"github.com/Ayush3941/gitrank/packages/contracts"
-	"github.com/Ayush3941/gitrank/services/api-gateway/internal/app"
+	"github.com/gitrank/gitrank/packages/authkit"
+	"github.com/gitrank/gitrank/packages/config"
+	"github.com/gitrank/gitrank/packages/contracts"
+	"github.com/gitrank/gitrank/services/api-gateway/internal/app"
 )
 
 func TestManifestAndDependenciesRoutes(t *testing.T) {
@@ -90,7 +90,7 @@ func TestProxyPublicProfileRequest(t *testing.T) {
 	defer profile.Close()
 
 	router := NewRouter(testConfig(profile.URL, stubAuthServer().URL, stubIngestorServer().URL), testLogger(), "test")
-	request := httptest.NewRequest(http.MethodGet, "/v1/users/Ayush3941", nil)
+	request := httptest.NewRequest(http.MethodGet, "/v1/users/octocat", nil)
 	response := httptest.NewRecorder()
 
 	router.ServeHTTP(response, request)
@@ -109,8 +109,8 @@ func TestProxyPublicProfileRequest(t *testing.T) {
 	if observed.Method != http.MethodGet {
 		t.Fatalf("method = %q, want %q", observed.Method, http.MethodGet)
 	}
-	if observed.Path != "/v1/users/Ayush3941" {
-		t.Fatalf("path = %q, want %q", observed.Path, "/v1/users/Ayush3941")
+	if observed.Path != "/v1/users/octocat" {
+		t.Fatalf("path = %q, want %q", observed.Path, "/v1/users/octocat")
 	}
 	if observed.TraceParent == "" {
 		t.Fatal("traceparent header missing")
@@ -125,15 +125,15 @@ func TestProxyPublicProfileRequest(t *testing.T) {
 
 func TestProxyPublicProfileCardRequest(t *testing.T) {
 	profile := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/v1/users/Ayush3941/card" {
-			t.Fatalf("path = %q, want /v1/users/Ayush3941/card", r.URL.Path)
+		if r.URL.Path != "/v1/users/octocat/card" {
+			t.Fatalf("path = %q, want /v1/users/octocat/card", r.URL.Path)
 		}
-		_ = json.NewEncoder(w).Encode(contracts.ShareableProfileCard{Handle: "Ayush3941"})
+		_ = json.NewEncoder(w).Encode(contracts.ShareableProfileCard{Handle: "octocat"})
 	}))
 	defer profile.Close()
 
 	router := NewRouter(testConfig(profile.URL, stubAuthServer().URL, stubIngestorServer().URL), testLogger(), "test")
-	request := httptest.NewRequest(http.MethodGet, "/v1/users/Ayush3941/card", nil)
+	request := httptest.NewRequest(http.MethodGet, "/v1/users/octocat/card", nil)
 	response := httptest.NewRecorder()
 
 	router.ServeHTTP(response, request)

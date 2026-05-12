@@ -3,7 +3,7 @@ package scoring
 import (
 	"testing"
 
-	"github.com/Ayush3941/gitrank/packages/contracts"
+	"github.com/gitrank/gitrank/packages/contracts"
 )
 
 func TestScoreMergedSecurityContribution(t *testing.T) {

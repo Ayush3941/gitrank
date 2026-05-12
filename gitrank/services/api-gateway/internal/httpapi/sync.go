@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Ayush3941/gitrank/packages/authkit"
-	"github.com/Ayush3941/gitrank/packages/contracts"
-	"github.com/Ayush3941/gitrank/packages/httpkit"
+	"github.com/gitrank/gitrank/packages/authkit"
+	"github.com/gitrank/gitrank/packages/contracts"
+	"github.com/gitrank/gitrank/packages/httpkit"
 )
 
 func handleSyncRequest(w http.ResponseWriter, r *http.Request, client *http.Client, ingestorBaseURL string, analytics *analyticsMetricsSource) {

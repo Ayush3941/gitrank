@@ -20,7 +20,7 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
           </Link>
           <div className="flex items-center gap-3">
             <Button asChild variant="ghost" className="hidden sm:inline-flex">
-              <Link href="/u/Ayush3941">Sample profile</Link>
+              <Link href="/leaderboard">Leaderboard</Link>
             </Button>
             <Button asChild>
               <Link href="/onboarding/connect-github">
