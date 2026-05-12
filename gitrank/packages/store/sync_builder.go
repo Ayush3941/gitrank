@@ -94,6 +94,11 @@ func BuildSyncJobs(req contracts.SyncRequest, queueName, correlationID string, m
 			return nil, errors.New("repository and sha are required when mode=commit")
 		}
 		return resourceJobs(queueName, correlationID, SyncCommitJob, req.Repository, 0, req.SHA, "commit", maxAttempts)
+	case "analysis_pull_request":
+		if req.Repository == "" || req.Number <= 0 {
+			return nil, errors.New("repository and number are required when mode=analysis_pull_request")
+		}
+		return resourceJobs(queueName, correlationID, AnalysisPullRequestJob, req.Repository, req.Number, "", "analysis_pull_request", maxAttempts)
 	case "score_replay":
 		if req.UserID == "" {
 			return nil, errors.New("user_id is required when mode=score_replay")
@@ -138,12 +143,12 @@ func resourceJobs(
 	if number > 0 {
 		subject = repository + "#" + strconv.Itoa(number)
 		payload["number"] = number
-		dedupeKey = subject
+		dedupeKey = mode + ":" + subject
 	}
 	if sha != "" {
 		subject = repository + "@" + sha
 		payload["sha"] = sha
-		dedupeKey = subject
+		dedupeKey = mode + ":" + subject
 	}
 
 	job, err := NewQueueJob(QueueJobInput{

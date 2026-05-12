@@ -35,6 +35,97 @@ func (s *Store) Ready(ctx context.Context) error {
 	return s.pool.Ping(ctx)
 }
 
+func (s *Store) LoadPullRequestAnalysisRequest(ctx context.Context, repository string, number int) (contracts.PullRequestAnalysisRequest, error) {
+	if s == nil || s.pool == nil {
+		return contracts.PullRequestAnalysisRequest{}, errors.New("analysis store is not configured")
+	}
+
+	var req contracts.PullRequestAnalysisRequest
+	var filesRaw []byte
+	var reviewsRaw []byte
+	if err := s.pool.QueryRow(ctx, `
+		SELECT
+			r.full_name,
+			COALESCE(r.primary_language, ''),
+			COALESCE(r.default_branch, ''),
+			COALESCE(r.stars_count, 0),
+			COALESCE(r.archived, false),
+			pr.number,
+			pr.title,
+			COALESCE(pr.payload_jsonb->>'body', ''),
+			pr.state,
+			pr.merged,
+			pr.draft,
+			pr.additions,
+			pr.deletions,
+			pr.changed_files,
+			pr.commits,
+			COALESCE(files.files_jsonb, '[]'::jsonb),
+			COALESCE(reviews.reviews_jsonb, '[]'::jsonb)
+		FROM pull_requests pr
+		INNER JOIN repositories r ON r.id = pr.repository_id
+		LEFT JOIN LATERAL (
+			SELECT jsonb_agg(
+				jsonb_build_object(
+					'path', path,
+					'additions', additions,
+					'deletions', deletions,
+					'status', status
+				)
+				ORDER BY path
+			) AS files_jsonb
+			FROM pull_request_files
+			WHERE pull_request_id = pr.id
+		) files ON true
+		LEFT JOIN LATERAL (
+			SELECT jsonb_agg(
+				jsonb_build_object(
+					'state', state,
+					'author_association', COALESCE(payload_jsonb->>'author_association', '')
+				)
+				ORDER BY submitted_at_source NULLS LAST, id
+			) AS reviews_jsonb
+			FROM pull_request_reviews
+			WHERE pull_request_id = pr.id
+		) reviews ON true
+		WHERE lower(r.full_name) = lower($1)
+		  AND pr.number = $2
+	`,
+		strings.TrimSpace(repository),
+		number,
+	).Scan(
+		&req.Repository.FullName,
+		&req.Repository.PrimaryLanguage,
+		&req.Repository.DefaultBranch,
+		&req.Repository.Stars,
+		&req.Repository.Archived,
+		&req.PullRequest.Number,
+		&req.PullRequest.Title,
+		&req.PullRequest.Body,
+		&req.PullRequest.State,
+		&req.PullRequest.Merged,
+		&req.PullRequest.Draft,
+		&req.PullRequest.Additions,
+		&req.PullRequest.Deletions,
+		&req.PullRequest.ChangedFiles,
+		&req.PullRequest.Commits,
+		&filesRaw,
+		&reviewsRaw,
+	); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return contracts.PullRequestAnalysisRequest{}, ErrPullRequestNotFound
+		}
+		return contracts.PullRequestAnalysisRequest{}, err
+	}
+
+	req.PullRequest.Files = decodeChangedFiles(filesRaw)
+	req.PullRequest.Reviews = decodeReviewSignals(reviewsRaw)
+	if err := req.Validate(); err != nil {
+		return contracts.PullRequestAnalysisRequest{}, err
+	}
+	return req, nil
+}
+
 func (s *Store) SavePullRequestAnalysis(ctx context.Context, req contracts.PullRequestAnalysisRequest, resp contracts.PullRequestAnalysisResponse, now time.Time) (PersistedAnalysis, error) {
 	if s == nil || s.pool == nil {
 		return PersistedAnalysis{}, errors.New("analysis store is not configured")
@@ -107,6 +198,28 @@ func (s *Store) SavePullRequestAnalysis(ctx context.Context, req contracts.PullR
 		return PersistedAnalysis{}, err
 	}
 	return persisted, nil
+}
+
+func decodeChangedFiles(raw []byte) []contracts.ChangedFile {
+	if len(raw) == 0 {
+		return nil
+	}
+	var files []contracts.ChangedFile
+	if err := json.Unmarshal(raw, &files); err != nil {
+		return nil
+	}
+	return files
+}
+
+func decodeReviewSignals(raw []byte) []contracts.ReviewSignal {
+	if len(raw) == 0 {
+		return nil
+	}
+	var reviews []contracts.ReviewSignal
+	if err := json.Unmarshal(raw, &reviews); err != nil {
+		return nil
+	}
+	return reviews
 }
 
 func updateLatestAnalysis(ctx context.Context, tx pgx.Tx, pullRequestID string, analysis contracts.PullRequestAnalysisResponse, signals []byte, now time.Time) (PersistedAnalysis, error) {

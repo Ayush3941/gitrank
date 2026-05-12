@@ -53,6 +53,20 @@ func TestSyncRequestNormalizeValidatesCommitSHA(t *testing.T) {
 	}
 }
 
+func TestSyncRequestNormalizeAcceptsAnalysisPullRequestTarget(t *testing.T) {
+	req := SyncRequest{
+		Mode:       "analysis_pull_request",
+		Repository: "octo/repo",
+		Number:     17,
+	}
+	if err := req.Normalize(); err != nil {
+		t.Fatalf("Normalize() error = %v", err)
+	}
+	if req.Repository != "octo/repo" || req.Number != 17 {
+		t.Fatalf("request = %+v, want normalized analysis PR target", req)
+	}
+}
+
 func TestSyncRequestNormalizeValidatesScoreReplayUserID(t *testing.T) {
 	req := SyncRequest{
 		Mode:   "score_replay",

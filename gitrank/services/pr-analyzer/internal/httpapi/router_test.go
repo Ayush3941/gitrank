@@ -112,6 +112,19 @@ func TestAnalyzePullRequestRejectsRequestsOverHardAILimits(t *testing.T) {
 	}
 }
 
+func TestAnalyzePullRequestExecuteRequiresPersistence(t *testing.T) {
+	router := NewRouter(testConfig(), testLogger(), "test")
+	request := httptest.NewRequest(http.MethodPost, "/v1/analyze/pull-request/execute", strings.NewReader(`{"repository":"octo/repo","number":17}`))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusServiceUnavailable {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusServiceUnavailable, response.Body.String())
+	}
+}
+
 func testConfig() config.App {
 	return config.App{
 		ServiceName: "pr-analyzer",

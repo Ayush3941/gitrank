@@ -569,7 +569,7 @@ Implemented service routes today:
 - `GET /v1/meta/manifest` and `GET /metrics` on every service
 - `GET /oauth/github/start`, `GET /oauth/github/callback`, `GET /v1/session/me`, `POST /v1/session/refresh`, and `POST /v1/session/logout` on `auth-service`
 - `POST /webhooks/github`, `POST /v1/webhooks/github/deliveries/{delivery_id}/requeue`, `POST /v1/sync/preview`, `GET /v1/sync/runs`, `POST /v1/sync/installation/execute`, `POST /v1/sync/user/execute`, `POST /v1/sync/repository/execute`, `POST /v1/sync/pull-request/execute`, `POST /v1/sync/review/execute`, `POST /v1/sync/issue/execute`, `POST /v1/sync/commit/execute`, and the normalized `POST /v1/sync/*` routes on `github-ingestor`
-- `POST /v1/analyze/pull-request` on `pr-analyzer`
+- `POST /v1/analyze/pull-request` and `POST /v1/analyze/pull-request/execute` on `pr-analyzer`
 - `POST /v1/score/contribution`, `POST /v1/score/users/{user_id}/replay`, `GET /v1/score/users/{user_id}/snapshot`, and `GET /v1/score/users/{user_id}/events` on `scoring-engine`
 - `GET /v1/profile/schema`, `GET /v1/leaderboard`, `GET /v1/users/{handle}`, `GET /v1/users/{handle}/card`, `GET /v1/me/profile`, `GET /v1/me/quests`, `GET /v1/pr/{owner}/{repo}/{number}/report`, and profile privacy update routes on `profile-service`
 - `GET /v1/jobs`, `POST /v1/jobs/sync`, `POST /v1/jobs/tick`, `POST /v1/jobs/lease`, `POST /v1/jobs/run-once`, `GET|POST /v1/jobs/backfills`, recurring-plan pause/resume/cancel/delete routes, `GET /v1/jobs/dead-letters`, job control routes, and dead-letter replay routes on `scheduler-worker`
@@ -796,6 +796,7 @@ V2 direction:
 - replace every production mock, demo-only product path, and derived-only product claim with real backend contracts, persistence, orchestration, and verification
 - user sync now supplements owned-repository traversal with bounded authored-PR discovery, so real public PRs in repositories the user does not own can enter the persisted PR evidence path
 - pr-analyzer now requires PostgreSQL in production and persists deterministic `contribution_analyses` artifacts against synced PR evidence instead of returning only transient analysis envelopes
+- scheduler-worker now supports real `analysis.pull_request` jobs that call pr-analyzer's persisted evidence execution route before scoring replay
 - frontend routes no longer accept `?demo=` preview modes, and the old authenticated mock dataset plus preview mock API modules have been removed
 - frontend CI now includes a live-fixture smoke suite that renders dashboard, quests, PR reports, profile, leaderboard, and settings without using frontend mock API functions
 - newly replayed PR battle reports expose persisted scoring-engine formula components instead of relying only on profile-side display heuristics

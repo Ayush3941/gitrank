@@ -919,6 +919,80 @@ func TestRunNextExecutesCommitJobAndCompletes(t *testing.T) {
 	}
 }
 
+func TestRunNextExecutesAnalysisPullRequestJobAndCompletes(t *testing.T) {
+	now := time.Now().UTC().Add(58 * time.Second).Truncate(time.Second)
+	var observed contracts.SyncRequest
+	var observedPath string
+	var observedRequestID string
+	var observedTraceParent string
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		observedPath = r.URL.Path
+		observedRequestID = r.Header.Get("X-Request-ID")
+		observedTraceParent = r.Header.Get("traceparent")
+		if err := json.NewDecoder(r.Body).Decode(&observed); err != nil {
+			t.Fatalf("decode request: %v", err)
+		}
+		_ = json.NewEncoder(w).Encode(contracts.PullRequestAnalysisResponse{
+			AnalysisID:       "b2000000-0000-4000-8000-000000000005",
+			PullRequestID:    "b2000000-0000-4000-8000-000000000004",
+			SchemaVersion:    contracts.PullRequestAnalysisSchemaVersion,
+			AnalyzerVersion:  "deterministic.v1",
+			AnalysisSource:   contracts.AnalysisSourceDeterministic,
+			ValidationStatus: contracts.AnalysisValidationValidated,
+			Category:         "feature",
+			Summary:          "Persisted analyzer execution.",
+			Confidence:       0.86,
+			TechnicalDepth:   1.2,
+			ReviewStrength:   1.0,
+			FileBreakdown:    contracts.FileBreakdown{Source: 1},
+		})
+	}))
+	defer server.Close()
+
+	cfg := testServiceConfig()
+	cfg.Services.PRAnalyzerBaseURL = server.URL
+	cfg.Services.RequestTimeout = time.Second
+	scheduler := New(cfg)
+
+	enqueue, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "analysis_pull_request", Repository: "octo/repo", Number: 7}, "analysis-correlation", now)
+	if err != nil {
+		t.Fatalf("EnqueueSync() error = %v", err)
+	}
+
+	run, err := scheduler.RunNext(context.Background(), now)
+	if err != nil {
+		t.Fatalf("RunNext() error = %v", err)
+	}
+	if run.Status != "completed" {
+		t.Fatalf("run status = %q, want completed", run.Status)
+	}
+	if run.Execution != nil {
+		t.Fatalf("sync execution = %+v, want nil for analysis job", run.Execution)
+	}
+	if run.Analysis == nil || run.Analysis.AnalysisID == "" || run.Analysis.PullRequestID == "" {
+		t.Fatalf("analysis execution = %+v, want persisted analysis IDs", run.Analysis)
+	}
+	if run.Analysis.Repository != "octo/repo" || run.Analysis.Number != 7 || run.Analysis.Category != "feature" {
+		t.Fatalf("analysis execution = %+v, want octo/repo#7 feature", run.Analysis)
+	}
+	if observedPath != "/v1/analyze/pull-request/execute" {
+		t.Fatalf("observed path = %q, want analysis execute path", observedPath)
+	}
+	if observed.Repository != "octo/repo" || observed.Number != 7 || observed.Mode != "analysis_pull_request" {
+		t.Fatalf("observed request = %+v, want analysis pull request target", observed)
+	}
+	if observedRequestID != "analysis-correlation" {
+		t.Fatalf("observed request id = %q, want %q", observedRequestID, "analysis-correlation")
+	}
+	if observedTraceParent == "" {
+		t.Fatal("observed traceparent header missing")
+	}
+	if run.Job == nil || run.Job.ID != enqueue.JobIDs[0] || run.Job.Type != string(store.AnalysisPullRequestJob) {
+		t.Fatalf("run job = %+v, want executed analysis job id %q", run.Job, enqueue.JobIDs[0])
+	}
+}
+
 func TestRunNextExecutesScoreReplayJobAndCompletes(t *testing.T) {
 	now := time.Now().UTC().Add(time.Minute).Truncate(time.Second)
 	const userID = "8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4"

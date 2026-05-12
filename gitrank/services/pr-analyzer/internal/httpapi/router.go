@@ -30,6 +30,7 @@ func NewRouterWithStore(cfg config.App, analysisStore *analyzer.Store, log *slog
 			{Method: "GET", Path: "/metrics", Summary: "Prometheus-style service metrics", Status: "implemented"},
 			{Method: "GET", Path: "/v1/meta/manifest", Summary: "Service route manifest", Status: "implemented"},
 			{Method: "POST", Path: "/v1/analyze/pull-request", Summary: "Analyze PR structure and classify contribution type", Status: "implemented"},
+			{Method: "POST", Path: "/v1/analyze/pull-request/execute", Summary: "Analyze already-synced PR evidence and persist the analysis artifact", Status: "implemented"},
 		},
 		Dependencies: []contracts.DependencySpec{
 			{Name: "PostgreSQL", Kind: "database", Purpose: "Persisted contribution analysis artifacts", Critical: true, Status: dependencyStatus(analysisStore != nil)},
@@ -94,6 +95,47 @@ func NewRouterWithStore(cfg config.App, analysisStore *analyzer.Store, log *slog
 			response.PullRequestID = persisted.PullRequestID
 		}
 		analysisMetrics.Observe(response.Category, time.Since(start), estimateAnalysisUsage(req, response, cfg.AI.Provider, cfg.AI.Model))
+		httpkit.WriteJSON(w, http.StatusOK, response)
+	})))
+	mux.Handle("/v1/analyze/pull-request/execute", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if analysisStore == nil {
+			httpkit.WriteError(w, http.StatusServiceUnavailable, "analysis_store_unavailable", "analysis persistence is not configured", httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		var req contracts.SyncRequest
+		if err := httpkit.DecodeJSON(r, &req, 1<<20); err != nil {
+			httpkit.WriteError(w, http.StatusBadRequest, "invalid_json", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		req.Mode = "analysis_pull_request"
+		if err := req.Normalize(); err != nil {
+			httpkit.WriteError(w, http.StatusBadRequest, "invalid_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+
+		start := time.Now()
+		analysisRequest, err := analysisStore.LoadPullRequestAnalysisRequest(r.Context(), req.Repository, req.Number)
+		if err != nil {
+			if errors.Is(err, analyzer.ErrPullRequestNotFound) {
+				httpkit.WriteError(w, http.StatusNotFound, "pull_request_not_found", "pull request evidence must be synced before analysis can run", httpkit.RequestIDFromContext(r.Context()))
+				return
+			}
+			httpkit.WriteError(w, http.StatusInternalServerError, "analysis_load_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		response, err := service.Analyze(analysisRequest)
+		if err != nil {
+			httpkit.WriteError(w, http.StatusInternalServerError, "analysis_validation_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		persisted, err := analysisStore.SavePullRequestAnalysis(r.Context(), analysisRequest, response, time.Now().UTC())
+		if err != nil {
+			httpkit.WriteError(w, http.StatusInternalServerError, "analysis_persistence_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		response.AnalysisID = persisted.ID
+		response.PullRequestID = persisted.PullRequestID
+		analysisMetrics.Observe(response.Category, time.Since(start), estimateAnalysisUsage(analysisRequest, response, cfg.AI.Provider, cfg.AI.Model))
 		httpkit.WriteJSON(w, http.StatusOK, response)
 	})))
 

@@ -97,7 +97,7 @@ func (req *SyncRequest) Normalize() error {
 			return err
 		}
 		req.Repository = repository
-	case "pull_request", "review", "issue":
+	case "pull_request", "review", "issue", "analysis_pull_request":
 		repository, err := NormalizeGitHubRepository(req.Repository)
 		if err != nil {
 			return err

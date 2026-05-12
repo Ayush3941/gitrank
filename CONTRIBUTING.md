@@ -50,7 +50,7 @@ Current state:
 - [x] Go workspace exists at `gitrank/go.work`.
 - [x] Core service modules are scaffolded.
 - [x] Shared package modules are scaffolded.
-- [x] Business logic exists for auth, webhook intake, deterministic PR analysis, scoring, and the mock frontend product flows.
+- [x] Business logic exists for auth, webhook intake, deterministic PR analysis, scoring, and live frontend product flows.
 - [x] API contracts are implemented.
 - [x] Database schema exists.
 - [x] Migrations exist.
@@ -676,7 +676,7 @@ Current preview state:
 
 ## 13. Frontend and User Experience Checklist
 
-The repo now contains a tracked Next.js frontend with root-level frontend CI plus repo-wide secret and Trivy scanning. Public profile reads plus authenticated dashboard, badge, contribution, leaderboard, settings, sync, disconnect, account-deletion, quest recommendation, and PR battle-report flows are live. The frontend also has season/rank progression presentation, player-card public profiles, quest recommendation evidence, badge rarity styling, PR battle-report explanation panels, and an account-backed reduced-gamification display preference for signed-in users. Demo preview modes are development-gated and use isolated mock data only when explicitly enabled.
+The repo now contains a tracked Next.js frontend with root-level frontend CI plus repo-wide secret and Trivy scanning. Public profile reads plus authenticated dashboard, badge, contribution, leaderboard, settings, sync, disconnect, account-deletion, quest recommendation, and PR battle-report flows are live. The frontend also has season/rank progression presentation, player-card public profiles, quest recommendation evidence, badge rarity styling, PR battle-report explanation panels, and an account-backed reduced-gamification display preference for signed-in users. Production app routes no longer include demo preview modes; remaining sample data is isolated to marketing, tests, or fixtures.
 
 Must be defined or built:
 
@@ -1124,7 +1124,7 @@ V2 product contract checklist:
 - [x] Expose authenticated quest routes through the gateway and frontend BFF instead of reading quests from `frontend/lib/api/mock-api.ts`.
 - [x] Define a live PR battle-report read model with PR metadata, evidence signals, formula version, XP breakdown, penalties, badge unlocks, suggested next quest, stale state, and source timestamps. The live read model and route exist, authenticated profiles expose recent persisted PR reports for dashboard rendering, PR reports include materialized suggested-next-quest objects, newly replayed score events expose persisted scorer components, and newly replayed badge awards expose bounded PR-linked badge unlocks.
 - [x] Add a PR report route through the gateway and frontend BFF so `/pr/[owner]/[repo]/[number]` never depends on mock data in production.
-- [ ] Add an orchestration path for `sync PR -> fetch bounded files/diff features -> analyze -> persist contribution_analyses -> score -> refresh profile -> materialize PR report`. The analyzer now persists deterministic `contribution_analyses` rows for already-synced PRs and returns `analysis_id`/`pull_request_id`; the remaining gap is a scheduler-owned end-to-end job that chains sync, analysis, score replay, profile refresh, and PR-report materialization.
+- [ ] Add an orchestration path for `sync PR -> fetch bounded files/diff features -> analyze -> persist contribution_analyses -> score -> refresh profile -> materialize PR report`. The analyzer now persists deterministic `contribution_analyses` rows for already-synced PRs and returns `analysis_id`/`pull_request_id`, and scheduler-worker can execute `analysis.pull_request` jobs against that route; the remaining gap is a single end-to-end job that chains sync, analysis, score replay, profile refresh, and PR-report materialization.
 - [x] Persist bounded changed-file metadata and derived diff features needed for scoring and explanation without storing full repository files.
 - [x] Add hard size, file-count, diff-hunk, token, and cost limits before any AI-assisted PR analysis call.
 - [x] Add a live suggested-next-quest contract that derives from score gaps, weak skill lanes, stale data, and real contribution evidence.
@@ -1137,7 +1137,7 @@ V2 ingestion and coverage checklist:
 - [ ] Add GitHub App support for installation-scoped repository sync, organization-scale webhooks, and more reliable repository inventory.
 - [ ] Keep OAuth for sign-in and account linking while using GitHub App installation permissions for scalable ingestion where users or organizations opt in.
 - [x] Add direct PR file-list fetching for live PR sync and store only approved bounded metadata or public diff excerpts.
-- [ ] Add retry, idempotency, and dedupe keys that cover each analysis and scoring step in the PR grading pipeline. Analyzer persistence now uses a database advisory lock plus latest-artifact update for the same PR/analyzer/source key, and score replay now has a real `score.replay_user` scheduler job with a `score_replay:{user_id}` dedupe key, normal retry/dead-letter behavior, and a real call to `scoring-engine /v1/score/users/{user_id}/replay`; remaining analysis worker, profile refresh, quest reward, leaderboard season, and report-materialization stages still need external-worker treatment.
+- [ ] Add retry, idempotency, and dedupe keys that cover each analysis and scoring step in the PR grading pipeline. Analyzer persistence now uses a database advisory lock plus latest-artifact update for the same PR/analyzer/source key, `analysis.pull_request` has scheduler retry/dead-letter/dedupe coverage, and score replay now has a real `score.replay_user` scheduler job with a `score_replay:{user_id}` dedupe key, normal retry/dead-letter behavior, and a real call to `scoring-engine /v1/score/users/{user_id}/replay`; remaining profile refresh, quest reward, leaderboard season, and report-materialization stages still need external-worker treatment.
 - [ ] Add backfill jobs for historical PR reports, quests, season rankings, badges, and score history. Historical score replay can now be queued through `mode=score_replay`, but PR report, quest, season ranking, and badge-history backfill workers are still outstanding.
 - [x] Add dead-letter replay runbooks for sync, file-feature extraction, analysis, scoring, profile refresh, quest update, and report materialization jobs. `gitrank/docs/runbooks/dead-letter-replay.md` covers the current scheduler replay endpoint, current sync and PR file-feature jobs, current manual scoring/profile/report recovery paths, and the future job names and idempotency requirements needed before those stages become external workers.
 - [ ] Add external worker deployment topology for long-running ingestion, analyzer, scoring, profile, leaderboard, and quest jobs.

@@ -82,8 +82,23 @@ type SchedulerRunResponse struct {
 	Status        string                                 `json:"status"`
 	Job           *SchedulerJobView                      `json:"job,omitempty"`
 	Execution     *GitHubSyncExecutionResponse           `json:"execution,omitempty"`
+	Analysis      *SchedulerPullRequestAnalysisResponse  `json:"analysis,omitempty"`
 	ScoreReplay   *SchedulerScoreReplayExecutionResponse `json:"score_replay,omitempty"`
 	LastUpdatedAt time.Time                              `json:"last_updated_at"`
+}
+
+type SchedulerPullRequestAnalysisResponse struct {
+	Status          string    `json:"status"`
+	Repository      string    `json:"repository"`
+	Number          int       `json:"number"`
+	PullRequestID   string    `json:"pull_request_id"`
+	AnalysisID      string    `json:"analysis_id"`
+	AnalyzerVersion string    `json:"analyzer_version"`
+	AnalysisSource  string    `json:"analysis_source"`
+	Category        string    `json:"category"`
+	CorrelationID   string    `json:"correlation_id,omitempty"`
+	StartedAt       time.Time `json:"started_at"`
+	FinishedAt      time.Time `json:"finished_at"`
 }
 
 type SchedulerScoreReplayExecutionResponse struct {

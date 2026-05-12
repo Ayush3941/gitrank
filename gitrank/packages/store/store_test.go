@@ -119,6 +119,59 @@ func TestBuildSyncJobsScoreReplayUser(t *testing.T) {
 	}
 }
 
+func TestBuildSyncJobsAnalysisPullRequest(t *testing.T) {
+	jobs, err := BuildSyncJobs(contracts.SyncRequest{
+		Mode:       "analysis_pull_request",
+		Repository: "octo/repo",
+		Number:     17,
+	}, "github-sync", "analysis-correlation", 5)
+	if err != nil {
+		t.Fatalf("BuildSyncJobs() error = %v", err)
+	}
+	if len(jobs) != 1 {
+		t.Fatalf("jobs len = %d, want 1", len(jobs))
+	}
+	if jobs[0].Type != AnalysisPullRequestJob {
+		t.Fatalf("job type = %q, want %q", jobs[0].Type, AnalysisPullRequestJob)
+	}
+	if jobs[0].Subject != "octo/repo#17" {
+		t.Fatalf("subject = %q, want octo/repo#17", jobs[0].Subject)
+	}
+	if jobs[0].DedupeKey != "analysis_pull_request:octo/repo#17" {
+		t.Fatalf("dedupe key = %q, want analysis_pull_request:octo/repo#17", jobs[0].DedupeKey)
+	}
+}
+
+func TestBuildSyncJobsPullRequestAndAnalysisHaveDistinctDedupeKeys(t *testing.T) {
+	syncJobs, err := BuildSyncJobs(contracts.SyncRequest{
+		Mode:       "pull_request",
+		Repository: "octo/repo",
+		Number:     17,
+	}, "github-sync", "sync-correlation", 5)
+	if err != nil {
+		t.Fatalf("BuildSyncJobs(sync) error = %v", err)
+	}
+
+	analysisJobs, err := BuildSyncJobs(contracts.SyncRequest{
+		Mode:       "analysis_pull_request",
+		Repository: "octo/repo",
+		Number:     17,
+	}, "github-sync", "analysis-correlation", 5)
+	if err != nil {
+		t.Fatalf("BuildSyncJobs(analysis) error = %v", err)
+	}
+
+	if syncJobs[0].DedupeKey == analysisJobs[0].DedupeKey {
+		t.Fatalf("dedupe keys should differ, both got %q", syncJobs[0].DedupeKey)
+	}
+	if syncJobs[0].DedupeKey != "pull_request:octo/repo#17" {
+		t.Fatalf("sync dedupe key = %q, want pull_request:octo/repo#17", syncJobs[0].DedupeKey)
+	}
+	if analysisJobs[0].DedupeKey != "analysis_pull_request:octo/repo#17" {
+		t.Fatalf("analysis dedupe key = %q, want analysis_pull_request:octo/repo#17", analysisJobs[0].DedupeKey)
+	}
+}
+
 func TestBuildSyncJobsRejectsUnsafeRepository(t *testing.T) {
 	_, err := BuildSyncJobs(contracts.SyncRequest{
 		Mode:       "repository",

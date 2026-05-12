@@ -44,7 +44,8 @@ func TestStoreSavePullRequestAnalysisUpsertsLatestArtifact(t *testing.T) {
 		t.Fatalf("insert repository: %v", err)
 	}
 
-	if _, err := pool.Exec(ctx, `
+	var pullRequestID string
+	if err := pool.QueryRow(ctx, `
 		INSERT INTO pull_requests (
 			github_pull_request_id,
 			repository_id,
@@ -59,8 +60,21 @@ func TestStoreSavePullRequestAnalysisUpsertsLatestArtifact(t *testing.T) {
 			deletions,
 			commits
 		) VALUES (9912001, $1::uuid, 17, 'Add analyzer persistence', 'closed', true, $2, $2, 2, 40, 3, 2)
-	`, repositoryID, time.Now().UTC().Add(-time.Hour)); err != nil {
+		RETURNING id::text
+	`, repositoryID, time.Now().UTC().Add(-time.Hour)).Scan(&pullRequestID); err != nil {
 		t.Fatalf("insert pull request: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO pull_request_files (
+			pull_request_id,
+			path,
+			status,
+			additions,
+			deletions,
+			changes
+		) VALUES ($1::uuid, 'services/pr-analyzer/internal/analyzer/store.go', 'modified', 35, 2, 37)
+	`, pullRequestID); err != nil {
+		t.Fatalf("insert pull request file: %v", err)
 	}
 
 	req := contracts.PullRequestAnalysisRequest{
@@ -80,13 +94,21 @@ func TestStoreSavePullRequestAnalysisUpsertsLatestArtifact(t *testing.T) {
 		},
 	}
 
+	store := NewStore(pool)
+	loaded, err := store.LoadPullRequestAnalysisRequest(ctx, repository, 17)
+	if err != nil {
+		t.Fatalf("LoadPullRequestAnalysisRequest() error = %v", err)
+	}
+	if len(loaded.PullRequest.Files) != 1 || loaded.PullRequest.Files[0].Path != "services/pr-analyzer/internal/analyzer/store.go" {
+		t.Fatalf("loaded files = %+v, want persisted changed file", loaded.PullRequest.Files)
+	}
+
 	service := New()
 	response, err := service.Analyze(req)
 	if err != nil {
 		t.Fatalf("Analyze() error = %v", err)
 	}
 
-	store := NewStore(pool)
 	first, err := store.SavePullRequestAnalysis(ctx, req, response, time.Now().UTC())
 	if err != nil {
 		t.Fatalf("SavePullRequestAnalysis(first) error = %v", err)

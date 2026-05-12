@@ -75,6 +75,7 @@ run_go_test ./services/github-ingestor/internal/httpapi 'TestWebhookAcceptedAndD
 run_go_test ./services/github-ingestor/internal/service 'Test(PersistWebhookNormalizesEntitiesIdempotently|ExecutorSyncRepositoryFetchesAndPersistsBoundedRepositoryData|ExecutorSyncUserFetchesOwnedRepositoriesAndAuthoredPullRequests|ExecutorSyncPullRequestFetchesAndPersistsBoundedPullRequestData)$'
 run_go_test ./services/pr-analyzer/internal/httpapi 'TestAnalyzePullRequestReturnsValidatedEnvelope$'
 run_go_test ./services/pr-analyzer/internal/analyzer 'TestStoreSavePullRequestAnalysisUpsertsLatestArtifact$'
+run_go_test ./services/scheduler-worker/internal/service 'TestRunNextExecutesAnalysisPullRequestJobAndCompletes$'
 run_go_test ./services/scoring-engine/internal/scoring 'TestScoreMergedSecurityContribution$'
 run_go_test ./services/scoring-engine/internal/service 'TestReplayUserPersistsLedgerAndSnapshot$'
 run_go_test ./services/profile-service/internal/service 'TestPublicResponseFiltersHiddenRepositories$'

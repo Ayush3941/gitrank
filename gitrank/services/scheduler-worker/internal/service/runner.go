@@ -32,7 +32,16 @@ type scoreReplayExecutor interface {
 	ReplayUser(ctx context.Context, userID string, correlationID string) (contracts.SchedulerScoreReplayExecutionResponse, error)
 }
 
+type pullRequestAnalysisExecutor interface {
+	AnalyzePullRequest(ctx context.Context, req contracts.SyncRequest, correlationID string) (contracts.SchedulerPullRequestAnalysisResponse, error)
+}
+
 type httpBoundedSyncExecutor struct {
+	baseURL string
+	client  *http.Client
+}
+
+type httpPullRequestAnalysisExecutor struct {
 	baseURL string
 	client  *http.Client
 }
@@ -44,6 +53,7 @@ type httpScoreReplayExecutor struct {
 
 type jobExecution struct {
 	Sync        *contracts.GitHubSyncExecutionResponse
+	Analysis    *contracts.SchedulerPullRequestAnalysisResponse
 	ScoreReplay *contracts.SchedulerScoreReplayExecutionResponse
 }
 
@@ -72,6 +82,19 @@ func newScoreReplayExecutor(cfg config.App) scoreReplayExecutor {
 		return nil
 	}
 	return &httpScoreReplayExecutor{
+		baseURL: baseURL,
+		client: &http.Client{
+			Timeout: cfg.Services.RequestTimeout,
+		},
+	}
+}
+
+func newPullRequestAnalysisExecutor(cfg config.App) pullRequestAnalysisExecutor {
+	baseURL := strings.TrimRight(strings.TrimSpace(cfg.Services.PRAnalyzerBaseURL), "/")
+	if baseURL == "" {
+		return nil
+	}
+	return &httpPullRequestAnalysisExecutor{
 		baseURL: baseURL,
 		client: &http.Client{
 			Timeout: cfg.Services.RequestTimeout,
@@ -120,6 +143,7 @@ func (s *Service) RunNext(ctx context.Context, now time.Time) (contracts.Schedul
 	response.LastUpdatedAt = action.LastUpdatedAt
 	response.Job = schedulerJobPointer(action.Job)
 	response.Execution = execution.Sync
+	response.Analysis = execution.Analysis
 	response.ScoreReplay = execution.ScoreReplay
 	s.recordExecution(job.Type, action.Status, finishedAt)
 	return response, nil
@@ -228,6 +252,19 @@ func (s *Service) executeLeasedJob(ctx context.Context, job store.QueueJob) (job
 			return jobExecution{}, err
 		}
 		return syncJobExecution(s.repositoryRunner.SyncCommit(ctx, req, correlationIDForJob(job)))
+	case store.AnalysisPullRequestJob:
+		if s.analysisRunner == nil {
+			return jobExecution{}, fmt.Errorf("pull request analysis runner is not configured")
+		}
+		req, err := syncRequestFromJob(job)
+		if err != nil {
+			return jobExecution{}, err
+		}
+		execution, err := s.analysisRunner.AnalyzePullRequest(ctx, req, correlationIDForJob(job))
+		if err != nil {
+			return jobExecution{}, err
+		}
+		return jobExecution{Analysis: &execution}, nil
 	case store.ScoreReplayUserJob:
 		if s.scoreRunner == nil {
 			return jobExecution{}, fmt.Errorf("score replay runner is not configured")
@@ -362,6 +399,75 @@ func (e *httpBoundedSyncExecutor) execute(ctx context.Context, req contracts.Syn
 	return execution, nil
 }
 
+func (e *httpPullRequestAnalysisExecutor) AnalyzePullRequest(ctx context.Context, req contracts.SyncRequest, correlationID string) (contracts.SchedulerPullRequestAnalysisResponse, error) {
+	req.Mode = "analysis_pull_request"
+	if err := req.Normalize(); err != nil {
+		return contracts.SchedulerPullRequestAnalysisResponse{}, err
+	}
+
+	ctx = httpkit.EnsureTraceContext(ctx)
+	body, err := json.Marshal(req)
+	if err != nil {
+		return contracts.SchedulerPullRequestAnalysisResponse{}, err
+	}
+
+	startedAt := time.Now().UTC()
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, e.baseURL+"/v1/analyze/pull-request/execute", bytes.NewReader(body))
+	if err != nil {
+		return contracts.SchedulerPullRequestAnalysisResponse{}, err
+	}
+	request.Header.Set("Accept", "application/json")
+	request.Header.Set("Content-Type", "application/json")
+	if strings.TrimSpace(correlationID) != "" {
+		request.Header.Set("X-Request-ID", strings.TrimSpace(correlationID))
+	}
+	httpkit.InjectTraceContext(ctx, request.Header)
+
+	response, err := e.client.Do(request)
+	if err != nil {
+		return contracts.SchedulerPullRequestAnalysisResponse{}, err
+	}
+	defer response.Body.Close()
+
+	payload, err := io.ReadAll(io.LimitReader(response.Body, 1<<20))
+	if err != nil {
+		return contracts.SchedulerPullRequestAnalysisResponse{}, err
+	}
+	if response.StatusCode != http.StatusOK {
+		var apiErr contracts.ErrorResponse
+		if err := json.Unmarshal(payload, &apiErr); err == nil && strings.TrimSpace(apiErr.Error.Message) != "" {
+			return contracts.SchedulerPullRequestAnalysisResponse{}, fmt.Errorf("pr-analyzer pull request analysis failed: %s", apiErr.Error.Message)
+		}
+		return contracts.SchedulerPullRequestAnalysisResponse{}, fmt.Errorf("pr-analyzer pull request analysis failed with status %d", response.StatusCode)
+	}
+
+	var analysis contracts.PullRequestAnalysisResponse
+	if err := json.Unmarshal(payload, &analysis); err != nil {
+		return contracts.SchedulerPullRequestAnalysisResponse{}, err
+	}
+	if strings.TrimSpace(analysis.AnalysisID) == "" ||
+		strings.TrimSpace(analysis.PullRequestID) == "" ||
+		strings.TrimSpace(analysis.AnalyzerVersion) == "" ||
+		strings.TrimSpace(analysis.AnalysisSource) == "" ||
+		strings.TrimSpace(analysis.Category) == "" {
+		return contracts.SchedulerPullRequestAnalysisResponse{}, fmt.Errorf("pr-analyzer returned an invalid persisted analysis contract")
+	}
+
+	return contracts.SchedulerPullRequestAnalysisResponse{
+		Status:          "completed",
+		Repository:      req.Repository,
+		Number:          req.Number,
+		PullRequestID:   strings.TrimSpace(analysis.PullRequestID),
+		AnalysisID:      strings.TrimSpace(analysis.AnalysisID),
+		AnalyzerVersion: strings.TrimSpace(analysis.AnalyzerVersion),
+		AnalysisSource:  strings.TrimSpace(analysis.AnalysisSource),
+		Category:        strings.TrimSpace(analysis.Category),
+		CorrelationID:   strings.TrimSpace(correlationID),
+		StartedAt:       startedAt,
+		FinishedAt:      time.Now().UTC(),
+	}, nil
+}
+
 func (e *httpScoreReplayExecutor) ReplayUser(ctx context.Context, userID string, correlationID string) (contracts.SchedulerScoreReplayExecutionResponse, error) {
 	userID, err := contracts.NormalizeUUID(userID, "user_id")
 	if err != nil {
@@ -474,7 +580,7 @@ func splitExecutionMetricKey(key string) (string, string) {
 }
 
 func isExecutableJob(job store.QueueJob, now time.Time) bool {
-	return (job.Type == store.SyncInstallationJob || job.Type == store.SyncRepositoryJob || job.Type == store.SyncUserHistoryJob || job.Type == store.SyncPullRequestJob || job.Type == store.SyncReviewJob || job.Type == store.SyncIssueJob || job.Type == store.SyncCommitJob || job.Type == store.ScoreReplayUserJob) &&
+	return (job.Type == store.SyncInstallationJob || job.Type == store.SyncRepositoryJob || job.Type == store.SyncUserHistoryJob || job.Type == store.SyncPullRequestJob || job.Type == store.SyncReviewJob || job.Type == store.SyncIssueJob || job.Type == store.SyncCommitJob || job.Type == store.AnalysisPullRequestJob || job.Type == store.ScoreReplayUserJob) &&
 		job.Status == store.JobPending &&
 		!job.NotBefore.After(now.UTC())
 }
@@ -555,6 +661,15 @@ func syncRequestFromJob(job store.QueueJob) (contracts.SyncRequest, error) {
 		req.SHA = strings.TrimSpace(req.SHA)
 		if req.Repository == "" || req.SHA == "" {
 			return contracts.SyncRequest{}, fmt.Errorf("repository and sha are required")
+		}
+	case store.AnalysisPullRequestJob:
+		if strings.TrimSpace(req.Repository) == "" {
+			req.Repository = strings.TrimSpace(job.Repository)
+		}
+		req.Mode = "analysis_pull_request"
+		req.Repository = strings.TrimSpace(req.Repository)
+		if req.Repository == "" || req.Number <= 0 {
+			return contracts.SyncRequest{}, fmt.Errorf("repository and number are required")
 		}
 	case store.ScoreReplayUserJob:
 		if strings.TrimSpace(req.UserID) == "" {

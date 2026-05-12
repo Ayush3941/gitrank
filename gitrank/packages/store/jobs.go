@@ -12,15 +12,16 @@ import (
 type SyncJobType string
 
 const (
-	SyncInstallationJob SyncJobType = "sync.installation"
-	SyncRepositoryJob   SyncJobType = "sync.repository"
-	SyncUserHistoryJob  SyncJobType = "sync.user_history"
-	SyncPullRequestJob  SyncJobType = "sync.pull_request"
-	SyncReviewJob       SyncJobType = "sync.review"
-	SyncIssueJob        SyncJobType = "sync.issue"
-	SyncCommitJob       SyncJobType = "sync.commit"
-	ScoreReplayUserJob  SyncJobType = "score.replay_user"
-	RepairWebhookJob    SyncJobType = "repair.webhook_delivery"
+	SyncInstallationJob    SyncJobType = "sync.installation"
+	SyncRepositoryJob      SyncJobType = "sync.repository"
+	SyncUserHistoryJob     SyncJobType = "sync.user_history"
+	SyncPullRequestJob     SyncJobType = "sync.pull_request"
+	SyncReviewJob          SyncJobType = "sync.review"
+	SyncIssueJob           SyncJobType = "sync.issue"
+	SyncCommitJob          SyncJobType = "sync.commit"
+	AnalysisPullRequestJob SyncJobType = "analysis.pull_request"
+	ScoreReplayUserJob     SyncJobType = "score.replay_user"
+	RepairWebhookJob       SyncJobType = "repair.webhook_delivery"
 )
 
 type SyncJobStatus string
@@ -144,6 +145,7 @@ func SupportedSyncJobTypes() []SyncJobType {
 		SyncReviewJob,
 		SyncIssueJob,
 		SyncCommitJob,
+		AnalysisPullRequestJob,
 		ScoreReplayUserJob,
 		RepairWebhookJob,
 	}

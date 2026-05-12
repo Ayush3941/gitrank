@@ -29,6 +29,7 @@ type Service struct {
 	installationLimiter *scopeRateLimiter
 	ticks               *tickCounters
 	repositoryRunner    boundedSyncExecutor
+	analysisRunner      pullRequestAnalysisExecutor
 	scoreRunner         scoreReplayExecutor
 	runs                *executionCounters
 	stateStore          *schedulerStateStore
@@ -56,6 +57,7 @@ func newService(cfg config.App, stateStore *schedulerStateStore) *Service {
 		installationLimiter: newScopeRateLimiter(cfg.Scheduler.PerInstallationRateWindow, cfg.Scheduler.PerInstallationRateMax),
 		ticks:               newTickCounters(),
 		repositoryRunner:    newBoundedSyncExecutor(cfg),
+		analysisRunner:      newPullRequestAnalysisExecutor(cfg),
 		scoreRunner:         newScoreReplayExecutor(cfg),
 		runs:                newExecutionCounters(),
 		stateStore:          stateStore,
