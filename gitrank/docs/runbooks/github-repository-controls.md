@@ -41,6 +41,15 @@ Required checks should include at least the critical root gates:
 If GitHub displays different check names, use the exact names shown on the most
 recent successful pull request for this repository.
 
+You can discover current check names from the latest default-branch commit:
+
+```bash
+cd gitrank
+GITHUB_REPOSITORY=OWNER/REPO \
+GITHUB_TOKEN=... \
+make discover-github-required-status-checks
+```
+
 ## Apply Through Script
 
 Use this path only with a token that has repository administration write

@@ -3,7 +3,7 @@ TMPDIR ?= $(CURDIR)/.tmp
 GOCACHE ?= $(CURDIR)/.gocache
 GO_MODULE_FIND := find . \( -path './.tmp' -o -path './.gocache' \) -prune -o -name go.mod
 
-.PHONY: fmt test test-migrations test-critical-path-flows race vet audit-go-safety verify-critical-path-tests verify-v2-no-mock-release-gate verify-v2-staging-seed verify-rollback-procedure verify-observability-manifests verify-secret-policy apply-github-repository-controls verify-github-repository-controls bench-ingestion tidy compose-up compose-down seed-local seed-v2-staging
+.PHONY: fmt test test-migrations test-critical-path-flows race vet audit-go-safety verify-critical-path-tests verify-v2-no-mock-release-gate verify-v2-staging-seed verify-rollback-procedure verify-observability-manifests verify-secret-policy discover-github-required-status-checks apply-github-repository-controls verify-github-repository-controls bench-ingestion tidy compose-up compose-down seed-local seed-v2-staging
 
 fmt:
 	mkdir -p "$(TMPDIR)" "$(GOCACHE)"
@@ -47,6 +47,9 @@ verify-observability-manifests:
 
 verify-secret-policy:
 	TMPDIR="$(TMPDIR)" ./scripts/verify_secret_policy.sh
+
+discover-github-required-status-checks:
+	TMPDIR="$(TMPDIR)" ./scripts/discover_github_required_status_checks.sh
 
 apply-github-repository-controls:
 	TMPDIR="$(TMPDIR)" ./scripts/apply_github_repository_controls.sh
