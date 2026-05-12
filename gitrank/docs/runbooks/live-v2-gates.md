@@ -129,6 +129,25 @@ OPERATOR=your-name \
 make generate-observability-evidence-from-workflow-run
 ```
 
+To dispatch live gates, verify the resulting workflow run, and generate
+observability evidence in one command:
+
+```bash
+cd gitrank
+CONFIRM_RUN_LIVE_V2_PIPELINE=yes \
+GITHUB_REPOSITORY=OWNER/REPO \
+GITRANK_REPO_ADMIN_TOKEN=... \
+TARGET_ENVIRONMENT=staging \
+RUN_GITHUB_CONTROLS=true \
+RUN_OBSERVABILITY=true \
+RUN_RELEASE_RENDER=true \
+ENVIRONMENT=staging \
+CLUSTER=your-cluster \
+NAMESPACE=gitrank \
+OPERATOR=your-name \
+make run-live-v2-workflow-evidence-pipeline
+```
+
 Use this check to ensure unresolved `CONTRIBUTING.md` items remain constrained
 to the approved live-gate list:
 

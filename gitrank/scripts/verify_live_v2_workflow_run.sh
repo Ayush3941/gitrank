@@ -7,6 +7,9 @@ API_BASE="${GITHUB_API_URL:-https://api.github.com}"
 API_VERSION="${GITHUB_API_VERSION:-2026-03-10}"
 WORKFLOW_RUN_ID="${WORKFLOW_RUN_ID:-}"
 EXPECTED_WORKFLOW_NAME="${EXPECTED_WORKFLOW_NAME:-Verify Live V2 Gates}"
+WORKFLOW_EVENT="${WORKFLOW_EVENT:-workflow_dispatch}"
+WORKFLOW_RUN_SEARCH_PAGES="${WORKFLOW_RUN_SEARCH_PAGES:-10}"
+WORKFLOW_RUN_ID_OUTPUT_FILE="${WORKFLOW_RUN_ID_OUTPUT_FILE:-}"
 REQUIRE_GITHUB_CONTROLS="${REQUIRE_GITHUB_CONTROLS:-true}"
 REQUIRE_OBSERVABILITY="${REQUIRE_OBSERVABILITY:-true}"
 REQUIRE_RELEASE_RENDER="${REQUIRE_RELEASE_RENDER:-true}"
@@ -41,8 +44,6 @@ case "$REPOSITORY" in
   */*) ;;
   *) fail "GITHUB_REPOSITORY must use owner/name form (or run from a clone with GitHub origin remote)" ;;
 esac
-
-[ -n "$WORKFLOW_RUN_ID" ] || fail "WORKFLOW_RUN_ID is required"
 
 require_command curl
 require_command jq
@@ -92,6 +93,50 @@ handle_read_access_error() {
     fail "workflow-run read denied for the provided token (HTTP $API_STATUS)"
   fi
 }
+
+resolve_workflow_run_id_if_needed() {
+  if [ -n "$WORKFLOW_RUN_ID" ] && [ "$WORKFLOW_RUN_ID" != "latest" ]; then
+    return 0
+  fi
+
+  page=1
+  while [ "$page" -le "$WORKFLOW_RUN_SEARCH_PAGES" ]; do
+    github_get "/repos/$OWNER/$REPO/actions/runs?per_page=100&page=$page"
+    handle_read_access_error
+    expect_status 200 "workflow run search page $page"
+
+    matched_id=$(printf '%s' "$API_BODY" | jq -r --arg name "$EXPECTED_WORKFLOW_NAME" --arg event "$WORKFLOW_EVENT" '
+      [
+        .workflow_runs[]?
+        | select(.name == $name)
+        | select(($event | length) == 0 or .event == $event)
+        | select(.status == "completed")
+        | select(.conclusion == "success")
+      ]
+      | sort_by(.created_at)
+      | reverse
+      | .[0].id // empty
+    ')
+
+    if [ -n "$matched_id" ]; then
+      WORKFLOW_RUN_ID="$matched_id"
+      printf 'resolved workflow run id: %s\n' "$WORKFLOW_RUN_ID"
+      return 0
+    fi
+
+    page_count=$(printf '%s' "$API_BODY" | jq '.workflow_runs | length')
+    [ "$page_count" -lt 100 ] && break
+    page=$((page + 1))
+  done
+
+  if [ -n "$WORKFLOW_EVENT" ]; then
+    fail "no successful '$EXPECTED_WORKFLOW_NAME' workflow run found for event '$WORKFLOW_EVENT' in the last $WORKFLOW_RUN_SEARCH_PAGES page(s)"
+  fi
+  fail "no successful '$EXPECTED_WORKFLOW_NAME' workflow run found in the last $WORKFLOW_RUN_SEARCH_PAGES page(s)"
+}
+
+resolve_workflow_run_id_if_needed
+[ -n "$WORKFLOW_RUN_ID" ] || fail "WORKFLOW_RUN_ID is required"
 
 github_get "/repos/$OWNER/$REPO/actions/runs/$WORKFLOW_RUN_ID"
 handle_read_access_error
@@ -167,3 +212,10 @@ printf 'verify_github_controls: %s\n' "$github_controls_conclusion"
 printf 'verify_live_observability: %s\n' "$observability_conclusion"
 printf 'verify_release_render_overrides: %s\n' "$release_render_conclusion"
 printf 'upload_render_artifact: %s\n' "$upload_artifact_conclusion"
+
+if [ -n "$WORKFLOW_RUN_ID_OUTPUT_FILE" ]; then
+  mkdir -p "$(dirname "$WORKFLOW_RUN_ID_OUTPUT_FILE")"
+  umask 077
+  printf '%s\n' "$WORKFLOW_RUN_ID" >"$WORKFLOW_RUN_ID_OUTPUT_FILE"
+  printf 'workflow_run_id_file: %s\n' "$WORKFLOW_RUN_ID_OUTPUT_FILE"
+fi

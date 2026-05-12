@@ -111,10 +111,16 @@ verify_script="$root_dir/scripts/verify_live_v2_workflow_run.sh"
 GITHUB_REPOSITORY="$REPOSITORY" \
 GITHUB_TOKEN="$TOKEN" \
 WORKFLOW_RUN_ID="$WORKFLOW_RUN_ID" \
+WORKFLOW_RUN_ID_OUTPUT_FILE="${TMPDIR:-/tmp}/gitrank-observability-workflow-run-id.$$.txt" \
 REQUIRE_GITHUB_CONTROLS=false \
 REQUIRE_OBSERVABILITY=true \
 REQUIRE_RELEASE_RENDER=false \
 "$verify_script"
+
+resolved_run_id=$(cat "${TMPDIR:-/tmp}/gitrank-observability-workflow-run-id.$$.txt" 2>/dev/null || true)
+rm -f "${TMPDIR:-/tmp}/gitrank-observability-workflow-run-id.$$.txt"
+[ -n "$resolved_run_id" ] || fail "could not resolve workflow run id from verifier output"
+WORKFLOW_RUN_ID="$resolved_run_id"
 
 github_get "/repos/$OWNER/$REPO/actions/runs/$WORKFLOW_RUN_ID"
 if [ "$API_STATUS" = "401" ] || [ "$API_STATUS" = "403" ]; then

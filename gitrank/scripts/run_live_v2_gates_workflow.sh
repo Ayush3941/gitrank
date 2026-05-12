@@ -15,6 +15,7 @@ RUN_RELEASE_RENDER="${RUN_RELEASE_RENDER:-true}"
 WAIT_FOR_COMPLETION="${WAIT_FOR_COMPLETION:-true}"
 WAIT_TIMEOUT_SECONDS="${WAIT_TIMEOUT_SECONDS:-900}"
 POLL_INTERVAL_SECONDS="${POLL_INTERVAL_SECONDS:-10}"
+WORKFLOW_RUN_ID_OUTPUT_FILE="${WORKFLOW_RUN_ID_OUTPUT_FILE:-}"
 TMP_ROOT="${TMPDIR:-/tmp}"
 
 fail() {
@@ -157,11 +158,19 @@ while :; do
 
     printf 'run id: %s status: %s conclusion: %s\n' "$matched_run_id" "$matched_status" "$matched_conclusion"
     printf 'run url: %s\n' "$matched_run_url"
+    if [ -n "$WORKFLOW_RUN_ID_OUTPUT_FILE" ]; then
+      mkdir -p "$(dirname "$WORKFLOW_RUN_ID_OUTPUT_FILE")"
+      umask 077
+      printf '%s\n' "$matched_run_id" >"$WORKFLOW_RUN_ID_OUTPUT_FILE"
+    fi
 
     case "$matched_status" in
       completed)
         if [ "$matched_conclusion" = "success" ]; then
           printf 'workflow run completed successfully\n'
+          if [ -n "$WORKFLOW_RUN_ID_OUTPUT_FILE" ]; then
+            printf 'workflow_run_id_file: %s\n' "$WORKFLOW_RUN_ID_OUTPUT_FILE"
+          fi
           exit 0
         fi
         fail "workflow run completed with conclusion: $matched_conclusion ($matched_run_url)"

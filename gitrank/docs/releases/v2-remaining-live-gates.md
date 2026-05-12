@@ -15,6 +15,8 @@ For consolidated execution, use:
   observability, and release-render gates
 - `make generate-observability-evidence-from-workflow-run` to create
   `docs/evidence/observability-live-*.txt` from a verified workflow run
+- `make run-live-v2-workflow-evidence-pipeline` to dispatch live gates, verify
+  workflow-run evidence, and generate observability evidence in one sequence
 - `CONFIRM_FINALIZE_V2=yes make finalize-v2-live-closeout` for one-command
   preflight + gate verification + checklist marking + audit
 - `make run-live-v2-gates-workflow` (requires token and live environment vars)
