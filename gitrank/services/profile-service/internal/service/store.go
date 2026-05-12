@@ -242,10 +242,14 @@ func (s *Store) LoadScoreRows(ctx context.Context, userID string, selection scor
 			se.event_type,
 			se.delta_total_xp,
 			se.score_version,
-			COALESCE(NULLIF(se.metadata_jsonb->>'score_formula_inputs_version', ''), ''),
+			COALESCE(
+				NULLIF(se.metadata_jsonb->>'score_formula_inputs_version', ''),
+				NULLIF(se.metadata_jsonb->>'formula_version', ''),
+				CASE WHEN se.event_type = 'quest.reward' THEN se.score_version ELSE '' END
+			),
 			COALESCE(se.metadata_jsonb->'evidence_score_event_ids', '[]'::jsonb),
-			COALESCE(se.pull_request_id::text, ''),
-			COALESCE(se.analysis_id::text, ''),
+			COALESCE(se.pull_request_id::text, NULLIF(se.metadata_jsonb->>'pull_request_id', ''), ''),
+			COALESCE(se.analysis_id::text, NULLIF(se.metadata_jsonb->>'analysis_id', ''), ''),
 			se.delta_skill_jsonb,
 			se.explanation_jsonb,
 			se.created_at,
