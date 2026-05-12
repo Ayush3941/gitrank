@@ -29,14 +29,15 @@ Apply these settings to the default branch, currently `main`:
 
 Required checks should include at least the critical root gates:
 
-- `CI / go-checks`
-- `CI / docker-builds`
-- `CodeQL`
-- `Dependency Review`
-- `Gitleaks`
-- `Trivy`
-- `Scorecard`
-- `DCO`
+- `go-checks`
+- `frontend-checks`
+- `gitleaks`
+- `filesystem-scan`
+- `analyze (go)`
+- `analyze (javascript-typescript)`
+- `Scorecard analysis`
+- every `docker-builds (...)` matrix entry
+- every `service-image-scan (...)` matrix entry
 
 If GitHub displays different check names, use the exact names shown on the most
 recent successful pull request for this repository.
@@ -50,6 +51,8 @@ GITHUB_TOKEN=... \
 make discover-github-required-status-checks
 ```
 
+For public repositories, discovery can run without a token but is rate-limited.
+
 ## Apply Through Script
 
 Use this path only with a token that has repository administration write
@@ -61,7 +64,7 @@ cd gitrank
 GITHUB_REPOSITORY=OWNER/REPO \
 GITHUB_TOKEN=... \
 GITRANK_APPLY_REPOSITORY_CONTROLS=yes \
-GITRANK_REQUIRED_STATUS_CHECKS="CI / go-checks,Frontend CI / frontend-checks,DCO / verify-signoff,Dependency Review / dependency-review,CodeQL / analyze,Secret Scan / gitleaks,Trivy Scan / filesystem-scan,Scorecard / analysis" \
+GITRANK_REQUIRED_STATUS_CHECKS="<paste output from discover-github-required-status-checks>" \
 make apply-github-repository-controls
 ```
 

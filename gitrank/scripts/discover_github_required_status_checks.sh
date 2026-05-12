@@ -37,8 +37,6 @@ case "$REPOSITORY" in
   *) fail "GITHUB_REPOSITORY must use owner/name form (or run from a clone with GitHub origin remote)" ;;
 esac
 
-[ -n "$TOKEN" ] || fail "GITHUB_TOKEN or GH_TOKEN is required"
-
 require_command curl
 require_command jq
 mkdir -p "$TMP_ROOT"
@@ -47,18 +45,30 @@ OWNER=${REPOSITORY%%/*}
 REPO=${REPOSITORY#*/}
 API_STATUS=
 API_BODY=
+AUTH_MODE=authenticated
 
 github_get() {
   path=$1
   body_file="$TMP_ROOT/gitrank-github-check-discovery.$$"
-  API_STATUS=$(curl -sS -L -o "$body_file" -w '%{http_code}' \
-    -H 'Accept: application/vnd.github+json' \
-    -H "Authorization: Bearer $TOKEN" \
-    -H "X-GitHub-Api-Version: $API_VERSION" \
-    "$API_BASE$path") || {
-      rm -f "$body_file"
-      fail "GitHub API request failed for $path"
-    }
+  if [ -n "$TOKEN" ]; then
+    API_STATUS=$(curl -sS -L -o "$body_file" -w '%{http_code}' \
+      -H 'Accept: application/vnd.github+json' \
+      -H "Authorization: Bearer $TOKEN" \
+      -H "X-GitHub-Api-Version: $API_VERSION" \
+      "$API_BASE$path") || {
+        rm -f "$body_file"
+        fail "GitHub API request failed for $path"
+      }
+  else
+    AUTH_MODE=unauthenticated
+    API_STATUS=$(curl -sS -L -o "$body_file" -w '%{http_code}' \
+      -H 'Accept: application/vnd.github+json' \
+      -H "X-GitHub-Api-Version: $API_VERSION" \
+      "$API_BASE$path") || {
+        rm -f "$body_file"
+        fail "GitHub API request failed for $path"
+      }
+  fi
   API_BODY=$(cat "$body_file")
   rm -f "$body_file"
 }
@@ -102,6 +112,7 @@ CHECK_COUNT=$(wc -l <"$TMP_CHECKS_FILE" | tr -d ' ')
 CSV_CONTEXTS=$(paste -sd, "$TMP_CHECKS_FILE")
 
 printf 'Repository: %s\n' "$REPOSITORY"
+printf 'Auth mode: %s\n' "$AUTH_MODE"
 printf 'Default branch: %s\n' "$DEFAULT_BRANCH"
 printf 'Head SHA: %s\n' "$DEFAULT_SHA"
 printf 'Discovered checks (%s):\n' "$CHECK_COUNT"
