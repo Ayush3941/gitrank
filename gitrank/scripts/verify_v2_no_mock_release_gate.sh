@@ -71,4 +71,19 @@ require_contains "$k8s_deployments" "name: scheduler-job-worker" "external sched
 require_contains "$k8s_deployments" "value: worker" "scheduler worker run mode"
 require_contains "$k8s_deployments" "value: api" "scheduler API run mode"
 
+live_workflow_verifier="$root_dir/scripts/verify_live_v2_workflow.sh"
+[ -x "$live_workflow_verifier" ] || fail "live V2 workflow verifier script is missing or not executable"
+TMPDIR="${TMPDIR:-$root_dir/.tmp}" "$live_workflow_verifier"
+
+for file in \
+  "$root_dir/scripts/verify_live_observability.sh" \
+  "$root_dir/scripts/verify_github_repository_controls.sh" \
+  "$root_dir/scripts/apply_github_repository_controls_auto.sh" \
+  "$root_dir/scripts/render_k8s_release_manifests.sh" \
+  "$root_dir/docs/evidence/observability-live-template.txt" \
+  "$root_dir/docs/evidence/rollback-drill-template.txt" \
+  "$root_dir/docs/evidence/database-restore-drill-template.txt"; do
+  [ -s "$file" ] || fail "required live-gate artifact is missing: $file"
+done
+
 echo "v2 no-mock release gate passed"
