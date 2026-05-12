@@ -42,7 +42,6 @@ case "$REPOSITORY" in
   *) fail "GITHUB_REPOSITORY must use owner/name form (or run from a clone with GitHub origin remote)" ;;
 esac
 
-[ -n "$TOKEN" ] || fail "GITHUB_TOKEN, GH_TOKEN, or GITRANK_REPO_ADMIN_TOKEN is required"
 [ -n "$WORKFLOW_RUN_ID" ] || fail "WORKFLOW_RUN_ID is required"
 
 require_command curl
@@ -57,14 +56,24 @@ API_BODY=
 github_get() {
   path=$1
   body_file="$TMP_ROOT/gitrank-live-v2-workflow-run.$$"
-  API_STATUS=$(curl -sS -L -o "$body_file" -w '%{http_code}' \
-    -H 'Accept: application/vnd.github+json' \
-    -H "Authorization: Bearer $TOKEN" \
-    -H "X-GitHub-Api-Version: $API_VERSION" \
-    "$API_BASE$path") || {
-      rm -f "$body_file"
-      fail "GitHub API request failed for $path"
-    }
+  if [ -n "$TOKEN" ]; then
+    API_STATUS=$(curl -sS -L -o "$body_file" -w '%{http_code}' \
+      -H 'Accept: application/vnd.github+json' \
+      -H "Authorization: Bearer $TOKEN" \
+      -H "X-GitHub-Api-Version: $API_VERSION" \
+      "$API_BASE$path") || {
+        rm -f "$body_file"
+        fail "GitHub API request failed for $path"
+      }
+  else
+    API_STATUS=$(curl -sS -L -o "$body_file" -w '%{http_code}' \
+      -H 'Accept: application/vnd.github+json' \
+      -H "X-GitHub-Api-Version: $API_VERSION" \
+      "$API_BASE$path") || {
+        rm -f "$body_file"
+        fail "GitHub API request failed for $path"
+      }
+  fi
   API_BODY=$(cat "$body_file")
   rm -f "$body_file"
 }
@@ -75,8 +84,22 @@ expect_status() {
   [ "$API_STATUS" = "$expected" ] || fail "$context returned HTTP $API_STATUS"
 }
 
+handle_read_access_error() {
+  if [ "$API_STATUS" = "401" ] || [ "$API_STATUS" = "403" ]; then
+    if [ -z "$TOKEN" ]; then
+      fail "workflow-run read requires authentication for this repository; set GITHUB_TOKEN, GH_TOKEN, or GITRANK_REPO_ADMIN_TOKEN"
+    fi
+    fail "workflow-run read denied for the provided token (HTTP $API_STATUS)"
+  fi
+}
+
 github_get "/repos/$OWNER/$REPO/actions/runs/$WORKFLOW_RUN_ID"
+handle_read_access_error
 expect_status 200 "workflow run metadata"
+
+if [ -z "$TOKEN" ]; then
+  printf 'workflow-run verifier using unauthenticated GitHub API access\n'
+fi
 
 run_name=$(printf '%s' "$API_BODY" | jq -r '.name // empty')
 run_status=$(printf '%s' "$API_BODY" | jq -r '.status // empty')
@@ -92,6 +115,7 @@ jobs_json='[]'
 page=1
 while :; do
   github_get "/repos/$OWNER/$REPO/actions/runs/$WORKFLOW_RUN_ID/jobs?per_page=100&page=$page"
+  handle_read_access_error
   expect_status 200 "workflow run jobs page $page"
   page_jobs=$(printf '%s' "$API_BODY" | jq '.jobs // []')
   page_job_count=$(printf '%s' "$page_jobs" | jq 'length')
