@@ -803,6 +803,7 @@ V2 direction:
 - V2 no-mock release gate checks now run through `make verify-v2-no-mock-release-gate` and frontend CI to catch production mock imports, missing critical OpenAPI paths, and dropped critical worker/profile smoke coverage
 - dead-letter replay guidance now exists in `gitrank/docs/runbooks/dead-letter-replay.md` for current scheduler replays and the future analysis, scoring, profile, quest, and PR-report worker stages
 - V2 staging seed support now inserts synthetic GitHub-like evidence and drives scoring/profile/PR-report verification through real service APIs instead of frontend mock functions
+- V2 release notes live in `gitrank/docs/releases/v2.md` and separate removed V1 limitations from remaining out-of-scope and live-proof requirements
 - profile skill areas expose evidence source, confidence, and freshness state so skill claims remain bounded to real scored evidence
 - PR battle reports expose and render structured evidence state for incomplete, stale, rate-limited, deterministic-only, and AI-fallback conditions
 - analysis envelopes reject score-override language before scoring, keeping final XP deterministic and rule-based
