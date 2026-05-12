@@ -38,6 +38,7 @@ run_go_test() {
   GITRANK_SCORING_DATABASE_URL="$database_url" \
   GITRANK_PROFILE_DATABASE_URL="$database_url" \
   GITRANK_SCHEDULER_DATABASE_URL="$database_url" \
+  GITRANK_ANALYZER_DATABASE_URL="$database_url" \
   GITRANK_STORE_DATABASE_URL="$database_url" \
     go test "$package" -run "$pattern" -count=1
 }
@@ -73,6 +74,7 @@ run_go_test ./services/api-gateway/internal/httpapi 'Test(SyncRouteDefaultsToAut
 run_go_test ./services/github-ingestor/internal/httpapi 'TestWebhookAcceptedAndDeduplicated$'
 run_go_test ./services/github-ingestor/internal/service 'Test(PersistWebhookNormalizesEntitiesIdempotently|ExecutorSyncRepositoryFetchesAndPersistsBoundedRepositoryData|ExecutorSyncUserFetchesOwnedRepositoriesAndAuthoredPullRequests|ExecutorSyncPullRequestFetchesAndPersistsBoundedPullRequestData)$'
 run_go_test ./services/pr-analyzer/internal/httpapi 'TestAnalyzePullRequestReturnsValidatedEnvelope$'
+run_go_test ./services/pr-analyzer/internal/analyzer 'TestStoreSavePullRequestAnalysisUpsertsLatestArtifact$'
 run_go_test ./services/scoring-engine/internal/scoring 'TestScoreMergedSecurityContribution$'
 run_go_test ./services/scoring-engine/internal/service 'TestReplayUserPersistsLedgerAndSnapshot$'
 run_go_test ./services/profile-service/internal/service 'TestPublicResponseFiltersHiddenRepositories$'

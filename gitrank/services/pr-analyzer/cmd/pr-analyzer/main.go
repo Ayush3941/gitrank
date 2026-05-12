@@ -9,7 +9,9 @@ import (
 	"github.com/Ayush3941/gitrank/packages/config"
 	"github.com/Ayush3941/gitrank/packages/httpkit"
 	"github.com/Ayush3941/gitrank/packages/logger"
+	"github.com/Ayush3941/gitrank/services/pr-analyzer/internal/analyzer"
 	"github.com/Ayush3941/gitrank/services/pr-analyzer/internal/httpapi"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 const version = "dev"
@@ -31,7 +33,18 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	server := httpkit.NewServer(cfg.Addr, httpapi.NewRouter(cfg, log, version), cfg.ShutdownTimeout, log)
+	if err := cfg.ValidatePRAnalyzerService(); err != nil {
+		panic(err)
+	}
+
+	dbpool, err := pgxpool.New(ctx, cfg.Database.URL)
+	if err != nil {
+		panic(err)
+	}
+	defer dbpool.Close()
+
+	analysisStore := analyzer.NewStore(dbpool)
+	server := httpkit.NewServer(cfg.Addr, httpapi.NewRouterWithStore(cfg, analysisStore, log, version), cfg.ShutdownTimeout, log)
 	log.Info("starting service", "addr", cfg.Addr, "version", version)
 	if err := server.Run(ctx); err != nil {
 		log.Error("server exited", "error", err)

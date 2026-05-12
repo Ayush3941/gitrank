@@ -34,6 +34,7 @@ require_test "pull request sync execution" "func TestExecutorSyncPullRequestFetc
 require_test "webhook accept and dedupe" "func TestWebhookAcceptedAndDeduplicated" "services/github-ingestor/internal/httpapi"
 require_test "webhook persistence idempotency" "func TestPersistWebhookNormalizesEntitiesIdempotently" "services/github-ingestor/internal/service"
 require_test "PR analyzer validated envelope" "func TestAnalyzePullRequestReturnsValidatedEnvelope" "services/pr-analyzer/internal/httpapi"
+require_test "PR analyzer persisted artifact" "func TestStoreSavePullRequestAnalysisUpsertsLatestArtifact" "services/pr-analyzer/internal/analyzer"
 require_test "deterministic scoring" "func TestScoreMergedSecurityContribution" "services/scoring-engine/internal/scoring"
 require_test "scoring replay ledger" "func TestReplayUserPersistsLedgerAndSnapshot" "services/scoring-engine/internal/service"
 require_test "public profile projection" "func TestPublicResponseFiltersHiddenRepositories" "services/profile-service/internal/service"

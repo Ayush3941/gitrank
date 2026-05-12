@@ -61,6 +61,8 @@ type ReviewSignal struct {
 }
 
 type PullRequestAnalysisResponse struct {
+	AnalysisID              string        `json:"analysis_id,omitempty"`
+	PullRequestID           string        `json:"pull_request_id,omitempty"`
 	SchemaVersion           string        `json:"schema_version,omitempty"`
 	AnalyzerVersion         string        `json:"analyzer_version,omitempty"`
 	AnalysisSource          string        `json:"analysis_source,omitempty"`

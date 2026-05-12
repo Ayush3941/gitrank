@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 	"time"
@@ -12,6 +13,10 @@ import (
 )
 
 func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
+	return NewRouterWithStore(cfg, nil, log, version)
+}
+
+func NewRouterWithStore(cfg config.App, analysisStore *analyzer.Store, log *slog.Logger, version string) http.Handler {
 	service := analyzer.New()
 	metrics := httpkit.NewMetrics(cfg.ServiceName)
 	analysisMetrics := newAnalysisMetricsSource(cfg.ServiceName)
@@ -27,6 +32,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			{Method: "POST", Path: "/v1/analyze/pull-request", Summary: "Analyze PR structure and classify contribution type", Status: "implemented"},
 		},
 		Dependencies: []contracts.DependencySpec{
+			{Name: "PostgreSQL", Kind: "database", Purpose: "Persisted contribution analysis artifacts", Critical: true, Status: dependencyStatus(analysisStore != nil)},
 			{Name: "OpenAI Responses API", Kind: "external_http", BaseURL: cfg.AI.BaseURL, Purpose: "Future AI enrichment layer", Auth: "API key", Critical: false, Status: "configured"},
 		},
 	}
@@ -37,7 +43,13 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			"http": {Status: "ok", Details: "deterministic analysis route online"},
 		}))
 	})))
-	mux.Handle("/readyz", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+	mux.Handle("/readyz", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if analysisStore != nil {
+			if err := analysisStore.Ready(r.Context()); err != nil {
+				httpkit.WriteError(w, http.StatusServiceUnavailable, "analysis_store_unavailable", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+				return
+			}
+		}
 		httpkit.WriteJSON(w, http.StatusOK, contracts.NewHealthResponse(cfg.ServiceName, string(cfg.Env), version, nil))
 	})))
 	mux.Handle("/v1/meta/manifest", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
@@ -68,9 +80,29 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			httpkit.WriteError(w, http.StatusInternalServerError, "analysis_validation_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
+		if analysisStore != nil {
+			persisted, err := analysisStore.SavePullRequestAnalysis(r.Context(), req, response, time.Now().UTC())
+			if err != nil {
+				if errors.Is(err, analyzer.ErrPullRequestNotFound) {
+					httpkit.WriteError(w, http.StatusNotFound, "pull_request_not_found", "pull request evidence must be synced before analysis can be persisted", httpkit.RequestIDFromContext(r.Context()))
+					return
+				}
+				httpkit.WriteError(w, http.StatusInternalServerError, "analysis_persistence_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+				return
+			}
+			response.AnalysisID = persisted.ID
+			response.PullRequestID = persisted.PullRequestID
+		}
 		analysisMetrics.Observe(response.Category, time.Since(start), estimateAnalysisUsage(req, response, cfg.AI.Provider, cfg.AI.Model))
 		httpkit.WriteJSON(w, http.StatusOK, response)
 	})))
 
 	return httpkit.Chain(mux, httpkit.RequestID, httpkit.Instrument(metrics), httpkit.AccessLog(log), httpkit.Recoverer(log))
+}
+
+func dependencyStatus(configured bool) string {
+	if configured {
+		return "implemented"
+	}
+	return "not_configured"
 }

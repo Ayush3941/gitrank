@@ -257,3 +257,22 @@ func TestValidateAuthService(t *testing.T) {
 		t.Fatalf("TokenEncryptionKeyRing() len = %d, want 2", len(keys))
 	}
 }
+
+func TestValidatePRAnalyzerServiceRequiresDatabase(t *testing.T) {
+	cfg, err := Load("pr-analyzer", "PR_ANALYZER_ADDR")
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+	if err := cfg.ValidatePRAnalyzerService(); err == nil {
+		t.Fatal("ValidatePRAnalyzerService() error = nil, want missing DATABASE_URL rejection")
+	}
+
+	t.Setenv("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/gitrank?sslmode=disable")
+	cfg, err = Load("pr-analyzer", "PR_ANALYZER_ADDR")
+	if err != nil {
+		t.Fatalf("Load() with database error = %v", err)
+	}
+	if err := cfg.ValidatePRAnalyzerService(); err != nil {
+		t.Fatalf("ValidatePRAnalyzerService() error = %v", err)
+	}
+}

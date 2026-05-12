@@ -585,6 +585,13 @@ func (a App) ValidateScoringService() error {
 	return nil
 }
 
+func (a App) ValidatePRAnalyzerService() error {
+	if strings.TrimSpace(a.Database.URL) == "" {
+		return errors.New("DATABASE_URL is required")
+	}
+	return nil
+}
+
 func (a App) GitHubUserClientID() string {
 	if a.GitHub.AppClientID != "" {
 		return a.GitHub.AppClientID

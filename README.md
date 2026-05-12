@@ -305,6 +305,7 @@ Responsibilities:
 - estimate complexity and effort
 - detect tests, refactors, docs-only work, infra work, or security-related changes
 - produce AI summaries and machine-readable labels
+- persist deterministic analysis artifacts against synced PR evidence
 
 ### `services/scoring-engine`
 
@@ -794,6 +795,7 @@ V2 direction:
 
 - replace every production mock, demo-only product path, and derived-only product claim with real backend contracts, persistence, orchestration, and verification
 - user sync now supplements owned-repository traversal with bounded authored-PR discovery, so real public PRs in repositories the user does not own can enter the persisted PR evidence path
+- pr-analyzer now requires PostgreSQL in production and persists deterministic `contribution_analyses` artifacts against synced PR evidence instead of returning only transient analysis envelopes
 - frontend routes no longer accept `?demo=` preview modes, and the old authenticated mock dataset plus preview mock API modules have been removed
 - frontend CI now includes a live-fixture smoke suite that renders dashboard, quests, PR reports, profile, leaderboard, and settings without using frontend mock API functions
 - newly replayed PR battle reports expose persisted scoring-engine formula components instead of relying only on profile-side display heuristics
