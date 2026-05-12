@@ -107,13 +107,14 @@ resolve_workflow_run_id_if_needed() {
     handle_read_access_error
     expect_status 200 "workflow run search page $page"
 
-    matched_id=$(printf '%s' "$API_BODY" | jq -r --arg name "$EXPECTED_WORKFLOW_NAME" --arg event "$WORKFLOW_EVENT" '
+    matched_id=$(printf '%s' "$API_BODY" | jq -r --arg name "$EXPECTED_WORKFLOW_NAME" --arg event "$WORKFLOW_EVENT" --arg workflow_path "$EXPECTED_WORKFLOW_PATH" '
       [
         .workflow_runs[]?
         | select(.name == $name)
         | select(($event | length) == 0 or .event == $event)
         | select(.status == "completed")
         | select(.conclusion == "success")
+        | select((.path // "" | split("@")[0]) == $workflow_path)
       ]
       | sort_by(.created_at)
       | reverse
