@@ -8,6 +8,7 @@ RUN_GITHUB_CONTROLS="${RUN_GITHUB_CONTROLS:-false}"
 APPLY_GITHUB_CONTROLS="${APPLY_GITHUB_CONTROLS:-false}"
 RUN_OBSERVABILITY="${RUN_OBSERVABILITY:-false}"
 RUN_RELEASE_RENDER="${RUN_RELEASE_RENDER:-false}"
+RUN_INPUT_PREFLIGHT="${RUN_INPUT_PREFLIGHT:-true}"
 
 fail() {
   printf 'v2 live readiness verification failed: %s\n' "$1" >&2
@@ -30,6 +31,9 @@ if [ "$RUN_LOCAL_STATIC" = "true" ]; then
 fi
 
 if [ "$RUN_GITHUB_CONTROLS" = "true" ]; then
+  if [ "$RUN_INPUT_PREFLIGHT" = "true" ]; then
+    RUN_GITHUB_CONTROLS=true run_make verify-live-v2-inputs
+  fi
   if [ "$APPLY_GITHUB_CONTROLS" = "true" ]; then
     export GITRANK_APPLY_REPOSITORY_CONTROLS=yes
     run_make apply-github-repository-controls-auto
@@ -38,6 +42,9 @@ if [ "$RUN_GITHUB_CONTROLS" = "true" ]; then
 fi
 
 if [ "$RUN_OBSERVABILITY" = "true" ]; then
+  if [ "$RUN_INPUT_PREFLIGHT" = "true" ]; then
+    RUN_OBSERVABILITY=true run_make verify-live-v2-inputs
+  fi
   run_make verify-live-observability
 fi
 
@@ -54,6 +61,9 @@ if [ -n "${RESTORE_EVIDENCE_FILE:-}" ]; then
 fi
 
 if [ "$RUN_RELEASE_RENDER" = "true" ]; then
+  if [ "$RUN_INPUT_PREFLIGHT" = "true" ]; then
+    RUN_RELEASE_RENDER=true run_make verify-live-v2-inputs
+  fi
   [ -n "${K8S_ENVIRONMENT:-}" ] || fail "K8S_ENVIRONMENT is required when RUN_RELEASE_RENDER=true"
   [ -n "${OUTPUT_FILE:-}" ] || fail "OUTPUT_FILE is required when RUN_RELEASE_RENDER=true"
   run_make render-k8s-release-manifests K8S_ENVIRONMENT="$K8S_ENVIRONMENT" OUTPUT_FILE="$OUTPUT_FILE"

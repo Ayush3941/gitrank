@@ -84,6 +84,16 @@ cd gitrank
 make verify-v2-live-readiness
 ```
 
+Use input preflight before live runs:
+
+```bash
+cd gitrank
+RUN_GITHUB_CONTROLS=true \
+RUN_OBSERVABILITY=true \
+RUN_RELEASE_RENDER=true \
+make verify-live-v2-inputs
+```
+
 Enable live checks by setting environment flags and required credentials:
 
 ```bash

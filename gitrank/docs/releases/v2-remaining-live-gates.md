@@ -12,6 +12,8 @@ For consolidated execution, use:
 - `make audit-v2-contributing-checklist` for pass/fail against unchecked lines
 - `make mark-v2-contributing-live-gates` to flip live-gate checkboxes only after
   successful verifier runs
+- `make verify-live-v2-inputs` as preflight for required live credentials and
+  environment inputs
 
 ## 1) Production Observability On Live Traffic
 

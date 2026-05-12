@@ -3,7 +3,7 @@ TMPDIR ?= $(CURDIR)/.tmp
 GOCACHE ?= $(CURDIR)/.gocache
 GO_MODULE_FIND := find . \( -path './.tmp' -o -path './.gocache' \) -prune -o -name go.mod
 
-.PHONY: fmt test test-migrations test-critical-path-flows race vet audit-go-safety audit-v2-contributing-checklist mark-v2-contributing-live-gates verify-critical-path-tests verify-v2-no-mock-release-gate verify-v2-staging-seed verify-v2-live-readiness verify-rollback-procedure verify-observability-manifests verify-observability-evidence verify-live-observability verify-live-v2-workflow run-live-v2-gates-workflow verify-rollback-drill-evidence verify-database-restore-drill-evidence verify-secret-policy verify-k8s-autoscaling discover-github-required-status-checks apply-github-repository-controls apply-github-repository-controls-auto verify-github-repository-controls render-k8s-release-manifests bench-ingestion tidy compose-up compose-down seed-local seed-v2-staging
+.PHONY: fmt test test-migrations test-critical-path-flows race vet audit-go-safety audit-v2-contributing-checklist mark-v2-contributing-live-gates verify-critical-path-tests verify-v2-no-mock-release-gate verify-v2-staging-seed verify-v2-live-readiness verify-live-v2-inputs verify-rollback-procedure verify-observability-manifests verify-observability-evidence verify-live-observability verify-live-v2-workflow run-live-v2-gates-workflow verify-rollback-drill-evidence verify-database-restore-drill-evidence verify-secret-policy verify-k8s-autoscaling discover-github-required-status-checks apply-github-repository-controls apply-github-repository-controls-auto verify-github-repository-controls render-k8s-release-manifests bench-ingestion tidy compose-up compose-down seed-local seed-v2-staging
 
 fmt:
 	mkdir -p "$(TMPDIR)" "$(GOCACHE)"
@@ -47,6 +47,9 @@ verify-v2-staging-seed:
 
 verify-v2-live-readiness:
 	TMPDIR="$(TMPDIR)" ./scripts/verify_v2_live_readiness.sh
+
+verify-live-v2-inputs:
+	TMPDIR="$(TMPDIR)" ./scripts/verify_live_v2_inputs.sh
 
 verify-rollback-procedure:
 	TMPDIR="$(TMPDIR)" ./scripts/verify_rollback_procedure.sh
