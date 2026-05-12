@@ -88,6 +88,12 @@ Use input preflight before live runs:
 
 ```bash
 cd gitrank
+cp .env.v2-live-gates.example .env.v2-live-gates.local
+# edit values, then export them
+set -a
+source .env.v2-live-gates.local
+set +a
+
 RUN_GITHUB_CONTROLS=true \
 RUN_OBSERVABILITY=true \
 RUN_RELEASE_RENDER=true \

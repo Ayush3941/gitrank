@@ -15,6 +15,9 @@ For consolidated execution, use:
 - `make verify-live-v2-inputs` as preflight for required live credentials and
   environment inputs
 
+Use `.env.v2-live-gates.example` as the source template for required
+environment variables.
+
 ## 1) Production Observability On Live Traffic
 
 Checklist refs:

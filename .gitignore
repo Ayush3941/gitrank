@@ -7,6 +7,7 @@
 .env
 .env.*
 !.env.example
+!gitrank/.env.v2-live-gates.example
 *.pem
 *.key
 
