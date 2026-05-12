@@ -1346,6 +1346,215 @@ func TestRunNextExecutesQuestBackfillUserJobAndCompletes(t *testing.T) {
 	}
 }
 
+func TestRunNextExecutesScoreHistoryBackfillUserJobAndCompletes(t *testing.T) {
+	now := time.Now().UTC().Add(4 * time.Minute).Truncate(time.Second)
+	const userID = "8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4"
+	observedPaths := make([]string, 0, 2)
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		observedPaths = append(observedPaths, r.Method+" "+r.URL.Path)
+		if got := r.Header.Get("X-Request-ID"); got != "score-history-backfill-correlation" {
+			t.Fatalf("request id = %q for %s, want score-history-backfill-correlation", got, r.URL.Path)
+		}
+		if r.Header.Get("traceparent") == "" {
+			t.Fatalf("traceparent header missing for %s", r.URL.Path)
+		}
+		switch r.URL.Path {
+		case "/v1/score/users/" + userID + "/replay":
+			var observed contracts.ReplayUserScoresRequest
+			if err := json.NewDecoder(r.Body).Decode(&observed); err != nil {
+				t.Fatalf("decode score request: %v", err)
+			}
+			if observed.TriggerType != "backfill" {
+				t.Fatalf("score trigger = %q, want backfill", observed.TriggerType)
+			}
+			w.WriteHeader(http.StatusAccepted)
+			_ = json.NewEncoder(w).Encode(contracts.ReplayUserScoresResponse{
+				Snapshot: contracts.UserScoreSnapshotResponse{
+					ReplayRunID:     "score-history-run-1",
+					UserID:          userID,
+					ScoreVersion:    "score/v1",
+					TriggerType:     "backfill",
+					TotalXP:         520,
+					Level:           "Builder",
+					RankTier:        "Gold III",
+					SourceWatermark: now,
+					ComputedAt:      now.Add(time.Second),
+				},
+				Events: 9,
+				Badges: []contracts.BadgeView{{Key: "consistent-contributor"}},
+			})
+		case "/v1/profile/users/" + userID + "/refresh":
+			w.WriteHeader(http.StatusAccepted)
+			_ = json.NewEncoder(w).Encode(contracts.ProfileRefreshResponse{
+				Status:                 "completed",
+				UserID:                 userID,
+				ProfileSnapshotID:      "profile-score-history-1",
+				ProfileSnapshotVersion: "profile/v1",
+				ScoreVersion:           "score/v1",
+				TotalXP:                520,
+				LevelLabel:             "Builder",
+				SourceWatermark:        now,
+				RefreshedAt:            now.Add(2 * time.Second),
+				StaleAfter:             now.Add(15 * time.Minute),
+			})
+		default:
+			t.Fatalf("unexpected path %s", r.URL.Path)
+		}
+	}))
+	defer server.Close()
+
+	cfg := testServiceConfig()
+	cfg.Services.ScoringBaseURL = server.URL
+	cfg.Services.ProfileBaseURL = server.URL
+	cfg.Services.RequestTimeout = time.Second
+	scheduler := New(cfg)
+
+	enqueue, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "score_history_backfill_user", UserID: userID}, "score-history-backfill-correlation", now)
+	if err != nil {
+		t.Fatalf("EnqueueSync() error = %v", err)
+	}
+
+	run, err := scheduler.RunNext(context.Background(), now)
+	if err != nil {
+		t.Fatalf("RunNext() error = %v", err)
+	}
+	if run.Status != "completed" {
+		t.Fatalf("run status = %q, want completed", run.Status)
+	}
+	if run.ScoreHistoryBackfill == nil || run.ScoreHistoryBackfill.UserID != userID {
+		t.Fatalf("score history backfill = %+v, want user-scoped backfill response", run.ScoreHistoryBackfill)
+	}
+	if run.ScoreHistoryBackfill.ScoreReplay == nil || run.ScoreHistoryBackfill.ProfileRefresh == nil {
+		t.Fatalf("score history backfill = %+v, want score replay and profile refresh stages", run.ScoreHistoryBackfill)
+	}
+	expectedPaths := []string{
+		"POST /v1/score/users/" + userID + "/replay",
+		"POST /v1/profile/users/" + userID + "/refresh",
+	}
+	if len(observedPaths) != len(expectedPaths) {
+		t.Fatalf("observed paths = %+v, want %+v", observedPaths, expectedPaths)
+	}
+	for i := range expectedPaths {
+		if observedPaths[i] != expectedPaths[i] {
+			t.Fatalf("observed paths = %+v, want %+v", observedPaths, expectedPaths)
+		}
+	}
+	if run.Job == nil || run.Job.ID != enqueue.JobIDs[0] || run.Job.Type != string(store.ScoreHistoryBackfillJob) {
+		t.Fatalf("run job = %+v, want executed score history backfill job id %q", run.Job, enqueue.JobIDs[0])
+	}
+}
+
+func TestRunNextExecutesBadgeBackfillUserJobAndCompletes(t *testing.T) {
+	now := time.Now().UTC().Add(4 * time.Minute).Truncate(time.Second)
+	const userID = "8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4"
+	observedPaths := make([]string, 0, 3)
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		observedPaths = append(observedPaths, r.Method+" "+r.URL.Path)
+		if got := r.Header.Get("X-Request-ID"); got != "badge-backfill-correlation" {
+			t.Fatalf("request id = %q for %s, want badge-backfill-correlation", got, r.URL.Path)
+		}
+		if r.Header.Get("traceparent") == "" {
+			t.Fatalf("traceparent header missing for %s", r.URL.Path)
+		}
+		switch r.URL.Path {
+		case "/v1/score/users/" + userID + "/replay":
+			var observed contracts.ReplayUserScoresRequest
+			if err := json.NewDecoder(r.Body).Decode(&observed); err != nil {
+				t.Fatalf("decode score request: %v", err)
+			}
+			if observed.TriggerType != "backfill" {
+				t.Fatalf("score trigger = %q, want backfill", observed.TriggerType)
+			}
+			w.WriteHeader(http.StatusAccepted)
+			_ = json.NewEncoder(w).Encode(contracts.ReplayUserScoresResponse{
+				Snapshot: contracts.UserScoreSnapshotResponse{
+					ReplayRunID:     "badge-backfill-run-1",
+					UserID:          userID,
+					ScoreVersion:    "score/v1",
+					TriggerType:     "backfill",
+					TotalXP:         610,
+					Level:           "Builder",
+					RankTier:        "Gold II",
+					SourceWatermark: now,
+					ComputedAt:      now.Add(time.Second),
+				},
+				Events: 11,
+				Badges: []contracts.BadgeView{{Key: "first_merged_pr"}, {Key: "test-builder"}},
+			})
+		case "/v1/profile/users/" + userID + "/quests/backfill":
+			w.WriteHeader(http.StatusAccepted)
+			_ = json.NewEncoder(w).Encode(contracts.QuestBackfillResponse{
+				Status:       "backfilled",
+				UserID:       userID,
+				Materialized: 4,
+				Completed:    2,
+				QuestIDs:     []string{"quest-consistency", "quest-regression-tests"},
+				GeneratedAt:  now.Add(2 * time.Second),
+			})
+		case "/v1/profile/users/" + userID + "/refresh":
+			w.WriteHeader(http.StatusAccepted)
+			_ = json.NewEncoder(w).Encode(contracts.ProfileRefreshResponse{
+				Status:                 "completed",
+				UserID:                 userID,
+				ProfileSnapshotID:      "profile-badge-backfill-1",
+				ProfileSnapshotVersion: "profile/v1",
+				ScoreVersion:           "score/v1",
+				TotalXP:                610,
+				LevelLabel:             "Builder",
+				SourceWatermark:        now,
+				RefreshedAt:            now.Add(3 * time.Second),
+				StaleAfter:             now.Add(15 * time.Minute),
+			})
+		default:
+			t.Fatalf("unexpected path %s", r.URL.Path)
+		}
+	}))
+	defer server.Close()
+
+	cfg := testServiceConfig()
+	cfg.Services.ScoringBaseURL = server.URL
+	cfg.Services.ProfileBaseURL = server.URL
+	cfg.Services.RequestTimeout = time.Second
+	scheduler := New(cfg)
+
+	enqueue, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "badge_backfill_user", UserID: userID}, "badge-backfill-correlation", now)
+	if err != nil {
+		t.Fatalf("EnqueueSync() error = %v", err)
+	}
+
+	run, err := scheduler.RunNext(context.Background(), now)
+	if err != nil {
+		t.Fatalf("RunNext() error = %v", err)
+	}
+	if run.Status != "completed" {
+		t.Fatalf("run status = %q, want completed", run.Status)
+	}
+	if run.BadgeBackfill == nil || run.BadgeBackfill.UserID != userID {
+		t.Fatalf("badge backfill = %+v, want user-scoped badge backfill response", run.BadgeBackfill)
+	}
+	if run.BadgeBackfill.ScoreReplay == nil || run.BadgeBackfill.QuestBackfill == nil || run.BadgeBackfill.ProfileRefresh == nil {
+		t.Fatalf("badge backfill = %+v, want score replay, quest backfill, and profile refresh stages", run.BadgeBackfill)
+	}
+	expectedPaths := []string{
+		"POST /v1/score/users/" + userID + "/replay",
+		"POST /v1/profile/users/" + userID + "/quests/backfill",
+		"POST /v1/profile/users/" + userID + "/refresh",
+	}
+	if len(observedPaths) != len(expectedPaths) {
+		t.Fatalf("observed paths = %+v, want %+v", observedPaths, expectedPaths)
+	}
+	for i := range expectedPaths {
+		if observedPaths[i] != expectedPaths[i] {
+			t.Fatalf("observed paths = %+v, want %+v", observedPaths, expectedPaths)
+		}
+	}
+	if run.Job == nil || run.Job.ID != enqueue.JobIDs[0] || run.Job.Type != string(store.BadgeBackfillJob) {
+		t.Fatalf("run job = %+v, want executed badge backfill job id %q", run.Job, enqueue.JobIDs[0])
+	}
+}
+
 func TestRunNextExecutesUserHistoryBackfillJobAndCompletes(t *testing.T) {
 	now := time.Now().UTC().Add(4 * time.Minute).Truncate(time.Second)
 	const userID = "8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4"

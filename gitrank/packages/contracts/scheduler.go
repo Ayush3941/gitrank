@@ -87,6 +87,8 @@ type SchedulerRunResponse struct {
 	ProfileRefresh             *SchedulerProfileRefreshResponse                   `json:"profile_refresh,omitempty"`
 	ReportMaterialization      *SchedulerPullRequestReportMaterializationResponse `json:"report_materialization,omitempty"`
 	ReportBackfill             *SchedulerPullRequestReportBackfillResponse        `json:"report_backfill,omitempty"`
+	ScoreHistoryBackfill       *SchedulerScoreHistoryBackfillResponse             `json:"score_history_backfill,omitempty"`
+	BadgeBackfill              *SchedulerBadgeBackfillResponse                    `json:"badge_backfill,omitempty"`
 	QuestBackfill              *SchedulerQuestBackfillResponse                    `json:"quest_backfill,omitempty"`
 	LeaderboardMaterialization *SchedulerLeaderboardMaterializationResponse       `json:"leaderboard_materialization,omitempty"`
 	LeaderboardHistoryBackfill *SchedulerLeaderboardHistoryBackfillResponse       `json:"leaderboard_history_backfill,omitempty"`
@@ -181,6 +183,27 @@ type SchedulerPullRequestReportBackfillResponse struct {
 	CorrelationID     string    `json:"correlation_id,omitempty"`
 	StartedAt         time.Time `json:"started_at"`
 	FinishedAt        time.Time `json:"finished_at"`
+}
+
+type SchedulerScoreHistoryBackfillResponse struct {
+	Status         string                                 `json:"status"`
+	UserID         string                                 `json:"user_id"`
+	ScoreReplay    *SchedulerScoreReplayExecutionResponse `json:"score_replay,omitempty"`
+	ProfileRefresh *SchedulerProfileRefreshResponse       `json:"profile_refresh,omitempty"`
+	CorrelationID  string                                 `json:"correlation_id,omitempty"`
+	StartedAt      time.Time                              `json:"started_at"`
+	FinishedAt     time.Time                              `json:"finished_at"`
+}
+
+type SchedulerBadgeBackfillResponse struct {
+	Status         string                                 `json:"status"`
+	UserID         string                                 `json:"user_id"`
+	ScoreReplay    *SchedulerScoreReplayExecutionResponse `json:"score_replay,omitempty"`
+	QuestBackfill  *SchedulerQuestBackfillResponse        `json:"quest_backfill,omitempty"`
+	ProfileRefresh *SchedulerProfileRefreshResponse       `json:"profile_refresh,omitempty"`
+	CorrelationID  string                                 `json:"correlation_id,omitempty"`
+	StartedAt      time.Time                              `json:"started_at"`
+	FinishedAt     time.Time                              `json:"finished_at"`
 }
 
 type SchedulerQuestBackfillResponse struct {

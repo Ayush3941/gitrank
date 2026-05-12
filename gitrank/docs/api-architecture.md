@@ -242,7 +242,7 @@ Current state:
 - `POST /v1/sync/commit/execute` performs a bounded live commit sync and persists one public commit in PostgreSQL
 - manual sync requests persist queued sync-run records and can be queried through `GET /v1/sync/runs` with user, repository, subject, requester, correlation, and delivery filters
 - sync requests still enqueue scheduler runtime-state jobs rather than a dedicated normalized job table
-- historical badge-history and score-history backfill orchestration is still pending beyond the current bounded scheduler execution paths
+- bounded user-mode historical orchestration now covers score history, badge evidence, quests, PR reports, and leaderboard seasons through explicit scheduler modes
 
 ### PR Analyzer
 
@@ -385,6 +385,8 @@ Current state:
 - the worker-mode scheduler process can execute ready `analysis.pull_request` jobs by calling `pr-analyzer /v1/analyze/pull-request/execute`
 - the worker-mode scheduler process can execute ready `score.replay_user` jobs by calling `scoring-engine /v1/score/users/{user_id}/replay` with a `backfill` trigger
 - the worker-mode scheduler process can execute ready `profile.refresh_user` jobs by calling `profile-service /v1/profile/users/{user_id}/refresh`
+- the worker-mode scheduler process can execute ready `score_history.backfill_user` jobs by chaining `score.replay_user` plus `profile.refresh_user`
+- the worker-mode scheduler process can execute ready `badge.backfill_user` jobs by chaining `score.replay_user`, `quest.backfill_user`, and `profile.refresh_user`
 - the worker-mode scheduler process can execute ready `quest.backfill_user` jobs by calling `profile-service /v1/profile/users/{user_id}/quests/backfill`
 - the worker-mode scheduler process can execute ready `report.materialize_pull_request` jobs by calling `profile-service /v1/pr/{owner}/{repo}/{number}/report/materialize`
 - the worker-mode scheduler process can execute ready `report.backfill_user_pull_requests` jobs by calling `profile-service /v1/profile/users/{user_id}/pr-reports/backfill`

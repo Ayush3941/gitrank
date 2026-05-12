@@ -282,6 +282,52 @@ func TestBuildSyncJobsQuestBackfillUser(t *testing.T) {
 	}
 }
 
+func TestBuildSyncJobsScoreHistoryBackfillUser(t *testing.T) {
+	const userID = "8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4"
+	jobs, err := BuildSyncJobs(contracts.SyncRequest{
+		Mode:   "score_history_backfill_user",
+		UserID: userID,
+	}, "github-sync", "score-history-backfill-correlation", 5)
+	if err != nil {
+		t.Fatalf("BuildSyncJobs() error = %v", err)
+	}
+	if len(jobs) != 1 {
+		t.Fatalf("jobs len = %d, want 1", len(jobs))
+	}
+	if jobs[0].Type != ScoreHistoryBackfillJob {
+		t.Fatalf("job type = %q, want %q", jobs[0].Type, ScoreHistoryBackfillJob)
+	}
+	if jobs[0].Subject != userID {
+		t.Fatalf("subject = %q, want %q", jobs[0].Subject, userID)
+	}
+	if jobs[0].DedupeKey != "score_history_backfill_user:"+userID {
+		t.Fatalf("dedupe key = %q, want score_history_backfill_user:%s", jobs[0].DedupeKey, userID)
+	}
+}
+
+func TestBuildSyncJobsBadgeBackfillUser(t *testing.T) {
+	const userID = "8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4"
+	jobs, err := BuildSyncJobs(contracts.SyncRequest{
+		Mode:   "badge_backfill_user",
+		UserID: userID,
+	}, "github-sync", "badge-backfill-correlation", 5)
+	if err != nil {
+		t.Fatalf("BuildSyncJobs() error = %v", err)
+	}
+	if len(jobs) != 1 {
+		t.Fatalf("jobs len = %d, want 1", len(jobs))
+	}
+	if jobs[0].Type != BadgeBackfillJob {
+		t.Fatalf("job type = %q, want %q", jobs[0].Type, BadgeBackfillJob)
+	}
+	if jobs[0].Subject != userID {
+		t.Fatalf("subject = %q, want %q", jobs[0].Subject, userID)
+	}
+	if jobs[0].DedupeKey != "badge_backfill_user:"+userID {
+		t.Fatalf("dedupe key = %q, want badge_backfill_user:%s", jobs[0].DedupeKey, userID)
+	}
+}
+
 func TestBuildSyncJobsLeaderboardMaterializeSeason(t *testing.T) {
 	jobs, err := BuildSyncJobs(contracts.SyncRequest{
 		Mode: "leaderboard_materialize_season",

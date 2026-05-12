@@ -90,6 +90,8 @@ type jobExecution struct {
 	ProfileRefresh             *contracts.SchedulerProfileRefreshResponse
 	ReportMaterialization      *contracts.SchedulerPullRequestReportMaterializationResponse
 	ReportBackfill             *contracts.SchedulerPullRequestReportBackfillResponse
+	ScoreHistoryBackfill       *contracts.SchedulerScoreHistoryBackfillResponse
+	BadgeBackfill              *contracts.SchedulerBadgeBackfillResponse
 	QuestBackfill              *contracts.SchedulerQuestBackfillResponse
 	LeaderboardMaterialization *contracts.SchedulerLeaderboardMaterializationResponse
 	LeaderboardHistoryBackfill *contracts.SchedulerLeaderboardHistoryBackfillResponse
@@ -227,6 +229,8 @@ func (s *Service) RunNext(ctx context.Context, now time.Time) (contracts.Schedul
 	response.ProfileRefresh = execution.ProfileRefresh
 	response.ReportMaterialization = execution.ReportMaterialization
 	response.ReportBackfill = execution.ReportBackfill
+	response.ScoreHistoryBackfill = execution.ScoreHistoryBackfill
+	response.BadgeBackfill = execution.BadgeBackfill
 	response.QuestBackfill = execution.QuestBackfill
 	response.LeaderboardMaterialization = execution.LeaderboardMaterialization
 	response.LeaderboardHistoryBackfill = execution.LeaderboardHistoryBackfill
@@ -404,6 +408,10 @@ func (s *Service) executeLeasedJob(ctx context.Context, job store.QueueJob) (job
 			return jobExecution{}, err
 		}
 		return jobExecution{ReportBackfill: &execution}, nil
+	case store.ScoreHistoryBackfillJob:
+		return s.executeScoreHistoryBackfillJob(ctx, job)
+	case store.BadgeBackfillJob:
+		return s.executeBadgeBackfillJob(ctx, job)
 	case store.QuestBackfillUserJob:
 		if s.profileRunner == nil {
 			return jobExecution{}, fmt.Errorf("profile refresh runner is not configured")
@@ -442,6 +450,81 @@ func (s *Service) executeLeasedJob(ctx context.Context, job store.QueueJob) (job
 	default:
 		return jobExecution{}, fmt.Errorf("job type %s is not executable by the in-process worker", job.Type)
 	}
+}
+
+func (s *Service) executeScoreHistoryBackfillJob(ctx context.Context, job store.QueueJob) (jobExecution, error) {
+	if s.scoreRunner == nil {
+		return jobExecution{}, fmt.Errorf("score replay runner is not configured")
+	}
+	if s.profileRunner == nil {
+		return jobExecution{}, fmt.Errorf("profile refresh runner is not configured")
+	}
+
+	req, err := syncRequestFromJob(job)
+	if err != nil {
+		return jobExecution{}, err
+	}
+
+	correlationID := correlationIDForJob(job)
+	startedAt := time.Now().UTC()
+	scoreExecution, err := s.scoreRunner.ReplayUser(ctx, req.UserID, correlationID)
+	if err != nil {
+		return jobExecution{}, err
+	}
+	profileExecution, err := s.profileRunner.RefreshProfile(ctx, req.UserID, correlationID)
+	if err != nil {
+		return jobExecution{}, err
+	}
+
+	return jobExecution{ScoreHistoryBackfill: &contracts.SchedulerScoreHistoryBackfillResponse{
+		Status:         "completed",
+		UserID:         req.UserID,
+		ScoreReplay:    &scoreExecution,
+		ProfileRefresh: &profileExecution,
+		CorrelationID:  strings.TrimSpace(correlationID),
+		StartedAt:      startedAt,
+		FinishedAt:     time.Now().UTC(),
+	}}, nil
+}
+
+func (s *Service) executeBadgeBackfillJob(ctx context.Context, job store.QueueJob) (jobExecution, error) {
+	if s.scoreRunner == nil {
+		return jobExecution{}, fmt.Errorf("score replay runner is not configured")
+	}
+	if s.profileRunner == nil {
+		return jobExecution{}, fmt.Errorf("profile refresh runner is not configured")
+	}
+
+	req, err := syncRequestFromJob(job)
+	if err != nil {
+		return jobExecution{}, err
+	}
+
+	correlationID := correlationIDForJob(job)
+	startedAt := time.Now().UTC()
+	scoreExecution, err := s.scoreRunner.ReplayUser(ctx, req.UserID, correlationID)
+	if err != nil {
+		return jobExecution{}, err
+	}
+	questExecution, err := s.profileRunner.BackfillQuests(ctx, req.UserID, correlationID)
+	if err != nil {
+		return jobExecution{}, err
+	}
+	profileExecution, err := s.profileRunner.RefreshProfile(ctx, req.UserID, correlationID)
+	if err != nil {
+		return jobExecution{}, err
+	}
+
+	return jobExecution{BadgeBackfill: &contracts.SchedulerBadgeBackfillResponse{
+		Status:         "completed",
+		UserID:         req.UserID,
+		ScoreReplay:    &scoreExecution,
+		QuestBackfill:  &questExecution,
+		ProfileRefresh: &profileExecution,
+		CorrelationID:  strings.TrimSpace(correlationID),
+		StartedAt:      startedAt,
+		FinishedAt:     time.Now().UTC(),
+	}}, nil
 }
 
 func (s *Service) executePullRequestGradeJob(ctx context.Context, job store.QueueJob) (jobExecution, error) {
@@ -1333,7 +1416,7 @@ func splitExecutionMetricKey(key string) (string, string) {
 }
 
 func isExecutableJob(job store.QueueJob, now time.Time) bool {
-	return (job.Type == store.SyncInstallationJob || job.Type == store.SyncRepositoryJob || job.Type == store.SyncUserHistoryJob || job.Type == store.SyncPullRequestJob || job.Type == store.SyncReviewJob || job.Type == store.SyncIssueJob || job.Type == store.SyncCommitJob || job.Type == store.AnalysisPullRequestJob || job.Type == store.ScoreReplayUserJob || job.Type == store.ProfileRefreshUserJob || job.Type == store.ReportMaterializePRJob || job.Type == store.ReportBackfillUserPRsJob || job.Type == store.QuestBackfillUserJob || job.Type == store.LeaderboardMaterializeJob || job.Type == store.LeaderboardHistoryJob || job.Type == store.BackfillUserHistoryJob || job.Type == store.GradePullRequestJob) &&
+	return (job.Type == store.SyncInstallationJob || job.Type == store.SyncRepositoryJob || job.Type == store.SyncUserHistoryJob || job.Type == store.SyncPullRequestJob || job.Type == store.SyncReviewJob || job.Type == store.SyncIssueJob || job.Type == store.SyncCommitJob || job.Type == store.AnalysisPullRequestJob || job.Type == store.ScoreReplayUserJob || job.Type == store.ProfileRefreshUserJob || job.Type == store.ReportMaterializePRJob || job.Type == store.ReportBackfillUserPRsJob || job.Type == store.QuestBackfillUserJob || job.Type == store.ScoreHistoryBackfillJob || job.Type == store.BadgeBackfillJob || job.Type == store.LeaderboardMaterializeJob || job.Type == store.LeaderboardHistoryJob || job.Type == store.BackfillUserHistoryJob || job.Type == store.GradePullRequestJob) &&
 		job.Status == store.JobPending &&
 		!job.NotBefore.After(now.UTC())
 }
@@ -1467,6 +1550,26 @@ func syncRequestFromJob(job store.QueueJob) (contracts.SyncRequest, error) {
 			req.UserID = strings.TrimSpace(job.Subject)
 		}
 		req.Mode = "quest_backfill_user"
+		userID, err := contracts.NormalizeUUID(req.UserID, "user_id")
+		if err != nil {
+			return contracts.SyncRequest{}, err
+		}
+		req.UserID = userID
+	case store.ScoreHistoryBackfillJob:
+		if strings.TrimSpace(req.UserID) == "" {
+			req.UserID = strings.TrimSpace(job.Subject)
+		}
+		req.Mode = "score_history_backfill_user"
+		userID, err := contracts.NormalizeUUID(req.UserID, "user_id")
+		if err != nil {
+			return contracts.SyncRequest{}, err
+		}
+		req.UserID = userID
+	case store.BadgeBackfillJob:
+		if strings.TrimSpace(req.UserID) == "" {
+			req.UserID = strings.TrimSpace(job.Subject)
+		}
+		req.Mode = "badge_backfill_user"
 		userID, err := contracts.NormalizeUUID(req.UserID, "user_id")
 		if err != nil {
 			return contracts.SyncRequest{}, err

@@ -144,6 +144,46 @@ func BuildSyncJobs(req contracts.SyncRequest, queueName, correlationID string, m
 			return nil, err
 		}
 		return []QueueJob{job}, nil
+	case "score_history_backfill_user":
+		if req.UserID == "" {
+			return nil, errors.New("user_id is required when mode=score_history_backfill_user")
+		}
+		job, err := NewQueueJob(QueueJobInput{
+			QueueName:     queueName,
+			Type:          ScoreHistoryBackfillJob,
+			CorrelationID: correlationID,
+			Subject:       req.UserID,
+			DedupeKey:     "score_history_backfill_user:" + req.UserID,
+			MaxAttempts:   maxAttempts,
+			Payload: map[string]string{
+				"mode":    "score_history_backfill_user",
+				"user_id": req.UserID,
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+		return []QueueJob{job}, nil
+	case "badge_backfill_user":
+		if req.UserID == "" {
+			return nil, errors.New("user_id is required when mode=badge_backfill_user")
+		}
+		job, err := NewQueueJob(QueueJobInput{
+			QueueName:     queueName,
+			Type:          BadgeBackfillJob,
+			CorrelationID: correlationID,
+			Subject:       req.UserID,
+			DedupeKey:     "badge_backfill_user:" + req.UserID,
+			MaxAttempts:   maxAttempts,
+			Payload: map[string]string{
+				"mode":    "badge_backfill_user",
+				"user_id": req.UserID,
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+		return []QueueJob{job}, nil
 	case "backfill_user_history":
 		if req.UserID == "" {
 			return nil, errors.New("user_id is required when mode=backfill_user_history")
