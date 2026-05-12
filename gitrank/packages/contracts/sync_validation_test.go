@@ -102,3 +102,18 @@ func TestSyncRequestNormalizeValidatesProfileRefreshUserID(t *testing.T) {
 		t.Fatal("Normalize() error = nil, want invalid user_id rejection")
 	}
 }
+
+func TestSyncRequestNormalizeAcceptsGradePullRequestTarget(t *testing.T) {
+	req := SyncRequest{
+		Mode:       "grade_pull_request",
+		UserID:     "8F0C38C9-671F-499D-A1B7-1F9F4F57CBB4",
+		Repository: "octo/repo",
+		Number:     17,
+	}
+	if err := req.Normalize(); err != nil {
+		t.Fatalf("Normalize() error = %v", err)
+	}
+	if req.UserID != "8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4" || req.Repository != "octo/repo" || req.Number != 17 {
+		t.Fatalf("request = %+v, want normalized grade PR target", req)
+	}
+}

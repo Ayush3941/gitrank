@@ -142,6 +142,31 @@ func TestBuildSyncJobsProfileRefreshUser(t *testing.T) {
 	}
 }
 
+func TestBuildSyncJobsGradePullRequest(t *testing.T) {
+	const userID = "8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4"
+	jobs, err := BuildSyncJobs(contracts.SyncRequest{
+		Mode:       "grade_pull_request",
+		UserID:     userID,
+		Repository: "octo/repo",
+		Number:     17,
+	}, "github-sync", "grade-correlation", 5)
+	if err != nil {
+		t.Fatalf("BuildSyncJobs() error = %v", err)
+	}
+	if len(jobs) != 1 {
+		t.Fatalf("jobs len = %d, want 1", len(jobs))
+	}
+	if jobs[0].Type != GradePullRequestJob {
+		t.Fatalf("job type = %q, want %q", jobs[0].Type, GradePullRequestJob)
+	}
+	if jobs[0].Subject != "octo/repo#17" {
+		t.Fatalf("subject = %q, want octo/repo#17", jobs[0].Subject)
+	}
+	if jobs[0].DedupeKey != "grade_pull_request:"+userID+":octo/repo#17" {
+		t.Fatalf("dedupe key = %q, want grade_pull_request:%s:octo/repo#17", jobs[0].DedupeKey, userID)
+	}
+}
+
 func TestBuildSyncJobsAnalysisPullRequest(t *testing.T) {
 	jobs, err := BuildSyncJobs(contracts.SyncRequest{
 		Mode:       "analysis_pull_request",

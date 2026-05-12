@@ -85,6 +85,7 @@ type SchedulerRunResponse struct {
 	Analysis       *SchedulerPullRequestAnalysisResponse  `json:"analysis,omitempty"`
 	ScoreReplay    *SchedulerScoreReplayExecutionResponse `json:"score_replay,omitempty"`
 	ProfileRefresh *SchedulerProfileRefreshResponse       `json:"profile_refresh,omitempty"`
+	Grade          *SchedulerPullRequestGradeResponse     `json:"grade,omitempty"`
 	LastUpdatedAt  time.Time                              `json:"last_updated_at"`
 }
 
@@ -130,6 +131,33 @@ type SchedulerProfileRefreshResponse struct {
 	CorrelationID          string    `json:"correlation_id,omitempty"`
 	StartedAt              time.Time `json:"started_at"`
 	FinishedAt             time.Time `json:"finished_at"`
+}
+
+type SchedulerPullRequestReportResponse struct {
+	Status          string    `json:"status"`
+	Repository      string    `json:"repository"`
+	Number          int       `json:"number"`
+	ContributionID  string    `json:"contribution_id"`
+	EvidenceStatus  string    `json:"evidence_status,omitempty"`
+	ScoreVersion    string    `json:"score_version,omitempty"`
+	AnalysisVersion string    `json:"analysis_version,omitempty"`
+	IsStale         bool      `json:"is_stale"`
+	GeneratedAt     time.Time `json:"generated_at"`
+}
+
+type SchedulerPullRequestGradeResponse struct {
+	Status         string                                 `json:"status"`
+	Repository     string                                 `json:"repository"`
+	Number         int                                    `json:"number"`
+	UserID         string                                 `json:"user_id"`
+	Sync           *GitHubSyncExecutionResponse           `json:"sync,omitempty"`
+	Analysis       *SchedulerPullRequestAnalysisResponse  `json:"analysis,omitempty"`
+	ScoreReplay    *SchedulerScoreReplayExecutionResponse `json:"score_replay,omitempty"`
+	ProfileRefresh *SchedulerProfileRefreshResponse       `json:"profile_refresh,omitempty"`
+	Report         *SchedulerPullRequestReportResponse    `json:"report,omitempty"`
+	CorrelationID  string                                 `json:"correlation_id,omitempty"`
+	StartedAt      time.Time                              `json:"started_at"`
+	FinishedAt     time.Time                              `json:"finished_at"`
 }
 
 type SchedulerDeadLetterListResponse struct {

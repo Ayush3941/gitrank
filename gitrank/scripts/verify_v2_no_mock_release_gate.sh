@@ -42,6 +42,7 @@ for test_name in \
   "ReplayUserPersistsLedgerAndSnapshot" \
   "RefreshProfileByUserIDPersistsFreshSnapshot" \
   "RunNextExecutesProfileRefreshJobAndCompletes" \
+  "RunNextExecutesPullRequestGradeJobAndCompletes" \
   "PublicResponseFiltersHiddenRepositories"; do
   require_contains "$critical_flows" "$test_name" "critical worker/profile flow verification"
 done

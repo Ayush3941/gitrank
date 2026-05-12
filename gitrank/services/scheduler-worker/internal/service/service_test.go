@@ -1143,6 +1143,165 @@ func TestRunNextExecutesProfileRefreshJobAndCompletes(t *testing.T) {
 	}
 }
 
+func TestRunNextExecutesPullRequestGradeJobAndCompletes(t *testing.T) {
+	now := time.Now().UTC().Add(3 * time.Minute).Truncate(time.Second)
+	const userID = "8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4"
+	observedPaths := make([]string, 0)
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		observedPaths = append(observedPaths, r.Method+" "+r.URL.Path)
+		if got := r.Header.Get("X-Request-ID"); got != "grade-correlation" {
+			t.Fatalf("request id = %q for %s, want grade-correlation", got, r.URL.Path)
+		}
+		if r.Header.Get("traceparent") == "" {
+			t.Fatalf("traceparent header missing for %s", r.URL.Path)
+		}
+		switch r.URL.Path {
+		case "/v1/sync/pull-request/execute":
+			var observed contracts.SyncRequest
+			if err := json.NewDecoder(r.Body).Decode(&observed); err != nil {
+				t.Fatalf("decode sync request: %v", err)
+			}
+			if observed.Mode != "pull_request" || observed.Repository != "octo/repo" || observed.Number != 7 {
+				t.Fatalf("sync request = %+v, want octo/repo#7", observed)
+			}
+			_ = json.NewEncoder(w).Encode(contracts.GitHubSyncExecutionResponse{
+				Status:        "completed",
+				Mode:          "pull_request",
+				Repository:    "octo/repo",
+				Number:        7,
+				CorrelationID: "grade-correlation",
+				StartedAt:     now,
+				FinishedAt:    now.Add(time.Second),
+			})
+		case "/v1/analyze/pull-request/execute":
+			var observed contracts.SyncRequest
+			if err := json.NewDecoder(r.Body).Decode(&observed); err != nil {
+				t.Fatalf("decode analysis request: %v", err)
+			}
+			if observed.Mode != "analysis_pull_request" || observed.Repository != "octo/repo" || observed.Number != 7 {
+				t.Fatalf("analysis request = %+v, want octo/repo#7", observed)
+			}
+			_ = json.NewEncoder(w).Encode(contracts.PullRequestAnalysisResponse{
+				AnalysisID:       "b2000000-0000-4000-8000-000000000005",
+				PullRequestID:    "b2000000-0000-4000-8000-000000000004",
+				SchemaVersion:    contracts.PullRequestAnalysisSchemaVersion,
+				AnalyzerVersion:  "deterministic.v1",
+				AnalysisSource:   contracts.AnalysisSourceDeterministic,
+				ValidationStatus: contracts.AnalysisValidationValidated,
+				Category:         "feature",
+				Summary:          "Persisted analyzer execution.",
+				Confidence:       0.86,
+				TechnicalDepth:   1.2,
+				ReviewStrength:   1.0,
+				FileBreakdown:    contracts.FileBreakdown{Source: 1},
+			})
+		case "/v1/score/users/" + userID + "/replay":
+			var observed contracts.ReplayUserScoresRequest
+			if err := json.NewDecoder(r.Body).Decode(&observed); err != nil {
+				t.Fatalf("decode score request: %v", err)
+			}
+			if observed.TriggerType != "backfill" {
+				t.Fatalf("score trigger = %q, want backfill", observed.TriggerType)
+			}
+			w.WriteHeader(http.StatusAccepted)
+			_ = json.NewEncoder(w).Encode(contracts.ReplayUserScoresResponse{
+				Snapshot: contracts.UserScoreSnapshotResponse{
+					ReplayRunID:     "score-run-1",
+					UserID:          userID,
+					ScoreVersion:    "score/v1",
+					TriggerType:     "backfill",
+					TotalXP:         240,
+					Level:           "Explorer",
+					RankTier:        "Bronze II",
+					SourceWatermark: now,
+					ComputedAt:      now.Add(2 * time.Second),
+				},
+				Events: 1,
+			})
+		case "/v1/profile/users/" + userID + "/refresh":
+			w.WriteHeader(http.StatusAccepted)
+			_ = json.NewEncoder(w).Encode(contracts.ProfileRefreshResponse{
+				Status:                 "completed",
+				UserID:                 userID,
+				ProfileSnapshotID:      "profile-snapshot-1",
+				ProfileSnapshotVersion: "profile/v1",
+				ScoreVersion:           "score/v1",
+				TotalXP:                240,
+				LevelLabel:             "Explorer",
+				SourceWatermark:        now,
+				RefreshedAt:            now.Add(3 * time.Second),
+				StaleAfter:             now.Add(15 * time.Minute),
+			})
+		case "/v1/pr/octo/repo/7/report":
+			_ = json.NewEncoder(w).Encode(contracts.PullRequestReportResponse{
+				Contribution: contracts.PRReportContribution{
+					ID:     "score-event-1",
+					Owner:  "octo",
+					Repo:   "repo",
+					Number: 7,
+					Title:  "Grade PR end to end",
+				},
+				EvidenceState:   contracts.PRReportEvidenceState{Status: "deterministic_only", DeterministicOnly: true},
+				ScoreVersion:    "score/v1",
+				AnalysisVersion: "deterministic.v1",
+				GeneratedAt:     now.Add(4 * time.Second),
+			})
+		default:
+			t.Fatalf("unexpected path %s", r.URL.Path)
+		}
+	}))
+	defer server.Close()
+
+	cfg := testServiceConfig()
+	cfg.Services.GitHubIngestorBaseURL = server.URL
+	cfg.Services.PRAnalyzerBaseURL = server.URL
+	cfg.Services.ScoringBaseURL = server.URL
+	cfg.Services.ProfileBaseURL = server.URL
+	cfg.Services.RequestTimeout = time.Second
+	scheduler := New(cfg)
+
+	enqueue, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "grade_pull_request", UserID: userID, Repository: "octo/repo", Number: 7}, "grade-correlation", now)
+	if err != nil {
+		t.Fatalf("EnqueueSync() error = %v", err)
+	}
+
+	run, err := scheduler.RunNext(context.Background(), now)
+	if err != nil {
+		t.Fatalf("RunNext() error = %v", err)
+	}
+	if run.Status != "completed" {
+		t.Fatalf("run status = %q, want completed", run.Status)
+	}
+	if run.Grade == nil || run.Grade.UserID != userID || run.Grade.Repository != "octo/repo" || run.Grade.Number != 7 {
+		t.Fatalf("grade = %+v, want completed grade for octo/repo#7", run.Grade)
+	}
+	if run.Grade.Sync == nil || run.Grade.Analysis == nil || run.Grade.ScoreReplay == nil || run.Grade.ProfileRefresh == nil || run.Grade.Report == nil {
+		t.Fatalf("grade = %+v, want every pipeline stage response", run.Grade)
+	}
+	if run.Grade.Report.EvidenceStatus != "deterministic_only" || run.Grade.Report.IsStale {
+		t.Fatalf("report = %+v, want non-stale deterministic report", run.Grade.Report)
+	}
+	expectedPaths := []string{
+		"POST /v1/sync/pull-request/execute",
+		"POST /v1/analyze/pull-request/execute",
+		"POST /v1/score/users/" + userID + "/replay",
+		"POST /v1/profile/users/" + userID + "/refresh",
+		"GET /v1/pr/octo/repo/7/report",
+	}
+	if len(observedPaths) != len(expectedPaths) {
+		t.Fatalf("observed paths = %+v, want %+v", observedPaths, expectedPaths)
+	}
+	for i := range expectedPaths {
+		if observedPaths[i] != expectedPaths[i] {
+			t.Fatalf("observed paths = %+v, want %+v", observedPaths, expectedPaths)
+		}
+	}
+	if run.Job == nil || run.Job.ID != enqueue.JobIDs[0] || run.Job.Type != string(store.GradePullRequestJob) {
+		t.Fatalf("run job = %+v, want executed grade job id %q", run.Job, enqueue.JobIDs[0])
+	}
+}
+
 func TestRunNextRetriesRepositoryJobOnUpstreamFailure(t *testing.T) {
 	now := time.Now().UTC().Add(time.Minute).Truncate(time.Second)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {

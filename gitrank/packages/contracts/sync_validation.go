@@ -106,6 +106,20 @@ func (req *SyncRequest) Normalize() error {
 			return errors.New("repository and number are required for pull_request, review, issue, and analysis_pull_request modes")
 		}
 		req.Repository = repository
+	case "grade_pull_request":
+		repository, err := NormalizeGitHubRepository(req.Repository)
+		if err != nil {
+			return err
+		}
+		if req.Number <= 0 {
+			return errors.New("repository and number are required for grade_pull_request mode")
+		}
+		userID, err := NormalizeUUID(req.UserID, "user_id")
+		if err != nil {
+			return err
+		}
+		req.Repository = repository
+		req.UserID = userID
 	case "commit":
 		repository, err := NormalizeGitHubRepository(req.Repository)
 		if err != nil {

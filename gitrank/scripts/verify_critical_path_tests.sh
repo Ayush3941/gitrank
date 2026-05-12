@@ -40,6 +40,7 @@ require_test "deterministic scoring" "func TestScoreMergedSecurityContribution" 
 require_test "scoring replay ledger" "func TestReplayUserPersistsLedgerAndSnapshot" "services/scoring-engine/internal/service"
 require_test "profile refresh persistence" "func TestRefreshProfileByUserIDPersistsFreshSnapshot" "services/profile-service/internal/service"
 require_test "scheduler profile refresh execution" "func TestRunNextExecutesProfileRefreshJobAndCompletes" "services/scheduler-worker/internal/service"
+require_test "scheduler PR grading pipeline execution" "func TestRunNextExecutesPullRequestGradeJobAndCompletes" "services/scheduler-worker/internal/service"
 require_test "public profile projection" "func TestPublicResponseFiltersHiddenRepositories" "services/profile-service/internal/service"
 require_test "public profile API contract" "func TestPublicProfileRoutePassesThroughPublicProfileContract" "services/api-gateway/internal/httpapi"
 

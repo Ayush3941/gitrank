@@ -99,6 +99,30 @@ func BuildSyncJobs(req contracts.SyncRequest, queueName, correlationID string, m
 			return nil, errors.New("repository and number are required when mode=analysis_pull_request")
 		}
 		return resourceJobs(queueName, correlationID, AnalysisPullRequestJob, req.Repository, req.Number, "", "analysis_pull_request", maxAttempts)
+	case "grade_pull_request":
+		if req.UserID == "" || req.Repository == "" || req.Number <= 0 {
+			return nil, errors.New("user_id, repository, and number are required when mode=grade_pull_request")
+		}
+		subject := req.Repository + "#" + strconv.Itoa(req.Number)
+		job, err := NewQueueJob(QueueJobInput{
+			QueueName:     queueName,
+			Type:          GradePullRequestJob,
+			CorrelationID: correlationID,
+			Repository:    req.Repository,
+			Subject:       subject,
+			DedupeKey:     "grade_pull_request:" + req.UserID + ":" + subject,
+			MaxAttempts:   maxAttempts,
+			Payload: map[string]any{
+				"mode":       "grade_pull_request",
+				"user_id":    req.UserID,
+				"repository": req.Repository,
+				"number":     req.Number,
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+		return []QueueJob{job}, nil
 	case "score_replay":
 		if req.UserID == "" {
 			return nil, errors.New("user_id is required when mode=score_replay")

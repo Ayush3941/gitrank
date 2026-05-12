@@ -342,6 +342,7 @@ Responsibilities:
 - execute persisted PR analysis jobs against `pr-analyzer`
 - execute score replay jobs against `scoring-engine` for real scoring backfill and repair flows
 - execute profile refresh jobs against `profile-service` after scoring changes
+- execute bounded PR grading pipeline jobs that chain sync, analysis, score replay, profile refresh, and live PR-report verification
 - apply retry and exponential backoff policy
 - throttle repeated sync generation per user and installation
 - expose filtered queue inspection for user, repository, installation, and correlation tracing
@@ -771,7 +772,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 - query-shape indexes for profile, scoring, sync-run, auth-session, and installation replay reads, with profile/scoring bulk reads avoiding application-level N+1 query loops
 - deterministic PR analysis and deterministic contribution scoring services, with schema-validated analysis envelopes, hard pre-analysis file/diff/token/cost limits, grounded-language and summary guardrails for future AI-assisted outputs, deterministic language and critical-path heuristics, issue-link and review-cycle extraction, regression datasets, scorer-side artifact validation before XP computation, and persisted replay runs with immutable score events plus historical score snapshots
 - a snapshot-backed profile-service read model with privacy controls, repository visibility, caching, and share-card data
-- a scheduler-worker orchestration layer with deduplicated enqueue, recurring backfill plans, plan pause/resume/cancel/delete controls, per-scope throttling, leasing, retries, dead letters, pause/cancel controls, manual replay, bounded in-process execution for `sync.installation`, `sync.repository`, `sync.user_history`, `sync.pull_request`, `sync.review`, `sync.issue`, `sync.commit`, `analysis.pull_request`, `score.replay_user`, and `profile.refresh_user` jobs, plus PostgreSQL-backed durable scheduler tables and cross-instance mutation serialization when `DATABASE_URL` is configured
+- a scheduler-worker orchestration layer with deduplicated enqueue, recurring backfill plans, plan pause/resume/cancel/delete controls, per-scope throttling, leasing, retries, dead letters, pause/cancel controls, manual replay, bounded in-process execution for `sync.installation`, `sync.repository`, `sync.user_history`, `sync.pull_request`, `sync.review`, `sync.issue`, `sync.commit`, `analysis.pull_request`, `score.replay_user`, `profile.refresh_user`, and `pipeline.grade_pull_request` jobs, plus PostgreSQL-backed durable scheduler tables and cross-instance mutation serialization when `DATABASE_URL` is configured
 - live profile route integration through api-gateway plus frontend BFF routes for public profile and settings pages, including settings-triggered sync, account data export, recent PR battle-report summaries, GitHub disconnect, and self-service account deletion
 - API-gateway product analytics counters for onboarding completion, sync success/failure, profile views, score explanation opens, and badge views, with bounded event payloads and no raw code/token capture
 - metrics endpoints and shared request instrumentation across the Go services, including queue depth, cache hit rate, sync duration, score computation duration, PR analysis breakdowns, estimated analysis token/cost telemetry, GitHub rate-limit tracking, and HTTP error counters
@@ -786,7 +787,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 
 Major gaps remain:
 
-- no external worker backend yet; scheduler-worker persistent mode now uses dedicated PostgreSQL tables for jobs, dead letters, backfill plans, rate-limit windows, and scheduler counters, but only bounded sync, PR-analysis, score-replay, and profile-refresh jobs currently auto-execute inside `scheduler-worker`
+- no external worker backend yet; scheduler-worker persistent mode now uses dedicated PostgreSQL tables for jobs, dead letters, backfill plans, rate-limit windows, and scheduler counters, but only bounded sync, PR-analysis, score-replay, profile-refresh, and PR-grading pipeline jobs currently auto-execute inside `scheduler-worker`
 - PR report pages now use a live read model with report-level suggested quest guidance, authenticated profiles expose recent persisted PR reports for dashboard rendering, and direct PR sync persists bounded changed-file metadata, derived file/diff features, and public patch excerpts for report evidence. The report still depends on analysis and score events already being persisted; exact scorer-component materialization, badge-unlock details, and full pipeline orchestration remain pending. Quests now use a live profile-owned read model and have persistence tables for definitions, assignments, progress events, completions, rewards, and audit events, but assignment/reward writers are still pending
 - live GitHub repository controls still need to be applied with `make apply-github-repository-controls` or GitHub settings, then verified with `make verify-github-repository-controls`
 - no deployed tracing backend or observability stack yet; dashboards and alert rules are committed, and `gitrank/docs/runbooks/production-observability.md` defines the live verification path
@@ -800,6 +801,7 @@ V2 direction:
 - pr-analyzer now requires PostgreSQL in production and persists deterministic `contribution_analyses` artifacts against synced PR evidence instead of returning only transient analysis envelopes
 - scheduler-worker now supports real `analysis.pull_request` jobs that call pr-analyzer's persisted evidence execution route before scoring replay
 - scheduler-worker now supports real `profile.refresh_user` jobs that call profile-service's persisted snapshot refresh route after scoring replay
+- scheduler-worker now supports real `pipeline.grade_pull_request` jobs that run bounded PR sync, persisted analysis, score replay, profile refresh, and live PR-report verification in one worker execution
 - frontend routes no longer accept `?demo=` preview modes, and the old authenticated mock dataset plus preview mock API modules have been removed
 - frontend CI now includes a live-fixture smoke suite that renders dashboard, quests, PR reports, profile, leaderboard, and settings without using frontend mock API functions
 - newly replayed PR battle reports expose persisted scoring-engine formula components instead of relying only on profile-side display heuristics

@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -36,6 +37,10 @@ type profileRefreshExecutor interface {
 	RefreshProfile(ctx context.Context, userID string, correlationID string) (contracts.SchedulerProfileRefreshResponse, error)
 }
 
+type pullRequestReportExecutor interface {
+	LoadPullRequestReport(ctx context.Context, repository string, number int, correlationID string) (contracts.SchedulerPullRequestReportResponse, error)
+}
+
 type pullRequestAnalysisExecutor interface {
 	AnalyzePullRequest(ctx context.Context, req contracts.SyncRequest, correlationID string) (contracts.SchedulerPullRequestAnalysisResponse, error)
 }
@@ -60,11 +65,17 @@ type httpProfileRefreshExecutor struct {
 	client  *http.Client
 }
 
+type httpPullRequestReportExecutor struct {
+	baseURL string
+	client  *http.Client
+}
+
 type jobExecution struct {
 	Sync           *contracts.GitHubSyncExecutionResponse
 	Analysis       *contracts.SchedulerPullRequestAnalysisResponse
 	ScoreReplay    *contracts.SchedulerScoreReplayExecutionResponse
 	ProfileRefresh *contracts.SchedulerProfileRefreshResponse
+	Grade          *contracts.SchedulerPullRequestGradeResponse
 }
 
 type executionCounters struct {
@@ -125,6 +136,19 @@ func newProfileRefreshExecutor(cfg config.App) profileRefreshExecutor {
 	}
 }
 
+func newPullRequestReportExecutor(cfg config.App) pullRequestReportExecutor {
+	baseURL := strings.TrimRight(strings.TrimSpace(cfg.Services.ProfileBaseURL), "/")
+	if baseURL == "" {
+		return nil
+	}
+	return &httpPullRequestReportExecutor{
+		baseURL: baseURL,
+		client: &http.Client{
+			Timeout: cfg.Services.RequestTimeout,
+		},
+	}
+}
+
 func newExecutionCounters() *executionCounters {
 	return &executionCounters{
 		byOutcome: make(map[string]int),
@@ -169,6 +193,7 @@ func (s *Service) RunNext(ctx context.Context, now time.Time) (contracts.Schedul
 	response.Analysis = execution.Analysis
 	response.ScoreReplay = execution.ScoreReplay
 	response.ProfileRefresh = execution.ProfileRefresh
+	response.Grade = execution.Grade
 	s.recordExecution(job.Type, action.Status, finishedAt)
 	return response, nil
 }
@@ -315,9 +340,72 @@ func (s *Service) executeLeasedJob(ctx context.Context, job store.QueueJob) (job
 			return jobExecution{}, err
 		}
 		return jobExecution{ProfileRefresh: &execution}, nil
+	case store.GradePullRequestJob:
+		return s.executePullRequestGradeJob(ctx, job)
 	default:
 		return jobExecution{}, fmt.Errorf("job type %s is not executable by the in-process worker", job.Type)
 	}
+}
+
+func (s *Service) executePullRequestGradeJob(ctx context.Context, job store.QueueJob) (jobExecution, error) {
+	if s.repositoryRunner == nil {
+		return jobExecution{}, fmt.Errorf("bounded sync runner is not configured")
+	}
+	if s.analysisRunner == nil {
+		return jobExecution{}, fmt.Errorf("pull request analysis runner is not configured")
+	}
+	if s.scoreRunner == nil {
+		return jobExecution{}, fmt.Errorf("score replay runner is not configured")
+	}
+	if s.profileRunner == nil {
+		return jobExecution{}, fmt.Errorf("profile refresh runner is not configured")
+	}
+	if s.reportRunner == nil {
+		return jobExecution{}, fmt.Errorf("pull request report runner is not configured")
+	}
+
+	req, err := syncRequestFromJob(job)
+	if err != nil {
+		return jobExecution{}, err
+	}
+
+	correlationID := correlationIDForJob(job)
+	startedAt := time.Now().UTC()
+	syncExecution, err := s.repositoryRunner.SyncPullRequest(ctx, req, correlationID)
+	if err != nil {
+		return jobExecution{}, err
+	}
+	analysisExecution, err := s.analysisRunner.AnalyzePullRequest(ctx, req, correlationID)
+	if err != nil {
+		return jobExecution{}, err
+	}
+	scoreExecution, err := s.scoreRunner.ReplayUser(ctx, req.UserID, correlationID)
+	if err != nil {
+		return jobExecution{}, err
+	}
+	profileExecution, err := s.profileRunner.RefreshProfile(ctx, req.UserID, correlationID)
+	if err != nil {
+		return jobExecution{}, err
+	}
+	reportExecution, err := s.reportRunner.LoadPullRequestReport(ctx, req.Repository, req.Number, correlationID)
+	if err != nil {
+		return jobExecution{}, err
+	}
+
+	return jobExecution{Grade: &contracts.SchedulerPullRequestGradeResponse{
+		Status:         "completed",
+		Repository:     req.Repository,
+		Number:         req.Number,
+		UserID:         req.UserID,
+		Sync:           &syncExecution,
+		Analysis:       &analysisExecution,
+		ScoreReplay:    &scoreExecution,
+		ProfileRefresh: &profileExecution,
+		Report:         &reportExecution,
+		CorrelationID:  strings.TrimSpace(correlationID),
+		StartedAt:      startedAt,
+		FinishedAt:     time.Now().UTC(),
+	}}, nil
 }
 
 func syncJobExecution(execution contracts.GitHubSyncExecutionResponse, err error) (jobExecution, error) {
@@ -649,6 +737,77 @@ func (e *httpProfileRefreshExecutor) RefreshProfile(ctx context.Context, userID 
 	}, nil
 }
 
+func (e *httpPullRequestReportExecutor) LoadPullRequestReport(ctx context.Context, repository string, number int, correlationID string) (contracts.SchedulerPullRequestReportResponse, error) {
+	repository, err := contracts.NormalizeGitHubRepository(repository)
+	if err != nil {
+		return contracts.SchedulerPullRequestReportResponse{}, err
+	}
+	if number <= 0 {
+		return contracts.SchedulerPullRequestReportResponse{}, fmt.Errorf("pull request number is required")
+	}
+	owner, repo, _ := strings.Cut(repository, "/")
+
+	ctx = httpkit.EnsureTraceContext(ctx)
+	request, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		e.baseURL+"/v1/pr/"+url.PathEscape(owner)+"/"+url.PathEscape(repo)+"/"+strconv.Itoa(number)+"/report",
+		nil,
+	)
+	if err != nil {
+		return contracts.SchedulerPullRequestReportResponse{}, err
+	}
+	request.Header.Set("Accept", "application/json")
+	if strings.TrimSpace(correlationID) != "" {
+		request.Header.Set("X-Request-ID", strings.TrimSpace(correlationID))
+	}
+	httpkit.InjectTraceContext(ctx, request.Header)
+
+	response, err := e.client.Do(request)
+	if err != nil {
+		return contracts.SchedulerPullRequestReportResponse{}, err
+	}
+	defer response.Body.Close()
+
+	payload, err := io.ReadAll(io.LimitReader(response.Body, 1<<20))
+	if err != nil {
+		return contracts.SchedulerPullRequestReportResponse{}, err
+	}
+	if response.StatusCode != http.StatusOK {
+		var apiErr contracts.ErrorResponse
+		if err := json.Unmarshal(payload, &apiErr); err == nil && strings.TrimSpace(apiErr.Error.Message) != "" {
+			return contracts.SchedulerPullRequestReportResponse{}, fmt.Errorf("profile-service PR report failed: %s", apiErr.Error.Message)
+		}
+		return contracts.SchedulerPullRequestReportResponse{}, fmt.Errorf("profile-service PR report failed with status %d", response.StatusCode)
+	}
+
+	var report contracts.PullRequestReportResponse
+	if err := json.Unmarshal(payload, &report); err != nil {
+		return contracts.SchedulerPullRequestReportResponse{}, err
+	}
+	if report.Contribution.Owner == "" ||
+		report.Contribution.Repo == "" ||
+		report.Contribution.Number <= 0 ||
+		report.GeneratedAt.IsZero() {
+		return contracts.SchedulerPullRequestReportResponse{}, fmt.Errorf("profile-service returned an invalid PR report contract")
+	}
+	if !strings.EqualFold(report.Contribution.Owner+"/"+report.Contribution.Repo, repository) || report.Contribution.Number != number {
+		return contracts.SchedulerPullRequestReportResponse{}, fmt.Errorf("profile-service PR report target mismatch")
+	}
+
+	return contracts.SchedulerPullRequestReportResponse{
+		Status:          "completed",
+		Repository:      repository,
+		Number:          number,
+		ContributionID:  strings.TrimSpace(report.Contribution.ID),
+		EvidenceStatus:  strings.TrimSpace(report.EvidenceState.Status),
+		ScoreVersion:    strings.TrimSpace(report.ScoreVersion),
+		AnalysisVersion: strings.TrimSpace(report.AnalysisVersion),
+		IsStale:         report.IsStale,
+		GeneratedAt:     report.GeneratedAt.UTC(),
+	}, nil
+}
+
 func (s *Service) runWorkerLoop(ctx context.Context) {
 	ticker := time.NewTicker(s.cfg.Scheduler.PollInterval)
 	defer ticker.Stop()
@@ -686,7 +845,7 @@ func splitExecutionMetricKey(key string) (string, string) {
 }
 
 func isExecutableJob(job store.QueueJob, now time.Time) bool {
-	return (job.Type == store.SyncInstallationJob || job.Type == store.SyncRepositoryJob || job.Type == store.SyncUserHistoryJob || job.Type == store.SyncPullRequestJob || job.Type == store.SyncReviewJob || job.Type == store.SyncIssueJob || job.Type == store.SyncCommitJob || job.Type == store.AnalysisPullRequestJob || job.Type == store.ScoreReplayUserJob || job.Type == store.ProfileRefreshUserJob) &&
+	return (job.Type == store.SyncInstallationJob || job.Type == store.SyncRepositoryJob || job.Type == store.SyncUserHistoryJob || job.Type == store.SyncPullRequestJob || job.Type == store.SyncReviewJob || job.Type == store.SyncIssueJob || job.Type == store.SyncCommitJob || job.Type == store.AnalysisPullRequestJob || job.Type == store.ScoreReplayUserJob || job.Type == store.ProfileRefreshUserJob || job.Type == store.GradePullRequestJob) &&
 		job.Status == store.JobPending &&
 		!job.NotBefore.After(now.UTC())
 }
@@ -797,6 +956,14 @@ func syncRequestFromJob(job store.QueueJob) (contracts.SyncRequest, error) {
 			return contracts.SyncRequest{}, err
 		}
 		req.UserID = userID
+	case store.GradePullRequestJob:
+		if strings.TrimSpace(req.Repository) == "" {
+			req.Repository = strings.TrimSpace(job.Repository)
+		}
+		req.Mode = "grade_pull_request"
+		if err := req.Normalize(); err != nil {
+			return contracts.SyncRequest{}, err
+		}
 	default:
 		return contracts.SyncRequest{}, fmt.Errorf("job type %s is not executable by the in-process worker", job.Type)
 	}
