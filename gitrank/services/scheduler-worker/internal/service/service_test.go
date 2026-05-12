@@ -1589,6 +1589,7 @@ func testServiceConfig() config.App {
 		},
 		ShutdownTimeout: time.Second,
 		Scheduler: config.Scheduler{
+			RunMode:                   "combined",
 			SyncCron:                  "0 */6 * * *",
 			MaxAttempts:               3,
 			RetryBackoff:              time.Millisecond,

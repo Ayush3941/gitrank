@@ -83,6 +83,7 @@ func (s *Service) MetricsSource() httpkit.PrometheusSource {
 
 func (s *Service) Config() contracts.SchedulerConfigResponse {
 	return contracts.SchedulerConfigResponse{
+		RunMode:                   s.cfg.Scheduler.RunMode,
 		SyncCron:                  s.cfg.Scheduler.SyncCron,
 		MaxAttempts:               s.cfg.Scheduler.MaxAttempts,
 		RetryBackoff:              s.cfg.Scheduler.RetryBackoff.String(),

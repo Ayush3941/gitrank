@@ -91,7 +91,7 @@ jobs:
           fi
           kubectl apply -f rendered-k8s.yaml
           kubectl wait --for=condition=complete job/gitrank-migrate --namespace "$namespace" --timeout=180s
-          for deployment in api-gateway auth-service github-ingestor pr-analyzer profile-service scoring-engine scheduler-worker; do
+          for deployment in api-gateway auth-service github-ingestor pr-analyzer profile-service scoring-engine scheduler-worker scheduler-job-worker; do
             kubectl rollout status "deployment/${deployment}" --namespace "$namespace" --timeout=180s
           done
 
@@ -101,7 +101,7 @@ jobs:
           set -eu
           namespace="gitrank-${{ inputs.environment }}"
           revision="${{ inputs.rollback_revision }}"
-          for deployment in api-gateway auth-service github-ingestor pr-analyzer profile-service scoring-engine scheduler-worker; do
+          for deployment in api-gateway auth-service github-ingestor pr-analyzer profile-service scoring-engine scheduler-worker scheduler-job-worker; do
             kubectl rollout history "deployment/${deployment}" --namespace "$namespace"
             if [ -n "$revision" ]; then
               kubectl rollout undo "deployment/${deployment}" --namespace "$namespace" --to-revision="$revision"

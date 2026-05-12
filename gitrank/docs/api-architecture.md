@@ -370,19 +370,19 @@ Current state:
 - sync jobs are deduplicated by `dedupe_key`
 - queue inspection supports filters for `user`, `repository`, `installation_id`, `status`, `type`, `subject`, and `correlation_id`
 - ready jobs can be leased up to the configured worker concurrency
-- the in-process worker can execute ready `sync.installation` jobs by calling `github-ingestor /v1/sync/installation/execute`
-- the in-process worker can execute ready `sync.repository` jobs by calling `github-ingestor /v1/sync/repository/execute`
-- the in-process worker can execute ready `sync.user_history` jobs by calling `github-ingestor /v1/sync/user/execute`
-- the in-process worker can execute ready `sync.pull_request` jobs by calling `github-ingestor /v1/sync/pull-request/execute`
-- the in-process worker can execute ready `sync.review` jobs by calling `github-ingestor /v1/sync/review/execute`
-- the in-process worker can execute ready `sync.issue` jobs by calling `github-ingestor /v1/sync/issue/execute`
-- the in-process worker can execute ready `sync.commit` jobs by calling `github-ingestor /v1/sync/commit/execute`
-- the in-process worker can execute ready `analysis.pull_request` jobs by calling `pr-analyzer /v1/analyze/pull-request/execute`
-- the in-process worker can execute ready `score.replay_user` jobs by calling `scoring-engine /v1/score/users/{user_id}/replay` with a `backfill` trigger
-- the in-process worker can execute ready `profile.refresh_user` jobs by calling `profile-service /v1/profile/users/{user_id}/refresh`
-- the in-process worker can execute ready `report.materialize_pull_request` jobs by calling `profile-service /v1/pr/{owner}/{repo}/{number}/report/materialize`
-- the in-process worker can execute ready `leaderboard.materialize_season` jobs by calling `profile-service /v1/leaderboard/materialize`
-- the in-process worker can execute ready `pipeline.grade_pull_request` jobs by chaining PR sync, persisted PR analysis, score replay, profile refresh, report materialization, and live PR-report verification for a known user and PR
+- the worker-mode scheduler process can execute ready `sync.installation` jobs by calling `github-ingestor /v1/sync/installation/execute`
+- the worker-mode scheduler process can execute ready `sync.repository` jobs by calling `github-ingestor /v1/sync/repository/execute`
+- the worker-mode scheduler process can execute ready `sync.user_history` jobs by calling `github-ingestor /v1/sync/user/execute`
+- the worker-mode scheduler process can execute ready `sync.pull_request` jobs by calling `github-ingestor /v1/sync/pull-request/execute`
+- the worker-mode scheduler process can execute ready `sync.review` jobs by calling `github-ingestor /v1/sync/review/execute`
+- the worker-mode scheduler process can execute ready `sync.issue` jobs by calling `github-ingestor /v1/sync/issue/execute`
+- the worker-mode scheduler process can execute ready `sync.commit` jobs by calling `github-ingestor /v1/sync/commit/execute`
+- the worker-mode scheduler process can execute ready `analysis.pull_request` jobs by calling `pr-analyzer /v1/analyze/pull-request/execute`
+- the worker-mode scheduler process can execute ready `score.replay_user` jobs by calling `scoring-engine /v1/score/users/{user_id}/replay` with a `backfill` trigger
+- the worker-mode scheduler process can execute ready `profile.refresh_user` jobs by calling `profile-service /v1/profile/users/{user_id}/refresh`
+- the worker-mode scheduler process can execute ready `report.materialize_pull_request` jobs by calling `profile-service /v1/pr/{owner}/{repo}/{number}/report/materialize`
+- the worker-mode scheduler process can execute ready `leaderboard.materialize_season` jobs by calling `profile-service /v1/leaderboard/materialize`
+- the worker-mode scheduler process can execute ready `pipeline.grade_pull_request` jobs by chaining PR sync, persisted PR analysis, score replay, profile refresh, report materialization, and live PR-report verification for a known user and PR
 - bounded installation execution currently means replaying repositories already associated with a persisted installation record, not discovering repositories from live GitHub App installation APIs
 - bounded user execution currently means recent public owned repositories plus recent public authored PRs discoverable through GitHub issue/PR search, not a full historical search across every contribution surface
 - bounded review execution currently means "refresh the reviews and review comments for one PR number", not a review-id-specific sync

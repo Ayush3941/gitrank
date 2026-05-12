@@ -19,7 +19,9 @@ Current committed assets in this directory include:
 - `examples/external-secret.staging.example.yaml`
 - `examples/external-secret.production.example.yaml`
 
-The base deploys the seven Go services, ClusterIP Services, an ingress for `api-gateway` and `auth-service`, and a migration Job. Staging and production overlays set namespaces, public URLs, ingress hosts, and image replacement points.
+The base deploys the seven Go service API deployments, a separate `scheduler-job-worker` execution deployment, ClusterIP Services, an ingress for `api-gateway` and `auth-service`, and a migration Job. Staging and production overlays set namespaces, public URLs, ingress hosts, and image replacement points.
+
+`scheduler-worker` runs with `SCHEDULER_RUN_MODE=api` and exposes scheduler HTTP operations through the `scheduler-worker` ClusterIP Service. `scheduler-job-worker` uses the same OCI image with `SCHEDULER_RUN_MODE=worker`, has no ClusterIP Service, and leases durable scheduler jobs directly from PostgreSQL for long-running sync, analysis, scoring, profile, PR-report, leaderboard, and quest materialization work.
 
 Before applying the manifests, create or sync a `gitrank-runtime-secrets` Secret in the target namespace. The example manifests show both a direct Kubernetes Secret shape and External Secrets Operator shapes, but no secret example is included in the base kustomization. Use distinct remote secret paths for staging and production, including separate `PREVIOUS_*` paths for planned auth/session and GitHub token-encryption key overlap windows.
 
@@ -38,7 +40,7 @@ Rollback procedure:
 2. Select the `staging` or `production` environment.
 3. Set `rollback` to `true` and leave `apply` as `false`.
 4. Optionally set `rollback_revision` to a Kubernetes deployment revision; leave it empty to roll back each deployment to its previous revision.
-5. Confirm every service reports a successful `kubectl rollout status`.
+5. Confirm every service and `scheduler-job-worker` report a successful `kubectl rollout status`.
 
 Rollback scope is application deployment rollback only. Database migrations are forward-only in v1; use the documented backup and restore process if a data rollback is required.
 

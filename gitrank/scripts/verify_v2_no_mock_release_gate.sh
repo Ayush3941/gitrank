@@ -63,4 +63,9 @@ for smoke_name in \
   require_contains "$frontend_smoke" "$smoke_name" "live fixture smoke coverage"
 done
 
+k8s_deployments="$root_dir/deployments/k8s/base/deployments.yaml"
+require_contains "$k8s_deployments" "name: scheduler-job-worker" "external scheduler worker deployment"
+require_contains "$k8s_deployments" "value: worker" "scheduler worker run mode"
+require_contains "$k8s_deployments" "value: api" "scheduler API run mode"
+
 echo "v2 no-mock release gate passed"

@@ -142,6 +142,7 @@ type Observability struct {
 }
 
 type Scheduler struct {
+	RunMode                   string
 	SyncCron                  string
 	MaxAttempts               int
 	RetryBackoff              time.Duration
@@ -259,6 +260,7 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			DistributedTraces: getBool("OTEL_TRACES_ENABLED", true),
 		},
 		Scheduler: Scheduler{
+			RunMode:                   strings.ToLower(getEnv("SCHEDULER_RUN_MODE", "combined")),
 			SyncCron:                  getEnv("SCHEDULER_SYNC_CRON", "0 */6 * * *"),
 			MaxAttempts:               getInt("JOB_MAX_ATTEMPTS", 10),
 			RetryBackoff:              getDuration("JOB_RETRY_BACKOFF", 30*time.Second),
@@ -337,6 +339,11 @@ func (a App) ValidateBase() error {
 	}
 	if a.Scheduler.MaxAttempts <= 0 {
 		problems = append(problems, "JOB_MAX_ATTEMPTS must be positive")
+	}
+	switch a.Scheduler.RunMode {
+	case "combined", "api", "worker":
+	default:
+		problems = append(problems, "SCHEDULER_RUN_MODE must be combined, api, or worker")
 	}
 	if a.Scheduler.RetryBackoff <= 0 {
 		problems = append(problems, "JOB_RETRY_BACKOFF must be positive")

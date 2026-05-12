@@ -28,7 +28,7 @@ grep -q "kubectl rollout history" "$workflow"
 grep -q "kubectl rollout undo" "$workflow"
 grep -q "kubectl rollout status" "$workflow"
 
-for deployment in api-gateway auth-service github-ingestor pr-analyzer profile-service scoring-engine scheduler-worker; do
+for deployment in api-gateway auth-service github-ingestor pr-analyzer profile-service scoring-engine scheduler-worker scheduler-job-worker; do
 	grep -q "$deployment" "$workflow"
 done
 

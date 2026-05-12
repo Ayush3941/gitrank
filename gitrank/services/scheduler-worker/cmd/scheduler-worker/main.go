@@ -53,10 +53,12 @@ func main() {
 	} else {
 		scheduler = service.New(cfg)
 	}
-	go scheduler.Run(ctx)
+	if cfg.Scheduler.RunMode != "api" {
+		go scheduler.Run(ctx)
+	}
 
 	server := httpkit.NewServer(cfg.Addr, httpapi.NewRouter(cfg, scheduler, log, version), cfg.ShutdownTimeout, log)
-	log.Info("starting service", "addr", cfg.Addr, "version", version)
+	log.Info("starting service", "addr", cfg.Addr, "version", version, "scheduler_run_mode", cfg.Scheduler.RunMode)
 	if err := server.Run(ctx); err != nil {
 		log.Error("server exited", "error", err)
 		os.Exit(1)

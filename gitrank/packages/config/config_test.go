@@ -31,6 +31,9 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.Scheduler.WorkerConcurrency != 4 {
 		t.Fatalf("Scheduler.WorkerConcurrency = %d, want 4", cfg.Scheduler.WorkerConcurrency)
 	}
+	if cfg.Scheduler.RunMode != "combined" {
+		t.Fatalf("Scheduler.RunMode = %q, want combined", cfg.Scheduler.RunMode)
+	}
 	if cfg.Scheduler.DeadLetterQueue != "github-sync-dead-letter" {
 		t.Fatalf("Scheduler.DeadLetterQueue = %q, want github-sync-dead-letter", cfg.Scheduler.DeadLetterQueue)
 	}
@@ -91,6 +94,7 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	t.Setenv("AI_PR_MAX_ESTIMATED_COST_USD", "0.08")
 	t.Setenv("AI_ESTIMATED_INPUT_TOKEN_COST_USD", "0.00001")
 	t.Setenv("JOB_WORKER_CONCURRENCY", "9")
+	t.Setenv("SCHEDULER_RUN_MODE", "worker")
 	t.Setenv("JOB_DEAD_LETTER_QUEUE", "custom-dead-letter")
 	t.Setenv("JOB_PER_USER_RATE_MAX", "3")
 	t.Setenv("JOB_PER_INSTALLATION_RATE_MAX", "11")
@@ -160,6 +164,9 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	if cfg.Scheduler.WorkerConcurrency != 9 {
 		t.Fatalf("Scheduler.WorkerConcurrency = %d, want 9", cfg.Scheduler.WorkerConcurrency)
 	}
+	if cfg.Scheduler.RunMode != "worker" {
+		t.Fatalf("Scheduler.RunMode = %q, want worker", cfg.Scheduler.RunMode)
+	}
 	if cfg.Scheduler.DeadLetterQueue != "custom-dead-letter" {
 		t.Fatalf("Scheduler.DeadLetterQueue = %q, want custom-dead-letter", cfg.Scheduler.DeadLetterQueue)
 	}
@@ -168,6 +175,18 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	}
 	if cfg.Scheduler.PerInstallationRateMax != 11 {
 		t.Fatalf("Scheduler.PerInstallationRateMax = %d, want 11", cfg.Scheduler.PerInstallationRateMax)
+	}
+}
+
+func TestLoadRejectsInvalidSchedulerRunMode(t *testing.T) {
+	t.Setenv("SCHEDULER_RUN_MODE", "sidecar")
+
+	_, err := Load("scheduler-worker", "SCHEDULER_WORKER_ADDR")
+	if err == nil {
+		t.Fatal("Load() error = nil, want invalid scheduler run mode rejection")
+	}
+	if !strings.Contains(err.Error(), "SCHEDULER_RUN_MODE") {
+		t.Fatalf("Load() error = %q, want SCHEDULER_RUN_MODE validation", err.Error())
 	}
 }
 

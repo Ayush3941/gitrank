@@ -452,6 +452,7 @@ type UpdateRepositoryVisibilityRequest struct {
 }
 
 type SchedulerConfigResponse struct {
+	RunMode                   string   `json:"run_mode"`
 	SyncCron                  string   `json:"sync_cron"`
 	MaxAttempts               int      `json:"max_attempts"`
 	RetryBackoff              string   `json:"retry_backoff"`

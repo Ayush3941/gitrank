@@ -25,8 +25,11 @@ func NewRouter(cfg config.App, scheduler *service.Service, log *slog.Logger, ver
 		if cfg.Database.URL != "" {
 			workerDetails = "postgres-backed scheduler state enabled"
 		}
+		if cfg.Scheduler.RunMode != "" {
+			workerDetails += "; run_mode=" + cfg.Scheduler.RunMode
+		}
 		httpkit.WriteJSON(w, http.StatusOK, contracts.NewHealthResponse(cfg.ServiceName, string(cfg.Env), version, map[string]contracts.ComponentCheck{
-			"worker": {Status: "ok", Details: workerDetails},
+			"scheduler": {Status: "ok", Details: workerDetails},
 		}))
 	})))
 

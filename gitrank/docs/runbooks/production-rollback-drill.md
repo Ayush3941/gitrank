@@ -21,6 +21,7 @@ services:
 - `pr-analyzer`
 - `profile-service`
 - `scheduler-worker`
+- `scheduler-job-worker`
 - `scoring-engine`
 
 Database migrations are forward-only in v1. Data rollback means managed
@@ -50,6 +51,7 @@ PostgreSQL restore or PITR, not reverse SQL migrations.
    kubectl -n gitrank-staging rollout history deployment/pr-analyzer
    kubectl -n gitrank-staging rollout history deployment/profile-service
    kubectl -n gitrank-staging rollout history deployment/scheduler-worker
+   kubectl -n gitrank-staging rollout history deployment/scheduler-job-worker
    kubectl -n gitrank-staging rollout history deployment/scoring-engine
    ```
 
@@ -64,6 +66,7 @@ PostgreSQL restore or PITR, not reverse SQL migrations.
    kubectl -n gitrank-staging rollout status deployment/pr-analyzer --timeout=180s
    kubectl -n gitrank-staging rollout status deployment/profile-service --timeout=180s
    kubectl -n gitrank-staging rollout status deployment/scheduler-worker --timeout=180s
+   kubectl -n gitrank-staging rollout status deployment/scheduler-job-worker --timeout=180s
    kubectl -n gitrank-staging rollout status deployment/scoring-engine --timeout=180s
    ```
 
@@ -96,6 +99,7 @@ kubectl -n gitrank-production rollout undo deployment/github-ingestor
 kubectl -n gitrank-production rollout undo deployment/pr-analyzer
 kubectl -n gitrank-production rollout undo deployment/profile-service
 kubectl -n gitrank-production rollout undo deployment/scheduler-worker
+kubectl -n gitrank-production rollout undo deployment/scheduler-job-worker
 kubectl -n gitrank-production rollout undo deployment/scoring-engine
 ```
 
@@ -108,6 +112,7 @@ kubectl -n gitrank-production rollout status deployment/github-ingestor --timeou
 kubectl -n gitrank-production rollout status deployment/pr-analyzer --timeout=180s
 kubectl -n gitrank-production rollout status deployment/profile-service --timeout=180s
 kubectl -n gitrank-production rollout status deployment/scheduler-worker --timeout=180s
+kubectl -n gitrank-production rollout status deployment/scheduler-job-worker --timeout=180s
 kubectl -n gitrank-production rollout status deployment/scoring-engine --timeout=180s
 ```
 

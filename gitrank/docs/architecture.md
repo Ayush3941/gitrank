@@ -93,6 +93,8 @@ flowchart LR
 - backfills
 - re-score jobs
 - repair and replay jobs
+- `SCHEDULER_RUN_MODE=api` for HTTP control-plane pods
+- `SCHEDULER_RUN_MODE=worker` for separate durable-job execution pods
 
 ## Communication Model
 
