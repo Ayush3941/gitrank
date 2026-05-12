@@ -3,7 +3,7 @@ TMPDIR ?= $(CURDIR)/.tmp
 GOCACHE ?= $(CURDIR)/.gocache
 GO_MODULE_FIND := find . \( -path './.tmp' -o -path './.gocache' \) -prune -o -name go.mod
 
-.PHONY: fmt test test-migrations test-critical-path-flows race vet audit-go-safety verify-critical-path-tests verify-v2-no-mock-release-gate verify-v2-staging-seed verify-rollback-procedure verify-observability-manifests verify-observability-evidence verify-live-observability verify-rollback-drill-evidence verify-secret-policy verify-k8s-autoscaling discover-github-required-status-checks apply-github-repository-controls verify-github-repository-controls render-k8s-release-manifests bench-ingestion tidy compose-up compose-down seed-local seed-v2-staging
+.PHONY: fmt test test-migrations test-critical-path-flows race vet audit-go-safety verify-critical-path-tests verify-v2-no-mock-release-gate verify-v2-staging-seed verify-rollback-procedure verify-observability-manifests verify-observability-evidence verify-live-observability verify-live-v2-workflow verify-rollback-drill-evidence verify-secret-policy verify-k8s-autoscaling discover-github-required-status-checks apply-github-repository-controls verify-github-repository-controls render-k8s-release-manifests bench-ingestion tidy compose-up compose-down seed-local seed-v2-staging
 
 fmt:
 	mkdir -p "$(TMPDIR)" "$(GOCACHE)"
@@ -51,6 +51,9 @@ verify-observability-evidence:
 
 verify-live-observability:
 	TMPDIR="$(TMPDIR)" ./scripts/verify_live_observability.sh
+
+verify-live-v2-workflow:
+	TMPDIR="$(TMPDIR)" ./scripts/verify_live_v2_workflow.sh
 
 verify-rollback-drill-evidence:
 	test -n "$${EVIDENCE_FILE:-}" || (echo "EVIDENCE_FILE is required" >&2; exit 1)

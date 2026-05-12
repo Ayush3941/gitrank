@@ -111,6 +111,11 @@ The verifier intentionally fails closed if it cannot prove a required setting.
 Do not check the repository-admin boxes in `CONTRIBUTING.md` from inspection
 alone; use this verifier or an equivalent GitHub settings export.
 
+Equivalent GitHub Actions path:
+
+- run `.github/workflows/verify-live-v2-gates.yml` with
+  `run_github_controls=true` and `GITRANK_REPO_ADMIN_TOKEN` configured
+
 ## Current Tooling Limitation
 
 The available repository connector can confirm that the authenticated user has

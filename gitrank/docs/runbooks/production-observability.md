@@ -94,6 +94,10 @@ GRAFANA_API_TOKEN=... \
 make verify-live-observability
 ```
 
+Equivalent GitHub Actions path:
+
+- run `.github/workflows/verify-live-v2-gates.yml` with `run_observability=true`
+
 Useful local access commands:
 
 ```bash

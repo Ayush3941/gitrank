@@ -56,6 +56,8 @@ Deployments can also be rendered, applied, or rolled back through the manual `De
 The workflow renders manifests through `make render-k8s-release-manifests` and
 expects environment-specific `K8S_*` runtime override values to be present in
 repository/environment variables or secrets.
+You can run the render gate without cluster apply through
+`.github/workflows/verify-live-v2-gates.yml` (`run_release_render=true`).
 
 Rollback procedure:
 

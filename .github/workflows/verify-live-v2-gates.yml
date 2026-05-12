@@ -1,0 +1,142 @@
+name: Verify Live V2 Gates
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment for release-render verification"
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      run_observability:
+        description: "Run live observability verification"
+        required: true
+        type: boolean
+        default: true
+      run_github_controls:
+        description: "Run live GitHub repository-controls verification"
+        required: true
+        type: boolean
+        default: true
+      run_release_render:
+        description: "Run release-manifest render verification"
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.33.4
+
+      - name: Verify GitHub controls
+        if: inputs.run_github_controls == true
+        working-directory: gitrank
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITRANK_REPO_ADMIN_TOKEN }}
+        run: |
+          set -eu
+          test -n "$GITHUB_TOKEN"
+          make discover-github-required-status-checks
+          make verify-github-repository-controls
+
+      - name: Verify live observability
+        if: inputs.run_observability == true
+        working-directory: gitrank
+        env:
+          PROMETHEUS_BASE_URL: ${{ vars.PROMETHEUS_BASE_URL }}
+          GRAFANA_BASE_URL: ${{ vars.GRAFANA_BASE_URL }}
+          GRAFANA_API_TOKEN: ${{ secrets.GRAFANA_API_TOKEN }}
+          EXPECTED_SERVICES: ${{ vars.OBS_EXPECTED_SERVICES }}
+          EXPECTED_ALERT_GROUPS: ${{ vars.OBS_EXPECTED_ALERT_GROUPS }}
+          EXPECTED_DASHBOARD_TITLES: ${{ vars.OBS_EXPECTED_DASHBOARD_TITLES }}
+        run: |
+          set -eu
+          test -n "$PROMETHEUS_BASE_URL"
+          test -n "$GRAFANA_BASE_URL"
+          test -n "$GRAFANA_API_TOKEN"
+          make verify-live-observability
+
+      - name: Verify release render overrides
+        if: inputs.run_release_render == true
+        working-directory: gitrank
+        env:
+          K8S_ENVIRONMENT: ${{ inputs.environment }}
+          OUTPUT_FILE: ${{ runner.temp }}/rendered-k8s.yaml
+          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_REGISTRY_OWNER_OVERRIDE: ${{ vars.K8S_IMAGE_REGISTRY_OWNER }}
+          IMAGE_REGISTRY_OWNER_DEFAULT: ${{ github.repository_owner }}
+          K8S_PUBLIC_BASE_URL_VAR: ${{ vars.K8S_PUBLIC_BASE_URL }}
+          K8S_PUBLIC_BASE_URL_SECRET: ${{ secrets.K8S_PUBLIC_BASE_URL }}
+          K8S_API_BASE_URL_VAR: ${{ vars.K8S_API_BASE_URL }}
+          K8S_API_BASE_URL_SECRET: ${{ secrets.K8S_API_BASE_URL }}
+          K8S_AUTH_COOKIE_DOMAIN_VAR: ${{ vars.K8S_AUTH_COOKIE_DOMAIN }}
+          K8S_AUTH_COOKIE_DOMAIN_SECRET: ${{ secrets.K8S_AUTH_COOKIE_DOMAIN }}
+          K8S_GITHUB_OAUTH_REDIRECT_URL_VAR: ${{ vars.K8S_GITHUB_OAUTH_REDIRECT_URL }}
+          K8S_GITHUB_OAUTH_REDIRECT_URL_SECRET: ${{ secrets.K8S_GITHUB_OAUTH_REDIRECT_URL }}
+          K8S_API_HOST_VAR: ${{ vars.K8S_API_HOST }}
+          K8S_API_HOST_SECRET: ${{ secrets.K8S_API_HOST }}
+          K8S_AUTH_HOST_VAR: ${{ vars.K8S_AUTH_HOST }}
+          K8S_AUTH_HOST_SECRET: ${{ secrets.K8S_AUTH_HOST }}
+          K8S_TLS_SECRET_NAME_VAR: ${{ vars.K8S_TLS_SECRET_NAME }}
+          K8S_TLS_SECRET_NAME_SECRET: ${{ secrets.K8S_TLS_SECRET_NAME }}
+          K8S_GITHUB_USER_AGENT_VAR: ${{ vars.K8S_GITHUB_USER_AGENT }}
+          K8S_GITHUB_USER_AGENT_SECRET: ${{ secrets.K8S_GITHUB_USER_AGENT }}
+        run: |
+          set -eu
+          resolve_required() {
+            key=$1
+            primary=$2
+            secondary=$3
+            value=$primary
+            if [ -z "$value" ]; then
+              value=$secondary
+            fi
+            if [ -z "$value" ]; then
+              echo "$key must be configured through repository/environment variables or secrets" >&2
+              exit 1
+            fi
+            printf '%s' "$value"
+          }
+
+          IMAGE_REGISTRY_OWNER="${IMAGE_REGISTRY_OWNER_OVERRIDE:-$IMAGE_REGISTRY_OWNER_DEFAULT}"
+          IMAGE_REGISTRY_OWNER=$(printf '%s' "$IMAGE_REGISTRY_OWNER" | tr '[:upper:]' '[:lower:]')
+          export IMAGE_REGISTRY_OWNER
+
+          export K8S_PUBLIC_BASE_URL="$(resolve_required K8S_PUBLIC_BASE_URL "$K8S_PUBLIC_BASE_URL_VAR" "$K8S_PUBLIC_BASE_URL_SECRET")"
+          export K8S_API_BASE_URL="$(resolve_required K8S_API_BASE_URL "$K8S_API_BASE_URL_VAR" "$K8S_API_BASE_URL_SECRET")"
+          export K8S_AUTH_COOKIE_DOMAIN="$(resolve_required K8S_AUTH_COOKIE_DOMAIN "$K8S_AUTH_COOKIE_DOMAIN_VAR" "$K8S_AUTH_COOKIE_DOMAIN_SECRET")"
+          export K8S_GITHUB_OAUTH_REDIRECT_URL="$(resolve_required K8S_GITHUB_OAUTH_REDIRECT_URL "$K8S_GITHUB_OAUTH_REDIRECT_URL_VAR" "$K8S_GITHUB_OAUTH_REDIRECT_URL_SECRET")"
+          export K8S_API_HOST="$(resolve_required K8S_API_HOST "$K8S_API_HOST_VAR" "$K8S_API_HOST_SECRET")"
+          export K8S_AUTH_HOST="$(resolve_required K8S_AUTH_HOST "$K8S_AUTH_HOST_VAR" "$K8S_AUTH_HOST_SECRET")"
+          export K8S_TLS_SECRET_NAME="$(resolve_required K8S_TLS_SECRET_NAME "$K8S_TLS_SECRET_NAME_VAR" "$K8S_TLS_SECRET_NAME_SECRET")"
+
+          K8S_GITHUB_USER_AGENT="$K8S_GITHUB_USER_AGENT_VAR"
+          if [ -z "$K8S_GITHUB_USER_AGENT" ]; then
+            K8S_GITHUB_USER_AGENT="$K8S_GITHUB_USER_AGENT_SECRET"
+          fi
+          export K8S_GITHUB_USER_AGENT
+
+          make render-k8s-release-manifests
+
+      - name: Upload render artifact
+        if: inputs.run_release_render == true
+        uses: actions/upload-artifact@v4
+        with:
+          name: rendered-k8s-${{ inputs.environment }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/rendered-k8s.yaml
+          retention-days: 14
