@@ -30,6 +30,11 @@ on:
         required: true
         type: boolean
         default: true
+      request_id:
+        description: "Optional request correlation id for scripted dispatches"
+        required: false
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -39,6 +44,11 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
+      - name: Log request id
+        run: |
+          set -eu
+          echo "request_id=${{ inputs.request_id }}"
+
       - name: Checkout
         uses: actions/checkout@v6
 

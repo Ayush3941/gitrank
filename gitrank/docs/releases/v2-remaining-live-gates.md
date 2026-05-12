@@ -8,6 +8,7 @@ All items here map to unchecked boxes in `CONTRIBUTING.md`.
 For consolidated execution, use:
 
 - `make verify-v2-live-readiness`
+- `make run-live-v2-gates-workflow` (requires token and live environment vars)
 
 ## 1) Production Observability On Live Traffic
 

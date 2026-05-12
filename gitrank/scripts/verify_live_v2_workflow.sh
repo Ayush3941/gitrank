@@ -12,7 +12,7 @@ fail() {
 
 [ -s "$workflow" ] || fail "workflow file missing: $workflow"
 
-for required in "run_observability" "run_github_controls" "apply_github_controls" "run_release_render" "make apply-github-repository-controls-auto" "make verify-github-repository-controls" "make verify-live-observability" "make render-k8s-release-manifests" "actions/upload-artifact@v4"; do
+for required in "run_observability" "run_github_controls" "apply_github_controls" "run_release_render" "request_id" "make apply-github-repository-controls-auto" "make verify-github-repository-controls" "make verify-live-observability" "make render-k8s-release-manifests" "actions/upload-artifact@v4"; do
   grep -q "$required" "$workflow" || fail "missing workflow content: $required"
 done
 

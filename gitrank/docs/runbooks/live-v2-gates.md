@@ -49,6 +49,22 @@ Optional observability tuning variables:
 5. Review the run logs.
 6. Attach the run URL to release notes or maintainer operations notes.
 
+### API Dispatch Option
+
+You can dispatch and optionally wait for completion from CLI:
+
+```bash
+cd gitrank
+GITHUB_REPOSITORY=OWNER/REPO \
+GITHUB_TOKEN=... \
+TARGET_ENVIRONMENT=staging \
+RUN_OBSERVABILITY=true \
+RUN_GITHUB_CONTROLS=true \
+APPLY_GITHUB_CONTROLS=false \
+RUN_RELEASE_RENDER=true \
+make run-live-v2-gates-workflow
+```
+
 ## Local Static Workflow Check
 
 Use this before merge to ensure the workflow wiring remains intact:
