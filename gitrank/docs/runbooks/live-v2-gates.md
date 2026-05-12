@@ -139,3 +139,33 @@ STAGING_RENDER_OUTPUT=/tmp/staging-rendered-k8s.yaml \
 PRODUCTION_RENDER_OUTPUT=/tmp/production-rendered-k8s.yaml \
 make mark-v2-contributing-live-gates
 ```
+
+## One-Command Final Closeout
+
+Use the finalizer when you want one command to run verifier preflight, live
+gate checks, rollback or restore evidence checks, checklist marking, and the
+final unresolved-checklist audit.
+
+```bash
+cd gitrank
+cp .env.v2-live-gates.example .env.v2-live-gates.local
+# edit values, then export them
+set -a
+source .env.v2-live-gates.local
+set +a
+
+CONFIRM_FINALIZE_V2=yes \
+make finalize-v2-live-closeout
+```
+
+Optional per-environment render overrides:
+
+- `STAGING_IMAGE_TAG`, `PRODUCTION_IMAGE_TAG`
+- `STAGING_IMAGE_REGISTRY_OWNER`, `PRODUCTION_IMAGE_REGISTRY_OWNER`
+- `STAGING_K8S_PUBLIC_BASE_URL`, `PRODUCTION_K8S_PUBLIC_BASE_URL`
+- `STAGING_K8S_API_BASE_URL`, `PRODUCTION_K8S_API_BASE_URL`
+- `STAGING_K8S_AUTH_COOKIE_DOMAIN`, `PRODUCTION_K8S_AUTH_COOKIE_DOMAIN`
+- `STAGING_K8S_GITHUB_OAUTH_REDIRECT_URL`, `PRODUCTION_K8S_GITHUB_OAUTH_REDIRECT_URL`
+- `STAGING_K8S_API_HOST`, `PRODUCTION_K8S_API_HOST`
+- `STAGING_K8S_AUTH_HOST`, `PRODUCTION_K8S_AUTH_HOST`
+- `STAGING_K8S_TLS_SECRET_NAME`, `PRODUCTION_K8S_TLS_SECRET_NAME`

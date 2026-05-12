@@ -1,0 +1,148 @@
+#!/usr/bin/env sh
+set -eu
+
+root_dir="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
+tmp_root="${TMPDIR:-$root_dir/.tmp}"
+mkdir -p "$tmp_root"
+
+CONFIRM_FINALIZE_V2="${CONFIRM_FINALIZE_V2:-}"
+RUN_GITHUB_CONTROLS="${RUN_GITHUB_CONTROLS:-true}"
+APPLY_GITHUB_CONTROLS="${APPLY_GITHUB_CONTROLS:-false}"
+RUN_OBSERVABILITY="${RUN_OBSERVABILITY:-true}"
+RUN_ROLLBACK_RESTORE="${RUN_ROLLBACK_RESTORE:-true}"
+RUN_K8S_RUNTIME="${RUN_K8S_RUNTIME:-true}"
+RUN_LOCAL_STATIC="${RUN_LOCAL_STATIC:-true}"
+MARK_CHECKBOXES="${MARK_CHECKBOXES:-true}"
+AUDIT_REPORT_FILE="${AUDIT_REPORT_FILE:-$root_dir/docs/releases/v2-contributing-audit-latest.md}"
+
+STAGING_RENDER_OUTPUT="${STAGING_RENDER_OUTPUT:-$tmp_root/rendered-k8s-staging.yaml}"
+PRODUCTION_RENDER_OUTPUT="${PRODUCTION_RENDER_OUTPUT:-$tmp_root/rendered-k8s-production.yaml}"
+
+fail() {
+  printf 'finalize v2 live closeout failed: %s\n' "$1" >&2
+  exit 1
+}
+
+run_make() {
+  target=$1
+  shift || true
+  (cd "$root_dir" && TMPDIR="$tmp_root" make "$target" "$@")
+}
+
+get_prefixed_or_default() {
+  prefix=$1
+  suffix=$2
+  default_value=$3
+  eval prefixed_value="\${${prefix}_${suffix}:-}"
+  if [ -n "$prefixed_value" ]; then
+    printf '%s' "$prefixed_value"
+  else
+    printf '%s' "$default_value"
+  fi
+}
+
+render_for_environment() {
+  prefix=$1
+  env_name=$2
+  output_file=$3
+
+  default_image_tag="${IMAGE_TAG:-}"
+  default_registry_owner="${IMAGE_REGISTRY_OWNER:-}"
+
+  image_tag=$(get_prefixed_or_default "$prefix" "IMAGE_TAG" "$default_image_tag")
+  image_registry_owner=$(get_prefixed_or_default "$prefix" "IMAGE_REGISTRY_OWNER" "$default_registry_owner")
+  public_base_url=$(get_prefixed_or_default "$prefix" "K8S_PUBLIC_BASE_URL" "")
+  api_base_url=$(get_prefixed_or_default "$prefix" "K8S_API_BASE_URL" "")
+  auth_cookie_domain=$(get_prefixed_or_default "$prefix" "K8S_AUTH_COOKIE_DOMAIN" "")
+  oauth_redirect_url=$(get_prefixed_or_default "$prefix" "K8S_GITHUB_OAUTH_REDIRECT_URL" "")
+  api_host=$(get_prefixed_or_default "$prefix" "K8S_API_HOST" "")
+  auth_host=$(get_prefixed_or_default "$prefix" "K8S_AUTH_HOST" "")
+  tls_secret_name=$(get_prefixed_or_default "$prefix" "K8S_TLS_SECRET_NAME" "")
+  github_user_agent=$(get_prefixed_or_default "$prefix" "K8S_GITHUB_USER_AGENT" "")
+
+  [ -n "$image_tag" ] || fail "${prefix}_IMAGE_TAG or IMAGE_TAG is required"
+  [ -n "$image_registry_owner" ] || fail "${prefix}_IMAGE_REGISTRY_OWNER or IMAGE_REGISTRY_OWNER is required"
+
+  RUN_RELEASE_RENDER=true \
+  K8S_ENVIRONMENT="$env_name" \
+  IMAGE_TAG="$image_tag" \
+  IMAGE_REGISTRY_OWNER="$image_registry_owner" \
+  K8S_PUBLIC_BASE_URL="$public_base_url" \
+  K8S_API_BASE_URL="$api_base_url" \
+  K8S_AUTH_COOKIE_DOMAIN="$auth_cookie_domain" \
+  K8S_GITHUB_OAUTH_REDIRECT_URL="$oauth_redirect_url" \
+  K8S_API_HOST="$api_host" \
+  K8S_AUTH_HOST="$auth_host" \
+  K8S_TLS_SECRET_NAME="$tls_secret_name" \
+  K8S_GITHUB_USER_AGENT="$github_user_agent" \
+  run_make verify-live-v2-inputs
+
+  K8S_ENVIRONMENT="$env_name" \
+  OUTPUT_FILE="$output_file" \
+  IMAGE_TAG="$image_tag" \
+  IMAGE_REGISTRY_OWNER="$image_registry_owner" \
+  K8S_PUBLIC_BASE_URL="$public_base_url" \
+  K8S_API_BASE_URL="$api_base_url" \
+  K8S_AUTH_COOKIE_DOMAIN="$auth_cookie_domain" \
+  K8S_GITHUB_OAUTH_REDIRECT_URL="$oauth_redirect_url" \
+  K8S_API_HOST="$api_host" \
+  K8S_AUTH_HOST="$auth_host" \
+  K8S_TLS_SECRET_NAME="$tls_secret_name" \
+  K8S_GITHUB_USER_AGENT="$github_user_agent" \
+  run_make render-k8s-release-manifests
+}
+
+[ "$CONFIRM_FINALIZE_V2" = "yes" ] || fail "set CONFIRM_FINALIZE_V2=yes to run final closeout"
+
+if [ "$RUN_GITHUB_CONTROLS" = "true" ]; then
+  RUN_GITHUB_CONTROLS=true run_make verify-live-v2-inputs
+fi
+
+if [ "$RUN_OBSERVABILITY" = "true" ]; then
+  RUN_OBSERVABILITY=true run_make verify-live-v2-inputs
+fi
+
+RUN_LOCAL_STATIC="$RUN_LOCAL_STATIC" \
+RUN_GITHUB_CONTROLS="$RUN_GITHUB_CONTROLS" \
+APPLY_GITHUB_CONTROLS="$APPLY_GITHUB_CONTROLS" \
+RUN_OBSERVABILITY="$RUN_OBSERVABILITY" \
+RUN_RELEASE_RENDER=false \
+OBS_EVIDENCE_FILE="${OBS_EVIDENCE_FILE:-}" \
+ROLLBACK_EVIDENCE_FILE="${ROLLBACK_EVIDENCE_FILE:-}" \
+RESTORE_EVIDENCE_FILE="${RESTORE_EVIDENCE_FILE:-}" \
+run_make verify-v2-live-readiness
+
+if [ "$RUN_K8S_RUNTIME" = "true" ]; then
+  render_for_environment STAGING staging "$STAGING_RENDER_OUTPUT"
+  render_for_environment PRODUCTION production "$PRODUCTION_RENDER_OUTPUT"
+fi
+
+if [ "$RUN_ROLLBACK_RESTORE" = "true" ]; then
+  [ -n "${ROLLBACK_EVIDENCE_FILE:-}" ] || fail "ROLLBACK_EVIDENCE_FILE is required"
+  [ -n "${RESTORE_EVIDENCE_FILE:-}" ] || fail "RESTORE_EVIDENCE_FILE is required"
+  run_make verify-rollback-drill-evidence EVIDENCE_FILE="$ROLLBACK_EVIDENCE_FILE"
+  run_make verify-database-restore-drill-evidence EVIDENCE_FILE="$RESTORE_EVIDENCE_FILE"
+fi
+
+if [ "$MARK_CHECKBOXES" = "true" ]; then
+  CONFIRM_MARK_CONTRIBUTING=yes \
+  VERIFY_BEFORE_MARK=false \
+  MARK_GITHUB_CONTROLS="$RUN_GITHUB_CONTROLS" \
+  APPLY_GITHUB_CONTROLS="$APPLY_GITHUB_CONTROLS" \
+  MARK_OBSERVABILITY="$RUN_OBSERVABILITY" \
+  MARK_ROLLBACK_RESTORE="$RUN_ROLLBACK_RESTORE" \
+  MARK_K8S_RUNTIME="$RUN_K8S_RUNTIME" \
+  OBS_EVIDENCE_FILE="${OBS_EVIDENCE_FILE:-}" \
+  ROLLBACK_EVIDENCE_FILE="${ROLLBACK_EVIDENCE_FILE:-}" \
+  RESTORE_EVIDENCE_FILE="${RESTORE_EVIDENCE_FILE:-}" \
+  STAGING_RENDER_OUTPUT="$STAGING_RENDER_OUTPUT" \
+  PRODUCTION_RENDER_OUTPUT="$PRODUCTION_RENDER_OUTPUT" \
+  run_make mark-v2-contributing-live-gates
+fi
+
+RUN_BASELINE_VERIFIERS=false \
+AUDIT_REPORT_FILE="$AUDIT_REPORT_FILE" \
+run_make audit-v2-contributing-checklist
+
+printf 'v2 live closeout complete\n'
+printf 'audit_report: %s\n' "$AUDIT_REPORT_FILE"

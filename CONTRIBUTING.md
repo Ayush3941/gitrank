@@ -1173,6 +1173,9 @@ the consolidated runner `make verify-v2-live-readiness` and audit command
 `make audit-v2-contributing-checklist`. After all live verifiers pass, use
 `make mark-v2-contributing-live-gates` to update the corresponding checkboxes.
 Use `make verify-live-v2-inputs` as preflight before running live gates.
+Use `CONFIRM_FINALIZE_V2=yes make finalize-v2-live-closeout` to run preflight,
+verification, evidence checks, checklist marking, and final audit from one
+command.
 Use `gitrank/.env.v2-live-gates.example` as the environment-variable template.
 Use `AUDIT_REPORT_FILE=... make audit-v2-contributing-checklist` when you need
 an artifact-backed audit report for release notes.

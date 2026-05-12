@@ -8,6 +8,8 @@ All items here map to unchecked boxes in `CONTRIBUTING.md`.
 For consolidated execution, use:
 
 - `make verify-v2-live-readiness`
+- `CONFIRM_FINALIZE_V2=yes make finalize-v2-live-closeout` for one-command
+  preflight + gate verification + checklist marking + audit
 - `make run-live-v2-gates-workflow` (requires token and live environment vars)
 - `make audit-v2-contributing-checklist` for pass/fail against unchecked lines
 - `make mark-v2-contributing-live-gates` to flip live-gate checkboxes only after
