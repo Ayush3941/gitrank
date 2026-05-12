@@ -32,7 +32,8 @@ for path in \
   "  /v1/pr/{owner}/{repo}/{number}/report:" \
   "  /v1/pr/{owner}/{repo}/{number}/report/materialize:" \
   "  /v1/me/account/export:" \
-  "  /v1/leaderboard:"; do
+  "  /v1/leaderboard:" \
+  "  /v1/leaderboard/materialize:"; do
   require_contains "$openapi" "$path" "critical production route OpenAPI entry"
 done
 
@@ -47,6 +48,7 @@ for test_name in \
   "LeaderboardMaterializesSeasonSnapshotsAndRankMovements" \
   "RunNextExecutesProfileRefreshJobAndCompletes" \
   "RunNextExecutesPullRequestReportMaterializationJobAndCompletes" \
+  "RunNextExecutesLeaderboardMaterializationJobAndCompletes" \
   "RunNextExecutesPullRequestGradeJobAndCompletes" \
   "PublicResponseFiltersHiddenRepositories"; do
   require_contains "$critical_flows" "$test_name" "critical worker/profile flow verification"

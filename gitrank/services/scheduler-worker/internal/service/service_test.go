@@ -1214,6 +1214,78 @@ func TestRunNextExecutesPullRequestReportMaterializationJobAndCompletes(t *testi
 	}
 }
 
+func TestRunNextExecutesLeaderboardMaterializationJobAndCompletes(t *testing.T) {
+	now := time.Now().UTC().Add(4 * time.Minute).Truncate(time.Second)
+	var observedPath string
+	var observedRequestID string
+	var observedTraceParent string
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		observedPath = r.URL.Path
+		observedRequestID = r.Header.Get("X-Request-ID")
+		observedTraceParent = r.Header.Get("traceparent")
+		if r.Method != http.MethodPost {
+			t.Fatalf("method = %s, want POST", r.Method)
+		}
+		if r.URL.Path != "/v1/leaderboard/materialize" {
+			t.Fatalf("path = %s, want leaderboard materialization path", r.URL.Path)
+		}
+		w.WriteHeader(http.StatusAccepted)
+		_ = json.NewEncoder(w).Encode(contracts.LeaderboardMaterializationResponse{
+			Status:                "materialized",
+			SeasonKey:             "weekly:2026-W20",
+			SeasonSnapshotVersion: "leaderboard-season/v1",
+			ScoringVersion:        "score/v1",
+			EntryCount:            42,
+			Window: contracts.ProfileTimeWindow{
+				Label:   "weekly:2026-W20",
+				Bucket:  "week",
+				StartAt: now.AddDate(0, 0, -1),
+				EndAt:   now.AddDate(0, 0, 6),
+			},
+			SourceWatermark: now.Add(-time.Minute),
+			GeneratedAt:     now,
+		})
+	}))
+	defer server.Close()
+
+	cfg := testServiceConfig()
+	cfg.Services.ProfileBaseURL = server.URL
+	cfg.Services.RequestTimeout = time.Second
+	scheduler := New(cfg)
+
+	enqueue, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "leaderboard_materialize_season"}, "leaderboard-correlation", now)
+	if err != nil {
+		t.Fatalf("EnqueueSync() error = %v", err)
+	}
+
+	run, err := scheduler.RunNext(context.Background(), now)
+	if err != nil {
+		t.Fatalf("RunNext() error = %v", err)
+	}
+	if run.Status != "completed" {
+		t.Fatalf("run status = %q, want completed", run.Status)
+	}
+	if run.LeaderboardMaterialization == nil || run.LeaderboardMaterialization.SeasonKey != "weekly:2026-W20" {
+		t.Fatalf("leaderboard materialization = %+v, want persisted season response", run.LeaderboardMaterialization)
+	}
+	if run.LeaderboardMaterialization.EntryCount != 42 || run.LeaderboardMaterialization.ScoringVersion != "score/v1" {
+		t.Fatalf("leaderboard materialization = %+v, want entry_count=42 score/v1", run.LeaderboardMaterialization)
+	}
+	if observedPath != "/v1/leaderboard/materialize" {
+		t.Fatalf("observed path = %q, want leaderboard materialization path", observedPath)
+	}
+	if observedRequestID != "leaderboard-correlation" {
+		t.Fatalf("observed request id = %q, want leaderboard-correlation", observedRequestID)
+	}
+	if observedTraceParent == "" {
+		t.Fatal("observed traceparent header missing")
+	}
+	if run.Job == nil || run.Job.ID != enqueue.JobIDs[0] || run.Job.Type != string(store.LeaderboardMaterializeJob) {
+		t.Fatalf("run job = %+v, want executed leaderboard materialization job id %q", run.Job, enqueue.JobIDs[0])
+	}
+}
+
 func TestRunNextExecutesPullRequestGradeJobAndCompletes(t *testing.T) {
 	now := time.Now().UTC().Add(3 * time.Minute).Truncate(time.Second)
 	const userID = "8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4"

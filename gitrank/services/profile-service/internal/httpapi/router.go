@@ -63,6 +63,15 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 		})
 	})))
 
+	mux.Handle("/v1/leaderboard/materialize", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		response, err := profileService.MaterializeLeaderboard(r.Context(), 100, time.Now().UTC())
+		if err != nil {
+			writeProfileError(w, r, err)
+			return
+		}
+		httpkit.WriteJSON(w, http.StatusAccepted, response)
+	})))
+
 	mux.Handle("/v1/leaderboard", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response, err := profileService.Leaderboard(r.Context(), 50, time.Now().UTC())
 		if err != nil {

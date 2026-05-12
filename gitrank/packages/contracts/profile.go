@@ -284,6 +284,17 @@ type LeaderboardResponse struct {
 	ScoringVersion        string                 `json:"scoring_version,omitempty"`
 }
 
+type LeaderboardMaterializationResponse struct {
+	Status                string            `json:"status"`
+	SeasonKey             string            `json:"season_key"`
+	SeasonSnapshotVersion string            `json:"season_snapshot_version"`
+	ScoringVersion        string            `json:"scoring_version,omitempty"`
+	EntryCount            int               `json:"entry_count"`
+	Window                ProfileTimeWindow `json:"window"`
+	SourceWatermark       time.Time         `json:"source_watermark"`
+	GeneratedAt           time.Time         `json:"generated_at"`
+}
+
 type ProfilePrivacySettings struct {
 	PublicProfileEnabled         bool `json:"public_profile_enabled"`
 	ShowExactPRs                 bool `json:"show_exact_prs"`

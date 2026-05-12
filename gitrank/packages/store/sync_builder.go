@@ -168,6 +168,22 @@ func BuildSyncJobs(req contracts.SyncRequest, queueName, correlationID string, m
 			return nil, err
 		}
 		return []QueueJob{job}, nil
+	case "leaderboard_materialize_season":
+		job, err := NewQueueJob(QueueJobInput{
+			QueueName:     queueName,
+			Type:          LeaderboardMaterializeJob,
+			CorrelationID: correlationID,
+			Subject:       "current",
+			DedupeKey:     "leaderboard_materialize_season:current",
+			MaxAttempts:   maxAttempts,
+			Payload: map[string]string{
+				"mode": "leaderboard_materialize_season",
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+		return []QueueJob{job}, nil
 	default:
 		return nil, errors.New("unsupported sync mode")
 	}

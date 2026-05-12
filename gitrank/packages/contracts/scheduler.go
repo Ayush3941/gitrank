@@ -78,16 +78,17 @@ type SchedulerJobActionResponse struct {
 }
 
 type SchedulerRunResponse struct {
-	QueueName             string                                             `json:"queue_name"`
-	Status                string                                             `json:"status"`
-	Job                   *SchedulerJobView                                  `json:"job,omitempty"`
-	Execution             *GitHubSyncExecutionResponse                       `json:"execution,omitempty"`
-	Analysis              *SchedulerPullRequestAnalysisResponse              `json:"analysis,omitempty"`
-	ScoreReplay           *SchedulerScoreReplayExecutionResponse             `json:"score_replay,omitempty"`
-	ProfileRefresh        *SchedulerProfileRefreshResponse                   `json:"profile_refresh,omitempty"`
-	ReportMaterialization *SchedulerPullRequestReportMaterializationResponse `json:"report_materialization,omitempty"`
-	Grade                 *SchedulerPullRequestGradeResponse                 `json:"grade,omitempty"`
-	LastUpdatedAt         time.Time                                          `json:"last_updated_at"`
+	QueueName                  string                                             `json:"queue_name"`
+	Status                     string                                             `json:"status"`
+	Job                        *SchedulerJobView                                  `json:"job,omitempty"`
+	Execution                  *GitHubSyncExecutionResponse                       `json:"execution,omitempty"`
+	Analysis                   *SchedulerPullRequestAnalysisResponse              `json:"analysis,omitempty"`
+	ScoreReplay                *SchedulerScoreReplayExecutionResponse             `json:"score_replay,omitempty"`
+	ProfileRefresh             *SchedulerProfileRefreshResponse                   `json:"profile_refresh,omitempty"`
+	ReportMaterialization      *SchedulerPullRequestReportMaterializationResponse `json:"report_materialization,omitempty"`
+	LeaderboardMaterialization *SchedulerLeaderboardMaterializationResponse       `json:"leaderboard_materialization,omitempty"`
+	Grade                      *SchedulerPullRequestGradeResponse                 `json:"grade,omitempty"`
+	LastUpdatedAt              time.Time                                          `json:"last_updated_at"`
 }
 
 type SchedulerPullRequestAnalysisResponse struct {
@@ -163,6 +164,19 @@ type SchedulerPullRequestReportMaterializationResponse struct {
 	CorrelationID    string    `json:"correlation_id,omitempty"`
 	StartedAt        time.Time `json:"started_at"`
 	FinishedAt       time.Time `json:"finished_at"`
+}
+
+type SchedulerLeaderboardMaterializationResponse struct {
+	Status                string    `json:"status"`
+	SeasonKey             string    `json:"season_key"`
+	SeasonSnapshotVersion string    `json:"season_snapshot_version"`
+	ScoringVersion        string    `json:"scoring_version,omitempty"`
+	EntryCount            int       `json:"entry_count"`
+	SourceWatermark       time.Time `json:"source_watermark"`
+	GeneratedAt           time.Time `json:"generated_at"`
+	CorrelationID         string    `json:"correlation_id,omitempty"`
+	StartedAt             time.Time `json:"started_at"`
+	FinishedAt            time.Time `json:"finished_at"`
 }
 
 type SchedulerPullRequestGradeResponse struct {

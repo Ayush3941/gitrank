@@ -163,6 +163,31 @@ func (s *Service) Leaderboard(ctx context.Context, limit int, now time.Time) (co
 	}, nil
 }
 
+func (s *Service) MaterializeLeaderboard(ctx context.Context, limit int, now time.Time) (contracts.LeaderboardMaterializationResponse, error) {
+	if limit <= 0 || limit > leaderboardMaxMaterializedRows {
+		limit = leaderboardMaxMaterializedRows
+	}
+	season, entries, err := s.store.MaterializeLeaderboardSeason(ctx, now.UTC(), limit)
+	if err != nil {
+		return contracts.LeaderboardMaterializationResponse{}, err
+	}
+	return contracts.LeaderboardMaterializationResponse{
+		Status:                "materialized",
+		SeasonKey:             season.SeasonKey,
+		SeasonSnapshotVersion: season.SnapshotVersion,
+		ScoringVersion:        season.ScoreVersion,
+		EntryCount:            len(entries),
+		Window: contracts.ProfileTimeWindow{
+			Label:   season.SeasonKey,
+			Bucket:  "week",
+			StartAt: season.WindowStart.UTC(),
+			EndAt:   season.WindowEnd.UTC(),
+		},
+		SourceWatermark: season.SourceWatermark.UTC(),
+		GeneratedAt:     season.GeneratedAt.UTC(),
+	}, nil
+}
+
 func (s *Service) RefreshProfileByUserID(ctx context.Context, userID string, now time.Time) (contracts.ProfileRefreshResponse, error) {
 	userID, err := contracts.NormalizeUUID(userID, "user_id")
 	if err != nil {

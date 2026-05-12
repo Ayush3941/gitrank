@@ -18,6 +18,7 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 			{Method: "GET", Path: "/v1/profile/schema", Summary: "Public profile section schema", Status: "implemented"},
 			{Method: "POST", Path: "/v1/profile/users/{user_id}/refresh", Summary: "Force a profile snapshot rebuild from stored score and badge evidence", Status: "implemented"},
 			{Method: "GET", Path: "/v1/leaderboard", Summary: "Public leaderboard from materialized season snapshots", Status: "implemented"},
+			{Method: "POST", Path: "/v1/leaderboard/materialize", Summary: "Materialize current leaderboard season snapshots and rank movements", Status: "implemented"},
 			{Method: "GET", Path: "/v1/pr/{owner}/{repo}/{number}/report", Summary: "Public PR battle report from persisted analysis and score evidence", Status: "implemented"},
 			{Method: "POST", Path: "/v1/pr/{owner}/{repo}/{number}/report/materialize", Summary: "Persist an idempotent PR report snapshot from current evidence", Status: "implemented"},
 			{Method: "GET", Path: "/v1/users/{handle}", Summary: "Public profile read model", Status: "implemented"},

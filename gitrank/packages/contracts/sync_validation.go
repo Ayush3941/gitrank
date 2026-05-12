@@ -137,6 +137,7 @@ func (req *SyncRequest) Normalize() error {
 			return err
 		}
 		req.UserID = userID
+	case "leaderboard_materialize_season":
 	default:
 		return errors.New("unsupported sync mode")
 	}

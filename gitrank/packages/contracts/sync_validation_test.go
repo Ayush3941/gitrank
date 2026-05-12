@@ -81,6 +81,16 @@ func TestSyncRequestNormalizeAcceptsReportMaterializePullRequestTarget(t *testin
 	}
 }
 
+func TestSyncRequestNormalizeAcceptsLeaderboardMaterializeSeason(t *testing.T) {
+	req := SyncRequest{Mode: "leaderboard_materialize_season"}
+	if err := req.Normalize(); err != nil {
+		t.Fatalf("Normalize() error = %v", err)
+	}
+	if req.Mode != "leaderboard_materialize_season" {
+		t.Fatalf("Mode = %q, want leaderboard materialization mode", req.Mode)
+	}
+}
+
 func TestSyncRequestNormalizeValidatesScoreReplayUserID(t *testing.T) {
 	req := SyncRequest{
 		Mode:   "score_replay",

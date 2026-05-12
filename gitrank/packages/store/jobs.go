@@ -12,19 +12,20 @@ import (
 type SyncJobType string
 
 const (
-	SyncInstallationJob    SyncJobType = "sync.installation"
-	SyncRepositoryJob      SyncJobType = "sync.repository"
-	SyncUserHistoryJob     SyncJobType = "sync.user_history"
-	SyncPullRequestJob     SyncJobType = "sync.pull_request"
-	SyncReviewJob          SyncJobType = "sync.review"
-	SyncIssueJob           SyncJobType = "sync.issue"
-	SyncCommitJob          SyncJobType = "sync.commit"
-	AnalysisPullRequestJob SyncJobType = "analysis.pull_request"
-	ScoreReplayUserJob     SyncJobType = "score.replay_user"
-	ProfileRefreshUserJob  SyncJobType = "profile.refresh_user"
-	ReportMaterializePRJob SyncJobType = "report.materialize_pull_request"
-	GradePullRequestJob    SyncJobType = "pipeline.grade_pull_request"
-	RepairWebhookJob       SyncJobType = "repair.webhook_delivery"
+	SyncInstallationJob       SyncJobType = "sync.installation"
+	SyncRepositoryJob         SyncJobType = "sync.repository"
+	SyncUserHistoryJob        SyncJobType = "sync.user_history"
+	SyncPullRequestJob        SyncJobType = "sync.pull_request"
+	SyncReviewJob             SyncJobType = "sync.review"
+	SyncIssueJob              SyncJobType = "sync.issue"
+	SyncCommitJob             SyncJobType = "sync.commit"
+	AnalysisPullRequestJob    SyncJobType = "analysis.pull_request"
+	ScoreReplayUserJob        SyncJobType = "score.replay_user"
+	ProfileRefreshUserJob     SyncJobType = "profile.refresh_user"
+	ReportMaterializePRJob    SyncJobType = "report.materialize_pull_request"
+	LeaderboardMaterializeJob SyncJobType = "leaderboard.materialize_season"
+	GradePullRequestJob       SyncJobType = "pipeline.grade_pull_request"
+	RepairWebhookJob          SyncJobType = "repair.webhook_delivery"
 )
 
 type SyncJobStatus string
@@ -152,6 +153,7 @@ func SupportedSyncJobTypes() []SyncJobType {
 		ScoreReplayUserJob,
 		ProfileRefreshUserJob,
 		ReportMaterializePRJob,
+		LeaderboardMaterializeJob,
 		GradePullRequestJob,
 		RepairWebhookJob,
 	}

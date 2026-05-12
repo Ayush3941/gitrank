@@ -928,6 +928,35 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /v1/leaderboard/materialize:
+    post:
+      tags: [Profiles]
+      summary: Materialize the current leaderboard season
+      description: |
+        Rebuilds the current weekly leaderboard season snapshots and rank movement events from public profile snapshots.
+        Intended for scheduler-worker and repair flows; public reads can still serve the latest materialized season.
+      operationId: materializeLeaderboardSeason
+      responses:
+        "202":
+          description: Leaderboard season materialized
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeaderboardMaterializationResponse"
+        "429":
+          description: Rate limit exceeded
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Retry-After:
+              $ref: "#/components/headers/RetryAfter"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /v1/users/{handle}/card:
     get:
       tags: [Profiles]
@@ -1090,12 +1119,28 @@ components:
         user:
           type: string
           description: "GitHub login to sync when `mode=user`."
+        user_id:
+          type: string
+          description: "User UUID for score replay, profile refresh, and PR grading modes."
         repository:
           type: string
           description: "`owner/repo` identifier for repository, PR, review, issue, and commit sync modes."
         mode:
           type: string
-          enum: [installation, user, repository, pull_request, review, issue, commit]
+          enum:
+            - installation
+            - user
+            - repository
+            - pull_request
+            - review
+            - issue
+            - commit
+            - analysis_pull_request
+            - score_replay
+            - profile_refresh
+            - report_materialize_pull_request
+            - leaderboard_materialize_season
+            - grade_pull_request
         installation_id:
           type: integer
           format: int64
@@ -1551,6 +1596,30 @@ components:
           type: string
         scoring_version:
           type: string
+    LeaderboardMaterializationResponse:
+      type: object
+      required: [status, season_key, season_snapshot_version, entry_count, window, source_watermark, generated_at]
+      properties:
+        status:
+          type: string
+          enum: [materialized]
+        season_key:
+          type: string
+        season_snapshot_version:
+          type: string
+        scoring_version:
+          type: string
+        entry_count:
+          type: integer
+          minimum: 0
+        window:
+          $ref: "#/components/schemas/ProfileTimeWindow"
+        source_watermark:
+          type: string
+          format: date-time
+        generated_at:
+          type: string
+          format: date-time
     BadgeView:
       type: object
       required: [key, name, awarded_at]

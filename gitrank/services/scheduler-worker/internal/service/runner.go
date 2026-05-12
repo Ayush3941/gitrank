@@ -42,6 +42,10 @@ type pullRequestReportExecutor interface {
 	MaterializePullRequestReport(ctx context.Context, repository string, number int, correlationID string) (contracts.SchedulerPullRequestReportMaterializationResponse, error)
 }
 
+type leaderboardExecutor interface {
+	MaterializeLeaderboard(ctx context.Context, correlationID string) (contracts.SchedulerLeaderboardMaterializationResponse, error)
+}
+
 type pullRequestAnalysisExecutor interface {
 	AnalyzePullRequest(ctx context.Context, req contracts.SyncRequest, correlationID string) (contracts.SchedulerPullRequestAnalysisResponse, error)
 }
@@ -71,13 +75,19 @@ type httpPullRequestReportExecutor struct {
 	client  *http.Client
 }
 
+type httpLeaderboardExecutor struct {
+	baseURL string
+	client  *http.Client
+}
+
 type jobExecution struct {
-	Sync                  *contracts.GitHubSyncExecutionResponse
-	Analysis              *contracts.SchedulerPullRequestAnalysisResponse
-	ScoreReplay           *contracts.SchedulerScoreReplayExecutionResponse
-	ProfileRefresh        *contracts.SchedulerProfileRefreshResponse
-	ReportMaterialization *contracts.SchedulerPullRequestReportMaterializationResponse
-	Grade                 *contracts.SchedulerPullRequestGradeResponse
+	Sync                       *contracts.GitHubSyncExecutionResponse
+	Analysis                   *contracts.SchedulerPullRequestAnalysisResponse
+	ScoreReplay                *contracts.SchedulerScoreReplayExecutionResponse
+	ProfileRefresh             *contracts.SchedulerProfileRefreshResponse
+	ReportMaterialization      *contracts.SchedulerPullRequestReportMaterializationResponse
+	LeaderboardMaterialization *contracts.SchedulerLeaderboardMaterializationResponse
+	Grade                      *contracts.SchedulerPullRequestGradeResponse
 }
 
 type executionCounters struct {
@@ -151,6 +161,19 @@ func newPullRequestReportExecutor(cfg config.App) pullRequestReportExecutor {
 	}
 }
 
+func newLeaderboardExecutor(cfg config.App) leaderboardExecutor {
+	baseURL := strings.TrimRight(strings.TrimSpace(cfg.Services.ProfileBaseURL), "/")
+	if baseURL == "" {
+		return nil
+	}
+	return &httpLeaderboardExecutor{
+		baseURL: baseURL,
+		client: &http.Client{
+			Timeout: cfg.Services.RequestTimeout,
+		},
+	}
+}
+
 func newExecutionCounters() *executionCounters {
 	return &executionCounters{
 		byOutcome: make(map[string]int),
@@ -196,6 +219,7 @@ func (s *Service) RunNext(ctx context.Context, now time.Time) (contracts.Schedul
 	response.ScoreReplay = execution.ScoreReplay
 	response.ProfileRefresh = execution.ProfileRefresh
 	response.ReportMaterialization = execution.ReportMaterialization
+	response.LeaderboardMaterialization = execution.LeaderboardMaterialization
 	response.Grade = execution.Grade
 	s.recordExecution(job.Type, action.Status, finishedAt)
 	return response, nil
@@ -356,6 +380,15 @@ func (s *Service) executeLeasedJob(ctx context.Context, job store.QueueJob) (job
 			return jobExecution{}, err
 		}
 		return jobExecution{ReportMaterialization: &execution}, nil
+	case store.LeaderboardMaterializeJob:
+		if s.leaderboardRunner == nil {
+			return jobExecution{}, fmt.Errorf("leaderboard runner is not configured")
+		}
+		execution, err := s.leaderboardRunner.MaterializeLeaderboard(ctx, correlationIDForJob(job))
+		if err != nil {
+			return jobExecution{}, err
+		}
+		return jobExecution{LeaderboardMaterialization: &execution}, nil
 	case store.GradePullRequestJob:
 		return s.executePullRequestGradeJob(ctx, job)
 	default:
@@ -910,6 +943,63 @@ func (e *httpPullRequestReportExecutor) MaterializePullRequestReport(ctx context
 	}, nil
 }
 
+func (e *httpLeaderboardExecutor) MaterializeLeaderboard(ctx context.Context, correlationID string) (contracts.SchedulerLeaderboardMaterializationResponse, error) {
+	ctx = httpkit.EnsureTraceContext(ctx)
+	startedAt := time.Now().UTC()
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, e.baseURL+"/v1/leaderboard/materialize", nil)
+	if err != nil {
+		return contracts.SchedulerLeaderboardMaterializationResponse{}, err
+	}
+	request.Header.Set("Accept", "application/json")
+	if strings.TrimSpace(correlationID) != "" {
+		request.Header.Set("X-Request-ID", strings.TrimSpace(correlationID))
+	}
+	httpkit.InjectTraceContext(ctx, request.Header)
+
+	response, err := e.client.Do(request)
+	if err != nil {
+		return contracts.SchedulerLeaderboardMaterializationResponse{}, err
+	}
+	defer response.Body.Close()
+
+	payload, err := io.ReadAll(io.LimitReader(response.Body, 1<<20))
+	if err != nil {
+		return contracts.SchedulerLeaderboardMaterializationResponse{}, err
+	}
+	if response.StatusCode != http.StatusAccepted && response.StatusCode != http.StatusOK {
+		var apiErr contracts.ErrorResponse
+		if err := json.Unmarshal(payload, &apiErr); err == nil && strings.TrimSpace(apiErr.Error.Message) != "" {
+			return contracts.SchedulerLeaderboardMaterializationResponse{}, fmt.Errorf("profile-service leaderboard materialization failed: %s", apiErr.Error.Message)
+		}
+		return contracts.SchedulerLeaderboardMaterializationResponse{}, fmt.Errorf("profile-service leaderboard materialization failed with status %d", response.StatusCode)
+	}
+
+	var materialized contracts.LeaderboardMaterializationResponse
+	if err := json.Unmarshal(payload, &materialized); err != nil {
+		return contracts.SchedulerLeaderboardMaterializationResponse{}, err
+	}
+	if strings.TrimSpace(materialized.Status) == "" ||
+		strings.TrimSpace(materialized.SeasonKey) == "" ||
+		strings.TrimSpace(materialized.SeasonSnapshotVersion) == "" ||
+		materialized.GeneratedAt.IsZero() ||
+		materialized.SourceWatermark.IsZero() {
+		return contracts.SchedulerLeaderboardMaterializationResponse{}, fmt.Errorf("profile-service returned an invalid leaderboard materialization contract")
+	}
+
+	return contracts.SchedulerLeaderboardMaterializationResponse{
+		Status:                strings.TrimSpace(materialized.Status),
+		SeasonKey:             strings.TrimSpace(materialized.SeasonKey),
+		SeasonSnapshotVersion: strings.TrimSpace(materialized.SeasonSnapshotVersion),
+		ScoringVersion:        strings.TrimSpace(materialized.ScoringVersion),
+		EntryCount:            materialized.EntryCount,
+		SourceWatermark:       materialized.SourceWatermark.UTC(),
+		GeneratedAt:           materialized.GeneratedAt.UTC(),
+		CorrelationID:         strings.TrimSpace(correlationID),
+		StartedAt:             startedAt,
+		FinishedAt:            time.Now().UTC(),
+	}, nil
+}
+
 func (s *Service) runWorkerLoop(ctx context.Context) {
 	ticker := time.NewTicker(s.cfg.Scheduler.PollInterval)
 	defer ticker.Stop()
@@ -947,7 +1037,7 @@ func splitExecutionMetricKey(key string) (string, string) {
 }
 
 func isExecutableJob(job store.QueueJob, now time.Time) bool {
-	return (job.Type == store.SyncInstallationJob || job.Type == store.SyncRepositoryJob || job.Type == store.SyncUserHistoryJob || job.Type == store.SyncPullRequestJob || job.Type == store.SyncReviewJob || job.Type == store.SyncIssueJob || job.Type == store.SyncCommitJob || job.Type == store.AnalysisPullRequestJob || job.Type == store.ScoreReplayUserJob || job.Type == store.ProfileRefreshUserJob || job.Type == store.ReportMaterializePRJob || job.Type == store.GradePullRequestJob) &&
+	return (job.Type == store.SyncInstallationJob || job.Type == store.SyncRepositoryJob || job.Type == store.SyncUserHistoryJob || job.Type == store.SyncPullRequestJob || job.Type == store.SyncReviewJob || job.Type == store.SyncIssueJob || job.Type == store.SyncCommitJob || job.Type == store.AnalysisPullRequestJob || job.Type == store.ScoreReplayUserJob || job.Type == store.ProfileRefreshUserJob || job.Type == store.ReportMaterializePRJob || job.Type == store.LeaderboardMaterializeJob || job.Type == store.GradePullRequestJob) &&
 		job.Status == store.JobPending &&
 		!job.NotBefore.After(now.UTC())
 }
@@ -1063,6 +1153,11 @@ func syncRequestFromJob(job store.QueueJob) (contracts.SyncRequest, error) {
 			req.Repository = strings.TrimSpace(job.Repository)
 		}
 		req.Mode = "report_materialize_pull_request"
+		if err := req.Normalize(); err != nil {
+			return contracts.SyncRequest{}, err
+		}
+	case store.LeaderboardMaterializeJob:
+		req.Mode = "leaderboard_materialize_season"
 		if err := req.Normalize(); err != nil {
 			return contracts.SyncRequest{}, err
 		}

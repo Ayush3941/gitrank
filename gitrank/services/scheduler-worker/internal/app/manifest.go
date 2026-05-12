@@ -18,7 +18,7 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 			{Method: "GET", Path: "/v1/jobs/config", Summary: "Current scheduler configuration preview", Status: "implemented"},
 			{Method: "GET", Path: "/v1/jobs/dead-letters/config", Summary: "Current dead-letter queue policy preview", Status: "implemented"},
 			{Method: "GET", Path: "/v1/jobs", Summary: "List current scheduler jobs and queue state, with optional filters for user, repository, installation, status, type, subject, or correlation ID", Status: "implemented"},
-			{Method: "POST", Path: "/v1/jobs/sync", Summary: "Schedule a GitHub sync or score replay job", Status: "implemented"},
+			{Method: "POST", Path: "/v1/jobs/sync", Summary: "Schedule a GitHub sync, score/profile/report, or leaderboard materialization job", Status: "implemented"},
 			{Method: "POST", Path: "/v1/jobs/tick", Summary: "Trigger one scheduler evaluation tick", Status: "implemented"},
 			{Method: "POST", Path: "/v1/jobs/lease", Summary: "Lease ready jobs up to the configured concurrency limit", Status: "implemented"},
 			{Method: "POST", Path: "/v1/jobs/run-once", Summary: "Execute the next ready in-process scheduler job", Status: "implemented"},
@@ -43,7 +43,7 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 			{Name: "github-ingestor", Kind: "internal_http", BaseURL: cfg.Services.GitHubIngestorBaseURL, Purpose: "Repository and PR sync flows", Auth: "service_to_service", Critical: true, Status: "configured"},
 			{Name: "pr-analyzer", Kind: "internal_http", BaseURL: cfg.Services.PRAnalyzerBaseURL, Purpose: "Executable persisted PR analysis jobs", Auth: "service_to_service", Critical: true, Status: "configured"},
 			{Name: "scoring-engine", Kind: "internal_http", BaseURL: cfg.Services.ScoringBaseURL, Purpose: "Executable score replay jobs for V2 backfills and repair flows", Auth: "service_to_service", Critical: true, Status: "configured"},
-			{Name: "profile-service", Kind: "internal_http", BaseURL: cfg.Services.ProfileBaseURL, Purpose: "Executable profile snapshot refresh jobs after scoring", Auth: "service_to_service", Critical: true, Status: "configured"},
+			{Name: "profile-service", Kind: "internal_http", BaseURL: cfg.Services.ProfileBaseURL, Purpose: "Executable profile snapshot, PR report, and leaderboard materialization jobs", Auth: "service_to_service", Critical: true, Status: "configured"},
 		},
 	}
 }
