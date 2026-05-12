@@ -66,6 +66,15 @@ func TestBuildReplayMonitorsAndExcludesSelfMergedPullRequests(t *testing.T) {
 	if version, _ := events[0].Metadata["score_formula_inputs_version"].(string); version != "score-components/v1" {
 		t.Fatalf("score_formula_inputs_version = %q, want score-components/v1", version)
 	}
+	if version, _ := events[0].Metadata["formula_version"].(string); version != "score-components/v1" {
+		t.Fatalf("formula_version = %q, want score-components/v1", version)
+	}
+	if pullRequestID, _ := events[0].Metadata["pull_request_id"].(string); pullRequestID != "pr-1" {
+		t.Fatalf("metadata pull_request_id = %q, want pr-1", pullRequestID)
+	}
+	if analysisID, _ := events[0].Metadata["analysis_id"].(string); analysisID != "analysis-1" {
+		t.Fatalf("metadata analysis_id = %q, want analysis-1", analysisID)
+	}
 	if totalXP, _ := events[0].Metadata["total_xp"].(int); totalXP != 0 {
 		t.Fatalf("metadata total_xp = %v, want 0 after self-merge exclusion", events[0].Metadata["total_xp"])
 	}

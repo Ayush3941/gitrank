@@ -206,6 +206,176 @@ func TestRefreshProfileByUserIDNormalizesLegacyBadgeEvidence(t *testing.T) {
 	}
 }
 
+func TestRefreshProfileByUserIDBackfillsLegacyScoreEventEvidenceLinks(t *testing.T) {
+	databaseURL := strings.TrimSpace(os.Getenv("GITRANK_PROFILE_DATABASE_URL"))
+	if databaseURL == "" {
+		t.Skip("GITRANK_PROFILE_DATABASE_URL is not set")
+	}
+
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, databaseURL)
+	if err != nil {
+		t.Fatalf("pgxpool.New() error = %v", err)
+	}
+	defer pool.Close()
+
+	cfg := config.App{
+		ServiceName: "profile-service",
+		Database:    config.Database{URL: databaseURL},
+		Auth: config.Auth{
+			SessionSecret:     "profile-refresh-legacy-score-secret",
+			SessionCookieName: "gitrank_session",
+			CSRFCookieName:    "gitrank_csrf",
+		},
+	}
+	svc, err := New(cfg, pool, &Cache{}, profileTestLogger())
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+
+	now := time.Now().UTC().Truncate(time.Second)
+	suffix := now.UnixNano()
+	handle := fmt.Sprintf("refresh-legacy-score-%d", suffix%1000000000)
+
+	var userID string
+	if err := pool.QueryRow(ctx, `
+		INSERT INTO users (display_name, public_handle, avatar_url)
+		VALUES ($1, $2, $3)
+		RETURNING id::text
+	`, "Profile Legacy Score User", handle, "https://avatars.example.test/u/refresh-legacy-score").Scan(&userID); err != nil {
+		t.Fatalf("insert user: %v", err)
+	}
+
+	var githubAccountID string
+	if err := pool.QueryRow(ctx, `
+		INSERT INTO github_accounts (user_id, github_user_id, login, node_id)
+		VALUES ($1::uuid, $2, $3, $4)
+		RETURNING id::text
+	`, userID, 9100000000+suffix, handle, fmt.Sprintf("U_refresh_legacy_score_%d", suffix)).Scan(&githubAccountID); err != nil {
+		t.Fatalf("insert github account: %v", err)
+	}
+
+	var repositoryID string
+	repository := handle + "/repo"
+	if err := pool.QueryRow(ctx, `
+		INSERT INTO repositories (github_repository_id, owner_login, name, full_name)
+		VALUES ($1, $2, 'repo', $3)
+		RETURNING id::text
+	`, 9200000000+suffix, handle, repository).Scan(&repositoryID); err != nil {
+		t.Fatalf("insert repository: %v", err)
+	}
+
+	var pullRequestID string
+	number := int(suffix%1000) + 20
+	if err := pool.QueryRow(ctx, `
+		INSERT INTO pull_requests (
+			github_pull_request_id,
+			repository_id,
+			author_github_account_id,
+			number,
+			title,
+			state,
+			merged,
+			merged_at,
+			created_at_source,
+			updated_at_source
+		) VALUES (
+			$1,
+			$2::uuid,
+			$3::uuid,
+			$4,
+			'fix: preserve score evidence links',
+			'closed',
+			true,
+			$5,
+			$6,
+			$7
+		)
+		RETURNING id::text
+	`, 9300000000+suffix, repositoryID, githubAccountID, number, now.Add(-2*time.Hour), now.Add(-3*time.Hour), now.Add(-time.Hour)).Scan(&pullRequestID); err != nil {
+		t.Fatalf("insert pull request: %v", err)
+	}
+
+	var analysisID string
+	if err := pool.QueryRow(ctx, `
+		INSERT INTO contribution_analyses (
+			pull_request_id,
+			analyzer_version,
+			analysis_source,
+			classification,
+			confidence,
+			summary
+		) VALUES (
+			$1::uuid,
+			'deterministic.v1',
+			'deterministic',
+			'feature',
+			0.87,
+			'Legacy score event linkage test analysis.'
+		)
+		RETURNING id::text
+	`, pullRequestID).Scan(&analysisID); err != nil {
+		t.Fatalf("insert analysis: %v", err)
+	}
+
+	legacyEventKey := fmt.Sprintf("pr:%s:analysis:%s:score:v1alpha1", pullRequestID, analysisID)
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO score_events (
+			user_id,
+			replay_run_id,
+			event_key,
+			score_version,
+			event_type,
+			delta_total_xp,
+			delta_skill_jsonb,
+			explanation_jsonb,
+			metadata_jsonb,
+			created_at
+		) VALUES (
+			$1::uuid,
+			NULL,
+			$2,
+			'score/v-refresh-legacy-test',
+			'score.computed',
+			180,
+			'{"backend":120,"testing":60}'::jsonb,
+			'["Legacy score event should still produce linked evidence."]'::jsonb,
+			'{"formula_version":"score-components/v1"}'::jsonb,
+			$3
+		)
+	`, userID, legacyEventKey, now.Add(-30*time.Minute)); err != nil {
+		t.Fatalf("insert legacy score event: %v", err)
+	}
+
+	if _, err := svc.RefreshProfileByUserID(ctx, userID, now); err != nil {
+		t.Fatalf("RefreshProfileByUserID() error = %v", err)
+	}
+
+	var linkedPullRequestID, linkedAnalysisID, linkedFormulaVersion, linkedEvidenceState string
+	if err := pool.QueryRow(ctx, `
+		SELECT
+			COALESCE(score_history_jsonb->0->>'pull_request_id', ''),
+			COALESCE(score_history_jsonb->0->>'analysis_id', ''),
+			COALESCE(score_history_jsonb->0->>'formula_version', ''),
+			COALESCE(score_history_jsonb->0->>'evidence_state', '')
+		FROM profile_snapshots
+		WHERE user_id = $1::uuid
+		ORDER BY refreshed_at DESC, created_at DESC
+		LIMIT 1
+	`, userID).Scan(&linkedPullRequestID, &linkedAnalysisID, &linkedFormulaVersion, &linkedEvidenceState); err != nil {
+		t.Fatalf("load score history evidence links: %v", err)
+	}
+	if linkedPullRequestID != pullRequestID || linkedAnalysisID != analysisID {
+		t.Fatalf("score history links = %q/%q, want %q/%q", linkedPullRequestID, linkedAnalysisID, pullRequestID, analysisID)
+	}
+	if linkedFormulaVersion != "score-components/v1" {
+		t.Fatalf("formula_version = %q, want score-components/v1", linkedFormulaVersion)
+	}
+	if linkedEvidenceState != "complete" {
+		t.Fatalf("evidence_state = %q, want complete", linkedEvidenceState)
+	}
+}
+
 func assertProfileSnapshotCount(t *testing.T, ctx context.Context, pool *pgxpool.Pool, userID string, want int) {
 	t.Helper()
 

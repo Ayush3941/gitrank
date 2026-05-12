@@ -248,8 +248,30 @@ func (s *Store) LoadScoreRows(ctx context.Context, userID string, selection scor
 				CASE WHEN se.event_type = 'quest.reward' THEN se.score_version ELSE '' END
 			),
 			COALESCE(se.metadata_jsonb->'evidence_score_event_ids', '[]'::jsonb),
-			COALESCE(se.pull_request_id::text, NULLIF(se.metadata_jsonb->>'pull_request_id', ''), ''),
-			COALESCE(se.analysis_id::text, NULLIF(se.metadata_jsonb->>'analysis_id', ''), ''),
+			COALESCE(
+				se.pull_request_id::text,
+				NULLIF(se.metadata_jsonb->>'pull_request_id', ''),
+				CASE
+					WHEN split_part(se.event_key, ':', 1) = 'pr'
+					 AND split_part(se.event_key, ':', 3) = 'analysis'
+					 AND split_part(se.event_key, ':', 2) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+					THEN split_part(se.event_key, ':', 2)
+					ELSE ''
+				END,
+				''
+			),
+			COALESCE(
+				se.analysis_id::text,
+				NULLIF(se.metadata_jsonb->>'analysis_id', ''),
+				CASE
+					WHEN split_part(se.event_key, ':', 1) = 'pr'
+					 AND split_part(se.event_key, ':', 3) = 'analysis'
+					 AND split_part(se.event_key, ':', 4) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+					THEN split_part(se.event_key, ':', 4)
+					ELSE ''
+				END,
+				''
+			),
 			se.delta_skill_jsonb,
 			se.explanation_jsonb,
 			se.created_at,
@@ -262,9 +284,31 @@ func (s *Store) LoadScoreRows(ctx context.Context, userID string, selection scor
 			COALESCE(NULLIF(se.metadata_jsonb->>'analysis_source', ''), ca.analysis_source, ''),
 			COALESCE((NULLIF(se.metadata_jsonb->>'confidence', ''))::double precision, ca.confidence::double precision, 0)
 		FROM score_events se
-		LEFT JOIN pull_requests pr ON pr.id = se.pull_request_id
+		LEFT JOIN pull_requests pr ON pr.id = COALESCE(
+			se.pull_request_id,
+			CASE
+				WHEN NULLIF(BTRIM(se.metadata_jsonb->>'pull_request_id'), '') ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+				THEN NULLIF(BTRIM(se.metadata_jsonb->>'pull_request_id'), '')::uuid
+				WHEN split_part(se.event_key, ':', 1) = 'pr'
+				 AND split_part(se.event_key, ':', 3) = 'analysis'
+				 AND split_part(se.event_key, ':', 2) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+				THEN split_part(se.event_key, ':', 2)::uuid
+				ELSE NULL
+			END
+		)
 		LEFT JOIN repositories r ON r.id = pr.repository_id
-		LEFT JOIN contribution_analyses ca ON ca.id = se.analysis_id
+		LEFT JOIN contribution_analyses ca ON ca.id = COALESCE(
+			se.analysis_id,
+			CASE
+				WHEN NULLIF(BTRIM(se.metadata_jsonb->>'analysis_id'), '') ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+				THEN NULLIF(BTRIM(se.metadata_jsonb->>'analysis_id'), '')::uuid
+				WHEN split_part(se.event_key, ':', 1) = 'pr'
+				 AND split_part(se.event_key, ':', 3) = 'analysis'
+				 AND split_part(se.event_key, ':', 4) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+				THEN split_part(se.event_key, ':', 4)::uuid
+				ELSE NULL
+			END
+		)
 		WHERE se.user_id = $1::uuid
 	`
 	args := []any{userID}
