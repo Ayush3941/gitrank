@@ -1173,6 +1173,8 @@ the consolidated runner `make verify-v2-live-readiness` and audit command
 `make audit-v2-contributing-checklist`. After all live verifiers pass, use
 `make mark-v2-contributing-live-gates` to update the corresponding checkboxes.
 Use `make verify-live-v2-inputs` as preflight before running live gates.
+Use `make verify-v2-unresolved-checklist-scope` to ensure unresolved checklist
+items stay limited to approved live gates.
 Use `CONFIRM_FINALIZE_V2=yes make finalize-v2-live-closeout` to run preflight,
 verification, evidence checks, checklist marking, and final audit from one
 command. The finalizer accepts `GITRANK_REPO_ADMIN_TOKEN` directly and can

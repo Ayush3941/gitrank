@@ -101,6 +101,14 @@ cd gitrank
 make verify-v2-live-readiness
 ```
 
+Use this check to ensure unresolved `CONTRIBUTING.md` items remain constrained
+to the approved live-gate list:
+
+```bash
+cd gitrank
+make verify-v2-unresolved-checklist-scope
+```
+
 Use input preflight before live runs:
 
 ```bash

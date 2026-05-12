@@ -8,6 +8,8 @@ All items here map to unchecked boxes in `CONTRIBUTING.md`.
 For consolidated execution, use:
 
 - `make verify-v2-live-readiness`
+- `make verify-v2-unresolved-checklist-scope` to ensure unresolved checklist
+  items stay limited to approved live-only gates
 - `CONFIRM_FINALIZE_V2=yes make finalize-v2-live-closeout` for one-command
   preflight + gate verification + checklist marking + audit
 - `make run-live-v2-gates-workflow` (requires token and live environment vars)
