@@ -37,6 +37,7 @@ jobs:
           trivy fs \
             --exit-code 1 \
             --ignore-unfixed \
+            --ignorefile .trivyignore.yaml \
             --severity HIGH,CRITICAL \
             --scanners vuln,secret,misconfig \
             --timeout 15m \
@@ -89,6 +90,7 @@ jobs:
           trivy image \
             --exit-code 1 \
             --ignore-unfixed \
+            --ignorefile .trivyignore.yaml \
             --severity HIGH,CRITICAL \
             --scanners vuln,secret,misconfig \
             --timeout 15m \

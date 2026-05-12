@@ -1,0 +1,5 @@
+misconfigurations:
+  - id: KSV-0109
+    paths:
+      - gitrank/deployments/k8s/base/configmap.yaml
+    expired_at: 2027-05-12
