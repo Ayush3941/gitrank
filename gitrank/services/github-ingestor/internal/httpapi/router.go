@@ -245,7 +245,19 @@ func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQ
 			mode = req.Mode
 		}
 
-		jobs, err := store.BuildSyncJobs(req, githubSyncQueueName, httpkit.RequestIDFromContext(r.Context()), cfg.Scheduler.MaxAttempts)
+		normalized := req
+		if err := normalized.Normalize(); err != nil {
+			status = "invalid_request"
+			httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		if !githubIngestorSyncMode(normalized.Mode) {
+			status = "invalid_request"
+			httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", "unsupported GitHub ingestor sync mode", httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+
+		jobs, err := store.BuildSyncJobs(normalized, githubSyncQueueName, httpkit.RequestIDFromContext(r.Context()), cfg.Scheduler.MaxAttempts)
 		if err != nil {
 			status = "invalid_request"
 			httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
@@ -662,6 +674,15 @@ func registerSyncRoute(mux *http.ServeMux, cfg config.App, queue *store.InMemory
 		}
 		httpkit.WriteJSON(w, http.StatusAccepted, queuePreview("queued", jobs, false))
 	})))
+}
+
+func githubIngestorSyncMode(mode string) bool {
+	switch mode {
+	case "installation", "user", "repository", "pull_request", "review", "issue", "commit":
+		return true
+	default:
+		return false
+	}
 }
 
 func webhookSubject(envelope githubapi.WebhookEnvelope) string {

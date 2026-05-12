@@ -78,11 +78,26 @@ type SchedulerJobActionResponse struct {
 }
 
 type SchedulerRunResponse struct {
-	QueueName     string                       `json:"queue_name"`
-	Status        string                       `json:"status"`
-	Job           *SchedulerJobView            `json:"job,omitempty"`
-	Execution     *GitHubSyncExecutionResponse `json:"execution,omitempty"`
-	LastUpdatedAt time.Time                    `json:"last_updated_at"`
+	QueueName     string                                 `json:"queue_name"`
+	Status        string                                 `json:"status"`
+	Job           *SchedulerJobView                      `json:"job,omitempty"`
+	Execution     *GitHubSyncExecutionResponse           `json:"execution,omitempty"`
+	ScoreReplay   *SchedulerScoreReplayExecutionResponse `json:"score_replay,omitempty"`
+	LastUpdatedAt time.Time                              `json:"last_updated_at"`
+}
+
+type SchedulerScoreReplayExecutionResponse struct {
+	Status        string    `json:"status"`
+	UserID        string    `json:"user_id"`
+	ReplayRunID   string    `json:"replay_run_id"`
+	ScoreVersion  string    `json:"score_version"`
+	TriggerType   string    `json:"trigger_type"`
+	TotalXP       int       `json:"total_xp"`
+	EventCount    int       `json:"event_count"`
+	BadgeCount    int       `json:"badge_count"`
+	CorrelationID string    `json:"correlation_id,omitempty"`
+	StartedAt     time.Time `json:"started_at"`
+	FinishedAt    time.Time `json:"finished_at"`
 }
 
 type SchedulerDeadLetterListResponse struct {

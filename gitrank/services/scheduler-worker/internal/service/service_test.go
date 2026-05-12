@@ -919,6 +919,86 @@ func TestRunNextExecutesCommitJobAndCompletes(t *testing.T) {
 	}
 }
 
+func TestRunNextExecutesScoreReplayJobAndCompletes(t *testing.T) {
+	now := time.Now().UTC().Add(time.Minute).Truncate(time.Second)
+	const userID = "8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4"
+	var observed contracts.ReplayUserScoresRequest
+	var observedPath string
+	var observedRequestID string
+	var observedTraceParent string
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		observedPath = r.URL.Path
+		observedRequestID = r.Header.Get("X-Request-ID")
+		observedTraceParent = r.Header.Get("traceparent")
+		if err := json.NewDecoder(r.Body).Decode(&observed); err != nil {
+			t.Fatalf("decode request: %v", err)
+		}
+		w.WriteHeader(http.StatusAccepted)
+		_ = json.NewEncoder(w).Encode(contracts.ReplayUserScoresResponse{
+			Snapshot: contracts.UserScoreSnapshotResponse{
+				ReplayRunID:       "score-run-1",
+				UserID:            userID,
+				ScoreVersion:      "v1alpha1",
+				TriggerType:       observed.TriggerType,
+				TotalXP:           123,
+				Level:             "Level 2",
+				RankTier:          "bronze",
+				ContributionCount: 2,
+				SourceWatermark:   now,
+				ComputedAt:        now.Add(time.Second),
+			},
+			Badges: []contracts.BadgeView{
+				{Key: "reviewer", Name: "Reviewer", AwardedAt: now},
+			},
+			Events: 2,
+		})
+	}))
+	defer server.Close()
+
+	cfg := testServiceConfig()
+	cfg.Services.ScoringBaseURL = server.URL
+	cfg.Services.RequestTimeout = time.Second
+	scheduler := New(cfg)
+
+	enqueue, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "score_replay", UserID: userID}, "score-correlation", now)
+	if err != nil {
+		t.Fatalf("EnqueueSync() error = %v", err)
+	}
+
+	run, err := scheduler.RunNext(context.Background(), now)
+	if err != nil {
+		t.Fatalf("RunNext() error = %v", err)
+	}
+	if run.Status != "completed" {
+		t.Fatalf("run status = %q, want completed", run.Status)
+	}
+	if run.Execution != nil {
+		t.Fatalf("sync execution = %+v, want nil for score replay", run.Execution)
+	}
+	if run.ScoreReplay == nil || run.ScoreReplay.UserID != userID || run.ScoreReplay.ReplayRunID != "score-run-1" {
+		t.Fatalf("score replay = %+v, want replay for user %s", run.ScoreReplay, userID)
+	}
+	if run.ScoreReplay.EventCount != 2 || run.ScoreReplay.BadgeCount != 1 || run.ScoreReplay.TriggerType != "backfill" {
+		t.Fatalf("score replay summary = %+v, want events=2 badges=1 trigger=backfill", run.ScoreReplay)
+	}
+	if observedPath != "/v1/score/users/"+userID+"/replay" {
+		t.Fatalf("observed path = %q, want score replay path", observedPath)
+	}
+	if observed.TriggerType != "backfill" {
+		t.Fatalf("observed trigger type = %q, want backfill", observed.TriggerType)
+	}
+	if observedRequestID != "score-correlation" {
+		t.Fatalf("observed request id = %q, want %q", observedRequestID, "score-correlation")
+	}
+	if observedTraceParent == "" {
+		t.Fatal("observed traceparent header missing")
+	}
+	if run.Job == nil || run.Job.ID != enqueue.JobIDs[0] || run.Job.Type != string(store.ScoreReplayUserJob) {
+		t.Fatalf("run job = %+v, want executed score replay job id %q", run.Job, enqueue.JobIDs[0])
+	}
+}
+
 func TestRunNextRetriesRepositoryJobOnUpstreamFailure(t *testing.T) {
 	now := time.Now().UTC().Add(time.Minute).Truncate(time.Second)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {

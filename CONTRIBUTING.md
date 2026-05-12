@@ -1137,8 +1137,8 @@ V2 ingestion and coverage checklist:
 - [ ] Add GitHub App support for installation-scoped repository sync, organization-scale webhooks, and more reliable repository inventory.
 - [ ] Keep OAuth for sign-in and account linking while using GitHub App installation permissions for scalable ingestion where users or organizations opt in.
 - [x] Add direct PR file-list fetching for live PR sync and store only approved bounded metadata or public diff excerpts.
-- [ ] Add retry, idempotency, and dedupe keys that cover each analysis and scoring step in the PR grading pipeline.
-- [ ] Add backfill jobs for historical PR reports, quests, season rankings, badges, and score history.
+- [ ] Add retry, idempotency, and dedupe keys that cover each analysis and scoring step in the PR grading pipeline. Score replay now has a real `score.replay_user` scheduler job with a `score_replay:{user_id}` dedupe key, normal retry/dead-letter behavior, and a real call to `scoring-engine /v1/score/users/{user_id}/replay`; remaining analysis, profile refresh, quest reward, leaderboard season, and report-materialization stages still need the same external-worker treatment.
+- [ ] Add backfill jobs for historical PR reports, quests, season rankings, badges, and score history. Historical score replay can now be queued through `mode=score_replay`, but PR report, quest, season ranking, and badge-history backfill workers are still outstanding.
 - [x] Add dead-letter replay runbooks for sync, file-feature extraction, analysis, scoring, profile refresh, quest update, and report materialization jobs. `gitrank/docs/runbooks/dead-letter-replay.md` covers the current scheduler replay endpoint, current sync and PR file-feature jobs, current manual scoring/profile/report recovery paths, and the future job names and idempotency requirements needed before those stages become external workers.
 - [ ] Add external worker deployment topology for long-running ingestion, analyzer, scoring, profile, leaderboard, and quest jobs.
 

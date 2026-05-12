@@ -96,6 +96,29 @@ func TestBuildSyncJobsRepository(t *testing.T) {
 	}
 }
 
+func TestBuildSyncJobsScoreReplayUser(t *testing.T) {
+	const userID = "8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4"
+	jobs, err := BuildSyncJobs(contracts.SyncRequest{
+		Mode:   "score_replay",
+		UserID: userID,
+	}, "github-sync", "score-correlation", 5)
+	if err != nil {
+		t.Fatalf("BuildSyncJobs() error = %v", err)
+	}
+	if len(jobs) != 1 {
+		t.Fatalf("jobs len = %d, want 1", len(jobs))
+	}
+	if jobs[0].Type != ScoreReplayUserJob {
+		t.Fatalf("job type = %q, want %q", jobs[0].Type, ScoreReplayUserJob)
+	}
+	if jobs[0].Subject != userID {
+		t.Fatalf("subject = %q, want %q", jobs[0].Subject, userID)
+	}
+	if jobs[0].DedupeKey != "score_replay:"+userID {
+		t.Fatalf("dedupe key = %q, want score_replay:%s", jobs[0].DedupeKey, userID)
+	}
+}
+
 func TestBuildSyncJobsRejectsUnsafeRepository(t *testing.T) {
 	_, err := BuildSyncJobs(contracts.SyncRequest{
 		Mode:       "repository",

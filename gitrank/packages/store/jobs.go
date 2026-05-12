@@ -19,6 +19,7 @@ const (
 	SyncReviewJob       SyncJobType = "sync.review"
 	SyncIssueJob        SyncJobType = "sync.issue"
 	SyncCommitJob       SyncJobType = "sync.commit"
+	ScoreReplayUserJob  SyncJobType = "score.replay_user"
 	RepairWebhookJob    SyncJobType = "repair.webhook_delivery"
 )
 
@@ -143,6 +144,7 @@ func SupportedSyncJobTypes() []SyncJobType {
 		SyncReviewJob,
 		SyncIssueJob,
 		SyncCommitJob,
+		ScoreReplayUserJob,
 		RepairWebhookJob,
 	}
 }

@@ -28,6 +28,7 @@ type ComponentCheck struct {
 
 type SyncRequest struct {
 	User           string `json:"user,omitempty"`
+	UserID         string `json:"user_id,omitempty"`
 	Repository     string `json:"repository,omitempty"`
 	Mode           string `json:"mode,omitempty"`
 	InstallationID int64  `json:"installation_id,omitempty"`

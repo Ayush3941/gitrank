@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 	"time"
@@ -27,9 +28,23 @@ type boundedSyncExecutor interface {
 	SyncCommit(ctx context.Context, req contracts.SyncRequest, correlationID string) (contracts.GitHubSyncExecutionResponse, error)
 }
 
+type scoreReplayExecutor interface {
+	ReplayUser(ctx context.Context, userID string, correlationID string) (contracts.SchedulerScoreReplayExecutionResponse, error)
+}
+
 type httpBoundedSyncExecutor struct {
 	baseURL string
 	client  *http.Client
+}
+
+type httpScoreReplayExecutor struct {
+	baseURL string
+	client  *http.Client
+}
+
+type jobExecution struct {
+	Sync        *contracts.GitHubSyncExecutionResponse
+	ScoreReplay *contracts.SchedulerScoreReplayExecutionResponse
 }
 
 type executionCounters struct {
@@ -44,6 +59,19 @@ func newBoundedSyncExecutor(cfg config.App) boundedSyncExecutor {
 		return nil
 	}
 	return &httpBoundedSyncExecutor{
+		baseURL: baseURL,
+		client: &http.Client{
+			Timeout: cfg.Services.RequestTimeout,
+		},
+	}
+}
+
+func newScoreReplayExecutor(cfg config.App) scoreReplayExecutor {
+	baseURL := strings.TrimRight(strings.TrimSpace(cfg.Services.ScoringBaseURL), "/")
+	if baseURL == "" {
+		return nil
+	}
+	return &httpScoreReplayExecutor{
 		baseURL: baseURL,
 		client: &http.Client{
 			Timeout: cfg.Services.RequestTimeout,
@@ -70,8 +98,8 @@ func (s *Service) RunNext(ctx context.Context, now time.Time) (contracts.Schedul
 		return response, err
 	}
 
-	finishedAt := time.Now().UTC()
 	execution, err := s.executeLeasedJob(ctx, job)
+	finishedAt := time.Now().UTC()
 	if err != nil {
 		action, actionErr := s.Fail(job.ID, err.Error(), finishedAt)
 		if actionErr != nil {
@@ -91,7 +119,8 @@ func (s *Service) RunNext(ctx context.Context, now time.Time) (contracts.Schedul
 	response.Status = action.Status
 	response.LastUpdatedAt = action.LastUpdatedAt
 	response.Job = schedulerJobPointer(action.Job)
-	response.Execution = &execution
+	response.Execution = execution.Sync
+	response.ScoreReplay = execution.ScoreReplay
 	s.recordExecution(job.Type, action.Status, finishedAt)
 	return response, nil
 }
@@ -134,57 +163,94 @@ func (s *Service) leaseNextExecutableJobLocal(now time.Time) (store.QueueJob, bo
 	return store.QueueJob{}, false, nil
 }
 
-func (s *Service) executeLeasedJob(ctx context.Context, job store.QueueJob) (contracts.GitHubSyncExecutionResponse, error) {
-	if s.repositoryRunner == nil {
-		return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf("bounded sync runner is not configured")
-	}
-
+func (s *Service) executeLeasedJob(ctx context.Context, job store.QueueJob) (jobExecution, error) {
 	switch job.Type {
 	case store.SyncInstallationJob:
+		if s.repositoryRunner == nil {
+			return jobExecution{}, fmt.Errorf("bounded sync runner is not configured")
+		}
 		req, err := syncRequestFromJob(job)
 		if err != nil {
-			return contracts.GitHubSyncExecutionResponse{}, err
+			return jobExecution{}, err
 		}
-		return s.repositoryRunner.SyncInstallation(ctx, req, correlationIDForJob(job))
+		return syncJobExecution(s.repositoryRunner.SyncInstallation(ctx, req, correlationIDForJob(job)))
 	case store.SyncRepositoryJob:
+		if s.repositoryRunner == nil {
+			return jobExecution{}, fmt.Errorf("bounded sync runner is not configured")
+		}
 		req, err := syncRequestFromJob(job)
 		if err != nil {
-			return contracts.GitHubSyncExecutionResponse{}, err
+			return jobExecution{}, err
 		}
-		return s.repositoryRunner.SyncRepository(ctx, req, correlationIDForJob(job))
+		return syncJobExecution(s.repositoryRunner.SyncRepository(ctx, req, correlationIDForJob(job)))
 	case store.SyncUserHistoryJob:
+		if s.repositoryRunner == nil {
+			return jobExecution{}, fmt.Errorf("bounded sync runner is not configured")
+		}
 		req, err := syncRequestFromJob(job)
 		if err != nil {
-			return contracts.GitHubSyncExecutionResponse{}, err
+			return jobExecution{}, err
 		}
-		return s.repositoryRunner.SyncUser(ctx, req, correlationIDForJob(job))
+		return syncJobExecution(s.repositoryRunner.SyncUser(ctx, req, correlationIDForJob(job)))
 	case store.SyncPullRequestJob:
+		if s.repositoryRunner == nil {
+			return jobExecution{}, fmt.Errorf("bounded sync runner is not configured")
+		}
 		req, err := syncRequestFromJob(job)
 		if err != nil {
-			return contracts.GitHubSyncExecutionResponse{}, err
+			return jobExecution{}, err
 		}
-		return s.repositoryRunner.SyncPullRequest(ctx, req, correlationIDForJob(job))
+		return syncJobExecution(s.repositoryRunner.SyncPullRequest(ctx, req, correlationIDForJob(job)))
 	case store.SyncReviewJob:
+		if s.repositoryRunner == nil {
+			return jobExecution{}, fmt.Errorf("bounded sync runner is not configured")
+		}
 		req, err := syncRequestFromJob(job)
 		if err != nil {
-			return contracts.GitHubSyncExecutionResponse{}, err
+			return jobExecution{}, err
 		}
-		return s.repositoryRunner.SyncReview(ctx, req, correlationIDForJob(job))
+		return syncJobExecution(s.repositoryRunner.SyncReview(ctx, req, correlationIDForJob(job)))
 	case store.SyncIssueJob:
+		if s.repositoryRunner == nil {
+			return jobExecution{}, fmt.Errorf("bounded sync runner is not configured")
+		}
 		req, err := syncRequestFromJob(job)
 		if err != nil {
-			return contracts.GitHubSyncExecutionResponse{}, err
+			return jobExecution{}, err
 		}
-		return s.repositoryRunner.SyncIssue(ctx, req, correlationIDForJob(job))
+		return syncJobExecution(s.repositoryRunner.SyncIssue(ctx, req, correlationIDForJob(job)))
 	case store.SyncCommitJob:
+		if s.repositoryRunner == nil {
+			return jobExecution{}, fmt.Errorf("bounded sync runner is not configured")
+		}
 		req, err := syncRequestFromJob(job)
 		if err != nil {
-			return contracts.GitHubSyncExecutionResponse{}, err
+			return jobExecution{}, err
 		}
-		return s.repositoryRunner.SyncCommit(ctx, req, correlationIDForJob(job))
+		return syncJobExecution(s.repositoryRunner.SyncCommit(ctx, req, correlationIDForJob(job)))
+	case store.ScoreReplayUserJob:
+		if s.scoreRunner == nil {
+			return jobExecution{}, fmt.Errorf("score replay runner is not configured")
+		}
+		req, err := syncRequestFromJob(job)
+		if err != nil {
+			return jobExecution{}, err
+		}
+		execution, err := s.scoreRunner.ReplayUser(ctx, req.UserID, correlationIDForJob(job))
+		if err != nil {
+			return jobExecution{}, err
+		}
+		return jobExecution{ScoreReplay: &execution}, nil
 	default:
-		return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf("job type %s is not executable by the in-process worker", job.Type)
+		return jobExecution{}, fmt.Errorf("job type %s is not executable by the in-process worker", job.Type)
 	}
+}
+
+func syncJobExecution(execution contracts.GitHubSyncExecutionResponse, err error) (jobExecution, error) {
+	if err != nil {
+		return jobExecution{}, err
+	}
+	return jobExecution{Sync: &execution}, nil
 }
 
 func (e *httpBoundedSyncExecutor) SyncRepository(ctx context.Context, req contracts.SyncRequest, correlationID string) (contracts.GitHubSyncExecutionResponse, error) {
@@ -296,6 +362,81 @@ func (e *httpBoundedSyncExecutor) execute(ctx context.Context, req contracts.Syn
 	return execution, nil
 }
 
+func (e *httpScoreReplayExecutor) ReplayUser(ctx context.Context, userID string, correlationID string) (contracts.SchedulerScoreReplayExecutionResponse, error) {
+	userID, err := contracts.NormalizeUUID(userID, "user_id")
+	if err != nil {
+		return contracts.SchedulerScoreReplayExecutionResponse{}, err
+	}
+
+	ctx = httpkit.EnsureTraceContext(ctx)
+	replayRequest := contracts.ReplayUserScoresRequest{TriggerType: "backfill"}
+	body, err := json.Marshal(replayRequest)
+	if err != nil {
+		return contracts.SchedulerScoreReplayExecutionResponse{}, err
+	}
+
+	startedAt := time.Now().UTC()
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, e.baseURL+"/v1/score/users/"+url.PathEscape(userID)+"/replay", bytes.NewReader(body))
+	if err != nil {
+		return contracts.SchedulerScoreReplayExecutionResponse{}, err
+	}
+	request.Header.Set("Accept", "application/json")
+	request.Header.Set("Content-Type", "application/json")
+	if strings.TrimSpace(correlationID) != "" {
+		request.Header.Set("X-Request-ID", strings.TrimSpace(correlationID))
+	}
+	httpkit.InjectTraceContext(ctx, request.Header)
+
+	response, err := e.client.Do(request)
+	if err != nil {
+		return contracts.SchedulerScoreReplayExecutionResponse{}, err
+	}
+	defer response.Body.Close()
+
+	payload, err := io.ReadAll(io.LimitReader(response.Body, 1<<20))
+	if err != nil {
+		return contracts.SchedulerScoreReplayExecutionResponse{}, err
+	}
+	if response.StatusCode != http.StatusAccepted && response.StatusCode != http.StatusOK {
+		var apiErr contracts.ErrorResponse
+		if err := json.Unmarshal(payload, &apiErr); err == nil && strings.TrimSpace(apiErr.Error.Message) != "" {
+			return contracts.SchedulerScoreReplayExecutionResponse{}, fmt.Errorf("scoring-engine replay failed: %s", apiErr.Error.Message)
+		}
+		return contracts.SchedulerScoreReplayExecutionResponse{}, fmt.Errorf("scoring-engine replay failed with status %d", response.StatusCode)
+	}
+
+	var replay contracts.ReplayUserScoresResponse
+	if err := json.Unmarshal(payload, &replay); err != nil {
+		return contracts.SchedulerScoreReplayExecutionResponse{}, err
+	}
+	if strings.TrimSpace(replay.Snapshot.UserID) == "" ||
+		strings.TrimSpace(replay.Snapshot.ReplayRunID) == "" ||
+		strings.TrimSpace(replay.Snapshot.ScoreVersion) == "" ||
+		strings.TrimSpace(replay.Snapshot.TriggerType) == "" {
+		return contracts.SchedulerScoreReplayExecutionResponse{}, fmt.Errorf("scoring-engine returned an invalid score replay contract")
+	}
+	if replay.Snapshot.UserID != userID {
+		return contracts.SchedulerScoreReplayExecutionResponse{}, fmt.Errorf("scoring-engine replay user_id mismatch")
+	}
+	if strings.TrimSpace(replay.Snapshot.TriggerType) != replayRequest.TriggerType {
+		return contracts.SchedulerScoreReplayExecutionResponse{}, fmt.Errorf("scoring-engine replay trigger_type mismatch")
+	}
+
+	return contracts.SchedulerScoreReplayExecutionResponse{
+		Status:        "completed",
+		UserID:        replay.Snapshot.UserID,
+		ReplayRunID:   replay.Snapshot.ReplayRunID,
+		ScoreVersion:  replay.Snapshot.ScoreVersion,
+		TriggerType:   replay.Snapshot.TriggerType,
+		TotalXP:       replay.Snapshot.TotalXP,
+		EventCount:    replay.Events,
+		BadgeCount:    len(replay.Badges),
+		CorrelationID: strings.TrimSpace(correlationID),
+		StartedAt:     startedAt,
+		FinishedAt:    time.Now().UTC(),
+	}, nil
+}
+
 func (s *Service) runWorkerLoop(ctx context.Context) {
 	ticker := time.NewTicker(s.cfg.Scheduler.PollInterval)
 	defer ticker.Stop()
@@ -333,7 +474,7 @@ func splitExecutionMetricKey(key string) (string, string) {
 }
 
 func isExecutableJob(job store.QueueJob, now time.Time) bool {
-	return (job.Type == store.SyncInstallationJob || job.Type == store.SyncRepositoryJob || job.Type == store.SyncUserHistoryJob || job.Type == store.SyncPullRequestJob || job.Type == store.SyncReviewJob || job.Type == store.SyncIssueJob || job.Type == store.SyncCommitJob) &&
+	return (job.Type == store.SyncInstallationJob || job.Type == store.SyncRepositoryJob || job.Type == store.SyncUserHistoryJob || job.Type == store.SyncPullRequestJob || job.Type == store.SyncReviewJob || job.Type == store.SyncIssueJob || job.Type == store.SyncCommitJob || job.Type == store.ScoreReplayUserJob) &&
 		job.Status == store.JobPending &&
 		!job.NotBefore.After(now.UTC())
 }
@@ -415,6 +556,16 @@ func syncRequestFromJob(job store.QueueJob) (contracts.SyncRequest, error) {
 		if req.Repository == "" || req.SHA == "" {
 			return contracts.SyncRequest{}, fmt.Errorf("repository and sha are required")
 		}
+	case store.ScoreReplayUserJob:
+		if strings.TrimSpace(req.UserID) == "" {
+			req.UserID = strings.TrimSpace(job.Subject)
+		}
+		req.Mode = "score_replay"
+		userID, err := contracts.NormalizeUUID(req.UserID, "user_id")
+		if err != nil {
+			return contracts.SyncRequest{}, err
+		}
+		req.UserID = userID
 	default:
 		return contracts.SyncRequest{}, fmt.Errorf("job type %s is not executable by the in-process worker", job.Type)
 	}

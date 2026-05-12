@@ -213,6 +213,27 @@ func TestSyncPreviewRejectsUnknownFields(t *testing.T) {
 	}
 }
 
+func TestSyncPreviewRejectsSchedulerOnlyScoreReplayMode(t *testing.T) {
+	router := NewRouter(testConfig(), testLogger(), "test")
+	request := httptest.NewRequest(http.MethodPost, "/v1/sync/preview", bytes.NewReader([]byte(`{"mode":"score_replay","user_id":"8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4"}`)))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusBadRequest, response.Body.String())
+	}
+
+	var out contracts.ErrorResponse
+	if err := json.Unmarshal(response.Body.Bytes(), &out); err != nil {
+		t.Fatalf("unmarshal error response: %v", err)
+	}
+	if out.Error.Code != "invalid_sync_request" {
+		t.Fatalf("error code = %q, want %q", out.Error.Code, "invalid_sync_request")
+	}
+}
+
 func TestSyncCommitRouteAccepts(t *testing.T) {
 	router := NewRouter(testConfig(), testLogger(), "test")
 	request := httptest.NewRequest(http.MethodPost, "/v1/sync/commit", bytes.NewReader([]byte(`{"repository":"octo/repo","sha":"abc123"}`)))

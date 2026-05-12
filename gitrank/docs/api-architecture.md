@@ -369,6 +369,7 @@ Current state:
 - the in-process worker can execute ready `sync.review` jobs by calling `github-ingestor /v1/sync/review/execute`
 - the in-process worker can execute ready `sync.issue` jobs by calling `github-ingestor /v1/sync/issue/execute`
 - the in-process worker can execute ready `sync.commit` jobs by calling `github-ingestor /v1/sync/commit/execute`
+- the in-process worker can execute ready `score.replay_user` jobs by calling `scoring-engine /v1/score/users/{user_id}/replay` with a `backfill` trigger
 - bounded installation execution currently means replaying repositories already associated with a persisted installation record, not discovering repositories from live GitHub App installation APIs
 - bounded user execution currently means recent public owned repositories plus recent public authored PRs discoverable through GitHub issue/PR search, not a full historical search across every contribution surface
 - bounded review execution currently means "refresh the reviews and review comments for one PR number", not a review-id-specific sync

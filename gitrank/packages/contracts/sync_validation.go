@@ -11,6 +11,7 @@ var (
 	githubLoginPattern  = regexp.MustCompile(`^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$`)
 	githubRepoPattern   = regexp.MustCompile(`^[A-Za-z0-9._-]{1,100}$`)
 	githubCommitPattern = regexp.MustCompile(`^[A-Fa-f0-9]{6,64}$`)
+	uuidPattern         = regexp.MustCompile(`(?i)^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
 )
 
 func NormalizeGitHubLogin(value string) (string, error) {
@@ -58,12 +59,24 @@ func NormalizeCommitSHA(value string) (string, error) {
 	return strings.ToLower(value), nil
 }
 
+func NormalizeUUID(value, field string) (string, error) {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return "", fmt.Errorf("%s is required", field)
+	}
+	if !uuidPattern.MatchString(value) {
+		return "", fmt.Errorf("%s must be a canonical UUID", field)
+	}
+	return strings.ToLower(value), nil
+}
+
 func (req *SyncRequest) Normalize() error {
 	if req == nil {
 		return errors.New("sync request is required")
 	}
 	req.Mode = strings.ToLower(strings.TrimSpace(req.Mode))
 	req.User = strings.TrimSpace(req.User)
+	req.UserID = strings.TrimSpace(req.UserID)
 	req.Repository = strings.TrimSpace(req.Repository)
 	req.SHA = strings.TrimSpace(req.SHA)
 
@@ -104,6 +117,12 @@ func (req *SyncRequest) Normalize() error {
 		}
 		req.Repository = repository
 		req.SHA = sha
+	case "score_replay":
+		userID, err := NormalizeUUID(req.UserID, "user_id")
+		if err != nil {
+			return err
+		}
+		req.UserID = userID
 	default:
 		return errors.New("unsupported sync mode")
 	}

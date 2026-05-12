@@ -338,6 +338,7 @@ Responsibilities:
 - trigger recurring backfill plans from cron schedules
 - lease ready work with bounded concurrency
 - execute bounded in-process installation, repository, user, pull-request, review, issue, and commit sync jobs against `github-ingestor`
+- execute score replay jobs against `scoring-engine` for real scoring backfill and repair flows
 - apply retry and exponential backoff policy
 - throttle repeated sync generation per user and installation
 - expose filtered queue inspection for user, repository, installation, and correlation tracing
@@ -798,6 +799,7 @@ V2 direction:
 - newly replayed PR battle reports expose persisted scoring-engine formula components instead of relying only on profile-side display heuristics
 - newly replayed badge awards carry bounded PR evidence references so PR reports can show real badge unlocks
 - scoring-engine now has a non-mutating replay verifier for selected user, repository, date range, and formula version checks against persisted evidence
+- scheduler-worker now supports real `score.replay_user` jobs by posting `score_replay` targets to `scoring-engine /v1/score/users/{user_id}/replay`, with normal dedupe, retry, dead-letter, metrics, and run-once execution behavior
 - profile score history now carries score-event, score-version, formula-version, pull-request, analysis, and missing-evidence state so XP rows are no longer anonymous display-only claims
 - leaderboard rows now expose profile snapshot provenance, score version, source watermark, and missing rank-ledger evidence instead of presenting snapshot-derived ranks as fully materialized season results
 - V2 no-mock release gate checks now run through `make verify-v2-no-mock-release-gate` and frontend CI to catch production mock imports, missing critical OpenAPI paths, and dropped critical worker/profile smoke coverage

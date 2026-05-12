@@ -94,6 +94,26 @@ func BuildSyncJobs(req contracts.SyncRequest, queueName, correlationID string, m
 			return nil, errors.New("repository and sha are required when mode=commit")
 		}
 		return resourceJobs(queueName, correlationID, SyncCommitJob, req.Repository, 0, req.SHA, "commit", maxAttempts)
+	case "score_replay":
+		if req.UserID == "" {
+			return nil, errors.New("user_id is required when mode=score_replay")
+		}
+		job, err := NewQueueJob(QueueJobInput{
+			QueueName:     queueName,
+			Type:          ScoreReplayUserJob,
+			CorrelationID: correlationID,
+			Subject:       req.UserID,
+			DedupeKey:     "score_replay:" + req.UserID,
+			MaxAttempts:   maxAttempts,
+			Payload: map[string]string{
+				"mode":    "score_replay",
+				"user_id": req.UserID,
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+		return []QueueJob{job}, nil
 	default:
 		return nil, errors.New("unsupported sync mode")
 	}

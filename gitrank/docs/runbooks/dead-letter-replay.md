@@ -36,7 +36,7 @@ errors will dead-letter again.
 | GitHub sync | `sync.repository`, `sync.user_history`, `sync.installation`, `sync.issue`, `sync.commit` | Replay through the scheduler dead-letter endpoint after API credentials, rate limits, and database writes are healthy. | GitHub IDs and sync-run IDs must upsert idempotently. |
 | PR file-feature extraction | `sync.pull_request` and `sync.review` | Replay the failed PR-surface job; bounded file metadata and diff features are extracted during direct PR sync. | `pull_request_files` must stay unique per PR/path and must not store full file contents. |
 | PR analysis | Future `analysis.pull_request` worker stage | Replay only after validating the normalized PR payload, analyzer version, prompt/model metadata, and size/cost limit result. | `contribution_analyses` must key by PR plus analyzer/prompt/model/source version. |
-| Scoring | Current manual `POST /v1/score/users/{user_id}/replay`; future `score.replay_user` job | Re-run score replay for the affected user/repository/date scope, or replay the future score job once the analysis artifact exists. | `score_events.event_key` and replay-run linkage must prevent duplicate XP rows. |
+| Scoring | `score.replay_user` scheduler job or direct `POST /v1/score/users/{user_id}/replay` for emergency manual repair | Replay the failed score job after the analysis artifact exists; use the direct replay endpoint only when the scheduler path itself is unavailable. | `score_events.event_key` and replay-run linkage must prevent duplicate XP rows. |
 | Profile refresh | Current profile snapshot rebuild on read; future `profile.refresh` job | Force a profile read or replay the future profile-refresh job after scoring completes. | Profile snapshots must remain versioned by user, snapshot version, and source watermark. |
 | Quest update | Current profile-owned quest read model; future `quest.update` job | Replay only after score history and quest evidence references are present. | Quest completion and reward grants must remain unique per user, quest, and evidence set. |
 | PR report materialization | Current live profile-service report read model; future `report.materialize_pr` job | Replay after PR, analysis, score-event, badge, and quest evidence are all present. | Materialized reports must be replaceable from evidence and must expose stale or partial state when inputs are missing. |
@@ -60,7 +60,7 @@ errors will dead-letter again.
 6. Verify the downstream artifact for the stage:
    - sync: repository, PR, file, review, issue, or commit rows exist
    - analysis: `contribution_analyses` row exists with valid version metadata
-   - scoring: score replay run, score events, badges, and snapshot exist
+   - scoring: score replay run, score events, badges, and snapshot exist; scheduler run output includes `score_replay.replay_run_id`
    - profile: profile snapshot freshness is current
    - quest: quest evidence references and reward grants are linked
    - report: PR report returns complete or explicitly partial evidence state
