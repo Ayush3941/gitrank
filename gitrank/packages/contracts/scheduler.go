@@ -88,6 +88,7 @@ type SchedulerRunResponse struct {
 	ReportMaterialization      *SchedulerPullRequestReportMaterializationResponse `json:"report_materialization,omitempty"`
 	ReportBackfill             *SchedulerPullRequestReportBackfillResponse        `json:"report_backfill,omitempty"`
 	LeaderboardMaterialization *SchedulerLeaderboardMaterializationResponse       `json:"leaderboard_materialization,omitempty"`
+	LeaderboardHistoryBackfill *SchedulerLeaderboardHistoryBackfillResponse       `json:"leaderboard_history_backfill,omitempty"`
 	UserHistoryBackfill        *SchedulerUserHistoryBackfillResponse              `json:"user_history_backfill,omitempty"`
 	Grade                      *SchedulerPullRequestGradeResponse                 `json:"grade,omitempty"`
 	LastUpdatedAt              time.Time                                          `json:"last_updated_at"`
@@ -192,6 +193,19 @@ type SchedulerLeaderboardMaterializationResponse struct {
 	CorrelationID         string    `json:"correlation_id,omitempty"`
 	StartedAt             time.Time `json:"started_at"`
 	FinishedAt            time.Time `json:"finished_at"`
+}
+
+type SchedulerLeaderboardHistoryBackfillResponse struct {
+	Status              string    `json:"status"`
+	WeeksRequested      int       `json:"weeks_requested"`
+	SeasonsMaterialized int       `json:"seasons_materialized"`
+	EntryCountTotal     int       `json:"entry_count_total"`
+	SeasonKeys          []string  `json:"season_keys,omitempty"`
+	SourceWatermark     time.Time `json:"source_watermark"`
+	GeneratedAt         time.Time `json:"generated_at"`
+	CorrelationID       string    `json:"correlation_id,omitempty"`
+	StartedAt           time.Time `json:"started_at"`
+	FinishedAt          time.Time `json:"finished_at"`
 }
 
 type SchedulerPullRequestGradeResponse struct {

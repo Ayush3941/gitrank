@@ -20,6 +20,7 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 			{Method: "POST", Path: "/v1/profile/users/{user_id}/pr-reports/backfill", Summary: "Backfill idempotent PR report snapshots for scored public PR evidence", Status: "implemented"},
 			{Method: "GET", Path: "/v1/leaderboard", Summary: "Public leaderboard from materialized season snapshots", Status: "implemented"},
 			{Method: "POST", Path: "/v1/leaderboard/materialize", Summary: "Materialize current leaderboard season snapshots and rank movements", Status: "implemented"},
+			{Method: "POST", Path: "/v1/leaderboard/materialize/history", Summary: "Backfill historical weekly leaderboard season snapshots", Status: "implemented"},
 			{Method: "GET", Path: "/v1/pr/{owner}/{repo}/{number}/report", Summary: "Public PR battle report from persisted analysis and score evidence", Status: "implemented"},
 			{Method: "POST", Path: "/v1/pr/{owner}/{repo}/{number}/report/materialize", Summary: "Persist an idempotent PR report snapshot from current evidence", Status: "implemented"},
 			{Method: "GET", Path: "/v1/users/{handle}", Summary: "Public profile read model", Status: "implemented"},

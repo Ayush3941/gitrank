@@ -188,6 +188,53 @@ func (s *Service) MaterializeLeaderboard(ctx context.Context, limit int, now tim
 	}, nil
 }
 
+func (s *Service) BackfillLeaderboardHistory(ctx context.Context, weeks int, limit int, now time.Time) (contracts.LeaderboardHistoryBackfillResponse, error) {
+	if weeks <= 0 {
+		weeks = 26
+	}
+	if weeks > 156 {
+		weeks = 156
+	}
+	if limit <= 0 || limit > leaderboardMaxMaterializedRows {
+		limit = leaderboardMaxMaterializedRows
+	}
+
+	seasonKeys := make([]string, 0, weeks)
+	seen := make(map[string]struct{}, weeks)
+	totalEntries := 0
+	var sourceWatermark time.Time
+
+	for offset := 0; offset < weeks; offset++ {
+		anchor := now.UTC().AddDate(0, 0, -7*offset)
+		season, entries, err := s.store.MaterializeLeaderboardSeason(ctx, anchor, limit)
+		if err != nil {
+			return contracts.LeaderboardHistoryBackfillResponse{}, err
+		}
+		if _, ok := seen[season.SeasonKey]; ok {
+			continue
+		}
+		seen[season.SeasonKey] = struct{}{}
+		seasonKeys = append(seasonKeys, season.SeasonKey)
+		totalEntries += len(entries)
+		if sourceWatermark.IsZero() || season.SourceWatermark.After(sourceWatermark) {
+			sourceWatermark = season.SourceWatermark.UTC()
+		}
+	}
+	if sourceWatermark.IsZero() {
+		sourceWatermark = now.UTC()
+	}
+
+	return contracts.LeaderboardHistoryBackfillResponse{
+		Status:              "materialized",
+		WeeksRequested:      weeks,
+		SeasonsMaterialized: len(seasonKeys),
+		EntryCountTotal:     totalEntries,
+		SeasonKeys:          seasonKeys,
+		SourceWatermark:     sourceWatermark,
+		GeneratedAt:         now.UTC(),
+	}, nil
+}
+
 func (s *Service) RefreshProfileByUserID(ctx context.Context, userID string, now time.Time) (contracts.ProfileRefreshResponse, error) {
 	userID, err := contracts.NormalizeUUID(userID, "user_id")
 	if err != nil {

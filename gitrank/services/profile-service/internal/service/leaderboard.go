@@ -132,7 +132,7 @@ func (s *Store) MaterializeLeaderboardSeason(ctx context.Context, now time.Time,
 		_ = tx.Rollback(ctx)
 	}()
 
-	candidates, err := loadRankedLeaderboardCandidates(ctx, tx, limit)
+	candidates, err := loadRankedLeaderboardCandidates(ctx, tx, generatedAt, limit)
 	if err != nil {
 		return leaderboardSeasonRecord{}, nil, err
 	}
@@ -203,7 +203,7 @@ func currentLeaderboardSeason(now time.Time) (string, time.Time, time.Time) {
 	return fmt.Sprintf("weekly:%04d-W%02d", year, week), start, start.AddDate(0, 0, 7)
 }
 
-func loadRankedLeaderboardCandidates(ctx context.Context, tx pgx.Tx, limit int) ([]leaderboardSeasonSnapshotRecord, error) {
+func loadRankedLeaderboardCandidates(ctx context.Context, tx pgx.Tx, asOf time.Time, limit int) ([]leaderboardSeasonSnapshotRecord, error) {
 	rows, err := tx.Query(ctx, `
 		WITH latest_snapshots AS (
 			SELECT DISTINCT ON (ps.user_id)
@@ -224,6 +224,7 @@ func loadRankedLeaderboardCandidates(ctx context.Context, tx pgx.Tx, limit int) 
 				COALESCE(ps.source_watermark, ps.refreshed_at) AS source_watermark,
 				ps.created_at
 			FROM profile_snapshots ps
+			WHERE ps.refreshed_at <= $1
 			ORDER BY ps.user_id, ps.refreshed_at DESC, ps.created_at DESC
 		), ranked AS (
 			SELECT
@@ -257,8 +258,8 @@ func loadRankedLeaderboardCandidates(ctx context.Context, tx pgx.Tx, limit int) 
 			source_watermark
 		FROM ranked
 		ORDER BY rank ASC
-		LIMIT $1
-	`, limit)
+		LIMIT $2
+	`, asOf.UTC(), limit)
 	if err != nil {
 		return nil, err
 	}

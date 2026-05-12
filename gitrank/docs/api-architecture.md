@@ -242,7 +242,7 @@ Current state:
 - `POST /v1/sync/commit/execute` performs a bounded live commit sync and persists one public commit in PostgreSQL
 - manual sync requests persist queued sync-run records and can be queried through `GET /v1/sync/runs` with user, repository, subject, requester, correlation, and delivery filters
 - sync requests still enqueue scheduler runtime-state jobs rather than a dedicated normalized job table
-- historical backfill orchestration is still pending beyond the current bounded scheduler execution paths
+- historical quest, badge-history, and score-history backfill orchestration is still pending beyond the current bounded scheduler execution paths
 
 ### PR Analyzer
 
@@ -313,6 +313,7 @@ Implemented routes:
 - `POST /v1/profile/users/{user_id}/refresh`
 - `GET /v1/leaderboard`
 - `POST /v1/leaderboard/materialize`
+- `POST /v1/leaderboard/materialize/history`
 - `GET /v1/users/{handle}`
 - `GET /v1/users/{handle}/card`
 - `GET /v1/me/profile`
@@ -325,6 +326,7 @@ Read-model behavior:
 - can force a profile snapshot rebuild from persisted score events and badge evidence for scheduler-driven post-scoring refresh
 - materializes public leaderboard rows into weekly season snapshots and rank movement events before serving rank evidence
 - exposes an explicit leaderboard materialization endpoint for scheduler-driven season refresh
+- exposes an explicit historical leaderboard materialization backfill endpoint for scheduler-driven weekly archive rebuilds
 - exposes explicit staleness metadata
 - applies privacy settings and per-repository visibility redaction
 - caches public and private profile responses in Redis when configured
@@ -384,6 +386,7 @@ Current state:
 - the worker-mode scheduler process can execute ready `report.materialize_pull_request` jobs by calling `profile-service /v1/pr/{owner}/{repo}/{number}/report/materialize`
 - the worker-mode scheduler process can execute ready `report.backfill_user_pull_requests` jobs by calling `profile-service /v1/profile/users/{user_id}/pr-reports/backfill`
 - the worker-mode scheduler process can execute ready `leaderboard.materialize_season` jobs by calling `profile-service /v1/leaderboard/materialize`
+- the worker-mode scheduler process can execute ready `leaderboard.backfill_history` jobs by calling `profile-service /v1/leaderboard/materialize/history?weeks=26`
 - the worker-mode scheduler process can execute ready `pipeline.backfill_user_history` jobs by chaining `score.replay_user`, `profile.refresh_user`, `report.backfill_user_pull_requests`, and `leaderboard.materialize_season` in one user-scoped durable run
 - the worker-mode scheduler process can execute ready `pipeline.grade_pull_request` jobs by chaining PR sync, persisted PR analysis, score replay, profile refresh, report materialization, and live PR-report verification for a known user and PR
 - bounded installation execution now supports live GitHub App installation repository discovery and installation-token-authenticated repository sync when App credentials are configured; persisted installation repositories remain the fallback path when App auth is unavailable

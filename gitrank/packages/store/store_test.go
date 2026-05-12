@@ -280,6 +280,27 @@ func TestBuildSyncJobsLeaderboardMaterializeSeason(t *testing.T) {
 	}
 }
 
+func TestBuildSyncJobsLeaderboardBackfillHistory(t *testing.T) {
+	jobs, err := BuildSyncJobs(contracts.SyncRequest{
+		Mode: "leaderboard_backfill_history",
+	}, "github-sync", "leaderboard-history-correlation", 5)
+	if err != nil {
+		t.Fatalf("BuildSyncJobs() error = %v", err)
+	}
+	if len(jobs) != 1 {
+		t.Fatalf("jobs len = %d, want 1", len(jobs))
+	}
+	if jobs[0].Type != LeaderboardHistoryJob {
+		t.Fatalf("job type = %q, want %q", jobs[0].Type, LeaderboardHistoryJob)
+	}
+	if jobs[0].Subject != "history" {
+		t.Fatalf("subject = %q, want history", jobs[0].Subject)
+	}
+	if jobs[0].DedupeKey != "leaderboard_backfill_history:global" {
+		t.Fatalf("dedupe key = %q, want leaderboard_backfill_history:global", jobs[0].DedupeKey)
+	}
+}
+
 func TestBuildSyncJobsPullRequestAndAnalysisHaveDistinctDedupeKeys(t *testing.T) {
 	syncJobs, err := BuildSyncJobs(contracts.SyncRequest{
 		Mode:       "pull_request",

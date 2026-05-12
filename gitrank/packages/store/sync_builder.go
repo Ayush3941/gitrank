@@ -224,6 +224,22 @@ func BuildSyncJobs(req contracts.SyncRequest, queueName, correlationID string, m
 			return nil, err
 		}
 		return []QueueJob{job}, nil
+	case "leaderboard_backfill_history":
+		job, err := NewQueueJob(QueueJobInput{
+			QueueName:     queueName,
+			Type:          LeaderboardHistoryJob,
+			CorrelationID: correlationID,
+			Subject:       "history",
+			DedupeKey:     "leaderboard_backfill_history:global",
+			MaxAttempts:   maxAttempts,
+			Payload: map[string]string{
+				"mode": "leaderboard_backfill_history",
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+		return []QueueJob{job}, nil
 	default:
 		return nil, errors.New("unsupported sync mode")
 	}

@@ -45,6 +45,7 @@ type pullRequestReportExecutor interface {
 
 type leaderboardExecutor interface {
 	MaterializeLeaderboard(ctx context.Context, correlationID string) (contracts.SchedulerLeaderboardMaterializationResponse, error)
+	BackfillLeaderboardHistory(ctx context.Context, correlationID string, weeks int) (contracts.SchedulerLeaderboardHistoryBackfillResponse, error)
 }
 
 type pullRequestAnalysisExecutor interface {
@@ -89,6 +90,7 @@ type jobExecution struct {
 	ReportMaterialization      *contracts.SchedulerPullRequestReportMaterializationResponse
 	ReportBackfill             *contracts.SchedulerPullRequestReportBackfillResponse
 	LeaderboardMaterialization *contracts.SchedulerLeaderboardMaterializationResponse
+	LeaderboardHistoryBackfill *contracts.SchedulerLeaderboardHistoryBackfillResponse
 	UserHistoryBackfill        *contracts.SchedulerUserHistoryBackfillResponse
 	Grade                      *contracts.SchedulerPullRequestGradeResponse
 }
@@ -224,6 +226,7 @@ func (s *Service) RunNext(ctx context.Context, now time.Time) (contracts.Schedul
 	response.ReportMaterialization = execution.ReportMaterialization
 	response.ReportBackfill = execution.ReportBackfill
 	response.LeaderboardMaterialization = execution.LeaderboardMaterialization
+	response.LeaderboardHistoryBackfill = execution.LeaderboardHistoryBackfill
 	response.UserHistoryBackfill = execution.UserHistoryBackfill
 	response.Grade = execution.Grade
 	s.recordExecution(job.Type, action.Status, finishedAt)
@@ -407,6 +410,15 @@ func (s *Service) executeLeasedJob(ctx context.Context, job store.QueueJob) (job
 			return jobExecution{}, err
 		}
 		return jobExecution{LeaderboardMaterialization: &execution}, nil
+	case store.LeaderboardHistoryJob:
+		if s.leaderboardRunner == nil {
+			return jobExecution{}, fmt.Errorf("leaderboard runner is not configured")
+		}
+		execution, err := s.leaderboardRunner.BackfillLeaderboardHistory(ctx, correlationIDForJob(job), 26)
+		if err != nil {
+			return jobExecution{}, err
+		}
+		return jobExecution{LeaderboardHistoryBackfill: &execution}, nil
 	case store.BackfillUserHistoryJob:
 		return s.executeUserHistoryBackfillJob(ctx, job)
 	case store.GradePullRequestJob:
@@ -1139,6 +1151,67 @@ func (e *httpLeaderboardExecutor) MaterializeLeaderboard(ctx context.Context, co
 	}, nil
 }
 
+func (e *httpLeaderboardExecutor) BackfillLeaderboardHistory(ctx context.Context, correlationID string, weeks int) (contracts.SchedulerLeaderboardHistoryBackfillResponse, error) {
+	if weeks <= 0 {
+		weeks = 26
+	}
+	ctx = httpkit.EnsureTraceContext(ctx)
+	startedAt := time.Now().UTC()
+	request, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodPost,
+		e.baseURL+"/v1/leaderboard/materialize/history?weeks="+strconv.Itoa(weeks),
+		nil,
+	)
+	if err != nil {
+		return contracts.SchedulerLeaderboardHistoryBackfillResponse{}, err
+	}
+	request.Header.Set("Accept", "application/json")
+	if strings.TrimSpace(correlationID) != "" {
+		request.Header.Set("X-Request-ID", strings.TrimSpace(correlationID))
+	}
+	httpkit.InjectTraceContext(ctx, request.Header)
+
+	response, err := e.client.Do(request)
+	if err != nil {
+		return contracts.SchedulerLeaderboardHistoryBackfillResponse{}, err
+	}
+	defer response.Body.Close()
+
+	payload, err := io.ReadAll(io.LimitReader(response.Body, 1<<20))
+	if err != nil {
+		return contracts.SchedulerLeaderboardHistoryBackfillResponse{}, err
+	}
+	if response.StatusCode != http.StatusAccepted && response.StatusCode != http.StatusOK {
+		var apiErr contracts.ErrorResponse
+		if err := json.Unmarshal(payload, &apiErr); err == nil && strings.TrimSpace(apiErr.Error.Message) != "" {
+			return contracts.SchedulerLeaderboardHistoryBackfillResponse{}, fmt.Errorf("profile-service leaderboard history backfill failed: %s", apiErr.Error.Message)
+		}
+		return contracts.SchedulerLeaderboardHistoryBackfillResponse{}, fmt.Errorf("profile-service leaderboard history backfill failed with status %d", response.StatusCode)
+	}
+
+	var backfilled contracts.LeaderboardHistoryBackfillResponse
+	if err := json.Unmarshal(payload, &backfilled); err != nil {
+		return contracts.SchedulerLeaderboardHistoryBackfillResponse{}, err
+	}
+	if strings.TrimSpace(backfilled.Status) == "" || backfilled.GeneratedAt.IsZero() {
+		return contracts.SchedulerLeaderboardHistoryBackfillResponse{}, fmt.Errorf("profile-service returned an invalid leaderboard history backfill contract")
+	}
+
+	return contracts.SchedulerLeaderboardHistoryBackfillResponse{
+		Status:              strings.TrimSpace(backfilled.Status),
+		WeeksRequested:      backfilled.WeeksRequested,
+		SeasonsMaterialized: backfilled.SeasonsMaterialized,
+		EntryCountTotal:     backfilled.EntryCountTotal,
+		SeasonKeys:          backfilled.SeasonKeys,
+		SourceWatermark:     backfilled.SourceWatermark.UTC(),
+		GeneratedAt:         backfilled.GeneratedAt.UTC(),
+		CorrelationID:       strings.TrimSpace(correlationID),
+		StartedAt:           startedAt,
+		FinishedAt:          time.Now().UTC(),
+	}, nil
+}
+
 func (s *Service) runWorkerLoop(ctx context.Context) {
 	ticker := time.NewTicker(s.cfg.Scheduler.PollInterval)
 	defer ticker.Stop()
@@ -1176,7 +1249,7 @@ func splitExecutionMetricKey(key string) (string, string) {
 }
 
 func isExecutableJob(job store.QueueJob, now time.Time) bool {
-	return (job.Type == store.SyncInstallationJob || job.Type == store.SyncRepositoryJob || job.Type == store.SyncUserHistoryJob || job.Type == store.SyncPullRequestJob || job.Type == store.SyncReviewJob || job.Type == store.SyncIssueJob || job.Type == store.SyncCommitJob || job.Type == store.AnalysisPullRequestJob || job.Type == store.ScoreReplayUserJob || job.Type == store.ProfileRefreshUserJob || job.Type == store.ReportMaterializePRJob || job.Type == store.ReportBackfillUserPRsJob || job.Type == store.LeaderboardMaterializeJob || job.Type == store.BackfillUserHistoryJob || job.Type == store.GradePullRequestJob) &&
+	return (job.Type == store.SyncInstallationJob || job.Type == store.SyncRepositoryJob || job.Type == store.SyncUserHistoryJob || job.Type == store.SyncPullRequestJob || job.Type == store.SyncReviewJob || job.Type == store.SyncIssueJob || job.Type == store.SyncCommitJob || job.Type == store.AnalysisPullRequestJob || job.Type == store.ScoreReplayUserJob || job.Type == store.ProfileRefreshUserJob || job.Type == store.ReportMaterializePRJob || job.Type == store.ReportBackfillUserPRsJob || job.Type == store.LeaderboardMaterializeJob || job.Type == store.LeaderboardHistoryJob || job.Type == store.BackfillUserHistoryJob || job.Type == store.GradePullRequestJob) &&
 		job.Status == store.JobPending &&
 		!job.NotBefore.After(now.UTC())
 }
@@ -1317,6 +1390,11 @@ func syncRequestFromJob(job store.QueueJob) (contracts.SyncRequest, error) {
 		req.UserID = userID
 	case store.LeaderboardMaterializeJob:
 		req.Mode = "leaderboard_materialize_season"
+		if err := req.Normalize(); err != nil {
+			return contracts.SyncRequest{}, err
+		}
+	case store.LeaderboardHistoryJob:
+		req.Mode = "leaderboard_backfill_history"
 		if err := req.Normalize(); err != nil {
 			return contracts.SyncRequest{}, err
 		}

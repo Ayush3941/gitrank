@@ -291,13 +291,12 @@ paths:
   /v1/sync/installation/execute:
     post:
       tags: [Sync]
-      summary: Execute a bounded installation sync from persisted installation associations
+      summary: Execute a bounded installation sync
       description: |
-        Replays repositories already associated with a persisted GitHub installation record and delegates each one to the
-        bounded repository executor.
-
-        This route does not perform live GitHub App installation discovery and is intentionally scoped to the OAuth-only
-        v1 production baseline.
+        When GitHub App credentials are configured, this route performs live installation repository discovery through
+        `/installation/repositories` and delegates each repository to the bounded repository executor using installation
+        access tokens.
+        When App credentials are not configured, it falls back to persisted installation-to-repository associations.
       operationId: executeInstallationSync
       security:
         - sessionCookie: []
@@ -1011,6 +1010,54 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /v1/leaderboard/materialize/history:
+    post:
+      tags: [Profiles]
+      summary: Backfill historical leaderboard seasons
+      description: |
+        Materializes a bounded number of prior weekly leaderboard seasons from public profile snapshots.
+        Intended for scheduler-worker repair and archive backfill flows.
+      operationId: backfillLeaderboardHistory
+      parameters:
+        - name: weeks
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 156
+            default: 26
+          description: Number of weekly seasons to materialize, including the current week anchor.
+      responses:
+        "202":
+          description: Historical leaderboard backfill completed
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeaderboardHistoryBackfillResponse"
+        "400":
+          description: Invalid `weeks` query value
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Rate limit exceeded
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/XRequestID"
+            Retry-After:
+              $ref: "#/components/headers/RetryAfter"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /v1/users/{handle}/card:
     get:
       tags: [Profiles]
@@ -1195,6 +1242,7 @@ components:
             - report_materialize_pull_request
             - report_backfill_user_pull_requests
             - leaderboard_materialize_season
+            - leaderboard_backfill_history
             - backfill_user_history
             - grade_pull_request
         installation_id:
@@ -1670,6 +1718,32 @@ components:
           minimum: 0
         window:
           $ref: "#/components/schemas/ProfileTimeWindow"
+        source_watermark:
+          type: string
+          format: date-time
+        generated_at:
+          type: string
+          format: date-time
+    LeaderboardHistoryBackfillResponse:
+      type: object
+      required: [status, weeks_requested, seasons_materialized, entry_count_total, source_watermark, generated_at]
+      properties:
+        status:
+          type: string
+          enum: [materialized]
+        weeks_requested:
+          type: integer
+          minimum: 1
+        seasons_materialized:
+          type: integer
+          minimum: 0
+        entry_count_total:
+          type: integer
+          minimum: 0
+        season_keys:
+          type: array
+          items:
+            type: string
         source_watermark:
           type: string
           format: date-time

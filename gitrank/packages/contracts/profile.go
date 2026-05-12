@@ -305,6 +305,16 @@ type LeaderboardMaterializationResponse struct {
 	GeneratedAt           time.Time         `json:"generated_at"`
 }
 
+type LeaderboardHistoryBackfillResponse struct {
+	Status              string    `json:"status"`
+	WeeksRequested      int       `json:"weeks_requested"`
+	SeasonsMaterialized int       `json:"seasons_materialized"`
+	EntryCountTotal     int       `json:"entry_count_total"`
+	SeasonKeys          []string  `json:"season_keys,omitempty"`
+	SourceWatermark     time.Time `json:"source_watermark"`
+	GeneratedAt         time.Time `json:"generated_at"`
+}
+
 type ProfilePrivacySettings struct {
 	PublicProfileEnabled         bool `json:"public_profile_enabled"`
 	ShowExactPRs                 bool `json:"show_exact_prs"`

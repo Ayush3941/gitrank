@@ -127,6 +127,16 @@ func TestSyncRequestNormalizeAcceptsLeaderboardMaterializeSeason(t *testing.T) {
 	}
 }
 
+func TestSyncRequestNormalizeAcceptsLeaderboardBackfillHistory(t *testing.T) {
+	req := SyncRequest{Mode: "leaderboard_backfill_history"}
+	if err := req.Normalize(); err != nil {
+		t.Fatalf("Normalize() error = %v", err)
+	}
+	if req.Mode != "leaderboard_backfill_history" {
+		t.Fatalf("Mode = %q, want leaderboard backfill history mode", req.Mode)
+	}
+}
+
 func TestSyncRequestNormalizeValidatesScoreReplayUserID(t *testing.T) {
 	req := SyncRequest{
 		Mode:   "score_replay",

@@ -72,6 +72,24 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 		httpkit.WriteJSON(w, http.StatusAccepted, response)
 	})))
 
+	mux.Handle("/v1/leaderboard/materialize/history", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		weeks := 26
+		if raw := strings.TrimSpace(r.URL.Query().Get("weeks")); raw != "" {
+			value, err := strconv.Atoi(raw)
+			if err != nil || value <= 0 {
+				httpkit.WriteError(w, http.StatusBadRequest, "invalid_weeks", "weeks must be a positive integer", httpkit.RequestIDFromContext(r.Context()))
+				return
+			}
+			weeks = value
+		}
+		response, err := profileService.BackfillLeaderboardHistory(r.Context(), weeks, 100, time.Now().UTC())
+		if err != nil {
+			writeProfileError(w, r, err)
+			return
+		}
+		httpkit.WriteJSON(w, http.StatusAccepted, response)
+	})))
+
 	mux.Handle("/v1/leaderboard", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response, err := profileService.Leaderboard(r.Context(), 50, time.Now().UTC())
 		if err != nil {
