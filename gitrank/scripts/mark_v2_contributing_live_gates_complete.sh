@@ -59,7 +59,9 @@ verify_from_workflow_run_if_needed() {
   [ "$VERIFY_BEFORE_MARK" = "true" ] || return 0
   [ "$VERIFY_FROM_WORKFLOW" = "true" ] || return 0
   [ "$workflow_verified" = "false" ] || return 0
-  [ -n "$WORKFLOW_RUN_ID" ] || fail "WORKFLOW_RUN_ID is required when VERIFY_FROM_WORKFLOW=true"
+  if [ -z "$WORKFLOW_RUN_ID" ]; then
+    WORKFLOW_RUN_ID=latest
+  fi
   run_make verify-live-v2-workflow-run \
     WORKFLOW_RUN_ID="$WORKFLOW_RUN_ID" \
     WORKFLOW_EVENT="$WORKFLOW_EVENT" \

@@ -103,7 +103,8 @@ How to complete:
    - `make verify-live-v2-workflow-run` verifies a successful workflow run by
      run ID, and `VERIFY_FROM_WORKFLOW=true` can be passed to
      `make finalize-v2-live-closeout` or `make mark-v2-contributing-live-gates`
-     to reuse that evidence during checklist updates.
+     to reuse that evidence during checklist updates. When run ID is omitted in
+     workflow mode, latest successful `workflow_dispatch` run is used.
 
 ## 3) Rollback And Restore Drills Executed And Recorded
 

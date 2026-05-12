@@ -173,7 +173,19 @@ readiness_run_github_controls="$RUN_GITHUB_CONTROLS"
 readiness_run_observability="$RUN_OBSERVABILITY"
 
 if [ "$VERIFY_FROM_WORKFLOW" = "true" ]; then
-  [ -n "$WORKFLOW_RUN_ID" ] || fail "WORKFLOW_RUN_ID is required when VERIFY_FROM_WORKFLOW=true"
+  if [ -z "$WORKFLOW_RUN_ID" ]; then
+    WORKFLOW_RUN_ID=latest
+  fi
+  RUN_WORKFLOW_EVIDENCE_PIPELINE=true \
+  VERIFY_FROM_WORKFLOW=true \
+  AUTO_GENERATE_OBSERVABILITY_EVIDENCE="$AUTO_GENERATE_OBSERVABILITY_EVIDENCE" \
+  WORKFLOW_RUN_ID="$WORKFLOW_RUN_ID" \
+  WORKFLOW_EVENT="$WORKFLOW_EVENT" \
+  ENVIRONMENT="${ENVIRONMENT:-}" \
+  CLUSTER="${CLUSTER:-}" \
+  NAMESPACE="${NAMESPACE:-}" \
+  OPERATOR="${OPERATOR:-}" \
+  run_make verify-live-v2-inputs
   run_make verify-live-v2-workflow-run \
     WORKFLOW_RUN_ID="$WORKFLOW_RUN_ID" \
     WORKFLOW_EVENT="$WORKFLOW_EVENT" \

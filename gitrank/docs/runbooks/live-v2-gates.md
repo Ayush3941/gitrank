@@ -236,7 +236,7 @@ workflow run ID while still enforcing rollback and restore evidence files:
 cd gitrank
 CONFIRM_MARK_CONTRIBUTING=yes \
 VERIFY_FROM_WORKFLOW=true \
-WORKFLOW_RUN_ID=12345678901 \
+# optional: WORKFLOW_RUN_ID=12345678901 (defaults to latest successful workflow_dispatch run)
 MARK_GITHUB_CONTROLS=true \
 MARK_OBSERVABILITY=true \
 OBS_EVIDENCE_FILE=docs/evidence/observability-live-YYYY-MM-DD.txt \
@@ -277,7 +277,7 @@ run evidence during finalization:
 cd gitrank
 CONFIRM_FINALIZE_V2=yes \
 VERIFY_FROM_WORKFLOW=true \
-WORKFLOW_RUN_ID=12345678901 \
+# optional: WORKFLOW_RUN_ID=12345678901 (defaults to latest successful workflow_dispatch run)
 RUN_GITHUB_CONTROLS=true \
 RUN_OBSERVABILITY=true \
 RUN_K8S_RUNTIME=true \
