@@ -37,7 +37,7 @@ jobs:
           test -z "$(gofmt -l $files)"
 
       - name: Run tests
-        run: find . -name go.mod -execdir sh -c 'go test ./...' \;
+        run: find . \( -path './.tmp' -o -path './.gocache' \) -prune -o -name go.mod -execdir sh -c 'go test ./...' \;
 
       - name: Verify critical path test coverage map
         run: ./scripts/verify_critical_path_tests.sh
@@ -52,13 +52,13 @@ jobs:
         run: ./scripts/verify_v2_unresolved_checklist_scope.sh
 
       - name: Run builds
-        run: find . -name go.mod -execdir sh -c 'go build ./...' \;
+        run: find . \( -path './.tmp' -o -path './.gocache' \) -prune -o -name go.mod -execdir sh -c 'go build ./...' \;
 
       - name: Run race detector
-        run: find . -name go.mod -execdir sh -c 'go test -race ./...' \;
+        run: find . \( -path './.tmp' -o -path './.gocache' \) -prune -o -name go.mod -execdir sh -c 'go test -race ./...' \;
 
       - name: Run vet
-        run: find . -name go.mod -execdir sh -c 'go vet ./...' \;
+        run: find . \( -path './.tmp' -o -path './.gocache' \) -prune -o -name go.mod -execdir sh -c 'go vet ./...' \;
 
       - name: Audit unsafe and reflection-heavy Go code
         run: ./scripts/audit_go_safety.sh
@@ -67,7 +67,7 @@ jobs:
         run: go install golang.org/x/vuln/cmd/govulncheck@latest
 
       - name: Run govulncheck
-        run: find . -name go.mod -execdir sh -c 'govulncheck ./...' \;
+        run: find . \( -path './.tmp' -o -path './.gocache' \) -prune -o -name go.mod -execdir sh -c 'govulncheck ./...' \;
 
   docker-builds:
     runs-on: ubuntu-latest
