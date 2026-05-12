@@ -115,6 +115,14 @@ REQUIRE_RELEASE_RENDER=true \
 make verify-live-v2-workflow-run
 ```
 
+For a no-token public precheck of repository-controls posture:
+
+```bash
+cd gitrank
+GITHUB_REPOSITORY=OWNER/REPO \
+make verify-github-repository-controls-public
+```
+
 Optional strict filters:
 
 - `WORKFLOW_EVENT=workflow_dispatch` (default)

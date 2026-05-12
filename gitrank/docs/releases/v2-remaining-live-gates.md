@@ -13,6 +13,8 @@ For consolidated execution, use:
 - `make verify-live-v2-workflow-run` to accept a successful
   `verify-live-v2-gates.yml` workflow run as evidence for GitHub controls,
   observability, and release-render gates (`WORKFLOW_RUN_ID=latest` supported)
+- `make verify-github-repository-controls-public` as a no-token precheck for
+  default-branch protection and required status-check visibility
 - `make generate-observability-evidence-from-workflow-run` to create
   `docs/evidence/observability-live-*.txt` from a verified workflow run
 - `make run-live-v2-workflow-evidence-pipeline` to dispatch live gates, verify
