@@ -115,6 +115,12 @@ REQUIRE_RELEASE_RENDER=true \
 make verify-live-v2-workflow-run
 ```
 
+Optional strict filters:
+
+- `WORKFLOW_EVENT=workflow_dispatch` (default)
+- `EXPECTED_WORKFLOW_PATH=.github/workflows/verify-live-v2-gates.yml` (default)
+- `EXPECTED_HEAD_BRANCH=main` (optional)
+
 You can also resolve the most recent successful workflow-dispatch run:
 
 ```bash

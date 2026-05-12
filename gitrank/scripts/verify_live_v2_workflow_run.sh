@@ -7,6 +7,8 @@ API_BASE="${GITHUB_API_URL:-https://api.github.com}"
 API_VERSION="${GITHUB_API_VERSION:-2026-03-10}"
 WORKFLOW_RUN_ID="${WORKFLOW_RUN_ID:-}"
 EXPECTED_WORKFLOW_NAME="${EXPECTED_WORKFLOW_NAME:-Verify Live V2 Gates}"
+EXPECTED_WORKFLOW_PATH="${EXPECTED_WORKFLOW_PATH:-.github/workflows/verify-live-v2-gates.yml}"
+EXPECTED_HEAD_BRANCH="${EXPECTED_HEAD_BRANCH:-}"
 WORKFLOW_EVENT="${WORKFLOW_EVENT:-workflow_dispatch}"
 WORKFLOW_RUN_SEARCH_PAGES="${WORKFLOW_RUN_SEARCH_PAGES:-10}"
 WORKFLOW_RUN_ID_OUTPUT_FILE="${WORKFLOW_RUN_ID_OUTPUT_FILE:-}"
@@ -150,11 +152,23 @@ run_name=$(printf '%s' "$API_BODY" | jq -r '.name // empty')
 run_status=$(printf '%s' "$API_BODY" | jq -r '.status // empty')
 run_conclusion=$(printf '%s' "$API_BODY" | jq -r '.conclusion // empty')
 run_html_url=$(printf '%s' "$API_BODY" | jq -r '.html_url // empty')
+run_event=$(printf '%s' "$API_BODY" | jq -r '.event // empty')
+run_head_branch=$(printf '%s' "$API_BODY" | jq -r '.head_branch // empty')
+run_path=$(printf '%s' "$API_BODY" | jq -r '.path // empty')
+run_workflow_path=${run_path%%@*}
 
 [ -n "$run_name" ] || fail "workflow run name missing"
 [ "$run_name" = "$EXPECTED_WORKFLOW_NAME" ] || fail "workflow run name mismatch: expected '$EXPECTED_WORKFLOW_NAME' got '$run_name'"
 [ "$run_status" = "completed" ] || fail "workflow run status is not completed: $run_status"
 [ "$run_conclusion" = "success" ] || fail "workflow run conclusion is not success: $run_conclusion"
+[ -n "$run_workflow_path" ] || fail "workflow run path is missing"
+[ "$run_workflow_path" = "$EXPECTED_WORKFLOW_PATH" ] || fail "workflow run path mismatch: expected '$EXPECTED_WORKFLOW_PATH' got '$run_workflow_path'"
+if [ -n "$WORKFLOW_EVENT" ]; then
+  [ "$run_event" = "$WORKFLOW_EVENT" ] || fail "workflow run event mismatch: expected '$WORKFLOW_EVENT' got '$run_event'"
+fi
+if [ -n "$EXPECTED_HEAD_BRANCH" ]; then
+  [ "$run_head_branch" = "$EXPECTED_HEAD_BRANCH" ] || fail "workflow run head branch mismatch: expected '$EXPECTED_HEAD_BRANCH' got '$run_head_branch'"
+fi
 
 jobs_json='[]'
 page=1
