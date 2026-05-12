@@ -5,7 +5,7 @@ This document describes the current external and internal API surface for GitRan
 V1 production policy note:
 
 - GitHub OAuth is the required auth path
-- GitHub App installation remains a future upgrade and is not part of the v1 production baseline
+- GitHub App installation auth remains optional and is currently used only for installation-scoped ingestion in the V2 path
 
 ## External APIs
 
@@ -39,10 +39,11 @@ Requested scopes in v1:
 Used by:
 
 - `auth-service`
+- `github-ingestor`
 
 Status:
 
-- future upgrade, not part of the v1 production baseline
+- optional in v1, actively used by the V2 installation-sync path when App credentials are configured
 
 Purpose:
 
@@ -232,7 +233,7 @@ Current state:
 - stored webhook deliveries can be manually requeued for recovery
 - webhook delivery deduplication and requeue state persist in PostgreSQL when `DATABASE_URL` is configured
 - webhook-driven repository, PR, review, issue, label, commit, installation, and sync-run entities persist idempotently in PostgreSQL when `DATABASE_URL` is configured
-- `POST /v1/sync/installation/execute` replays repositories already associated with a persisted installation record and delegates them through the bounded repository executor without requiring GitHub App installation auth in the v1 baseline
+- `POST /v1/sync/installation/execute` now prefers live GitHub App installation repository inventory (`/installation/repositories`) plus installation access tokens when App credentials are configured, and falls back to persisted installation-repository associations when App auth is not configured
 - `POST /v1/sync/user/execute` performs a bounded live user sync by walking recent public repositories owned by the requested GitHub login, discovering recent public PRs authored by that login through GitHub issue/PR search, and delegating concrete repositories and PRs to the repository and PR executors
 - `POST /v1/sync/repository/execute` performs a bounded live repository sync through the public GitHub REST API and persists repository, pull request, review, issue, and commit data in PostgreSQL
 - `POST /v1/sync/pull-request/execute` performs a bounded live pull-request sync and persists the PR, its reviews, and its review comments in PostgreSQL
@@ -385,7 +386,7 @@ Current state:
 - the worker-mode scheduler process can execute ready `leaderboard.materialize_season` jobs by calling `profile-service /v1/leaderboard/materialize`
 - the worker-mode scheduler process can execute ready `pipeline.backfill_user_history` jobs by chaining `score.replay_user`, `profile.refresh_user`, `report.backfill_user_pull_requests`, and `leaderboard.materialize_season` in one user-scoped durable run
 - the worker-mode scheduler process can execute ready `pipeline.grade_pull_request` jobs by chaining PR sync, persisted PR analysis, score replay, profile refresh, report materialization, and live PR-report verification for a known user and PR
-- bounded installation execution currently means replaying repositories already associated with a persisted installation record, not discovering repositories from live GitHub App installation APIs
+- bounded installation execution now supports live GitHub App installation repository discovery and installation-token-authenticated repository sync when App credentials are configured; persisted installation repositories remain the fallback path when App auth is unavailable
 - bounded user execution currently means recent public owned repositories plus recent public authored PRs discoverable through GitHub issue/PR search, not a full historical search across every contribution surface
 - bounded review execution currently means "refresh the reviews and review comments for one PR number", not a review-id-specific sync
 - retries apply exponential backoff before the next eligible lease

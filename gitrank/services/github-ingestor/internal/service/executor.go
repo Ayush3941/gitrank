@@ -34,6 +34,7 @@ type Executor struct {
 	oauthTokenKeys       [][]byte
 	graphqlClientFactory githubGraphQLClientFactory
 	graphqlTokenSource   githubGraphQLTokenSource
+	installationClient   githubInstallationClientFactory
 }
 
 func NewExecutor(cfg config.App, pool *pgxpool.Pool, client *githubapi.RESTClient) *Executor {
@@ -44,6 +45,7 @@ func NewExecutor(cfg config.App, pool *pgxpool.Pool, client *githubapi.RESTClien
 		repositoryCache:      newRepositoryMetadataCache(cfg.GitHub.RepositoryCacheTTL),
 		oauthTokenKeys:       decodeOptionalOAuthTokenKeys(cfg),
 		graphqlClientFactory: newGitHubGraphQLClientFactory(cfg),
+		installationClient:   newGitHubInstallationClientFactory(cfg),
 	}
 	executor.graphqlTokenSource = executor.graphQLTokenSourceForActor
 	return executor
@@ -343,21 +345,54 @@ func (e *Executor) SyncInstallation(
 		return response, fmt.Errorf("installation_id is required")
 	}
 
-	installationID, repositories, err := e.store.ActiveInstallationRepositories(ctx, req.InstallationID)
+	installationID, persistedRepositories, err := e.store.ActiveInstallationRepositories(ctx, req.InstallationID)
 	if err != nil {
 		_ = e.recordFailedInstallationSyncRun(ctx, req, actor, correlationID, startedAt, installationID, err, PersistResult{})
 		return response, err
 	}
+	persistedRepositories = normalizeRepositoryTargets(persistedRepositories)
+
+	repositories := persistedRepositories
+	repositoryClient := e.client
+	if e.installationClient != nil {
+		installationClient, enabled, clientErr := e.installationClient(ctx, req.InstallationID)
+		if clientErr != nil {
+			_ = e.recordFailedInstallationSyncRun(ctx, req, actor, correlationID, startedAt, installationID, clientErr, PersistResult{})
+			return response, clientErr
+		}
+		if enabled && installationClient != nil {
+			repositoryClient = installationClient
+			liveRepositories, inventoryIncomplete, liveErr := e.fetchLiveInstallationRepositoryTargets(ctx, installationClient)
+			if liveErr != nil {
+				_ = e.recordFailedInstallationSyncRun(ctx, req, actor, correlationID, startedAt, installationID, liveErr, PersistResult{})
+				return response, liveErr
+			}
+			repositories = liveRepositories
+			response.Fetched["installation_repository_inventory_live"] = 1
+			response.Fetched["repositories_selected_live"] = len(liveRepositories)
+			if inventoryIncomplete {
+				response.Fetched["installation_repository_inventory_incomplete"] = 1
+			}
+		}
+	}
 
 	aggregatePersisted := PersistResult{}
+	response.Fetched["repositories_selected_persisted"] = len(persistedRepositories)
 	response.Fetched["repositories_selected"] = len(repositories)
 	baseCorrelationID := strings.TrimSpace(correlationID)
 	if baseCorrelationID == "" {
 		baseCorrelationID = "sync-installation:" + fmt.Sprintf("%d", req.InstallationID)
 	}
 
+	repositoryExecutor := e
+	if repositoryClient != e.client {
+		cloned := *e
+		cloned.client = repositoryClient
+		repositoryExecutor = &cloned
+	}
+
 	for index, repository := range repositories {
-		child, err := e.SyncRepository(ctx, contracts.SyncRequest{
+		child, err := repositoryExecutor.SyncRepository(ctx, contracts.SyncRequest{
 			Mode:       "repository",
 			Repository: repository,
 		}, actor, fmt.Sprintf("%s:repo:%d", baseCorrelationID, index+1), time.Now().UTC())

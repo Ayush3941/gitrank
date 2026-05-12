@@ -252,6 +252,130 @@ func TestExecutorFetchAuthoredPullRequestTargetsUsesGitHubSearch(t *testing.T) {
 	}
 }
 
+func TestExecutorFetchLiveInstallationRepositoryTargetsUsesPaginationAndFilters(t *testing.T) {
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/installation/repositories" {
+			t.Fatalf("path = %q, want /installation/repositories", r.URL.Path)
+		}
+		if r.Header.Get("Authorization") != "Bearer install-token" {
+			t.Fatalf("Authorization = %q, want installation token", r.Header.Get("Authorization"))
+		}
+		if r.URL.Query().Get("per_page") != "3" {
+			t.Fatalf("per_page = %q, want 3", r.URL.Query().Get("per_page"))
+		}
+
+		requests++
+		page := r.URL.Query().Get("page")
+		w.Header().Set("Content-Type", "application/json")
+		switch page {
+		case "1":
+			w.Header().Set("Link", `<https://api.github.test/installation/repositories?page=2>; rel="next"`)
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"total_count": 6,
+				"repositories": []map[string]any{
+					{"full_name": "octo/repo-one", "private": false, "archived": false, "disabled": false},
+					{"full_name": "octo/private-repo", "private": true, "archived": false, "disabled": false},
+					{"full_name": "octo/archived-repo", "private": false, "archived": true, "disabled": false},
+				},
+			})
+		case "2":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"total_count": 6,
+				"repositories": []map[string]any{
+					{"full_name": "octo/repo-one", "private": false, "archived": false, "disabled": false},
+					{"full_name": "octo/repo-two", "private": false, "archived": false, "disabled": false},
+					{"full_name": "invalid", "private": false, "archived": false, "disabled": false},
+				},
+			})
+		default:
+			t.Fatalf("unexpected page %q", page)
+		}
+	}))
+	defer server.Close()
+
+	client, err := githubapi.NewRESTClient(githubapi.ClientConfig{
+		BaseURL:          server.URL,
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		TokenSource:      githubapi.StaticTokenSource("install-token"),
+		HTTPClient:       server.Client(),
+		SecondaryBackoff: time.Millisecond,
+		MaxConcurrency:   1,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	executor := NewExecutor(config.App{
+		GitHub: config.GitHub{
+			MaxPageSize: 3,
+		},
+	}, nil, client)
+
+	repositories, incomplete, err := executor.fetchLiveInstallationRepositoryTargets(context.Background(), client)
+	if err != nil {
+		t.Fatalf("fetchLiveInstallationRepositoryTargets() error = %v", err)
+	}
+	if incomplete {
+		t.Fatal("incomplete = true, want false after terminal page without next link")
+	}
+	if requests != 2 {
+		t.Fatalf("requests = %d, want 2 pages", requests)
+	}
+	if len(repositories) != 2 {
+		t.Fatalf("repositories len = %d, want 2 filtered entries", len(repositories))
+	}
+	if repositories[0] != "octo/repo-one" || repositories[1] != "octo/repo-two" {
+		t.Fatalf("repositories = %#v, want octo/repo-one and octo/repo-two", repositories)
+	}
+}
+
+func TestExecutorFetchLiveInstallationRepositoryTargetsCapsPageDepth(t *testing.T) {
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests++
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Link", `<https://api.github.test/installation/repositories?page=999>; rel="next"`)
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"total_count": 999,
+			"repositories": []map[string]any{
+				{"full_name": "octo/repo", "private": false, "archived": false, "disabled": false},
+			},
+		})
+	}))
+	defer server.Close()
+
+	client, err := githubapi.NewRESTClient(githubapi.ClientConfig{
+		BaseURL:          server.URL,
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		TokenSource:      githubapi.StaticTokenSource("install-token"),
+		HTTPClient:       server.Client(),
+		SecondaryBackoff: time.Millisecond,
+		MaxConcurrency:   1,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	executor := NewExecutor(config.App{}, nil, client)
+
+	repositories, incomplete, err := executor.fetchLiveInstallationRepositoryTargets(context.Background(), client)
+	if err != nil {
+		t.Fatalf("fetchLiveInstallationRepositoryTargets() error = %v", err)
+	}
+	if !incomplete {
+		t.Fatal("incomplete = false, want true when max page depth is reached")
+	}
+	if requests != defaultInstallationRepositoryMaxPages {
+		t.Fatalf("requests = %d, want capped %d", requests, defaultInstallationRepositoryMaxPages)
+	}
+	if len(repositories) != 1 {
+		t.Fatalf("repositories len = %d, want deduped single repository", len(repositories))
+	}
+}
+
 func TestSanitizedPullRequestFilePayloadBoundsPatchAndDropsContents(t *testing.T) {
 	longPatch := strings.Repeat("a", maxStoredPullRequestFilePatchBytes+20)
 	file := map[string]any{

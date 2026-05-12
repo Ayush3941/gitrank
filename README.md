@@ -761,7 +761,7 @@ The repository currently contains a working foundation, not just an empty scaffo
 - environment-separated ExternalSecret examples plus key-ring-aware auth/token secret rotation runbooks verified by `make verify-secret-policy`
 - local verification Makefile targets pass `TMPDIR` through so manifest render checks do not depend on limited system `/tmp` space
 - a bounded live user sync execution path that walks recent public repositories owned by a GitHub login, discovers recent authored public PRs through GitHub issue/PR search, and persists those concrete PR targets through the same repository and PR executors in `github-ingestor`
-- a bounded installation sync execution path that replays repositories already associated with a persisted installation record and delegates them through the repository executor without requiring GitHub App installation auth in the v1 baseline
+- a bounded installation sync execution path that can use live GitHub App installation repository inventory plus installation tokens for repository sync when App credentials are configured, with persisted-installation-repository fallback when App auth is not configured
 - a bounded live repository sync execution path that fetches recent repository, PR, review, issue, and commit data from the public GitHub REST API and persists it directly through `github-ingestor`
 - a bounded live pull-request sync execution path that fetches one public PR plus its reviews and review comments and persists them directly through `github-ingestor`
 - a bounded live review sync execution path that refreshes the review surface for one PR number and persists its reviews and review comments through `github-ingestor`
