@@ -8,6 +8,7 @@ mkdir -p "$tmp_root"
 
 OUTPUT_FILE="${OUTPUT_FILE:-$root_dir/docs/releases/v2-live-closeout-status-latest.md}"
 CHECK_PUBLIC_GITHUB_CONTROLS="${CHECK_PUBLIC_GITHUB_CONTROLS:-true}"
+CHECK_PUBLIC_WORKFLOW_HEALTH="${CHECK_PUBLIC_WORKFLOW_HEALTH:-true}"
 CHECK_WORKFLOW_EVIDENCE="${CHECK_WORKFLOW_EVIDENCE:-true}"
 WORKFLOW_RUN_ID="${WORKFLOW_RUN_ID:-latest}"
 WORKFLOW_EVENT="${WORKFLOW_EVENT:-workflow_dispatch}"
@@ -104,6 +105,13 @@ done
 '
 env_presence_code=$RUN_CAPTURE_LAST_CODE
 
+public_workflow_health_code=skip
+if [ "$CHECK_PUBLIC_WORKFLOW_HEALTH" = "true" ]; then
+  run_and_capture "Public Workflow Health Gate" \
+    sh -c "cd '$root_dir' && GITHUB_REPOSITORY='${gitrank_repo:-}' make verify-public-workflow-health"
+  public_workflow_health_code=$RUN_CAPTURE_LAST_CODE
+fi
+
 public_controls_code=skip
 if [ "$CHECK_PUBLIC_GITHUB_CONTROLS" = "true" ]; then
   run_and_capture "Public GitHub Controls Precheck" \
@@ -154,13 +162,19 @@ token_candidate="${GITRANK_REPO_ADMIN_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}"
   fi
   printf 'REQUIRE_ENV_SPECIFIC_K8S_OVERRIDES: `%s`.\n' "$require_env_specific"
   printf '\n'
-  printf '2. Run public controls precheck and fix branch protection first if needed.\n'
+  printf '2. Run public workflow-health check and clear failing origin workflows.\n'
+  printf '\n'
+  printf '```bash\n'
+  printf 'cd gitrank\n'
+  printf 'GITHUB_REPOSITORY=%s make verify-public-workflow-health\n' "${gitrank_repo:-OWNER/REPO}"
+  printf '```\n\n'
+  printf '3. Run public controls precheck and fix branch protection first if needed.\n'
   printf '\n'
   printf '```bash\n'
   printf 'cd gitrank\n'
   printf 'GITHUB_REPOSITORY=%s make verify-github-repository-controls-public\n' "${gitrank_repo:-OWNER/REPO}"
   printf '```\n\n'
-  printf '3. Run live-gates workflow evidence pipeline.\n\n'
+  printf '4. Run live-gates workflow evidence pipeline.\n\n'
   printf '```bash\n'
   printf 'cd gitrank\n'
   printf 'CONFIRM_RUN_LIVE_V2_PIPELINE=yes \\\n'
@@ -176,7 +190,7 @@ token_candidate="${GITRANK_REPO_ADMIN_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}"
   printf 'OPERATOR=your-name \\\n'
   printf 'make run-live-v2-workflow-evidence-pipeline\n'
   printf '```\n\n'
-  printf '4. Generate rollback and restore drill evidence (or provide equivalent real drill records).\n\n'
+  printf '5. Generate rollback and restore drill evidence (or provide equivalent real drill records).\n\n'
   printf '```bash\n'
   printf 'cd gitrank\n'
   printf 'OUTPUT_FILE=docs/evidence/rollback-drill-YYYY-MM-DD.txt \\\n'
@@ -193,7 +207,7 @@ token_candidate="${GITRANK_REPO_ADMIN_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}"
   printf 'RESTORE_COMMAND_OR_WORKFLOW=workflow SCHEMA_MIGRATION_STATE=up-to-date CRITICAL_PRODUCT_CHECKS=pass \\\n'
   printf 'make generate-database-restore-drill-evidence\n'
   printf '```\n\n'
-  printf '5. Finalize checklist marking and re-audit.\n\n'
+  printf '6. Finalize checklist marking and re-audit.\n\n'
   printf '```bash\n'
   printf 'cd gitrank\n'
   printf 'CONFIRM_FINALIZE_V2=yes VERIFY_FROM_WORKFLOW=true RUN_GITHUB_CONTROLS=true RUN_OBSERVABILITY=true RUN_K8S_RUNTIME=true RUN_ROLLBACK_RESTORE=true \\\n'
@@ -221,6 +235,7 @@ token_candidate="${GITRANK_REPO_ADMIN_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}"
   printf '%s\n' "- Local readiness: \`$local_readiness_code\`"
   printf '%s\n' "- Contributing audit: \`$audit_code\`"
   printf '%s\n' "- Env presence probe: \`$env_presence_code\`"
+  printf '%s\n' "- Public workflow health: \`$public_workflow_health_code\`"
   printf '%s\n' "- Public controls precheck: \`$public_controls_code\`"
   printf '%s\n' "- Workflow evidence probe: \`$workflow_probe_code\`"
   printf '\n'

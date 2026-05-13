@@ -145,7 +145,7 @@ default (`RUN_PUBLIC_WORKFLOW_HEALTH=true`) so final closeout catches
 `origin`-side workflow regressions.
 
 To generate a single closeout status artifact (local gates + unresolved checklist
-audit + live-input and evidence probes):
+audit + live-input probes + public workflow health + workflow-evidence probes):
 
 ```bash
 cd gitrank
