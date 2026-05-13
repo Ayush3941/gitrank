@@ -87,8 +87,9 @@ awk -F':' '/^[a-zA-Z0-9_.-]+:/ { print $1 }' "$makefile" | sort -u >"$make_targe
   printf '## Success Criteria\n\n'
   printf '1. All checklist items in `CONTRIBUTING.md` are checked.\n'
   printf '2. Critical local gates pass (`make verify-v2-live-readiness`).\n'
-  printf '3. No unresolved checklist items remain in `make audit-v2-contributing-checklist`.\n'
-  printf '4. Explicit file, command, and gate references in `CONTRIBUTING.md` resolve to real artifacts or real commands.\n'
+  printf '3. Public origin workflow health is green (`make verify-public-workflow-health`) unless intentionally waived.\n'
+  printf '4. No unresolved checklist items remain in `make audit-v2-contributing-checklist`.\n'
+  printf '5. Explicit file, command, and gate references in `CONTRIBUTING.md` resolve to real artifacts or real commands.\n'
   printf '\n'
   printf '## Prompt-to-Artifact Checklist\n\n'
   printf '### Unchecked Checklist Lines\n\n'
@@ -165,21 +166,27 @@ if [ "$run_checks" = "true" ]; then
     "cd '$root_dir' && make verify-v2-live-readiness"
   local_gate_code=$RUN_CAPTURE_LAST_CODE
 
+  run_capture "Public Workflow Health Gate (make verify-public-workflow-health)" \
+    "cd '$root_dir' && make verify-public-workflow-health"
+  public_workflow_health_code=$RUN_CAPTURE_LAST_CODE
+
   run_capture "Checklist Audit (make audit-v2-contributing-checklist)" \
     "cd '$root_dir' && RUN_BASELINE_VERIFIERS=false make audit-v2-contributing-checklist"
   checklist_audit_code=$RUN_CAPTURE_LAST_CODE
 else
   local_gate_code=skip
+  public_workflow_health_code=skip
   checklist_audit_code=skip
 fi
 
 {
   printf '## Completion Verdict Inputs\n\n'
   printf '%s\n' "- Local readiness gate exit code: \`$local_gate_code\`"
+  printf '%s\n' "- Public workflow health gate exit code: \`$public_workflow_health_code\`"
   printf '%s\n' "- Checklist audit exit code: \`$checklist_audit_code\`"
   printf '%s\n' "- Current unchecked checklist count: \`$unchecked_count\`"
   printf '\n'
-  if [ "$unchecked_count" -eq 0 ] && [ "$local_gate_code" = "0" ] && [ "$checklist_audit_code" = "0" ]; then
+  if [ "$unchecked_count" -eq 0 ] && [ "$local_gate_code" = "0" ] && [ "$public_workflow_health_code" = "0" ] && [ "$checklist_audit_code" = "0" ]; then
     printf 'Current audit verdict: **ready to consider objective complete**.\n'
   else
     printf 'Current audit verdict: **objective not complete**.\n'

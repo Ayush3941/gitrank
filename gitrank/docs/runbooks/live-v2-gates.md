@@ -140,6 +140,10 @@ WORKFLOW_BRANCH=any \
 make verify-public-workflow-health
 ```
 
+`make finalize-v2-live-closeout` now runs this public workflow-health gate by
+default (`RUN_PUBLIC_WORKFLOW_HEALTH=true`) so final closeout catches
+`origin`-side workflow regressions.
+
 To generate a single closeout status artifact (local gates + unresolved checklist
 audit + live-input and evidence probes):
 

@@ -9,6 +9,7 @@ APPLY_GITHUB_CONTROLS="${APPLY_GITHUB_CONTROLS:-false}"
 RUN_OBSERVABILITY="${RUN_OBSERVABILITY:-false}"
 RUN_RELEASE_RENDER="${RUN_RELEASE_RENDER:-false}"
 RUN_INPUT_PREFLIGHT="${RUN_INPUT_PREFLIGHT:-true}"
+RUN_PUBLIC_WORKFLOW_HEALTH="${RUN_PUBLIC_WORKFLOW_HEALTH:-false}"
 
 fail() {
   printf 'v2 live readiness verification failed: %s\n' "$1" >&2
@@ -30,6 +31,10 @@ if [ "$RUN_LOCAL_STATIC" = "true" ]; then
   run_make verify-rollback-procedure
   run_make verify-k8s-autoscaling
   run_make verify-secret-policy
+fi
+
+if [ "$RUN_PUBLIC_WORKFLOW_HEALTH" = "true" ]; then
+  run_make verify-public-workflow-health
 fi
 
 if [ "$RUN_GITHUB_CONTROLS" = "true" ]; then
