@@ -10,6 +10,7 @@ RUN_OBSERVABILITY="${RUN_OBSERVABILITY:-false}"
 RUN_RELEASE_RENDER="${RUN_RELEASE_RENDER:-false}"
 RUN_INPUT_PREFLIGHT="${RUN_INPUT_PREFLIGHT:-true}"
 RUN_PUBLIC_WORKFLOW_HEALTH="${RUN_PUBLIC_WORKFLOW_HEALTH:-false}"
+AUTO_SYNC_REMOTE_TRIVY_POLICY="${AUTO_SYNC_REMOTE_TRIVY_POLICY:-false}"
 
 fail() {
   printf 'v2 live readiness verification failed: %s\n' "$1" >&2
@@ -34,7 +35,18 @@ if [ "$RUN_LOCAL_STATIC" = "true" ]; then
 fi
 
 if [ "$RUN_PUBLIC_WORKFLOW_HEALTH" = "true" ]; then
-  run_make verify-public-workflow-health
+  if run_make verify-public-workflow-health; then
+    :
+  else
+    if [ "$AUTO_SYNC_REMOTE_TRIVY_POLICY" = "true" ]; then
+      token_candidate="${GITHUB_TOKEN:-${GH_TOKEN:-${GITRANK_REPO_ADMIN_TOKEN:-}}}"
+      [ -n "$token_candidate" ] || fail "public workflow health failed and AUTO_SYNC_REMOTE_TRIVY_POLICY=true, but no admin token is set"
+      run_make sync-remote-trivy-policy
+      run_make verify-public-workflow-health
+    else
+      fail "public workflow health gate failed (set AUTO_SYNC_REMOTE_TRIVY_POLICY=true to attempt automated Trivy policy sync)"
+    fi
+  fi
 fi
 
 if [ "$RUN_GITHUB_CONTROLS" = "true" ]; then

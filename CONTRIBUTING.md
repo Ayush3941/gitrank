@@ -1213,7 +1213,9 @@ Use `CONFIRM_FINALIZE_V2=yes make finalize-v2-live-closeout` to run preflight,
 verification, evidence checks, checklist marking, and final audit from one
 command. The finalizer accepts `GITRANK_REPO_ADMIN_TOKEN` directly and can
 auto-bootstrap a short-lived GitHub App installation token when no token is
-pre-set and App credentials are provided.
+pre-set and App credentials are provided. It also defaults
+`AUTO_SYNC_REMOTE_TRIVY_POLICY=true` so Trivy workflow-health failures caused
+by remote policy drift can be auto-remediated when a token is available.
 When `RUN_K8S_RUNTIME=true` and workflow evidence is not used, finalizer runtime
 proof now requires explicit staging and production `STAGING_K8S_*` /
 `PRODUCTION_K8S_*` overrides by default
