@@ -196,6 +196,10 @@ for raw_workflow_name in $WORKFLOW_NAMES; do
       printf 'failing jobs for %s:\n%s\n' "$workflow_name" "$failing_jobs" >&2
     fi
   fi
+
+  if [ "$workflow_name" = "Trivy Scan" ]; then
+    printf 'hint: verify .github/workflows/trivy.yml includes --ignorefile .trivyignore.yaml for fs/image scans and that .trivyignore.yaml exists at repo root\n' >&2
+  fi
 done
 IFS=$old_ifs
 
