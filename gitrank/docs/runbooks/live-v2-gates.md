@@ -123,6 +123,23 @@ GITHUB_REPOSITORY=OWNER/REPO \
 make verify-github-repository-controls-public
 ```
 
+To check recent workflow health on `origin` without a token (defaults to
+default-branch `push` runs), use:
+
+```bash
+cd gitrank
+make verify-public-workflow-health
+```
+
+To evaluate recent runs across all branches (for example pull requests), set:
+
+```bash
+cd gitrank
+WORKFLOW_EVENT=pull_request \
+WORKFLOW_BRANCH=any \
+make verify-public-workflow-health
+```
+
 To generate a single closeout status artifact (local gates + unresolved checklist
 audit + live-input and evidence probes):
 
