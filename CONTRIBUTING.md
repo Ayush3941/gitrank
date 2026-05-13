@@ -1181,6 +1181,8 @@ must remain absent).
 Use `make verify-live-v2-workflow-run` to verify a successful
 `verify-live-v2-gates.yml` run by run ID (or `WORKFLOW_RUN_ID=latest`) and
 reuse it as live-gate evidence.
+Use `make verify-public-workflow-health` for a no-token check of recent
+default-branch push workflow health across CI, frontend, security, and Trivy.
 Use `make verify-github-repository-controls-public` for a no-token public
 precheck of default-branch protection and required status-check visibility.
 Use `make generate-v2-live-closeout-status` to produce a single status artifact
