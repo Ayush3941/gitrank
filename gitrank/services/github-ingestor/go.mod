@@ -9,7 +9,7 @@ require (
 	github.com/gitrank/gitrank/packages/httpkit v0.0.0
 	github.com/gitrank/gitrank/packages/logger v0.0.0
 	github.com/gitrank/gitrank/packages/store v0.0.0
-	github.com/jackc/pgx/v5 v5.9.0
+	github.com/jackc/pgx/v5 v5.9.2
 )
 
 require (
