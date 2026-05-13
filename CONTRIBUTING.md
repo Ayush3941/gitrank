@@ -1173,6 +1173,9 @@ the consolidated runner `make verify-v2-live-readiness` and audit command
 `make audit-v2-contributing-checklist`. After all live verifiers pass, use
 `make mark-v2-contributing-live-gates` to update the corresponding checkboxes.
 Use `make verify-live-v2-inputs` as preflight before running live gates.
+Use `make verify-live-github-access` after setting token/repository variables to
+confirm the token can read branch protection, Dependabot alerts, dependency
+graph SBOM, and live-gates workflow metadata before running apply/verify steps.
 Use `make verify-v2-unresolved-checklist-scope` to ensure unresolved checklist
 items stay limited to approved live gates.
 Use `make verify-contributing-checked-file-refs` to ensure checked checklist

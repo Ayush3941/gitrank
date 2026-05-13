@@ -101,6 +101,15 @@ cd gitrank
 make verify-v2-live-readiness
 ```
 
+Before running GitHub controls apply/verify operations, validate token access:
+
+```bash
+cd gitrank
+GITHUB_REPOSITORY=OWNER/REPO \
+GITRANK_REPO_ADMIN_TOKEN=... \
+make verify-live-github-access
+```
+
 To verify a completed Actions run as live-gate evidence (without rerunning
 those checks locally), use:
 
