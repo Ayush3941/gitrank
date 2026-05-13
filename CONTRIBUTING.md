@@ -1184,6 +1184,8 @@ reuse it as live-gate evidence.
 Use `make verify-public-workflow-health` for a no-token check of recent
 default-branch push workflow health across CI, frontend, security, and Trivy.
 Set `WORKFLOW_BRANCH=any` to evaluate the latest runs across all branches.
+For Trivy failures, the verifier now inspects remote `.github/workflows/trivy.yml`
+and `.trivyignore.yaml` to pinpoint missing policy wiring.
 `make generate-v2-completion-audit` now includes this gate so completion
 reports capture `origin` workflow health, not only local checks.
 Use `make verify-github-repository-controls-public` for a no-token public

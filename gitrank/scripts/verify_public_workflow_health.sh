@@ -59,6 +59,7 @@ is_positive_int "$MAX_PAGES" || fail "MAX_PAGES must be a positive integer"
 
 require_command curl
 require_command jq
+require_command base64
 mkdir -p "$TMP_ROOT"
 
 OWNER=${REPOSITORY%%/*}
@@ -95,6 +96,47 @@ expect_status() {
   expected=$1
   context=$2
   [ "$API_STATUS" = "$expected" ] || fail "$context returned HTTP $API_STATUS"
+}
+
+diagnose_trivy_remote_policy() {
+  branch_name=$1
+  [ -n "$branch_name" ] || branch_name=$WORKFLOW_BRANCH
+
+  github_get "/repos/$OWNER/$REPO/contents/.github/workflows/trivy.yml?ref=$branch_name"
+  case "$API_STATUS" in
+    200)
+      trivy_workflow_base64=$(printf '%s' "$API_BODY" | jq -r '.content // empty')
+      trivy_workflow_content=$(printf '%s' "$trivy_workflow_base64" | tr -d '\n' | base64 -d 2>/dev/null || true)
+      if [ -z "$trivy_workflow_content" ]; then
+        printf 'hint: unable to decode remote .github/workflows/trivy.yml for branch %s\n' "$branch_name" >&2
+      elif ! printf '%s' "$trivy_workflow_content" | grep -q -- "--ignorefile .trivyignore.yaml"; then
+        printf 'hint: remote .github/workflows/trivy.yml on %s is missing --ignorefile .trivyignore.yaml in Trivy scan commands\n' "$branch_name" >&2
+      fi
+      ;;
+    404)
+      printf 'hint: remote .github/workflows/trivy.yml is missing on %s\n' "$branch_name" >&2
+      ;;
+    *)
+      printf 'hint: unable to read remote .github/workflows/trivy.yml on %s (HTTP %s)\n' "$branch_name" "$API_STATUS" >&2
+      ;;
+  esac
+
+  github_get "/repos/$OWNER/$REPO/contents/.trivyignore.yaml?ref=$branch_name"
+  case "$API_STATUS" in
+    200)
+      trivy_ignore_base64=$(printf '%s' "$API_BODY" | jq -r '.content // empty')
+      trivy_ignore_content=$(printf '%s' "$trivy_ignore_base64" | tr -d '\n' | base64 -d 2>/dev/null || true)
+      if [ -z "$trivy_ignore_content" ]; then
+        printf 'hint: remote .trivyignore.yaml exists on %s but is empty\n' "$branch_name" >&2
+      fi
+      ;;
+    404)
+      printf 'hint: remote .trivyignore.yaml is missing on %s\n' "$branch_name" >&2
+      ;;
+    *)
+      printf 'hint: unable to read remote .trivyignore.yaml on %s (HTTP %s)\n' "$branch_name" "$API_STATUS" >&2
+      ;;
+  esac
 }
 
 github_get "/repos/$OWNER/$REPO"
@@ -198,6 +240,8 @@ for raw_workflow_name in $WORKFLOW_NAMES; do
   fi
 
   if [ "$workflow_name" = "Trivy Scan" ]; then
+    run_head_branch=$(printf '%s' "$latest_run" | jq -r '.head_branch // empty')
+    diagnose_trivy_remote_policy "$run_head_branch"
     printf 'hint: verify .github/workflows/trivy.yml includes --ignorefile .trivyignore.yaml for fs/image scans and that .trivyignore.yaml exists at repo root\n' >&2
   fi
 done

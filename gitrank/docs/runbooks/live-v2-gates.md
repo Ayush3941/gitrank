@@ -131,6 +131,10 @@ cd gitrank
 make verify-public-workflow-health
 ```
 
+When Trivy is unhealthy, this command also inspects remote
+`.github/workflows/trivy.yml` and `.trivyignore.yaml` on the relevant branch
+to report whether ignore-policy wiring is missing.
+
 To evaluate recent runs across all branches (for example pull requests), set:
 
 ```bash
