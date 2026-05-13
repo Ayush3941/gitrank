@@ -104,6 +104,10 @@ if [ -z "$WORKFLOW_BRANCH" ]; then
   WORKFLOW_BRANCH=$(printf '%s' "$API_BODY" | jq -r '.default_branch // empty')
 fi
 [ -n "$WORKFLOW_BRANCH" ] || fail "unable to resolve workflow branch"
+branch_filter="$WORKFLOW_BRANCH"
+if [ "$WORKFLOW_BRANCH" = "*" ] || [ "$WORKFLOW_BRANCH" = "any" ]; then
+  branch_filter=""
+fi
 
 runs_file="$TMP_ROOT/gitrank-workflow-health-runs.$$"
 : >"$runs_file"
@@ -111,7 +115,11 @@ trap 'rm -f "$runs_file"' EXIT HUP INT TERM
 
 page=1
 while [ "$page" -le "$MAX_PAGES" ]; do
-  github_get "/repos/$OWNER/$REPO/actions/runs?branch=$WORKFLOW_BRANCH&event=$WORKFLOW_EVENT&per_page=$RUNS_PER_PAGE&page=$page"
+  if [ -n "$branch_filter" ]; then
+    github_get "/repos/$OWNER/$REPO/actions/runs?branch=$branch_filter&event=$WORKFLOW_EVENT&per_page=$RUNS_PER_PAGE&page=$page"
+  else
+    github_get "/repos/$OWNER/$REPO/actions/runs?event=$WORKFLOW_EVENT&per_page=$RUNS_PER_PAGE&page=$page"
+  fi
   expect_status 200 "workflow run list page $page"
   page_count=$(printf '%s' "$API_BODY" | jq '.workflow_runs | length')
   page_runs=$(printf '%s' "$API_BODY" | jq -c '.workflow_runs[]?')
@@ -123,7 +131,11 @@ while [ "$page" -le "$MAX_PAGES" ]; do
 done
 
 total_runs=$(awk 'END { print NR + 0 }' "$runs_file")
-[ "$total_runs" -gt 0 ] || fail "no workflow runs found for branch '$WORKFLOW_BRANCH' and event '$WORKFLOW_EVENT'"
+if [ -n "$branch_filter" ]; then
+  [ "$total_runs" -gt 0 ] || fail "no workflow runs found for branch '$branch_filter' and event '$WORKFLOW_EVENT'"
+else
+  [ "$total_runs" -gt 0 ] || fail "no workflow runs found for event '$WORKFLOW_EVENT'"
+fi
 
 workflow_count=0
 failed_workflow_count=0
@@ -193,4 +205,8 @@ if [ "$missing_workflow_count" -gt 0 ] || [ "$failed_workflow_count" -gt 0 ]; th
   fail "checked $workflow_count workflow(s): missing=$missing_workflow_count unhealthy=$failed_workflow_count"
 fi
 
-printf 'public workflow health verification passed for %s (%s/%s)\n' "$REPOSITORY" "$WORKFLOW_EVENT" "$WORKFLOW_BRANCH"
+if [ -n "$branch_filter" ]; then
+  printf 'public workflow health verification passed for %s (%s/%s)\n' "$REPOSITORY" "$WORKFLOW_EVENT" "$branch_filter"
+else
+  printf 'public workflow health verification passed for %s (%s/all-branches)\n' "$REPOSITORY" "$WORKFLOW_EVENT"
+fi
