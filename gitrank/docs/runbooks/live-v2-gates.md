@@ -168,7 +168,8 @@ make verify-public-workflow-health
 default (`RUN_PUBLIC_WORKFLOW_HEALTH=true`) so final closeout catches
 `origin`-side workflow regressions. Finalizer default
 `AUTO_SYNC_REMOTE_TRIVY_POLICY=true` attempts automatic Trivy policy sync
-before re-checking workflow health when drift is detected.
+before re-checking workflow health when drift is detected, and enforces
+`make verify-live-github-access` before GitHub-controls apply/verify actions.
 
 To generate a single closeout status artifact (branch divergence + local gates +
 unresolved checklist audit + live-input probes + public workflow health +

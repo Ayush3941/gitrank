@@ -53,6 +53,7 @@ if [ "$RUN_GITHUB_CONTROLS" = "true" ]; then
   if [ "$RUN_INPUT_PREFLIGHT" = "true" ]; then
     RUN_GITHUB_CONTROLS=true run_make verify-live-v2-inputs
   fi
+  run_make verify-live-github-access
   if [ "$APPLY_GITHUB_CONTROLS" = "true" ]; then
     export GITRANK_APPLY_REPOSITORY_CONTROLS=yes
     run_make apply-github-repository-controls-auto

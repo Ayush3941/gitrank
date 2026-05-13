@@ -283,6 +283,7 @@ generate_rollback_restore_evidence_if_needed
 if [ "$RUN_GITHUB_CONTROLS" = "true" ] && [ "$VERIFY_FROM_WORKFLOW" != "true" ]; then
   resolve_github_admin_token
   RUN_GITHUB_CONTROLS=true run_make verify-live-v2-inputs
+  run_make verify-live-github-access
 fi
 
 if [ "$RUN_OBSERVABILITY" = "true" ] && [ "$VERIFY_FROM_WORKFLOW" != "true" ]; then
