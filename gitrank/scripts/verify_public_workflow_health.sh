@@ -243,6 +243,7 @@ for raw_workflow_name in $WORKFLOW_NAMES; do
     run_head_branch=$(printf '%s' "$latest_run" | jq -r '.head_branch // empty')
     diagnose_trivy_remote_policy "$run_head_branch"
     printf 'hint: verify .github/workflows/trivy.yml includes --ignorefile .trivyignore.yaml for fs/image scans and that .trivyignore.yaml exists at repo root\n' >&2
+    printf 'hint: if remote policy files drifted, run GITRANK_REPO_ADMIN_TOKEN=... make sync-remote-trivy-policy\n' >&2
   fi
 done
 IFS=$old_ifs

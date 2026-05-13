@@ -135,6 +135,17 @@ When Trivy is unhealthy, this command also inspects remote
 `.github/workflows/trivy.yml` and `.trivyignore.yaml` on the relevant branch
 to report whether ignore-policy wiring is missing.
 
+To sync local Trivy policy files to the remote default branch (token required):
+
+```bash
+cd gitrank
+GITHUB_REPOSITORY=OWNER/REPO \
+GITRANK_REPO_ADMIN_TOKEN=... \
+make sync-remote-trivy-policy
+```
+
+Set `DRY_RUN=true` to preview updates without writing.
+
 To evaluate recent runs across all branches (for example pull requests), set:
 
 ```bash

@@ -1186,6 +1186,10 @@ default-branch push workflow health across CI, frontend, security, and Trivy.
 Set `WORKFLOW_BRANCH=any` to evaluate the latest runs across all branches.
 For Trivy failures, the verifier now inspects remote `.github/workflows/trivy.yml`
 and `.trivyignore.yaml` to pinpoint missing policy wiring.
+Use `make sync-remote-trivy-policy` with
+`GITRANK_REPO_ADMIN_TOKEN`/`GITHUB_TOKEN` to copy local Trivy workflow policy
+files to the remote default branch and optionally wait for a successful
+post-sync `Trivy Scan` run.
 `make generate-v2-completion-audit` now includes this gate so completion
 reports capture `origin` workflow health, not only local checks.
 Use `make verify-github-repository-controls-public` for a no-token public
