@@ -1192,7 +1192,7 @@ Use `make verify-github-repository-controls-public` for a no-token public
 precheck of default-branch protection and required status-check visibility.
 Use `make generate-v2-live-closeout-status` to produce a single status artifact
 covering local readiness, checklist audit, env presence, public workflow health,
-and live-evidence probes.
+branch divergence (`origin/main...HEAD`), and live-evidence probes.
 Use `make generate-v2-completion-audit` to produce a prompt-to-artifact matrix
 from this checklist, including unresolved lines, file-reference existence, `make`
 target mapping, and current gate exit codes.

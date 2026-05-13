@@ -73,6 +73,10 @@ mkdir -p "$(dirname "$OUTPUT_FILE")"
   printf '\n'
 } >"$OUTPUT_FILE"
 
+run_and_capture "Branch Divergence" \
+  sh -c "cd '$repo_dir' && git status --short --branch && printf '\nleft-right count (origin/main...HEAD): ' && git rev-list --left-right --count origin/main...HEAD && printf '\nrecent divergent commits:\n' && git log --oneline --left-right --decorate --max-count=30 origin/main...HEAD"
+branch_divergence_code=$RUN_CAPTURE_LAST_CODE
+
 run_and_capture "Local Readiness Gate" \
   sh -c "cd '$root_dir' && make verify-v2-live-readiness"
 local_readiness_code=$RUN_CAPTURE_LAST_CODE
@@ -232,6 +236,7 @@ token_candidate="${GITRANK_REPO_ADMIN_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}"
   printf 'make finalize-v2-live-closeout\n'
   printf '```\n\n'
   printf '### Probe Exit Codes\n\n'
+  printf '%s\n' "- Branch divergence probe: \`$branch_divergence_code\`"
   printf '%s\n' "- Local readiness: \`$local_readiness_code\`"
   printf '%s\n' "- Contributing audit: \`$audit_code\`"
   printf '%s\n' "- Env presence probe: \`$env_presence_code\`"
