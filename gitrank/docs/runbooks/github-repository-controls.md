@@ -53,6 +53,14 @@ make discover-github-required-status-checks
 
 For public repositories, discovery can run without a token but is rate-limited.
 
+For a no-token repository-controls precheck (branch protection or rulesets):
+
+```bash
+cd gitrank
+GITHUB_REPOSITORY=OWNER/REPO \
+make verify-github-repository-controls-public
+```
+
 ## Apply Through Script
 
 Use this path only with a token that has repository administration write

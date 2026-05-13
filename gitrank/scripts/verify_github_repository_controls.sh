@@ -88,17 +88,50 @@ verify_branch_protection_payload() {
   CONTROL_MODE="branch protection"
 }
 
+rules_json_from_api_body() {
+  printf '%s' "$API_BODY" | jq -c '
+    def flatten_rulesets(xs):
+      [
+        xs[]?
+        | if (type == "object" and has("rules")) then
+            .rules[]?
+          else
+            .
+          end
+      ];
+
+    if type == "array" then
+      if ((.[0]? | type) == "object") and (.[0]? | has("type")) then
+        .
+      else
+        flatten_rulesets(.)
+      end
+    elif type == "object" then
+      if has("rules") then
+        (.rules // [])
+      elif has("type") then
+        [.]
+      else
+        []
+      end
+    else
+      []
+    end
+  '
+}
+
 verify_ruleset_payload() {
-  REVIEW_COUNT=$(printf '%s' "$API_BODY" | jq -r '[.[] | select(.type == "pull_request") | (.parameters.required_approving_review_count // 0)] | max // 0')
+  rules_json=$1
+  REVIEW_COUNT=$(printf '%s' "$rules_json" | jq -r '[.[] | select(.type == "pull_request") | (.parameters.required_approving_review_count // 0)] | max // 0')
   [ "$REVIEW_COUNT" -ge 1 ] || fail "ruleset controls must require at least one approving pull request review"
 
-  REQUIRED_CHECKS=$(printf '%s' "$API_BODY" | jq -r '[.[] | select(.type == "required_status_checks") | (.parameters.required_status_checks // [] | length)] | add // 0')
+  REQUIRED_CHECKS=$(printf '%s' "$rules_json" | jq -r '[.[] | select(.type == "required_status_checks") | (.parameters.required_status_checks // [] | length)] | add // 0')
   [ "$REQUIRED_CHECKS" -ge 1 ] || fail "ruleset controls must require at least one status check"
 
-  HAS_NON_FAST_FORWARD=$(printf '%s' "$API_BODY" | jq -r '[.[] | select(.type == "non_fast_forward")] | length')
+  HAS_NON_FAST_FORWARD=$(printf '%s' "$rules_json" | jq -r '[.[] | select(.type == "non_fast_forward")] | length')
   [ "$HAS_NON_FAST_FORWARD" -ge 1 ] || fail "ruleset controls must block force pushes (non_fast_forward rule missing)"
 
-  HAS_DELETION_RULE=$(printf '%s' "$API_BODY" | jq -r '[.[] | select(.type == "deletion")] | length')
+  HAS_DELETION_RULE=$(printf '%s' "$rules_json" | jq -r '[.[] | select(.type == "deletion")] | length')
   [ "$HAS_DELETION_RULE" -ge 1 ] || fail "ruleset controls must block branch deletion (deletion rule missing)"
 
   CONTROL_MODE="rulesets"
@@ -119,7 +152,10 @@ case "$API_STATUS" in
   404)
     github_get "/repos/$OWNER/$REPO/rules/branches/$TARGET_BRANCH"
     expect_status 200 "ruleset branch rules for $TARGET_BRANCH"
-    verify_ruleset_payload
+    rules_json=$(rules_json_from_api_body)
+    rules_count=$(printf '%s' "$rules_json" | jq 'length')
+    [ "$rules_count" -gt 0 ] || fail "ruleset branch rules for $TARGET_BRANCH returned no effective rules"
+    verify_ruleset_payload "$rules_json"
     ;;
   *)
     fail "branch protection lookup for $TARGET_BRANCH returned HTTP $API_STATUS"
