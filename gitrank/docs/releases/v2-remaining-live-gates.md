@@ -52,7 +52,9 @@ For consolidated execution, use:
   (`RETURN_RUN_DETAILS=true` by default, with legacy fallback on validation errors)
 - `make audit-v2-contributing-checklist` for pass/fail against unchecked lines
 - `make mark-v2-contributing-live-gates` to flip live-gate checkboxes only after
-  successful verifier runs
+  successful verifier runs. In workflow-evidence mode, latest
+  `workflow_dispatch` misses now retry with `WORKFLOW_EVENT=any` by default
+  (`WORKFLOW_EVENT_FALLBACK_ANY=true`).
 - `make verify-live-v2-inputs` as preflight for required live credentials and
   environment inputs
 - `make create-github-app-installation-token` to bootstrap short-lived GitHub
