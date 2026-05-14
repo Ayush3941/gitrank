@@ -78,6 +78,9 @@ URLs), this command captures them immediately and writes
 `WORKFLOW_RUN_ID_OUTPUT_FILE` when configured, then falls back to polling only
 if needed.
 
+By default it requests dispatch run details (`RETURN_RUN_DETAILS=true`) and
+auto-falls back to legacy dispatch payloads if a repository rejects that field.
+
 If you need a short-lived token for repository-controls operations, use:
 
 ```bash

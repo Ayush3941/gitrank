@@ -36,6 +36,7 @@ For consolidated execution, use:
   preflight + gate verification + checklist marking + audit
 - `make run-live-v2-gates-workflow` (requires token and live environment vars)
   and now consumes workflow-dispatch run details when the API provides them
+  (`RETURN_RUN_DETAILS=true` by default, with legacy fallback on validation errors)
 - `make audit-v2-contributing-checklist` for pass/fail against unchecked lines
 - `make mark-v2-contributing-live-gates` to flip live-gate checkboxes only after
   successful verifier runs

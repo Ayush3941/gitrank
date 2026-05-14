@@ -21,6 +21,7 @@ GITHUB_APP_ID="${GITHUB_APP_ID:-${GITRANK_GITHUB_APP_ID:-}}"
 GITHUB_APP_INSTALLATION_ID="${GITHUB_APP_INSTALLATION_ID:-${GITRANK_GITHUB_APP_INSTALLATION_ID:-}}"
 GITHUB_APP_PRIVATE_KEY_FILE="${GITHUB_APP_PRIVATE_KEY_FILE:-${GITRANK_GITHUB_APP_PRIVATE_KEY_FILE:-}}"
 GITHUB_APP_PRIVATE_KEY_PEM="${GITHUB_APP_PRIVATE_KEY_PEM:-${GITRANK_GITHUB_APP_PRIVATE_KEY_PEM:-}}"
+RETURN_RUN_DETAILS="${RETURN_RUN_DETAILS:-true}"
 
 fail() {
   printf 'live v2 workflow dispatch failed: %s\n' "$1" >&2
@@ -133,6 +134,7 @@ dispatch_payload=$(jq -n \
   --arg apply_github_controls "$APPLY_GITHUB_CONTROLS" \
   --arg run_release_render "$RUN_RELEASE_RENDER" \
   --arg request_id "$request_id" \
+  --arg return_run_details "$RETURN_RUN_DETAILS" \
   '{
     ref: $ref,
     inputs: {
@@ -142,10 +144,40 @@ dispatch_payload=$(jq -n \
       apply_github_controls: $apply_github_controls,
       run_release_render: $run_release_render,
       request_id: $request_id
-    }
+    },
+    return_run_details: (($return_run_details | ascii_downcase) == "true")
   }')
 
 json_request POST "/repos/$OWNER/$REPO/actions/workflows/$WORKFLOW_FILE/dispatches" "$dispatch_payload"
+if [ "$API_STATUS" = "422" ]; then
+  dispatch_error_message=$(printf '%s' "$API_BODY" | jq -r '.message // empty' 2>/dev/null || true)
+  case "$dispatch_error_message" in
+    *"return_run_details"*)
+      printf 'workflow dispatch: retrying without return_run_details due API validation on this repository\n'
+      dispatch_payload=$(jq -n \
+        --arg ref "$TARGET_REF" \
+        --arg env "$TARGET_ENVIRONMENT" \
+        --arg run_observability "$RUN_OBSERVABILITY" \
+        --arg run_github_controls "$RUN_GITHUB_CONTROLS" \
+        --arg apply_github_controls "$APPLY_GITHUB_CONTROLS" \
+        --arg run_release_render "$RUN_RELEASE_RENDER" \
+        --arg request_id "$request_id" \
+        '{
+          ref: $ref,
+          inputs: {
+            environment: $env,
+            run_observability: $run_observability,
+            run_github_controls: $run_github_controls,
+            apply_github_controls: $apply_github_controls,
+            run_release_render: $run_release_render,
+            request_id: $request_id
+          }
+        }')
+      json_request POST "/repos/$OWNER/$REPO/actions/workflows/$WORKFLOW_FILE/dispatches" "$dispatch_payload"
+      ;;
+  esac
+fi
+
 case "$API_STATUS" in
   200)
     dispatch_run_id=$(printf '%s' "$API_BODY" | jq -r '.workflow_run_id // empty')
