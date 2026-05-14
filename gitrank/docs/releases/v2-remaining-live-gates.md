@@ -72,6 +72,17 @@ when that happens.
 If GitHub App credentials are present, the public prechecks can auto-bootstrap
 short-lived installation tokens.
 
+## Current Snapshot (2026-05-14 UTC)
+
+- `make verify-v2-live-readiness`: pass
+- `make verify-public-workflow-health`: pass on `Ayush3941/gitrank`
+- `make verify-remote-live-v2-workflow-sync`: pass via raw-public fallback when
+  no token is configured
+- `make audit-v2-contributing-checklist`: fail with `unchecked items: 14`
+- Remaining unchecked items are still limited to live-only gates (observability,
+  GitHub controls, rollback/restore drills, environment-specific Kubernetes
+  runtime proof)
+
 ## 1) Production Observability On Live Traffic
 
 Checklist refs:
