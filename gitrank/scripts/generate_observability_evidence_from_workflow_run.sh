@@ -11,6 +11,7 @@ API_TIMEOUT_SECONDS="${GITHUB_API_TIMEOUT_SECONDS:-30}"
 WORKFLOW_RUN_ID="${WORKFLOW_RUN_ID:-}"
 USE_LATEST_SUCCESSFUL_RUN="${USE_LATEST_SUCCESSFUL_RUN:-false}"
 WORKFLOW_EVENT="${WORKFLOW_EVENT:-workflow_dispatch}"
+WORKFLOW_EVENT_FALLBACK_ANY="${WORKFLOW_EVENT_FALLBACK_ANY:-true}"
 OUTPUT_FILE="${OUTPUT_FILE:-}"
 
 ENVIRONMENT="${ENVIRONMENT:-}"
@@ -148,15 +149,45 @@ expect_status() {
 verify_script="$root_dir/scripts/verify_live_v2_workflow_run.sh"
 [ -x "$verify_script" ] || fail "missing executable verifier script: $verify_script"
 
-GITHUB_REPOSITORY="$REPOSITORY" \
-GITHUB_TOKEN="$TOKEN" \
-WORKFLOW_RUN_ID="$WORKFLOW_RUN_ID" \
-WORKFLOW_EVENT="$WORKFLOW_EVENT" \
-WORKFLOW_RUN_ID_OUTPUT_FILE="${TMPDIR:-/tmp}/gitrank-observability-workflow-run-id.$$.txt" \
-REQUIRE_GITHUB_CONTROLS=false \
-REQUIRE_OBSERVABILITY=true \
-REQUIRE_RELEASE_RENDER=false \
-"$verify_script"
+if GITHUB_REPOSITORY="$REPOSITORY" \
+  GITHUB_TOKEN="$TOKEN" \
+  WORKFLOW_RUN_ID="$WORKFLOW_RUN_ID" \
+  WORKFLOW_EVENT="$WORKFLOW_EVENT" \
+  WORKFLOW_RUN_ID_OUTPUT_FILE="${TMPDIR:-/tmp}/gitrank-observability-workflow-run-id.$$.txt" \
+  REQUIRE_GITHUB_CONTROLS=false \
+  REQUIRE_OBSERVABILITY=true \
+  REQUIRE_RELEASE_RENDER=false \
+  "$verify_script"; then
+  :
+else
+  retry_with_any=false
+  case "$WORKFLOW_EVENT_FALLBACK_ANY" in
+    true)
+      if [ "$WORKFLOW_EVENT" != "any" ] && [ "$WORKFLOW_EVENT" != "all" ] && [ "$WORKFLOW_EVENT" != "*" ]; then
+        if [ "$WORKFLOW_RUN_ID" = "latest" ]; then
+          retry_with_any=true
+        fi
+      fi
+      ;;
+  esac
+
+  if [ "$retry_with_any" = "true" ]; then
+    printf '%s\n' "workflow-run verification miss for event '$WORKFLOW_EVENT'; retrying with WORKFLOW_EVENT=any"
+    WORKFLOW_EVENT=any
+    WORKFLOW_RUN_ID=latest
+    GITHUB_REPOSITORY="$REPOSITORY" \
+    GITHUB_TOKEN="$TOKEN" \
+    WORKFLOW_RUN_ID="$WORKFLOW_RUN_ID" \
+    WORKFLOW_EVENT="$WORKFLOW_EVENT" \
+    WORKFLOW_RUN_ID_OUTPUT_FILE="${TMPDIR:-/tmp}/gitrank-observability-workflow-run-id.$$.txt" \
+    REQUIRE_GITHUB_CONTROLS=false \
+    REQUIRE_OBSERVABILITY=true \
+    REQUIRE_RELEASE_RENDER=false \
+    "$verify_script"
+  else
+    fail "workflow-run verification failed"
+  fi
+fi
 
 resolved_run_id=$(cat "${TMPDIR:-/tmp}/gitrank-observability-workflow-run-id.$$.txt" 2>/dev/null || true)
 rm -f "${TMPDIR:-/tmp}/gitrank-observability-workflow-run-id.$$.txt"

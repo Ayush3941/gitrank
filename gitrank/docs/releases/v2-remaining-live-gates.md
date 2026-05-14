@@ -21,7 +21,9 @@ For consolidated execution, use:
 - `make verify-github-repository-controls-public` as a no-token precheck for
   default-branch protection and required status-check visibility
 - `make generate-observability-evidence-from-workflow-run` to create
-  `docs/evidence/observability-live-*.txt` from a verified workflow run
+  `docs/evidence/observability-live-*.txt` from a verified workflow run. Latest
+  `workflow_dispatch` lookup misses now retry with `WORKFLOW_EVENT=any` by
+  default (`WORKFLOW_EVENT_FALLBACK_ANY=true`).
 - `make generate-rollback-drill-evidence` and
   `make generate-database-restore-drill-evidence` to generate validated drill
   evidence records from captured rollback/restore metadata
