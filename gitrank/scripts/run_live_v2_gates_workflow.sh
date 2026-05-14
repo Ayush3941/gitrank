@@ -5,6 +5,7 @@ REPOSITORY="${GITHUB_REPOSITORY:-}"
 TOKEN="${GITHUB_TOKEN:-${GH_TOKEN:-${GITRANK_REPO_ADMIN_TOKEN:-}}}"
 API_BASE="${GITHUB_API_URL:-https://api.github.com}"
 API_VERSION="${GITHUB_API_VERSION:-2026-03-10}"
+API_TIMEOUT_SECONDS="${GITHUB_API_TIMEOUT_SECONDS:-30}"
 WORKFLOW_FILE="${WORKFLOW_FILE:-verify-live-v2-gates.yml}"
 TARGET_REF="${TARGET_REF:-main}"
 TARGET_ENVIRONMENT="${TARGET_ENVIRONMENT:-staging}"
@@ -109,6 +110,8 @@ json_request() {
   body_file="$TMP_ROOT/gitrank-live-v2-run.$$"
   if [ -n "$payload" ]; then
     API_STATUS=$(curl -sS -L -X "$method" -o "$body_file" -w '%{http_code}' \
+      --connect-timeout "$API_TIMEOUT_SECONDS" \
+      --max-time "$API_TIMEOUT_SECONDS" \
       -H 'Accept: application/vnd.github+json' \
       -H "Authorization: Bearer $TOKEN" \
       -H "X-GitHub-Api-Version: $API_VERSION" \
@@ -120,6 +123,8 @@ json_request() {
       }
   else
     API_STATUS=$(curl -sS -L -X "$method" -o "$body_file" -w '%{http_code}' \
+      --connect-timeout "$API_TIMEOUT_SECONDS" \
+      --max-time "$API_TIMEOUT_SECONDS" \
       -H 'Accept: application/vnd.github+json' \
       -H "Authorization: Bearer $TOKEN" \
       -H "X-GitHub-Api-Version: $API_VERSION" \

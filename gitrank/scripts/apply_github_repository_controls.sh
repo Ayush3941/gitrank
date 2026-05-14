@@ -5,6 +5,7 @@ REPOSITORY="${GITHUB_REPOSITORY:-}"
 TOKEN="${GITHUB_TOKEN:-${GH_TOKEN:-${GITRANK_REPO_ADMIN_TOKEN:-}}}"
 API_BASE="${GITHUB_API_URL:-https://api.github.com}"
 API_VERSION="${GITHUB_API_VERSION:-2026-03-10}"
+API_TIMEOUT_SECONDS="${GITHUB_API_TIMEOUT_SECONDS:-30}"
 TMP_ROOT="${TMPDIR:-/tmp}"
 APPLY_CONFIRMATION="${GITRANK_APPLY_REPOSITORY_CONTROLS:-}"
 STATUS_CHECKS="${GITRANK_REQUIRED_STATUS_CHECKS:-}"
@@ -89,6 +90,8 @@ github_request() {
   body_file="$TMP_ROOT/gitrank-github-controls-apply.$$"
   if [ -n "$data_file" ]; then
     API_STATUS=$(curl -sS -L -X "$method" -o "$body_file" -w '%{http_code}' \
+      --connect-timeout "$API_TIMEOUT_SECONDS" \
+      --max-time "$API_TIMEOUT_SECONDS" \
       -H 'Accept: application/vnd.github+json' \
       -H "Authorization: Bearer $TOKEN" \
       -H "X-GitHub-Api-Version: $API_VERSION" \
@@ -99,6 +102,8 @@ github_request() {
       }
   else
     API_STATUS=$(curl -sS -L -X "$method" -o "$body_file" -w '%{http_code}' \
+      --connect-timeout "$API_TIMEOUT_SECONDS" \
+      --max-time "$API_TIMEOUT_SECONDS" \
       -H 'Accept: application/vnd.github+json' \
       -H "Authorization: Bearer $TOKEN" \
       -H "X-GitHub-Api-Version: $API_VERSION" \

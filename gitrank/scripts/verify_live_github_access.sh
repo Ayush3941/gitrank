@@ -5,6 +5,7 @@ REPOSITORY="${GITHUB_REPOSITORY:-}"
 TOKEN="${GITHUB_TOKEN:-${GH_TOKEN:-${GITRANK_REPO_ADMIN_TOKEN:-}}}"
 API_BASE="${GITHUB_API_URL:-https://api.github.com}"
 API_VERSION="${GITHUB_API_VERSION:-2026-03-10}"
+API_TIMEOUT_SECONDS="${GITHUB_API_TIMEOUT_SECONDS:-30}"
 TARGET_WORKFLOW_FILE="${TARGET_WORKFLOW_FILE:-verify-live-v2-gates.yml}"
 TMP_ROOT="${TMPDIR:-/tmp}"
 GITHUB_APP_ID="${GITHUB_APP_ID:-${GITRANK_GITHUB_APP_ID:-}}"
@@ -85,6 +86,8 @@ github_get() {
   LAST_CONTEXT=$context
   body_file="$TMP_ROOT/gitrank-live-github-access.$$"
   API_STATUS=$(curl -sS -L -o "$body_file" -w '%{http_code}' \
+    --connect-timeout "$API_TIMEOUT_SECONDS" \
+    --max-time "$API_TIMEOUT_SECONDS" \
     -H 'Accept: application/vnd.github+json' \
     -H "Authorization: Bearer $TOKEN" \
     -H "X-GitHub-Api-Version: $API_VERSION" \
