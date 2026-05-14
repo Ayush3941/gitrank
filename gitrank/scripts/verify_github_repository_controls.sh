@@ -95,10 +95,23 @@ github_get() {
   rm -f "$body_file"
 }
 
+is_rate_limited_response() {
+  message=$(printf '%s' "$API_BODY" | jq -r '.message // empty' 2>/dev/null || true)
+  case "$message" in
+    *"API rate limit exceeded"*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 expect_status() {
   expected=$1
   context=$2
-  [ "$API_STATUS" = "$expected" ] || fail "$context returned HTTP $API_STATUS"
+  if [ "$API_STATUS" != "$expected" ]; then
+    if [ "$API_STATUS" = "403" ] && is_rate_limited_response; then
+      fail "$context hit GitHub API rate limit (HTTP 403); retry with token/App credentials that have remaining quota"
+    fi
+    fail "$context returned HTTP $API_STATUS"
+  fi
 }
 
 verify_branch_protection_payload() {
@@ -185,6 +198,12 @@ case "$API_STATUS" in
     rules_count=$(printf '%s' "$rules_json" | jq 'length')
     [ "$rules_count" -gt 0 ] || fail "ruleset branch rules for $TARGET_BRANCH returned no effective rules"
     verify_ruleset_payload "$rules_json"
+    ;;
+  403)
+    if is_rate_limited_response; then
+      fail "branch protection lookup for $TARGET_BRANCH hit GitHub API rate limit (HTTP 403); retry with token/App credentials that have remaining quota"
+    fi
+    fail "branch protection lookup for $TARGET_BRANCH denied (HTTP 403); verify repository administration read permissions"
     ;;
   *)
     fail "branch protection lookup for $TARGET_BRANCH returned HTTP $API_STATUS"

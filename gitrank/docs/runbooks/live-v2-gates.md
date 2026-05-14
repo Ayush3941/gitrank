@@ -128,6 +128,9 @@ make verify-live-github-access
 If you do not have a static token, `make verify-live-github-access` now auto
 bootstraps a short-lived installation token when GitHub App credentials are
 present in the environment.
+If GitHub returns `HTTP 403` due API quota exhaustion, the verifier now reports
+that explicitly so you can retry with token/App credentials that have remaining
+quota.
 
 To verify a completed Actions run as live-gate evidence (without rerunning
 those checks locally), use:

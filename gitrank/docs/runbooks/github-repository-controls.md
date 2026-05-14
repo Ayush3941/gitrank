@@ -163,6 +163,9 @@ targets this repository. `GH_TOKEN` is accepted as a fallback to `GITHUB_TOKEN`.
 The verifier intentionally fails closed if it cannot prove a required setting.
 Do not check the repository-admin boxes in `CONTRIBUTING.md` from inspection
 alone; use this verifier or an equivalent GitHub settings export.
+If GitHub responds with API quota exhaustion (`HTTP 403` rate-limit), the
+verifier now reports that explicitly instead of treating it as a generic
+permission failure.
 
 Equivalent GitHub Actions path:
 

@@ -96,11 +96,24 @@ github_get() {
   rm -f "$body_file"
 }
 
+is_rate_limited_response() {
+  message=$(printf '%s' "$API_BODY" | jq -r '.message // empty' 2>/dev/null || true)
+  case "$message" in
+    *"API rate limit exceeded"*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 expect_200() {
   [ "$API_STATUS" = "200" ] || {
     case "$API_STATUS" in
       401) fail "$LAST_CONTEXT denied: token invalid or expired (HTTP 401)" ;;
-      403) fail "$LAST_CONTEXT denied: token lacks required permission/scope (HTTP 403)" ;;
+      403)
+        if is_rate_limited_response; then
+          fail "$LAST_CONTEXT hit GitHub API rate limit (HTTP 403); retry with token/App credentials that have remaining quota"
+        fi
+        fail "$LAST_CONTEXT denied: token lacks required permission/scope (HTTP 403)"
+        ;;
       404) fail "$LAST_CONTEXT denied: endpoint/resource unavailable for this token or repo (HTTP 404)" ;;
       *) fail "$LAST_CONTEXT returned HTTP $API_STATUS" ;;
     esac
@@ -128,7 +141,12 @@ github_get "/repos/$OWNER/$REPO/dependency-graph/sbom" "dependency graph SBOM"
 case "$API_STATUS" in
   200|201|202) ;;
   401) fail "dependency graph SBOM denied: token invalid or expired (HTTP 401)" ;;
-  403) fail "dependency graph SBOM denied: token lacks required permission/scope (HTTP 403)" ;;
+  403)
+    if is_rate_limited_response; then
+      fail "dependency graph SBOM hit GitHub API rate limit (HTTP 403); retry with token/App credentials that have remaining quota"
+    fi
+    fail "dependency graph SBOM denied: token lacks required permission/scope (HTTP 403)"
+    ;;
   404) fail "dependency graph SBOM unavailable for this repo/token (HTTP 404)" ;;
   *) fail "dependency graph SBOM returned HTTP $API_STATUS" ;;
 esac
