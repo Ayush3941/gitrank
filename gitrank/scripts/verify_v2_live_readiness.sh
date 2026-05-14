@@ -11,6 +11,8 @@ RUN_RELEASE_RENDER="${RUN_RELEASE_RENDER:-false}"
 RUN_INPUT_PREFLIGHT="${RUN_INPUT_PREFLIGHT:-true}"
 RUN_PUBLIC_WORKFLOW_HEALTH="${RUN_PUBLIC_WORKFLOW_HEALTH:-false}"
 AUTO_SYNC_REMOTE_TRIVY_POLICY="${AUTO_SYNC_REMOTE_TRIVY_POLICY:-false}"
+RUN_REMOTE_WORKFLOW_SYNC="${RUN_REMOTE_WORKFLOW_SYNC:-false}"
+AUTO_SYNC_REMOTE_WORKFLOW="${AUTO_SYNC_REMOTE_WORKFLOW:-false}"
 
 fail() {
   printf 'v2 live readiness verification failed: %s\n' "$1" >&2
@@ -47,6 +49,33 @@ if [ "$RUN_PUBLIC_WORKFLOW_HEALTH" = "true" ]; then
       run_make verify-public-workflow-health
     else
       fail "public workflow health gate failed (set AUTO_SYNC_REMOTE_TRIVY_POLICY=true to attempt automated Trivy policy sync)"
+    fi
+  fi
+fi
+
+if [ "$RUN_REMOTE_WORKFLOW_SYNC" = "true" ]; then
+  if run_make verify-remote-live-v2-workflow-sync; then
+    :
+  else
+    if [ "$AUTO_SYNC_REMOTE_WORKFLOW" = "true" ]; then
+      token_candidate="${GITHUB_TOKEN:-${GH_TOKEN:-${GITRANK_REPO_ADMIN_TOKEN:-}}}"
+      app_id_candidate="${GITHUB_APP_ID:-${GITRANK_GITHUB_APP_ID:-}}"
+      app_installation_candidate="${GITHUB_APP_INSTALLATION_ID:-${GITRANK_GITHUB_APP_INSTALLATION_ID:-}}"
+      app_key_file_candidate="${GITHUB_APP_PRIVATE_KEY_FILE:-${GITRANK_GITHUB_APP_PRIVATE_KEY_FILE:-}}"
+      app_key_pem_candidate="${GITHUB_APP_PRIVATE_KEY_PEM:-${GITRANK_GITHUB_APP_PRIVATE_KEY_PEM:-}}"
+      has_app_bootstrap=false
+      if [ -n "$app_id_candidate" ] && [ -n "$app_installation_candidate" ]; then
+        if [ -n "$app_key_file_candidate" ] || [ -n "$app_key_pem_candidate" ]; then
+          has_app_bootstrap=true
+        fi
+      fi
+      if [ -z "$token_candidate" ] && [ "$has_app_bootstrap" != "true" ]; then
+        fail "remote workflow sync failed and AUTO_SYNC_REMOTE_WORKFLOW=true, but no admin token/App credentials are set"
+      fi
+      run_make sync-remote-live-v2-workflow
+      run_make verify-remote-live-v2-workflow-sync
+    else
+      fail "remote live workflow sync gate failed (set AUTO_SYNC_REMOTE_WORKFLOW=true to attempt automated workflow sync)"
     fi
   fi
 fi

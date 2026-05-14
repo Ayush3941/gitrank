@@ -247,6 +247,11 @@ default (`RUN_PUBLIC_WORKFLOW_HEALTH=true`) so final closeout catches
 `AUTO_SYNC_REMOTE_TRIVY_POLICY=true` attempts automatic Trivy policy sync
 before re-checking workflow health when drift is detected, and enforces
 `make verify-live-github-access` before GitHub-controls apply/verify actions.
+Finalizer also defaults `RUN_REMOTE_WORKFLOW_SYNC=true` and
+`AUTO_SYNC_REMOTE_WORKFLOW=true` so missing/stale
+`.github/workflows/verify-live-v2-gates.yml` on the remote default branch is
+detected and auto-synced before continuing (when token/App credentials allow
+write access).
 
 To generate a single closeout status artifact (branch divergence + local gates +
 unresolved checklist audit + live-input probes + public workflow health +

@@ -37,6 +37,10 @@ For consolidated execution, use:
   default; set `AUTO_SYNC_REMOTE_WORKFLOW=false` to skip)
 - `CONFIRM_FINALIZE_V2=yes make finalize-v2-live-closeout` for one-command
   preflight + gate verification + checklist marking + audit
+  - finalizer now includes remote workflow sync verification by default and
+    can auto-sync `.github/workflows/verify-live-v2-gates.yml` when drift is
+    detected (`RUN_REMOTE_WORKFLOW_SYNC=true`,
+    `AUTO_SYNC_REMOTE_WORKFLOW=true`)
 - `make run-live-v2-gates-workflow` (requires token and live environment vars)
   and now consumes workflow-dispatch run details when the API provides them
   (`RETURN_RUN_DETAILS=true` by default, with legacy fallback on validation errors)
