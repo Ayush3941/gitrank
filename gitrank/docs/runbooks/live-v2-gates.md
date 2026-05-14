@@ -116,6 +116,11 @@ cd gitrank
 make verify-v2-live-readiness
 ```
 
+This readiness command now also verifies that
+`scripts/finalize_v2_live_closeout.sh` correctly resolves both
+`GITHUB_APP_*` and `GITRANK_GITHUB_APP_*` credential variable sets before
+attempting GitHub-controls automation.
+
 Before running GitHub controls apply/verify operations, validate GitHub access:
 
 ```bash

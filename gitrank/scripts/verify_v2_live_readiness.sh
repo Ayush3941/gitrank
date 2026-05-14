@@ -32,6 +32,7 @@ if [ "$RUN_LOCAL_STATIC" = "true" ]; then
   run_make verify-rollback-procedure
   run_make verify-k8s-autoscaling
   run_make verify-secret-policy
+  run_make verify-finalize-v2-closeout-env-aliases
 fi
 
 if [ "$RUN_PUBLIC_WORKFLOW_HEALTH" = "true" ]; then
