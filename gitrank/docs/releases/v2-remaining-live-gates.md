@@ -48,6 +48,9 @@ For consolidated execution, use:
     `WAIVE_LIVE_GITHUB_ACCESS_PREFLIGHT`,
     `WAIVE_PUBLIC_GITHUB_CONTROLS_PRECHECK`,
     `WAIVE_WORKFLOW_EVIDENCE_PROBE`.
+- `make verify-v2-completion-audit-behavior` to regression-test completion
+  audit defaults (repository display redaction, waiver reporting, and skip
+  behavior) without requiring live credentials
 - `make run-live-v2-workflow-evidence-pipeline` to dispatch live gates, verify
   workflow-run evidence, and generate observability evidence in one sequence
   (auto-syncs `.github/workflows/verify-live-v2-gates.yml` before dispatch by

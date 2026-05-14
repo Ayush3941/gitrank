@@ -125,6 +125,7 @@ awk -F':' '/^[a-zA-Z0-9_.-]+:/ { print $1 }' "$makefile" | sort -u >"$make_targe
 {
   printf '# V2 Completion Audit Matrix\n\n'
   printf '%s\n' "- Generated at (UTC): \`$(date -u +%Y-%m-%dT%H:%M:%SZ)\`"
+  printf '%s\n' "- Repository: \`$display_repository\`"
   printf '%s\n' "- Objective: \`achieve V2 according to CONTRIBUTING.md\`"
   printf '%s\n' "- Contributing source: \`$contributing_file\`"
   printf '%s\n' "- Checklist items found: \`$total_checklist\`"
