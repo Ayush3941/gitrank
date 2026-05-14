@@ -73,7 +73,12 @@ require_command jq
 require_command mktemp
 mkdir -p "$TMP_ROOT"
 bootstrap_token_from_github_app || true
-[ -n "$TOKEN" ] || fail "GITHUB_TOKEN, GH_TOKEN, or GITRANK_REPO_ADMIN_TOKEN is required (or set GitHub App credentials)"
+if [ -z "$TOKEN" ]; then
+  if [ "$REQUIRE_WORKFLOW_SYNC_CAPABILITY" = "true" ]; then
+    fail "GITHUB_TOKEN, GH_TOKEN, or GITRANK_REPO_ADMIN_TOKEN is required (or set GitHub App credentials); workflow sync also requires workflow-file write capability (workflow scope for classic PAT or workflows:write for GitHub App)"
+  fi
+  fail "GITHUB_TOKEN, GH_TOKEN, or GITRANK_REPO_ADMIN_TOKEN is required (or set GitHub App credentials)"
+fi
 
 OWNER=${REPOSITORY%%/*}
 REPO=${REPOSITORY#*/}

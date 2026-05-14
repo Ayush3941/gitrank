@@ -55,3 +55,34 @@ do
     printf '%s=unset\n' "$var_name"
   fi
 done
+
+token_candidate="${GITRANK_REPO_ADMIN_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}"
+app_id_candidate="${GITHUB_APP_ID:-${GITRANK_GITHUB_APP_ID:-}}"
+app_installation_candidate="${GITHUB_APP_INSTALLATION_ID:-${GITRANK_GITHUB_APP_INSTALLATION_ID:-}}"
+app_key_file_candidate="${GITHUB_APP_PRIVATE_KEY_FILE:-${GITRANK_GITHUB_APP_PRIVATE_KEY_FILE:-}}"
+app_key_pem_candidate="${GITHUB_APP_PRIVATE_KEY_PEM:-${GITRANK_GITHUB_APP_PRIVATE_KEY_PEM:-}}"
+
+has_app_bootstrap=false
+if [ -n "$app_id_candidate" ] && [ -n "$app_installation_candidate" ]; then
+  if [ -n "$app_key_file_candidate" ] || [ -n "$app_key_pem_candidate" ]; then
+    has_app_bootstrap=true
+  fi
+fi
+
+auth_mode=none
+if [ -n "$token_candidate" ]; then
+  auth_mode=token
+elif [ "$has_app_bootstrap" = "true" ]; then
+  auth_mode=app-bootstrap
+fi
+
+workflow_sync_credential_readiness=unavailable
+if [ "$auth_mode" = "token" ]; then
+  workflow_sync_credential_readiness=token-present
+elif [ "$auth_mode" = "app-bootstrap" ]; then
+  workflow_sync_credential_readiness=app-bootstrap-present
+fi
+
+printf 'derived.auth_mode=%s\n' "$auth_mode"
+printf 'derived.has_app_bootstrap=%s\n' "$has_app_bootstrap"
+printf 'derived.workflow_sync_credential_readiness=%s\n' "$workflow_sync_credential_readiness"

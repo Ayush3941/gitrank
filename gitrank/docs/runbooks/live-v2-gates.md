@@ -278,6 +278,13 @@ OUTPUT_FILE=docs/releases/v2-live-closeout-status-latest.md \
 make generate-v2-live-closeout-status
 ```
 
+The embedded env-presence probe now emits derived readiness fields:
+
+- `derived.auth_mode` (`none|token|app-bootstrap`)
+- `derived.has_app_bootstrap` (`true|false`)
+- `derived.workflow_sync_credential_readiness`
+  (`unavailable|token-present|app-bootstrap-present`)
+
 To generate a full V2 completion matrix (checklist counts, unresolved lines,
 file-reference existence, `make` target mapping, and gate outputs):
 
