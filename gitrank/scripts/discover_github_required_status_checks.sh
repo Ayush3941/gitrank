@@ -47,6 +47,7 @@ REPO=${REPOSITORY#*/}
 API_STATUS=
 API_BODY=
 AUTH_MODE=authenticated
+DISCOVERY_SOURCE=default-branch-head
 
 github_get() {
   path=$1
@@ -105,19 +106,49 @@ expect_status 200 "commit status contexts"
 STATUS_CONTEXT_JSON=$API_BODY
 
 TMP_CHECKS_FILE="$TMP_ROOT/gitrank-required-checks.$$"
-trap 'rm -f "$TMP_CHECKS_FILE"' EXIT
+TMP_RUN_SHAS_FILE="$TMP_ROOT/gitrank-required-checks-runs.$$"
+trap 'rm -f "$TMP_CHECKS_FILE" "$TMP_RUN_SHAS_FILE"' EXIT
 {
   printf '%s' "$CHECK_RUNS_JSON" | jq -r '.check_runs[]?.name // empty'
   printf '%s' "$STATUS_CONTEXT_JSON" | jq -r '.statuses[]?.context // empty'
 } | sed '/^$/d' | sort -u >"$TMP_CHECKS_FILE"
 
 CHECK_COUNT=$(wc -l <"$TMP_CHECKS_FILE" | tr -d ' ')
-[ "$CHECK_COUNT" -gt 0 ] || fail "no check contexts discovered from default branch head"
+if [ "$CHECK_COUNT" -eq 0 ]; then
+  DISCOVERY_SOURCE=recent-successful-runs
+  github_get "/repos/$OWNER/$REPO/actions/runs?branch=$DEFAULT_BRANCH&status=completed&per_page=30"
+  expect_status 200 "recent workflow runs list"
+  printf '%s' "$API_BODY" | jq -r '
+    .workflow_runs[]?
+    | select(.conclusion == "success")
+    | .head_sha // empty
+  ' | sed '/^$/d' | awk '!seen[$0]++' | sed -n '1,10p' >"$TMP_RUN_SHAS_FILE"
+
+  while IFS= read -r sha; do
+    [ -n "$sha" ] || continue
+    github_get "/repos/$OWNER/$REPO/commits/$sha/check-runs?per_page=100"
+    [ "$API_STATUS" = "200" ] || continue
+    printf '%s' "$API_BODY" | jq -r '.check_runs[]?.name // empty' >>"$TMP_CHECKS_FILE"
+
+    github_get "/repos/$OWNER/$REPO/commits/$sha/status"
+    [ "$API_STATUS" = "200" ] || continue
+    printf '%s' "$API_BODY" | jq -r '.statuses[]?.context // empty' >>"$TMP_CHECKS_FILE"
+  done <"$TMP_RUN_SHAS_FILE"
+
+  tmp_compact_file="$TMP_ROOT/gitrank-required-checks-compact.$$"
+  sed '/^$/d' "$TMP_CHECKS_FILE" >"$tmp_compact_file"
+  mv "$tmp_compact_file" "$TMP_CHECKS_FILE"
+  sort -u "$TMP_CHECKS_FILE" -o "$TMP_CHECKS_FILE"
+  CHECK_COUNT=$(wc -l <"$TMP_CHECKS_FILE" | tr -d ' ')
+fi
+
+[ "$CHECK_COUNT" -gt 0 ] || fail "no check contexts discovered from default branch head or recent successful runs"
 
 CSV_CONTEXTS=$(paste -sd, "$TMP_CHECKS_FILE")
 
 printf 'Repository: %s\n' "$REPOSITORY"
 printf 'Auth mode: %s\n' "$AUTH_MODE"
+printf 'Discovery source: %s\n' "$DISCOVERY_SOURCE"
 printf 'Default branch: %s\n' "$DEFAULT_BRANCH"
 printf 'Head SHA: %s\n' "$DEFAULT_SHA"
 printf 'Discovered checks (%s):\n' "$CHECK_COUNT"
