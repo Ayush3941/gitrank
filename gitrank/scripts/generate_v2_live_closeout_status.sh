@@ -79,11 +79,7 @@ run_and_capture() {
 
 gitrank_repo=$(resolve_repository_from_git_remote || true)
 if [ -z "$DISPLAY_REPOSITORY" ]; then
-  if [ -n "$gitrank_repo" ]; then
-    DISPLAY_REPOSITORY=$gitrank_repo
-  else
-    DISPLAY_REPOSITORY=OWNER/REPO
-  fi
+  DISPLAY_REPOSITORY=OWNER/REPO
 fi
 INFERRED_GITHUB_REPOSITORY=$gitrank_repo
 export INFERRED_GITHUB_REPOSITORY

@@ -45,11 +45,7 @@ resolve_repository_from_git_remote() {
 
 resolved_repository=$(resolve_repository_from_git_remote || true)
 if [ -z "$display_repository" ]; then
-  if [ -n "$resolved_repository" ]; then
-    display_repository=$resolved_repository
-  else
-    display_repository=OWNER/REPO
-  fi
+  display_repository=OWNER/REPO
 fi
 
 run_capture() {
