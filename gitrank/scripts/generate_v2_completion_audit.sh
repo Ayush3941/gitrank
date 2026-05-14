@@ -13,6 +13,7 @@ check_remote_live_workflow_sync="${CHECK_REMOTE_LIVE_WORKFLOW_SYNC:-true}"
 check_public_github_controls="${CHECK_PUBLIC_GITHUB_CONTROLS:-true}"
 check_live_github_access="${CHECK_LIVE_GITHUB_ACCESS:-true}"
 check_workflow_evidence="${CHECK_WORKFLOW_EVIDENCE:-true}"
+checklist_audit_run_public_probe="${CHECKLIST_AUDIT_RUN_PUBLIC_PROBE:-true}"
 workflow_run_id="${WORKFLOW_RUN_ID:-latest}"
 workflow_event="${WORKFLOW_EVENT:-workflow_dispatch}"
 waive_run_checks="${WAIVE_RUN_CHECKS:-}"
@@ -224,7 +225,7 @@ if [ "$run_checks" = "true" ]; then
   public_workflow_health_code=$RUN_CAPTURE_LAST_CODE
 
   run_capture "Checklist Audit (make audit-v2-contributing-checklist)" \
-    "cd '$root_dir' && RUN_BASELINE_VERIFIERS=false make audit-v2-contributing-checklist"
+    "cd '$root_dir' && RUN_BASELINE_VERIFIERS=false RUN_PUBLIC_PROBE='$checklist_audit_run_public_probe' make audit-v2-contributing-checklist"
   checklist_audit_code=$RUN_CAPTURE_LAST_CODE
 
   run_capture "Essential Live Env Presence" \

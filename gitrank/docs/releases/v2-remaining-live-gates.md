@@ -33,6 +33,9 @@ For consolidated execution, use:
 - `make generate-v2-live-closeout-status` to generate one artifact with local
   readiness, unresolved checklist audit, env presence, public controls precheck,
   and workflow-evidence probe results
+  - set `CHECKLIST_AUDIT_RUN_PUBLIC_PROBE=false` to run the embedded checklist
+    audit without live GitHub probe calls (useful for offline/rate-limited local
+    snapshots)
   - set `CHECK_LOCAL_READINESS=false` when this report is called from other
     local verification scripts to avoid nested readiness recursion
   - report output uses `OWNER/REPO` by default for repository display labels;
@@ -43,6 +46,8 @@ For consolidated execution, use:
 - `make generate-v2-completion-audit` to generate a prompt-to-artifact matrix
   from `CONTRIBUTING.md` (checklist counts, unresolved requirements,
   file-reference existence, `make` target mapping, and gate outputs)
+  - set `CHECKLIST_AUDIT_RUN_PUBLIC_PROBE=false` to keep the embedded checklist
+    audit deterministic in offline/rate-limited local runs
   - if you intentionally skip probe execution (for example, `RUN_CHECKS=false`
     or probe-specific `CHECK_*` toggles), provide explicit waiver reasons via:
     `WAIVE_RUN_CHECKS`, `WAIVE_PUBLIC_WORKFLOW_HEALTH`,

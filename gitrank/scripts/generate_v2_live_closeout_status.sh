@@ -13,6 +13,7 @@ CHECK_REMOTE_LIVE_WORKFLOW_SYNC="${CHECK_REMOTE_LIVE_WORKFLOW_SYNC:-true}"
 CHECK_WORKFLOW_EVIDENCE="${CHECK_WORKFLOW_EVIDENCE:-true}"
 CHECK_LIVE_GITHUB_ACCESS="${CHECK_LIVE_GITHUB_ACCESS:-true}"
 CHECK_LOCAL_READINESS="${CHECK_LOCAL_READINESS:-true}"
+CHECKLIST_AUDIT_RUN_PUBLIC_PROBE="${CHECKLIST_AUDIT_RUN_PUBLIC_PROBE:-true}"
 WORKFLOW_RUN_ID="${WORKFLOW_RUN_ID:-latest}"
 WORKFLOW_EVENT="${WORKFLOW_EVENT:-workflow_dispatch}"
 DISPLAY_REPOSITORY="${GITHUB_REPOSITORY_DISPLAY:-}"
@@ -108,7 +109,7 @@ fi
 
 audit_report_tmp="${AUDIT_REPORT_FILE:-$tmp_root/v2-closeout-status-audit.$$.md}"
 run_and_capture "Contributing Checklist Audit" \
-  sh -c "cd '$root_dir' && RUN_BASELINE_VERIFIERS=false AUDIT_REPORT_FILE='$audit_report_tmp' make audit-v2-contributing-checklist"
+  sh -c "cd '$root_dir' && RUN_BASELINE_VERIFIERS=false RUN_PUBLIC_PROBE='$CHECKLIST_AUDIT_RUN_PUBLIC_PROBE' AUDIT_REPORT_FILE='$audit_report_tmp' make audit-v2-contributing-checklist"
 audit_code=$RUN_CAPTURE_LAST_CODE
 
 if [ -s "$audit_report_tmp" ]; then
