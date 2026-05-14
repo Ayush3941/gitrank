@@ -167,6 +167,15 @@ GITRANK_REPO_ADMIN_TOKEN=... \
 make sync-remote-live-v2-workflow
 ```
 
+To verify whether the remote default branch already has the expected workflow
+file content before dispatching:
+
+```bash
+cd gitrank
+GITHUB_REPOSITORY=OWNER/REPO \
+make verify-remote-live-v2-workflow-sync
+```
+
 For a no-token public precheck of repository-controls posture:
 
 ```bash

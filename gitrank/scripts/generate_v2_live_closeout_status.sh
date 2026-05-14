@@ -9,6 +9,7 @@ mkdir -p "$tmp_root"
 OUTPUT_FILE="${OUTPUT_FILE:-$root_dir/docs/releases/v2-live-closeout-status-latest.md}"
 CHECK_PUBLIC_GITHUB_CONTROLS="${CHECK_PUBLIC_GITHUB_CONTROLS:-true}"
 CHECK_PUBLIC_WORKFLOW_HEALTH="${CHECK_PUBLIC_WORKFLOW_HEALTH:-true}"
+CHECK_REMOTE_LIVE_WORKFLOW_SYNC="${CHECK_REMOTE_LIVE_WORKFLOW_SYNC:-true}"
 CHECK_WORKFLOW_EVIDENCE="${CHECK_WORKFLOW_EVIDENCE:-true}"
 CHECK_LIVE_GITHUB_ACCESS="${CHECK_LIVE_GITHUB_ACCESS:-true}"
 WORKFLOW_RUN_ID="${WORKFLOW_RUN_ID:-latest}"
@@ -129,6 +130,13 @@ if [ "$CHECK_PUBLIC_WORKFLOW_HEALTH" = "true" ]; then
   public_workflow_health_code=$RUN_CAPTURE_LAST_CODE
 fi
 
+remote_live_workflow_sync_code=skip
+if [ "$CHECK_REMOTE_LIVE_WORKFLOW_SYNC" = "true" ]; then
+  run_and_capture "Remote Live V2 Workflow Sync" \
+    sh -c "cd '$root_dir' && GITHUB_REPOSITORY='${gitrank_repo:-}' make verify-remote-live-v2-workflow-sync"
+  remote_live_workflow_sync_code=$RUN_CAPTURE_LAST_CODE
+fi
+
 live_github_access_code=skip
 if [ "$CHECK_LIVE_GITHUB_ACCESS" = "true" ]; then
   run_and_capture "Live GitHub Access Preflight" \
@@ -227,14 +235,19 @@ fi
   printf 'cd gitrank\n'
   printf 'GITHUB_REPOSITORY=%s make verify-github-repository-controls-public\n' "$DISPLAY_REPOSITORY"
   printf '```\n\n'
-  printf '6. Sync the live-gates workflow file to remote default branch if dispatch/evidence probes report it missing or stale.\n\n'
+  printf '6. Verify the remote live-gates workflow file is present and in sync.\n\n'
+  printf '```bash\n'
+  printf 'cd gitrank\n'
+  printf 'GITHUB_REPOSITORY=%s make verify-remote-live-v2-workflow-sync\n' "$DISPLAY_REPOSITORY"
+  printf '```\n\n'
+  printf '7. Sync the live-gates workflow file to remote default branch if sync verification or dispatch/evidence probes report it missing or stale.\n\n'
   printf '```bash\n'
   printf 'cd gitrank\n'
   printf 'GITHUB_REPOSITORY=%s \\\n' "$DISPLAY_REPOSITORY"
   printf 'GITRANK_REPO_ADMIN_TOKEN=... \\\n'
   printf 'make sync-remote-live-v2-workflow\n'
   printf '```\n\n'
-  printf '7. Run live-gates workflow evidence pipeline.\n\n'
+  printf '8. Run live-gates workflow evidence pipeline.\n\n'
   printf '```bash\n'
   printf 'cd gitrank\n'
   printf 'CONFIRM_RUN_LIVE_V2_PIPELINE=yes \\\n'
@@ -250,7 +263,7 @@ fi
   printf 'OPERATOR=your-name \\\n'
   printf 'make run-live-v2-workflow-evidence-pipeline\n'
   printf '```\n\n'
-  printf '8. Generate rollback and restore drill evidence (or provide equivalent real drill records).\n\n'
+  printf '9. Generate rollback and restore drill evidence (or provide equivalent real drill records).\n\n'
   printf '```bash\n'
   printf 'cd gitrank\n'
   printf 'OUTPUT_FILE=docs/evidence/rollback-drill-YYYY-MM-DD.txt \\\n'
@@ -267,7 +280,7 @@ fi
   printf 'RESTORE_COMMAND_OR_WORKFLOW=workflow SCHEMA_MIGRATION_STATE=up-to-date CRITICAL_PRODUCT_CHECKS=pass \\\n'
   printf 'make generate-database-restore-drill-evidence\n'
   printf '```\n\n'
-  printf '9. Finalize checklist marking and re-audit.\n\n'
+  printf '10. Finalize checklist marking and re-audit.\n\n'
   printf '```bash\n'
   printf 'cd gitrank\n'
   printf 'CONFIRM_FINALIZE_V2=yes VERIFY_FROM_WORKFLOW=true RUN_GITHUB_CONTROLS=true RUN_OBSERVABILITY=true RUN_K8S_RUNTIME=true RUN_ROLLBACK_RESTORE=true \\\n'
@@ -297,6 +310,7 @@ fi
   printf '%s\n' "- Contributing audit: \`$audit_code\`"
   printf '%s\n' "- Env presence probe: \`$env_presence_code\`"
   printf '%s\n' "- Public workflow health: \`$public_workflow_health_code\`"
+  printf '%s\n' "- Remote live workflow sync: \`$remote_live_workflow_sync_code\`"
   printf '%s\n' "- Live GitHub access preflight: \`$live_github_access_code\`"
   printf '%s\n' "- Public controls precheck: \`$public_controls_code\`"
   printf '%s\n' "- Workflow evidence probe: \`$workflow_probe_code\`"
