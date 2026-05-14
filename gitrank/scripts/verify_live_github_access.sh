@@ -123,6 +123,36 @@ expect_200() {
   }
 }
 
+verify_dependency_graph_sbom() {
+  github_get "/repos/$OWNER/$REPO/dependency-graph/sbom" "dependency graph SBOM (legacy endpoint)"
+  case "$API_STATUS" in
+    200|201|202) return 0 ;;
+    404)
+      github_get "/repos/$OWNER/$REPO/dependency-graph/sbom/generate-report" "dependency graph SBOM generation"
+      case "$API_STATUS" in
+        200|201|202) return 0 ;;
+        401) fail "dependency graph SBOM generation denied: token invalid or expired (HTTP 401)" ;;
+        403)
+          if is_rate_limited_response; then
+            fail "dependency graph SBOM generation hit GitHub API rate limit (HTTP 403); retry with token/App credentials that have remaining quota"
+          fi
+          fail "dependency graph SBOM generation denied: token lacks required permission/scope (HTTP 403)"
+          ;;
+        404) fail "dependency graph SBOM unavailable for this repo/token (HTTP 404 on legacy and generate-report endpoints)" ;;
+        *) fail "dependency graph SBOM generation returned HTTP $API_STATUS" ;;
+      esac
+      ;;
+    401) fail "dependency graph SBOM denied: token invalid or expired (HTTP 401)" ;;
+    403)
+      if is_rate_limited_response; then
+        fail "dependency graph SBOM hit GitHub API rate limit (HTTP 403); retry with token/App credentials that have remaining quota"
+      fi
+      fail "dependency graph SBOM denied: token lacks required permission/scope (HTTP 403)"
+      ;;
+    *) fail "dependency graph SBOM returned HTTP $API_STATUS" ;;
+  esac
+}
+
 github_get "/repos/$OWNER/$REPO" "repository metadata"
 expect_200
 default_branch=$(printf '%s' "$API_BODY" | jq -r '.default_branch // empty')
@@ -140,19 +170,7 @@ expect_200
 github_get "/repos/$OWNER/$REPO/dependabot/alerts?per_page=1" "Dependabot alerts API"
 expect_200
 
-github_get "/repos/$OWNER/$REPO/dependency-graph/sbom" "dependency graph SBOM"
-case "$API_STATUS" in
-  200|201|202) ;;
-  401) fail "dependency graph SBOM denied: token invalid or expired (HTTP 401)" ;;
-  403)
-    if is_rate_limited_response; then
-      fail "dependency graph SBOM hit GitHub API rate limit (HTTP 403); retry with token/App credentials that have remaining quota"
-    fi
-    fail "dependency graph SBOM denied: token lacks required permission/scope (HTTP 403)"
-    ;;
-  404) fail "dependency graph SBOM unavailable for this repo/token (HTTP 404)" ;;
-  *) fail "dependency graph SBOM returned HTTP $API_STATUS" ;;
-esac
+verify_dependency_graph_sbom
 
 printf 'live github access verification passed for %s\n' "$REPOSITORY"
 printf '- default branch: %s\n' "$default_branch"

@@ -182,6 +182,21 @@ verify_ruleset_payload() {
   CONTROL_MODE="rulesets"
 }
 
+verify_dependency_graph_sbom() {
+  github_get "/repos/$OWNER/$REPO/dependency-graph/sbom"
+  case "$API_STATUS" in
+    200|201|202) return 0 ;;
+    404)
+      github_get "/repos/$OWNER/$REPO/dependency-graph/sbom/generate-report"
+      case "$API_STATUS" in
+        200|201|202) return 0 ;;
+        *) fail "dependency graph SBOM generation endpoint returned HTTP $API_STATUS" ;;
+      esac
+      ;;
+    *) fail "dependency graph SBOM endpoint returned HTTP $API_STATUS" ;;
+  esac
+}
+
 github_get "/repos/$OWNER/$REPO"
 expect_status 200 "repository metadata"
 
@@ -216,11 +231,7 @@ esac
 github_get "/repos/$OWNER/$REPO/dependabot/alerts?per_page=1"
 expect_status 200 "Dependabot alerts API"
 
-github_get "/repos/$OWNER/$REPO/dependency-graph/sbom"
-case "$API_STATUS" in
-  200|201|202) ;;
-  *) fail "dependency graph SBOM endpoint returned HTTP $API_STATUS" ;;
-esac
+verify_dependency_graph_sbom
 
 printf 'GitHub repository controls verified for %s on %s.\n' "$REPOSITORY" "$TARGET_BRANCH"
 printf '- control surface verified via: %s\n' "$CONTROL_MODE"

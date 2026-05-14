@@ -193,6 +193,78 @@ verify_ruleset_payload() {
   ALLOW_DELETIONS="false"
 }
 
+probe_dependency_graph_sbom_authenticated() {
+  github_get "/repos/$OWNER/$REPO/dependency-graph/sbom"
+  case "$API_STATUS" in
+    200|201|202)
+      DEPENDENCY_GRAPH_STATUS="verified"
+      return 0
+      ;;
+    404)
+      github_get "/repos/$OWNER/$REPO/dependency-graph/sbom/generate-report"
+      case "$API_STATUS" in
+        200|201|202)
+          DEPENDENCY_GRAPH_STATUS="verified"
+          return 0
+          ;;
+        401)
+          add_control_error "dependency graph SBOM generation denied (HTTP 401): token invalid or expired"
+          DEPENDENCY_GRAPH_STATUS="denied"
+          return 0
+          ;;
+        403)
+          add_control_error "dependency graph SBOM generation denied (HTTP 403): missing dependency-graph/read scope"
+          DEPENDENCY_GRAPH_STATUS="denied"
+          return 0
+          ;;
+        404)
+          add_control_error "dependency graph SBOM returned HTTP 404 on legacy and generate-report endpoints"
+          DEPENDENCY_GRAPH_STATUS="not-found"
+          return 0
+          ;;
+        *)
+          add_control_error "dependency graph SBOM generation endpoint returned HTTP $API_STATUS"
+          DEPENDENCY_GRAPH_STATUS="error"
+          return 0
+          ;;
+      esac
+      ;;
+    401)
+      add_control_error "dependency graph SBOM denied (HTTP 401): token invalid or expired"
+      DEPENDENCY_GRAPH_STATUS="denied"
+      ;;
+    403)
+      add_control_error "dependency graph SBOM denied (HTTP 403): missing dependency-graph/read scope"
+      DEPENDENCY_GRAPH_STATUS="denied"
+      ;;
+    *)
+      add_control_error "dependency graph SBOM endpoint returned HTTP $API_STATUS"
+      DEPENDENCY_GRAPH_STATUS="error"
+      ;;
+  esac
+}
+
+probe_dependency_graph_sbom_public() {
+  github_get "/repos/$OWNER/$REPO/dependency-graph/sbom"
+  case "$API_STATUS" in
+    200|201|202)
+      DEPENDENCY_GRAPH_STATUS="public-verified"
+      return 0
+      ;;
+    404)
+      github_get "/repos/$OWNER/$REPO/dependency-graph/sbom/generate-report"
+      case "$API_STATUS" in
+        200|201|202) DEPENDENCY_GRAPH_STATUS="public-verified" ;;
+        404) DEPENDENCY_GRAPH_STATUS="not-found" ;;
+        403) DEPENDENCY_GRAPH_STATUS="rate-limited-or-forbidden" ;;
+        *) DEPENDENCY_GRAPH_STATUS="unverified" ;;
+      esac
+      ;;
+    403) DEPENDENCY_GRAPH_STATUS="rate-limited-or-forbidden" ;;
+    *) DEPENDENCY_GRAPH_STATUS="unverified" ;;
+  esac
+}
+
 github_get "/repos/$OWNER/$REPO"
 expect_status 200 "repository metadata"
 
@@ -284,24 +356,11 @@ if [ -n "$TOKEN" ]; then
     *) add_control_error "Dependabot alerts API returned HTTP $API_STATUS"; DEPENDABOT_STATUS="error" ;;
   esac
 
-  github_get "/repos/$OWNER/$REPO/dependency-graph/sbom"
-  case "$API_STATUS" in
-    200|201|202) DEPENDENCY_GRAPH_STATUS="verified" ;;
-    401) add_control_error "dependency graph SBOM denied (HTTP 401): token invalid or expired"; DEPENDENCY_GRAPH_STATUS="denied" ;;
-    403) add_control_error "dependency graph SBOM denied (HTTP 403): missing dependency-graph/read scope"; DEPENDENCY_GRAPH_STATUS="denied" ;;
-    404) add_control_error "dependency graph SBOM returned HTTP 404 (feature disabled or no supported dependency graph data)"; DEPENDENCY_GRAPH_STATUS="not-found" ;;
-    *) add_control_error "dependency graph SBOM endpoint returned HTTP $API_STATUS"; DEPENDENCY_GRAPH_STATUS="error" ;;
-  esac
+  probe_dependency_graph_sbom_authenticated
   verification_mode="full-authenticated"
 else
   DEPENDABOT_STATUS="requires-token"
-  github_get "/repos/$OWNER/$REPO/dependency-graph/sbom"
-  case "$API_STATUS" in
-    200|201|202) DEPENDENCY_GRAPH_STATUS="public-verified" ;;
-    404) DEPENDENCY_GRAPH_STATUS="not-found" ;;
-    403) DEPENDENCY_GRAPH_STATUS="rate-limited-or-forbidden" ;;
-    *) DEPENDENCY_GRAPH_STATUS="unverified" ;;
-  esac
+  probe_dependency_graph_sbom_public
 fi
 
 if [ "$REQUIRE_FULL_VERIFICATION" = "true" ] && [ "$TOKEN" = "" ]; then
