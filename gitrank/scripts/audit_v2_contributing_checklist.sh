@@ -63,6 +63,8 @@ emit_public_live_probe_snapshot() {
   branch_status=
   rules_status=
   workflow_runs_status=
+  controls_public_probe_status=unknown
+  controls_public_probe_summary=
   default_branch=
   protected_state=unknown
   rules_count=unknown
@@ -121,6 +123,19 @@ emit_public_live_probe_snapshot() {
     probe_msg='workflow file has no visible runs yet (or workflow file absent on remote default branch)'
   fi
 
+  controls_probe_log=$(mktemp "${TMPDIR:-/tmp}/gitrank-v2-audit-controls-probe.XXXXXX")
+  if GITHUB_REPOSITORY="$repository" \
+    "$root_dir/scripts/verify_github_repository_controls_public.sh" >"$controls_probe_log" 2>&1; then
+    controls_public_probe_status=pass
+  else
+    controls_public_probe_status=fail
+  fi
+  controls_public_probe_summary=$(tail -n 1 "$controls_probe_log" 2>/dev/null || true)
+  rm -f "$controls_probe_log"
+  if [ -z "$controls_public_probe_summary" ]; then
+    controls_public_probe_summary='no output captured from public controls probe'
+  fi
+
   printf 'public probe snapshot\n'
   printf 'repository: %s\n' "$repository"
   printf 'repo metadata http: %s\n' "${repo_status:-unknown}"
@@ -131,6 +146,8 @@ emit_public_live_probe_snapshot() {
   printf 'branch rules count: %s\n' "$rules_count"
   printf 'live-gates workflow runs http: %s\n' "$workflow_runs_status"
   printf 'live-gates workflow run count: %s\n' "$workflow_runs_count"
+  printf 'controls public probe: %s\n' "$controls_public_probe_status"
+  printf 'controls public probe summary: %s\n' "$controls_public_probe_summary"
   if [ -n "$probe_msg" ]; then
     printf 'probe note: %s\n' "$probe_msg"
   fi
@@ -147,6 +164,8 @@ emit_public_live_probe_snapshot() {
       printf '%s\n' "- branch rules count: $rules_count"
       printf '%s\n' "- live-gates workflow runs http: $workflow_runs_status"
       printf '%s\n' "- live-gates workflow run count: $workflow_runs_count"
+      printf '%s\n' "- controls public probe: $controls_public_probe_status"
+      printf '%s\n' "- controls public probe summary: $controls_public_probe_summary"
       if [ -n "$probe_msg" ]; then
         printf '%s\n' "- note: $probe_msg"
       fi
