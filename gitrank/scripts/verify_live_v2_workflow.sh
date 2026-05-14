@@ -21,6 +21,9 @@ for key in K8S_PUBLIC_BASE_URL K8S_API_BASE_URL K8S_AUTH_COOKIE_DOMAIN K8S_GITHU
 done
 
 grep -q "GITRANK_REPO_ADMIN_TOKEN" "$workflow" || fail "missing repository-controls token binding"
+grep -q "GITRANK_GITHUB_APP_ID" "$workflow" || fail "missing GitHub App id token-bootstrap binding"
+grep -q "GITRANK_GITHUB_APP_INSTALLATION_ID" "$workflow" || fail "missing GitHub App installation token-bootstrap binding"
+grep -q "GITRANK_GITHUB_APP_PRIVATE_KEY_PEM" "$workflow" || fail "missing GitHub App private-key token-bootstrap binding"
 grep -q "GRAFANA_API_TOKEN" "$workflow" || fail "missing Grafana API token binding"
 grep -q "PROMETHEUS_BASE_URL" "$workflow" || fail "missing Prometheus base URL binding"
 grep -q "GRAFANA_BASE_URL" "$workflow" || fail "missing Grafana base URL binding"

@@ -40,6 +40,9 @@ For consolidated execution, use:
   environment inputs
 - `make create-github-app-installation-token` to bootstrap short-lived GitHub
   App installation tokens for repository-controls operations
+- `make sync-remote-live-v2-workflow` to sync
+  `.github/workflows/verify-live-v2-gates.yml` to the remote default branch
+  before dispatch/evidence verification
 
 Optional persistent audit artifact:
 
@@ -98,8 +101,10 @@ Current local evidence:
 
 How to complete:
 
-1. Provide `GITRANK_REPO_ADMIN_TOKEN` (or `GITHUB_TOKEN`) with repository admin
-   scope.
+1. Provide either:
+   - `GITRANK_REPO_ADMIN_TOKEN` (or `GITHUB_TOKEN`) with repository admin scope, or
+   - GitHub App credentials (`GITHUB_APP_ID`, `GITHUB_APP_INSTALLATION_ID`, and
+     private-key input) so scripts can bootstrap short-lived installation tokens.
 2. Apply:
    - `GITRANK_APPLY_REPOSITORY_CONTROLS=yes make apply-github-repository-controls-auto`
 3. Verify:
@@ -118,6 +123,9 @@ How to complete:
      `make finalize-v2-live-closeout` or `make mark-v2-contributing-live-gates`
      to reuse that evidence during checklist updates. When run ID is omitted in
      workflow mode, latest successful `workflow_dispatch` run is used.
+7. If workflow dispatch/evidence fails because the workflow file is absent on
+   remote default branch:
+   - `make sync-remote-live-v2-workflow`
 
 ## 3) Rollback And Restore Drills Executed And Recorded
 

@@ -133,6 +133,16 @@ make verify-live-v2-workflow-run
 If no static token is provided, `make verify-live-v2-workflow-run` now also
 supports GitHub App credential bootstrap.
 
+If this verifier reports no matching successful run and the remote workflow is
+missing or stale, sync the workflow file first:
+
+```bash
+cd gitrank
+GITHUB_REPOSITORY=OWNER/REPO \
+GITRANK_REPO_ADMIN_TOKEN=... \
+make sync-remote-live-v2-workflow
+```
+
 For a no-token public precheck of repository-controls posture:
 
 ```bash
@@ -165,6 +175,15 @@ make sync-remote-trivy-policy
 If no static token is provided, `make sync-remote-trivy-policy` now also
 supports GitHub App credential bootstrap in the same way as
 `make verify-live-github-access`.
+
+To sync only the live-gates workflow file to the remote default branch:
+
+```bash
+cd gitrank
+GITHUB_REPOSITORY=OWNER/REPO \
+GITRANK_REPO_ADMIN_TOKEN=... \
+make sync-remote-live-v2-workflow
+```
 
 Set `DRY_RUN=true` to preview updates without writing.
 
