@@ -130,6 +130,23 @@ is_rate_limited_response() {
   esac
 }
 
+normalize_workflow_event_filter() {
+  case "$WORKFLOW_EVENT" in
+    any|all|\*)
+      WORKFLOW_EVENT_FILTER=
+      WORKFLOW_EVENT_DISPLAY=any
+      ;;
+    *)
+      WORKFLOW_EVENT_FILTER=$WORKFLOW_EVENT
+      if [ -n "$WORKFLOW_EVENT_FILTER" ]; then
+        WORKFLOW_EVENT_DISPLAY=$WORKFLOW_EVENT_FILTER
+      else
+        WORKFLOW_EVENT_DISPLAY=any
+      fi
+      ;;
+  esac
+}
+
 handle_read_access_error() {
   if [ "$API_STATUS" = "401" ] || [ "$API_STATUS" = "403" ]; then
     if [ "$API_STATUS" = "403" ] && is_rate_limited_response; then
@@ -153,7 +170,7 @@ resolve_workflow_run_id_if_needed() {
     handle_read_access_error
     expect_status 200 "workflow run search page $page"
 
-    matched_id=$(printf '%s' "$API_BODY" | jq -r --arg name "$EXPECTED_WORKFLOW_NAME" --arg event "$WORKFLOW_EVENT" --arg workflow_path "$EXPECTED_WORKFLOW_PATH" '
+    matched_id=$(printf '%s' "$API_BODY" | jq -r --arg name "$EXPECTED_WORKFLOW_NAME" --arg event "$WORKFLOW_EVENT_FILTER" --arg workflow_path "$EXPECTED_WORKFLOW_PATH" '
       [
         .workflow_runs[]?
         | select(.name == $name)
@@ -178,12 +195,13 @@ resolve_workflow_run_id_if_needed() {
     page=$((page + 1))
   done
 
-  if [ -n "$WORKFLOW_EVENT" ]; then
-    fail "no successful '$EXPECTED_WORKFLOW_NAME' workflow run found for event '$WORKFLOW_EVENT' in the last $WORKFLOW_RUN_SEARCH_PAGES page(s)"
+  if [ -n "$WORKFLOW_EVENT_FILTER" ]; then
+    fail "no successful '$EXPECTED_WORKFLOW_NAME' workflow run found for event '$WORKFLOW_EVENT_FILTER' in the last $WORKFLOW_RUN_SEARCH_PAGES page(s)"
   fi
   fail "no successful '$EXPECTED_WORKFLOW_NAME' workflow run found in the last $WORKFLOW_RUN_SEARCH_PAGES page(s)"
 }
 
+normalize_workflow_event_filter
 resolve_workflow_run_id_if_needed
 [ -n "$WORKFLOW_RUN_ID" ] || fail "WORKFLOW_RUN_ID is required"
 
@@ -210,8 +228,8 @@ run_workflow_path=${run_path%%@*}
 [ "$run_conclusion" = "success" ] || fail "workflow run conclusion is not success: $run_conclusion"
 [ -n "$run_workflow_path" ] || fail "workflow run path is missing"
 [ "$run_workflow_path" = "$EXPECTED_WORKFLOW_PATH" ] || fail "workflow run path mismatch: expected '$EXPECTED_WORKFLOW_PATH' got '$run_workflow_path'"
-if [ -n "$WORKFLOW_EVENT" ]; then
-  [ "$run_event" = "$WORKFLOW_EVENT" ] || fail "workflow run event mismatch: expected '$WORKFLOW_EVENT' got '$run_event'"
+if [ -n "$WORKFLOW_EVENT_FILTER" ]; then
+  [ "$run_event" = "$WORKFLOW_EVENT_FILTER" ] || fail "workflow run event mismatch: expected '$WORKFLOW_EVENT_FILTER' got '$run_event'"
 fi
 if [ -n "$EXPECTED_HEAD_BRANCH" ]; then
   [ "$run_head_branch" = "$EXPECTED_HEAD_BRANCH" ] || fail "workflow run head branch mismatch: expected '$EXPECTED_HEAD_BRANCH' got '$run_head_branch'"
@@ -269,6 +287,7 @@ upload_artifact_conclusion=$(validate_step "Upload render artifact" "$REQUIRE_RE
 printf 'live v2 workflow run verification passed\n'
 printf 'run_id: %s\n' "$WORKFLOW_RUN_ID"
 printf 'run_url: %s\n' "$run_html_url"
+printf 'event_filter: %s\n' "$WORKFLOW_EVENT_DISPLAY"
 printf 'verify_github_controls: %s\n' "$github_controls_conclusion"
 printf 'verify_live_observability: %s\n' "$observability_conclusion"
 printf 'verify_release_render_overrides: %s\n' "$release_render_conclusion"

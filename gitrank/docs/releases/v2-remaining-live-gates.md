@@ -75,7 +75,7 @@ short-lived installation tokens.
 ## Current Snapshot (2026-05-14 UTC)
 
 - `make verify-v2-live-readiness`: pass
-- `make verify-public-workflow-health`: pass on `Ayush3941/gitrank`
+- `make verify-public-workflow-health`: pass on the current default repository
 - `make verify-remote-live-v2-workflow-sync`: pass via raw-public fallback when
   no token is configured
 - `make audit-v2-contributing-checklist`: fail with `unchecked items: 14`
@@ -154,11 +154,12 @@ How to complete:
      from `GITRANK_GITHUB_APP_ID`, `GITRANK_GITHUB_APP_INSTALLATION_ID`, and
      `GITRANK_GITHUB_APP_PRIVATE_KEY_PEM` if `GITRANK_REPO_ADMIN_TOKEN` is unset.
 6. Optional workflow-run evidence:
-   - `make verify-live-v2-workflow-run` verifies a successful workflow run by
-     run ID, and `VERIFY_FROM_WORKFLOW=true` can be passed to
-     `make finalize-v2-live-closeout` or `make mark-v2-contributing-live-gates`
-     to reuse that evidence during checklist updates. When run ID is omitted in
-     workflow mode, latest successful `workflow_dispatch` run is used.
+- `make verify-live-v2-workflow-run` verifies a successful workflow run by
+  run ID, and `VERIFY_FROM_WORKFLOW=true` can be passed to
+  `make finalize-v2-live-closeout` or `make mark-v2-contributing-live-gates`
+  to reuse that evidence during checklist updates. When run ID is omitted in
+  workflow mode, latest successful `workflow_dispatch` run is used.
+  Use `WORKFLOW_EVENT=any` to search successful runs across all events.
 7. If workflow dispatch/evidence fails because the workflow file is absent on
    remote default branch:
    - `make sync-remote-live-v2-workflow`
