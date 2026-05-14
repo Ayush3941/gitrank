@@ -154,6 +154,10 @@ GITHUB_REPOSITORY=OWNER/REPO \
 make inspect-github-app-installation-permissions
 ```
 
+Review `derived_capabilities` in the output. For workflow-sync operations,
+`can_sync_live_v2_workflow_file` should be `yes` (it requires both
+`contents_write` and `workflows_write`).
+
 To verify a completed Actions run as live-gate evidence (without rerunning
 those checks locally), use:
 

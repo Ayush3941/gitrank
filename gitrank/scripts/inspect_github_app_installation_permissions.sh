@@ -155,11 +155,39 @@ printf '%s\n' "$permissions_json" | jq -r 'to_entries | sort_by(.key)[] | "- " +
 contents_perm=$(printf '%s' "$permissions_json" | jq -r '.contents // "none"')
 admin_perm=$(printf '%s' "$permissions_json" | jq -r '.administration // "none"')
 dependabot_perm=$(printf '%s' "$permissions_json" | jq -r '.dependabot_alerts // "none"')
+workflows_perm=$(printf '%s' "$permissions_json" | jq -r 'if has("workflows") then .workflows elif has("workflow") then .workflow else "none" end')
+
+has_contents_write=no
+if [ "$contents_perm" = "write" ]; then
+  has_contents_write=yes
+fi
+
+has_admin_write=no
+if [ "$admin_perm" = "write" ]; then
+  has_admin_write=yes
+fi
+
+has_dependabot_read=no
+if [ "$dependabot_perm" = "read" ] || [ "$dependabot_perm" = "write" ]; then
+  has_dependabot_read=yes
+fi
+
+has_workflows_write=no
+if [ "$workflows_perm" = "write" ]; then
+  has_workflows_write=yes
+fi
+
+can_sync_live_v2_workflow=no
+if [ "$has_contents_write" = "yes" ] && [ "$has_workflows_write" = "yes" ]; then
+  can_sync_live_v2_workflow=yes
+fi
 
 printf 'derived_capabilities:\n'
-printf '- contents_write: %s\n' "$( [ "$contents_perm" = "write" ] && printf yes || printf no )"
-printf '- administration_write: %s\n' "$( [ "$admin_perm" = "write" ] && printf yes || printf no )"
-printf '- dependabot_alerts_read: %s\n' "$( [ "$dependabot_perm" = "read" ] || [ "$dependabot_perm" = "write" ] && printf yes || printf no )"
+printf '- contents_write: %s\n' "$has_contents_write"
+printf '- administration_write: %s\n' "$has_admin_write"
+printf '- dependabot_alerts_read: %s\n' "$has_dependabot_read"
+printf '- workflows_write: %s\n' "$has_workflows_write"
+printf '- can_sync_live_v2_workflow_file: %s\n' "$can_sync_live_v2_workflow"
 
 if [ -n "$repo_match" ]; then
   repo_permissions=$(printf '%s' "$repo_match" | jq -c '.permissions // {}')
