@@ -57,6 +57,10 @@ make audit-v2-contributing-checklist
 Use `.env.v2-live-gates.example` as the source template for required
 environment variables.
 
+Note: unauthenticated GitHub API calls can hit low per-IP rate limits. Public
+prechecks now report this explicitly; switch to token/App-authenticated mode
+when that happens.
+
 ## 1) Production Observability On Live Traffic
 
 Checklist refs:

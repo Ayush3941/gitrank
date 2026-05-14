@@ -95,7 +95,17 @@ github_get() {
 expect_status() {
   expected=$1
   context=$2
-  [ "$API_STATUS" = "$expected" ] || fail "$context returned HTTP $API_STATUS"
+  if [ "$API_STATUS" != "$expected" ]; then
+    if [ "$API_STATUS" = "403" ]; then
+      message=$(printf '%s' "$API_BODY" | jq -r '.message // empty' 2>/dev/null || true)
+      case "$message" in
+        *"API rate limit exceeded"*)
+          fail "$context hit GitHub API rate limit (HTTP 403); set GITHUB_TOKEN, GH_TOKEN, GITRANK_REPO_ADMIN_TOKEN, or GitHub App credentials"
+          ;;
+      esac
+    fi
+    fail "$context returned HTTP $API_STATUS"
+  fi
 }
 
 diagnose_trivy_remote_policy() {

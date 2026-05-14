@@ -159,6 +159,10 @@ cd gitrank
 make verify-public-workflow-health
 ```
 
+If GitHub's unauthenticated API quota is exhausted, this command now fails with
+an explicit rate-limit error. In that case, rerun with
+`GITRANK_REPO_ADMIN_TOKEN` (or GitHub App bootstrap credentials).
+
 When Trivy is unhealthy, this command also inspects remote
 `.github/workflows/trivy.yml` and `.trivyignore.yaml` on the relevant branch
 to report whether ignore-policy wiring is missing.

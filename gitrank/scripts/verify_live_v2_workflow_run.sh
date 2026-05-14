@@ -117,8 +117,19 @@ expect_status() {
   [ "$API_STATUS" = "$expected" ] || fail "$context returned HTTP $API_STATUS"
 }
 
+is_rate_limited_response() {
+  message=$(printf '%s' "$API_BODY" | jq -r '.message // empty' 2>/dev/null || true)
+  case "$message" in
+    *"API rate limit exceeded"*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 handle_read_access_error() {
   if [ "$API_STATUS" = "401" ] || [ "$API_STATUS" = "403" ]; then
+    if [ "$API_STATUS" = "403" ] && is_rate_limited_response; then
+      fail "workflow-run read hit GitHub API rate limit (HTTP 403); provide GITHUB_TOKEN, GH_TOKEN, GITRANK_REPO_ADMIN_TOKEN, or GitHub App credentials"
+    fi
     if [ -z "$TOKEN" ]; then
       fail "workflow-run read requires authentication for this repository; set GITHUB_TOKEN, GH_TOKEN, or GITRANK_REPO_ADMIN_TOKEN"
     fi
