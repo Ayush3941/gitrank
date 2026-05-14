@@ -3,6 +3,7 @@ set -eu
 
 API_BASE="${GITHUB_API_URL:-https://api.github.com}"
 API_VERSION="${GITHUB_API_VERSION:-2026-03-10}"
+API_TIMEOUT_SECONDS="${GITHUB_API_TIMEOUT_SECONDS:-30}"
 APP_ID="${GITHUB_APP_ID:-}"
 INSTALLATION_ID="${GITHUB_APP_INSTALLATION_ID:-}"
 PRIVATE_KEY_FILE="${GITHUB_APP_PRIVATE_KEY_FILE:-}"
@@ -67,6 +68,8 @@ jwt="${unsigned}.${signature_b64}"
 
 response_file=$(mktemp "$TMP_ROOT/gitrank-app-token-response.XXXXXX.json")
 status_code=$(curl -sS -o "$response_file" -w '%{http_code}' \
+  --connect-timeout "$API_TIMEOUT_SECONDS" \
+  --max-time "$API_TIMEOUT_SECONDS" \
   -X POST \
   -H 'Accept: application/vnd.github+json' \
   -H "Authorization: Bearer $jwt" \

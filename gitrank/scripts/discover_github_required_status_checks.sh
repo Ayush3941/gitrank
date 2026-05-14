@@ -5,6 +5,7 @@ REPOSITORY="${GITHUB_REPOSITORY:-}"
 TOKEN="${GITHUB_TOKEN:-${GH_TOKEN:-}}"
 API_BASE="${GITHUB_API_URL:-https://api.github.com}"
 API_VERSION="${GITHUB_API_VERSION:-2026-03-10}"
+API_TIMEOUT_SECONDS="${GITHUB_API_TIMEOUT_SECONDS:-30}"
 TMP_ROOT="${TMPDIR:-/tmp}"
 
 fail() {
@@ -52,6 +53,8 @@ github_get() {
   body_file="$TMP_ROOT/gitrank-github-check-discovery.$$"
   if [ -n "$TOKEN" ]; then
     API_STATUS=$(curl -sS -L -o "$body_file" -w '%{http_code}' \
+      --connect-timeout "$API_TIMEOUT_SECONDS" \
+      --max-time "$API_TIMEOUT_SECONDS" \
       -H 'Accept: application/vnd.github+json' \
       -H "Authorization: Bearer $TOKEN" \
       -H "X-GitHub-Api-Version: $API_VERSION" \
@@ -62,6 +65,8 @@ github_get() {
   else
     AUTH_MODE=unauthenticated
     API_STATUS=$(curl -sS -L -o "$body_file" -w '%{http_code}' \
+      --connect-timeout "$API_TIMEOUT_SECONDS" \
+      --max-time "$API_TIMEOUT_SECONDS" \
       -H 'Accept: application/vnd.github+json' \
       -H "X-GitHub-Api-Version: $API_VERSION" \
       "$API_BASE$path") || {
