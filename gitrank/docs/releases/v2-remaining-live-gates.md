@@ -18,6 +18,11 @@ For consolidated execution, use:
   with built-in fallback to `WORKFLOW_EVENT=any` when latest
   `workflow_dispatch` lookup misses
   (`WORKFLOW_EVENT_FALLBACK_ANY=true` by default)
+  - `.github/workflows/verify-live-v2-gates.yml` now also supports a scoped
+    `push` trigger on `main` when that workflow file itself changes, so you can
+    exercise the live-gates workflow without a dispatch token by merging a
+    workflow update; use `WORKFLOW_EVENT=any` in verification when relying on
+    this path
 - `make verify-remote-live-v2-workflow-sync` to verify the remote default
   branch contains `.github/workflows/verify-live-v2-gates.yml` and that its
   content matches the local file before dispatch/evidence probes

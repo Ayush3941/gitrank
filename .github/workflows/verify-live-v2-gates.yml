@@ -35,6 +35,11 @@ on:
         required: false
         type: string
         default: ""
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/verify-live-v2-gates.yml"
 
 permissions:
   contents: read
@@ -42,12 +47,19 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'staging' }}
+    env:
+      LIVE_GATES_ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'staging' }}
+      LIVE_GATES_RUN_OBSERVABILITY: ${{ github.event_name == 'workflow_dispatch' && inputs.run_observability || 'true' }}
+      LIVE_GATES_RUN_GITHUB_CONTROLS: ${{ github.event_name == 'workflow_dispatch' && inputs.run_github_controls || 'true' }}
+      LIVE_GATES_APPLY_GITHUB_CONTROLS: ${{ github.event_name == 'workflow_dispatch' && inputs.apply_github_controls || 'false' }}
+      LIVE_GATES_RUN_RELEASE_RENDER: ${{ github.event_name == 'workflow_dispatch' && inputs.run_release_render || 'true' }}
+      LIVE_GATES_REQUEST_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.request_id || format('push-{0}', github.sha) }}
     steps:
       - name: Log request id
         run: |
           set -eu
-          echo "request_id=${{ inputs.request_id }}"
+          echo "request_id=${LIVE_GATES_REQUEST_ID}"
 
       - name: Checkout
         uses: actions/checkout@v6
@@ -58,7 +70,7 @@ jobs:
           version: v1.33.4
 
       - name: Verify GitHub controls
-        if: inputs.run_github_controls == true
+        if: ${{ env.LIVE_GATES_RUN_GITHUB_CONTROLS == 'true' }}
         working-directory: gitrank
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
@@ -80,13 +92,13 @@ jobs:
           test -n "$token"
           export GITHUB_TOKEN="$token"
 
-          if [ "${{ inputs.apply_github_controls }}" = "true" ]; then
+          if [ "$LIVE_GATES_APPLY_GITHUB_CONTROLS" = "true" ]; then
             GITRANK_APPLY_REPOSITORY_CONTROLS=yes make apply-github-repository-controls-auto
           fi
           make verify-github-repository-controls
 
       - name: Verify live observability
-        if: inputs.run_observability == true
+        if: ${{ env.LIVE_GATES_RUN_OBSERVABILITY == 'true' }}
         working-directory: gitrank
         env:
           PROMETHEUS_BASE_URL: ${{ vars.PROMETHEUS_BASE_URL }}
@@ -103,10 +115,10 @@ jobs:
           make verify-live-observability
 
       - name: Verify release render overrides
-        if: inputs.run_release_render == true
+        if: ${{ env.LIVE_GATES_RUN_RELEASE_RENDER == 'true' }}
         working-directory: gitrank
         env:
-          K8S_ENVIRONMENT: ${{ inputs.environment }}
+          K8S_ENVIRONMENT: ${{ env.LIVE_GATES_ENVIRONMENT }}
           OUTPUT_FILE: ${{ runner.temp }}/rendered-k8s.yaml
           IMAGE_TAG: ${{ github.sha }}
           IMAGE_REGISTRY_OWNER_OVERRIDE: ${{ vars.K8S_IMAGE_REGISTRY_OWNER }}
@@ -165,9 +177,9 @@ jobs:
           make render-k8s-release-manifests
 
       - name: Upload render artifact
-        if: inputs.run_release_render == true
+        if: ${{ env.LIVE_GATES_RUN_RELEASE_RENDER == 'true' }}
         uses: actions/upload-artifact@v4
         with:
-          name: rendered-k8s-${{ inputs.environment }}-${{ github.run_id }}
+          name: rendered-k8s-${{ env.LIVE_GATES_ENVIRONMENT }}-${{ github.run_id }}
           path: ${{ runner.temp }}/rendered-k8s.yaml
           retention-days: 14
