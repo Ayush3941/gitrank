@@ -13,6 +13,10 @@ WAIT_TIMEOUT_SECONDS="${WAIT_TIMEOUT_SECONDS:-900}"
 POLL_INTERVAL_SECONDS="${POLL_INTERVAL_SECONDS:-10}"
 DRY_RUN="${DRY_RUN:-false}"
 TMP_ROOT="${TMPDIR:-/tmp}"
+GITHUB_APP_ID="${GITHUB_APP_ID:-${GITRANK_GITHUB_APP_ID:-}}"
+GITHUB_APP_INSTALLATION_ID="${GITHUB_APP_INSTALLATION_ID:-${GITRANK_GITHUB_APP_INSTALLATION_ID:-}}"
+GITHUB_APP_PRIVATE_KEY_FILE="${GITHUB_APP_PRIVATE_KEY_FILE:-${GITRANK_GITHUB_APP_PRIVATE_KEY_FILE:-}}"
+GITHUB_APP_PRIVATE_KEY_PEM="${GITHUB_APP_PRIVATE_KEY_PEM:-${GITRANK_GITHUB_APP_PRIVATE_KEY_PEM:-}}"
 
 fail() {
   printf 'sync remote trivy policy failed: %s\n' "$1" >&2
@@ -39,17 +43,43 @@ resolve_repository_from_git_remote() {
 
 resolve_repository_from_git_remote
 
+bootstrap_token_from_github_app() {
+  [ -n "$TOKEN" ] && return 0
+  [ -n "$GITHUB_APP_ID" ] || return 1
+  [ -n "$GITHUB_APP_INSTALLATION_ID" ] || return 1
+  if [ -z "$GITHUB_APP_PRIVATE_KEY_FILE" ] && [ -z "$GITHUB_APP_PRIVATE_KEY_PEM" ]; then
+    return 1
+  fi
+
+  token_file=$(mktemp "$TMP_ROOT/gitrank-sync-trivy-token.XXXXXX")
+  GITHUB_APP_ID="$GITHUB_APP_ID" \
+  GITHUB_APP_INSTALLATION_ID="$GITHUB_APP_INSTALLATION_ID" \
+  GITHUB_APP_PRIVATE_KEY_FILE="$GITHUB_APP_PRIVATE_KEY_FILE" \
+  GITHUB_APP_PRIVATE_KEY_PEM="$GITHUB_APP_PRIVATE_KEY_PEM" \
+  TOKEN_OUTPUT_FILE="$token_file" \
+  "$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)/create_github_app_installation_token.sh" >/dev/null
+  TOKEN=$(cat "$token_file" 2>/dev/null || true)
+  rm -f "$token_file"
+  [ -n "$TOKEN" ] || fail "GitHub App token bootstrap succeeded but returned empty token"
+  export GITHUB_TOKEN="$TOKEN"
+  export GH_TOKEN="$TOKEN"
+  export GITRANK_REPO_ADMIN_TOKEN="$TOKEN"
+  printf 'sync remote trivy policy: bootstrapped token via GitHub App installation credentials\n'
+}
+
 case "$REPOSITORY" in
   */*) ;;
   *) fail "GITHUB_REPOSITORY must use owner/name form (or run from a clone with GitHub origin remote)" ;;
 esac
-[ -n "$TOKEN" ] || fail "GITHUB_TOKEN, GH_TOKEN, or GITRANK_REPO_ADMIN_TOKEN is required"
 
 require_command curl
 require_command jq
 require_command base64
 require_command date
+require_command mktemp
 mkdir -p "$TMP_ROOT"
+bootstrap_token_from_github_app || true
+[ -n "$TOKEN" ] || fail "GITHUB_TOKEN, GH_TOKEN, or GITRANK_REPO_ADMIN_TOKEN is required (or set GitHub App credentials)"
 
 root_dir="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 repo_dir="$(CDPATH= cd -- "$root_dir/.." && pwd)"
