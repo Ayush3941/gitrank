@@ -82,6 +82,9 @@ By default it requests dispatch run details (`RETURN_RUN_DETAILS=true`) and
 auto-falls back to legacy dispatch payloads if a repository rejects that field.
 When run details are returned, temporary run-lookup `404` responses are treated
 as eventual-consistency delays and retried within the existing wait timeout.
+Dispatch/poll failures now also report explicit remediation for:
+- workflow file missing on default branch (`make sync-remote-live-v2-workflow`)
+- GitHub API rate-limit exhaustion (switch to token/App-authenticated mode)
 
 If you need a short-lived token for repository-controls operations, use:
 

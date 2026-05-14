@@ -92,6 +92,14 @@ API_BODY=
 dispatch_run_id=
 dispatch_run_url=
 
+is_rate_limited_response() {
+  message=$(printf '%s' "$API_BODY" | jq -r '.message // empty' 2>/dev/null || true)
+  case "$message" in
+    *"API rate limit exceeded"*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 request_id="v2-live-$(date -u +%Y%m%dT%H%M%SZ)-$$"
 
 json_request() {
@@ -184,6 +192,15 @@ case "$API_STATUS" in
     dispatch_run_url=$(printf '%s' "$API_BODY" | jq -r '.html_url // empty')
     ;;
   201|202|204) ;;
+  403)
+    if is_rate_limited_response; then
+      fail "workflow dispatch hit GitHub API rate limit (HTTP 403); provide token/App credentials with higher quota"
+    fi
+    fail "workflow dispatch denied (HTTP 403); verify token permissions and workflow visibility on default branch"
+    ;;
+  404)
+    fail "workflow dispatch target not found (HTTP 404); ensure '$WORKFLOW_FILE' exists on default branch or run make sync-remote-live-v2-workflow"
+    ;;
   *) fail "workflow dispatch returned HTTP $API_STATUS" ;;
 esac
 
@@ -226,13 +243,33 @@ while :; do
         # Dispatch can return run details before the run is queryable.
         matched_run_json=
         ;;
+      403)
+        if is_rate_limited_response; then
+          fail "workflow run lookup hit GitHub API rate limit (HTTP 403); provide token/App credentials with higher quota"
+        fi
+        fail "workflow run lookup denied (HTTP 403); verify token permissions"
+        ;;
       *)
         fail "workflow run lookup returned HTTP $API_STATUS"
         ;;
     esac
   else
     json_request GET "/repos/$OWNER/$REPO/actions/workflows/$WORKFLOW_FILE/runs?event=workflow_dispatch&per_page=20"
-    [ "$API_STATUS" = "200" ] || fail "workflow runs query returned HTTP $API_STATUS"
+    case "$API_STATUS" in
+      200) ;;
+      403)
+        if is_rate_limited_response; then
+          fail "workflow runs query hit GitHub API rate limit (HTTP 403); provide token/App credentials with higher quota"
+        fi
+        fail "workflow runs query denied (HTTP 403); verify token permissions"
+        ;;
+      404)
+        fail "workflow runs query target not found (HTTP 404); ensure '$WORKFLOW_FILE' exists on default branch or run make sync-remote-live-v2-workflow"
+        ;;
+      *)
+        fail "workflow runs query returned HTTP $API_STATUS"
+        ;;
+    esac
 
     matched_run_json=$(printf '%s' "$API_BODY" | jq -c --arg start "$start_epoch" '
       .workflow_runs
