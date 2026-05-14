@@ -97,6 +97,9 @@ TOKEN_OUTPUT_FILE=/tmp/gitrank-app-token.txt \
 make create-github-app-installation-token
 ```
 
+`make create-github-app-installation-token` accepts either `GITHUB_APP_*` or
+`GITRANK_GITHUB_APP_*` credential variable names.
+
 ## Local Static Workflow Check
 
 Use this before merge to ensure the workflow wiring remains intact:

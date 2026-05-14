@@ -3,7 +3,7 @@ TMPDIR ?= $(CURDIR)/.tmp
 GOCACHE ?= $(CURDIR)/.gocache
 GO_MODULE_FIND := find . \( -path './.tmp' -o -path './.gocache' \) -prune -o -name go.mod
 
-.PHONY: fmt test test-migrations test-critical-path-flows race vet audit-go-safety audit-v2-contributing-checklist generate-v2-completion-audit mark-v2-contributing-live-gates finalize-v2-live-closeout verify-v2-unresolved-checklist-scope verify-contributing-checked-file-refs verify-critical-path-tests verify-v2-no-mock-release-gate verify-v2-staging-seed verify-v2-live-readiness verify-live-v2-inputs verify-live-github-access verify-rollback-procedure verify-observability-manifests verify-observability-evidence verify-live-observability generate-observability-evidence-from-workflow-run generate-rollback-drill-evidence generate-database-restore-drill-evidence generate-v2-live-closeout-status verify-live-v2-workflow verify-live-v2-workflow-run verify-public-workflow-health sync-remote-trivy-policy sync-remote-live-v2-workflow run-live-v2-gates-workflow run-live-v2-workflow-evidence-pipeline create-github-app-installation-token verify-rollback-drill-evidence verify-database-restore-drill-evidence verify-secret-policy verify-k8s-autoscaling verify-finalize-v2-closeout-env-aliases discover-github-required-status-checks apply-github-repository-controls apply-github-repository-controls-auto verify-github-repository-controls verify-github-repository-controls-public render-k8s-release-manifests bench-ingestion tidy compose-up compose-down seed-local seed-v2-staging
+.PHONY: fmt test test-migrations test-critical-path-flows race vet audit-go-safety audit-v2-contributing-checklist generate-v2-completion-audit mark-v2-contributing-live-gates finalize-v2-live-closeout verify-v2-unresolved-checklist-scope verify-contributing-checked-file-refs verify-critical-path-tests verify-v2-no-mock-release-gate verify-v2-staging-seed verify-v2-live-readiness verify-live-v2-inputs verify-live-github-access verify-rollback-procedure verify-observability-manifests verify-observability-evidence verify-live-observability generate-observability-evidence-from-workflow-run generate-rollback-drill-evidence generate-database-restore-drill-evidence generate-v2-live-closeout-status verify-live-v2-workflow verify-live-v2-workflow-run verify-public-workflow-health sync-remote-trivy-policy sync-remote-live-v2-workflow run-live-v2-gates-workflow run-live-v2-workflow-evidence-pipeline create-github-app-installation-token verify-rollback-drill-evidence verify-database-restore-drill-evidence verify-secret-policy verify-k8s-autoscaling verify-finalize-v2-closeout-env-aliases verify-github-app-token-env-aliases discover-github-required-status-checks apply-github-repository-controls apply-github-repository-controls-auto verify-github-repository-controls verify-github-repository-controls-public render-k8s-release-manifests bench-ingestion tidy compose-up compose-down seed-local seed-v2-staging
 
 fmt:
 	mkdir -p "$(TMPDIR)" "$(GOCACHE)"
@@ -131,6 +131,9 @@ verify-k8s-autoscaling:
 
 verify-finalize-v2-closeout-env-aliases:
 	TMPDIR="$(TMPDIR)" ./scripts/verify_finalize_v2_closeout_env_aliases.sh
+
+verify-github-app-token-env-aliases:
+	TMPDIR="$(TMPDIR)" ./scripts/verify_github_app_token_env_aliases.sh
 
 discover-github-required-status-checks:
 	TMPDIR="$(TMPDIR)" ./scripts/discover_github_required_status_checks.sh
