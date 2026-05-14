@@ -16,7 +16,9 @@ It does not execute the managed PostgreSQL restore drill; use
 
 ## Required Repository Or Environment Secrets
 
-- `GITRANK_REPO_ADMIN_TOKEN` (or `GITHUB_TOKEN`)
+- `GITRANK_REPO_ADMIN_TOKEN` (or `GITHUB_TOKEN`), or GitHub App credentials
+  (`GITHUB_APP_ID`, `GITHUB_APP_INSTALLATION_ID`, and
+  `GITHUB_APP_PRIVATE_KEY_FILE` or `GITHUB_APP_PRIVATE_KEY_PEM`)
 - `GRAFANA_API_TOKEN`
 
 Optional GitHub App bootstrap secrets (used when repo-admin token secret is not set):
@@ -101,7 +103,7 @@ cd gitrank
 make verify-v2-live-readiness
 ```
 
-Before running GitHub controls apply/verify operations, validate token access:
+Before running GitHub controls apply/verify operations, validate GitHub access:
 
 ```bash
 cd gitrank
@@ -109,6 +111,10 @@ GITHUB_REPOSITORY=OWNER/REPO \
 GITRANK_REPO_ADMIN_TOKEN=... \
 make verify-live-github-access
 ```
+
+If you do not have a static token, `make verify-live-github-access` now auto
+bootstraps a short-lived installation token when GitHub App credentials are
+present in the environment.
 
 To verify a completed Actions run as live-gate evidence (without rerunning
 those checks locally), use:
@@ -144,7 +150,7 @@ When Trivy is unhealthy, this command also inspects remote
 `.github/workflows/trivy.yml` and `.trivyignore.yaml` on the relevant branch
 to report whether ignore-policy wiring is missing.
 
-To sync local Trivy policy files to the remote default branch (token required):
+To sync local Trivy policy files to the remote default branch:
 
 ```bash
 cd gitrank
@@ -152,6 +158,10 @@ GITHUB_REPOSITORY=OWNER/REPO \
 GITRANK_REPO_ADMIN_TOKEN=... \
 make sync-remote-trivy-policy
 ```
+
+If no static token is provided, `make sync-remote-trivy-policy` now also
+supports GitHub App credential bootstrap in the same way as
+`make verify-live-github-access`.
 
 Set `DRY_RUN=true` to preview updates without writing.
 
