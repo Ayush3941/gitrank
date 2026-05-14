@@ -14,7 +14,7 @@ CHECK_WORKFLOW_EVIDENCE="${CHECK_WORKFLOW_EVIDENCE:-true}"
 CHECK_LIVE_GITHUB_ACCESS="${CHECK_LIVE_GITHUB_ACCESS:-true}"
 WORKFLOW_RUN_ID="${WORKFLOW_RUN_ID:-latest}"
 WORKFLOW_EVENT="${WORKFLOW_EVENT:-workflow_dispatch}"
-DISPLAY_REPOSITORY="${GITHUB_REPOSITORY_DISPLAY:-OWNER/REPO}"
+DISPLAY_REPOSITORY="${GITHUB_REPOSITORY_DISPLAY:-}"
 
 fail() {
   printf 'generate v2 live closeout status failed: %s\n' "$1" >&2
@@ -58,7 +58,9 @@ append_section() {
     sed -n '1,220p' "$rendered_file"
     printf '```\n\n'
   } >>"$OUTPUT_FILE"
-  [ -n "$sanitized_file" ] && rm -f "$sanitized_file"
+  if [ -n "$sanitized_file" ]; then
+    rm -f "$sanitized_file"
+  fi
 }
 
 run_and_capture() {
@@ -76,6 +78,13 @@ run_and_capture() {
 }
 
 gitrank_repo=$(resolve_repository_from_git_remote || true)
+if [ -z "$DISPLAY_REPOSITORY" ]; then
+  if [ -n "$gitrank_repo" ]; then
+    DISPLAY_REPOSITORY=$gitrank_repo
+  else
+    DISPLAY_REPOSITORY=OWNER/REPO
+  fi
+fi
 
 mkdir -p "$(dirname "$OUTPUT_FILE")"
 

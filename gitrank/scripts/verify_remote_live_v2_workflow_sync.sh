@@ -69,6 +69,93 @@ is_rate_limited_response() {
   esac
 }
 
+infer_default_branch_from_local_git() {
+  command -v git >/dev/null 2>&1 || return 1
+  remote_head=$(git symbolic-ref --quiet refs/remotes/origin/HEAD 2>/dev/null || true)
+  case "$remote_head" in
+    refs/remotes/origin/*) printf '%s' "${remote_head##refs/remotes/origin/}" ;;
+    *) return 1 ;;
+  esac
+}
+
+verify_via_raw_public_fallback() {
+  reason=$1
+  candidate_branches=
+
+  add_candidate_branch() {
+    branch=$1
+    [ -n "$branch" ] || return 0
+    case " $candidate_branches " in
+      *" $branch "*) ;;
+      *)
+        if [ -n "$candidate_branches" ]; then
+          candidate_branches="$candidate_branches $branch"
+        else
+          candidate_branches="$branch"
+        fi
+        ;;
+    esac
+  }
+
+  if [ -n "$TARGET_BRANCH" ]; then
+    add_candidate_branch "$TARGET_BRANCH"
+  else
+    inferred_branch=$(infer_default_branch_from_local_git || true)
+    add_candidate_branch "$inferred_branch"
+    add_candidate_branch main
+    add_candidate_branch master
+  fi
+
+  [ -n "$candidate_branches" ] || fail "unable to determine candidate branch for raw fallback"
+
+  raw_body_file="$TMP_ROOT/gitrank-verify-live-v2-workflow-sync-raw.$$"
+  found_branch=
+
+  for branch in $candidate_branches; do
+    raw_url="https://raw.githubusercontent.com/$OWNER/$REPO/$branch/$WORKFLOW_FILE_PATH"
+    raw_status=$(curl -sS -L -o "$raw_body_file" -w '%{http_code}' \
+      --connect-timeout "$API_TIMEOUT_SECONDS" \
+      --max-time "$API_TIMEOUT_SECONDS" \
+      "$raw_url") || {
+        rm -f "$raw_body_file"
+        fail "raw workflow fallback request failed for branch '$branch' ($reason)"
+      }
+
+    case "$raw_status" in
+      200)
+        found_branch="$branch"
+        break
+        ;;
+      404)
+        ;;
+      403|429)
+        rm -f "$raw_body_file"
+        fail "raw workflow fallback hit rate limit or access restriction (HTTP $raw_status); provide token or GitHub App credentials"
+        ;;
+      *)
+        rm -f "$raw_body_file"
+        fail "raw workflow fallback returned unexpected HTTP $raw_status for branch '$branch'"
+        ;;
+    esac
+  done
+
+  if [ -z "$found_branch" ]; then
+    rm -f "$raw_body_file"
+    fail "remote workflow file is missing on $REPOSITORY for candidate branch(es): $candidate_branches (or repository is private/inaccessible); run make sync-remote-live-v2-workflow"
+  fi
+
+  remote_content=$(cat "$raw_body_file")
+  rm -f "$raw_body_file"
+
+  [ "$remote_content" = "$local_content" ] || fail "remote workflow content drift detected via raw fallback for $WORKFLOW_FILE_PATH on $REPOSITORY@$found_branch (run make sync-remote-live-v2-workflow)"
+
+  printf 'remote live-v2 workflow sync verification passed (raw public fallback)\n'
+  printf 'repository: %s\n' "$REPOSITORY"
+  printf 'branch: %s\n' "$found_branch"
+  printf 'path: %s\n' "$WORKFLOW_FILE_PATH"
+  exit 0
+}
+
 resolve_repository_from_git_remote
 
 case "$REPOSITORY" in
@@ -87,11 +174,16 @@ root_dir="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 repo_dir="$(CDPATH= cd -- "$root_dir/.." && pwd)"
 local_workflow_file="$repo_dir/$WORKFLOW_FILE_PATH"
 [ -s "$local_workflow_file" ] || fail "local file missing: $local_workflow_file"
+local_content=$(cat "$local_workflow_file")
 
 OWNER=${REPOSITORY%%/*}
 REPO=${REPOSITORY#*/}
 API_STATUS=
 API_BODY=
+
+if [ -z "$TOKEN" ]; then
+  verify_via_raw_public_fallback "no token available"
+fi
 
 github_get() {
   path=$1
@@ -128,7 +220,7 @@ case "$API_STATUS" in
   401) fail "repository metadata lookup requires authentication; set GITHUB_TOKEN, GH_TOKEN, GITRANK_REPO_ADMIN_TOKEN, or GitHub App credentials" ;;
   403)
     if is_rate_limited_response; then
-      fail "repository metadata hit GitHub API rate limit (HTTP 403); provide token or GitHub App credentials"
+      verify_via_raw_public_fallback "GitHub API rate limit on repository metadata"
     fi
     fail "repository metadata lookup denied (HTTP 403)"
     ;;
@@ -147,7 +239,7 @@ case "$API_STATUS" in
   401) fail "remote workflow contents lookup requires authentication" ;;
   403)
     if is_rate_limited_response; then
-      fail "remote workflow contents lookup hit GitHub API rate limit (HTTP 403); provide token or GitHub App credentials"
+      verify_via_raw_public_fallback "GitHub API rate limit on workflow contents lookup"
     fi
     fail "remote workflow contents lookup denied (HTTP 403)"
     ;;
@@ -159,7 +251,6 @@ remote_encoding=$(printf '%s' "$API_BODY" | jq -r '.encoding // empty')
 [ "$remote_encoding" = "base64" ] || fail "unexpected remote contents encoding: $remote_encoding"
 remote_content_base64=$(printf '%s' "$API_BODY" | jq -r '.content // empty' | tr -d '\n')
 remote_content=$(printf '%s' "$remote_content_base64" | base64 -d 2>/dev/null || true)
-local_content=$(cat "$local_workflow_file")
 
 [ "$remote_content" = "$local_content" ] || fail "remote workflow content drift detected for $WORKFLOW_FILE_PATH on $REPOSITORY@$TARGET_BRANCH (run make sync-remote-live-v2-workflow)"
 

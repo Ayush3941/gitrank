@@ -8,7 +8,7 @@ makefile="$root_dir/Makefile"
 tmp_root="${TMPDIR:-$root_dir/.tmp}"
 output_file="${OUTPUT_FILE:-$root_dir/docs/releases/v2-completion-audit-latest.md}"
 run_checks="${RUN_CHECKS:-true}"
-display_repository="${GITHUB_REPOSITORY_DISPLAY:-OWNER/REPO}"
+display_repository="${GITHUB_REPOSITORY_DISPLAY:-}"
 
 fail() {
   printf 'generate v2 completion audit failed: %s\n' "$1" >&2
@@ -32,6 +32,13 @@ resolve_repository_from_git_remote() {
 }
 
 resolved_repository=$(resolve_repository_from_git_remote || true)
+if [ -z "$display_repository" ]; then
+  if [ -n "$resolved_repository" ]; then
+    display_repository=$resolved_repository
+  else
+    display_repository=OWNER/REPO
+  fi
+fi
 
 run_capture() {
   title=$1
@@ -59,7 +66,9 @@ run_capture() {
     sed -n '1,260p' "$rendered"
     printf '```\n\n'
   } >>"$output_file"
-  [ -n "$sanitized" ] && rm -f "$sanitized"
+  if [ -n "$sanitized" ]; then
+    rm -f "$sanitized"
+  fi
   rm -f "$out"
   RUN_CAPTURE_LAST_CODE=$code
 }
