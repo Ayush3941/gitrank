@@ -38,6 +38,13 @@ For consolidated execution, use:
 - `make generate-v2-completion-audit` to generate a prompt-to-artifact matrix
   from `CONTRIBUTING.md` (checklist counts, unresolved requirements,
   file-reference existence, `make` target mapping, and gate outputs)
+  - if you intentionally skip probe execution (for example, `RUN_CHECKS=false`
+    or probe-specific `CHECK_*` toggles), provide explicit waiver reasons via:
+    `WAIVE_RUN_CHECKS`, `WAIVE_PUBLIC_WORKFLOW_HEALTH`,
+    `WAIVE_REMOTE_LIVE_WORKFLOW_SYNC`,
+    `WAIVE_LIVE_GITHUB_ACCESS_PREFLIGHT`,
+    `WAIVE_PUBLIC_GITHUB_CONTROLS_PRECHECK`,
+    `WAIVE_WORKFLOW_EVIDENCE_PROBE`.
 - `make run-live-v2-workflow-evidence-pipeline` to dispatch live gates, verify
   workflow-run evidence, and generate observability evidence in one sequence
   (auto-syncs `.github/workflows/verify-live-v2-gates.yml` before dispatch by

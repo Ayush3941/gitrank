@@ -15,6 +15,12 @@ check_live_github_access="${CHECK_LIVE_GITHUB_ACCESS:-true}"
 check_workflow_evidence="${CHECK_WORKFLOW_EVIDENCE:-true}"
 workflow_run_id="${WORKFLOW_RUN_ID:-latest}"
 workflow_event="${WORKFLOW_EVENT:-workflow_dispatch}"
+waive_run_checks="${WAIVE_RUN_CHECKS:-}"
+waive_public_workflow_health="${WAIVE_PUBLIC_WORKFLOW_HEALTH:-}"
+waive_remote_live_workflow_sync="${WAIVE_REMOTE_LIVE_WORKFLOW_SYNC:-}"
+waive_live_github_access_preflight="${WAIVE_LIVE_GITHUB_ACCESS_PREFLIGHT:-}"
+waive_public_github_controls_precheck="${WAIVE_PUBLIC_GITHUB_CONTROLS_PRECHECK:-}"
+waive_workflow_evidence_probe="${WAIVE_WORKFLOW_EVIDENCE_PROBE:-}"
 
 fail() {
   printf 'generate v2 completion audit failed: %s\n' "$1" >&2
@@ -267,33 +273,52 @@ else
 fi
 
 code_is_ok_or_skipped() {
-  code=$1
-  [ "$code" = "0" ] || [ "$code" = "skip" ]
+  probe_name=$1
+  code=$2
+  waiver_reason=$3
+  case "$code" in
+    0)
+      return 0
+      ;;
+    skip)
+      if [ -n "$waiver_reason" ]; then
+        return 0
+      fi
+      printf 'missing waiver for skipped probe: %s\n' "$probe_name" >&2
+      return 1
+      ;;
+    *)
+      return 1
+      ;;
+  esac
 }
 
 ready_for_completion=true
-if ! code_is_ok_or_skipped "$local_gate_code"; then
+if [ "$run_checks" != "true" ] && [ -z "$waive_run_checks" ]; then
   ready_for_completion=false
 fi
-if ! code_is_ok_or_skipped "$public_workflow_health_code"; then
+if ! code_is_ok_or_skipped "local readiness gate" "$local_gate_code" "$waive_run_checks"; then
   ready_for_completion=false
 fi
-if ! code_is_ok_or_skipped "$checklist_audit_code"; then
+if ! code_is_ok_or_skipped "public workflow health gate" "$public_workflow_health_code" "$waive_public_workflow_health"; then
   ready_for_completion=false
 fi
-if ! code_is_ok_or_skipped "$env_presence_code"; then
+if ! code_is_ok_or_skipped "checklist audit gate" "$checklist_audit_code" "$waive_run_checks"; then
   ready_for_completion=false
 fi
-if ! code_is_ok_or_skipped "$remote_live_workflow_sync_code"; then
+if ! code_is_ok_or_skipped "env presence probe" "$env_presence_code" "$waive_run_checks"; then
   ready_for_completion=false
 fi
-if ! code_is_ok_or_skipped "$live_github_access_code"; then
+if ! code_is_ok_or_skipped "remote live workflow sync probe" "$remote_live_workflow_sync_code" "$waive_remote_live_workflow_sync"; then
   ready_for_completion=false
 fi
-if ! code_is_ok_or_skipped "$public_controls_code"; then
+if ! code_is_ok_or_skipped "live github access preflight" "$live_github_access_code" "$waive_live_github_access_preflight"; then
   ready_for_completion=false
 fi
-if ! code_is_ok_or_skipped "$workflow_probe_code"; then
+if ! code_is_ok_or_skipped "public github controls precheck" "$public_controls_code" "$waive_public_github_controls_precheck"; then
+  ready_for_completion=false
+fi
+if ! code_is_ok_or_skipped "workflow evidence probe" "$workflow_probe_code" "$waive_workflow_evidence_probe"; then
   ready_for_completion=false
 fi
 if [ "$unchecked_count" -ne 0 ]; then
@@ -311,6 +336,29 @@ fi
   printf '%s\n' "- Public GitHub controls precheck exit code: \`$public_controls_code\`"
   printf '%s\n' "- Workflow evidence probe exit code: \`$workflow_probe_code\`"
   printf '%s\n' "- Current unchecked checklist count: \`$unchecked_count\`"
+  printf '\n'
+  printf '### Probe Waivers\n\n'
+  if [ -n "$waive_run_checks" ]; then
+    printf '%s\n' "- run_checks waiver: \`$waive_run_checks\`"
+  fi
+  if [ -n "$waive_public_workflow_health" ]; then
+    printf '%s\n' "- public workflow health waiver: \`$waive_public_workflow_health\`"
+  fi
+  if [ -n "$waive_remote_live_workflow_sync" ]; then
+    printf '%s\n' "- remote live workflow sync waiver: \`$waive_remote_live_workflow_sync\`"
+  fi
+  if [ -n "$waive_live_github_access_preflight" ]; then
+    printf '%s\n' "- live github access preflight waiver: \`$waive_live_github_access_preflight\`"
+  fi
+  if [ -n "$waive_public_github_controls_precheck" ]; then
+    printf '%s\n' "- public github controls precheck waiver: \`$waive_public_github_controls_precheck\`"
+  fi
+  if [ -n "$waive_workflow_evidence_probe" ]; then
+    printf '%s\n' "- workflow evidence probe waiver: \`$waive_workflow_evidence_probe\`"
+  fi
+  if [ -z "$waive_run_checks" ] && [ -z "$waive_public_workflow_health" ] && [ -z "$waive_remote_live_workflow_sync" ] && [ -z "$waive_live_github_access_preflight" ] && [ -z "$waive_public_github_controls_precheck" ] && [ -z "$waive_workflow_evidence_probe" ]; then
+    printf '%s\n' "- none"
+  fi
   printf '\n'
   if [ "$ready_for_completion" = "true" ]; then
     printf 'Current audit verdict: **ready to consider objective complete**.\n'
