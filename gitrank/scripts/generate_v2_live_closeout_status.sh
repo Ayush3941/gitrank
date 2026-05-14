@@ -108,13 +108,26 @@ run_and_capture "Contributing Checklist Audit" \
 audit_code=$RUN_CAPTURE_LAST_CODE
 
 if [ -s "$audit_report_tmp" ]; then
+  audit_report_rendered="$audit_report_tmp"
+  audit_report_sanitized=
+  if [ -n "${gitrank_repo:-}" ] && [ "$gitrank_repo" != "$DISPLAY_REPOSITORY" ]; then
+    audit_report_sanitized="$tmp_root/v2-closeout-status-audit-sanitized.$$.md"
+    sed \
+      -e "s|https://github.com/$gitrank_repo|https://github.com/$DISPLAY_REPOSITORY|g" \
+      -e "s|$gitrank_repo|$DISPLAY_REPOSITORY|g" \
+      "$audit_report_tmp" >"$audit_report_sanitized"
+    audit_report_rendered="$audit_report_sanitized"
+  fi
   {
     printf '## Checklist Audit Artifact\n\n'
     printf '%s\n\n' "- File: \`$audit_report_tmp\`"
     printf '```markdown\n'
-    sed -n '1,260p' "$audit_report_tmp"
+    sed -n '1,260p' "$audit_report_rendered"
     printf '```\n\n'
   } >>"$OUTPUT_FILE"
+  if [ -n "$audit_report_sanitized" ]; then
+    rm -f "$audit_report_sanitized"
+  fi
 fi
 
 run_and_capture "Essential Live Env Presence" \
