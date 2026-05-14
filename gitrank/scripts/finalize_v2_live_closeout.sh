@@ -24,6 +24,10 @@ AUTO_GENERATE_ROLLBACK_RESTORE_EVIDENCE="${AUTO_GENERATE_ROLLBACK_RESTORE_EVIDEN
 AUDIT_REPORT_FILE="${AUDIT_REPORT_FILE:-$root_dir/docs/releases/v2-contributing-audit-latest.md}"
 AUTO_CREATE_GITHUB_APP_TOKEN="${AUTO_CREATE_GITHUB_APP_TOKEN:-true}"
 APP_TOKEN_OUTPUT_FILE="${APP_TOKEN_OUTPUT_FILE:-$tmp_root/gitrank-app-installation-token.txt}"
+RESOLVED_GITHUB_APP_ID="${GITHUB_APP_ID:-${GITRANK_GITHUB_APP_ID:-}}"
+RESOLVED_GITHUB_APP_INSTALLATION_ID="${GITHUB_APP_INSTALLATION_ID:-${GITRANK_GITHUB_APP_INSTALLATION_ID:-}}"
+RESOLVED_GITHUB_APP_PRIVATE_KEY_FILE="${GITHUB_APP_PRIVATE_KEY_FILE:-${GITRANK_GITHUB_APP_PRIVATE_KEY_FILE:-}}"
+RESOLVED_GITHUB_APP_PRIVATE_KEY_PEM="${GITHUB_APP_PRIVATE_KEY_PEM:-${GITRANK_GITHUB_APP_PRIVATE_KEY_PEM:-}}"
 
 STAGING_RENDER_OUTPUT="${STAGING_RENDER_OUTPUT:-$tmp_root/rendered-k8s-staging.yaml}"
 PRODUCTION_RENDER_OUTPUT="${PRODUCTION_RENDER_OUTPUT:-$tmp_root/rendered-k8s-production.yaml}"
@@ -144,18 +148,27 @@ resolve_github_admin_token() {
     fail "GitHub controls enabled but no token provided; set GITHUB_TOKEN, GH_TOKEN, or GITRANK_REPO_ADMIN_TOKEN"
   fi
 
-  if [ -z "${GITHUB_APP_ID:-}" ] || [ -z "${GITHUB_APP_INSTALLATION_ID:-}" ]; then
+  if [ -z "$RESOLVED_GITHUB_APP_ID" ] || [ -z "$RESOLVED_GITHUB_APP_INSTALLATION_ID" ]; then
     fail "GitHub controls enabled but no token is set and GitHub App credentials are incomplete"
   fi
 
-  if [ -z "${GITHUB_APP_PRIVATE_KEY_FILE:-}" ] && [ -z "${GITHUB_APP_PRIVATE_KEY_PEM:-}" ]; then
+  if [ -z "$RESOLVED_GITHUB_APP_PRIVATE_KEY_FILE" ] && [ -z "$RESOLVED_GITHUB_APP_PRIVATE_KEY_PEM" ]; then
     fail "GitHub controls enabled but no token is set and GitHub App private key is missing"
   fi
 
-  TOKEN_OUTPUT_FILE="$APP_TOKEN_OUTPUT_FILE" run_make create-github-app-installation-token
+  GITHUB_APP_ID="$RESOLVED_GITHUB_APP_ID" \
+  GITHUB_APP_INSTALLATION_ID="$RESOLVED_GITHUB_APP_INSTALLATION_ID" \
+  GITHUB_APP_PRIVATE_KEY_FILE="$RESOLVED_GITHUB_APP_PRIVATE_KEY_FILE" \
+  GITHUB_APP_PRIVATE_KEY_PEM="$RESOLVED_GITHUB_APP_PRIVATE_KEY_PEM" \
+  TOKEN_OUTPUT_FILE="$APP_TOKEN_OUTPUT_FILE" \
+  run_make create-github-app-installation-token
   token_candidate=$(cat "$APP_TOKEN_OUTPUT_FILE" 2>/dev/null || true)
   [ -n "$token_candidate" ] || fail "GitHub App token creation succeeded but no token file content was produced"
   cleanup_app_token_file=true
+  export GITHUB_APP_ID="$RESOLVED_GITHUB_APP_ID"
+  export GITHUB_APP_INSTALLATION_ID="$RESOLVED_GITHUB_APP_INSTALLATION_ID"
+  export GITHUB_APP_PRIVATE_KEY_FILE="$RESOLVED_GITHUB_APP_PRIVATE_KEY_FILE"
+  export GITHUB_APP_PRIVATE_KEY_PEM="$RESOLVED_GITHUB_APP_PRIVATE_KEY_PEM"
   export GITHUB_TOKEN="$token_candidate"
   export GH_TOKEN="$token_candidate"
   export GITRANK_REPO_ADMIN_TOKEN="$token_candidate"
