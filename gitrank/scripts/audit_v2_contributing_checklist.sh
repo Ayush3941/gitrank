@@ -17,6 +17,143 @@ run_make() {
   (cd "$root_dir" && TMPDIR="${TMPDIR:-$root_dir/.tmp}" make "$target" "$@")
 }
 
+resolve_repository_from_git_remote() {
+  if [ -n "${GITHUB_REPOSITORY:-}" ]; then
+    printf '%s' "$GITHUB_REPOSITORY"
+    return 0
+  fi
+  if ! command -v git >/dev/null 2>&1; then
+    return 0
+  fi
+  remote_url=$(git -C "$repo_dir" config --get remote.origin.url 2>/dev/null || true)
+  [ -n "$remote_url" ] || return 0
+  case "$remote_url" in
+    https://github.com/*) inferred_repo=${remote_url#https://github.com/} ;;
+    git@github.com:*) inferred_repo=${remote_url#git@github.com:} ;;
+    *) inferred_repo= ;;
+  esac
+  inferred_repo=${inferred_repo%.git}
+  printf '%s' "$inferred_repo"
+}
+
+emit_public_live_probe_snapshot() {
+  repository=$1
+  [ -n "$repository" ] || {
+    printf 'public probe: skipped (repository unavailable)\n'
+    [ -n "$audit_report_file" ] && {
+      printf '\n## Public Probe Snapshot\n' >>"$audit_report_file"
+      printf '%s\n' '- skipped: repository unavailable' >>"$audit_report_file"
+    }
+    return 0
+  }
+
+  if ! command -v curl >/dev/null 2>&1 || ! command -v jq >/dev/null 2>&1; then
+    printf 'public probe: skipped (curl/jq missing)\n'
+    [ -n "$audit_report_file" ] && {
+      printf '\n## Public Probe Snapshot\n' >>"$audit_report_file"
+      printf '%s\n' '- skipped: curl/jq missing' >>"$audit_report_file"
+    }
+    return 0
+  fi
+
+  owner=${repository%%/*}
+  repo=${repository#*/}
+  api_base="${GITHUB_API_URL:-https://api.github.com}"
+  api_timeout_seconds="${GITHUB_API_TIMEOUT_SECONDS:-20}"
+  branch_status=
+  rules_status=
+  workflow_runs_status=
+  default_branch=
+  protected_state=unknown
+  rules_count=unknown
+  workflow_runs_count=unknown
+  probe_msg=
+
+  api_get() {
+    path=$1
+    status_file=$(mktemp "${TMPDIR:-/tmp}/gitrank-v2-audit-probe.XXXXXX")
+    status_code=$(curl -sS -L -o "$status_file" -w '%{http_code}' \
+      --connect-timeout "$api_timeout_seconds" \
+      --max-time "$api_timeout_seconds" \
+      -H 'Accept: application/vnd.github+json' \
+      "$api_base$path") || status_code=000
+    body=$(cat "$status_file" 2>/dev/null || true)
+    rm -f "$status_file"
+    API_GET_STATUS=$status_code
+    API_GET_BODY=$body
+  }
+
+  api_get "/repos/$owner/$repo"
+  repo_status=$API_GET_STATUS
+  repo_body=$API_GET_BODY
+  if [ "$repo_status" = "200" ]; then
+    default_branch=$(printf '%s' "$repo_body" | jq -r '.default_branch // empty')
+  fi
+
+  if [ -n "$default_branch" ]; then
+    api_get "/repos/$owner/$repo/branches/$default_branch"
+    branch_status=$API_GET_STATUS
+    branch_body=$API_GET_BODY
+    if [ "$branch_status" = "200" ]; then
+      protected_state=$(printf '%s' "$branch_body" | jq -r '.protected // false')
+      api_get "/repos/$owner/$repo/rules/branches/$default_branch"
+      rules_status=$API_GET_STATUS
+      rules_body=$API_GET_BODY
+      if [ "$rules_status" = "200" ]; then
+        rules_count=$(printf '%s' "$rules_body" | jq -r '
+          if type == "array" then length
+          elif type == "object" and has("rules") then (.rules | length)
+          elif type == "object" and has("type") then 1
+          else 0 end
+        ')
+      fi
+    fi
+  fi
+
+  api_get "/repos/$owner/$repo/actions/workflows/verify-live-v2-gates.yml/runs?per_page=1"
+  workflow_runs_status=$API_GET_STATUS
+  workflow_runs_body=$API_GET_BODY
+  if [ "$workflow_runs_status" = "200" ]; then
+    workflow_runs_count=$(printf '%s' "$workflow_runs_body" | jq -r '.total_count // (.workflow_runs | length) // 0')
+  fi
+
+  if [ "$workflow_runs_status" = "404" ] && [ "$workflow_runs_count" = "unknown" ]; then
+    probe_msg='workflow file has no visible runs yet (or workflow file absent on remote default branch)'
+  fi
+
+  printf 'public probe snapshot\n'
+  printf 'repository: %s\n' "$repository"
+  printf 'repo metadata http: %s\n' "${repo_status:-unknown}"
+  printf 'default branch: %s\n' "${default_branch:-unknown}"
+  printf 'branch metadata http: %s\n' "${branch_status:-unknown}"
+  printf 'default branch protected: %s\n' "$protected_state"
+  printf 'branch rules http: %s\n' "${rules_status:-unknown}"
+  printf 'branch rules count: %s\n' "$rules_count"
+  printf 'live-gates workflow runs http: %s\n' "$workflow_runs_status"
+  printf 'live-gates workflow run count: %s\n' "$workflow_runs_count"
+  if [ -n "$probe_msg" ]; then
+    printf 'probe note: %s\n' "$probe_msg"
+  fi
+
+  if [ -n "$audit_report_file" ]; then
+    {
+      printf '\n## Public Probe Snapshot\n'
+      printf '%s\n' "- repository: $repository"
+      printf '%s\n' "- repo metadata http: ${repo_status:-unknown}"
+      printf '%s\n' "- default branch: ${default_branch:-unknown}"
+      printf '%s\n' "- branch metadata http: ${branch_status:-unknown}"
+      printf '%s\n' "- default branch protected: $protected_state"
+      printf '%s\n' "- branch rules http: ${rules_status:-unknown}"
+      printf '%s\n' "- branch rules count: $rules_count"
+      printf '%s\n' "- live-gates workflow runs http: $workflow_runs_status"
+      printf '%s\n' "- live-gates workflow run count: $workflow_runs_count"
+      if [ -n "$probe_msg" ]; then
+        printf '%s\n' "- note: $probe_msg"
+      fi
+    } >>"$audit_report_file"
+  fi
+}
+
 [ -s "$contributing_file" ] || fail "missing CONTRIBUTING.md at $contributing_file"
 
 if [ "${RUN_BASELINE_VERIFIERS:-true}" = "true" ]; then
@@ -96,5 +233,8 @@ while IFS= read -r line; do
     } >>"$audit_report_file"
   fi
 done <"$unchecked_file"
+
+repository=$(resolve_repository_from_git_remote || true)
+emit_public_live_probe_snapshot "$repository"
 
 fail "checklist still has unresolved items"
