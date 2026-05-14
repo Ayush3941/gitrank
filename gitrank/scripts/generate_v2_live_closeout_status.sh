@@ -8,7 +8,7 @@ mkdir -p "$tmp_root"
 
 OUTPUT_FILE="${OUTPUT_FILE:-$root_dir/docs/releases/v2-live-closeout-status-latest.md}"
 CHECK_PUBLIC_GITHUB_CONTROLS="${CHECK_PUBLIC_GITHUB_CONTROLS:-true}"
-CHECK_PUBLIC_WORKFLOW_HEALTH="${CHECK_PUBLIC_WORKFLOW_HEALTH:-true}"
+CHECK_PUBLIC_WORKFLOW_HEALTH="${CHECK_PUBLIC_WORKFLOW_HEALTH:-auto}"
 CHECK_REMOTE_LIVE_WORKFLOW_SYNC="${CHECK_REMOTE_LIVE_WORKFLOW_SYNC:-true}"
 CHECK_WORKFLOW_EVIDENCE="${CHECK_WORKFLOW_EVIDENCE:-true}"
 CHECK_LIVE_GITHUB_ACCESS="${CHECK_LIVE_GITHUB_ACCESS:-true}"
@@ -24,9 +24,19 @@ fail() {
 }
 
 resolve_checklist_audit_run_public_probe() {
-  case "$CHECKLIST_AUDIT_RUN_PUBLIC_PROBE" in
+  resolve_boolean_or_auto_from_github_auth "$CHECKLIST_AUDIT_RUN_PUBLIC_PROBE" "CHECKLIST_AUDIT_RUN_PUBLIC_PROBE"
+}
+
+resolve_check_public_workflow_health() {
+  resolve_boolean_or_auto_from_github_auth "$CHECK_PUBLIC_WORKFLOW_HEALTH" "CHECK_PUBLIC_WORKFLOW_HEALTH"
+}
+
+resolve_boolean_or_auto_from_github_auth() {
+  configured_value=$1
+  configured_name=$2
+  case "$configured_value" in
     true|false)
-      printf '%s' "$CHECKLIST_AUDIT_RUN_PUBLIC_PROBE"
+      printf '%s' "$configured_value"
       return 0
       ;;
     auto)
@@ -49,7 +59,7 @@ resolve_checklist_audit_run_public_probe() {
       return 0
       ;;
     *)
-      fail "CHECKLIST_AUDIT_RUN_PUBLIC_PROBE must be one of: true, false, auto"
+      fail "$configured_name must be one of: true, false, auto"
       ;;
   esac
 }
@@ -115,6 +125,7 @@ if [ -z "$DISPLAY_REPOSITORY" ]; then
   DISPLAY_REPOSITORY=OWNER/REPO
 fi
 CHECKLIST_AUDIT_RUN_PUBLIC_PROBE_RESOLVED=$(resolve_checklist_audit_run_public_probe)
+CHECK_PUBLIC_WORKFLOW_HEALTH_RESOLVED=$(resolve_check_public_workflow_health)
 INFERRED_GITHUB_REPOSITORY=$gitrank_repo
 export INFERRED_GITHUB_REPOSITORY
 
@@ -172,7 +183,7 @@ run_and_capture "Essential Live Env Presence" \
 env_presence_code=$RUN_CAPTURE_LAST_CODE
 
 public_workflow_health_code=skip
-if [ "$CHECK_PUBLIC_WORKFLOW_HEALTH" = "true" ]; then
+if [ "$CHECK_PUBLIC_WORKFLOW_HEALTH_RESOLVED" = "true" ]; then
   run_and_capture "Public Workflow Health Gate" \
     sh -c "cd '$root_dir' && GITHUB_REPOSITORY='${gitrank_repo:-}' make verify-public-workflow-health"
   public_workflow_health_code=$RUN_CAPTURE_LAST_CODE
@@ -389,6 +400,7 @@ fi
   printf '%s\n' "- Checklist audit public probe mode: \`$CHECKLIST_AUDIT_RUN_PUBLIC_PROBE_RESOLVED\` (configured: \`$CHECKLIST_AUDIT_RUN_PUBLIC_PROBE\`)"
   printf '%s\n' "- Env presence probe: \`$env_presence_code\`"
   printf '%s\n' "- Public workflow health: \`$public_workflow_health_code\`"
+  printf '%s\n' "- Public workflow health mode: \`$CHECK_PUBLIC_WORKFLOW_HEALTH_RESOLVED\` (configured: \`$CHECK_PUBLIC_WORKFLOW_HEALTH\`)"
   printf '%s\n' "- Remote live workflow sync: \`$remote_live_workflow_sync_code\`"
   printf '%s\n' "- Live GitHub access preflight: \`$live_github_access_code\`"
   printf '%s\n' "- GitHub App permission snapshot: \`$github_app_permission_snapshot_code\`"
