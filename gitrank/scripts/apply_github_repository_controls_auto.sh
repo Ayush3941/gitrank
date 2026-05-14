@@ -111,6 +111,8 @@ expect_status() {
 status_checks_csv=$EXPLICIT_STATUS_CHECKS
 
 if [ -z "$status_checks_csv" ]; then
+  discovery_source=default-branch-head
+
   github_get "/repos/$OWNER/$REPO"
   expect_status 200 "repository metadata"
   default_branch=$(printf '%s' "$API_BODY" | jq -r '.default_branch // empty')
@@ -130,15 +132,45 @@ if [ -z "$status_checks_csv" ]; then
   status_context_json=$API_BODY
 
   checks_file=$(mktemp "$TMP_ROOT/gitrank-required-checks-auto.XXXXXX")
-  trap 'rm -f "$checks_file"' EXIT
+  run_shas_file=$(mktemp "$TMP_ROOT/gitrank-required-checks-auto-runs.XXXXXX")
+  trap 'rm -f "$checks_file" "$run_shas_file"' EXIT
   {
     printf '%s' "$check_runs_json" | jq -r '.check_runs[]?.name // empty'
     printf '%s' "$status_context_json" | jq -r '.statuses[]?.context // empty'
   } | sed '/^$/d' | sort -u >"$checks_file"
 
   check_count=$(wc -l <"$checks_file" | tr -d ' ')
-  [ "$check_count" -gt 0 ] || fail "no check contexts discovered from default branch head"
+  if [ "$check_count" -eq 0 ]; then
+    discovery_source=recent-successful-runs
+    github_get "/repos/$OWNER/$REPO/actions/runs?branch=$default_branch&status=completed&per_page=30"
+    expect_status 200 "recent workflow runs list"
+    printf '%s' "$API_BODY" | jq -r '
+      .workflow_runs[]?
+      | select(.conclusion == "success")
+      | .head_sha // empty
+    ' | sed '/^$/d' | awk '!seen[$0]++' | sed -n '1,10p' >"$run_shas_file"
+
+    while IFS= read -r sha; do
+      [ -n "$sha" ] || continue
+      github_get "/repos/$OWNER/$REPO/commits/$sha/check-runs?per_page=100"
+      [ "$API_STATUS" = "200" ] || continue
+      printf '%s' "$API_BODY" | jq -r '.check_runs[]?.name // empty' >>"$checks_file"
+
+      github_get "/repos/$OWNER/$REPO/commits/$sha/status"
+      [ "$API_STATUS" = "200" ] || continue
+      printf '%s' "$API_BODY" | jq -r '.statuses[]?.context // empty' >>"$checks_file"
+    done <"$run_shas_file"
+
+    compact_checks_file=$(mktemp "$TMP_ROOT/gitrank-required-checks-auto-compact.XXXXXX")
+    sed '/^$/d' "$checks_file" >"$compact_checks_file"
+    mv "$compact_checks_file" "$checks_file"
+    sort -u "$checks_file" -o "$checks_file"
+    check_count=$(wc -l <"$checks_file" | tr -d ' ')
+  fi
+
+  [ "$check_count" -gt 0 ] || fail "no check contexts discovered from default branch head or recent successful runs"
   status_checks_csv=$(paste -sd, "$checks_file")
+  printf 'required-check discovery source: %s\n' "$discovery_source"
 fi
 
 [ -n "$status_checks_csv" ] || fail "computed required status checks list was empty"

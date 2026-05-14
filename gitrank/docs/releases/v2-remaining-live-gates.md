@@ -133,6 +133,8 @@ Current local evidence:
 - Required-check discovery now prefers default-branch head contexts and falls
   back to recent successful default-branch workflow runs when head contexts are
   temporarily empty.
+- Auto-apply now uses the same fallback path when deriving
+  `GITRANK_REQUIRED_STATUS_CHECKS` automatically.
 - Verification fails closed without admin token.
 - App integrations without repository `contents:write` and `administration`
   privileges fail with `HTTP 403 Resource not accessible by integration` for
