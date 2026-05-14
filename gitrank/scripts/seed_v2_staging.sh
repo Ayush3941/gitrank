@@ -20,11 +20,17 @@ curl_json() {
   url="$2"
   body="${3:-}"
   if [ -n "$body" ]; then
-    curl -fsS -X "$method" "$url" \
+    curl -fsS \
+      --connect-timeout "${SEED_HTTP_TIMEOUT_SECONDS:-30}" \
+      --max-time "${SEED_HTTP_TIMEOUT_SECONDS:-30}" \
+      -X "$method" "$url" \
       -H "Content-Type: application/json" \
       --data "$body"
   else
-    curl -fsS -X "$method" "$url"
+    curl -fsS \
+      --connect-timeout "${SEED_HTTP_TIMEOUT_SECONDS:-30}" \
+      --max-time "${SEED_HTTP_TIMEOUT_SECONDS:-30}" \
+      -X "$method" "$url"
   fi
 }
 
