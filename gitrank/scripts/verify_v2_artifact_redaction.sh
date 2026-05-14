@@ -52,6 +52,7 @@ rm -f "$audit_report" "$closeout_report" "$completion_report" "$completion_repor
 if (
   cd "$root_dir" &&
   RUN_BASELINE_VERIFIERS=false \
+  RUN_PUBLIC_PROBE=false \
   AUDIT_REPORT_FILE="$audit_report" \
   ./scripts/audit_v2_contributing_checklist.sh >/dev/null 2>&1
 ); then
@@ -70,6 +71,7 @@ fi
 
 [ -s "$audit_report" ] || fail "audit report file was not created"
 assert_contains "$audit_report" "- repository: OWNER/REPO" "audit report should redact repository label by default"
+assert_contains "$audit_report" "- probe skipped: RUN_PUBLIC_PROBE=false" "audit report should honor local probe skip toggle"
 assert_not_contains "$audit_report" "$real_repo" "audit report should not leak concrete repository"
 
 if ! (

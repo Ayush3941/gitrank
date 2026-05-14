@@ -78,6 +78,8 @@ For consolidated execution, use:
   - when `GITHUB_TOKEN`/`GH_TOKEN`/`GITRANK_REPO_ADMIN_TOKEN` (or GitHub App
     credentials) are available, the public probe snapshot now uses
     authenticated API calls to reduce rate-limit noise
+  - set `RUN_PUBLIC_PROBE=false` to skip live GitHub probe calls during
+    local/offline runs while still emitting a structured skipped-probe note
 - `make mark-v2-contributing-live-gates` to flip live-gate checkboxes only after
   successful verifier runs. In workflow-evidence mode it now delegates
   workflow-run lookup behavior to `make verify-live-v2-workflow-run`.

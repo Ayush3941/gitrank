@@ -6,6 +6,7 @@ repo_dir="$(CDPATH= cd -- "$root_dir/.." && pwd)"
 contributing_file="$repo_dir/CONTRIBUTING.md"
 audit_report_file="${AUDIT_REPORT_FILE:-}"
 display_repository="${GITHUB_REPOSITORY_DISPLAY:-}"
+run_public_probe="${RUN_PUBLIC_PROBE:-true}"
 api_token="${GITHUB_TOKEN:-${GH_TOKEN:-${GITRANK_REPO_ADMIN_TOKEN:-}}}"
 github_app_id="${GITHUB_APP_ID:-${GITRANK_GITHUB_APP_ID:-}}"
 github_app_installation_id="${GITHUB_APP_INSTALLATION_ID:-${GITRANK_GITHUB_APP_INSTALLATION_ID:-}}"
@@ -218,6 +219,22 @@ emit_public_live_probe_snapshot() {
   fi
 }
 
+emit_skipped_public_probe_snapshot() {
+  repository_display=$1
+  reason=$2
+  printf 'public probe snapshot\n'
+  printf 'repository: %s\n' "$repository_display"
+  printf 'probe skipped: %s\n' "$reason"
+
+  if [ -n "$audit_report_file" ]; then
+    {
+      printf '\n## Public Probe Snapshot\n'
+      printf '%s\n' "- repository: $repository_display"
+      printf '%s\n' "- probe skipped: $reason"
+    } >>"$audit_report_file"
+  fi
+}
+
 [ -s "$contributing_file" ] || fail "missing CONTRIBUTING.md at $contributing_file"
 bootstrap_probe_token_from_github_app
 
@@ -301,6 +318,10 @@ done <"$unchecked_file"
 
 repository=$(resolve_repository_from_git_remote || true)
 repository_display=$(resolve_display_repository "$repository")
-emit_public_live_probe_snapshot "$repository" "$repository_display"
+if [ "$run_public_probe" = "true" ]; then
+  emit_public_live_probe_snapshot "$repository" "$repository_display"
+else
+  emit_skipped_public_probe_snapshot "$repository_display" "RUN_PUBLIC_PROBE=false"
+fi
 
 fail "checklist still has unresolved items"
