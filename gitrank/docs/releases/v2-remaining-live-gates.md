@@ -62,6 +62,8 @@ environment variables.
 Note: unauthenticated GitHub API calls can hit low per-IP rate limits. Public
 prechecks now report this explicitly; switch to token/App-authenticated mode
 when that happens.
+If GitHub App credentials are present, the public prechecks can auto-bootstrap
+short-lived installation tokens.
 
 ## 1) Production Observability On Live Traffic
 

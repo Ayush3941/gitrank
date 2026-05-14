@@ -11,6 +11,10 @@ WORKFLOW_NAMES="${WORKFLOW_NAMES:-CI,Frontend CI,Secret Scan,CodeQL,Trivy Scan}"
 RUNS_PER_PAGE="${RUNS_PER_PAGE:-100}"
 MAX_PAGES="${MAX_PAGES:-5}"
 TMP_ROOT="${TMPDIR:-/tmp}"
+GITHUB_APP_ID="${GITHUB_APP_ID:-${GITRANK_GITHUB_APP_ID:-}}"
+GITHUB_APP_INSTALLATION_ID="${GITHUB_APP_INSTALLATION_ID:-${GITRANK_GITHUB_APP_INSTALLATION_ID:-}}"
+GITHUB_APP_PRIVATE_KEY_FILE="${GITHUB_APP_PRIVATE_KEY_FILE:-${GITRANK_GITHUB_APP_PRIVATE_KEY_FILE:-}}"
+GITHUB_APP_PRIVATE_KEY_PEM="${GITHUB_APP_PRIVATE_KEY_PEM:-${GITRANK_GITHUB_APP_PRIVATE_KEY_PEM:-}}"
 
 fail() {
   printf 'public workflow health verification failed: %s\n' "$1" >&2
@@ -47,6 +51,30 @@ trim_spaces() {
   printf '%s' "$1" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'
 }
 
+bootstrap_token_from_github_app() {
+  [ -n "$TOKEN" ] && return 0
+  [ -n "$GITHUB_APP_ID" ] || return 1
+  [ -n "$GITHUB_APP_INSTALLATION_ID" ] || return 1
+  if [ -z "$GITHUB_APP_PRIVATE_KEY_FILE" ] && [ -z "$GITHUB_APP_PRIVATE_KEY_PEM" ]; then
+    return 1
+  fi
+
+  token_file=$(mktemp "$TMP_ROOT/gitrank-public-workflow-health-token.XXXXXX")
+  GITHUB_APP_ID="$GITHUB_APP_ID" \
+  GITHUB_APP_INSTALLATION_ID="$GITHUB_APP_INSTALLATION_ID" \
+  GITHUB_APP_PRIVATE_KEY_FILE="$GITHUB_APP_PRIVATE_KEY_FILE" \
+  GITHUB_APP_PRIVATE_KEY_PEM="$GITHUB_APP_PRIVATE_KEY_PEM" \
+  TOKEN_OUTPUT_FILE="$token_file" \
+  "$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)/create_github_app_installation_token.sh" >/dev/null
+  TOKEN=$(cat "$token_file" 2>/dev/null || true)
+  rm -f "$token_file"
+  [ -n "$TOKEN" ] || fail "GitHub App token bootstrap succeeded but returned empty token"
+  export GITHUB_TOKEN="$TOKEN"
+  export GH_TOKEN="$TOKEN"
+  export GITRANK_REPO_ADMIN_TOKEN="$TOKEN"
+  printf 'public workflow health: bootstrapped token via GitHub App installation credentials\n'
+}
+
 resolve_repository_from_git_remote
 
 case "$REPOSITORY" in
@@ -60,7 +88,9 @@ is_positive_int "$MAX_PAGES" || fail "MAX_PAGES must be a positive integer"
 require_command curl
 require_command jq
 require_command base64
+require_command mktemp
 mkdir -p "$TMP_ROOT"
+bootstrap_token_from_github_app || true
 
 OWNER=${REPOSITORY%%/*}
 REPO=${REPOSITORY#*/}

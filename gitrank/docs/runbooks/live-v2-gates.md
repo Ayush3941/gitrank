@@ -164,6 +164,9 @@ GITHUB_REPOSITORY=OWNER/REPO \
 make verify-github-repository-controls-public
 ```
 
+When GitHub App credentials are present, this precheck can auto-bootstrap a
+short-lived token to avoid unauthenticated API rate limits.
+
 To check recent workflow health on `origin` without a token (defaults to
 default-branch `push` runs), use:
 
@@ -175,6 +178,8 @@ make verify-public-workflow-health
 If GitHub's unauthenticated API quota is exhausted, this command now fails with
 an explicit rate-limit error. In that case, rerun with
 `GITRANK_REPO_ADMIN_TOKEN` (or GitHub App bootstrap credentials).
+When GitHub App credentials are present, `make verify-public-workflow-health`
+can auto-bootstrap a short-lived token.
 
 When Trivy is unhealthy, this command also inspects remote
 `.github/workflows/trivy.yml` and `.trivyignore.yaml` on the relevant branch
