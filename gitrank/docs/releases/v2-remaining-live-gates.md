@@ -30,6 +30,8 @@ For consolidated execution, use:
   file-reference existence, `make` target mapping, and gate outputs)
 - `make run-live-v2-workflow-evidence-pipeline` to dispatch live gates, verify
   workflow-run evidence, and generate observability evidence in one sequence
+  (auto-syncs `.github/workflows/verify-live-v2-gates.yml` before dispatch by
+  default; set `AUTO_SYNC_REMOTE_WORKFLOW=false` to skip)
 - `CONFIRM_FINALIZE_V2=yes make finalize-v2-live-closeout` for one-command
   preflight + gate verification + checklist marking + audit
 - `make run-live-v2-gates-workflow` (requires token and live environment vars)

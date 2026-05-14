@@ -7,6 +7,7 @@ RUN_RELEASE_RENDER="${RUN_RELEASE_RENDER:-false}"
 RUN_EVIDENCE_VALIDATION="${RUN_EVIDENCE_VALIDATION:-false}"
 RUN_WORKFLOW_EVIDENCE_PIPELINE="${RUN_WORKFLOW_EVIDENCE_PIPELINE:-false}"
 RUN_ROLLBACK_RESTORE="${RUN_ROLLBACK_RESTORE:-false}"
+DISPATCH_WORKFLOW="${DISPATCH_WORKFLOW:-false}"
 
 GITHUB_REPOSITORY="${GITHUB_REPOSITORY:-}"
 GITHUB_TOKEN="${GITHUB_TOKEN:-${GH_TOKEN:-${GITRANK_REPO_ADMIN_TOKEN:-}}}"
@@ -124,6 +125,26 @@ ensure_file_non_empty() {
 }
 
 if [ "$RUN_GITHUB_CONTROLS" = "true" ]; then
+  ensure_non_empty GITHUB_REPOSITORY "$GITHUB_REPOSITORY"
+  if [ -z "$GITHUB_TOKEN" ]; then
+    has_app_bootstrap=false
+    if [ -n "$GITHUB_APP_ID" ] && [ -n "$GITHUB_APP_INSTALLATION_ID" ]; then
+      if [ -n "$GITHUB_APP_PRIVATE_KEY_FILE" ] || [ -n "$GITHUB_APP_PRIVATE_KEY_PEM" ]; then
+        has_app_bootstrap=true
+      fi
+    fi
+    if [ "$has_app_bootstrap" != "true" ]; then
+      ensure_non_empty GITHUB_TOKEN_OR_GH_TOKEN_OR_GITRANK_REPO_ADMIN_TOKEN "$GITHUB_TOKEN"
+      ensure_non_empty GITHUB_APP_ID_OR_GITRANK_GITHUB_APP_ID "$GITHUB_APP_ID"
+      ensure_non_empty GITHUB_APP_INSTALLATION_ID_OR_GITRANK_GITHUB_APP_INSTALLATION_ID "$GITHUB_APP_INSTALLATION_ID"
+      if [ -z "$GITHUB_APP_PRIVATE_KEY_FILE" ] && [ -z "$GITHUB_APP_PRIVATE_KEY_PEM" ]; then
+        ensure_non_empty GITHUB_APP_PRIVATE_KEY_FILE_OR_PEM "$GITHUB_APP_PRIVATE_KEY_PEM"
+      fi
+    fi
+  fi
+fi
+
+if [ "$RUN_WORKFLOW_EVIDENCE_PIPELINE" = "true" ] && [ "$DISPATCH_WORKFLOW" = "true" ]; then
   ensure_non_empty GITHUB_REPOSITORY "$GITHUB_REPOSITORY"
   if [ -z "$GITHUB_TOKEN" ]; then
     has_app_bootstrap=false

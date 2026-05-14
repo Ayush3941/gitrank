@@ -309,6 +309,10 @@ make run-live-v2-workflow-evidence-pipeline
 
 The workflow dispatch and workflow-run verification stages also support
 GitHub App credential bootstrap when a direct token is not set.
+`make run-live-v2-workflow-evidence-pipeline` now attempts
+`make sync-remote-live-v2-workflow` before dispatch by default
+(`AUTO_SYNC_REMOTE_WORKFLOW=true`). Set `AUTO_SYNC_REMOTE_WORKFLOW=false` to
+disable that pre-dispatch sync.
 
 If the workflow already ran and you only want evidence generation from the
 latest successful run:
