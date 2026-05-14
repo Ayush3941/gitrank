@@ -10,6 +10,7 @@ OUTPUT_FILE="${OUTPUT_FILE:-$root_dir/docs/releases/v2-live-closeout-status-late
 CHECK_PUBLIC_GITHUB_CONTROLS="${CHECK_PUBLIC_GITHUB_CONTROLS:-true}"
 CHECK_PUBLIC_WORKFLOW_HEALTH="${CHECK_PUBLIC_WORKFLOW_HEALTH:-true}"
 CHECK_WORKFLOW_EVIDENCE="${CHECK_WORKFLOW_EVIDENCE:-true}"
+CHECK_LIVE_GITHUB_ACCESS="${CHECK_LIVE_GITHUB_ACCESS:-true}"
 WORKFLOW_RUN_ID="${WORKFLOW_RUN_ID:-latest}"
 WORKFLOW_EVENT="${WORKFLOW_EVENT:-workflow_dispatch}"
 DISPLAY_REPOSITORY="${GITHUB_REPOSITORY_DISPLAY:-OWNER/REPO}"
@@ -126,6 +127,13 @@ if [ "$CHECK_PUBLIC_WORKFLOW_HEALTH" = "true" ]; then
   run_and_capture "Public Workflow Health Gate" \
     sh -c "cd '$root_dir' && GITHUB_REPOSITORY='${gitrank_repo:-}' make verify-public-workflow-health"
   public_workflow_health_code=$RUN_CAPTURE_LAST_CODE
+fi
+
+live_github_access_code=skip
+if [ "$CHECK_LIVE_GITHUB_ACCESS" = "true" ]; then
+  run_and_capture "Live GitHub Access Preflight" \
+    sh -c "cd '$root_dir' && GITHUB_REPOSITORY='${gitrank_repo:-}' make verify-live-github-access"
+  live_github_access_code=$RUN_CAPTURE_LAST_CODE
 fi
 
 public_controls_code=skip
@@ -289,6 +297,7 @@ fi
   printf '%s\n' "- Contributing audit: \`$audit_code\`"
   printf '%s\n' "- Env presence probe: \`$env_presence_code\`"
   printf '%s\n' "- Public workflow health: \`$public_workflow_health_code\`"
+  printf '%s\n' "- Live GitHub access preflight: \`$live_github_access_code\`"
   printf '%s\n' "- Public controls precheck: \`$public_controls_code\`"
   printf '%s\n' "- Workflow evidence probe: \`$workflow_probe_code\`"
   printf '\n'
