@@ -63,39 +63,13 @@ verify_from_workflow_run_if_needed() {
   if [ -z "$WORKFLOW_RUN_ID" ]; then
     WORKFLOW_RUN_ID=latest
   fi
-  if run_make verify-live-v2-workflow-run \
+  run_make verify-live-v2-workflow-run \
     WORKFLOW_RUN_ID="$WORKFLOW_RUN_ID" \
     WORKFLOW_EVENT="$WORKFLOW_EVENT" \
+    WORKFLOW_EVENT_FALLBACK_ANY="$WORKFLOW_EVENT_FALLBACK_ANY" \
     REQUIRE_GITHUB_CONTROLS="$MARK_GITHUB_CONTROLS" \
     REQUIRE_OBSERVABILITY="$MARK_OBSERVABILITY" \
-    REQUIRE_RELEASE_RENDER="$MARK_K8S_RUNTIME"; then
-    :
-  else
-    retry_with_any=false
-    case "$WORKFLOW_EVENT_FALLBACK_ANY" in
-      true)
-        if [ "$WORKFLOW_EVENT" != "any" ] && [ "$WORKFLOW_EVENT" != "all" ] && [ "$WORKFLOW_EVENT" != "*" ]; then
-          if [ "$WORKFLOW_RUN_ID" = "latest" ]; then
-            retry_with_any=true
-          fi
-        fi
-        ;;
-    esac
-
-    if [ "$retry_with_any" = "true" ]; then
-      printf '%s\n' "workflow-run verification miss for event '$WORKFLOW_EVENT'; retrying with WORKFLOW_EVENT=any"
-      WORKFLOW_EVENT=any
-      WORKFLOW_RUN_ID=latest
-      run_make verify-live-v2-workflow-run \
-        WORKFLOW_RUN_ID="$WORKFLOW_RUN_ID" \
-        WORKFLOW_EVENT="$WORKFLOW_EVENT" \
-        REQUIRE_GITHUB_CONTROLS="$MARK_GITHUB_CONTROLS" \
-        REQUIRE_OBSERVABILITY="$MARK_OBSERVABILITY" \
-        REQUIRE_RELEASE_RENDER="$MARK_K8S_RUNTIME"
-    else
-      fail "workflow-run verification failed"
-    fi
-  fi
+    REQUIRE_RELEASE_RENDER="$MARK_K8S_RUNTIME" || fail "workflow-run verification failed"
   workflow_verified=true
 }
 

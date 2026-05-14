@@ -15,6 +15,9 @@ For consolidated execution, use:
 - `make verify-live-v2-workflow-run` to accept a successful
   `verify-live-v2-gates.yml` workflow run as evidence for GitHub controls,
   observability, and release-render gates (`WORKFLOW_RUN_ID=latest` supported)
+  with built-in fallback to `WORKFLOW_EVENT=any` when latest
+  `workflow_dispatch` lookup misses
+  (`WORKFLOW_EVENT_FALLBACK_ANY=true` by default)
 - `make verify-remote-live-v2-workflow-sync` to verify the remote default
   branch contains `.github/workflows/verify-live-v2-gates.yml` and that its
   content matches the local file before dispatch/evidence probes
@@ -36,27 +39,23 @@ For consolidated execution, use:
 - `make run-live-v2-workflow-evidence-pipeline` to dispatch live gates, verify
   workflow-run evidence, and generate observability evidence in one sequence
   (auto-syncs `.github/workflows/verify-live-v2-gates.yml` before dispatch by
-  default; set `AUTO_SYNC_REMOTE_WORKFLOW=false` to skip). If workflow evidence
-  lookup misses `workflow_dispatch` runs, pipeline verification now retries
-  automatically with `WORKFLOW_EVENT=any` by default
-  (`WORKFLOW_EVENT_FALLBACK_ANY=true`).
+  default; set `AUTO_SYNC_REMOTE_WORKFLOW=false` to skip). Workflow-event
+  fallback behavior is delegated to `make verify-live-v2-workflow-run`.
 - `CONFIRM_FINALIZE_V2=yes make finalize-v2-live-closeout` for one-command
   preflight + gate verification + checklist marking + audit
   - finalizer now includes remote workflow sync verification by default and
     can auto-sync `.github/workflows/verify-live-v2-gates.yml` when drift is
     detected (`RUN_REMOTE_WORKFLOW_SYNC=true`,
     `AUTO_SYNC_REMOTE_WORKFLOW=true`)
-  - workflow evidence verification in finalizer mode now retries with
-    `WORKFLOW_EVENT=any` when latest `workflow_dispatch` lookup misses
-    (`WORKFLOW_EVENT_FALLBACK_ANY=true`).
+  - workflow evidence verification in finalizer mode now uses
+    `make verify-live-v2-workflow-run` directly, including its event fallback.
 - `make run-live-v2-gates-workflow` (requires token and live environment vars)
   and now consumes workflow-dispatch run details when the API provides them
   (`RETURN_RUN_DETAILS=true` by default, with legacy fallback on validation errors)
 - `make audit-v2-contributing-checklist` for pass/fail against unchecked lines
 - `make mark-v2-contributing-live-gates` to flip live-gate checkboxes only after
-  successful verifier runs. In workflow-evidence mode, latest
-  `workflow_dispatch` misses now retry with `WORKFLOW_EVENT=any` by default
-  (`WORKFLOW_EVENT_FALLBACK_ANY=true`).
+  successful verifier runs. In workflow-evidence mode it now delegates
+  workflow-run lookup behavior to `make verify-live-v2-workflow-run`.
 - `make verify-live-v2-inputs` as preflight for required live credentials and
   environment inputs
 - `make create-github-app-installation-token` to bootstrap short-lived GitHub

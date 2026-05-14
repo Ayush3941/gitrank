@@ -14,6 +14,7 @@ EXPECTED_HEAD_BRANCH="${EXPECTED_HEAD_BRANCH:-}"
 WORKFLOW_EVENT="${WORKFLOW_EVENT:-workflow_dispatch}"
 WORKFLOW_RUN_SEARCH_PAGES="${WORKFLOW_RUN_SEARCH_PAGES:-10}"
 WORKFLOW_RUN_ID_OUTPUT_FILE="${WORKFLOW_RUN_ID_OUTPUT_FILE:-}"
+WORKFLOW_EVENT_FALLBACK_ANY="${WORKFLOW_EVENT_FALLBACK_ANY:-true}"
 REQUIRE_GITHUB_CONTROLS="${REQUIRE_GITHUB_CONTROLS:-true}"
 REQUIRE_OBSERVABILITY="${REQUIRE_OBSERVABILITY:-true}"
 REQUIRE_RELEASE_RENDER="${REQUIRE_RELEASE_RENDER:-true}"
@@ -169,65 +170,88 @@ resolve_workflow_run_id_if_needed() {
     return 0
   fi
 
-  page=1
-  scanned_runs=0
-  search_mode=workflow-specific
-  used_repo_wide_fallback=false
-  while [ "$page" -le "$WORKFLOW_RUN_SEARCH_PAGES" ]; do
-    event_query=
-    if [ -n "$WORKFLOW_EVENT_FILTER" ]; then
-      event_query="&event=$WORKFLOW_EVENT_FILTER"
-    fi
-    if [ "$search_mode" = "workflow-specific" ]; then
-      search_path="/repos/$OWNER/$REPO/actions/workflows/$EXPECTED_WORKFLOW_FILE/runs?per_page=100&page=$page$event_query"
-    else
-      search_path="/repos/$OWNER/$REPO/actions/runs?per_page=100&page=$page$event_query"
-    fi
+  lookup_event_filter=$WORKFLOW_EVENT_FILTER
+  lookup_event_display=$WORKFLOW_EVENT_DISPLAY
+  fallback_to_any_attempted=false
 
-    github_get "$search_path"
-    handle_read_access_error
-    if [ "$API_STATUS" = "404" ] && [ "$search_mode" = "workflow-specific" ] && [ "$page" -eq 1 ]; then
-      search_mode=repository-wide
-      used_repo_wide_fallback=true
+  while :; do
+    page=1
+    scanned_runs=0
+    search_mode=workflow-specific
+    used_repo_wide_fallback=false
+
+    while [ "$page" -le "$WORKFLOW_RUN_SEARCH_PAGES" ]; do
+      event_query=
+      if [ -n "$lookup_event_filter" ]; then
+        event_query="&event=$lookup_event_filter"
+      fi
+      if [ "$search_mode" = "workflow-specific" ]; then
+        search_path="/repos/$OWNER/$REPO/actions/workflows/$EXPECTED_WORKFLOW_FILE/runs?per_page=100&page=$page$event_query"
+      else
+        search_path="/repos/$OWNER/$REPO/actions/runs?per_page=100&page=$page$event_query"
+      fi
+
+      github_get "$search_path"
+      handle_read_access_error
+      if [ "$API_STATUS" = "404" ] && [ "$search_mode" = "workflow-specific" ] && [ "$page" -eq 1 ]; then
+        search_mode=repository-wide
+        used_repo_wide_fallback=true
+        continue
+      fi
+      expect_status 200 "workflow run search page $page"
+
+      matched_id=$(printf '%s' "$API_BODY" | jq -r --arg name "$EXPECTED_WORKFLOW_NAME" --arg event "$lookup_event_filter" --arg workflow_path "$EXPECTED_WORKFLOW_PATH" '
+        [
+          .workflow_runs[]?
+          | select(.name == $name)
+          | select(($event | length) == 0 or .event == $event)
+          | select(.status == "completed")
+          | select(.conclusion == "success")
+          | select((.path // "" | split("@")[0]) == $workflow_path)
+        ]
+        | sort_by(.created_at)
+        | reverse
+        | .[0].id // empty
+      ')
+
+      if [ -n "$matched_id" ]; then
+        WORKFLOW_RUN_ID="$matched_id"
+        WORKFLOW_EVENT_FILTER=$lookup_event_filter
+        WORKFLOW_EVENT_DISPLAY=$lookup_event_display
+        if [ "$fallback_to_any_attempted" = "true" ]; then
+          printf 'resolved workflow run id with event fallback: %s\n' "$WORKFLOW_RUN_ID"
+        else
+          printf 'resolved workflow run id: %s\n' "$WORKFLOW_RUN_ID"
+        fi
+        return 0
+      fi
+
+      page_count=$(printf '%s' "$API_BODY" | jq '.workflow_runs | length')
+      scanned_runs=$((scanned_runs + page_count))
+      [ "$page_count" -lt 100 ] && break
+      page=$((page + 1))
+    done
+
+    if [ "$WORKFLOW_EVENT_FALLBACK_ANY" = "true" ] && [ -n "$lookup_event_filter" ] && [ "$fallback_to_any_attempted" = "false" ]; then
+      lookup_event_filter=
+      lookup_event_display=any
+      fallback_to_any_attempted=true
       continue
     fi
-    expect_status 200 "workflow run search page $page"
 
-    matched_id=$(printf '%s' "$API_BODY" | jq -r --arg name "$EXPECTED_WORKFLOW_NAME" --arg event "$WORKFLOW_EVENT_FILTER" --arg workflow_path "$EXPECTED_WORKFLOW_PATH" '
-      [
-        .workflow_runs[]?
-        | select(.name == $name)
-        | select(($event | length) == 0 or .event == $event)
-        | select(.status == "completed")
-        | select(.conclusion == "success")
-        | select((.path // "" | split("@")[0]) == $workflow_path)
-      ]
-      | sort_by(.created_at)
-      | reverse
-      | .[0].id // empty
-    ')
-
-    if [ -n "$matched_id" ]; then
-      WORKFLOW_RUN_ID="$matched_id"
-      printf 'resolved workflow run id: %s\n' "$WORKFLOW_RUN_ID"
-      return 0
+    remediation="dispatch the live-gates workflow (make run-live-v2-gates-workflow) or provide WORKFLOW_RUN_ID"
+    fallback_note=
+    if [ "$used_repo_wide_fallback" = "true" ]; then
+      fallback_note="; workflow-specific lookup returned 404 and repository-wide fallback was used"
     fi
-
-    page_count=$(printf '%s' "$API_BODY" | jq '.workflow_runs | length')
-    scanned_runs=$((scanned_runs + page_count))
-    [ "$page_count" -lt 100 ] && break
-    page=$((page + 1))
+    if [ "$fallback_to_any_attempted" = "true" ]; then
+      fallback_note="$fallback_note; event fallback to any was attempted"
+    fi
+    if [ -n "$lookup_event_filter" ]; then
+      fail "no successful '$EXPECTED_WORKFLOW_NAME' workflow run found for event '$lookup_event_filter' in the last $WORKFLOW_RUN_SEARCH_PAGES page(s) (search_mode=$search_mode scanned_runs=$scanned_runs$fallback_note; $remediation)"
+    fi
+    fail "no successful '$EXPECTED_WORKFLOW_NAME' workflow run found in the last $WORKFLOW_RUN_SEARCH_PAGES page(s) (search_mode=$search_mode scanned_runs=$scanned_runs$fallback_note; $remediation)"
   done
-
-  remediation="dispatch the live-gates workflow (make run-live-v2-gates-workflow) or provide WORKFLOW_RUN_ID"
-  fallback_note=
-  if [ "$used_repo_wide_fallback" = "true" ]; then
-    fallback_note="; workflow-specific lookup returned 404 and repository-wide fallback was used"
-  fi
-  if [ -n "$WORKFLOW_EVENT_FILTER" ]; then
-    fail "no successful '$EXPECTED_WORKFLOW_NAME' workflow run found for event '$WORKFLOW_EVENT_FILTER' in the last $WORKFLOW_RUN_SEARCH_PAGES page(s) (search_mode=$search_mode scanned_runs=$scanned_runs$fallback_note; $remediation)"
-  fi
-  fail "no successful '$EXPECTED_WORKFLOW_NAME' workflow run found in the last $WORKFLOW_RUN_SEARCH_PAGES page(s) (search_mode=$search_mode scanned_runs=$scanned_runs$fallback_note; $remediation)"
 }
 
 normalize_workflow_event_filter
