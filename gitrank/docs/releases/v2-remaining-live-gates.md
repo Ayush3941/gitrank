@@ -108,6 +108,9 @@ Current local evidence:
   - `make apply-github-repository-controls-auto`
   - `make verify-github-repository-controls`
 - Verification fails closed without admin token.
+- App integrations without repository `contents:write` and `administration`
+  privileges fail with `HTTP 403 Resource not accessible by integration` for
+  live controls mutation calls.
 
 How to complete:
 
@@ -115,6 +118,9 @@ How to complete:
    - `GITRANK_REPO_ADMIN_TOKEN` (or `GITHUB_TOKEN`) with repository admin scope, or
    - GitHub App credentials (`GITHUB_APP_ID`, `GITHUB_APP_INSTALLATION_ID`, and
      private-key input) so scripts can bootstrap short-lived installation tokens.
+   - Ensure the GitHub App installation has permission to mutate repository
+     settings (branch protections/rulesets) and repository contents where
+     policy-sync writes are required.
 2. Apply:
    - `GITRANK_APPLY_REPOSITORY_CONTROLS=yes make apply-github-repository-controls-auto`
 3. Verify:
