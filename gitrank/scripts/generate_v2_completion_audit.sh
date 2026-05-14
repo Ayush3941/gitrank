@@ -9,6 +9,12 @@ tmp_root="${TMPDIR:-$root_dir/.tmp}"
 output_file="${OUTPUT_FILE:-$root_dir/docs/releases/v2-completion-audit-latest.md}"
 run_checks="${RUN_CHECKS:-true}"
 display_repository="${GITHUB_REPOSITORY_DISPLAY:-}"
+check_remote_live_workflow_sync="${CHECK_REMOTE_LIVE_WORKFLOW_SYNC:-true}"
+check_public_github_controls="${CHECK_PUBLIC_GITHUB_CONTROLS:-true}"
+check_live_github_access="${CHECK_LIVE_GITHUB_ACCESS:-true}"
+check_workflow_evidence="${CHECK_WORKFLOW_EVIDENCE:-true}"
+workflow_run_id="${WORKFLOW_RUN_ID:-latest}"
+workflow_event="${WORKFLOW_EVENT:-workflow_dispatch}"
 
 fail() {
   printf 'generate v2 completion audit failed: %s\n' "$1" >&2
@@ -212,10 +218,64 @@ if [ "$run_checks" = "true" ]; then
   run_capture "Checklist Audit (make audit-v2-contributing-checklist)" \
     "cd '$root_dir' && RUN_BASELINE_VERIFIERS=false make audit-v2-contributing-checklist"
   checklist_audit_code=$RUN_CAPTURE_LAST_CODE
+
+  run_capture "Essential Live Env Presence" \
+    '
+repo_val="${GITHUB_REPOSITORY:-}"
+if [ -n "$repo_val" ]; then
+  echo "GITHUB_REPOSITORY=set"
+elif [ -n "'"$resolved_repository"'" ]; then
+  echo "GITHUB_REPOSITORY=set(inferred:'"$resolved_repository"')"
+else
+  echo "GITHUB_REPOSITORY=unset"
+fi
+for v in GITRANK_REPO_ADMIN_TOKEN GITHUB_TOKEN GH_TOKEN GITHUB_APP_ID GITHUB_APP_INSTALLATION_ID GITHUB_APP_PRIVATE_KEY_FILE GITHUB_APP_PRIVATE_KEY_PEM GITRANK_GITHUB_APP_ID GITRANK_GITHUB_APP_INSTALLATION_ID GITRANK_GITHUB_APP_PRIVATE_KEY_FILE GITRANK_GITHUB_APP_PRIVATE_KEY_PEM PROMETHEUS_BASE_URL GRAFANA_BASE_URL GRAFANA_API_TOKEN OBS_EVIDENCE_FILE ROLLBACK_EVIDENCE_FILE RESTORE_EVIDENCE_FILE IMAGE_TAG IMAGE_REGISTRY_OWNER REQUIRE_ENV_SPECIFIC_K8S_OVERRIDES STAGING_K8S_PUBLIC_BASE_URL PRODUCTION_K8S_PUBLIC_BASE_URL STAGING_K8S_API_BASE_URL PRODUCTION_K8S_API_BASE_URL STAGING_K8S_AUTH_COOKIE_DOMAIN PRODUCTION_K8S_AUTH_COOKIE_DOMAIN STAGING_K8S_GITHUB_OAUTH_REDIRECT_URL PRODUCTION_K8S_GITHUB_OAUTH_REDIRECT_URL STAGING_K8S_API_HOST PRODUCTION_K8S_API_HOST STAGING_K8S_AUTH_HOST PRODUCTION_K8S_AUTH_HOST STAGING_K8S_TLS_SECRET_NAME PRODUCTION_K8S_TLS_SECRET_NAME; do
+  eval val="\${$v-}"
+  if [ -n "$val" ]; then
+    echo "$v=set"
+  else
+    echo "$v=unset"
+  fi
+done
+'
+  env_presence_code=$RUN_CAPTURE_LAST_CODE
+
+  remote_live_workflow_sync_code=skip
+  if [ "$check_remote_live_workflow_sync" = "true" ]; then
+    run_capture "Remote Live V2 Workflow Sync (make verify-remote-live-v2-workflow-sync)" \
+      "cd '$root_dir' && GITHUB_REPOSITORY='${resolved_repository:-$display_repository}' make verify-remote-live-v2-workflow-sync"
+    remote_live_workflow_sync_code=$RUN_CAPTURE_LAST_CODE
+  fi
+
+  live_github_access_code=skip
+  if [ "$check_live_github_access" = "true" ]; then
+    run_capture "Live GitHub Access Preflight (make verify-live-github-access)" \
+      "cd '$root_dir' && GITHUB_REPOSITORY='${resolved_repository:-$display_repository}' make verify-live-github-access"
+    live_github_access_code=$RUN_CAPTURE_LAST_CODE
+  fi
+
+  public_controls_code=skip
+  if [ "$check_public_github_controls" = "true" ]; then
+    run_capture "Public GitHub Controls Precheck (make verify-github-repository-controls-public)" \
+      "cd '$root_dir' && GITHUB_REPOSITORY='${resolved_repository:-$display_repository}' make verify-github-repository-controls-public"
+    public_controls_code=$RUN_CAPTURE_LAST_CODE
+  fi
+
+  workflow_probe_code=skip
+  if [ "$check_workflow_evidence" = "true" ]; then
+    run_capture "Workflow Evidence Probe (make verify-live-v2-workflow-run)" \
+      "cd '$root_dir' && GITHUB_REPOSITORY='${resolved_repository:-$display_repository}' WORKFLOW_RUN_ID='$workflow_run_id' WORKFLOW_EVENT='$workflow_event' REQUIRE_GITHUB_CONTROLS=true REQUIRE_OBSERVABILITY=true REQUIRE_RELEASE_RENDER=true make verify-live-v2-workflow-run"
+    workflow_probe_code=$RUN_CAPTURE_LAST_CODE
+  fi
 else
   local_gate_code=skip
   public_workflow_health_code=skip
   checklist_audit_code=skip
+  env_presence_code=skip
+  remote_live_workflow_sync_code=skip
+  live_github_access_code=skip
+  public_controls_code=skip
+  workflow_probe_code=skip
 fi
 
 {
@@ -223,6 +283,11 @@ fi
   printf '%s\n' "- Local readiness gate exit code: \`$local_gate_code\`"
   printf '%s\n' "- Public workflow health gate exit code: \`$public_workflow_health_code\`"
   printf '%s\n' "- Checklist audit exit code: \`$checklist_audit_code\`"
+  printf '%s\n' "- Env presence probe exit code: \`$env_presence_code\`"
+  printf '%s\n' "- Remote live workflow sync exit code: \`$remote_live_workflow_sync_code\`"
+  printf '%s\n' "- Live GitHub access preflight exit code: \`$live_github_access_code\`"
+  printf '%s\n' "- Public GitHub controls precheck exit code: \`$public_controls_code\`"
+  printf '%s\n' "- Workflow evidence probe exit code: \`$workflow_probe_code\`"
   printf '%s\n' "- Current unchecked checklist count: \`$unchecked_count\`"
   printf '\n'
   if [ "$unchecked_count" -eq 0 ] && [ "$local_gate_code" = "0" ] && [ "$public_workflow_health_code" = "0" ] && [ "$checklist_audit_code" = "0" ]; then
