@@ -79,6 +79,11 @@ short-lived installation tokens.
 - `make verify-remote-live-v2-workflow-sync`: pass via raw-public fallback when
   no token is configured
 - `make audit-v2-contributing-checklist`: fail with `unchecked items: 14`
+- Public workflow probe for `.github/workflows/verify-live-v2-gates.yml`:
+  `total runs: 0` (no successful workflow-run evidence exists yet)
+- Public branch-policy probe:
+  `main` is currently unprotected and branch-rules endpoint returns no effective
+  rules, so repository-controls gates cannot be marked complete yet
 - Remaining unchecked items are still limited to live-only gates (observability,
   GitHub controls, rollback/restore drills, environment-specific Kubernetes
   runtime proof)
