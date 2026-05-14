@@ -218,8 +218,18 @@ while :; do
 
   if [ -n "$dispatch_run_id" ]; then
     json_request GET "/repos/$OWNER/$REPO/actions/runs/$dispatch_run_id"
-    [ "$API_STATUS" = "200" ] || fail "workflow run lookup returned HTTP $API_STATUS"
-    matched_run_json="$API_BODY"
+    case "$API_STATUS" in
+      200)
+        matched_run_json="$API_BODY"
+        ;;
+      404)
+        # Dispatch can return run details before the run is queryable.
+        matched_run_json=
+        ;;
+      *)
+        fail "workflow run lookup returned HTTP $API_STATUS"
+        ;;
+    esac
   else
     json_request GET "/repos/$OWNER/$REPO/actions/workflows/$WORKFLOW_FILE/runs?event=workflow_dispatch&per_page=20"
     [ "$API_STATUS" = "200" ] || fail "workflow runs query returned HTTP $API_STATUS"
