@@ -378,6 +378,9 @@ GitHub App credential bootstrap when a direct token is not set.
 `make sync-remote-live-v2-workflow` before dispatch by default
 (`AUTO_SYNC_REMOTE_WORKFLOW=true`). Set `AUTO_SYNC_REMOTE_WORKFLOW=false` to
 disable that pre-dispatch sync.
+When auto-sync is enabled, the pipeline first runs
+`make verify-live-github-access REQUIRE_WORKFLOW_SYNC_CAPABILITY=true` so
+missing workflow-file write capability is surfaced before dispatch.
 
 If the workflow already ran and you only want evidence generation from the
 latest successful run:

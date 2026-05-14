@@ -51,6 +51,8 @@ run_make verify-live-v2-inputs
 
 if [ "$DISPATCH_WORKFLOW" = "true" ]; then
   if [ "$AUTO_SYNC_REMOTE_WORKFLOW" = "true" ]; then
+    REQUIRE_WORKFLOW_SYNC_CAPABILITY=true \
+    run_make verify-live-github-access
     run_make sync-remote-live-v2-workflow
   fi
 

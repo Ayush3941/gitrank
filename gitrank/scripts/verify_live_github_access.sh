@@ -7,6 +7,7 @@ API_BASE="${GITHUB_API_URL:-https://api.github.com}"
 API_VERSION="${GITHUB_API_VERSION:-2026-03-10}"
 API_TIMEOUT_SECONDS="${GITHUB_API_TIMEOUT_SECONDS:-30}"
 TARGET_WORKFLOW_FILE="${TARGET_WORKFLOW_FILE:-verify-live-v2-gates.yml}"
+REQUIRE_WORKFLOW_SYNC_CAPABILITY="${REQUIRE_WORKFLOW_SYNC_CAPABILITY:-false}"
 TMP_ROOT="${TMPDIR:-/tmp}"
 GITHUB_APP_ID="${GITHUB_APP_ID:-${GITRANK_GITHUB_APP_ID:-}}"
 GITHUB_APP_INSTALLATION_ID="${GITHUB_APP_INSTALLATION_ID:-${GITRANK_GITHUB_APP_INSTALLATION_ID:-}}"
@@ -79,13 +80,15 @@ REPO=${REPOSITORY#*/}
 API_STATUS=
 API_BODY=
 LAST_CONTEXT=
+LAST_HEADERS=
 
 github_get() {
   path=$1
   context=$2
   LAST_CONTEXT=$context
   body_file="$TMP_ROOT/gitrank-live-github-access.$$"
-  API_STATUS=$(curl -sS -L -o "$body_file" -w '%{http_code}' \
+  headers_file="$TMP_ROOT/gitrank-live-github-access-headers.$$"
+  API_STATUS=$(curl -sS -L -D "$headers_file" -o "$body_file" -w '%{http_code}' \
     --connect-timeout "$API_TIMEOUT_SECONDS" \
     --max-time "$API_TIMEOUT_SECONDS" \
     -H 'Accept: application/vnd.github+json' \
@@ -93,10 +96,13 @@ github_get() {
     -H "X-GitHub-Api-Version: $API_VERSION" \
     "$API_BASE$path") || {
       rm -f "$body_file"
+      rm -f "$headers_file"
       fail "GitHub API request failed for $context"
     }
   API_BODY=$(cat "$body_file")
+  LAST_HEADERS=$(cat "$headers_file")
   rm -f "$body_file"
+  rm -f "$headers_file"
 }
 
 is_rate_limited_response() {
@@ -179,6 +185,54 @@ verify_dependency_graph_sbom() {
   esac
 }
 
+probe_workflow_sync_capability() {
+  github_get "/installation" "github app installation permissions"
+  case "$API_STATUS" in
+    200)
+      permissions_json=$(printf '%s' "$API_BODY" | jq -c '.permissions // {}')
+      contents_perm=$(printf '%s' "$permissions_json" | jq -r '.contents // "none"')
+      workflows_perm=$(printf '%s' "$permissions_json" | jq -r 'if has("workflows") then .workflows elif has("workflow") then .workflow else "none" end')
+      if [ "$contents_perm" != "write" ]; then
+        fail "workflow sync capability check failed: GitHub App installation contents permission is '$contents_perm' (requires write)"
+      fi
+      if [ "$workflows_perm" != "write" ]; then
+        fail "workflow sync capability check failed: GitHub App installation workflows permission is '$workflows_perm' (requires write)"
+      fi
+      printf '- workflow sync write capability: ok (GitHub App installation contents=write workflows=write)\n'
+      return 0
+      ;;
+    401)
+      fail "workflow sync capability check denied: token invalid or expired (HTTP 401 on /installation)"
+      ;;
+    403)
+      if is_rate_limited_response; then
+        fail "workflow sync capability check hit GitHub API rate limit (HTTP 403 on /installation)"
+      fi
+      if is_integration_permission_error; then
+        fail "workflow sync capability check denied: resource not accessible by integration (HTTP 403 on /installation)"
+      fi
+      fail "workflow sync capability check denied (HTTP 403 on /installation)"
+      ;;
+    404)
+      # Likely not an app installation token. Fall back to OAuth scope header when present.
+      oauth_scopes=$(printf '%s\n' "$LAST_HEADERS" | awk 'BEGIN{IGNORECASE=1} /^x-oauth-scopes:/{sub(/\r$/,""); sub(/^[^:]*:[[:space:]]*/, ""); print; exit}')
+      if [ -n "$oauth_scopes" ]; then
+        if printf '%s' "$oauth_scopes" | tr ',' '\n' | rg -q '^[[:space:]]*workflow[[:space:]]*$'; then
+          printf '%s\n' "- workflow sync scope check: workflow scope present (\`x-oauth-scopes: $oauth_scopes\`)"
+        else
+          fail "workflow sync capability check failed: token scopes do not include workflow (\`x-oauth-scopes: $oauth_scopes\`)"
+        fi
+      else
+        printf '%s\n' "- workflow sync scope check: unable to confirm via scopes header (token may be fine-grained); ensure workflow-file updates are allowed"
+      fi
+      return 0
+      ;;
+    *)
+      fail "workflow sync capability check returned HTTP $API_STATUS on /installation"
+      ;;
+  esac
+}
+
 github_get "/repos/$OWNER/$REPO" "repository metadata"
 expect_200
 default_branch=$(printf '%s' "$API_BODY" | jq -r '.default_branch // empty')
@@ -197,6 +251,10 @@ github_get "/repos/$OWNER/$REPO/dependabot/alerts?per_page=1" "Dependabot alerts
 expect_200
 
 verify_dependency_graph_sbom
+
+if [ "$REQUIRE_WORKFLOW_SYNC_CAPABILITY" = "true" ]; then
+  probe_workflow_sync_capability
+fi
 
 printf 'live github access verification passed for %s\n' "$REPOSITORY"
 printf '- default branch: %s\n' "$default_branch"
