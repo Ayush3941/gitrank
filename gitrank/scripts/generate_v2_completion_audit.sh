@@ -13,7 +13,7 @@ check_remote_live_workflow_sync="${CHECK_REMOTE_LIVE_WORKFLOW_SYNC:-true}"
 check_public_github_controls="${CHECK_PUBLIC_GITHUB_CONTROLS:-true}"
 check_live_github_access="${CHECK_LIVE_GITHUB_ACCESS:-true}"
 check_workflow_evidence="${CHECK_WORKFLOW_EVIDENCE:-true}"
-checklist_audit_run_public_probe="${CHECKLIST_AUDIT_RUN_PUBLIC_PROBE:-true}"
+checklist_audit_run_public_probe="${CHECKLIST_AUDIT_RUN_PUBLIC_PROBE:-auto}"
 workflow_run_id="${WORKFLOW_RUN_ID:-latest}"
 workflow_event="${WORKFLOW_EVENT:-workflow_dispatch}"
 waive_run_checks="${WAIVE_RUN_CHECKS:-}"
@@ -26,6 +26,37 @@ waive_workflow_evidence_probe="${WAIVE_WORKFLOW_EVIDENCE_PROBE:-}"
 fail() {
   printf 'generate v2 completion audit failed: %s\n' "$1" >&2
   exit 1
+}
+
+resolve_checklist_audit_run_public_probe() {
+  case "$checklist_audit_run_public_probe" in
+    true|false)
+      printf '%s' "$checklist_audit_run_public_probe"
+      return 0
+      ;;
+    auto)
+      token_candidate="${GITHUB_TOKEN:-${GH_TOKEN:-${GITRANK_REPO_ADMIN_TOKEN:-}}}"
+      app_id_candidate="${GITHUB_APP_ID:-${GITRANK_GITHUB_APP_ID:-}}"
+      app_installation_candidate="${GITHUB_APP_INSTALLATION_ID:-${GITRANK_GITHUB_APP_INSTALLATION_ID:-}}"
+      app_key_file_candidate="${GITHUB_APP_PRIVATE_KEY_FILE:-${GITRANK_GITHUB_APP_PRIVATE_KEY_FILE:-}}"
+      app_key_pem_candidate="${GITHUB_APP_PRIVATE_KEY_PEM:-${GITRANK_GITHUB_APP_PRIVATE_KEY_PEM:-}}"
+      has_app_bootstrap=false
+      if [ -n "$app_id_candidate" ] && [ -n "$app_installation_candidate" ]; then
+        if [ -n "$app_key_file_candidate" ] || [ -n "$app_key_pem_candidate" ]; then
+          has_app_bootstrap=true
+        fi
+      fi
+      if [ -n "$token_candidate" ] || [ "$has_app_bootstrap" = "true" ]; then
+        printf 'true'
+      else
+        printf 'false'
+      fi
+      return 0
+      ;;
+    *)
+      fail "CHECKLIST_AUDIT_RUN_PUBLIC_PROBE must be one of: true, false, auto"
+      ;;
+  esac
 }
 
 resolve_repository_from_git_remote() {
@@ -48,6 +79,7 @@ resolved_repository=$(resolve_repository_from_git_remote || true)
 if [ -z "$display_repository" ]; then
   display_repository=OWNER/REPO
 fi
+checklist_audit_run_public_probe_resolved=$(resolve_checklist_audit_run_public_probe)
 
 run_capture() {
   title=$1
@@ -225,7 +257,7 @@ if [ "$run_checks" = "true" ]; then
   public_workflow_health_code=$RUN_CAPTURE_LAST_CODE
 
   run_capture "Checklist Audit (make audit-v2-contributing-checklist)" \
-    "cd '$root_dir' && RUN_BASELINE_VERIFIERS=false RUN_PUBLIC_PROBE='$checklist_audit_run_public_probe' make audit-v2-contributing-checklist"
+    "cd '$root_dir' && RUN_BASELINE_VERIFIERS=false RUN_PUBLIC_PROBE='$checklist_audit_run_public_probe_resolved' make audit-v2-contributing-checklist"
   checklist_audit_code=$RUN_CAPTURE_LAST_CODE
 
   run_capture "Essential Live Env Presence" \
@@ -328,6 +360,7 @@ fi
   printf '%s\n' "- Local readiness gate exit code: \`$local_gate_code\`"
   printf '%s\n' "- Public workflow health gate exit code: \`$public_workflow_health_code\`"
   printf '%s\n' "- Checklist audit exit code: \`$checklist_audit_code\`"
+  printf '%s\n' "- Checklist audit public probe mode: \`$checklist_audit_run_public_probe_resolved\` (configured: \`$checklist_audit_run_public_probe\`)"
   printf '%s\n' "- Env presence probe exit code: \`$env_presence_code\`"
   printf '%s\n' "- Remote live workflow sync exit code: \`$remote_live_workflow_sync_code\`"
   printf '%s\n' "- Live GitHub access preflight exit code: \`$live_github_access_code\`"

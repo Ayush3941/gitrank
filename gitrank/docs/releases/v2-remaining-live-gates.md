@@ -33,6 +33,9 @@ For consolidated execution, use:
 - `make generate-v2-live-closeout-status` to generate one artifact with local
   readiness, unresolved checklist audit, env presence, public controls precheck,
   and workflow-evidence probe results
+  - `CHECKLIST_AUDIT_RUN_PUBLIC_PROBE` supports `auto|true|false` (default
+    `auto`, which enables probe calls only when token/App credentials are
+    present)
   - set `CHECKLIST_AUDIT_RUN_PUBLIC_PROBE=false` to run the embedded checklist
     audit without live GitHub probe calls (useful for offline/rate-limited local
     snapshots)
@@ -46,6 +49,9 @@ For consolidated execution, use:
 - `make generate-v2-completion-audit` to generate a prompt-to-artifact matrix
   from `CONTRIBUTING.md` (checklist counts, unresolved requirements,
   file-reference existence, `make` target mapping, and gate outputs)
+  - `CHECKLIST_AUDIT_RUN_PUBLIC_PROBE` supports `auto|true|false` (default
+    `auto`, which enables probe calls only when token/App credentials are
+    present)
   - set `CHECKLIST_AUDIT_RUN_PUBLIC_PROBE=false` to keep the embedded checklist
     audit deterministic in offline/rate-limited local runs
   - if you intentionally skip probe execution (for example, `RUN_CHECKS=false`
