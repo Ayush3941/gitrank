@@ -142,6 +142,13 @@ quota.
 If GitHub returns `HTTP 403 Resource not accessible by integration`, the
 verifier now reports that explicitly so you can fix GitHub App installation
 permissions or switch to an admin token.
+Use this command to inspect installation-level permissions and repository scope:
+
+```bash
+cd gitrank
+GITHUB_REPOSITORY=OWNER/REPO \
+make inspect-github-app-installation-permissions
+```
 
 To verify a completed Actions run as live-gate evidence (without rerunning
 those checks locally), use:

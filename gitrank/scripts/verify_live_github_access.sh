@@ -124,7 +124,7 @@ expect_200() {
           fail "$LAST_CONTEXT hit GitHub API rate limit (HTTP 403); retry with token/App credentials that have remaining quota"
         fi
         if is_integration_permission_error; then
-          fail "$LAST_CONTEXT denied: resource not accessible by integration (HTTP 403); ensure the GitHub App installation has required repository permissions, or use an admin token"
+          fail "$LAST_CONTEXT denied: resource not accessible by integration (HTTP 403); ensure the GitHub App installation has required repository permissions, or use an admin token (run make inspect-github-app-installation-permissions)"
         fi
         fail "$LAST_CONTEXT denied: token lacks required permission/scope (HTTP 403)"
         ;;
@@ -157,7 +157,7 @@ verify_dependency_graph_sbom() {
             fail "dependency graph SBOM generation hit GitHub API rate limit (HTTP 403); retry with token/App credentials that have remaining quota"
           fi
           if is_integration_permission_error; then
-            fail "dependency graph SBOM generation denied: resource not accessible by integration (HTTP 403); ensure GitHub App installation permissions include dependency graph access, or use an admin token"
+            fail "dependency graph SBOM generation denied: resource not accessible by integration (HTTP 403); ensure GitHub App installation permissions include dependency graph access, or use an admin token (run make inspect-github-app-installation-permissions)"
           fi
           fail "dependency graph SBOM generation denied: token lacks required permission/scope (HTTP 403)"
           ;;
@@ -171,7 +171,7 @@ verify_dependency_graph_sbom() {
         fail "dependency graph SBOM hit GitHub API rate limit (HTTP 403); retry with token/App credentials that have remaining quota"
       fi
       if is_integration_permission_error; then
-        fail "dependency graph SBOM denied: resource not accessible by integration (HTTP 403); ensure GitHub App installation permissions include dependency graph access, or use an admin token"
+        fail "dependency graph SBOM denied: resource not accessible by integration (HTTP 403); ensure GitHub App installation permissions include dependency graph access, or use an admin token (run make inspect-github-app-installation-permissions)"
       fi
       fail "dependency graph SBOM denied: token lacks required permission/scope (HTTP 403)"
       ;;

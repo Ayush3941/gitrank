@@ -118,6 +118,8 @@ Current local evidence:
 - App integrations without repository `contents:write` and `administration`
   privileges fail with `HTTP 403 Resource not accessible by integration` for
   live controls mutation calls.
+  Use `make inspect-github-app-installation-permissions` to capture the
+  installation permission map and repository scope before retrying.
 
 How to complete:
 

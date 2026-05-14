@@ -144,6 +144,26 @@ if [ "$CHECK_LIVE_GITHUB_ACCESS" = "true" ]; then
   live_github_access_code=$RUN_CAPTURE_LAST_CODE
 fi
 
+github_app_permission_snapshot_code=skip
+if [ "$CHECK_LIVE_GITHUB_ACCESS" = "true" ]; then
+  token_probe="${GITHUB_TOKEN:-${GH_TOKEN:-${GITRANK_REPO_ADMIN_TOKEN:-}}}"
+  app_id_probe="${GITHUB_APP_ID:-${GITRANK_GITHUB_APP_ID:-}}"
+  app_installation_probe="${GITHUB_APP_INSTALLATION_ID:-${GITRANK_GITHUB_APP_INSTALLATION_ID:-}}"
+  app_key_file_probe="${GITHUB_APP_PRIVATE_KEY_FILE:-${GITRANK_GITHUB_APP_PRIVATE_KEY_FILE:-}}"
+  app_key_pem_probe="${GITHUB_APP_PRIVATE_KEY_PEM:-${GITRANK_GITHUB_APP_PRIVATE_KEY_PEM:-}}"
+  has_app_probe_creds=false
+  if [ -n "$app_id_probe" ] && [ -n "$app_installation_probe" ]; then
+    if [ -n "$app_key_file_probe" ] || [ -n "$app_key_pem_probe" ]; then
+      has_app_probe_creds=true
+    fi
+  fi
+  if [ -n "$token_probe" ] || [ "$has_app_probe_creds" = "true" ]; then
+    run_and_capture "GitHub App Installation Permission Snapshot" \
+      sh -c "cd '$root_dir' && GITHUB_REPOSITORY='${gitrank_repo:-}' make inspect-github-app-installation-permissions"
+    github_app_permission_snapshot_code=$RUN_CAPTURE_LAST_CODE
+  fi
+fi
+
 public_controls_code=skip
 if [ "$CHECK_PUBLIC_GITHUB_CONTROLS" = "true" ]; then
   run_and_capture "Public GitHub Controls Precheck" \
@@ -312,6 +332,7 @@ fi
   printf '%s\n' "- Public workflow health: \`$public_workflow_health_code\`"
   printf '%s\n' "- Remote live workflow sync: \`$remote_live_workflow_sync_code\`"
   printf '%s\n' "- Live GitHub access preflight: \`$live_github_access_code\`"
+  printf '%s\n' "- GitHub App permission snapshot: \`$github_app_permission_snapshot_code\`"
   printf '%s\n' "- Public controls precheck: \`$public_controls_code\`"
   printf '%s\n' "- Workflow evidence probe: \`$workflow_probe_code\`"
   printf '\n'
