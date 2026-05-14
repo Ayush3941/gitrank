@@ -1084,8 +1084,12 @@ Do not call the project production ready until:
 - [x] deletion and retention policies exist
 - [x] dashboards, alerts, and runbooks exist
 - [x] the unsigned v1 release flow is traceable
-- [ ] rollback procedures are documented and tested
+- [x] rollback procedures are documented and tested
 - [x] at least two-person review is required for production release decisions
+
+Live execution evidence for rollback and restore drills is still required under
+the V2 operational checklist (see the unchecked live-gate item for drill
+records).
 
 ## V1 Limitations and V2 Checklist
 
