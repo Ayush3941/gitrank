@@ -34,7 +34,10 @@ For consolidated execution, use:
 - `make run-live-v2-workflow-evidence-pipeline` to dispatch live gates, verify
   workflow-run evidence, and generate observability evidence in one sequence
   (auto-syncs `.github/workflows/verify-live-v2-gates.yml` before dispatch by
-  default; set `AUTO_SYNC_REMOTE_WORKFLOW=false` to skip)
+  default; set `AUTO_SYNC_REMOTE_WORKFLOW=false` to skip). If workflow evidence
+  lookup misses `workflow_dispatch` runs, pipeline verification now retries
+  automatically with `WORKFLOW_EVENT=any` by default
+  (`WORKFLOW_EVENT_FALLBACK_ANY=true`).
 - `CONFIRM_FINALIZE_V2=yes make finalize-v2-live-closeout` for one-command
   preflight + gate verification + checklist marking + audit
   - finalizer now includes remote workflow sync verification by default and

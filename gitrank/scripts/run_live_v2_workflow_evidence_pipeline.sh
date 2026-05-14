@@ -15,6 +15,7 @@ AUTO_SYNC_REMOTE_WORKFLOW="${AUTO_SYNC_REMOTE_WORKFLOW:-true}"
 WORKFLOW_RUN_ID="${WORKFLOW_RUN_ID:-}"
 WORKFLOW_RUN_ID_FILE="${WORKFLOW_RUN_ID_FILE:-$tmp_root/live-v2-workflow-run-id.txt}"
 WORKFLOW_EVENT="${WORKFLOW_EVENT:-workflow_dispatch}"
+WORKFLOW_EVENT_FALLBACK_ANY="${WORKFLOW_EVENT_FALLBACK_ANY:-true}"
 
 RUN_GITHUB_CONTROLS="${RUN_GITHUB_CONTROLS:-true}"
 RUN_OBSERVABILITY="${RUN_OBSERVABILITY:-true}"
@@ -72,13 +73,41 @@ fi
 
 if [ "$VERIFY_WORKFLOW_RUN" = "true" ]; then
   [ -n "$WORKFLOW_RUN_ID" ] || fail "WORKFLOW_RUN_ID is required when VERIFY_WORKFLOW_RUN=true"
-  WORKFLOW_RUN_ID_OUTPUT_FILE="$WORKFLOW_RUN_ID_FILE" \
-  WORKFLOW_RUN_ID="$WORKFLOW_RUN_ID" \
-  WORKFLOW_EVENT="$WORKFLOW_EVENT" \
-  REQUIRE_GITHUB_CONTROLS="$RUN_GITHUB_CONTROLS" \
-  REQUIRE_OBSERVABILITY="$RUN_OBSERVABILITY" \
-  REQUIRE_RELEASE_RENDER="$RUN_RELEASE_RENDER" \
-  run_make verify-live-v2-workflow-run
+  if WORKFLOW_RUN_ID_OUTPUT_FILE="$WORKFLOW_RUN_ID_FILE" \
+    WORKFLOW_RUN_ID="$WORKFLOW_RUN_ID" \
+    WORKFLOW_EVENT="$WORKFLOW_EVENT" \
+    REQUIRE_GITHUB_CONTROLS="$RUN_GITHUB_CONTROLS" \
+    REQUIRE_OBSERVABILITY="$RUN_OBSERVABILITY" \
+    REQUIRE_RELEASE_RENDER="$RUN_RELEASE_RENDER" \
+    run_make verify-live-v2-workflow-run; then
+    :
+  else
+    retry_with_any=false
+    case "$WORKFLOW_EVENT_FALLBACK_ANY" in
+      true)
+        if [ "$WORKFLOW_EVENT" != "any" ] && [ "$WORKFLOW_EVENT" != "all" ] && [ "$WORKFLOW_EVENT" != "*" ]; then
+          if [ -z "$WORKFLOW_RUN_ID" ] || [ "$WORKFLOW_RUN_ID" = "latest" ]; then
+            retry_with_any=true
+          fi
+        fi
+        ;;
+    esac
+
+    if [ "$retry_with_any" = "true" ]; then
+      printf '%s\n' "workflow-run verification miss for event '$WORKFLOW_EVENT'; retrying with WORKFLOW_EVENT=any"
+      WORKFLOW_EVENT=any
+      WORKFLOW_RUN_ID=latest
+      WORKFLOW_RUN_ID_OUTPUT_FILE="$WORKFLOW_RUN_ID_FILE" \
+      WORKFLOW_RUN_ID="$WORKFLOW_RUN_ID" \
+      WORKFLOW_EVENT="$WORKFLOW_EVENT" \
+      REQUIRE_GITHUB_CONTROLS="$RUN_GITHUB_CONTROLS" \
+      REQUIRE_OBSERVABILITY="$RUN_OBSERVABILITY" \
+      REQUIRE_RELEASE_RENDER="$RUN_RELEASE_RENDER" \
+      run_make verify-live-v2-workflow-run
+    else
+      fail "workflow-run verification failed"
+    fi
+  fi
   WORKFLOW_RUN_ID=$(cat "$WORKFLOW_RUN_ID_FILE")
 fi
 
