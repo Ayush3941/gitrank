@@ -41,7 +41,7 @@ checks:
 K8S_ENVIRONMENT=staging \
 OUTPUT_FILE=./rendered-k8s.yaml \
 IMAGE_TAG=2026.05.12 \
-IMAGE_REGISTRY_OWNER=ayush3941 \
+IMAGE_REGISTRY_OWNER=your-github-org-or-user \
 K8S_PUBLIC_BASE_URL=https://staging.gitrank.dev \
 K8S_API_BASE_URL=https://api.staging.gitrank.dev \
 K8S_AUTH_COOKIE_DOMAIN=.staging.gitrank.dev \
