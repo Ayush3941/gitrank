@@ -9,6 +9,7 @@ API_TIMEOUT_SECONDS="${GITHUB_API_TIMEOUT_SECONDS:-30}"
 WORKFLOW_RUN_ID="${WORKFLOW_RUN_ID:-}"
 EXPECTED_WORKFLOW_NAME="${EXPECTED_WORKFLOW_NAME:-Verify Live V2 Gates}"
 EXPECTED_WORKFLOW_PATH="${EXPECTED_WORKFLOW_PATH:-.github/workflows/verify-live-v2-gates.yml}"
+EXPECTED_WORKFLOW_FILE="${EXPECTED_WORKFLOW_FILE:-}"
 EXPECTED_HEAD_BRANCH="${EXPECTED_HEAD_BRANCH:-}"
 WORKFLOW_EVENT="${WORKFLOW_EVENT:-workflow_dispatch}"
 WORKFLOW_RUN_SEARCH_PAGES="${WORKFLOW_RUN_SEARCH_PAGES:-10}"
@@ -75,6 +76,10 @@ case "$REPOSITORY" in
   */*) ;;
   *) fail "GITHUB_REPOSITORY must use owner/name form (or run from a clone with GitHub origin remote)" ;;
 esac
+
+if [ -z "$EXPECTED_WORKFLOW_FILE" ]; then
+  EXPECTED_WORKFLOW_FILE=${EXPECTED_WORKFLOW_PATH##*/}
+fi
 
 require_command curl
 require_command jq
@@ -166,9 +171,26 @@ resolve_workflow_run_id_if_needed() {
 
   page=1
   scanned_runs=0
+  search_mode=workflow-specific
+  used_repo_wide_fallback=false
   while [ "$page" -le "$WORKFLOW_RUN_SEARCH_PAGES" ]; do
-    github_get "/repos/$OWNER/$REPO/actions/runs?per_page=100&page=$page"
+    event_query=
+    if [ -n "$WORKFLOW_EVENT_FILTER" ]; then
+      event_query="&event=$WORKFLOW_EVENT_FILTER"
+    fi
+    if [ "$search_mode" = "workflow-specific" ]; then
+      search_path="/repos/$OWNER/$REPO/actions/workflows/$EXPECTED_WORKFLOW_FILE/runs?per_page=100&page=$page$event_query"
+    else
+      search_path="/repos/$OWNER/$REPO/actions/runs?per_page=100&page=$page$event_query"
+    fi
+
+    github_get "$search_path"
     handle_read_access_error
+    if [ "$API_STATUS" = "404" ] && [ "$search_mode" = "workflow-specific" ] && [ "$page" -eq 1 ]; then
+      search_mode=repository-wide
+      used_repo_wide_fallback=true
+      continue
+    fi
     expect_status 200 "workflow run search page $page"
 
     matched_id=$(printf '%s' "$API_BODY" | jq -r --arg name "$EXPECTED_WORKFLOW_NAME" --arg event "$WORKFLOW_EVENT_FILTER" --arg workflow_path "$EXPECTED_WORKFLOW_PATH" '
@@ -198,10 +220,14 @@ resolve_workflow_run_id_if_needed() {
   done
 
   remediation="dispatch the live-gates workflow (make run-live-v2-gates-workflow) or provide WORKFLOW_RUN_ID"
-  if [ -n "$WORKFLOW_EVENT_FILTER" ]; then
-    fail "no successful '$EXPECTED_WORKFLOW_NAME' workflow run found for event '$WORKFLOW_EVENT_FILTER' in the last $WORKFLOW_RUN_SEARCH_PAGES page(s) (scanned_runs=$scanned_runs; $remediation)"
+  fallback_note=
+  if [ "$used_repo_wide_fallback" = "true" ]; then
+    fallback_note="; workflow-specific lookup returned 404 and repository-wide fallback was used"
   fi
-  fail "no successful '$EXPECTED_WORKFLOW_NAME' workflow run found in the last $WORKFLOW_RUN_SEARCH_PAGES page(s) (scanned_runs=$scanned_runs; $remediation)"
+  if [ -n "$WORKFLOW_EVENT_FILTER" ]; then
+    fail "no successful '$EXPECTED_WORKFLOW_NAME' workflow run found for event '$WORKFLOW_EVENT_FILTER' in the last $WORKFLOW_RUN_SEARCH_PAGES page(s) (search_mode=$search_mode scanned_runs=$scanned_runs$fallback_note; $remediation)"
+  fi
+  fail "no successful '$EXPECTED_WORKFLOW_NAME' workflow run found in the last $WORKFLOW_RUN_SEARCH_PAGES page(s) (search_mode=$search_mode scanned_runs=$scanned_runs$fallback_note; $remediation)"
 }
 
 normalize_workflow_event_filter
