@@ -5,6 +5,7 @@ REPOSITORY="${GITHUB_REPOSITORY:-}"
 TOKEN="${GITHUB_TOKEN:-${GH_TOKEN:-${GITRANK_REPO_ADMIN_TOKEN:-}}}"
 API_BASE="${GITHUB_API_URL:-https://api.github.com}"
 API_VERSION="${GITHUB_API_VERSION:-2026-03-10}"
+API_TIMEOUT_SECONDS="${GITHUB_API_TIMEOUT_SECONDS:-30}"
 REQUIRE_FULL_VERIFICATION="${REQUIRE_FULL_VERIFICATION:-false}"
 TMP_ROOT="${TMPDIR:-/tmp}"
 GITHUB_APP_ID="${GITHUB_APP_ID:-${GITRANK_GITHUB_APP_ID:-}}"
@@ -15,6 +16,17 @@ GITHUB_APP_PRIVATE_KEY_PEM="${GITHUB_APP_PRIVATE_KEY_PEM:-${GITRANK_GITHUB_APP_P
 fail() {
   printf 'github repository controls public verification failed: %s\n' "$1" >&2
   exit 1
+}
+
+CONTROL_ERRORS=
+
+add_control_error() {
+  msg=$1
+  if [ -n "$CONTROL_ERRORS" ]; then
+    CONTROL_ERRORS="${CONTROL_ERRORS}; ${msg}"
+  else
+    CONTROL_ERRORS="$msg"
+  fi
 }
 
 require_command() {
@@ -82,6 +94,8 @@ github_get() {
   body_file="$TMP_ROOT/gitrank-github-controls-public.$$"
   if [ -n "$TOKEN" ]; then
     API_STATUS=$(curl -sS -L -o "$body_file" -w '%{http_code}' \
+      --connect-timeout "$API_TIMEOUT_SECONDS" \
+      --max-time "$API_TIMEOUT_SECONDS" \
       -H 'Accept: application/vnd.github+json' \
       -H "Authorization: Bearer $TOKEN" \
       -H "X-GitHub-Api-Version: $API_VERSION" \
@@ -91,6 +105,8 @@ github_get() {
       }
   else
     API_STATUS=$(curl -sS -L -o "$body_file" -w '%{http_code}' \
+      --connect-timeout "$API_TIMEOUT_SECONDS" \
+      --max-time "$API_TIMEOUT_SECONDS" \
       -H 'Accept: application/vnd.github+json' \
       -H "X-GitHub-Api-Version: $API_VERSION" \
       "$API_BASE$path") || {
@@ -153,16 +169,24 @@ rules_json_from_api_body() {
 verify_ruleset_payload() {
   rules_json=$1
   REVIEW_COUNT=$(printf '%s' "$rules_json" | jq -r '[.[] | select(.type == "pull_request") | (.parameters.required_approving_review_count // 0)] | max // 0')
-  [ "$REVIEW_COUNT" -ge 1 ] || fail "ruleset controls must require at least one approving pull request review"
+  if [ "$REVIEW_COUNT" -lt 1 ]; then
+    add_control_error "ruleset controls must require at least one approving pull request review"
+  fi
 
   REQUIRED_CHECKS=$(printf '%s' "$rules_json" | jq -r '[.[] | select(.type == "required_status_checks") | (.parameters.required_status_checks // [] | length)] | add // 0')
-  [ "$REQUIRED_CHECKS" -ge 1 ] || fail "ruleset controls must require at least one status check"
+  if [ "$REQUIRED_CHECKS" -lt 1 ]; then
+    add_control_error "ruleset controls must require at least one status check"
+  fi
 
   HAS_NON_FAST_FORWARD=$(printf '%s' "$rules_json" | jq -r '[.[] | select(.type == "non_fast_forward")] | length')
-  [ "$HAS_NON_FAST_FORWARD" -ge 1 ] || fail "ruleset controls must block force pushes (non_fast_forward rule missing)"
+  if [ "$HAS_NON_FAST_FORWARD" -lt 1 ]; then
+    add_control_error "ruleset controls must block force pushes (non_fast_forward rule missing)"
+  fi
 
   HAS_DELETION_RULE=$(printf '%s' "$rules_json" | jq -r '[.[] | select(.type == "deletion")] | length')
-  [ "$HAS_DELETION_RULE" -ge 1 ] || fail "ruleset controls must block branch deletion (deletion rule missing)"
+  if [ "$HAS_DELETION_RULE" -lt 1 ]; then
+    add_control_error "ruleset controls must block branch deletion (deletion rule missing)"
+  fi
 
   CONTROL_MODE="rulesets"
   ALLOW_FORCE_PUSHES="false"
@@ -192,7 +216,9 @@ DEPENDENCY_GRAPH_STATUS="unverified"
 
 if [ "$BRANCH_PROTECTED" = "true" ]; then
   REQUIRED_CHECKS=$(printf '%s' "$API_BODY" | jq -r '((.protection.required_status_checks.contexts // []) | length) + ((.protection.required_status_checks.checks // []) | length)')
-  [ "$REQUIRED_CHECKS" -ge 1 ] || fail "protected branch does not expose any required status checks"
+  if [ "$REQUIRED_CHECKS" -lt 1 ]; then
+    add_control_error "protected branch does not expose any required status checks"
+  fi
   CONTROL_MODE="branch protection"
 else
   github_get "/repos/$OWNER/$REPO/rules/branches/$TARGET_BRANCH"
@@ -200,22 +226,28 @@ else
     200)
       rules_json=$(rules_json_from_api_body)
       rules_count=$(printf '%s' "$rules_json" | jq 'length')
-      [ "$rules_count" -gt 0 ] || fail "branch rules endpoint returned no effective rules for $TARGET_BRANCH"
+      if [ "$rules_count" -le 0 ]; then
+        add_control_error "branch rules endpoint returned no effective rules for $TARGET_BRANCH"
+      fi
       verify_ruleset_payload "$rules_json"
       ;;
     404)
-      fail "default branch is neither protected nor covered by branch rulesets"
+      add_control_error "default branch is neither protected nor covered by branch rulesets"
       ;;
     *)
       if [ "$API_STATUS" = "403" ]; then
         message=$(printf '%s' "$API_BODY" | jq -r '.message // empty' 2>/dev/null || true)
         case "$message" in
           *"API rate limit exceeded"*)
-            fail "branch rules lookup for $TARGET_BRANCH hit GitHub API rate limit (HTTP 403); set GITHUB_TOKEN, GH_TOKEN, GITRANK_REPO_ADMIN_TOKEN, or GitHub App credentials"
+            add_control_error "branch rules lookup for $TARGET_BRANCH hit GitHub API rate limit (HTTP 403); set GITHUB_TOKEN, GH_TOKEN, GITRANK_REPO_ADMIN_TOKEN, or GitHub App credentials"
+            ;;
+          *)
+            add_control_error "branch rules lookup for $TARGET_BRANCH returned HTTP 403"
             ;;
         esac
+      else
+        add_control_error "branch rules lookup for $TARGET_BRANCH returned HTTP $API_STATUS"
       fi
-      fail "branch rules lookup for $TARGET_BRANCH returned HTTP $API_STATUS"
       ;;
   esac
 fi
@@ -223,33 +255,61 @@ fi
 if [ -n "$TOKEN" ]; then
   if [ "$CONTROL_MODE" = "branch protection" ]; then
     github_get "/repos/$OWNER/$REPO/branches/$TARGET_BRANCH/protection"
-    expect_status 200 "branch protection metadata"
+    if [ "$API_STATUS" = "200" ]; then
+      REVIEW_COUNT=$(printf '%s' "$API_BODY" | jq -r '.required_pull_request_reviews.required_approving_review_count // 0')
+      if [ "$REVIEW_COUNT" -lt 1 ]; then
+        add_control_error "branch protection must require at least one approving pull request review"
+      fi
 
-    REVIEW_COUNT=$(printf '%s' "$API_BODY" | jq -r '.required_pull_request_reviews.required_approving_review_count // 0')
-    [ "$REVIEW_COUNT" -ge 1 ] || fail "branch protection must require at least one approving pull request review"
+      ALLOW_FORCE_PUSHES=$(printf '%s' "$API_BODY" | jq -r '.allow_force_pushes.enabled // false')
+      if [ "$ALLOW_FORCE_PUSHES" != "false" ]; then
+        add_control_error "branch protection must not allow force pushes"
+      fi
 
-    ALLOW_FORCE_PUSHES=$(printf '%s' "$API_BODY" | jq -r '.allow_force_pushes.enabled // false')
-    [ "$ALLOW_FORCE_PUSHES" = "false" ] || fail "branch protection must not allow force pushes"
-
-    ALLOW_DELETIONS=$(printf '%s' "$API_BODY" | jq -r '.allow_deletions.enabled // false')
-    [ "$ALLOW_DELETIONS" = "false" ] || fail "branch protection must not allow branch deletions"
+      ALLOW_DELETIONS=$(printf '%s' "$API_BODY" | jq -r '.allow_deletions.enabled // false')
+      if [ "$ALLOW_DELETIONS" != "false" ]; then
+        add_control_error "branch protection must not allow branch deletions"
+      fi
+    else
+      add_control_error "branch protection metadata returned HTTP $API_STATUS"
+    fi
   fi
 
   github_get "/repos/$OWNER/$REPO/dependabot/alerts?per_page=1"
-  expect_status 200 "Dependabot alerts API"
-  DEPENDABOT_STATUS="verified"
+  case "$API_STATUS" in
+    200) DEPENDABOT_STATUS="verified" ;;
+    401) add_control_error "Dependabot alerts API denied (HTTP 401): token invalid or expired"; DEPENDABOT_STATUS="denied" ;;
+    403) add_control_error "Dependabot alerts API denied (HTTP 403): missing security-events/read or insufficient scope"; DEPENDABOT_STATUS="denied" ;;
+    404) add_control_error "Dependabot alerts API unavailable (HTTP 404)"; DEPENDABOT_STATUS="unavailable" ;;
+    *) add_control_error "Dependabot alerts API returned HTTP $API_STATUS"; DEPENDABOT_STATUS="error" ;;
+  esac
 
   github_get "/repos/$OWNER/$REPO/dependency-graph/sbom"
   case "$API_STATUS" in
-    200|201|202) ;;
-    *) fail "dependency graph SBOM endpoint returned HTTP $API_STATUS" ;;
+    200|201|202) DEPENDENCY_GRAPH_STATUS="verified" ;;
+    401) add_control_error "dependency graph SBOM denied (HTTP 401): token invalid or expired"; DEPENDENCY_GRAPH_STATUS="denied" ;;
+    403) add_control_error "dependency graph SBOM denied (HTTP 403): missing dependency-graph/read scope"; DEPENDENCY_GRAPH_STATUS="denied" ;;
+    404) add_control_error "dependency graph SBOM returned HTTP 404 (feature disabled or no supported dependency graph data)"; DEPENDENCY_GRAPH_STATUS="not-found" ;;
+    *) add_control_error "dependency graph SBOM endpoint returned HTTP $API_STATUS"; DEPENDENCY_GRAPH_STATUS="error" ;;
   esac
-  DEPENDENCY_GRAPH_STATUS="verified"
   verification_mode="full-authenticated"
+else
+  DEPENDABOT_STATUS="requires-token"
+  github_get "/repos/$OWNER/$REPO/dependency-graph/sbom"
+  case "$API_STATUS" in
+    200|201|202) DEPENDENCY_GRAPH_STATUS="public-verified" ;;
+    404) DEPENDENCY_GRAPH_STATUS="not-found" ;;
+    403) DEPENDENCY_GRAPH_STATUS="rate-limited-or-forbidden" ;;
+    *) DEPENDENCY_GRAPH_STATUS="unverified" ;;
+  esac
 fi
 
 if [ "$REQUIRE_FULL_VERIFICATION" = "true" ] && [ "$TOKEN" = "" ]; then
-  fail "full verification requested but no token provided"
+  add_control_error "full verification requested but no token provided"
+fi
+
+if [ -n "$CONTROL_ERRORS" ]; then
+  fail "$CONTROL_ERRORS (verification_mode=$verification_mode dependabot_status=$DEPENDABOT_STATUS dependency_graph_status=$DEPENDENCY_GRAPH_STATUS)"
 fi
 
 printf 'GitHub repository controls public verification passed for %s on %s.\n' "$REPOSITORY" "$TARGET_BRANCH"
