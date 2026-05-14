@@ -33,6 +33,8 @@ For consolidated execution, use:
 - `make generate-v2-live-closeout-status` to generate one artifact with local
   readiness, unresolved checklist audit, env presence, public controls precheck,
   and workflow-evidence probe results
+- `make report-live-v2-env-presence` for a quick set/unset snapshot of live-gate
+  environment inputs (without printing secret values)
 - `make generate-v2-completion-audit` to generate a prompt-to-artifact matrix
   from `CONTRIBUTING.md` (checklist counts, unresolved requirements,
   file-reference existence, `make` target mapping, and gate outputs)
