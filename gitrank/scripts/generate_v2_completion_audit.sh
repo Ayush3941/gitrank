@@ -134,7 +134,12 @@ awk -F':' '/^[a-zA-Z0-9_.-]+:/ { print $1 }' "$makefile" | sort -u >"$make_targe
   printf '2. Critical local gates pass (`make verify-v2-live-readiness`).\n'
   printf '3. Public origin workflow health is green (`make verify-public-workflow-health`) unless intentionally waived.\n'
   printf '4. No unresolved checklist items remain in `make audit-v2-contributing-checklist`.\n'
-  printf '5. Explicit file, command, and gate references in `CONTRIBUTING.md` resolve to real artifacts or real commands.\n'
+  printf '5. Live-gate preflights and probes are green (or intentionally skipped with explicit waiver):\n'
+  printf '   - `make verify-remote-live-v2-workflow-sync`\n'
+  printf '   - `make verify-live-github-access`\n'
+  printf '   - `make verify-github-repository-controls-public`\n'
+  printf '   - `make verify-live-v2-workflow-run`\n'
+  printf '6. Explicit file, command, and gate references in `CONTRIBUTING.md` resolve to real artifacts or real commands.\n'
   printf '\n'
   printf '## Prompt-to-Artifact Checklist\n\n'
   printf '### Unchecked Checklist Lines\n\n'
@@ -278,6 +283,40 @@ else
   workflow_probe_code=skip
 fi
 
+code_is_ok_or_skipped() {
+  code=$1
+  [ "$code" = "0" ] || [ "$code" = "skip" ]
+}
+
+ready_for_completion=true
+if ! code_is_ok_or_skipped "$local_gate_code"; then
+  ready_for_completion=false
+fi
+if ! code_is_ok_or_skipped "$public_workflow_health_code"; then
+  ready_for_completion=false
+fi
+if ! code_is_ok_or_skipped "$checklist_audit_code"; then
+  ready_for_completion=false
+fi
+if ! code_is_ok_or_skipped "$env_presence_code"; then
+  ready_for_completion=false
+fi
+if ! code_is_ok_or_skipped "$remote_live_workflow_sync_code"; then
+  ready_for_completion=false
+fi
+if ! code_is_ok_or_skipped "$live_github_access_code"; then
+  ready_for_completion=false
+fi
+if ! code_is_ok_or_skipped "$public_controls_code"; then
+  ready_for_completion=false
+fi
+if ! code_is_ok_or_skipped "$workflow_probe_code"; then
+  ready_for_completion=false
+fi
+if [ "$unchecked_count" -ne 0 ]; then
+  ready_for_completion=false
+fi
+
 {
   printf '## Completion Verdict Inputs\n\n'
   printf '%s\n' "- Local readiness gate exit code: \`$local_gate_code\`"
@@ -290,7 +329,7 @@ fi
   printf '%s\n' "- Workflow evidence probe exit code: \`$workflow_probe_code\`"
   printf '%s\n' "- Current unchecked checklist count: \`$unchecked_count\`"
   printf '\n'
-  if [ "$unchecked_count" -eq 0 ] && [ "$local_gate_code" = "0" ] && [ "$public_workflow_health_code" = "0" ] && [ "$checklist_audit_code" = "0" ]; then
+  if [ "$ready_for_completion" = "true" ]; then
     printf 'Current audit verdict: **ready to consider objective complete**.\n'
   else
     printf 'Current audit verdict: **objective not complete**.\n'
