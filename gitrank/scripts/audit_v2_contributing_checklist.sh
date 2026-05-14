@@ -73,7 +73,7 @@ while IFS= read -r line; do
       remediation="run make verify-live-observability and provide live observability evidence file"
       ;;
     *"enable dependency graph"*|*"enable Dependabot alerts"*|*"protect the default branch"*|*"require pull request review"*|*"require status checks"*|*"enforce required checks"*|*"prevent direct pushes"*|*"default branch protections or rulesets are enforced"*|*"Apply and verify live GitHub repository controls"*)
-      remediation="run make verify-live-github-access (token preflight) and make verify-github-repository-controls-public (no-token precheck), then apply/verify via make apply-github-repository-controls-auto + make verify-github-repository-controls (admin token), or verify successful live-gates workflow evidence via make verify-live-v2-workflow-run"
+      remediation="run make verify-live-github-access (token/App preflight) and make verify-github-repository-controls-public (precheck), then apply/verify via make apply-github-repository-controls-auto + make verify-github-repository-controls (admin token or GitHub App creds), or verify successful live-gates workflow evidence via make verify-live-v2-workflow-run"
       ;;
     *"rollback procedures are documented and tested"*|*"Run and record staging rollback and restore drills"*)
       remediation="execute live rollback+restore drills and validate evidence files with make verify-rollback-drill-evidence + make verify-database-restore-drill-evidence"
