@@ -44,6 +44,9 @@ For consolidated execution, use:
     can auto-sync `.github/workflows/verify-live-v2-gates.yml` when drift is
     detected (`RUN_REMOTE_WORKFLOW_SYNC=true`,
     `AUTO_SYNC_REMOTE_WORKFLOW=true`)
+  - workflow evidence verification in finalizer mode now retries with
+    `WORKFLOW_EVENT=any` when latest `workflow_dispatch` lookup misses
+    (`WORKFLOW_EVENT_FALLBACK_ANY=true`).
 - `make run-live-v2-gates-workflow` (requires token and live environment vars)
   and now consumes workflow-dispatch run details when the API provides them
   (`RETURN_RUN_DETAILS=true` by default, with legacy fallback on validation errors)

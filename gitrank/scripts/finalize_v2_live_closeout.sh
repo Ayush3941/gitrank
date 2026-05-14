@@ -21,6 +21,7 @@ MARK_CHECKBOXES="${MARK_CHECKBOXES:-true}"
 VERIFY_FROM_WORKFLOW="${VERIFY_FROM_WORKFLOW:-false}"
 WORKFLOW_RUN_ID="${WORKFLOW_RUN_ID:-}"
 WORKFLOW_EVENT="${WORKFLOW_EVENT:-workflow_dispatch}"
+WORKFLOW_EVENT_FALLBACK_ANY="${WORKFLOW_EVENT_FALLBACK_ANY:-true}"
 AUTO_GENERATE_OBSERVABILITY_EVIDENCE="${AUTO_GENERATE_OBSERVABILITY_EVIDENCE:-true}"
 AUTO_GENERATE_ROLLBACK_RESTORE_EVIDENCE="${AUTO_GENERATE_ROLLBACK_RESTORE_EVIDENCE:-true}"
 AUDIT_REPORT_FILE="${AUDIT_REPORT_FILE:-$root_dir/docs/releases/v2-contributing-audit-latest.md}"
@@ -282,12 +283,39 @@ if [ "$VERIFY_FROM_WORKFLOW" = "true" ]; then
   NAMESPACE="${NAMESPACE:-}" \
   OPERATOR="${OPERATOR:-}" \
   run_make verify-live-v2-inputs
-  run_make verify-live-v2-workflow-run \
+  if run_make verify-live-v2-workflow-run \
     WORKFLOW_RUN_ID="$WORKFLOW_RUN_ID" \
     WORKFLOW_EVENT="$WORKFLOW_EVENT" \
     REQUIRE_GITHUB_CONTROLS="$RUN_GITHUB_CONTROLS" \
     REQUIRE_OBSERVABILITY="$RUN_OBSERVABILITY" \
-    REQUIRE_RELEASE_RENDER="$RUN_K8S_RUNTIME"
+    REQUIRE_RELEASE_RENDER="$RUN_K8S_RUNTIME"; then
+    :
+  else
+    retry_with_any=false
+    case "$WORKFLOW_EVENT_FALLBACK_ANY" in
+      true)
+        if [ "$WORKFLOW_EVENT" != "any" ] && [ "$WORKFLOW_EVENT" != "all" ] && [ "$WORKFLOW_EVENT" != "*" ]; then
+          if [ "$WORKFLOW_RUN_ID" = "latest" ]; then
+            retry_with_any=true
+          fi
+        fi
+        ;;
+    esac
+
+    if [ "$retry_with_any" = "true" ]; then
+      printf '%s\n' "workflow-run verification miss for event '$WORKFLOW_EVENT'; retrying with WORKFLOW_EVENT=any"
+      WORKFLOW_EVENT=any
+      WORKFLOW_RUN_ID=latest
+      run_make verify-live-v2-workflow-run \
+        WORKFLOW_RUN_ID="$WORKFLOW_RUN_ID" \
+        WORKFLOW_EVENT="$WORKFLOW_EVENT" \
+        REQUIRE_GITHUB_CONTROLS="$RUN_GITHUB_CONTROLS" \
+        REQUIRE_OBSERVABILITY="$RUN_OBSERVABILITY" \
+        REQUIRE_RELEASE_RENDER="$RUN_K8S_RUNTIME"
+    else
+      fail "workflow-run verification failed"
+    fi
+  fi
   readiness_run_github_controls=false
   readiness_run_observability=false
 fi
