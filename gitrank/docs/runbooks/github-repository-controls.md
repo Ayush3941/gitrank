@@ -61,6 +61,9 @@ GITHUB_REPOSITORY=OWNER/REPO \
 make verify-github-repository-controls-public
 ```
 
+All GitHub API scripts in this runbook accept `GITHUB_API_TIMEOUT_SECONDS`
+(default `30`) to bound network wait time during live-gate operations.
+
 ## Apply Through Script
 
 Use this path with either:
@@ -148,7 +151,10 @@ state. If no static token is set, the verifier now attempts GitHub App token
 bootstrap using `GITHUB_APP_*` credentials. The verifier checks branch
 protection first and falls back to branch
 ruleset evaluation (`/rules/branches/{branch}`) when branch protection is not
-present.
+present. Dependency-graph verification now probes both the legacy SBOM endpoint
+(`GET /dependency-graph/sbom`) and the asynchronous fallback endpoint
+(`GET /dependency-graph/sbom/generate-report`) to avoid false negatives when
+GitHub serves SBOMs through the newer flow.
 
 ```bash
 cd gitrank
