@@ -165,6 +165,7 @@ resolve_workflow_run_id_if_needed() {
   fi
 
   page=1
+  scanned_runs=0
   while [ "$page" -le "$WORKFLOW_RUN_SEARCH_PAGES" ]; do
     github_get "/repos/$OWNER/$REPO/actions/runs?per_page=100&page=$page"
     handle_read_access_error
@@ -191,14 +192,16 @@ resolve_workflow_run_id_if_needed() {
     fi
 
     page_count=$(printf '%s' "$API_BODY" | jq '.workflow_runs | length')
+    scanned_runs=$((scanned_runs + page_count))
     [ "$page_count" -lt 100 ] && break
     page=$((page + 1))
   done
 
+  remediation="dispatch the live-gates workflow (make run-live-v2-gates-workflow) or provide WORKFLOW_RUN_ID"
   if [ -n "$WORKFLOW_EVENT_FILTER" ]; then
-    fail "no successful '$EXPECTED_WORKFLOW_NAME' workflow run found for event '$WORKFLOW_EVENT_FILTER' in the last $WORKFLOW_RUN_SEARCH_PAGES page(s)"
+    fail "no successful '$EXPECTED_WORKFLOW_NAME' workflow run found for event '$WORKFLOW_EVENT_FILTER' in the last $WORKFLOW_RUN_SEARCH_PAGES page(s) (scanned_runs=$scanned_runs; $remediation)"
   fi
-  fail "no successful '$EXPECTED_WORKFLOW_NAME' workflow run found in the last $WORKFLOW_RUN_SEARCH_PAGES page(s)"
+  fail "no successful '$EXPECTED_WORKFLOW_NAME' workflow run found in the last $WORKFLOW_RUN_SEARCH_PAGES page(s) (scanned_runs=$scanned_runs; $remediation)"
 }
 
 normalize_workflow_event_filter
