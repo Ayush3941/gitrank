@@ -37,6 +37,7 @@ if [ "$RUN_LOCAL_STATIC" = "true" ]; then
   run_make verify-finalize-v2-closeout-env-aliases
   run_make verify-github-app-token-env-aliases
   run_make verify-v2-completion-audit-behavior
+  run_make verify-v2-artifact-redaction
 fi
 
 if [ "$RUN_PUBLIC_WORKFLOW_HEALTH" = "true" ]; then

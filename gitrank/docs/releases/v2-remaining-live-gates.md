@@ -33,6 +33,8 @@ For consolidated execution, use:
 - `make generate-v2-live-closeout-status` to generate one artifact with local
   readiness, unresolved checklist audit, env presence, public controls precheck,
   and workflow-evidence probe results
+  - set `CHECK_LOCAL_READINESS=false` when this report is called from other
+    local verification scripts to avoid nested readiness recursion
   - report output uses `OWNER/REPO` by default for repository display labels;
     set `GITHUB_REPOSITORY_DISPLAY=owner/repo` when you explicitly want the
     concrete repository identifier in generated artifacts
@@ -51,6 +53,9 @@ For consolidated execution, use:
 - `make verify-v2-completion-audit-behavior` to regression-test completion
   audit defaults (repository display redaction, waiver reporting, and skip
   behavior) without requiring live credentials
+- `make verify-v2-artifact-redaction` to regression-test default repository
+  redaction across generated V2 artifacts (`audit`, `closeout`, and
+  `completion` reports), with optional `GITHUB_REPOSITORY_DISPLAY` override
 - `make run-live-v2-workflow-evidence-pipeline` to dispatch live gates, verify
   workflow-run evidence, and generate observability evidence in one sequence
   (auto-syncs `.github/workflows/verify-live-v2-gates.yml` before dispatch by

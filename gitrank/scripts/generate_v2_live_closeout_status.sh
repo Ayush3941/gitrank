@@ -12,6 +12,7 @@ CHECK_PUBLIC_WORKFLOW_HEALTH="${CHECK_PUBLIC_WORKFLOW_HEALTH:-true}"
 CHECK_REMOTE_LIVE_WORKFLOW_SYNC="${CHECK_REMOTE_LIVE_WORKFLOW_SYNC:-true}"
 CHECK_WORKFLOW_EVIDENCE="${CHECK_WORKFLOW_EVIDENCE:-true}"
 CHECK_LIVE_GITHUB_ACCESS="${CHECK_LIVE_GITHUB_ACCESS:-true}"
+CHECK_LOCAL_READINESS="${CHECK_LOCAL_READINESS:-true}"
 WORKFLOW_RUN_ID="${WORKFLOW_RUN_ID:-latest}"
 WORKFLOW_EVENT="${WORKFLOW_EVENT:-workflow_dispatch}"
 DISPLAY_REPOSITORY="${GITHUB_REPOSITORY_DISPLAY:-}"
@@ -98,9 +99,12 @@ run_and_capture "Branch Divergence" \
   sh -c "cd '$repo_dir' && git status --short --branch && printf '\nleft-right count (origin/main...HEAD): ' && git rev-list --left-right --count origin/main...HEAD && printf '\nrecent divergent commits:\n' && git log --oneline --left-right --decorate --max-count=30 origin/main...HEAD"
 branch_divergence_code=$RUN_CAPTURE_LAST_CODE
 
-run_and_capture "Local Readiness Gate" \
-  sh -c "cd '$root_dir' && make verify-v2-live-readiness"
-local_readiness_code=$RUN_CAPTURE_LAST_CODE
+local_readiness_code=skip
+if [ "$CHECK_LOCAL_READINESS" = "true" ]; then
+  run_and_capture "Local Readiness Gate" \
+    sh -c "cd '$root_dir' && make verify-v2-live-readiness"
+  local_readiness_code=$RUN_CAPTURE_LAST_CODE
+fi
 
 audit_report_tmp="${AUDIT_REPORT_FILE:-$tmp_root/v2-closeout-status-audit.$$.md}"
 run_and_capture "Contributing Checklist Audit" \
