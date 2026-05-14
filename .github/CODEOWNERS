@@ -1,24 +1,5 @@
-# Default owners
-* @Ayush3941
-
-# Governance and security
-/.github/ @Ayush3941
-/SECURITY.md @Ayush3941
-/CONTRIBUTING.md @Ayush3941
-/SUPPORT.md @Ayush3941
-
-# Product and architecture
-/gitrank/docs/ @Ayush3941
-/gitrank/README.md @Ayush3941
-
-# Shared packages
-/gitrank/packages/ @Ayush3941
-
-# Services
-/gitrank/services/api-gateway/ @Ayush3941
-/gitrank/services/auth-service/ @Ayush3941
-/gitrank/services/github-ingestor/ @Ayush3941
-/gitrank/services/pr-analyzer/ @Ayush3941
-/gitrank/services/profile-service/ @Ayush3941
-/gitrank/services/scoring-engine/ @Ayush3941
-/gitrank/services/scheduler-worker/ @Ayush3941
+# CODEOWNERS intentionally left unassigned in this repo template.
+# Set repository-specific owners before enabling required CODEOWNERS review.
+#
+# Example:
+# * @your-github-username
