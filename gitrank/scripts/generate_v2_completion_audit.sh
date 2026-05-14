@@ -8,28 +8,58 @@ makefile="$root_dir/Makefile"
 tmp_root="${TMPDIR:-$root_dir/.tmp}"
 output_file="${OUTPUT_FILE:-$root_dir/docs/releases/v2-completion-audit-latest.md}"
 run_checks="${RUN_CHECKS:-true}"
+display_repository="${GITHUB_REPOSITORY_DISPLAY:-OWNER/REPO}"
 
 fail() {
   printf 'generate v2 completion audit failed: %s\n' "$1" >&2
   exit 1
 }
 
+resolve_repository_from_git_remote() {
+  if [ -n "${GITHUB_REPOSITORY:-}" ]; then
+    printf '%s' "$GITHUB_REPOSITORY"
+    return 0
+  fi
+  remote_url=$(git -C "$repo_dir" config --get remote.origin.url 2>/dev/null || true)
+  [ -n "$remote_url" ] || return 0
+  case "$remote_url" in
+    https://github.com/*) inferred_repo=${remote_url#https://github.com/} ;;
+    git@github.com:*) inferred_repo=${remote_url#git@github.com:} ;;
+    *) inferred_repo= ;;
+  esac
+  inferred_repo=${inferred_repo%.git}
+  printf '%s' "$inferred_repo"
+}
+
+resolved_repository=$(resolve_repository_from_git_remote || true)
+
 run_capture() {
   title=$1
   cmd=$2
   out="$tmp_root/v2-completion-audit.$$.$title.txt"
+  rendered="$out"
+  sanitized=
   if sh -c "$cmd" >"$out" 2>&1; then
     code=0
   else
     code=$?
   fi
+  if [ -n "$resolved_repository" ] && [ "$resolved_repository" != "$display_repository" ]; then
+    sanitized="$tmp_root/v2-completion-audit.$$.$title.sanitized.txt"
+    sed \
+      -e "s|https://github.com/$resolved_repository|https://github.com/$display_repository|g" \
+      -e "s|$resolved_repository|$display_repository|g" \
+      "$out" >"$sanitized"
+    rendered="$sanitized"
+  fi
   {
     printf '## %s\n\n' "$title"
     printf '%s\n\n' "- Exit code: \`$code\`"
     printf '```text\n'
-    sed -n '1,260p' "$out"
+    sed -n '1,260p' "$rendered"
     printf '```\n\n'
   } >>"$output_file"
+  [ -n "$sanitized" ] && rm -f "$sanitized"
   rm -f "$out"
   RUN_CAPTURE_LAST_CODE=$code
 }

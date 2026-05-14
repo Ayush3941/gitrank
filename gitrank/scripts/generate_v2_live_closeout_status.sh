@@ -12,6 +12,7 @@ CHECK_PUBLIC_WORKFLOW_HEALTH="${CHECK_PUBLIC_WORKFLOW_HEALTH:-true}"
 CHECK_WORKFLOW_EVIDENCE="${CHECK_WORKFLOW_EVIDENCE:-true}"
 WORKFLOW_RUN_ID="${WORKFLOW_RUN_ID:-latest}"
 WORKFLOW_EVENT="${WORKFLOW_EVENT:-workflow_dispatch}"
+DISPLAY_REPOSITORY="${GITHUB_REPOSITORY_DISPLAY:-OWNER/REPO}"
 
 fail() {
   printf 'generate v2 live closeout status failed: %s\n' "$1" >&2
@@ -38,13 +39,24 @@ append_section() {
   title=$1
   exit_code=$2
   output_file=$3
+  rendered_file=$output_file
+  sanitized_file=
+  if [ -n "${gitrank_repo:-}" ] && [ "$gitrank_repo" != "$DISPLAY_REPOSITORY" ]; then
+    sanitized_file="$tmp_root/v2-closeout-status-sanitized.$$.$title.txt"
+    sed \
+      -e "s|https://github.com/$gitrank_repo|https://github.com/$DISPLAY_REPOSITORY|g" \
+      -e "s|$gitrank_repo|$DISPLAY_REPOSITORY|g" \
+      "$output_file" >"$sanitized_file"
+    rendered_file=$sanitized_file
+  fi
   {
     printf '## %s\n\n' "$title"
     printf '%s\n\n' "- Exit code: \`$exit_code\`"
     printf '```text\n'
-    sed -n '1,220p' "$output_file"
+    sed -n '1,220p' "$rendered_file"
     printf '```\n\n'
   } >>"$OUTPUT_FILE"
+  [ -n "$sanitized_file" ] && rm -f "$sanitized_file"
 }
 
 run_and_capture() {
@@ -68,7 +80,7 @@ mkdir -p "$(dirname "$OUTPUT_FILE")"
 {
   printf '# V2 Live Closeout Status\n\n'
   printf '%s\n' "- Generated at (UTC): \`$(date -u +%Y-%m-%dT%H:%M:%SZ)\`"
-  printf '%s\n' "- Repository: \`${gitrank_repo:-unset}\`"
+  printf '%s\n' "- Repository: \`$DISPLAY_REPOSITORY\`"
   printf '%s\n' "- Workdir: \`$root_dir\`"
   printf '\n'
 } >"$OUTPUT_FILE"
@@ -170,13 +182,13 @@ token_candidate="${GITRANK_REPO_ADMIN_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}"
   printf '\n'
   printf '```bash\n'
   printf 'cd gitrank\n'
-  printf 'GITHUB_REPOSITORY=%s make verify-public-workflow-health\n' "${gitrank_repo:-OWNER/REPO}"
+  printf 'GITHUB_REPOSITORY=%s make verify-public-workflow-health\n' "$DISPLAY_REPOSITORY"
   printf '```\n\n'
   printf '3. If Trivy workflow-health fails because remote policy files drift, sync them.\n'
   printf '\n'
   printf '```bash\n'
   printf 'cd gitrank\n'
-  printf 'GITHUB_REPOSITORY=%s \\\n' "${gitrank_repo:-OWNER/REPO}"
+  printf 'GITHUB_REPOSITORY=%s \\\n' "$DISPLAY_REPOSITORY"
   printf 'GITRANK_REPO_ADMIN_TOKEN=... \\\n'
   printf 'make sync-remote-trivy-policy\n'
   printf '```\n\n'
@@ -184,7 +196,7 @@ token_candidate="${GITRANK_REPO_ADMIN_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}"
   printf '\n'
   printf '```bash\n'
   printf 'cd gitrank\n'
-  printf 'GITHUB_REPOSITORY=%s \\\n' "${gitrank_repo:-OWNER/REPO}"
+  printf 'GITHUB_REPOSITORY=%s \\\n' "$DISPLAY_REPOSITORY"
   printf 'GITRANK_REPO_ADMIN_TOKEN=... \\\n'
   printf 'make verify-live-github-access\n'
   printf '```\n\n'
@@ -192,13 +204,13 @@ token_candidate="${GITRANK_REPO_ADMIN_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}"
   printf '\n'
   printf '```bash\n'
   printf 'cd gitrank\n'
-  printf 'GITHUB_REPOSITORY=%s make verify-github-repository-controls-public\n' "${gitrank_repo:-OWNER/REPO}"
+  printf 'GITHUB_REPOSITORY=%s make verify-github-repository-controls-public\n' "$DISPLAY_REPOSITORY"
   printf '```\n\n'
   printf '6. Run live-gates workflow evidence pipeline.\n\n'
   printf '```bash\n'
   printf 'cd gitrank\n'
   printf 'CONFIRM_RUN_LIVE_V2_PIPELINE=yes \\\n'
-  printf 'GITHUB_REPOSITORY=%s \\\n' "${gitrank_repo:-OWNER/REPO}"
+  printf 'GITHUB_REPOSITORY=%s \\\n' "$DISPLAY_REPOSITORY"
   printf 'GITRANK_REPO_ADMIN_TOKEN=... \\\n'
   printf 'TARGET_ENVIRONMENT=staging \\\n'
   printf 'RUN_GITHUB_CONTROLS=true \\\n'
@@ -216,7 +228,7 @@ token_candidate="${GITRANK_REPO_ADMIN_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}"
   printf 'OUTPUT_FILE=docs/evidence/rollback-drill-YYYY-MM-DD.txt \\\n'
   printf 'ENVIRONMENT=staging CLUSTER=your-cluster NAMESPACE=gitrank OPERATOR=your-name \\\n'
   printf 'STARTING_COMMIT=<sha> CANDIDATE_COMMIT=<sha> ROLLBACK_TARGET_REVISION=<revision> \\\n'
-  printf 'DATABASE_BACKUP_MARKER=<backup-id> WORKFLOW_RUN_URL=https://github.com/%s/actions/runs/<id> \\\n' "${gitrank_repo:-OWNER/REPO}"
+  printf 'DATABASE_BACKUP_MARKER=<backup-id> WORKFLOW_RUN_URL=https://github.com/%s/actions/runs/<id> \\\n' "$DISPLAY_REPOSITORY"
   printf 'ROLLOUT_HISTORY_CAPTURED=yes ROLLBACK_MODE=workflow ROLLOUT_STATUS_RESULTS=healthy \\\n'
   printf 'CRITICAL_PRODUCT_CHECKS=pass make generate-rollback-drill-evidence\n'
   printf '\n'
