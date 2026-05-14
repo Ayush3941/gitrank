@@ -5,6 +5,7 @@ root_dir="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 repo_dir="$(CDPATH= cd -- "$root_dir/.." && pwd)"
 contributing_file="$repo_dir/CONTRIBUTING.md"
 audit_report_file="${AUDIT_REPORT_FILE:-}"
+display_repository="${GITHUB_REPOSITORY_DISPLAY:-}"
 
 fail() {
   printf 'v2 contributing audit failed: %s\n' "$1" >&2
@@ -36,8 +37,18 @@ resolve_repository_from_git_remote() {
   printf '%s' "$inferred_repo"
 }
 
+resolve_display_repository() {
+  resolved_repository=$1
+  if [ -n "$display_repository" ]; then
+    printf '%s' "$display_repository"
+    return 0
+  fi
+  printf 'OWNER/REPO'
+}
+
 emit_public_live_probe_snapshot() {
   repository=$1
+  repository_display=$2
   [ -n "$repository" ] || {
     printf 'public probe: skipped (repository unavailable)\n'
     [ -n "$audit_report_file" ] && {
@@ -137,7 +148,7 @@ emit_public_live_probe_snapshot() {
   fi
 
   printf 'public probe snapshot\n'
-  printf 'repository: %s\n' "$repository"
+  printf 'repository: %s\n' "$repository_display"
   printf 'repo metadata http: %s\n' "${repo_status:-unknown}"
   printf 'default branch: %s\n' "${default_branch:-unknown}"
   printf 'branch metadata http: %s\n' "${branch_status:-unknown}"
@@ -155,7 +166,7 @@ emit_public_live_probe_snapshot() {
   if [ -n "$audit_report_file" ]; then
     {
       printf '\n## Public Probe Snapshot\n'
-      printf '%s\n' "- repository: $repository"
+      printf '%s\n' "- repository: $repository_display"
       printf '%s\n' "- repo metadata http: ${repo_status:-unknown}"
       printf '%s\n' "- default branch: ${default_branch:-unknown}"
       printf '%s\n' "- branch metadata http: ${branch_status:-unknown}"
@@ -254,6 +265,7 @@ while IFS= read -r line; do
 done <"$unchecked_file"
 
 repository=$(resolve_repository_from_git_remote || true)
-emit_public_live_probe_snapshot "$repository"
+repository_display=$(resolve_display_repository "$repository")
+emit_public_live_probe_snapshot "$repository" "$repository_display"
 
 fail "checklist still has unresolved items"

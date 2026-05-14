@@ -68,6 +68,8 @@ For consolidated execution, use:
   and now consumes workflow-dispatch run details when the API provides them
   (`RETURN_RUN_DETAILS=true` by default, with legacy fallback on validation errors)
 - `make audit-v2-contributing-checklist` for pass/fail against unchecked lines
+  - public probe snapshot uses `OWNER/REPO` display by default; set
+    `GITHUB_REPOSITORY_DISPLAY=owner/repo` to show a concrete repository label
 - `make mark-v2-contributing-live-gates` to flip live-gate checkboxes only after
   successful verifier runs. In workflow-evidence mode it now delegates
   workflow-run lookup behavior to `make verify-live-v2-workflow-run`.
