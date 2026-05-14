@@ -4,6 +4,7 @@ set -eu
 REPOSITORY="${GITHUB_REPOSITORY:-}"
 TOKEN="${GITHUB_TOKEN:-${GH_TOKEN:-${GITRANK_REPO_ADMIN_TOKEN:-}}}"
 API_BASE="${GITHUB_API_URL:-https://api.github.com}"
+WEB_BASE="${GITHUB_WEB_URL:-https://github.com}"
 API_VERSION="${GITHUB_API_VERSION:-2026-03-10}"
 API_TIMEOUT_SECONDS="${GITHUB_API_TIMEOUT_SECONDS:-30}"
 REQUIRE_FULL_VERIFICATION="${REQUIRE_FULL_VERIFICATION:-false}"
@@ -265,6 +266,40 @@ probe_dependency_graph_sbom_public() {
   esac
 }
 
+probe_dependency_graph_html_public() {
+  html_file=$(mktemp "$TMP_ROOT/gitrank-dependency-graph-html.XXXXXX")
+  html_status=$(curl -sS -L -o "$html_file" -w '%{http_code}' \
+    --connect-timeout "$API_TIMEOUT_SECONDS" \
+    --max-time "$API_TIMEOUT_SECONDS" \
+    "$WEB_BASE/$OWNER/$REPO/network/dependencies") || {
+      rm -f "$html_file"
+      DEPENDENCY_GRAPH_HTML_STATUS="request-failed"
+      return 0
+    }
+
+  case "$html_status" in
+    200)
+      if rg -q "Dependency graph is disabled" "$html_file"; then
+        DEPENDENCY_GRAPH_HTML_STATUS="disabled"
+      elif rg -q "<title>Dependencies ·" "$html_file"; then
+        DEPENDENCY_GRAPH_HTML_STATUS="page-present"
+      else
+        DEPENDENCY_GRAPH_HTML_STATUS="unknown-page-content"
+      fi
+      ;;
+    404)
+      DEPENDENCY_GRAPH_HTML_STATUS="not-found"
+      ;;
+    403)
+      DEPENDENCY_GRAPH_HTML_STATUS="forbidden"
+      ;;
+    *)
+      DEPENDENCY_GRAPH_HTML_STATUS="http-$html_status"
+      ;;
+  esac
+  rm -f "$html_file"
+}
+
 github_get "/repos/$OWNER/$REPO"
 expect_status 200 "repository metadata"
 
@@ -285,6 +320,7 @@ CONTROL_MODE="unknown"
 verification_mode="public-partial"
 DEPENDABOT_STATUS="unverified"
 DEPENDENCY_GRAPH_STATUS="unverified"
+DEPENDENCY_GRAPH_HTML_STATUS="not-run"
 
 if [ "$BRANCH_PROTECTED" = "true" ]; then
   REQUIRED_CHECKS=$(printf '%s' "$API_BODY" | jq -r '((.protection.required_status_checks.contexts // []) | length) + ((.protection.required_status_checks.checks // []) | length)')
@@ -361,6 +397,22 @@ if [ -n "$TOKEN" ]; then
 else
   DEPENDABOT_STATUS="requires-token"
   probe_dependency_graph_sbom_public
+  case "$DEPENDENCY_GRAPH_STATUS" in
+    not-found|unverified|rate-limited-or-forbidden)
+      probe_dependency_graph_html_public
+      case "$DEPENDENCY_GRAPH_HTML_STATUS" in
+        disabled)
+          add_control_error "dependency graph appears disabled in public repository UI"
+          DEPENDENCY_GRAPH_STATUS="public-ui-disabled"
+          ;;
+        page-present)
+          if [ "$DEPENDENCY_GRAPH_STATUS" = "unverified" ] || [ "$DEPENDENCY_GRAPH_STATUS" = "not-found" ]; then
+            DEPENDENCY_GRAPH_STATUS="public-ui-visible"
+          fi
+          ;;
+      esac
+      ;;
+  esac
 fi
 
 if [ "$REQUIRE_FULL_VERIFICATION" = "true" ] && [ "$TOKEN" = "" ]; then
@@ -381,6 +433,9 @@ printf '- force pushes disabled: %s\n' "$ALLOW_FORCE_PUSHES"
 printf '- branch deletions disabled: %s\n' "$ALLOW_DELETIONS"
 printf '- dependabot alerts API: %s\n' "$DEPENDABOT_STATUS"
 printf '- dependency graph SBOM endpoint: %s\n' "$DEPENDENCY_GRAPH_STATUS"
+if [ -z "$TOKEN" ]; then
+  printf '- dependency graph public UI probe: %s\n' "$DEPENDENCY_GRAPH_HTML_STATUS"
+fi
 if [ -z "$TOKEN" ]; then
   printf 'note: run full verification with token for dependabot/dependency graph and full branch policy checks\n'
 fi
