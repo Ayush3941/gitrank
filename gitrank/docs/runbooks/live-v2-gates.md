@@ -382,6 +382,10 @@ set -a
 source .env.v2-live-gates.local
 set +a
 
+# optional refinements from the template:
+# AUTO_SYNC_REMOTE_WORKFLOW=true
+# RETURN_RUN_DETAILS=true
+
 RUN_GITHUB_CONTROLS=true \
 RUN_OBSERVABILITY=true \
 RUN_RELEASE_RENDER=true \
