@@ -6,6 +6,11 @@ repo_dir="$(CDPATH= cd -- "$root_dir/.." && pwd)"
 contributing_file="$repo_dir/CONTRIBUTING.md"
 audit_report_file="${AUDIT_REPORT_FILE:-}"
 display_repository="${GITHUB_REPOSITORY_DISPLAY:-}"
+api_token="${GITHUB_TOKEN:-${GH_TOKEN:-${GITRANK_REPO_ADMIN_TOKEN:-}}}"
+github_app_id="${GITHUB_APP_ID:-${GITRANK_GITHUB_APP_ID:-}}"
+github_app_installation_id="${GITHUB_APP_INSTALLATION_ID:-${GITRANK_GITHUB_APP_INSTALLATION_ID:-}}"
+github_app_private_key_file="${GITHUB_APP_PRIVATE_KEY_FILE:-${GITRANK_GITHUB_APP_PRIVATE_KEY_FILE:-}}"
+github_app_private_key_pem="${GITHUB_APP_PRIVATE_KEY_PEM:-${GITRANK_GITHUB_APP_PRIVATE_KEY_PEM:-}}"
 
 fail() {
   printf 'v2 contributing audit failed: %s\n' "$1" >&2
@@ -44,6 +49,26 @@ resolve_display_repository() {
     return 0
   fi
   printf 'OWNER/REPO'
+}
+
+bootstrap_probe_token_from_github_app() {
+  [ -n "$api_token" ] && return 0
+  [ -n "$github_app_id" ] || return 0
+  [ -n "$github_app_installation_id" ] || return 0
+  if [ -z "$github_app_private_key_file" ] && [ -z "$github_app_private_key_pem" ]; then
+    return 0
+  fi
+
+  token_file=$(mktemp "${TMPDIR:-/tmp}/gitrank-v2-audit-token.XXXXXX")
+  if GITHUB_APP_ID="$github_app_id" \
+    GITHUB_APP_INSTALLATION_ID="$github_app_installation_id" \
+    GITHUB_APP_PRIVATE_KEY_FILE="$github_app_private_key_file" \
+    GITHUB_APP_PRIVATE_KEY_PEM="$github_app_private_key_pem" \
+    TOKEN_OUTPUT_FILE="$token_file" \
+    "$root_dir/scripts/create_github_app_installation_token.sh" >/dev/null 2>&1; then
+    api_token=$(cat "$token_file" 2>/dev/null || true)
+  fi
+  rm -f "$token_file"
 }
 
 emit_public_live_probe_snapshot() {
@@ -85,11 +110,20 @@ emit_public_live_probe_snapshot() {
   api_get() {
     path=$1
     status_file=$(mktemp "${TMPDIR:-/tmp}/gitrank-v2-audit-probe.XXXXXX")
-    status_code=$(curl -sS -L -o "$status_file" -w '%{http_code}' \
-      --connect-timeout "$api_timeout_seconds" \
-      --max-time "$api_timeout_seconds" \
-      -H 'Accept: application/vnd.github+json' \
-      "$api_base$path") || status_code=000
+    if [ -n "$api_token" ]; then
+      status_code=$(curl -sS -L -o "$status_file" -w '%{http_code}' \
+        --connect-timeout "$api_timeout_seconds" \
+        --max-time "$api_timeout_seconds" \
+        -H 'Accept: application/vnd.github+json' \
+        -H "Authorization: Bearer $api_token" \
+        "$api_base$path") || status_code=000
+    else
+      status_code=$(curl -sS -L -o "$status_file" -w '%{http_code}' \
+        --connect-timeout "$api_timeout_seconds" \
+        --max-time "$api_timeout_seconds" \
+        -H 'Accept: application/vnd.github+json' \
+        "$api_base$path") || status_code=000
+    fi
     body=$(cat "$status_file" 2>/dev/null || true)
     rm -f "$status_file"
     API_GET_STATUS=$status_code
@@ -185,6 +219,7 @@ emit_public_live_probe_snapshot() {
 }
 
 [ -s "$contributing_file" ] || fail "missing CONTRIBUTING.md at $contributing_file"
+bootstrap_probe_token_from_github_app
 
 if [ "${RUN_BASELINE_VERIFIERS:-true}" = "true" ]; then
   run_make verify-v2-live-readiness

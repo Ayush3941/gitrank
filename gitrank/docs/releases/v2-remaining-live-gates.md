@@ -70,6 +70,9 @@ For consolidated execution, use:
 - `make audit-v2-contributing-checklist` for pass/fail against unchecked lines
   - public probe snapshot uses `OWNER/REPO` display by default; set
     `GITHUB_REPOSITORY_DISPLAY=owner/repo` to show a concrete repository label
+  - when `GITHUB_TOKEN`/`GH_TOKEN`/`GITRANK_REPO_ADMIN_TOKEN` (or GitHub App
+    credentials) are available, the public probe snapshot now uses
+    authenticated API calls to reduce rate-limit noise
 - `make mark-v2-contributing-live-gates` to flip live-gate checkboxes only after
   successful verifier runs. In workflow-evidence mode it now delegates
   workflow-run lookup behavior to `make verify-live-v2-workflow-run`.
