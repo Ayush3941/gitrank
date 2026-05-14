@@ -33,6 +33,11 @@ For consolidated execution, use:
 - `make generate-v2-live-closeout-status` to generate one artifact with local
   readiness, unresolved checklist audit, env presence, public controls precheck,
   and workflow-evidence probe results
+  - `CHECK_PUBLIC_WORKFLOW_HEALTH` supports `auto|true|false` (default `auto`,
+    which enables the public workflow-health probe only when token/App
+    credentials are present)
+  - set `CHECK_PUBLIC_WORKFLOW_HEALTH=false` to force offline snapshots without
+    attempting `make verify-public-workflow-health`
   - `CHECKLIST_AUDIT_RUN_PUBLIC_PROBE` supports `auto|true|false` (default
     `auto`, which enables probe calls only when token/App credentials are
     present)
@@ -49,6 +54,11 @@ For consolidated execution, use:
 - `make generate-v2-completion-audit` to generate a prompt-to-artifact matrix
   from `CONTRIBUTING.md` (checklist counts, unresolved requirements,
   file-reference existence, `make` target mapping, and gate outputs)
+  - `CHECK_PUBLIC_WORKFLOW_HEALTH` supports `auto|true|false` (default `auto`,
+    which enables the public workflow-health probe only when token/App
+    credentials are present)
+  - in `auto`, missing token/App credentials emit an explicit
+    `auto-disabled: no GitHub token/App credentials` waiver line
   - `CHECKLIST_AUDIT_RUN_PUBLIC_PROBE` supports `auto|true|false` (default
     `auto`, which enables probe calls only when token/App credentials are
     present)
@@ -125,7 +135,7 @@ short-lived installation tokens.
 - `make verify-public-workflow-health`: pass on the current default repository
 - `make verify-remote-live-v2-workflow-sync`: pass via raw-public fallback when
   no token is configured
-- `make audit-v2-contributing-checklist`: fail with `unchecked items: 14`
+- `make audit-v2-contributing-checklist`: fail with `unchecked items: 13`
 - Public workflow probe for `.github/workflows/verify-live-v2-gates.yml`:
   `total runs: 0` (no successful workflow-run evidence exists yet)
 - Public branch-policy probe:
