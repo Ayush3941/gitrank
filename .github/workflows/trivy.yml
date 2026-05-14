@@ -16,6 +16,8 @@ permissions:
 env:
   TRIVY_VERSION: "0.70.0"
   TRIVY_LINUX_SHA256: "8b4376d5d6befe5c24d503f10ff136d9e0c49f9127a4279fd110b727929a5aa9"
+  TRIVY_DOWNLOAD_CONNECT_TIMEOUT: "30"
+  TRIVY_DOWNLOAD_MAX_TIME: "120"
 
 jobs:
   filesystem-scan:
@@ -26,7 +28,10 @@ jobs:
 
       - name: Install Trivy
         run: |
-          curl -fsSLo trivy.tar.gz "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          curl -fsSLo trivy.tar.gz \
+            --connect-timeout "${TRIVY_DOWNLOAD_CONNECT_TIMEOUT}" \
+            --max-time "${TRIVY_DOWNLOAD_MAX_TIME}" \
+            "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
           echo "${TRIVY_LINUX_SHA256}  trivy.tar.gz" | sha256sum -c -
           tar -xzf trivy.tar.gz trivy
           install -m 0755 trivy "${RUNNER_TEMP}/trivy"
@@ -71,7 +76,10 @@ jobs:
 
       - name: Install Trivy
         run: |
-          curl -fsSLo trivy.tar.gz "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          curl -fsSLo trivy.tar.gz \
+            --connect-timeout "${TRIVY_DOWNLOAD_CONNECT_TIMEOUT}" \
+            --max-time "${TRIVY_DOWNLOAD_MAX_TIME}" \
+            "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
           echo "${TRIVY_LINUX_SHA256}  trivy.tar.gz" | sha256sum -c -
           tar -xzf trivy.tar.gz trivy
           install -m 0755 trivy "${RUNNER_TEMP}/trivy"
