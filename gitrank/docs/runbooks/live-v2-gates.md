@@ -139,6 +139,9 @@ present in the environment.
 If GitHub returns `HTTP 403` due API quota exhaustion, the verifier now reports
 that explicitly so you can retry with token/App credentials that have remaining
 quota.
+If GitHub returns `HTTP 403 Resource not accessible by integration`, the
+verifier now reports that explicitly so you can fix GitHub App installation
+permissions or switch to an admin token.
 
 To verify a completed Actions run as live-gate evidence (without rerunning
 those checks locally), use:

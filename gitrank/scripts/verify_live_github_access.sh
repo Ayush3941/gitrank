@@ -107,6 +107,14 @@ is_rate_limited_response() {
   esac
 }
 
+is_integration_permission_error() {
+  message=$(printf '%s' "$API_BODY" | jq -r '.message // empty' 2>/dev/null || true)
+  case "$message" in
+    *"Resource not accessible by integration"*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 expect_200() {
   [ "$API_STATUS" = "200" ] || {
     case "$API_STATUS" in
@@ -115,9 +123,21 @@ expect_200() {
         if is_rate_limited_response; then
           fail "$LAST_CONTEXT hit GitHub API rate limit (HTTP 403); retry with token/App credentials that have remaining quota"
         fi
+        if is_integration_permission_error; then
+          fail "$LAST_CONTEXT denied: resource not accessible by integration (HTTP 403); ensure the GitHub App installation has required repository permissions, or use an admin token"
+        fi
         fail "$LAST_CONTEXT denied: token lacks required permission/scope (HTTP 403)"
         ;;
-      404) fail "$LAST_CONTEXT denied: endpoint/resource unavailable for this token or repo (HTTP 404)" ;;
+      404)
+        case "$LAST_CONTEXT" in
+          "workflow metadata ("*)
+            fail "$LAST_CONTEXT missing on default branch (HTTP 404); run make sync-remote-live-v2-workflow"
+            ;;
+          *)
+            fail "$LAST_CONTEXT denied: endpoint/resource unavailable for this token or repo (HTTP 404)"
+            ;;
+        esac
+        ;;
       *) fail "$LAST_CONTEXT returned HTTP $API_STATUS" ;;
     esac
   }
@@ -136,6 +156,9 @@ verify_dependency_graph_sbom() {
           if is_rate_limited_response; then
             fail "dependency graph SBOM generation hit GitHub API rate limit (HTTP 403); retry with token/App credentials that have remaining quota"
           fi
+          if is_integration_permission_error; then
+            fail "dependency graph SBOM generation denied: resource not accessible by integration (HTTP 403); ensure GitHub App installation permissions include dependency graph access, or use an admin token"
+          fi
           fail "dependency graph SBOM generation denied: token lacks required permission/scope (HTTP 403)"
           ;;
         404) fail "dependency graph SBOM unavailable for this repo/token (HTTP 404 on legacy and generate-report endpoints)" ;;
@@ -146,6 +169,9 @@ verify_dependency_graph_sbom() {
     403)
       if is_rate_limited_response; then
         fail "dependency graph SBOM hit GitHub API rate limit (HTTP 403); retry with token/App credentials that have remaining quota"
+      fi
+      if is_integration_permission_error; then
+        fail "dependency graph SBOM denied: resource not accessible by integration (HTTP 403); ensure GitHub App installation permissions include dependency graph access, or use an admin token"
       fi
       fail "dependency graph SBOM denied: token lacks required permission/scope (HTTP 403)"
       ;;
