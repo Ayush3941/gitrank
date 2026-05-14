@@ -38,7 +38,19 @@ rm -f "$default_report" "$custom_report" "$default_stdout" "$default_stderr" "$c
 
 if ! (
   cd "$root_dir" &&
+  GITHUB_TOKEN= \
+  GH_TOKEN= \
+  GITRANK_REPO_ADMIN_TOKEN= \
+  GITHUB_APP_ID= \
+  GITRANK_GITHUB_APP_ID= \
+  GITHUB_APP_INSTALLATION_ID= \
+  GITRANK_GITHUB_APP_INSTALLATION_ID= \
+  GITHUB_APP_PRIVATE_KEY_FILE= \
+  GITRANK_GITHUB_APP_PRIVATE_KEY_FILE= \
+  GITHUB_APP_PRIVATE_KEY_PEM= \
+  GITRANK_GITHUB_APP_PRIVATE_KEY_PEM= \
   RUN_CHECKS=false \
+  CHECK_PUBLIC_WORKFLOW_HEALTH=auto \
   OUTPUT_FILE="$default_report" \
   GITHUB_REPOSITORY="example/private-repo" \
   ./scripts/generate_v2_completion_audit.sh
@@ -49,7 +61,8 @@ fi
 [ -s "$default_report" ] || fail "default completion-audit report was not created"
 assert_contains "$default_report" "- Repository: \`OWNER/REPO\`" "default display repository should be redacted"
 assert_contains "$default_report" "### Probe Waivers" "probe waiver section should exist"
-assert_contains "$default_report" "- none" "default run should report no waivers"
+assert_contains "$default_report" "- Public workflow health mode: \`false\` (configured: \`auto\`)" "default run should resolve public workflow probe mode from auth context"
+assert_contains "$default_report" "- public workflow health waiver: \`auto-disabled: no GitHub token/App credentials\`" "default run should record auto waiver for public workflow health when auth is missing"
 assert_contains "$default_report" "Current audit verdict: **objective not complete**." "default run should not mark completion"
 assert_contains "$default_stderr" "missing waiver for skipped probe" "default skipped probes should require waivers"
 

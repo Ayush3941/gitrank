@@ -9,6 +9,7 @@ tmp_root="${TMPDIR:-$root_dir/.tmp}"
 output_file="${OUTPUT_FILE:-$root_dir/docs/releases/v2-completion-audit-latest.md}"
 run_checks="${RUN_CHECKS:-true}"
 display_repository="${GITHUB_REPOSITORY_DISPLAY:-}"
+check_public_workflow_health="${CHECK_PUBLIC_WORKFLOW_HEALTH:-auto}"
 check_remote_live_workflow_sync="${CHECK_REMOTE_LIVE_WORKFLOW_SYNC:-true}"
 check_public_github_controls="${CHECK_PUBLIC_GITHUB_CONTROLS:-true}"
 check_live_github_access="${CHECK_LIVE_GITHUB_ACCESS:-true}"
@@ -29,9 +30,19 @@ fail() {
 }
 
 resolve_checklist_audit_run_public_probe() {
-  case "$checklist_audit_run_public_probe" in
+  resolve_boolean_or_auto_from_github_auth "$checklist_audit_run_public_probe" "CHECKLIST_AUDIT_RUN_PUBLIC_PROBE"
+}
+
+resolve_check_public_workflow_health() {
+  resolve_boolean_or_auto_from_github_auth "$check_public_workflow_health" "CHECK_PUBLIC_WORKFLOW_HEALTH"
+}
+
+resolve_boolean_or_auto_from_github_auth() {
+  configured_value=$1
+  configured_name=$2
+  case "$configured_value" in
     true|false)
-      printf '%s' "$checklist_audit_run_public_probe"
+      printf '%s' "$configured_value"
       return 0
       ;;
     auto)
@@ -54,7 +65,7 @@ resolve_checklist_audit_run_public_probe() {
       return 0
       ;;
     *)
-      fail "CHECKLIST_AUDIT_RUN_PUBLIC_PROBE must be one of: true, false, auto"
+      fail "$configured_name must be one of: true, false, auto"
       ;;
   esac
 }
@@ -79,7 +90,12 @@ resolved_repository=$(resolve_repository_from_git_remote || true)
 if [ -z "$display_repository" ]; then
   display_repository=OWNER/REPO
 fi
+check_public_workflow_health_resolved=$(resolve_check_public_workflow_health)
 checklist_audit_run_public_probe_resolved=$(resolve_checklist_audit_run_public_probe)
+auto_waive_public_workflow_health=
+if [ "$check_public_workflow_health" = "auto" ] && [ "$check_public_workflow_health_resolved" = "false" ] && [ -z "$waive_public_workflow_health" ]; then
+  auto_waive_public_workflow_health="auto-disabled: no GitHub token/App credentials"
+fi
 
 run_capture() {
   title=$1
@@ -252,9 +268,12 @@ if [ "$run_checks" = "true" ]; then
     "cd '$root_dir' && make verify-v2-live-readiness"
   local_gate_code=$RUN_CAPTURE_LAST_CODE
 
-  run_capture "Public Workflow Health Gate (make verify-public-workflow-health)" \
-    "cd '$root_dir' && make verify-public-workflow-health"
-  public_workflow_health_code=$RUN_CAPTURE_LAST_CODE
+  public_workflow_health_code=skip
+  if [ "$check_public_workflow_health_resolved" = "true" ]; then
+    run_capture "Public Workflow Health Gate (make verify-public-workflow-health)" \
+      "cd '$root_dir' && make verify-public-workflow-health"
+    public_workflow_health_code=$RUN_CAPTURE_LAST_CODE
+  fi
 
   run_capture "Checklist Audit (make audit-v2-contributing-checklist)" \
     "cd '$root_dir' && RUN_BASELINE_VERIFIERS=false RUN_PUBLIC_PROBE='$checklist_audit_run_public_probe_resolved' make audit-v2-contributing-checklist"
@@ -327,10 +346,11 @@ ready_for_completion=true
 if [ "$run_checks" != "true" ] && [ -z "$waive_run_checks" ]; then
   ready_for_completion=false
 fi
+effective_waive_public_workflow_health=${waive_public_workflow_health:-$auto_waive_public_workflow_health}
 if ! code_is_ok_or_skipped "local readiness gate" "$local_gate_code" "$waive_run_checks"; then
   ready_for_completion=false
 fi
-if ! code_is_ok_or_skipped "public workflow health gate" "$public_workflow_health_code" "$waive_public_workflow_health"; then
+if ! code_is_ok_or_skipped "public workflow health gate" "$public_workflow_health_code" "$effective_waive_public_workflow_health"; then
   ready_for_completion=false
 fi
 if ! code_is_ok_or_skipped "checklist audit gate" "$checklist_audit_code" "$waive_run_checks"; then
@@ -359,6 +379,7 @@ fi
   printf '## Completion Verdict Inputs\n\n'
   printf '%s\n' "- Local readiness gate exit code: \`$local_gate_code\`"
   printf '%s\n' "- Public workflow health gate exit code: \`$public_workflow_health_code\`"
+  printf '%s\n' "- Public workflow health mode: \`$check_public_workflow_health_resolved\` (configured: \`$check_public_workflow_health\`)"
   printf '%s\n' "- Checklist audit exit code: \`$checklist_audit_code\`"
   printf '%s\n' "- Checklist audit public probe mode: \`$checklist_audit_run_public_probe_resolved\` (configured: \`$checklist_audit_run_public_probe\`)"
   printf '%s\n' "- Env presence probe exit code: \`$env_presence_code\`"
@@ -372,8 +393,8 @@ fi
   if [ -n "$waive_run_checks" ]; then
     printf '%s\n' "- run_checks waiver: \`$waive_run_checks\`"
   fi
-  if [ -n "$waive_public_workflow_health" ]; then
-    printf '%s\n' "- public workflow health waiver: \`$waive_public_workflow_health\`"
+  if [ -n "$effective_waive_public_workflow_health" ]; then
+    printf '%s\n' "- public workflow health waiver: \`$effective_waive_public_workflow_health\`"
   fi
   if [ -n "$waive_remote_live_workflow_sync" ]; then
     printf '%s\n' "- remote live workflow sync waiver: \`$waive_remote_live_workflow_sync\`"
@@ -387,7 +408,7 @@ fi
   if [ -n "$waive_workflow_evidence_probe" ]; then
     printf '%s\n' "- workflow evidence probe waiver: \`$waive_workflow_evidence_probe\`"
   fi
-  if [ -z "$waive_run_checks" ] && [ -z "$waive_public_workflow_health" ] && [ -z "$waive_remote_live_workflow_sync" ] && [ -z "$waive_live_github_access_preflight" ] && [ -z "$waive_public_github_controls_precheck" ] && [ -z "$waive_workflow_evidence_probe" ]; then
+  if [ -z "$waive_run_checks" ] && [ -z "$effective_waive_public_workflow_health" ] && [ -z "$waive_remote_live_workflow_sync" ] && [ -z "$waive_live_github_access_preflight" ] && [ -z "$waive_public_github_controls_precheck" ] && [ -z "$waive_workflow_evidence_probe" ]; then
     printf '%s\n' "- none"
   fi
   printf '\n'
