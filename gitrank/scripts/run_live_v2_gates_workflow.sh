@@ -88,6 +88,8 @@ OWNER=${REPOSITORY%%/*}
 REPO=${REPOSITORY#*/}
 API_STATUS=
 API_BODY=
+dispatch_run_id=
+dispatch_run_url=
 
 request_id="v2-live-$(date -u +%Y%m%dT%H%M%SZ)-$$"
 
@@ -145,6 +147,10 @@ dispatch_payload=$(jq -n \
 
 json_request POST "/repos/$OWNER/$REPO/actions/workflows/$WORKFLOW_FILE/dispatches" "$dispatch_payload"
 case "$API_STATUS" in
+  200)
+    dispatch_run_id=$(printf '%s' "$API_BODY" | jq -r '.workflow_run_id // empty')
+    dispatch_run_url=$(printf '%s' "$API_BODY" | jq -r '.html_url // empty')
+    ;;
   201|202|204) ;;
   *) fail "workflow dispatch returned HTTP $API_STATUS" ;;
 esac
@@ -153,6 +159,16 @@ printf 'workflow dispatch accepted\n'
 printf 'repository: %s\n' "$REPOSITORY"
 printf 'workflow: %s\n' "$WORKFLOW_FILE"
 printf 'request_id: %s\n' "$request_id"
+if [ -n "$dispatch_run_id" ]; then
+  printf 'dispatch_run_id: %s\n' "$dispatch_run_id"
+  [ -n "$dispatch_run_url" ] && printf 'dispatch_run_url: %s\n' "$dispatch_run_url"
+  if [ -n "$WORKFLOW_RUN_ID_OUTPUT_FILE" ]; then
+    mkdir -p "$(dirname "$WORKFLOW_RUN_ID_OUTPUT_FILE")"
+    umask 077
+    printf '%s\n' "$dispatch_run_id" >"$WORKFLOW_RUN_ID_OUTPUT_FILE"
+    printf 'workflow_run_id_file: %s\n' "$WORKFLOW_RUN_ID_OUTPUT_FILE"
+  fi
+fi
 
 if [ "$WAIT_FOR_COMPLETION" != "true" ]; then
   exit 0
@@ -168,16 +184,22 @@ while :; do
   now=$(date -u +%s)
   [ "$now" -le "$deadline" ] || fail "timed out waiting for workflow run"
 
-  json_request GET "/repos/$OWNER/$REPO/actions/workflows/$WORKFLOW_FILE/runs?event=workflow_dispatch&per_page=20"
-  [ "$API_STATUS" = "200" ] || fail "workflow runs query returned HTTP $API_STATUS"
+  if [ -n "$dispatch_run_id" ]; then
+    json_request GET "/repos/$OWNER/$REPO/actions/runs/$dispatch_run_id"
+    [ "$API_STATUS" = "200" ] || fail "workflow run lookup returned HTTP $API_STATUS"
+    matched_run_json="$API_BODY"
+  else
+    json_request GET "/repos/$OWNER/$REPO/actions/workflows/$WORKFLOW_FILE/runs?event=workflow_dispatch&per_page=20"
+    [ "$API_STATUS" = "200" ] || fail "workflow runs query returned HTTP $API_STATUS"
 
-  matched_run_json=$(printf '%s' "$API_BODY" | jq -c --arg start "$start_epoch" '
-    .workflow_runs
-    | map(select((.created_at | fromdateiso8601) >= ($start | tonumber)))
-    | sort_by(.created_at)
-    | reverse
-    | .[0] // empty
-  ')
+    matched_run_json=$(printf '%s' "$API_BODY" | jq -c --arg start "$start_epoch" '
+      .workflow_runs
+      | map(select((.created_at | fromdateiso8601) >= ($start | tonumber)))
+      | sort_by(.created_at)
+      | reverse
+      | .[0] // empty
+    ')
+  fi
 
   if [ -n "$matched_run_json" ] && [ "$matched_run_json" != "null" ]; then
     matched_run_id=$(printf '%s' "$matched_run_json" | jq -r '.id')

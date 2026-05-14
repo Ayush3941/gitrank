@@ -73,6 +73,11 @@ RUN_RELEASE_RENDER=true \
 make run-live-v2-gates-workflow
 ```
 
+When GitHub returns workflow-dispatch run details (`workflow_run_id` and run
+URLs), this command captures them immediately and writes
+`WORKFLOW_RUN_ID_OUTPUT_FILE` when configured, then falls back to polling only
+if needed.
+
 If you need a short-lived token for repository-controls operations, use:
 
 ```bash

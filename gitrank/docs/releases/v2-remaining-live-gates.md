@@ -35,6 +35,7 @@ For consolidated execution, use:
 - `CONFIRM_FINALIZE_V2=yes make finalize-v2-live-closeout` for one-command
   preflight + gate verification + checklist marking + audit
 - `make run-live-v2-gates-workflow` (requires token and live environment vars)
+  and now consumes workflow-dispatch run details when the API provides them
 - `make audit-v2-contributing-checklist` for pass/fail against unchecked lines
 - `make mark-v2-contributing-live-gates` to flip live-gate checkboxes only after
   successful verifier runs
