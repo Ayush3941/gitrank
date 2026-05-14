@@ -142,6 +142,10 @@ quota.
 If GitHub returns `HTTP 403 Resource not accessible by integration`, the
 verifier now reports that explicitly so you can fix GitHub App installation
 permissions or switch to an admin token.
+For `.github/workflows/*` sync operations, the token/App must also have
+workflow write permission (`workflow` scope for classic PATs or
+`workflows:write` for GitHub App installations), otherwise GitHub may reject
+updates with `HTTP 403`.
 Use this command to inspect installation-level permissions and repository scope:
 
 ```bash

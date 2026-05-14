@@ -87,6 +87,61 @@ REPO=${REPOSITORY#*/}
 API_STATUS=
 API_BODY=
 
+is_rate_limited_response() {
+  message=$(printf '%s' "$API_BODY" | jq -r '.message // empty' 2>/dev/null || true)
+  case "$message" in
+    *"API rate limit exceeded"*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+is_integration_permission_error() {
+  message=$(printf '%s' "$API_BODY" | jq -r '.message // empty' 2>/dev/null || true)
+  case "$message" in
+    *"Resource not accessible by integration"*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+is_workflow_scope_error() {
+  message=$(printf '%s' "$API_BODY" | jq -r '.message // empty' 2>/dev/null || true)
+  case "$message" in
+    *"refusing to allow"*".github/workflows"*|*"workflows scope"*|*"workflows:write"*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+handle_sync_http_error() {
+  context=$1
+  case "$API_STATUS" in
+    401)
+      fail "$context denied: token invalid or expired (HTTP 401)"
+      ;;
+    403)
+      if is_rate_limited_response; then
+        fail "$context hit GitHub API rate limit (HTTP 403); retry with token/App credentials that have remaining quota"
+      fi
+      if is_workflow_scope_error; then
+        fail "$context denied: token/App lacks workflow write scope for .github/workflows updates (HTTP 403); use a PAT with workflow scope or an App installation token with workflows:write"
+      fi
+      if is_integration_permission_error; then
+        fail "$context denied: resource not accessible by integration (HTTP 403); ensure GitHub App installation permissions include repository contents write and workflows write, or use an admin token"
+      fi
+      fail "$context denied: token lacks required permission/scope (HTTP 403)"
+      ;;
+    404)
+      fail "$context missing or inaccessible (HTTP 404)"
+      ;;
+    *)
+      fail "$context returned HTTP $API_STATUS"
+      ;;
+  esac
+}
+
 github_request() {
   method=$1
   path=$2
@@ -122,7 +177,7 @@ github_request() {
 }
 
 github_request GET "/repos/$OWNER/$REPO"
-[ "$API_STATUS" = "200" ] || fail "repository metadata lookup returned HTTP $API_STATUS"
+[ "$API_STATUS" = "200" ] || handle_sync_http_error "repository metadata lookup"
 
 if [ -z "$TARGET_BRANCH" ]; then
   TARGET_BRANCH=$(printf '%s' "$API_BODY" | jq -r '.default_branch // empty')
@@ -156,7 +211,7 @@ case "$API_STATUS" in
     case "$API_STATUS" in
       200|201) printf 'updated: %s on %s\n' "$WORKFLOW_FILE_PATH" "$TARGET_BRANCH" ;;
       409) fail "conflict updating workflow file (possible branch protection or stale SHA): $API_BODY" ;;
-      *) fail "update returned HTTP $API_STATUS" ;;
+      *) handle_sync_http_error "update workflow file $WORKFLOW_FILE_PATH on $TARGET_BRANCH" ;;
     esac
     ;;
   404)
@@ -173,12 +228,10 @@ case "$API_STATUS" in
     case "$API_STATUS" in
       200|201) printf 'created: %s on %s\n' "$WORKFLOW_FILE_PATH" "$TARGET_BRANCH" ;;
       409) fail "conflict creating workflow file (possible branch protection): $API_BODY" ;;
-      *) fail "create returned HTTP $API_STATUS" ;;
+      *) handle_sync_http_error "create workflow file $WORKFLOW_FILE_PATH on $TARGET_BRANCH" ;;
     esac
     ;;
-  *)
-    fail "contents lookup for $WORKFLOW_FILE_PATH returned HTTP $API_STATUS"
-    ;;
+  *) handle_sync_http_error "contents lookup for $WORKFLOW_FILE_PATH on $TARGET_BRANCH" ;;
 esac
 
 printf 'sync remote live-v2 workflow complete\n'
