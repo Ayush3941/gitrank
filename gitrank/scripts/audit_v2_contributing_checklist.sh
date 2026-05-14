@@ -235,6 +235,42 @@ emit_skipped_public_probe_snapshot() {
   fi
 }
 
+emit_env_presence_snapshot() {
+  repository=$1
+  if [ ! -x "$root_dir/scripts/report_live_v2_env_presence.sh" ]; then
+    return 0
+  fi
+
+  env_probe_file=$(mktemp "${TMPDIR:-/tmp}/gitrank-v2-env-presence.XXXXXX")
+  if INFERRED_GITHUB_REPOSITORY="$repository" \
+    "$root_dir/scripts/report_live_v2_env_presence.sh" >"$env_probe_file" 2>/dev/null; then
+    :
+  else
+    rm -f "$env_probe_file"
+    return 0
+  fi
+
+  auth_mode=$(awk -F= '/^derived\.auth_mode=/{print $2; exit}' "$env_probe_file")
+  has_app_bootstrap=$(awk -F= '/^derived\.has_app_bootstrap=/{print $2; exit}' "$env_probe_file")
+  workflow_sync_readiness=$(awk -F= '/^derived\.workflow_sync_credential_readiness=/{print $2; exit}' "$env_probe_file")
+
+  if [ -n "$auth_mode" ] || [ -n "$has_app_bootstrap" ] || [ -n "$workflow_sync_readiness" ]; then
+    printf 'env derived readiness\n'
+    printf 'derived.auth_mode: %s\n' "${auth_mode:-unknown}"
+    printf 'derived.has_app_bootstrap: %s\n' "${has_app_bootstrap:-unknown}"
+    printf 'derived.workflow_sync_credential_readiness: %s\n' "${workflow_sync_readiness:-unknown}"
+    if [ -n "$audit_report_file" ]; then
+      {
+        printf '\n## Env Presence Snapshot\n'
+        printf '%s\n' "- derived.auth_mode: ${auth_mode:-unknown}"
+        printf '%s\n' "- derived.has_app_bootstrap: ${has_app_bootstrap:-unknown}"
+        printf '%s\n' "- derived.workflow_sync_credential_readiness: ${workflow_sync_readiness:-unknown}"
+      } >>"$audit_report_file"
+    fi
+  fi
+  rm -f "$env_probe_file"
+}
+
 [ -s "$contributing_file" ] || fail "missing CONTRIBUTING.md at $contributing_file"
 bootstrap_probe_token_from_github_app
 
@@ -323,5 +359,6 @@ if [ "$run_public_probe" = "true" ]; then
 else
   emit_skipped_public_probe_snapshot "$repository_display" "RUN_PUBLIC_PROBE=false"
 fi
+emit_env_presence_snapshot "$repository"
 
 fail "checklist still has unresolved items"
