@@ -130,6 +130,9 @@ Current local evidence:
   - `make discover-github-required-status-checks`
   - `make apply-github-repository-controls-auto`
   - `make verify-github-repository-controls`
+- Required-check discovery now prefers default-branch head contexts and falls
+  back to recent successful default-branch workflow runs when head contexts are
+  temporarily empty.
 - Verification fails closed without admin token.
 - App integrations without repository `contents:write` and `administration`
   privileges fail with `HTTP 403 Resource not accessible by integration` for
