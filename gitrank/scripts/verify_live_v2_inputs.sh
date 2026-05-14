@@ -74,6 +74,22 @@ fail() {
   exit 1
 }
 
+resolve_repository_from_git_remote() {
+  [ -n "$GITHUB_REPOSITORY" ] && return 0
+  command -v git >/dev/null 2>&1 || return 0
+  remote_url=$(git config --get remote.origin.url 2>/dev/null || true)
+  [ -n "$remote_url" ] || return 0
+  case "$remote_url" in
+    https://github.com/*) inferred_repo=${remote_url#https://github.com/} ;;
+    git@github.com:*) inferred_repo=${remote_url#git@github.com:} ;;
+    *) inferred_repo= ;;
+  esac
+  inferred_repo=${inferred_repo%.git}
+  [ -n "$inferred_repo" ] && GITHUB_REPOSITORY=$inferred_repo
+}
+
+resolve_repository_from_git_remote
+
 add_missing_unique() {
   current=$1
   item=$2

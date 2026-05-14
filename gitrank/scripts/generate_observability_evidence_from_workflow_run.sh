@@ -29,6 +29,10 @@ ALERT_ROUTE_TESTED="${ALERT_ROUTE_TESTED:-verified by workflow run step success}
 KNOWN_GAPS="${KNOWN_GAPS:-none observed in workflow run}"
 FOLLOW_UP_ACTIONS="${FOLLOW_UP_ACTIONS:-continue normal monitoring and alert tuning}"
 DECISION="${DECISION:-pass}"
+GITHUB_APP_ID="${GITHUB_APP_ID:-${GITRANK_GITHUB_APP_ID:-}}"
+GITHUB_APP_INSTALLATION_ID="${GITHUB_APP_INSTALLATION_ID:-${GITRANK_GITHUB_APP_INSTALLATION_ID:-}}"
+GITHUB_APP_PRIVATE_KEY_FILE="${GITHUB_APP_PRIVATE_KEY_FILE:-${GITRANK_GITHUB_APP_PRIVATE_KEY_FILE:-}}"
+GITHUB_APP_PRIVATE_KEY_PEM="${GITHUB_APP_PRIVATE_KEY_PEM:-${GITRANK_GITHUB_APP_PRIVATE_KEY_PEM:-}}"
 
 fail() {
   printf 'generate observability evidence from workflow run failed: %s\n' "$1" >&2
@@ -55,6 +59,30 @@ resolve_repository_from_git_remote() {
 
 resolve_repository_from_git_remote
 
+bootstrap_token_from_github_app() {
+  [ -n "$TOKEN" ] && return 0
+  [ -n "$GITHUB_APP_ID" ] || return 1
+  [ -n "$GITHUB_APP_INSTALLATION_ID" ] || return 1
+  if [ -z "$GITHUB_APP_PRIVATE_KEY_FILE" ] && [ -z "$GITHUB_APP_PRIVATE_KEY_PEM" ]; then
+    return 1
+  fi
+
+  token_file=$(mktemp "${TMPDIR:-/tmp}/gitrank-observability-token.XXXXXX")
+  GITHUB_APP_ID="$GITHUB_APP_ID" \
+  GITHUB_APP_INSTALLATION_ID="$GITHUB_APP_INSTALLATION_ID" \
+  GITHUB_APP_PRIVATE_KEY_FILE="$GITHUB_APP_PRIVATE_KEY_FILE" \
+  GITHUB_APP_PRIVATE_KEY_PEM="$GITHUB_APP_PRIVATE_KEY_PEM" \
+  TOKEN_OUTPUT_FILE="$token_file" \
+  "$root_dir/scripts/create_github_app_installation_token.sh" >/dev/null
+  TOKEN=$(cat "$token_file" 2>/dev/null || true)
+  rm -f "$token_file"
+  [ -n "$TOKEN" ] || fail "GitHub App token bootstrap succeeded but returned empty token"
+  export GITHUB_TOKEN="$TOKEN"
+  export GH_TOKEN="$TOKEN"
+  export GITRANK_REPO_ADMIN_TOKEN="$TOKEN"
+  printf 'observability evidence: bootstrapped token via GitHub App installation credentials\n'
+}
+
 case "$REPOSITORY" in
   */*) ;;
   *) fail "GITHUB_REPOSITORY must use owner/name form (or run from a clone with GitHub origin remote)" ;;
@@ -72,6 +100,8 @@ fi
 
 require_command curl
 require_command jq
+require_command mktemp
+bootstrap_token_from_github_app || true
 mkdir -p "$(dirname "$OUTPUT_FILE")"
 
 OWNER=${REPOSITORY%%/*}

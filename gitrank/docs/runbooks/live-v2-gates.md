@@ -130,6 +130,9 @@ REQUIRE_RELEASE_RENDER=true \
 make verify-live-v2-workflow-run
 ```
 
+If no static token is provided, `make verify-live-v2-workflow-run` now also
+supports GitHub App credential bootstrap.
+
 For a no-token public precheck of repository-controls posture:
 
 ```bash
@@ -284,6 +287,9 @@ NAMESPACE=gitrank \
 OPERATOR=your-name \
 make run-live-v2-workflow-evidence-pipeline
 ```
+
+The workflow dispatch and workflow-run verification stages also support
+GitHub App credential bootstrap when a direct token is not set.
 
 If the workflow already ran and you only want evidence generation from the
 latest successful run:

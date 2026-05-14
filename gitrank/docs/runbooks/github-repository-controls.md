@@ -63,9 +63,14 @@ make verify-github-repository-controls-public
 
 ## Apply Through Script
 
-Use this path only with a token that has repository administration write
-permission. The script refuses to mutate live settings unless both the
-confirmation flag and exact status check names are provided.
+Use this path with either:
+- a token that has repository administration write permission, or
+- GitHub App credentials (`GITHUB_APP_ID`, `GITHUB_APP_INSTALLATION_ID`, and
+  `GITHUB_APP_PRIVATE_KEY_FILE` or `GITHUB_APP_PRIVATE_KEY_PEM`) so the script
+  can bootstrap a short-lived installation token.
+
+The script refuses to mutate live settings unless both the confirmation flag
+and exact status check names are provided.
 
 ```bash
 cd gitrank
@@ -119,6 +124,9 @@ make apply-github-repository-controls-auto
 Use this only when the latest default-branch check set is the intended required
 merge gate set.
 
+If no static token is set, `make apply-github-repository-controls-auto` now
+attempts the same GitHub App token bootstrap described above.
+
 ## Apply Through GitHub UI
 
 1. Open repository settings.
@@ -136,7 +144,9 @@ merge gate set.
 
 Run this from the repo root with a token that can read repository
 administration, branch protection, dependency graph, and Dependabot alert
-state. The verifier checks branch protection first and falls back to branch
+state. If no static token is set, the verifier now attempts GitHub App token
+bootstrap using `GITHUB_APP_*` credentials. The verifier checks branch
+protection first and falls back to branch
 ruleset evaluation (`/rules/branches/{branch}`) when branch protection is not
 present.
 
