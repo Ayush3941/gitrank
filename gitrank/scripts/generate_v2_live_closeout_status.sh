@@ -305,6 +305,13 @@ fi
   printf 'OPERATOR=your-name \\\n'
   printf 'make run-live-v2-workflow-evidence-pipeline\n'
   printf '```\n\n'
+  printf 'If workflow evidence verification reports no successful `workflow_dispatch` run, retry the verifier across all events:\n\n'
+  printf '```bash\n'
+  printf 'cd gitrank\n'
+  printf 'GITHUB_REPOSITORY=%s \\\n' "$DISPLAY_REPOSITORY"
+  printf 'WORKFLOW_EVENT=any \\\n'
+  printf 'make verify-live-v2-workflow-run\n'
+  printf '```\n\n'
   printf '9. Generate rollback and restore drill evidence (or provide equivalent real drill records).\n\n'
   printf '```bash\n'
   printf 'cd gitrank\n'
