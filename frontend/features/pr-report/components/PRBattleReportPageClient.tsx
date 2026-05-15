@@ -80,14 +80,14 @@ export function PRBattleReportPageClient({
             </div>
           </div>
         </div>
-        <div className="rounded-[1.5rem] border border-white/8 bg-black/20 p-4">
+        <div className="neon-tile rounded-[1.5rem] p-4">
           <p className="text-xs tracking-[0.22em] text-muted uppercase">Evidence state</p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-200">
+            <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
               analysis: {evidenceState.analysisSource ?? "unknown"}
             </span>
             {typeof evidenceState.analysisConfidence === "number" ? (
-              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-200">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
                 confidence {Math.round(evidenceState.analysisConfidence * 100)}%
               </span>
             ) : null}
@@ -119,7 +119,7 @@ export function PRBattleReportPageClient({
           </div>
           <div className="grid gap-3 md:grid-cols-2">
             {data.badgeUnlocks.map((badge) => (
-              <div key={badge.key} className="rounded-[1.75rem] border border-white/8 bg-white/5 p-4">
+              <div key={badge.key} className="neon-surface rounded-[1.75rem] p-4">
                 <p className="text-lg font-semibold text-white">{badge.name}</p>
                 {badge.description ? <p className="mt-2 text-sm text-muted">{badge.description}</p> : null}
                 <p className="mt-3 text-xs text-emerald-100">
@@ -128,7 +128,7 @@ export function PRBattleReportPageClient({
                 {badge.evidenceSignals.length ? (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {badge.evidenceSignals.slice(0, 3).map((signal) => (
-                      <span key={signal} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-200">
+                      <span key={signal} className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
                         {signal}
                       </span>
                     ))}
@@ -156,7 +156,7 @@ export function PRBattleReportPageClient({
             {suggestedQuest?.evidenceSignals.length ? (
               <div className="mt-3 flex flex-wrap gap-2">
                 {suggestedQuest.evidenceSignals.slice(0, 3).map((signal) => (
-                  <span key={signal} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-200">
+                  <span key={signal} className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
                     {signal}
                   </span>
                 ))}

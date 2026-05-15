@@ -23,8 +23,8 @@ export function EvidenceSignalsCard({ report }: { report: PullRequestAnalysis })
         {signals.map((signal) => {
           const Icon = signal.icon;
           return (
-            <div key={signal.label} className="flex items-center gap-3 rounded-[1.75rem] border border-white/8 bg-white/5 px-4 py-4">
-              <div className={`rounded-2xl p-2 ${signal.active ? "bg-emerald-400/12 text-emerald-200" : "bg-white/6 text-muted"}`}>
+            <div key={signal.label} className="neon-surface flex items-center gap-3 rounded-[1.75rem] px-4 py-4">
+              <div className={`rounded-2xl p-2 ${signal.active ? "bg-emerald-400/12 text-emerald-200" : "neon-tile text-muted"}`}>
                 <Icon className="h-4 w-4" />
               </div>
               <div>
@@ -35,11 +35,11 @@ export function EvidenceSignalsCard({ report }: { report: PullRequestAnalysis })
           );
         })}
       </div>
-      <div className="rounded-[1.75rem] border border-white/8 bg-white/5 p-4">
+      <div className="neon-surface rounded-[1.75rem] p-4">
         <p className="text-xs tracking-[0.24em] text-primary uppercase">Stored evidence labels</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {contribution.evidenceSignals.map((signal) => (
-            <span key={signal} className="rounded-full border border-white/8 bg-white/5 px-3 py-1 text-xs text-slate-200">
+            <span key={signal} className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
               {signal}
             </span>
           ))}

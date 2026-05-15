@@ -14,7 +14,7 @@ export function ScoreExplanationCard({ user }: { user: UserProfile }) {
           const positive = change.type === "gain";
           const Icon = positive ? Plus : Minus;
           return (
-            <div key={change.label} className="flex items-start gap-4 rounded-[1.75rem] border border-white/8 bg-white/5 p-4">
+            <div key={change.label} className="neon-surface flex items-start gap-4 rounded-[1.75rem] p-4">
               <div className={`rounded-2xl p-2 ${positive ? "bg-emerald-400/12 text-emerald-200" : "bg-rose-400/12 text-rose-100"}`}>
                 <Icon className="h-4 w-4" />
               </div>

@@ -23,7 +23,7 @@ export function ConnectGithubPanel() {
             "Inspect merged PRs, reviews, changed files, linked issues, and repository context.",
             "Build an explainable score instead of a raw activity count.",
           ].map((item) => (
-            <div key={item} className="rounded-3xl border border-white/8 bg-white/5 px-4 py-3 text-sm text-slate-200">
+            <div key={item} className="neon-surface rounded-3xl px-4 py-3 text-sm text-slate-200">
               {item}
             </div>
           ))}
@@ -54,7 +54,7 @@ export function ConnectGithubPanel() {
             "Exact PRs, AI summaries, and leaderboard participation are individually controllable.",
             "Repository-level visibility can be hidden without deleting the account.",
           ].map((item) => (
-            <div key={item} className="rounded-3xl border border-white/8 bg-white/5 px-4 py-3 text-sm text-slate-200">
+            <div key={item} className="neon-surface rounded-3xl px-4 py-3 text-sm text-slate-200">
               {item}
             </div>
           ))}

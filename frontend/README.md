@@ -80,7 +80,7 @@ The public profile page, authenticated dashboard overview, onboarding reveal, ba
 - frontend CI also runs `../gitrank/scripts/verify_v2_no_mock_release_gate.sh` to verify critical OpenAPI entries, worker-flow coverage, and live fixture coverage stay wired
 - `npm run test:smoke` renders dashboard, quest, PR-report, profile, leaderboard, and settings flows from live-shaped BFF fixtures
 
-The gamified UI adds season metadata, rank-progress cards, player-card profile presentation, quest recommendation evidence, badge rarity styling, and PR battle-report explanation panels. Live leaderboard season metadata now comes from the gateway response window when available; final scoring still comes from backend score/profile snapshots.
+The gamified UI adds season metadata, rank-progress cards, player-card profile presentation, quest recommendation evidence, badge rarity styling, and PR battle-report explanation panels. The interface now uses a consistent neon/cyberpunk visual language across dashboard tabs, onboarding, public profile internals, PR report internals, and chart surfaces while preserving reduced-gamification accessibility behavior. Live leaderboard season metadata now comes from the gateway response window when available; final scoring still comes from backend score/profile snapshots.
 
 The marketing landing page uses a dedicated sample fixture under `features/marketing/data/`; it does not import authenticated profile data or any mock app route dataset.
 

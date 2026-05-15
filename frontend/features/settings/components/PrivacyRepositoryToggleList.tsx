@@ -21,7 +21,7 @@ export function PrivacyRepositoryToggleList({
   return (
     <div className="space-y-3">
       {visibleItems.map((repo) => (
-        <div key={repo.name} className="flex flex-col gap-3 rounded-[1.75rem] border border-white/8 bg-white/5 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <div key={repo.name} className="neon-surface flex flex-col gap-3 rounded-[1.75rem] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="font-medium text-white">{repo.name}</p>
             <p className="text-sm text-muted">{repo.reason}</p>

@@ -76,7 +76,7 @@ export function LandingPage() {
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               {user.strongestSignals.map((skill) => (
-                <div key={skill} className="rounded-3xl border border-white/8 bg-white/5 px-4 py-3 text-sm text-slate-200">
+                <div key={skill} className="neon-surface rounded-3xl px-4 py-3 text-sm text-slate-200">
                   {skill}
                 </div>
               ))}
@@ -104,7 +104,7 @@ export function LandingPage() {
           },
         ].map((item) => (
           <GlowCard key={item.title} className="space-y-3">
-            <div className="inline-flex rounded-2xl bg-white/6 p-3">{item.icon}</div>
+            <div className="neon-tile inline-flex rounded-2xl p-3">{item.icon}</div>
             <h3 className="text-xl font-semibold text-white">{item.title}</h3>
             <p className="text-sm text-muted">{item.text}</p>
           </GlowCard>
@@ -124,7 +124,7 @@ export function LandingPage() {
               "Turns verified work into XP, badge unlocks, league position, and public proof.",
               "Explains score changes so maintainers and recruiters can inspect the evidence instead of trusting a black box.",
             ].map((line) => (
-              <div key={line} className="rounded-3xl border border-white/8 bg-white/5 px-4 py-3 text-sm text-slate-200">
+              <div key={line} className="neon-surface rounded-3xl px-4 py-3 text-sm text-slate-200">
                 {line}
               </div>
             ))}
@@ -139,7 +139,7 @@ export function LandingPage() {
           />
           <div className="grid gap-3 sm:grid-cols-2">
             {loop.map((step, index) => (
-              <div key={step} className="rounded-3xl border border-white/8 bg-white/5 p-4">
+              <div key={step} className="neon-surface rounded-3xl p-4">
                 <p className="text-xs tracking-[0.24em] text-primary uppercase">Step {index + 1}</p>
                 <p className="mt-2 text-lg font-medium text-white">{step}</p>
               </div>
@@ -155,7 +155,7 @@ export function LandingPage() {
             title="Every high-signal PR gets a post-match report"
             description="The scoring model stays visible. High XP only lands when the work had difficulty, context, review credibility, and clearly surfaced uncertainty."
           />
-          <div className="rounded-[1.75rem] border border-white/8 bg-black/20 p-5">
+          <div className="neon-tile rounded-[1.75rem] p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-sm text-muted">{report.owner}/{report.repo} #{report.number}</p>
@@ -183,7 +183,7 @@ export function LandingPage() {
           />
           <div className="grid gap-3 sm:grid-cols-2">
             {highlightedBadges.map((badge) => (
-              <div key={badge.id} className="rounded-[1.75rem] border border-white/8 bg-white/5 p-4">
+              <div key={badge.id} className="neon-surface rounded-[1.75rem] p-4">
                 <RarityBadge rarity={badge.rarity} />
                 <h3 className="mt-3 text-lg font-semibold text-white">{badge.name}</h3>
                 <p className="mt-2 text-sm text-muted">{badge.description}</p>
@@ -225,7 +225,7 @@ export function LandingPage() {
 
 function Metric({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-3xl border border-white/8 bg-white/5 px-4 py-3">
+    <div className="neon-metric rounded-3xl px-4 py-3">
       <p className="text-xs tracking-[0.24em] text-muted uppercase">{label}</p>
       <p className="mt-2 text-2xl font-semibold text-white">{value}</p>
     </div>

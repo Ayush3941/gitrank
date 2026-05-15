@@ -67,7 +67,7 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
         {rows.map((row) => (
           <div
             key={row.label}
-            className="rounded-[1.75rem] border border-white/8 bg-white/5 px-4 py-4"
+            className="neon-surface rounded-[1.75rem] px-4 py-4"
           >
             <div className="flex items-center justify-between gap-4">
               <p className="text-sm text-slate-200">{row.label}</p>

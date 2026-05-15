@@ -39,9 +39,9 @@ export function SyncPipeline() {
                 initial={reducedMotion ? false : { opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: reducedMotion ? 0 : index * 0.07 }}
-                className="flex items-center gap-4 rounded-[1.75rem] border border-white/8 bg-white/5 px-4 py-4"
+                className="neon-surface flex items-center gap-4 rounded-[1.75rem] px-4 py-4"
               >
-                <div className="rounded-2xl bg-white/6 p-2 text-primary">
+                <div className="neon-tile rounded-2xl p-2 text-primary">
                   {done ? (
                     <CheckCircle2 className="h-5 w-5 text-emerald-300" />
                   ) : (

@@ -275,7 +275,7 @@ function SettingSection({
       {errorMessage ? <p className="text-sm text-rose-200">{errorMessage}</p> : null}
       <div className="space-y-3">
         {rows.map(([label, checked, onCheckedChange]) => (
-          <div key={label} className="flex items-center justify-between gap-4 rounded-[1.75rem] border border-white/8 bg-white/5 px-4 py-4">
+          <div key={label} className="neon-surface flex items-center justify-between gap-4 rounded-[1.75rem] px-4 py-4">
             <label className="text-sm text-slate-200" htmlFor={label}>
               {label}
             </label>

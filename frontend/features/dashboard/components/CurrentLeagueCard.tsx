@@ -16,7 +16,7 @@ export function CurrentLeagueCard({ user }: { user: UserProfile }) {
           <h2 className="mt-2 text-2xl font-semibold text-white">{user.level.rankTier}</h2>
           <p className="mt-2 text-sm text-muted">{user.rankProgress.season.windowLabel}</p>
         </div>
-        <div className="rounded-3xl bg-white/6 p-3 text-primary">
+        <div className="neon-tile rounded-3xl p-3 text-primary">
           <Trophy className="h-5 w-5" />
         </div>
       </div>
@@ -25,7 +25,7 @@ export function CurrentLeagueCard({ user }: { user: UserProfile }) {
         <Metric label="Weekly XP" value={`${user.weeklyXp}`} />
         <Metric label="Movement" value={`${positive ? "+" : ""}${user.movement}`} icon={<MovementIcon className="h-4 w-4" />} />
       </div>
-      <div className="rounded-[1.75rem] border border-white/8 bg-white/5 p-4">
+      <div className="neon-tile rounded-[1.75rem] p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs tracking-[0.24em] text-muted uppercase">Promotion track</p>
@@ -35,7 +35,7 @@ export function CurrentLeagueCard({ user }: { user: UserProfile }) {
                 : "Highest tier reached"}
             </p>
           </div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+          <div className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold">
             <CalendarClock className="h-3.5 w-3.5" />
             {user.rankProgress.season.status}
           </div>
@@ -58,7 +58,7 @@ export function CurrentLeagueCard({ user }: { user: UserProfile }) {
       </div>
       <div className="flex flex-wrap gap-2">
         {user.rankProgress.evidenceSignals.map((signal) => (
-          <span key={signal} className="rounded-full border border-white/8 bg-white/5 px-3 py-1 text-xs text-slate-200">
+          <span key={signal} className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
             {signal}
           </span>
         ))}
@@ -77,7 +77,7 @@ function Metric({
   icon?: ReactNode;
 }) {
   return (
-    <div className="rounded-3xl border border-white/8 bg-white/5 p-4">
+    <div className="neon-metric rounded-3xl p-4">
       <p className="text-xs tracking-[0.24em] text-muted uppercase">{label}</p>
       <div className="mt-2 flex items-center gap-2 text-xl font-semibold text-white">
         <span>{value}</span>

@@ -122,7 +122,7 @@ export function PublicProfilePageClient({
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             {data.user.badges.filter((badge) => badge.unlocked).slice(0, 4).map((badge) => (
-              <div key={badge.id} className="rounded-[1.75rem] border border-white/8 bg-white/5 p-4">
+              <div key={badge.id} className="neon-surface rounded-[1.75rem] p-4">
                 <RarityBadge rarity={badge.rarity} />
                 <h3 className="mt-3 text-lg font-medium text-white">{badge.name}</h3>
                 <p className="mt-2 text-sm text-muted">{badge.description}</p>
@@ -162,7 +162,7 @@ export function PublicProfilePageClient({
               </div>
             ) : (
               data.topRepositories.slice(0, 4).map((repository) => (
-                <div key={repository.name} className="rounded-[1.5rem] border border-white/8 bg-white/5 px-4 py-3">
+                <div key={repository.name} className="neon-surface rounded-[1.5rem] px-4 py-3">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="font-medium text-white">{repository.name}</p>

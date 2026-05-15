@@ -43,7 +43,7 @@ export function LoginPanel() {
               "Tests and repo context change XP.",
               "Spam PR floods get reduced multipliers.",
             ].map((line) => (
-              <div key={line} className="rounded-3xl border border-white/8 bg-white/5 px-4 py-3 text-sm text-slate-200">
+              <div key={line} className="neon-surface rounded-3xl px-4 py-3 text-sm text-slate-200">
                 {line}
               </div>
             ))}

@@ -51,7 +51,7 @@ export function RevealPanel({
         </div>
         <div className="flex flex-wrap items-center justify-center gap-3">
           <RankBadge rank={user.level.rankTier} />
-          <div className="rounded-full border border-white/10 bg-white/6 px-4 py-2 text-sm text-slate-200">
+          <div className="neon-chip neon-chip-muted rounded-full px-4 py-2 text-sm text-slate-200">
             {user.level.currentXp} / {user.level.nextLevelXp} XP
           </div>
         </div>

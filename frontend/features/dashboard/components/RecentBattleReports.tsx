@@ -13,12 +13,12 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
       </div>
       <div className="grid gap-3">
         {reports.length === 0 ? (
-          <div className="rounded-[1.75rem] border border-dashed border-white/12 bg-white/4 p-4 text-sm text-muted">
+          <div className="neon-surface rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
             No persisted PR battle reports are attached to this profile snapshot yet. Direct report URLs will appear here after scoring writes score events with public PR evidence.
           </div>
         ) : null}
         {reports.map((report) => (
-          <div key={report.contribution.id} className="rounded-[1.75rem] border border-white/8 bg-white/5 p-4">
+          <div key={report.contribution.id} className="neon-surface rounded-[1.75rem] p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-sm text-muted">{report.contribution.owner}/{report.contribution.repo} #{report.contribution.number}</p>

@@ -86,7 +86,7 @@ export function PublicProfileHero({
           ) : null}
           <div className="flex flex-wrap gap-2">
             {user.topSkills.map((skill) => (
-              <div key={skill} className="rounded-full border border-white/8 bg-white/5 px-3 py-1.5 text-sm text-slate-200">
+              <div key={skill} className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 text-sm text-slate-200">
                 {skill}
               </div>
             ))}
@@ -96,7 +96,7 @@ export function PublicProfileHero({
             {shareState === "copied" ? "Link copied" : "Share profile"}
           </Button>
         </div>
-        <div className="rounded-[1.85rem] border border-white/8 bg-white/5 p-5">
+        <div className="neon-surface rounded-[1.85rem] p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-xs tracking-[0.24em] text-primary uppercase">Player card</p>
@@ -130,7 +130,7 @@ function MiniMetric({
   value: string;
 }) {
   return (
-    <div className="rounded-[1.4rem] border border-white/8 bg-white/5 px-4 py-3">
+    <div className="neon-metric rounded-[1.4rem] px-4 py-3">
       <div className="flex items-center gap-2 text-xs tracking-[0.2em] text-muted uppercase">
         {icon}
         {label}
