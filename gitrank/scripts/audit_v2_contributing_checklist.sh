@@ -406,7 +406,10 @@ printf 'v2 contributing audit summary\n'
 printf 'unchecked items: %s\n' "$unchecked_count"
 if [ -f "$live_env_template" ]; then
   printf 'live env template: %s\n' "$live_env_template"
-  printf 'bootstrap hint: cp %s .env.v2-live-gates.local && edit required values, then run CONFIRM_FINALIZE_V2=yes make -C %s finalize-v2-live-closeout\n' "$live_env_template" "$root_dir"
+  printf 'bootstrap hint: cp %s .env.v2-live-gates.local && edit required values, then run FINALIZE_V2_ENV_FILE=.env.v2-live-gates.local CONFIRM_FINALIZE_V2=yes make -C %s finalize-v2-live-closeout\n' "$live_env_template" "$root_dir"
+  if [ -n "$audit_report_file" ]; then
+    printf '%s\n' "- bootstrap hint: FINALIZE_V2_ENV_FILE=.env.v2-live-gates.local CONFIRM_FINALIZE_V2=yes make -C $root_dir finalize-v2-live-closeout" >>"$audit_report_file"
+  fi
 fi
 
 while IFS= read -r line; do
