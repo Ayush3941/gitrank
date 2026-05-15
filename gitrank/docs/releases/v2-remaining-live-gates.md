@@ -139,12 +139,20 @@ token/App-authenticated mode for full verification.
 If GitHub App credentials are present, the public prechecks can auto-bootstrap
 short-lived installation tokens.
 
-## Current Snapshot (2026-05-14 UTC)
+## Current Snapshot (2026-05-15 UTC)
 
 - `make verify-v2-live-readiness`: pass
 - `make verify-public-workflow-health`: pass on the current default repository
-- `make verify-remote-live-v2-workflow-sync`: pass via raw-public fallback when
-  no token is configured
+- `make verify-remote-live-v2-workflow-sync`: fail; remote
+  `.github/workflows/verify-live-v2-gates.yml` still drifts from local content
+- `make verify-live-github-access`: fail without
+  `GITHUB_TOKEN`/`GH_TOKEN`/`GITRANK_REPO_ADMIN_TOKEN` (or GitHub App creds)
+- `make verify-github-repository-controls-public`: fail; `main` is unprotected,
+  no effective branch rulesets are visible, and dependency graph appears
+  disabled in public UI probes
+- `make verify-live-v2-workflow-run`: fail; no successful
+  `Verify Live V2 Gates` run was found and the workflow badge reports
+  `no status` for `workflow_dispatch`
 - `make audit-v2-contributing-checklist`: fail with `unchecked items: 13`
 - Public workflow probe for `.github/workflows/verify-live-v2-gates.yml`:
   `total runs: 0` (no successful workflow-run evidence exists yet)
