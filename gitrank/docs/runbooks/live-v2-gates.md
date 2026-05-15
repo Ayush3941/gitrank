@@ -210,6 +210,13 @@ The preflight output now includes:
 - `checklist_probe_mapping` lines that map unresolved `CONTRIBUTING.md` checklist entries to the exact probe set required to clear them.
 - `Minimal required next inputs` computed from failing probes, so you can fill only the missing auth/observability variables first.
 
+For local regression safety of this output contract, run:
+
+```bash
+cd gitrank
+make verify-v2-external-unblock-preflight-behavior
+```
+
 This readiness command now also verifies that
 `scripts/finalize_v2_live_closeout.sh` correctly resolves both
 `GITHUB_APP_*` and `GITRANK_GITHUB_APP_*` credential variable sets before

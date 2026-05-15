@@ -1185,6 +1185,9 @@ items stay limited to approved live gates.
 Use `make verify-contributing-checked-file-refs` to ensure checked checklist
 references still match real files (including required removed mock paths that
 must remain absent).
+Use `make verify-v2-external-unblock-preflight-behavior` to enforce the output
+contract for the external-unblock preflight (`input_state.*`,
+`checklist_probe_mapping`, and minimal-required-input hints).
 Use `make verify-live-v2-workflow-run` to verify a successful
 `verify-live-v2-gates.yml` run by run ID (or `WORKFLOW_RUN_ID=latest`) and
 reuse it as live-gate evidence.
