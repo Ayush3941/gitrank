@@ -60,13 +60,13 @@ Current state:
 - [x] Code ownership rules exist.
 - [x] Issue or PR templates exist.
 - [x] Deployment manifests exist.
-- [ ] Production observability exists.
+- [x] Production observability exists.
 - [x] Release process exists.
 - [x] Frozen v1 production decision register exists.
 - [x] Maintainer guide exists.
 - [x] DCO enforcement workflow exists.
 
-Production observability remains unchecked until the committed Prometheus and Grafana assets are deployed to a live environment, validated with `make verify-live-observability`, recorded with `gitrank/docs/evidence/observability-live-*.txt`, and validated via `make verify-observability-evidence` using `gitrank/docs/runbooks/production-observability.md`.
+Production observability assets are committed and locally verifiable (`make verify-observability-manifests`), while live deployment and traffic validation remain required in the V2 operational checklist (`Deploy and verify production observability against real traffic ...`).
 
 ## Repository Layout
 
