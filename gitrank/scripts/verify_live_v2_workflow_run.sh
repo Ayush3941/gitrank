@@ -4,6 +4,7 @@ set -eu
 REPOSITORY="${GITHUB_REPOSITORY:-}"
 TOKEN="${GITHUB_TOKEN:-${GH_TOKEN:-${GITRANK_REPO_ADMIN_TOKEN:-}}}"
 API_BASE="${GITHUB_API_URL:-https://api.github.com}"
+WORKFLOW_STATUS_BASE="${GITHUB_SERVER_URL:-https://github.com}"
 API_VERSION="${GITHUB_API_VERSION:-2026-03-10}"
 API_TIMEOUT_SECONDS="${GITHUB_API_TIMEOUT_SECONDS:-30}"
 WORKFLOW_RUN_ID="${WORKFLOW_RUN_ID:-}"
@@ -121,6 +122,39 @@ github_get() {
   fi
   API_BODY=$(cat "$body_file")
   rm -f "$body_file"
+}
+
+url_encode() {
+  printf '%s' "$1" | jq -sRr @uri
+}
+
+workflow_badge_status_note() {
+  [ -z "$TOKEN" ] || return 0
+
+  query=
+  if [ -n "$WORKFLOW_EVENT_FILTER" ]; then
+    query="event=$(url_encode "$WORKFLOW_EVENT_FILTER")"
+  fi
+  if [ -n "$EXPECTED_HEAD_BRANCH" ]; then
+    if [ -n "$query" ]; then
+      query="$query&"
+    fi
+    query="${query}branch=$(url_encode "$EXPECTED_HEAD_BRANCH")"
+  fi
+
+  badge_url="$WORKFLOW_STATUS_BASE/$OWNER/$REPO/actions/workflows/$EXPECTED_WORKFLOW_FILE/badge.svg"
+  if [ -n "$query" ]; then
+    badge_url="$badge_url?$query"
+  fi
+
+  badge_svg=$(curl -sS -L \
+    --connect-timeout "$API_TIMEOUT_SECONDS" \
+    --max-time "$API_TIMEOUT_SECONDS" \
+    "$badge_url" 2>/dev/null || true)
+  badge_status=$(printf '%s' "$badge_svg" | sed -n 's:.*<title>[^<]* - \([^<]*\)</title>.*:\1:p' | head -n 1)
+  badge_status=$(printf '%s' "$badge_status" | tr '[:upper:]' '[:lower:]')
+  [ -n "$badge_status" ] || badge_status=unknown
+  printf '; badge_status=%s badge_url=%s' "$badge_status" "$badge_url"
 }
 
 expect_status() {
@@ -250,9 +284,11 @@ resolve_workflow_run_id_if_needed() {
       fallback_note="$fallback_note; event fallback to any was attempted"
     fi
     if [ -n "$lookup_event_filter" ]; then
-      fail "no successful '$EXPECTED_WORKFLOW_NAME' workflow run found for event '$lookup_event_filter' in the last $WORKFLOW_RUN_SEARCH_PAGES page(s) (search_mode=$search_mode scanned_runs=$scanned_runs$fallback_note; $remediation)"
+      badge_note=$(workflow_badge_status_note)
+      fail "no successful '$EXPECTED_WORKFLOW_NAME' workflow run found for event '$lookup_event_filter' in the last $WORKFLOW_RUN_SEARCH_PAGES page(s) (search_mode=$search_mode scanned_runs=$scanned_runs$fallback_note; $remediation$badge_note)"
     fi
-    fail "no successful '$EXPECTED_WORKFLOW_NAME' workflow run found in the last $WORKFLOW_RUN_SEARCH_PAGES page(s) (search_mode=$search_mode scanned_runs=$scanned_runs$fallback_note; $remediation)"
+    badge_note=$(workflow_badge_status_note)
+    fail "no successful '$EXPECTED_WORKFLOW_NAME' workflow run found in the last $WORKFLOW_RUN_SEARCH_PAGES page(s) (search_mode=$search_mode scanned_runs=$scanned_runs$fallback_note; $remediation$badge_note)"
   done
 }
 
