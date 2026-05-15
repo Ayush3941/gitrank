@@ -219,6 +219,10 @@ Current local evidence:
   live controls mutation calls.
   Use `make inspect-github-app-installation-permissions` to capture the
   installation permission map and repository scope before retrying.
+- Current connector snapshot (2026-05-15): available installed accounts are
+  `DinasPratap` and `Reputation-DAO`, while this repository resolves to
+  `Ayush3941/gitrank`; connector writes to that repository currently fail with
+  `HTTP 403 Resource not accessible by integration`.
 
 How to complete:
 
