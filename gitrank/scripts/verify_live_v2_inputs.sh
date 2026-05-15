@@ -94,6 +94,7 @@ resolve_repository_from_git_remote() {
 resolve_repository_from_git_remote
 
 script_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+template_env_file="$(CDPATH= cd -- "$script_dir/.." && pwd)/.env.v2-live-gates.example"
 
 add_missing_unique() {
   current=$1
@@ -297,8 +298,13 @@ if [ "$RUN_ROLLBACK_RESTORE" = "true" ] && [ "$AUTO_GENERATE_ROLLBACK_RESTORE_EV
 fi
 
 if [ -n "$missing_vars" ]; then
+  guidance=""
+  if [ -f "$template_env_file" ]; then
+    guidance="
+hint: copy $template_env_file to a local untracked env file and fill the required values"
+  fi
   fail "missing required environment variables:
-$missing_vars"
+$missing_vars$guidance"
 fi
 
 if [ -n "$missing_files" ]; then
