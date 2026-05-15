@@ -210,6 +210,7 @@ The preflight output now includes:
 - `input_state.origin_push_required` to indicate when local push auth is truly required (`true`) versus optional because token/App auth is already available (`false`).
 - `probe.github_access_effective_status` to distinguish missing credentials from invalid/expired credentials before retrying live gates.
 - `probe.origin_push_effective_status` (`required` or `advisory`) so push-auth failures are interpreted correctly during token/App-auth paths.
+- `checklist_probe_mapping` probe sets that automatically treat `origin_push` as advisory when token/App auth is active.
 - `checklist_probe_mapping` lines that map unresolved `CONTRIBUTING.md` checklist entries to the exact probe set required to clear them.
 - `Minimal required next inputs` computed from failing probes, so you can fill only the missing auth/observability variables first.
 

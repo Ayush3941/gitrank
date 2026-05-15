@@ -25,6 +25,7 @@ for required in \
   'origin_push_required_state=false' \
   'github_access_effective_status=credential-invalid' \
   '[ "$origin_push_status" = "fail" ] && [ "$origin_push_required_state" = "true" ]' \
+  'workflow_evidence (+ advisory origin_push)' \
   'checklist_probe_mapping' \
   'line.%s => probes[%s] :: %s' \
   'Minimal required next inputs:' \

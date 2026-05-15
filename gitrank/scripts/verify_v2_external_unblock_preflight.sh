@@ -252,7 +252,11 @@ if [ -s "$contributing_file" ]; then
     probes=
     case "$requirement" in
       *"dependency graph"*|*"Dependabot alerts"*|*"default branch"*|*"pull request review"*|*"status checks"*|*"required checks"*|*"repository controls"*|*"direct pushes"*|*"rulesets"*|*"GitHub repository controls"*)
-        probes="github_access, origin_push, remote_workflow_sync, controls_public, workflow_evidence"
+        if [ "$origin_push_required_state" = "true" ]; then
+          probes="github_access, origin_push, remote_workflow_sync, controls_public, workflow_evidence"
+        else
+          probes="github_access, remote_workflow_sync, controls_public, workflow_evidence (+ advisory origin_push)"
+        fi
         ;;
       *"observability"*|*"Prometheus"*|*"Grafana"*|*"real traffic"*)
         probes="observability_inputs, workflow_evidence"
