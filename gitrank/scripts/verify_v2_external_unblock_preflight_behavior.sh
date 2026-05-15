@@ -20,6 +20,8 @@ for required in \
   'input_state.grafana_base_url:' \
   'input_state.grafana_api_token:' \
   'input_state.origin_push_required:' \
+  'origin_push_required_state=false' \
+  '[ "$origin_push_status" = "fail" ] && [ "$origin_push_required_state" = "true" ]' \
   'checklist_probe_mapping' \
   'line.%s => probes[%s] :: %s' \
   'Minimal required next inputs:' \
