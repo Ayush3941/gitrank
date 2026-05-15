@@ -232,6 +232,10 @@ short-lived token to avoid unauthenticated API rate limits. Without token/App
 credentials, the precheck now falls back to public `rules` and `branches` page
 embedded data when API quota is exhausted, so it can still report concrete
 missing controls for public repositories.
+When GitHub App credentials are used, this precheck now verifies that the
+installation token includes the target `GITHUB_REPOSITORY`; if the repository
+is outside installation scope, it fails early with installation-id/target
+details instead of a generic controls API failure.
 
 To check recent workflow health on `origin` without a token (defaults to
 default-branch `push` runs), use:
@@ -280,6 +284,26 @@ also resolves this drift (`git push origin main`) without using the sync script.
 When GitHub App credentials are used, `make sync-remote-live-v2-workflow` now
 fails early if the installation token does not include the target repository,
 instead of failing later with a generic repository-metadata error.
+
+For authenticated controls verification/apply runs, these commands now also
+validate GitHub App installation repository scope before branch/ruleset API
+calls:
+
+```bash
+cd gitrank
+GITHUB_REPOSITORY=OWNER/REPO \
+GITRANK_REPO_ADMIN_TOKEN=... \
+make verify-github-repository-controls
+```
+
+```bash
+cd gitrank
+GITHUB_REPOSITORY=OWNER/REPO \
+GITRANK_REPO_ADMIN_TOKEN=... \
+GITRANK_APPLY_REPOSITORY_CONTROLS=yes \
+GITRANK_REQUIRED_STATUS_CHECKS="ci / test,ci / lint" \
+make apply-github-repository-controls-auto
+```
 
 To evaluate recent runs across all branches (for example pull requests), set:
 
