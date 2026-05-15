@@ -44,7 +44,7 @@ If GitHub displays different check names, use the exact names shown on the most
 recent successful pull request for this repository.
 
 You can discover current check names with a PR-first strategy:
-- first from recent successful `pull_request` runs,
+- first from recent successful `pull_request` and `pull_request_target` runs,
 - then (if needed) from default-branch head checks,
 - then (if needed) from recent successful branch runs.
 

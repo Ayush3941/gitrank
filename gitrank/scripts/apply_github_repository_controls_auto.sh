@@ -134,6 +134,27 @@ append_checks_for_sha() {
   printf '%s' "$API_BODY" | jq -r '.statuses[]?.context // empty' >>"$checks_file"
 }
 
+append_successful_run_shas_for_event() {
+  event_name=$1
+  run_shas_file=$2
+  github_get "/repos/$OWNER/$REPO/actions/runs?event=$event_name&status=completed&per_page=50"
+  case "$API_STATUS" in
+    200)
+      printf '%s' "$API_BODY" | jq -r '
+        .workflow_runs[]?
+        | select(.conclusion == "success")
+        | .head_sha // empty
+      ' >>"$run_shas_file"
+      ;;
+    422)
+      # Older API variants may reject some event filters; ignore and continue.
+      ;;
+    *)
+      expect_status 200 "successful $event_name workflow runs list"
+      ;;
+  esac
+}
+
 status_checks_csv=$EXPLICIT_STATUS_CHECKS
 
 if [ -z "$status_checks_csv" ]; then
@@ -150,13 +171,11 @@ if [ -z "$status_checks_csv" ]; then
   trap 'rm -f "$checks_file" "$run_shas_file" "$compact_checks_file"' EXIT
   : >"$checks_file"
 
-  github_get "/repos/$OWNER/$REPO/actions/runs?event=pull_request&status=completed&per_page=50"
-  expect_status 200 "successful pull_request workflow runs list"
-  printf '%s' "$API_BODY" | jq -r '
-    .workflow_runs[]?
-    | select(.conclusion == "success")
-    | .head_sha // empty
-  ' | sed '/^$/d' | awk '!seen[$0]++' | sed -n '1,10p' >"$run_shas_file"
+  : >"$run_shas_file"
+  append_successful_run_shas_for_event pull_request "$run_shas_file"
+  append_successful_run_shas_for_event pull_request_target "$run_shas_file"
+  sed '/^$/d' "$run_shas_file" | awk '!seen[$0]++' | sed -n '1,10p' >"$compact_checks_file"
+  mv "$compact_checks_file" "$run_shas_file"
 
   while IFS= read -r sha; do
     append_checks_for_sha "$sha" "$checks_file"

@@ -107,7 +107,8 @@ DEFAULT_BRANCH=$(printf '%s' "$API_BODY" | jq -r '.default_branch // empty')
 TMP_CHECKS_FILE="$TMP_ROOT/gitrank-required-checks.$$"
 TMP_RUN_SHAS_FILE="$TMP_ROOT/gitrank-required-checks-runs.$$"
 TMP_COMPACT_FILE="$TMP_ROOT/gitrank-required-checks-compact.$$"
-trap 'rm -f "$TMP_CHECKS_FILE" "$TMP_RUN_SHAS_FILE" "$TMP_COMPACT_FILE"' EXIT
+TMP_RUN_SHAS_COMPACT_FILE="$TMP_ROOT/gitrank-required-checks-runs-compact.$$"
+trap 'rm -f "$TMP_CHECKS_FILE" "$TMP_RUN_SHAS_FILE" "$TMP_COMPACT_FILE" "$TMP_RUN_SHAS_COMPACT_FILE"' EXIT
 : >"$TMP_CHECKS_FILE"
 
 append_checks_for_sha() {
@@ -122,13 +123,31 @@ append_checks_for_sha() {
   printf '%s' "$API_BODY" | jq -r '.statuses[]?.context // empty' >>"$TMP_CHECKS_FILE"
 }
 
-github_get "/repos/$OWNER/$REPO/actions/runs?event=pull_request&status=completed&per_page=50"
-expect_status 200 "successful pull_request workflow runs list"
-printf '%s' "$API_BODY" | jq -r '
-  .workflow_runs[]?
-  | select(.conclusion == "success")
-  | .head_sha // empty
-' | sed '/^$/d' | awk '!seen[$0]++' | sed -n '1,10p' >"$TMP_RUN_SHAS_FILE"
+append_successful_run_shas_for_event() {
+  event_name=$1
+  github_get "/repos/$OWNER/$REPO/actions/runs?event=$event_name&status=completed&per_page=50"
+  case "$API_STATUS" in
+    200)
+      printf '%s' "$API_BODY" | jq -r '
+        .workflow_runs[]?
+        | select(.conclusion == "success")
+        | .head_sha // empty
+      ' >>"$TMP_RUN_SHAS_FILE"
+      ;;
+    422)
+      # Older API variants may reject some event filters; ignore and continue.
+      ;;
+    *)
+      expect_status 200 "successful $event_name workflow runs list"
+      ;;
+  esac
+}
+
+: >"$TMP_RUN_SHAS_FILE"
+append_successful_run_shas_for_event pull_request
+append_successful_run_shas_for_event pull_request_target
+sed '/^$/d' "$TMP_RUN_SHAS_FILE" | awk '!seen[$0]++' | sed -n '1,10p' >"$TMP_RUN_SHAS_COMPACT_FILE"
+mv "$TMP_RUN_SHAS_COMPACT_FILE" "$TMP_RUN_SHAS_FILE"
 
 while IFS= read -r sha; do
   append_checks_for_sha "$sha"
