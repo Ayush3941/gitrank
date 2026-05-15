@@ -1293,6 +1293,7 @@ ABRA closeout artifact:
 ABRA gate:
 
 - `make -C gitrank verify-abra-checklist` validates that ABRA checklist items remain fully checked and that the closeout artifact still contains scope, module, Gemini config, degraded-mode, and demo-flow coverage. This gate is also included in `make -C gitrank verify-v2-live-readiness`.
+- `make -C gitrank generate-v2-live-closeout-status` now includes an explicit ABRA checklist probe so live closeout reports show both V2 and ABRA readiness.
 
 ## Suggested Early Issues
 

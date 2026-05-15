@@ -13,6 +13,7 @@ CHECK_REMOTE_LIVE_WORKFLOW_SYNC="${CHECK_REMOTE_LIVE_WORKFLOW_SYNC:-true}"
 CHECK_WORKFLOW_EVIDENCE="${CHECK_WORKFLOW_EVIDENCE:-true}"
 CHECK_LIVE_GITHUB_ACCESS="${CHECK_LIVE_GITHUB_ACCESS:-true}"
 CHECK_LOCAL_READINESS="${CHECK_LOCAL_READINESS:-true}"
+CHECK_ABRA_CHECKLIST="${CHECK_ABRA_CHECKLIST:-true}"
 CHECKLIST_AUDIT_RUN_PUBLIC_PROBE="${CHECKLIST_AUDIT_RUN_PUBLIC_PROBE:-auto}"
 WORKFLOW_RUN_ID="${WORKFLOW_RUN_ID:-latest}"
 WORKFLOW_EVENT="${WORKFLOW_EVENT:-workflow_dispatch}"
@@ -170,7 +171,7 @@ export INFERRED_GITHUB_REPOSITORY
 mkdir -p "$(dirname "$OUTPUT_FILE")"
 
 {
-  printf '# V2 Live Closeout Status\n\n'
+  printf '# V2 + ABRA Live Closeout Status\n\n'
   printf '%s\n' "- Generated at (UTC): \`$(date -u +%Y-%m-%dT%H:%M:%SZ)\`"
   printf '%s\n' "- Repository: \`$DISPLAY_REPOSITORY\`"
   printf '%s\n' "- Workdir: \`$root_dir\`"
@@ -186,6 +187,13 @@ if [ "$CHECK_LOCAL_READINESS" = "true" ]; then
   run_and_capture "Local Readiness Gate" \
     sh -c "cd '$root_dir' && make verify-v2-live-readiness"
   local_readiness_code=$RUN_CAPTURE_LAST_CODE
+fi
+
+abra_checklist_code=skip
+if [ "$CHECK_ABRA_CHECKLIST" = "true" ]; then
+  run_and_capture "ABRA Checklist Gate" \
+    sh -c "cd '$root_dir' && make verify-abra-checklist"
+  abra_checklist_code=$RUN_CAPTURE_LAST_CODE
 fi
 
 audit_report_tmp="${AUDIT_REPORT_FILE:-$tmp_root/v2-closeout-status-audit.$$.md}"
@@ -448,9 +456,16 @@ fi
   printf 'RESTORE_EVIDENCE_FILE=docs/evidence/database-restore-drill-YYYY-MM-DD.txt \\\n'
   printf 'make finalize-v2-live-closeout\n'
   printf '```\n\n'
+  printf '11. Re-verify ABRA and full V2 checklist status.\n\n'
+  printf '```bash\n'
+  printf 'cd gitrank\n'
+  printf 'make verify-abra-checklist\n'
+  printf 'make audit-v2-contributing-checklist\n'
+  printf '```\n\n'
   printf '### Probe Exit Codes\n\n'
   printf '%s\n' "- Branch divergence probe: \`$branch_divergence_code\`"
   printf '%s\n' "- Local readiness: \`$local_readiness_code\`"
+  printf '%s\n' "- ABRA checklist gate: \`$abra_checklist_code\`"
   printf '%s\n' "- Contributing audit: \`$audit_code\`"
   printf '%s\n' "- Checklist audit public probe mode: \`$CHECKLIST_AUDIT_RUN_PUBLIC_PROBE_RESOLVED\` (configured: \`$CHECKLIST_AUDIT_RUN_PUBLIC_PROBE\`)"
   printf '%s\n' "- Env presence probe: \`$env_presence_code\`"
