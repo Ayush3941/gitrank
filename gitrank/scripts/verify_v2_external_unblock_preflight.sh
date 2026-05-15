@@ -182,6 +182,11 @@ if [ "$token_state" = "set" ]; then
   origin_push_required_state=false
 fi
 
+origin_push_effective_status=required
+if [ "$origin_push_required_state" = "false" ]; then
+  origin_push_effective_status=advisory
+fi
+
 if [ "$github_access_status" = "fail" ]; then
   fail_count=$((fail_count + 1))
 fi
@@ -209,6 +214,7 @@ printf 'input_state.grafana_api_token: %s\n' "$grafana_token_state"
 printf 'input_state.workflow_run_id: %s\n' "$workflow_id_state"
 printf 'input_state.workflow_event: %s\n' "$workflow_event_state"
 printf 'input_state.origin_push_required: %s\n' "$origin_push_required_state"
+printf 'probe.origin_push_effective_status: %s\n' "$origin_push_effective_status"
 
 if [ -s "$contributing_file" ]; then
   unresolved_file=$(mktemp "$tmp_root/gitrank-v2-unblock-unresolved.XXXXXX")
