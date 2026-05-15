@@ -144,6 +144,10 @@ quota.
 If GitHub returns `HTTP 403 Resource not accessible by integration`, the
 verifier now reports that explicitly so you can fix GitHub App installation
 permissions or switch to an admin token.
+When GitHub App credentials are used, `make verify-live-github-access` now also
+checks that the generated installation token actually includes the target
+`GITHUB_REPOSITORY`; if the installation scope does not include the repository,
+the verifier fails early with installation-id/target details.
 For `.github/workflows/*` sync operations, the token/App must also have
 workflow write permission (`workflow` scope for classic PATs or
 `workflows:write` for GitHub App installations), otherwise GitHub may reject
@@ -273,6 +277,9 @@ make sync-remote-live-v2-workflow
 Set `DRY_RUN=true` to preview updates without writing.
 If your local branch already contains the workflow updates, a normal branch push
 also resolves this drift (`git push origin main`) without using the sync script.
+When GitHub App credentials are used, `make sync-remote-live-v2-workflow` now
+fails early if the installation token does not include the target repository,
+instead of failing later with a generic repository-metadata error.
 
 To evaluate recent runs across all branches (for example pull requests), set:
 
