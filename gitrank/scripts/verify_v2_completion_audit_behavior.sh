@@ -28,13 +28,15 @@ assert_not_contains() {
   fi
 }
 
-default_report="$tmp_root/v2-completion-audit-behavior-default.md"
-custom_report="$tmp_root/v2-completion-audit-behavior-custom.md"
-default_stdout="$tmp_root/v2-completion-audit-behavior-default.stdout"
-default_stderr="$tmp_root/v2-completion-audit-behavior-default.stderr"
-custom_stdout="$tmp_root/v2-completion-audit-behavior-custom.stdout"
-custom_stderr="$tmp_root/v2-completion-audit-behavior-custom.stderr"
+tmp_prefix="$tmp_root/v2-completion-audit-behavior.$$"
+default_report="$tmp_prefix.default.md"
+custom_report="$tmp_prefix.custom.md"
+default_stdout="$tmp_prefix.default.stdout"
+default_stderr="$tmp_prefix.default.stderr"
+custom_stdout="$tmp_prefix.custom.stdout"
+custom_stderr="$tmp_prefix.custom.stderr"
 rm -f "$default_report" "$custom_report" "$default_stdout" "$default_stderr" "$custom_stdout" "$custom_stderr"
+trap 'rm -f "$default_report" "$custom_report" "$default_stdout" "$default_stderr" "$custom_stdout" "$custom_stderr"' EXIT
 
 if ! (
   cd "$root_dir" &&
