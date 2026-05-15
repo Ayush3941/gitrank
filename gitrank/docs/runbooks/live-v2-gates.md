@@ -251,6 +251,9 @@ pass/fail status. Use `GITRANK_REPO_ADMIN_TOKEN` (or GitHub App bootstrap
 credentials) when you need full API-backed run/job diagnostics.
 When GitHub App credentials are present, `make verify-public-workflow-health`
 can auto-bootstrap a short-lived token.
+When GitHub App credentials are used, this gate now verifies that the
+installation token includes the target `GITHUB_REPOSITORY`; if repository scope
+is mismatched, it fails early with installation-id/target details.
 
 When Trivy is unhealthy, this command also inspects remote
 `.github/workflows/trivy.yml` and `.trivyignore.yaml` on the relevant branch
@@ -268,6 +271,9 @@ make sync-remote-trivy-policy
 If no static token is provided, `make sync-remote-trivy-policy` now also
 supports GitHub App credential bootstrap in the same way as
 `make verify-live-github-access`.
+If credentials are unavailable but local commits already include Trivy workflow
+and ignore-policy updates, push the branch directly (for example:
+`git push origin main`) to resolve remote drift.
 
 To sync only the live-gates workflow file to the remote default branch:
 

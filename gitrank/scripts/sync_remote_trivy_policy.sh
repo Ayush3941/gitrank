@@ -80,7 +80,7 @@ require_command date
 require_command mktemp
 mkdir -p "$TMP_ROOT"
 bootstrap_token_from_github_app || true
-[ -n "$TOKEN" ] || fail "GITHUB_TOKEN, GH_TOKEN, or GITRANK_REPO_ADMIN_TOKEN is required (or set GitHub App credentials)"
+[ -n "$TOKEN" ] || fail "GITHUB_TOKEN, GH_TOKEN, or GITRANK_REPO_ADMIN_TOKEN is required (or set GitHub App credentials). If local commits already contain the Trivy policy updates, push them directly (for example: git push origin main)."
 
 root_dir="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 repo_dir="$(CDPATH= cd -- "$root_dir/.." && pwd)"
