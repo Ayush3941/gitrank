@@ -47,7 +47,7 @@ REPO=${REPOSITORY#*/}
 API_STATUS=
 API_BODY=
 AUTH_MODE=authenticated
-DISCOVERY_SOURCE=default-branch-head
+DISCOVERY_SOURCE=recent-successful-pull-request-runs
 
 github_get() {
   path=$1
@@ -79,10 +79,23 @@ github_get() {
   rm -f "$body_file"
 }
 
+is_rate_limited_response() {
+  message=$(printf '%s' "$API_BODY" | jq -r '.message // empty' 2>/dev/null || true)
+  case "$message" in
+    *"API rate limit exceeded"*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 expect_status() {
   expected=$1
   context=$2
-  [ "$API_STATUS" = "$expected" ] || fail "$context returned HTTP $API_STATUS"
+  if [ "$API_STATUS" != "$expected" ]; then
+    if [ "$API_STATUS" = "403" ] && is_rate_limited_response; then
+      fail "$context hit GitHub API rate limit (HTTP 403); set GITHUB_TOKEN or GH_TOKEN for higher quota"
+    fi
+    fail "$context returned HTTP $API_STATUS"
+  fi
 }
 
 github_get "/repos/$OWNER/$REPO"
@@ -91,29 +104,57 @@ expect_status 200 "repository metadata"
 DEFAULT_BRANCH=$(printf '%s' "$API_BODY" | jq -r '.default_branch // empty')
 [ -n "$DEFAULT_BRANCH" ] || fail "repository default branch is empty"
 
-github_get "/repos/$OWNER/$REPO/branches/$DEFAULT_BRANCH"
-expect_status 200 "default branch metadata"
-
-DEFAULT_SHA=$(printf '%s' "$API_BODY" | jq -r '.commit.sha // empty')
-[ -n "$DEFAULT_SHA" ] || fail "default branch head SHA is empty"
-
-github_get "/repos/$OWNER/$REPO/commits/$DEFAULT_SHA/check-runs?per_page=100"
-expect_status 200 "check-runs list"
-CHECK_RUNS_JSON=$API_BODY
-
-github_get "/repos/$OWNER/$REPO/commits/$DEFAULT_SHA/status"
-expect_status 200 "commit status contexts"
-STATUS_CONTEXT_JSON=$API_BODY
-
 TMP_CHECKS_FILE="$TMP_ROOT/gitrank-required-checks.$$"
 TMP_RUN_SHAS_FILE="$TMP_ROOT/gitrank-required-checks-runs.$$"
-trap 'rm -f "$TMP_CHECKS_FILE" "$TMP_RUN_SHAS_FILE"' EXIT
-{
-  printf '%s' "$CHECK_RUNS_JSON" | jq -r '.check_runs[]?.name // empty'
-  printf '%s' "$STATUS_CONTEXT_JSON" | jq -r '.statuses[]?.context // empty'
-} | sed '/^$/d' | sort -u >"$TMP_CHECKS_FILE"
+TMP_COMPACT_FILE="$TMP_ROOT/gitrank-required-checks-compact.$$"
+trap 'rm -f "$TMP_CHECKS_FILE" "$TMP_RUN_SHAS_FILE" "$TMP_COMPACT_FILE"' EXIT
+: >"$TMP_CHECKS_FILE"
+
+append_checks_for_sha() {
+  sha=$1
+  [ -n "$sha" ] || return 0
+  github_get "/repos/$OWNER/$REPO/commits/$sha/check-runs?per_page=100"
+  [ "$API_STATUS" = "200" ] || return 0
+  printf '%s' "$API_BODY" | jq -r '.check_runs[]?.name // empty' >>"$TMP_CHECKS_FILE"
+
+  github_get "/repos/$OWNER/$REPO/commits/$sha/status"
+  [ "$API_STATUS" = "200" ] || return 0
+  printf '%s' "$API_BODY" | jq -r '.statuses[]?.context // empty' >>"$TMP_CHECKS_FILE"
+}
+
+github_get "/repos/$OWNER/$REPO/actions/runs?event=pull_request&status=completed&per_page=50"
+expect_status 200 "successful pull_request workflow runs list"
+printf '%s' "$API_BODY" | jq -r '
+  .workflow_runs[]?
+  | select(.conclusion == "success")
+  | .head_sha // empty
+' | sed '/^$/d' | awk '!seen[$0]++' | sed -n '1,10p' >"$TMP_RUN_SHAS_FILE"
+
+while IFS= read -r sha; do
+  append_checks_for_sha "$sha"
+done <"$TMP_RUN_SHAS_FILE"
+
+sed '/^$/d' "$TMP_CHECKS_FILE" >"$TMP_COMPACT_FILE"
+mv "$TMP_COMPACT_FILE" "$TMP_CHECKS_FILE"
+sort -u "$TMP_CHECKS_FILE" -o "$TMP_CHECKS_FILE"
 
 CHECK_COUNT=$(wc -l <"$TMP_CHECKS_FILE" | tr -d ' ')
+if [ "$CHECK_COUNT" -eq 0 ]; then
+  DISCOVERY_SOURCE=default-branch-head
+
+  github_get "/repos/$OWNER/$REPO/branches/$DEFAULT_BRANCH"
+  expect_status 200 "default branch metadata"
+  default_sha=$(printf '%s' "$API_BODY" | jq -r '.commit.sha // empty')
+  [ -n "$default_sha" ] || fail "default branch head SHA is empty"
+  DEFAULT_SHA=$default_sha
+  append_checks_for_sha "$default_sha"
+
+  sed '/^$/d' "$TMP_CHECKS_FILE" >"$TMP_COMPACT_FILE"
+  mv "$TMP_COMPACT_FILE" "$TMP_CHECKS_FILE"
+  sort -u "$TMP_CHECKS_FILE" -o "$TMP_CHECKS_FILE"
+  CHECK_COUNT=$(wc -l <"$TMP_CHECKS_FILE" | tr -d ' ')
+fi
+
 if [ "$CHECK_COUNT" -eq 0 ]; then
   DISCOVERY_SOURCE=recent-successful-runs
   github_get "/repos/$OWNER/$REPO/actions/runs?branch=$DEFAULT_BRANCH&status=completed&per_page=30"
@@ -125,24 +166,20 @@ if [ "$CHECK_COUNT" -eq 0 ]; then
   ' | sed '/^$/d' | awk '!seen[$0]++' | sed -n '1,10p' >"$TMP_RUN_SHAS_FILE"
 
   while IFS= read -r sha; do
-    [ -n "$sha" ] || continue
-    github_get "/repos/$OWNER/$REPO/commits/$sha/check-runs?per_page=100"
-    [ "$API_STATUS" = "200" ] || continue
-    printf '%s' "$API_BODY" | jq -r '.check_runs[]?.name // empty' >>"$TMP_CHECKS_FILE"
-
-    github_get "/repos/$OWNER/$REPO/commits/$sha/status"
-    [ "$API_STATUS" = "200" ] || continue
-    printf '%s' "$API_BODY" | jq -r '.statuses[]?.context // empty' >>"$TMP_CHECKS_FILE"
+    append_checks_for_sha "$sha"
   done <"$TMP_RUN_SHAS_FILE"
 
-  tmp_compact_file="$TMP_ROOT/gitrank-required-checks-compact.$$"
-  sed '/^$/d' "$TMP_CHECKS_FILE" >"$tmp_compact_file"
-  mv "$tmp_compact_file" "$TMP_CHECKS_FILE"
+  sed '/^$/d' "$TMP_CHECKS_FILE" >"$TMP_COMPACT_FILE"
+  mv "$TMP_COMPACT_FILE" "$TMP_CHECKS_FILE"
   sort -u "$TMP_CHECKS_FILE" -o "$TMP_CHECKS_FILE"
   CHECK_COUNT=$(wc -l <"$TMP_CHECKS_FILE" | tr -d ' ')
 fi
 
-[ "$CHECK_COUNT" -gt 0 ] || fail "no check contexts discovered from default branch head or recent successful runs"
+[ "$CHECK_COUNT" -gt 0 ] || fail "no check contexts discovered from successful pull_request runs, default branch head, or recent successful runs"
+
+if [ "$DISCOVERY_SOURCE" = "default-branch-head" ] && [ -z "${DEFAULT_SHA:-}" ]; then
+  DEFAULT_SHA=unknown
+fi
 
 CSV_CONTEXTS=$(paste -sd, "$TMP_CHECKS_FILE")
 
@@ -150,7 +187,7 @@ printf 'Repository: %s\n' "$REPOSITORY"
 printf 'Auth mode: %s\n' "$AUTH_MODE"
 printf 'Discovery source: %s\n' "$DISCOVERY_SOURCE"
 printf 'Default branch: %s\n' "$DEFAULT_BRANCH"
-printf 'Head SHA: %s\n' "$DEFAULT_SHA"
+printf 'Head SHA: %s\n' "${DEFAULT_SHA:-n/a}"
 printf 'Discovered checks (%s):\n' "$CHECK_COUNT"
 cat "$TMP_CHECKS_FILE"
 printf '\n'

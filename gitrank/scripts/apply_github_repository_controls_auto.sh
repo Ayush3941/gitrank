@@ -102,44 +102,84 @@ github_get() {
   rm -f "$body_file"
 }
 
+is_rate_limited_response() {
+  message=$(printf '%s' "$API_BODY" | jq -r '.message // empty' 2>/dev/null || true)
+  case "$message" in
+    *"API rate limit exceeded"*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 expect_status() {
   expected=$1
   context=$2
-  [ "$API_STATUS" = "$expected" ] || fail "$context returned HTTP $API_STATUS"
+  if [ "$API_STATUS" != "$expected" ]; then
+    if [ "$API_STATUS" = "403" ] && is_rate_limited_response; then
+      fail "$context hit GitHub API rate limit (HTTP 403); retry with token/App credentials that have remaining quota"
+    fi
+    fail "$context returned HTTP $API_STATUS"
+  fi
+}
+
+append_checks_for_sha() {
+  sha=$1
+  checks_file=$2
+  [ -n "$sha" ] || return 0
+  github_get "/repos/$OWNER/$REPO/commits/$sha/check-runs?per_page=100"
+  [ "$API_STATUS" = "200" ] || return 0
+  printf '%s' "$API_BODY" | jq -r '.check_runs[]?.name // empty' >>"$checks_file"
+
+  github_get "/repos/$OWNER/$REPO/commits/$sha/status"
+  [ "$API_STATUS" = "200" ] || return 0
+  printf '%s' "$API_BODY" | jq -r '.statuses[]?.context // empty' >>"$checks_file"
 }
 
 status_checks_csv=$EXPLICIT_STATUS_CHECKS
 
 if [ -z "$status_checks_csv" ]; then
-  discovery_source=default-branch-head
+  discovery_source=recent-successful-pull-request-runs
 
   github_get "/repos/$OWNER/$REPO"
   expect_status 200 "repository metadata"
   default_branch=$(printf '%s' "$API_BODY" | jq -r '.default_branch // empty')
   [ -n "$default_branch" ] || fail "repository default branch is empty"
 
-  github_get "/repos/$OWNER/$REPO/branches/$default_branch"
-  expect_status 200 "default branch metadata"
-  default_sha=$(printf '%s' "$API_BODY" | jq -r '.commit.sha // empty')
-  [ -n "$default_sha" ] || fail "default branch head SHA is empty"
-
-  github_get "/repos/$OWNER/$REPO/commits/$default_sha/check-runs?per_page=100"
-  expect_status 200 "check-runs list"
-  check_runs_json=$API_BODY
-
-  github_get "/repos/$OWNER/$REPO/commits/$default_sha/status"
-  expect_status 200 "commit status contexts"
-  status_context_json=$API_BODY
-
   checks_file=$(mktemp "$TMP_ROOT/gitrank-required-checks-auto.XXXXXX")
   run_shas_file=$(mktemp "$TMP_ROOT/gitrank-required-checks-auto-runs.XXXXXX")
-  trap 'rm -f "$checks_file" "$run_shas_file"' EXIT
-  {
-    printf '%s' "$check_runs_json" | jq -r '.check_runs[]?.name // empty'
-    printf '%s' "$status_context_json" | jq -r '.statuses[]?.context // empty'
-  } | sed '/^$/d' | sort -u >"$checks_file"
+  compact_checks_file=$(mktemp "$TMP_ROOT/gitrank-required-checks-auto-compact.XXXXXX")
+  trap 'rm -f "$checks_file" "$run_shas_file" "$compact_checks_file"' EXIT
+  : >"$checks_file"
+
+  github_get "/repos/$OWNER/$REPO/actions/runs?event=pull_request&status=completed&per_page=50"
+  expect_status 200 "successful pull_request workflow runs list"
+  printf '%s' "$API_BODY" | jq -r '
+    .workflow_runs[]?
+    | select(.conclusion == "success")
+    | .head_sha // empty
+  ' | sed '/^$/d' | awk '!seen[$0]++' | sed -n '1,10p' >"$run_shas_file"
+
+  while IFS= read -r sha; do
+    append_checks_for_sha "$sha" "$checks_file"
+  done <"$run_shas_file"
+
+  sed '/^$/d' "$checks_file" >"$compact_checks_file"
+  mv "$compact_checks_file" "$checks_file"
+  sort -u "$checks_file" -o "$checks_file"
 
   check_count=$(wc -l <"$checks_file" | tr -d ' ')
+  if [ "$check_count" -eq 0 ]; then
+    discovery_source=default-branch-head
+    github_get "/repos/$OWNER/$REPO/branches/$default_branch"
+    expect_status 200 "default branch metadata"
+    default_sha=$(printf '%s' "$API_BODY" | jq -r '.commit.sha // empty')
+    [ -n "$default_sha" ] || fail "default branch head SHA is empty"
+    append_checks_for_sha "$default_sha" "$checks_file"
+    sed '/^$/d' "$checks_file" >"$compact_checks_file"
+    mv "$compact_checks_file" "$checks_file"
+    sort -u "$checks_file" -o "$checks_file"
+    check_count=$(wc -l <"$checks_file" | tr -d ' ')
+  fi
+
   if [ "$check_count" -eq 0 ]; then
     discovery_source=recent-successful-runs
     github_get "/repos/$OWNER/$REPO/actions/runs?branch=$default_branch&status=completed&per_page=30"
@@ -151,24 +191,16 @@ if [ -z "$status_checks_csv" ]; then
     ' | sed '/^$/d' | awk '!seen[$0]++' | sed -n '1,10p' >"$run_shas_file"
 
     while IFS= read -r sha; do
-      [ -n "$sha" ] || continue
-      github_get "/repos/$OWNER/$REPO/commits/$sha/check-runs?per_page=100"
-      [ "$API_STATUS" = "200" ] || continue
-      printf '%s' "$API_BODY" | jq -r '.check_runs[]?.name // empty' >>"$checks_file"
-
-      github_get "/repos/$OWNER/$REPO/commits/$sha/status"
-      [ "$API_STATUS" = "200" ] || continue
-      printf '%s' "$API_BODY" | jq -r '.statuses[]?.context // empty' >>"$checks_file"
+      append_checks_for_sha "$sha" "$checks_file"
     done <"$run_shas_file"
 
-    compact_checks_file=$(mktemp "$TMP_ROOT/gitrank-required-checks-auto-compact.XXXXXX")
     sed '/^$/d' "$checks_file" >"$compact_checks_file"
     mv "$compact_checks_file" "$checks_file"
     sort -u "$checks_file" -o "$checks_file"
     check_count=$(wc -l <"$checks_file" | tr -d ' ')
   fi
 
-  [ "$check_count" -gt 0 ] || fail "no check contexts discovered from default branch head or recent successful runs"
+  [ "$check_count" -gt 0 ] || fail "no check contexts discovered from successful pull_request runs, default branch head, or recent successful runs"
   status_checks_csv=$(paste -sd, "$checks_file")
   printf 'required-check discovery source: %s\n' "$discovery_source"
 fi

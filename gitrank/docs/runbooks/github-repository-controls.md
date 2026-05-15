@@ -43,7 +43,10 @@ Required checks should include at least the critical root gates:
 If GitHub displays different check names, use the exact names shown on the most
 recent successful pull request for this repository.
 
-You can discover current check names from the latest default-branch commit:
+You can discover current check names with a PR-first strategy:
+- first from recent successful `pull_request` runs,
+- then (if needed) from default-branch head checks,
+- then (if needed) from recent successful branch runs.
 
 ```bash
 cd gitrank
@@ -135,8 +138,8 @@ make apply-github-repository-controls-auto
 
 ## Apply With Auto-Discovered Check Names
 
-This path discovers status checks from the current default-branch head commit
-and feeds them into the same live apply script.
+This path uses the same PR-first discovery strategy and feeds the discovered
+check names into the live apply script.
 
 ```bash
 cd gitrank
