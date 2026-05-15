@@ -102,6 +102,10 @@ emit_public_live_probe_snapshot() {
   workflow_runs_status=
   controls_public_probe_status=unknown
   controls_public_probe_summary=
+  workflow_badge_status=unknown
+  workflow_badge_url=
+  remote_workflow_sync_status=unknown
+  remote_workflow_sync_summary=
   default_branch=
   protected_state=unknown
   rules_count=unknown
@@ -165,6 +169,23 @@ emit_public_live_probe_snapshot() {
     workflow_runs_count=$(printf '%s' "$workflow_runs_body" | jq -r '.total_count // (.workflow_runs | length) // 0')
   fi
 
+  workflow_badge_url="https://github.com/$owner/$repo/actions/workflows/verify-live-v2-gates.yml/badge.svg?event=workflow_dispatch"
+  if [ -n "$default_branch" ]; then
+    workflow_badge_url="$workflow_badge_url&branch=$default_branch"
+  fi
+  badge_file=$(mktemp "${TMPDIR:-/tmp}/gitrank-v2-audit-workflow-badge.XXXXXX")
+  badge_http_status=$(curl -sS -L -o "$badge_file" -w '%{http_code}' \
+    --connect-timeout "$api_timeout_seconds" \
+    --max-time "$api_timeout_seconds" \
+    "$workflow_badge_url" 2>/dev/null || printf '000')
+  if [ "$badge_http_status" = "200" ]; then
+    workflow_badge_status=$(sed -n 's:.*<title>[^<]* - \([^<]*\)</title>.*:\1:p' "$badge_file" | head -n 1 | tr '[:upper:]' '[:lower:]')
+    [ -n "$workflow_badge_status" ] || workflow_badge_status=unknown
+  else
+    workflow_badge_status="http-$badge_http_status"
+  fi
+  rm -f "$badge_file"
+
   if [ "$workflow_runs_status" = "404" ] && [ "$workflow_runs_count" = "unknown" ]; then
     probe_msg='workflow file has no visible runs yet (or workflow file absent on remote default branch)'
   fi
@@ -182,6 +203,19 @@ emit_public_live_probe_snapshot() {
     controls_public_probe_summary='no output captured from public controls probe'
   fi
 
+  remote_sync_probe_log=$(mktemp "${TMPDIR:-/tmp}/gitrank-v2-audit-remote-sync.XXXXXX")
+  if GITHUB_REPOSITORY="$repository" \
+    "$root_dir/scripts/verify_remote_live_v2_workflow_sync.sh" >"$remote_sync_probe_log" 2>&1; then
+    remote_workflow_sync_status=pass
+  else
+    remote_workflow_sync_status=fail
+  fi
+  remote_workflow_sync_summary=$(tail -n 1 "$remote_sync_probe_log" 2>/dev/null || true)
+  rm -f "$remote_sync_probe_log"
+  if [ -z "$remote_workflow_sync_summary" ]; then
+    remote_workflow_sync_summary='no output captured from remote workflow sync probe'
+  fi
+
   printf 'public probe snapshot\n'
   printf 'repository: %s\n' "$repository_display"
   printf 'repo metadata http: %s\n' "${repo_status:-unknown}"
@@ -192,6 +226,10 @@ emit_public_live_probe_snapshot() {
   printf 'branch rules count: %s\n' "$rules_count"
   printf 'live-gates workflow runs http: %s\n' "$workflow_runs_status"
   printf 'live-gates workflow run count: %s\n' "$workflow_runs_count"
+  printf 'live-gates workflow badge status: %s\n' "$workflow_badge_status"
+  printf 'live-gates workflow badge url: %s\n' "$workflow_badge_url"
+  printf 'remote workflow sync probe: %s\n' "$remote_workflow_sync_status"
+  printf 'remote workflow sync summary: %s\n' "$remote_workflow_sync_summary"
   printf 'controls public probe: %s\n' "$controls_public_probe_status"
   printf 'controls public probe summary: %s\n' "$controls_public_probe_summary"
   if [ -n "$probe_msg" ]; then
@@ -210,6 +248,10 @@ emit_public_live_probe_snapshot() {
       printf '%s\n' "- branch rules count: $rules_count"
       printf '%s\n' "- live-gates workflow runs http: $workflow_runs_status"
       printf '%s\n' "- live-gates workflow run count: $workflow_runs_count"
+      printf '%s\n' "- live-gates workflow badge status: $workflow_badge_status"
+      printf '%s\n' "- live-gates workflow badge url: $workflow_badge_url"
+      printf '%s\n' "- remote workflow sync probe: $remote_workflow_sync_status"
+      printf '%s\n' "- remote workflow sync summary: $remote_workflow_sync_summary"
       printf '%s\n' "- controls public probe: $controls_public_probe_status"
       printf '%s\n' "- controls public probe summary: $controls_public_probe_summary"
       if [ -n "$probe_msg" ]; then
