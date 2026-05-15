@@ -37,6 +37,42 @@ resolve_check_public_workflow_health() {
   resolve_boolean_or_auto_from_github_auth "$check_public_workflow_health" "CHECK_PUBLIC_WORKFLOW_HEALTH"
 }
 
+is_public_repository_accessible() {
+  repository=$1
+  [ -n "$repository" ] || return 1
+  case "$repository" in
+    */*) ;;
+    *) return 1 ;;
+  esac
+
+  if command -v git >/dev/null 2>&1; then
+    if GIT_TERMINAL_PROMPT=0 git ls-remote --exit-code "https://github.com/$repository.git" HEAD >/dev/null 2>&1; then
+      return 0
+    fi
+  fi
+
+  command -v curl >/dev/null 2>&1 || return 1
+  command -v jq >/dev/null 2>&1 || return 1
+
+  owner=${repository%%/*}
+  repo=${repository#*/}
+  api_base="${GITHUB_API_URL:-https://api.github.com}"
+  api_timeout_seconds="${GITHUB_API_TIMEOUT_SECONDS:-20}"
+  probe_file="$tmp_root/v2-completion-audit-public-repo-probe.$$"
+  status_code=$(curl -sS -L -o "$probe_file" -w '%{http_code}' \
+    --connect-timeout "$api_timeout_seconds" \
+    --max-time "$api_timeout_seconds" \
+    -H 'Accept: application/vnd.github+json' \
+    "$api_base/repos/$owner/$repo" 2>/dev/null || printf '000')
+  if [ "$status_code" != "200" ]; then
+    rm -f "$probe_file"
+    return 1
+  fi
+  is_private=$(jq -r '.private // true' "$probe_file" 2>/dev/null || printf 'true')
+  rm -f "$probe_file"
+  [ "$is_private" = "false" ]
+}
+
 resolve_boolean_or_auto_from_github_auth() {
   configured_value=$1
   configured_name=$2
@@ -58,6 +94,8 @@ resolve_boolean_or_auto_from_github_auth() {
         fi
       fi
       if [ -n "$token_candidate" ] || [ "$has_app_bootstrap" = "true" ]; then
+        printf 'true'
+      elif is_public_repository_accessible "${resolved_repository:-}"; then
         printf 'true'
       else
         printf 'false'
