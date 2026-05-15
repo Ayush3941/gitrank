@@ -153,6 +153,12 @@ short-lived installation tokens.
 - `make verify-live-v2-workflow-run`: fail; no successful
   `Verify Live V2 Gates` run was found and the workflow badge reports
   `no status` for `workflow_dispatch`
+- Direct GitHub connector mutation attempts against
+  `Ayush3941/gitrank` still fail with
+  `HTTP 403 Resource not accessible by integration` on
+  `repos/contents` writes, so remote workflow sync and repository-controls
+  apply/verify remain blocked without usable PAT/App credentials in the runtime
+  environment.
 - `make audit-v2-contributing-checklist`: fail with `unchecked items: 11`
 - Public workflow probe for `.github/workflows/verify-live-v2-gates.yml`:
   `total runs: 0` (no successful workflow-run evidence exists yet)
@@ -223,6 +229,11 @@ Current local evidence:
   `DinasPratap` and `Reputation-DAO`, while this repository resolves to
   `Ayush3941/gitrank`; connector writes to that repository currently fail with
   `HTTP 403 Resource not accessible by integration`.
+- A direct connector file-update probe on
+  `.github/workflows/verify-live-v2-gates.yml` also failed with
+  `HTTP 403 Resource not accessible by integration`
+  (`create-or-update-file-contents`), confirming workflow sync cannot be
+  completed via the current integration scope.
 
 How to complete:
 
