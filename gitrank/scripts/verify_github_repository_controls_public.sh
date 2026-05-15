@@ -445,7 +445,7 @@ else
         rules_json=$(rules_json_from_api_body)
         rules_count=$(printf '%s' "$rules_json" | jq 'length')
         if [ "$rules_count" -le 0 ]; then
-          add_control_error "branch rules endpoint returned no effective rules for $TARGET_BRANCH"
+          add_control_error "default branch is neither protected nor covered by branch rulesets"
         else
           verify_ruleset_payload "$rules_json"
         fi
