@@ -8,7 +8,17 @@ import { XPProgress } from "@/components/shared/XPProgress";
 import { Button } from "@/components/ui/button";
 import type { UserProfile } from "@/types/gitrank";
 
-export function DashboardHeroRankCard({ user }: { user: UserProfile }) {
+export function DashboardHeroRankCard({
+  user,
+  archetype,
+  identitySummary,
+  aiMode,
+}: {
+  user: UserProfile;
+  archetype?: string;
+  identitySummary?: string;
+  aiMode?: "gemini" | "deterministic";
+}) {
   return (
     <GlowCard strong className="player-card-shell space-y-6 overflow-hidden">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
@@ -28,7 +38,10 @@ export function DashboardHeroRankCard({ user }: { user: UserProfile }) {
               <RankBadge rank={user.level.rankTier} />
             </div>
             <p className="text-sm text-muted">@{user.username}</p>
-            <p className="text-sm text-slate-200">{user.title}</p>
+            <p className="text-sm text-slate-200">
+              {user.title}
+              {archetype ? ` • ${archetype}` : ""}
+            </p>
           </div>
         </div>
         <Button asChild variant="secondary">
@@ -71,6 +84,14 @@ export function DashboardHeroRankCard({ user }: { user: UserProfile }) {
           </div>
         </div>
       </div>
+      {identitySummary ? (
+        <div className="rounded-[1.75rem] border border-cyan-300/20 bg-cyan-400/8 p-4">
+          <p className="text-xs tracking-[0.24em] text-cyan-200 uppercase">
+            Open-source identity summary ({aiMode === "gemini" ? "Gemini" : "Deterministic"})
+          </p>
+          <p className="mt-2 text-sm leading-6 text-slate-200/84">{identitySummary}</p>
+        </div>
+      ) : null}
       <div className="space-y-3">
         <p className="text-xs tracking-[0.24em] text-primary uppercase">Top observed signals in this snapshot</p>
         <div className="flex flex-wrap gap-2">

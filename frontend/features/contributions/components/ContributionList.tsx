@@ -1,21 +1,32 @@
 import Link from "next/link";
-import { ArrowRight, GitMerge, ShieldCheck } from "lucide-react";
+import { ArrowRight, BookCheck, GitMerge, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlowCard } from "@/components/shared/GlowCard";
+import type { ContributionNarrative } from "@/lib/ai/abra-insights-types";
 import type { Contribution } from "@/types/gitrank";
 
-export function ContributionList({ items }: { items: Contribution[] }) {
+export function ContributionList({
+  items,
+  narratives,
+}: {
+  items: Contribution[];
+  narratives?: Record<string, ContributionNarrative>;
+}) {
   return (
     <div className="grid gap-4">
       {items.map((item) => (
-        <GlowCard key={item.id} className="space-y-4">
+        <GlowCard
+          key={item.id}
+          className="relative space-y-4 overflow-hidden border border-cyan-400/16 bg-gradient-to-br from-slate-950/84 via-slate-900/78 to-fuchsia-950/18"
+        >
+          <div className="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-cyan-400/14 blur-2xl" />
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-sm text-muted">{item.owner}/{item.repo} #{item.number}</p>
               <h2 className="mt-2 text-xl font-semibold text-white">{item.title}</h2>
               <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-200">
-                <span className="rounded-full border border-white/8 bg-white/5 px-3 py-1.5">{item.category}</span>
-                <span className="rounded-full border border-white/8 bg-white/5 px-3 py-1.5">{item.status}</span>
+                <span className="rounded-full border border-cyan-300/28 bg-cyan-400/10 px-3 py-1.5 text-cyan-100">{item.category}</span>
+                <span className="rounded-full border border-white/8 bg-white/5 px-3 py-1.5 uppercase">{item.status}</span>
                 <span className="rounded-full border border-white/8 bg-white/5 px-3 py-1.5">{item.changedFilesCount} files changed</span>
                 {item.evidenceState ? (
                   <span className="rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-primary">
@@ -29,6 +40,10 @@ export function ContributionList({ items }: { items: Contribution[] }) {
               <p className="mt-2 text-3xl font-semibold text-white">{item.xpEarned} XP</p>
             </div>
           </div>
+          <AIPanel
+            fallbackSummary={item.aiSummary}
+            narrative={narratives?.[item.id]}
+          />
           {hasDetailedMetrics(item) ? (
             <div className="grid gap-3 md:grid-cols-4">
               <Metric label="Difficulty" value={item.difficultyScore} />
@@ -90,6 +105,39 @@ function Metric({ label, value }: { label: string; value: number }) {
     <div className="rounded-3xl border border-white/8 bg-white/5 px-4 py-3">
       <p className="text-xs tracking-[0.24em] text-muted uppercase">{label}</p>
       <p className="mt-2 text-xl font-semibold text-white">{value}</p>
+    </div>
+  );
+}
+
+function AIPanel({
+  narrative,
+  fallbackSummary,
+}: {
+  narrative?: ContributionNarrative;
+  fallbackSummary: string;
+}) {
+  return (
+    <div className="rounded-[1.35rem] border border-fuchsia-300/20 bg-fuchsia-400/7 px-4 py-4">
+      <p className="inline-flex items-center gap-2 text-xs tracking-[0.24em] text-fuchsia-200 uppercase">
+        <Sparkles className="h-3.5 w-3.5" />
+        Contribution Impact Explanation
+      </p>
+      {narrative ? (
+        <div className="mt-3 grid gap-2 text-sm text-slate-200/88">
+          <p><span className="text-cyan-200">What:</span> {narrative.what}</p>
+          <p><span className="text-cyan-200">Why it matters:</span> {narrative.why}</p>
+          <p><span className="text-cyan-200">Signal:</span> {narrative.signal}</p>
+          <p className="inline-flex items-start gap-2 rounded-xl border border-cyan-300/20 bg-cyan-400/8 px-3 py-2 text-cyan-100">
+            <Zap className="mt-0.5 h-3.5 w-3.5" />
+            {narrative.pitch}
+          </p>
+        </div>
+      ) : (
+        <p className="mt-3 inline-flex items-start gap-2 text-sm text-slate-200/84">
+          <BookCheck className="mt-0.5 h-4 w-4 text-cyan-200" />
+          {fallbackSummary}
+        </p>
+      )}
     </div>
   );
 }

@@ -32,10 +32,18 @@ export function LeaderboardArena({ snapshot }: { snapshot: LeaderboardSnapshot }
       </GlowCard>
       {rows.map((row) => {
         const positive = row.movement >= 0;
+        const podiumTone =
+          row.rank === 1
+            ? "border-amber-300/35 bg-amber-300/10"
+            : row.rank === 2
+              ? "border-slate-200/35 bg-slate-200/10"
+              : row.rank === 3
+                ? "border-orange-300/30 bg-orange-300/10"
+                : "";
         return (
           <GlowCard
             key={`${row.rank}-${row.username}`}
-            className={row.isCurrentUser ? "border border-primary/22 bg-primary/8" : undefined}
+            className={`${row.isCurrentUser ? "border border-primary/22 bg-primary/8" : ""} ${podiumTone}`.trim() || undefined}
           >
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex items-center gap-4">

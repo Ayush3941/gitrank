@@ -44,6 +44,7 @@ Dark-first Next.js frontend for GitRank, an evidence-backed open-source reputati
 
 ```bash
 cd frontend
+cp -n .env.example .env.local
 npm install
 npm run dev
 ```
@@ -107,3 +108,16 @@ If you expose a non-default CSRF cookie name to the browser, also set:
 ```bash
 NEXT_PUBLIC_GITRANK_CSRF_COOKIE_NAME=gitrank_csrf
 ```
+
+## Optional Gemini ABRA Insights
+
+ABRA insight generation (contribution impact explanation, badge story, identity summary) runs through the frontend server route `POST /api/ai/abra-insights`.
+
+Set these in `frontend/.env.local`:
+
+```bash
+GEMINI_API_KEY=your-key
+GEMINI_MODEL=gemini-2.5-flash
+```
+
+If `GEMINI_API_KEY` is not set or request generation fails, GitRank automatically falls back to deterministic insight copy so demo flows remain stable.

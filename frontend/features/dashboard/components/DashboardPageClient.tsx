@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { Activity, Medal, ShieldCheck, Swords } from "lucide-react";
 import { DashboardHeroRankCard } from "@/features/dashboard/components/DashboardHeroRankCard";
 import { ContributionTimelineCard } from "@/features/dashboard/components/ContributionTimelineCard";
@@ -9,21 +10,74 @@ import { RecentBattleReports } from "@/features/dashboard/components/RecentBattl
 import { ScoreExplanationCard } from "@/features/dashboard/components/ScoreExplanationCard";
 import { SkillBreakdownCard } from "@/features/dashboard/components/SkillBreakdownCard";
 import { BadgeShelf } from "@/features/dashboard/components/BadgeShelf";
+import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
+import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 
 export function DashboardPageClient() {
   const { data, isLoading, isError } = useDashboard();
+  const user = data?.user;
+  const recentReports = data?.recentReports ?? [];
+  const streak = useMemo(
+    () => summarizeContributionStreak(user?.contributions ?? []),
+    [user?.contributions],
+  );
+  const abraPayload = useMemo(() => {
+    if (!user) {
+      return null;
+    }
+    return {
+      profile: {
+        username: user.username,
+        displayName: user.displayName,
+        currentTitle: user.title,
+        rankTier: user.level.rankTier,
+        level: user.level.currentLevel,
+        totalXp: user.level.currentXp,
+        mergedPrCount: user.mergedPrCount,
+        strongestSignals: user.strongestSignals,
+        repositoriesTouched: user.repositories.length,
+        badgeCount: user.badges.filter((badge) => badge.unlocked).length,
+        streakDays: streak.currentStreakDays,
+      },
+      contributions: user.contributions.slice(0, 8).map((row) => ({
+        id: row.id,
+        title: row.title,
+        owner: row.owner,
+        repo: row.repo,
+        number: row.number,
+        category: row.category,
+        status: row.status,
+        xpEarned: row.xpEarned,
+        mergedAt: row.mergedAt,
+        summary: row.aiSummary,
+        evidenceSignals: row.evidenceSignals,
+      })),
+      badges: user.badges.slice(0, 8).map((badge) => ({
+        id: badge.id,
+        name: badge.name,
+        rarity: badge.rarity,
+        unlocked: badge.unlocked,
+        earnedAt: badge.earnedAt,
+        description: badge.description,
+        unlockCondition: badge.unlockCondition,
+        progress: badge.progress ?? (badge.unlocked ? 100 : 0),
+        evidencePrIds: badge.evidencePrIds,
+      })),
+    };
+  }, [streak.currentStreakDays, user]);
+  const abraInsights = useAbraInsights(abraPayload);
 
   if (isLoading) {
     return <LoadingState message="Building your RPG dashboard..." />;
   }
 
-  if (isError || !data) {
+  if (isError || !data || !user) {
     return (
       <ErrorState
         title="Dashboard sync failed"
@@ -31,8 +85,6 @@ export function DashboardPageClient() {
       />
     );
   }
-
-  const { user, recentReports } = data;
 
   return (
     <div className="space-y-6">
@@ -43,7 +95,12 @@ export function DashboardPageClient() {
       {user.syncStatus.state === "stale" ? (
         <StaleState message="Your GitRank profile is 6 days old." />
       ) : null}
-      <DashboardHeroRankCard user={user} />
+      <DashboardHeroRankCard
+        user={user}
+        archetype={abraInsights.data?.archetype}
+        identitySummary={abraInsights.data?.identitySummary}
+        aiMode={abraInsights.data?.generatedBy}
+      />
       <div className="grid gap-4 md:grid-cols-3">
         <StatCard label="GitRank score" value={user.gitRankScore} detail="Weighted by impact, reviews, tests, and repository context." icon={<Medal className="h-5 w-5 text-primary" />} />
         <StatCard label="Merged PRs" value={user.mergedPrCount} detail="Only verified merged work receives full progression value." icon={<ShieldCheck className="h-5 w-5 text-primary" />} />

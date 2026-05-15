@@ -12,9 +12,15 @@ import type { UserProfile } from "@/types/gitrank";
 export function PublicProfileHero({
   user,
   shareHeadline,
+  archetype,
+  identitySummary,
+  aiMode,
 }: {
   user: UserProfile;
   shareHeadline: string;
+  archetype?: string;
+  identitySummary?: string;
+  aiMode?: "gemini" | "deterministic";
 }) {
   const [shareState, setShareState] = useState<"idle" | "copied">("idle");
 
@@ -63,10 +69,21 @@ export function PublicProfileHero({
                 <RankBadge rank={user.level.rankTier} />
               </div>
               <p className="text-sm text-muted">@{user.username}</p>
-              <p className="text-sm text-slate-200">{user.title}</p>
+              <p className="text-sm text-slate-200">
+                {user.title}
+                {archetype ? ` • ${archetype}` : ""}
+              </p>
             </div>
           </div>
           <p className="max-w-3xl text-sm leading-7 text-slate-200/82">{user.bio}</p>
+          {identitySummary ? (
+            <div className="rounded-2xl border border-cyan-300/24 bg-cyan-400/8 px-4 py-3 text-sm text-slate-200/88">
+              <p className="text-xs tracking-[0.24em] text-cyan-200 uppercase">
+                Open Source Identity ({aiMode === "gemini" ? "Gemini" : "Deterministic"})
+              </p>
+              <p className="mt-2 leading-6">{identitySummary}</p>
+            </div>
+          ) : null}
           <div className="flex flex-wrap gap-2">
             {user.topSkills.map((skill) => (
               <div key={skill} className="rounded-full border border-white/8 bg-white/5 px-3 py-1.5 text-sm text-slate-200">

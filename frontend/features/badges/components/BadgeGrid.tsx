@@ -3,15 +3,22 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { RarityBadge } from "@/components/shared/RarityBadge";
 import { SignalIcon } from "@/components/shared/SignalIcon";
 import { BadgeDetailDialog } from "@/features/badges/components/BadgeDetailDialog";
+import type { BadgeStory } from "@/lib/ai/abra-insights-types";
 import type { Badge } from "@/types/gitrank";
 
-export function BadgeGrid({ badges }: { badges: Badge[] }) {
+export function BadgeGrid({
+  badges,
+  stories,
+}: {
+  badges: Badge[];
+  stories?: Record<string, BadgeStory>;
+}) {
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       {badges.map((badge) => (
-        <BadgeDetailDialog key={badge.id} badge={badge}>
+        <BadgeDetailDialog key={badge.id} badge={badge} story={stories?.[badge.id]}>
           <button className="focus-ring text-left">
-            <GlowCard className="h-full space-y-4 transition hover:-translate-y-0.5 hover:bg-white/8">
+            <GlowCard className="h-full space-y-4 border border-cyan-300/16 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/20 transition hover:-translate-y-0.5 hover:border-cyan-300/30 hover:bg-white/8">
               <div className="flex items-start justify-between gap-3">
                 <div className="rounded-3xl bg-primary/12 p-3 text-primary">
                   <SignalIcon icon={badge.icon} className="h-5 w-5" />
@@ -33,6 +40,11 @@ export function BadgeGrid({ badges }: { badges: Badge[] }) {
                   </span>
                 ) : null}
               </div>
+              {stories?.[badge.id] ? (
+                <div className="rounded-xl border border-fuchsia-300/18 bg-fuchsia-400/8 px-3 py-2 text-xs text-slate-200/86">
+                  {stories[badge.id].story}
+                </div>
+              ) : null}
             </GlowCard>
           </button>
         </BadgeDetailDialog>

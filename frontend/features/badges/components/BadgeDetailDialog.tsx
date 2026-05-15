@@ -5,13 +5,16 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } 
 import { GlowCard } from "@/components/shared/GlowCard";
 import { RarityBadge } from "@/components/shared/RarityBadge";
 import { SignalIcon } from "@/components/shared/SignalIcon";
+import type { BadgeStory } from "@/lib/ai/abra-insights-types";
 import type { Badge } from "@/types/gitrank";
 
 export function BadgeDetailDialog({
   badge,
+  story,
   children,
 }: {
   badge: Badge;
+  story?: BadgeStory;
   children: ReactNode;
 }) {
   return (
@@ -41,6 +44,18 @@ export function BadgeDetailDialog({
               <p className="text-sm text-primary">{badge.progress}% progress</p>
             ) : null}
           </GlowCard>
+          {story ? (
+            <GlowCard className="space-y-3 border border-fuchsia-300/20 bg-fuchsia-400/8 p-4">
+              <p className="text-xs tracking-[0.24em] text-fuchsia-200 uppercase">Achievement story</p>
+              <p className="text-sm text-slate-200/88">{story.story}</p>
+              <p className="text-sm text-slate-200/84">
+                <span className="text-cyan-200">Trigger:</span> {story.trigger}
+              </p>
+              <p className="text-sm text-slate-200/84">
+                <span className="text-cyan-200">Next:</span> {story.nextFocus}
+              </p>
+            </GlowCard>
+          ) : null}
           <div className="space-y-2">
             <p className="text-xs tracking-[0.24em] text-primary uppercase">Evidence PRs</p>
             <div className="flex flex-wrap gap-2">

@@ -5,9 +5,16 @@ import type { Quest } from "@/types/gitrank";
 
 export function QuestCard({ quest }: { quest: Quest }) {
   const progress = Math.round((quest.progress / quest.goal) * 100);
+  const statusTone =
+    quest.status === "Completed"
+      ? "border-emerald-300/30 bg-emerald-400/10 text-emerald-100"
+      : quest.status === "Locked"
+        ? "border-amber-300/30 bg-amber-400/10 text-amber-100"
+        : "border-cyan-300/30 bg-cyan-400/10 text-cyan-100";
 
   return (
-    <GlowCard className="space-y-4">
+    <GlowCard className="relative space-y-4 overflow-hidden border border-cyan-300/20 bg-gradient-to-br from-slate-950/88 via-slate-900/82 to-cyan-950/30">
+      <div className="pointer-events-none absolute -top-16 right-0 h-32 w-32 rounded-full bg-cyan-400/12 blur-2xl" />
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-white/5 px-3 py-1 text-xs text-muted">
@@ -25,7 +32,7 @@ export function QuestCard({ quest }: { quest: Quest }) {
       <Progress value={progress} />
       <div className="flex items-center justify-between text-sm text-muted">
         <span>{quest.progress} / {quest.goal}</span>
-        <span>{quest.status}</span>
+        <span className={`rounded-full border px-2.5 py-1 text-xs ${statusTone}`}>{quest.status}</span>
       </div>
       <div className="flex flex-wrap gap-2">
         {quest.evidenceSignals.map((signal) => (
