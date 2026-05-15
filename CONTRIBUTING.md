@@ -1253,6 +1253,10 @@ live-gates sequence.
 Placeholder secret values (for example `replace-me-with-...`) are ignored by
 those commands until replaced with real credentials, so scaffolding an env file
 does not accidentally count as authenticated access.
+When no GitHub token/App credential is present, the public-probe snapshot may
+show API rate-limit notes and should be treated as advisory only; authenticated
+`make verify-live-github-access` + controls verification is the authoritative
+source for release gating.
 
 - [ ] Deploy and verify production observability against real traffic, including sync, analysis, scoring, profile, quest, PR report, leaderboard, queue, GitHub, and AI dashboards. `make verify-live-observability` now automates Prometheus target/rule/metric checks plus Grafana dashboard presence, and `.github/workflows/verify-live-v2-gates.yml` can run it in GitHub Actions, but live endpoint credentials and traffic are still required.
 - [ ] Apply and verify live GitHub repository controls before V2 release branches are cut. `.github/workflows/verify-live-v2-gates.yml` can run auto-apply plus verification (`apply_github_controls=true`) with `GITRANK_REPO_ADMIN_TOKEN`.

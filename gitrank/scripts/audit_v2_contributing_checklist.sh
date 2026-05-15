@@ -172,6 +172,14 @@ emit_public_live_probe_snapshot() {
   api_get "/repos/$owner/$repo"
   repo_status=$API_GET_STATUS
   repo_body=$API_GET_BODY
+  if [ "$repo_status" = "403" ]; then
+    rate_limit_msg=$(printf '%s' "$repo_body" | jq -r '.message // empty' 2>/dev/null || true)
+    case "$rate_limit_msg" in
+      *"rate limit"*)
+        probe_msg='public probe hit GitHub API rate limits without authenticated credentials; set a token/App credential for stable results'
+        ;;
+    esac
+  fi
   if [ "$repo_status" = "200" ]; then
     default_branch=$(printf '%s' "$repo_body" | jq -r '.default_branch // empty')
   fi
