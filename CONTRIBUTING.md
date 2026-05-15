@@ -1230,6 +1230,9 @@ proof now requires explicit staging and production `STAGING_K8S_*` /
 (`REQUIRE_ENV_SPECIFIC_K8S_OVERRIDES=true`) to prevent reusing one environment's
 runtime values for both renders.
 Use `gitrank/.env.v2-live-gates.example` as the environment-variable template.
+The finalizer can load that file directly with
+`FINALIZE_V2_ENV_FILE=.env.v2-live-gates.local` (or
+`LIVE_V2_ENV_FILE=.env.v2-live-gates.local`) to avoid manual `set -a` export.
 Use `AUDIT_REPORT_FILE=... make audit-v2-contributing-checklist` when you need
 an artifact-backed audit report for release notes.
 Use `make create-github-app-installation-token` when GitHub App credentials are

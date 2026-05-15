@@ -596,6 +596,17 @@ CONFIRM_FINALIZE_V2=yes \
 make finalize-v2-live-closeout
 ```
 
+Alternative (no manual `set -a` export):
+
+```bash
+cd gitrank
+cp .env.v2-live-gates.example .env.v2-live-gates.local
+# edit values, then run finalizer with direct env-file loading
+FINALIZE_V2_ENV_FILE=.env.v2-live-gates.local \
+CONFIRM_FINALIZE_V2=yes \
+make finalize-v2-live-closeout
+```
+
 If `RUN_GITHUB_CONTROLS=true` and no GitHub token is set, the finalizer can
 auto-bootstrap a short-lived installation token when
 `GITHUB_APP_ID`, `GITHUB_APP_INSTALLATION_ID`, and

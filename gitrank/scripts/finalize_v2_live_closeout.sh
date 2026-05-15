@@ -5,6 +5,27 @@ root_dir="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 tmp_root="${TMPDIR:-$root_dir/.tmp}"
 mkdir -p "$tmp_root"
 
+FINALIZE_V2_ENV_FILE="${FINALIZE_V2_ENV_FILE:-${LIVE_V2_ENV_FILE:-}}"
+if [ -n "$FINALIZE_V2_ENV_FILE" ]; then
+  resolved_finalize_env_file="$FINALIZE_V2_ENV_FILE"
+  case "$resolved_finalize_env_file" in
+    /*) ;;
+    *)
+      if [ -f "$root_dir/$resolved_finalize_env_file" ]; then
+        resolved_finalize_env_file="$root_dir/$resolved_finalize_env_file"
+      fi
+      ;;
+  esac
+  if [ ! -f "$resolved_finalize_env_file" ]; then
+    printf 'finalize v2 live closeout failed: env file not found: %s\n' "$FINALIZE_V2_ENV_FILE" >&2
+    exit 1
+  fi
+  set -a
+  # shellcheck disable=SC1090
+  . "$resolved_finalize_env_file"
+  set +a
+fi
+
 CONFIRM_FINALIZE_V2="${CONFIRM_FINALIZE_V2:-}"
 RUN_GITHUB_CONTROLS="${RUN_GITHUB_CONTROLS:-true}"
 APPLY_GITHUB_CONTROLS="${APPLY_GITHUB_CONTROLS:-false}"
