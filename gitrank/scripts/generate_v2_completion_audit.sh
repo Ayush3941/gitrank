@@ -210,10 +210,10 @@ sort -u "$commands_file" >"$commands_unique_file"
 awk -F':' '/^[a-zA-Z0-9_.-]+:/ { print $1 }' "$makefile" | sort -u >"$make_targets_file"
 
 {
-  printf '# V2 Completion Audit Matrix\n\n'
+  printf '# V2 + ABRA Completion Audit Matrix\n\n'
   printf '%s\n' "- Generated at (UTC): \`$(date -u +%Y-%m-%dT%H:%M:%SZ)\`"
   printf '%s\n' "- Repository: \`$display_repository\`"
-  printf '%s\n' "- Objective: \`achieve V2 according to CONTRIBUTING.md\`"
+  printf '%s\n' "- Objective: \`achieve V2 and complete ABRA according to CONTRIBUTING.md\`"
   printf '%s\n' "- Contributing source: \`$contributing_file\`"
   printf '%s\n' "- Checklist items found: \`$total_checklist\`"
   printf '%s\n' "- Checked items: \`$checked_count\`"
@@ -222,14 +222,15 @@ awk -F':' '/^[a-zA-Z0-9_.-]+:/ { print $1 }' "$makefile" | sort -u >"$make_targe
   printf '## Success Criteria\n\n'
   printf '1. All checklist items in `CONTRIBUTING.md` are checked.\n'
   printf '2. Critical local gates pass (`make verify-v2-live-readiness`).\n'
-  printf '3. Public origin workflow health is green (`make verify-public-workflow-health`) unless intentionally waived.\n'
-  printf '4. No unresolved checklist items remain in `make audit-v2-contributing-checklist`.\n'
-  printf '5. Live-gate preflights and probes are green (or intentionally skipped with explicit waiver):\n'
+  printf '3. ABRA checklist and closeout artifact remain complete (`make verify-abra-checklist`).\n'
+  printf '4. Public origin workflow health is green (`make verify-public-workflow-health`) unless intentionally waived.\n'
+  printf '5. No unresolved checklist items remain in `make audit-v2-contributing-checklist`.\n'
+  printf '6. Live-gate preflights and probes are green (or intentionally skipped with explicit waiver):\n'
   printf '   - `make verify-remote-live-v2-workflow-sync`\n'
   printf '   - `make verify-live-github-access`\n'
   printf '   - `make verify-github-repository-controls-public`\n'
   printf '   - `make verify-live-v2-workflow-run`\n'
-  printf '6. Explicit file, command, and gate references in `CONTRIBUTING.md` resolve to real artifacts or real commands.\n'
+  printf '7. Explicit file, command, and gate references in `CONTRIBUTING.md` resolve to real artifacts or real commands.\n'
   printf '\n'
   printf '## Prompt-to-Artifact Checklist\n\n'
   printf '### Unchecked Checklist Lines\n\n'
@@ -306,6 +307,10 @@ if [ "$run_checks" = "true" ]; then
     "cd '$root_dir' && make verify-v2-live-readiness"
   local_gate_code=$RUN_CAPTURE_LAST_CODE
 
+  run_capture "ABRA Checklist Gate (make verify-abra-checklist)" \
+    "cd '$root_dir' && make verify-abra-checklist"
+  abra_gate_code=$RUN_CAPTURE_LAST_CODE
+
   public_workflow_health_code=skip
   if [ "$check_public_workflow_health_resolved" = "true" ]; then
     run_capture "Public Workflow Health Gate (make verify-public-workflow-health)" \
@@ -350,6 +355,7 @@ if [ "$run_checks" = "true" ]; then
   fi
 else
   local_gate_code=skip
+  abra_gate_code=skip
   public_workflow_health_code=skip
   checklist_audit_code=skip
   env_presence_code=skip
@@ -388,6 +394,9 @@ effective_waive_public_workflow_health=${waive_public_workflow_health:-$auto_wai
 if ! code_is_ok_or_skipped "local readiness gate" "$local_gate_code" "$waive_run_checks"; then
   ready_for_completion=false
 fi
+if ! code_is_ok_or_skipped "abra checklist gate" "$abra_gate_code" "$waive_run_checks"; then
+  ready_for_completion=false
+fi
 if ! code_is_ok_or_skipped "public workflow health gate" "$public_workflow_health_code" "$effective_waive_public_workflow_health"; then
   ready_for_completion=false
 fi
@@ -416,6 +425,7 @@ fi
 {
   printf '## Completion Verdict Inputs\n\n'
   printf '%s\n' "- Local readiness gate exit code: \`$local_gate_code\`"
+  printf '%s\n' "- ABRA checklist gate exit code: \`$abra_gate_code\`"
   printf '%s\n' "- Public workflow health gate exit code: \`$public_workflow_health_code\`"
   printf '%s\n' "- Public workflow health mode: \`$check_public_workflow_health_resolved\` (configured: \`$check_public_workflow_health\`)"
   printf '%s\n' "- Checklist audit exit code: \`$checklist_audit_code\`"
