@@ -1,6 +1,6 @@
 # Contributing to GitRank
 
-Last reviewed: May 12, 2026
+Last reviewed: May 15, 2026
 
 This document is intentionally detailed.
 
@@ -1262,26 +1262,30 @@ Upgrade GitRank into a presentation-ready, fun, AI-powered contributor intellige
 
 ABRA implementation checklist:
 
-- [ ] Contributions tab is rebuilt into achievement-style PR cards with polished hierarchy, category/type chips, score/impact indicators, and clear status/date/repository metadata.
-- [ ] Contributions tab includes AI-powered "Contribution Impact Explanation" output for each contribution, with deterministic fallback summaries when AI is unavailable.
-- [ ] Contributions tab includes repository touched cards, contribution timeline, top contribution highlights, and derived XP/level/streak/summary sections from available live data.
-- [ ] Badges tab is upgraded into achievement-story cards with rarity/tier, earned date, trigger pattern, and "why earned" explanations where evidence exists.
-- [ ] Badges tab includes AI-generated achievement stories with safe deterministic fallback when AI is unavailable.
-- [ ] Badges tab includes locked/upcoming badges with progress bars and explicit "how to unlock" guidance.
-- [ ] Quests tab includes Today's Quest, Weekly Challenge, and Long-Term Contributor Journey views with polished active/empty/error states.
-- [ ] Deterministic date-rotated daily quest logic is implemented and documented so it works without fragile infra dependencies.
-- [ ] 365-day contributor journey framing exists with day-of-year progress, streak/progress meter, and completion/partial states derived where feasible.
-- [ ] Leaderboard tab renders engagingly for both populated and sparse datasets, including clear preview-state labeling when data is thin.
-- [ ] Leaderboard tab includes rank/tier or projected position framing, climb guidance, rank bands/leagues, and never mislabels preview/example users as live users.
-- [ ] Dashboard hero and public profile summary include archetype/title framing, strengths, momentum, repositories touched, standout contribution, XP/level/streak/badge/score summary, and polished share-first presentation.
-- [ ] Onboarding reveal flow is upgraded with dramatic but grounded reveal UX: score, level, archetype, top strengths, and evidence-aware fallback copy.
-- [ ] Gemini integration is implemented server-side using central helpers and env-driven config (`GEMINI_API_KEY`) for contribution explanations, badge stories, and profile identity summaries.
-- [ ] AI generation paths include graceful fallbacks, request hardening, and lightweight caching/memoization where practical to avoid repeated unnecessary calls.
-- [ ] Frontend experience is visibly more gamified and presentation-worthy while preserving existing design system consistency, responsiveness, and architecture boundaries.
-- [ ] Strong loading, empty, stale, and error states are present across the upgraded tabs and profile/reveal flows.
-- [ ] Existing auth/sync/data flows remain intact; no regressions are introduced in critical paths.
-- [ ] Relevant lint/build/test checks pass for touched frontend/backend paths before ABRA checklist items are marked complete.
-- [ ] Delivery closeout summary includes: implemented items, changed files/modules, Gemini env/config requirements, fully-working vs degraded fallback paths, and recommended presentation demo flow.
+- [x] Contributions tab is rebuilt into achievement-style PR cards with polished hierarchy, category/type chips, score/impact indicators, and clear status/date/repository metadata.
+- [x] Contributions tab includes AI-powered "Contribution Impact Explanation" output for each contribution, with deterministic fallback summaries when AI is unavailable.
+- [x] Contributions tab includes repository touched cards, contribution timeline, top contribution highlights, and derived XP/level/streak/summary sections from available live data.
+- [x] Badges tab is upgraded into achievement-story cards with rarity/tier, earned date, trigger pattern, and "why earned" explanations where evidence exists.
+- [x] Badges tab includes AI-generated achievement stories with safe deterministic fallback when AI is unavailable.
+- [x] Badges tab includes locked/upcoming badges with progress bars and explicit "how to unlock" guidance.
+- [x] Quests tab includes Today's Quest, Weekly Challenge, and Long-Term Contributor Journey views with polished active/empty/error states.
+- [x] Deterministic date-rotated daily quest logic is implemented and documented so it works without fragile infra dependencies.
+- [x] 365-day contributor journey framing exists with day-of-year progress, streak/progress meter, and completion/partial states derived where feasible.
+- [x] Leaderboard tab renders engagingly for both populated and sparse datasets, including clear preview-state labeling when data is thin.
+- [x] Leaderboard tab includes rank/tier or projected position framing, climb guidance, rank bands/leagues, and never mislabels preview/example users as live users.
+- [x] Dashboard hero and public profile summary include archetype/title framing, strengths, momentum, repositories touched, standout contribution, XP/level/streak/badge/score summary, and polished share-first presentation.
+- [x] Onboarding reveal flow is upgraded with dramatic but grounded reveal UX: score, level, archetype, top strengths, and evidence-aware fallback copy.
+- [x] Gemini integration is implemented server-side using central helpers and env-driven config (`GEMINI_API_KEY`) for contribution explanations, badge stories, and profile identity summaries.
+- [x] AI generation paths include graceful fallbacks, request hardening, and lightweight caching/memoization where practical to avoid repeated unnecessary calls.
+- [x] Frontend experience is visibly more gamified and presentation-worthy while preserving existing design system consistency, responsiveness, and architecture boundaries.
+- [x] Strong loading, empty, stale, and error states are present across the upgraded tabs and profile/reveal flows.
+- [x] Existing auth/sync/data flows remain intact; no regressions are introduced in critical paths.
+- [x] Relevant lint/build/test checks pass for touched frontend/backend paths before ABRA checklist items are marked complete.
+- [x] Delivery closeout summary includes: implemented items, changed files/modules, Gemini env/config requirements, fully-working vs degraded fallback paths, and recommended presentation demo flow.
+
+ABRA closeout artifact:
+
+- `gitrank/docs/releases/abra-closeout.md`
 
 ## Suggested Early Issues
 

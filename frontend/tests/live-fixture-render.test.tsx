@@ -68,7 +68,9 @@ describe("live fixture frontend smoke coverage", () => {
     expect(
       await screen.findByText("Backed by live quest fixture evidence."),
     ).toBeTruthy();
-    expect(requestedPaths).toEqual(["/api/profile/me/quests"]);
+    expect([...requestedPaths].sort()).toEqual(
+      ["/api/profile/me", "/api/profile/me/quests"].sort(),
+    );
   });
 
   it("renders PR battle report from the live PR report fixture route", async () => {
@@ -104,7 +106,9 @@ describe("live fixture frontend smoke coverage", () => {
         "Live fixture profile rendered through BFF-shaped JSON.",
       ),
     ).toBeTruthy();
-    expect(requestedPaths).toEqual(["/api/profile/public/live-maintainer"]);
+    expect([...requestedPaths].sort()).toEqual(
+      ["/api/profile/public/live-maintainer", "/api/ai/abra-insights"].sort(),
+    );
   });
 
   it("renders leaderboard from the live leaderboard fixture route", async () => {
@@ -115,7 +119,9 @@ describe("live fixture frontend smoke coverage", () => {
     expect(
       await screen.findByText("Verified season snapshot with rank movement and bounded scoring evidence."),
     ).toBeTruthy();
-    expect(requestedPaths).toEqual(["/api/leaderboard"]);
+    expect([...requestedPaths].sort()).toEqual(
+      ["/api/leaderboard", "/api/profile/me"].sort(),
+    );
   });
 
   it("renders settings from the authenticated profile fixture", async () => {
@@ -180,6 +186,9 @@ async function liveFixtureFetch(input: RequestInfo | URL): Promise<Response> {
   if (path === "/api/account/export") {
     return jsonResponse(accountExportFixture);
   }
+  if (path === "/api/ai/abra-insights") {
+    return jsonResponse(abraInsightsFixture);
+  }
 
   return jsonResponse(
     { error: { message: `Unhandled live fixture route: ${path}` } },
@@ -197,6 +206,15 @@ function jsonResponse(body: unknown, status = 200): Response {
 }
 
 const now = "2026-05-10T12:00:00Z";
+
+const abraInsightsFixture = {
+  generatedBy: "deterministic",
+  archetype: "Live Systems Builder",
+  identitySummary:
+    "Live fixture identity summary generated from deterministic ABRA fallback.",
+  contributionNarratives: {},
+  badgeStories: {},
+};
 
 const publicProfileFixture = {
   summary: {

@@ -25,6 +25,7 @@ export function LeaderboardPageClient() {
   const [tab, setTab] = useState<LeaderboardTab>("Global");
   const { data, isLoading, isError } = useLeaderboard(tab);
   const { data: myProfile } = useMyProfile();
+  const snapshot = data ?? null;
   const projectedRank = data && myProfile ? projectRank(data.rows, myProfile.user.gitRankScore) : null;
   const rows = data?.rows ?? [];
 
@@ -72,9 +73,9 @@ export function LeaderboardPageClient() {
           </div>
         </GlowCard>
       ) : null}
-      {!isLoading && !isError && rows.length ? (
+      {!isLoading && !isError && snapshot && rows.length ? (
         <>
-          <LeaderboardArena snapshot={data} />
+          <LeaderboardArena snapshot={snapshot} />
           <GlowCard className="space-y-3 border border-fuchsia-300/22 bg-gradient-to-br from-slate-950/90 to-fuchsia-950/20">
             <p className="text-xs tracking-[0.24em] text-fuchsia-200 uppercase">How to climb</p>
             <div className="grid gap-3 md:grid-cols-3">
