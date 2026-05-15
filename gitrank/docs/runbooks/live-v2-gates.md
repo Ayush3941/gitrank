@@ -256,6 +256,8 @@ make sync-remote-live-v2-workflow
 ```
 
 Set `DRY_RUN=true` to preview updates without writing.
+If your local branch already contains the workflow updates, a normal branch push
+also resolves this drift (`git push origin main`) without using the sync script.
 
 To evaluate recent runs across all branches (for example pull requests), set:
 

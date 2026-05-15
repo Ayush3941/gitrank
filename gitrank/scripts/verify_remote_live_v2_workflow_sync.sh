@@ -167,7 +167,7 @@ verify_via_raw_public_fallback() {
 
   if [ "$remote_content" != "$local_content" ]; then
     raw_view_url="https://raw.githubusercontent.com/$OWNER/$REPO/$found_branch/$WORKFLOW_FILE_PATH"
-    fail "remote workflow content drift detected via raw fallback for $WORKFLOW_FILE_PATH on $REPOSITORY@$found_branch (remote_url=$raw_view_url; $local_workflow_state; run make sync-remote-live-v2-workflow)"
+    fail "remote workflow content drift detected via raw fallback for $WORKFLOW_FILE_PATH on $REPOSITORY@$found_branch (remote_url=$raw_view_url; $local_workflow_state; sync by pushing the local branch to origin (for example: git push origin main) or run make sync-remote-live-v2-workflow with token/App credentials)"
   fi
 
   printf 'remote live-v2 workflow sync verification passed (raw public fallback)\n'
@@ -280,7 +280,7 @@ remote_content=$(printf '%s' "$remote_content_base64" | base64 -d 2>/dev/null ||
 
 if [ "$remote_content" != "$local_content" ]; then
   remote_view_url="https://github.com/$OWNER/$REPO/blob/$TARGET_BRANCH/$WORKFLOW_FILE_PATH"
-  fail "remote workflow content drift detected for $WORKFLOW_FILE_PATH on $REPOSITORY@$TARGET_BRANCH (remote_url=$remote_view_url; remote_blob_sha=$remote_blob_sha; $local_workflow_state; run make sync-remote-live-v2-workflow)"
+  fail "remote workflow content drift detected for $WORKFLOW_FILE_PATH on $REPOSITORY@$TARGET_BRANCH (remote_url=$remote_view_url; remote_blob_sha=$remote_blob_sha; $local_workflow_state; sync by pushing the local branch to origin (for example: git push origin main) or run make sync-remote-live-v2-workflow)"
 fi
 
 printf 'remote live-v2 workflow sync verification passed\n'
