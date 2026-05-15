@@ -102,6 +102,8 @@ emit_public_live_probe_snapshot() {
   workflow_runs_status=
   controls_public_probe_status=unknown
   controls_public_probe_summary=
+  public_workflow_health_probe_status=unknown
+  public_workflow_health_probe_summary=
   workflow_badge_status=unknown
   workflow_badge_url=
   remote_workflow_sync_status=unknown
@@ -205,6 +207,19 @@ emit_public_live_probe_snapshot() {
     controls_public_probe_summary='no output captured from public controls probe'
   fi
 
+  workflow_health_probe_log=$(mktemp "${TMPDIR:-/tmp}/gitrank-v2-audit-workflow-health.XXXXXX")
+  if GITHUB_REPOSITORY="$repository" \
+    "$root_dir/scripts/verify_public_workflow_health.sh" >"$workflow_health_probe_log" 2>&1; then
+    public_workflow_health_probe_status=pass
+  else
+    public_workflow_health_probe_status=fail
+  fi
+  public_workflow_health_probe_summary=$(tail -n 1 "$workflow_health_probe_log" 2>/dev/null || true)
+  rm -f "$workflow_health_probe_log"
+  if [ -z "$public_workflow_health_probe_summary" ]; then
+    public_workflow_health_probe_summary='no output captured from public workflow health probe'
+  fi
+
   remote_sync_probe_log=$(mktemp "${TMPDIR:-/tmp}/gitrank-v2-audit-remote-sync.XXXXXX")
   if GITHUB_REPOSITORY="$repository" \
     "$root_dir/scripts/verify_remote_live_v2_workflow_sync.sh" >"$remote_sync_probe_log" 2>&1; then
@@ -247,6 +262,8 @@ emit_public_live_probe_snapshot() {
   printf 'remote workflow sync summary: %s\n' "$remote_workflow_sync_summary"
   printf 'origin push access probe: %s\n' "$origin_push_access_status"
   printf 'origin push access summary: %s\n' "$origin_push_access_summary"
+  printf 'public workflow health probe: %s\n' "$public_workflow_health_probe_status"
+  printf 'public workflow health summary: %s\n' "$public_workflow_health_probe_summary"
   printf 'controls public probe: %s\n' "$controls_public_probe_status"
   printf 'controls public probe summary: %s\n' "$controls_public_probe_summary"
   if [ -n "$probe_msg" ]; then
@@ -271,6 +288,8 @@ emit_public_live_probe_snapshot() {
       printf '%s\n' "- remote workflow sync summary: $remote_workflow_sync_summary"
       printf '%s\n' "- origin push access probe: $origin_push_access_status"
       printf '%s\n' "- origin push access summary: $origin_push_access_summary"
+      printf '%s\n' "- public workflow health probe: $public_workflow_health_probe_status"
+      printf '%s\n' "- public workflow health summary: $public_workflow_health_probe_summary"
       printf '%s\n' "- controls public probe: $controls_public_probe_status"
       printf '%s\n' "- controls public probe summary: $controls_public_probe_summary"
       if [ -n "$probe_msg" ]; then
