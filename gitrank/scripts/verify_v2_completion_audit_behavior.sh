@@ -68,6 +68,8 @@ assert_contains "$default_report" "- Repository: \`OWNER/REPO\`" "default displa
 assert_contains "$default_report" "### Probe Waivers" "probe waiver section should exist"
 assert_contains "$default_report" "- Public workflow health mode: \`false\` (configured: \`auto\`)" "default run should resolve public workflow probe mode from auth context"
 assert_contains "$default_report" "- public workflow health waiver: \`auto-disabled: no GitHub token/App credentials\`" "default run should record auto waiver for public workflow health when auth is missing"
+assert_contains "$default_report" "## External Unblock Preflight (make verify-v2-external-unblock-preflight)" "default run should include external unblock preflight section"
+assert_contains "$default_report" "- External unblock preflight exit code: \`skip\`" "default run should mark external unblock preflight as skipped when RUN_CHECKS=false"
 assert_contains "$default_report" "Current audit verdict: **objective not complete**." "default run should not mark completion"
 assert_contains "$default_stderr" "missing waiver for skipped probe" "default skipped probes should require waivers"
 
@@ -96,6 +98,7 @@ assert_not_contains "$custom_report" "- Repository: \`OWNER/REPO\`" "custom disp
 assert_contains "$custom_report" "- run_checks waiver: \`offline dry run\`" "run_checks waiver should be recorded"
 assert_contains "$custom_report" "- public workflow health waiver: \`no live token in local CI sandbox\`" "public workflow waiver should be recorded"
 assert_contains "$custom_report" "- live github access preflight waiver: \`no live token in local CI sandbox\`" "live github waiver should be recorded"
+assert_contains "$custom_report" "- External unblock preflight exit code: \`skip\`" "waived run should mark external unblock preflight as skipped"
 assert_contains "$custom_report" "Current audit verdict: **objective not complete**." "waived run should still not mark completion"
 
 if rg -q --fixed-strings -- "missing waiver for skipped probe" "$custom_stderr"; then

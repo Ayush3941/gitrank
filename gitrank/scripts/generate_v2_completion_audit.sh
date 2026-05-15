@@ -225,6 +225,18 @@ run_capture() {
   RUN_CAPTURE_LAST_CODE=$code
 }
 
+append_skipped_section() {
+  title=$1
+  reason=$2
+  {
+    printf '## %s\n\n' "$title"
+    printf '%s\n\n' "- Exit code: \`skip\`"
+    printf '```text\n'
+    printf '%s\n' "$reason"
+    printf '```\n\n'
+  } >>"$output_file"
+}
+
 mkdir -p "$tmp_root"
 mkdir -p "$(dirname "$output_file")"
 [ -s "$contributing_file" ] || fail "missing CONTRIBUTING.md at $contributing_file"
@@ -366,6 +378,8 @@ if [ "$run_checks" = "true" ]; then
     run_capture "External Unblock Preflight (make verify-v2-external-unblock-preflight)" \
       "cd '$root_dir' && make verify-v2-external-unblock-preflight"
     external_unblock_preflight_code=$RUN_CAPTURE_LAST_CODE
+  else
+    append_skipped_section "External Unblock Preflight (make verify-v2-external-unblock-preflight)" "probe skipped: CHECK_EXTERNAL_UNBLOCK_PREFLIGHT=false"
   fi
 
   run_capture "Local Readiness Gate (make verify-v2-live-readiness)" \
@@ -420,6 +434,11 @@ if [ "$run_checks" = "true" ]; then
   fi
 else
   external_unblock_preflight_code=skip
+  if [ "$check_external_unblock_preflight" = "true" ]; then
+    append_skipped_section "External Unblock Preflight (make verify-v2-external-unblock-preflight)" "probe skipped: RUN_CHECKS=false"
+  else
+    append_skipped_section "External Unblock Preflight (make verify-v2-external-unblock-preflight)" "probe skipped: RUN_CHECKS=false and CHECK_EXTERNAL_UNBLOCK_PREFLIGHT=false"
+  fi
   local_gate_code=skip
   abra_gate_code=skip
   public_workflow_health_code=skip
