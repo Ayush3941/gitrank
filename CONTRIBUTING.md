@@ -1233,6 +1233,8 @@ Use `gitrank/.env.v2-live-gates.example` as the environment-variable template.
 The finalizer can load that file directly with
 `FINALIZE_V2_ENV_FILE=.env.v2-live-gates.local` (or
 `LIVE_V2_ENV_FILE=.env.v2-live-gates.local`) to avoid manual `set -a` export.
+For the default local filename, use
+`CONFIRM_FINALIZE_V2=yes make -C gitrank finalize-v2-live-closeout-local-env`.
 Use `AUDIT_REPORT_FILE=... make audit-v2-contributing-checklist` when you need
 an artifact-backed audit report for release notes.
 Use `make create-github-app-installation-token` when GitHub App credentials are
@@ -1249,6 +1251,37 @@ The live-gates workflow can also bootstrap a short-lived admin token from
 - [x] Add release gates that fail when mock-backed production routes, demo-only imports, missing OpenAPI entries, or unverified worker paths remain. `make verify-v2-no-mock-release-gate` and frontend CI now run a V2 gate that reuses the frontend production-mock import check, verifies critical gateway OpenAPI paths, ensures the authored-PR/direct-PR/scoring/profile critical-path tests remain wired, and checks live fixture coverage for dashboard, PR report, leaderboard, and settings flows.
 - [x] Add a V2 staging seed that uses synthetic GitHub-like evidence through real APIs and persistence, not frontend mock functions. `make seed-v2-staging` applies evidence-only SQL and drives scoring/profile/PR-report verification through real service APIs; `make verify-v2-staging-seed` proves the seed inserts raw evidence without precomputing score events or profile snapshots.
 - [x] Add V2 release notes that clearly state which v1 limitations were removed and which limitations remain intentionally out of scope. See `gitrank/docs/releases/v2.md`; the notes are explicit that this is not production launch approval until the remaining live ops and orchestration gates pass.
+
+## ABRA Goal Checklist
+
+ABRA goal:
+
+```txt
+Upgrade GitRank into a presentation-ready, fun, AI-powered contributor intelligence platform.
+```
+
+ABRA implementation checklist:
+
+- [ ] Contributions tab is rebuilt into achievement-style PR cards with polished hierarchy, category/type chips, score/impact indicators, and clear status/date/repository metadata.
+- [ ] Contributions tab includes AI-powered "Contribution Impact Explanation" output for each contribution, with deterministic fallback summaries when AI is unavailable.
+- [ ] Contributions tab includes repository touched cards, contribution timeline, top contribution highlights, and derived XP/level/streak/summary sections from available live data.
+- [ ] Badges tab is upgraded into achievement-story cards with rarity/tier, earned date, trigger pattern, and "why earned" explanations where evidence exists.
+- [ ] Badges tab includes AI-generated achievement stories with safe deterministic fallback when AI is unavailable.
+- [ ] Badges tab includes locked/upcoming badges with progress bars and explicit "how to unlock" guidance.
+- [ ] Quests tab includes Today's Quest, Weekly Challenge, and Long-Term Contributor Journey views with polished active/empty/error states.
+- [ ] Deterministic date-rotated daily quest logic is implemented and documented so it works without fragile infra dependencies.
+- [ ] 365-day contributor journey framing exists with day-of-year progress, streak/progress meter, and completion/partial states derived where feasible.
+- [ ] Leaderboard tab renders engagingly for both populated and sparse datasets, including clear preview-state labeling when data is thin.
+- [ ] Leaderboard tab includes rank/tier or projected position framing, climb guidance, rank bands/leagues, and never mislabels preview/example users as live users.
+- [ ] Dashboard hero and public profile summary include archetype/title framing, strengths, momentum, repositories touched, standout contribution, XP/level/streak/badge/score summary, and polished share-first presentation.
+- [ ] Onboarding reveal flow is upgraded with dramatic but grounded reveal UX: score, level, archetype, top strengths, and evidence-aware fallback copy.
+- [ ] Gemini integration is implemented server-side using central helpers and env-driven config (`GEMINI_API_KEY`) for contribution explanations, badge stories, and profile identity summaries.
+- [ ] AI generation paths include graceful fallbacks, request hardening, and lightweight caching/memoization where practical to avoid repeated unnecessary calls.
+- [ ] Frontend experience is visibly more gamified and presentation-worthy while preserving existing design system consistency, responsiveness, and architecture boundaries.
+- [ ] Strong loading, empty, stale, and error states are present across the upgraded tabs and profile/reveal flows.
+- [ ] Existing auth/sync/data flows remain intact; no regressions are introduced in critical paths.
+- [ ] Relevant lint/build/test checks pass for touched frontend/backend paths before ABRA checklist items are marked complete.
+- [ ] Delivery closeout summary includes: implemented items, changed files/modules, Gemini env/config requirements, fully-working vs degraded fallback paths, and recommended presentation demo flow.
 
 ## Suggested Early Issues
 
