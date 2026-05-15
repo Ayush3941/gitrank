@@ -47,6 +47,81 @@ Optional observability tuning variables:
 - `OBS_EXPECTED_DASHBOARD_TITLES`
 - `K8S_GITHUB_USER_AGENT`
 
+## External Unblock Checklist
+
+Use this when local gates pass but V2 still fails on live-only checklist items.
+
+1. Ensure you have one valid write path for `Ayush3941/gitrank`:
+- Preferred: fine-grained PAT with repository administration + contents/workflows write.
+- Alternative: GitHub App installed on `Ayush3941/gitrank` with:
+  `administration:write`, `contents:write`, `workflows:write`,
+  `metadata:read`, and repository scope including `Ayush3941/gitrank`.
+
+2. If using GitHub App, verify installation scope:
+- App installations: `https://github.com/settings/installations`
+- Repo install target: `https://github.com/Ayush3941/gitrank`
+
+3. Configure live gate secrets/vars in the selected Actions environment:
+- Environment settings:
+  `https://github.com/Ayush3941/gitrank/settings/environments`
+- Required secrets:
+  `GITRANK_REPO_ADMIN_TOKEN` (or GitHub App bootstrap secrets),
+  `GRAFANA_API_TOKEN`
+- Required vars:
+  `PROMETHEUS_BASE_URL`, `GRAFANA_BASE_URL`,
+  `K8S_PUBLIC_BASE_URL`, `K8S_API_BASE_URL`,
+  `K8S_AUTH_COOKIE_DOMAIN`, `K8S_GITHUB_OAUTH_REDIRECT_URL`,
+  `K8S_API_HOST`, `K8S_AUTH_HOST`, `K8S_TLS_SECRET_NAME`
+
+4. Validate write/auth path before running live gates:
+
+```bash
+cd gitrank
+GITHUB_REPOSITORY=Ayush3941/gitrank make verify-live-github-access
+GITHUB_REPOSITORY=Ayush3941/gitrank make verify-origin-push-access
+GITHUB_REPOSITORY=Ayush3941/gitrank make verify-remote-live-v2-workflow-sync
+```
+
+5. If workflow sync still drifts, sync remote workflow file first:
+
+```bash
+cd gitrank
+GITHUB_REPOSITORY=Ayush3941/gitrank GITRANK_REPO_ADMIN_TOKEN=... make sync-remote-live-v2-workflow
+```
+
+6. Run full live gates and capture workflow evidence:
+
+```bash
+cd gitrank
+GITHUB_REPOSITORY=Ayush3941/gitrank \
+TARGET_ENVIRONMENT=staging \
+RUN_OBSERVABILITY=true \
+RUN_GITHUB_CONTROLS=true \
+APPLY_GITHUB_CONTROLS=true \
+RUN_RELEASE_RENDER=true \
+GITRANK_REPO_ADMIN_TOKEN=... \
+make run-live-v2-gates-workflow
+```
+
+7. Verify workflow-run evidence and complete checklist marking:
+
+```bash
+cd gitrank
+GITHUB_REPOSITORY=Ayush3941/gitrank \
+GITRANK_REPO_ADMIN_TOKEN=... \
+WORKFLOW_RUN_ID=latest \
+REQUIRE_GITHUB_CONTROLS=true \
+REQUIRE_OBSERVABILITY=true \
+REQUIRE_RELEASE_RENDER=true \
+make verify-live-v2-workflow-run
+
+CONFIRM_FINALIZE_V2=yes \
+FINALIZE_V2_ENV_FILE=.env.v2-live-gates.local \
+VERIFY_FROM_WORKFLOW=true \
+WORKFLOW_RUN_ID=latest \
+make finalize-v2-live-closeout
+```
+
 ## Execute
 
 1. Open Actions and run `Verify Live V2 Gates`.
