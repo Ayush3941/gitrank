@@ -40,6 +40,8 @@ trap 'rm -f "$default_report" "$custom_report" "$default_stdout" "$default_stder
 
 if ! (
   cd "$root_dir" &&
+  LIVE_V2_ENV_FILE= \
+  FINALIZE_V2_ENV_FILE= \
   GITHUB_TOKEN= \
   GH_TOKEN= \
   GITRANK_REPO_ADMIN_TOKEN= \
@@ -71,6 +73,8 @@ assert_contains "$default_stderr" "missing waiver for skipped probe" "default sk
 
 if ! (
   cd "$root_dir" &&
+  LIVE_V2_ENV_FILE= \
+  FINALIZE_V2_ENV_FILE= \
   RUN_CHECKS=false \
   OUTPUT_FILE="$custom_report" \
   GITHUB_REPOSITORY="example/private-repo" \

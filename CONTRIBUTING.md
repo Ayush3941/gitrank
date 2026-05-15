@@ -1245,6 +1245,14 @@ preferred over long-lived PATs for repository-controls gates.
 The live-gates workflow can also bootstrap a short-lived admin token from
 `GITRANK_GITHUB_APP_ID`, `GITRANK_GITHUB_APP_INSTALLATION_ID`, and
 `GITRANK_GITHUB_APP_PRIVATE_KEY_PEM` when `GITRANK_REPO_ADMIN_TOKEN` is unset.
+`FINALIZE_V2_ENV_FILE` (or `LIVE_V2_ENV_FILE`) is now honored by the closeout
+preflight and audit/status generators as well (`make verify-v2-external-unblock-preflight`,
+`make audit-v2-contributing-checklist`, `make generate-v2-live-closeout-status`,
+`make generate-v2-completion-audit`) so one env file can drive the entire
+live-gates sequence.
+Placeholder secret values (for example `replace-me-with-...`) are ignored by
+those commands until replaced with real credentials, so scaffolding an env file
+does not accidentally count as authenticated access.
 
 - [ ] Deploy and verify production observability against real traffic, including sync, analysis, scoring, profile, quest, PR report, leaderboard, queue, GitHub, and AI dashboards. `make verify-live-observability` now automates Prometheus target/rule/metric checks plus Grafana dashboard presence, and `.github/workflows/verify-live-v2-gates.yml` can run it in GitHub Actions, but live endpoint credentials and traffic are still required.
 - [ ] Apply and verify live GitHub repository controls before V2 release branches are cut. `.github/workflows/verify-live-v2-gates.yml` can run auto-apply plus verification (`apply_github_controls=true`) with `GITRANK_REPO_ADMIN_TOKEN`.

@@ -51,6 +51,8 @@ rm -f "$audit_report" "$closeout_report" "$completion_report" "$completion_repor
 
 if (
   cd "$root_dir" &&
+  LIVE_V2_ENV_FILE= \
+  FINALIZE_V2_ENV_FILE= \
   RUN_BASELINE_VERIFIERS=false \
   RUN_PUBLIC_PROBE=false \
   AUDIT_REPORT_FILE="$audit_report" \
@@ -76,6 +78,8 @@ assert_not_contains "$audit_report" "$real_repo" "audit report should not leak c
 
 if ! (
   cd "$root_dir" &&
+  LIVE_V2_ENV_FILE= \
+  FINALIZE_V2_ENV_FILE= \
   OUTPUT_FILE="$closeout_report" \
   CHECK_LOCAL_READINESS=false \
   CHECK_PUBLIC_GITHUB_CONTROLS=false \
@@ -94,6 +98,8 @@ assert_not_contains "$closeout_report" "$real_repo" "closeout report should not 
 
 if ! (
   cd "$root_dir" &&
+  LIVE_V2_ENV_FILE= \
+  FINALIZE_V2_ENV_FILE= \
   RUN_CHECKS=false \
   OUTPUT_FILE="$completion_report" \
   ./scripts/generate_v2_completion_audit.sh >/dev/null 2>&1
@@ -107,6 +113,8 @@ assert_not_contains "$completion_report" "$real_repo" "completion audit should n
 
 if ! (
   cd "$root_dir" &&
+  LIVE_V2_ENV_FILE= \
+  FINALIZE_V2_ENV_FILE= \
   RUN_CHECKS=false \
   GITHUB_REPOSITORY_DISPLAY="public/demo-repo" \
   OUTPUT_FILE="$completion_report_custom" \

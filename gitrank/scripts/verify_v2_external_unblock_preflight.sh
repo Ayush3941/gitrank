@@ -6,6 +6,34 @@ repo_dir="$(CDPATH= cd -- "$root_dir/.." && pwd)"
 tmp_root="${TMPDIR:-$root_dir/.tmp}"
 mkdir -p "$tmp_root"
 
+LIVE_ENV_FILE="${LIVE_V2_ENV_FILE:-${FINALIZE_V2_ENV_FILE:-}}"
+if [ -n "$LIVE_ENV_FILE" ]; then
+  resolved_live_env_file="$LIVE_ENV_FILE"
+  case "$resolved_live_env_file" in
+    /*) ;;
+    *)
+      if [ -f "$root_dir/$resolved_live_env_file" ]; then
+        resolved_live_env_file="$root_dir/$resolved_live_env_file"
+      fi
+      ;;
+  esac
+  if [ ! -f "$resolved_live_env_file" ]; then
+    printf 'v2 external unblock preflight failed: env file not found: %s\n' "$LIVE_ENV_FILE" >&2
+    exit 1
+  fi
+  set -a
+  # shellcheck disable=SC1090
+  . "$resolved_live_env_file"
+  set +a
+
+  for token_var in GITRANK_REPO_ADMIN_TOKEN GITHUB_TOKEN GH_TOKEN GRAFANA_API_TOKEN; do
+    eval token_value="\${$token_var:-}"
+    case "$token_value" in
+      replace-me*|changeme*|example-token*) eval "$token_var=''" ;;
+    esac
+  done
+fi
+
 fail_count=0
 
 resolve_repository_from_git_remote() {
