@@ -1188,6 +1188,9 @@ must remain absent).
 Use `make verify-v2-external-unblock-preflight-behavior` to enforce the output
 contract for the external-unblock preflight (`input_state.*`,
 `checklist_probe_mapping`, and minimal-required-input hints).
+Use `make verify-v2-audit-remediation-behavior` to verify that
+`audit-v2-contributing-checklist` switches remediation guidance correctly
+between no-auth mode and token/App-auth mode.
 The preflight also emits `input_state.origin_push_required` so token/App-auth
 setups are not blocked by local push-auth probe failures when an authenticated
 sync/apply path is already available.

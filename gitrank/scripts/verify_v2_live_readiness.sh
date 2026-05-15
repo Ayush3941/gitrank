@@ -39,6 +39,7 @@ if [ "$RUN_LOCAL_STATIC" = "true" ]; then
   run_make verify-v2-live-env-scaffold
   run_make verify-v2-completion-audit-behavior
   run_make verify-v2-artifact-redaction
+  run_make verify-v2-audit-remediation-behavior
   run_make verify-v2-external-unblock-preflight-behavior
   run_make verify-abra-checklist
 fi

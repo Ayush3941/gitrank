@@ -219,6 +219,7 @@ For local regression safety of this output contract, run:
 ```bash
 cd gitrank
 make verify-v2-external-unblock-preflight-behavior
+make verify-v2-audit-remediation-behavior
 ```
 
 This readiness command now also verifies that
