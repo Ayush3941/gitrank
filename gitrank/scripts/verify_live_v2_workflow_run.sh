@@ -15,6 +15,7 @@ WORKFLOW_EVENT="${WORKFLOW_EVENT:-workflow_dispatch}"
 WORKFLOW_RUN_SEARCH_PAGES="${WORKFLOW_RUN_SEARCH_PAGES:-10}"
 WORKFLOW_RUN_ID_OUTPUT_FILE="${WORKFLOW_RUN_ID_OUTPUT_FILE:-}"
 WORKFLOW_EVENT_FALLBACK_ANY="${WORKFLOW_EVENT_FALLBACK_ANY:-true}"
+EXPECTED_REQUEST_ID="${EXPECTED_REQUEST_ID:-}"
 REQUIRE_GITHUB_CONTROLS="${REQUIRE_GITHUB_CONTROLS:-true}"
 REQUIRE_OBSERVABILITY="${REQUIRE_OBSERVABILITY:-true}"
 REQUIRE_RELEASE_RENDER="${REQUIRE_RELEASE_RENDER:-true}"
@@ -200,7 +201,7 @@ resolve_workflow_run_id_if_needed() {
       fi
       expect_status 200 "workflow run search page $page"
 
-      matched_id=$(printf '%s' "$API_BODY" | jq -r --arg name "$EXPECTED_WORKFLOW_NAME" --arg event "$lookup_event_filter" --arg workflow_path "$EXPECTED_WORKFLOW_PATH" '
+      matched_id=$(printf '%s' "$API_BODY" | jq -r --arg name "$EXPECTED_WORKFLOW_NAME" --arg event "$lookup_event_filter" --arg workflow_path "$EXPECTED_WORKFLOW_PATH" --arg request_id "$EXPECTED_REQUEST_ID" '
         [
           .workflow_runs[]?
           | select(.name == $name)
@@ -208,6 +209,7 @@ resolve_workflow_run_id_if_needed() {
           | select(.status == "completed")
           | select(.conclusion == "success")
           | select((.path // "" | split("@")[0]) == $workflow_path)
+          | select(($request_id | length) == 0 or ((.display_title // "") | contains($request_id)))
         ]
         | sort_by(.created_at)
         | reverse
@@ -283,6 +285,13 @@ run_workflow_path=${run_path%%@*}
 [ "$run_workflow_path" = "$EXPECTED_WORKFLOW_PATH" ] || fail "workflow run path mismatch: expected '$EXPECTED_WORKFLOW_PATH' got '$run_workflow_path'"
 if [ -n "$WORKFLOW_EVENT_FILTER" ]; then
   [ "$run_event" = "$WORKFLOW_EVENT_FILTER" ] || fail "workflow run event mismatch: expected '$WORKFLOW_EVENT_FILTER' got '$run_event'"
+fi
+if [ -n "$EXPECTED_REQUEST_ID" ]; then
+  run_display_title=$(printf '%s' "$API_BODY" | jq -r '.display_title // empty')
+  case "$run_display_title" in
+    *"$EXPECTED_REQUEST_ID"*) ;;
+    *) fail "workflow run display title does not contain expected request id '$EXPECTED_REQUEST_ID'" ;;
+  esac
 fi
 if [ -n "$EXPECTED_HEAD_BRANCH" ]; then
   [ "$run_head_branch" = "$EXPECTED_HEAD_BRANCH" ] || fail "workflow run head branch mismatch: expected '$EXPECTED_HEAD_BRANCH' got '$run_head_branch'"

@@ -17,6 +17,7 @@ WAIT_FOR_COMPLETION="${WAIT_FOR_COMPLETION:-true}"
 WAIT_TIMEOUT_SECONDS="${WAIT_TIMEOUT_SECONDS:-900}"
 POLL_INTERVAL_SECONDS="${POLL_INTERVAL_SECONDS:-10}"
 WORKFLOW_RUN_ID_OUTPUT_FILE="${WORKFLOW_RUN_ID_OUTPUT_FILE:-}"
+WORKFLOW_REQUEST_ID_OUTPUT_FILE="${WORKFLOW_REQUEST_ID_OUTPUT_FILE:-}"
 TMP_ROOT="${TMPDIR:-/tmp}"
 GITHUB_APP_ID="${GITHUB_APP_ID:-${GITRANK_GITHUB_APP_ID:-}}"
 GITHUB_APP_INSTALLATION_ID="${GITHUB_APP_INSTALLATION_ID:-${GITRANK_GITHUB_APP_INSTALLATION_ID:-}}"
@@ -213,6 +214,12 @@ printf 'workflow dispatch accepted\n'
 printf 'repository: %s\n' "$REPOSITORY"
 printf 'workflow: %s\n' "$WORKFLOW_FILE"
 printf 'request_id: %s\n' "$request_id"
+if [ -n "$WORKFLOW_REQUEST_ID_OUTPUT_FILE" ]; then
+  mkdir -p "$(dirname "$WORKFLOW_REQUEST_ID_OUTPUT_FILE")"
+  umask 077
+  printf '%s\n' "$request_id" >"$WORKFLOW_REQUEST_ID_OUTPUT_FILE"
+  printf 'workflow_request_id_file: %s\n' "$WORKFLOW_REQUEST_ID_OUTPUT_FILE"
+fi
 if [ -n "$dispatch_run_id" ]; then
   printf 'dispatch_run_id: %s\n' "$dispatch_run_id"
   [ -n "$dispatch_run_url" ] && printf 'dispatch_run_url: %s\n' "$dispatch_run_url"
@@ -276,9 +283,10 @@ while :; do
         ;;
     esac
 
-    matched_run_json=$(printf '%s' "$API_BODY" | jq -c --arg start "$start_epoch" '
+    matched_run_json=$(printf '%s' "$API_BODY" | jq -c --arg start "$start_epoch" --arg request_id "$request_id" '
       .workflow_runs
       | map(select((.created_at | fromdateiso8601) >= ($start | tonumber)))
+      | map(select(($request_id | length) == 0 or ((.display_title // "") | contains($request_id))))
       | sort_by(.created_at)
       | reverse
       | .[0] // empty

@@ -14,6 +14,8 @@ AUTO_SYNC_REMOTE_WORKFLOW="${AUTO_SYNC_REMOTE_WORKFLOW:-true}"
 
 WORKFLOW_RUN_ID="${WORKFLOW_RUN_ID:-}"
 WORKFLOW_RUN_ID_FILE="${WORKFLOW_RUN_ID_FILE:-$tmp_root/live-v2-workflow-run-id.txt}"
+WORKFLOW_REQUEST_ID="${WORKFLOW_REQUEST_ID:-}"
+WORKFLOW_REQUEST_ID_FILE="${WORKFLOW_REQUEST_ID_FILE:-$tmp_root/live-v2-workflow-request-id.txt}"
 WORKFLOW_EVENT="${WORKFLOW_EVENT:-workflow_dispatch}"
 WORKFLOW_EVENT_FALLBACK_ANY="${WORKFLOW_EVENT_FALLBACK_ANY:-true}"
 
@@ -57,6 +59,7 @@ if [ "$DISPATCH_WORKFLOW" = "true" ]; then
   fi
 
   WORKFLOW_RUN_ID_OUTPUT_FILE="$WORKFLOW_RUN_ID_FILE" \
+  WORKFLOW_REQUEST_ID_OUTPUT_FILE="$WORKFLOW_REQUEST_ID_FILE" \
   RUN_GITHUB_CONTROLS="$RUN_GITHUB_CONTROLS" \
   RUN_OBSERVABILITY="$RUN_OBSERVABILITY" \
   RUN_RELEASE_RENDER="$RUN_RELEASE_RENDER" \
@@ -69,6 +72,10 @@ if [ -z "$WORKFLOW_RUN_ID" ] && [ -s "$WORKFLOW_RUN_ID_FILE" ]; then
   WORKFLOW_RUN_ID=$(cat "$WORKFLOW_RUN_ID_FILE")
 fi
 
+if [ -z "$WORKFLOW_REQUEST_ID" ] && [ -s "$WORKFLOW_REQUEST_ID_FILE" ]; then
+  WORKFLOW_REQUEST_ID=$(cat "$WORKFLOW_REQUEST_ID_FILE")
+fi
+
 if [ -z "$WORKFLOW_RUN_ID" ] && [ "$USE_LATEST_SUCCESSFUL_RUN" = "true" ]; then
   WORKFLOW_RUN_ID=latest
 fi
@@ -77,6 +84,7 @@ if [ "$VERIFY_WORKFLOW_RUN" = "true" ]; then
   [ -n "$WORKFLOW_RUN_ID" ] || fail "WORKFLOW_RUN_ID is required when VERIFY_WORKFLOW_RUN=true"
   WORKFLOW_RUN_ID_OUTPUT_FILE="$WORKFLOW_RUN_ID_FILE" \
   WORKFLOW_RUN_ID="$WORKFLOW_RUN_ID" \
+  EXPECTED_REQUEST_ID="$WORKFLOW_REQUEST_ID" \
   WORKFLOW_EVENT="$WORKFLOW_EVENT" \
   WORKFLOW_EVENT_FALLBACK_ANY="$WORKFLOW_EVENT_FALLBACK_ANY" \
   REQUIRE_GITHUB_CONTROLS="$RUN_GITHUB_CONTROLS" \
@@ -106,6 +114,8 @@ fi
 printf 'live v2 workflow evidence pipeline complete\n'
 printf 'workflow_run_id: %s\n' "${WORKFLOW_RUN_ID:-unset}"
 printf 'workflow_run_id_file: %s\n' "$WORKFLOW_RUN_ID_FILE"
+printf 'workflow_request_id: %s\n' "${WORKFLOW_REQUEST_ID:-unset}"
+printf 'workflow_request_id_file: %s\n' "$WORKFLOW_REQUEST_ID_FILE"
 if [ "$GENERATE_OBSERVABILITY_EVIDENCE" = "true" ] && [ "$RUN_OBSERVABILITY" = "true" ]; then
   printf 'observability_evidence_file: %s\n' "$OBS_EVIDENCE_FILE"
 fi

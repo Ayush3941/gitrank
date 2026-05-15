@@ -16,6 +16,9 @@ for required in "run_observability" "run_github_controls" "apply_github_controls
   grep -q "$required" "$workflow" || fail "missing workflow content: $required"
 done
 
+grep -q "^run-name:" "$workflow" || fail "missing workflow run-name for request correlation"
+grep -q "inputs.request_id" "$workflow" || fail "workflow run-name does not include request_id"
+
 for key in K8S_PUBLIC_BASE_URL K8S_API_BASE_URL K8S_AUTH_COOKIE_DOMAIN K8S_GITHUB_OAUTH_REDIRECT_URL K8S_API_HOST K8S_AUTH_HOST K8S_TLS_SECRET_NAME; do
   grep -q "$key" "$workflow" || fail "missing runtime override key in workflow: $key"
 done

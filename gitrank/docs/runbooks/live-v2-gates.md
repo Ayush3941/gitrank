@@ -77,6 +77,8 @@ When GitHub returns workflow-dispatch run details (`workflow_run_id` and run
 URLs), this command captures them immediately and writes
 `WORKFLOW_RUN_ID_OUTPUT_FILE` when configured, then falls back to polling only
 if needed.
+The workflow now sets `run-name` from `request_id`, and dispatch polling filters
+workflow runs by that request id to avoid picking unrelated concurrent dispatches.
 
 By default it requests dispatch run details (`RETURN_RUN_DETAILS=true`) and
 auto-falls back to legacy dispatch payloads if a repository rejects that field.
@@ -385,6 +387,9 @@ make run-live-v2-workflow-evidence-pipeline
 
 The workflow dispatch and workflow-run verification stages also support
 GitHub App credential bootstrap when a direct token is not set.
+The pipeline now writes both `workflow_run_id` and `workflow_request_id`
+artifacts and passes `EXPECTED_REQUEST_ID` into workflow-run verification for
+stronger run correlation.
 `make run-live-v2-workflow-evidence-pipeline` now attempts
 `make sync-remote-live-v2-workflow` before dispatch by default
 (`AUTO_SYNC_REMOTE_WORKFLOW=true`). Set `AUTO_SYNC_REMOTE_WORKFLOW=false` to
