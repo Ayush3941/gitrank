@@ -328,6 +328,9 @@ write access).
 If token/App credentials are missing, the readiness gate now runs
 `make verify-origin-push-access` and fails with that probe summary so you can
 immediately distinguish push-auth failures from “just missing token” failures.
+The same fallback now applies to Trivy policy auto-sync: when
+`AUTO_SYNC_REMOTE_TRIVY_POLICY=true` and no token/App credentials are present,
+the gate runs `make verify-origin-push-access` and reports that summary.
 
 To generate a single closeout status artifact (branch divergence + local gates +
 unresolved checklist audit + live-input probes + public workflow health +

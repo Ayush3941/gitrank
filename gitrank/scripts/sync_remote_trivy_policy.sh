@@ -130,6 +130,43 @@ github_request() {
   rm -f "$body_file"
 }
 
+verify_installation_repository_scope() {
+  github_request GET "/installation"
+  case "$API_STATUS" in
+    200)
+      installation_id=$(printf '%s' "$API_BODY" | jq -r '.id // empty')
+      installation_target=$(printf '%s' "$API_BODY" | jq -r '.account.login // .target_id // "unknown"')
+      repository_selection=$(printf '%s' "$API_BODY" | jq -r '.repository_selection // "unknown"')
+
+      github_request GET "/installation/repositories?per_page=100"
+      case "$API_STATUS" in
+        200)
+          installation_repo_count=$(printf '%s' "$API_BODY" | jq -r '.total_count // (.repositories | length) // 0')
+          repository_match=$(printf '%s' "$API_BODY" | jq -r --arg repo "$REPOSITORY" '.repositories[]? | select(.full_name == $repo) | .full_name' | head -n 1)
+          if [ -z "$repository_match" ]; then
+            fail "GitHub App installation scope mismatch: installation_id=${installation_id:-unknown} target=${installation_target:-unknown} repository_selection=${repository_selection:-unknown} does not include $REPOSITORY (visible_repos=$installation_repo_count); install the app on the repository owner or expand installation repository access"
+          fi
+          printf '%s\n' "- app installation repository scope: includes $REPOSITORY (selection=$repository_selection visible_repos=$installation_repo_count)"
+          return 0
+          ;;
+        401) fail "github app installation repositories denied: token invalid or expired (HTTP 401 on /installation/repositories)" ;;
+        403) fail "github app installation repositories denied: token lacks required permission/scope (HTTP 403 on /installation/repositories)" ;;
+        404) fail "github app installation repositories unavailable (HTTP 404 on /installation/repositories)" ;;
+        *) fail "github app installation repositories returned HTTP $API_STATUS" ;;
+      esac
+      ;;
+    404)
+      # Non-installation tokens (PAT/OAuth/fine-grained) won't expose /installation.
+      return 0
+      ;;
+    *)
+      return 0
+      ;;
+  esac
+}
+
+verify_installation_repository_scope
+
 github_request GET "/repos/$OWNER/$REPO"
 [ "$API_STATUS" = "200" ] || fail "repository metadata lookup returned HTTP $API_STATUS"
 

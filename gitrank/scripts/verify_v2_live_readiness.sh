@@ -46,7 +46,34 @@ if [ "$RUN_PUBLIC_WORKFLOW_HEALTH" = "true" ]; then
   else
     if [ "$AUTO_SYNC_REMOTE_TRIVY_POLICY" = "true" ]; then
       token_candidate="${GITHUB_TOKEN:-${GH_TOKEN:-${GITRANK_REPO_ADMIN_TOKEN:-}}}"
-      [ -n "$token_candidate" ] || fail "public workflow health failed and AUTO_SYNC_REMOTE_TRIVY_POLICY=true, but no admin token is set"
+      app_id_candidate="${GITHUB_APP_ID:-${GITRANK_GITHUB_APP_ID:-}}"
+      app_installation_candidate="${GITHUB_APP_INSTALLATION_ID:-${GITRANK_GITHUB_APP_INSTALLATION_ID:-}}"
+      app_key_file_candidate="${GITHUB_APP_PRIVATE_KEY_FILE:-${GITRANK_GITHUB_APP_PRIVATE_KEY_FILE:-}}"
+      app_key_pem_candidate="${GITHUB_APP_PRIVATE_KEY_PEM:-${GITRANK_GITHUB_APP_PRIVATE_KEY_PEM:-}}"
+      has_app_bootstrap=false
+      if [ -n "$app_id_candidate" ] && [ -n "$app_installation_candidate" ]; then
+        if [ -n "$app_key_file_candidate" ] || [ -n "$app_key_pem_candidate" ]; then
+          has_app_bootstrap=true
+        fi
+      fi
+      if [ -z "$token_candidate" ] && [ "$has_app_bootstrap" != "true" ]; then
+        push_probe_log=$(mktemp "${TMPDIR:-$root_dir/.tmp}/gitrank-origin-push-probe.XXXXXX")
+        if run_make verify-origin-push-access >"$push_probe_log" 2>&1; then
+          current_branch=$(git -C "$root_dir/.." rev-parse --abbrev-ref HEAD 2>/dev/null || printf 'main')
+          rm -f "$push_probe_log"
+          fail "public workflow health failed and AUTO_SYNC_REMOTE_TRIVY_POLICY=true, but no admin token/App credentials are set. Push the local branch to origin to sync Trivy policy drift (verify-origin-push-access passed). Example: git push origin $current_branch"
+        else
+          push_summary=$(grep -E 'origin push access verification (failed|passed)' "$push_probe_log" | tail -n 1 2>/dev/null || true)
+          if [ -z "$push_summary" ]; then
+            push_summary=$(tail -n 1 "$push_probe_log" 2>/dev/null || true)
+          fi
+          rm -f "$push_probe_log"
+          if [ -z "$push_summary" ]; then
+            push_summary="origin push access probe failed (no output captured)"
+          fi
+          fail "public workflow health failed and AUTO_SYNC_REMOTE_TRIVY_POLICY=true, but no admin token/App credentials are set. $push_summary"
+        fi
+      fi
       run_make sync-remote-trivy-policy
       run_make verify-public-workflow-health
     else
