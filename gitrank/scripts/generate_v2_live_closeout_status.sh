@@ -64,6 +64,19 @@ is_placeholder_value() {
   esac
 }
 
+state_for_value() {
+  value=$1
+  if [ -z "$value" ]; then
+    printf 'unset'
+    return 0
+  fi
+  if is_placeholder_value "$value"; then
+    printf 'placeholder'
+    return 0
+  fi
+  printf 'set'
+}
+
 resolve_checklist_audit_run_public_probe() {
   resolve_boolean_or_auto_from_github_auth "$CHECKLIST_AUDIT_RUN_PUBLIC_PROBE" "CHECKLIST_AUDIT_RUN_PUBLIC_PROBE"
 }
@@ -382,6 +395,39 @@ fi
 if [ -z "$token_candidate" ] && [ "$has_app_bootstrap" != "true" ]; then
   add_missing_var "GITRANK_REPO_ADMIN_TOKEN_OR_GITHUB_TOKEN_OR_GH_TOKEN_OR_GITHUB_APP_CREDENTIALS"
 fi
+
+display_repo_state="$(state_for_value "${gitrank_repo:-${GITHUB_REPOSITORY:-}}")"
+token_state="$(state_for_value "${GITRANK_REPO_ADMIN_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}")"
+app_id_state="$(state_for_value "${GITHUB_APP_ID:-${GITRANK_GITHUB_APP_ID:-}}")"
+app_installation_state="$(state_for_value "${GITHUB_APP_INSTALLATION_ID:-${GITRANK_GITHUB_APP_INSTALLATION_ID:-}}")"
+app_key_file_state="$(state_for_value "${GITHUB_APP_PRIVATE_KEY_FILE:-${GITRANK_GITHUB_APP_PRIVATE_KEY_FILE:-}}")"
+app_key_pem_state="$(state_for_value "${GITHUB_APP_PRIVATE_KEY_PEM:-${GITRANK_GITHUB_APP_PRIVATE_KEY_PEM:-}}")"
+prometheus_state="$(state_for_value "${PROMETHEUS_BASE_URL:-}")"
+grafana_base_state="$(state_for_value "${GRAFANA_BASE_URL:-}")"
+grafana_token_state="$(state_for_value "${GRAFANA_API_TOKEN:-}")"
+obs_evidence_state="$(state_for_value "${OBS_EVIDENCE_FILE:-}")"
+rollback_evidence_state="$(state_for_value "${ROLLBACK_EVIDENCE_FILE:-}")"
+restore_evidence_state="$(state_for_value "${RESTORE_EVIDENCE_FILE:-}")"
+image_tag_state="$(state_for_value "${IMAGE_TAG:-}")"
+image_owner_state="$(state_for_value "${IMAGE_REGISTRY_OWNER:-}")"
+staging_public_state="$(state_for_value "${STAGING_K8S_PUBLIC_BASE_URL:-}")"
+production_public_state="$(state_for_value "${PRODUCTION_K8S_PUBLIC_BASE_URL:-}")"
+
+{
+  printf '## Live Input Matrix\n\n'
+  printf '| Input Group | State | Used By |\n'
+  printf '| --- | --- | --- |\n'
+  printf '| `GITHUB_REPOSITORY` | `%s` | GitHub controls, workflow sync/evidence probes |\n' "$display_repo_state"
+  printf '| `GITRANK_REPO_ADMIN_TOKEN` / `GITHUB_TOKEN` / `GH_TOKEN` | `%s` | GitHub controls apply/verify, workflow dispatch/evidence |\n' "$token_state"
+  printf '| GitHub App bootstrap (`ID`, `INSTALLATION_ID`, private key file or PEM) | `id:%s install:%s key_file:%s key_pem:%s` | Token bootstrap when PAT is absent |\n' "$app_id_state" "$app_installation_state" "$app_key_file_state" "$app_key_pem_state"
+  printf '| `PROMETHEUS_BASE_URL` | `%s` | `make verify-live-observability` |\n' "$prometheus_state"
+  printf '| `GRAFANA_BASE_URL` | `%s` | `make verify-live-observability` |\n' "$grafana_base_state"
+  printf '| `GRAFANA_API_TOKEN` | `%s` | `make verify-live-observability` |\n' "$grafana_token_state"
+  printf '| `OBS_EVIDENCE_FILE` / `ROLLBACK_EVIDENCE_FILE` / `RESTORE_EVIDENCE_FILE` | `obs:%s rollback:%s restore:%s` | Evidence verification + checklist closure |\n' "$obs_evidence_state" "$rollback_evidence_state" "$restore_evidence_state"
+  printf '| `IMAGE_TAG` / `IMAGE_REGISTRY_OWNER` | `tag:%s owner:%s` | Release render verification |\n' "$image_tag_state" "$image_owner_state"
+  printf '| `STAGING_K8S_PUBLIC_BASE_URL` / `PRODUCTION_K8S_PUBLIC_BASE_URL` | `staging:%s prod:%s` | Env-specific runtime override proof |\n' "$staging_public_state" "$production_public_state"
+  printf '\n'
+} >>"$OUTPUT_FILE"
 
 {
   printf '## Next Command Plan\n\n'
