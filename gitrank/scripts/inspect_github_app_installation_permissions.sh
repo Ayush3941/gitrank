@@ -125,22 +125,47 @@ permissions_json=$(printf '%s' "$API_BODY" | jq -c '.permissions // {}')
 
 [ -n "$installation_id" ] || fail "installation id missing in /installation response"
 
-github_get "/installation/repositories?per_page=100"
-case "$API_STATUS" in
-  200) ;;
-  401) fail "token is invalid or expired (HTTP 401 on /installation/repositories)" ;;
-  403)
-    if is_rate_limited_response; then
-      fail "GitHub API rate limit exceeded (HTTP 403 on /installation/repositories)"
-    fi
-    fail "token lacks access to /installation/repositories (HTTP 403)"
-    ;;
-  404) fail "token cannot access /installation/repositories (HTTP 404)" ;;
-  *) fail "unexpected HTTP $API_STATUS on /installation/repositories" ;;
-esac
-
-repo_count=$(printf '%s' "$API_BODY" | jq -r '.total_count // 0')
-repo_match=$(printf '%s' "$API_BODY" | jq -c --arg repo "$REPOSITORY" '.repositories[]? | select(.full_name == $repo) | .')
+page=1
+repo_count=0
+repo_match=
+while :; do
+  github_get "/installation/repositories?per_page=100&page=$page"
+  case "$API_STATUS" in
+    200)
+      if [ "$page" -eq 1 ]; then
+        repo_count=$(printf '%s' "$API_BODY" | jq -r '.total_count // 0')
+        case "$repo_count" in
+          ''|*[!0-9]*) repo_count=0 ;;
+        esac
+      fi
+      repo_match_candidate=$(printf '%s' "$API_BODY" | jq -c --arg repo "$REPOSITORY" '.repositories[]? | select(.full_name == $repo) | .')
+      if [ -n "$repo_match_candidate" ]; then
+        repo_match=$repo_match_candidate
+        break
+      fi
+      page_repo_count=$(printf '%s' "$API_BODY" | jq -r '(.repositories | length) // 0')
+      case "$page_repo_count" in
+        ''|*[!0-9]*) page_repo_count=0 ;;
+      esac
+      if [ "$page_repo_count" -le 0 ]; then
+        break
+      fi
+      if [ "$repo_count" -gt 0 ] && [ $((page * 100)) -ge "$repo_count" ]; then
+        break
+      fi
+      page=$((page + 1))
+      ;;
+    401) fail "token is invalid or expired (HTTP 401 on /installation/repositories)" ;;
+    403)
+      if is_rate_limited_response; then
+        fail "GitHub API rate limit exceeded (HTTP 403 on /installation/repositories)"
+      fi
+      fail "token lacks access to /installation/repositories (HTTP 403)"
+      ;;
+    404) fail "token cannot access /installation/repositories (HTTP 404)" ;;
+    *) fail "unexpected HTTP $API_STATUS on /installation/repositories" ;;
+  esac
+done
 
 printf 'github app installation permissions inspection complete\n'
 printf 'repository: %s\n' "$REPOSITORY"

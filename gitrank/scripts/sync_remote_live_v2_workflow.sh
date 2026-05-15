@@ -183,31 +183,54 @@ verify_installation_repository_scope() {
       installation_id=$(printf '%s' "$API_BODY" | jq -r '.id // empty')
       installation_target=$(printf '%s' "$API_BODY" | jq -r '.account.login // .target_id // "unknown"')
       repository_selection=$(printf '%s' "$API_BODY" | jq -r '.repository_selection // "unknown"')
-
-      github_request GET "/installation/repositories?per_page=100"
-      case "$API_STATUS" in
-        200)
-          installation_repo_count=$(printf '%s' "$API_BODY" | jq -r '.total_count // (.repositories | length) // 0')
-          repository_match=$(printf '%s' "$API_BODY" | jq -r --arg repo "$REPOSITORY" '.repositories[]? | select(.full_name == $repo) | .full_name' | head -n 1)
-          if [ -z "$repository_match" ]; then
-            fail "GitHub App installation scope mismatch: installation_id=${installation_id:-unknown} target=${installation_target:-unknown} repository_selection=${repository_selection:-unknown} does not include $REPOSITORY (visible_repos=$installation_repo_count); install the app on the repository owner or expand installation repository access"
-          fi
-          printf '%s\n' "- app installation repository scope: includes $REPOSITORY (selection=$repository_selection visible_repos=$installation_repo_count)"
-          return 0
-          ;;
-        401) fail "github app installation repositories denied: token invalid or expired (HTTP 401 on /installation/repositories)" ;;
-        403)
-          if is_rate_limited_response; then
-            fail "github app installation repositories hit GitHub API rate limit (HTTP 403)"
-          fi
-          if is_integration_permission_error; then
-            fail "github app installation repositories denied: resource not accessible by integration (HTTP 403 on /installation/repositories)"
-          fi
-          fail "github app installation repositories denied: token lacks required permission/scope (HTTP 403)"
-          ;;
-        404) fail "github app installation repositories unavailable (HTTP 404 on /installation/repositories)" ;;
-        *) fail "github app installation repositories returned HTTP $API_STATUS" ;;
-      esac
+      page=1
+      installation_repo_count=0
+      repository_match=
+      while :; do
+        github_request GET "/installation/repositories?per_page=100&page=$page"
+        case "$API_STATUS" in
+          200)
+            if [ "$page" -eq 1 ]; then
+              installation_repo_count=$(printf '%s' "$API_BODY" | jq -r '.total_count // (.repositories | length) // 0')
+              case "$installation_repo_count" in
+                ''|*[!0-9]*) installation_repo_count=0 ;;
+              esac
+            fi
+            repository_match=$(printf '%s' "$API_BODY" | jq -r --arg repo "$REPOSITORY" '.repositories[]? | select(.full_name == $repo) | .full_name' | head -n 1)
+            if [ -n "$repository_match" ]; then
+              break
+            fi
+            page_repo_count=$(printf '%s' "$API_BODY" | jq -r '(.repositories | length) // 0')
+            case "$page_repo_count" in
+              ''|*[!0-9]*) page_repo_count=0 ;;
+            esac
+            if [ "$page_repo_count" -le 0 ]; then
+              break
+            fi
+            if [ "$installation_repo_count" -gt 0 ] && [ $((page * 100)) -ge "$installation_repo_count" ]; then
+              break
+            fi
+            page=$((page + 1))
+            ;;
+          401) fail "github app installation repositories denied: token invalid or expired (HTTP 401 on /installation/repositories)" ;;
+          403)
+            if is_rate_limited_response; then
+              fail "github app installation repositories hit GitHub API rate limit (HTTP 403)"
+            fi
+            if is_integration_permission_error; then
+              fail "github app installation repositories denied: resource not accessible by integration (HTTP 403 on /installation/repositories)"
+            fi
+            fail "github app installation repositories denied: token lacks required permission/scope (HTTP 403)"
+            ;;
+          404) fail "github app installation repositories unavailable (HTTP 404 on /installation/repositories)" ;;
+          *) fail "github app installation repositories returned HTTP $API_STATUS" ;;
+        esac
+      done
+      if [ -z "$repository_match" ]; then
+        fail "GitHub App installation scope mismatch: installation_id=${installation_id:-unknown} target=${installation_target:-unknown} repository_selection=${repository_selection:-unknown} does not include $REPOSITORY (visible_repos=$installation_repo_count); install the app on the repository owner or expand installation repository access"
+      fi
+      printf '%s\n' "- app installation repository scope: includes $REPOSITORY (selection=$repository_selection visible_repos=$installation_repo_count)"
+      return 0
       ;;
     404)
       # Non-installation tokens (PAT/OAuth/fine-grained) won't expose /installation.
