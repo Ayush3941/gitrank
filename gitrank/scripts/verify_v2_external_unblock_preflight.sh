@@ -1,0 +1,112 @@
+#!/usr/bin/env sh
+set -eu
+
+root_dir="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
+repo_dir="$(CDPATH= cd -- "$root_dir/.." && pwd)"
+tmp_root="${TMPDIR:-$root_dir/.tmp}"
+mkdir -p "$tmp_root"
+
+fail_count=0
+
+resolve_repository_from_git_remote() {
+  if [ -n "${GITHUB_REPOSITORY:-}" ]; then
+    printf '%s' "$GITHUB_REPOSITORY"
+    return 0
+  fi
+  remote_url=$(git -C "$repo_dir" config --get remote.origin.url 2>/dev/null || true)
+  [ -n "$remote_url" ] || return 0
+  case "$remote_url" in
+    https://github.com/*) inferred_repo=${remote_url#https://github.com/} ;;
+    git@github.com:*) inferred_repo=${remote_url#git@github.com:} ;;
+    *) inferred_repo= ;;
+  esac
+  inferred_repo=${inferred_repo%.git}
+  printf '%s' "$inferred_repo"
+}
+
+resolved_repo="$(resolve_repository_from_git_remote)"
+if [ -z "$resolved_repo" ]; then
+  printf 'v2 external unblock preflight failed: could not resolve repository (set GITHUB_REPOSITORY=owner/name)\n' >&2
+  exit 1
+fi
+
+run_probe() {
+  name=$1
+  shift
+  log_file=$(mktemp "$tmp_root/gitrank-v2-unblock-${name}.XXXXXX")
+  if "$@" >"$log_file" 2>&1; then
+    probe_status=pass
+  else
+    probe_status=fail
+  fi
+  probe_summary=$(tail -n 1 "$log_file" 2>/dev/null || true)
+  if [ -z "$probe_summary" ]; then
+    probe_summary="no output captured"
+  fi
+  rm -f "$log_file"
+}
+
+report_env_file=$(mktemp "$tmp_root/gitrank-v2-unblock-env.XXXXXX")
+INFERRED_GITHUB_REPOSITORY="$resolved_repo" \
+  "$root_dir/scripts/report_live_v2_env_presence.sh" >"$report_env_file" 2>/dev/null || true
+
+auth_mode=$(awk -F= '/^derived\.auth_mode=/{print $2; exit}' "$report_env_file")
+workflow_sync_credential_readiness=$(awk -F= '/^derived\.workflow_sync_credential_readiness=/{print $2; exit}' "$report_env_file")
+origin_push_readiness=$(awk -F= '/^derived\.origin_push_access_readiness=/{print $2; exit}' "$report_env_file")
+workflow_sync_execution_path=$(awk -F= '/^derived\.workflow_sync_execution_path=/{print $2; exit}' "$report_env_file")
+rm -f "$report_env_file"
+
+run_probe github_access env GITHUB_REPOSITORY="$resolved_repo" "$root_dir/scripts/verify_live_github_access.sh"
+github_access_status=$probe_status
+github_access_summary=$probe_summary
+[ "$github_access_status" = "fail" ] && fail_count=$((fail_count + 1))
+
+run_probe origin_push env REMOTE_NAME=origin "$root_dir/scripts/verify_origin_push_access.sh"
+origin_push_status=$probe_status
+origin_push_summary=$probe_summary
+[ "$origin_push_status" = "fail" ] && fail_count=$((fail_count + 1))
+
+run_probe remote_workflow_sync env GITHUB_REPOSITORY="$resolved_repo" "$root_dir/scripts/verify_remote_live_v2_workflow_sync.sh"
+remote_workflow_sync_status=$probe_status
+remote_workflow_sync_summary=$probe_summary
+[ "$remote_workflow_sync_status" = "fail" ] && fail_count=$((fail_count + 1))
+
+run_probe controls_public env GITHUB_REPOSITORY="$resolved_repo" "$root_dir/scripts/verify_github_repository_controls_public.sh"
+controls_public_status=$probe_status
+controls_public_summary=$probe_summary
+[ "$controls_public_status" = "fail" ] && fail_count=$((fail_count + 1))
+
+run_probe observability_inputs env RUN_OBSERVABILITY=true "$root_dir/scripts/verify_live_v2_inputs.sh"
+observability_inputs_status=$probe_status
+observability_inputs_summary=$probe_summary
+[ "$observability_inputs_status" = "fail" ] && fail_count=$((fail_count + 1))
+
+run_probe workflow_evidence env GITHUB_REPOSITORY="$resolved_repo" WORKFLOW_RUN_ID=latest WORKFLOW_EVENT=any REQUIRE_GITHUB_CONTROLS=true REQUIRE_OBSERVABILITY=true REQUIRE_RELEASE_RENDER=true "$root_dir/scripts/verify_live_v2_workflow_run.sh"
+workflow_evidence_status=$probe_status
+workflow_evidence_summary=$probe_summary
+[ "$workflow_evidence_status" = "fail" ] && fail_count=$((fail_count + 1))
+
+printf 'v2 external unblock preflight\n'
+printf 'repository: %s\n' "$resolved_repo"
+printf 'derived.auth_mode: %s\n' "${auth_mode:-unknown}"
+printf 'derived.workflow_sync_credential_readiness: %s\n' "${workflow_sync_credential_readiness:-unknown}"
+printf 'derived.origin_push_access_readiness: %s\n' "${origin_push_readiness:-unknown}"
+printf 'derived.workflow_sync_execution_path: %s\n' "${workflow_sync_execution_path:-unknown}"
+printf 'probe.github_access: %s (%s)\n' "$github_access_status" "$github_access_summary"
+printf 'probe.origin_push: %s (%s)\n' "$origin_push_status" "$origin_push_summary"
+printf 'probe.remote_workflow_sync: %s (%s)\n' "$remote_workflow_sync_status" "$remote_workflow_sync_summary"
+printf 'probe.controls_public: %s (%s)\n' "$controls_public_status" "$controls_public_summary"
+printf 'probe.observability_inputs: %s (%s)\n' "$observability_inputs_status" "$observability_inputs_summary"
+printf 'probe.workflow_evidence: %s (%s)\n' "$workflow_evidence_status" "$workflow_evidence_summary"
+
+if [ "$fail_count" -gt 0 ]; then
+  printf 'remediation\n'
+  printf '1. Prepare live env file: make -C %s scaffold-v2-live-env\n' "$root_dir"
+  printf '2. Fill credentials and endpoints in %s/.env.v2-live-gates.local\n' "$root_dir"
+  printf '3. Re-run this preflight: make -C %s verify-v2-external-unblock-preflight\n' "$root_dir"
+  printf '4. Execute live gates: CONFIRM_FINALIZE_V2=yes make -C %s finalize-v2-live-closeout-local-env\n' "$root_dir"
+  printf 'v2 external unblock preflight failed: unresolved external prerequisites remain\n' >&2
+  exit 1
+fi
+
+printf 'v2 external unblock preflight passed\n'

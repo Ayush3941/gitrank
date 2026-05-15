@@ -196,6 +196,15 @@ cd gitrank
 make verify-v2-live-readiness
 ```
 
+Before attempting live checklist closure, run the external unblock preflight to
+confirm auth, remote workflow sync, observability inputs, and workflow-evidence
+readiness:
+
+```bash
+cd gitrank
+make verify-v2-external-unblock-preflight
+```
+
 This readiness command now also verifies that
 `scripts/finalize_v2_live_closeout.sh` correctly resolves both
 `GITHUB_APP_*` and `GITRANK_GITHUB_APP_*` credential variable sets before
