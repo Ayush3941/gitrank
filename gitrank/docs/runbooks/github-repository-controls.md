@@ -9,6 +9,7 @@ Official references:
 
 - GitHub protected branches: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches
 - GitHub branch protection REST API: https://docs.github.com/en/rest/branches/branch-protection
+- GitHub repository rulesets REST API: https://docs.github.com/en/rest/repos/rules
 - GitHub Dependabot alerts: https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/secure-your-dependencies/configuring-dependabot-alerts
 - GitHub vulnerability-alerts REST API: https://docs.github.com/en/rest/repos/repos#enable-vulnerability-alerts
 - GitHub dependency graph SBOM API: https://docs.github.com/en/rest/dependency-graph/sboms
@@ -81,6 +82,27 @@ GITHUB_REPOSITORY=OWNER/REPO \
 GITHUB_TOKEN=... \
 GITRANK_APPLY_REPOSITORY_CONTROLS=yes \
 GITRANK_REQUIRED_STATUS_CHECKS="<paste output from discover-github-required-status-checks>" \
+make apply-github-repository-controls
+```
+
+`make apply-github-repository-controls` now accepts
+`GITRANK_REPOSITORY_CONTROLS_MODE`:
+- `auto` (default): try branch-protection API first, then fall back to a
+  repository ruleset update/create when GitHub rejects branch-protection writes
+  for non-auth reasons.
+- `branch-protection`: only use the branch-protection API, fail if that write
+  does not succeed.
+- `ruleset`: only use repository rulesets, skipping branch-protection writes.
+
+Force ruleset-only apply when needed:
+
+```bash
+cd gitrank
+GITHUB_REPOSITORY=OWNER/REPO \
+GITHUB_TOKEN=... \
+GITRANK_APPLY_REPOSITORY_CONTROLS=yes \
+GITRANK_REQUIRED_STATUS_CHECKS="<paste output from discover-github-required-status-checks>" \
+GITRANK_REPOSITORY_CONTROLS_MODE=ruleset \
 make apply-github-repository-controls
 ```
 

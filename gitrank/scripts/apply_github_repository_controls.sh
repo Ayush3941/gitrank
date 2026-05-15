@@ -9,6 +9,8 @@ API_TIMEOUT_SECONDS="${GITHUB_API_TIMEOUT_SECONDS:-30}"
 TMP_ROOT="${TMPDIR:-/tmp}"
 APPLY_CONFIRMATION="${GITRANK_APPLY_REPOSITORY_CONTROLS:-}"
 STATUS_CHECKS="${GITRANK_REQUIRED_STATUS_CHECKS:-}"
+CONTROL_APPLY_MODE="${GITRANK_REPOSITORY_CONTROLS_MODE:-auto}"
+RULESET_NAME="${GITRANK_REPOSITORY_RULESET_NAME:-GitRank V2 Repository Controls}"
 GITHUB_APP_ID="${GITHUB_APP_ID:-${GITRANK_GITHUB_APP_ID:-}}"
 GITHUB_APP_INSTALLATION_ID="${GITHUB_APP_INSTALLATION_ID:-${GITRANK_GITHUB_APP_INSTALLATION_ID:-}}"
 GITHUB_APP_PRIVATE_KEY_FILE="${GITHUB_APP_PRIVATE_KEY_FILE:-${GITRANK_GITHUB_APP_PRIVATE_KEY_FILE:-}}"
@@ -70,6 +72,10 @@ esac
 
 [ "$APPLY_CONFIRMATION" = "yes" ] || fail "set GITRANK_APPLY_REPOSITORY_CONTROLS=yes to allow live GitHub mutations"
 [ -n "$STATUS_CHECKS" ] || fail "GITRANK_REQUIRED_STATUS_CHECKS is required; use exact check names from a recent successful PR"
+case "$CONTROL_APPLY_MODE" in
+  auto|branch-protection|ruleset) ;;
+  *) fail "GITRANK_REPOSITORY_CONTROLS_MODE must be one of: auto, branch-protection, ruleset" ;;
+esac
 
 require_command curl
 require_command jq
@@ -82,6 +88,8 @@ OWNER=${REPOSITORY%%/*}
 REPO=${REPOSITORY#*/}
 API_STATUS=
 API_BODY=
+APPLIED_CONTROL_SURFACE=
+BRANCH_PROTECTION_ERROR=
 
 github_request() {
   method=$1
@@ -122,6 +130,20 @@ expect_status() {
   [ "$API_STATUS" = "$expected" ] || fail "$context returned HTTP $API_STATUS"
 }
 
+api_error_summary() {
+  message=$(printf '%s' "$API_BODY" | jq -r '.message // empty' 2>/dev/null || true)
+  documentation_url=$(printf '%s' "$API_BODY" | jq -r '.documentation_url // empty' 2>/dev/null || true)
+  if [ -n "$message" ] && [ -n "$documentation_url" ]; then
+    printf 'HTTP %s: %s (%s)' "$API_STATUS" "$message" "$documentation_url"
+    return 0
+  fi
+  if [ -n "$message" ]; then
+    printf 'HTTP %s: %s' "$API_STATUS" "$message"
+    return 0
+  fi
+  printf 'HTTP %s' "$API_STATUS"
+}
+
 checks_json=$(printf '%s' "$STATUS_CHECKS" | tr ',' '\n' | jq -R 'gsub("^\\s+|\\s+$"; "")' | jq -s 'map(select(length > 0))')
 check_count=$(printf '%s' "$checks_json" | jq 'length')
 [ "$check_count" -gt 0 ] || fail "GITRANK_REQUIRED_STATUS_CHECKS did not contain any check names"
@@ -136,7 +158,8 @@ github_request PUT "/repos/$OWNER/$REPO/vulnerability-alerts"
 expect_status 204 "enable vulnerability alerts and dependency graph"
 
 payload_file="$TMP_ROOT/gitrank-branch-protection-payload.$$"
-trap 'rm -f "$payload_file"' EXIT
+ruleset_payload_file="$TMP_ROOT/gitrank-ruleset-payload.$$"
+trap 'rm -f "$payload_file" "$ruleset_payload_file"' EXIT
 printf '%s' "$checks_json" | jq '{
   required_status_checks: {
     strict: true,
@@ -159,14 +182,110 @@ printf '%s' "$checks_json" | jq '{
   allow_fork_syncing: true
 }' >"$payload_file"
 
-github_request PUT "/repos/$OWNER/$REPO/branches/$TARGET_BRANCH/protection" "$payload_file"
-case "$API_STATUS" in
-  200|201) ;;
-  *) fail "update branch protection for $TARGET_BRANCH returned HTTP $API_STATUS" ;;
+apply_branch_protection_controls() {
+  github_request PUT "/repos/$OWNER/$REPO/branches/$TARGET_BRANCH/protection" "$payload_file"
+  case "$API_STATUS" in
+    200|201)
+      APPLIED_CONTROL_SURFACE="branch protection"
+      return 0
+      ;;
+    *)
+      BRANCH_PROTECTION_ERROR=$(api_error_summary)
+      return 1
+      ;;
+  esac
+}
+
+apply_ruleset_controls() {
+  printf '%s' "$checks_json" | jq \
+    --arg ruleset_name "$RULESET_NAME" \
+    --arg target_ref "refs/heads/$TARGET_BRANCH" \
+    '{
+      name: $ruleset_name,
+      target: "branch",
+      enforcement: "active",
+      conditions: {
+        ref_name: {
+          include: [$target_ref],
+          exclude: []
+        }
+      },
+      rules: [
+        {
+          type: "pull_request",
+          parameters: {
+            allowed_merge_methods: ["merge", "squash", "rebase"],
+            dismiss_stale_reviews_on_push: false,
+            require_code_owner_review: false,
+            require_last_push_approval: false,
+            required_approving_review_count: 1,
+            required_review_thread_resolution: false
+          }
+        },
+        {
+          type: "required_status_checks",
+          parameters: {
+            required_status_checks: (map({ context: . })),
+            strict_required_status_checks_policy: true,
+            do_not_enforce_on_create: false
+          }
+        },
+        { type: "non_fast_forward" },
+        { type: "deletion" }
+      ]
+    }' >"$ruleset_payload_file"
+
+  github_request GET "/repos/$OWNER/$REPO/rulesets?per_page=100"
+  expect_status 200 "list repository rulesets"
+  existing_ruleset_id=$(printf '%s' "$API_BODY" | jq -r \
+    --arg ruleset_name "$RULESET_NAME" \
+    --arg target_ref "refs/heads/$TARGET_BRANCH" \
+    '[.[]?
+      | select((.target // "") == "branch")
+      | select((.name // "") == $ruleset_name)
+      | select(any((.conditions.ref_name.include // []); . == $target_ref))
+    ][0].id // empty')
+
+  if [ -n "$existing_ruleset_id" ]; then
+    github_request PUT "/repos/$OWNER/$REPO/rulesets/$existing_ruleset_id" "$ruleset_payload_file"
+    case "$API_STATUS" in
+      200|201) ;;
+      *) fail "update repository ruleset for $TARGET_BRANCH failed ($(api_error_summary))" ;;
+    esac
+  else
+    github_request POST "/repos/$OWNER/$REPO/rulesets" "$ruleset_payload_file"
+    case "$API_STATUS" in
+      200|201) ;;
+      *) fail "create repository ruleset for $TARGET_BRANCH failed ($(api_error_summary))" ;;
+    esac
+  fi
+
+  APPLIED_CONTROL_SURFACE="ruleset"
+}
+
+case "$CONTROL_APPLY_MODE" in
+  branch-protection)
+    apply_branch_protection_controls || fail "update branch protection for $TARGET_BRANCH failed ($BRANCH_PROTECTION_ERROR)"
+    ;;
+  ruleset)
+    apply_ruleset_controls
+    ;;
+  auto)
+    if ! apply_branch_protection_controls; then
+      case "$API_STATUS" in
+        401|403)
+          fail "update branch protection for $TARGET_BRANCH failed ($BRANCH_PROTECTION_ERROR)"
+          ;;
+      esac
+      printf 'github controls apply: branch-protection update failed (%s); falling back to repository ruleset mode\n' "$BRANCH_PROTECTION_ERROR"
+      apply_ruleset_controls
+    fi
+    ;;
 esac
 
 printf 'GitHub repository controls applied for %s on %s.\n' "$REPOSITORY" "$TARGET_BRANCH"
 printf '- vulnerability alerts and dependency graph requested\n'
+printf '- control surface applied via: %s\n' "$APPLIED_CONTROL_SURFACE"
 printf '- pull request review required: 1 approval\n'
 printf '- required status checks configured: %s\n' "$check_count"
 printf '- force pushes disabled\n'
