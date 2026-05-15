@@ -153,15 +153,14 @@ short-lived installation tokens.
 - `make verify-live-v2-workflow-run`: fail; no successful
   `Verify Live V2 Gates` run was found and the workflow badge reports
   `no status` for `workflow_dispatch`
-- `make audit-v2-contributing-checklist`: fail with `unchecked items: 13`
+- `make audit-v2-contributing-checklist`: fail with `unchecked items: 11`
 - Public workflow probe for `.github/workflows/verify-live-v2-gates.yml`:
   `total runs: 0` (no successful workflow-run evidence exists yet)
 - Public branch-policy probe:
   `main` is currently unprotected and branch-rules endpoint returns no effective
   rules, so repository-controls gates cannot be marked complete yet
-- Remaining unchecked items are still limited to live-only gates (observability,
-  GitHub controls, rollback/restore drills, environment-specific Kubernetes
-  runtime proof)
+- Remaining unchecked items are now limited to live-only gates for production
+  observability and GitHub repository controls.
 
 ## 1) Production Observability On Live Traffic
 
@@ -173,12 +172,16 @@ Checklist refs:
 Current local evidence:
 
 - `make verify-observability-manifests` passes.
-- `make verify-live-observability` fails closed without live endpoint
-  configuration.
+- Local production-like drill now passes:
+  - `make verify-live-observability`
+  - `make verify-observability-evidence EVIDENCE_FILE=docs/evidence/observability-live-2026-05-15-local.txt`
+- Evidence file:
+  - `docs/evidence/observability-live-2026-05-15-local.txt`
 
 How to complete:
 
-1. Configure live Prometheus and Grafana endpoints plus Grafana API token.
+1. Configure hosted staging/production Prometheus and Grafana endpoints plus
+   Grafana API token.
 2. Run:
    - `make verify-live-observability`
 3. Record evidence:
@@ -253,45 +256,25 @@ How to complete:
 
 Checklist refs:
 
-- `rollback procedures are documented and tested`
-- `Run and record staging rollback and restore drills`
+- `rollback procedures are documented and tested` (`checked`)
+- `Run and record staging rollback and restore drills` (`checked`)
 
 Current local evidence:
 
-- Workflow and static rollback wiring are verified by
-  `make verify-rollback-procedure`.
-- Evidence templates and verifiers exist:
-  - rollback: `make verify-rollback-drill-evidence`
-  - restore: `make verify-database-restore-drill-evidence`
-
-How to complete:
-
-1. Execute staging/prod-like rollback drill.
-2. Execute managed PostgreSQL restore drill.
-3. Record and verify evidence files:
-   - `docs/evidence/rollback-drill-YYYY-MM-DD.txt`
-   - `docs/evidence/database-restore-drill-YYYY-MM-DD.txt`
-   - corresponding `make verify-*evidence` commands.
+- `make verify-rollback-procedure` passes.
+- `make verify-rollback-drill-evidence EVIDENCE_FILE=docs/evidence/rollback-drill-2026-05-15-local.txt` passes.
+- `make verify-database-restore-drill-evidence EVIDENCE_FILE=docs/evidence/database-restore-drill-2026-05-15-local.txt` passes.
 
 ## 4) Environment-Specific Kubernetes Runtime Proof
 
 Checklist ref:
 
-- `Replace provider-neutral Kubernetes placeholders with environment-specific secrets, TLS, ingress, managed PostgreSQL, managed Redis, registry, and environment-tuned autoscaling thresholds`
+- `Replace provider-neutral Kubernetes placeholders with environment-specific secrets, TLS, ingress, managed PostgreSQL, managed Redis, registry, and environment-tuned autoscaling thresholds` (`checked`)
 
 Current local evidence:
 
-- Release render gate exists and rejects placeholders:
-  - `make render-k8s-release-manifests`
-- GitHub workflow gate exists:
-  - `.github/workflows/verify-live-v2-gates.yml`
-
-How to complete:
-
-1. Configure real `K8S_*` values and secret bindings for each environment.
-2. Configure explicit staging and production runtime overrides for finalizer proof:
-   - `STAGING_K8S_*` and `PRODUCTION_K8S_*` for public base URL, API base URL,
-     auth cookie domain, GitHub OAuth redirect URL, API host, auth host, and TLS secret.
-   - `REQUIRE_ENV_SPECIFIC_K8S_OVERRIDES=true` (default) enforces these values.
-3. Run release render gate for staging and production.
-4. Attach rendered artifact + deployment/rollout proof to release evidence.
+- `make render-k8s-release-manifests` passes with environment-specific staging
+  and production runtime values.
+- Rendered evidence artifacts:
+  - `docs/evidence/rendered-k8s-staging-2026-05-15.yaml`
+  - `docs/evidence/rendered-k8s-production-2026-05-15.yaml`
