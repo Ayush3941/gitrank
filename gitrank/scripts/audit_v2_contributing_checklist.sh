@@ -8,6 +8,7 @@ live_env_template="$root_dir/.env.v2-live-gates.example"
 audit_report_file="${AUDIT_REPORT_FILE:-}"
 display_repository="${GITHUB_REPOSITORY_DISPLAY:-}"
 run_public_probe="${RUN_PUBLIC_PROBE:-true}"
+run_external_unblock_preflight_snapshot="${RUN_EXTERNAL_UNBLOCK_PREFLIGHT_SNAPSHOT:-true}"
 
 LIVE_ENV_FILE="${LIVE_V2_ENV_FILE:-${FINALIZE_V2_ENV_FILE:-}}"
 if [ -n "$LIVE_ENV_FILE" ]; then
@@ -395,6 +396,52 @@ emit_env_presence_snapshot() {
   rm -f "$env_probe_file"
 }
 
+emit_external_unblock_preflight_snapshot() {
+  repository=$1
+  repository_display=$2
+  preflight_script="$root_dir/scripts/verify_v2_external_unblock_preflight.sh"
+  [ -x "$preflight_script" ] || return 0
+
+  preflight_output=$(mktemp "${TMPDIR:-/tmp}/gitrank-v2-audit-external-preflight.XXXXXX")
+  preflight_rendered=$preflight_output
+  preflight_sanitized=
+
+  if GITHUB_REPOSITORY="$repository" \
+    "$preflight_script" >"$preflight_output" 2>&1; then
+    preflight_status=pass
+  else
+    preflight_status=fail
+  fi
+
+  if [ -n "$repository" ] && [ "$repository" != "$repository_display" ]; then
+    preflight_sanitized=$(mktemp "${TMPDIR:-/tmp}/gitrank-v2-audit-external-preflight-sanitized.XXXXXX")
+    sed \
+      -e "s|https://github.com/$repository|https://github.com/$repository_display|g" \
+      -e "s|$repository|$repository_display|g" \
+      "$preflight_output" >"$preflight_sanitized"
+    preflight_rendered=$preflight_sanitized
+  fi
+
+  printf 'external unblock preflight snapshot\n'
+  printf 'status: %s\n' "$preflight_status"
+  sed -n '1,220p' "$preflight_rendered"
+
+  if [ -n "$audit_report_file" ]; then
+    {
+      printf '\n## External Unblock Preflight Snapshot\n'
+      printf '%s\n' "- status: $preflight_status"
+      printf '```text\n'
+      sed -n '1,220p' "$preflight_rendered"
+      printf '```\n'
+    } >>"$audit_report_file"
+  fi
+
+  rm -f "$preflight_output"
+  if [ -n "$preflight_sanitized" ]; then
+    rm -f "$preflight_sanitized"
+  fi
+}
+
 [ -s "$contributing_file" ] || fail "missing CONTRIBUTING.md at $contributing_file"
 bootstrap_probe_token_from_github_app
 
@@ -494,5 +541,8 @@ else
   emit_skipped_public_probe_snapshot "$repository_display" "RUN_PUBLIC_PROBE=false"
 fi
 emit_env_presence_snapshot "$repository"
+if [ "$run_external_unblock_preflight_snapshot" = "true" ]; then
+  emit_external_unblock_preflight_snapshot "$repository" "$repository_display"
+fi
 
 fail "checklist still has unresolved items"

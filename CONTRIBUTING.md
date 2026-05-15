@@ -1249,6 +1249,9 @@ For the default local filename, use
 `CONFIRM_FINALIZE_V2=yes make -C gitrank finalize-v2-live-closeout-local-env`.
 Use `AUDIT_REPORT_FILE=... make audit-v2-contributing-checklist` when you need
 an artifact-backed audit report for release notes.
+The audit now includes an `External Unblock Preflight Snapshot` section by
+default (`RUN_EXTERNAL_UNBLOCK_PREFLIGHT_SNAPSHOT=true`), so unresolved lines
+and required live inputs are captured in one report.
 Use `make create-github-app-installation-token` when GitHub App credentials are
 preferred over long-lived PATs for repository-controls gates.
 The live-gates workflow can also bootstrap a short-lived admin token from

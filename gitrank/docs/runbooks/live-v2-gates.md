@@ -468,6 +468,10 @@ OUTPUT_FILE=docs/releases/v2-completion-audit-latest.md \
 make generate-v2-completion-audit
 ```
 
+`make audit-v2-contributing-checklist` now also embeds an
+`External Unblock Preflight Snapshot` section by default, mirroring unresolved
+line mappings and minimal-required-input hints from the preflight command.
+
 To generate rollback and restore evidence files from recorded drill metadata:
 
 ```bash
