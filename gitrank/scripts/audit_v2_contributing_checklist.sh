@@ -106,6 +106,8 @@ emit_public_live_probe_snapshot() {
   workflow_badge_url=
   remote_workflow_sync_status=unknown
   remote_workflow_sync_summary=
+  origin_push_access_status=unknown
+  origin_push_access_summary=
   default_branch=
   protected_state=unknown
   rules_count=unknown
@@ -216,6 +218,19 @@ emit_public_live_probe_snapshot() {
     remote_workflow_sync_summary='no output captured from remote workflow sync probe'
   fi
 
+  origin_push_probe_log=$(mktemp "${TMPDIR:-/tmp}/gitrank-v2-audit-origin-push.XXXXXX")
+  if REMOTE_NAME=origin \
+    "$root_dir/scripts/verify_origin_push_access.sh" >"$origin_push_probe_log" 2>&1; then
+    origin_push_access_status=pass
+  else
+    origin_push_access_status=fail
+  fi
+  origin_push_access_summary=$(tail -n 1 "$origin_push_probe_log" 2>/dev/null || true)
+  rm -f "$origin_push_probe_log"
+  if [ -z "$origin_push_access_summary" ]; then
+    origin_push_access_summary='no output captured from origin push access probe'
+  fi
+
   printf 'public probe snapshot\n'
   printf 'repository: %s\n' "$repository_display"
   printf 'repo metadata http: %s\n' "${repo_status:-unknown}"
@@ -230,6 +245,8 @@ emit_public_live_probe_snapshot() {
   printf 'live-gates workflow badge url: %s\n' "$workflow_badge_url"
   printf 'remote workflow sync probe: %s\n' "$remote_workflow_sync_status"
   printf 'remote workflow sync summary: %s\n' "$remote_workflow_sync_summary"
+  printf 'origin push access probe: %s\n' "$origin_push_access_status"
+  printf 'origin push access summary: %s\n' "$origin_push_access_summary"
   printf 'controls public probe: %s\n' "$controls_public_probe_status"
   printf 'controls public probe summary: %s\n' "$controls_public_probe_summary"
   if [ -n "$probe_msg" ]; then
@@ -252,6 +269,8 @@ emit_public_live_probe_snapshot() {
       printf '%s\n' "- live-gates workflow badge url: $workflow_badge_url"
       printf '%s\n' "- remote workflow sync probe: $remote_workflow_sync_status"
       printf '%s\n' "- remote workflow sync summary: $remote_workflow_sync_summary"
+      printf '%s\n' "- origin push access probe: $origin_push_access_status"
+      printf '%s\n' "- origin push access summary: $origin_push_access_summary"
       printf '%s\n' "- controls public probe: $controls_public_probe_status"
       printf '%s\n' "- controls public probe summary: $controls_public_probe_summary"
       if [ -n "$probe_msg" ]; then

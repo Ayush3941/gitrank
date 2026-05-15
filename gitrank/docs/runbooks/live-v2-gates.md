@@ -148,6 +148,19 @@ For `.github/workflows/*` sync operations, the token/App must also have
 workflow write permission (`workflow` scope for classic PATs or
 `workflows:write` for GitHub App installations), otherwise GitHub may reject
 updates with `HTTP 403`.
+
+Before attempting remote workflow sync or direct branch push, run this local
+push preflight to distinguish credential failures from branch-policy rejections:
+
+```bash
+cd gitrank
+make verify-origin-push-access
+```
+
+This command performs `git push --dry-run` to `origin/<default-branch>` and
+reports whether the blocker is missing HTTPS credentials, SSH key access, or
+protected-branch/ruleset rejection.
+
 Use this command to inspect installation-level permissions and repository scope:
 
 ```bash
@@ -199,6 +212,8 @@ make verify-remote-live-v2-workflow-sync
 When drift is detected, this verifier now reports the remote file URL and
 local workflow state (`local_commit`, `local_dirty`) so you can quickly decide
 whether to sync/push the workflow update or discard local edits.
+If you need to confirm that local commits can be pushed before sync, run
+`make verify-origin-push-access`.
 
 For a no-token public precheck of repository-controls posture:
 
