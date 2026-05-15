@@ -459,7 +459,8 @@ The embedded env-presence probe now emits derived readiness fields:
   (`token-or-app|git-push|unavailable`)
 
 To generate a full V2 completion matrix (checklist counts, unresolved lines,
-file-reference existence, `make` target mapping, and gate outputs):
+file-reference existence, `make` target mapping, and gate outputs, including
+an explicit external-unblock preflight section/exit code):
 
 ```bash
 cd gitrank

@@ -1210,7 +1210,8 @@ branch divergence (`origin/main...HEAD`), live-input matrix states
 (`set|placeholder|unset`), and live-evidence probes.
 Use `make generate-v2-completion-audit` to produce a prompt-to-artifact matrix
 from this checklist, including unresolved lines, file-reference existence, `make`
-target mapping, and current gate exit codes.
+target mapping, current gate exit codes, and an explicit
+`verify-v2-external-unblock-preflight` section/exit code.
 Use `make generate-observability-evidence-from-workflow-run` to generate a
 validated observability evidence file from a successful live-gates workflow run.
 Use `make generate-rollback-drill-evidence` and
