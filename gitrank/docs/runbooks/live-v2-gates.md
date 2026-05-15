@@ -325,6 +325,9 @@ Finalizer also defaults `RUN_REMOTE_WORKFLOW_SYNC=true` and
 `.github/workflows/verify-live-v2-gates.yml` on the remote default branch is
 detected and auto-synced before continuing (when token/App credentials allow
 write access).
+If token/App credentials are missing, the readiness gate now runs
+`make verify-origin-push-access` and fails with that probe summary so you can
+immediately distinguish push-auth failures from “just missing token” failures.
 
 To generate a single closeout status artifact (branch divergence + local gates +
 unresolved checklist audit + live-input probes + public workflow health +

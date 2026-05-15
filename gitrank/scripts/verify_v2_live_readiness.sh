@@ -72,7 +72,22 @@ if [ "$RUN_REMOTE_WORKFLOW_SYNC" = "true" ]; then
         fi
       fi
       if [ -z "$token_candidate" ] && [ "$has_app_bootstrap" != "true" ]; then
-        fail "remote workflow sync failed and AUTO_SYNC_REMOTE_WORKFLOW=true, but no admin token/App credentials are set"
+        push_probe_log=$(mktemp "${TMPDIR:-$root_dir/.tmp}/gitrank-origin-push-probe.XXXXXX")
+        if run_make verify-origin-push-access >"$push_probe_log" 2>&1; then
+          current_branch=$(git -C "$root_dir/.." rev-parse --abbrev-ref HEAD 2>/dev/null || printf 'main')
+          rm -f "$push_probe_log"
+          fail "remote workflow sync failed and AUTO_SYNC_REMOTE_WORKFLOW=true, but no admin token/App credentials are set. Push the local branch to origin to sync workflow drift (verify-origin-push-access passed). Example: git push origin $current_branch"
+        else
+          push_summary=$(grep -E 'origin push access verification (failed|passed)' "$push_probe_log" | tail -n 1 2>/dev/null || true)
+          if [ -z "$push_summary" ]; then
+            push_summary=$(tail -n 1 "$push_probe_log" 2>/dev/null || true)
+          fi
+          rm -f "$push_probe_log"
+          if [ -z "$push_summary" ]; then
+            push_summary="origin push access probe failed (no output captured)"
+          fi
+          fail "remote workflow sync failed and AUTO_SYNC_REMOTE_WORKFLOW=true, but no admin token/App credentials are set. $push_summary"
+        fi
       fi
       run_make sync-remote-live-v2-workflow
       run_make verify-remote-live-v2-workflow-sync
