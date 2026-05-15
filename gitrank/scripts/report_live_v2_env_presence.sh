@@ -83,6 +83,27 @@ elif [ "$auth_mode" = "app-bootstrap" ]; then
   workflow_sync_credential_readiness=app-bootstrap-present
 fi
 
+origin_push_access_readiness=unknown
+origin_push_probe_script="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)/verify_origin_push_access.sh"
+if [ -x "$origin_push_probe_script" ]; then
+  origin_push_probe_log=$(mktemp "${TMPDIR:-/tmp}/gitrank-env-origin-push.XXXXXX")
+  if "$origin_push_probe_script" >"$origin_push_probe_log" 2>&1; then
+    origin_push_access_readiness=available
+  else
+    origin_push_access_readiness=unavailable
+  fi
+  rm -f "$origin_push_probe_log"
+fi
+
+workflow_sync_execution_path=unavailable
+if [ "$workflow_sync_credential_readiness" = "token-present" ] || [ "$workflow_sync_credential_readiness" = "app-bootstrap-present" ]; then
+  workflow_sync_execution_path=token-or-app
+elif [ "$origin_push_access_readiness" = "available" ]; then
+  workflow_sync_execution_path=git-push
+fi
+
 printf 'derived.auth_mode=%s\n' "$auth_mode"
 printf 'derived.has_app_bootstrap=%s\n' "$has_app_bootstrap"
 printf 'derived.workflow_sync_credential_readiness=%s\n' "$workflow_sync_credential_readiness"
+printf 'derived.origin_push_access_readiness=%s\n' "$origin_push_access_readiness"
+printf 'derived.workflow_sync_execution_path=%s\n' "$workflow_sync_execution_path"

@@ -348,6 +348,9 @@ The embedded env-presence probe now emits derived readiness fields:
 - `derived.has_app_bootstrap` (`true|false`)
 - `derived.workflow_sync_credential_readiness`
   (`unavailable|token-present|app-bootstrap-present`)
+- `derived.origin_push_access_readiness` (`available|unavailable|unknown`)
+- `derived.workflow_sync_execution_path`
+  (`token-or-app|git-push|unavailable`)
 
 To generate a full V2 completion matrix (checklist counts, unresolved lines,
 file-reference existence, `make` target mapping, and gate outputs):

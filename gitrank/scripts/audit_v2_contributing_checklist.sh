@@ -314,18 +314,24 @@ emit_env_presence_snapshot() {
   auth_mode=$(awk -F= '/^derived\.auth_mode=/{print $2; exit}' "$env_probe_file")
   has_app_bootstrap=$(awk -F= '/^derived\.has_app_bootstrap=/{print $2; exit}' "$env_probe_file")
   workflow_sync_readiness=$(awk -F= '/^derived\.workflow_sync_credential_readiness=/{print $2; exit}' "$env_probe_file")
+  origin_push_readiness=$(awk -F= '/^derived\.origin_push_access_readiness=/{print $2; exit}' "$env_probe_file")
+  workflow_sync_execution_path=$(awk -F= '/^derived\.workflow_sync_execution_path=/{print $2; exit}' "$env_probe_file")
 
-  if [ -n "$auth_mode" ] || [ -n "$has_app_bootstrap" ] || [ -n "$workflow_sync_readiness" ]; then
+  if [ -n "$auth_mode" ] || [ -n "$has_app_bootstrap" ] || [ -n "$workflow_sync_readiness" ] || [ -n "$origin_push_readiness" ] || [ -n "$workflow_sync_execution_path" ]; then
     printf 'env derived readiness\n'
     printf 'derived.auth_mode: %s\n' "${auth_mode:-unknown}"
     printf 'derived.has_app_bootstrap: %s\n' "${has_app_bootstrap:-unknown}"
     printf 'derived.workflow_sync_credential_readiness: %s\n' "${workflow_sync_readiness:-unknown}"
+    printf 'derived.origin_push_access_readiness: %s\n' "${origin_push_readiness:-unknown}"
+    printf 'derived.workflow_sync_execution_path: %s\n' "${workflow_sync_execution_path:-unknown}"
     if [ -n "$audit_report_file" ]; then
       {
         printf '\n## Env Presence Snapshot\n'
         printf '%s\n' "- derived.auth_mode: ${auth_mode:-unknown}"
         printf '%s\n' "- derived.has_app_bootstrap: ${has_app_bootstrap:-unknown}"
         printf '%s\n' "- derived.workflow_sync_credential_readiness: ${workflow_sync_readiness:-unknown}"
+        printf '%s\n' "- derived.origin_push_access_readiness: ${origin_push_readiness:-unknown}"
+        printf '%s\n' "- derived.workflow_sync_execution_path: ${workflow_sync_execution_path:-unknown}"
       } >>"$audit_report_file"
     fi
   fi
