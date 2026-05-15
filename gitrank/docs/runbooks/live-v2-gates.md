@@ -432,6 +432,10 @@ OUTPUT_FILE=docs/releases/v2-live-closeout-status-latest.md \
 make generate-v2-live-closeout-status
 ```
 
+The report includes a `Live Input Matrix` section with `set|placeholder|unset`
+state per credential/runtime group so unresolved external gates can be traced
+to missing inputs quickly.
+
 The embedded env-presence probe now emits derived readiness fields:
 
 - `derived.auth_mode` (`none|token|app-bootstrap`)

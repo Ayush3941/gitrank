@@ -46,3 +46,7 @@ Use these helpers:
 make generate-v2-live-closeout-status
 make generate-v2-completion-audit
 ```
+
+`make generate-v2-live-closeout-status` includes a live input matrix showing
+`set|placeholder|unset` states for credentials/endpoints required by external
+V2 gates.
