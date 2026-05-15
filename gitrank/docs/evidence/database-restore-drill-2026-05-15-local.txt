@@ -1,0 +1,16 @@
+Date: 2026-05-15
+Environment: staging-local
+Cluster: docker-local
+Namespace: gitrank-staging-local
+Operator: codex-gpt5
+Restore source: /home/kali/Desktop/gitrank/gitrank/.tmp/db-restore-drill-20260515T194239Z.sql
+Restore target: postgres16 local container database gitrank on localhost:55432
+Backup identifier: sha256:ea83653cb7f9bb02a83a0614813983382e8c44c219195c08b4ac1a6f71fa4274
+Restore start timestamp: 2026-05-15T19:42:52Z
+Restore completion timestamp: 2026-05-15T19:42:54Z
+Restore command or workflow: docker exec pg_dump (postgres:16) + psql replay into same version target
+Schema migration state after restore: drill table and schema restored; validation query row_count=1
+Critical product checks: pass
+Observed errors: none observed during restore
+Follow-up actions: run equivalent restore drill against managed staging Postgres with PITR marker
+Decision: pass
