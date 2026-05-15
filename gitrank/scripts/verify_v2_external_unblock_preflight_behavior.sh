@@ -24,6 +24,7 @@ for required in \
   'probe.origin_push_effective_status:' \
   'origin_push_required_state=false' \
   'github_access_effective_status=credential-invalid' \
+  '[ "$token_state" != "set" ] || [ "$github_access_effective_status" = "credential-invalid" ]' \
   '[ "$origin_push_status" = "fail" ] && [ "$origin_push_required_state" = "true" ]' \
   'workflow_evidence (+ advisory origin_push)' \
   'checklist_probe_mapping' \
