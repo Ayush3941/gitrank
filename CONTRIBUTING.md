@@ -1193,6 +1193,9 @@ setups are not blocked by local push-auth probe failures when an authenticated
 sync/apply path is already available.
 It also emits `probe.origin_push_effective_status` (`required` or `advisory`)
 to make clear whether an origin push-auth failure is currently release-blocking.
+`probe.github_access_effective_status` now distinguishes `credential-missing`
+from `credential-invalid`, and remediation hints include token/App refresh when
+an invalid token is detected.
 Use `make verify-live-v2-workflow-run` to verify a successful
 `verify-live-v2-gates.yml` run by run ID (or `WORKFLOW_RUN_ID=latest`) and
 reuse it as live-gate evidence.

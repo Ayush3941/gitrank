@@ -20,8 +20,10 @@ for required in \
   'input_state.grafana_base_url:' \
   'input_state.grafana_api_token:' \
   'input_state.origin_push_required:' \
+  'probe.github_access_effective_status:' \
   'probe.origin_push_effective_status:' \
   'origin_push_required_state=false' \
+  'github_access_effective_status=credential-invalid' \
   '[ "$origin_push_status" = "fail" ] && [ "$origin_push_required_state" = "true" ]' \
   'checklist_probe_mapping' \
   'line.%s => probes[%s] :: %s' \

@@ -187,6 +187,25 @@ if [ "$origin_push_required_state" = "false" ]; then
   origin_push_effective_status=advisory
 fi
 
+github_access_effective_status=pass
+if [ "$github_access_status" = "fail" ]; then
+  case "$github_access_summary" in
+    *"is required"*|*"requires authentication"*|*"provide GITHUB_TOKEN"*|*"set GitHub App credentials"*)
+      github_access_effective_status=credential-missing
+      ;;
+    *"invalid or expired"*|*"HTTP 401"*|*"denied"*|*"insufficient scope"*|*"forbidden"*)
+      github_access_effective_status=credential-invalid
+      ;;
+    *)
+      if [ "$token_state" = "set" ]; then
+        github_access_effective_status=credential-invalid
+      else
+        github_access_effective_status=credential-missing
+      fi
+      ;;
+  esac
+fi
+
 if [ "$github_access_status" = "fail" ]; then
   fail_count=$((fail_count + 1))
 fi
@@ -214,6 +233,7 @@ printf 'input_state.grafana_api_token: %s\n' "$grafana_token_state"
 printf 'input_state.workflow_run_id: %s\n' "$workflow_id_state"
 printf 'input_state.workflow_event: %s\n' "$workflow_event_state"
 printf 'input_state.origin_push_required: %s\n' "$origin_push_required_state"
+printf 'probe.github_access_effective_status: %s\n' "$github_access_effective_status"
 printf 'probe.origin_push_effective_status: %s\n' "$origin_push_effective_status"
 
 if [ -s "$contributing_file" ]; then
@@ -249,7 +269,7 @@ fi
 if [ "$fail_count" -gt 0 ]; then
   required_inputs=
   if [ "$github_access_status" = "fail" ] || [ "$remote_workflow_sync_status" = "fail" ] || [ "$controls_public_status" = "fail" ] || [ "$workflow_evidence_status" = "fail" ]; then
-    if [ "$token_state" != "set" ]; then
+    if [ "$token_state" != "set" ] || [ "$github_access_effective_status" = "credential-invalid" ]; then
       required_inputs=$(append_unique_csv "$required_inputs" "GITRANK_REPO_ADMIN_TOKEN (or GITHUB_TOKEN/GH_TOKEN)")
       required_inputs=$(append_unique_csv "$required_inputs" "or GitHub App bootstrap: GITHUB_APP_ID + GITHUB_APP_INSTALLATION_ID + GITHUB_APP_PRIVATE_KEY_FILE/PEM")
     fi
