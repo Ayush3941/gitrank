@@ -105,7 +105,7 @@ export function PublicProfilePageClient({
         identitySummary={abraInsights.data?.identitySummary}
         aiMode={abraInsights.data?.generatedBy}
       />
-      <div className="rounded-[1.75rem] border border-primary/18 bg-primary/8 px-4 py-3 text-sm text-slate-200">
+      <div className="neon-callout rounded-[1.75rem] px-4 py-3 text-sm text-slate-200">
         Public profiles summarize recent contribution evidence. Skill areas and repository rankings are snapshot-based signals, not absolute claims of expertise.
       </div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -157,7 +157,7 @@ export function PublicProfilePageClient({
           </div>
           <div className="space-y-3">
             {data.topRepositories.length === 0 ? (
-              <div className="rounded-[1.5rem] border border-dashed border-white/12 bg-white/3 px-4 py-3 text-sm text-muted">
+              <div className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
                 Repository-level signal is not available on this snapshot yet.
               </div>
             ) : (

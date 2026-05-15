@@ -14,6 +14,7 @@ export function QuestCard({ quest }: { quest: Quest }) {
 
   return (
     <GlowCard className="relative space-y-4 overflow-hidden border border-cyan-300/20 bg-gradient-to-br from-slate-950/88 via-slate-900/82 to-cyan-950/30">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.1] [background:repeating-linear-gradient(170deg,rgba(255,255,255,0.13)_0px,rgba(255,255,255,0.13)_1px,transparent_1px,transparent_11px)]" />
       <div className="pointer-events-none absolute -top-16 right-0 h-32 w-32 rounded-full bg-cyan-400/12 blur-2xl" />
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-2">
@@ -46,7 +47,7 @@ export function QuestCard({ quest }: { quest: Quest }) {
         </span>
       </div>
       {quest.rewardBadgeId ? (
-        <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-sm text-amber-100">
+        <div className="neon-chip neon-chip-warning inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm text-amber-100">
           <Gift className="h-3.5 w-3.5" />
           Rewards badge: {quest.rewardBadgeId}
         </div>

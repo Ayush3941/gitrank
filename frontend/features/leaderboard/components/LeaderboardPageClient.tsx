@@ -44,7 +44,7 @@ export function LeaderboardPageClient() {
           ))}
         </TabsList>
       </Tabs>
-      <div className="neon-surface rounded-[1.75rem] px-4 py-3 text-sm text-slate-200">
+      <div className="neon-callout rounded-[1.75rem] px-4 py-3 text-sm text-slate-200">
         Snapshot note: leaderboard placement is directional, not a final measure of engineering ability. Quality weighting reduces the impact of shallow, unreviewed, or repetitive PR floods.
       </div>
       {isLoading ? <LoadingState message="Updating the arena ladder..." /> : null}
@@ -66,7 +66,7 @@ export function LeaderboardPageClient() {
             <PreviewBand name="Silver Workshop" range="Ranks 80-31" cue="Consistent weekly evidence and streak retention." />
             <PreviewBand name="Gold Forge+" range="Ranks 30-1" cue="High-impact score movement and sustained quality." />
           </div>
-          <div className="rounded-2xl border border-fuchsia-300/25 bg-fuchsia-400/10 px-4 py-3 text-sm text-fuchsia-100">
+          <div className="neon-callout rounded-2xl border-fuchsia-300/28 px-4 py-3 text-sm text-fuchsia-100">
             {projectedRank
               ? `Projected position after your next scored cycle: around #${projectedRank}.`
               : "Complete one scored contribution to receive your initial projected position."}

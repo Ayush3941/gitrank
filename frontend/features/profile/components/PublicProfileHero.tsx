@@ -77,8 +77,8 @@ export function PublicProfileHero({
           </div>
           <p className="max-w-3xl text-sm leading-7 text-slate-200/82">{user.bio}</p>
           {identitySummary ? (
-            <div className="rounded-2xl border border-cyan-300/24 bg-cyan-400/8 px-4 py-3 text-sm text-slate-200/88">
-              <p className="text-xs tracking-[0.24em] text-cyan-200 uppercase">
+            <div className="neon-callout rounded-2xl px-4 py-3 text-sm text-slate-200/88">
+              <p className="cyber-readout text-xs tracking-[0.24em] text-cyan-200 uppercase">
                 Open Source Identity ({aiMode === "gemini" ? "Gemini" : "Deterministic"})
               </p>
               <p className="mt-2 leading-6">{identitySummary}</p>
@@ -102,7 +102,7 @@ export function PublicProfileHero({
               <p className="text-xs tracking-[0.24em] text-primary uppercase">Player card</p>
               <p className="mt-2 text-4xl font-semibold text-white">Lv. {user.level.currentLevel}</p>
             </div>
-            <div className="rounded-3xl bg-primary/12 p-3 text-primary">
+            <div className="hud-pill rounded-3xl p-3 text-primary">
               <Trophy className="h-5 w-5" />
             </div>
           </div>
@@ -111,7 +111,7 @@ export function PublicProfileHero({
             <MiniMetric icon={<Sparkles className="h-4 w-4" />} label="Season XP" value={user.rankProgress.seasonXp.toLocaleString("en-US")} />
             <MiniMetric icon={<ShieldCheck className="h-4 w-4" />} label="Formula" value={user.rankProgress.season.scoringVersion} />
           </div>
-          <p className="mt-4 text-xs leading-5 text-muted">
+          <p className="cyber-readout mt-4 text-[11px] leading-5 text-muted">
             {shareHeadline}. Public claims are backed by score events, badges, and PR evidence where visibility allows.
           </p>
         </div>

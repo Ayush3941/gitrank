@@ -13,20 +13,20 @@ export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
       </div>
       <div className="space-y-3">
         {reports.length === 0 ? (
-          <div className="rounded-[1.75rem] border border-dashed border-white/12 bg-white/3 p-4 text-sm text-muted">
+          <div className="neon-surface rounded-[1.75rem] border-dashed border-primary/24 p-4 text-sm text-muted">
             Exact pull request evidence is hidden on this profile or there are no scored contributions yet.
           </div>
         ) : (
           reports.slice(0, 5).map((report) => (
-            <div key={report.id} className="rounded-[1.75rem] border border-white/8 bg-white/5 p-4">
+            <div key={report.id} className="neon-surface cyber-sheen rounded-[1.75rem] border-cyan-300/18 p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-sm text-muted">
                     {report.owner}/{report.repo} #{report.number}
                   </p>
                   <h3 className="mt-2 text-lg font-medium text-white">{report.title}</h3>
-                  <p className="mt-2 text-sm text-muted">{report.summary}</p>
-                  <p className="mt-2 text-xs text-muted">
+                  <p className="mt-2 text-sm text-slate-200/84">{report.summary}</p>
+                  <p className="neon-chip neon-chip-muted mt-3 inline-flex rounded-full px-3 py-1 text-xs">
                     Evidence {report.evidenceState || "partial"} / Formula {report.formulaVersion || "not recorded"}
                   </p>
                 </div>
