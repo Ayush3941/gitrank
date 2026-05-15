@@ -4,6 +4,7 @@ set -eu
 root_dir="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 repo_dir="$(CDPATH= cd -- "$root_dir/.." && pwd)"
 contributing_file="$repo_dir/CONTRIBUTING.md"
+live_env_template="$root_dir/.env.v2-live-gates.example"
 audit_report_file="${AUDIT_REPORT_FILE:-}"
 display_repository="${GITHUB_REPOSITORY_DISPLAY:-}"
 run_public_probe="${RUN_PUBLIC_PROBE:-true}"
@@ -403,6 +404,10 @@ fi
 
 printf 'v2 contributing audit summary\n'
 printf 'unchecked items: %s\n' "$unchecked_count"
+if [ -f "$live_env_template" ]; then
+  printf 'live env template: %s\n' "$live_env_template"
+  printf 'bootstrap hint: cp %s .env.v2-live-gates.local && edit required values, then run CONFIRM_FINALIZE_V2=yes make -C %s finalize-v2-live-closeout\n' "$live_env_template" "$root_dir"
+fi
 
 while IFS= read -r line; do
   [ -n "$line" ] || continue
