@@ -58,6 +58,18 @@ fail() {
   exit 1
 }
 
+is_placeholder_value() {
+  value=$1
+  case "$value" in
+    ""|OWNER/REPO|replace-me*|changeme*|*your-env.example*|*YYYY-MM-DD*|*your-cluster*|*your-name*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 resolve_checklist_audit_run_public_probe() {
   resolve_boolean_or_auto_from_github_auth "$checklist_audit_run_public_probe" "CHECKLIST_AUDIT_RUN_PUBLIC_PROBE"
 }
@@ -116,6 +128,21 @@ resolve_boolean_or_auto_from_github_auth() {
       app_installation_candidate="${GITHUB_APP_INSTALLATION_ID:-${GITRANK_GITHUB_APP_INSTALLATION_ID:-}}"
       app_key_file_candidate="${GITHUB_APP_PRIVATE_KEY_FILE:-${GITRANK_GITHUB_APP_PRIVATE_KEY_FILE:-}}"
       app_key_pem_candidate="${GITHUB_APP_PRIVATE_KEY_PEM:-${GITRANK_GITHUB_APP_PRIVATE_KEY_PEM:-}}"
+      if is_placeholder_value "$token_candidate"; then
+        token_candidate=
+      fi
+      if is_placeholder_value "$app_id_candidate"; then
+        app_id_candidate=
+      fi
+      if is_placeholder_value "$app_installation_candidate"; then
+        app_installation_candidate=
+      fi
+      if is_placeholder_value "$app_key_file_candidate"; then
+        app_key_file_candidate=
+      fi
+      if is_placeholder_value "$app_key_pem_candidate"; then
+        app_key_pem_candidate=
+      fi
       has_app_bootstrap=false
       if [ -n "$app_id_candidate" ] && [ -n "$app_installation_candidate" ]; then
         if [ -n "$app_key_file_candidate" ] || [ -n "$app_key_pem_candidate" ]; then

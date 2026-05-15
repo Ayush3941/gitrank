@@ -4,8 +4,38 @@ set -eu
 repo_value="${GITHUB_REPOSITORY:-}"
 inferred_repo_value="${INFERRED_GITHUB_REPOSITORY:-}"
 
+is_placeholder_value() {
+  value=$1
+  case "$value" in
+    ""|OWNER/REPO|replace-me*|changeme*|*your-env.example*|*YYYY-MM-DD*|*your-cluster*|*your-name*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+emit_var_presence() {
+  name=$1
+  value=$2
+  if [ -z "$value" ]; then
+    printf '%s=unset\n' "$name"
+    return 0
+  fi
+  if is_placeholder_value "$value"; then
+    printf '%s=placeholder\n' "$name"
+    return 0
+  fi
+  printf '%s=set\n' "$name"
+}
+
 if [ -n "$repo_value" ]; then
-  printf 'GITHUB_REPOSITORY=set\n'
+  if is_placeholder_value "$repo_value"; then
+    printf 'GITHUB_REPOSITORY=placeholder\n'
+  else
+    printf 'GITHUB_REPOSITORY=set\n'
+  fi
 elif [ -n "$inferred_repo_value" ]; then
   printf 'GITHUB_REPOSITORY=set(inferred:%s)\n' "$inferred_repo_value"
 else
@@ -49,11 +79,7 @@ for var_name in \
   PRODUCTION_K8S_TLS_SECRET_NAME
 do
   eval var_value="\${$var_name-}"
-  if [ -n "$var_value" ]; then
-    printf '%s=set\n' "$var_name"
-  else
-    printf '%s=unset\n' "$var_name"
-  fi
+  emit_var_presence "$var_name" "$var_value"
 done
 
 token_candidate="${GITRANK_REPO_ADMIN_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}"
@@ -61,6 +87,22 @@ app_id_candidate="${GITHUB_APP_ID:-${GITRANK_GITHUB_APP_ID:-}}"
 app_installation_candidate="${GITHUB_APP_INSTALLATION_ID:-${GITRANK_GITHUB_APP_INSTALLATION_ID:-}}"
 app_key_file_candidate="${GITHUB_APP_PRIVATE_KEY_FILE:-${GITRANK_GITHUB_APP_PRIVATE_KEY_FILE:-}}"
 app_key_pem_candidate="${GITHUB_APP_PRIVATE_KEY_PEM:-${GITRANK_GITHUB_APP_PRIVATE_KEY_PEM:-}}"
+
+if is_placeholder_value "$token_candidate"; then
+  token_candidate=
+fi
+if is_placeholder_value "$app_id_candidate"; then
+  app_id_candidate=
+fi
+if is_placeholder_value "$app_installation_candidate"; then
+  app_installation_candidate=
+fi
+if is_placeholder_value "$app_key_file_candidate"; then
+  app_key_file_candidate=
+fi
+if is_placeholder_value "$app_key_pem_candidate"; then
+  app_key_pem_candidate=
+fi
 
 has_app_bootstrap=false
 if [ -n "$app_id_candidate" ] && [ -n "$app_installation_candidate" ]; then

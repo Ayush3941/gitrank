@@ -52,6 +52,18 @@ fail() {
   exit 1
 }
 
+is_placeholder_value() {
+  value=$1
+  case "$value" in
+    ""|OWNER/REPO|replace-me*|changeme*|*your-env.example*|*YYYY-MM-DD*|*your-cluster*|*your-name*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 resolve_checklist_audit_run_public_probe() {
   resolve_boolean_or_auto_from_github_auth "$CHECKLIST_AUDIT_RUN_PUBLIC_PROBE" "CHECKLIST_AUDIT_RUN_PUBLIC_PROBE"
 }
@@ -326,14 +338,18 @@ for v in GITHUB_REPOSITORY PROMETHEUS_BASE_URL GRAFANA_BASE_URL GRAFANA_API_TOKE
     continue
   fi
   eval val="\${$v-}"
-  [ -n "$val" ] || add_missing_var "$v"
+  if is_placeholder_value "$val"; then
+    add_missing_var "$v"
+  fi
 done
 
 require_env_specific="${REQUIRE_ENV_SPECIFIC_K8S_OVERRIDES:-true}"
 if [ "$require_env_specific" = "true" ]; then
   for v in STAGING_K8S_PUBLIC_BASE_URL PRODUCTION_K8S_PUBLIC_BASE_URL STAGING_K8S_API_BASE_URL PRODUCTION_K8S_API_BASE_URL STAGING_K8S_AUTH_COOKIE_DOMAIN PRODUCTION_K8S_AUTH_COOKIE_DOMAIN STAGING_K8S_GITHUB_OAUTH_REDIRECT_URL PRODUCTION_K8S_GITHUB_OAUTH_REDIRECT_URL STAGING_K8S_API_HOST PRODUCTION_K8S_API_HOST STAGING_K8S_AUTH_HOST PRODUCTION_K8S_AUTH_HOST STAGING_K8S_TLS_SECRET_NAME PRODUCTION_K8S_TLS_SECRET_NAME; do
     eval val="\${$v-}"
-    [ -n "$val" ] || add_missing_var "$v"
+    if is_placeholder_value "$val"; then
+      add_missing_var "$v"
+    fi
   done
 fi
 
@@ -342,6 +358,21 @@ app_id_candidate="${GITHUB_APP_ID:-${GITRANK_GITHUB_APP_ID:-}}"
 app_installation_candidate="${GITHUB_APP_INSTALLATION_ID:-${GITRANK_GITHUB_APP_INSTALLATION_ID:-}}"
 app_key_file_candidate="${GITHUB_APP_PRIVATE_KEY_FILE:-${GITRANK_GITHUB_APP_PRIVATE_KEY_FILE:-}}"
 app_key_pem_candidate="${GITHUB_APP_PRIVATE_KEY_PEM:-${GITRANK_GITHUB_APP_PRIVATE_KEY_PEM:-}}"
+if is_placeholder_value "$token_candidate"; then
+  token_candidate=
+fi
+if is_placeholder_value "$app_id_candidate"; then
+  app_id_candidate=
+fi
+if is_placeholder_value "$app_installation_candidate"; then
+  app_installation_candidate=
+fi
+if is_placeholder_value "$app_key_file_candidate"; then
+  app_key_file_candidate=
+fi
+if is_placeholder_value "$app_key_pem_candidate"; then
+  app_key_pem_candidate=
+fi
 has_app_bootstrap=false
 if [ -n "$app_id_candidate" ] && [ -n "$app_installation_candidate" ]; then
   if [ -n "$app_key_file_candidate" ] || [ -n "$app_key_pem_candidate" ]; then

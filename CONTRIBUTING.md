@@ -1253,6 +1253,9 @@ live-gates sequence.
 Placeholder secret values (for example `replace-me-with-...`) are ignored by
 those commands until replaced with real credentials, so scaffolding an env file
 does not accidentally count as authenticated access.
+Live-input checks also treat scaffold placeholders like `OWNER/REPO`,
+`*your-env.example*`, and `*YYYY-MM-DD*` as missing until real runtime values
+are provided.
 When no GitHub token/App credential is present, the public-probe snapshot may
 show API rate-limit notes and should be treated as advisory only; authenticated
 `make verify-live-github-access` + controls verification is the authoritative

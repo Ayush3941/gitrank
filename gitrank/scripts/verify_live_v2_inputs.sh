@@ -113,10 +113,22 @@ add_missing_unique() {
 missing_vars=
 missing_files=
 
+is_placeholder_value() {
+  value=$1
+  case "$value" in
+    ""|OWNER/REPO|replace-me*|changeme*|*your-env.example*|*YYYY-MM-DD*|*your-cluster*|*your-name*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 ensure_non_empty() {
   name=$1
   value=$2
-  if [ -z "$value" ]; then
+  if is_placeholder_value "$value"; then
     missing_vars=$(add_missing_unique "$missing_vars" "$name")
   fi
 }
