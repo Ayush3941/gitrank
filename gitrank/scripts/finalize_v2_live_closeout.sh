@@ -45,6 +45,7 @@ WORKFLOW_EVENT="${WORKFLOW_EVENT:-workflow_dispatch}"
 WORKFLOW_EVENT_FALLBACK_ANY="${WORKFLOW_EVENT_FALLBACK_ANY:-true}"
 AUTO_GENERATE_OBSERVABILITY_EVIDENCE="${AUTO_GENERATE_OBSERVABILITY_EVIDENCE:-true}"
 AUTO_GENERATE_ROLLBACK_RESTORE_EVIDENCE="${AUTO_GENERATE_ROLLBACK_RESTORE_EVIDENCE:-true}"
+RUN_EXTERNAL_PREFLIGHT_REPORT="${RUN_EXTERNAL_PREFLIGHT_REPORT:-true}"
 AUDIT_REPORT_FILE="${AUDIT_REPORT_FILE:-$root_dir/docs/releases/v2-contributing-audit-latest.md}"
 AUTO_CREATE_GITHUB_APP_TOKEN="${AUTO_CREATE_GITHUB_APP_TOKEN:-true}"
 APP_TOKEN_OUTPUT_FILE="${APP_TOKEN_OUTPUT_FILE:-$tmp_root/gitrank-app-installation-token.txt}"
@@ -284,6 +285,14 @@ generate_rollback_restore_evidence_if_needed() {
 }
 
 [ "$CONFIRM_FINALIZE_V2" = "yes" ] || fail "set CONFIRM_FINALIZE_V2=yes to run final closeout"
+
+if [ "$RUN_EXTERNAL_PREFLIGHT_REPORT" = "true" ]; then
+  if run_make verify-v2-external-unblock-preflight; then
+    printf 'external unblock preflight passed\n'
+  else
+    printf 'external unblock preflight reported unresolved prerequisites (continuing finalizer flow)\n'
+  fi
+fi
 
 readiness_run_github_controls="$RUN_GITHUB_CONTROLS"
 readiness_run_observability="$RUN_OBSERVABILITY"

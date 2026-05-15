@@ -1224,6 +1224,9 @@ pre-set and App credentials are provided. It also defaults
 `AUTO_SYNC_REMOTE_TRIVY_POLICY=true` so Trivy workflow-health failures caused
 by remote policy drift can be auto-remediated when a token is available, and it
 now enforces `make verify-live-github-access` before GitHub-controls apply/verify.
+When `RUN_EXTERNAL_PREFLIGHT_REPORT=true` (default), finalizer now emits the
+`make verify-v2-external-unblock-preflight` report first and continues, so
+credential/config blockers are visible before any live mutations are attempted.
 When `RUN_K8S_RUNTIME=true` and workflow evidence is not used, finalizer runtime
 proof now requires explicit staging and production `STAGING_K8S_*` /
 `PRODUCTION_K8S_*` overrides by default

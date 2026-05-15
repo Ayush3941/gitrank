@@ -690,6 +690,12 @@ CONFIRM_FINALIZE_V2=yes \
 make finalize-v2-live-closeout-local-env
 ```
 
+By default, finalization now runs
+`make verify-v2-external-unblock-preflight` first
+(`RUN_EXTERNAL_PREFLIGHT_REPORT=true`) and continues even when the preflight
+reports unresolved external prerequisites, so credential and remote-state
+blockers are surfaced before mutating live gates.
+
 If `RUN_GITHUB_CONTROLS=true` and no GitHub token is set, the finalizer can
 auto-bootstrap a short-lived installation token when
 `GITHUB_APP_ID`, `GITHUB_APP_INSTALLATION_ID`, and
