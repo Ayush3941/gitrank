@@ -1257,6 +1257,9 @@ an artifact-backed audit report for release notes.
 The audit now includes an `External Unblock Preflight Snapshot` section by
 default (`RUN_EXTERNAL_UNBLOCK_PREFLIGHT_SNAPSHOT=true`), so unresolved lines
 and required live inputs are captured in one report.
+When token/App credentials are present, GitHub-controls remediation text in the
+audit automatically switches to the token-first path and treats origin-push auth
+as advisory.
 Use `make create-github-app-installation-token` when GitHub App credentials are
 preferred over long-lived PATs for repository-controls gates.
 The live-gates workflow can also bootstrap a short-lived admin token from

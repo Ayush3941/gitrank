@@ -473,6 +473,9 @@ make generate-v2-completion-audit
 `make audit-v2-contributing-checklist` now also embeds an
 `External Unblock Preflight Snapshot` section by default, mirroring unresolved
 line mappings and minimal-required-input hints from the preflight command.
+When token/App credentials are available, the audit's GitHub-controls
+remediation guidance switches to a token-first flow and marks origin-push auth
+as advisory.
 
 To generate rollback and restore evidence files from recorded drill metadata:
 
