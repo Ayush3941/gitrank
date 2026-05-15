@@ -43,6 +43,7 @@ check_remote_live_workflow_sync="${CHECK_REMOTE_LIVE_WORKFLOW_SYNC:-true}"
 check_public_github_controls="${CHECK_PUBLIC_GITHUB_CONTROLS:-true}"
 check_live_github_access="${CHECK_LIVE_GITHUB_ACCESS:-true}"
 check_workflow_evidence="${CHECK_WORKFLOW_EVIDENCE:-true}"
+check_external_unblock_preflight="${CHECK_EXTERNAL_UNBLOCK_PREFLIGHT:-true}"
 checklist_audit_run_public_probe="${CHECKLIST_AUDIT_RUN_PUBLIC_PROBE:-auto}"
 workflow_run_id="${WORKFLOW_RUN_ID:-latest}"
 workflow_event="${WORKFLOW_EVENT:-workflow_dispatch}"
@@ -281,12 +282,13 @@ awk -F':' '/^[a-zA-Z0-9_.-]+:/ { print $1 }' "$makefile" | sort -u >"$make_targe
   printf '3. ABRA checklist and closeout artifact remain complete (`make verify-abra-checklist`).\n'
   printf '4. Public origin workflow health is green (`make verify-public-workflow-health`) unless intentionally waived.\n'
   printf '5. No unresolved checklist items remain in `make audit-v2-contributing-checklist`.\n'
-  printf '6. Live-gate preflights and probes are green (or intentionally skipped with explicit waiver):\n'
+  printf '6. External unblock preflight is green (`make verify-v2-external-unblock-preflight`) or explicitly waived.\n'
+  printf '7. Live-gate preflights and probes are green (or intentionally skipped with explicit waiver):\n'
   printf '   - `make verify-remote-live-v2-workflow-sync`\n'
   printf '   - `make verify-live-github-access`\n'
   printf '   - `make verify-github-repository-controls-public`\n'
   printf '   - `make verify-live-v2-workflow-run`\n'
-  printf '7. Explicit file, command, and gate references in `CONTRIBUTING.md` resolve to real artifacts or real commands.\n'
+  printf '8. Explicit file, command, and gate references in `CONTRIBUTING.md` resolve to real artifacts or real commands.\n'
   printf '\n'
   printf '## Prompt-to-Artifact Checklist\n\n'
   printf '### Unchecked Checklist Lines\n\n'
@@ -359,6 +361,13 @@ awk -F':' '/^[a-zA-Z0-9_.-]+:/ { print $1 }' "$makefile" | sort -u >"$make_targe
 } >"$output_file"
 
 if [ "$run_checks" = "true" ]; then
+  external_unblock_preflight_code=skip
+  if [ "$check_external_unblock_preflight" = "true" ]; then
+    run_capture "External Unblock Preflight (make verify-v2-external-unblock-preflight)" \
+      "cd '$root_dir' && make verify-v2-external-unblock-preflight"
+    external_unblock_preflight_code=$RUN_CAPTURE_LAST_CODE
+  fi
+
   run_capture "Local Readiness Gate (make verify-v2-live-readiness)" \
     "cd '$root_dir' && make verify-v2-live-readiness"
   local_gate_code=$RUN_CAPTURE_LAST_CODE
@@ -410,6 +419,7 @@ if [ "$run_checks" = "true" ]; then
     workflow_probe_code=$RUN_CAPTURE_LAST_CODE
   fi
 else
+  external_unblock_preflight_code=skip
   local_gate_code=skip
   abra_gate_code=skip
   public_workflow_health_code=skip
@@ -462,6 +472,9 @@ fi
 if ! code_is_ok_or_skipped "env presence probe" "$env_presence_code" "$waive_run_checks"; then
   ready_for_completion=false
 fi
+if ! code_is_ok_or_skipped "external unblock preflight" "$external_unblock_preflight_code" "$waive_run_checks"; then
+  ready_for_completion=false
+fi
 if ! code_is_ok_or_skipped "remote live workflow sync probe" "$remote_live_workflow_sync_code" "$waive_remote_live_workflow_sync"; then
   ready_for_completion=false
 fi
@@ -482,6 +495,7 @@ fi
   printf '## Completion Verdict Inputs\n\n'
   printf '%s\n' "- Local readiness gate exit code: \`$local_gate_code\`"
   printf '%s\n' "- ABRA checklist gate exit code: \`$abra_gate_code\`"
+  printf '%s\n' "- External unblock preflight exit code: \`$external_unblock_preflight_code\`"
   printf '%s\n' "- Public workflow health gate exit code: \`$public_workflow_health_code\`"
   printf '%s\n' "- Public workflow health mode: \`$check_public_workflow_health_resolved\` (configured: \`$check_public_workflow_health\`)"
   printf '%s\n' "- Checklist audit exit code: \`$checklist_audit_code\`"
