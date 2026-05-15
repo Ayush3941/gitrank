@@ -36,6 +36,7 @@ if [ "$RUN_LOCAL_STATIC" = "true" ]; then
   run_make verify-secret-policy
   run_make verify-finalize-v2-closeout-env-aliases
   run_make verify-github-app-token-env-aliases
+  run_make verify-v2-live-env-scaffold
   run_make verify-v2-completion-audit-behavior
   run_make verify-v2-artifact-redaction
 fi
