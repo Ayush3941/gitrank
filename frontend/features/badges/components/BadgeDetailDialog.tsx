@@ -32,7 +32,7 @@ export function BadgeDetailDialog({
             </div>
             <RarityBadge rarity={badge.rarity} />
           </div>
-          <GlowCard className="space-y-3 border border-white/8 bg-white/5 p-4">
+          <GlowCard className="space-y-3 neon-surface p-4">
             <p className="text-xs tracking-[0.24em] text-primary uppercase">Unlock condition</p>
             <p className="text-sm text-slate-200">{badge.unlockCondition}</p>
             {typeof badge.rarityScore === "number" ? (
@@ -45,7 +45,7 @@ export function BadgeDetailDialog({
             ) : null}
           </GlowCard>
           {story ? (
-            <GlowCard className="space-y-3 border border-fuchsia-300/20 bg-fuchsia-400/8 p-4">
+            <GlowCard className="space-y-3 neon-surface border-fuchsia-300/24 p-4">
               <p className="text-xs tracking-[0.24em] text-fuchsia-200 uppercase">Achievement story</p>
               <p className="text-sm text-slate-200/88">{story.story}</p>
               <p className="text-sm text-slate-200/84">
@@ -61,12 +61,12 @@ export function BadgeDetailDialog({
             <div className="flex flex-wrap gap-2">
               {badge.evidencePrIds.length ? (
                 badge.evidencePrIds.map((prId) => (
-                  <span key={prId} className="rounded-full border border-white/8 bg-white/5 px-3 py-1.5 text-sm text-slate-200">
+                  <span key={prId} className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 text-sm">
                     {prId}
                   </span>
                 ))
               ) : (
-                <span className="rounded-full border border-white/8 bg-white/5 px-3 py-1.5 text-sm text-muted">
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 text-sm">
                   No qualifying PRs yet
                 </span>
               )}

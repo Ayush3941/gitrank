@@ -17,7 +17,7 @@ export function DashboardTopBar({ user }: { user: UserProfile }) {
       </div>
       <Link
         href={`/u/${user.username}`}
-        className="focus-ring inline-flex items-center gap-2 text-sm font-medium text-slate-200 transition hover:text-primary"
+        className="focus-ring inline-flex items-center gap-2 text-sm font-medium text-slate-200 transition hover:text-cyan-200"
       >
         View public profile
         <ArrowUpRight className="h-4 w-4" />
@@ -48,7 +48,7 @@ export function DashboardTopBarUnavailable() {
       </div>
       <Link
         href="/login"
-        className="focus-ring inline-flex items-center gap-2 text-sm font-medium text-slate-200 transition hover:text-white"
+        className="focus-ring inline-flex items-center gap-2 text-sm font-medium text-slate-200 transition hover:text-cyan-100"
       >
         Reconnect GitHub
         <ArrowUpRight className="h-4 w-4" />

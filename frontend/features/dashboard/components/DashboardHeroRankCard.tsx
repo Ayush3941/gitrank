@@ -52,19 +52,19 @@ export function DashboardHeroRankCard({
         </Button>
       </div>
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-[1.75rem] border border-white/8 bg-white/5 p-5">
+        <div className="neon-metric rounded-[1.75rem] p-5">
           <p className="text-xs tracking-[0.24em] text-primary uppercase">Level</p>
           <p className="mt-3 text-4xl font-semibold text-white">
             <AnimatedNumber value={user.level.currentLevel} />
           </p>
         </div>
-        <div className="rounded-[1.75rem] border border-white/8 bg-white/5 p-5">
+        <div className="neon-metric rounded-[1.75rem] p-5">
           <p className="text-xs tracking-[0.24em] text-primary uppercase">Total XP</p>
           <p className="mt-3 text-4xl font-semibold text-white">
             <AnimatedNumber value={user.level.currentXp} />
           </p>
         </div>
-        <div className="rounded-[1.75rem] border border-white/8 bg-white/5 p-5">
+        <div className="neon-metric rounded-[1.75rem] p-5">
           <p className="text-xs tracking-[0.24em] text-primary uppercase">Next title gate</p>
           <p className="mt-3 text-lg font-medium text-white">Reach {user.level.nextLevelXp} XP</p>
           <p className="mt-2 text-sm text-muted">Unlock stronger rank movement, harder quests, and rarer badge lanes.</p>
@@ -96,7 +96,7 @@ export function DashboardHeroRankCard({
         <p className="text-xs tracking-[0.24em] text-primary uppercase">Top observed signals in this snapshot</p>
         <div className="flex flex-wrap gap-2">
           {user.strongestSignals.map((signal) => (
-            <div key={signal} className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-white/5 px-3 py-1.5 text-sm text-slate-200">
+            <div key={signal} className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm">
               <Star className="h-3.5 w-3.5 text-primary" />
               {signal}
             </div>

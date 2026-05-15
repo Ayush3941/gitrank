@@ -25,11 +25,11 @@ export function ContributionList({
               <p className="text-sm text-muted">{item.owner}/{item.repo} #{item.number}</p>
               <h2 className="mt-2 text-xl font-semibold text-white">{item.title}</h2>
               <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-200">
-                <span className="rounded-full border border-cyan-300/28 bg-cyan-400/10 px-3 py-1.5 text-cyan-100">{item.category}</span>
-                <span className="rounded-full border border-white/8 bg-white/5 px-3 py-1.5 uppercase">{item.status}</span>
-                <span className="rounded-full border border-white/8 bg-white/5 px-3 py-1.5">{item.changedFilesCount} files changed</span>
+                <span className="neon-chip neon-chip-info rounded-full px-3 py-1.5">{item.category}</span>
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 uppercase">{item.status}</span>
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">{item.changedFilesCount} files changed</span>
                 {item.evidenceState ? (
-                  <span className="rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-primary">
+                  <span className="neon-chip rounded-full px-3 py-1.5">
                     Evidence {item.evidenceState}
                   </span>
                 ) : null}
@@ -52,7 +52,7 @@ export function ContributionList({
               <Metric label="Test signal" value={item.testSignalScore} />
             </div>
           ) : (
-            <div className="rounded-[1.75rem] border border-dashed border-white/12 bg-white/4 p-4 text-sm text-muted">
+            <div className="neon-surface rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
               This live profile row comes from persisted score-history evidence. Formula version:{" "}
               {item.formulaVersion || "not recorded"}.{" "}
               {item.evidenceMissing?.length
@@ -102,7 +102,7 @@ function hasDetailedMetrics(item: Contribution) {
 
 function Metric({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-3xl border border-white/8 bg-white/5 px-4 py-3">
+    <div className="neon-metric rounded-3xl px-4 py-3">
       <p className="text-xs tracking-[0.24em] text-muted uppercase">{label}</p>
       <p className="mt-2 text-xl font-semibold text-white">{value}</p>
     </div>
@@ -117,7 +117,7 @@ function AIPanel({
   fallbackSummary: string;
 }) {
   return (
-    <div className="rounded-[1.35rem] border border-fuchsia-300/20 bg-fuchsia-400/7 px-4 py-4">
+    <div className="neon-surface rounded-[1.35rem] border-fuchsia-300/28 px-4 py-4">
       <p className="inline-flex items-center gap-2 text-xs tracking-[0.24em] text-fuchsia-200 uppercase">
         <Sparkles className="h-3.5 w-3.5" />
         Contribution Impact Explanation
@@ -127,7 +127,7 @@ function AIPanel({
           <p><span className="text-cyan-200">What:</span> {narrative.what}</p>
           <p><span className="text-cyan-200">Why it matters:</span> {narrative.why}</p>
           <p><span className="text-cyan-200">Signal:</span> {narrative.signal}</p>
-          <p className="inline-flex items-start gap-2 rounded-xl border border-cyan-300/20 bg-cyan-400/8 px-3 py-2 text-cyan-100">
+          <p className="neon-chip neon-chip-info inline-flex items-start gap-2 rounded-xl px-3 py-2">
             <Zap className="mt-0.5 h-3.5 w-3.5" />
             {narrative.pitch}
           </p>

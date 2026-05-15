@@ -161,7 +161,7 @@ export function ContributionsPageClient() {
                     "Signal synthesis is running in deterministic mode while contribution intelligence resolves."}
                 </p>
               </div>
-              <div className="inline-flex items-center gap-2 rounded-2xl border border-fuchsia-300/35 bg-fuchsia-400/12 px-3 py-2 text-xs text-fuchsia-100">
+              <div className="neon-chip neon-chip-mythic inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-xs">
                 <Sparkles className="h-3.5 w-3.5" />
                 {abraInsights.data?.generatedBy === "gemini"
                   ? "Gemini impact synthesis enabled"
@@ -182,7 +182,7 @@ export function ContributionsPageClient() {
           <p className="text-xs tracking-[0.24em] text-cyan-200 uppercase">Repositories touched</p>
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {repositories.map((repository) => (
-              <div key={repository.fullName} className="rounded-[1.4rem] border border-cyan-300/22 bg-gradient-to-br from-slate-900/85 to-cyan-950/35 px-4 py-3">
+              <div key={repository.fullName} className="neon-surface rounded-[1.4rem] border-cyan-300/28 px-4 py-3">
                 <p className="text-sm font-medium text-white">{repository.fullName}</p>
                 <p className="mt-1 text-xs text-slate-300">{repository.contributions} contributions</p>
                 <p className="mt-3 text-lg font-semibold text-cyan-200">{repository.totalXp} XP</p>
@@ -202,7 +202,7 @@ export function ContributionsPageClient() {
                     <span>{point.month}</span>
                     <span>{point.xp} XP</span>
                   </div>
-                  <div className="h-2 rounded-full bg-white/8">
+                  <div className="neon-track h-2 rounded-full">
                     <div
                       className="h-full rounded-full bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300 shadow-[0_0_18px_rgba(147,197,253,0.45)]"
                       style={{ width: `${Math.max(8, Math.round((point.xp / maxMonthlyXp) * 100))}%` }}
@@ -216,7 +216,7 @@ export function ContributionsPageClient() {
             <p className="text-xs tracking-[0.24em] text-cyan-200 uppercase">Top highlights</p>
             <div className="space-y-3">
               {topHighlights.map((row) => (
-                <div key={row.id} className="rounded-2xl border border-white/8 bg-white/5 px-3 py-3">
+                <div key={row.id} className="neon-surface rounded-2xl px-3 py-3">
                   <p className="text-sm font-medium text-white">{row.title}</p>
                   <p className="mt-1 text-xs text-slate-300">{row.owner}/{row.repo} #{row.number}</p>
                   <p className="mt-2 text-sm text-cyan-200">+{row.xpEarned} XP</p>
@@ -246,7 +246,7 @@ function Metric({
   icon: ReactNode;
 }) {
   return (
-    <div className="rounded-[1.4rem] border border-white/12 bg-black/25 px-4 py-3">
+    <div className="neon-metric rounded-[1.4rem] px-4 py-3">
       <p className="text-[11px] tracking-[0.2em] text-slate-300 uppercase">{label}</p>
       <p className="mt-2 flex items-center gap-2 text-xl font-semibold text-white">
         {value}

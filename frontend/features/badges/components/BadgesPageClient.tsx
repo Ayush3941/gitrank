@@ -124,7 +124,7 @@ export function BadgesPageClient() {
                     "Badge narratives are running in deterministic fallback mode."}
                 </p>
               </div>
-              <div className="inline-flex items-center gap-2 rounded-2xl border border-cyan-300/30 bg-cyan-400/10 px-3 py-2 text-xs text-cyan-100">
+              <div className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-xs">
                 <Sparkles className="h-3.5 w-3.5" />
                 {abraInsights.data?.generatedBy === "gemini"
                   ? "Gemini achievement stories"
@@ -197,7 +197,7 @@ export function BadgesPageClient() {
                 Math.max(5, Math.round((profile?.user.level.currentLevel ?? 1) * 9 + index * 13)),
               );
               return (
-                <div key={badge.id} className="rounded-[1.4rem] border border-dashed border-fuchsia-300/28 bg-fuchsia-950/20 px-4 py-4">
+                <div key={badge.id} className="neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4">
                   <p className="text-xs tracking-[0.24em] text-fuchsia-200 uppercase">{badge.rarity}</p>
                   <h3 className="mt-2 text-base font-semibold text-white">{badge.name}</h3>
                   <p className="mt-2 text-sm text-slate-300">{badge.unlockCondition}</p>
@@ -226,7 +226,7 @@ function BadgeMetric({
   icon: ReactNode;
 }) {
   return (
-    <div className="rounded-[1.4rem] border border-white/12 bg-black/25 px-4 py-3">
+    <div className="neon-metric rounded-[1.4rem] px-4 py-3">
       <p className="text-[11px] tracking-[0.2em] text-slate-300 uppercase">{label}</p>
       <p className="mt-2 flex items-center gap-2 text-xl font-semibold text-white">
         {value}

@@ -18,7 +18,7 @@ export function BadgeGrid({
       {badges.map((badge) => (
         <BadgeDetailDialog key={badge.id} badge={badge} story={stories?.[badge.id]}>
           <button className="focus-ring text-left">
-            <GlowCard className="h-full space-y-4 border border-cyan-300/16 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/20 transition hover:-translate-y-0.5 hover:border-cyan-300/30 hover:bg-white/8">
+            <GlowCard className="h-full space-y-4 border border-cyan-300/16 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/20 transition hover:-translate-y-0.5 hover:border-cyan-300/30 hover:shadow-[0_0_42px_rgba(34,226,255,0.22)]">
               <div className="flex items-start justify-between gap-3">
                 <div className="rounded-3xl bg-primary/12 p-3 text-primary">
                   <SignalIcon icon={badge.icon} className="h-5 w-5" />
@@ -41,7 +41,7 @@ export function BadgeGrid({
                 ) : null}
               </div>
               {stories?.[badge.id] ? (
-                <div className="rounded-xl border border-fuchsia-300/18 bg-fuchsia-400/8 px-3 py-2 text-xs text-slate-200/86">
+                <div className="neon-surface rounded-xl border-fuchsia-300/24 px-3 py-2 text-xs text-slate-200/86">
                   {stories[badge.id].story}
                 </div>
               ) : null}

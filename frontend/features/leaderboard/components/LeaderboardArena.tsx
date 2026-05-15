@@ -37,7 +37,7 @@ export function LeaderboardArena({ snapshot }: { snapshot: LeaderboardSnapshot }
             ? "border-amber-300/35 bg-amber-300/10"
             : row.rank === 2
               ? "border-slate-200/35 bg-slate-200/10"
-              : row.rank === 3
+                : row.rank === 3
                 ? "border-orange-300/30 bg-orange-300/10"
                 : "";
         return (
@@ -47,7 +47,7 @@ export function LeaderboardArena({ snapshot }: { snapshot: LeaderboardSnapshot }
           >
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-3xl border border-white/8 bg-white/5 text-xl font-semibold text-white">
+                <div className="neon-surface flex h-14 w-14 items-center justify-center rounded-3xl text-xl font-semibold text-white">
                   #{row.rank}
                 </div>
                 <div>
@@ -102,7 +102,7 @@ function Rule({
   value: string;
 }) {
   return (
-    <div className="rounded-[1.5rem] border border-white/8 bg-white/5 px-4 py-3">
+    <div className="neon-surface rounded-[1.5rem] px-4 py-3">
       <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-primary uppercase">
         {icon}
         {label}
@@ -120,13 +120,13 @@ function Pill({
   tone?: "neutral" | "success" | "warning";
 }) {
   const toneClass = {
-    neutral: "border-white/8 bg-white/5 text-slate-200",
-    success: "border-emerald-400/22 bg-emerald-400/10 text-emerald-100",
-    warning: "border-amber-400/24 bg-amber-400/10 text-amber-100",
+    neutral: "neon-chip neon-chip-muted text-slate-200",
+    success: "neon-chip neon-chip-success",
+    warning: "neon-chip neon-chip-warning",
   }[tone];
 
   return (
-    <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${toneClass}`}>
+    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${toneClass}`}>
       {children}
     </span>
   );
@@ -142,7 +142,7 @@ function Metric({
   icon?: ReactNode;
 }) {
   return (
-    <div className="rounded-3xl border border-white/8 bg-white/5 px-4 py-3">
+    <div className="neon-metric rounded-3xl px-4 py-3">
       <p className="text-xs tracking-[0.24em] text-muted uppercase">{label}</p>
       <div className="mt-2 flex items-center gap-2 text-xl font-semibold text-white">
         <span>{value}</span>

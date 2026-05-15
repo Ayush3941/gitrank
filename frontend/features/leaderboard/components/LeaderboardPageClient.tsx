@@ -44,7 +44,7 @@ export function LeaderboardPageClient() {
           ))}
         </TabsList>
       </Tabs>
-      <div className="rounded-[1.75rem] border border-primary/18 bg-primary/8 px-4 py-3 text-sm text-slate-200">
+      <div className="neon-surface rounded-[1.75rem] px-4 py-3 text-sm text-slate-200">
         Snapshot note: leaderboard placement is directional, not a final measure of engineering ability. Quality weighting reduces the impact of shallow, unreviewed, or repetitive PR floods.
       </div>
       {isLoading ? <LoadingState message="Updating the arena ladder..." /> : null}
@@ -118,7 +118,7 @@ function PreviewBand({
   cue: string;
 }) {
   return (
-    <div className="rounded-[1.35rem] border border-cyan-300/18 bg-black/25 px-4 py-3">
+    <div className="neon-surface rounded-[1.35rem] border-cyan-300/24 px-4 py-3">
       <p className="text-sm font-semibold text-white">{name}</p>
       <p className="mt-1 text-xs text-cyan-200">{range}</p>
       <p className="mt-2 text-xs text-slate-300">{cue}</p>
@@ -134,7 +134,7 @@ function ClimbTip({
   body: string;
 }) {
   return (
-    <div className="rounded-[1.35rem] border border-white/12 bg-black/25 px-4 py-3">
+    <div className="neon-metric rounded-[1.35rem] px-4 py-3">
       <p className="text-sm font-semibold text-white">{title}</p>
       <p className="mt-1 text-xs text-slate-300">{body}</p>
     </div>

@@ -17,7 +17,7 @@ export function QuestCard({ quest }: { quest: Quest }) {
       <div className="pointer-events-none absolute -top-16 right-0 h-32 w-32 rounded-full bg-cyan-400/12 blur-2xl" />
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-white/5 px-3 py-1 text-xs text-muted">
+          <div className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs">
             <Flag className="h-3.5 w-3.5 text-primary" />
             {quest.cadence}
           </div>
@@ -36,11 +36,11 @@ export function QuestCard({ quest }: { quest: Quest }) {
       </div>
       <div className="flex flex-wrap gap-2">
         {quest.evidenceSignals.map((signal) => (
-          <span key={signal} className="rounded-full border border-white/8 bg-white/5 px-3 py-1 text-xs text-slate-200">
+          <span key={signal} className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
             {signal}
           </span>
         ))}
-        <span className="inline-flex items-center gap-1 rounded-full border border-white/8 bg-white/5 px-3 py-1 text-xs text-muted">
+        <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs">
           <Link2 className="h-3 w-3" />
           {quest.linkedContributionIds.length} evidence PRs
         </span>

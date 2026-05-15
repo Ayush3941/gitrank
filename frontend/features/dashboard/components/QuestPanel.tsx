@@ -11,20 +11,20 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
           <p className="text-xs tracking-[0.24em] text-primary uppercase">Active quests</p>
           <h2 className="mt-2 text-2xl font-semibold text-white">Weak lanes become your next ladder.</h2>
         </div>
-        <div className="rounded-3xl bg-white/6 p-3 text-primary">
+        <div className="neon-surface rounded-3xl p-3 text-primary">
           <Target className="h-5 w-5" />
         </div>
       </div>
       <div className="space-y-3">
         {quests.length === 0 ? (
-          <div className="rounded-[1.75rem] border border-dashed border-white/12 bg-white/4 p-4 text-sm text-muted">
+          <div className="neon-surface rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
             No live quests are available for this profile snapshot yet. Run a sync or wait for new scored evidence to refresh the quest board.
           </div>
         ) : null}
         {quests.slice(0, 3).map((quest) => {
           const progress = Math.round((quest.progress / quest.goal) * 100);
           return (
-            <div key={quest.id} className="rounded-[1.75rem] border border-white/8 bg-white/5 p-4">
+            <div key={quest.id} className="neon-surface rounded-[1.75rem] p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-lg font-medium text-white">{quest.title}</p>
@@ -42,11 +42,11 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {quest.evidenceSignals.slice(0, 3).map((signal) => (
-                  <span key={signal} className="rounded-full border border-white/8 bg-white/5 px-3 py-1 text-xs text-slate-200">
+                  <span key={signal} className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
                     {signal}
                   </span>
                 ))}
-                <span className="inline-flex items-center gap-1 rounded-full border border-white/8 bg-white/5 px-3 py-1 text-xs text-muted">
+                <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs">
                   <Link2 className="h-3 w-3" />
                   {quest.linkedContributionIds.length} linked PRs
                 </span>

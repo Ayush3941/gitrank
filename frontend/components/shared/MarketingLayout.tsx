@@ -31,7 +31,7 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
           </div>
         </header>
         {children}
-        <footer className="border-t border-white/8 py-8 text-sm text-muted">
+        <footer className="border-t border-primary/18 py-8 text-sm text-muted">
           <p>GitRank rewards merged evidence, review depth, tests, and project impact. Spam PRs do not make you powerful here.</p>
         </footer>
       </div>
