@@ -419,7 +419,7 @@ fi
   printf 'Recommended path (env file):\n\n'
   printf '```bash\n'
   printf 'cd gitrank\n'
-  printf 'cp .env.v2-live-gates.example .env.v2-live-gates.local\n'
+  printf 'make scaffold-v2-live-env\n'
   printf '# edit values, then run:\n'
   printf 'CONFIRM_FINALIZE_V2=yes \\\n'
   printf 'make finalize-v2-live-closeout-local-env\n'

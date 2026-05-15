@@ -502,7 +502,7 @@ Use input preflight before live runs:
 
 ```bash
 cd gitrank
-cp .env.v2-live-gates.example .env.v2-live-gates.local
+make scaffold-v2-live-env
 # edit values, then export them
 set -a
 source .env.v2-live-gates.local
@@ -586,7 +586,7 @@ final unresolved-checklist audit.
 
 ```bash
 cd gitrank
-cp .env.v2-live-gates.example .env.v2-live-gates.local
+make scaffold-v2-live-env
 # edit values, then export them
 set -a
 source .env.v2-live-gates.local
@@ -600,7 +600,7 @@ Alternative (no manual `set -a` export):
 
 ```bash
 cd gitrank
-cp .env.v2-live-gates.example .env.v2-live-gates.local
+make scaffold-v2-live-env
 # edit values, then run:
 CONFIRM_FINALIZE_V2=yes \
 make finalize-v2-live-closeout-local-env
