@@ -132,8 +132,10 @@ Use `.env.v2-live-gates.example` as the source template for required
 environment variables.
 
 Note: unauthenticated GitHub API calls can hit low per-IP rate limits. Public
-prechecks now report this explicitly; switch to token/App-authenticated mode
-when that happens.
+prechecks now report this explicitly; `make verify-github-repository-controls-public`
+also falls back to public `rules` and `branches` page embedded data so it can
+still report concrete missing controls for public repositories. Switch to
+token/App-authenticated mode for full verification.
 If GitHub App credentials are present, the public prechecks can auto-bootstrap
 short-lived installation tokens.
 

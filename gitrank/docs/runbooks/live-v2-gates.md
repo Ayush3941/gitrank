@@ -209,7 +209,10 @@ make verify-github-repository-controls-public
 ```
 
 When GitHub App credentials are present, this precheck can auto-bootstrap a
-short-lived token to avoid unauthenticated API rate limits.
+short-lived token to avoid unauthenticated API rate limits. Without token/App
+credentials, the precheck now falls back to public `rules` and `branches` page
+embedded data when API quota is exhausted, so it can still report concrete
+missing controls for public repositories.
 
 To check recent workflow health on `origin` without a token (defaults to
 default-branch `push` runs), use:

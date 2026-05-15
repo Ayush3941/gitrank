@@ -89,6 +89,8 @@ OWNER=${REPOSITORY%%/*}
 REPO=${REPOSITORY#*/}
 API_STATUS=
 API_BODY=
+WEB_STATUS=
+WEB_BODY=
 
 github_get() {
   path=$1
@@ -119,20 +121,84 @@ github_get() {
   rm -f "$body_file"
 }
 
+github_web_get() {
+  path=$1
+  body_file="$TMP_ROOT/gitrank-github-controls-public-web.$$"
+  WEB_STATUS=$(curl -sS -L -o "$body_file" -w '%{http_code}' \
+    --connect-timeout "$API_TIMEOUT_SECONDS" \
+    --max-time "$API_TIMEOUT_SECONDS" \
+    "$WEB_BASE$path") || {
+      rm -f "$body_file"
+      fail "GitHub web request failed for $path"
+    }
+  WEB_BODY=$(cat "$body_file")
+  rm -f "$body_file"
+}
+
+is_rate_limited_api_response() {
+  [ "$API_STATUS" = "403" ] || return 1
+  message=$(printf '%s' "$API_BODY" | jq -r '.message // empty' 2>/dev/null || true)
+  case "$message" in
+    *"API rate limit exceeded"*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 expect_status() {
   expected=$1
   context=$2
   if [ "$API_STATUS" != "$expected" ]; then
-    if [ "$API_STATUS" = "403" ]; then
-      message=$(printf '%s' "$API_BODY" | jq -r '.message // empty' 2>/dev/null || true)
-      case "$message" in
-        *"API rate limit exceeded"*)
-          fail "$context hit GitHub API rate limit (HTTP 403); set GITHUB_TOKEN, GH_TOKEN, GITRANK_REPO_ADMIN_TOKEN, or GitHub App credentials"
-          ;;
-      esac
+    if is_rate_limited_api_response; then
+      fail "$context hit GitHub API rate limit (HTTP 403); set GITHUB_TOKEN, GH_TOKEN, GITRANK_REPO_ADMIN_TOKEN, or GitHub App credentials"
     fi
     fail "$context returned HTTP $API_STATUS"
   fi
+}
+
+extract_react_embedded_json() {
+  printf '%s' "$1" | awk '
+    /<script type="application\/json" data-target="react-app.embeddedData">/ {
+      sub(/^.*data-target="react-app.embeddedData">/, "")
+      sub(/<\/script>.*/, "")
+      print
+      exit
+    }
+  '
+}
+
+load_public_rules_page_fallback() {
+  github_web_get "/$OWNER/$REPO/rules"
+  [ "$WEB_STATUS" = "200" ] || return 1
+  rules_embedded_json=$(extract_react_embedded_json "$WEB_BODY")
+  [ -n "$rules_embedded_json" ] || return 1
+
+  FALLBACK_DEFAULT_BRANCH=$(printf '%s' "$rules_embedded_json" | jq -r '.payload.source.defaultBranch // empty' 2>/dev/null || true)
+  [ -n "$FALLBACK_DEFAULT_BRANCH" ] || return 1
+
+  FALLBACK_RULESETS_JSON=$(printf '%s' "$rules_embedded_json" | jq -c '.payload.rulesets // []' 2>/dev/null || printf '[]')
+  FALLBACK_RULESET_COUNT=$(printf '%s' "$FALLBACK_RULESETS_JSON" | jq 'length')
+  FALLBACK_RULES_PAGE_AVAILABLE=true
+  return 0
+}
+
+load_public_branches_page_fallback() {
+  branch_name=$1
+  github_web_get "/$OWNER/$REPO/branches"
+  [ "$WEB_STATUS" = "200" ] || return 1
+  branches_embedded_json=$(extract_react_embedded_json "$WEB_BODY")
+  [ -n "$branches_embedded_json" ] || return 1
+
+  default_name=$(printf '%s' "$branches_embedded_json" | jq -r '.payload.branches.default.name // empty' 2>/dev/null || true)
+  [ -n "$default_name" ] || return 1
+
+  if [ "$default_name" != "$branch_name" ]; then
+    return 1
+  fi
+
+  FALLBACK_BRANCH_PROTECTED=$(printf '%s' "$branches_embedded_json" | jq -r '.payload.branches.default.protectedByBranchProtections // false' 2>/dev/null || printf 'false')
+  FALLBACK_BRANCH_RULESETS_PATH=$(printf '%s' "$branches_embedded_json" | jq -r '.payload.branches.default.rulesetsPath // empty' 2>/dev/null || true)
+  FALLBACK_BRANCHES_PAGE_AVAILABLE=true
+  return 0
 }
 
 rules_json_from_api_body() {
@@ -300,17 +366,45 @@ probe_dependency_graph_html_public() {
   rm -f "$html_file"
 }
 
-github_get "/repos/$OWNER/$REPO"
-expect_status 200 "repository metadata"
+FALLBACK_RULES_PAGE_AVAILABLE=false
+FALLBACK_BRANCHES_PAGE_AVAILABLE=false
+FALLBACK_DEFAULT_BRANCH=
+FALLBACK_RULESETS_JSON='[]'
+FALLBACK_RULESET_COUNT=0
+FALLBACK_BRANCH_PROTECTED=false
+FALLBACK_BRANCH_RULESETS_PATH=
 
-DEFAULT_BRANCH=$(printf '%s' "$API_BODY" | jq -r '.default_branch // empty')
-[ -n "$DEFAULT_BRANCH" ] || fail "repository default branch is empty"
+github_get "/repos/$OWNER/$REPO"
+if [ "$API_STATUS" = "200" ]; then
+  DEFAULT_BRANCH=$(printf '%s' "$API_BODY" | jq -r '.default_branch // empty')
+  [ -n "$DEFAULT_BRANCH" ] || fail "repository default branch is empty"
+elif [ -z "$TOKEN" ] && is_rate_limited_api_response; then
+  if ! load_public_rules_page_fallback; then
+    fail "repository metadata hit GitHub API rate limit (HTTP 403) and public rules fallback failed; set GITHUB_TOKEN, GH_TOKEN, GITRANK_REPO_ADMIN_TOKEN, or GitHub App credentials"
+  fi
+  DEFAULT_BRANCH="$FALLBACK_DEFAULT_BRANCH"
+else
+  expect_status 200 "repository metadata"
+fi
+
 TARGET_BRANCH="${GITHUB_DEFAULT_BRANCH:-$DEFAULT_BRANCH}"
 
+branch_metadata_source=api
 github_get "/repos/$OWNER/$REPO/branches/$TARGET_BRANCH"
-expect_status 200 "default branch metadata"
+if [ "$API_STATUS" = "200" ]; then
+  BRANCH_PROTECTED=$(printf '%s' "$API_BODY" | jq -r '.protected // false')
+elif [ -z "$TOKEN" ] && is_rate_limited_api_response; then
+  if load_public_branches_page_fallback "$TARGET_BRANCH"; then
+    BRANCH_PROTECTED="$FALLBACK_BRANCH_PROTECTED"
+    branch_metadata_source=web
+  else
+    fail "default branch metadata hit GitHub API rate limit (HTTP 403) and public branches fallback failed; set GITHUB_TOKEN, GH_TOKEN, GITRANK_REPO_ADMIN_TOKEN, or GitHub App credentials"
+  fi
+else
+  expect_status 200 "default branch metadata"
+  BRANCH_PROTECTED=$(printf '%s' "$API_BODY" | jq -r '.protected // false')
+fi
 
-BRANCH_PROTECTED=$(printf '%s' "$API_BODY" | jq -r '.protected // false')
 REQUIRED_CHECKS=0
 REVIEW_COUNT="unknown"
 ALLOW_FORCE_PUSHES="unknown"
@@ -323,41 +417,59 @@ DEPENDENCY_GRAPH_STATUS="unverified"
 DEPENDENCY_GRAPH_HTML_STATUS="not-run"
 
 if [ "$BRANCH_PROTECTED" = "true" ]; then
-  REQUIRED_CHECKS=$(printf '%s' "$API_BODY" | jq -r '((.protection.required_status_checks.contexts // []) | length) + ((.protection.required_status_checks.checks // []) | length)')
-  if [ "$REQUIRED_CHECKS" -lt 1 ]; then
-    add_control_error "protected branch does not expose any required status checks"
+  if [ "$branch_metadata_source" = "api" ]; then
+    REQUIRED_CHECKS=$(printf '%s' "$API_BODY" | jq -r '((.protection.required_status_checks.contexts // []) | length) + ((.protection.required_status_checks.checks // []) | length)')
+    if [ "$REQUIRED_CHECKS" -lt 1 ]; then
+      add_control_error "protected branch does not expose any required status checks"
+    fi
+  else
+    REQUIRED_CHECKS="unknown"
   fi
   CONTROL_MODE="branch protection"
 else
-  github_get "/repos/$OWNER/$REPO/rules/branches/$TARGET_BRANCH"
-  case "$API_STATUS" in
-    200)
-      rules_json=$(rules_json_from_api_body)
-      rules_count=$(printf '%s' "$rules_json" | jq 'length')
-      if [ "$rules_count" -le 0 ]; then
-        add_control_error "branch rules endpoint returned no effective rules for $TARGET_BRANCH"
-      fi
-      verify_ruleset_payload "$rules_json"
-      ;;
-    404)
+  rules_loaded_from_fallback=false
+  if [ "$FALLBACK_RULES_PAGE_AVAILABLE" = "true" ] && [ "$FALLBACK_RULESET_COUNT" -ge 0 ]; then
+    rules_loaded_from_fallback=true
+    if [ "$FALLBACK_RULESET_COUNT" -le 0 ]; then
       add_control_error "default branch is neither protected nor covered by branch rulesets"
-      ;;
-    *)
-      if [ "$API_STATUS" = "403" ]; then
-        message=$(printf '%s' "$API_BODY" | jq -r '.message // empty' 2>/dev/null || true)
-        case "$message" in
-          *"API rate limit exceeded"*)
-            add_control_error "branch rules lookup for $TARGET_BRANCH hit GitHub API rate limit (HTTP 403); set GITHUB_TOKEN, GH_TOKEN, GITRANK_REPO_ADMIN_TOKEN, or GitHub App credentials"
-            ;;
-          *)
-            add_control_error "branch rules lookup for $TARGET_BRANCH returned HTTP 403"
-            ;;
-        esac
-      else
-        add_control_error "branch rules lookup for $TARGET_BRANCH returned HTTP $API_STATUS"
-      fi
-      ;;
-  esac
+    else
+      rules_json="$FALLBACK_RULESETS_JSON"
+      verify_ruleset_payload "$rules_json"
+    fi
+  fi
+
+  if [ "$rules_loaded_from_fallback" = "false" ]; then
+    github_get "/repos/$OWNER/$REPO/rules/branches/$TARGET_BRANCH"
+    case "$API_STATUS" in
+      200)
+        rules_json=$(rules_json_from_api_body)
+        rules_count=$(printf '%s' "$rules_json" | jq 'length')
+        if [ "$rules_count" -le 0 ]; then
+          add_control_error "branch rules endpoint returned no effective rules for $TARGET_BRANCH"
+        else
+          verify_ruleset_payload "$rules_json"
+        fi
+        ;;
+      404)
+        add_control_error "default branch is neither protected nor covered by branch rulesets"
+        ;;
+      *)
+        if [ "$API_STATUS" = "403" ]; then
+          message=$(printf '%s' "$API_BODY" | jq -r '.message // empty' 2>/dev/null || true)
+          case "$message" in
+            *"API rate limit exceeded"*)
+              add_control_error "branch rules lookup for $TARGET_BRANCH hit GitHub API rate limit (HTTP 403); set GITHUB_TOKEN, GH_TOKEN, GITRANK_REPO_ADMIN_TOKEN, or GitHub App credentials"
+              ;;
+            *)
+              add_control_error "branch rules lookup for $TARGET_BRANCH returned HTTP 403"
+              ;;
+          esac
+        else
+          add_control_error "branch rules lookup for $TARGET_BRANCH returned HTTP $API_STATUS"
+        fi
+        ;;
+    esac
+  fi
 fi
 
 if [ -n "$TOKEN" ]; then
@@ -427,6 +539,9 @@ printf 'GitHub repository controls public verification passed for %s on %s.\n' "
 printf '- verification mode: %s\n' "$verification_mode"
 printf '- control surface verified via: %s\n' "$CONTROL_MODE"
 printf '- default branch protected: %s\n' "$BRANCH_PROTECTED"
+if [ "$branch_metadata_source" != "api" ]; then
+  printf '- branch metadata source: %s\n' "$branch_metadata_source"
+fi
 printf '- required status checks discovered: %s\n' "$REQUIRED_CHECKS"
 printf '- required PR approvals: %s\n' "$REVIEW_COUNT"
 printf '- force pushes disabled: %s\n' "$ALLOW_FORCE_PUSHES"
