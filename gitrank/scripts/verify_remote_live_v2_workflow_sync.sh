@@ -78,6 +78,24 @@ infer_default_branch_from_local_git() {
   esac
 }
 
+build_local_workflow_state() {
+  local_commit=unknown
+  local_dirty=unknown
+  if command -v git >/dev/null 2>&1; then
+    local_commit=$(git -C "$repo_dir" log -n1 --pretty=format:%H -- "$WORKFLOW_FILE_PATH" 2>/dev/null || true)
+    [ -n "$local_commit" ] || local_commit=unknown
+    if git -C "$repo_dir" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+      if git -C "$repo_dir" diff --quiet -- "$WORKFLOW_FILE_PATH" >/dev/null 2>&1 && \
+         git -C "$repo_dir" diff --cached --quiet -- "$WORKFLOW_FILE_PATH" >/dev/null 2>&1; then
+        local_dirty=no
+      else
+        local_dirty=yes
+      fi
+    fi
+  fi
+  printf 'local_commit=%s local_dirty=%s' "$local_commit" "$local_dirty"
+}
+
 verify_via_raw_public_fallback() {
   reason=$1
   candidate_branches=
@@ -147,7 +165,10 @@ verify_via_raw_public_fallback() {
   remote_content=$(cat "$raw_body_file")
   rm -f "$raw_body_file"
 
-  [ "$remote_content" = "$local_content" ] || fail "remote workflow content drift detected via raw fallback for $WORKFLOW_FILE_PATH on $REPOSITORY@$found_branch (run make sync-remote-live-v2-workflow)"
+  if [ "$remote_content" != "$local_content" ]; then
+    raw_view_url="https://raw.githubusercontent.com/$OWNER/$REPO/$found_branch/$WORKFLOW_FILE_PATH"
+    fail "remote workflow content drift detected via raw fallback for $WORKFLOW_FILE_PATH on $REPOSITORY@$found_branch (remote_url=$raw_view_url; $local_workflow_state; run make sync-remote-live-v2-workflow)"
+  fi
 
   printf 'remote live-v2 workflow sync verification passed (raw public fallback)\n'
   printf 'repository: %s\n' "$REPOSITORY"
@@ -175,6 +196,7 @@ repo_dir="$(CDPATH= cd -- "$root_dir/.." && pwd)"
 local_workflow_file="$repo_dir/$WORKFLOW_FILE_PATH"
 [ -s "$local_workflow_file" ] || fail "local file missing: $local_workflow_file"
 local_content=$(cat "$local_workflow_file")
+local_workflow_state=$(build_local_workflow_state)
 
 OWNER=${REPOSITORY%%/*}
 REPO=${REPOSITORY#*/}
@@ -249,10 +271,17 @@ esac
 
 remote_encoding=$(printf '%s' "$API_BODY" | jq -r '.encoding // empty')
 [ "$remote_encoding" = "base64" ] || fail "unexpected remote contents encoding: $remote_encoding"
+remote_blob_sha=$(printf '%s' "$API_BODY" | jq -r '.sha // empty')
+if [ -z "$remote_blob_sha" ]; then
+  remote_blob_sha=unknown
+fi
 remote_content_base64=$(printf '%s' "$API_BODY" | jq -r '.content // empty' | tr -d '\n')
 remote_content=$(printf '%s' "$remote_content_base64" | base64 -d 2>/dev/null || true)
 
-[ "$remote_content" = "$local_content" ] || fail "remote workflow content drift detected for $WORKFLOW_FILE_PATH on $REPOSITORY@$TARGET_BRANCH (run make sync-remote-live-v2-workflow)"
+if [ "$remote_content" != "$local_content" ]; then
+  remote_view_url="https://github.com/$OWNER/$REPO/blob/$TARGET_BRANCH/$WORKFLOW_FILE_PATH"
+  fail "remote workflow content drift detected for $WORKFLOW_FILE_PATH on $REPOSITORY@$TARGET_BRANCH (remote_url=$remote_view_url; remote_blob_sha=$remote_blob_sha; $local_workflow_state; run make sync-remote-live-v2-workflow)"
+fi
 
 printf 'remote live-v2 workflow sync verification passed\n'
 printf 'repository: %s\n' "$REPOSITORY"

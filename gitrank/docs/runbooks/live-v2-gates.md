@@ -194,6 +194,10 @@ GITHUB_REPOSITORY=OWNER/REPO \
 make verify-remote-live-v2-workflow-sync
 ```
 
+When drift is detected, this verifier now reports the remote file URL and
+local workflow state (`local_commit`, `local_dirty`) so you can quickly decide
+whether to sync/push the workflow update or discard local edits.
+
 For a no-token public precheck of repository-controls posture:
 
 ```bash
