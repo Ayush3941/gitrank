@@ -39,13 +39,14 @@ For consolidated execution, use:
   readiness, unresolved checklist audit, env presence, public controls precheck,
   and workflow-evidence probe results
   - `CHECK_PUBLIC_WORKFLOW_HEALTH` supports `auto|true|false` (default `auto`,
-    which enables the public workflow-health probe only when token/App
-    credentials are present)
+    which enables the public workflow-health probe when token/App credentials
+    are present or when the repository is publicly accessible for no-token probe
+    fallback)
   - set `CHECK_PUBLIC_WORKFLOW_HEALTH=false` to force offline snapshots without
     attempting `make verify-public-workflow-health`
   - `CHECKLIST_AUDIT_RUN_PUBLIC_PROBE` supports `auto|true|false` (default
-    `auto`, which enables probe calls only when token/App credentials are
-    present)
+    `auto`, which enables probe calls when token/App credentials are present or
+    when the repository is publicly accessible for no-token probe fallback)
   - set `CHECKLIST_AUDIT_RUN_PUBLIC_PROBE=false` to run the embedded checklist
     audit without live GitHub probe calls (useful for offline/rate-limited local
     snapshots)
@@ -60,13 +61,15 @@ For consolidated execution, use:
   from `CONTRIBUTING.md` (checklist counts, unresolved requirements,
   file-reference existence, `make` target mapping, and gate outputs)
   - `CHECK_PUBLIC_WORKFLOW_HEALTH` supports `auto|true|false` (default `auto`,
-    which enables the public workflow-health probe only when token/App
-    credentials are present)
-  - in `auto`, missing token/App credentials emit an explicit
-    `auto-disabled: no GitHub token/App credentials` waiver line
+    which enables the public workflow-health probe when token/App credentials
+    are present or when the repository is publicly accessible for no-token probe
+    fallback)
+  - in `auto`, missing token/App credentials emit
+    `auto-disabled: no GitHub token/App credentials` only when public no-token
+    fallback is unavailable
   - `CHECKLIST_AUDIT_RUN_PUBLIC_PROBE` supports `auto|true|false` (default
-    `auto`, which enables probe calls only when token/App credentials are
-    present)
+    `auto`, which enables probe calls when token/App credentials are present or
+    when the repository is publicly accessible for no-token probe fallback)
   - set `CHECKLIST_AUDIT_RUN_PUBLIC_PROBE=false` to keep the embedded checklist
     audit deterministic in offline/rate-limited local runs
   - if you intentionally skip probe execution (for example, `RUN_CHECKS=false`

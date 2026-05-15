@@ -6,6 +6,7 @@ TOKEN="${GITHUB_TOKEN:-${GH_TOKEN:-${GITRANK_REPO_ADMIN_TOKEN:-}}}"
 API_BASE="${GITHUB_API_URL:-https://api.github.com}"
 API_VERSION="${GITHUB_API_VERSION:-2026-03-10}"
 API_TIMEOUT_SECONDS="${GITHUB_API_TIMEOUT_SECONDS:-30}"
+WORKFLOW_STATUS_BASE="${GITHUB_SERVER_URL:-https://github.com}"
 WORKFLOW_EVENT="${WORKFLOW_EVENT:-push}"
 WORKFLOW_BRANCH="${WORKFLOW_BRANCH:-}"
 WORKFLOW_NAMES="${WORKFLOW_NAMES:-CI,Frontend CI,Secret Scan,CodeQL,Trivy Scan}"
@@ -21,6 +22,10 @@ fail() {
   printf 'public workflow health verification failed: %s\n' "$1" >&2
   exit 1
 }
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+REPO_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)
+LOCAL_WORKFLOW_DIR="$REPO_ROOT/.github/workflows"
 
 require_command() {
   command -v "$1" >/dev/null 2>&1 || fail "missing required command: $1"
@@ -50,6 +55,45 @@ is_positive_int() {
 
 trim_spaces() {
   printf '%s' "$1" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//'
+}
+
+resolve_default_branch_from_git_remote_head() {
+  [ -n "$WORKFLOW_BRANCH" ] && return 0
+  command -v git >/dev/null 2>&1 || return 0
+  remote_head_ref=$(git symbolic-ref -q --short refs/remotes/origin/HEAD 2>/dev/null || true)
+  case "$remote_head_ref" in
+    origin/*) WORKFLOW_BRANCH=${remote_head_ref#origin/} ;;
+  esac
+}
+
+workflow_name_from_local_file() {
+  workflow_file=$1
+  name_line=$(awk '
+    /^[[:space:]]*name:[[:space:]]*/ {
+      sub(/^[[:space:]]*name:[[:space:]]*/, "", $0)
+      sub(/[[:space:]]*#.*/, "", $0)
+      print
+      exit
+    }
+  ' "$workflow_file")
+  printf '%s' "$name_line" | sed 's/^"//; s/"$//; s/^'\''//; s/'\''$//'
+}
+
+resolve_local_workflow_file_for_name() {
+  wanted_name=$1
+  [ -d "$LOCAL_WORKFLOW_DIR" ] || return 1
+  for candidate in "$LOCAL_WORKFLOW_DIR"/*.yml "$LOCAL_WORKFLOW_DIR"/*.yaml; do
+    [ -f "$candidate" ] || continue
+    candidate_name=$(workflow_name_from_local_file "$candidate")
+    [ "$candidate_name" = "$wanted_name" ] || continue
+    printf '%s' "${candidate#"$REPO_ROOT"/}"
+    return 0
+  done
+  return 1
+}
+
+url_encode() {
+  printf '%s' "$1" | jq -sRr @uri
 }
 
 bootstrap_token_from_github_app() {
@@ -127,19 +171,91 @@ github_get() {
   rm -f "$body_file"
 }
 
+is_rate_limit_403() {
+  [ "$API_STATUS" = "403" ] || return 1
+  message=$(printf '%s' "$API_BODY" | jq -r '.message // empty' 2>/dev/null || true)
+  case "$message" in
+    *"API rate limit exceeded"*) return 0 ;;
+  esac
+  return 1
+}
+
 expect_status() {
   expected=$1
   context=$2
   if [ "$API_STATUS" != "$expected" ]; then
-    if [ "$API_STATUS" = "403" ]; then
-      message=$(printf '%s' "$API_BODY" | jq -r '.message // empty' 2>/dev/null || true)
-      case "$message" in
-        *"API rate limit exceeded"*)
-          fail "$context hit GitHub API rate limit (HTTP 403); set GITHUB_TOKEN, GH_TOKEN, GITRANK_REPO_ADMIN_TOKEN, or GitHub App credentials"
-          ;;
-      esac
+    if is_rate_limit_403; then
+      fail "$context hit GitHub API rate limit (HTTP 403); set GITHUB_TOKEN, GH_TOKEN, GITRANK_REPO_ADMIN_TOKEN, or GitHub App credentials"
     fi
     fail "$context returned HTTP $API_STATUS"
+  fi
+}
+
+verify_workflow_health_via_badges() {
+  badge_branch=$1
+
+  workflow_count=0
+  failed_workflow_count=0
+  missing_workflow_count=0
+
+  old_ifs=$IFS
+  IFS=','
+  for raw_workflow_name in $WORKFLOW_NAMES; do
+    workflow_name=$(trim_spaces "$raw_workflow_name")
+    [ -n "$workflow_name" ] || continue
+    workflow_count=$((workflow_count + 1))
+
+    workflow_file=$(resolve_local_workflow_file_for_name "$workflow_name" || true)
+    if [ -z "$workflow_file" ]; then
+      missing_workflow_count=$((missing_workflow_count + 1))
+      printf 'workflow missing: %s (no local workflow file matched by name)\n' "$workflow_name" >&2
+      continue
+    fi
+
+    query="event=$(url_encode "$WORKFLOW_EVENT")"
+    if [ -n "$badge_branch" ]; then
+      query="$query&branch=$(url_encode "$badge_branch")"
+    fi
+
+    badge_url="$WORKFLOW_STATUS_BASE/$OWNER/$REPO/actions/workflows/$workflow_file/badge.svg?$query"
+    badge_svg=$(curl -sS -L \
+      --connect-timeout "$API_TIMEOUT_SECONDS" \
+      --max-time "$API_TIMEOUT_SECONDS" \
+      "$badge_url") || fail "failed to fetch workflow badge for '$workflow_name'"
+
+    badge_status=$(printf '%s' "$badge_svg" | sed -n 's:.*<title>[^<]* - \([^<]*\)</title>.*:\1:p' | head -n 1)
+    badge_status=$(printf '%s' "$badge_status" | tr '[:upper:]' '[:lower:]')
+
+    case "$badge_status" in
+      passing|success)
+        printf 'workflow ok: %s (badge=%s)\n' "$workflow_name" "$badge_status"
+        ;;
+      failing|failed|failure|error)
+        failed_workflow_count=$((failed_workflow_count + 1))
+        printf 'workflow unhealthy: %s (badge=%s url=%s)\n' "$workflow_name" "$badge_status" "$badge_url" >&2
+        ;;
+      "")
+        missing_workflow_count=$((missing_workflow_count + 1))
+        printf 'workflow missing: %s (badge did not expose a status title)\n' "$workflow_name" >&2
+        ;;
+      *)
+        missing_workflow_count=$((missing_workflow_count + 1))
+        printf 'workflow unknown: %s (badge=%s url=%s)\n' "$workflow_name" "$badge_status" "$badge_url" >&2
+        ;;
+    esac
+  done
+  IFS=$old_ifs
+
+  [ "$workflow_count" -gt 0 ] || fail "WORKFLOW_NAMES resolved to an empty set"
+
+  if [ "$missing_workflow_count" -gt 0 ] || [ "$failed_workflow_count" -gt 0 ]; then
+    fail "checked $workflow_count workflow(s) via badges: missing=$missing_workflow_count unhealthy=$failed_workflow_count"
+  fi
+
+  if [ -n "$badge_branch" ]; then
+    printf 'public workflow health verification passed for %s (%s/%s) via badges\n' "$REPOSITORY" "$WORKFLOW_EVENT" "$badge_branch"
+  else
+    printf 'public workflow health verification passed for %s (%s/all-branches) via badges\n' "$REPOSITORY" "$WORKFLOW_EVENT"
   fi
 }
 
@@ -184,11 +300,21 @@ diagnose_trivy_remote_policy() {
   esac
 }
 
-github_get "/repos/$OWNER/$REPO"
-expect_status 200 "repository metadata"
+resolve_default_branch_from_git_remote_head
 
 if [ -z "$WORKFLOW_BRANCH" ]; then
-  WORKFLOW_BRANCH=$(printf '%s' "$API_BODY" | jq -r '.default_branch // empty')
+  github_get "/repos/$OWNER/$REPO"
+  if [ "$API_STATUS" = "200" ]; then
+    WORKFLOW_BRANCH=$(printf '%s' "$API_BODY" | jq -r '.default_branch // empty')
+  elif is_rate_limit_403; then
+    if [ -n "$TOKEN" ]; then
+      fail "repository metadata hit GitHub API rate limit (HTTP 403) even with token; check token scope and current rate limits"
+    fi
+    printf 'public workflow health: repository metadata is rate-limited without token; continuing with all-branch workflow checks\n' >&2
+    WORKFLOW_BRANCH="*"
+  else
+    fail "repository metadata returned HTTP $API_STATUS"
+  fi
 fi
 [ -n "$WORKFLOW_BRANCH" ] || fail "unable to resolve workflow branch"
 branch_filter="$WORKFLOW_BRANCH"
@@ -196,32 +322,15 @@ if [ "$WORKFLOW_BRANCH" = "*" ] || [ "$WORKFLOW_BRANCH" = "any" ]; then
   branch_filter=""
 fi
 
-runs_file="$TMP_ROOT/gitrank-workflow-health-runs.$$"
-: >"$runs_file"
-trap 'rm -f "$runs_file"' EXIT HUP INT TERM
-
-page=1
-while [ "$page" -le "$MAX_PAGES" ]; do
-  if [ -n "$branch_filter" ]; then
-    github_get "/repos/$OWNER/$REPO/actions/runs?branch=$branch_filter&event=$WORKFLOW_EVENT&per_page=$RUNS_PER_PAGE&page=$page"
-  else
-    github_get "/repos/$OWNER/$REPO/actions/runs?event=$WORKFLOW_EVENT&per_page=$RUNS_PER_PAGE&page=$page"
-  fi
-  expect_status 200 "workflow run list page $page"
-  page_count=$(printf '%s' "$API_BODY" | jq '.workflow_runs | length')
-  page_runs=$(printf '%s' "$API_BODY" | jq -c '.workflow_runs[]?')
-  if [ -n "$page_runs" ]; then
-    printf '%s\n' "$page_runs" >>"$runs_file"
-  fi
-  [ "$page_count" -lt "$RUNS_PER_PAGE" ] && break
-  page=$((page + 1))
-done
-
-total_runs=$(awk 'END { print NR + 0 }' "$runs_file")
-if [ -n "$branch_filter" ]; then
-  [ "$total_runs" -gt 0 ] || fail "no workflow runs found for branch '$branch_filter' and event '$WORKFLOW_EVENT'"
+github_get "/repos/$OWNER/$REPO/actions/workflows?per_page=100"
+if [ "$API_STATUS" = "200" ]; then
+  workflows_json=$API_BODY
+elif is_rate_limit_403 && [ -z "$TOKEN" ]; then
+  printf 'public workflow health: workflow list is rate-limited without token; falling back to badge checks\n' >&2
+  verify_workflow_health_via_badges "$branch_filter"
+  exit 0
 else
-  [ "$total_runs" -gt 0 ] || fail "no workflow runs found for event '$WORKFLOW_EVENT'"
+  expect_status 200 "repository workflows list"
 fi
 
 workflow_count=0
@@ -235,19 +344,36 @@ for raw_workflow_name in $WORKFLOW_NAMES; do
   [ -n "$workflow_name" ] || continue
   workflow_count=$((workflow_count + 1))
 
-  latest_run=$(jq -s -c --arg name "$workflow_name" '
+  workflow_id=$(printf '%s' "$workflows_json" | jq -r --arg name "$workflow_name" '
     [
-      .[]?
+      .workflows[]?
       | select(.name == $name)
     ]
-    | sort_by(.created_at)
+    | sort_by(.updated_at // .created_at // "")
     | reverse
-    | .[0] // empty
-  ' "$runs_file")
+    | .[0].id // empty
+  ')
 
+  if [ -z "$workflow_id" ]; then
+    missing_workflow_count=$((missing_workflow_count + 1))
+    printf 'workflow missing: %s (workflow not found in repository workflow list)\n' "$workflow_name" >&2
+    continue
+  fi
+
+  if [ -n "$branch_filter" ]; then
+    github_get "/repos/$OWNER/$REPO/actions/workflows/$workflow_id/runs?branch=$branch_filter&event=$WORKFLOW_EVENT&per_page=1"
+  else
+    github_get "/repos/$OWNER/$REPO/actions/workflows/$workflow_id/runs?event=$WORKFLOW_EVENT&per_page=1"
+  fi
+  expect_status 200 "workflow run list for $workflow_name"
+  latest_run=$(printf '%s' "$API_BODY" | jq -c '.workflow_runs[0] // empty')
   if [ -z "$latest_run" ]; then
     missing_workflow_count=$((missing_workflow_count + 1))
-    printf 'workflow missing: %s (no matching run in the last %s page(s))\n' "$workflow_name" "$MAX_PAGES" >&2
+    if [ -n "$branch_filter" ]; then
+      printf 'workflow missing: %s (no %s run found on branch %s)\n' "$workflow_name" "$WORKFLOW_EVENT" "$branch_filter" >&2
+    else
+      printf 'workflow missing: %s (no %s run found)\n' "$workflow_name" "$WORKFLOW_EVENT" >&2
+    fi
     continue
   fi
 

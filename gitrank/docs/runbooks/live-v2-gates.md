@@ -219,9 +219,10 @@ cd gitrank
 make verify-public-workflow-health
 ```
 
-If GitHub's unauthenticated API quota is exhausted, this command now fails with
-an explicit rate-limit error. In that case, rerun with
-`GITRANK_REPO_ADMIN_TOKEN` (or GitHub App bootstrap credentials).
+If GitHub's unauthenticated API quota is exhausted, this command falls back to
+workflow badge checks for the configured workflow names and still reports
+pass/fail status. Use `GITRANK_REPO_ADMIN_TOKEN` (or GitHub App bootstrap
+credentials) when you need full API-backed run/job diagnostics.
 When GitHub App credentials are present, `make verify-public-workflow-health`
 can auto-bootstrap a short-lived token.
 
