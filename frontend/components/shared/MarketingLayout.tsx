@@ -8,14 +8,14 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
   return (
     <AppShell>
       <div className="space-y-8">
-        <header className="glass-panel flex items-center justify-between rounded-[2rem] px-5 py-4">
+        <header className="glass-panel cyber-card panel-grid flex items-center justify-between rounded-[2rem] px-5 py-4">
           <Link href="/" className="flex items-center gap-3">
             <div className="rounded-3xl bg-primary/16 p-3 text-primary ring-glow">
               <Sparkles className="h-5 w-5" />
             </div>
             <div>
               <p className="text-lg font-semibold text-white">GitRank</p>
-              <p className="text-xs tracking-[0.24em] text-muted uppercase">Open-source reputation</p>
+              <p className="hud-eyebrow text-xs font-semibold uppercase">Open-source reputation</p>
             </div>
           </Link>
           <div className="flex items-center gap-3">
@@ -31,7 +31,7 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
           </div>
         </header>
         {children}
-        <footer className="border-t border-primary/18 py-8 text-sm text-muted">
+        <footer className="neon-surface rounded-[1.75rem] px-5 py-6 text-sm text-muted">
           <p>GitRank rewards merged evidence, review depth, tests, and project impact. Spam PRs do not make you powerful here.</p>
         </footer>
       </div>

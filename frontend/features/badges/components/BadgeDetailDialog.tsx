@@ -24,7 +24,7 @@ export function BadgeDetailDialog({
         <div className="space-y-5">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-3">
-              <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
+              <div className="neon-tile cyber-sheen inline-flex rounded-3xl p-3 text-primary">
                 <SignalIcon icon={badge.icon} className="h-5 w-5" />
               </div>
               <DialogTitle className="text-2xl font-semibold text-white">{badge.name}</DialogTitle>
@@ -32,7 +32,7 @@ export function BadgeDetailDialog({
             </div>
             <RarityBadge rarity={badge.rarity} />
           </div>
-          <GlowCard className="space-y-3 neon-surface p-4">
+          <GlowCard className="cyber-sheen space-y-3 neon-surface p-4">
             <p className="text-xs tracking-[0.24em] text-primary uppercase">Unlock condition</p>
             <p className="text-sm text-slate-200">{badge.unlockCondition}</p>
             {typeof badge.rarityScore === "number" ? (
@@ -45,7 +45,7 @@ export function BadgeDetailDialog({
             ) : null}
           </GlowCard>
           {story ? (
-            <GlowCard className="space-y-3 neon-surface border-fuchsia-300/24 p-4">
+            <GlowCard className="cyber-sheen space-y-3 neon-surface border-fuchsia-300/24 p-4">
               <p className="text-xs tracking-[0.24em] text-fuchsia-200 uppercase">Achievement story</p>
               <p className="text-sm text-slate-200/88">{story.story}</p>
               <p className="text-sm text-slate-200/84">

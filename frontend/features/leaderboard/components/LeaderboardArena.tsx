@@ -34,16 +34,23 @@ export function LeaderboardArena({ snapshot }: { snapshot: LeaderboardSnapshot }
         const positive = row.movement >= 0;
         const podiumTone =
           row.rank === 1
-            ? "border-amber-300/35 bg-amber-300/10"
+            ? "cyber-podium-gold"
             : row.rank === 2
-              ? "border-slate-200/35 bg-slate-200/10"
+              ? "cyber-podium-silver"
                 : row.rank === 3
-                ? "border-orange-300/30 bg-orange-300/10"
+                ? "cyber-podium-bronze"
                 : "";
+        const rowTone = [
+          "cyber-sheen",
+          row.isCurrentUser ? "ring-glow border border-primary/22 bg-primary/8" : "",
+          podiumTone,
+        ]
+          .filter(Boolean)
+          .join(" ");
         return (
           <GlowCard
             key={`${row.rank}-${row.username}`}
-            className={`${row.isCurrentUser ? "border border-primary/22 bg-primary/8" : ""} ${podiumTone}`.trim() || undefined}
+            className={rowTone || undefined}
           >
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex items-center gap-4">
@@ -55,7 +62,7 @@ export function LeaderboardArena({ snapshot }: { snapshot: LeaderboardSnapshot }
                     <p className="text-xl font-semibold text-white">{row.displayName}</p>
                     <RankBadge rank={row.rankTier} />
                     {row.isCurrentUser ? (
-                      <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                      <span className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
                         You
                       </span>
                     ) : null}

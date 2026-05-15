@@ -11,7 +11,7 @@ export function SkillBreakdownCard({ user }: { user: UserProfile }) {
           <p className="text-xs tracking-[0.24em] text-primary uppercase">Skill breakdown</p>
           <h2 className="mt-2 text-2xl font-semibold text-white">Reputation signal by discipline</h2>
         </div>
-        <div className="rounded-3xl bg-white/6 p-3 text-primary">
+        <div className="neon-tile cyber-sheen rounded-3xl p-3 text-primary">
           <BarChart3 className="h-5 w-5" />
         </div>
       </div>

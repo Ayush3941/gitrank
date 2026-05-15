@@ -1281,6 +1281,7 @@ ABRA implementation checklist:
 - [x] Gemini integration is implemented server-side using central helpers and env-driven config (`GEMINI_API_KEY`) for contribution explanations, badge stories, and profile identity summaries.
 - [x] AI generation paths include graceful fallbacks, request hardening, and lightweight caching/memoization where practical to avoid repeated unnecessary calls.
 - [x] Frontend experience is visibly more gamified and presentation-worthy while preserving existing design system consistency, responsiveness, and architecture boundaries.
+- [x] Neon/cyberpunk visual language is consistently applied across nav shells, dialogs, toggles, progress bars, leaderboard podium states, quest status pills, and avatar surfaces while keeping reduced-gamification behavior intact.
 - [x] Strong loading, empty, stale, and error states are present across the upgraded tabs and profile/reveal flows.
 - [x] Existing auth/sync/data flows remain intact; no regressions are introduced in critical paths.
 - [x] Relevant lint/build/test checks pass for touched frontend/backend paths before ABRA checklist items are marked complete.

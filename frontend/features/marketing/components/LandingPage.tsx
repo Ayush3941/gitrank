@@ -66,7 +66,7 @@ export function LandingPage() {
                 alt={`${user.displayName} sample avatar`}
                 width={72}
                 height={72}
-                className="h-[72px] w-[72px] rounded-3xl border border-white/10 bg-white/6"
+                className="cyber-avatar h-[72px] w-[72px] rounded-3xl"
               />
               <div className="space-y-1">
                 <p className="text-sm text-muted">@{user.username}</p>

@@ -7,10 +7,10 @@ export function QuestCard({ quest }: { quest: Quest }) {
   const progress = Math.round((quest.progress / quest.goal) * 100);
   const statusTone =
     quest.status === "Completed"
-      ? "border-emerald-300/30 bg-emerald-400/10 text-emerald-100"
+      ? "neon-chip neon-chip-success"
       : quest.status === "Locked"
-        ? "border-amber-300/30 bg-amber-400/10 text-amber-100"
-        : "border-cyan-300/30 bg-cyan-400/10 text-cyan-100";
+        ? "neon-chip neon-chip-warning"
+        : "neon-chip neon-chip-info";
 
   return (
     <GlowCard className="relative space-y-4 overflow-hidden border border-cyan-300/20 bg-gradient-to-br from-slate-950/88 via-slate-900/82 to-cyan-950/30">
@@ -25,14 +25,14 @@ export function QuestCard({ quest }: { quest: Quest }) {
           <p className="text-sm text-muted">{quest.description}</p>
           <p className="text-sm leading-6 text-slate-200/76">{quest.whyRecommended}</p>
         </div>
-        <div className="rounded-3xl bg-primary/12 px-3 py-2 text-sm font-medium text-primary">
+        <div className="neon-chip neon-chip-info rounded-3xl px-3 py-2 text-sm font-medium">
           +{quest.rewardXp} XP
         </div>
       </div>
       <Progress value={progress} />
       <div className="flex items-center justify-between text-sm text-muted">
         <span>{quest.progress} / {quest.goal}</span>
-        <span className={`rounded-full border px-2.5 py-1 text-xs ${statusTone}`}>{quest.status}</span>
+        <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusTone}`}>{quest.status}</span>
       </div>
       <div className="flex flex-wrap gap-2">
         {quest.evidenceSignals.map((signal) => (
