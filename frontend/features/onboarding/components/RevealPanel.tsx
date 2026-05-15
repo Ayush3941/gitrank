@@ -87,12 +87,12 @@ export function RevealPanelSkeleton() {
   return (
     <main className="mx-auto max-w-5xl">
       <GlowCard strong className="space-y-8 panel-grid text-center">
-        <div className="mx-auto h-8 w-48 animate-pulse rounded-full bg-white/8" />
-        <div className="mx-auto h-16 w-full max-w-2xl animate-pulse rounded-3xl bg-white/8" />
-        <div className="mx-auto h-10 w-72 animate-pulse rounded-full bg-white/8" />
+        <div className="neon-skeleton mx-auto h-8 w-48 rounded-full" />
+        <div className="neon-skeleton mx-auto h-16 w-full max-w-2xl rounded-3xl" />
+        <div className="neon-skeleton mx-auto h-10 w-72 rounded-full" />
         <div className="grid gap-4 sm:grid-cols-3">
           {[0, 1, 2].map((item) => (
-            <div key={item} className="h-40 animate-pulse rounded-[1.75rem] bg-white/8" />
+            <div key={item} className="neon-skeleton h-40 rounded-[1.75rem]" />
           ))}
         </div>
       </GlowCard>

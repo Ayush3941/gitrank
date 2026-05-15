@@ -6,7 +6,7 @@ export function PublicProfileLayout({ children }: { children: ReactNode }) {
   return (
     <AppShell className="max-w-6xl">
       <div className="space-y-6">
-        <Link href="/" className="cyber-link text-sm font-medium">
+        <Link href="/" className="cyber-link hud-pill inline-flex rounded-full px-3 py-1.5 text-sm font-medium">
           Back to GitRank
         </Link>
         {children}

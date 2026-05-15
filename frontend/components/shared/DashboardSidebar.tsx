@@ -18,7 +18,7 @@ export function DashboardSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="glass-panel cyber-card panel-grid hidden w-72 shrink-0 rounded-[2rem] p-5 xl:flex xl:flex-col xl:justify-between">
+    <aside className="glass-panel cyber-card panel-grid neon-outline hidden w-72 shrink-0 rounded-[2rem] p-5 xl:flex xl:flex-col xl:justify-between">
       <div className="space-y-8">
         <Link href="/" className="flex items-center gap-3">
           <div className="cyber-sheen rounded-3xl bg-primary/16 p-3 text-primary ring-glow">
@@ -51,7 +51,7 @@ export function DashboardSidebar() {
           })}
         </nav>
       </div>
-      <div className="cyber-card rounded-[1.75rem] border border-primary/28 bg-primary/10 p-4">
+      <div className="neon-surface rounded-[1.75rem] border border-primary/34 p-4">
         <p className="text-xs font-semibold tracking-[0.24em] text-primary uppercase">Core thesis</p>
         <p className="mt-2 text-sm text-slate-200">
           GitRank does not ask only how much you contributed. It asks how meaningful your contribution was.

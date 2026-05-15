@@ -16,7 +16,7 @@ export function Switch({
       )}
       {...props}
     >
-      <SwitchPrimitive.Thumb className="block h-5 w-5 translate-x-1 rounded-full bg-gradient-to-r from-slate-100 to-cyan-100 shadow-[0_0_18px_rgb(34_226_255_/_0.32)] transition data-[state=checked]:translate-x-6" />
+      <SwitchPrimitive.Thumb className="block h-5 w-5 translate-x-1 rounded-full bg-gradient-to-r from-cyan-100 via-cyan-200 to-fuchsia-200 shadow-[0_0_18px_rgb(34_226_255_/_0.38)] transition data-[state=checked]:translate-x-6" />
     </SwitchPrimitive.Root>
   );
 }
