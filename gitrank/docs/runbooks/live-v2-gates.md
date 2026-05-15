@@ -506,6 +506,19 @@ RUN_RELEASE_RENDER=true \
 make verify-live-v2-inputs
 ```
 
+To preflight remote workflow-sync execution explicitly:
+
+```bash
+RUN_REMOTE_WORKFLOW_SYNC=true \
+AUTO_SYNC_REMOTE_WORKFLOW=true \
+make verify-live-v2-inputs
+```
+
+When auto-sync is enabled, this preflight now requires either:
+- token/App credentials for `make sync-remote-live-v2-workflow`, or
+- successful `make verify-origin-push-access` (so local workflow updates can be pushed directly).
+If neither path is available, it fails with the origin push probe summary.
+
 Enable live checks by setting environment flags and required credentials:
 
 ```bash

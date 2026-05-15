@@ -8,6 +8,8 @@ RUN_EVIDENCE_VALIDATION="${RUN_EVIDENCE_VALIDATION:-false}"
 RUN_WORKFLOW_EVIDENCE_PIPELINE="${RUN_WORKFLOW_EVIDENCE_PIPELINE:-false}"
 RUN_ROLLBACK_RESTORE="${RUN_ROLLBACK_RESTORE:-false}"
 DISPATCH_WORKFLOW="${DISPATCH_WORKFLOW:-false}"
+RUN_REMOTE_WORKFLOW_SYNC="${RUN_REMOTE_WORKFLOW_SYNC:-false}"
+AUTO_SYNC_REMOTE_WORKFLOW="${AUTO_SYNC_REMOTE_WORKFLOW:-false}"
 
 GITHUB_REPOSITORY="${GITHUB_REPOSITORY:-}"
 GITHUB_TOKEN="${GITHUB_TOKEN:-${GH_TOKEN:-${GITRANK_REPO_ADMIN_TOKEN:-}}}"
@@ -91,6 +93,8 @@ resolve_repository_from_git_remote() {
 
 resolve_repository_from_git_remote
 
+script_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+
 add_missing_unique() {
   current=$1
   item=$2
@@ -124,6 +128,51 @@ ensure_file_non_empty() {
   fi
 }
 
+ensure_remote_workflow_sync_access() {
+  if [ "$RUN_REMOTE_WORKFLOW_SYNC" != "true" ]; then
+    return 0
+  fi
+
+  ensure_non_empty GITHUB_REPOSITORY "$GITHUB_REPOSITORY"
+
+  if [ "$AUTO_SYNC_REMOTE_WORKFLOW" != "true" ]; then
+    return 0
+  fi
+
+  if [ -n "$GITHUB_TOKEN" ]; then
+    return 0
+  fi
+
+  has_app_bootstrap=false
+  if [ -n "$GITHUB_APP_ID" ] && [ -n "$GITHUB_APP_INSTALLATION_ID" ]; then
+    if [ -n "$GITHUB_APP_PRIVATE_KEY_FILE" ] || [ -n "$GITHUB_APP_PRIVATE_KEY_PEM" ]; then
+      has_app_bootstrap=true
+    fi
+  fi
+  if [ "$has_app_bootstrap" = "true" ]; then
+    return 0
+  fi
+
+  if [ ! -x "$script_dir/verify_origin_push_access.sh" ]; then
+    fail "remote workflow sync preflight requires token/App credentials or executable verify_origin_push_access.sh"
+  fi
+
+  push_probe_log=$(mktemp "${TMPDIR:-/tmp}/gitrank-live-v2-inputs-origin-push.XXXXXX")
+  if "$script_dir/verify_origin_push_access.sh" >"$push_probe_log" 2>&1; then
+    rm -f "$push_probe_log"
+    return 0
+  fi
+  push_summary=$(grep -E 'origin push access verification (failed|passed)' "$push_probe_log" | tail -n 1 2>/dev/null || true)
+  if [ -z "$push_summary" ]; then
+    push_summary=$(tail -n 1 "$push_probe_log" 2>/dev/null || true)
+  fi
+  rm -f "$push_probe_log"
+  if [ -z "$push_summary" ]; then
+    push_summary="origin push access probe failed (no output captured)"
+  fi
+  fail "remote workflow sync preflight requires token/App credentials or successful origin push access. $push_summary"
+}
+
 if [ "$RUN_GITHUB_CONTROLS" = "true" ]; then
   ensure_non_empty GITHUB_REPOSITORY "$GITHUB_REPOSITORY"
   if [ -z "$GITHUB_TOKEN" ]; then
@@ -143,6 +192,8 @@ if [ "$RUN_GITHUB_CONTROLS" = "true" ]; then
     fi
   fi
 fi
+
+ensure_remote_workflow_sync_access
 
 if [ "$RUN_WORKFLOW_EVIDENCE_PIPELINE" = "true" ] && [ "$DISPATCH_WORKFLOW" = "true" ]; then
   ensure_non_empty GITHUB_REPOSITORY "$GITHUB_REPOSITORY"

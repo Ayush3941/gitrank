@@ -56,6 +56,11 @@ if [ "$RUN_PUBLIC_WORKFLOW_HEALTH" = "true" ]; then
 fi
 
 if [ "$RUN_REMOTE_WORKFLOW_SYNC" = "true" ]; then
+  if [ "$RUN_INPUT_PREFLIGHT" = "true" ]; then
+    RUN_REMOTE_WORKFLOW_SYNC=true \
+    AUTO_SYNC_REMOTE_WORKFLOW="$AUTO_SYNC_REMOTE_WORKFLOW" \
+    run_make verify-live-v2-inputs
+  fi
   if run_make verify-remote-live-v2-workflow-sync; then
     :
   else
