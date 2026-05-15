@@ -1188,6 +1188,9 @@ must remain absent).
 Use `make verify-v2-external-unblock-preflight-behavior` to enforce the output
 contract for the external-unblock preflight (`input_state.*`,
 `checklist_probe_mapping`, and minimal-required-input hints).
+The preflight also emits `input_state.origin_push_required` so token/App-auth
+setups are not blocked by local push-auth probe failures when an authenticated
+sync/apply path is already available.
 Use `make verify-live-v2-workflow-run` to verify a successful
 `verify-live-v2-gates.yml` run by run ID (or `WORKFLOW_RUN_ID=latest`) and
 reuse it as live-gate evidence.

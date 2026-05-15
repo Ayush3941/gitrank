@@ -19,6 +19,7 @@ for required in \
   'input_state.prometheus_base_url:' \
   'input_state.grafana_base_url:' \
   'input_state.grafana_api_token:' \
+  'input_state.origin_push_required:' \
   'checklist_probe_mapping' \
   'line.%s => probes[%s] :: %s' \
   'Minimal required next inputs:' \

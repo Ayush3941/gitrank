@@ -84,6 +84,8 @@ if [ -z "$resolved_repo" ]; then
   exit 1
 fi
 
+token_state=$(state_for_value "${GITRANK_REPO_ADMIN_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}")
+
 run_probe() {
   name=$1
   shift
@@ -134,32 +136,26 @@ rm -f "$report_env_file"
 run_probe github_access env GITHUB_REPOSITORY="$resolved_repo" "$root_dir/scripts/verify_live_github_access.sh"
 github_access_status=$probe_status
 github_access_summary=$probe_summary
-[ "$github_access_status" = "fail" ] && fail_count=$((fail_count + 1))
 
 run_probe origin_push env REMOTE_NAME=origin "$root_dir/scripts/verify_origin_push_access.sh"
 origin_push_status=$probe_status
 origin_push_summary=$probe_summary
-[ "$origin_push_status" = "fail" ] && fail_count=$((fail_count + 1))
 
 run_probe remote_workflow_sync env GITHUB_REPOSITORY="$resolved_repo" "$root_dir/scripts/verify_remote_live_v2_workflow_sync.sh"
 remote_workflow_sync_status=$probe_status
 remote_workflow_sync_summary=$probe_summary
-[ "$remote_workflow_sync_status" = "fail" ] && fail_count=$((fail_count + 1))
 
 run_probe controls_public env GITHUB_REPOSITORY="$resolved_repo" "$root_dir/scripts/verify_github_repository_controls_public.sh"
 controls_public_status=$probe_status
 controls_public_summary=$probe_summary
-[ "$controls_public_status" = "fail" ] && fail_count=$((fail_count + 1))
 
 run_probe observability_inputs env RUN_OBSERVABILITY=true "$root_dir/scripts/verify_live_v2_inputs.sh"
 observability_inputs_status=$probe_status
 observability_inputs_summary=$probe_summary
-[ "$observability_inputs_status" = "fail" ] && fail_count=$((fail_count + 1))
 
 run_probe workflow_evidence env GITHUB_REPOSITORY="$resolved_repo" WORKFLOW_RUN_ID=latest WORKFLOW_EVENT=any REQUIRE_GITHUB_CONTROLS=true REQUIRE_OBSERVABILITY=true REQUIRE_RELEASE_RENDER=true "$root_dir/scripts/verify_live_v2_workflow_run.sh"
 workflow_evidence_status=$probe_status
 workflow_evidence_summary=$probe_summary
-[ "$workflow_evidence_status" = "fail" ] && fail_count=$((fail_count + 1))
 
 printf 'v2 external unblock preflight\n'
 printf 'repository: %s\n' "$resolved_repo"
@@ -174,13 +170,36 @@ printf 'probe.controls_public: %s (%s)\n' "$controls_public_status" "$controls_p
 printf 'probe.observability_inputs: %s (%s)\n' "$observability_inputs_status" "$observability_inputs_summary"
 printf 'probe.workflow_evidence: %s (%s)\n' "$workflow_evidence_status" "$workflow_evidence_summary"
 
-token_state=$(state_for_value "${GITRANK_REPO_ADMIN_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}")
 repo_state=$(state_for_value "${GITHUB_REPOSITORY:-$resolved_repo}")
 prometheus_state=$(state_for_value "${PROMETHEUS_BASE_URL:-}")
 grafana_base_state=$(state_for_value "${GRAFANA_BASE_URL:-}")
 grafana_token_state=$(state_for_value "${GRAFANA_API_TOKEN:-}")
 workflow_id_state=$(state_for_value "${WORKFLOW_RUN_ID:-latest}")
 workflow_event_state=$(state_for_value "${WORKFLOW_EVENT:-any}")
+
+origin_push_required_state=true
+if [ "$token_state" = "set" ]; then
+  origin_push_required_state=false
+fi
+
+if [ "$github_access_status" = "fail" ]; then
+  fail_count=$((fail_count + 1))
+fi
+if [ "$origin_push_status" = "fail" ] && [ "$origin_push_required_state" = "true" ]; then
+  fail_count=$((fail_count + 1))
+fi
+if [ "$remote_workflow_sync_status" = "fail" ]; then
+  fail_count=$((fail_count + 1))
+fi
+if [ "$controls_public_status" = "fail" ]; then
+  fail_count=$((fail_count + 1))
+fi
+if [ "$observability_inputs_status" = "fail" ]; then
+  fail_count=$((fail_count + 1))
+fi
+if [ "$workflow_evidence_status" = "fail" ]; then
+  fail_count=$((fail_count + 1))
+fi
 
 printf 'input_state.repository: %s\n' "$repo_state"
 printf 'input_state.github_token_or_admin_token: %s\n' "$token_state"
@@ -189,6 +208,7 @@ printf 'input_state.grafana_base_url: %s\n' "$grafana_base_state"
 printf 'input_state.grafana_api_token: %s\n' "$grafana_token_state"
 printf 'input_state.workflow_run_id: %s\n' "$workflow_id_state"
 printf 'input_state.workflow_event: %s\n' "$workflow_event_state"
+printf 'input_state.origin_push_required: %s\n' "$origin_push_required_state"
 
 if [ -s "$contributing_file" ]; then
   unresolved_file=$(mktemp "$tmp_root/gitrank-v2-unblock-unresolved.XXXXXX")

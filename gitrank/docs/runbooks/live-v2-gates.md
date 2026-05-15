@@ -207,6 +207,7 @@ make verify-v2-external-unblock-preflight
 
 The preflight output now includes:
 - `input_state.*` summaries (`set|placeholder|unset`) for key credentials and observability/workflow inputs.
+- `input_state.origin_push_required` to indicate when local push auth is truly required (`true`) versus optional because token/App auth is already available (`false`).
 - `checklist_probe_mapping` lines that map unresolved `CONTRIBUTING.md` checklist entries to the exact probe set required to clear them.
 - `Minimal required next inputs` computed from failing probes, so you can fill only the missing auth/observability variables first.
 
