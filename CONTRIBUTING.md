@@ -1228,6 +1228,8 @@ now enforces `make verify-live-github-access` before GitHub-controls apply/verif
 When `RUN_EXTERNAL_PREFLIGHT_REPORT=true` (default), finalizer now emits the
 `make verify-v2-external-unblock-preflight` report first and continues, so
 credential/config blockers are visible before any live mutations are attempted.
+That preflight now prints `input_state.*` fields and a `checklist_probe_mapping`
+section that maps each unresolved checklist line to the probe(s) it depends on.
 When `RUN_K8S_RUNTIME=true` and workflow evidence is not used, finalizer runtime
 proof now requires explicit staging and production `STAGING_K8S_*` /
 `PRODUCTION_K8S_*` overrides by default

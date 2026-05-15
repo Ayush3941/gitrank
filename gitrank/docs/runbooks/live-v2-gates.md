@@ -205,6 +205,10 @@ cd gitrank
 make verify-v2-external-unblock-preflight
 ```
 
+The preflight output now includes:
+- `input_state.*` summaries (`set|placeholder|unset`) for key credentials and observability/workflow inputs.
+- `checklist_probe_mapping` lines that map unresolved `CONTRIBUTING.md` checklist entries to the exact probe set required to clear them.
+
 This readiness command now also verifies that
 `scripts/finalize_v2_live_closeout.sh` correctly resolves both
 `GITHUB_APP_*` and `GITRANK_GITHUB_APP_*` credential variable sets before

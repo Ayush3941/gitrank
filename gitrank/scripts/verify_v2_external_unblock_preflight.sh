@@ -4,6 +4,7 @@ set -eu
 root_dir="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 repo_dir="$(CDPATH= cd -- "$root_dir/.." && pwd)"
 tmp_root="${TMPDIR:-$root_dir/.tmp}"
+contributing_file="$repo_dir/CONTRIBUTING.md"
 mkdir -p "$tmp_root"
 
 LIVE_ENV_FILE="${LIVE_V2_ENV_FILE:-${FINALIZE_V2_ENV_FILE:-}}"
@@ -35,6 +36,31 @@ if [ -n "$LIVE_ENV_FILE" ]; then
 fi
 
 fail_count=0
+
+is_placeholder_value() {
+  value=$1
+  case "$value" in
+    ""|OWNER/REPO|replace-me*|changeme*|*your-env.example*|*YYYY-MM-DD*|*your-cluster*|*your-name*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+state_for_value() {
+  value=$1
+  if [ -z "$value" ]; then
+    printf 'unset'
+    return 0
+  fi
+  if is_placeholder_value "$value"; then
+    printf 'placeholder'
+    return 0
+  fi
+  printf 'set'
+}
 
 resolve_repository_from_git_remote() {
   if [ -n "${GITHUB_REPOSITORY:-}" ]; then
@@ -126,6 +152,52 @@ printf 'probe.remote_workflow_sync: %s (%s)\n' "$remote_workflow_sync_status" "$
 printf 'probe.controls_public: %s (%s)\n' "$controls_public_status" "$controls_public_summary"
 printf 'probe.observability_inputs: %s (%s)\n' "$observability_inputs_status" "$observability_inputs_summary"
 printf 'probe.workflow_evidence: %s (%s)\n' "$workflow_evidence_status" "$workflow_evidence_summary"
+
+token_state=$(state_for_value "${GITRANK_REPO_ADMIN_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}")
+repo_state=$(state_for_value "${GITHUB_REPOSITORY:-$resolved_repo}")
+prometheus_state=$(state_for_value "${PROMETHEUS_BASE_URL:-}")
+grafana_base_state=$(state_for_value "${GRAFANA_BASE_URL:-}")
+grafana_token_state=$(state_for_value "${GRAFANA_API_TOKEN:-}")
+workflow_id_state=$(state_for_value "${WORKFLOW_RUN_ID:-latest}")
+workflow_event_state=$(state_for_value "${WORKFLOW_EVENT:-any}")
+
+printf 'input_state.repository: %s\n' "$repo_state"
+printf 'input_state.github_token_or_admin_token: %s\n' "$token_state"
+printf 'input_state.prometheus_base_url: %s\n' "$prometheus_state"
+printf 'input_state.grafana_base_url: %s\n' "$grafana_base_state"
+printf 'input_state.grafana_api_token: %s\n' "$grafana_token_state"
+printf 'input_state.workflow_run_id: %s\n' "$workflow_id_state"
+printf 'input_state.workflow_event: %s\n' "$workflow_event_state"
+
+if [ -s "$contributing_file" ]; then
+  unresolved_file=$(mktemp "$tmp_root/gitrank-v2-unblock-unresolved.XXXXXX")
+  if command -v rg >/dev/null 2>&1; then
+    rg -n "^- \\[ \\]" "$contributing_file" >"$unresolved_file" || true
+  else
+    grep -n "^- \\[ \\]" "$contributing_file" >"$unresolved_file" || true
+  fi
+
+  printf 'checklist_probe_mapping\n'
+  while IFS= read -r line; do
+    [ -n "$line" ] || continue
+    line_no=${line%%:*}
+    requirement=${line#*:}
+    probes=
+    case "$requirement" in
+      *"dependency graph"*|*"Dependabot alerts"*|*"default branch"*|*"pull request review"*|*"status checks"*|*"required checks"*|*"repository controls"*|*"direct pushes"*|*"rulesets"*|*"GitHub repository controls"*)
+        probes="github_access, origin_push, remote_workflow_sync, controls_public, workflow_evidence"
+        ;;
+      *"observability"*|*"Prometheus"*|*"Grafana"*|*"real traffic"*)
+        probes="observability_inputs, workflow_evidence"
+        ;;
+      *)
+        probes="(no probe mapping rule)"
+        ;;
+    esac
+    printf 'line.%s => probes[%s] :: %s\n' "$line_no" "$probes" "$requirement"
+  done <"$unresolved_file"
+  rm -f "$unresolved_file"
+fi
 
 if [ "$fail_count" -gt 0 ]; then
   printf 'remediation\n'
