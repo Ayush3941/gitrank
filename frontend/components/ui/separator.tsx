@@ -10,7 +10,7 @@ export function Separator({
   return (
     <SeparatorPrimitive.Root
       className={cn(
-        "shrink-0 bg-white/8",
+        "shrink-0 bg-gradient-to-r from-primary/30 via-primary-2/30 to-transparent",
         orientation === "horizontal" ? "h-px w-full" : "h-full w-px",
         className,
       )}

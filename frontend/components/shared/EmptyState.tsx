@@ -12,12 +12,12 @@ export function EmptyState({
   actionLabel?: string;
 }) {
   return (
-    <GlowCard className="flex flex-col items-start gap-4 border-dashed border-white/12">
-      <div className="rounded-3xl bg-primary/12 p-3 text-primary">
+    <GlowCard className="cyber-sheen flex flex-col items-start gap-4 border-dashed border-primary/24">
+      <div className="hud-pill rounded-3xl p-3 text-primary">
         <Sparkles className="h-5 w-5" />
       </div>
       <div className="space-y-2">
-        <h3 className="text-xl font-semibold text-white">{title}</h3>
+        <h3 className="neon-title text-xl font-semibold">{title}</h3>
         <p className="max-w-xl text-sm text-muted">{description}</p>
       </div>
       {actionLabel ? <Button variant="secondary">{actionLabel}</Button> : null}

@@ -14,10 +14,10 @@ export function ErrorState({
   fallbackLabel?: string;
 }) {
   return (
-    <GlowCard className="space-y-4 border border-rose-400/18">
+    <GlowCard className="cyber-sheen space-y-4 border border-rose-400/24">
       <div className="flex items-center gap-3 text-rose-100">
         <AlertTriangle className="h-5 w-5" />
-        <h3 className="text-lg font-semibold">{title}</h3>
+        <h3 className="text-lg font-semibold tracking-wide">{title}</h3>
       </div>
       <p className="text-sm text-muted">{description}</p>
       <div className="flex flex-wrap gap-3">

@@ -16,7 +16,7 @@ export function SelectTrigger({
   return (
     <SelectPrimitive.Trigger
       className={cn(
-        "focus-ring inline-flex h-11 w-full items-center justify-between rounded-2xl border border-white/10 bg-white/6 px-4 text-sm text-foreground",
+        "focus-ring inline-flex h-11 w-full items-center justify-between rounded-2xl border border-primary/24 bg-background/60 px-4 text-sm text-foreground",
         className,
       )}
       {...props}
@@ -38,7 +38,7 @@ export function SelectContent({
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content
         className={cn(
-          "glass-panel z-50 overflow-hidden rounded-3xl p-1.5 shadow-2xl",
+          "glass-panel cyber-card z-50 overflow-hidden rounded-3xl p-1.5 shadow-2xl",
           className,
         )}
         {...props}
@@ -57,7 +57,7 @@ export function SelectItem({
   return (
     <SelectPrimitive.Item
       className={cn(
-        "focus-ring relative flex cursor-default items-center rounded-2xl py-2.5 pr-8 pl-3 text-sm text-foreground outline-none data-[highlighted]:bg-white/8",
+        "focus-ring relative flex cursor-default items-center rounded-2xl py-2.5 pr-8 pl-3 text-sm text-foreground outline-none data-[highlighted]:bg-primary/16",
         className,
       )}
       {...props}

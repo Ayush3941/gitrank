@@ -18,15 +18,15 @@ export function DashboardSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="glass-panel hidden w-72 shrink-0 rounded-[2rem] p-5 xl:flex xl:flex-col xl:justify-between">
+    <aside className="glass-panel cyber-card panel-grid hidden w-72 shrink-0 rounded-[2rem] p-5 xl:flex xl:flex-col xl:justify-between">
       <div className="space-y-8">
         <Link href="/" className="flex items-center gap-3">
-          <div className="rounded-3xl bg-primary/16 p-3 text-primary ring-glow">
+          <div className="cyber-sheen rounded-3xl bg-primary/16 p-3 text-primary ring-glow">
             <Sparkles className="h-5 w-5" />
           </div>
           <div>
             <p className="text-lg font-semibold text-white">GitRank</p>
-            <p className="text-xs tracking-[0.24em] text-muted uppercase">Meaning over volume</p>
+            <p className="hud-eyebrow text-xs font-semibold uppercase">Meaning over volume</p>
           </div>
         </Link>
         <nav className="space-y-2">
@@ -40,8 +40,8 @@ export function DashboardSidebar() {
                 className={cn(
                   "focus-ring flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition",
                   active
-                    ? "bg-white text-background shadow-[0_10px_30px_rgb(255_255_255_/_0.1)]"
-                    : "text-muted hover:bg-white/6 hover:text-white",
+                    ? "bg-gradient-to-r from-primary/80 via-primary to-primary-2/80 text-background shadow-[0_0_26px_rgb(34_226_255_/_0.44)]"
+                    : "text-muted hover:bg-primary/12 hover:text-white",
                 )}
               >
                 <Icon className="h-4 w-4" />
@@ -51,7 +51,7 @@ export function DashboardSidebar() {
           })}
         </nav>
       </div>
-      <div className="rounded-[1.75rem] border border-primary/20 bg-primary/10 p-4">
+      <div className="cyber-card rounded-[1.75rem] border border-primary/28 bg-primary/10 p-4">
         <p className="text-xs font-semibold tracking-[0.24em] text-primary uppercase">Core thesis</p>
         <p className="mt-2 text-sm text-slate-200">
           GitRank does not ask only how much you contributed. It asks how meaningful your contribution was.

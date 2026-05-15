@@ -13,10 +13,10 @@ export function StatCard({
   icon: ReactNode;
 }) {
   return (
-    <GlowCard className="space-y-3">
+    <GlowCard className="cyber-sheen space-y-3">
       <div className="flex items-center justify-between text-muted">
         <span className="text-sm">{label}</span>
-        <span className="rounded-2xl bg-white/6 p-2">{icon}</span>
+        <span className="hud-pill rounded-2xl p-2">{icon}</span>
       </div>
       <div className="text-3xl font-semibold tracking-tight">{value}</div>
       <p className="text-sm text-muted">{detail}</p>

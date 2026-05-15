@@ -4,7 +4,7 @@ import { GlowCard } from "@/components/shared/GlowCard";
 
 export function StaleState({ message }: { message: string }) {
   return (
-    <GlowCard className="flex flex-col gap-3 border border-amber-400/18 bg-amber-400/6 sm:flex-row sm:items-center sm:justify-between">
+    <GlowCard className="cyber-sheen flex flex-col gap-3 border border-amber-400/22 bg-amber-400/8 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-start gap-3">
         <Clock3 className="mt-0.5 h-5 w-5 text-amber-100" />
         <div className="space-y-1">
