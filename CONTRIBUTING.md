@@ -1230,6 +1230,8 @@ When `RUN_EXTERNAL_PREFLIGHT_REPORT=true` (default), finalizer now emits the
 credential/config blockers are visible before any live mutations are attempted.
 That preflight now prints `input_state.*` fields and a `checklist_probe_mapping`
 section that maps each unresolved checklist line to the probe(s) it depends on.
+It also prints a `Minimal required next inputs` summary derived from failing
+probes so credentials/endpoints can be filled incrementally.
 When `RUN_K8S_RUNTIME=true` and workflow evidence is not used, finalizer runtime
 proof now requires explicit staging and production `STAGING_K8S_*` /
 `PRODUCTION_K8S_*` overrides by default

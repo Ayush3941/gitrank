@@ -208,6 +208,7 @@ make verify-v2-external-unblock-preflight
 The preflight output now includes:
 - `input_state.*` summaries (`set|placeholder|unset`) for key credentials and observability/workflow inputs.
 - `checklist_probe_mapping` lines that map unresolved `CONTRIBUTING.md` checklist entries to the exact probe set required to clear them.
+- `Minimal required next inputs` computed from failing probes, so you can fill only the missing auth/observability variables first.
 
 This readiness command now also verifies that
 `scripts/finalize_v2_live_closeout.sh` correctly resolves both

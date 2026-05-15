@@ -100,6 +100,27 @@ run_probe() {
   rm -f "$log_file"
 }
 
+append_unique_csv() {
+  current=$1
+  item=$2
+  if [ -z "$item" ]; then
+    printf '%s' "$current"
+    return 0
+  fi
+  case ",$current," in
+    *",$item,"*)
+      printf '%s' "$current"
+      ;;
+    *)
+      if [ -n "$current" ]; then
+        printf '%s, %s' "$current" "$item"
+      else
+        printf '%s' "$item"
+      fi
+      ;;
+  esac
+}
+
 report_env_file=$(mktemp "$tmp_root/gitrank-v2-unblock-env.XXXXXX")
 INFERRED_GITHUB_REPOSITORY="$resolved_repo" \
   "$root_dir/scripts/report_live_v2_env_presence.sh" >"$report_env_file" 2>/dev/null || true
@@ -200,7 +221,32 @@ if [ -s "$contributing_file" ]; then
 fi
 
 if [ "$fail_count" -gt 0 ]; then
+  required_inputs=
+  if [ "$github_access_status" = "fail" ] || [ "$remote_workflow_sync_status" = "fail" ] || [ "$controls_public_status" = "fail" ] || [ "$workflow_evidence_status" = "fail" ]; then
+    if [ "$token_state" != "set" ]; then
+      required_inputs=$(append_unique_csv "$required_inputs" "GITRANK_REPO_ADMIN_TOKEN (or GITHUB_TOKEN/GH_TOKEN)")
+      required_inputs=$(append_unique_csv "$required_inputs" "or GitHub App bootstrap: GITHUB_APP_ID + GITHUB_APP_INSTALLATION_ID + GITHUB_APP_PRIVATE_KEY_FILE/PEM")
+    fi
+  fi
+  if [ "$observability_inputs_status" = "fail" ]; then
+    if [ "$prometheus_state" != "set" ]; then
+      required_inputs=$(append_unique_csv "$required_inputs" "PROMETHEUS_BASE_URL")
+    fi
+    if [ "$grafana_base_state" != "set" ]; then
+      required_inputs=$(append_unique_csv "$required_inputs" "GRAFANA_BASE_URL")
+    fi
+    if [ "$grafana_token_state" != "set" ]; then
+      required_inputs=$(append_unique_csv "$required_inputs" "GRAFANA_API_TOKEN")
+    fi
+  fi
+  if [ "$origin_push_status" = "fail" ] && [ "$token_state" != "set" ]; then
+    required_inputs=$(append_unique_csv "$required_inputs" "working origin push auth OR GitHub token/App creds for sync/apply paths")
+  fi
+
   printf 'remediation\n'
+  if [ -n "$required_inputs" ]; then
+    printf '0. Minimal required next inputs: %s\n' "$required_inputs"
+  fi
   printf '1. Prepare live env file: make -C %s scaffold-v2-live-env\n' "$root_dir"
   printf '2. Fill credentials and endpoints in %s/.env.v2-live-gates.local\n' "$root_dir"
   printf '3. Re-run this preflight: make -C %s verify-v2-external-unblock-preflight\n' "$root_dir"
