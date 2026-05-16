@@ -8,12 +8,15 @@ import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { PrivacyRepositoryToggleList } from "@/features/settings/components/PrivacyRepositoryToggleList";
 import {
   useDeleteMyAccount,
   useExportMyAccountData,
   useLogoutSession,
+  useRunInstallationSync,
+  useRunRepositorySync,
   useRequestProfileSync,
   useUnlinkMyAccount,
 } from "@/hooks/use-account-actions";
@@ -43,9 +46,13 @@ export function SettingsPageClient() {
   const deleteAccount = useDeleteMyAccount();
   const exportAccount = useExportMyAccountData();
   const logoutSession = useLogoutSession();
+  const repositorySync = useRunRepositorySync();
+  const installationSync = useRunInstallationSync();
   const { setReducedGamification } = useGamificationPreference();
   useAccountGamificationPreference(data);
   const [actionNotice, setActionNotice] = useState("");
+  const [repositoryTarget, setRepositoryTarget] = useState("");
+  const [installationTarget, setInstallationTarget] = useState("");
   const currentSettings = data?.user.privacy ?? null;
 
   if (isLoading) {
@@ -71,6 +78,8 @@ export function SettingsPageClient() {
     (unlinkAccount.error as Error | null)?.message ||
     (deleteAccount.error as Error | null)?.message ||
     (exportAccount.error as Error | null)?.message ||
+    (repositorySync.error as Error | null)?.message ||
+    (installationSync.error as Error | null)?.message ||
     "";
   const isSaving = updatePrivacy.isPending || updateRepositoryVisibility.isPending;
   const isActing =
@@ -78,7 +87,9 @@ export function SettingsPageClient() {
     logoutSession.isPending ||
     unlinkAccount.isPending ||
     deleteAccount.isPending ||
-    exportAccount.isPending;
+    exportAccount.isPending ||
+    repositorySync.isPending ||
+    installationSync.isPending;
   const pendingRepository = updateRepositoryVisibility.variables?.fullName ?? null;
 
   function handlePrivacyToggle(key: BackedPrivacyKey, checked: boolean) {
@@ -95,6 +106,51 @@ export function SettingsPageClient() {
         const acceptedAt = new Date(result.accepted_at).toLocaleString();
         setActionNotice(
           `Sync queued at ${acceptedAt}. The latest verified snapshot stays visible until the refresh finishes.`,
+        );
+      },
+    });
+  }
+
+  function handleRepositorySyncExecution() {
+    if (isActing) {
+      return;
+    }
+    const target = repositoryTarget.trim();
+    if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(target)) {
+      setActionNotice("Repository sync target must be owner/repo.");
+      return;
+    }
+
+    setActionNotice("");
+    repositorySync.mutate(target, {
+      onSuccess: (result) => {
+        setActionNotice(
+          `Repository sync completed for ${result.repository || target} at ${new Date(
+            result.finished_at,
+          ).toLocaleString()}.`,
+        );
+      },
+    });
+  }
+
+  function handleInstallationSyncExecution() {
+    if (isActing) {
+      return;
+    }
+    const value = installationTarget.trim();
+    const installationID = Number.parseInt(value, 10);
+    if (!Number.isFinite(installationID) || installationID <= 0) {
+      setActionNotice("Installation sync requires a positive installation ID.");
+      return;
+    }
+
+    setActionNotice("");
+    installationSync.mutate(installationID, {
+      onSuccess: (result) => {
+        setActionNotice(
+          `Installation sync ${result.installation || installationID} completed at ${new Date(
+            result.finished_at,
+          ).toLocaleString()}.`,
         );
       },
     });
@@ -273,6 +329,62 @@ export function SettingsPageClient() {
           </Button>
         </div>
       </GlowCard>
+
+      <GlowCard className="space-y-4">
+        <div>
+          <p className="text-xs tracking-[0.24em] text-primary uppercase">Advanced sync execution</p>
+          <h2 className="mt-2 text-2xl font-semibold text-white">Run repository or installation sync now</h2>
+          <p className="mt-2 text-sm text-muted">
+            Executes backend sync routes directly and returns fetched/persisted counts from the run.
+          </p>
+        </div>
+        <div className="grid gap-3 lg:grid-cols-2">
+          <div className="space-y-3 rounded-[1.5rem] border border-primary/16 bg-primary/5 p-4">
+            <label className="text-xs tracking-[0.2em] text-primary uppercase" htmlFor="sync-repository">
+              Repository target
+            </label>
+            <Input
+              id="sync-repository"
+              value={repositoryTarget}
+              onChange={(event) => setRepositoryTarget(event.target.value)}
+              placeholder="owner/repository"
+              disabled={isActing}
+            />
+            <Button disabled={isActing} onClick={handleRepositorySyncExecution}>
+              {repositorySync.isPending ? "Running repository sync..." : "Run repository sync"}
+            </Button>
+            {repositorySync.data ? (
+              <p className="text-xs text-slate-300">
+                {repositorySync.data.mode} • {repositorySync.data.status} • fetched{" "}
+                {formatCountMap(repositorySync.data.fetched)} • persisted{" "}
+                {formatCountMap(repositorySync.data.persisted)}
+              </p>
+            ) : null}
+          </div>
+          <div className="space-y-3 rounded-[1.5rem] border border-primary/16 bg-primary/5 p-4">
+            <label className="text-xs tracking-[0.2em] text-primary uppercase" htmlFor="sync-installation">
+              Installation ID
+            </label>
+            <Input
+              id="sync-installation"
+              value={installationTarget}
+              onChange={(event) => setInstallationTarget(event.target.value)}
+              placeholder="12345678"
+              disabled={isActing}
+            />
+            <Button disabled={isActing} onClick={handleInstallationSyncExecution}>
+              {installationSync.isPending ? "Running installation sync..." : "Run installation sync"}
+            </Button>
+            {installationSync.data ? (
+              <p className="text-xs text-slate-300">
+                {installationSync.data.mode} • {installationSync.data.status} • fetched{" "}
+                {formatCountMap(installationSync.data.fetched)} • persisted{" "}
+                {formatCountMap(installationSync.data.persisted)}
+              </p>
+            ) : null}
+          </div>
+        </div>
+      </GlowCard>
     </div>
   );
 }
@@ -323,4 +435,13 @@ function downloadJSON(payload: unknown, filename: string) {
   anchor.click();
   anchor.remove();
   URL.revokeObjectURL(url);
+}
+
+function formatCountMap(value?: Record<string, number>): string {
+  if (!value || Object.keys(value).length === 0) {
+    return "0";
+  }
+  return Object.entries(value)
+    .map(([key, count]) => `${key}:${count}`)
+    .join(", ");
 }

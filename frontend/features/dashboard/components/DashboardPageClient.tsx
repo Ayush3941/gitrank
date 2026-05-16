@@ -17,6 +17,7 @@ import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
+import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 
 export function DashboardPageClient() {
@@ -93,7 +94,11 @@ export function DashboardPageClient() {
         description="Snapshot-based contribution analytics, progression, and score explanations weighted toward meaningful merged work."
       />
       {user.syncStatus.state === "stale" ? (
-        <StaleState message="Your GitRank profile is 6 days old." />
+        <StaleState
+          message={`Your GitRank profile was refreshed ${formatRelativeDays(
+            data.refreshedAt,
+          )}.`}
+        />
       ) : null}
       <DashboardHeroRankCard
         user={user}

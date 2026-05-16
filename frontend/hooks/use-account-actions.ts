@@ -5,6 +5,8 @@ import {
   deleteMyAccount,
   exportMyAccountData,
   logoutCurrentSession,
+  runInstallationSync,
+  runRepositorySync,
   requestProfileSync,
   unlinkMyAccount,
 } from "@/lib/api/account-api";
@@ -15,6 +17,28 @@ export function useRequestProfileSync() {
 
   return useMutation({
     mutationFn: requestProfileSync,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: myProfileQueryKey });
+    },
+  });
+}
+
+export function useRunRepositorySync() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (repository: string) => runRepositorySync(repository),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: myProfileQueryKey });
+    },
+  });
+}
+
+export function useRunInstallationSync() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (installationId: number) => runInstallationSync(installationId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: myProfileQueryKey });
     },

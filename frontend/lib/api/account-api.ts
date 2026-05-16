@@ -14,6 +14,21 @@ type ApiSyncResponse = {
   accepted_at: string;
 };
 
+export type ApiSyncExecutionResponse = {
+  status: string;
+  mode: string;
+  user?: string;
+  repository?: string;
+  installation?: number;
+  number?: number;
+  sha?: string;
+  correlation_id?: string;
+  started_at: string;
+  finished_at: string;
+  fetched?: Record<string, number>;
+  persisted?: Record<string, number>;
+};
+
 type ApiAccountUnlinkResponse = {
   status: string;
   logged_out: boolean;
@@ -57,6 +72,44 @@ export async function requestProfileSync(): Promise<ApiSyncResponse> {
     body: JSON.stringify({ mode: "user" }),
   });
   return adaptJSON<ApiSyncResponse>(response, "Sync request failed.");
+}
+
+export async function runRepositorySync(
+  repository: string,
+): Promise<ApiSyncExecutionResponse> {
+  const csrfToken = requireCSRFToken();
+  const response = await fetch("/api/sync/repository", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
+    },
+    credentials: "same-origin",
+    cache: "no-store",
+    body: JSON.stringify({
+      repository,
+    }),
+  });
+  return adaptJSON<ApiSyncExecutionResponse>(response, "Repository sync failed.");
+}
+
+export async function runInstallationSync(
+  installationId: number,
+): Promise<ApiSyncExecutionResponse> {
+  const csrfToken = requireCSRFToken();
+  const response = await fetch("/api/sync/installation", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
+    },
+    credentials: "same-origin",
+    cache: "no-store",
+    body: JSON.stringify({
+      installation_id: installationId,
+    }),
+  });
+  return adaptJSON<ApiSyncExecutionResponse>(response, "Installation sync failed.");
 }
 
 export async function unlinkMyAccount(): Promise<ApiAccountUnlinkResponse> {

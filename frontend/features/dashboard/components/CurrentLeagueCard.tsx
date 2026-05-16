@@ -21,7 +21,10 @@ export function CurrentLeagueCard({ user }: { user: UserProfile }) {
         </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
-        <Metric label="Position" value={`#${user.leaguePosition}`} />
+        <Metric
+          label="Position"
+          value={user.leaguePosition > 0 ? `#${user.leaguePosition}` : "Unranked"}
+        />
         <Metric label="Weekly XP" value={`${user.weeklyXp}`} />
         <Metric label="Movement" value={`${positive ? "+" : ""}${user.movement}`} icon={<MovementIcon className="h-4 w-4" />} />
       </div>
