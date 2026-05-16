@@ -5,10 +5,12 @@ import {
   deleteMyAccount,
   exportMyAccountData,
   logoutCurrentSession,
+  queueSyncRequest,
   runInstallationSync,
   runRepositorySync,
   startAccountLink,
   requestProfileSync,
+  type QueueSyncInput,
   unlinkMyAccount,
 } from "@/lib/api/account-api";
 import { myProfileQueryKey } from "@/hooks/use-profile";
@@ -18,6 +20,17 @@ export function useRequestProfileSync() {
 
   return useMutation({
     mutationFn: requestProfileSync,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: myProfileQueryKey });
+    },
+  });
+}
+
+export function useQueueSyncRequest() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: QueueSyncInput) => queueSyncRequest(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: myProfileQueryKey });
     },

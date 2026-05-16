@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Activity, Medal, ShieldCheck, Swords } from "lucide-react";
+import { Activity, Flame, Medal, ShieldCheck, Swords } from "lucide-react";
 import { DashboardHeroRankCard } from "@/features/dashboard/components/DashboardHeroRankCard";
 import { ContributionTimelineCard } from "@/features/dashboard/components/ContributionTimelineCard";
 import { CurrentLeagueCard } from "@/features/dashboard/components/CurrentLeagueCard";
@@ -28,6 +28,15 @@ export function DashboardPageClient() {
     () => summarizeContributionStreak(user?.contributions ?? []),
     [user?.contributions],
   );
+  const contributionWindowCap = 100;
+  const contributionWindowCount = Math.min(
+    user?.contributions.length ?? 0,
+    contributionWindowCap,
+  );
+  const contributionWindowFillRate =
+    contributionWindowCap > 0
+      ? Math.round((contributionWindowCount / contributionWindowCap) * 100)
+      : 0;
   const abraPayload = useMemo(() => {
     if (!user) {
       return null;
@@ -106,9 +115,21 @@ export function DashboardPageClient() {
         identitySummary={abraInsights.data?.identitySummary}
         aiMode={abraInsights.data?.generatedBy}
       />
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         <StatCard label="GitRank score" value={user.gitRankScore} detail="Weighted by impact, reviews, tests, and repository context." icon={<Medal className="h-5 w-5 text-primary" />} />
         <StatCard label="Merged PRs" value={user.mergedPrCount} detail="Only verified merged work receives full progression value." icon={<ShieldCheck className="h-5 w-5 text-primary" />} />
+        <StatCard
+          label="PR evidence window"
+          value={`${contributionWindowCount}/${contributionWindowCap}`}
+          detail={`Current profile includes ${contributionWindowFillRate}% of the capped recent PR history window.`}
+          icon={<Activity className="h-5 w-5 text-primary" />}
+        />
+        <StatCard
+          label="Current streak"
+          value={`${streak.currentStreakDays}d`}
+          detail={`Best streak ${streak.bestStreakDays} days • active days this year ${streak.activeDaysThisYear}.`}
+          icon={<Flame className="h-5 w-5 text-primary" />}
+        />
         <StatCard label="Reviewed PRs" value={user.reviewedPrCount} detail="Review participation increases trust and unlocks deeper quests." icon={<Activity className="h-5 w-5 text-primary" />} />
       </div>
       <div className="grid gap-6 xl:grid-cols-[0.92fr,1.08fr]">

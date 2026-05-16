@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { PrivacyRepositoryToggleList } from "@/features/settings/components/PrivacyRepositoryToggleList";
 import {
@@ -17,6 +18,7 @@ import {
   useLogoutSession,
   useRunInstallationSync,
   useRunRepositorySync,
+  useQueueSyncRequest,
   useStartAccountLink,
   useRequestProfileSync,
   useUnlinkMyAccount,
@@ -38,6 +40,8 @@ type BackedPrivacyKey =
   | "showLeaderboardParticipation"
   | "reducedGamification";
 
+type QueueSyncMode = "user" | "repository" | "pull_request" | "review" | "issue" | "commit";
+
 export function SettingsPageClient() {
   const { data, isLoading, isError } = useMyProfile();
   const updatePrivacy = useUpdateProfilePrivacy();
@@ -48,6 +52,7 @@ export function SettingsPageClient() {
   const exportAccount = useExportMyAccountData();
   const logoutSession = useLogoutSession();
   const accountLinkStart = useStartAccountLink();
+  const queueSync = useQueueSyncRequest();
   const repositorySync = useRunRepositorySync();
   const installationSync = useRunInstallationSync();
   const { setReducedGamification } = useGamificationPreference();
@@ -55,6 +60,11 @@ export function SettingsPageClient() {
   const [actionNotice, setActionNotice] = useState("");
   const [repositoryTarget, setRepositoryTarget] = useState("");
   const [installationTarget, setInstallationTarget] = useState("");
+  const [queueMode, setQueueMode] = useState<QueueSyncMode>("user");
+  const [queueUser, setQueueUser] = useState("");
+  const [queueRepository, setQueueRepository] = useState("");
+  const [queueNumber, setQueueNumber] = useState("");
+  const [queueSha, setQueueSha] = useState("");
   const currentSettings = data?.user.privacy ?? null;
 
   if (isLoading) {
@@ -81,6 +91,7 @@ export function SettingsPageClient() {
     (deleteAccount.error as Error | null)?.message ||
     (exportAccount.error as Error | null)?.message ||
     (accountLinkStart.error as Error | null)?.message ||
+    (queueSync.error as Error | null)?.message ||
     (repositorySync.error as Error | null)?.message ||
     (installationSync.error as Error | null)?.message ||
     "";
@@ -92,6 +103,7 @@ export function SettingsPageClient() {
     deleteAccount.isPending ||
     exportAccount.isPending ||
     accountLinkStart.isPending ||
+    queueSync.isPending ||
     repositorySync.isPending ||
     installationSync.isPending;
   const pendingRepository = updateRepositoryVisibility.variables?.fullName ?? null;
@@ -133,6 +145,64 @@ export function SettingsPageClient() {
             result.finished_at,
           ).toLocaleString()}.`,
         );
+      },
+    });
+  }
+
+  function handleQueueSyncRequest() {
+    if (isActing) {
+      return;
+    }
+
+    const mode = queueMode;
+    const payload: {
+      mode: QueueSyncMode;
+      user?: string;
+      repository?: string;
+      number?: number;
+      sha?: string;
+    } = { mode };
+
+    if (mode === "user") {
+      const user = queueUser.trim();
+      if (user.length > 0) {
+        payload.user = user;
+      }
+    }
+
+    if (mode === "repository" || mode === "pull_request" || mode === "review" || mode === "issue" || mode === "commit") {
+      const repository = queueRepository.trim();
+      if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repository)) {
+        setActionNotice("Target repository must be owner/repository.");
+        return;
+      }
+      payload.repository = repository;
+    }
+
+    if (mode === "pull_request" || mode === "review" || mode === "issue") {
+      const number = Number.parseInt(queueNumber.trim(), 10);
+      if (!Number.isFinite(number) || number <= 0) {
+        setActionNotice("PR, review, and issue queue modes require a positive number.");
+        return;
+      }
+      payload.number = number;
+    }
+
+    if (mode === "commit") {
+      const sha = queueSha.trim();
+      if (!/^[A-Fa-f0-9]{6,64}$/.test(sha)) {
+        setActionNotice("Commit sync requires a 6-64 character hexadecimal SHA.");
+        return;
+      }
+      payload.sha = sha;
+    }
+
+    setActionNotice("");
+    queueSync.mutate(payload, {
+      onSuccess: (result) => {
+        const acceptedAt = new Date(result.accepted_at).toLocaleString();
+        const correlation = result.correlation_id ? ` (${result.correlation_id})` : "";
+        setActionNotice(`Queued ${mode} sync at ${acceptedAt}${correlation}.`);
       },
     });
   }
@@ -351,6 +421,107 @@ export function SettingsPageClient() {
             <Trash2 className="h-4 w-4" />
             {deleteAccount.isPending ? "Deleting account..." : "Delete account"}
           </Button>
+        </div>
+      </GlowCard>
+
+      <GlowCard className="space-y-4">
+        <div>
+          <p className="text-xs tracking-[0.24em] text-primary uppercase">Queue targeted sync</p>
+          <h2 className="mt-2 text-2xl font-semibold text-white">Queue user, repo, PR, review, issue, or commit jobs</h2>
+          <p className="mt-2 text-sm text-muted">
+            Uses the generic sync queue endpoint and enforces the same mode validation required by backend contracts.
+          </p>
+        </div>
+        <div className="grid gap-3 lg:grid-cols-2">
+          <div className="space-y-2">
+            <label className="text-xs tracking-[0.2em] text-primary uppercase" htmlFor="queue-mode">
+              Sync mode
+            </label>
+            <Select value={queueMode} onValueChange={(value) => setQueueMode(value as QueueSyncMode)}>
+              <SelectTrigger id="queue-mode" aria-label="Queue sync mode">
+                <SelectValue placeholder="Select mode" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="user">user</SelectItem>
+                <SelectItem value="repository">repository</SelectItem>
+                <SelectItem value="pull_request">pull_request</SelectItem>
+                <SelectItem value="review">review</SelectItem>
+                <SelectItem value="issue">issue</SelectItem>
+                <SelectItem value="commit">commit</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {queueMode === "user" ? (
+            <div className="space-y-2">
+              <label className="text-xs tracking-[0.2em] text-primary uppercase" htmlFor="queue-user">
+                GitHub login (optional)
+              </label>
+              <Input
+                id="queue-user"
+                value={queueUser}
+                onChange={(event) => setQueueUser(event.target.value)}
+                placeholder="octocat"
+                disabled={isActing}
+              />
+            </div>
+          ) : null}
+
+          {queueMode !== "user" ? (
+            <div className="space-y-2">
+              <label className="text-xs tracking-[0.2em] text-primary uppercase" htmlFor="queue-repository">
+                Repository
+              </label>
+              <Input
+                id="queue-repository"
+                value={queueRepository}
+                onChange={(event) => setQueueRepository(event.target.value)}
+                placeholder="owner/repository"
+                disabled={isActing}
+              />
+            </div>
+          ) : null}
+
+          {queueMode === "pull_request" || queueMode === "review" || queueMode === "issue" ? (
+            <div className="space-y-2">
+              <label className="text-xs tracking-[0.2em] text-primary uppercase" htmlFor="queue-number">
+                Number
+              </label>
+              <Input
+                id="queue-number"
+                value={queueNumber}
+                onChange={(event) => setQueueNumber(event.target.value)}
+                placeholder="123"
+                disabled={isActing}
+              />
+            </div>
+          ) : null}
+
+          {queueMode === "commit" ? (
+            <div className="space-y-2">
+              <label className="text-xs tracking-[0.2em] text-primary uppercase" htmlFor="queue-sha">
+                Commit SHA
+              </label>
+              <Input
+                id="queue-sha"
+                value={queueSha}
+                onChange={(event) => setQueueSha(event.target.value)}
+                placeholder="a1b2c3d4..."
+                disabled={isActing}
+              />
+            </div>
+          ) : null}
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button disabled={isActing} onClick={handleQueueSyncRequest}>
+            {queueSync.isPending ? "Queueing targeted sync..." : "Queue targeted sync"}
+          </Button>
+          {queueSync.data ? (
+            <p className="text-xs text-slate-300">
+              {queueSync.data.status} • {queueSync.data.job_id ? `job ${queueSync.data.job_id}` : "job pending"} •{" "}
+              {new Date(queueSync.data.accepted_at).toLocaleString()}
+            </p>
+          ) : null}
         </div>
       </GlowCard>
 

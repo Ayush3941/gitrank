@@ -38,6 +38,20 @@ export type ApiSyncExecutionResponse = {
   persisted?: Record<string, number>;
 };
 
+export type QueueSyncInput = {
+  mode:
+    | "user"
+    | "repository"
+    | "pull_request"
+    | "review"
+    | "issue"
+    | "commit";
+  user?: string;
+  repository?: string;
+  number?: number;
+  sha?: string;
+};
+
 type ApiAccountUnlinkResponse = {
   status: string;
   logged_out: boolean;
@@ -69,6 +83,10 @@ export type AccountDataExport = {
 };
 
 export async function requestProfileSync(): Promise<ApiSyncResponse> {
+  return queueSyncRequest({ mode: "user" });
+}
+
+export async function queueSyncRequest(input: QueueSyncInput): Promise<ApiSyncResponse> {
   const csrfToken = requireCSRFToken();
   const response = await fetch("/api/sync", {
     method: "POST",
@@ -78,7 +96,13 @@ export async function requestProfileSync(): Promise<ApiSyncResponse> {
     },
     credentials: "same-origin",
     cache: "no-store",
-    body: JSON.stringify({ mode: "user" }),
+    body: JSON.stringify({
+      mode: input.mode,
+      user: input.user,
+      repository: input.repository,
+      number: input.number,
+      sha: input.sha,
+    }),
   });
   return adaptJSON<ApiSyncResponse>(response, "Sync request failed.");
 }

@@ -9,12 +9,15 @@ export function useDashboard() {
   return useQuery({
     queryKey: ["dashboard"],
     queryFn: async () => {
-      const [profile, quests, leaderboard] = await Promise.all([
-        getMyProfile(),
+      const profile = await getMyProfile();
+      const [questsResult, leaderboardResult] = await Promise.allSettled([
         getMyQuests(),
         getLeaderboard("Global"),
       ]);
-      const current = leaderboard.rows.find(
+      const quests = questsResult.status === "fulfilled" ? questsResult.value : [];
+      const leaderboard =
+        leaderboardResult.status === "fulfilled" ? leaderboardResult.value : null;
+      const current = leaderboard?.rows.find(
         (row) => row.username.toLowerCase() === profile.user.username.toLowerCase(),
       );
 
@@ -23,7 +26,7 @@ export function useDashboard() {
         quests,
         rankProgress: {
           ...profile.user.rankProgress,
-          season: leaderboard.season,
+          season: leaderboard?.season ?? profile.user.rankProgress.season,
           seasonXp: current?.seasonXp ?? profile.user.rankProgress.seasonXp,
         },
         weeklyXp: current?.weeklyXp ?? profile.user.weeklyXp,
