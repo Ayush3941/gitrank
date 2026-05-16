@@ -1,832 +1,184 @@
 # GitRank
 
-AI-powered open source skill reputation and gamification platform.
+GitRank is a contributor intelligence platform that turns GitHub activity into
+an evidence-backed reputation system with game mechanics.
 
-GitRank turns public GitHub activity into a more meaningful developer reputation system. Instead of rewarding raw activity such as commit counts, contribution streaks, or low-effort pull requests, GitRank evaluates the quality, depth, difficulty, and impact of open-source work. The goal is simple: represent what a developer actually contributed, not just how often they clicked "commit".
+Think: contributor analytics + RPG progression + shareable public profile.
 
-## Core Thesis
+## The Vibe
 
-GitRank does not only ask:
+- Every PR becomes a battle report: category, impact, score signals, and growth.
+- Progression is visible: XP, levels, badges, quests, streak framing, leaderboard.
+- AI explains outcomes, but deterministic scoring stays in control.
 
-> How much did you contribute?
+## Product Surface
 
-It asks:
+| Area | What users see |
+| --- | --- |
+| Dashboard | Contributor identity summary, momentum, XP/level/streak framing |
+| Contributions | Rich PR cards, timeline, repository touchpoints, highlights |
+| Badges | Earned badge stories, rarity tiers, locked progress states |
+| Quests | Daily and weekly challenge framing plus long-journey progression |
+| Leaderboard | Rank and progression context with sparse-data-safe states |
+| Public Profile | Shareable reputation card with evidence-driven strengths |
 
-> How meaningful was your contribution?
-
-That distinction is the product.
-
-## Why GitRank Exists
-
-GitHub already exposes a lot of public data:
-
-- commits
-- pull requests
-- review comments
-- stars and forks
-- contribution graphs
-- repository activity
-
-Those signals are useful, but they are weak proxies for engineering skill.
-
-A typo fix, a flaky test cleanup, a production bug repair, a performance optimization, and a cross-service refactor may all show up as "1 merged PR". Traditional profiles flatten these contributions into the same unit even though they carry very different technical weight.
-
-GitRank is designed to close that gap.
-
-## Problem
-
-Current open-source reputation systems have three major issues:
-
-1. They reward volume more than quality.
-2. They are easy to game with low-value contributions.
-3. They do not clearly separate beginner activity from high-signal engineering work.
-
-This creates a credibility problem for:
-
-- students trying to prove real skill
-- recruiters trying to evaluate developers fairly
-- maintainers looking for consistent contributors
-- contributors who do difficult but less flashy work such as tests, infra, refactors, and code review
-
-## Solution
-
-GitRank evaluates GitHub contributions with repository context and AI-assisted analysis to build an evidence-backed skill profile.
-
-For each pull request, GitRank can inspect:
-
-- changed files and languages
-- lines added and removed
-- test impact
-- issue links and labels
-- review comments and requested changes
-- merge outcome
-- repository importance and activity
-- contributor consistency over time
-- maintainer interactions
-- contribution category and difficulty
-
-These signals feed a scoring engine that produces:
-
-- contribution intensity scores
-- skill-specific XP
-- levels and rank progression
-- badges
-- public reputation profiles
-- trend lines over time
-
-## Product Goals
-
-- Make open-source effort legible.
-- Reward meaningful work over spam.
-- Encourage long-term contributor growth.
-- Help developers showcase real engineering ability.
-- Give maintainers and recruiters a better signal than raw GitHub graphs.
-
-## Key Product Features
-
-### 1. PR Intensity Score
-
-Every pull request receives a weighted score based on technical depth and contribution context.
-
-Example factors:
-
-- files changed
-- code churn adjusted for noise
-- module criticality
-- presence of tests
-- review iteration count
-- whether feedback was addressed
-- whether the PR was merged
-- whether the change affected architecture, performance, reliability, or security
-
-### 2. AI PR Analysis
-
-An LLM-assisted analyzer classifies what kind of engineering work happened in the PR and summarizes its likely difficulty.
-
-Possible categories:
-
-- documentation
-- tests
-- bug fix
-- feature
-- refactor
-- performance
-- infrastructure
-- security
-- developer tooling
-- maintainer design work
-
-### 3. Skill Reputation Profile
-
-Instead of one generic score, GitRank can model strengths across dimensions such as:
-
-- backend engineering
-- systems design
-- testing discipline
-- debugging
-- API design
-- developer tooling
-- performance optimization
-- documentation quality
-- open-source consistency
-
-### 4. Levels and XP
-
-Developers progress through a reputation ladder as they accumulate verified contribution evidence.
-
-Illustrative rank ladder:
-
-- Explorer
-- Contributor
-- Builder
-- Specialist
-- Maintainer
-- Architect
-
-### 5. Contribution Badges
-
-Focused achievements help developers tell a clearer story.
-
-Examples:
-
-- Bug Hunter
-- Test Builder
-- Docs Improver
-- Performance Optimizer
-- Backend Contributor
-- Systems Builder
-- Reliable Reviewer
-- Refactor Specialist
-
-### 6. Public Skill Card
-
-Each user gets a shareable public profile with:
-
-- overall GitRank
-- strongest skill areas
-- contribution history
-- top repositories
-- notable badges
-- growth over time
-
-## Anti-Gaming Principles
-
-GitRank should not become a platform that rewards noise. The scoring model should explicitly resist shallow optimization.
-
-Core anti-gaming rules:
-
-- merged work counts more than unmerged work
-- repeated micro-PR spam should have diminishing returns
-- documentation and small fixes can still matter, but context should determine their weight
-- maintainers' review acceptance should matter more than self-opened activity
-- repository quality and project significance should influence contribution weight
-- copy-paste churn and cosmetic edits should be discounted
-- consistency over time should beat short bursts of low-value activity
-
-Eligibility rules:
-
-- only public repositories are in scope for scoring
-- public repositories owned by organizations are treated like any other public repository
-- private repositories do not count toward GitRank
-- self-merged pull requests are monitored through score-event metadata and receive zero XP
-- bot-authored and bot-assisted pull requests do not count toward GitRank
-
-## Frozen V1 Decisions
-
-The production policy baseline is frozen in these docs:
-
-- [gitrank/docs/production-decision-register.md](./gitrank/docs/production-decision-register.md)
-- [gitrank/docs/MAINTAINER_GUIDE.md](./gitrank/docs/MAINTAINER_GUIDE.md)
-- [gitrank/docs/github-integration-policy.md](./gitrank/docs/github-integration-policy.md)
-- [gitrank/docs/ai-governance.md](./gitrank/docs/ai-governance.md)
-- [gitrank/docs/privacy-and-data-handling.md](./gitrank/docs/privacy-and-data-handling.md)
-- [gitrank/docs/analytics-plan.md](./gitrank/docs/analytics-plan.md)
-- [gitrank/docs/infrastructure-baseline.md](./gitrank/docs/infrastructure-baseline.md)
-
-Important v1 decisions:
-
-- GitHub OAuth is the required auth path
-- public profiles and the leaderboard are enabled by default for signed-in users
-- bounded public PR diffs may be used for AI enrichment, but private code and full repository files are out of scope
-- Kubernetes and OCI images are the deployment baseline
-- Git tags, GitHub Releases, and OCI publication are required in v1, while signing and provenance are deferred
-- DCO is required and CLA is not
-
-## High-Level Architecture
-
-GitRank is structured as a Go monorepo with multiple services and shared packages.
-
-```mermaid
-flowchart LR
-    User[User Dashboard / Public Profile] --> APIGW[API Gateway]
-    APIGW --> AUTH[Auth Service]
-    APIGW --> PROFILE[Profile Service]
-    APIGW --> SCORE[Scoring Engine]
-    APIGW --> INGEST[GitHub Ingestor]
-    SCHED[Scheduler Worker] --> INGEST
-    INGEST --> ANALYZER[PR Analyzer]
-    ANALYZER --> SCORE
-    SCORE --> PROFILE
-    AUTH --> GH[GitHub OAuth / GitHub API]
-    INGEST --> GH
-```
-
-## Repository Layout
+## System Shape
 
 ```text
-gitrank/
-├── deployments/
-├── docs/
-├── go.work
-├── packages/
-│   ├── aiapi/
-│   ├── authkit/
-│   ├── config/
-│   ├── contracts/
-│   ├── errors/
-│   ├── events/
-│   ├── githubapi/
-│   ├── httpkit/
-│   └── logger/
-├── scripts/
-└── services/
-    ├── api-gateway/
-    ├── auth-service/
-    ├── github-ingestor/
-    ├── pr-analyzer/
-    ├── profile-service/
-    ├── scheduler-worker/
-    └── scoring-engine/
+GitHub OAuth + API/Webhooks
+        |
+        v
+auth-service -----> github-ingestor -----> pr-analyzer -----> scoring-engine
+      |                     |                     |                   |
+      +---------------------+---------------------+-------------------+
+                                    |
+                                    v
+                             profile-service
+                                    |
+                                    v
+                               api-gateway
+                                    |
+                                    v
+                          frontend (Next.js BFF + UI)
 ```
 
-## Service Responsibilities
+## Repository Map
 
-### `services/api-gateway`
+- `gitrank/`: Go backend workspace (services, packages, deploy, scripts, docs)
+- `frontend/`: Next.js app (dashboard, onboarding, profile, leaderboard, PR view)
+- `CONTRIBUTING.md`: production policies, V1/V2 checklists, ABRA checklist
 
-External entrypoint for frontend clients and third-party consumers.
+Backend service modules:
 
-Responsibilities:
+- `api-gateway`
+- `auth-service`
+- `github-ingestor`
+- `pr-analyzer`
+- `scoring-engine`
+- `profile-service`
+- `scheduler-worker`
 
-- route public and authenticated API traffic
-- aggregate data from internal services
-- enforce auth and rate limits
-- expose profile, score, badge, and contribution endpoints
+## Quick Start (Local)
 
-### `services/auth-service`
+Prerequisites:
 
-Handles identity and GitHub OAuth integration.
+- Go (1.24+ recommended)
+- Node.js (20+ recommended)
+- Docker + Docker Compose
+- `npm`
 
-Responsibilities:
-
-- sign-in with GitHub
-- session or token issuance
-- identity linking
-- permission checks for private or scoped data
-
-### `services/github-ingestor`
-
-Fetches and normalizes GitHub data.
-
-Responsibilities:
-
-- call GitHub REST and GraphQL APIs
-- pull repository, PR, review, commit, and issue metadata
-- normalize raw data into internal contracts
-- schedule incremental syncs
-- handle rate limits, retries, and caching
-
-### `services/pr-analyzer`
-
-Converts raw pull request data into structured technical signals.
-
-Responsibilities:
-
-- classify PR type
-- estimate complexity and effort
-- detect tests, refactors, docs-only work, infra work, or security-related changes
-- produce AI summaries and machine-readable labels
-- persist deterministic analysis artifacts against synced PR evidence
-
-### `services/scoring-engine`
-
-Transforms analyzed contribution data into reputation outputs.
-
-Responsibilities:
-
-- calculate PR intensity
-- assign XP and skill weights
-- apply anti-spam and anti-gaming rules
-- compute badges, ranks, and trend lines
-
-### `services/profile-service`
-
-Owns user-facing profile and leaderboard views.
-
-Responsibilities:
-
-- build public profile responses
-- aggregate repository and contribution stats
-- expose badge, level, and timeline data
-- prepare shareable profile cards
-
-### `services/scheduler-worker`
-
-Runs asynchronous jobs.
-
-Responsibilities:
-
-- enqueue and deduplicate internal sync jobs
-- trigger recurring backfill plans from cron schedules
-- lease ready work with bounded concurrency
-- execute bounded worker-mode installation, repository, user, pull-request, review, issue, and commit sync jobs against `github-ingestor`
-- execute persisted PR analysis jobs against `pr-analyzer`
-- execute score replay jobs against `scoring-engine` for real scoring backfill and repair flows
-- execute profile refresh jobs against `profile-service` after scoring changes
-- execute PR report materialization jobs and bounded PR grading pipeline jobs that chain sync, analysis, score replay, profile refresh, report materialization, and live PR-report verification
-- apply retry and exponential backoff policy
-- throttle repeated sync generation per user and installation
-- expose filtered queue inspection for user, repository, installation, and correlation tracing
-- move poison jobs to a dead-letter queue
-- support pause, cancel, manual replay, and recurring-plan control flows, including canceling the latest queued or leased backfill run for a plan
-
-## Shared Package Responsibilities
-
-### `packages/contracts`
-
-Shared types, DTOs, and internal service contracts.
-
-### `packages/logger`
-
-Structured logging helpers and common logging configuration.
-
-### `packages/config`
-
-Centralized environment and service configuration loading.
-
-### `packages/errors`
-
-Common error types, wrappers, and API-safe error mapping.
-
-### `packages/events`
-
-Event payloads and publisher/subscriber interfaces for async workflows.
-
-### `packages/authkit`
-
-Shared authentication helpers, middleware, and token utilities.
-
-### `packages/httpkit`
-
-Shared HTTP server bootstrap, request IDs, access logging, panic recovery, and JSON helpers.
-
-### `packages/githubapi`
-
-GitHub-specific API helpers for OAuth URL generation, webhook verification, rate-limit-aware clients, and optional future App-path request shaping.
-
-### `packages/aiapi`
-
-AI-provider request building and integration boundaries for analyzer-side enrichment.
-
-## Proposed Data Flow
-
-1. A user signs in with GitHub.
-2. GitRank stores the user's GitHub identity and sync preferences.
-3. The scheduler triggers repository and PR ingestion jobs.
-4. The GitHub ingestor fetches PR metadata, diffs, reviews, labels, linked issues, and repository context.
-5. The PR analyzer classifies the contribution and extracts technical signals.
-6. The scoring engine converts those signals into XP, badges, and rank movement.
-7. The profile service materializes an updated public profile.
-8. The API gateway serves dashboard and public profile requests.
-
-## Scoring Model Direction
-
-The scoring model is the core intellectual asset of the product. A good first version should stay understandable and auditable.
-
-Illustrative scoring dimensions:
-
-### Contribution Type Weight
-
-Base weight for the category of work:
-
-- docs: low to medium
-- tests: medium
-- bug fix: medium to high
-- feature: high
-- refactor: medium to high
-- performance: high
-- infra or tooling: medium to high
-- security: high
-- architecture or maintainer work: very high
-
-### Technical Depth
-
-Signals that increase depth:
-
-- multiple important files changed
-- non-trivial logic updates
-- complex code paths
-- schema, API, or concurrency changes
-- meaningful tests added or updated
-- cross-module integration work
-
-### Review Strength
-
-Signals that improve confidence:
-
-- maintainers requested changes and the contributor addressed them
-- the PR received detailed review discussion
-- the final merge indicates approval from trusted reviewers
-
-### Repository Weight
-
-Not all repositories carry the same signal.
-
-Possible weighting inputs:
-
-- repository activity
-- number of maintainers
-- issue and PR volume
-- star count as a weak secondary feature
-- age and health of the project
-
-### Outcome Weight
-
-- merged PRs count the most
-- closed without merge counts less
-- draft or abandoned work should contribute little or nothing
-
-### Consistency Multiplier
-
-Contributors who do meaningful work steadily over time should earn more trust than contributors who appear briefly with noisy bursts.
-
-## Example Scoring Formula
-
-This is only a directional model for v1:
-
-```text
-PR Score =
-  BaseCategoryWeight
-  x TechnicalDepth
-  x ReviewConfidence
-  x RepositoryWeight
-  x OutcomeMultiplier
-  x ConsistencyModifier
-  - SpamPenalty
-```
-
-This formula should remain interpretable. If AI is used, it should enrich features rather than hide the scoring logic behind an opaque model.
-
-## AI Layer Design
-
-The AI layer should assist classification, not replace system design.
-
-Good uses of AI:
-
-- summarize the technical purpose of a PR
-- classify the contribution type
-- estimate whether the change is shallow, moderate, or deep
-- identify likely skill areas involved
-- generate human-readable profile insights
-
-AI should not be trusted blindly for:
-
-- final scoring without deterministic checks
-- security-critical claims
-- contributor identity trust
-- exact difficulty estimation without repo context
-
-Recommended approach:
-
-- deterministic feature extraction first
-- AI classification second
-- rule-based scoring third
-
-## Suggested Storage Model
-
-The first version will likely need:
-
-- PostgreSQL for users, repositories, pull requests, analysis results, scores, badges, and profile snapshots
-- Redis for caching, job coordination, and temporary rate-limit protection
-
-Core entities:
-
-- users
-- github_accounts
-- repositories
-- pull_requests
-- pull_request_reviews
-- contribution_analyses
-- score_events
-- badges
-- user_badges
-- profile_snapshots
-- sync_jobs
-
-## Proposed Tech Stack
-
-### Backend
-
-- Go for services
-- PostgreSQL for primary relational storage
-- Redis for caching and background coordination
-- GitHub REST and GraphQL APIs for source data
-- OpenAI or another LLM provider for PR analysis and profile insights
-
-### Frontend
-
-- dashboard for authenticated users
-- public shareable profile pages
-- contribution timeline, badges, and skill breakdown views
-
-### Infrastructure
-
-- OCI-containerized services
-- Kubernetes as the v1 deployment baseline
-- managed PostgreSQL and Redis preferred for production state
-- async workers for ingestion and re-scoring
-- observability through structured logs, metrics, and planned tracing
-
-## API Direction
-
-Current gateway routes:
-
-- `GET /healthz`
-- `GET /readyz`
-- `GET /metrics`
-- `GET /v1/meta/manifest`
-- `GET /v1/meta/dependencies`
-- `POST /v1/sync`
-- `POST /v1/sync/installation/execute`
-- `POST /v1/sync/repository/execute`
-- `GET /v1/me/profile`
-- `GET /v1/me/quests`
-- `PATCH /v1/me/profile`
-- `PATCH /v1/me/profile/repositories/{owner}/{repo}`
-- `GET /v1/pr/{owner}/{repo}/{number}/report`
-- `GET /v1/leaderboard`
-- `GET /v1/users/{handle}`
-- `GET /v1/users/{handle}/card`
-
-Implemented service routes today:
-
-- `GET /v1/meta/manifest` and `GET /metrics` on every service
-- `GET /oauth/github/start`, `GET /oauth/github/callback`, `GET /v1/session/me`, `POST /v1/session/refresh`, and `POST /v1/session/logout` on `auth-service`
-- `POST /webhooks/github`, `POST /v1/webhooks/github/deliveries/{delivery_id}/requeue`, `POST /v1/sync/preview`, `GET /v1/sync/runs`, `POST /v1/sync/installation/execute`, `POST /v1/sync/user/execute`, `POST /v1/sync/repository/execute`, `POST /v1/sync/pull-request/execute`, `POST /v1/sync/review/execute`, `POST /v1/sync/issue/execute`, `POST /v1/sync/commit/execute`, and the normalized `POST /v1/sync/*` routes on `github-ingestor`
-- `POST /v1/analyze/pull-request` and `POST /v1/analyze/pull-request/execute` on `pr-analyzer`
-- `POST /v1/score/contribution`, `POST /v1/score/users/{user_id}/replay`, `GET /v1/score/users/{user_id}/snapshot`, and `GET /v1/score/users/{user_id}/events` on `scoring-engine`
-- `GET /v1/profile/schema`, `POST /v1/profile/users/{user_id}/refresh`, `GET /v1/leaderboard`, `POST /v1/leaderboard/materialize`, `GET /v1/users/{handle}`, `GET /v1/users/{handle}/card`, `GET /v1/me/profile`, `GET /v1/me/quests`, `GET /v1/pr/{owner}/{repo}/{number}/report`, and profile privacy update routes on `profile-service`
-- `GET /v1/jobs`, `POST /v1/jobs/sync`, `POST /v1/jobs/tick`, `POST /v1/jobs/lease`, `POST /v1/jobs/run-once`, `GET|POST /v1/jobs/backfills`, recurring-plan pause/resume/cancel/delete routes, `GET /v1/jobs/dead-letters`, job control routes, and dead-letter replay routes on `scheduler-worker`
-
-## Local Development
-
-### Prerequisites
-
-- Go `1.26+`
-- GitHub OAuth app credentials
-- PostgreSQL
-- Redis
-- an AI provider API key for PR analysis
-
-Optional future-upgrade path:
-
-- GitHub App credentials for deeper org-scale ingestion are not required for the v1 production baseline
-
-### Current Workspace
-
-This repository is currently scaffolded as a Go workspace using `go.work` with one module per service and shared package.
-
-### Useful Commands
-
-From the project root:
+### 1) Start infra
 
 ```bash
-cd gitrank
-go work sync
+cd /home/kali/Desktop/gitrank
+make -C gitrank compose-up
+```
+
+### 2) Configure backend env
+
+```bash
+cd /home/kali/Desktop/gitrank
+cp -n gitrank/.env.example gitrank/.env
+```
+
+Set at minimum in `gitrank/.env`:
+
+- `GITHUB_CLIENT_ID`
+- `GITHUB_CLIENT_SECRET`
+- `GITRANK_SESSION_SECRET`
+- `GITRANK_JWT_SIGNING_KEY`
+- `GITHUB_TOKEN_ENCRYPTION_KEY` (32-byte base64 key)
+
+### 3) Run migrations
+
+```bash
+cd /home/kali/Desktop/gitrank/gitrank
+./scripts/migrate.sh
+```
+
+### 4) Start backend services
+
+```bash
+cd /home/kali/Desktop/gitrank/gitrank
+mkdir -p ../.logs
+for svc in auth-service github-ingestor pr-analyzer scoring-engine profile-service scheduler-worker api-gateway; do
+  nohup go run "./services/$svc/cmd/$svc" >"../.logs/$svc.log" 2>&1 &
+done
+```
+
+### 5) Start frontend
+
+```bash
+cd /home/kali/Desktop/gitrank
+cp -n frontend/.env.example frontend/.env.local
+cd frontend
+npm install
+npm run dev
+```
+
+Open:
+
+- frontend: `http://localhost:3000`
+- gateway health: `http://localhost:8080/healthz`
+
+## AI Support (Gemini Only, For Now)
+
+GitRank is configured for Gemini as the active AI provider.
+
+Backend (`gitrank/.env`):
+
+- `AI_PROVIDER=gemini`
+- `GEMINI_API_KEY=...`
+- `GEMINI_MODEL=gemini-2.5-flash`
+- `GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai`
+
+Frontend (`frontend/.env.local`):
+
+- `GEMINI_API_KEY=...`
+- `GEMINI_MODEL=gemini-2.5-flash`
+
+If Gemini is unavailable, ABRA insight surfaces degrade gracefully with
+deterministic fallback text.
+
+## Quality Gates
+
+Backend:
+
+```bash
+cd /home/kali/Desktop/gitrank/gitrank
 make test
+make test-critical-path-flows
+make verify-v2-live-readiness
 ```
 
-To inspect the workspace:
+Frontend:
 
 ```bash
-go work edit -json
+cd /home/kali/Desktop/gitrank/frontend
+npm run lint
+npm run check:no-production-mocks
+npm run test:smoke
+npm run build
 ```
 
-### Suggested Environment Variables
+## Deployment and Operations Docs
 
-```bash
-GITRANK_ENV=development
-GITRANK_HTTP_PORT=8080
-GITHUB_CLIENT_ID=your_github_oauth_client_id
-GITHUB_CLIENT_SECRET=your_github_oauth_client_secret
-GITHUB_WEBHOOK_SECRET=your_github_webhook_secret
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/gitrank?sslmode=disable
-REDIS_URL=redis://localhost:6379
-GEMINI_API_KEY=your_api_key
-```
-
-See [`.env.example`](./.env.example) for the full local configuration surface, including optional future GitHub App settings that are not required in the v1 production baseline.
-
-Optional local seed data:
-
-```bash
-cd gitrank
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/gitrank?sslmode=disable \
-GITRANK_ENV=development \
-ALLOW_LOCAL_SEED=1 \
-make seed-local
-```
-
-This seed path is intentionally local-only. It creates one deterministic sample user, repository, PR, score event, badge, and profile snapshot for profile and scoring development.
-
-V2 staging seed:
-
-```bash
-cd gitrank
-GITRANK_ENV=staging \
-ALLOW_V2_STAGING_SEED=1 \
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/gitrank?sslmode=disable \
-SCORING_ENGINE_BASE_URL=http://localhost:8085 \
-PROFILE_SERVICE_BASE_URL=http://localhost:8084 \
-make seed-v2-staging
-```
-
-The V2 staging seed inserts only synthetic GitHub-like evidence and deterministic analysis records, then uses the scoring/profile/PR-report APIs to generate score events, badges, snapshots, and report output. `make verify-v2-staging-seed` checks the SQL seed does not precompute score or profile artifacts.
-
-## MVP Roadmap
-
-### Phase 1: Foundation
-
-- GitHub OAuth
-- user onboarding
-- PR ingestion for public repositories
-- normalized storage for PRs, reviews, repositories, and users
-
-### Phase 2: Contribution Analysis
-
-- rule-based PR classification
-- AI-generated PR summaries
-- first-pass technical depth scoring
-- docs vs tests vs bugfix vs feature categorization
-
-### Phase 3: Reputation Engine
-
-- user XP
-- skill weights
-- levels
-- badge issuance
-- contribution timeline
-
-### Phase 4: Public Profiles
-
-- public profile pages
-- shareable skill cards
-- repository highlights
-- progress history
-
-### Phase 5: Trust and Platform Features
-
-- leaderboards
-- maintainer signals
-- contributor streaks based on meaningful work
-- org or team dashboards
-
-## Example User Journey
-
-1. A developer connects GitHub.
-2. GitRank imports their merged PR history.
-3. The system analyzes each contribution.
-4. The developer sees which repositories, languages, and skills contribute most to their score.
-5. They earn badges for meaningful work patterns such as testing, debugging, or sustained backend contributions.
-6. They share their public GitRank profile on resumes, portfolios, and social platforms.
-
-## Intended Users
-
-- students building proof of skill
-- early-career developers who need stronger public credibility
-- open-source contributors who want recognition beyond streaks
-- maintainers who want better contributor insight
-- recruiters, mentors, and communities who need better evaluation signals
-
-## Design Principles
-
-- evidence over hype
-- quality over volume
-- explainable scoring over black-box ranking
-- sustained contribution over one-off activity
-- contributor growth over vanity metrics
-
-## Risks and Challenges
-
-This product only works if the scoring feels credible. Major challenges include:
-
-- avoiding false precision in AI judgments
-- preventing gaming through micro-contributions
-- handling repository context fairly
-- keeping scores interpretable
-- respecting GitHub rate limits and API constraints
-- avoiding bias toward only large or popular repositories
-
-These should shape the architecture from the start.
-
-## Long-Term Vision
-
-If executed well, GitRank can become a serious reputation layer on top of open source:
-
-- a motivation system for contributors
-- a discovery signal for maintainers
-- a credibility signal for recruiters
-- a progress tracker for developers improving in public
-
-The best version of GitRank does not just make contribution graphs prettier. It makes open-source work more legible, more rewarding, and harder to fake.
+- Backend workspace guide: [`gitrank/README.md`](./gitrank/README.md)
+- Frontend guide: [`frontend/README.md`](./frontend/README.md)
+- K8s deployment notes: [`gitrank/deployments/k8s/README.md`](./gitrank/deployments/k8s/README.md)
+- Architecture docs: [`gitrank/docs/architecture.md`](./gitrank/docs/architecture.md)
+- API architecture: [`gitrank/docs/api-architecture.md`](./gitrank/docs/api-architecture.md)
+- Release and live-gate docs: [`gitrank/docs/releases`](./gitrank/docs/releases)
+- Contribution policy and checklists: [`CONTRIBUTING.md`](./CONTRIBUTING.md)
 
 ## Current Status
 
-The repository currently contains a working foundation, not just an empty scaffold:
-
-- workspace modules for all core services
-- shared packages for config, logging, errors, events, auth, HTTP, and GitHub API access
-- a frozen v1 production decision register plus maintainer, privacy, AI-governance, analytics, and infrastructure policy docs
-- DCO workflow enforcement plus PR-template sign-off reminders
-- real auth-service session, OAuth, token refresh, linking, unlinking, and audit logic
-- webhook intake plus normalized repository, PR, review, issue, label, commit, installation, and sync-run persistence in the GitHub ingestor, including queryable manual sync traceability by user, repository, requester, and correlation ID
-- GitHub REST and GraphQL client protections with bounded concurrency, secondary-rate-limit backoff, and provider-failure circuit breakers
-- GitHub REST and GraphQL fault-injection tests that prove secondary-rate-limit recovery and `Retry-After` handling on the shared client path
-- configurable `github-ingestor` repository metadata caching for stable `/repos/{owner}/{repo}` responses during bounded sync execution
-- OAuth-token-backed GraphQL batching in `github-ingestor` for repository PR details and reviews, with public REST list enrichment and REST fallback when the requester has no usable linked OAuth token
-- GitHub login, repository, and commit sync target validation plus HTTP(S)-only outbound URL guards for gateway, GitHub, and AI clients
-- a CI-backed Go safety audit that fails on non-test `unsafe` or reflection-heavy code paths unless they are reviewed explicitly
-- W3C `traceparent` propagation across service HTTP boundaries, scheduler-triggered async sync execution, GitHub API calls, OAuth token calls, and AI request builders
-- renderable Prometheus and Grafana Kubernetes manifests that mount the committed alert rules and dashboards, with a local `make verify-observability-manifests` check
-- Kubernetes deployment rollback workflow support plus a local `make verify-rollback-procedure` check for manifest rendering and rollback wiring
-- environment-separated ExternalSecret examples plus key-ring-aware auth/token secret rotation runbooks verified by `make verify-secret-policy`
-- local verification Makefile targets pass `TMPDIR` through so manifest render checks do not depend on limited system `/tmp` space
-- a bounded live user sync execution path that walks recent public repositories owned by a GitHub login, discovers recent authored public PRs through GitHub issue/PR search, and persists those concrete PR targets through the same repository and PR executors in `github-ingestor`
-- a bounded installation sync execution path that can use live GitHub App installation repository inventory plus installation tokens for repository sync when App credentials are configured, with persisted-installation-repository fallback when App auth is not configured
-- a bounded live repository sync execution path that fetches recent repository, PR, review, issue, and commit data from the public GitHub REST API and persists it directly through `github-ingestor`
-- a bounded live pull-request sync execution path that fetches one public PR plus its reviews and review comments and persists them directly through `github-ingestor`
-- a bounded live review sync execution path that refreshes the review surface for one PR number and persists its reviews and review comments through `github-ingestor`
-- a bounded live issue sync execution path that fetches one standalone public issue plus its labels and persists it directly through `github-ingestor`
-- a bounded live commit sync execution path that fetches one public commit and persists it directly through `github-ingestor`
-- an ingestion throughput benchmark target, `make bench-ingestion`, for PostgreSQL-backed pull-request webhook persistence when `GITRANK_INGESTOR_DATABASE_URL` is configured
-- optional PostgreSQL-backed webhook delivery persistence for durable dedupe and requeue state in the GitHub ingestor
-- query-shape indexes for profile, scoring, sync-run, auth-session, and installation replay reads, with profile/scoring bulk reads avoiding application-level N+1 query loops
-- deterministic PR analysis and deterministic contribution scoring services, with schema-validated analysis envelopes, hard pre-analysis file/diff/token/cost limits, grounded-language and summary guardrails for future AI-assisted outputs, deterministic language and critical-path heuristics, issue-link and review-cycle extraction, regression datasets, scorer-side artifact validation before XP computation, and persisted replay runs with immutable score events plus historical score snapshots
-- a snapshot-backed profile-service read model with privacy controls, repository visibility, caching, and share-card data
-- a scheduler-worker orchestration layer with deduplicated enqueue, recurring backfill plans, plan pause/resume/cancel/delete controls, per-scope throttling, leasing, retries, dead letters, pause/cancel controls, manual replay, bounded worker-mode execution for `sync.installation`, `sync.repository`, `sync.user_history`, `sync.pull_request`, `sync.review`, `sync.issue`, `sync.commit`, `analysis.pull_request`, `score.replay_user`, `profile.refresh_user`, `report.materialize_pull_request`, `report.backfill_user_pull_requests`, `leaderboard.materialize_season`, `pipeline.backfill_user_history`, and `pipeline.grade_pull_request` jobs, plus PostgreSQL-backed durable scheduler tables and cross-instance mutation serialization when `DATABASE_URL` is configured
-- live profile route integration through api-gateway plus frontend BFF routes for public profile and settings pages, including settings-triggered sync, account data export, recent PR battle-report summaries, GitHub disconnect, and self-service account deletion
-- API-gateway product analytics counters for onboarding completion, sync success/failure, profile views, score explanation opens, and badge views, with bounded event payloads and no raw code/token capture
-- metrics endpoints and shared request instrumentation across the Go services, including queue depth, cache hit rate, sync duration, score computation duration, PR analysis breakdowns, estimated analysis token/cost telemetry, GitHub rate-limit tracking, and HTTP error counters
-- PostgreSQL migrations for core entities, GitHub ingestion state, and auth/session security tables
-- generic OCI build packaging under `deployments/docker/` and a release workflow that builds binaries, publishes GitHub Releases, and pushes per-service OCI images
-- a Kubernetes deployment baseline under `deployments/k8s/` with per-service Deployments, Services, gateway/auth ingress, staging and production overlays, runtime secret contracts, and migration Job wiring
-- committed observability assets under `deployments/observability/`, including Grafana dashboards, Prometheus alert rules, and service runbooks
-- a substantial Next.js frontend with dashboard, profile, leaderboard, quest, badge, onboarding, and PR-report flows, with live profile/settings/account actions, account export download, live dashboard/badge/contribution/recent-report data from the authenticated profile snapshot, live quest recommendations from profile score evidence, live PR battle reports from persisted public PR analysis and score evidence, live leaderboard data from persisted season snapshots, season/rank progression presentation, player-card public profiles, badge rarity styling, and an account-backed reduced-gamification preference for authenticated dashboard flows
-- CI, frontend CI, release-artifact, Kubernetes deployment, dependency-review, CodeQL for Go and TypeScript, Scorecard, repo-level secret scanning, pinned Trivy filesystem and service-image scanning
-- a CI-enforced critical-path test coverage map plus Docker-backed local flow tests covering OAuth, sync, PR ingestion, analysis, scoring, profile projection, and webhook idempotency paths
-- a GitHub repository-controls runbook and token-based verifier for proving live branch protection, required checks, dependency graph, and Dependabot alerts
-
-Major gaps remain:
-
-- Kubernetes now defines a split scheduler topology: `scheduler-worker` runs API/control operations, while `scheduler-job-worker` leases durable jobs as a separate worker fleet. Bounded sync, PR-analysis, score-replay, profile-refresh, PR-report materialization, PR-report backfill enumeration, leaderboard materialization, user-history pipeline backfill, and PR-grading pipeline jobs now have a deployable worker path, but broad historical backfill coverage and live environment proof are still pending
-- PR report pages now use a live read model with report-level suggested quest guidance, authenticated profiles expose recent persisted PR reports for dashboard rendering, and direct PR sync persists bounded changed-file metadata, derived file/diff features, and public patch excerpts for report evidence. Profile-service can now write idempotent `pull_request_report_snapshots` rows from persisted PR, analysis, score, badge, file, and review evidence, materialize quest assignments/progress/completions/rewards from verified score history, materialize weekly leaderboard season snapshots plus rank movement events, and backfill user-scoped historical PR report snapshots from persisted score evidence. The PR grading pipeline materializes its report snapshot before live verification. Historical quest, season, badge, and score-history backfill workers are still pending
-- live GitHub repository controls still need to be applied with `make apply-github-repository-controls` or GitHub settings, then verified with `make verify-github-repository-controls`
-- no deployed tracing backend or observability stack yet; dashboards and alert rules are committed, and `gitrank/docs/runbooks/production-observability.md` defines the live verification path
-- rollback wiring is locally verified, but a real staging or production-like rollback drill still has to be executed and recorded
-- the Kubernetes assets are still provider-neutral and require a real `gitrank-runtime-secrets` source, TLS Secret, ingress controller, managed PostgreSQL, managed Redis, and registry owner/tag substitution before production apply
-
-V2 direction:
-
-- replace every production mock, demo-only product path, and derived-only product claim with real backend contracts, persistence, orchestration, and verification
-- user sync now supplements owned-repository traversal with bounded authored-PR discovery, so real public PRs in repositories the user does not own can enter the persisted PR evidence path
-- pr-analyzer now requires PostgreSQL in production and persists deterministic `contribution_analyses` artifacts against synced PR evidence instead of returning only transient analysis envelopes
-- scheduler-worker now supports real `analysis.pull_request` jobs that call pr-analyzer's persisted evidence execution route before scoring replay
-- scheduler-worker now supports real `profile.refresh_user` jobs that call profile-service's persisted snapshot refresh route after scoring replay
-- scheduler-worker now supports real `report.materialize_pull_request` jobs that call profile-service's persisted PR-report snapshot route
-- scheduler-worker now supports real `report.backfill_user_pull_requests` jobs that call profile-service's user-scoped PR-report backfill route
-- scheduler-worker now supports real `leaderboard.materialize_season` jobs that call profile-service's leaderboard season materialization route
-- scheduler-worker now supports real `pipeline.backfill_user_history` jobs that chain user score replay, profile refresh, PR-report backfill, and leaderboard materialization in one user-scoped durable job
-- scheduler-worker now supports real `pipeline.grade_pull_request` jobs that run bounded PR sync, persisted analysis, score replay, profile refresh, PR-report materialization, and live PR-report verification in one worker execution
-- scheduler-worker now supports `SCHEDULER_RUN_MODE=api|worker|combined`, and Kubernetes deploys a separate `scheduler-job-worker` fleet for long-running durable job execution
-- frontend routes no longer accept `?demo=` preview modes, and the old authenticated mock dataset plus preview mock API modules have been removed
-- production navigation no longer links to a hardcoded personal sample profile, and repository-control scripts require an explicit `GITHUB_REPOSITORY`
-- frontend CI now includes a live-fixture smoke suite that renders dashboard, quests, PR reports, profile, leaderboard, and settings without using frontend mock API functions
-- newly replayed PR battle reports expose persisted scoring-engine formula components instead of relying only on profile-side display heuristics
-- newly replayed badge awards carry bounded PR evidence references so PR reports can show real badge unlocks
-- profile-owned quest boards now materialize quest definitions, assignments, progress events, completions, XP reward score events, badge awards, reward grants, and audit events from score-history evidence
-- leaderboard rows now materialize into weekly season snapshots and rank movement events, and the API exposes those IDs with score version and freshness evidence
-- scoring-engine now has a non-mutating replay verifier for selected user, repository, date range, and formula version checks against persisted evidence
-- scheduler-worker now supports real `score.replay_user` jobs by posting `score_replay` targets to `scoring-engine /v1/score/users/{user_id}/replay`, with normal dedupe, retry, dead-letter, metrics, and run-once execution behavior
-- profile score history now carries score-event, score-version, formula-version, pull-request, analysis, and missing-evidence state so XP rows are no longer anonymous display-only claims
-- leaderboard rows now expose season snapshot provenance, rank movement event IDs, profile snapshot provenance, score version, and source watermark instead of presenting snapshot-derived ranks as anonymous display-only results
-- V2 no-mock release gate checks now run through `make verify-v2-no-mock-release-gate` and frontend CI to catch production mock imports, missing critical OpenAPI paths, and dropped critical worker/profile smoke coverage
-- dead-letter replay guidance now exists in `gitrank/docs/runbooks/dead-letter-replay.md` for current scheduler replays and the future analysis, scoring, profile, quest, and PR-report worker stages
-- V2 staging seed support now inserts synthetic GitHub-like evidence and drives scoring/profile/PR-report verification through real service APIs instead of frontend mock functions
-- V2 release notes live in `gitrank/docs/releases/v2.md` and separate removed V1 limitations from remaining out-of-scope and live-proof requirements
-- profile skill areas expose evidence source, confidence, and freshness state so skill claims remain bounded to real scored evidence
-- PR battle reports expose and render structured evidence state for incomplete, stale, rate-limited, deterministic-only, and AI-fallback conditions
-- analysis envelopes reject score-override language before scoring, keeping final XP deterministic and rule-based
-- see `CONTRIBUTING.md` for the V1 limitations inventory and V2 no-mock checklist
+- Core local stack is runnable for demo and development.
+- Production readiness still depends on live external gates
+  (repo controls, observability evidence, rollback/restore proof, and
+  environment-specific infra validation).
+- See `CONTRIBUTING.md` and live-gate scripts under `gitrank/scripts/`.
 
 ## License
 
-This project is licensed under the MIT License.
+MIT
