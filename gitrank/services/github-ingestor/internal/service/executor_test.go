@@ -87,6 +87,16 @@ func TestIsSkippableGitHubSyncError(t *testing.T) {
 			want: false,
 		},
 		{
+			name: "context deadline exceeded errors are skippable",
+			err:  context.DeadlineExceeded,
+			want: true,
+		},
+		{
+			name: "client timeout errors are skippable",
+			err:  errors.New("Get \"https://api.github.com/repos/llvm/llvm-project/pulls/182707/reviews?per_page=20\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)"),
+			want: true,
+		},
+		{
 			name: "non-github errors are not skippable",
 			err:  errors.New("database is unavailable"),
 			want: false,

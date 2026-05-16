@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -1355,6 +1357,10 @@ func uniqueRepositoryCountFromAuthoredTargets(targets []authoredPullRequestTarge
 }
 
 func isSkippableGitHubSyncError(err error) bool {
+	if isSkippableGitHubTimeoutError(err) {
+		return true
+	}
+
 	statusCode, ok := gitHubStatusCodeFromError(err)
 	if !ok {
 		return false
@@ -1366,6 +1372,24 @@ func isSkippableGitHubSyncError(err error) bool {
 	default:
 		return false
 	}
+}
+
+func isSkippableGitHubTimeoutError(err error) bool {
+	if err == nil {
+		return false
+	}
+	if errors.Is(err, context.DeadlineExceeded) {
+		return true
+	}
+
+	var netErr net.Error
+	if errors.As(err, &netErr) && netErr.Timeout() {
+		return true
+	}
+
+	message := strings.ToLower(err.Error())
+	return strings.Contains(message, "context deadline exceeded") ||
+		strings.Contains(message, "client.timeout exceeded")
 }
 
 func gitHubStatusCodeFromError(err error) (int, bool) {
