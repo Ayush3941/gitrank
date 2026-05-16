@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -134,7 +135,7 @@ func handleRepositorySyncExecution(w http.ResponseWriter, r *http.Request, clien
 	})
 }
 
-func handleUserSyncExecution(w http.ResponseWriter, r *http.Request, client *http.Client, ingestorBaseURL string) {
+func handleUserSyncExecution(w http.ResponseWriter, r *http.Request, client *http.Client, ingestorBaseURL, scoringBaseURL, profileBaseURL string) {
 	var req contracts.SyncRequest
 	if err := httpkit.DecodeJSON(r, &req, 1<<20); err != nil {
 		httpkit.WriteError(w, http.StatusBadRequest, "invalid_json", err.Error(), httpkit.RequestIDFromContext(r.Context()))
@@ -176,6 +177,9 @@ func handleUserSyncExecution(w http.ResponseWriter, r *http.Request, client *htt
 			}
 			if strings.TrimSpace(execution.Status) == "" || execution.StartedAt.IsZero() || execution.FinishedAt.IsZero() {
 				return 0, nil, nil, fmt.Errorf("invalid github-ingestor execution contract")
+			}
+			if err := refreshUserDashboardEvidence(r.Context(), client, principal.Subject, scoringBaseURL, profileBaseURL); err != nil {
+				return 0, nil, nil, err
 			}
 			encoded, err := json.Marshal(execution)
 			if err != nil {
@@ -306,4 +310,105 @@ func allowRateLimit(w http.ResponseWriter, r *http.Request, limiter *rateLimiter
 	w.Header().Set("Retry-After", retryAfterSeconds(retryAfter))
 	httpkit.WriteError(w, http.StatusTooManyRequests, "rate_limited", "too many requests", httpkit.RequestIDFromContext(r.Context()))
 	return false
+}
+
+func refreshUserDashboardEvidence(ctx context.Context, client *http.Client, subject, scoringBaseURL, profileBaseURL string) error {
+	userID, err := contracts.NormalizeUUID(subject, "subject")
+	if err != nil {
+		return fmt.Errorf("invalid authenticated subject: %w", err)
+	}
+
+	steps := []struct {
+		name       string
+		baseURL    string
+		path       string
+		request    any
+		expectCode int
+	}{
+		{
+			name:       "score replay",
+			baseURL:    scoringBaseURL,
+			path:       "/v1/score/users/" + userID + "/replay",
+			request:    contracts.ReplayUserScoresRequest{TriggerType: "live"},
+			expectCode: http.StatusAccepted,
+		},
+		{
+			name:       "profile refresh",
+			baseURL:    profileBaseURL,
+			path:       "/v1/profile/users/" + userID + "/refresh",
+			expectCode: http.StatusAccepted,
+		},
+		{
+			name:       "pr report backfill",
+			baseURL:    profileBaseURL,
+			path:       "/v1/profile/users/" + userID + "/pr-reports/backfill",
+			expectCode: http.StatusAccepted,
+		},
+		{
+			name:       "quest backfill",
+			baseURL:    profileBaseURL,
+			path:       "/v1/profile/users/" + userID + "/quests/backfill",
+			expectCode: http.StatusAccepted,
+		},
+	}
+
+	for _, step := range steps {
+		if strings.TrimSpace(step.baseURL) == "" {
+			return fmt.Errorf("%s failed: missing upstream base URL", step.name)
+		}
+		if err := postInternalJSON(ctx, client, step.baseURL, step.path, step.request, step.expectCode); err != nil {
+			return fmt.Errorf("%s failed: %w", step.name, err)
+		}
+	}
+	return nil
+}
+
+func postInternalJSON(ctx context.Context, client *http.Client, baseURL, path string, requestBody any, expectedStatus int) error {
+	target, err := buildProxyURL(baseURL, path, "")
+	if err != nil {
+		return err
+	}
+
+	var body io.Reader
+	if requestBody != nil {
+		encoded, err := json.Marshal(requestBody)
+		if err != nil {
+			return err
+		}
+		body = bytes.NewReader(encoded)
+	}
+
+	callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	request, err := http.NewRequestWithContext(callCtx, http.MethodPost, target, body)
+	if err != nil {
+		return err
+	}
+	request.Header.Set("Content-Type", "application/json")
+	httpkit.InjectTraceContext(callCtx, request.Header)
+
+	response, err := client.Do(request)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode == expectedStatus {
+		return nil
+	}
+
+	payload, _ := io.ReadAll(io.LimitReader(response.Body, 8<<10))
+	var contractError contracts.ErrorResponse
+	if err := json.Unmarshal(payload, &contractError); err == nil {
+		message := strings.TrimSpace(contractError.Error.Message)
+		if message != "" {
+			return fmt.Errorf("status %d: %s", response.StatusCode, message)
+		}
+	}
+	trimmedPayload := strings.TrimSpace(string(payload))
+	if trimmedPayload == "" {
+		return fmt.Errorf("status %d", response.StatusCode)
+	}
+	return fmt.Errorf("status %d: %s", response.StatusCode, trimmedPayload)
 }

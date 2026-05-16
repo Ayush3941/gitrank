@@ -23,6 +23,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 	profileBaseURL := strings.TrimRight(cfg.Services.ProfileBaseURL, "/")
 	authBaseURL := strings.TrimRight(cfg.Services.AuthBaseURL, "/")
 	ingestorBaseURL := strings.TrimRight(cfg.Services.GitHubIngestorBaseURL, "/")
+	scoringBaseURL := strings.TrimRight(cfg.Services.ScoringBaseURL, "/")
 	client := &http.Client{Timeout: cfg.Services.RequestTimeout}
 	syncExecutionClient := &http.Client{Timeout: maxDuration(cfg.Services.RequestTimeout, 10*time.Minute)}
 	sessionSecrets := cfg.SessionSecretRing()
@@ -309,7 +310,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		if !allowRateLimit(w, r, writeLimiter, "sync_execute_user") {
 			return
 		}
-		handleUserSyncExecution(w, r, syncExecutionClient, ingestorBaseURL)
+		handleUserSyncExecution(w, r, syncExecutionClient, ingestorBaseURL, scoringBaseURL, profileBaseURL)
 	})))
 
 	mux.Handle("/v1/sync/installation/execute", sessionAuth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

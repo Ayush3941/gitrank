@@ -155,9 +155,9 @@ func (s *Store) LoadReplayCandidatesFiltered(ctx context.Context, userID string,
 		)
 		SELECT
 			pr.id::text,
-			ca.id::text,
+			COALESCE(ca.id::text, ''),
 			pr.occurred_at,
-			ca.created_at,
+			COALESCE(ca.created_at, pr.occurred_at),
 			r.full_name,
 			COALESCE(r.primary_language, ''),
 			COALESCE(r.default_branch, 'main'),
@@ -175,11 +175,11 @@ func (s *Store) LoadReplayCandidatesFiltered(ctx context.Context, userID string,
 			pr.deletions,
 			pr.changed_files,
 			pr.commits,
-			ca.analyzer_version,
+			COALESCE(ca.analyzer_version, ''),
 			COALESCE(ca.prompt_version, ''),
 			COALESCE(ca.model_name, ''),
-			ca.analysis_source,
-			ca.classification,
+			COALESCE(ca.analysis_source, 'deterministic'),
+			COALESCE(ca.classification, 'feature'),
 			COALESCE(ca.confidence::float8, 0),
 			COALESCE(ca.summary, ''),
 			COALESCE(ca.signals_jsonb, '[]'::jsonb),
@@ -187,7 +187,7 @@ func (s *Store) LoadReplayCandidatesFiltered(ctx context.Context, userID string,
 			COALESCE(reviews.reviews_jsonb, '[]'::jsonb)
 		FROM replay_candidates pr
 		INNER JOIN repositories r ON r.id = pr.repository_id
-		INNER JOIN LATERAL (
+		LEFT JOIN LATERAL (
 			SELECT
 				id,
 				analyzer_version,
