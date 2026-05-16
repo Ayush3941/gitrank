@@ -1,8 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ChartNoAxesCombined, GitPullRequestArrow, ShieldCheck, Sparkles, Swords, Trophy } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
-import { RankBadge } from "@/components/shared/RankBadge";
 import { RarityBadge } from "@/components/shared/RarityBadge";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { Button } from "@/components/ui/button";
@@ -18,7 +16,7 @@ const loop = [
 ];
 
 export function LandingPage() {
-  const { highlightedBadges, report, user } = marketingSample;
+  const { highlightedBadges, report } = marketingSample;
 
   return (
     <main className="space-y-8">
@@ -44,9 +42,6 @@ export function LandingPage() {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
-              <Button asChild variant="secondary" size="lg">
-                <Link href="/leaderboard">Explore leaderboard</Link>
-              </Button>
             </div>
             <p className="max-w-2xl text-sm text-muted">
               GitRank does not ask only how much you contributed. It asks what recent contribution evidence suggests about the work.
@@ -55,31 +50,20 @@ export function LandingPage() {
           <GlowCard strong className="space-y-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs tracking-[0.24em] text-primary uppercase">Sample rank card</p>
-                <h2 className="cyber-title mt-2 text-2xl font-semibold text-white">{user.displayName}</h2>
+                <p className="text-xs tracking-[0.24em] text-primary uppercase">Live rank arena</p>
+                <h2 className="cyber-title mt-2 text-2xl font-semibold text-white">Live contributor card</h2>
               </div>
-              <RankBadge rank={user.level.rankTier} />
             </div>
-            <div className="flex items-center gap-4">
-              <Image
-                src={user.avatarUrl}
-                alt={`${user.displayName} sample avatar`}
-                width={72}
-                height={72}
-                className="cyber-avatar h-[72px] w-[72px] rounded-3xl"
-              />
-              <div className="space-y-1">
-                <p className="text-sm text-muted">@{user.username}</p>
-                <p className="text-3xl font-semibold text-white">Level {user.level.currentLevel}</p>
-                <p className="cyber-copy text-sm">{user.title}</p>
-              </div>
+            <div className="neon-surface rounded-3xl p-4">
+              <p className="text-sm text-muted">
+                Connect GitHub to unlock your real rank, profile card, and progression signals.
+              </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
-              {user.strongestSignals.map((skill) => (
-                <div key={skill} className="neon-surface rounded-3xl px-4 py-3 text-sm cyber-copy">
-                  {skill}
-                </div>
-              ))}
+              <div className="neon-surface rounded-3xl px-4 py-3 text-sm cyber-copy">Live contributor snapshot</div>
+              <div className="neon-surface rounded-3xl px-4 py-3 text-sm cyber-copy">Evidence-backed score movement</div>
+              <div className="neon-surface rounded-3xl px-4 py-3 text-sm cyber-copy">Quest and badge progression</div>
+              <div className="neon-surface rounded-3xl px-4 py-3 text-sm cyber-copy">AI explanation with deterministic fallback</div>
             </div>
           </GlowCard>
         </div>

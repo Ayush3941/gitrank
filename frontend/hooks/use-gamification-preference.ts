@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useSyncExternalStore } from "react";
-import { useReducedMotion } from "motion/react";
 import type { ProfileViewData } from "@/types/gitrank";
 
 const STORAGE_KEY = "gitrank:reduced-gamification";
@@ -27,9 +26,8 @@ export function useGamificationPreference() {
 }
 
 export function useReducedGamification() {
-  const prefersReducedMotion = useReducedMotion();
   const { reducedGamification } = useGamificationPreference();
-  return Boolean(prefersReducedMotion || reducedGamification);
+  return Boolean(reducedGamification);
 }
 
 export function useApplyGamificationPreference() {

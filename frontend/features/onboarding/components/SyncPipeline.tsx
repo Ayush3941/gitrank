@@ -1,7 +1,6 @@
 "use client";
 
 import { CheckCircle2, LoaderCircle } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
 import { GlowCard } from "@/components/shared/GlowCard";
 
 const steps = [
@@ -16,8 +15,6 @@ const steps = [
 ];
 
 export function SyncPipeline() {
-  const reducedMotion = useReducedMotion();
-
   return (
     <main className="mx-auto max-w-4xl">
       <GlowCard strong className="space-y-8">
@@ -34,18 +31,15 @@ export function SyncPipeline() {
             const active = index === 5;
 
             return (
-              <motion.div
+              <div
                 key={step}
-                initial={reducedMotion ? false : { opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: reducedMotion ? 0 : index * 0.07 }}
                 className="neon-surface flex items-center gap-4 rounded-[1.75rem] px-4 py-4"
               >
                 <div className="neon-tile rounded-2xl p-2 text-primary">
                   {done ? (
                     <CheckCircle2 className="h-5 w-5 text-emerald-300" />
                   ) : (
-                    <LoaderCircle className={`h-5 w-5 ${active ? "animate-spin" : "text-muted"}`} />
+                    <LoaderCircle className={`h-5 w-5 ${active ? "text-primary" : "text-muted"}`} />
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -59,7 +53,7 @@ export function SyncPipeline() {
                   </p>
                 </div>
                 <p className="text-sm text-muted">{Math.min(100, (index + 1) * 12)}%</p>
-              </motion.div>
+              </div>
             );
           })}
         </div>

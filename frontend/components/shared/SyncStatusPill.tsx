@@ -31,7 +31,7 @@ export function SyncStatusPill({
         className,
       )}
     >
-      <Icon className={cn("h-3.5 w-3.5", status.state === "syncing" && "animate-spin")} />
+      <Icon className="h-3.5 w-3.5" />
       <span>{meta.label}</span>
       <span className="text-current/70">{formatRelativeDays(status.lastSyncedAt)}</span>
     </div>

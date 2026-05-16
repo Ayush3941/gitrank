@@ -1,15 +1,4 @@
 export const marketingSample = {
-  user: {
-    username: "sample-maintainer",
-    displayName: "Rina Vale",
-    title: "Runtime Cartographer",
-    avatarUrl: "https://api.dicebear.com/9.x/glass/svg?seed=GitRankSample",
-    level: {
-      currentLevel: 12,
-      rankTier: "Platinum I",
-    },
-    strongestSignals: ["Architecture", "Testing", "Backend"],
-  },
   report: {
     owner: "open-source-labs",
     repo: "runtime-core",
