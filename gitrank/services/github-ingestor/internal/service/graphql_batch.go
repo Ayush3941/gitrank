@@ -28,7 +28,7 @@ query GitRankRepositoryPullRequestBatch($owner: String!, $name: String!, $first:
         createdAt
         updatedAt
         closedAt
-        changedFilesIfAvailable
+        changedFiles
         additions
         deletions
         commits {
@@ -84,25 +84,25 @@ type githubGraphQLPullRequestConnection struct {
 }
 
 type githubGraphQLPullRequest struct {
-	DatabaseID              int64                   `json:"databaseId"`
-	Number                  int                     `json:"number"`
-	Title                   string                  `json:"title"`
-	State                   string                  `json:"state"`
-	IsDraft                 bool                    `json:"isDraft"`
-	Merged                  bool                    `json:"merged"`
-	MergedAt                *string                 `json:"mergedAt"`
-	CreatedAt               string                  `json:"createdAt"`
-	UpdatedAt               string                  `json:"updatedAt"`
-	ClosedAt                *string                 `json:"closedAt"`
-	ChangedFilesIfAvailable *int                    `json:"changedFilesIfAvailable"`
-	Additions               int                     `json:"additions"`
-	Deletions               int                     `json:"deletions"`
-	Commits                 githubGraphQLCount      `json:"commits"`
-	Author                  *githubGraphQLActor     `json:"author"`
-	BaseRefName             string                  `json:"baseRefName"`
-	HeadRefName             string                  `json:"headRefName"`
-	Labels                  githubGraphQLLabelList  `json:"labels"`
-	Reviews                 githubGraphQLReviewList `json:"reviews"`
+	DatabaseID   int64                   `json:"databaseId"`
+	Number       int                     `json:"number"`
+	Title        string                  `json:"title"`
+	State        string                  `json:"state"`
+	IsDraft      bool                    `json:"isDraft"`
+	Merged       bool                    `json:"merged"`
+	MergedAt     *string                 `json:"mergedAt"`
+	CreatedAt    string                  `json:"createdAt"`
+	UpdatedAt    string                  `json:"updatedAt"`
+	ClosedAt     *string                 `json:"closedAt"`
+	ChangedFiles *int                    `json:"changedFiles"`
+	Additions    int                     `json:"additions"`
+	Deletions    int                     `json:"deletions"`
+	Commits      githubGraphQLCount      `json:"commits"`
+	Author       *githubGraphQLActor     `json:"author"`
+	BaseRefName  string                  `json:"baseRefName"`
+	HeadRefName  string                  `json:"headRefName"`
+	Labels       githubGraphQLLabelList  `json:"labels"`
+	Reviews      githubGraphQLReviewList `json:"reviews"`
 }
 
 type githubGraphQLCount struct {
@@ -313,8 +313,8 @@ func graphQLPullRequestToRESTMap(node githubGraphQLPullRequest) map[string]any {
 	}
 
 	changedFiles := 0
-	if node.ChangedFilesIfAvailable != nil {
-		changedFiles = *node.ChangedFilesIfAvailable
+	if node.ChangedFiles != nil {
+		changedFiles = *node.ChangedFiles
 	}
 
 	return map[string]any{

@@ -611,24 +611,24 @@ func TestExecutorFetchPullRequestsUsesGraphQLBatchWhenTokenAvailable(t *testing.
 					"pullRequests": map[string]any{
 						"nodes": []map[string]any{
 							{
-								"databaseId":              7007,
-								"number":                  7,
-								"title":                   "Fix parser panic",
-								"state":                   "MERGED",
-								"isDraft":                 false,
-								"merged":                  true,
-								"mergedAt":                "2026-05-01T12:00:00Z",
-								"createdAt":               "2026-04-30T12:00:00Z",
-								"updatedAt":               "2026-05-01T12:01:00Z",
-								"closedAt":                "2026-05-01T12:00:00Z",
-								"changedFilesIfAvailable": 3,
-								"additions":               40,
-								"deletions":               5,
-								"commits":                 map[string]any{"totalCount": 2},
-								"author":                  map[string]any{"login": "alice"},
-								"baseRefName":             "main",
-								"headRefName":             "fix-parser",
-								"labels":                  map[string]any{"nodes": []map[string]any{{"name": "bug", "color": "d73a4a", "description": "Something is not working", "isDefault": true}}},
+								"databaseId":   7007,
+								"number":       7,
+								"title":        "Fix parser panic",
+								"state":        "MERGED",
+								"isDraft":      false,
+								"merged":       true,
+								"mergedAt":     "2026-05-01T12:00:00Z",
+								"createdAt":    "2026-04-30T12:00:00Z",
+								"updatedAt":    "2026-05-01T12:01:00Z",
+								"closedAt":     "2026-05-01T12:00:00Z",
+								"changedFiles": 3,
+								"additions":    40,
+								"deletions":    5,
+								"commits":      map[string]any{"totalCount": 2},
+								"author":       map[string]any{"login": "alice"},
+								"baseRefName":  "main",
+								"headRefName":  "fix-parser",
+								"labels":       map[string]any{"nodes": []map[string]any{{"name": "bug", "color": "d73a4a", "description": "Something is not working", "isDefault": true}}},
 								"reviews": map[string]any{
 									"nodes": []map[string]any{
 										{
@@ -721,5 +721,130 @@ func TestExecutorFetchPullRequestsUsesGraphQLBatchWhenTokenAvailable(t *testing.
 	}
 	if int64Value(reviews[0]["id"]) != 701 || stringValue(object(reviews[0]["user"])["login"]) != "bob" {
 		t.Fatalf("review = %#v, want GraphQL review mapped to REST shape", reviews[0])
+	}
+}
+
+func TestExecutorFetchPullRequestsFallsBackToRESTWhenGraphQLFails(t *testing.T) {
+	t.Parallel()
+
+	restRequests := map[string]int{}
+	restServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		restRequests[r.URL.Path]++
+		w.Header().Set("Content-Type", "application/json")
+		switch r.URL.Path {
+		case "/repos/octo/repo/pulls":
+			_ = json.NewEncoder(w).Encode([]map[string]any{
+				{"number": 7},
+			})
+		case "/repos/octo/repo/pulls/7":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id":            201,
+				"number":        7,
+				"title":         "fix: graphql fallback",
+				"state":         "closed",
+				"draft":         false,
+				"merged_at":     "2026-05-01T12:00:00Z",
+				"created_at":    "2026-04-30T12:00:00Z",
+				"updated_at":    "2026-05-01T12:00:00Z",
+				"closed_at":     "2026-05-01T12:00:00Z",
+				"changed_files": 2,
+				"additions":     14,
+				"deletions":     4,
+				"commits":       1,
+				"user": map[string]any{
+					"id":    1001,
+					"login": "alice",
+				},
+				"base": map[string]any{"ref": "main"},
+				"head": map[string]any{"ref": "fix-graphql-fallback"},
+			})
+		case "/repos/octo/repo/pulls/7/reviews":
+			_ = json.NewEncoder(w).Encode([]map[string]any{
+				{
+					"id":           701,
+					"state":        "COMMENTED",
+					"submitted_at": "2026-05-01T11:30:00Z",
+					"body":         "fallback review",
+					"user": map[string]any{
+						"id":    2001,
+						"login": "bob",
+					},
+				},
+			})
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer restServer.Close()
+
+	graphqlRequests := 0
+	graphqlServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		graphqlRequests++
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"errors": []map[string]any{
+				{"message": "Field 'changedFilesIfAvailable' doesn't exist on type 'PullRequest'"},
+			},
+		})
+	}))
+	defer graphqlServer.Close()
+
+	restClient, err := githubapi.NewRESTClient(githubapi.ClientConfig{
+		BaseURL:          restServer.URL,
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		HTTPClient:       restServer.Client(),
+		SecondaryBackoff: time.Millisecond,
+		MaxConcurrency:   1,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	executor := NewExecutor(config.App{
+		GitHub: config.GitHub{
+			GraphQLURL:       graphqlServer.URL,
+			APIVersion:       "2026-03-10",
+			UserAgent:        "GitRank/test",
+			RequestTimeout:   time.Second,
+			MaxPageSize:      50,
+			GraphQLPageSize:  20,
+			SecondaryBackoff: time.Millisecond,
+			MaxConcurrency:   1,
+		},
+	}, nil, restClient)
+	executor.graphqlTokenSource = func(context.Context, SyncRequestActor, time.Time) (githubapi.TokenSource, bool, error) {
+		return githubapi.StaticTokenSource("user-token"), true, nil
+	}
+	executor.graphqlClientFactory = func(tokenSource githubapi.TokenSource) (*githubapi.GraphQLClient, error) {
+		return githubapi.NewGraphQLClient(githubapi.ClientConfig{
+			BaseURL:          graphqlServer.URL,
+			APIVersion:       "2026-03-10",
+			UserAgent:        "GitRank/test",
+			TokenSource:      tokenSource,
+			HTTPClient:       graphqlServer.Client(),
+			SecondaryBackoff: time.Millisecond,
+			MaxConcurrency:   1,
+		})
+	}
+
+	pullRequests, reviewsByNumber, err := executor.fetchPullRequests(context.Background(), "octo", "repo", SyncRequestActor{GitHubLogin: "alice"})
+	if err != nil {
+		t.Fatalf("fetchPullRequests() error = %v", err)
+	}
+	if graphqlRequests != 1 {
+		t.Fatalf("GraphQL requests = %d, want 1", graphqlRequests)
+	}
+	if restRequests["/repos/octo/repo/pulls/7"] != 1 {
+		t.Fatalf("REST details requests = %d, want 1", restRequests["/repos/octo/repo/pulls/7"])
+	}
+	if len(pullRequests) != 1 {
+		t.Fatalf("pullRequests len = %d, want 1", len(pullRequests))
+	}
+	if intValue(pullRequests[0]["changed_files"]) != 2 {
+		t.Fatalf("changed_files = %v, want 2 from REST fallback", pullRequests[0]["changed_files"])
+	}
+	if len(reviewsByNumber[7]) != 1 {
+		t.Fatalf("reviewsByNumber[7] len = %d, want 1", len(reviewsByNumber[7]))
 	}
 }

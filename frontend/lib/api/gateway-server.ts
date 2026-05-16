@@ -18,12 +18,31 @@ export async function proxyGateway(request: Request, path: string): Promise<Resp
       ? undefined
       : await request.text();
 
-  const response = await fetch(target, {
-    method: request.method,
-    headers: outboundHeaders,
-    body,
-    cache: "no-store",
-  });
+  let response: Response;
+  try {
+    response = await fetch(target, {
+      method: request.method,
+      headers: outboundHeaders,
+      body,
+      cache: "no-store",
+    });
+  } catch {
+    return new Response(
+      JSON.stringify({
+        error: {
+          code: "dependency_unavailable",
+          message: "API gateway is unavailable. Retry after backend services are running.",
+        },
+      }),
+      {
+        status: 502,
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store",
+        },
+      },
+    );
+  }
 
   const payload = await response.text();
   const headers = new Headers();

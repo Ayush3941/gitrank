@@ -21,6 +21,7 @@ const (
 	defaultCommitSyncPageSize     = 50
 	defaultUserRepositoryLimit    = 100
 	defaultAuthoredPRSearchLimit  = 100
+	defaultAuthoredPRSyncLimit    = 10
 )
 
 var gitHubStatusCodePattern = regexp.MustCompile(`status (\d{3})`)
@@ -250,19 +251,17 @@ func (e *Executor) SyncUser(
 		return response, err
 	}
 
-	repositories, err := runtime.fetchUserRepositories(ctx, user)
-	if err != nil {
-		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, PersistResult{})
-		return response, err
-	}
 	authoredPullRequests, authoredSearchIncomplete, err := runtime.fetchAuthoredPullRequestTargets(ctx, user)
 	if err != nil {
 		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, PersistResult{})
 		return response, err
 	}
-
+	if len(authoredPullRequests) > defaultAuthoredPRSyncLimit {
+		authoredPullRequests = authoredPullRequests[:defaultAuthoredPRSyncLimit]
+		response.Fetched["authored_pull_requests_capped"] = 1
+	}
 	aggregatePersisted := PersistResult{}
-	response.Fetched["repositories_selected"] = len(repositories)
+	response.Fetched["repositories_selected"] = uniqueRepositoryCountFromAuthoredTargets(authoredPullRequests)
 	response.Fetched["authored_pull_requests_selected"] = len(authoredPullRequests)
 	if authoredSearchIncomplete {
 		response.Fetched["authored_pull_request_search_incomplete"] = 1
@@ -270,29 +269,6 @@ func (e *Executor) SyncUser(
 	baseCorrelationID := strings.TrimSpace(correlationID)
 	if baseCorrelationID == "" {
 		baseCorrelationID = "sync-user:" + user
-	}
-
-	for index, repository := range repositories {
-		fullName := strings.TrimSpace(stringValue(repository["full_name"]))
-		if fullName == "" {
-			continue
-		}
-		child, err := runtime.SyncRepository(ctx, contracts.SyncRequest{
-			Mode:       "repository",
-			Repository: fullName,
-		}, actor, fmt.Sprintf("%s:repo:%d", baseCorrelationID, index+1), time.Now().UTC())
-		if err != nil {
-			if isSkippableGitHubSyncError(err) {
-				response.Fetched["repositories_skipped"]++
-				continue
-			}
-			response.FinishedAt = time.Now().UTC()
-			_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, aggregatePersisted)
-			return response, err
-		}
-		response.Fetched = mergeCountMaps(response.Fetched, child.Fetched)
-		response.Persisted = mergeCountMaps(response.Persisted, child.Persisted)
-		aggregatePersisted = addPersistResult(aggregatePersisted, persistResultFromCountMap(child.Persisted))
 	}
 
 	for index, target := range authoredPullRequests {
@@ -1234,7 +1210,10 @@ func (e *Executor) fetchPullRequests(ctx context.Context, owner, name string, ac
 		return []map[string]any{}, map[int][]map[string]any{}, nil
 	}
 	if useGraphQL {
-		return e.fetchPullRequestsGraphQL(ctx, graphqlClient, owner, name, summaries, perPage)
+		pullRequests, reviewsByNumber, gqlErr := e.fetchPullRequestsGraphQL(ctx, graphqlClient, owner, name, summaries, perPage)
+		if gqlErr == nil {
+			return pullRequests, reviewsByNumber, nil
+		}
 	}
 	return e.fetchPullRequestsRESTDetails(ctx, owner, name, summaries, perPage)
 }
@@ -1358,6 +1337,21 @@ func boundedPageSize(configured, fallback int) int {
 		return 20
 	}
 	return fallback
+}
+
+func uniqueRepositoryCountFromAuthoredTargets(targets []authoredPullRequestTarget) int {
+	if len(targets) == 0 {
+		return 0
+	}
+	seen := make(map[string]struct{}, len(targets))
+	for _, target := range targets {
+		repository := strings.ToLower(strings.TrimSpace(target.Repository))
+		if repository == "" {
+			continue
+		}
+		seen[repository] = struct{}{}
+	}
+	return len(seen)
 }
 
 func isSkippableGitHubSyncError(err error) bool {
