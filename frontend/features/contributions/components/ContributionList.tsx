@@ -17,14 +17,14 @@ export function ContributionList({
       {items.map((item) => (
         <GlowCard
           key={item.id}
-          className="relative space-y-4 overflow-hidden border border-cyan-400/16 bg-gradient-to-br from-slate-950/84 via-slate-900/78 to-fuchsia-950/18"
+          className="cyber-hero-shell relative space-y-4 overflow-hidden"
         >
           <div className="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-cyan-400/14 blur-2xl" />
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-sm text-muted">{item.owner}/{item.repo} #{item.number}</p>
               <h2 className="mt-2 text-xl font-semibold text-white">{item.title}</h2>
-              <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-200">
+              <div className="mt-3 flex flex-wrap gap-2 text-xs cyber-copy">
                 <span className="neon-chip neon-chip-info rounded-full px-3 py-1.5">{item.category}</span>
                 <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 uppercase">{item.status}</span>
                 <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">{item.changedFilesCount} files changed</span>
@@ -123,7 +123,7 @@ function AIPanel({
         Contribution Impact Explanation
       </p>
       {narrative ? (
-        <div className="mt-3 grid gap-2 text-sm text-slate-200/88">
+        <div className="cyber-copy mt-3 grid gap-2 text-sm">
           <p><span className="text-cyan-200">What:</span> {narrative.what}</p>
           <p><span className="text-cyan-200">Why it matters:</span> {narrative.why}</p>
           <p><span className="text-cyan-200">Signal:</span> {narrative.signal}</p>

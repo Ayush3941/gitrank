@@ -13,7 +13,7 @@ export function QuestCard({ quest }: { quest: Quest }) {
         : "neon-chip neon-chip-info";
 
   return (
-    <GlowCard className="relative space-y-4 overflow-hidden border border-cyan-300/20 bg-gradient-to-br from-slate-950/88 via-slate-900/82 to-cyan-950/30">
+    <GlowCard className="cyber-hero-shell relative space-y-4 overflow-hidden">
       <div className="pointer-events-none absolute inset-0 opacity-[0.1] [background:repeating-linear-gradient(170deg,rgba(255,255,255,0.13)_0px,rgba(255,255,255,0.13)_1px,transparent_1px,transparent_11px)]" />
       <div className="pointer-events-none absolute -top-16 right-0 h-32 w-32 rounded-full bg-cyan-400/12 blur-2xl" />
       <div className="flex items-start justify-between gap-3">

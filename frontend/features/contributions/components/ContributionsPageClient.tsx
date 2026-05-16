@@ -144,12 +144,12 @@ export function ContributionsPageClient() {
         />
       ) : null}
       {!isLoading && !isError && profile ? (
-        <GlowCard strong className="relative overflow-hidden border border-cyan-300/35 bg-gradient-to-br from-cyan-500/14 via-blue-500/10 to-fuchsia-500/12">
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(transparent_0%,rgba(255,255,255,0.04)_50%,transparent_100%)] bg-[length:100%_8px] opacity-30" />
+        <GlowCard strong className="cyber-hero-shell relative overflow-hidden">
+          <div className="cyber-hero-overlay pointer-events-none absolute inset-0" />
           <div className="relative space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="inline-flex items-center gap-2 rounded-full border border-cyan-300/40 bg-cyan-400/10 px-3 py-1 text-xs tracking-[0.24em] text-cyan-200 uppercase">
+                <p className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs tracking-[0.24em] text-cyan-100 uppercase">
                   <Radar className="h-3.5 w-3.5" />
                   Contribution Ops
                 </p>

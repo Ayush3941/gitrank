@@ -9,10 +9,10 @@ export function LeaderboardArena({ snapshot }: { snapshot: LeaderboardSnapshot }
 
   return (
     <div className="grid gap-4">
-      <GlowCard strong className="season-arena-card overflow-hidden">
+      <GlowCard strong className="season-arena-card cyber-hero-shell overflow-hidden">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/24 bg-primary/12 px-3 py-1.5 text-xs font-semibold tracking-[0.22em] text-primary uppercase">
+            <div className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold tracking-[0.22em] text-primary uppercase">
               <CalendarClock className="h-3.5 w-3.5" />
               {snapshot.season.status} season
             </div>

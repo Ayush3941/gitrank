@@ -20,7 +20,7 @@ export function DashboardHeroRankCard({
   aiMode?: "gemini" | "deterministic";
 }) {
   return (
-    <GlowCard strong className="player-card-shell space-y-6 overflow-hidden">
+    <GlowCard strong className="player-card-shell cyber-hero-shell space-y-6 overflow-hidden">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-4">
           <div className="rank-orbit rounded-[2rem] p-[2px]">

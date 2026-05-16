@@ -41,12 +41,12 @@ export function QuestsPageClient() {
         description="Daily missions, weekly challenge ladders, and a 365-day contributor journey with deterministic rotation and evidence-aware completion states."
       />
       {!isLoading && !isError && profile ? (
-        <GlowCard strong className="relative overflow-hidden border border-cyan-300/30 bg-gradient-to-br from-cyan-500/12 via-slate-950/88 to-fuchsia-500/10">
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(transparent_0%,rgba(255,255,255,0.04)_50%,transparent_100%)] bg-[length:100%_10px] opacity-25" />
+        <GlowCard strong className="cyber-hero-shell relative overflow-hidden">
+          <div className="cyber-hero-overlay pointer-events-none absolute inset-0" />
           <div className="relative space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-3 py-1 text-xs tracking-[0.24em] text-cyan-200 uppercase">
+                <p className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs tracking-[0.24em] text-cyan-100 uppercase">
                   <CalendarClock className="h-3.5 w-3.5" />
                   365-day contributor journey
                 </p>

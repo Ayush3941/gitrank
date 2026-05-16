@@ -55,7 +55,7 @@ export function LeaderboardPageClient() {
         />
       ) : null}
       {!isLoading && !isError && rows.length === 0 ? (
-        <GlowCard strong className="space-y-4 border border-cyan-300/28 bg-gradient-to-br from-slate-950/90 via-cyan-950/30 to-fuchsia-950/25">
+        <GlowCard strong className="cyber-hero-shell space-y-4">
           <p className="text-xs tracking-[0.24em] text-cyan-200 uppercase">Arena preview state</p>
           <h2 className="text-2xl font-semibold text-white">The arena is warming up</h2>
           <p className="text-sm text-slate-200/84">

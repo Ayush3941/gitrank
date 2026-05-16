@@ -107,12 +107,12 @@ export function BadgesPageClient() {
         description="Turn each unlocked badge into a story, track locked paths, and frame progression as a visible contributor journey."
       />
       {!isLoading && !isError && profile ? (
-        <GlowCard strong className="relative overflow-hidden border border-fuchsia-300/30 bg-gradient-to-br from-fuchsia-500/12 via-slate-900/84 to-cyan-500/10">
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,transparent_0%,rgba(56,189,248,0.08)_50%,transparent_100%)]" />
+        <GlowCard strong className="cyber-hero-shell relative overflow-hidden">
+          <div className="cyber-hero-overlay pointer-events-none absolute inset-0" />
           <div className="relative space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="inline-flex items-center gap-2 rounded-full border border-fuchsia-300/30 bg-fuchsia-400/10 px-3 py-1 text-xs tracking-[0.24em] text-fuchsia-200 uppercase">
+                <p className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs tracking-[0.24em] text-fuchsia-100 uppercase">
                   <Trophy className="h-3.5 w-3.5" />
                   Achievement Forge
                 </p>
