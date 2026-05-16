@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LeaderboardArena } from "@/features/leaderboard/components/LeaderboardArena";
 import { useLeaderboard } from "@/hooks/use-leaderboard";
+import { useMyProfile } from "@/hooks/use-profile";
 import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
 
 const tabs: LeaderboardTab[] = [
@@ -23,8 +24,21 @@ const tabs: LeaderboardTab[] = [
 export function LeaderboardPageClient() {
   const [tab, setTab] = useState<LeaderboardTab>("Global");
   const { data, isLoading, isError } = useLeaderboard(tab);
-  const snapshot = data ?? null;
-  const rows = data?.rows ?? [];
+  const { data: myProfile } = useMyProfile();
+  const currentUserHandle = myProfile?.user.username.toLowerCase() ?? "";
+  const rows = (data?.rows ?? []).map((row) => ({
+    ...row,
+    isCurrentUser:
+      currentUserHandle.length > 0 &&
+      row.username.toLowerCase() === currentUserHandle,
+  }));
+  const snapshot = data
+    ? {
+        ...data,
+        rows,
+        currentUser: rows.find((row) => row.isCurrentUser),
+      }
+    : null;
 
   return (
     <div className="space-y-6">

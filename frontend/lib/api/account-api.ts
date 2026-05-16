@@ -26,6 +26,10 @@ type ApiAccountDeletionResponse = {
   deleted_at: string;
 };
 
+type ApiLogoutResponse = {
+  status: string;
+};
+
 export type AccountDataExport = {
   export_version: string;
   generated_at: string;
@@ -94,6 +98,21 @@ export async function exportMyAccountData(): Promise<AccountDataExport> {
     cache: "no-store",
   });
   return adaptJSON<AccountDataExport>(response, "Account export failed.");
+}
+
+export async function logoutCurrentSession(): Promise<ApiLogoutResponse> {
+  const csrfToken = requireCSRFToken();
+  const response = await fetch("/api/session/logout", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
+    },
+    credentials: "same-origin",
+    cache: "no-store",
+    body: JSON.stringify({}),
+  });
+  return adaptJSON<ApiLogoutResponse>(response, "Session logout failed.");
 }
 
 async function adaptJSON<T>(response: Response, fallback: string): Promise<T> {

@@ -19,6 +19,7 @@ import {
   type ApiPRReportResponse,
   toPullRequestAnalysis,
 } from "@/lib/api/pr-report-api";
+import type { PullRequestAnalysis } from "@/types/gitrank";
 
 const DEFAULT_CSRF_COOKIE_NAME =
   process.env.NEXT_PUBLIC_GITRANK_CSRF_COOKIE_NAME ?? "gitrank_csrf";
@@ -268,11 +269,14 @@ function toProfileViewData(
   const topSkills = (response.top_skill_areas ?? []).map((skill) => normalizeSkillCategory(skill.key));
   const skillTree = toSkillTree(response.top_skill_areas ?? []);
   const featuredContributions = toFeaturedContributions(response.score_history ?? []);
-  const contributions = toContributions(response.score_history ?? []);
   const recentReports =
     "recent_pr_reports" in response
       ? (response.recent_pr_reports ?? []).map(toPullRequestAnalysis)
       : [];
+  const contributions = mergeContributionDetails(
+    toContributions(response.score_history ?? []),
+    recentReports,
+  );
   const scoringVersion = scoreVersionFromHistory(response.score_history ?? []);
   const repositories =
     mode === "private" && "repository_visibility" in response
@@ -460,6 +464,60 @@ function toContributions(entries: ApiScoreHistoryEntry[]): Contribution[] {
         evidenceSignals: entry.explanation ?? [],
       };
     });
+}
+
+function mergeContributionDetails(
+  contributions: Contribution[],
+  reports: PullRequestAnalysis[],
+): Contribution[] {
+  if (reports.length === 0) {
+    return contributions;
+  }
+
+  const reportByKey = new Map<string, PullRequestAnalysis>();
+  for (const report of reports) {
+    reportByKey.set(
+      contributionKey(
+        report.contribution.owner,
+        report.contribution.repo,
+        report.contribution.number,
+      ),
+      report,
+    );
+  }
+
+  return contributions.map((row) => {
+    const report = reportByKey.get(contributionKey(row.owner, row.repo, row.number));
+    if (!report) {
+      return row;
+    }
+
+    const live = report.contribution;
+    return {
+      ...row,
+      status: live.status,
+      category: live.category,
+      difficultyScore: live.difficultyScore,
+      impactScore: live.impactScore,
+      reviewDepthScore: live.reviewDepthScore,
+      testSignalScore: live.testSignalScore,
+      repoWeight: live.repoWeight,
+      antiSpamMultiplier: live.antiSpamMultiplier,
+      additions: live.additions,
+      deletions: live.deletions,
+      changedFilesCount: live.changedFilesCount,
+      maintainerReviewed: live.maintainerReviewed,
+      linkedIssue: live.linkedIssue,
+      ciPassed: live.ciPassed,
+      aiSummary: live.aiSummary || row.aiSummary,
+      evidenceSignals:
+        live.evidenceSignals.length > 0 ? live.evidenceSignals : row.evidenceSignals,
+    };
+  });
+}
+
+function contributionKey(owner: string, repo: string, number: number): string {
+  return `${owner.toLowerCase()}/${repo.toLowerCase()}#${number}`;
 }
 
 function inferPRCategory(entry: ApiScoreHistoryEntry): PRCategory {

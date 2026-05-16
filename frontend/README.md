@@ -92,6 +92,7 @@ The settings page also has live authenticated account actions:
 - `/api/account/export` proxies to the Go account export route and downloads a JSON file with token secrets and secret hashes excluded
 - `/api/account/unlink` proxies to the Go account disconnect route
 - `/api/account/delete` proxies to the Go account deletion route
+- `/api/session/logout` proxies to auth-service session invalidation and clears frontend-visible auth cookies
 
 ## Backend Configuration
 
@@ -113,6 +114,12 @@ The OAuth proxy defaults to auth-service at `http://localhost:8081`:
 
 ```bash
 GITRANK_AUTH_BASE_URL=http://localhost:8081
+```
+
+If your backend uses a non-default session cookie name:
+
+```bash
+AUTH_SESSION_COOKIE_NAME=gitrank_session
 ```
 
 GitHub auth is initiated and completed through frontend routes:

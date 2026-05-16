@@ -133,7 +133,7 @@ func (s *Store) CreateOAuthState(ctx context.Context, nonce, browserTokenHash, i
 			return_to,
 			linking_user_id,
 			expires_at
-		) VALUES ($1,$2,$3,$4,$5,$6,$7,NULLIF($8, ''),$9)
+		) VALUES ($1,$2,$3,$4,$5,$6,$7,NULLIF($8, '')::uuid,$9)
 	`, nonce, browserTokenHash, intent, clientMode, requestIP, userAgent, returnTo, linkingUserID, expiresAt.UTC())
 	return err
 }

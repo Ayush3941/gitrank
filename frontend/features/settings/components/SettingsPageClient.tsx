@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Download, FolderGit2, RefreshCcw, Sparkles, Trash2 } from "lucide-react";
+import { Download, FolderGit2, LogOut, RefreshCcw, Sparkles, Trash2 } from "lucide-react";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -13,6 +13,7 @@ import { PrivacyRepositoryToggleList } from "@/features/settings/components/Priv
 import {
   useDeleteMyAccount,
   useExportMyAccountData,
+  useLogoutSession,
   useRequestProfileSync,
   useUnlinkMyAccount,
 } from "@/hooks/use-account-actions";
@@ -41,6 +42,7 @@ export function SettingsPageClient() {
   const unlinkAccount = useUnlinkMyAccount();
   const deleteAccount = useDeleteMyAccount();
   const exportAccount = useExportMyAccountData();
+  const logoutSession = useLogoutSession();
   const { setReducedGamification } = useGamificationPreference();
   useAccountGamificationPreference(data);
   const [actionNotice, setActionNotice] = useState("");
@@ -65,12 +67,18 @@ export function SettingsPageClient() {
     "";
   const actionError =
     (requestSync.error as Error | null)?.message ||
+    (logoutSession.error as Error | null)?.message ||
     (unlinkAccount.error as Error | null)?.message ||
     (deleteAccount.error as Error | null)?.message ||
     (exportAccount.error as Error | null)?.message ||
     "";
   const isSaving = updatePrivacy.isPending || updateRepositoryVisibility.isPending;
-  const isActing = requestSync.isPending || unlinkAccount.isPending || deleteAccount.isPending || exportAccount.isPending;
+  const isActing =
+    requestSync.isPending ||
+    logoutSession.isPending ||
+    unlinkAccount.isPending ||
+    deleteAccount.isPending ||
+    exportAccount.isPending;
   const pendingRepository = updateRepositoryVisibility.variables?.fullName ?? null;
 
   function handlePrivacyToggle(key: BackedPrivacyKey, checked: boolean) {
@@ -101,6 +109,18 @@ export function SettingsPageClient() {
     }
     setActionNotice("");
     unlinkAccount.mutate(undefined, {
+      onSuccess: () => {
+        window.location.assign("/login");
+      },
+    });
+  }
+
+  function handleSessionLogout() {
+    if (isActing) {
+      return;
+    }
+    setActionNotice("");
+    logoutSession.mutate(undefined, {
       onSuccess: () => {
         window.location.assign("/login");
       },
@@ -162,6 +182,10 @@ export function SettingsPageClient() {
           <Button disabled={isActing} onClick={handleSyncRequest}>
             <RefreshCcw className="h-4 w-4" />
             {requestSync.isPending ? "Queueing sync..." : "Sync now"}
+          </Button>
+          <Button variant="secondary" disabled={isActing} onClick={handleSessionLogout}>
+            <LogOut className="h-4 w-4" />
+            {logoutSession.isPending ? "Signing out..." : "Sign out"}
           </Button>
           <Button variant="secondary" disabled={isActing} onClick={handleUnlinkAccount}>
             <FolderGit2 className="h-4 w-4" />

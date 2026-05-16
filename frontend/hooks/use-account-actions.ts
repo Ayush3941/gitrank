@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   deleteMyAccount,
   exportMyAccountData,
+  logoutCurrentSession,
   requestProfileSync,
   unlinkMyAccount,
 } from "@/lib/api/account-api";
@@ -45,5 +46,16 @@ export function useDeleteMyAccount() {
 export function useExportMyAccountData() {
   return useMutation({
     mutationFn: exportMyAccountData,
+  });
+}
+
+export function useLogoutSession() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: logoutCurrentSession,
+    onSuccess: () => {
+      queryClient.clear();
+    },
   });
 }

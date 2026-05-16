@@ -15,27 +15,6 @@ import { useBadges } from "@/hooks/use-badges";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import type { BadgeRarity } from "@/types/gitrank";
 
-const upcomingBadgeTemplates = [
-  {
-    id: "legendary-maintainer-lane",
-    name: "Legendary Maintainer Lane",
-    rarity: "Legendary",
-    unlockCondition: "Land high-quality contributions across 3 repositories in one season.",
-  },
-  {
-    id: "mythic-system-architect",
-    name: "Mythic System Architect",
-    rarity: "Mythic",
-    unlockCondition: "Sustain architecture + reliability signal for 8+ weeks.",
-  },
-  {
-    id: "epic-review-commander",
-    name: "Epic Review Commander",
-    rarity: "Epic",
-    unlockCondition: "Demonstrate deep review participation with accepted feedback loops.",
-  },
-] as const;
-
 export function BadgesPageClient() {
   const { data, isLoading, isError } = useBadges();
   const [rarity, setRarity] = useState<BadgeRarity | "All">("All");
@@ -51,6 +30,7 @@ export function BadgesPageClient() {
       return rarityMatch && visibilityMatch;
     }) ?? [];
   const profile = data?.profile;
+  const lockedBadges = data?.badges.filter((badge) => !badge.unlocked) ?? [];
   const unlockedCount = data?.badges.filter((badge) => badge.unlocked).length ?? 0;
   const totalCount = data?.badges.length ?? 0;
   const completionPercent = totalCount > 0 ? Math.round((unlockedCount / totalCount) * 100) : 0;
@@ -190,26 +170,25 @@ export function BadgesPageClient() {
       {!isLoading && !isError ? (
         <section className="space-y-3">
           <p className="text-xs tracking-[0.24em] text-fuchsia-200 uppercase">Locked / upcoming badges</p>
-          <div className="grid gap-3 md:grid-cols-3">
-            {upcomingBadgeTemplates.map((badge, index) => {
-              const progress = Math.min(
-                92,
-                Math.max(5, Math.round((profile?.user.level.currentLevel ?? 1) * 9 + index * 13)),
-              );
-              return (
+          {lockedBadges.length > 0 ? (
+            <div className="grid gap-3 md:grid-cols-3">
+              {lockedBadges.map((badge) => (
                 <div key={badge.id} className="neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4">
                   <p className="text-xs tracking-[0.24em] text-fuchsia-200 uppercase">{badge.rarity}</p>
                   <h3 className="mt-2 text-base font-semibold text-white">{badge.name}</h3>
                   <p className="mt-2 text-sm text-slate-300">{badge.unlockCondition}</p>
-                  <p className="mt-3 text-xs text-cyan-200">How to unlock: keep weekly evidence momentum in this lane.</p>
                   <div className="mt-3 space-y-1">
-                    <Progress value={progress} />
-                    <p className="text-xs text-slate-300">{progress}% projected progress</p>
+                    <Progress value={badge.progress ?? 0} />
+                    <p className="text-xs text-slate-300">{badge.progress ?? 0}% verified progress</p>
                   </div>
                 </div>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4 text-sm text-slate-300">
+              No locked badge definitions are currently returned by the backend profile snapshot.
+            </div>
+          )}
         </section>
       ) : null}
     </div>
