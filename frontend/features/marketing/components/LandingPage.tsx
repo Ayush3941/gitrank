@@ -30,10 +30,10 @@ export function LandingPage() {
               Open-source battle pass
             </div>
             <div className="space-y-4">
-              <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-white sm:text-6xl">
+              <h1 className="neon-title cyber-title max-w-3xl text-4xl font-semibold tracking-tight sm:text-6xl">
                 Turn open-source work into a reputation system.
               </h1>
-              <p className="max-w-2xl text-base leading-8 text-slate-200/80 sm:text-lg">
+              <p className="cyber-copy max-w-2xl text-base leading-8 sm:text-lg">
                 GitRank analyzes meaningful PR difficulty, review depth, tests, and project context, then turns that evidence into XP, levels, badges, and shareable profile snapshots.
               </p>
             </div>
@@ -56,7 +56,7 @@ export function LandingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs tracking-[0.24em] text-primary uppercase">Sample rank card</p>
-                <h2 className="mt-2 text-2xl font-semibold text-white">{user.displayName}</h2>
+                <h2 className="cyber-title mt-2 text-2xl font-semibold text-white">{user.displayName}</h2>
               </div>
               <RankBadge rank={user.level.rankTier} />
             </div>
@@ -71,12 +71,12 @@ export function LandingPage() {
               <div className="space-y-1">
                 <p className="text-sm text-muted">@{user.username}</p>
                 <p className="text-3xl font-semibold text-white">Level {user.level.currentLevel}</p>
-                <p className="text-sm text-slate-200">{user.title}</p>
+                <p className="cyber-copy text-sm">{user.title}</p>
               </div>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               {user.strongestSignals.map((skill) => (
-                <div key={skill} className="neon-surface rounded-3xl px-4 py-3 text-sm text-slate-200">
+                <div key={skill} className="neon-surface rounded-3xl px-4 py-3 text-sm cyber-copy">
                   {skill}
                 </div>
               ))}

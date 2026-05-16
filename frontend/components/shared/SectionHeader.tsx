@@ -17,8 +17,8 @@ export function SectionHeader({
         {eyebrow ? (
           <p className="hud-eyebrow text-xs font-semibold uppercase">{eyebrow}</p>
         ) : null}
-        <h2 className="neon-title text-2xl font-semibold tracking-tight">{title}</h2>
-        <p className="max-w-2xl text-sm section-subtitle">{description}</p>
+        <h2 className="neon-title cyber-title text-2xl font-semibold tracking-tight">{title}</h2>
+        <p className="cyber-copy-muted max-w-2xl text-sm section-subtitle">{description}</p>
       </div>
       {action}
     </div>

@@ -9,7 +9,9 @@ export function GlowCard({
   return (
     <div
       className={cn(
-        strong ? "glass-panel-strong cyber-card" : "glass-panel cyber-card",
+        strong
+          ? "glass-panel-strong cyber-card cyber-frame"
+          : "glass-panel cyber-card cyber-frame",
         "rounded-[var(--radius-card)] p-5 sm:p-6",
         className,
       )}
