@@ -18,6 +18,14 @@ type ApiQuest = {
 
 type ApiUserQuestsResponse = {
   quests?: ApiQuest[];
+  generated_at?: string;
+  staleness?: {
+    refreshed_at?: string;
+    stale_after?: string;
+    source_watermark?: string;
+    is_stale?: boolean;
+    partial_profile_available?: boolean;
+  };
 };
 
 type ApiErrorResponse = {
@@ -26,7 +34,19 @@ type ApiErrorResponse = {
   };
 };
 
-export async function getMyQuests(): Promise<Quest[]> {
+export type MyQuestsView = {
+  quests: Quest[];
+  generatedAt?: string;
+  staleness?: {
+    refreshedAt?: string;
+    staleAfter?: string;
+    sourceWatermark?: string;
+    isStale: boolean;
+    partialProfileAvailable: boolean;
+  };
+};
+
+export async function getMyQuestsView(): Promise<MyQuestsView> {
   const response = await fetch("/api/profile/me/quests", {
     cache: "no-store",
     credentials: "same-origin",
@@ -36,7 +56,24 @@ export async function getMyQuests(): Promise<Quest[]> {
   }
 
   const payload = (await response.json()) as ApiUserQuestsResponse;
-  return (payload.quests ?? []).map(toQuest);
+  return {
+    quests: (payload.quests ?? []).map(toQuest),
+    generatedAt: payload.generated_at,
+    staleness: payload.staleness
+      ? {
+          refreshedAt: payload.staleness.refreshed_at,
+          staleAfter: payload.staleness.stale_after,
+          sourceWatermark: payload.staleness.source_watermark,
+          isStale: payload.staleness.is_stale ?? false,
+          partialProfileAvailable: payload.staleness.partial_profile_available ?? false,
+        }
+      : undefined,
+  };
+}
+
+export async function getMyQuests(): Promise<Quest[]> {
+  const view = await getMyQuestsView();
+  return view.quests;
 }
 
 function toQuest(quest: ApiQuest): Quest {

@@ -98,6 +98,11 @@ export type ApiPRReportResponse = {
   suggested_quest_id: string;
   suggested_quest?: ApiPRReportSuggestedQuest;
   evidence_state?: ApiPRReportEvidenceState;
+  score_version?: string;
+  analysis_version?: string;
+  source_updated_at?: string;
+  generated_at?: string;
+  is_stale?: boolean;
 };
 
 type ApiErrorResponse = {
@@ -145,6 +150,11 @@ export function toPullRequestAnalysis(
     badgeUnlocks: (report.badge_unlocks ?? []).map(toBadgeUnlock),
     suggestedQuestId: report.suggested_quest_id,
     evidenceState: toEvidenceState(report.evidence_state),
+    scoreVersion: report.score_version,
+    analysisVersion: report.analysis_version,
+    sourceUpdatedAt: report.source_updated_at,
+    generatedAt: report.generated_at,
+    isStale: report.is_stale ?? false,
     suggestedQuest: report.suggested_quest
       ? {
           id: report.suggested_quest.id,

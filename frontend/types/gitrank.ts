@@ -177,6 +177,11 @@ export interface PullRequestAnalysis {
   suggestedQuestId: string;
   suggestedQuest?: PRSuggestedQuest;
   evidenceState: PREvidenceState;
+  scoreVersion?: string;
+  analysisVersion?: string;
+  sourceUpdatedAt?: string;
+  generatedAt?: string;
+  isStale?: boolean;
 }
 
 export interface PREvidenceState {

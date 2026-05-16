@@ -12,6 +12,7 @@ import { EvidenceSignalsCard } from "@/features/pr-report/components/EvidenceSig
 import { ScoreMatrixCard } from "@/features/pr-report/components/ScoreMatrixCard";
 import { XPBreakdownCard } from "@/features/pr-report/components/XPBreakdownCard";
 import { usePrReport } from "@/hooks/use-pr-report";
+import { formatRelativeDays } from "@/lib/formatters";
 
 export function PRBattleReportPageClient({
   owner,
@@ -56,6 +57,12 @@ export function PRBattleReportPageClient({
         title="PR battle report"
         description="Explainable contribution scoring, not a mysterious number."
       />
+      <div className="neon-callout rounded-[1.75rem] px-4 py-3 text-sm text-slate-200">
+        Report metadata: score version {data.scoreVersion || "unknown"} • analysis version{" "}
+        {data.analysisVersion || "unknown"} • source updated{" "}
+        {data.sourceUpdatedAt ? formatRelativeDays(data.sourceUpdatedAt) : "unknown"}
+        {data.isStale ? " • report snapshot is stale" : ""}
+      </div>
       <GlowCard strong className="space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>

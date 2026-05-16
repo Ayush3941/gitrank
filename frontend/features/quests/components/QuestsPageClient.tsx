@@ -7,9 +7,11 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionHeader } from "@/components/shared/SectionHeader";
+import { StaleState } from "@/components/shared/StaleState";
 import { Progress } from "@/components/ui/progress";
 import { QuestCard } from "@/features/quests/components/QuestCard";
 import { useQuests } from "@/hooks/use-quests";
+import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import type { Quest } from "@/types/gitrank";
 
@@ -36,6 +38,13 @@ export function QuestsPageClient() {
         title="Quest board"
         description="Daily, weekly, and long-term missions from the backend quest engine with evidence-aware completion states."
       />
+      {data?.staleness?.isStale ? (
+        <StaleState
+          message={`Quest snapshot refreshed ${formatRelativeDays(
+            data.staleness.refreshedAt,
+          )}. Live quest signals may lag until the next sync completes.`}
+        />
+      ) : null}
       {!isLoading && !isError && profile ? (
         <GlowCard strong className="cyber-hero-shell relative overflow-hidden">
           <div className="cyber-hero-overlay pointer-events-none absolute inset-0" />
