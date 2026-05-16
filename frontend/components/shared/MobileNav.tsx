@@ -2,16 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Award, Flag, LayoutDashboard, Settings, Shield } from "lucide-react";
 import { cn } from "@/lib/cn";
-
-const items = [
-  { href: "/dashboard", label: "Dash", icon: LayoutDashboard, exact: true },
-  { href: "/dashboard/contributions", label: "PRs", icon: Shield },
-  { href: "/dashboard/badges", label: "Badges", icon: Award },
-  { href: "/dashboard/quests", label: "Quests", icon: Flag },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
-];
+import { dashboardNavItems } from "@/components/shared/dashboard-nav";
 
 export function MobileNav() {
   const pathname = usePathname();
@@ -23,7 +15,7 @@ export function MobileNav() {
       aria-label="Dashboard navigation"
       className="glass-panel cyber-card cyber-frame neon-outline fixed inset-x-3 bottom-3 z-40 grid grid-cols-5 gap-1 p-1.5 xl:hidden"
     >
-      {items.map((item) => {
+      {dashboardNavItems.map((item) => {
         const Icon = item.icon;
         const active = isActive(item.href, item.exact);
         return (
@@ -39,7 +31,7 @@ export function MobileNav() {
             )}
           >
             <Icon className="h-4 w-4" />
-            <span>{item.label}</span>
+            <span>{item.mobileLabel}</span>
           </Link>
         );
       })}

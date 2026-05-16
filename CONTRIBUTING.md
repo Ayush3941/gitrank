@@ -219,22 +219,22 @@ with the no-slowdown rules above.
 
 ### C. Information Architecture and Navigation
 
-- [ ] Validate sidebar and mobile nav use identical route semantics.
-- [ ] Ensure route naming is user-language, not backend-language.
-- [ ] Add consistent page header structure: title, purpose sentence, key action(s).
-- [ ] Ensure deep links work for shareable views (profile, PR report, leaderboard states).
-- [ ] Add route-level 404 and global not-found UX consistency.
+- [x] Validate sidebar and mobile nav use identical route semantics.
+- [x] Ensure route naming is user-language, not backend-language.
+- [x] Add consistent page header structure: title, purpose sentence, key action(s).
+- [x] Ensure deep links work for shareable views (profile, PR report, leaderboard states).
+- [x] Add route-level 404 and global not-found UX consistency.
 
 ### D. Accessibility (WCAG 2.2 aligned)
 
-- [ ] Ensure keyboard focus is always visible on interactive elements.
-- [ ] Ensure pointer targets are at least 24x24 CSS px where required.
+- [x] Ensure keyboard focus is always visible on interactive elements.
+- [x] Ensure pointer targets are at least 24x24 CSS px where required.
 - [ ] Validate color contrast for text and non-text UI indicators.
 - [ ] Ensure meaningful accessible names/labels on all controls.
 - [ ] Ensure form errors are announced clearly and linked to specific inputs.
 - [ ] Ensure auth flows avoid cognitive-only challenges where possible.
-- [ ] Respect reduced-motion preferences (`prefers-reduced-motion`) globally.
-- [ ] Use ARIA APG patterns for tabs, dialogs, menus, and custom widgets.
+- [x] Respect reduced-motion preferences (`prefers-reduced-motion`) globally.
+- [x] Use ARIA APG patterns for tabs, dialogs, menus, and custom widgets.
 
 ### E. Motion, Interactions, and Gamification Polish
 
@@ -242,7 +242,7 @@ with the no-slowdown rules above.
 - [ ] Remove decorative motion that does not communicate state.
 - [ ] Cap animation duration and easing consistency across the app.
 - [ ] Ensure animated progress (XP bars, streaks) has static text equivalent.
-- [ ] Ensure leaderboard/badge effects degrade cleanly when reduced motion is on.
+- [x] Ensure leaderboard/badge effects degrade cleanly when reduced motion is on.
 - [ ] Add micro-feedback on meaningful actions (sync complete, badge unlocked, share copied).
 
 ### F. Performance and Core Web Vitals
@@ -257,10 +257,10 @@ with the no-slowdown rules above.
 
 ### G. Next.js Production Hardening
 
-- [ ] Use `next build` + `next start` as pre-release baseline checks.
+- [x] Use `next build` + `next start` as pre-release baseline checks.
 - [ ] Run Lighthouse in incognito and compare with field data.
 - [ ] Use `next/image`, `next/font`, and `next/script` best practices consistently.
-- [ ] Add or maintain global error UI and global 404 UI.
+- [x] Add or maintain global error UI and global 404 UI.
 - [ ] Confirm caching strategy per route/data fetch (avoid accidental dynamic overuse).
 - [ ] Run bundle analysis and trim oversized dependencies/chunks.
 - [ ] Keep server-only boundaries strict for sensitive code/data.
@@ -268,7 +268,7 @@ with the no-slowdown rules above.
 ### H. Security and Privacy UX Layer
 
 - [ ] Enforce CSP with report-only rollout first, then enforce.
-- [ ] Add or verify secure browser headers policy for frontend responses.
+- [x] Add or verify secure browser headers policy for frontend responses.
 - [ ] Ensure no secrets leak through client payloads or public env vars.
 - [ ] Ensure auth/session actions have explicit user feedback and safe failure states.
 - [ ] Ensure analytics payloads are bounded and exclude sensitive data.

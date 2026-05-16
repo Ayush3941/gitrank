@@ -2,16 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Award, Flag, LayoutDashboard, Settings, Shield, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/cn";
-
-const items = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/dashboard/contributions", label: "Contributions", icon: Shield },
-  { href: "/dashboard/badges", label: "Badges", icon: Award },
-  { href: "/dashboard/quests", label: "Quests", icon: Flag },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
-];
+import { dashboardNavItems } from "@/components/shared/dashboard-nav";
 
 export function DashboardSidebar() {
   const pathname = usePathname();
@@ -32,7 +25,7 @@ export function DashboardSidebar() {
           </div>
         </Link>
         <nav aria-label="Dashboard navigation" className="space-y-1">
-          {items.map((item) => {
+          {dashboardNavItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href, item.exact);
             return (
