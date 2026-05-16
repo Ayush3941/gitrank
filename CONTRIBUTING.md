@@ -199,23 +199,28 @@ the PR description describing expected UX/performance impact.
 Use this as the master frontend refinement backlog. Keep improvements aligned
 with the no-slowdown rules above.
 
+Baseline references for checked items in this section:
+
+- `frontend/docs/frontend-excellence.md`
+- `frontend/docs/ux-changelog.md`
+
 ### A. Product Direction and UX
 
-- [ ] Define 3 primary user journeys (new user onboarding, returning contributor, profile sharing).
-- [ ] For each journey, define one clear success moment (for example: first synced PR shown, first badge earned, public profile shared).
+- [x] Define 3 primary user journeys (new user onboarding, returning contributor, profile sharing).
+- [x] For each journey, define one clear success moment (for example: first synced PR shown, first badge earned, public profile shared).
 - [ ] Remove dead-end screens; every page should have a clear next action.
 - [ ] Ensure empty states always show recovery paths (sync, retry, navigate, docs).
 - [ ] Ensure stale states are visible and understandable (last refresh time + what to do next).
 
 ### B. Design System and Visual Consistency
 
-- [ ] Create a single design token layer (color, spacing, radius, shadow, motion, z-index).
-- [ ] Standardize typography scale (display, heading, body, caption) and line-height rules.
-- [ ] Standardize corner radius scale across all surfaces (cards, buttons, modals, inputs).
-- [ ] Standardize glow/neon intensity levels (subtle, medium, hero) to avoid visual noise.
-- [ ] Standardize icon sizes and stroke weight.
+- [x] Create a single design token layer (color, spacing, radius, shadow, motion, z-index).
+- [x] Standardize typography scale (display, heading, body, caption) and line-height rules.
+- [x] Standardize corner radius scale across all surfaces (cards, buttons, modals, inputs).
+- [x] Standardize glow/neon intensity levels (subtle, medium, hero) to avoid visual noise.
+- [x] Standardize icon sizes and stroke weight.
 - [ ] Ensure all components support light-content-on-dark contrast without readability loss.
-- [ ] Create component-state spec: default, hover, focus, active, disabled, loading, error.
+- [x] Create component-state spec: default, hover, focus, active, disabled, loading, error.
 
 ### C. Information Architecture and Navigation
 
@@ -275,7 +280,7 @@ with the no-slowdown rules above.
 
 ### I. SEO, Social, and Shareability
 
-- [ ] Use Metadata API on all major routes.
+- [x] Use Metadata API on all major routes.
 - [ ] Ensure OG/Twitter image coverage for profile and marketing routes.
 - [ ] Ensure sitemap and robots are valid and current.
 - [ ] Ensure share cards are visually consistent with in-app identity framing.
@@ -298,9 +303,9 @@ with the no-slowdown rules above.
 
 ### L. Delivery Discipline
 
-- [ ] Create a prioritized 30/60/90 day roadmap (critical, important, polish).
+- [x] Create a prioritized 30/60/90 day roadmap (critical, important, polish).
 - [ ] Run a weekly refinement loop with before/after screenshots and metric diffs.
-- [ ] Keep a changelog of UX-impacting frontend decisions.
+- [x] Keep a changelog of UX-impacting frontend decisions.
 
 ### Review expectations
 

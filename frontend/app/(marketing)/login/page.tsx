@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { LoginPanel } from "@/features/onboarding/components/LoginPanel";
+
+export const metadata: Metadata = {
+  title: "Login",
+  description: "Sign in with GitHub OAuth to sync contribution evidence and open your GitRank dashboard.",
+};
 
 export default async function LoginPage({
   searchParams,
