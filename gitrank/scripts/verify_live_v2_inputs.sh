@@ -78,6 +78,11 @@ fail() {
 }
 
 resolve_repository_from_git_remote() {
+  case "$GITHUB_REPOSITORY" in
+    OWNER/REPO|replace-me*|changeme*|*your-env.example*|*YYYY-MM-DD*|*your-cluster*|*your-name*)
+      GITHUB_REPOSITORY=
+      ;;
+  esac
   [ -n "$GITHUB_REPOSITORY" ] && return 0
   command -v git >/dev/null 2>&1 || return 0
   remote_url=$(git config --get remote.origin.url 2>/dev/null || true)

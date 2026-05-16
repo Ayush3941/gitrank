@@ -36,6 +36,9 @@ require_command() {
 }
 
 resolve_repository_from_git_remote() {
+  if is_placeholder_value "$REPOSITORY"; then
+    REPOSITORY=
+  fi
   [ -n "$REPOSITORY" ] && return 0
   command -v git >/dev/null 2>&1 || return 0
   remote_url=$(git config --get remote.origin.url 2>/dev/null || true)

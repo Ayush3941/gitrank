@@ -43,6 +43,7 @@ if [ "$RUN_LOCAL_STATIC" = "true" ]; then
   run_make verify-v2-external-unblock-preflight-behavior
   run_make verify-v2-external-unblock-preflight-semantics
   run_make verify-live-github-access-behavior
+  run_make verify-live-repo-placeholder-resolution-behavior
   run_make verify-abra-checklist
 fi
 

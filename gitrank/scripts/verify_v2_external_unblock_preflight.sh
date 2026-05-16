@@ -71,6 +71,9 @@ state_for_value() {
 }
 
 resolve_repository_from_git_remote() {
+  if is_placeholder_value "${GITHUB_REPOSITORY:-}"; then
+    GITHUB_REPOSITORY=
+  fi
   if [ -n "${GITHUB_REPOSITORY:-}" ]; then
     printf '%s' "$GITHUB_REPOSITORY"
     return 0

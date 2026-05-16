@@ -34,7 +34,22 @@ require_command() {
   command -v "$1" >/dev/null 2>&1 || fail "missing required command: $1"
 }
 
+is_placeholder_value() {
+  value=$1
+  case "$value" in
+    ""|OWNER/REPO|replace-me*|changeme*|*your-env.example*|*YYYY-MM-DD*|*your-cluster*|*your-name*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 resolve_repository_from_git_remote() {
+  if is_placeholder_value "$REPOSITORY"; then
+    REPOSITORY=
+  fi
   [ -n "$REPOSITORY" ] && return 0
   command -v git >/dev/null 2>&1 || return 0
   remote_url=$(git config --get remote.origin.url 2>/dev/null || true)

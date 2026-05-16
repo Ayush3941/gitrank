@@ -55,7 +55,22 @@ run_make() {
   (cd "$root_dir" && TMPDIR="${TMPDIR:-$root_dir/.tmp}" make "$target" "$@")
 }
 
+is_placeholder_value() {
+  value=$1
+  case "$value" in
+    ""|OWNER/REPO|replace-me*|changeme*|*your-env.example*|*YYYY-MM-DD*|*your-cluster*|*your-name*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 resolve_repository_from_git_remote() {
+  if is_placeholder_value "${GITHUB_REPOSITORY:-}"; then
+    GITHUB_REPOSITORY=
+  fi
   if [ -n "${GITHUB_REPOSITORY:-}" ]; then
     printf '%s' "$GITHUB_REPOSITORY"
     return 0
