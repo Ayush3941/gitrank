@@ -277,6 +277,7 @@ function toProfileViewData(
     toContributions(response.score_history ?? []),
     recentReports,
   );
+  const reviewedPrCount = contributions.filter((row) => row.maintainerReviewed).length;
   const scoringVersion = scoreVersionFromHistory(response.score_history ?? []);
   const repositories =
     mode === "private" && "repository_visibility" in response
@@ -298,7 +299,7 @@ function toProfileViewData(
     bio: response.summary.bio || response.summary.strength_summary,
     gitRankScore: response.summary.total_xp,
     mergedPrCount: response.summary.merged_pull_requests,
-    reviewedPrCount: 0,
+    reviewedPrCount,
     bestCategory: topSkills[0] ?? "Backend",
     consistencyScore: Math.round((activeBuckets / totalBuckets) * 100),
     strongestSignals: topSkills,
