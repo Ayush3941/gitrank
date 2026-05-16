@@ -1330,6 +1330,8 @@ ABRA implementation checklist:
 - [x] Neon/cyberpunk visual language is consistently applied across nav shells, dialogs, toggles, progress bars, leaderboard podium states, quest status pills, and avatar surfaces while keeping reduced-gamification behavior intact.
 - [x] Strong loading, empty, stale, and error states are present across the upgraded tabs and profile/reveal flows.
 - [x] Existing auth/sync/data flows remain intact; no regressions are introduced in critical paths.
+- [x] Manual sync-button UX is removed from authenticated product flows; dashboard and onboarding sync behavior is background-driven.
+- [x] Auto user-history sync now targets a broad history window (up to the latest 100 authored PRs per run) with timeout-tolerant partial persistence instead of hard-failing the full sync.
 - [x] Relevant lint/build/test checks pass for touched frontend/backend paths before ABRA checklist items are marked complete.
 - [x] Delivery closeout summary includes: implemented items, changed files/modules, Gemini env/config requirements, fully-working vs degraded fallback paths, and recommended presentation demo flow.
 

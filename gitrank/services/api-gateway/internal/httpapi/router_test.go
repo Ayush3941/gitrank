@@ -512,6 +512,73 @@ func TestRepositorySyncExecutionRouteProxiesExecutionContract(t *testing.T) {
 	}
 }
 
+func TestUserSyncExecutionReturnsCompletedContractWhenPostSyncRefreshFails(t *testing.T) {
+	auth := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_ = json.NewEncoder(w).Encode(contracts.SessionEnvelope{
+			Session: contracts.SessionIdentity{
+				Subject:     "00000000-0000-0000-0000-000000000001",
+				GitHubLogin: "octocat",
+				Roles:       []string{"user"},
+			},
+		})
+	}))
+	defer auth.Close()
+
+	var observedPath string
+	var observedBody contracts.SyncRequest
+	ingestor := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		observedPath = r.URL.Path
+		_ = json.NewDecoder(r.Body).Decode(&observedBody)
+		_ = json.NewEncoder(w).Encode(contracts.GitHubSyncExecutionResponse{
+			Status:        "completed",
+			Mode:          "user",
+			User:          "octocat",
+			CorrelationID: "req-user-1",
+			StartedAt:     time.Date(2026, 5, 6, 10, 0, 0, 0, time.UTC),
+			FinishedAt:    time.Date(2026, 5, 6, 10, 0, 4, 0, time.UTC),
+			Fetched:       map[string]int{"authored_pull_requests_selected": 10},
+			Persisted:     map[string]int{"pull_requests": 10},
+		})
+	}))
+	defer ingestor.Close()
+
+	cfg := testConfig(stubProfileServer().URL, auth.URL, ingestor.URL)
+	router := NewRouter(cfg, testLogger(), "test")
+
+	request := httptest.NewRequest(http.MethodPost, "/v1/sync/user/execute", strings.NewReader(`{}`))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Cookie", "gitrank_session=session-original; gitrank_csrf=csrf-original")
+	csrfToken, err := authkit.DoubleSubmitCSRFFromToken([]byte("test-session-secret"), "session-original")
+	if err != nil {
+		t.Fatalf("csrf token: %v", err)
+	}
+	request.Header.Set("X-CSRF-Token", csrfToken)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusOK, response.Body.String())
+	}
+	if observedPath != "/v1/sync/user/execute" {
+		t.Fatalf("path = %q, want %q", observedPath, "/v1/sync/user/execute")
+	}
+	if observedBody.Mode != "user" || observedBody.User != "octocat" {
+		t.Fatalf("observed body = %+v, want user sync request for authenticated login", observedBody)
+	}
+
+	var observed contracts.GitHubSyncExecutionResponse
+	if err := json.Unmarshal(response.Body.Bytes(), &observed); err != nil {
+		t.Fatalf("unmarshal response: %v", err)
+	}
+	if observed.Status != "completed" || observed.Mode != "user" {
+		t.Fatalf("execution response = %+v", observed)
+	}
+	if observed.Fetched["post_sync_refresh_failed"] != 1 {
+		t.Fatalf("Fetched[post_sync_refresh_failed] = %d, want 1", observed.Fetched["post_sync_refresh_failed"])
+	}
+}
+
 func TestRepositorySyncExecutionRejectsUnsafeRepository(t *testing.T) {
 	auth := stubAuthServer()
 	defer auth.Close()

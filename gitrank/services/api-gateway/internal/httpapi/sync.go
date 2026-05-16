@@ -179,7 +179,10 @@ func handleUserSyncExecution(w http.ResponseWriter, r *http.Request, client *htt
 				return 0, nil, nil, fmt.Errorf("invalid github-ingestor execution contract")
 			}
 			if err := refreshUserDashboardEvidence(r.Context(), client, principal.Subject, scoringBaseURL, profileBaseURL); err != nil {
-				return 0, nil, nil, err
+				if execution.Fetched == nil {
+					execution.Fetched = map[string]int{}
+				}
+				execution.Fetched["post_sync_refresh_failed"] = 1
 			}
 			encoded, err := json.Marshal(execution)
 			if err != nil {

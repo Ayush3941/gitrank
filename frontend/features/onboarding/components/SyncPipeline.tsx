@@ -62,15 +62,6 @@ export function SyncPipeline() {
     (userSync.error as Error | null)?.message ||
     (isError ? "Authenticated profile snapshot is unavailable." : "");
 
-  function handleRunSync() {
-    userSync.mutate(data?.user.username, {
-      onSuccess: (result) => {
-        setSyncStartedAt(result.started_at);
-        void refetch();
-      },
-    });
-  }
-
   return (
     <main className="mx-auto max-w-4xl">
       <GlowCard strong className="space-y-8">
@@ -131,9 +122,6 @@ export function SyncPipeline() {
           >
             <RefreshCcw className="h-4 w-4" />
             Refresh status
-          </Button>
-          <Button onClick={handleRunSync} disabled={userSync.isPending}>
-            {userSync.isPending ? "Running sync..." : "Run sync now"}
           </Button>
           {isSynced ? (
             <>

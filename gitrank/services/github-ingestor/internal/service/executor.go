@@ -23,7 +23,7 @@ const (
 	defaultCommitSyncPageSize     = 50
 	defaultUserRepositoryLimit    = 100
 	defaultAuthoredPRSearchLimit  = 100
-	defaultAuthoredPRSyncLimit    = 10
+	defaultAuthoredPRSyncLimit    = 100
 )
 
 var gitHubStatusCodePattern = regexp.MustCompile(`status (\d{3})`)
@@ -496,20 +496,44 @@ func (e *Executor) syncPullRequestSurface(
 		_ = e.recordFailedPullRequestSurfaceSyncRun(ctx, req, actor, correlationID, startedAt, mode, err)
 		return response, err
 	}
-	reviews, err := e.fetchPullRequestReviews(ctx, owner, name, req.Number)
+
+	var reviews []map[string]any
+	reviews, err = e.fetchPullRequestReviews(ctx, owner, name, req.Number)
+	reviewsSkipped := false
 	if err != nil {
-		_ = e.recordFailedPullRequestSurfaceSyncRun(ctx, req, actor, correlationID, startedAt, mode, err)
-		return response, err
+		if isSkippableGitHubSyncError(err) {
+			reviewsSkipped = true
+			reviews = nil
+		} else {
+			_ = e.recordFailedPullRequestSurfaceSyncRun(ctx, req, actor, correlationID, startedAt, mode, err)
+			return response, err
+		}
 	}
-	reviewComments, err := e.fetchPullRequestReviewComments(ctx, owner, name, req.Number)
+
+	var reviewComments []map[string]any
+	reviewComments, err = e.fetchPullRequestReviewComments(ctx, owner, name, req.Number)
+	reviewCommentsSkipped := false
 	if err != nil {
-		_ = e.recordFailedPullRequestSurfaceSyncRun(ctx, req, actor, correlationID, startedAt, mode, err)
-		return response, err
+		if isSkippableGitHubSyncError(err) {
+			reviewCommentsSkipped = true
+			reviewComments = nil
+		} else {
+			_ = e.recordFailedPullRequestSurfaceSyncRun(ctx, req, actor, correlationID, startedAt, mode, err)
+			return response, err
+		}
 	}
-	files, err := e.fetchPullRequestFiles(ctx, owner, name, req.Number)
+
+	var files []map[string]any
+	files, err = e.fetchPullRequestFiles(ctx, owner, name, req.Number)
+	filesSkipped := false
 	if err != nil {
-		_ = e.recordFailedPullRequestSurfaceSyncRun(ctx, req, actor, correlationID, startedAt, mode, err)
-		return response, err
+		if isSkippableGitHubSyncError(err) {
+			filesSkipped = true
+			files = nil
+		} else {
+			_ = e.recordFailedPullRequestSurfaceSyncRun(ctx, req, actor, correlationID, startedAt, mode, err)
+			return response, err
+		}
 	}
 
 	finishedAt := time.Now().UTC()
@@ -607,6 +631,15 @@ func (e *Executor) syncPullRequestSurface(
 		"pull_request_files": len(files),
 		"reviews":            len(reviews),
 		"review_comments":    len(reviewComments),
+	}
+	if reviewsSkipped {
+		response.Fetched["reviews_skipped"] = 1
+	}
+	if reviewCommentsSkipped {
+		response.Fetched["review_comments_skipped"] = 1
+	}
+	if filesSkipped {
+		response.Fetched["pull_request_files_skipped"] = 1
 	}
 	return response, nil
 }
