@@ -121,6 +121,11 @@ export function ContributionsPageClient() {
         title="Contribution drill-down"
         description="Achievement-grade contribution intelligence with score signals, timeline momentum, and AI-ready impact copy."
       />
+      {profile ? (
+        <div className="neon-callout rounded-[1.5rem] px-4 py-3 text-sm text-slate-200">
+          Contribution window: latest {profile.user.contributions.length} scored PR-linked events (capped at 100 by backend profile history projection).
+        </div>
+      ) : null}
       <ContributionFilters
         value={filter}
         onValueChange={setFilter}
