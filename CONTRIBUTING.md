@@ -194,6 +194,114 @@ npm run test:smoke
 If a PR touches rendering-heavy components, include a short before/after note in
 the PR description describing expected UX/performance impact.
 
+## Frontend Excellence Checklist (No-Slowdown Backlog)
+
+Use this as the master frontend refinement backlog. Keep improvements aligned
+with the no-slowdown rules above.
+
+### A. Product Direction and UX
+
+- [ ] Define 3 primary user journeys (new user onboarding, returning contributor, profile sharing).
+- [ ] For each journey, define one clear success moment (for example: first synced PR shown, first badge earned, public profile shared).
+- [ ] Remove dead-end screens; every page should have a clear next action.
+- [ ] Ensure empty states always show recovery paths (sync, retry, navigate, docs).
+- [ ] Ensure stale states are visible and understandable (last refresh time + what to do next).
+
+### B. Design System and Visual Consistency
+
+- [ ] Create a single design token layer (color, spacing, radius, shadow, motion, z-index).
+- [ ] Standardize typography scale (display, heading, body, caption) and line-height rules.
+- [ ] Standardize corner radius scale across all surfaces (cards, buttons, modals, inputs).
+- [ ] Standardize glow/neon intensity levels (subtle, medium, hero) to avoid visual noise.
+- [ ] Standardize icon sizes and stroke weight.
+- [ ] Ensure all components support light-content-on-dark contrast without readability loss.
+- [ ] Create component-state spec: default, hover, focus, active, disabled, loading, error.
+
+### C. Information Architecture and Navigation
+
+- [ ] Validate sidebar and mobile nav use identical route semantics.
+- [ ] Ensure route naming is user-language, not backend-language.
+- [ ] Add consistent page header structure: title, purpose sentence, key action(s).
+- [ ] Ensure deep links work for shareable views (profile, PR report, leaderboard states).
+- [ ] Add route-level 404 and global not-found UX consistency.
+
+### D. Accessibility (WCAG 2.2 aligned)
+
+- [ ] Ensure keyboard focus is always visible on interactive elements.
+- [ ] Ensure pointer targets are at least 24x24 CSS px where required.
+- [ ] Validate color contrast for text and non-text UI indicators.
+- [ ] Ensure meaningful accessible names/labels on all controls.
+- [ ] Ensure form errors are announced clearly and linked to specific inputs.
+- [ ] Ensure auth flows avoid cognitive-only challenges where possible.
+- [ ] Respect reduced-motion preferences (`prefers-reduced-motion`) globally.
+- [ ] Use ARIA APG patterns for tabs, dialogs, menus, and custom widgets.
+
+### E. Motion, Interactions, and Gamification Polish
+
+- [ ] Keep motion purposeful: state change, hierarchy reveal, feedback.
+- [ ] Remove decorative motion that does not communicate state.
+- [ ] Cap animation duration and easing consistency across the app.
+- [ ] Ensure animated progress (XP bars, streaks) has static text equivalent.
+- [ ] Ensure leaderboard/badge effects degrade cleanly when reduced motion is on.
+- [ ] Add micro-feedback on meaningful actions (sync complete, badge unlocked, share copied).
+
+### F. Performance and Core Web Vitals
+
+- [ ] Set CWV budgets: p75 LCP <= 2.5s, INP <= 200ms, CLS <= 0.1.
+- [ ] Track field CWV (not lab-only) and report by route group.
+- [ ] Add width/height or aspect-ratio for all media to prevent CLS.
+- [ ] Audit fonts for layout-shift risk and loading behavior.
+- [ ] Defer non-critical scripts and reduce third-party JS overhead.
+- [ ] Avoid long main-thread tasks that hurt INP.
+- [ ] Keep heavy interactions smooth on secondary pages, not only homepage.
+
+### G. Next.js Production Hardening
+
+- [ ] Use `next build` + `next start` as pre-release baseline checks.
+- [ ] Run Lighthouse in incognito and compare with field data.
+- [ ] Use `next/image`, `next/font`, and `next/script` best practices consistently.
+- [ ] Add or maintain global error UI and global 404 UI.
+- [ ] Confirm caching strategy per route/data fetch (avoid accidental dynamic overuse).
+- [ ] Run bundle analysis and trim oversized dependencies/chunks.
+- [ ] Keep server-only boundaries strict for sensitive code/data.
+
+### H. Security and Privacy UX Layer
+
+- [ ] Enforce CSP with report-only rollout first, then enforce.
+- [ ] Add or verify secure browser headers policy for frontend responses.
+- [ ] Ensure no secrets leak through client payloads or public env vars.
+- [ ] Ensure auth/session actions have explicit user feedback and safe failure states.
+- [ ] Ensure analytics payloads are bounded and exclude sensitive data.
+
+### I. SEO, Social, and Shareability
+
+- [ ] Use Metadata API on all major routes.
+- [ ] Ensure OG/Twitter image coverage for profile and marketing routes.
+- [ ] Ensure sitemap and robots are valid and current.
+- [ ] Ensure share cards are visually consistent with in-app identity framing.
+- [ ] Validate canonical URLs for public profile and PR report pages.
+
+### J. Quality Engineering and Regression Safety
+
+- [ ] Add route-level visual regression checks for key pages.
+- [ ] Add accessibility CI checks (axe/Pa11y/Lighthouse accessibility).
+- [ ] Expand smoke tests to include sync/stale/error state transitions.
+- [ ] Add contract tests for BFF route mappings to backend endpoints.
+- [ ] Add performance CI budgets (bundle size plus selected Lighthouse/CWV guards).
+
+### K. Observability for Frontend UX
+
+- [ ] Instrument key product events (onboarding, sync, score explanation, badge view, share).
+- [ ] Add route-level error-rate dashboards.
+- [ ] Track stale-profile incidence and sync retry outcomes.
+- [ ] Track no-data or empty-state frequency per page.
+
+### L. Delivery Discipline
+
+- [ ] Create a prioritized 30/60/90 day roadmap (critical, important, polish).
+- [ ] Run a weekly refinement loop with before/after screenshots and metric diffs.
+- [ ] Keep a changelog of UX-impacting frontend decisions.
+
 ### Review expectations
 
 - Review for correctness first.
