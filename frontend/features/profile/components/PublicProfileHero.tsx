@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { Share2, ShieldCheck, Sparkles, Trophy } from "lucide-react";
+import Link from "next/link";
+import { FileJson2, Share2, ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -91,10 +92,22 @@ export function PublicProfileHero({
               </div>
             ))}
           </div>
-          <Button variant="secondary" onClick={handleShare}>
-            <Share2 className="h-4 w-4" />
-            {shareState === "copied" ? "Link copied" : "Share profile"}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" onClick={handleShare}>
+              <Share2 className="h-4 w-4" />
+              {shareState === "copied" ? "Link copied" : "Share profile"}
+            </Button>
+            <Button asChild variant="ghost">
+              <Link
+                href={`/api/profile/public/${encodeURIComponent(user.username)}/card`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <FileJson2 className="h-4 w-4" />
+                View card JSON
+              </Link>
+            </Button>
+          </div>
         </div>
         <div className="neon-surface rounded-[1.85rem] p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
