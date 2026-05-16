@@ -6,7 +6,7 @@ import { AppShell } from "@/components/shared/AppShell";
 
 export function DashboardLayout({ children }: { children: ReactNode }) {
   return (
-    <AppShell className="xl:grid xl:grid-cols-[18rem,1fr] xl:gap-6">
+    <AppShell className="xl:grid xl:grid-cols-[16rem,1fr] xl:gap-5">
       <DashboardSidebar />
       <div className="min-w-0">
         <DashboardTopBarContainer />
