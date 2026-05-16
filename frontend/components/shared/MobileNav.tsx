@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Award, Flag, Settings, Shield, Trophy } from "lucide-react";
+import { Award, Flag, Settings, Shield } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const items = [
   { href: "/dashboard/contributions", label: "PRs", icon: Shield },
   { href: "/dashboard/badges", label: "Badges", icon: Award },
   { href: "/dashboard/quests", label: "Quests", icon: Flag },
-  { href: "/dashboard/leaderboard", label: "Ranks", icon: Trophy },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
@@ -17,7 +16,7 @@ export function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="glass-panel cyber-card cyber-frame panel-grid neon-outline fixed inset-x-4 bottom-4 z-40 grid grid-cols-5 gap-1 rounded-[2rem] p-2 xl:hidden">
+    <nav className="glass-panel cyber-card cyber-frame panel-grid neon-outline fixed inset-x-4 bottom-4 z-40 grid grid-cols-4 gap-1 rounded-[2rem] p-2 xl:hidden">
       {items.map((item) => {
         const Icon = item.icon;
         const active = pathname === item.href;

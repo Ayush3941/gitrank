@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Award, Flag, LayoutDashboard, Settings, Shield, Sparkles, Trophy } from "lucide-react";
+import { Award, Flag, LayoutDashboard, Settings, Shield, Sparkles } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const items = [
@@ -10,7 +10,6 @@ const items = [
   { href: "/dashboard/contributions", label: "Contributions", icon: Shield },
   { href: "/dashboard/badges", label: "Badges", icon: Award },
   { href: "/dashboard/quests", label: "Quests", icon: Flag },
-  { href: "/dashboard/leaderboard", label: "Leaderboard", icon: Trophy },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 

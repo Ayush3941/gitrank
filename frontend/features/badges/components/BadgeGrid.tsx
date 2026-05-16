@@ -18,7 +18,7 @@ export function BadgeGrid({
       {badges.map((badge) => (
         <BadgeDetailDialog key={badge.id} badge={badge} story={stories?.[badge.id]}>
           <button className="focus-ring text-left">
-            <GlowCard className="cyber-hero-shell h-full space-y-4 transition hover:-translate-y-0.5 hover:border-cyan-300/30 hover:shadow-[0_0_42px_rgba(34,226,255,0.22)]">
+            <GlowCard className="cyber-hero-shell h-full space-y-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="rounded-3xl bg-primary/12 p-3 text-primary">
                   <SignalIcon icon={badge.icon} className="h-5 w-5" />

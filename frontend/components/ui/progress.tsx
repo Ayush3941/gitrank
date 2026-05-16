@@ -18,7 +18,7 @@ export function Progress({
     >
       <ProgressPrimitive.Indicator
         className={cn(
-          "h-full rounded-full bg-gradient-to-r from-primary via-primary-2 to-success shadow-[0_0_18px_rgb(34_226_255_/_0.32)] transition-all",
+          "h-full rounded-full bg-gradient-to-r from-primary via-primary-2 to-success shadow-[0_0_18px_rgb(34_226_255_/_0.32)]",
           indicatorClassName,
         )}
         style={{ transform: `translateX(-${100 - (value ?? 0)}%)` }}
