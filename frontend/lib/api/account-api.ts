@@ -14,6 +14,15 @@ type ApiSyncResponse = {
   accepted_at: string;
 };
 
+export type ApiAccountLinkStartResponse = {
+  provider: string;
+  client_mode: string;
+  intent: string;
+  authorize_url: string;
+  return_to?: string;
+  expires_at: string;
+};
+
 export type ApiSyncExecutionResponse = {
   status: string;
   mode: string;
@@ -72,6 +81,25 @@ export async function requestProfileSync(): Promise<ApiSyncResponse> {
     body: JSON.stringify({ mode: "user" }),
   });
   return adaptJSON<ApiSyncResponse>(response, "Sync request failed.");
+}
+
+export async function startAccountLink(
+  returnTo: string,
+): Promise<ApiAccountLinkStartResponse> {
+  const csrfToken = requireCSRFToken();
+  const response = await fetch("/api/account/link/start", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
+    },
+    credentials: "same-origin",
+    cache: "no-store",
+    body: JSON.stringify({
+      return_to: returnTo,
+    }),
+  });
+  return adaptJSON<ApiAccountLinkStartResponse>(response, "Account link start failed.");
 }
 
 export async function runRepositorySync(

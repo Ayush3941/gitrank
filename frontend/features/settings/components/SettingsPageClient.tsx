@@ -17,6 +17,7 @@ import {
   useLogoutSession,
   useRunInstallationSync,
   useRunRepositorySync,
+  useStartAccountLink,
   useRequestProfileSync,
   useUnlinkMyAccount,
 } from "@/hooks/use-account-actions";
@@ -46,6 +47,7 @@ export function SettingsPageClient() {
   const deleteAccount = useDeleteMyAccount();
   const exportAccount = useExportMyAccountData();
   const logoutSession = useLogoutSession();
+  const accountLinkStart = useStartAccountLink();
   const repositorySync = useRunRepositorySync();
   const installationSync = useRunInstallationSync();
   const { setReducedGamification } = useGamificationPreference();
@@ -78,6 +80,7 @@ export function SettingsPageClient() {
     (unlinkAccount.error as Error | null)?.message ||
     (deleteAccount.error as Error | null)?.message ||
     (exportAccount.error as Error | null)?.message ||
+    (accountLinkStart.error as Error | null)?.message ||
     (repositorySync.error as Error | null)?.message ||
     (installationSync.error as Error | null)?.message ||
     "";
@@ -88,6 +91,7 @@ export function SettingsPageClient() {
     unlinkAccount.isPending ||
     deleteAccount.isPending ||
     exportAccount.isPending ||
+    accountLinkStart.isPending ||
     repositorySync.isPending ||
     installationSync.isPending;
   const pendingRepository = updateRepositoryVisibility.variables?.fullName ?? null;
@@ -171,6 +175,22 @@ export function SettingsPageClient() {
     });
   }
 
+  function handleAccountRelink() {
+    if (isActing) {
+      return;
+    }
+    setActionNotice("");
+    accountLinkStart.mutate("/dashboard/settings", {
+      onSuccess: (result) => {
+        if (!result.authorize_url) {
+          setActionNotice("Account relink response did not include authorize_url.");
+          return;
+        }
+        window.location.assign(result.authorize_url);
+      },
+    });
+  }
+
   function handleSessionLogout() {
     if (isActing) {
       return;
@@ -238,6 +258,10 @@ export function SettingsPageClient() {
           <Button disabled={isActing} onClick={handleSyncRequest}>
             <RefreshCcw className="h-4 w-4" />
             {requestSync.isPending ? "Queueing sync..." : "Sync now"}
+          </Button>
+          <Button variant="secondary" disabled={isActing} onClick={handleAccountRelink}>
+            <FolderGit2 className="h-4 w-4" />
+            {accountLinkStart.isPending ? "Starting relink..." : "Reconnect GitHub"}
           </Button>
           <Button variant="secondary" disabled={isActing} onClick={handleSessionLogout}>
             <LogOut className="h-4 w-4" />

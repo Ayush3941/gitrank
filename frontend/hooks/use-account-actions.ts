@@ -7,6 +7,7 @@ import {
   logoutCurrentSession,
   runInstallationSync,
   runRepositorySync,
+  startAccountLink,
   requestProfileSync,
   unlinkMyAccount,
 } from "@/lib/api/account-api";
@@ -20,6 +21,12 @@ export function useRequestProfileSync() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: myProfileQueryKey });
     },
+  });
+}
+
+export function useStartAccountLink() {
+  return useMutation({
+    mutationFn: (returnTo: string) => startAccountLink(returnTo),
   });
 }
 
