@@ -7,6 +7,14 @@ tmp_root="${TMPDIR:-$root_dir/.tmp}"
 contributing_file="$repo_dir/CONTRIBUTING.md"
 mkdir -p "$tmp_root"
 
+report_live_v2_env_presence_script="${REPORT_LIVE_V2_ENV_PRESENCE_SCRIPT:-$root_dir/scripts/report_live_v2_env_presence.sh}"
+verify_live_github_access_script="${VERIFY_LIVE_GITHUB_ACCESS_SCRIPT:-$root_dir/scripts/verify_live_github_access.sh}"
+verify_origin_push_access_script="${VERIFY_ORIGIN_PUSH_ACCESS_SCRIPT:-$root_dir/scripts/verify_origin_push_access.sh}"
+verify_remote_live_v2_workflow_sync_script="${VERIFY_REMOTE_LIVE_V2_WORKFLOW_SYNC_SCRIPT:-$root_dir/scripts/verify_remote_live_v2_workflow_sync.sh}"
+verify_github_repository_controls_public_script="${VERIFY_GITHUB_REPOSITORY_CONTROLS_PUBLIC_SCRIPT:-$root_dir/scripts/verify_github_repository_controls_public.sh}"
+verify_live_v2_inputs_script="${VERIFY_LIVE_V2_INPUTS_SCRIPT:-$root_dir/scripts/verify_live_v2_inputs.sh}"
+verify_live_v2_workflow_run_script="${VERIFY_LIVE_V2_WORKFLOW_RUN_SCRIPT:-$root_dir/scripts/verify_live_v2_workflow_run.sh}"
+
 LIVE_ENV_FILE="${LIVE_V2_ENV_FILE:-${FINALIZE_V2_ENV_FILE:-}}"
 if [ -n "$LIVE_ENV_FILE" ]; then
   resolved_live_env_file="$LIVE_ENV_FILE"
@@ -84,6 +92,20 @@ if [ -z "$resolved_repo" ]; then
   exit 1
 fi
 
+for script_file in \
+  "$report_live_v2_env_presence_script" \
+  "$verify_live_github_access_script" \
+  "$verify_origin_push_access_script" \
+  "$verify_remote_live_v2_workflow_sync_script" \
+  "$verify_github_repository_controls_public_script" \
+  "$verify_live_v2_inputs_script" \
+  "$verify_live_v2_workflow_run_script"; do
+  if [ ! -x "$script_file" ]; then
+    printf 'v2 external unblock preflight failed: required probe script is missing or not executable: %s\n' "$script_file" >&2
+    exit 1
+  fi
+done
+
 token_state=$(state_for_value "${GITRANK_REPO_ADMIN_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}")
 
 run_probe() {
@@ -125,7 +147,7 @@ append_unique_csv() {
 
 report_env_file=$(mktemp "$tmp_root/gitrank-v2-unblock-env.XXXXXX")
 INFERRED_GITHUB_REPOSITORY="$resolved_repo" \
-  "$root_dir/scripts/report_live_v2_env_presence.sh" >"$report_env_file" 2>/dev/null || true
+  "$report_live_v2_env_presence_script" >"$report_env_file" 2>/dev/null || true
 
 auth_mode=$(awk -F= '/^derived\.auth_mode=/{print $2; exit}' "$report_env_file")
 workflow_sync_credential_readiness=$(awk -F= '/^derived\.workflow_sync_credential_readiness=/{print $2; exit}' "$report_env_file")
@@ -133,27 +155,27 @@ origin_push_readiness=$(awk -F= '/^derived\.origin_push_access_readiness=/{print
 workflow_sync_execution_path=$(awk -F= '/^derived\.workflow_sync_execution_path=/{print $2; exit}' "$report_env_file")
 rm -f "$report_env_file"
 
-run_probe github_access env GITHUB_REPOSITORY="$resolved_repo" "$root_dir/scripts/verify_live_github_access.sh"
+run_probe github_access env GITHUB_REPOSITORY="$resolved_repo" "$verify_live_github_access_script"
 github_access_status=$probe_status
 github_access_summary=$probe_summary
 
-run_probe origin_push env REMOTE_NAME=origin "$root_dir/scripts/verify_origin_push_access.sh"
+run_probe origin_push env REMOTE_NAME=origin "$verify_origin_push_access_script"
 origin_push_status=$probe_status
 origin_push_summary=$probe_summary
 
-run_probe remote_workflow_sync env GITHUB_REPOSITORY="$resolved_repo" "$root_dir/scripts/verify_remote_live_v2_workflow_sync.sh"
+run_probe remote_workflow_sync env GITHUB_REPOSITORY="$resolved_repo" "$verify_remote_live_v2_workflow_sync_script"
 remote_workflow_sync_status=$probe_status
 remote_workflow_sync_summary=$probe_summary
 
-run_probe controls_public env GITHUB_REPOSITORY="$resolved_repo" "$root_dir/scripts/verify_github_repository_controls_public.sh"
+run_probe controls_public env GITHUB_REPOSITORY="$resolved_repo" "$verify_github_repository_controls_public_script"
 controls_public_status=$probe_status
 controls_public_summary=$probe_summary
 
-run_probe observability_inputs env RUN_OBSERVABILITY=true "$root_dir/scripts/verify_live_v2_inputs.sh"
+run_probe observability_inputs env RUN_OBSERVABILITY=true "$verify_live_v2_inputs_script"
 observability_inputs_status=$probe_status
 observability_inputs_summary=$probe_summary
 
-run_probe workflow_evidence env GITHUB_REPOSITORY="$resolved_repo" WORKFLOW_RUN_ID=latest WORKFLOW_EVENT=any REQUIRE_GITHUB_CONTROLS=true REQUIRE_OBSERVABILITY=true REQUIRE_RELEASE_RENDER=true "$root_dir/scripts/verify_live_v2_workflow_run.sh"
+run_probe workflow_evidence env GITHUB_REPOSITORY="$resolved_repo" WORKFLOW_RUN_ID=latest WORKFLOW_EVENT=any REQUIRE_GITHUB_CONTROLS=true REQUIRE_OBSERVABILITY=true REQUIRE_RELEASE_RENDER=true "$verify_live_v2_workflow_run_script"
 workflow_evidence_status=$probe_status
 workflow_evidence_summary=$probe_summary
 

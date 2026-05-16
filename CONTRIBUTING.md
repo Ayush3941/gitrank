@@ -1188,6 +1188,9 @@ must remain absent).
 Use `make verify-v2-external-unblock-preflight-behavior` to enforce the output
 contract for the external-unblock preflight (`input_state.*`,
 `checklist_probe_mapping`, and minimal-required-input hints).
+Use `make verify-v2-external-unblock-preflight-semantics` for stubbed
+scenario checks that validate no-token vs invalid-token behavior, advisory
+origin-push mapping, and minimal-required-input generation.
 Use `make verify-v2-audit-remediation-behavior` to verify that
 `audit-v2-contributing-checklist` switches remediation guidance correctly
 between no-auth mode and token/App-auth mode.
