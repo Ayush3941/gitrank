@@ -104,7 +104,7 @@ Current contract:
 - event type header: `X-GitHub-Event`
 - duplicate deliveries are deduplicated by GitHub delivery ID
 
-### OpenAI Responses API
+### Gemini OpenAI-Compatible API
 
 Used by:
 
@@ -112,9 +112,9 @@ Used by:
 
 Config:
 
-- `OPENAI_BASE_URL`
-- `OPENAI_API_KEY`
-- `OPENAI_MODEL`
+- `GEMINI_BASE_URL`
+- `GEMINI_API_KEY`
+- `GEMINI_MODEL`
 - `AI_REQUEST_TIMEOUT`
 - `AI_PR_MAX_CHANGED_FILES`
 - `AI_PR_MAX_FILE_RECORDS`

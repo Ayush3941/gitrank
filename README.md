@@ -621,7 +621,7 @@ GITHUB_CLIENT_SECRET=your_github_oauth_client_secret
 GITHUB_WEBHOOK_SECRET=your_github_webhook_secret
 DATABASE_URL=postgres://postgres:postgres@localhost:5432/gitrank?sslmode=disable
 REDIS_URL=redis://localhost:6379
-OPENAI_API_KEY=your_api_key
+GEMINI_API_KEY=your_api_key
 ```
 
 See [`.env.example`](./.env.example) for the full local configuration surface, including optional future GitHub App settings that are not required in the v1 production baseline.

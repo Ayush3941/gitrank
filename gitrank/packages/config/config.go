@@ -237,13 +237,13 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			CircuitBreakerHalfOpenMax:      getInt("GITHUB_CIRCUIT_BREAKER_HALF_OPEN_MAX_REQUESTS", 1),
 		},
 		AI: AI{
-			Provider:                   getEnv("AI_PROVIDER", "openai"),
-			APIKey:                     getEnv("OPENAI_API_KEY", ""),
-			Model:                      getEnv("OPENAI_MODEL", "gpt-5.5"),
-			BaseURL:                    getEnv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
+			Provider:                   getEnv("AI_PROVIDER", "gemini"),
+			APIKey:                     getEnv("GEMINI_API_KEY", ""),
+			Model:                      getEnv("GEMINI_MODEL", "gemini-2.5-flash"),
+			BaseURL:                    getEnv("GEMINI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai"),
 			RequestTimeout:             getDuration("AI_REQUEST_TIMEOUT", 20*time.Second),
-			ModerationModel:            getEnv("OPENAI_MODERATION_MODEL", "omni-moderation-latest"),
-			EmbeddingModel:             getEnv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"),
+			ModerationModel:            getEnv("GEMINI_MODERATION_MODEL", ""),
+			EmbeddingModel:             getEnv("GEMINI_EMBEDDING_MODEL", "text-embedding-004"),
 			PRMaxChangedFiles:          getInt("AI_PR_MAX_CHANGED_FILES", 100),
 			PRMaxFileRecords:           getInt("AI_PR_MAX_FILE_RECORDS", 100),
 			PRMaxDiffLines:             getInt("AI_PR_MAX_DIFF_LINES", 5000),
@@ -673,10 +673,10 @@ func (a App) ValidateAI() error {
 		return errors.New("AI provider is required")
 	}
 	if a.AI.APIKey == "" {
-		return errors.New("OPENAI_API_KEY is required for AI integration")
+		return errors.New("GEMINI_API_KEY is required for AI integration")
 	}
 	if a.AI.Model == "" {
-		return errors.New("OPENAI_MODEL is required for AI integration")
+		return errors.New("GEMINI_MODEL is required for AI integration")
 	}
 	return nil
 }

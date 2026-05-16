@@ -58,6 +58,15 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.AI.PRMaxChangedFiles != 100 || cfg.AI.PRMaxFileRecords != 100 || cfg.AI.PRMaxEstimatedTokens != 30000 {
 		t.Fatalf("AI PR limits = changed_files %d file_records %d tokens %d, want defaults", cfg.AI.PRMaxChangedFiles, cfg.AI.PRMaxFileRecords, cfg.AI.PRMaxEstimatedTokens)
 	}
+	if cfg.AI.Provider != "gemini" {
+		t.Fatalf("AI.Provider = %q, want gemini", cfg.AI.Provider)
+	}
+	if cfg.AI.Model != "gemini-2.5-flash" {
+		t.Fatalf("AI.Model = %q, want gemini-2.5-flash", cfg.AI.Model)
+	}
+	if cfg.AI.BaseURL != "https://generativelanguage.googleapis.com/v1beta/openai" {
+		t.Fatalf("AI.BaseURL = %q, want Gemini OpenAI-compatible endpoint", cfg.AI.BaseURL)
+	}
 	if cfg.Auth.SessionCookieName != "gitrank_session" {
 		t.Fatalf("Auth.SessionCookieName = %q, want gitrank_session", cfg.Auth.SessionCookieName)
 	}
@@ -86,6 +95,10 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	t.Setenv("GITHUB_CIRCUIT_BREAKER_HALF_OPEN_MAX_REQUESTS", "2")
 	t.Setenv("GITHUB_REPOSITORY_CACHE_TTL", "30m")
 	t.Setenv("GITHUB_INSTALLATION_REFRESH_SKEW", "7m")
+	t.Setenv("AI_PROVIDER", "gemini")
+	t.Setenv("GEMINI_API_KEY", "test-key")
+	t.Setenv("GEMINI_MODEL", "gemini-2.5-pro")
+	t.Setenv("GEMINI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai")
 	t.Setenv("AI_PR_MAX_CHANGED_FILES", "24")
 	t.Setenv("AI_PR_MAX_FILE_RECORDS", "30")
 	t.Setenv("AI_PR_MAX_DIFF_LINES", "900")
@@ -157,6 +170,9 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	}
 	if cfg.AI.PRMaxChangedFiles != 24 || cfg.AI.PRMaxFileRecords != 30 {
 		t.Fatalf("AI file limits = changed %d files %d, want 24/30", cfg.AI.PRMaxChangedFiles, cfg.AI.PRMaxFileRecords)
+	}
+	if cfg.AI.Provider != "gemini" || cfg.AI.Model != "gemini-2.5-pro" {
+		t.Fatalf("AI provider/model = %s/%s, want gemini/gemini-2.5-pro", cfg.AI.Provider, cfg.AI.Model)
 	}
 	if cfg.AI.PRMaxEstimatedCostUSD != 0.08 || cfg.AI.EstimatedInputTokenCostUSD != 0.00001 {
 		t.Fatalf("AI cost limits = max %.5f token %.5f, want 0.08/0.00001", cfg.AI.PRMaxEstimatedCostUSD, cfg.AI.EstimatedInputTokenCostUSD)

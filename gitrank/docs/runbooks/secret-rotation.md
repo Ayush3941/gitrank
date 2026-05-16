@@ -36,7 +36,7 @@ The Kubernetes examples under `deployments/k8s/examples/` include separate Exter
 - `REDIS_URL`: rotate during a low-traffic window; verify scheduler leases and queue metrics after rollout.
 - `GITHUB_CLIENT_SECRET`: update the OAuth app secret, then roll `auth-service` and `api-gateway`.
 - `GITHUB_WEBHOOK_SECRET`: GitHub sends signatures with one configured secret at a time. Rotate by updating GitHub webhook configuration and `github-ingestor` close together.
-- `OPENAI_API_KEY`: roll `pr-analyzer` after the ExternalSecret refresh.
+- `GEMINI_API_KEY`: roll `pr-analyzer` after the ExternalSecret refresh.
 - `GRAFANA_ADMIN_PASSWORD`: roll `gitrank-grafana` after the ExternalSecret refresh.
 - `GITRANK_SESSION_SECRET`: move the previous value into `GITRANK_PREVIOUS_SESSION_SECRETS`, deploy the new primary value, then rely on normal session rotation to reissue primary-key material.
 - `GITRANK_JWT_SIGNING_KEY`: no current JWT issuer depends on this key for browser sessions. If JWT issuance is added later, add a `kid`-based signing-key ring before rotating without invalidation.
