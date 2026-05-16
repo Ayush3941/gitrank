@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -13,6 +14,100 @@ import (
 	"github.com/gitrank/gitrank/packages/config"
 	"github.com/gitrank/gitrank/packages/githubapi"
 )
+
+func TestGitHubStatusCodeFromError(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		err      error
+		wantCode int
+		wantOK   bool
+	}{
+		{
+			name:     "extracts status code from github rest error",
+			err:      errors.New("GitHub API GET https://api.github.com/repos/octo/repo/commits failed with status 403"),
+			wantCode: 403,
+			wantOK:   true,
+		},
+		{
+			name:   "missing status code",
+			err:    errors.New("dial tcp timeout"),
+			wantOK: false,
+		},
+		{
+			name:   "nil error",
+			err:    nil,
+			wantOK: false,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			gotCode, gotOK := gitHubStatusCodeFromError(test.err)
+			if gotOK != test.wantOK {
+				t.Fatalf("gitHubStatusCodeFromError() ok = %v, want %v", gotOK, test.wantOK)
+			}
+			if gotCode != test.wantCode {
+				t.Fatalf("gitHubStatusCodeFromError() code = %d, want %d", gotCode, test.wantCode)
+			}
+		})
+	}
+}
+
+func TestIsSkippableGitHubSyncError(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		err  error
+		want bool
+	}{
+		{
+			name: "forbidden errors are skippable",
+			err:  errors.New("GitHub API GET https://api.github.com/repos/octo/repo/commits failed with status 403"),
+			want: true,
+		},
+		{
+			name: "not found errors are skippable",
+			err:  errors.New("GitHub API GET https://api.github.com/repos/octo/repo failed with status 404"),
+			want: true,
+		},
+		{
+			name: "conflict errors are skippable",
+			err:  errors.New("GitHub API GET https://api.github.com/repos/octo/repo/commits failed with status 409"),
+			want: true,
+		},
+		{
+			name: "secondary rate-limit errors are not skippable",
+			err:  errors.New("GitHub API GET https://api.github.com/repos/octo/repo/commits failed with status 429"),
+			want: false,
+		},
+		{
+			name: "non-github errors are not skippable",
+			err:  errors.New("database is unavailable"),
+			want: false,
+		},
+		{
+			name: "nil error is not skippable",
+			err:  nil,
+			want: false,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			if got := isSkippableGitHubSyncError(test.err); got != test.want {
+				t.Fatalf("isSkippableGitHubSyncError() = %v, want %v", got, test.want)
+			}
+		})
+	}
+}
 
 func TestExecutorFetchRepositoryUsesStableMetadataCache(t *testing.T) {
 	requests := 0

@@ -3,7 +3,9 @@ package service
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -20,6 +22,8 @@ const (
 	defaultUserRepositoryLimit    = 100
 	defaultAuthoredPRSearchLimit  = 100
 )
+
+var gitHubStatusCodePattern = regexp.MustCompile(`status (\d{3})`)
 
 type authoredPullRequestTarget struct {
 	Repository string
@@ -278,6 +282,10 @@ func (e *Executor) SyncUser(
 			Repository: fullName,
 		}, actor, fmt.Sprintf("%s:repo:%d", baseCorrelationID, index+1), time.Now().UTC())
 		if err != nil {
+			if isSkippableGitHubSyncError(err) {
+				response.Fetched["repositories_skipped"]++
+				continue
+			}
 			response.FinishedAt = time.Now().UTC()
 			_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, aggregatePersisted)
 			return response, err
@@ -297,6 +305,10 @@ func (e *Executor) SyncUser(
 			Number:     target.Number,
 		}, actor, fmt.Sprintf("%s:authored-pr:%d", baseCorrelationID, index+1), time.Now().UTC())
 		if err != nil {
+			if isSkippableGitHubSyncError(err) {
+				response.Fetched["authored_pull_requests_skipped"]++
+				continue
+			}
 			response.FinishedAt = time.Now().UTC()
 			_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, aggregatePersisted)
 			return response, err
@@ -1346,6 +1358,36 @@ func boundedPageSize(configured, fallback int) int {
 		return 20
 	}
 	return fallback
+}
+
+func isSkippableGitHubSyncError(err error) bool {
+	statusCode, ok := gitHubStatusCodeFromError(err)
+	if !ok {
+		return false
+	}
+
+	switch statusCode {
+	case http.StatusForbidden, http.StatusNotFound, http.StatusConflict, http.StatusGone, http.StatusUnavailableForLegalReasons:
+		return true
+	default:
+		return false
+	}
+}
+
+func gitHubStatusCodeFromError(err error) (int, bool) {
+	if err == nil {
+		return 0, false
+	}
+	matches := gitHubStatusCodePattern.FindStringSubmatch(err.Error())
+	if len(matches) != 2 {
+		return 0, false
+	}
+
+	var code int
+	if _, scanErr := fmt.Sscanf(matches[1], "%d", &code); scanErr != nil || code <= 0 {
+		return 0, false
+	}
+	return code, true
 }
 
 type repositoryMetadataCache struct {
