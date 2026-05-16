@@ -86,13 +86,25 @@ The marketing landing page avoids synthetic contributor identities and does not 
 
 The settings page includes an account-backed reduced-gamification display preference. Authenticated dashboard and reveal flows apply the value from the live profile response, mirror it into browser `localStorage` for immediate rendering, respect OS reduced-motion intent in animated components, and do not change score, badge, or leaderboard state.
 
-The settings page also has live authenticated account actions:
+Authenticated dashboard routes now use background auto-sync instead of manual sync buttons:
 
-- `/api/sync` proxies to the Go sync trigger route
+- dashboard layout triggers bounded `POST /api/sync/user` execution when authenticated profile state is stale
+- sync success invalidates profile-derived dashboard caches (`dashboard`, `contributions`, `badges`, `quests`, `leaderboard`) so tabs refresh without a hard reload
+- sync failures are surfaced through stale/partial state messaging and retried opportunistically while the user stays in authenticated routes
+
+The settings page has live authenticated account actions:
+
 - `/api/account/export` proxies to the Go account export route and downloads a JSON file with token secrets and secret hashes excluded
 - `/api/account/unlink` proxies to the Go account disconnect route
 - `/api/account/delete` proxies to the Go account deletion route
 - `/api/session/logout` proxies to auth-service session invalidation and clears frontend-visible auth cookies
+
+Frontend product analytics now posts bounded events to backend `POST /v1/analytics/events` through `/api/analytics/events` for:
+
+- onboarding completion
+- sync success and failure
+- score explanation views
+- badge page views
 
 ## Backend Configuration
 

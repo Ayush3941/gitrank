@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import {
   RevealPanel,
   RevealPanelSkeleton,
@@ -9,10 +9,12 @@ import {
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useAccountGamificationPreference } from "@/hooks/use-gamification-preference";
 import { useMyProfile } from "@/hooks/use-profile";
+import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 
 export function RevealPanelContainer() {
   const { data, isError, isLoading } = useMyProfile();
+  const onboardingEventSentForUser = useRef<string>("");
   useAccountGamificationPreference(data);
   const streak = useMemo(
     () => summarizeContributionStreak(data?.user.contributions ?? []),
@@ -63,6 +65,23 @@ export function RevealPanelContainer() {
     };
   }, [data, streak.currentStreakDays]);
   const abraInsights = useAbraInsights(abraPayload);
+
+  useEffect(() => {
+    if (isLoading || isError || !data) {
+      return;
+    }
+    const username = data.user.username.trim().toLowerCase();
+    if (!username || onboardingEventSentForUser.current === username) {
+      return;
+    }
+    onboardingEventSentForUser.current = username;
+    void emitAnalyticsEvent({
+      eventName: "onboarding.completed",
+      source: "frontend",
+      target: "onboarding/reveal",
+      status: "success",
+    });
+  }, [data, isError, isLoading]);
 
   if (isLoading) {
     return <RevealPanelSkeleton />;

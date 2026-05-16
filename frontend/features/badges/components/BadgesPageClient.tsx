@@ -1,7 +1,7 @@
 "use client";
 
 import { Crown, ShieldCheck, Sparkles, Trophy } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -12,11 +12,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { BadgeGrid } from "@/features/badges/components/BadgeGrid";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useBadges } from "@/hooks/use-badges";
+import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import type { BadgeRarity } from "@/types/gitrank";
 
 export function BadgesPageClient() {
   const { data, isLoading, isError } = useBadges();
+  const badgeViewedEventSent = useRef(false);
   const [rarity, setRarity] = useState<BadgeRarity | "All">("All");
   const [visibility, setVisibility] = useState<"All" | "Unlocked" | "Locked">("All");
 
@@ -79,6 +81,19 @@ export function BadgesPageClient() {
         }
       : null,
   );
+
+  useEffect(() => {
+    if (isLoading || isError || !data || badgeViewedEventSent.current) {
+      return;
+    }
+    badgeViewedEventSent.current = true;
+    void emitAnalyticsEvent({
+      eventName: "badge.viewed",
+      source: "frontend",
+      target: "dashboard/badges",
+      status: "success",
+    });
+  }, [data, isError, isLoading]);
 
   return (
     <div className="space-y-6">

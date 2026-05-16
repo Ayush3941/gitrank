@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import {
   deleteMyAccount,
   exportMyAccountData,
@@ -16,13 +16,29 @@ import {
 } from "@/lib/api/account-api";
 import { myProfileQueryKey } from "@/hooks/use-profile";
 
+const derivedProfileQueryKeys = [
+  myProfileQueryKey,
+  ["dashboard"],
+  ["contributions"],
+  ["badges"],
+  ["quests"],
+  ["leaderboard"],
+  ["profile", "public"],
+] as const;
+
+function invalidateProfileDerivedQueries(queryClient: QueryClient) {
+  for (const queryKey of derivedProfileQueryKeys) {
+    void queryClient.invalidateQueries({ queryKey });
+  }
+}
+
 export function useRequestProfileSync() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: requestProfileSync,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: myProfileQueryKey });
+      invalidateProfileDerivedQueries(queryClient);
     },
   });
 }
@@ -33,7 +49,7 @@ export function useQueueSyncRequest() {
   return useMutation({
     mutationFn: (input: QueueSyncInput) => queueSyncRequest(input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: myProfileQueryKey });
+      invalidateProfileDerivedQueries(queryClient);
     },
   });
 }
@@ -50,7 +66,7 @@ export function useRunRepositorySync() {
   return useMutation({
     mutationFn: (repository: string) => runRepositorySync(repository),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: myProfileQueryKey });
+      invalidateProfileDerivedQueries(queryClient);
     },
   });
 }
@@ -61,7 +77,7 @@ export function useRunUserSync() {
   return useMutation({
     mutationFn: (user?: string) => runUserSync(user),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: myProfileQueryKey });
+      invalidateProfileDerivedQueries(queryClient);
     },
   });
 }
@@ -72,7 +88,7 @@ export function useRunInstallationSync() {
   return useMutation({
     mutationFn: (installationId: number) => runInstallationSync(installationId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: myProfileQueryKey });
+      invalidateProfileDerivedQueries(queryClient);
     },
   });
 }

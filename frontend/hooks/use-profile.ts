@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import {
   getMyProfile,
   getPublicProfile,
@@ -10,6 +10,21 @@ import {
 import type { PrivacySettings, RepositoryVisibility } from "@/types/gitrank";
 
 export const myProfileQueryKey = ["profile", "me"] as const;
+const derivedProfileQueryKeys = [
+  myProfileQueryKey,
+  ["dashboard"],
+  ["contributions"],
+  ["badges"],
+  ["quests"],
+  ["leaderboard"],
+  ["profile", "public"],
+] as const;
+
+function invalidateProfileDerivedQueries(queryClient: QueryClient) {
+  for (const queryKey of derivedProfileQueryKeys) {
+    void queryClient.invalidateQueries({ queryKey });
+  }
+}
 
 type BackedPrivacySettings = Partial<
   Pick<
@@ -43,6 +58,7 @@ export function useUpdateProfilePrivacy() {
     mutationFn: (input: BackedPrivacySettings) => updateMyProfilePrivacy(input),
     onSuccess: (data) => {
       queryClient.setQueryData(myProfileQueryKey, data);
+      invalidateProfileDerivedQueries(queryClient);
     },
   });
 }
@@ -62,6 +78,7 @@ export function useUpdateRepositoryVisibility() {
     }) => updateMyProfileRepositoryVisibility(fullName, visibility, reason),
     onSuccess: (data) => {
       queryClient.setQueryData(myProfileQueryKey, data);
+      invalidateProfileDerivedQueries(queryClient);
     },
   });
 }

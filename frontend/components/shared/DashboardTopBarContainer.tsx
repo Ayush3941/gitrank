@@ -9,11 +9,12 @@ import {
 import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useAccountGamificationPreference } from "@/hooks/use-gamification-preference";
 import { useMyProfile } from "@/hooks/use-profile";
+import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 
 export function DashboardTopBarContainer() {
   const { data, isError, isLoading } = useMyProfile();
   const { mutate: runUserSync, isPending: isUserSyncPending } = useRunUserSync();
-  const autoSyncRequested = useRef<string>("");
+  const autoSyncLastAttempt = useRef(0);
   useAccountGamificationPreference(data);
 
   useEffect(() => {
@@ -26,13 +27,29 @@ export function DashboardTopBarContainer() {
     if (isUserSyncPending) {
       return;
     }
-
-    const syncKey = `${data.user.username}:${data.user.syncStatus.state}`;
-    if (autoSyncRequested.current === syncKey) {
+    const now = Date.now();
+    if (now - autoSyncLastAttempt.current < 90_000) {
       return;
     }
-    autoSyncRequested.current = syncKey;
-    runUserSync(data.user.username);
+    autoSyncLastAttempt.current = now;
+    runUserSync(data.user.username, {
+      onSuccess: () => {
+        void emitAnalyticsEvent({
+          eventName: "sync.succeeded",
+          source: "frontend",
+          target: "dashboard",
+          status: "success",
+        });
+      },
+      onError: () => {
+        void emitAnalyticsEvent({
+          eventName: "sync.failed",
+          source: "frontend",
+          target: "dashboard",
+          status: "failure",
+        });
+      },
+    });
   }, [data, isError, isLoading, isUserSyncPending, runUserSync]);
 
   if (isLoading) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Activity, Flame, Medal, ShieldCheck, Swords } from "lucide-react";
 import { DashboardHeroRankCard } from "@/features/dashboard/components/DashboardHeroRankCard";
 import { ContributionTimelineCard } from "@/features/dashboard/components/ContributionTimelineCard";
@@ -18,10 +18,12 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
 import { formatRelativeDays } from "@/lib/formatters";
+import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 
 export function DashboardPageClient() {
   const { data, isLoading, isError } = useDashboard();
+  const scoreExplanationEventSent = useRef(false);
   const user = data?.user;
   const recentReports = data?.recentReports ?? [];
   const streak = useMemo(
@@ -82,6 +84,19 @@ export function DashboardPageClient() {
     };
   }, [streak.currentStreakDays, user]);
   const abraInsights = useAbraInsights(abraPayload);
+
+  useEffect(() => {
+    if (isLoading || isError || !data || scoreExplanationEventSent.current) {
+      return;
+    }
+    scoreExplanationEventSent.current = true;
+    void emitAnalyticsEvent({
+      eventName: "score_explanation.opened",
+      source: "frontend",
+      target: "dashboard",
+      status: "success",
+    });
+  }, [data, isError, isLoading]);
 
   if (isLoading) {
     return <LoadingState message="Building your RPG dashboard..." />;
