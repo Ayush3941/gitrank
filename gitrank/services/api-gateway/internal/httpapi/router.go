@@ -24,6 +24,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 	authBaseURL := strings.TrimRight(cfg.Services.AuthBaseURL, "/")
 	ingestorBaseURL := strings.TrimRight(cfg.Services.GitHubIngestorBaseURL, "/")
 	client := &http.Client{Timeout: cfg.Services.RequestTimeout}
+	syncExecutionClient := &http.Client{Timeout: maxDuration(cfg.Services.RequestTimeout, 10*time.Minute)}
 	sessionSecrets := cfg.SessionSecretRing()
 
 	sessionAuth := newSessionAuthenticator(client, authBaseURL, cfg.Auth.SessionCookieName, cfg.Auth.CSRFCookieName)
@@ -293,7 +294,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		if !allowRateLimit(w, r, writeLimiter, "sync_execute_repository") {
 			return
 		}
-		handleRepositorySyncExecution(w, r, client, ingestorBaseURL)
+		handleRepositorySyncExecution(w, r, syncExecutionClient, ingestorBaseURL)
 	})))
 
 	mux.Handle("/v1/sync/user/execute", sessionAuth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -308,7 +309,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		if !allowRateLimit(w, r, writeLimiter, "sync_execute_user") {
 			return
 		}
-		handleUserSyncExecution(w, r, client, ingestorBaseURL)
+		handleUserSyncExecution(w, r, syncExecutionClient, ingestorBaseURL)
 	})))
 
 	mux.Handle("/v1/sync/installation/execute", sessionAuth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -323,7 +324,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		if !allowRateLimit(w, r, writeLimiter, "sync_execute_installation") {
 			return
 		}
-		handleInstallationSyncExecution(w, r, client, ingestorBaseURL)
+		handleInstallationSyncExecution(w, r, syncExecutionClient, ingestorBaseURL)
 	})))
 
 	return httpkit.Chain(
@@ -375,4 +376,11 @@ func validPullRequestReportPath(path string) bool {
 	}
 	number, err := strconv.Atoi(parts[2])
 	return err == nil && number > 0
+}
+
+func maxDuration(left, right time.Duration) time.Duration {
+	if left >= right {
+		return left
+	}
+	return right
 }
