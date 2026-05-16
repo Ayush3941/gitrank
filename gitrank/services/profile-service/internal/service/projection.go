@@ -303,7 +303,7 @@ func buildBadgeViews(badges []badgeRecord) []contracts.BadgeView {
 }
 
 func buildScoreHistory(scoreRows []scoreRow) []contracts.ScoreHistoryEntry {
-	limit := 25
+	limit := 100
 	if len(scoreRows) < limit {
 		limit = len(scoreRows)
 	}

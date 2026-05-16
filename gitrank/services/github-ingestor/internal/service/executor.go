@@ -17,8 +17,8 @@ import (
 const (
 	defaultRepositorySyncPageSize = 20
 	defaultCommitSyncPageSize     = 50
-	defaultUserRepositoryLimit    = 10
-	defaultAuthoredPRSearchLimit  = 20
+	defaultUserRepositoryLimit    = 100
+	defaultAuthoredPRSearchLimit  = 100
 )
 
 type authoredPullRequestTarget struct {
