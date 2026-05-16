@@ -8,6 +8,7 @@ import type {
   AbraInsightsResponse,
   BadgeStory,
   ContributionNarrative,
+  SkillInsight,
 } from "@/lib/ai/abra-insights-types";
 
 const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models";
@@ -37,6 +38,7 @@ type GeminiInsightsShape = {
   identity_summary?: unknown;
   contributions?: unknown;
   badges?: unknown;
+  skill_assessment?: unknown;
 };
 
 type GeminiContributionItem = {
@@ -52,6 +54,13 @@ type GeminiBadgeItem = {
   story?: unknown;
   trigger?: unknown;
   next_focus?: unknown;
+};
+
+type GeminiSkillItem = {
+  discipline?: unknown;
+  summary?: unknown;
+  evidence?: unknown;
+  confidence?: unknown;
 };
 
 export async function buildAbraInsights(
@@ -124,12 +133,15 @@ function deterministicInsights(input: AbraInsightsRequest): AbraInsightsResponse
     badgeStories[badge.id] = fallbackBadgeStory(badge);
   }
 
+  const skillInsights = fallbackSkillInsights(input);
+
   return {
     generatedBy: "deterministic",
     archetype,
     identitySummary,
     contributionNarratives,
     badgeStories,
+    skillInsights,
   };
 }
 
@@ -190,6 +202,46 @@ function fallbackBadgeStory(input: AbraBadgeInput): BadgeStory {
     trigger: progressNote,
     nextFocus: input.unlockCondition,
   };
+}
+
+function fallbackSkillInsights(input: AbraInsightsRequest): Record<string, SkillInsight> {
+  const disciplineSet = new Set<string>();
+  for (const strongestSignal of input.profile.strongestSignals) {
+    const normalized = normalizeDisciplineKey(strongestSignal);
+    if (normalized) {
+      disciplineSet.add(normalized);
+    }
+  }
+  for (const contribution of input.contributions) {
+    const normalized = normalizeDisciplineKey(contribution.category);
+    if (normalized) {
+      disciplineSet.add(normalized);
+    }
+  }
+
+  const out: Record<string, SkillInsight> = {};
+  for (const discipline of disciplineSet) {
+    const related = input.contributions.filter(
+      (row) => normalizeDisciplineKey(row.category) === discipline,
+    );
+    if (related.length === 0) {
+      continue;
+    }
+    const totalXP = related.reduce((sum, row) => sum + Math.max(0, row.xpEarned), 0);
+    const topEvidence =
+      related
+        .flatMap((row) => row.evidenceSignals)
+        .find((signal) => signal.trim().length > 0) ||
+      "Evidence-linked PR activity is present in this discipline.";
+
+    out[discipline] = {
+      discipline: titleCaseDiscipline(discipline),
+      summary: `${related.length} scored PRs produced ${totalXP} XP in this discipline.`,
+      evidence: topEvidence,
+      confidence: confidenceFromSampleSize(related.length),
+    };
+  }
+  return out;
 }
 
 async function generateGeminiInsights(
@@ -254,6 +306,7 @@ function buildGeminiPrompt(input: AbraInsightsRequest): string {
     "- identity_summary: 2-3 sentences about strengths, momentum, and evidence posture.",
     "- contributions[]: one item per contribution id with what/why/signal/pitch.",
     "- badges[]: one item per badge id with story/trigger/next_focus.",
+    "- skill_assessment[]: one item per discipline with discipline/summary/evidence/confidence.",
     "- Keep every field <= 240 characters.",
   ].join("\n");
 }
@@ -294,8 +347,22 @@ function abraResponseSchema() {
           required: ["id", "story", "trigger", "next_focus"],
         },
       },
+      skill_assessment: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            discipline: { type: "string" },
+            summary: { type: "string" },
+            evidence: { type: "string" },
+            confidence: { type: "string", enum: ["high", "medium", "emerging"] },
+          },
+          required: ["discipline", "summary", "evidence", "confidence"],
+        },
+      },
     },
-    required: ["archetype", "identity_summary", "contributions", "badges"],
+    required: ["archetype", "identity_summary", "contributions", "badges", "skill_assessment"],
   };
 }
 
@@ -334,12 +401,34 @@ function normalizeGeminiResponse(input: GeminiInsightsShape): AbraInsightsRespon
     }
   }
 
+  const skillInsights: Record<string, SkillInsight> = {};
+  if (Array.isArray(input.skill_assessment)) {
+    for (const item of input.skill_assessment) {
+      const row = item as GeminiSkillItem;
+      const discipline = nonEmptyString(row.discipline);
+      const key = normalizeDisciplineKey(discipline);
+      if (!key) continue;
+      const confidence = confidenceFromString(row.confidence);
+      skillInsights[key] = {
+        discipline: discipline || titleCaseDiscipline(key),
+        summary:
+          nonEmptyString(row.summary) ||
+          "Scored PR evidence indicates repeated contribution quality in this lane.",
+        evidence:
+          nonEmptyString(row.evidence) ||
+          "Evidence signals were derived from scored PR metadata and explanations.",
+        confidence,
+      };
+    }
+  }
+
   return {
     generatedBy: "gemini",
     archetype,
     identitySummary,
     contributionNarratives,
     badgeStories,
+    skillInsights,
   };
 }
 
@@ -355,6 +444,10 @@ function mergeInsights(
     ...fallback.badgeStories,
     ...generated.badgeStories,
   };
+  const skillInsights: Record<string, SkillInsight> = {
+    ...fallback.skillInsights,
+    ...generated.skillInsights,
+  };
 
   return {
     generatedBy: generated.generatedBy,
@@ -362,7 +455,47 @@ function mergeInsights(
     identitySummary: generated.identitySummary || fallback.identitySummary,
     contributionNarratives,
     badgeStories,
+    skillInsights,
   };
+}
+
+function normalizeDisciplineKey(value: string): string {
+  const normalized = value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  if (!normalized) {
+    return "";
+  }
+  if (normalized.includes("doc")) return "documentation";
+  if (normalized.includes("test")) return "testing";
+  if (normalized.includes("bug")) return "bug fix";
+  if (normalized.includes("infra") || normalized.includes("devops")) return "infrastructure";
+  if (normalized.includes("security")) return "security";
+  if (normalized.includes("performance")) return "performance";
+  if (normalized.includes("architecture")) return "architecture";
+  if (normalized.includes("review")) return "review";
+  if (normalized.includes("front")) return "frontend";
+  if (normalized.includes("backend")) return "backend";
+  return normalized;
+}
+
+function titleCaseDiscipline(value: string): string {
+  return value
+    .split(" ")
+    .filter((part) => part.length > 0)
+    .map((part) => part[0].toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function confidenceFromSampleSize(samples: number): "high" | "medium" | "emerging" {
+  if (samples >= 4) return "high";
+  if (samples >= 2) return "medium";
+  return "emerging";
+}
+
+function confidenceFromString(value: unknown): "high" | "medium" | "emerging" {
+  if (value === "high" || value === "medium" || value === "emerging") {
+    return value;
+  }
+  return "emerging";
 }
 
 function nonEmptyString(value: unknown): string {

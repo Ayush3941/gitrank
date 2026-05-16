@@ -8,6 +8,7 @@ BACKEND_ENV_FILE="$BACKEND_DIR/.env"
 FRONTEND_ENV_FILE="$FRONTEND_DIR/.env.local"
 LOG_DIR="$ROOT_DIR/.logs"
 RUN_DIR="$ROOT_DIR/.run"
+BIN_DIR="$RUN_DIR/bin"
 COMPOSE_FILE="$BACKEND_DIR/deployments/compose/compose.yaml"
 
 BACKEND_SERVICES=(
@@ -91,6 +92,7 @@ need_cmd openssl
 need_cmd lsof
 
 mkdir -p "$LOG_DIR" "$RUN_DIR"
+mkdir -p "$BIN_DIR"
 
 if [[ ! -f "$BACKEND_ENV_FILE" ]]; then
   log "creating backend env from template: $BACKEND_ENV_FILE"
@@ -142,6 +144,8 @@ kill_pid_file "$RUN_DIR/frontend.pid"
 for svc in "${BACKEND_SERVICES[@]}"; do
   kill_pid_file "$RUN_DIR/$svc.pid"
 done
+pkill -f "node .*next dev" >/dev/null 2>&1 || true
+pkill -f "/home/kali/Desktop/gitrank/.run/bin/" >/dev/null 2>&1 || true
 
 log "freeing local app ports"
 for port in 3000 8080 8081 8082 8083 8084 8085 8086; do
@@ -166,8 +170,10 @@ log "starting backend services"
 for svc in "${BACKEND_SERVICES[@]}"; do
   (
     cd "$BACKEND_DIR"
-    nohup go run "./services/$svc/cmd/$svc" >"$LOG_DIR/$svc.log" 2>&1 &
-    echo "$!" >"$RUN_DIR/$svc.pid"
+    go build -o "$BIN_DIR/$svc" "./services/$svc/cmd/$svc"
+    nohup "$BIN_DIR/$svc" >"$LOG_DIR/$svc.log" 2>&1 &
+    pid="$!"
+    echo "$pid" >"$RUN_DIR/$svc.pid"
   )
   sleep 0.5
 done
@@ -183,7 +189,7 @@ fi
 log "starting frontend dev server"
 (
   cd "$FRONTEND_DIR"
-  nohup npm run dev >"$LOG_DIR/frontend.log" 2>&1 &
+  nohup npm run dev -- --port 3000 >"$LOG_DIR/frontend.log" 2>&1 &
   echo "$!" >"$RUN_DIR/frontend.pid"
 )
 

@@ -67,6 +67,8 @@ query GitRankRepositoryPullRequestBatch($owner: String!, $name: String!, $first:
 
 type githubGraphQLClientFactory func(githubapi.TokenSource) (*githubapi.GraphQLClient, error)
 
+type githubRESTClientFactory func(githubapi.TokenSource) (*githubapi.RESTClient, error)
+
 type githubGraphQLTokenSource func(context.Context, SyncRequestActor, time.Time) (githubapi.TokenSource, bool, error)
 
 type githubGraphQLPullRequestBatchData struct {
@@ -160,6 +162,23 @@ func newGitHubGraphQLClientFactory(cfg config.App) githubGraphQLClientFactory {
 	}
 }
 
+func newGitHubRESTClientFactory(cfg config.App) githubRESTClientFactory {
+	return func(tokenSource githubapi.TokenSource) (*githubapi.RESTClient, error) {
+		return githubapi.NewRESTClient(githubapi.ClientConfig{
+			BaseURL:                        cfg.GitHub.APIBaseURL,
+			APIVersion:                     cfg.GitHub.APIVersion,
+			UserAgent:                      cfg.GitHub.UserAgent,
+			TokenSource:                    tokenSource,
+			HTTPClient:                     &http.Client{Timeout: cfg.GitHub.RequestTimeout},
+			SecondaryBackoff:               cfg.GitHub.SecondaryBackoff,
+			MaxConcurrency:                 cfg.GitHub.MaxConcurrency,
+			CircuitBreakerFailureThreshold: cfg.GitHub.CircuitBreakerFailureThreshold,
+			CircuitBreakerOpenInterval:     cfg.GitHub.CircuitBreakerOpenInterval,
+			CircuitBreakerHalfOpenMax:      cfg.GitHub.CircuitBreakerHalfOpenMax,
+		})
+	}
+}
+
 func (e *Executor) graphQLTokenSourceForActor(ctx context.Context, actor SyncRequestActor, now time.Time) (githubapi.TokenSource, bool, error) {
 	if e == nil || e.store == nil || e.store.pool == nil || len(e.oauthTokenKeys) == 0 {
 		return nil, false, nil
@@ -197,6 +216,37 @@ func (e *Executor) graphQLClientForActor(ctx context.Context, actor SyncRequestA
 		return nil, false, err
 	}
 	return client, true, nil
+}
+
+func (e *Executor) restClientForActor(ctx context.Context, actor SyncRequestActor, now time.Time) (*githubapi.RESTClient, bool, error) {
+	if e == nil || e.graphqlTokenSource == nil || e.restClientFactory == nil {
+		return nil, false, nil
+	}
+	tokenSource, ok, err := e.graphqlTokenSource(ctx, actor, now)
+	if err != nil || !ok {
+		return nil, false, err
+	}
+	client, err := e.restClientFactory(tokenSource)
+	if err != nil {
+		return nil, false, err
+	}
+	return client, true, nil
+}
+
+func (e *Executor) executorForActor(ctx context.Context, actor SyncRequestActor, now time.Time) (*Executor, error) {
+	if e == nil {
+		return nil, nil
+	}
+	client, ok, err := e.restClientForActor(ctx, actor, now)
+	if err != nil {
+		return nil, err
+	}
+	if !ok || client == nil {
+		return e, nil
+	}
+	clone := *e
+	clone.client = client
+	return &clone, nil
 }
 
 func (e *Executor) fetchPullRequestsGraphQL(

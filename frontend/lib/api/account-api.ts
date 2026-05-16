@@ -145,6 +145,23 @@ export async function runRepositorySync(
   return adaptJSON<ApiSyncExecutionResponse>(response, "Repository sync failed.");
 }
 
+export async function runUserSync(user?: string): Promise<ApiSyncExecutionResponse> {
+  const csrfToken = requireCSRFToken();
+  const response = await fetch("/api/sync/user", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
+    },
+    credentials: "same-origin",
+    cache: "no-store",
+    body: JSON.stringify({
+      user,
+    }),
+  });
+  return adaptJSON<ApiSyncExecutionResponse>(response, "User sync failed.");
+}
+
 export async function runInstallationSync(
   installationId: number,
 ): Promise<ApiSyncExecutionResponse> {

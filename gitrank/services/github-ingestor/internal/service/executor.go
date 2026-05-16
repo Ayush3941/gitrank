@@ -32,6 +32,7 @@ type Executor struct {
 	client               *githubapi.RESTClient
 	repositoryCache      *repositoryMetadataCache
 	oauthTokenKeys       [][]byte
+	restClientFactory    githubRESTClientFactory
 	graphqlClientFactory githubGraphQLClientFactory
 	graphqlTokenSource   githubGraphQLTokenSource
 	installationClient   githubInstallationClientFactory
@@ -44,6 +45,7 @@ func NewExecutor(cfg config.App, pool *pgxpool.Pool, client *githubapi.RESTClien
 		client:               client,
 		repositoryCache:      newRepositoryMetadataCache(cfg.GitHub.RepositoryCacheTTL),
 		oauthTokenKeys:       decodeOptionalOAuthTokenKeys(cfg),
+		restClientFactory:    newGitHubRESTClientFactory(cfg),
 		graphqlClientFactory: newGitHubGraphQLClientFactory(cfg),
 		installationClient:   newGitHubInstallationClientFactory(cfg),
 	}
@@ -85,26 +87,31 @@ func (e *Executor) SyncRepository(
 	if err != nil {
 		return response, err
 	}
-
-	repository, err := e.fetchRepository(ctx, owner, name)
+	runtime, err := e.executorForActor(ctx, actor, startedAt)
 	if err != nil {
 		_ = e.recordFailedSyncRun(ctx, req.Repository, req, actor, correlationID, startedAt, err)
 		return response, err
 	}
 
-	pullRequests, reviewsByNumber, err := e.fetchPullRequests(ctx, owner, name, actor)
+	repository, err := runtime.fetchRepository(ctx, owner, name)
 	if err != nil {
 		_ = e.recordFailedSyncRun(ctx, req.Repository, req, actor, correlationID, startedAt, err)
 		return response, err
 	}
 
-	issues, err := e.fetchIssues(ctx, owner, name)
+	pullRequests, reviewsByNumber, err := runtime.fetchPullRequests(ctx, owner, name, actor)
 	if err != nil {
 		_ = e.recordFailedSyncRun(ctx, req.Repository, req, actor, correlationID, startedAt, err)
 		return response, err
 	}
 
-	commits, err := e.fetchCommits(ctx, owner, name)
+	issues, err := runtime.fetchIssues(ctx, owner, name)
+	if err != nil {
+		_ = e.recordFailedSyncRun(ctx, req.Repository, req, actor, correlationID, startedAt, err)
+		return response, err
+	}
+
+	commits, err := runtime.fetchCommits(ctx, owner, name)
 	if err != nil {
 		_ = e.recordFailedSyncRun(ctx, req.Repository, req, actor, correlationID, startedAt, err)
 		return response, err
@@ -233,13 +240,18 @@ func (e *Executor) SyncUser(
 	if !isValidGitHubLogin(user) {
 		return response, fmt.Errorf("user must be a GitHub login")
 	}
-
-	repositories, err := e.fetchUserRepositories(ctx, user)
+	runtime, err := e.executorForActor(ctx, actor, startedAt)
 	if err != nil {
 		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, PersistResult{})
 		return response, err
 	}
-	authoredPullRequests, authoredSearchIncomplete, err := e.fetchAuthoredPullRequestTargets(ctx, user)
+
+	repositories, err := runtime.fetchUserRepositories(ctx, user)
+	if err != nil {
+		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, PersistResult{})
+		return response, err
+	}
+	authoredPullRequests, authoredSearchIncomplete, err := runtime.fetchAuthoredPullRequestTargets(ctx, user)
 	if err != nil {
 		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, PersistResult{})
 		return response, err
@@ -261,7 +273,7 @@ func (e *Executor) SyncUser(
 		if fullName == "" {
 			continue
 		}
-		child, err := e.SyncRepository(ctx, contracts.SyncRequest{
+		child, err := runtime.SyncRepository(ctx, contracts.SyncRequest{
 			Mode:       "repository",
 			Repository: fullName,
 		}, actor, fmt.Sprintf("%s:repo:%d", baseCorrelationID, index+1), time.Now().UTC())
@@ -279,7 +291,7 @@ func (e *Executor) SyncUser(
 		if target.Repository == "" || target.Number <= 0 {
 			continue
 		}
-		child, err := e.SyncPullRequest(ctx, contracts.SyncRequest{
+		child, err := runtime.SyncPullRequest(ctx, contracts.SyncRequest{
 			Mode:       "pull_request",
 			Repository: target.Repository,
 			Number:     target.Number,

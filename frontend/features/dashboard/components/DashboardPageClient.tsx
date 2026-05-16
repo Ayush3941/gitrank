@@ -139,7 +139,11 @@ export function DashboardPageClient() {
           <ScoreExplanationCard user={user} />
         </div>
         <div className="space-y-6">
-          <SkillBreakdownCard user={user} />
+          <SkillBreakdownCard
+            user={user}
+            skillInsights={abraInsights.data?.skillInsights}
+            aiMode={abraInsights.data?.generatedBy}
+          />
           <RecentBattleReports reports={recentReports} />
         </div>
       </div>

@@ -8,6 +8,7 @@ import {
   queueSyncRequest,
   runInstallationSync,
   runRepositorySync,
+  runUserSync,
   startAccountLink,
   requestProfileSync,
   type QueueSyncInput,
@@ -48,6 +49,17 @@ export function useRunRepositorySync() {
 
   return useMutation({
     mutationFn: (repository: string) => runRepositorySync(repository),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: myProfileQueryKey });
+    },
+  });
+}
+
+export function useRunUserSync() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (user?: string) => runUserSync(user),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: myProfileQueryKey });
     },

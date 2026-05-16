@@ -57,10 +57,18 @@ export type BadgeStory = {
   nextFocus: string;
 };
 
+export type SkillInsight = {
+  discipline: string;
+  summary: string;
+  evidence: string;
+  confidence: "high" | "medium" | "emerging";
+};
+
 export type AbraInsightsResponse = {
   generatedBy: "gemini" | "deterministic";
   archetype: string;
   identitySummary: string;
   contributionNarratives: Record<string, ContributionNarrative>;
   badgeStories: Record<string, BadgeStory>;
+  skillInsights: Record<string, SkillInsight>;
 };

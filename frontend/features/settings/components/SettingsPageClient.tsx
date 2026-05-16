@@ -16,11 +16,11 @@ import {
   useDeleteMyAccount,
   useExportMyAccountData,
   useLogoutSession,
+  useRunUserSync,
   useRunInstallationSync,
   useRunRepositorySync,
   useQueueSyncRequest,
   useStartAccountLink,
-  useRequestProfileSync,
   useUnlinkMyAccount,
 } from "@/hooks/use-account-actions";
 import {
@@ -46,7 +46,7 @@ export function SettingsPageClient() {
   const { data, isLoading, isError } = useMyProfile();
   const updatePrivacy = useUpdateProfilePrivacy();
   const updateRepositoryVisibility = useUpdateRepositoryVisibility();
-  const requestSync = useRequestProfileSync();
+  const userSync = useRunUserSync();
   const unlinkAccount = useUnlinkMyAccount();
   const deleteAccount = useDeleteMyAccount();
   const exportAccount = useExportMyAccountData();
@@ -85,7 +85,7 @@ export function SettingsPageClient() {
     (updateRepositoryVisibility.error as Error | null)?.message ||
     "";
   const actionError =
-    (requestSync.error as Error | null)?.message ||
+    (userSync.error as Error | null)?.message ||
     (logoutSession.error as Error | null)?.message ||
     (unlinkAccount.error as Error | null)?.message ||
     (deleteAccount.error as Error | null)?.message ||
@@ -97,7 +97,7 @@ export function SettingsPageClient() {
     "";
   const isSaving = updatePrivacy.isPending || updateRepositoryVisibility.isPending;
   const isActing =
-    requestSync.isPending ||
+    userSync.isPending ||
     logoutSession.isPending ||
     unlinkAccount.isPending ||
     deleteAccount.isPending ||
@@ -107,6 +107,7 @@ export function SettingsPageClient() {
     repositorySync.isPending ||
     installationSync.isPending;
   const pendingRepository = updateRepositoryVisibility.variables?.fullName ?? null;
+  const profileUsername = data.user.username;
 
   function handlePrivacyToggle(key: BackedPrivacyKey, checked: boolean) {
     if (key === "reducedGamification") {
@@ -117,11 +118,13 @@ export function SettingsPageClient() {
 
   function handleSyncRequest() {
     setActionNotice("");
-    requestSync.mutate(undefined, {
+    userSync.mutate(profileUsername, {
       onSuccess: (result) => {
-        const acceptedAt = new Date(result.accepted_at).toLocaleString();
+        const finishedAt = new Date(result.finished_at).toLocaleString();
+        const fetched = formatCountMap(result.fetched);
+        const persisted = formatCountMap(result.persisted);
         setActionNotice(
-          `Sync queued at ${acceptedAt}. The latest verified snapshot stays visible until the refresh finishes.`,
+          `User sync completed at ${finishedAt}. fetched ${fetched} • persisted ${persisted}.`,
         );
       },
     });
@@ -327,7 +330,7 @@ export function SettingsPageClient() {
         <div className="flex flex-wrap gap-3">
           <Button disabled={isActing} onClick={handleSyncRequest}>
             <RefreshCcw className="h-4 w-4" />
-            {requestSync.isPending ? "Queueing sync..." : "Sync now"}
+            {userSync.isPending ? "Running sync..." : "Sync now"}
           </Button>
           <Button variant="secondary" disabled={isActing} onClick={handleAccountRelink}>
             <FolderGit2 className="h-4 w-4" />
@@ -411,7 +414,7 @@ export function SettingsPageClient() {
         <div className="flex flex-wrap gap-3">
           <Button disabled={isActing} onClick={handleSyncRequest}>
             <RefreshCcw className="h-4 w-4" />
-            {requestSync.isPending ? "Queueing refresh..." : "Refresh analysis"}
+            {userSync.isPending ? "Running refresh..." : "Refresh analysis"}
           </Button>
           <Button variant="secondary" disabled={isActing} onClick={handleExportAccountData}>
             <Download className="h-4 w-4" />

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, LoaderCircle, RefreshCcw } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Button } from "@/components/ui/button";
-import { useRequestProfileSync } from "@/hooks/use-account-actions";
+import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useMyProfile } from "@/hooks/use-profile";
 import { formatRelativeDays } from "@/lib/formatters";
 
@@ -22,8 +22,8 @@ const steps = [
 
 export function SyncPipeline() {
   const { data, isLoading, isError, refetch } = useMyProfile();
-  const requestSync = useRequestProfileSync();
-  const [syncQueuedAt, setSyncQueuedAt] = useState<string | null>(null);
+  const userSync = useRunUserSync();
+  const [syncStartedAt, setSyncStartedAt] = useState<string | null>(null);
   const autoRequestedRef = useRef(false);
   const syncState = data?.user.syncStatus.state ?? "stale";
   const isSynced = syncState === "synced";
@@ -36,15 +36,15 @@ export function SyncPipeline() {
     if (data.user.syncStatus.state === "synced") {
       return;
     }
-    requestSync.mutate(undefined, {
+    userSync.mutate(data.user.username, {
       onSuccess: (result) => {
-        setSyncQueuedAt(result.accepted_at);
+        setSyncStartedAt(result.started_at);
       },
     });
-  }, [data, isError, isLoading, requestSync]);
+  }, [data, isError, isLoading, userSync]);
 
   useEffect(() => {
-    if (!syncQueuedAt || isSynced) {
+    if (!syncStartedAt || isSynced) {
       return;
     }
     const timer = window.setInterval(() => {
@@ -53,19 +53,19 @@ export function SyncPipeline() {
     return () => {
       window.clearInterval(timer);
     };
-  }, [isSynced, refetch, syncQueuedAt]);
+  }, [isSynced, refetch, syncStartedAt]);
 
   const completedSteps =
-    isSynced ? steps.length : syncQueuedAt || requestSync.isPending ? 3 : 1;
+    isSynced ? steps.length : syncStartedAt || userSync.isPending ? 3 : 1;
 
   const actionError =
-    (requestSync.error as Error | null)?.message ||
+    (userSync.error as Error | null)?.message ||
     (isError ? "Authenticated profile snapshot is unavailable." : "");
 
-  function handleQueueSync() {
-    requestSync.mutate(undefined, {
+  function handleRunSync() {
+    userSync.mutate(data?.user.username, {
       onSuccess: (result) => {
-        setSyncQueuedAt(result.accepted_at);
+        setSyncStartedAt(result.started_at);
         void refetch();
       },
     });
@@ -86,9 +86,9 @@ export function SyncPipeline() {
               {formatRelativeDays(data.refreshedAt)}
             </p>
           ) : null}
-          {syncQueuedAt ? (
+          {syncStartedAt ? (
             <p className="text-sm text-cyan-100">
-              Sync queued at {new Date(syncQueuedAt).toLocaleString()}.
+              Sync run started at {new Date(syncStartedAt).toLocaleString()}.
             </p>
           ) : null}
           {actionError ? <p className="text-sm text-rose-200">{actionError}</p> : null}
@@ -127,13 +127,13 @@ export function SyncPipeline() {
           <Button
             variant="secondary"
             onClick={() => void refetch()}
-            disabled={isLoading || requestSync.isPending}
+            disabled={isLoading || userSync.isPending}
           >
             <RefreshCcw className="h-4 w-4" />
             Refresh status
           </Button>
-          <Button onClick={handleQueueSync} disabled={requestSync.isPending}>
-            {requestSync.isPending ? "Queueing sync..." : "Queue sync now"}
+          <Button onClick={handleRunSync} disabled={userSync.isPending}>
+            {userSync.isPending ? "Running sync..." : "Run sync now"}
           </Button>
           {isSynced ? (
             <>
