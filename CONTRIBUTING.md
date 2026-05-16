@@ -165,6 +165,35 @@ Every PR should include:
 - known limitations
 - follow-up work if the change is incomplete
 
+## Frontend No-Slowdown Rules (Required)
+
+Any UI change must preserve responsiveness on low-end laptops and avoid adding
+runtime-heavy effects.
+
+Required guardrails:
+
+- Keep animation minimal on product routes (`/dashboard`, `/contributions`, `/badges`, `/quests`, `/settings`, `/leaderboard`).
+- Avoid continuous/repeating motion loops in core layouts, cards, tables, and nav surfaces.
+- Prefer static visuals over runtime visual effects (for example heavy blur stacks, multi-layer glow animations, and JS-driven parallax).
+- Use transitions only for state clarity; keep them short and limited to `opacity` and `transform` when possible.
+- Do not block first meaningful render on optional data. Non-critical enrichments (AI summaries, secondary panels, decorative stats) must degrade gracefully.
+- Keep contribution/profile payloads bounded; do not remove the recent-history cap without performance evidence and a fallback strategy.
+- Avoid production polling loops that can amplify CPU/network load. Use event-driven updates or conservative intervals when background refresh is required.
+- Never re-introduce mock adapters into production frontend data paths.
+
+Frontend PR verification (required before merge):
+
+```bash
+cd frontend
+npm run lint
+npm run build
+npm run check:no-production-mocks
+npm run test:smoke
+```
+
+If a PR touches rendering-heavy components, include a short before/after note in
+the PR description describing expected UX/performance impact.
+
 ### Review expectations
 
 - Review for correctness first.
