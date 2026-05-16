@@ -3,7 +3,9 @@ import { FolderGit2, LockKeyhole, Sparkles } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Button } from "@/components/ui/button";
 
-export function LoginPanel() {
+export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
+  const oauthURL = `/oauth/github/start?return_to=${encodeURIComponent(returnTo)}`;
+
   return (
     <main className="mx-auto max-w-4xl">
       <GlowCard strong className="grid gap-6 lg:grid-cols-[1fr,0.9fr]">
@@ -18,7 +20,7 @@ export function LoginPanel() {
           </p>
           <div className="flex flex-wrap gap-3">
             <Button asChild size="lg">
-              <Link href="/onboarding/connect-github">
+              <Link href={oauthURL}>
                 <FolderGit2 className="h-4 w-4" />
                 Continue with GitHub
               </Link>

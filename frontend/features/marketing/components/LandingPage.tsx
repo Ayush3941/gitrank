@@ -1,10 +1,8 @@
 import Link from "next/link";
 import { ArrowRight, ChartNoAxesCombined, GitPullRequestArrow, ShieldCheck, Sparkles, Swords, Trophy } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
-import { RarityBadge } from "@/components/shared/RarityBadge";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { Button } from "@/components/ui/button";
-import { marketingSample } from "@/features/marketing/data/sample";
 
 const loop = [
   "Connect GitHub",
@@ -16,8 +14,6 @@ const loop = [
 ];
 
 export function LandingPage() {
-  const { highlightedBadges, report } = marketingSample;
-
   return (
     <main className="space-y-8">
       <section className="glass-panel-strong panel-grid overflow-hidden rounded-[2rem] px-6 py-10 sm:px-10 sm:py-14">
@@ -37,7 +33,7 @@ export function LandingPage() {
             </div>
             <div className="flex flex-wrap gap-3">
               <Button asChild size="lg">
-                <Link href="/onboarding/connect-github">
+                <Link href="/oauth/github/start?return_to=/dashboard">
                   Connect GitHub
                   <ArrowRight className="h-4 w-4" />
                 </Link>
@@ -140,22 +136,16 @@ export function LandingPage() {
             description="The scoring model stays visible. High XP only lands when the work had difficulty, context, review credibility, and clearly surfaced uncertainty."
           />
           <div className="neon-tile rounded-[1.75rem] p-5">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-sm text-muted">{report.owner}/{report.repo} #{report.number}</p>
-                <h3 className="mt-2 text-xl font-semibold text-white">{report.title}</h3>
-              </div>
-              <div className="text-right">
-                <p className="text-xs tracking-[0.24em] text-primary uppercase">{report.category}</p>
-                <p className="mt-2 text-3xl font-semibold text-white">{report.xpEarned} XP</p>
-              </div>
-            </div>
+            <p className="text-sm text-cyan-200">Live report cards unlock after OAuth and sync.</p>
+            <h3 className="mt-2 text-xl font-semibold text-white">No synthetic PR data is shown on this screen.</h3>
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
-              <Metric label="Difficulty" value={report.difficultyScore} />
-              <Metric label="Impact" value={report.impactScore} />
-              <Metric label="Review depth" value={report.reviewDepthScore} />
+              <Metric label="Difficulty" value="Live" />
+              <Metric label="Impact" value="Live" />
+              <Metric label="Review depth" value="Live" />
             </div>
-            <p className="mt-5 text-sm text-muted">{report.aiSummary}</p>
+            <p className="mt-5 text-sm text-muted">
+              Once connected, this section shows real PR score components, evidence state, and AI explanation with deterministic fallback.
+            </p>
           </div>
         </GlowCard>
 
@@ -166,11 +156,18 @@ export function LandingPage() {
             description="Badges are unlocked by sustained evidence. Legendary badges stay locked until the work deserves them."
           />
           <div className="grid gap-3 sm:grid-cols-2">
-            {highlightedBadges.map((badge) => (
-              <div key={badge.id} className="neon-surface rounded-[1.75rem] p-4">
-                <RarityBadge rarity={badge.rarity} />
-                <h3 className="mt-3 text-lg font-semibold text-white">{badge.name}</h3>
-                <p className="mt-2 text-sm text-muted">{badge.description}</p>
+            {[
+              "Merged contribution cadence",
+              "Review depth consistency",
+              "Testing and reliability signal",
+              "Cross-repository impact",
+            ].map((lane) => (
+              <div key={lane} className="neon-surface rounded-[1.75rem] p-4">
+                <p className="text-xs tracking-[0.24em] text-primary uppercase">Badge lane</p>
+                <h3 className="mt-3 text-lg font-semibold text-white">{lane}</h3>
+                <p className="mt-2 text-sm text-muted">
+                  This lane remains locked until real evidence is ingested from your GitHub history.
+                </p>
               </div>
             ))}
           </div>
@@ -199,7 +196,7 @@ export function LandingPage() {
             <p className="max-w-2xl text-sm text-slate-200/80">The goal is a legible contribution snapshot, not an absolute ranking of developer worth.</p>
           </div>
           <Button asChild size="lg">
-            <Link href="/onboarding/connect-github">Start the reveal</Link>
+            <Link href="/oauth/github/start?return_to=/dashboard">Start the reveal</Link>
           </Button>
         </GlowCard>
       </section>
@@ -207,7 +204,7 @@ export function LandingPage() {
   );
 }
 
-function Metric({ label, value }: { label: string; value: number }) {
+function Metric({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="neon-metric rounded-3xl px-4 py-3">
       <p className="text-xs tracking-[0.24em] text-muted uppercase">{label}</p>

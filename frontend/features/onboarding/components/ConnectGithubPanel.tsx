@@ -30,10 +30,10 @@ export function ConnectGithubPanel() {
         </div>
         <div className="flex flex-wrap gap-3">
           <Button asChild size="lg">
-            <Link href="/onboarding/analyzing">Connect GitHub</Link>
+            <Link href="/oauth/github/start?return_to=/dashboard">Connect GitHub</Link>
           </Button>
           <Button asChild variant="secondary" size="lg">
-            <Link href="/leaderboard">Explore leaderboard first</Link>
+            <Link href="/">Back to landing</Link>
           </Button>
         </div>
       </GlowCard>

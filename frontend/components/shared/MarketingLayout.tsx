@@ -20,7 +20,7 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
           </Link>
           <div className="flex items-center gap-3">
             <Button asChild>
-              <Link href="/onboarding/connect-github">
+              <Link href="/oauth/github/start?return_to=/dashboard">
                 Connect GitHub
                 <ArrowUpRight className="h-4 w-4" />
               </Link>

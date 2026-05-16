@@ -35,7 +35,7 @@ Dark-first Next.js frontend for GitRank, an evidence-backed open-source reputati
 - `components/ui/`: reusable primitives
 - `components/shared/`: layout shell, cards, charts, states, and navigation
 - `features/*/components/`: page and feature modules
-- `features/*/data/`: feature-local constants and clearly labeled marketing sample data
+- `features/*/data/`: feature-local constants
 - `hooks/`: TanStack Query hooks
 - `lib/api/`: live frontend BFF clients for profile, quests, leaderboard, account actions, sync, and PR reports
 - `types/gitrank.ts`: domain model types
@@ -82,7 +82,7 @@ The public profile page, authenticated dashboard overview, onboarding reveal, ba
 
 The gamified UI adds season metadata, rank-progress cards, player-card profile presentation, quest recommendation evidence, badge rarity styling, and PR battle-report explanation panels. The interface now uses a consistent neon/cyberpunk visual language across dashboard tabs, onboarding, public profile internals, PR report internals, and chart surfaces while preserving reduced-gamification accessibility behavior. Live leaderboard season metadata now comes from the gateway response window when available; final scoring still comes from backend score/profile snapshots.
 
-The marketing landing page uses a dedicated sample fixture under `features/marketing/data/`; it does not import authenticated profile data or any mock app route dataset.
+The marketing landing page avoids synthetic contributor identities and does not import authenticated profile data or any mock app route dataset.
 
 The settings page includes an account-backed reduced-gamification display preference. Authenticated dashboard and reveal flows apply the value from the live profile response, mirror it into browser `localStorage` for immediate rendering, respect OS reduced-motion intent in animated components, and do not change score, badge, or leaderboard state.
 
@@ -108,6 +108,19 @@ If you expose a non-default CSRF cookie name to the browser, also set:
 ```bash
 NEXT_PUBLIC_GITRANK_CSRF_COOKIE_NAME=gitrank_csrf
 ```
+
+The OAuth proxy defaults to auth-service at `http://localhost:8081`:
+
+```bash
+GITRANK_AUTH_BASE_URL=http://localhost:8081
+```
+
+GitHub auth is initiated and completed through frontend routes:
+
+- `GET /oauth/github/start`
+- `GET /oauth/github/callback`
+
+These routes proxy to auth-service and preserve auth cookies on the frontend origin.
 
 ## Optional Gemini ABRA Insights
 

@@ -47,7 +47,7 @@ export function DashboardTopBarUnavailable() {
         Authenticated profile unavailable
       </div>
       <Link
-        href="/login"
+        href="/login?return_to=/dashboard"
         className="focus-ring cyber-link inline-flex items-center gap-2 text-sm font-medium"
       >
         Reconnect GitHub
