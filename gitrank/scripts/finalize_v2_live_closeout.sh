@@ -88,6 +88,18 @@ get_prefixed_or_default() {
   fi
 }
 
+is_placeholder_value() {
+  value=$1
+  case "$value" in
+    ""|OWNER/REPO|replace-me*|changeme*|*your-env.example*|*YYYY-MM-DD*|*your-cluster*|*your-name*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 require_env_specific_k8s_overrides() {
   [ "$RUN_K8S_RUNTIME" = "true" ] || return 0
   [ "$VERIFY_FROM_WORKFLOW" != "true" ] || return 0
@@ -162,6 +174,9 @@ render_for_environment() {
 
 resolve_github_admin_token() {
   token_candidate="${GITHUB_TOKEN:-${GH_TOKEN:-${GITRANK_REPO_ADMIN_TOKEN:-}}}"
+  if is_placeholder_value "$token_candidate"; then
+    token_candidate=
+  fi
   if [ -n "$token_candidate" ]; then
     export GITHUB_TOKEN="$token_candidate"
     export GH_TOKEN="$token_candidate"
@@ -324,9 +339,6 @@ if [ "$VERIFY_FROM_WORKFLOW" = "true" ]; then
   readiness_run_observability=false
 fi
 
-generate_observability_evidence_if_needed
-generate_rollback_restore_evidence_if_needed
-
 if [ "$RUN_GITHUB_CONTROLS" = "true" ] && [ "$VERIFY_FROM_WORKFLOW" != "true" ]; then
   resolve_github_admin_token
   RUN_GITHUB_CONTROLS=true run_make verify-live-v2-inputs
@@ -336,6 +348,9 @@ fi
 if [ "$RUN_OBSERVABILITY" = "true" ] && [ "$VERIFY_FROM_WORKFLOW" != "true" ]; then
   RUN_OBSERVABILITY=true run_make verify-live-v2-inputs
 fi
+
+generate_observability_evidence_if_needed
+generate_rollback_restore_evidence_if_needed
 
 RUN_LOCAL_STATIC="$RUN_LOCAL_STATIC" \
 RUN_PUBLIC_WORKFLOW_HEALTH="$RUN_PUBLIC_WORKFLOW_HEALTH" \

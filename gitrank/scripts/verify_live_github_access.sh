@@ -19,6 +19,18 @@ fail() {
   exit 1
 }
 
+is_placeholder_value() {
+  value=$1
+  case "$value" in
+    ""|OWNER/REPO|replace-me*|changeme*|*your-env.example*|*YYYY-MM-DD*|*your-cluster*|*your-name*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 require_command() {
   command -v "$1" >/dev/null 2>&1 || fail "missing required command: $1"
 }
@@ -38,6 +50,22 @@ resolve_repository_from_git_remote() {
 }
 
 resolve_repository_from_git_remote
+
+if is_placeholder_value "$TOKEN"; then
+  TOKEN=
+fi
+if is_placeholder_value "$GITHUB_APP_ID"; then
+  GITHUB_APP_ID=
+fi
+if is_placeholder_value "$GITHUB_APP_INSTALLATION_ID"; then
+  GITHUB_APP_INSTALLATION_ID=
+fi
+if is_placeholder_value "$GITHUB_APP_PRIVATE_KEY_FILE"; then
+  GITHUB_APP_PRIVATE_KEY_FILE=
+fi
+if is_placeholder_value "$GITHUB_APP_PRIVATE_KEY_PEM"; then
+  GITHUB_APP_PRIVATE_KEY_PEM=
+fi
 
 bootstrap_token_from_github_app() {
   [ -n "$TOKEN" ] && return 0
