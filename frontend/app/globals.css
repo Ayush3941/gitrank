@@ -19,7 +19,7 @@
   --cyber-grid: 34 226 255;
   --cyber-grid-alt: 244 114 255;
   --cyber-lime: 133 255 196;
-  --radius-card: 1.5rem;
+  --radius-card: 0.1rem;
 }
 
 @theme inline {
@@ -42,13 +42,6 @@
   border-color: rgb(var(--line) / 0.7);
 }
 
-*,
-*::before,
-*::after {
-  animation: none !important;
-  transition: none !important;
-}
-
 html {
   min-height: 100%;
   scroll-behavior: smooth;
@@ -59,10 +52,8 @@ body {
   overflow-x: hidden;
   min-height: 100vh;
   background:
-    radial-gradient(circle at 12% 0%, rgb(var(--cyber-grid) / 0.33), transparent 28%),
-    radial-gradient(circle at 92% 4%, rgb(var(--cyber-grid-alt) / 0.3), transparent 25%),
-    radial-gradient(circle at 46% 118%, rgb(var(--cyber-lime) / 0.13), transparent 44%),
-    linear-gradient(180deg, rgb(0 3 12), rgb(var(--background)));
+    linear-gradient(180deg, rgb(0 3 12 / 0.72), rgb(var(--background) / 0.82)),
+    url("../assets/background.jpg") center center / cover no-repeat fixed;
   color: rgb(var(--foreground));
   font-family: var(--font-space-grotesk), sans-serif;
   text-rendering: optimizeLegibility;
@@ -101,6 +92,13 @@ body::after {
   background:
     radial-gradient(circle at 50% -20%, rgb(var(--primary-2) / 0.12), transparent 40%),
     radial-gradient(circle at -10% 90%, rgb(var(--primary) / 0.1), transparent 34%);
+  opacity: 0.62;
+  animation: gitrank-background-glow 72s cubic-bezier(0.42, 0, 0.58, 1) infinite;
+}
+
+.rounded,
+[class*="rounded-"] {
+  border-radius: 0.1rem !important;
 }
 
 ::selection {
@@ -663,6 +661,21 @@ select {
   inset: 0;
   translate: -120% 0;
   background: linear-gradient(100deg, transparent 35%, rgb(255 255 255 / 0.26), transparent 65%);
+}
+
+@keyframes gitrank-background-glow {
+  0%,
+  18%,
+  100% {
+    opacity: 0.56;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  48%,
+  62% {
+    opacity: 0.74;
+    transform: translate3d(-1.5%, 1.2%, 0) scale(1.04);
+  }
 }
 
 html[data-gamification="reduced"] .player-card-shell::before,
