@@ -1213,6 +1213,27 @@ html[data-gamification="reduced"] .rank-orbit {
   }
 }
 
+@media (prefers-reduced-data: reduce) {
+  body {
+    background-image: linear-gradient(
+      180deg,
+      rgb(0 3 12 / var(--page-overlay-top-alpha)),
+      rgb(var(--background) / 0.9)
+    );
+    background-attachment: scroll;
+  }
+
+  .panel-grid,
+  .neon-vignette,
+  .cyber-hero-overlay,
+  .page-shell::before,
+  .page-shell::after,
+  body::before,
+  body::after {
+    display: none !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

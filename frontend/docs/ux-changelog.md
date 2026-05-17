@@ -37,6 +37,10 @@
     improve scan speed on compact metric labels
   - increased muted chip and data-badge text clarity by moving to stronger text
     tokens (`--text-body`, `--text-strong`).
+- Added `prefers-reduced-data: reduce` fallback mode:
+  - removes heavy decorative overlays/glow layers and fixed background image
+    for users requesting lower-data/lower-render UI behavior
+  - preserves default neon experience for regular mode users.
 
 - Optimized hero/background rendering while preserving cyber style:
   - compressed `public/background.jpg` from large source to web-safe size
