@@ -190,6 +190,19 @@ merge gate set.
 If no static token is set, `make apply-github-repository-controls-auto` now
 attempts the same GitHub App token bootstrap described above.
 
+If no static token or GitHub App credentials are available, you can also opt in
+to OAuth web-flow token bootstrap directly from apply/verify commands:
+
+```bash
+cd gitrank
+GITHUB_REPOSITORY=OWNER/REPO \
+GITRANK_APPLY_REPOSITORY_CONTROLS=yes \
+GITRANK_ALLOW_OAUTH_WEB_TOKEN_BOOTSTRAP=yes \
+make apply-github-repository-controls-auto
+```
+
+This prompts for one callback URL/code and then continues with live apply.
+
 ## Apply Through GitHub UI
 
 1. Open repository settings.
@@ -225,6 +238,9 @@ make verify-github-repository-controls
 
 `GITHUB_REPOSITORY` can be omitted when running from a Git clone whose `origin`
 targets this repository. `GH_TOKEN` is accepted as a fallback to `GITHUB_TOKEN`.
+`GITRANK_ALLOW_OAUTH_WEB_TOKEN_BOOTSTRAP=yes` can be set to bootstrap a
+temporary token via OAuth web flow when no static token/GitHub App credential
+is configured.
 
 The verifier intentionally fails closed if it cannot prove a required setting.
 Do not check the repository-admin boxes in `CONTRIBUTING.md` from inspection

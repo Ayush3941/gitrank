@@ -7,6 +7,7 @@ API_BASE="${GITHUB_API_URL:-https://api.github.com}"
 API_VERSION="${GITHUB_API_VERSION:-2026-03-10}"
 API_TIMEOUT_SECONDS="${GITHUB_API_TIMEOUT_SECONDS:-30}"
 TMP_ROOT="${TMPDIR:-/tmp}"
+ALLOW_OAUTH_WEB_TOKEN_BOOTSTRAP="${GITRANK_ALLOW_OAUTH_WEB_TOKEN_BOOTSTRAP:-false}"
 GITHUB_APP_ID="${GITHUB_APP_ID:-${GITRANK_GITHUB_APP_ID:-}}"
 GITHUB_APP_INSTALLATION_ID="${GITHUB_APP_INSTALLATION_ID:-${GITRANK_GITHUB_APP_INSTALLATION_ID:-}}"
 GITHUB_APP_PRIVATE_KEY_FILE="${GITHUB_APP_PRIVATE_KEY_FILE:-${GITRANK_GITHUB_APP_PRIVATE_KEY_FILE:-}}"
@@ -61,6 +62,25 @@ bootstrap_token_from_github_app() {
   printf 'github controls verification: bootstrapped token via GitHub App installation credentials\n'
 }
 
+bootstrap_token_via_oauth_web_flow() {
+  [ -n "$TOKEN" ] && return 0
+  [ "$ALLOW_OAUTH_WEB_TOKEN_BOOTSTRAP" = "yes" ] || return 1
+
+  token_file=$(mktemp "$TMP_ROOT/gitrank-github-controls-verify-oauth-token.XXXXXX")
+  if ! TOKEN_OUTPUT_FILE="$token_file" \
+    "$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)/create_github_repo_admin_token_via_oauth_web_flow.sh"; then
+    rm -f "$token_file"
+    fail "oauth web-flow token bootstrap failed; verify OAuth client credentials and callback input"
+  fi
+  TOKEN=$(cat "$token_file" 2>/dev/null || true)
+  rm -f "$token_file"
+  [ -n "$TOKEN" ] || fail "oauth web-flow token bootstrap succeeded but returned empty token"
+  export GITHUB_TOKEN="$TOKEN"
+  export GH_TOKEN="$TOKEN"
+  export GITRANK_REPO_ADMIN_TOKEN="$TOKEN"
+  printf 'github controls verification: bootstrapped token via OAuth web flow\n'
+}
+
 case "$REPOSITORY" in
   */*) ;;
   *) fail "GITHUB_REPOSITORY must use owner/name form (or run from a clone with GitHub origin remote)" ;;
@@ -71,7 +91,8 @@ require_command jq
 require_command mktemp
 mkdir -p "$TMP_ROOT"
 bootstrap_token_from_github_app || true
-[ -n "$TOKEN" ] || fail "GITHUB_TOKEN, GH_TOKEN, or GITRANK_REPO_ADMIN_TOKEN is required with repository administration/security read access (or set GitHub App credentials)"
+bootstrap_token_via_oauth_web_flow || true
+[ -n "$TOKEN" ] || fail "GITHUB_TOKEN, GH_TOKEN, or GITRANK_REPO_ADMIN_TOKEN is required with repository administration/security read access (or set GitHub App credentials, or set GITRANK_ALLOW_OAUTH_WEB_TOKEN_BOOTSTRAP=yes)"
 
 OWNER=${REPOSITORY%%/*}
 REPO=${REPOSITORY#*/}
