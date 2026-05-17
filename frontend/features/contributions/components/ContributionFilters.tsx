@@ -6,7 +6,18 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const filters = ["All", "Merged", "Open", "Docs", "Tests", "Bug Fixes", "Infra", "Security", "Performance", "High XP"] as const;
+const filters = [
+  { value: "All", short: "All" },
+  { value: "Merged", short: "Merged" },
+  { value: "Open", short: "Open" },
+  { value: "Docs", short: "Docs" },
+  { value: "Tests", short: "Tests" },
+  { value: "Bug Fixes", short: "Bugs" },
+  { value: "Infra", short: "Infra" },
+  { value: "Security", short: "Security" },
+  { value: "Performance", short: "Perf" },
+  { value: "High XP", short: "High XP" },
+] as const;
 
 export function ContributionFilters({
   value,
@@ -31,10 +42,15 @@ export function ContributionFilters({
   canReset?: boolean;
   onReset?: () => void;
 }) {
+  const statusId = "contribution-filter-status";
+
   return (
-    <div className="space-y-4">
+    <section aria-labelledby="contribution-filter-controls-label" className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p role="status" aria-live="polite" className="text-xs tracking-[0.2em] text-cyan-200 uppercase">
+        <p id="contribution-filter-controls-label" className="text-xs tracking-[0.2em] text-cyan-200 uppercase">
+          Filter controls
+        </p>
+        <p id={statusId} role="status" aria-live="polite" className="text-xs tracking-[0.2em] text-cyan-200 uppercase">
           {isFiltering
             ? "Updating contribution list..."
             : `Showing ${resultCount ?? 0} contribution cards`}
@@ -52,10 +68,16 @@ export function ContributionFilters({
         ) : null}
       </div>
       <Tabs value={value} onValueChange={onValueChange}>
-        <TabsList className="scrollbar-thin w-full overflow-x-auto whitespace-nowrap">
+        <TabsList className="scrollbar-thin w-full overflow-x-auto whitespace-nowrap" aria-label="Contribution category filters">
           {filters.map((filter) => (
-            <TabsTrigger key={filter} value={filter}>
-              {filter}
+            <TabsTrigger
+              key={filter.value}
+              value={filter.value}
+              title={filter.value}
+              aria-label={`${filter.value} contributions`}
+            >
+              <span className="sm:hidden">{filter.short}</span>
+              <span className="hidden sm:inline">{filter.value}</span>
             </TabsTrigger>
           ))}
         </TabsList>
@@ -69,10 +91,11 @@ export function ContributionFilters({
             className="pl-11"
             placeholder="Search repo, PR title, or owner"
             aria-label="Search contributions"
+            aria-describedby={statusId}
           />
         </div>
         <Select value={sort} onValueChange={onSortChange}>
-          <SelectTrigger aria-label="Sort contributions">
+          <SelectTrigger aria-label="Sort contributions" aria-describedby={statusId}>
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
           <SelectContent>
@@ -83,6 +106,6 @@ export function ContributionFilters({
           </SelectContent>
         </Select>
       </div>
-    </div>
+    </section>
   );
 }

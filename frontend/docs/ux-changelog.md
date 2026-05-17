@@ -404,6 +404,10 @@
   - sidebar navigation now uses `aria-labelledby` bound to visible `Navigate` text instead of a standalone string label.
 - Restored explicit keyboard focus styling on chip-based jump links:
   - dashboard and quests quick-jump chips now include `focus-ring` to keep focus-visible behavior consistent with other rails.
+- Improved filter-control clarity and mobile readability:
+  - contribution category tabs now use mobile-short labels with full labels retained on larger breakpoints
+  - contribution and badge filter controls now expose stronger live-status/described-by context
+  - badge filters now surface active filter chips (`Rarity`, `State`) to reduce hidden-state confusion.
 
 ## 2026-05-16
 

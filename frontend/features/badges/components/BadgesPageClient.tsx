@@ -38,6 +38,7 @@ export function BadgesPageClient() {
   const [visibility, setVisibility] = useState<"All" | "Unlocked" | "Locked">("All");
   const [unlockNotice, setUnlockNotice] = useState("");
   const canResetFilters = rarity !== "All" || visibility !== "All";
+  const badgesFilterStatusId = "badges-filter-status";
 
   const filtered =
     data?.badges.filter((badge) => {
@@ -295,10 +296,25 @@ export function BadgesPageClient() {
         ) : null}
       </section>
       <section id="badges-earned" className="scroll-mt-24 space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p role="status" aria-live="polite" className="text-xs tracking-[0.2em] text-fuchsia-200 uppercase">
-            Showing {filtered.length} of {totalCount} badges
-          </p>
+        <div className="space-y-2">
+          <p className="text-xs tracking-[0.2em] text-fuchsia-200 uppercase">Filter controls</p>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p id={badgesFilterStatusId} role="status" aria-live="polite" className="text-xs tracking-[0.2em] text-fuchsia-200 uppercase">
+              Showing {filtered.length} of {totalCount} badges
+            </p>
+            <div className="flex flex-wrap gap-2 text-xs">
+              {rarity !== "All" ? (
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+                  Rarity: {rarity}
+                </span>
+              ) : null}
+              {visibility !== "All" ? (
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+                  State: {visibility}
+                </span>
+              ) : null}
+            </div>
+          </div>
           <Button
             type="button"
             size="sm"
@@ -311,7 +327,7 @@ export function BadgesPageClient() {
         </div>
         <div className="grid gap-3 md:grid-cols-2">
           <Select value={rarity} onValueChange={(value) => handleRarityChange(value as BadgeRarity | "All")}>
-            <SelectTrigger aria-label="Filter by rarity">
+            <SelectTrigger aria-label="Filter by rarity" aria-describedby={badgesFilterStatusId}>
               <SelectValue placeholder="Filter by rarity" />
             </SelectTrigger>
             <SelectContent>
@@ -322,7 +338,7 @@ export function BadgesPageClient() {
             </SelectContent>
           </Select>
           <Select value={visibility} onValueChange={(value) => handleVisibilityChange(value as typeof visibility)}>
-            <SelectTrigger aria-label="Filter by unlock state">
+            <SelectTrigger aria-label="Filter by unlock state" aria-describedby={badgesFilterStatusId}>
               <SelectValue placeholder="Filter by state" />
             </SelectTrigger>
             <SelectContent>
