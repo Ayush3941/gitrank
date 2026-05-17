@@ -7,6 +7,7 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -208,9 +209,19 @@ export function SettingsPageClient() {
         title="Settings and privacy"
         description="Choose what becomes public, which repositories stay visible, and how much of your GitRank profile is shared."
         actions={(
-          <Button asChild variant="secondary">
-            <Link href={`/u/${data.user.username}`}>View public profile</Link>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="secondary">
+              <Link href={`/u/${data.user.username}`}>View public profile</Link>
+            </Button>
+            <ShareProfileButton
+              variant="ghost"
+              size="sm"
+              username={data.user.username}
+              displayName={data.user.displayName}
+              shareHeadline={`${data.user.displayName} is ${data.user.title} on GitRank.`}
+              analyticsTargetPrefix="settings-profile"
+            />
+          </div>
         )}
       />
       <GlowCard className="space-y-4">
