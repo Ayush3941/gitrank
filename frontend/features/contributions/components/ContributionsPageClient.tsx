@@ -9,6 +9,7 @@ import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { SectionHeader } from "@/components/shared/SectionHeader";
 import { StaleState } from "@/components/shared/StaleState";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
 import { ContributionList } from "@/features/contributions/components/ContributionList";
@@ -336,7 +337,11 @@ export function ContributionsPageClient() {
       ) : null}
       {!isLoading && !isError ? (
         <section id="contributions-repositories" className="scroll-mt-24 space-y-3">
-          <p className="text-xs tracking-[0.24em] text-cyan-200 uppercase">Repositories touched</p>
+          <SectionHeader
+            eyebrow="Repositories"
+            title="Repositories touched"
+            description="Where contribution effort concentrated in this scored evidence window."
+          />
           {repositories.length ? (
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               {repositories.map((repository) => (
@@ -348,19 +353,24 @@ export function ContributionsPageClient() {
               ))}
             </div>
           ) : (
-            <GlowCard className="neon-surface space-y-3 border-dashed border-cyan-300/24 p-4 text-sm text-muted">
-              <p>No repository contribution summary is available in this snapshot yet.</p>
-              <Button asChild variant="secondary" size="sm">
-                <Link href="/dashboard/settings">Open sync settings</Link>
-              </Button>
-            </GlowCard>
+            <SubsectionEmptyState
+              message="No repository contribution summary is available in this snapshot yet."
+              actionLabel="Open sync settings"
+              actionHref="/dashboard/settings"
+            />
           )}
         </section>
       ) : null}
       {!isLoading && !isError ? (
-        <section id="contributions-timeline" className="scroll-mt-24 grid gap-4 xl:grid-cols-[1.2fr,0.8fr]">
+        <section id="contributions-timeline" className="scroll-mt-24 space-y-4">
+          <SectionHeader
+            eyebrow="History"
+            title="Contribution timeline and highlights"
+            description="Momentum and top-impact snapshots from the current PR evidence window."
+          />
+          <div className="grid gap-4 xl:grid-cols-[1.2fr,0.8fr]">
           <GlowCard className="space-y-4 border border-fuchsia-400/20 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/30">
-            <p className="text-xs tracking-[0.24em] text-fuchsia-200 uppercase">Contribution timeline</p>
+            <h3 className="cyber-title text-sm tracking-[0.2em] text-fuchsia-200 uppercase">Contribution timeline</h3>
             {monthly.length ? (
               <div className="space-y-3">
                 {monthly.map((point) => (
@@ -379,18 +389,15 @@ export function ContributionsPageClient() {
                 ))}
               </div>
             ) : (
-              <div className="space-y-3">
-                <p className="text-sm text-muted">
-                  Timeline points are not available yet for this filtered evidence window.
-                </p>
-                <Button asChild variant="secondary" size="sm">
-                  <Link href="/dashboard/settings">Refresh contribution sync</Link>
-                </Button>
-              </div>
+              <SubsectionEmptyState
+                message="Timeline points are not available yet for this filtered evidence window."
+                actionLabel="Open sync settings"
+                actionHref="/dashboard/settings"
+              />
             )}
           </GlowCard>
           <GlowCard className="space-y-4 border border-cyan-300/20 bg-gradient-to-br from-slate-950/88 to-cyan-950/25">
-            <p className="text-xs tracking-[0.24em] text-cyan-200 uppercase">Top highlights</p>
+            <h3 className="cyber-title text-sm tracking-[0.2em] text-cyan-200 uppercase">Top highlights</h3>
             {topHighlights.length ? (
               <div className="space-y-3">
                 {topHighlights.map((row) => (
@@ -402,20 +409,23 @@ export function ContributionsPageClient() {
                 ))}
               </div>
             ) : (
-              <div className="space-y-3">
-                <p className="text-sm text-muted">
-                  No high-signal highlights are available yet in this snapshot.
-                </p>
-                <Button asChild variant="secondary" size="sm">
-                  <Link href="/dashboard/quests">Open quest lane</Link>
-                </Button>
-              </div>
+              <SubsectionEmptyState
+                message="No high-signal highlights are available yet in this snapshot."
+                actionLabel="Open quest lane"
+                actionHref="/dashboard/quests"
+              />
             )}
           </GlowCard>
+          </div>
         </section>
       ) : null}
       {!isLoading && !isError ? (
-        <section id="contributions-cards" className="scroll-mt-24">
+        <section id="contributions-cards" className="scroll-mt-24 space-y-4">
+          <SectionHeader
+            eyebrow="PR cards"
+            title="Achievement cards"
+            description="Per-PR score signal, evidence tags, and impact narrative prepared for profile and presentation use."
+          />
           {filteredRows.length ? (
             <ContributionList
               items={filteredRows}
@@ -423,21 +433,44 @@ export function ContributionsPageClient() {
               isBusy={isFiltering}
             />
           ) : (
-            <GlowCard className="neon-surface space-y-3 border-dashed border-primary/24 p-4 text-sm text-muted">
-              <p>No contribution cards match this filter set yet. Reset filters or widen the PR evidence window.</p>
-              <div className="flex flex-wrap gap-2">
-                <Button type="button" size="sm" variant="secondary" onClick={handleResetFilters}>
-                  Reset filters
-                </Button>
-                <Button asChild size="sm" variant="ghost">
-                  <Link href="/dashboard/settings">Open sync settings</Link>
-                </Button>
-              </div>
-            </GlowCard>
+            <SubsectionEmptyState
+              message="No contribution cards match this filter set yet. Reset filters or widen the PR evidence window."
+              actionLabel="Open sync settings"
+              actionHref="/dashboard/settings"
+              onResetFilters={handleResetFilters}
+            />
           )}
         </section>
       ) : null}
     </div>
+  );
+}
+
+function SubsectionEmptyState({
+  message,
+  actionLabel,
+  actionHref,
+  onResetFilters,
+}: {
+  message: string;
+  actionLabel: string;
+  actionHref: string;
+  onResetFilters?: () => void;
+}) {
+  return (
+    <GlowCard className="neon-surface space-y-3 border-dashed border-primary/24 p-4 text-sm text-muted">
+      <p>{message}</p>
+      <div className="flex flex-wrap gap-2">
+        {onResetFilters ? (
+          <Button type="button" size="sm" variant="secondary" onClick={onResetFilters}>
+            Reset filters
+          </Button>
+        ) : null}
+        <Button asChild size="sm" variant="secondary">
+          <Link href={actionHref}>{actionLabel}</Link>
+        </Button>
+      </div>
+    </GlowCard>
   );
 }
 

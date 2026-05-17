@@ -16,6 +16,15 @@
     overrides for better visibility on dense dashboard surfaces.
   - added focused contract coverage in `tests/sync-state-guide.test.ts` for
     failed and syncing CTA routing behavior.
+- Contributions information-architecture consistency pass:
+  - promoted major contribution sections to explicit semantic headers using
+    `SectionHeader` (Repositories, Timeline/Highlights, PR Cards) to align page
+    structure and improve in-page scan/navigation behavior
+  - standardized subsection zero-data surfaces with shared
+    `SubsectionEmptyState` actions so each contribution panel now has a clear
+    recovery CTA
+  - upgraded timeline/highlights panel titles to explicit heading elements
+    instead of label-only text.
 - Route fallback consistency pass:
   - added shared `RouteFallbackCard` (`components/shared/RouteFallbackCard.tsx`)
     and migrated all route-level `not-found` surfaces (global, dashboard,
