@@ -321,7 +321,7 @@ export function ContributionsPageClient() {
           {repositories.length ? (
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               {repositories.map((repository) => (
-                <div key={repository.fullName} className="neon-surface rounded-[1.4rem] border-cyan-300/28 px-4 py-3">
+                <div key={repository.fullName} className="render-opt-card neon-surface rounded-[1.4rem] border-cyan-300/28 px-4 py-3">
                   <p className="break-anywhere text-sm font-medium text-white">{repository.fullName}</p>
                   <p className="mt-1 text-xs text-slate-300">{repository.contributions} contributions</p>
                   <p className="mt-3 text-lg font-semibold text-cyan-200">{repository.totalXp} XP</p>
@@ -375,7 +375,7 @@ export function ContributionsPageClient() {
             {topHighlights.length ? (
               <div className="space-y-3">
                 {topHighlights.map((row) => (
-                  <div key={row.id} className="neon-surface rounded-2xl px-3 py-3">
+                  <div key={row.id} className="render-opt-card neon-surface rounded-2xl px-3 py-3">
                     <p className="break-anywhere text-sm font-medium text-white">{row.title}</p>
                     <p className="mt-1 break-anywhere text-xs text-slate-300">{row.owner}/{row.repo} #{row.number}</p>
                     <p className="mt-2 text-sm text-cyan-200">+{row.xpEarned} XP</p>

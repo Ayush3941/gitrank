@@ -386,6 +386,9 @@
 - Added action paths to public-profile sparse evidence panels:
   - `Best PRs` empty state now links to contribution lane and visibility settings
   - top-repositories empty state now offers in-page jumps back to summary or PR evidence.
+- Expanded list-render optimization coverage:
+  - added `render-opt-card` to locked badge cards and contribution repository/highlight rows
+  - extends deferred paint/layout behavior to more high-count card lists.
 
 ## 2026-05-16
 

@@ -361,7 +361,7 @@ export function BadgesPageClient() {
           {lockedBadges.length > 0 ? (
             <div className="grid gap-3 md:grid-cols-3">
               {lockedBadges.map((badge) => (
-                <div key={badge.id} className="neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4">
+                <div key={badge.id} className="render-opt-card neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4">
                   <p className="text-xs tracking-[0.24em] text-fuchsia-200 uppercase">{badge.rarity}</p>
                   <h3 className="mt-2 text-base font-semibold text-white">{badge.name}</h3>
                   <ExpandableText
