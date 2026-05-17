@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Download, FolderGit2, LogOut, Palette, Sparkles, Trash2 } from "lucide-react";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -43,6 +43,21 @@ type BackedPrivacyKey =
   | "showAiSummaries"
   | "showLeaderboardParticipation"
   | "reducedGamification";
+
+type SettingsSectionID =
+  | "settings-account"
+  | "settings-public-profile"
+  | "settings-display"
+  | "settings-repositories"
+  | "settings-data-controls";
+
+const SETTINGS_SECTION_ITEMS: Array<{ id: SettingsSectionID; label: string }> = [
+  { id: "settings-account", label: "Account" },
+  { id: "settings-public-profile", label: "Privacy" },
+  { id: "settings-display", label: "Display" },
+  { id: "settings-repositories", label: "Repositories" },
+  { id: "settings-data-controls", label: "Data" },
+];
 
 const THEME_OPTIONS: Array<{
   value: ThemePreference;
@@ -110,9 +125,37 @@ export function SettingsPageClient() {
   useAccountGamificationPreference(data);
   const [actionNotice, setActionNotice] = useState("");
   const [displayNotice, setDisplayNotice] = useState("");
+  const [activeSection, setActiveSection] = useState<SettingsSectionID>("settings-account");
   const currentSettings = data?.user.privacy ?? null;
   const activeThemeOption =
     THEME_OPTIONS.find((option) => option.value === theme) ?? THEME_OPTIONS[1];
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((left, right) => right.intersectionRatio - left.intersectionRatio)[0];
+        if (!visible) {
+          return;
+        }
+        const id = visible.target.id as SettingsSectionID;
+        if (id) {
+          setActiveSection(id);
+        }
+      },
+      { rootMargin: "-22% 0px -55% 0px", threshold: [0.2, 0.45, 0.7] },
+    );
+
+    SETTINGS_SECTION_ITEMS.forEach(({ id }) => {
+      const node = document.getElementById(id);
+      if (node) {
+        observer.observe(node);
+      }
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   function handleResetDisplayPreferences() {
     setTheme("midnight");
@@ -266,7 +309,28 @@ export function SettingsPageClient() {
           </div>
         )}
       />
-      <GlowCard className="space-y-4">
+      <nav
+        aria-label="Settings quick sections"
+        className="glass-panel sticky top-4 z-20 flex flex-wrap items-center gap-2 border border-primary/20 p-2"
+      >
+        <p className="cyber-title px-2 text-[10px] tracking-[0.16em] text-cyan-200 uppercase">Jump to</p>
+        {SETTINGS_SECTION_ITEMS.map((section) => (
+          <a
+            key={section.id}
+            href={`#${section.id}`}
+            aria-current={activeSection === section.id ? "location" : undefined}
+            className={
+              activeSection === section.id
+                ? "focus-ring cyber-title border border-primary/45 bg-primary/16 px-3 py-1.5 text-[11px] tracking-[0.16em] text-white uppercase"
+                : "focus-ring cyber-title border border-transparent px-3 py-1.5 text-[11px] tracking-[0.16em] text-slate-200 uppercase hover:border-primary/28 hover:bg-primary/10"
+            }
+          >
+            {section.label}
+          </a>
+        ))}
+      </nav>
+      <section id="settings-account" className="scroll-mt-24">
+        <GlowCard className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs tracking-[0.24em] text-primary uppercase">GitHub account</p>
@@ -301,22 +365,26 @@ export function SettingsPageClient() {
             {actionError}
           </p>
         ) : null}
-      </GlowCard>
+        </GlowCard>
+      </section>
 
-      <SettingSection
-        title="Public profile"
-        saving={isSaving}
-        disabled={isSaving}
-        errorMessage={mutationError}
-        rows={[
-          ["Enable public profile", currentSettings.publicProfileEnabled, (checked) => handlePrivacyToggle("publicProfileEnabled", checked)],
-          ["Show exact PRs", currentSettings.showExactPRs, (checked) => handlePrivacyToggle("showExactPRs", checked)],
-          ["Show AI summaries", currentSettings.showAiSummaries, (checked) => handlePrivacyToggle("showAiSummaries", checked)],
-          ["Show leaderboard participation", currentSettings.showLeaderboardParticipation, (checked) => handlePrivacyToggle("showLeaderboardParticipation", checked)],
-        ]}
-      />
+      <section id="settings-public-profile" className="scroll-mt-24">
+        <SettingSection
+          title="Public profile"
+          saving={isSaving}
+          disabled={isSaving}
+          errorMessage={mutationError}
+          rows={[
+            ["Enable public profile", currentSettings.publicProfileEnabled, (checked) => handlePrivacyToggle("publicProfileEnabled", checked)],
+            ["Show exact PRs", currentSettings.showExactPRs, (checked) => handlePrivacyToggle("showExactPRs", checked)],
+            ["Show AI summaries", currentSettings.showAiSummaries, (checked) => handlePrivacyToggle("showAiSummaries", checked)],
+            ["Show leaderboard participation", currentSettings.showLeaderboardParticipation, (checked) => handlePrivacyToggle("showLeaderboardParticipation", checked)],
+          ]}
+        />
+      </section>
 
-      <GlowCard className="space-y-4">
+      <section id="settings-display" className="scroll-mt-24">
+        <GlowCard className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="max-w-2xl">
             <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
@@ -467,43 +535,48 @@ export function SettingsPageClient() {
             Use this preview to confirm headings, supporting copy, and small labels stay easy to read on your screen.
           </p>
         </div>
-      </GlowCard>
+        </GlowCard>
+      </section>
 
-      <GlowCard className="space-y-4">
-        <div>
-          <p className="text-xs tracking-[0.24em] text-primary uppercase">Repository privacy</p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">Choose what stays on your public card</h2>
-        </div>
-        <PrivacyRepositoryToggleList
-          repositories={data.user.repositories}
-          pendingRepository={pendingRepository}
-          onToggle={
-            (repository, checked) =>
-              updateRepositoryVisibility.mutate({
-                fullName: repository.name,
-                visibility: checked ? "Public" : "Hidden",
-                reason: repository.reason,
-              })
-          }
-        />
-      </GlowCard>
+      <section id="settings-repositories" className="scroll-mt-24">
+        <GlowCard className="space-y-4">
+          <div>
+            <p className="text-xs tracking-[0.24em] text-primary uppercase">Repository privacy</p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">Choose what stays on your public card</h2>
+          </div>
+          <PrivacyRepositoryToggleList
+            repositories={data.user.repositories}
+            pendingRepository={pendingRepository}
+            onToggle={
+              (repository, checked) =>
+                updateRepositoryVisibility.mutate({
+                  fullName: repository.name,
+                  visibility: checked ? "Public" : "Hidden",
+                  reason: repository.reason,
+                })
+            }
+          />
+        </GlowCard>
+      </section>
 
-      <GlowCard className="space-y-4">
-        <div>
-          <p className="text-xs tracking-[0.24em] text-primary uppercase">Data controls</p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">Export or remove account data</h2>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <Button variant="secondary" disabled={isActing} onClick={handleExportAccountData}>
-            <Download className="h-4 w-4" />
-            {exportAccount.isPending ? "Exporting..." : "Export data"}
-          </Button>
-          <Button variant="danger" disabled={isActing} onClick={handleDeleteAccount}>
-            <Trash2 className="h-4 w-4" />
-            {deleteAccount.isPending ? "Deleting account..." : "Delete account"}
-          </Button>
-        </div>
-      </GlowCard>
+      <section id="settings-data-controls" className="scroll-mt-24">
+        <GlowCard className="space-y-4">
+          <div>
+            <p className="text-xs tracking-[0.24em] text-primary uppercase">Data controls</p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">Export or remove account data</h2>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Button variant="secondary" disabled={isActing} onClick={handleExportAccountData}>
+              <Download className="h-4 w-4" />
+              {exportAccount.isPending ? "Exporting..." : "Export data"}
+            </Button>
+            <Button variant="danger" disabled={isActing} onClick={handleDeleteAccount}>
+              <Trash2 className="h-4 w-4" />
+              {deleteAccount.isPending ? "Deleting account..." : "Delete account"}
+            </Button>
+          </div>
+        </GlowCard>
+      </section>
     </div>
   );
 }

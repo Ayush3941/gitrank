@@ -308,6 +308,10 @@
   - sidebar now includes explicit `Navigate` section framing
   - desktop/mobile inactive items default to stronger readable muted tone
   - nav item styling keeps state clarity without extra transition churn.
+- Added settings in-page navigation for dense account/privacy pages:
+  - sticky `Jump to` rail with section anchors (`Account`, `Privacy`, `Display`, `Repositories`, `Data`)
+  - active section highlighting powered by `IntersectionObserver`
+  - section IDs and `scroll-mt` anchors so direct hash links land cleanly under sticky chrome.
 
 ## 2026-05-16
 
