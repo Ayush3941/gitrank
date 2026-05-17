@@ -1474,6 +1474,8 @@ Use `make -C gitrank create-github-repo-admin-token-via-oauth-web-flow` to
 mint a short-lived OAuth token from `GITHUB_CLIENT_ID` /
 `GITHUB_CLIENT_SECRET` when Device Flow is disabled; the helper prints the
 authorization URL and accepts a pasted callback URL or `code`.
+For non-interactive shells, set `GITHUB_OAUTH_WEB_CALLBACK_URL` with that
+callback URL (or `code`) before running the command.
 `make -C gitrank finalize-v2-live-closeout-via-oauth-web-flow` uses that same
 flow and then runs the full closeout pipeline automatically.
 The live-gates workflow can also bootstrap a short-lived admin token from

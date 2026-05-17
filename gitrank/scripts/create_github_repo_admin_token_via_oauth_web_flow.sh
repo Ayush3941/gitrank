@@ -83,6 +83,9 @@ printf '3. After redirect, copy the full callback URL (or just the code value).\
 printf '\n'
 
 if [ -z "$CALLBACK_INPUT" ]; then
+  if [ ! -t 0 ]; then
+    fail "no interactive stdin available; set GITHUB_OAUTH_WEB_CALLBACK_URL to the callback URL (or code) and rerun"
+  fi
   printf 'Paste callback URL or code: '
   IFS= read -r CALLBACK_INPUT
 fi

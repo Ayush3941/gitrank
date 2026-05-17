@@ -110,6 +110,8 @@ export GITRANK_REPO_ADMIN_TOKEN="$(cat /tmp/gitrank-repo-admin-token.txt)"
 
 The command prints an authorization URL. Open it, approve scopes, and paste the
 callback URL (or `code`) when prompted.
+For non-interactive automation, set `GITHUB_OAUTH_WEB_CALLBACK_URL` to the
+callback URL (or `code`) before running the command.
 
 The script refuses to mutate live settings unless both the confirmation flag
 and exact status check names are provided.
