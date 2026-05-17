@@ -41,7 +41,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
           </div>
         ) : null}
         {sortedReports.map((report) => (
-          <div key={report.contribution.id} className="neon-surface rounded-[1.75rem] p-4">
+          <div key={report.contribution.id} className="render-opt-card neon-surface rounded-[1.75rem] p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="break-anywhere text-sm text-muted">{report.contribution.owner}/{report.contribution.repo} #{report.contribution.number}</p>

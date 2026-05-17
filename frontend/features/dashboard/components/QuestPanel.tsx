@@ -36,7 +36,7 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
         {quests.slice(0, 3).map((quest) => {
           const progress = safeQuestProgress(quest.progress, quest.goal);
           return (
-            <div key={quest.id} className="neon-surface rounded-[1.75rem] p-4">
+            <div key={quest.id} className="render-opt-card neon-surface rounded-[1.75rem] p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-lg font-medium text-white">{quest.title}</p>

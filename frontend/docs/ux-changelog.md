@@ -38,6 +38,11 @@
   - dashboard and public-profile hero avatars now set explicit Next.js `sizes`
     plus `priority` preload hints to reduce first-view image uncertainty and
     improve above-the-fold visual stabilization.
+- Dashboard list virtualization-style render optimization:
+  - added `render-opt-card` (`content-visibility` helper) to repeated quest,
+    battle-report, and badge cards inside dashboard panels
+  - reduces offscreen rendering work on long dashboard sessions while
+    preserving existing layout and styling.
 - Route fallback consistency pass:
   - added shared `RouteFallbackCard` (`components/shared/RouteFallbackCard.tsx`)
     and migrated all route-level `not-found` surfaces (global, dashboard,
