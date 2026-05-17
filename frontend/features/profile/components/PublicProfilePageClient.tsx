@@ -7,6 +7,7 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
+import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { SkillRadarChart } from "@/components/shared/SkillRadarChart";
 import { TimelineChart } from "@/components/shared/TimelineChart";
 import { RarityBadge } from "@/components/shared/RarityBadge";
@@ -40,6 +41,10 @@ export function PublicProfilePageClient({
 }) {
   const { data, isLoading, isError, isFetching, refetch } = useProfile(username);
   const [activeSection, setActiveSection] = useState<PublicProfileSectionID>("public-profile-overview");
+  const activeSectionLabel =
+    PUBLIC_PROFILE_SECTION_ITEMS.find((section) => section.id === activeSection)?.label ??
+    "Overview";
+  const activeSectionLink = `/u/${username}#${activeSection}`;
   const streak = summarizeContributionStreak(data?.user.contributions ?? []);
   const abraPayload = useMemo(() => {
     if (!data) {
@@ -162,6 +167,9 @@ export function PublicProfilePageClient({
         className="glass-panel flex flex-wrap items-center gap-2 border border-primary/20 p-2 lg:sticky lg:top-4 lg:z-20"
       >
         <p id="public-profile-jump-nav-label" className="cyber-title px-2 text-[10px] tracking-[0.16em] text-cyan-200 uppercase">Jump to</p>
+        <p role="status" aria-live="polite" className="px-2 text-xs tracking-[0.16em] text-cyan-200 uppercase">
+          {activeSectionLabel}
+        </p>
         <ul role="list" className="flex flex-wrap gap-2">
           {PUBLIC_PROFILE_SECTION_ITEMS.map((section) => (
             <li key={section.id}>
@@ -179,6 +187,14 @@ export function PublicProfilePageClient({
             </li>
           ))}
         </ul>
+        <div className="ml-auto">
+          <CopyTextButton
+            text={activeSectionLink}
+            label="Copy section link"
+            copiedLabel="Section link copied"
+            analyticsTarget="public-profile/copy-section-link"
+          />
+        </div>
       </nav>
       <section id="public-profile-overview" className="scroll-mt-24 space-y-6">
         <PublicProfileHero

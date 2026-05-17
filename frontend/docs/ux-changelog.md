@@ -67,6 +67,10 @@
   - leaderboard jump navigator now includes active section context and
     `Copy section link` (`/dashboard/leaderboard#...`) in addition to lane
     query sharing, making both lane and panel context shareable.
+- Public profile section share-link refinement:
+  - public profile jump navigator now shows active section context and a
+    `Copy section link` action (`/u/<username>#...`) so shared profile links
+    can point to exact sections.
 - Route fallback consistency pass:
   - added shared `RouteFallbackCard` (`components/shared/RouteFallbackCard.tsx`)
     and migrated all route-level `not-found` surfaces (global, dashboard,
