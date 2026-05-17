@@ -11,6 +11,8 @@
   - theme switcher is also available on landing and login onboarding screens
   - public profile hero and PR battle report now expose quick theme switching
   - theme changes now announce via polite live region for assistive tech
+  - new global text-scale preference (`Default` / `Large`) with settings
+    controls and persisted document-level rendering mode
   - settings now includes a live readability preview panel for current theme
   - stronger global text tokens for body/supporting copy across all themes
   - raised global type baseline (`16px` floor, higher line-height) for clearer

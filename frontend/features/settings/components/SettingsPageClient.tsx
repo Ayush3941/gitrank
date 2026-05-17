@@ -28,6 +28,10 @@ import {
   useAccountGamificationPreference,
   useGamificationPreference,
 } from "@/hooks/use-gamification-preference";
+import {
+  type TextScalePreference,
+  useTextScalePreference,
+} from "@/hooks/use-text-scale-preference";
 import { type ThemePreference, useThemePreference } from "@/hooks/use-theme-preference";
 
 type BackedPrivacyKey =
@@ -63,6 +67,23 @@ const THEME_OPTIONS: Array<{
   },
 ];
 
+const TEXT_SCALE_OPTIONS: Array<{
+  value: TextScalePreference;
+  label: string;
+  description: string;
+}> = [
+  {
+    value: "default",
+    label: "Default text",
+    description: "Balanced density with the standard UI scale.",
+  },
+  {
+    value: "large",
+    label: "Large text",
+    description: "Increases body and UI copy size for easier reading.",
+  },
+];
+
 export function SettingsPageClient() {
   const { data, isLoading, isError } = useMyProfile();
   const updatePrivacy = useUpdateProfilePrivacy();
@@ -74,6 +95,7 @@ export function SettingsPageClient() {
   const accountLinkStart = useStartAccountLink();
   const { setReducedGamification } = useGamificationPreference();
   const { theme, setTheme } = useThemePreference();
+  const { textScale, setTextScale } = useTextScalePreference();
   useAccountGamificationPreference(data);
   const [actionNotice, setActionNotice] = useState("");
   const currentSettings = data?.user.privacy ?? null;
@@ -331,6 +353,40 @@ export function SettingsPageClient() {
                   <span className="inline-flex items-center gap-2">
                     {option.label}
                     {theme === option.value ? (
+                      <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-[10px] tracking-[0.12em] text-emerald-50 uppercase">
+                        Active
+                      </span>
+                    ) : null}
+                  </span>
+                  <span className="text-xs text-muted">{option.description}</span>
+                </span>
+              </Button>
+            ))}
+          </div>
+        </div>
+        <div className="cyber-divider" />
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="max-w-2xl">
+            <p className="text-xs tracking-[0.24em] text-primary uppercase">Text scale</p>
+            <h3 className="mt-2 text-xl font-semibold text-white">Readable text size</h3>
+            <p className="mt-2 text-sm leading-6 text-muted">
+              Choose a denser or larger text rendering mode. This affects frontend reading size only.
+            </p>
+          </div>
+          <div className="grid w-full gap-2 sm:w-auto sm:min-w-[18rem]">
+            {TEXT_SCALE_OPTIONS.map((option) => (
+              <Button
+                key={option.value}
+                type="button"
+                size="sm"
+                variant={textScale === option.value ? "default" : "secondary"}
+                className="h-auto justify-start px-4 py-3 text-left"
+                onClick={() => setTextScale(option.value)}
+              >
+                <span className="flex flex-col items-start">
+                  <span className="inline-flex items-center gap-2">
+                    {option.label}
+                    {textScale === option.value ? (
                       <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-[10px] tracking-[0.12em] text-emerald-50 uppercase">
                         Active
                       </span>
