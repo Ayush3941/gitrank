@@ -1,4 +1,5 @@
 import { Flag, Gift, Link2 } from "lucide-react";
+import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Progress } from "@/components/ui/progress";
 import type { Quest } from "@/types/gitrank";
@@ -22,9 +23,19 @@ export function QuestCard({ quest }: { quest: Quest }) {
             <Flag className="h-3.5 w-3.5 text-primary" />
             {quest.cadence}
           </div>
-          <h2 className="text-xl font-semibold text-white">{quest.title}</h2>
-          <p className="text-sm text-muted">{quest.description}</p>
-          <p className="text-sm leading-6 text-slate-200/76">{quest.whyRecommended}</p>
+          <h2 className="break-anywhere text-xl font-semibold text-white">{quest.title}</h2>
+          <ExpandableText
+            text={quest.description}
+            lines={3}
+            minLengthForToggle={150}
+            textClassName="break-anywhere text-sm text-muted"
+          />
+          <ExpandableText
+            text={quest.whyRecommended}
+            lines={3}
+            minLengthForToggle={170}
+            textClassName="break-anywhere text-sm leading-6 text-slate-200/76"
+          />
         </div>
         <div className="neon-chip neon-chip-info rounded-3xl px-3 py-2 text-sm font-medium">
           +{quest.rewardXp} XP

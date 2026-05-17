@@ -77,6 +77,12 @@
   - lightweight scroll+resize `requestAnimationFrame` tracking keeps updates
     smooth
   - quick-jump rail is sticky on larger breakpoints for persistent orientation.
+- Quest board navigation and card-density refinement:
+  - added cadence quick-jump rail (Daily / Weekly / Long-term / Skill-based)
+    with active-section highlighting + `aria-current="location"` state
+  - added cadence section anchors and sticky jump rail behavior on larger screens
+  - quest cards now use progressive-disclosure text blocks for long
+    descriptions/recommendations to preserve scanability.
 
 - Optimized hero/background rendering while preserving cyber style:
   - compressed `public/background.jpg` from large source to web-safe size

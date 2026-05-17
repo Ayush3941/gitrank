@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { CalendarClock, Flame, ShieldCheck } from "lucide-react";
+import { useEffect, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -18,6 +19,12 @@ import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics"
 import type { Quest } from "@/types/gitrank";
 
 const groups: Array<Quest["cadence"]> = ["Daily", "Weekly", "Long-term", "Skill-based"];
+const QUEST_SECTION_IDS: Record<Quest["cadence"], string> = {
+  Daily: "quests-daily",
+  Weekly: "quests-weekly",
+  "Long-term": "quests-long-term",
+  "Skill-based": "quests-skill-based",
+};
 
 export function QuestsPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useQuests();
@@ -27,12 +34,67 @@ export function QuestsPageClient() {
   const streak = summarizeContributionStreak(contributionRows);
   const dayOfYear = dayOfYearUTC(new Date());
   const dayProgress = Math.round((dayOfYear / 365) * 100);
+  const [activeGroup, setActiveGroup] = useState<Quest["cadence"]>("Daily");
   const questMap = {
     Daily: quests.filter((quest) => quest.cadence === "Daily"),
     Weekly: quests.filter((quest) => quest.cadence === "Weekly"),
     "Long-term": quests.filter((quest) => quest.cadence === "Long-term"),
     "Skill-based": quests.filter((quest) => quest.cadence === "Skill-based"),
   } as const;
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const sectionNodes = groups
+      .map((group) => {
+        const id = QUEST_SECTION_IDS[group];
+        const node = document.getElementById(id);
+        return node ? ({ id, group, node }) : null;
+      })
+      .filter(Boolean) as Array<{ id: string; group: Quest["cadence"]; node: HTMLElement }>;
+
+    if (!sectionNodes.length) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((left, right) => {
+            if (right.intersectionRatio !== left.intersectionRatio) {
+              return right.intersectionRatio - left.intersectionRatio;
+            }
+            return left.boundingClientRect.top - right.boundingClientRect.top;
+          });
+
+        const nextId = visible[0]?.target?.id;
+        if (!nextId) {
+          return;
+        }
+        const match = sectionNodes.find((section) => section.id === nextId);
+        if (!match) {
+          return;
+        }
+        setActiveGroup((current) => (current === match.group ? current : match.group));
+      },
+      {
+        root: null,
+        rootMargin: "-24% 0px -56% 0px",
+        threshold: [0, 0.2, 0.45, 0.7, 1],
+      },
+    );
+
+    for (const section of sectionNodes) {
+      observer.observe(section.node);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -89,6 +151,31 @@ export function QuestsPageClient() {
           </div>
         </GlowCard>
       ) : null}
+      {!isLoading && !isError && quests.length > 0 ? (
+        <section
+          aria-label="Quest cadence quick jump"
+          className="cyber-terminal panel-grid flex flex-wrap items-center gap-2 rounded-[1.2rem] px-3 py-3 xl:sticky xl:top-20 xl:z-20"
+        >
+          <span className="px-2 text-xs tracking-[0.14em] text-primary uppercase">Cadence</span>
+          {groups.map((group) => {
+            const active = group === activeGroup;
+            return (
+              <a
+                key={group}
+                href={`#${QUEST_SECTION_IDS[group]}`}
+                className={
+                  active
+                    ? "neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold"
+                    : "neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs"
+                }
+                aria-current={active ? "location" : undefined}
+              >
+                {labelForGroup(group)}
+              </a>
+            );
+          })}
+        </section>
+      ) : null}
       {isLoading ? <LoadingState message="Building your skill tree..." /> : null}
       {isError ? (
         <ErrorState
@@ -113,7 +200,11 @@ export function QuestsPageClient() {
           const grouped = questMap[group];
 
           return (
-            <section key={group} className="space-y-4">
+            <section
+              key={group}
+              id={QUEST_SECTION_IDS[group]}
+              className="space-y-4 scroll-mt-24"
+            >
               <SectionHeader
                 title={labelForGroup(group)}
                 description={descriptionForGroup(group)}
