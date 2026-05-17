@@ -85,6 +85,12 @@
 - Leaderboard tab switching now preserves previous snapshot while fetching the
   next tab (`placeholderData`) and surfaces a lightweight live refresh status
   instead of full-page flicker.
+- Added shared profile-share action component with native-share → clipboard
+  fallback chain and integrated it across:
+  - public profile hero
+  - dashboard hero card
+  - onboarding reveal completion panel
+  for consistent share behavior and copy feedback.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`

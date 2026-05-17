@@ -4,6 +4,7 @@ import { ArrowRight, Sparkles, Star } from "lucide-react";
 import { AnimatedNumber } from "@/components/shared/AnimatedNumber";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { RankBadge } from "@/components/shared/RankBadge";
+import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { XPProgress } from "@/components/shared/XPProgress";
 import { Button } from "@/components/ui/button";
 import type { UserProfile } from "@/types/gitrank";
@@ -44,12 +45,22 @@ export function DashboardHeroRankCard({
             </p>
           </div>
         </div>
-        <Button asChild variant="secondary">
-          <Link href={`/u/${user.username}`}>
-            Public profile
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button asChild variant="secondary">
+            <Link href={`/u/${user.username}`}>
+              Public profile
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
+          <ShareProfileButton
+            variant="ghost"
+            size="sm"
+            username={user.username}
+            displayName={user.displayName}
+            shareHeadline={`${user.displayName} is ${user.title} on GitRank.`}
+            analyticsTargetPrefix="dashboard-profile"
+          />
+        </div>
       </div>
       <div className="grid gap-4 md:grid-cols-3">
         <div className="neon-metric rounded-[1.75rem] p-5">

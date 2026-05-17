@@ -2,11 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { FileJson2, Share2, ShieldCheck, Sparkles, Trophy } from "lucide-react";
+import { FileJson2, ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import type { ReactNode } from "react";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { RankBadge } from "@/components/shared/RankBadge";
+import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { XPProgress } from "@/components/shared/XPProgress";
 import type { UserProfile } from "@/types/gitrank";
 
@@ -23,33 +23,6 @@ export function PublicProfileHero({
   identitySummary?: string;
   aiMode?: "gemini" | "deterministic";
 }) {
-  const [shareState, setShareState] = useState<"idle" | "copied">("idle");
-
-  async function handleShare() {
-    const url = window.location.href;
-    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
-      try {
-        await navigator.share({
-          title: `${user.displayName} on GitRank`,
-          text: shareHeadline,
-          url,
-        });
-        return;
-      } catch {
-        // Fall back to clipboard copy.
-      }
-    }
-
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(url);
-    } else {
-      window.prompt("Copy this profile URL", url);
-      return;
-    }
-    setShareState("copied");
-    window.setTimeout(() => setShareState("idle"), 1600);
-  }
-
   return (
     <div className="player-card-shell glass-panel-strong overflow-hidden rounded-[2rem] p-6 sm:p-8">
       <div className="grid gap-6 xl:grid-cols-[1.08fr,0.92fr]">
@@ -93,10 +66,13 @@ export function PublicProfileHero({
             ))}
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="secondary" onClick={handleShare}>
-              <Share2 className="h-4 w-4" />
-              {shareState === "copied" ? "Link copied" : "Share profile"}
-            </Button>
+            <ShareProfileButton
+              variant="secondary"
+              username={user.username}
+              displayName={user.displayName}
+              shareHeadline={shareHeadline}
+              analyticsTargetPrefix="public-profile"
+            />
             <Button asChild variant="ghost">
               <Link
                 href={`/api/profile/public/${encodeURIComponent(user.username)}/card`}

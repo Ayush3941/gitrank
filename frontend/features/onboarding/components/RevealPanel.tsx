@@ -3,6 +3,7 @@ import { ArrowRight, Award, Sparkles } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { RarityBadge } from "@/components/shared/RarityBadge";
+import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { Button } from "@/components/ui/button";
 import { OnboardingStepper } from "@/features/onboarding/components/OnboardingStepper";
 import type { UserProfile } from "@/types/gitrank";
@@ -95,6 +96,14 @@ export function RevealPanel({
           <Button asChild variant="secondary" size="lg">
             <Link href="/dashboard/contributions">Open contributions</Link>
           </Button>
+          <ShareProfileButton
+            variant="secondary"
+            size="lg"
+            username={user.username}
+            displayName={user.displayName}
+            shareHeadline={`${user.displayName} is ${user.title} on GitRank.`}
+            analyticsTargetPrefix="onboarding-reveal"
+          />
           <Button asChild variant="secondary" size="lg">
             <Link href={`/u/${user.username}`}>View public profile</Link>
           </Button>
