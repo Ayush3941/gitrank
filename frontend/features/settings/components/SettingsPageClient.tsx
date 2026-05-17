@@ -63,6 +63,12 @@ const THEME_OPTIONS: Array<{
     swatchClassName: "from-sky-300 via-indigo-300 to-violet-300",
   },
   {
+    value: "aurora",
+    label: "Aurora clarity",
+    description: "Softer glow with stronger body-copy contrast for long reading.",
+    swatchClassName: "from-teal-200 via-cyan-200 to-blue-300",
+  },
+  {
     value: "high-contrast",
     label: "High contrast",
     description: "Maximum text clarity and reduced background noise.",

@@ -8,10 +8,11 @@ import { type ThemePreference, useThemePreference } from "@/hooks/use-theme-pref
 const THEME_OPTIONS: Record<ThemePreference, { shortLabel: string; longLabel: string }> = {
   neon: { shortLabel: "Neon", longLabel: "Neon grid" },
   midnight: { shortLabel: "Midnight", longLabel: "Midnight contrast" },
+  aurora: { shortLabel: "Aurora", longLabel: "Aurora clarity" },
   "high-contrast": { shortLabel: "Contrast", longLabel: "High contrast" },
 };
 
-const THEME_ORDER: ThemePreference[] = ["neon", "midnight", "high-contrast"];
+const THEME_ORDER: ThemePreference[] = ["neon", "midnight", "aurora", "high-contrast"];
 
 export function ThemeQuickSwitcher({
   compact = false,

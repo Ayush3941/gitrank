@@ -2,6 +2,20 @@
 
 ## 2026-05-17
 
+- Added a new `Aurora clarity` theme tuned for long-read dashboard sessions:
+  - brighter body/supporting copy tokens with softer accent glow
+  - exposed in settings, quick theme switcher, and keyboard theme-cycle flow
+  - preserved deterministic behavior (theme-only visual change; no scoring/data effects)
+- Global readability hardening pass:
+  - raised shared tiny-text baseline (`text-xs`) and placeholder contrast
+  - stronger muted/supplementary text rendering for `Aurora` and `High contrast`
+    so explanatory copy is easier to scan
+  - added `@media (prefers-reduced-transparency: reduce)` fallback to suppress
+    blur-heavy surfaces and background overlays for clearer text and lower GPU cost
+- Smoothed shell atmosphere rendering in `AppShell`:
+  - simplified layered glow/background grid composition
+  - reduced decorative overdraw while keeping neon/cyberpunk identity
+
 - Optimized hero/background rendering while preserving cyber style:
   - compressed `public/background.jpg` from large source to web-safe size
   - added `public/background.webp` and CSS `image-set()` fallback selection

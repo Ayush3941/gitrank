@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTextScalePreference } from "@/hooks/use-text-scale-preference";
 import { useThemePreference, type ThemePreference } from "@/hooks/use-theme-preference";
 
-const THEME_ORDER: ThemePreference[] = ["neon", "midnight", "high-contrast"];
+const THEME_ORDER: ThemePreference[] = ["neon", "midnight", "aurora", "high-contrast"];
 
 export function useDisplayShortcutsStatus(enabled: boolean) {
   const { theme, setTheme } = useThemePreference();
@@ -80,6 +80,9 @@ function labelForTheme(theme: ThemePreference): string {
   }
   if (theme === "high-contrast") {
     return "High contrast";
+  }
+  if (theme === "aurora") {
+    return "Aurora clarity";
   }
   return "Midnight contrast";
 }
