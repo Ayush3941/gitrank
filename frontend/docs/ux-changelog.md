@@ -41,6 +41,12 @@
   - removes heavy decorative overlays/glow layers and fixed background image
     for users requesting lower-data/lower-render UI behavior
   - preserves default neon experience for regular mode users.
+- Long-string layout safety pass for live GitHub data:
+  - added `break-words` handling on high-visibility dynamic text surfaces
+    (PR titles, repo names, identity summaries, leaderboard evidence copy)
+  - prevents long owner/repo/title strings from overflowing hero cards and
+    panel grids across dashboard, contributions, profile, leaderboard, and
+    PR battle report routes.
 
 - Optimized hero/background rendering while preserving cyber style:
   - compressed `public/background.jpg` from large source to web-safe size

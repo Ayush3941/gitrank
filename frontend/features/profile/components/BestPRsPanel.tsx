@@ -22,11 +22,11 @@ export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
             <div key={report.id} className="render-opt-card neon-surface cyber-sheen rounded-[1.75rem] border-cyan-300/18 p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm text-muted">
+                  <p className="break-words text-sm text-muted">
                     {report.owner}/{report.repo} #{report.number}
                   </p>
-                  <h3 className="mt-2 text-lg font-medium text-white">{report.title}</h3>
-                  <p className="mt-2 text-sm text-slate-200/84">{report.summary}</p>
+                  <h3 className="mt-2 break-words text-lg font-medium text-white">{report.title}</h3>
+                  <p className="mt-2 break-words text-sm text-slate-200/84">{report.summary}</p>
                   <p className="neon-chip neon-chip-muted mt-3 inline-flex rounded-full px-3 py-1 text-xs">
                     Evidence {report.evidenceState || "partial"} / Formula {report.formulaVersion || "not recorded"}
                   </p>

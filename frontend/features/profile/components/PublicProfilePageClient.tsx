@@ -178,10 +178,10 @@ export function PublicProfilePageClient({
             ) : (
               data.topRepositories.slice(0, 4).map((repository) => (
                 <div key={repository.name} className="neon-surface rounded-[1.5rem] px-4 py-3">
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="font-medium text-white">{repository.name}</p>
-                      <p className="text-sm text-muted">
+                      <p className="break-words font-medium text-white">{repository.name}</p>
+                      <p className="break-words text-sm text-muted">
                         {repository.contributionCount} scored contributions
                         {repository.primarySkill ? ` • ${repository.primarySkill}` : ""}
                       </p>

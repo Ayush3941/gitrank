@@ -35,11 +35,11 @@ export function DashboardHeroRankCard({
           </div>
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-3">
-              <p className="text-2xl font-semibold text-white">{user.displayName}</p>
+              <p className="break-words text-2xl font-semibold text-white">{user.displayName}</p>
               <RankBadge rank={user.level.rankTier} />
             </div>
             <p className="text-sm text-muted">@{user.username}</p>
-            <p className="text-sm text-slate-200">
+            <p className="break-words text-sm text-slate-200">
               {user.title}
               {archetype ? ` • ${archetype}` : ""}
             </p>
@@ -102,7 +102,7 @@ export function DashboardHeroRankCard({
           <p className="text-xs tracking-[0.24em] text-cyan-200 uppercase">
             Open-source identity summary ({aiMode === "gemini" ? "Gemini" : "Deterministic"})
           </p>
-          <p className="mt-2 text-sm leading-6 text-slate-200/84">{identitySummary}</p>
+          <p className="mt-2 break-words text-sm leading-6 text-slate-200/84">{identitySummary}</p>
         </div>
       ) : null}
       <div className="space-y-3">
