@@ -12,13 +12,13 @@ export const metadata: Metadata = {
     title: "GitRank login",
     description: "Sign in with GitHub OAuth to sync contribution evidence and open your GitRank dashboard.",
     url: absolutePublicURL("/login"),
-    images: [{ url: absolutePublicURL("/background.jpg") }],
+    images: [{ url: absolutePublicURL("/opengraph-image") }],
   },
   twitter: {
     card: "summary_large_image",
     title: "GitRank login",
     description: "Sign in with GitHub OAuth to sync contribution evidence and open your GitRank dashboard.",
-    images: [absolutePublicURL("/background.jpg")],
+    images: [absolutePublicURL("/twitter-image")],
   },
 };
 

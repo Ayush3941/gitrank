@@ -10,6 +10,11 @@
   - added metadata contract test coverage in
     `tests/public-metadata-sharecards.test.ts` to keep encoded image route
     mapping stable.
+- Standardized marketing/onboarding social metadata:
+  - updated landing, login, and onboarding (`connect-github`, `analyzing`,
+    `reveal`) metadata to include canonical URLs and OpenGraph/Twitter cards
+  - switched these routes from static background image previews to the branded
+    generated image endpoints (`/opengraph-image`, `/twitter-image`).
 - Removed remaining dashboard dead-end empty panels:
   - `QuestPanel`, `RecentBattleReports`, and `BadgeShelf` now include direct
     recovery actions (sync settings, contribution drill-down, badge forge)

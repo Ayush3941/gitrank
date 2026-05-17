@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     url: absolutePublicURL("/"),
     images: [
       {
-        url: absolutePublicURL("/background.jpg"),
+        url: absolutePublicURL("/opengraph-image"),
       },
     ],
   },
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     title: "GitRank: open-source reputation from evidence",
     description:
       "Evidence-backed contribution scoring, progression, and public contributor profiles.",
-    images: [absolutePublicURL("/background.jpg")],
+    images: [absolutePublicURL("/twitter-image")],
   },
 };
 
