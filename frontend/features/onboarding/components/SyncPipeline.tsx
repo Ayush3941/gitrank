@@ -5,8 +5,10 @@ import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, LoaderCircle, RefreshCcw } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Button } from "@/components/ui/button";
+import { OnboardingStepper } from "@/features/onboarding/components/OnboardingStepper";
 import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useMyProfile } from "@/hooks/use-profile";
+import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { formatRelativeDays } from "@/lib/formatters";
 
 const steps = [
@@ -24,7 +26,10 @@ export function SyncPipeline() {
   const { data, isLoading, isError, refetch } = useMyProfile();
   const userSync = useRunUserSync();
   const [syncStartedAt, setSyncStartedAt] = useState<string | null>(null);
+  const [syncNotice, setSyncNotice] = useState("");
   const autoRequestedRef = useRef(false);
+  const syncStartedEventSent = useRef(false);
+  const previousSyncStateRef = useRef<string>("stale");
   const syncState = data?.user.syncStatus.state ?? "stale";
   const isSynced = syncState === "synced";
 
@@ -55,6 +60,34 @@ export function SyncPipeline() {
     };
   }, [isSynced, refetch, syncStartedAt]);
 
+  useEffect(() => {
+    if (!syncStartedAt || syncStartedEventSent.current) {
+      return;
+    }
+    syncStartedEventSent.current = true;
+    void emitAnalyticsEvent({
+      eventName: "onboarding.sync.started",
+      source: "frontend",
+      target: "onboarding/analyzing",
+      status: "success",
+    });
+  }, [syncStartedAt]);
+
+  useEffect(() => {
+    const previousState = previousSyncStateRef.current;
+    previousSyncStateRef.current = syncState;
+    if (previousState === "synced" || syncState !== "synced") {
+      return;
+    }
+    setSyncNotice("Sync complete. Your profile snapshot is ready for reveal.");
+    void emitAnalyticsEvent({
+      eventName: "sync.succeeded",
+      source: "frontend",
+      target: "onboarding/analyzing",
+      status: "success",
+    });
+  }, [syncState]);
+
   const completedSteps =
     isSynced ? steps.length : syncStartedAt || userSync.isPending ? 3 : 1;
 
@@ -65,6 +98,7 @@ export function SyncPipeline() {
   return (
     <main className="mx-auto max-w-4xl">
       <GlowCard strong className="space-y-8">
+        <OnboardingStepper currentStep="analyze" />
         <div className="space-y-3">
           <p className="text-xs font-semibold tracking-[0.3em] text-primary uppercase">Analyzing</p>
           <h1 className="text-4xl font-semibold text-white">Reading your open-source history…</h1>
@@ -82,7 +116,16 @@ export function SyncPipeline() {
               Sync run started at {new Date(syncStartedAt).toLocaleString()}.
             </p>
           ) : null}
-          {actionError ? <p className="text-sm text-rose-200">{actionError}</p> : null}
+          {actionError ? (
+            <p role="alert" className="text-sm text-rose-200">
+              {actionError}
+            </p>
+          ) : null}
+          {syncNotice ? (
+            <p role="status" aria-live="polite" className="text-sm text-emerald-200">
+              {syncNotice}
+            </p>
+          ) : null}
         </div>
         <div className="space-y-3">
           {steps.map((step, index) => {

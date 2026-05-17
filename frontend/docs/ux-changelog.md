@@ -36,6 +36,13 @@
   each page has a clear next action instead of dead-end reading states.
 - Upgraded settings theme chooser with visual swatches and explicit `Active`
   status chip for faster mode recognition.
+- Onboarding UX upgrade:
+  - added a shared 4-step onboarding progress indicator (sign in → connect →
+    analyze → reveal) with `aria-current="step"` semantics
+  - wired step state into login, connect, analyzing pipeline, reveal, and
+    reveal-unavailable/skeleton states
+  - added progressive-disclosure details on OAuth connect screen for "what is
+    read" vs "what is not read by default".
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`

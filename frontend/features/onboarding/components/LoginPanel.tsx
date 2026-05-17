@@ -2,6 +2,7 @@ import Link from "next/link";
 import { FolderGit2, LockKeyhole, Sparkles } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Button } from "@/components/ui/button";
+import { OnboardingStepper } from "@/features/onboarding/components/OnboardingStepper";
 
 export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
   const oauthURL = `/oauth/github/start?return_to=${encodeURIComponent(returnTo)}`;
@@ -10,6 +11,7 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
     <main className="mx-auto max-w-4xl">
       <GlowCard strong className="grid gap-6 lg:grid-cols-[1fr,0.9fr]">
         <div className="space-y-5">
+          <OnboardingStepper currentStep="sign-in" />
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-semibold tracking-[0.24em] text-primary uppercase">
             <LockKeyhole className="h-3.5 w-3.5" />
             Sign in

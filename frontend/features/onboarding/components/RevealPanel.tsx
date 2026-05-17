@@ -4,6 +4,7 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { RarityBadge } from "@/components/shared/RarityBadge";
 import { Button } from "@/components/ui/button";
+import { OnboardingStepper } from "@/features/onboarding/components/OnboardingStepper";
 import type { UserProfile } from "@/types/gitrank";
 
 export function RevealPanel({
@@ -25,6 +26,7 @@ export function RevealPanel({
       <GlowCard strong className="relative space-y-8 overflow-hidden panel-grid text-center">
         <div className="pointer-events-none absolute -top-20 -left-16 h-56 w-56 rounded-full bg-cyan-400/15 blur-3xl" />
         <div className="pointer-events-none absolute -right-20 top-16 h-56 w-56 rounded-full bg-fuchsia-400/15 blur-3xl" />
+        <OnboardingStepper currentStep="reveal" />
         <div className="space-y-4">
           <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-3 py-1.5 text-xs font-semibold tracking-[0.24em] text-cyan-100 uppercase">
             <Sparkles className="h-3.5 w-3.5" />
@@ -87,6 +89,7 @@ export function RevealPanelSkeleton() {
   return (
     <main className="mx-auto max-w-5xl">
       <GlowCard strong className="space-y-8 panel-grid text-center">
+        <OnboardingStepper currentStep="reveal" />
         <div className="neon-skeleton mx-auto h-8 w-48 rounded-full" />
         <div className="neon-skeleton mx-auto h-16 w-full max-w-2xl rounded-3xl" />
         <div className="neon-skeleton mx-auto h-10 w-72 rounded-full" />
@@ -104,6 +107,7 @@ export function RevealPanelUnavailable() {
   return (
     <main className="mx-auto max-w-3xl">
       <GlowCard strong className="space-y-6 panel-grid text-center">
+        <OnboardingStepper currentStep="connect" />
         <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-amber-400/25 bg-amber-400/12 px-3 py-1.5 text-xs font-semibold tracking-[0.24em] text-amber-100 uppercase">
           <Sparkles className="h-3.5 w-3.5" />
           Profile unavailable
