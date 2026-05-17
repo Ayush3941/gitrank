@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AlertTriangle, ArrowUpRight, Zap } from "lucide-react";
 import { RankBadge } from "@/components/shared/RankBadge";
+import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
 import type { UserProfile } from "@/types/gitrank";
 
@@ -15,13 +16,23 @@ export function DashboardTopBar({ user }: { user: UserProfile }) {
           {user.weeklyXp} weekly XP
         </div>
       </div>
-      <Link
-        href={`/u/${user.username}`}
-        className="focus-ring cyber-link inline-flex items-center gap-2 text-sm font-medium"
-      >
-        View public profile
-        <ArrowUpRight className="h-4 w-4" />
-      </Link>
+      <div className="flex flex-wrap items-center gap-2">
+        <Link
+          href={`/u/${user.username}`}
+          className="focus-ring cyber-link inline-flex items-center gap-2 text-sm font-medium"
+        >
+          View public profile
+          <ArrowUpRight className="h-4 w-4" />
+        </Link>
+        <ShareProfileButton
+          variant="ghost"
+          size="sm"
+          username={user.username}
+          displayName={user.displayName}
+          shareHeadline={`${user.displayName} is ${user.title} on GitRank.`}
+          analyticsTargetPrefix="dashboard-topbar"
+        />
+      </div>
     </div>
   );
 }

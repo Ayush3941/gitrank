@@ -94,6 +94,8 @@
 - Added `content-visibility` rendering optimization class and applied it to
   high-volume card lists (contributions, leaderboard rows, badges, quests,
   best PRs, repository privacy list) to reduce offscreen paint/layout cost.
+- Added dashboard top-bar profile share action to align sharing affordances
+  across the major authenticated profile surfaces.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`
