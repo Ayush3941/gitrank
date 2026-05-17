@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BookCheck, GitMerge, ShieldCheck, Sparkles, Zap } from "lucide-react";
+import { ArrowRight, BookCheck, CalendarDays, GitMerge, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { ExpandableText } from "@/components/shared/ExpandableText";
@@ -18,7 +18,9 @@ export function ContributionList({
 }) {
   return (
     <div className="grid gap-4" aria-busy={isBusy || undefined}>
-      {items.map((item) => (
+      {items.map((item) => {
+        const tier = contributionTier(item);
+        return (
         <GlowCard
           key={item.id}
           className="render-opt-card relative space-y-4"
@@ -29,9 +31,20 @@ export function ContributionList({
               <p className="break-anywhere text-sm text-muted">{item.owner}/{item.repo} #{item.number}</p>
               <h2 className="mt-2 break-anywhere text-xl font-semibold text-white">{item.title}</h2>
               <div className="mt-3 flex flex-wrap gap-2 text-xs cyber-copy">
+                <span className={`neon-chip rounded-full px-3 py-1.5 font-semibold ${tier.className}`}>{tier.label}</span>
                 <span className="neon-chip neon-chip-info rounded-full px-3 py-1.5 font-semibold">{item.category}</span>
-                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 font-semibold uppercase">{item.status}</span>
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 font-semibold uppercase">{formatContributionStatus(item.status)}</span>
                 <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 font-semibold">{item.changedFilesCount} files changed</span>
+                <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-3 py-1.5 font-semibold">
+                  <CalendarDays className="h-3 w-3" />
+                  {formatContributionDate(item.mergedAt)}
+                </span>
+                {item.maintainerReviewed ? (
+                  <span className="neon-chip neon-chip-success rounded-full px-3 py-1.5 font-semibold">Maintainer reviewed</span>
+                ) : null}
+                {item.ciPassed ? (
+                  <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 font-semibold">CI passed</span>
+                ) : null}
                 {item.evidenceState ? (
                   <span className="neon-chip rounded-full px-3 py-1.5 font-semibold">
                     Evidence {item.evidenceState}
@@ -89,7 +102,8 @@ export function ContributionList({
             )}
           </div>
         </GlowCard>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -111,6 +125,47 @@ function Metric({ label, value }: { label: string; value: number }) {
       <p className="numeric-readout mt-2 text-xl font-semibold text-white">{value}</p>
     </div>
   );
+}
+
+type ContributionTier = {
+  label: string;
+  className: string;
+};
+
+function contributionTier(item: Contribution): ContributionTier {
+  const weightedScore = item.xpEarned + item.impactScore + item.difficultyScore;
+  if (weightedScore >= 420) {
+    return { label: "Mythic run", className: "neon-chip-mythic" };
+  }
+  if (weightedScore >= 280) {
+    return { label: "Epic run", className: "neon-chip-warning" };
+  }
+  if (weightedScore >= 170) {
+    return { label: "Rare run", className: "neon-chip-success" };
+  }
+  return { label: "Solid run", className: "neon-chip-muted" };
+}
+
+function formatContributionStatus(status: Contribution["status"]): string {
+  if (status === "merged") {
+    return "Merged";
+  }
+  if (status === "open") {
+    return "Open";
+  }
+  return "Closed";
+}
+
+function formatContributionDate(value: string): string {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return "Date unavailable";
+  }
+  return parsed.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 function AIPanel({

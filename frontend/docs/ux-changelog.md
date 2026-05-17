@@ -31,6 +31,13 @@
   - fallback covers shared surface primitives (`glass-panel`, `cyber-card`,
     `neon-surface`, `neon-tile`, `neon-metric`) to keep visual hierarchy
     consistent even when blur effects are unavailable.
+- Contribution card achievement framing upgrade:
+  - each contribution card now surfaces a computed run-tier chip (`Solid`,
+    `Rare`, `Epic`, `Mythic`) from real score/difficulty/impact values
+  - added explicit merged date metadata plus maintainer-review and CI chips to
+    tighten the "achievement artifact" story per PR
+  - status chips now use readable title-case labels instead of raw lowercase
+    backend status values.
 - Sync freshness readability/traceability upgrade:
   - `formatRelativeDays` now reports recent sync age with minute/hour precision
     (for example `2m ago`, `3h ago`) before day-level buckets
