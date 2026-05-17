@@ -350,6 +350,10 @@
 - Added recovery actions for empty quest cadence sections:
   - empty daily/weekly/skill lanes now link directly to contribution drill-down
   - empty long-term lane links to sync/settings recovery instead of a dead-end message.
+- Optimized high-volume contribution cards for lighter rendering:
+  - removed per-card decorative blurred glow element
+  - replaced with a low-cost top gradient rule for hierarchy
+  - strengthened chip text weight for faster scanability without extra visual effects.
 
 ## 2026-05-16
 

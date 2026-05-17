@@ -21,19 +21,19 @@ export function ContributionList({
       {items.map((item) => (
         <GlowCard
           key={item.id}
-          className="render-opt-card cyber-hero-shell relative space-y-4 overflow-hidden"
+          className="render-opt-card relative space-y-4"
         >
-          <div className="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-cyan-400/14 blur-2xl" />
+          <div className="h-px w-28 bg-gradient-to-r from-primary/62 via-primary-2/42 to-transparent" />
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0">
               <p className="break-anywhere text-sm text-muted">{item.owner}/{item.repo} #{item.number}</p>
               <h2 className="mt-2 break-anywhere text-xl font-semibold text-white">{item.title}</h2>
               <div className="mt-3 flex flex-wrap gap-2 text-xs cyber-copy">
-                <span className="neon-chip neon-chip-info rounded-full px-3 py-1.5">{item.category}</span>
-                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 uppercase">{item.status}</span>
-                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">{item.changedFilesCount} files changed</span>
+                <span className="neon-chip neon-chip-info rounded-full px-3 py-1.5 font-semibold">{item.category}</span>
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 font-semibold uppercase">{item.status}</span>
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 font-semibold">{item.changedFilesCount} files changed</span>
                 {item.evidenceState ? (
-                  <span className="neon-chip rounded-full px-3 py-1.5">
+                  <span className="neon-chip rounded-full px-3 py-1.5 font-semibold">
                     Evidence {item.evidenceState}
                   </span>
                 ) : null}
