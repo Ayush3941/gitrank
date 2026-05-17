@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AlertTriangle, ArrowUpRight, Zap } from "lucide-react";
+import { DashboardQuickActions } from "@/components/shared/DashboardQuickActions";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
@@ -15,9 +16,15 @@ export type AutoSyncNote = {
 export function DashboardTopBar({
   user,
   autoSyncNote,
+  onRunSyncNow,
+  syncPending = false,
+  showQuickActions = false,
 }: {
   user: UserProfile;
   autoSyncNote?: AutoSyncNote | null;
+  onRunSyncNow?: () => void;
+  syncPending?: boolean;
+  showQuickActions?: boolean;
 }) {
   const autoSyncToneClass =
     autoSyncNote?.tone === "success"
@@ -38,6 +45,13 @@ export function DashboardTopBar({
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {showQuickActions ? (
+            <DashboardQuickActions
+              username={user.username}
+              onRunSyncNow={onRunSyncNow}
+              syncPending={syncPending}
+            />
+          ) : null}
           <ThemeQuickSwitcher compact />
           <TextScaleQuickSwitcher compact />
           <Link

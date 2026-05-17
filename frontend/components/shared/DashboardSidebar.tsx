@@ -82,6 +82,9 @@ export function DashboardSidebar() {
           <p className="cyber-copy mt-1.5 text-sm text-foreground">
             Meaningful contribution quality over raw activity volume.
           </p>
+          <p className="mt-2 text-[11px] tracking-[0.12em] text-cyan-200 uppercase">
+            Quick actions: Ctrl/Cmd+K
+          </p>
         </div>
       </div>
     </aside>

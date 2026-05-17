@@ -2,6 +2,15 @@
 
 ## 2026-05-17
 
+- Dashboard quick-actions command palette:
+  - added `DashboardQuickActions` (`components/shared/DashboardQuickActions.tsx`)
+    with searchable keyboard-first actions (`Ctrl/Cmd+K`) for route jumps,
+    profile open, manual sync trigger, theme cycle, and text-scale toggle
+  - integrated quick actions into top bar (`DashboardTopBar`) and wired manual
+    sync execution through existing container mutation flow
+  - added discoverability hint in sidebar focus block (`Ctrl/Cmd+K`)
+  - added deterministic ranking helper + tests:
+    `lib/quick-actions.ts` and `tests/quick-actions.test.ts`.
 - Deep-link jump-nav state consistency pass:
   - added shared `initialSectionFromHash` helper (`lib/section-nav.ts`) with
     malformed-hash safety fallback handling
