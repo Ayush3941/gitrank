@@ -10,6 +10,12 @@
     stale/partial states
   - added `tests/formatters.test.ts` to lock formatter behavior for recent and
     older windows plus invalid timestamp handling.
+- Sync error messaging now avoids raw upstream technical strings for direct
+  sync actions:
+  - user/repository/installation sync failures map timeout/rate-limit/auth/
+    upstream-unavailable failures into plain-language, actionable recovery copy
+  - added `tests/account-api-sync-errors.test.ts` to lock timeout and
+    rate-limit message mapping behavior.
 - Dashboard auto-sync now executes direct user sync runs instead of relying on
   queue-only triggers, so authenticated route opens actively refresh profile
   evidence without requiring manual sync controls.

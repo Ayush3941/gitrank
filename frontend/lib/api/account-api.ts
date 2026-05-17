@@ -3,6 +3,7 @@ const DEFAULT_CSRF_COOKIE_NAME =
 
 type ApiErrorResponse = {
   error?: {
+    code?: string;
     message?: string;
   };
 };
@@ -142,7 +143,10 @@ export async function runRepositorySync(
       repository,
     }),
   });
-  return adaptJSON<ApiSyncExecutionResponse>(response, "Repository sync failed.");
+  return adaptJSON<ApiSyncExecutionResponse>(response, "Repository sync failed.", {
+    transformError: (message, status, code) =>
+      sanitizeSyncExecutionError(message, status, code, "repository"),
+  });
 }
 
 export async function runUserSync(user?: string): Promise<ApiSyncExecutionResponse> {
@@ -159,7 +163,10 @@ export async function runUserSync(user?: string): Promise<ApiSyncExecutionRespon
       user,
     }),
   });
-  return adaptJSON<ApiSyncExecutionResponse>(response, "User sync failed.");
+  return adaptJSON<ApiSyncExecutionResponse>(response, "User sync failed.", {
+    transformError: (message, status, code) =>
+      sanitizeSyncExecutionError(message, status, code, "user"),
+  });
 }
 
 export async function runInstallationSync(
@@ -178,7 +185,10 @@ export async function runInstallationSync(
       installation_id: installationId,
     }),
   });
-  return adaptJSON<ApiSyncExecutionResponse>(response, "Installation sync failed.");
+  return adaptJSON<ApiSyncExecutionResponse>(response, "Installation sync failed.", {
+    transformError: (message, status, code) =>
+      sanitizeSyncExecutionError(message, status, code, "installation"),
+  });
 }
 
 export async function unlinkMyAccount(): Promise<ApiAccountUnlinkResponse> {
@@ -237,21 +247,75 @@ export async function logoutCurrentSession(): Promise<ApiLogoutResponse> {
   return adaptJSON<ApiLogoutResponse>(response, "Session logout failed.");
 }
 
-async function adaptJSON<T>(response: Response, fallback: string): Promise<T> {
+type AdaptJSONOptions = {
+  transformError?: (message: string, status: number, code?: string) => string;
+};
+
+async function adaptJSON<T>(response: Response, fallback: string, options?: AdaptJSONOptions): Promise<T> {
   if (!response.ok) {
-    throw new Error(await responseErrorMessage(response, fallback));
+    const parsed = await parseErrorResponse(response, fallback);
+    const message = options?.transformError
+      ? options.transformError(parsed.message, response.status, parsed.code)
+      : parsed.message;
+    throw new Error(message);
   }
   return (await response.json()) as T;
 }
 
-async function responseErrorMessage(response: Response, fallback: string): Promise<string> {
+async function parseErrorResponse(
+  response: Response,
+  fallback: string,
+): Promise<{ message: string; code?: string }> {
   const defaultMessage = `${fallback} Status ${response.status}.`;
   try {
     const body = (await response.json()) as ApiErrorResponse;
-    return body.error?.message?.trim() || defaultMessage;
+    return {
+      message: body.error?.message?.trim() || defaultMessage,
+      code: body.error?.code?.trim(),
+    };
   } catch {
-    return defaultMessage;
+    return { message: defaultMessage };
   }
+}
+
+function sanitizeSyncExecutionError(
+  message: string,
+  status: number,
+  code: string | undefined,
+  mode: "user" | "repository" | "installation",
+): string {
+  const normalized = message.toLowerCase();
+  if (normalized.includes("context deadline exceeded") || normalized.includes("client.timeout exceeded")) {
+    return syncRecoveryMessage(mode, "GitHub took too long to respond.");
+  }
+  if (normalized.includes("status 429") || normalized.includes("rate limit")) {
+    return syncRecoveryMessage(mode, "GitHub rate limits are active right now.");
+  }
+  if (
+    normalized.includes("status 401") ||
+    normalized.includes("status 403") ||
+    normalized.includes("unauthorized") ||
+    normalized.includes("forbidden")
+  ) {
+    return "GitHub authorization is blocked for this sync. Reconnect GitHub from Settings, then retry.";
+  }
+  if (status >= 500 || code === "dependency_unavailable") {
+    return syncRecoveryMessage(mode, "Sync services are temporarily unavailable.");
+  }
+  return message;
+}
+
+function syncRecoveryMessage(
+  mode: "user" | "repository" | "installation",
+  reason: string,
+): string {
+  if (mode === "repository") {
+    return `${reason} Repository sync kept any available evidence. Retry soon or run full dashboard auto-sync.`;
+  }
+  if (mode === "installation") {
+    return `${reason} Installation sync kept any available evidence. Retry after a short wait.`;
+  }
+  return `${reason} User sync kept any available evidence and dashboard auto-sync will retry in the background.`;
 }
 
 function requireCSRFToken(): string {
