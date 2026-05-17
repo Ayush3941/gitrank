@@ -221,7 +221,7 @@ export function ContributionsPageClient() {
       ) : null}
       <nav
         aria-label="Contribution page quick sections"
-        className="glass-panel sticky top-4 z-20 flex flex-wrap items-center gap-2 border border-primary/20 p-2"
+        className="glass-panel flex flex-wrap items-center gap-2 border border-primary/20 p-2 xl:sticky xl:top-20 xl:z-20"
       >
         <p className="cyber-title px-2 text-[10px] tracking-[0.16em] text-cyan-200 uppercase">Jump to</p>
         {CONTRIBUTION_SECTION_ITEMS.map((section) => (

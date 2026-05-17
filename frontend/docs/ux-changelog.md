@@ -328,6 +328,10 @@
   - sticky `Jump to` rail for overview, score, AI summary, evidence signals, and rewards
   - active-section tracking via `IntersectionObserver`
   - section anchors with `scroll-mt` offsets improve deep linking during demos.
+- Tuned section jump rails for mobile usability:
+  - dashboard jump rails (badges/settings/contributions/leaderboard) now stick only on `xl` screens
+  - public profile and PR report rails now stick from `lg` upward
+  - small screens keep rails non-sticky to preserve vertical reading space.
 
 ## 2026-05-16
 
