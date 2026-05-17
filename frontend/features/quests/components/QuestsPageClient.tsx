@@ -99,6 +99,7 @@ export function QuestsPageClient() {
   return (
     <div className="space-y-6">
       <PageHeader
+        eyebrow="Quests"
         title="Quest board"
         description="Daily, weekly, and long-term missions from the backend quest engine with evidence-aware completion states."
         actions={(

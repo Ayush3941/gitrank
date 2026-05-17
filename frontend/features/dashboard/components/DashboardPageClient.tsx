@@ -211,6 +211,7 @@ export function DashboardPageClient() {
   return (
     <div className="space-y-6">
       <PageHeader
+        eyebrow="Dashboard"
         title="Command center"
         description="Snapshot-based contribution analytics, progression, and score explanations weighted toward meaningful merged work."
         actions={(

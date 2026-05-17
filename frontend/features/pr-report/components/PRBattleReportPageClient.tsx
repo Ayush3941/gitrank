@@ -107,6 +107,7 @@ export function PRBattleReportPageClient({
   return (
     <div className="space-y-6">
       <PageHeader
+        eyebrow="PR Report"
         title="PR battle report"
         description="Explainable contribution scoring, not a mysterious number."
         actions={(

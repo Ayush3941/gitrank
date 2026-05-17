@@ -192,6 +192,7 @@ export function ContributionsPageClient() {
   return (
     <div className="space-y-6">
       <PageHeader
+        eyebrow="Contributions"
         title="Contribution drill-down"
         description="Achievement-grade contribution intelligence with score signals, timeline momentum, and AI-ready impact copy."
         actions={(

@@ -291,6 +291,7 @@ export function SettingsPageClient() {
   return (
     <div className="space-y-6">
       <PageHeader
+        eyebrow="Settings"
         title="Settings and privacy"
         description="Choose what becomes public, which repositories stay visible, and how much of your GitRank profile is shared."
         actions={(

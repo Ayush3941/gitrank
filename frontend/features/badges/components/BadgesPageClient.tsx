@@ -174,6 +174,7 @@ export function BadgesPageClient() {
   return (
     <div className="space-y-6">
       <PageHeader
+        eyebrow="Badges"
         title="Badge shelf"
         description="Turn each unlocked badge into a story, track locked paths, and frame progression as a visible contributor journey."
         actions={(

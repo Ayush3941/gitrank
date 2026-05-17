@@ -96,6 +96,7 @@ export function LeaderboardPageClient() {
   return (
     <div className="space-y-6" aria-busy={(isSwitchingTab || (isFetching && snapshot)) || undefined}>
       <PageHeader
+        eyebrow="Leaderboard"
         title="Leaderboard arena"
         description="A time-windowed ranking snapshot weighted by meaningful merged work, review depth, tests, and project context."
         actions={(

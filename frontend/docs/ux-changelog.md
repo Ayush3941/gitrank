@@ -358,6 +358,9 @@
   - added explicit 3-step OAuth-to-reveal path cards (`Authorize`, `Sync evidence`, `Reveal profile`)
   - surfaced expected first-snapshot timing (`~60-90s`) as a visible callout
   - clarified post-OAuth destination and no-fabricated-user behavior in onboarding copy.
+- Improved page-level orientation with contextual headers:
+  - `PageHeader` now accepts a route-specific eyebrow label while retaining a default fallback
+  - dashboard surfaces now show explicit section context (`Dashboard`, `Contributions`, `Badges`, `Quests`, `Settings`, `Leaderboard`, `PR Report`) instead of a single repeated generic label.
 
 ## 2026-05-16
 
