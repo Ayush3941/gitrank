@@ -23,6 +23,8 @@ export function MobileNav() {
             key={item.href}
             href={item.href}
             aria-current={active ? "page" : undefined}
+            aria-label={item.label}
+            title={item.label}
             className={cn(
               "focus-ring flex min-h-14 flex-col items-center justify-center gap-1 border px-1.5 py-1.5 text-[10px] font-medium tracking-[0.02em] transition-colors",
               active

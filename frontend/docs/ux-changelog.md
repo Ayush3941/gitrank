@@ -48,6 +48,8 @@
 - Split heavy chart rendering into lazy-loaded client chunks for
   `SkillRadarChart` and `TimelineChart`, with themed skeleton fallbacks to
   reduce initial JS pressure on primary routes.
+- Mobile nav now keeps compact labels visually while exposing full route names
+  via `aria-label` and `title` for clearer assistive-tech and tooltip context.
 - Smoothed and simplified shell glow layers in `AppShell` to reduce decorative
   overdraw and avoid abrupt glow cutoffs.
 - Added responsive visual cost guard in `app/globals.css`:
