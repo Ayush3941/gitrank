@@ -312,6 +312,10 @@
   - sticky `Jump to` rail with section anchors (`Account`, `Privacy`, `Display`, `Repositories`, `Data`)
   - active section highlighting powered by `IntersectionObserver`
   - section IDs and `scroll-mt` anchors so direct hash links land cleanly under sticky chrome.
+- Added contributions in-page navigation to keep long analysis surfaces scannable:
+  - sticky `Jump to` rail with anchors for filters, overview, repositories, timeline, and contribution cards
+  - active section highlighting with `IntersectionObserver`
+  - hash-friendly section IDs and `scroll-mt` offsets for cleaner deep links.
 
 ## 2026-05-16
 

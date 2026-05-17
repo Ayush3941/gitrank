@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Flame, Radar, Sparkles, Swords } from "lucide-react";
-import { startTransition, useDeferredValue, useMemo, useState, type ReactNode } from "react";
+import { startTransition, useDeferredValue, useEffect, useMemo, useState, type ReactNode } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { ExpandableText } from "@/components/shared/ExpandableText";
@@ -36,10 +36,26 @@ const filterMap: Record<string, string> = {
   "High XP": "High XP",
 };
 
+type ContributionSectionID =
+  | "contributions-filters"
+  | "contributions-overview"
+  | "contributions-repositories"
+  | "contributions-timeline"
+  | "contributions-cards";
+
+const CONTRIBUTION_SECTION_ITEMS: Array<{ id: ContributionSectionID; label: string }> = [
+  { id: "contributions-filters", label: "Filters" },
+  { id: "contributions-overview", label: "Overview" },
+  { id: "contributions-repositories", label: "Repos" },
+  { id: "contributions-timeline", label: "Timeline" },
+  { id: "contributions-cards", label: "Cards" },
+];
+
 export function ContributionsPageClient() {
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact">("Newest");
+  const [activeSection, setActiveSection] = useState<ContributionSectionID>("contributions-filters");
   const deferredFilter = useDeferredValue(filter);
   const deferredSearch = useDeferredValue(search);
   const deferredSort = useDeferredValue(sort);
@@ -126,6 +142,33 @@ export function ContributionsPageClient() {
   const abraInsights = useAbraInsights(abraPayload);
   const maxMonthlyXp = Math.max(1, ...monthly.map((point) => point.xp));
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((left, right) => right.intersectionRatio - left.intersectionRatio)[0];
+        if (!visible) {
+          return;
+        }
+        const id = visible.target.id as ContributionSectionID;
+        if (id) {
+          setActiveSection(id);
+        }
+      },
+      { rootMargin: "-22% 0px -55% 0px", threshold: [0.2, 0.45, 0.7] },
+    );
+
+    CONTRIBUTION_SECTION_ITEMS.forEach(({ id }) => {
+      const node = document.getElementById(id);
+      if (node) {
+        observer.observe(node);
+      }
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   function handleFilterChange(next: string) {
     startTransition(() => setFilter(next));
   }
@@ -176,18 +219,40 @@ export function ContributionsPageClient() {
           Contribution window: latest {profile.user.contributions.length} scored PR-linked events (capped at 100 by backend profile history projection).
         </div>
       ) : null}
-      <ContributionFilters
-        value={filter}
-        onValueChange={handleFilterChange}
-        search={search}
-        onSearchChange={handleSearchChange}
-        sort={sort}
-        onSortChange={handleSortChange}
-        resultCount={filteredRows.length}
-        isFiltering={isFiltering}
-        canReset={canReset}
-        onReset={handleResetFilters}
-      />
+      <nav
+        aria-label="Contribution page quick sections"
+        className="glass-panel sticky top-4 z-20 flex flex-wrap items-center gap-2 border border-primary/20 p-2"
+      >
+        <p className="cyber-title px-2 text-[10px] tracking-[0.16em] text-cyan-200 uppercase">Jump to</p>
+        {CONTRIBUTION_SECTION_ITEMS.map((section) => (
+          <a
+            key={section.id}
+            href={`#${section.id}`}
+            aria-current={activeSection === section.id ? "location" : undefined}
+            className={
+              activeSection === section.id
+                ? "focus-ring cyber-title border border-primary/45 bg-primary/16 px-3 py-1.5 text-[11px] tracking-[0.16em] text-white uppercase"
+                : "focus-ring cyber-title border border-transparent px-3 py-1.5 text-[11px] tracking-[0.16em] text-slate-200 uppercase hover:border-primary/28 hover:bg-primary/10"
+            }
+          >
+            {section.label}
+          </a>
+        ))}
+      </nav>
+      <section id="contributions-filters" className="scroll-mt-24">
+        <ContributionFilters
+          value={filter}
+          onValueChange={handleFilterChange}
+          search={search}
+          onSearchChange={handleSearchChange}
+          sort={sort}
+          onSortChange={handleSortChange}
+          resultCount={filteredRows.length}
+          isFiltering={isFiltering}
+          canReset={canReset}
+          onReset={handleResetFilters}
+        />
+      </section>
       {isLoading ? <LoadingState message="Checking review depth and PR intensity..." /> : null}
       {isError ? (
         <ErrorState
@@ -208,7 +273,8 @@ export function ContributionsPageClient() {
         />
       ) : null}
       {!isLoading && !isError && profile ? (
-        <GlowCard strong className="cyber-hero-shell relative overflow-hidden">
+        <section id="contributions-overview" className="scroll-mt-24">
+          <GlowCard strong className="cyber-hero-shell relative overflow-hidden">
           <div className="cyber-hero-overlay pointer-events-none absolute inset-0" />
           <div className="relative space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -245,10 +311,11 @@ export function ContributionsPageClient() {
               <Metric label="Unique contribution days" value={uniqueDays} icon={<Sparkles className="h-4 w-4 text-violet-200" />} />
             </div>
           </div>
-        </GlowCard>
+          </GlowCard>
+        </section>
       ) : null}
       {!isLoading && !isError && repositories.length ? (
-        <section className="space-y-3">
+        <section id="contributions-repositories" className="scroll-mt-24 space-y-3">
           <p className="text-xs tracking-[0.24em] text-cyan-200 uppercase">Repositories touched</p>
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {repositories.map((repository) => (
@@ -262,7 +329,7 @@ export function ContributionsPageClient() {
         </section>
       ) : null}
       {!isLoading && !isError && monthly.length ? (
-        <section className="grid gap-4 xl:grid-cols-[1.2fr,0.8fr]">
+        <section id="contributions-timeline" className="scroll-mt-24 grid gap-4 xl:grid-cols-[1.2fr,0.8fr]">
           <GlowCard className="space-y-4 border border-fuchsia-400/20 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/30">
             <p className="text-xs tracking-[0.24em] text-fuchsia-200 uppercase">Contribution timeline</p>
             <div className="space-y-3">
@@ -297,11 +364,13 @@ export function ContributionsPageClient() {
         </section>
       ) : null}
       {!isLoading && !isError && filteredRows.length ? (
-        <ContributionList
-          items={filteredRows}
-          narratives={abraInsights.data?.contributionNarratives}
-          isBusy={isFiltering}
-        />
+        <section id="contributions-cards" className="scroll-mt-24">
+          <ContributionList
+            items={filteredRows}
+            narratives={abraInsights.data?.contributionNarratives}
+            isBusy={isFiltering}
+          />
+        </section>
       ) : null}
     </div>
   );
