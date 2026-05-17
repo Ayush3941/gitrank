@@ -255,8 +255,14 @@ func (e *Executor) SyncUser(
 
 	authoredPullRequests, authoredSearchIncomplete, err := runtime.fetchAuthoredPullRequestTargets(ctx, user)
 	if err != nil {
-		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, PersistResult{})
-		return response, err
+		if isRecoverableUserSyncSelectionError(err) {
+			response.Fetched["authored_pull_request_search_failed"] = 1
+			authoredPullRequests = nil
+			authoredSearchIncomplete = true
+		} else {
+			_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, PersistResult{})
+			return response, err
+		}
 	}
 	if len(authoredPullRequests) > defaultAuthoredPRSyncLimit {
 		authoredPullRequests = authoredPullRequests[:defaultAuthoredPRSyncLimit]
@@ -1407,6 +1413,22 @@ func isSkippableGitHubSyncError(err error) bool {
 	default:
 		return false
 	}
+}
+
+func isRecoverableUserSyncSelectionError(err error) bool {
+	if err == nil {
+		return false
+	}
+	if isSkippableGitHubSyncError(err) {
+		return true
+	}
+
+	statusCode, ok := gitHubStatusCodeFromError(err)
+	if !ok {
+		return false
+	}
+
+	return statusCode == http.StatusTooManyRequests
 }
 
 func isSkippableGitHubTimeoutError(err error) bool {

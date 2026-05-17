@@ -119,6 +119,47 @@ func TestIsSkippableGitHubSyncError(t *testing.T) {
 	}
 }
 
+func TestIsRecoverableUserSyncSelectionError(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		err  error
+		want bool
+	}{
+		{
+			name: "timeout errors are recoverable",
+			err:  context.DeadlineExceeded,
+			want: true,
+		},
+		{
+			name: "not found errors are recoverable",
+			err:  errors.New("GitHub API GET https://api.github.com/repos/octo/repo failed with status 404"),
+			want: true,
+		},
+		{
+			name: "rate limit errors are recoverable for user selection",
+			err:  errors.New("GitHub API GET https://api.github.com/search/issues failed with status 429"),
+			want: true,
+		},
+		{
+			name: "non-github errors are not recoverable",
+			err:  errors.New("database is unavailable"),
+			want: false,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			if got := isRecoverableUserSyncSelectionError(test.err); got != test.want {
+				t.Fatalf("isRecoverableUserSyncSelectionError() = %v, want %v", got, test.want)
+			}
+		})
+	}
+}
+
 func TestExecutorFetchRepositoryUsesStableMetadataCache(t *testing.T) {
 	requests := 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
