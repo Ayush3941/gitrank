@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Award, CheckCircle2, GitPullRequest, ShieldCheck, Stars } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { SkillRadarChart } from "@/components/shared/SkillRadarChart";
@@ -18,12 +19,26 @@ import { useProfile } from "@/hooks/use-profile";
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 
+type PublicProfileSectionID =
+  | "public-profile-overview"
+  | "public-profile-badges-skills"
+  | "public-profile-best-prs"
+  | "public-profile-timeline-repos";
+
+const PUBLIC_PROFILE_SECTION_ITEMS: Array<{ id: PublicProfileSectionID; label: string }> = [
+  { id: "public-profile-overview", label: "Overview" },
+  { id: "public-profile-badges-skills", label: "Badges+Skills" },
+  { id: "public-profile-best-prs", label: "Best PRs" },
+  { id: "public-profile-timeline-repos", label: "Timeline+Repos" },
+];
+
 export function PublicProfilePageClient({
   username,
 }: {
   username: string;
 }) {
   const { data, isLoading, isError, isFetching, refetch } = useProfile(username);
+  const [activeSection, setActiveSection] = useState<PublicProfileSectionID>("public-profile-overview");
   const streak = summarizeContributionStreak(data?.user.contributions ?? []);
   const abraPayload = useMemo(() => {
     if (!data) {
@@ -71,6 +86,33 @@ export function PublicProfilePageClient({
   }, [data, streak.currentStreakDays]);
   const abraInsights = useAbraInsights(abraPayload);
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((left, right) => right.intersectionRatio - left.intersectionRatio)[0];
+        if (!visible) {
+          return;
+        }
+        const id = visible.target.id as PublicProfileSectionID;
+        if (id) {
+          setActiveSection(id);
+        }
+      },
+      { rootMargin: "-22% 0px -55% 0px", threshold: [0.2, 0.45, 0.7] },
+    );
+
+    PUBLIC_PROFILE_SECTION_ITEMS.forEach(({ id }) => {
+      const node = document.getElementById(id);
+      if (node) {
+        observer.observe(node);
+      }
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   if (isLoading) {
     return <LoadingState message="Preparing public reputation card..." />;
   }
@@ -113,90 +155,126 @@ export function PublicProfilePageClient({
           analyticsTarget="public-profile:stale"
         />
       ) : null}
-      <PublicProfileHero
-        user={data.user}
-        shareHeadline={data.shareHeadline}
-        archetype={abraInsights.data?.archetype}
-        identitySummary={abraInsights.data?.identitySummary}
-        aiMode={abraInsights.data?.generatedBy}
-      />
-      <div className="neon-callout rounded-[1.75rem] px-4 py-3 text-sm text-slate-200">
-        Public profiles summarize recent contribution evidence. Skill areas and repository rankings are snapshot-based signals, not absolute claims of expertise.
-      </div>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Total XP" value={data.user.gitRankScore} detail="The explainable score ledger currently served on this profile." icon={<Stars className="h-5 w-5 text-primary" />} />
-        <StatCard label="Merged PRs" value={data.user.mergedPrCount} detail="Merged work is the core reputation primitive." icon={<GitPullRequest className="h-5 w-5 text-primary" />} />
-        <StatCard label="Badges earned" value={data.user.badges.filter((badge) => badge.unlocked).length} detail="Verified contribution milestones, not vanity counters." icon={<ShieldCheck className="h-5 w-5 text-primary" />} />
-        <StatCard label="Consistency" value={`${data.user.consistencyScore}%`} detail={`Trend window: ${data.trendWindowLabel}`} icon={<CheckCircle2 className="h-5 w-5 text-primary" />} />
-      </div>
-      <div className="grid gap-6 xl:grid-cols-[1fr,1fr]">
-        <GlowCard className="space-y-5">
-          <div>
-            <p className="text-xs tracking-[0.24em] text-primary uppercase">Badge showcase</p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">Top unlocked badges</h2>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {data.user.badges.filter((badge) => badge.unlocked).slice(0, 4).map((badge) => (
-              <div key={badge.id} className="neon-surface rounded-[1.75rem] p-4">
-                <RarityBadge rarity={badge.rarity} />
-                <h3 className="mt-3 text-lg font-medium text-white">{badge.name}</h3>
-                <p className="mt-2 text-sm text-muted">{badge.description}</p>
-              </div>
-            ))}
-          </div>
-        </GlowCard>
-        <GlowCard className="space-y-5">
-          <div>
-            <p className="text-xs tracking-[0.24em] text-primary uppercase">Skill radar</p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">Strength map</h2>
-          </div>
-          <SkillRadarChart skills={data.user.skillTree} />
-        </GlowCard>
-      </div>
-      <BestPRsPanel reports={data.featuredContributions} />
-      <div className="grid gap-6 xl:grid-cols-[1.08fr,0.92fr]">
-        <GlowCard className="space-y-5">
-          <div>
-            <p className="text-xs tracking-[0.24em] text-primary uppercase">Contribution quality timeline</p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">{data.trendWindowLabel}</h2>
-          </div>
-          <TimelineChart data={data.user.xpTimeline} />
-        </GlowCard>
-        <GlowCard className="space-y-5">
-          <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
-            <Award className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-xs tracking-[0.24em] text-primary uppercase">Top repositories</p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">Where recent contribution signal is strongest</h2>
-          </div>
-          <div className="space-y-3">
-            {data.topRepositories.length === 0 ? (
-              <div className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
-                Repository-level signal is not available on this snapshot yet.
-              </div>
-            ) : (
-              data.topRepositories.slice(0, 4).map((repository) => (
-                <div key={repository.name} className="neon-surface rounded-[1.5rem] px-4 py-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="break-anywhere font-medium text-white">{repository.name}</p>
-                      <p className="break-anywhere text-sm text-muted">
-                        {repository.contributionCount} scored contributions
-                        {repository.primarySkill ? ` • ${repository.primarySkill}` : ""}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs tracking-[0.24em] text-primary uppercase">XP</p>
-                      <p className="mt-1 text-lg font-semibold text-white">{repository.totalXp}</p>
+      <nav
+        aria-label="Public profile quick sections"
+        className="glass-panel sticky top-4 z-20 flex flex-wrap items-center gap-2 border border-primary/20 p-2"
+      >
+        <p className="cyber-title px-2 text-[10px] tracking-[0.16em] text-cyan-200 uppercase">Jump to</p>
+        {PUBLIC_PROFILE_SECTION_ITEMS.map((section) => (
+          <a
+            key={section.id}
+            href={`#${section.id}`}
+            aria-current={activeSection === section.id ? "location" : undefined}
+            className={
+              activeSection === section.id
+                ? "focus-ring cyber-title border border-primary/45 bg-primary/16 px-3 py-1.5 text-[11px] tracking-[0.16em] text-white uppercase"
+                : "focus-ring cyber-title border border-transparent px-3 py-1.5 text-[11px] tracking-[0.16em] text-slate-200 uppercase hover:border-primary/28 hover:bg-primary/10"
+            }
+          >
+            {section.label}
+          </a>
+        ))}
+      </nav>
+      <section id="public-profile-overview" className="scroll-mt-24 space-y-6">
+        <PublicProfileHero
+          user={data.user}
+          shareHeadline={data.shareHeadline}
+          archetype={abraInsights.data?.archetype}
+          identitySummary={abraInsights.data?.identitySummary}
+          aiMode={abraInsights.data?.generatedBy}
+        />
+        <div className="neon-callout rounded-[1.75rem] px-4 py-3 text-sm text-slate-200">
+          Public profiles summarize recent contribution evidence. Skill areas and repository rankings are snapshot-based signals, not absolute claims of expertise.
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <StatCard label="Total XP" value={data.user.gitRankScore} detail="The explainable score ledger currently served on this profile." icon={<Stars className="h-5 w-5 text-primary" />} />
+          <StatCard label="Merged PRs" value={data.user.mergedPrCount} detail="Merged work is the core reputation primitive." icon={<GitPullRequest className="h-5 w-5 text-primary" />} />
+          <StatCard label="Badges earned" value={data.user.badges.filter((badge) => badge.unlocked).length} detail="Verified contribution milestones, not vanity counters." icon={<ShieldCheck className="h-5 w-5 text-primary" />} />
+          <StatCard label="Consistency" value={`${data.user.consistencyScore}%`} detail={`Trend window: ${data.trendWindowLabel}`} icon={<CheckCircle2 className="h-5 w-5 text-primary" />} />
+        </div>
+      </section>
+      <section id="public-profile-badges-skills" className="scroll-mt-24">
+        <div className="grid gap-6 xl:grid-cols-[1fr,1fr]">
+          <GlowCard className="space-y-5">
+            <div>
+              <p className="text-xs tracking-[0.24em] text-primary uppercase">Badge showcase</p>
+              <h2 className="mt-2 text-2xl font-semibold text-white">Top unlocked badges</h2>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {data.user.badges.filter((badge) => badge.unlocked).slice(0, 4).map((badge) => (
+                <div key={badge.id} className="neon-surface rounded-[1.75rem] p-4">
+                  <RarityBadge rarity={badge.rarity} />
+                  <h3 className="mt-3 text-lg font-medium text-white">{badge.name}</h3>
+                  <ExpandableText
+                    text={badge.description}
+                    lines={3}
+                    minLengthForToggle={120}
+                    className="mt-2"
+                    textClassName="text-sm text-muted"
+                    showMoreLabel="More"
+                    showLessLabel="Less"
+                  />
+                </div>
+              ))}
+            </div>
+          </GlowCard>
+          <GlowCard className="space-y-5">
+            <div>
+              <p className="text-xs tracking-[0.24em] text-primary uppercase">Skill radar</p>
+              <h2 className="mt-2 text-2xl font-semibold text-white">Strength map</h2>
+            </div>
+            <SkillRadarChart skills={data.user.skillTree} />
+          </GlowCard>
+        </div>
+      </section>
+      <section id="public-profile-best-prs" className="scroll-mt-24">
+        <BestPRsPanel reports={data.featuredContributions} />
+      </section>
+      <section id="public-profile-timeline-repos" className="scroll-mt-24">
+        <div className="grid gap-6 xl:grid-cols-[1.08fr,0.92fr]">
+          <GlowCard className="space-y-5">
+            <div>
+              <p className="text-xs tracking-[0.24em] text-primary uppercase">Contribution quality timeline</p>
+              <h2 className="mt-2 text-2xl font-semibold text-white">{data.trendWindowLabel}</h2>
+            </div>
+            <TimelineChart data={data.user.xpTimeline} />
+          </GlowCard>
+          <GlowCard className="space-y-5">
+            <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
+              <Award className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-xs tracking-[0.24em] text-primary uppercase">Top repositories</p>
+              <h2 className="mt-2 text-2xl font-semibold text-white">Where recent contribution signal is strongest</h2>
+            </div>
+            <div className="space-y-3">
+              {data.topRepositories.length === 0 ? (
+                <div className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
+                  Repository-level signal is not available on this snapshot yet.
+                </div>
+              ) : (
+                data.topRepositories.slice(0, 4).map((repository) => (
+                  <div key={repository.name} className="neon-surface rounded-[1.5rem] px-4 py-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="break-anywhere font-medium text-white">{repository.name}</p>
+                        <p className="break-anywhere text-sm text-muted">
+                          {repository.contributionCount} scored contributions
+                          {repository.primarySkill ? ` • ${repository.primarySkill}` : ""}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs tracking-[0.24em] text-primary uppercase">XP</p>
+                        <p className="mt-1 text-lg font-semibold text-white">{repository.totalXp}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
-            )}
-          </div>
-        </GlowCard>
-      </div>
+                ))
+              )}
+            </div>
+          </GlowCard>
+        </div>
+      </section>
     </div>
   );
 }

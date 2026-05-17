@@ -320,6 +320,10 @@
   - sticky `Jump to` rail for tabs, arena view, and climb guidance
   - active section tracking via `IntersectionObserver`
   - section anchors with `scroll-mt` offsets so hash links land correctly with sticky UI.
+- Added public profile in-page navigation and readability refinements:
+  - sticky `Jump to` rail for overview, badges+skills, best PRs, and timeline+repos
+  - active-section highlighting from `IntersectionObserver`
+  - badge descriptions now use `ExpandableText` to keep cards scannable without truncation loss.
 
 ## 2026-05-16
 
