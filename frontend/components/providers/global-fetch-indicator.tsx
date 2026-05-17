@@ -1,0 +1,23 @@
+"use client";
+
+import { useIsFetching, useIsMutating } from "@tanstack/react-query";
+
+export function GlobalFetchIndicator() {
+  const fetchCount = useIsFetching();
+  const mutationCount = useIsMutating();
+  const hasNetworkActivity = fetchCount + mutationCount > 0;
+
+  return (
+    <>
+      <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {hasNetworkActivity ? "Refreshing live data." : ""}
+      </span>
+      {hasNetworkActivity ? (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-x-0 top-0 z-50 h-0.5 bg-gradient-to-r from-primary via-primary-2 to-success shadow-[0_0_18px_rgb(34_226_255_/_0.35)]"
+        />
+      ) : null}
+    </>
+  );
+}
