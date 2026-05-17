@@ -22,12 +22,13 @@
   --text-strong: 251 253 255;
   --text-body: 242 248 255;
   --text-soft: 236 245 255;
-  --page-overlay-top-alpha: 0.08;
-  --page-overlay-bottom-alpha: 0.24;
-  --page-grid-opacity: 0.08;
-  --page-glow-opacity: 0.26;
+  --page-overlay-top-alpha: 0.03;
+  --page-overlay-bottom-alpha: 0.16;
+  --page-grid-opacity: 0.03;
+  --page-glow-opacity: 0.18;
   --surface-blur: 12px;
   --surface-blur-strong: 14px;
+  --radius-universal: 0.1rem;
   --radius-card: 0.1rem;
   --eyebrow-tracking-wide: 0.14em;
   --eyebrow-tracking-tight: 0.12em;
@@ -53,10 +54,10 @@ html[data-theme="midnight"] {
   --text-strong: 252 254 255;
   --text-body: 244 249 255;
   --text-soft: 238 246 255;
-  --page-overlay-top-alpha: 0.12;
-  --page-overlay-bottom-alpha: 0.32;
-  --page-grid-opacity: 0.08;
-  --page-glow-opacity: 0.22;
+  --page-overlay-top-alpha: 0.04;
+  --page-overlay-bottom-alpha: 0.18;
+  --page-grid-opacity: 0.03;
+  --page-glow-opacity: 0.16;
   --surface-blur: 10px;
   --surface-blur-strong: 12px;
 }
@@ -81,10 +82,10 @@ html[data-theme="aurora"] {
   --text-strong: 251 254 255;
   --text-body: 246 250 255;
   --text-soft: 240 248 255;
-  --page-overlay-top-alpha: 0.06;
-  --page-overlay-bottom-alpha: 0.2;
-  --page-grid-opacity: 0.05;
-  --page-glow-opacity: 0.16;
+  --page-overlay-top-alpha: 0.02;
+  --page-overlay-bottom-alpha: 0.12;
+  --page-grid-opacity: 0.02;
+  --page-glow-opacity: 0.12;
   --surface-blur: 9px;
   --surface-blur-strong: 11px;
 }
@@ -109,10 +110,10 @@ html[data-theme="high-contrast"] {
   --text-strong: 254 255 255;
   --text-body: 247 251 255;
   --text-soft: 239 246 255;
-  --page-overlay-top-alpha: 0.4;
-  --page-overlay-bottom-alpha: 0.8;
-  --page-grid-opacity: 0.08;
-  --page-glow-opacity: 0.26;
+  --page-overlay-top-alpha: 0.1;
+  --page-overlay-bottom-alpha: 0.32;
+  --page-grid-opacity: 0.02;
+  --page-glow-opacity: 0.14;
   --surface-blur: 8px;
   --surface-blur-strong: 10px;
 }
@@ -140,7 +141,11 @@ html[data-theme="high-contrast"] {
 *,
 *::before,
 *::after {
-  border-radius: 0.1rem !important;
+  border-radius: var(--radius-universal) !important;
+}
+
+:where([class~="rounded"], [class*=" rounded"], [class^="rounded-"], [class*="rounded-"]) {
+  border-radius: var(--radius-universal) !important;
 }
 
 html {
@@ -152,28 +157,15 @@ body {
   position: relative;
   overflow-x: hidden;
   min-height: 100vh;
-  background-image:
-    linear-gradient(
-      180deg,
-      rgb(0 3 12 / var(--page-overlay-top-alpha)),
-      rgb(var(--background) / var(--page-overlay-bottom-alpha))
-    ),
-    image-set(
-      url("/assets/background.webp") type("image/webp"),
-      url("/assets/background.jpg") type("image/jpeg")
-    );
-  background-position:
-    center center,
-    center center;
-  background-size:
-    cover,
-    cover;
-  background-repeat:
-    no-repeat,
-    no-repeat;
-  background-attachment:
-    scroll,
-    fixed;
+  background-color: rgb(var(--background));
+  background-image: image-set(
+    url("/assets/background.webp") type("image/webp"),
+    url("/assets/background.jpg") type("image/jpeg")
+  );
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   color: rgb(var(--text-body));
   font-family: var(--font-space-grotesk), sans-serif;
   text-rendering: optimizeLegibility;
@@ -197,18 +189,24 @@ body::before {
   z-index: -1;
   background:
     linear-gradient(
-      to bottom,
-      transparent 0%,
-      rgb(255 255 255 / 0.01) 50%,
-      transparent 100%
+      180deg,
+      rgb(0 3 12 / var(--page-overlay-top-alpha)),
+      rgb(2 7 18 / var(--page-overlay-bottom-alpha))
+    ),
+    radial-gradient(
+      circle at 50% -16%,
+      rgb(var(--primary) / 0.08) 0%,
+      rgb(var(--primary-2) / 0.04) 30%,
+      transparent 70%
     ),
     repeating-linear-gradient(
-      to right,
-      transparent 0 44px,
-      rgb(var(--primary) / 0.03) 44px 45px
+      90deg,
+      transparent 0 120px,
+      rgb(255 255 255 / 0.014) 120px 121px
     );
   background-size:
-    100% 5px,
+    100% 100%,
+    100% 100%,
     100% 100%;
   opacity: var(--page-grid-opacity);
 }
@@ -221,16 +219,16 @@ body::after {
   z-index: -1;
   background:
     radial-gradient(
-      circle at 50% -16%,
-      rgb(var(--primary-2) / 0.08) 0%,
-      rgb(var(--primary-2) / 0.05) 30%,
-      transparent 68%
+      circle at 14% 12%,
+      rgb(var(--primary) / 0.08) 0%,
+      rgb(var(--primary) / 0.03) 34%,
+      transparent 78%
     ),
     radial-gradient(
-      circle at -8% 94%,
-      rgb(var(--primary) / 0.07) 0%,
-      rgb(var(--primary) / 0.04) 34%,
-      transparent 64%
+      circle at 86% 86%,
+      rgb(var(--primary-2) / 0.08) 0%,
+      rgb(var(--primary-2) / 0.03) 32%,
+      transparent 80%
     );
   opacity: var(--page-glow-opacity);
 }
@@ -978,9 +976,7 @@ html[data-theme="high-contrast"] .neon-title {
 
 @media (max-width: 1100px) {
   body {
-    background-attachment:
-      scroll,
-      scroll;
+    background-attachment: scroll;
   }
 
   .glass-panel,
