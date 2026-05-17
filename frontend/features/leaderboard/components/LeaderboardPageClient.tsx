@@ -1,11 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LeaderboardArena } from "@/features/leaderboard/components/LeaderboardArena";
 import { useLeaderboard } from "@/hooks/use-leaderboard";
@@ -45,6 +47,11 @@ export function LeaderboardPageClient() {
       <PageHeader
         title="Leaderboard arena"
         description="A time-windowed ranking snapshot weighted by meaningful merged work, review depth, tests, and project context."
+        actions={(
+          <Button asChild variant="secondary">
+            <Link href="/dashboard/contributions">Open contributions</Link>
+          </Button>
+        )}
       />
       <Tabs value={tab} onValueChange={(value) => setTab(value as LeaderboardTab)}>
         <TabsList className="scrollbar-thin w-full overflow-x-auto whitespace-nowrap">
@@ -63,16 +70,19 @@ export function LeaderboardPageClient() {
         <ErrorState
           title="Leaderboard unavailable"
           description="The ranking snapshot could not be refreshed. Retry or keep browsing your existing public profile."
+          fallbackLabel="Open dashboard"
+          fallbackHref="/dashboard"
+          analyticsTarget="leaderboard:error"
         />
       ) : null}
       {!isLoading && !isError && rows.length === 0 ? (
-        <GlowCard strong className="space-y-4">
-          <p className="text-xs tracking-[0.24em] text-cyan-200 uppercase">Live data required</p>
-          <h2 className="text-2xl font-semibold text-white">No public leaderboard rows yet</h2>
-          <p className="text-sm text-slate-200/84">
-            GitRank does not fabricate leaderboard identities. Rows appear only after contributors complete OAuth, sync, and enable public participation.
-          </p>
-        </GlowCard>
+        <EmptyState
+          title="No public leaderboard rows yet"
+          description="GitRank does not fabricate leaderboard identities. Rows appear only after contributors complete OAuth, sync, and enable public participation."
+          actionLabel="Open contributions"
+          actionHref="/dashboard/contributions"
+          analyticsTarget="leaderboard:no-live-rows"
+        />
       ) : null}
       {!isLoading && !isError && snapshot && rows.length ? (
         <>
@@ -91,6 +101,9 @@ export function LeaderboardPageClient() {
         <EmptyState
           title="Sparse live leaderboard data"
           description="This arena currently has limited active profiles. Rank movement is real, but competitive context is still building."
+          actionLabel="Open contributions"
+          actionHref="/dashboard/contributions"
+          analyticsTarget="leaderboard:empty"
         />
       ) : null}
     </div>

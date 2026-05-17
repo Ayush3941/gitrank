@@ -34,6 +34,9 @@ export function PRBattleReportPageClient({
       <ErrorState
         title="Battle report failed"
         description="The score breakdown could not be computed. Retry or return to the contribution drill-down."
+        fallbackLabel="Open contributions"
+        fallbackHref="/dashboard/contributions"
+        analyticsTarget="pr-report:error"
       />
     );
   }
@@ -43,6 +46,9 @@ export function PRBattleReportPageClient({
       <EmptyState
         title="Battle report not found"
         description="This PR either has not been synced, is private, or has not produced a persisted analysis and score report yet."
+        actionLabel="Open contributions"
+        actionHref="/dashboard/contributions"
+        analyticsTarget="pr-report:empty"
       />
     );
   }
@@ -56,6 +62,11 @@ export function PRBattleReportPageClient({
       <PageHeader
         title="PR battle report"
         description="Explainable contribution scoring, not a mysterious number."
+        actions={(
+          <Button asChild variant="secondary">
+            <Link href="/dashboard/contributions">Back to contributions</Link>
+          </Button>
+        )}
       />
       <div className="neon-callout rounded-[1.75rem] px-4 py-3 text-sm text-slate-200">
         Report metadata: score version {data.scoreVersion || "unknown"} • analysis version{" "}

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { CalendarClock, Flame, ShieldCheck } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -8,6 +9,7 @@ import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { StaleState } from "@/components/shared/StaleState";
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { QuestCard } from "@/features/quests/components/QuestCard";
 import { useQuests } from "@/hooks/use-quests";
@@ -37,12 +39,20 @@ export function QuestsPageClient() {
       <PageHeader
         title="Quest board"
         description="Daily, weekly, and long-term missions from the backend quest engine with evidence-aware completion states."
+        actions={(
+          <Button asChild variant="secondary">
+            <Link href="/dashboard/contributions">Open contributions</Link>
+          </Button>
+        )}
       />
       {data?.staleness?.isStale ? (
         <StaleState
           message={`Quest snapshot refreshed ${formatRelativeDays(
             data.staleness.refreshedAt,
           )}. Live quest signals may lag until the next sync completes.`}
+          actionLabel="Open settings"
+          actionHref="/dashboard/settings"
+          analyticsTarget="quests:stale"
         />
       ) : null}
       {!isLoading && !isError && profile ? (
@@ -80,6 +90,9 @@ export function QuestsPageClient() {
         <ErrorState
           title="Quest engine unavailable"
           description="The recommendation system could not finish. Retry or fall back to your last synced quest board."
+          fallbackLabel="Open settings"
+          fallbackHref="/dashboard/settings"
+          analyticsTarget="quests:error"
         />
       ) : null}
       {!isLoading && !isError && quests.length === 0 ? (
@@ -87,6 +100,8 @@ export function QuestsPageClient() {
           title="No quests ready yet."
           description="Leaderboard unlocks after your first verified score, and quests sharpen once the system sees enough meaningful work."
           actionLabel="Sync profile"
+          actionHref="/dashboard/settings"
+          analyticsTarget="quests:empty"
         />
       ) : null}
       {!isLoading && !isError && data ? (

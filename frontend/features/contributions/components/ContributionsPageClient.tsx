@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Flame, Radar, Sparkles, Swords } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -11,6 +12,7 @@ import { ContributionFilters } from "@/features/contributions/components/Contrib
 import { ContributionList } from "@/features/contributions/components/ContributionList";
 import { useContributions } from "@/hooks/use-contributions";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
+import { Button } from "@/components/ui/button";
 import {
   monthTimeline,
   summarizeContributionStreak,
@@ -120,6 +122,11 @@ export function ContributionsPageClient() {
       <PageHeader
         title="Contribution drill-down"
         description="Achievement-grade contribution intelligence with score signals, timeline momentum, and AI-ready impact copy."
+        actions={(
+          <Button asChild variant="secondary">
+            <Link href="/dashboard/settings">Sync settings</Link>
+          </Button>
+        )}
       />
       {profile ? (
         <div className="neon-callout rounded-[1.5rem] px-4 py-3 text-sm text-slate-200">
@@ -139,6 +146,9 @@ export function ContributionsPageClient() {
         <ErrorState
           title="Contribution sync failed"
           description="GitHub rate limit reached or the PR analysis cache expired. Retry or inspect the last synced profile snapshot."
+          fallbackLabel="Open settings"
+          fallbackHref="/dashboard/settings"
+          analyticsTarget="contributions:error"
         />
       ) : null}
       {!isLoading && !isError && filteredRows.length === 0 ? (
@@ -146,6 +156,8 @@ export function ContributionsPageClient() {
           title="No merged PRs found yet."
           description="Start with a small real contribution: docs, tests, or a bug fix. Meaningful work unlocks the shelf."
           actionLabel="Review quest queue"
+          actionHref="/dashboard/quests"
+          analyticsTarget="contributions:empty"
         />
       ) : null}
       {!isLoading && !isError && profile ? (

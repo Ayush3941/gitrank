@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef } from "react";
 import { Activity, Flame, Medal, ShieldCheck, Swords } from "lucide-react";
 import { DashboardHeroRankCard } from "@/features/dashboard/components/DashboardHeroRankCard";
@@ -17,6 +18,7 @@ import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
+import { Button } from "@/components/ui/button";
 import { formatRelativeDays } from "@/lib/formatters";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
@@ -107,6 +109,9 @@ export function DashboardPageClient() {
       <ErrorState
         title="Dashboard sync failed"
         description="GitHub rate limits or AI analysis delays can leave the dashboard partially unavailable. Retry or fall back to the last verified profile."
+        fallbackLabel="Open settings"
+        fallbackHref="/dashboard/settings"
+        analyticsTarget="dashboard:error"
       />
     );
   }
@@ -116,12 +121,20 @@ export function DashboardPageClient() {
       <PageHeader
         title="Command center"
         description="Snapshot-based contribution analytics, progression, and score explanations weighted toward meaningful merged work."
+        actions={(
+          <Button asChild variant="secondary">
+            <Link href="/dashboard/settings">Sync and privacy</Link>
+          </Button>
+        )}
       />
       {user.syncStatus.state === "stale" ? (
         <StaleState
           message={`Your GitRank profile was refreshed ${formatRelativeDays(
             data.refreshedAt,
           )}.`}
+          actionLabel="Open settings"
+          actionHref="/dashboard/settings"
+          analyticsTarget="dashboard:stale"
         />
       ) : null}
       <DashboardHeroRankCard

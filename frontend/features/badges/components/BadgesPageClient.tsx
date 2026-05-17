@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Crown, ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -8,6 +9,7 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BadgeGrid } from "@/features/badges/components/BadgeGrid";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
@@ -19,8 +21,10 @@ import type { BadgeRarity } from "@/types/gitrank";
 export function BadgesPageClient() {
   const { data, isLoading, isError } = useBadges();
   const badgeViewedEventSent = useRef(false);
+  const previousUnlockedCountRef = useRef<number | null>(null);
   const [rarity, setRarity] = useState<BadgeRarity | "All">("All");
   const [visibility, setVisibility] = useState<"All" | "Unlocked" | "Locked">("All");
+  const [unlockNotice, setUnlockNotice] = useState("");
 
   const filtered =
     data?.badges.filter((badge) => {
@@ -95,11 +99,33 @@ export function BadgesPageClient() {
     });
   }, [data, isError, isLoading]);
 
+  useEffect(() => {
+    if (isLoading || isError || !data) {
+      return;
+    }
+    const previous = previousUnlockedCountRef.current;
+    previousUnlockedCountRef.current = unlockedCount;
+    if (previous === null || unlockedCount <= previous) {
+      return;
+    }
+    const delta = unlockedCount - previous;
+    setUnlockNotice(
+      delta === 1
+        ? "Badge unlocked. Your shelf gained 1 new achievement."
+        : `Badges unlocked. Your shelf gained ${delta} new achievements.`,
+    );
+  }, [data, isError, isLoading, unlockedCount]);
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Badge shelf"
         description="Turn each unlocked badge into a story, track locked paths, and frame progression as a visible contributor journey."
+        actions={(
+          <Button asChild variant="secondary">
+            <Link href="/dashboard/quests">Open quests</Link>
+          </Button>
+        )}
       />
       {!isLoading && !isError && profile ? (
         <GlowCard strong className="cyber-hero-shell relative overflow-hidden">
@@ -136,6 +162,11 @@ export function BadgesPageClient() {
               <p className="text-xs tracking-[0.24em] text-cyan-200 uppercase">Badge lane progress</p>
               <Progress value={completionPercent} />
             </div>
+            {unlockNotice ? (
+              <p role="status" aria-live="polite" className="text-sm text-emerald-200">
+                {unlockNotice}
+              </p>
+            ) : null}
           </div>
         </GlowCard>
       ) : null}
@@ -167,6 +198,9 @@ export function BadgesPageClient() {
         <ErrorState
           title="Badge sync failed"
           description="Some badge evidence could not be verified from GitHub. Retry sync or use partial profile data."
+          fallbackLabel="Open settings"
+          fallbackHref="/dashboard/settings"
+          analyticsTarget="badges:error"
         />
       ) : null}
       {!isLoading && !isError && filtered.length === 0 ? (
@@ -174,6 +208,8 @@ export function BadgesPageClient() {
           title="Your badge shelf is waiting."
           description="Complete your first meaningful merged PR to start unlocking visible reputation proof."
           actionLabel="Open quests"
+          actionHref="/dashboard/quests"
+          analyticsTarget="badges:empty"
         />
       ) : null}
       {!isLoading && !isError && filtered.length ? (

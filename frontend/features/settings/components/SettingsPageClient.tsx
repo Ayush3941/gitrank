@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Download, FolderGit2, LogOut, Palette, Sparkles, Trash2 } from "lucide-react";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -202,6 +203,11 @@ export function SettingsPageClient() {
       <PageHeader
         title="Settings and privacy"
         description="Choose what becomes public, which repositories stay visible, and how much of your GitRank profile is shared."
+        actions={(
+          <Button asChild variant="secondary">
+            <Link href={`/u/${data.user.username}`}>View public profile</Link>
+          </Button>
+        )}
       />
       <GlowCard className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">

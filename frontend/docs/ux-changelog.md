@@ -31,6 +31,9 @@
 - Adjusted overlay density to reveal more of the locked background image while
   preserving readable text contrast, and added Safari-compatible
   `-webkit-backdrop-filter` + no-backdrop fallback surfaces.
+- Added consistent `PageHeader` primary actions across key routes
+  (dashboard/contributions/badges/quests/leaderboard/settings/PR report) so
+  each page has a clear next action instead of dead-end reading states.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`
