@@ -8,7 +8,18 @@
     "start": "next start",
     "lint": "eslint",
     "check:no-production-mocks": "node scripts/check-no-production-mocks.mjs",
-    "test:smoke": "vitest run tests/live-fixture-render.test.tsx"
+    "check:client-env-safety": "node scripts/check-client-env-safety.mjs",
+    "check:server-boundaries": "node scripts/check-server-boundaries.mjs",
+    "check:cache-strategy": "node scripts/check-route-cache-strategy.mjs",
+    "check:contrast": "node scripts/check-contrast-tokens.mjs",
+    "check:media-stability": "node scripts/check-media-layout-stability.mjs",
+    "check:main-thread": "node scripts/check-main-thread-guards.mjs",
+    "check:perf-budgets": "node scripts/check-performance-budgets.mjs",
+    "analyze:bundle": "node scripts/analyze-bundle.mjs",
+    "test:smoke": "vitest run tests/live-fixture-render.test.tsx",
+    "test:a11y": "vitest run tests/accessibility.test.tsx tests/accessibility-controls.test.tsx tests/settings-form-accessibility.test.tsx",
+    "test:contracts": "vitest run tests/bff-route-contract.test.ts",
+    "test:visual": "vitest run tests/visual-regression.test.tsx"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
@@ -23,7 +34,6 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.14.0",
-    "motion": "^12.38.0",
     "next": "16.2.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -43,6 +53,7 @@
     "jsdom": "^29.1.1",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^4.1.6"
+    "vitest": "^4.1.6",
+    "vitest-axe": "^0.1.0"
   }
 }

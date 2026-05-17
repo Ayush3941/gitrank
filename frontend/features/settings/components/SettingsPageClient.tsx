@@ -57,6 +57,9 @@ export function SettingsPageClient() {
       <ErrorState
         title="Settings unavailable"
         description="Profile settings could not be loaded. Keep using the last verified profile and retry shortly."
+        fallbackLabel="Back to dashboard"
+        fallbackHref="/dashboard"
+        analyticsTarget="settings:error"
       />
     );
   }
@@ -80,6 +83,8 @@ export function SettingsPageClient() {
     exportAccount.isPending ||
     accountLinkStart.isPending;
   const pendingRepository = updateRepositoryVisibility.variables?.fullName ?? null;
+  const accountActionNoticeId = "settings-account-action-notice";
+  const accountActionErrorId = "settings-account-action-error";
 
   function handlePrivacyToggle(key: BackedPrivacyKey, checked: boolean) {
     if (key === "reducedGamification") {
@@ -199,8 +204,16 @@ export function SettingsPageClient() {
         <p className="text-sm text-muted">
           Automatic GitHub sync runs in the background when you open authenticated dashboard routes. Export excludes token secrets and secret hashes.
         </p>
-        {actionNotice ? <p className="text-sm text-sky-100">{actionNotice}</p> : null}
-        {actionError ? <p className="text-sm text-rose-200">{actionError}</p> : null}
+        {actionNotice ? (
+          <p id={accountActionNoticeId} role="status" aria-live="polite" className="text-sm text-sky-100">
+            {actionNotice}
+          </p>
+        ) : null}
+        {actionError ? (
+          <p id={accountActionErrorId} role="alert" className="text-sm text-rose-200">
+            {actionError}
+          </p>
+        ) : null}
       </GlowCard>
 
       <SettingSection
@@ -231,6 +244,7 @@ export function SettingsPageClient() {
           </div>
           <Switch
             id="reduced-gamification"
+            aria-label="Reduced gamification"
             checked={currentSettings.reducedGamification}
             disabled={isSaving}
             onCheckedChange={(checked) => handlePrivacyToggle("reducedGamification", checked)}
@@ -296,16 +310,30 @@ function SettingSection({
         <h2 className="text-2xl font-semibold text-white">{title}</h2>
         {saving ? <p className="text-sm text-primary">Saving…</p> : null}
       </div>
-      {errorMessage ? <p className="text-sm text-rose-200">{errorMessage}</p> : null}
+      {errorMessage ? (
+        <p id={`${toControlID(title)}-error`} role="alert" className="text-sm text-rose-200">
+          {errorMessage}
+        </p>
+      ) : null}
       <div className="space-y-3">
-        {rows.map(([label, checked, onCheckedChange]) => (
+        {rows.map(([label, checked, onCheckedChange], index) => {
+          const controlID = `${toControlID(title)}-${toControlID(label)}-${index}`;
+          return (
           <div key={label} className="neon-surface flex items-center justify-between gap-4 rounded-[1.75rem] px-4 py-4">
-            <label className="text-sm text-slate-200" htmlFor={label}>
+            <label className="text-sm text-slate-200" htmlFor={controlID}>
               {label}
             </label>
-            <Switch id={label} checked={checked} disabled={disabled} onCheckedChange={onCheckedChange} />
+            <Switch
+              id={controlID}
+              checked={checked}
+              disabled={disabled}
+              onCheckedChange={onCheckedChange}
+              aria-invalid={errorMessage ? true : undefined}
+              aria-describedby={errorMessage ? `${toControlID(title)}-error` : undefined}
+            />
           </div>
-        ))}
+          );
+        })}
       </div>
     </GlowCard>
   );
@@ -323,4 +351,11 @@ function downloadJSON(payload: unknown, filename: string) {
   anchor.click();
   anchor.remove();
   URL.revokeObjectURL(url);
+}
+
+function toControlID(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
