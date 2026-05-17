@@ -76,6 +76,26 @@ Use this path with either:
   `GITHUB_APP_PRIVATE_KEY_FILE` or `GITHUB_APP_PRIVATE_KEY_PEM`) so the script
   can bootstrap a short-lived installation token.
 
+If you only have OAuth app credentials (`GITHUB_CLIENT_ID`,
+`GITHUB_CLIENT_SECRET`), you can mint a temporary admin token through device
+flow first:
+
+```bash
+cd gitrank
+GITHUB_DEVICE_FLOW_SCOPES="repo read:org admin:repo_hook" \
+TOKEN_OUTPUT_FILE=/tmp/gitrank-repo-admin-token.txt \
+make create-github-repo-admin-token-via-device-flow
+
+export GITRANK_REPO_ADMIN_TOKEN="$(cat /tmp/gitrank-repo-admin-token.txt)"
+```
+
+Then run apply/verify as usual with `GITRANK_REPO_ADMIN_TOKEN`.
+
+If the command returns `Device Flow must be explicitly enabled for this App`,
+enable Device Flow in GitHub App/OAuth app settings first, or use a temporary
+fine-grained PAT with repository administration plus Dependabot-alert read
+access as `GITRANK_REPO_ADMIN_TOKEN`.
+
 The script refuses to mutate live settings unless both the confirmation flag
 and exact status check names are provided.
 
