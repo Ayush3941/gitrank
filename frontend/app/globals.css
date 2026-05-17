@@ -281,6 +281,11 @@ select {
   outline-offset: 2px;
 }
 
+:where(button:disabled, input:disabled, select:disabled, textarea:disabled, [aria-disabled="true"]) {
+  opacity: 0.58;
+  filter: saturate(0.82);
+}
+
 .focus-ring {
   @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
   min-width: 24px;

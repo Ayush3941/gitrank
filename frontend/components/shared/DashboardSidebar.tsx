@@ -23,7 +23,7 @@ export function DashboardSidebar() {
           </div>
           <div className="min-w-0">
             <p className="cyber-title truncate text-base font-semibold text-white">GitRank</p>
-            <p className="text-[10px] tracking-[0.22em] text-primary uppercase">Dashboard</p>
+            <p className="text-[11px] tracking-[0.18em] text-primary uppercase">Dashboard</p>
           </div>
         </Link>
         <nav aria-label="Dashboard navigation sidebar" className="space-y-1">
@@ -36,10 +36,10 @@ export function DashboardSidebar() {
                 href={item.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "focus-ring relative flex items-center gap-3 border px-3 py-2.5 text-sm font-medium transition-colors",
+                  "focus-ring relative flex items-center gap-3 border px-3 py-2.5 text-[0.95rem] leading-5 font-medium transition-colors",
                   active
-                    ? "border-primary/42 bg-gradient-to-r from-primary/26 via-primary/16 to-primary-2/24 text-white shadow-[0_0_18px_rgb(34_226_255_/_0.28)]"
-                    : "border-transparent text-muted hover:border-primary/28 hover:bg-primary/10 hover:text-white",
+                    ? "border-primary/42 bg-gradient-to-r from-primary/24 via-primary/16 to-primary-2/24 text-white shadow-[0_0_16px_rgb(34_226_255_/_0.22)]"
+                    : "border-transparent text-slate-200 hover:border-primary/28 hover:bg-primary/10 hover:text-white",
                 )}
               >
                 <span

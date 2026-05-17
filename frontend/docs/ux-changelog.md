@@ -15,6 +15,12 @@
 - Smoothed shell atmosphere rendering in `AppShell`:
   - simplified layered glow/background grid composition
   - reduced decorative overdraw while keeping neon/cyberpunk identity
+- Navigation/control readability polish:
+  - increased sidebar and mobile-nav label legibility (size/spacing/contrast)
+  - reduced active-item glow harshness while preserving selection clarity
+  - tuned shared button variants for clearer default text and lighter shadow cost
+  - added consistent disabled control treatment (`opacity` + `saturation`) for
+    clearer state signaling.
 
 - Optimized hero/background rendering while preserving cyber style:
   - compressed `public/background.jpg` from large source to web-safe size

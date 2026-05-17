@@ -9,13 +9,13 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "border-primary/30 bg-gradient-to-r from-primary via-primary-2 to-primary text-background shadow-[0_0_30px_rgb(34_226_255_/_0.46)] hover:brightness-110 hover:shadow-[0_0_40px_rgb(34_226_255_/_0.55)]",
+          "border-primary/34 bg-gradient-to-r from-primary via-primary-2 to-primary text-background shadow-[0_0_18px_rgb(34_226_255_/_0.28)] hover:brightness-105 hover:shadow-[0_0_24px_rgb(34_226_255_/_0.34)]",
         secondary:
-          "neon-tile border-primary/32 text-foreground hover:border-primary/52 hover:text-white",
+          "neon-tile border-primary/32 text-foreground hover:border-primary/48 hover:text-white hover:shadow-[0_0_20px_rgb(34_226_255_/_0.16)]",
         ghost:
-          "text-muted hover:border-primary/24 hover:bg-primary/10 hover:text-foreground hover:shadow-[0_0_26px_rgb(34_226_255_/_0.14)]",
+          "text-slate-200 hover:border-primary/24 hover:bg-primary/10 hover:text-white hover:shadow-[0_0_18px_rgb(34_226_255_/_0.12)]",
         danger:
-          "border-danger/38 bg-danger/82 text-white shadow-[0_0_24px_rgb(248_113_113_/_0.26)] hover:bg-danger",
+          "border-danger/40 bg-danger/82 text-white shadow-[0_0_18px_rgb(248_113_113_/_0.22)] hover:bg-danger",
       },
       size: {
         sm: "h-10 px-4 text-sm",
