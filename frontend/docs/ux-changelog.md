@@ -29,6 +29,12 @@
     public profile stale banners for stronger snapshot trust.
   - added `tests/stale-state.test.tsx` to lock rendering of the exact
     verification timestamp hint.
+- Sync status pill now exposes exact timestamp text visibly (not only via
+  tooltip/title):
+  - the top-bar sync badge now appends an inline exact sync timestamp on wider
+    layouts while keeping the relative age text
+  - added `tests/sync-status-pill.test.tsx` to lock visible exact-timestamp
+    rendering alongside status + relative freshness copy.
 - Dashboard auto-sync now executes direct user sync runs instead of relying on
   queue-only triggers, so authenticated route opens actively refresh profile
   evidence without requiring manual sync controls.

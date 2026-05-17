@@ -24,6 +24,7 @@ export function SyncStatusPill({
   const Icon = meta.icon;
   const relative = formatRelativeDays(status.lastSyncedAt);
   const exact = formatDateTime(status.lastSyncedAt);
+  const showExact = exact !== "Unknown";
 
   return (
     <div
@@ -38,6 +39,9 @@ export function SyncStatusPill({
       <Icon className="h-3.5 w-3.5" />
       <span>{meta.label}</span>
       <span className="text-current">{relative}</span>
+      {showExact ? (
+        <span className="hidden text-current/90 md:inline">({exact})</span>
+      ) : null}
     </div>
   );
 }
