@@ -1,11 +1,16 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { AlertTriangle, ArrowUpRight, Zap } from "lucide-react";
 import { DashboardQuickActions } from "@/components/shared/DashboardQuickActions";
+import { DashboardShortcutHelpDialog } from "@/components/shared/DashboardShortcutHelpDialog";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
 import { TextScaleQuickSwitcher } from "@/components/shared/TextScaleQuickSwitcher";
 import { ThemeQuickSwitcher } from "@/components/shared/ThemeQuickSwitcher";
+import { Button } from "@/components/ui/button";
 import type { UserProfile } from "@/types/gitrank";
 
 export type AutoSyncNote = {
@@ -26,6 +31,7 @@ export function DashboardTopBar({
   syncPending?: boolean;
   showQuickActions?: boolean;
 }) {
+  const [shortcutHelpOpen, setShortcutHelpOpen] = useState(false);
   const autoSyncToneClass =
     autoSyncNote?.tone === "success"
       ? "text-emerald-100"
@@ -33,53 +39,96 @@ export function DashboardTopBar({
         ? "text-amber-100"
         : "text-slate-200";
 
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.defaultPrevented || event.repeat) {
+        return;
+      }
+      if (event.metaKey || event.ctrlKey || event.altKey) {
+        return;
+      }
+      if (isEditableTarget(event.target)) {
+        return;
+      }
+      const isQuestionShortcut = event.key === "?" || (event.shiftKey && event.key === "/");
+      if (!isQuestionShortcut) {
+        return;
+      }
+      event.preventDefault();
+      setShortcutHelpOpen(true);
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
   return (
-    <div className="glass-panel cyber-card cyber-frame panel-grid sticky top-4 z-30 mb-6 rounded-[2rem] px-5 py-4">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap items-center gap-3">
-          <SyncStatusPill status={user.syncStatus} />
-          <RankBadge rank={user.level.rankTier} />
-          <div className="hud-pill inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs text-foreground">
-            <Zap className="h-3.5 w-3.5 text-primary" />
-            <span className="numeric-readout">{user.weeklyXp.toLocaleString("en-US")}</span> weekly XP
+    <>
+      <div className="glass-panel cyber-card cyber-frame panel-grid sticky top-4 z-30 mb-6 rounded-[2rem] px-5 py-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-wrap items-center gap-3">
+            <SyncStatusPill status={user.syncStatus} />
+            <RankBadge rank={user.level.rankTier} />
+            <div className="hud-pill inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs text-foreground">
+              <Zap className="h-3.5 w-3.5 text-primary" />
+              <span className="numeric-readout">{user.weeklyXp.toLocaleString("en-US")}</span> weekly XP
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {showQuickActions ? (
+              <DashboardQuickActions
+                username={user.username}
+                onRunSyncNow={onRunSyncNow}
+                onOpenShortcutsHelp={() => {
+                  setShortcutHelpOpen(true);
+                }}
+                syncPending={syncPending}
+              />
+            ) : null}
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                setShortcutHelpOpen(true);
+              }}
+              className="gap-2"
+            >
+              Shortcuts
+              <kbd className="hidden text-[11px] sm:inline">?</kbd>
+            </Button>
+            <ThemeQuickSwitcher compact />
+            <TextScaleQuickSwitcher compact />
+            <Link
+              href={`/u/${user.username}`}
+              className="focus-ring cyber-link inline-flex items-center gap-2 text-sm font-medium"
+            >
+              View public profile
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
+            <ShareProfileButton
+              variant="ghost"
+              size="sm"
+              username={user.username}
+              displayName={user.displayName}
+              shareHeadline={`${user.displayName} is ${user.title} on GitRank.`}
+              analyticsTargetPrefix="dashboard-topbar"
+            />
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {showQuickActions ? (
-            <DashboardQuickActions
-              username={user.username}
-              onRunSyncNow={onRunSyncNow}
-              syncPending={syncPending}
-            />
-          ) : null}
-          <ThemeQuickSwitcher compact />
-          <TextScaleQuickSwitcher compact />
-          <Link
-            href={`/u/${user.username}`}
-            className="focus-ring cyber-link inline-flex items-center gap-2 text-sm font-medium"
-          >
-            View public profile
-            <ArrowUpRight className="h-4 w-4" />
-          </Link>
-          <ShareProfileButton
-            variant="ghost"
-            size="sm"
-            username={user.username}
-            displayName={user.displayName}
-            shareHeadline={`${user.displayName} is ${user.title} on GitRank.`}
-            analyticsTargetPrefix="dashboard-topbar"
-          />
-        </div>
+        <p
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className={autoSyncNote ? `mt-3 text-sm ${autoSyncToneClass}` : "sr-only"}
+        >
+          {autoSyncNote?.message ?? ""}
+        </p>
       </div>
-      <p
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        className={autoSyncNote ? `mt-3 text-sm ${autoSyncToneClass}` : "sr-only"}
-      >
-        {autoSyncNote?.message ?? ""}
-      </p>
-    </div>
+      <DashboardShortcutHelpDialog open={shortcutHelpOpen} onOpenChange={setShortcutHelpOpen} />
+    </>
   );
 }
 
@@ -111,5 +160,23 @@ export function DashboardTopBarUnavailable() {
         <ArrowUpRight className="h-4 w-4" />
       </Link>
     </div>
+  );
+}
+
+function isEditableTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+  if (target.isContentEditable) {
+    return true;
+  }
+  const tagName = target.tagName.toLowerCase();
+  if (tagName === "input" || tagName === "textarea" || tagName === "select") {
+    return true;
+  }
+  return Boolean(
+    target.closest(
+      "input, textarea, select, [contenteditable='true'], [contenteditable=''], [role='textbox'], [aria-multiline='true']",
+    ),
   );
 }

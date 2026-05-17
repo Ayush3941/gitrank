@@ -35,12 +35,14 @@ type ActionTone = "default" | "success" | "info";
 type DashboardQuickActionsProps = {
   username: string;
   onRunSyncNow?: () => void;
+  onOpenShortcutsHelp?: () => void;
   syncPending?: boolean;
 };
 
 export function DashboardQuickActions({
   username,
   onRunSyncNow,
+  onOpenShortcutsHelp,
   syncPending = false,
 }: DashboardQuickActionsProps) {
   const router = useRouter();
@@ -124,8 +126,38 @@ export function DashboardQuickActions({
       },
     };
 
-    return [...routeActions, profileAction, syncAction, themeAction, textAction];
-  }, [onRunSyncNow, pathname, router, setTextScale, setTheme, syncPending, textScale, theme, username]);
+    const shortcutsAction: QuickActionItem = {
+      id: "help:shortcuts",
+      group: "Help",
+      label: "Open keyboard shortcuts help",
+      description: "View all dashboard keyboard actions and discovery tips",
+      keywords: ["help", "shortcuts", "keyboard", "question mark"],
+      shortcut: "?",
+      execute: () => {
+        onOpenShortcutsHelp?.();
+      },
+    };
+
+    return [
+      ...routeActions,
+      profileAction,
+      syncAction,
+      themeAction,
+      textAction,
+      shortcutsAction,
+    ];
+  }, [
+    onOpenShortcutsHelp,
+    onRunSyncNow,
+    pathname,
+    router,
+    setTextScale,
+    setTheme,
+    syncPending,
+    textScale,
+    theme,
+    username,
+  ]);
 
   const filteredActions = useMemo(
     () => filterQuickActions(actions, deferredQuery),

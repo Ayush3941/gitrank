@@ -2,6 +2,13 @@
 
 ## 2026-05-17
 
+- Keyboard shortcut help overlay:
+  - added `DashboardShortcutHelpDialog` with an in-app quick-reference for
+    navigation, command palette, and display shortcuts
+  - added a visible `Shortcuts` top-bar trigger plus global `?` hotkey
+    (non-editable-field safe) for fast discovery
+  - wired quick actions to include `Open keyboard shortcuts help` in a
+    dedicated `Help` group so shortcut discovery is reachable from `Ctrl/Cmd+K`.
 - Dashboard quick-actions command palette:
   - added `DashboardQuickActions` (`components/shared/DashboardQuickActions.tsx`)
     with searchable keyboard-first actions (`Ctrl/Cmd+K`) for route jumps,

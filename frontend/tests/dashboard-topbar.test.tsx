@@ -47,4 +47,9 @@ describe("DashboardTopBar", () => {
     expect(status.getAttribute("aria-live")).toBe("polite");
     expect(status.getAttribute("aria-atomic")).toBe("true");
   });
+
+  it("renders a visible keyboard shortcut help trigger", () => {
+    render(<DashboardTopBar user={userFixture as unknown as UserProfile} />);
+    expect(screen.getByRole("button", { name: /Shortcuts/i })).toBeTruthy();
+  });
 });
