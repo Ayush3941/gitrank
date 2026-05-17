@@ -17,11 +17,28 @@ export function formatDate(value?: string) {
 
 export function formatRelativeDays(value?: string) {
   if (!value) return "Never synced";
-  const days = Math.max(
-    0,
-    Math.round((Date.now() - new Date(value).getTime()) / (1000 * 60 * 60 * 24)),
-  );
-  if (days === 0) return "Synced today";
+  const timestamp = new Date(value).getTime();
+  if (Number.isNaN(timestamp)) return "Unknown sync time";
+  const deltaMs = Date.now() - timestamp;
+  if (deltaMs <= 0) return "Just now";
+  const minutes = Math.floor(deltaMs / (1000 * 60));
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
   if (days === 1) return "1 day ago";
   return `${days} days ago`;
+}
+
+export function formatDateTime(value?: string) {
+  if (!value) return "Unknown";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Unknown";
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
 }

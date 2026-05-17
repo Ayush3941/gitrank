@@ -1,6 +1,6 @@
 import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, ShieldAlert, WifiOff } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { formatRelativeDays } from "@/lib/formatters";
+import { formatDateTime, formatRelativeDays } from "@/lib/formatters";
 import type { SyncStatus } from "@/types/gitrank";
 
 const statusMap = {
@@ -22,6 +22,8 @@ export function SyncStatusPill({
 }) {
   const meta = statusMap[status.state];
   const Icon = meta.icon;
+  const relative = formatRelativeDays(status.lastSyncedAt);
+  const exact = formatDateTime(status.lastSyncedAt);
 
   return (
     <div
@@ -30,10 +32,12 @@ export function SyncStatusPill({
         meta.tone,
         className,
       )}
+      title={`Last synced ${exact}`}
+      aria-label={`${meta.label}. Last synced ${relative}. Exact time ${exact}.`}
     >
       <Icon className="h-3.5 w-3.5" />
       <span>{meta.label}</span>
-      <span className="text-current">{formatRelativeDays(status.lastSyncedAt)}</span>
+      <span className="text-current">{relative}</span>
     </div>
   );
 }

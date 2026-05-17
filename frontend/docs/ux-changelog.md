@@ -2,6 +2,14 @@
 
 ## 2026-05-17
 
+- Sync freshness readability/traceability upgrade:
+  - `formatRelativeDays` now reports recent sync age with minute/hour precision
+    (for example `2m ago`, `3h ago`) before day-level buckets
+  - `SyncStatusPill` now exposes exact local sync timestamp via tooltip and
+    assistive label text (`Last synced <timestamp>`) to improve trust around
+    stale/partial states
+  - added `tests/formatters.test.ts` to lock formatter behavior for recent and
+    older windows plus invalid timestamp handling.
 - Dashboard auto-sync now executes direct user sync runs instead of relying on
   queue-only triggers, so authenticated route opens actively refresh profile
   evidence without requiring manual sync controls.
