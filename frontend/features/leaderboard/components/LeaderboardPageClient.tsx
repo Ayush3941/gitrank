@@ -7,12 +7,14 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { StaleState } from "@/components/shared/StaleState";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LeaderboardArena } from "@/features/leaderboard/components/LeaderboardArena";
 import { useLeaderboard } from "@/hooks/use-leaderboard";
 import { useMyProfile } from "@/hooks/use-profile";
 import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
+import { formatRelativeDays } from "@/lib/formatters";
 
 const tabs: LeaderboardTab[] = [
   "Global",
@@ -53,6 +55,16 @@ export function LeaderboardPageClient() {
           </Button>
         )}
       />
+      {myProfile?.user.syncStatus.state === "stale" ? (
+        <StaleState
+          message={`Leaderboard context refreshed ${formatRelativeDays(
+            myProfile.refreshedAt,
+          )}. Rank movement can lag until the next profile sync completes.`}
+          actionLabel="Open settings"
+          actionHref="/dashboard/settings"
+          analyticsTarget="leaderboard:stale"
+        />
+      ) : null}
       <Tabs value={tab} onValueChange={(value) => setTab(value as LeaderboardTab)}>
         <TabsList className="scrollbar-thin w-full overflow-x-auto whitespace-nowrap">
           {tabs.map((item) => (

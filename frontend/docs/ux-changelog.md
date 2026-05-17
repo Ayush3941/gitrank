@@ -68,6 +68,7 @@
 - Expanded stale-state visibility beyond dashboard:
   - contributions and badges routes now show explicit stale snapshot banners
     when profile sync state is stale, with direct settings CTA.
+  - leaderboard route now shows stale profile context warning with sync CTA.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`
