@@ -11,6 +11,11 @@
   `tests/marketing-metadata.test.ts`:
   - locks canonical URLs and generated social image endpoints for landing,
     login, and onboarding route metadata.
+- Added private-dashboard indexing guardrails:
+  - `app/(app)/dashboard/layout.tsx` now exports route-level `robots` metadata
+    with `noindex` / `nofollow` defaults for authenticated dashboard surfaces
+  - added `tests/dashboard-metadata.test.ts` to lock that policy as a frontend
+    contract.
 - Added route-specific public error/not-found boundaries:
   - `app/(public)/u/[username]/error.tsx` + `not-found.tsx`
   - `app/(public)/pr/[owner]/[repo]/[number]/error.tsx` + `not-found.tsx`
