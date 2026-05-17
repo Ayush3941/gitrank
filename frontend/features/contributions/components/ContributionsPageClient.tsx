@@ -8,11 +8,13 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { StaleState } from "@/components/shared/StaleState";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
 import { ContributionList } from "@/features/contributions/components/ContributionList";
 import { useContributions } from "@/hooks/use-contributions";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { Button } from "@/components/ui/button";
+import { formatRelativeDays } from "@/lib/formatters";
 import {
   monthTimeline,
   summarizeContributionStreak,
@@ -154,6 +156,16 @@ export function ContributionsPageClient() {
           </Button>
         )}
       />
+      {profile?.user.syncStatus.state === "stale" ? (
+        <StaleState
+          message={`Contribution snapshot refreshed ${formatRelativeDays(
+            profile.refreshedAt,
+          )}. New PR evidence may still be syncing.`}
+          actionLabel="Open settings"
+          actionHref="/dashboard/settings"
+          analyticsTarget="contributions:stale"
+        />
+      ) : null}
       {profile ? (
         <div className="neon-callout rounded-[1.5rem] px-4 py-3 text-sm text-slate-200">
           Contribution window: latest {profile.user.contributions.length} scored PR-linked events (capped at 100 by backend profile history projection).

@@ -65,6 +65,9 @@
   - contributions page now uses deferred filter/search/sort state updates to
     keep interactions responsive
   - added live result count + reset-filters action in the filter bar.
+- Expanded stale-state visibility beyond dashboard:
+  - contributions and badges routes now show explicit stale snapshot banners
+    when profile sync state is stale, with direct settings CTA.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`

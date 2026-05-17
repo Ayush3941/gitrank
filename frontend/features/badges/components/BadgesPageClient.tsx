@@ -8,6 +8,7 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { StaleState } from "@/components/shared/StaleState";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -15,6 +16,7 @@ import { BadgeGrid } from "@/features/badges/components/BadgeGrid";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useBadges } from "@/hooks/use-badges";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
+import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import type { BadgeRarity } from "@/types/gitrank";
 
@@ -127,6 +129,16 @@ export function BadgesPageClient() {
           </Button>
         )}
       />
+      {profile?.user.syncStatus.state === "stale" ? (
+        <StaleState
+          message={`Badge snapshot refreshed ${formatRelativeDays(
+            profile.refreshedAt,
+          )}. New unlocks can appear after the next completed sync.`}
+          actionLabel="Open settings"
+          actionHref="/dashboard/settings"
+          analyticsTarget="badges:stale"
+        />
+      ) : null}
       {!isLoading && !isError && profile ? (
         <GlowCard strong className="cyber-hero-shell relative overflow-hidden">
           <div className="cyber-hero-overlay pointer-events-none absolute inset-0" />
