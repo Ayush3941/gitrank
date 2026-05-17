@@ -93,6 +93,11 @@
 - Copy-link control visibility pass:
   - `CopyLinkButton` now defaults to `secondary` variant styling so share-link
     actions are more discoverable in jump navigators across dashboard surfaces.
+- Anchor target visual orientation pass:
+  - added scoped `:target` highlight treatment for dashboard/profile/report
+    section anchors so deep-linked shared URLs visibly emphasize the destination
+    panel when opened
+  - respects reduced-motion preference by disabling target highlight animation.
 - Route fallback consistency pass:
   - added shared `RouteFallbackCard` (`components/shared/RouteFallbackCard.tsx`)
     and migrated all route-level `not-found` surfaces (global, dashboard,

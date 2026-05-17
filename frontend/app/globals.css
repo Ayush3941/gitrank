@@ -1278,6 +1278,37 @@ html[data-gamification="reduced"] .page-shell::after {
   background: transparent;
 }
 
+:where(
+    [id^="dashboard-"],
+    [id^="contributions-"],
+    [id^="badges-"],
+    [id^="quests-"],
+    [id^="settings-"],
+    [id^="leaderboard-"],
+    [id^="public-profile-"],
+    [id^="pr-report-"]
+  ):target {
+  position: relative;
+  border-radius: var(--radius-card);
+  box-shadow:
+    0 0 0 1px rgb(var(--primary) / 0.52),
+    0 0 32px rgb(var(--primary) / 0.24);
+  animation: anchor-target-glow 1200ms ease-out 1;
+}
+
+@keyframes anchor-target-glow {
+  0% {
+    box-shadow:
+      0 0 0 1px rgb(var(--primary) / 0.72),
+      0 0 46px rgb(var(--primary) / 0.34);
+  }
+  100% {
+    box-shadow:
+      0 0 0 1px rgb(var(--primary) / 0.52),
+      0 0 32px rgb(var(--primary) / 0.24);
+  }
+}
+
 @media (prefers-contrast: more) {
   :where(
       a[href],
@@ -1438,6 +1469,19 @@ html[data-gamification="reduced"] .page-shell::after {
   .cyber-card::after,
   .neon-skeleton,
   body::before {
+    animation: none !important;
+  }
+
+  :where(
+      [id^="dashboard-"],
+      [id^="contributions-"],
+      [id^="badges-"],
+      [id^="quests-"],
+      [id^="settings-"],
+      [id^="leaderboard-"],
+      [id^="public-profile-"],
+      [id^="pr-report-"]
+    ):target {
     animation: none !important;
   }
 
