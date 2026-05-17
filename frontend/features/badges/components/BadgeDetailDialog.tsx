@@ -7,6 +7,7 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { RarityBadge } from "@/components/shared/RarityBadge";
 import { SignalIcon } from "@/components/shared/SignalIcon";
 import type { BadgeStory } from "@/lib/ai/abra-insights-types";
+import { formatDate } from "@/lib/formatters";
 import type { Badge } from "@/types/gitrank";
 
 export function BadgeDetailDialog({
@@ -43,6 +44,16 @@ export function BadgeDetailDialog({
             <RarityBadge rarity={badge.rarity} />
           </div>
           <GlowCard className="cyber-sheen space-y-3 neon-surface p-4">
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className={badge.unlocked ? "neon-chip neon-chip-success rounded-full px-3 py-1 font-semibold" : "neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold"}>
+                {badge.unlocked ? "Unlocked" : "Locked"}
+              </span>
+              {badge.unlocked ? (
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+                  Earned {formatDate(badge.earnedAt)}
+                </span>
+              ) : null}
+            </div>
             <p className="text-xs tracking-[0.24em] text-primary uppercase">Unlock condition</p>
             <ExpandableText
               text={badge.unlockCondition}

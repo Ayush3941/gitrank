@@ -408,6 +408,9 @@
   - contribution category tabs now use mobile-short labels with full labels retained on larger breakpoints
   - contribution and badge filter controls now expose stronger live-status/described-by context
   - badge filters now surface active filter chips (`Rarity`, `State`) to reduce hidden-state confusion.
+- Improved badge date/status presentation:
+  - normalized earned-date display to formatted date strings on badge cards
+  - badge detail dialog now surfaces explicit unlocked/locked status chips and earned date metadata.
 
 ## 2026-05-16
 

@@ -6,6 +6,7 @@ import { RarityBadge } from "@/components/shared/RarityBadge";
 import { SignalIcon } from "@/components/shared/SignalIcon";
 import { BadgeDetailDialog } from "@/features/badges/components/BadgeDetailDialog";
 import type { BadgeStory } from "@/lib/ai/abra-insights-types";
+import { formatDate } from "@/lib/formatters";
 import type { Badge } from "@/types/gitrank";
 
 export function BadgeGrid({
@@ -41,7 +42,7 @@ export function BadgeGrid({
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className={badge.unlocked ? "text-emerald-200" : "text-muted"}>
-                  {badge.unlocked ? `Earned ${badge.earnedAt}` : "Locked"}
+                  {badge.unlocked ? `Earned ${formatDate(badge.earnedAt)}` : "Locked"}
                 </span>
                 {!badge.unlocked ? (
                   <span className="inline-flex items-center gap-1 text-muted">
