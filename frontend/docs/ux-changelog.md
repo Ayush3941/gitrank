@@ -55,6 +55,10 @@
   - badge jump navigator now mirrors other tabs with active section context and
     a `Copy section link` action (`/dashboard/badges#...`) for shareable shelf
     and locked-lane views.
+- Dashboard section share-link refinement:
+  - dashboard jump navigator now exposes active section context plus
+    `Copy section link` (`/dashboard#...`) to share specific command-center
+    panels directly.
 - Route fallback consistency pass:
   - added shared `RouteFallbackCard` (`components/shared/RouteFallbackCard.tsx`)
     and migrated all route-level `not-found` surfaces (global, dashboard,

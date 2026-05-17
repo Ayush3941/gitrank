@@ -17,6 +17,7 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,10 @@ export function DashboardPageClient() {
     user?.contributions.length ?? 0,
     contributionWindowCap,
   );
+  const activeSectionLabel =
+    DASHBOARD_SECTION_NAV.find((section) => section.id === activeSection)?.label ??
+    "Hero";
+  const activeSectionLink = `/dashboard#${activeSection}`;
   const contributionWindowFillRate =
     contributionWindowCap > 0
       ? Math.round((contributionWindowCount / contributionWindowCap) * 100)
@@ -244,6 +249,9 @@ export function DashboardPageClient() {
           <Waypoints className="h-3.5 w-3.5" />
           Jump
         </span>
+        <p role="status" aria-live="polite" className="px-2 text-xs tracking-[0.14em] text-cyan-200 uppercase">
+          {activeSectionLabel}
+        </p>
         <ul role="list" className="flex flex-wrap gap-2">
           {DASHBOARD_SECTION_NAV.map((section) => {
             const active = section.id === activeSection;
@@ -261,9 +269,17 @@ export function DashboardPageClient() {
                   {section.label}
                 </a>
               </li>
-            );
-          })}
-        </ul>
+              );
+            })}
+          </ul>
+        <div className="ml-auto">
+          <CopyTextButton
+            text={activeSectionLink}
+            label="Copy section link"
+            copiedLabel="Section link copied"
+            analyticsTarget="dashboard/copy-section-link"
+          />
+        </div>
       </nav>
       <section id="dashboard-hero" className="scroll-mt-24">
         <DashboardHeroRankCard
