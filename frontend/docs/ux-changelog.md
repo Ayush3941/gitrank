@@ -7,6 +7,11 @@
     `app/twitter-image.tsx` with cyber-neon branding and high-contrast copy
   - added descriptive `opengraph-image.alt.txt` and `twitter-image.alt.txt`
     metadata companions for accessibility.
+- Added a generated web app manifest in `app/manifest.ts`:
+  - sets app identity, theme/background colors, and install metadata for
+    share-ready browser surfaces
+  - keeps icon references pinned to existing `favicon.ico` so no new asset
+    loading paths were required.
 - Upgraded root metadata defaults in `app/layout.tsx`:
   - configured `metadataBase`, canonical root path, and baseline OpenGraph /
     Twitter defaults so page-level metadata composes cleanly
