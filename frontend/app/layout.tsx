@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, Orbitron, Space_Grotesk } from "next/font/google";
 import { GamificationPreferenceProvider } from "@/components/providers/gamification-preference-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
+import { DisplayShortcutsProvider } from "@/components/providers/display-shortcuts-provider";
 import { TextScalePreferenceProvider } from "@/components/providers/text-scale-preference-provider";
 import { ThemePreferenceProvider } from "@/components/providers/theme-preference-provider";
 import { WebVitalsReporter } from "@/components/providers/web-vitals-reporter";
@@ -54,9 +55,11 @@ export default function RootLayout({
         <WebVitalsReporter />
         <ThemePreferenceProvider>
           <TextScalePreferenceProvider>
-            <GamificationPreferenceProvider>
-              <QueryProvider>{children}</QueryProvider>
-            </GamificationPreferenceProvider>
+            <DisplayShortcutsProvider>
+              <GamificationPreferenceProvider>
+                <QueryProvider>{children}</QueryProvider>
+              </GamificationPreferenceProvider>
+            </DisplayShortcutsProvider>
           </TextScalePreferenceProvider>
         </ThemePreferenceProvider>
       </body>

@@ -35,6 +35,9 @@
 - Upgraded shared `LoadingState` component with structured skeleton placeholders
   and explicit live-region loading announcements, improving perceived progress
   and accessibility across all major routes that reuse this component.
+- Added global display accessibility shortcuts (when not typing in inputs):
+  `Alt+Shift+T` cycles theme and `Alt+Shift+L` toggles text size, with
+  live-region confirmation announcements and settings-page shortcut hints.
 - Smoothed and simplified shell glow layers in `AppShell` to reduce decorative
   overdraw and avoid abrupt glow cutoffs.
 - Added responsive visual cost guard in `app/globals.css`:

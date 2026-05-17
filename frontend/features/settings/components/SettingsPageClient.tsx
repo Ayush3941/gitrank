@@ -379,6 +379,9 @@ export function SettingsPageClient() {
             <p className="mt-2 text-sm leading-6 text-muted">
               Choose a denser or larger text rendering mode. This affects frontend reading size only.
             </p>
+            <p className="mt-2 text-xs leading-6 text-slate-200">
+              Keyboard shortcuts: <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> toggles theme, and <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd> toggles text size.
+            </p>
           </div>
           <div className="grid w-full gap-2 sm:w-auto sm:min-w-[18rem]">
             {TEXT_SCALE_OPTIONS.map((option) => (
