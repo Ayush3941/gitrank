@@ -25,6 +25,9 @@
   - heading text uses `text-wrap: balance` for cleaner multi-line wraps
   - `high-contrast` theme now renders heading titles without gradient text fill
     to maximize legibility.
+- Interaction refinement: global interactive transition baseline now limits
+  transition properties to color/background/border/shadow/opacity/transform
+  instead of broad implicit transitions.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`

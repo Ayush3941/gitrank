@@ -228,6 +228,7 @@ select {
     [role="tab"],
     [role="switch"]
   ) {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
   transition-duration: 160ms;
   transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
