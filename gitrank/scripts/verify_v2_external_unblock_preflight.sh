@@ -232,9 +232,16 @@ workflow_id_state=$(state_for_value "${WORKFLOW_RUN_ID:-latest}")
 workflow_event_state=$(state_for_value "${WORKFLOW_EVENT:-any}")
 
 origin_push_required_state=true
-if [ "$token_state" = "set" ]; then
-  origin_push_required_state=false
-fi
+case "$workflow_sync_execution_path" in
+  token-or-app|oauth-web-bootstrap)
+    origin_push_required_state=false
+    ;;
+  *)
+    if [ "$token_state" = "set" ]; then
+      origin_push_required_state=false
+    fi
+    ;;
+esac
 
 origin_push_effective_status=required
 if [ "$origin_push_required_state" = "false" ]; then
