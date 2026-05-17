@@ -21,6 +21,12 @@
   - tuned shared button variants for clearer default text and lighter shadow cost
   - added consistent disabled control treatment (`opacity` + `saturation`) for
     clearer state signaling.
+- Global micro-typography readability normalization:
+  - reduced overly-wide uppercase label tracking app-wide (`tracking-[0.24em]`,
+    `tracking-[0.22em]`, `tracking-[0.2em]`, `tracking-[0.32em]`) using central
+    CSS overrides to improve scan speed on dashboard cards and metrics
+  - added `prefers-contrast: more` enhancements for stronger focus outlines and
+    clearer muted/supporting text in user high-contrast environments.
 
 - Optimized hero/background rendering while preserving cyber style:
   - compressed `public/background.jpg` from large source to web-safe size

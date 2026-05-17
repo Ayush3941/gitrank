@@ -29,6 +29,8 @@
   --surface-blur: 16px;
   --surface-blur-strong: 18px;
   --radius-card: 0.1rem;
+  --eyebrow-tracking-wide: 0.14em;
+  --eyebrow-tracking-tight: 0.12em;
 }
 
 html[data-theme="midnight"] {
@@ -381,6 +383,19 @@ html[data-text-scale="large"] :where(.text-sm) {
 
 :where(strong, b, th, h1, h2, h3, h4, h5, h6) {
   color: rgb(var(--text-strong));
+}
+
+[class*="tracking-[0.24em]"] {
+  letter-spacing: var(--eyebrow-tracking-wide) !important;
+}
+
+[class*="tracking-[0.22em]"],
+[class*="tracking-[0.2em]"] {
+  letter-spacing: var(--eyebrow-tracking-tight) !important;
+}
+
+[class*="tracking-[0.32em]"] {
+  letter-spacing: 0.18em !important;
 }
 
 .glass-panel {
@@ -1138,6 +1153,38 @@ html[data-gamification="reduced"] .rank-orbit {
 
 .scrollbar-thin::-webkit-scrollbar-track {
   background: transparent;
+}
+
+@media (prefers-contrast: more) {
+  :where(
+      a[href],
+      button,
+      input:not([type="hidden"]),
+      select,
+      textarea,
+      summary,
+      [role="button"],
+      [tabindex]:not([tabindex="-1"])
+    ):focus-visible {
+    outline: 3px solid rgb(var(--primary));
+    outline-offset: 3px;
+  }
+
+  .text-muted,
+  .cyber-copy-muted,
+  .section-subtitle,
+  [class*="text-slate-300/"],
+  [class~="text-slate-300"],
+  [class*="text-slate-400/"],
+  [class~="text-slate-400"],
+  [class*="text-slate-500/"],
+  [class~="text-slate-500"] {
+    color: rgb(var(--text-body));
+  }
+
+  .neon-title {
+    text-shadow: none;
+  }
 }
 
 @media (prefers-reduced-transparency: reduce) {
