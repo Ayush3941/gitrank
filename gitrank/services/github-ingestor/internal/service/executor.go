@@ -23,7 +23,7 @@ const (
 	defaultCommitSyncPageSize     = 50
 	defaultUserRepositoryLimit    = 100
 	defaultAuthoredPRSearchLimit  = 100
-	defaultAuthoredPRSyncLimit    = 100
+	defaultAuthoredPRSyncLimit    = 10
 )
 
 var gitHubStatusCodePattern = regexp.MustCompile(`status (\d{3})`)
@@ -283,13 +283,11 @@ func (e *Executor) SyncUser(
 			Number:     target.Number,
 		}, actor, fmt.Sprintf("%s:authored-pr:%d", baseCorrelationID, index+1), time.Now().UTC())
 		if err != nil {
-			if isSkippableGitHubSyncError(err) {
-				response.Fetched["authored_pull_requests_skipped"]++
-				continue
+			response.Fetched["authored_pull_requests_skipped"]++
+			if !isSkippableGitHubSyncError(err) {
+				response.Fetched["authored_pull_requests_failed"]++
 			}
-			response.FinishedAt = time.Now().UTC()
-			_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, aggregatePersisted)
-			return response, err
+			continue
 		}
 		response.Fetched = mergeCountMaps(response.Fetched, child.Fetched)
 		response.Persisted = mergeCountMaps(response.Persisted, child.Persisted)
