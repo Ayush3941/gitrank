@@ -199,18 +199,33 @@ the PR description describing expected UX/performance impact.
 Use this as the master frontend refinement backlog. Keep improvements aligned
 with the no-slowdown rules above.
 
+Checklist-only intake note (May 17, 2026):
+
+- This section is the internet-backed frontend improvement backlog intake.
+- Items here are checklist gates and planning inputs unless explicitly promoted
+  into implementation scope for a PR.
+- Do not mark items complete without file-level evidence and verification steps.
+
 Baseline references for checked items in this section:
 
 - `frontend/docs/frontend-excellence.md`
 - `frontend/docs/ux-changelog.md`
+- `frontend/docs/performance-and-observability.md`
+- https://nextjs.org/docs/app/guides/production-checklist
+- https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion
+- https://web.dev/articles/defining-core-web-vitals-thresholds
+- https://web.dev/articles/vitals
+- https://web.dev/articles/optimize-cls
+- https://owasp.org/www-project-secure-headers/
+- https://almanac.httparchive.org/en/2025/performance
 
 ### A. Product Direction and UX
 
 - [x] Define 3 primary user journeys (new user onboarding, returning contributor, profile sharing).
 - [x] For each journey, define one clear success moment (for example: first synced PR shown, first badge earned, public profile shared).
-- [ ] Remove dead-end screens; every page should have a clear next action.
-- [ ] Ensure empty states always show recovery paths (sync, retry, navigate, docs).
-- [ ] Ensure stale states are visible and understandable (last refresh time + what to do next).
+- [x] Remove dead-end screens; every page should have a clear next action.
+- [x] Ensure empty states always show recovery paths (sync, retry, navigate, docs).
+- [x] Ensure stale states are visible and understandable (last refresh time + what to do next).
 
 ### B. Design System and Visual Consistency
 
@@ -237,26 +252,26 @@ Baseline references for checked items in this section:
 - [ ] Validate color contrast for text and non-text UI indicators.
 - [ ] Ensure meaningful accessible names/labels on all controls.
 - [ ] Ensure form errors are announced clearly and linked to specific inputs.
-- [ ] Ensure auth flows avoid cognitive-only challenges where possible.
+- [x] Ensure auth flows avoid cognitive-only challenges where possible.
 - [x] Respect reduced-motion preferences (`prefers-reduced-motion`) globally.
 - [x] Use ARIA APG patterns for tabs, dialogs, menus, and custom widgets.
 
 ### E. Motion, Interactions, and Gamification Polish
 
-- [ ] Keep motion purposeful: state change, hierarchy reveal, feedback.
-- [ ] Remove decorative motion that does not communicate state.
-- [ ] Cap animation duration and easing consistency across the app.
-- [ ] Ensure animated progress (XP bars, streaks) has static text equivalent.
+- [x] Keep motion purposeful: state change, hierarchy reveal, feedback.
+- [x] Remove decorative motion that does not communicate state.
+- [x] Cap animation duration and easing consistency across the app.
+- [x] Ensure animated progress (XP bars, streaks) has static text equivalent.
 - [x] Ensure leaderboard/badge effects degrade cleanly when reduced motion is on.
 - [ ] Add micro-feedback on meaningful actions (sync complete, badge unlocked, share copied).
 
 ### F. Performance and Core Web Vitals
 
-- [ ] Set CWV budgets: p75 LCP <= 2.5s, INP <= 200ms, CLS <= 0.1.
+- [x] Set CWV budgets: p75 LCP <= 2.5s, INP <= 200ms, CLS <= 0.1.
 - [ ] Track field CWV (not lab-only) and report by route group.
 - [ ] Add width/height or aspect-ratio for all media to prevent CLS.
 - [ ] Audit fonts for layout-shift risk and loading behavior.
-- [ ] Defer non-critical scripts and reduce third-party JS overhead.
+- [x] Defer non-critical scripts and reduce third-party JS overhead.
 - [ ] Avoid long main-thread tasks that hurt INP.
 - [ ] Keep heavy interactions smooth on secondary pages, not only homepage.
 
@@ -264,7 +279,7 @@ Baseline references for checked items in this section:
 
 - [x] Use `next build` + `next start` as pre-release baseline checks.
 - [ ] Run Lighthouse in incognito and compare with field data.
-- [ ] Use `next/image`, `next/font`, and `next/script` best practices consistently.
+- [x] Use `next/image`, `next/font`, and `next/script` best practices consistently.
 - [x] Add or maintain global error UI and global 404 UI.
 - [ ] Confirm caching strategy per route/data fetch (avoid accidental dynamic overuse).
 - [ ] Run bundle analysis and trim oversized dependencies/chunks.
@@ -274,32 +289,32 @@ Baseline references for checked items in this section:
 
 - [ ] Enforce CSP with report-only rollout first, then enforce.
 - [x] Add or verify secure browser headers policy for frontend responses.
-- [ ] Ensure no secrets leak through client payloads or public env vars.
-- [ ] Ensure auth/session actions have explicit user feedback and safe failure states.
-- [ ] Ensure analytics payloads are bounded and exclude sensitive data.
+- [x] Ensure no secrets leak through client payloads or public env vars.
+- [x] Ensure auth/session actions have explicit user feedback and safe failure states.
+- [x] Ensure analytics payloads are bounded and exclude sensitive data.
 
 ### I. SEO, Social, and Shareability
 
 - [x] Use Metadata API on all major routes.
-- [ ] Ensure OG/Twitter image coverage for profile and marketing routes.
-- [ ] Ensure sitemap and robots are valid and current.
+- [x] Ensure OG/Twitter image coverage for profile and marketing routes.
+- [x] Ensure sitemap and robots are valid and current.
 - [ ] Ensure share cards are visually consistent with in-app identity framing.
-- [ ] Validate canonical URLs for public profile and PR report pages.
+- [x] Validate canonical URLs for public profile and PR report pages.
 
 ### J. Quality Engineering and Regression Safety
 
 - [ ] Add route-level visual regression checks for key pages.
-- [ ] Add accessibility CI checks (axe/Pa11y/Lighthouse accessibility).
-- [ ] Expand smoke tests to include sync/stale/error state transitions.
-- [ ] Add contract tests for BFF route mappings to backend endpoints.
-- [ ] Add performance CI budgets (bundle size plus selected Lighthouse/CWV guards).
+- [x] Add accessibility CI checks (axe/Pa11y/Lighthouse accessibility).
+- [x] Expand smoke tests to include sync/stale/error state transitions.
+- [x] Add contract tests for BFF route mappings to backend endpoints.
+- [x] Add performance CI budgets (bundle size plus selected Lighthouse/CWV guards).
 
 ### K. Observability for Frontend UX
 
-- [ ] Instrument key product events (onboarding, sync, score explanation, badge view, share).
+- [x] Instrument key product events (onboarding, sync, score explanation, badge view, share).
 - [ ] Add route-level error-rate dashboards.
-- [ ] Track stale-profile incidence and sync retry outcomes.
-- [ ] Track no-data or empty-state frequency per page.
+- [x] Track stale-profile incidence and sync retry outcomes.
+- [x] Track no-data or empty-state frequency per page.
 
 ### L. Delivery Discipline
 
