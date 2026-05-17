@@ -17,6 +17,8 @@
     profile open, manual sync trigger, theme cycle, and text-scale toggle
   - palette now promotes recently executed actions into a `Recent` section
     when search is empty, improving repeat-task speed without fake data
+  - added `Clear recent` control so users can reset command history directly
+    from the palette.
   - upgraded quick actions with grouped sections (`Navigate`, `Profile`, `Sync`,
     `Display`) and arrow-key traversal (`↑/↓`) + `Enter` execution for
     keyboard-only command flows

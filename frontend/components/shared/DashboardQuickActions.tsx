@@ -56,6 +56,7 @@ export function DashboardQuickActions({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const [recentNonce, setRecentNonce] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const deferredQuery = useDeferredValue(query);
   const normalizedQuery = deferredQuery.trim();
@@ -168,8 +169,8 @@ export function DashboardQuickActions({
     [actions, deferredQuery],
   );
   const recentActionIds = useMemo(
-    () => (open ? loadRecentActionIds() : []),
-    [open],
+    () => (open ? loadRecentActionIds(recentNonce) : []),
+    [open, recentNonce],
   );
   const visibleActions = useMemo(() => {
     if (normalizedQuery.length > 0 || recentActionIds.length === 0) {
@@ -244,6 +245,7 @@ export function DashboardQuickActions({
 
   function executeAction(action: QuickActionItem) {
     recordRecentAction(action.id);
+    setRecentNonce((value) => value + 1);
     action.execute();
     setOpen(false);
     setQuery("");
@@ -335,6 +337,22 @@ export function DashboardQuickActions({
             <p className="text-xs text-amber-100">
               Display shortcuts are disabled in Settings, so <span className="text-white">Alt+Shift+T/L</span> are off.
             </p>
+          ) : null}
+          {normalizedQuery.length === 0 && recentActionIds.length > 0 ? (
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2 text-xs"
+                onClick={() => {
+                  clearRecentActionIds();
+                  setRecentNonce((value) => value + 1);
+                }}
+              >
+                Clear recent
+              </Button>
+            </div>
           ) : null}
           <div
             id="dashboard-quick-actions-list"
@@ -460,7 +478,8 @@ function isEditableTarget(target: EventTarget | null): boolean {
   );
 }
 
-function loadRecentActionIds() {
+function loadRecentActionIds(_refresh = 0) {
+  void _refresh;
   if (typeof window === "undefined") {
     return [];
   }
@@ -489,4 +508,11 @@ function recordRecentAction(actionId: string) {
     MAX_RECENT_ACTIONS,
   );
   window.localStorage.setItem(RECENT_ACTION_IDS_STORAGE_KEY, JSON.stringify(next));
+}
+
+function clearRecentActionIds() {
+  if (typeof window === "undefined") {
+    return;
+  }
+  window.localStorage.removeItem(RECENT_ACTION_IDS_STORAGE_KEY);
 }
