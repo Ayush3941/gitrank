@@ -965,6 +965,7 @@ Repository security:
 - [x] keep `CODEOWNERS`, but do not require CODEOWNERS approval in v1
 
 Apply live GitHub repository-admin controls with `gitrank/docs/runbooks/github-repository-controls.md`, either through GitHub settings or `make apply-github-repository-controls`, then verify them with `make verify-github-repository-controls`. Use `make discover-github-required-status-checks` to fetch current check names before applying branch rules. The verifier proves either branch-protection or branch-ruleset enforcement, and these boxes must stay unchecked until the live GitHub settings are applied and verified against the actual repository.
+Once credentials and observability endpoints are available, `make -C gitrank verify-and-mark-live-external-gates` can run both live verifiers and mark the related external-live checklist items in this file automatically.
 
 Application security:
 

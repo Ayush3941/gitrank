@@ -198,6 +198,18 @@ If GitHub responds with API quota exhaustion (`HTTP 403` rate-limit), the
 verifier now reports that explicitly instead of treating it as a generic
 permission failure.
 
+To verify and mark all related external-live checklist boxes in one step (after
+credentials and live observability endpoints are configured):
+
+```bash
+cd gitrank
+make verify-and-mark-live-external-gates
+```
+
+This command runs `verify-github-repository-controls` and
+`verify-live-observability` first, then updates the remaining external-live
+unchecked items in `../CONTRIBUTING.md` only if both verifiers pass.
+
 Equivalent GitHub Actions path:
 
 - run `.github/workflows/verify-live-v2-gates.yml` with
