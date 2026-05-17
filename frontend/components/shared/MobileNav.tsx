@@ -9,12 +9,20 @@ export function MobileNav() {
   const pathname = usePathname();
   const isActive = (href: string, exact = false) =>
     exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+  const activeItem = dashboardNavItems.find((item) => isActive(item.href, item.exact));
 
   return (
     <nav
       aria-label="Dashboard navigation mobile"
       className="mobile-nav-shell glass-panel cyber-card cyber-frame neon-outline fixed inset-x-3 z-40 grid grid-cols-5 gap-1.5 p-2.5 xl:hidden"
     >
+      <p
+        role="status"
+        aria-live="polite"
+        className="col-span-5 px-1 text-[10px] tracking-[0.16em] text-cyan-200 uppercase"
+      >
+        {activeItem ? `Current lane: ${activeItem.label}` : "Dashboard navigation"}
+      </p>
       <ul role="list" className="col-span-5 grid grid-cols-5 gap-1.5">
         {dashboardNavItems.map((item) => {
           const Icon = item.icon;

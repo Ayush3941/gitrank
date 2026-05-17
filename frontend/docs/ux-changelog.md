@@ -100,6 +100,10 @@
     contribution summary text, and formula/analysis version traceability fields
   - battle report cards now surface confidence percentages and a concise
     quality-priority footer to reinforce how ranking signal is interpreted.
+- Mobile navigation orientation cue:
+  - `MobileNav` now renders a small live current-lane label (`Current lane:
+    <route>`) above nav tiles for stronger in-flow orientation on compact
+    screens and demo recordings.
 - Sync freshness readability/traceability upgrade:
   - `formatRelativeDays` now reports recent sync age with minute/hour precision
     (for example `2m ago`, `3h ago`) before day-level buckets
