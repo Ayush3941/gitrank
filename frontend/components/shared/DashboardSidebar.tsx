@@ -17,8 +17,11 @@ export function DashboardSidebar() {
   return (
     <aside className="glass-panel cyber-card cyber-frame neon-outline hidden h-fit w-64 shrink-0 p-4 xl:sticky xl:top-6 xl:flex xl:flex-col xl:justify-between">
       <div className="space-y-6">
-        <Link href="/dashboard" className="flex items-center gap-3 border border-primary/18 bg-primary/6 px-3 py-2.5">
-          <div className="cyber-sheen bg-primary/16 p-2.5 text-primary ring-glow">
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-3 border border-primary/24 bg-gradient-to-r from-primary/10 to-primary-2/8 px-3 py-2.5"
+        >
+          <div className="bg-primary/16 p-2.5 text-primary ring-glow">
             <Sparkles className="h-5 w-5" />
           </div>
           <div className="min-w-0">
@@ -38,10 +41,10 @@ export function DashboardSidebar() {
                   href={item.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "focus-ring relative flex items-center gap-3 border px-3 py-2.5 text-[0.96rem] leading-5 font-medium",
+                    "focus-ring relative flex items-center gap-3 border px-3 py-2.5 text-sm leading-5 font-semibold",
                     active
-                      ? "border-primary/42 bg-gradient-to-r from-primary/26 via-primary/18 to-primary-2/24 text-white shadow-[0_0_14px_rgb(34_226_255_/_0.18)]"
-                      : "border-transparent text-muted hover:border-primary/28 hover:bg-primary/10 hover:text-white",
+                      ? "border-primary/45 bg-gradient-to-r from-primary/24 via-primary/16 to-primary-2/22 text-white shadow-[0_0_12px_rgb(34_226_255_/_0.14)]"
+                      : "border-transparent text-slate-100 hover:border-primary/28 hover:bg-primary/10 hover:text-white",
                   )}
                 >
                   <span

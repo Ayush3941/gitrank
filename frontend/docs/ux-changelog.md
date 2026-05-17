@@ -332,6 +332,15 @@
   - dashboard jump rails (badges/settings/contributions/leaderboard) now stick only on `xl` screens
   - public profile and PR report rails now stick from `lg` upward
   - small screens keep rails non-sticky to preserve vertical reading space.
+- Reduced shell and effect overhead for smoother rendering:
+  - simplified `AppShell` overlays to a single subtle vignette layer
+  - lowered backdrop blur tokens across themes to keep glass surfaces readable without over-blurring
+  - narrowed global interactive transitions to color/opacity/transform-focused properties.
+- Trimmed decorative sheen overlays that did not communicate state:
+  - disabled `rarity-badge` and `cyber-sheen` pseudo highlights to reduce visual noise.
+- Refined dashboard navigation formatting for clearer hierarchy:
+  - strengthened inactive text contrast in sidebar and mobile nav
+  - tightened active-state styling and added a top active indicator on mobile cards.
 
 ## 2026-05-16
 
