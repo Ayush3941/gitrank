@@ -6,6 +6,13 @@ import type { ProfileViewData } from "@/types/gitrank";
 const STORAGE_KEY = "gitrank:reduced-gamification";
 const CHANGE_EVENT = "gitrank:gamification-preference";
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+type NavigatorWithConnection = Navigator & {
+  connection?: {
+    saveData?: boolean;
+    addEventListener?: (type: "change", listener: () => void) => void;
+    removeEventListener?: (type: "change", listener: () => void) => void;
+  };
+};
 
 export function useGamificationPreference() {
   const reducedGamification = useSyncExternalStore(
@@ -57,6 +64,7 @@ function subscribe(callback: () => void) {
   }
 
   const mediaQuery = window.matchMedia(REDUCED_MOTION_QUERY);
+  const connection = (window.navigator as NavigatorWithConnection).connection;
   const handleMediaChange = () => {
     window.dispatchEvent(new Event(CHANGE_EVENT));
     callback();
@@ -69,6 +77,9 @@ function subscribe(callback: () => void) {
   } else if (typeof mediaQuery.addListener === "function") {
     mediaQuery.addListener(handleMediaChange);
   }
+  if (typeof connection?.addEventListener === "function") {
+    connection.addEventListener("change", handleMediaChange);
+  }
   return () => {
     window.removeEventListener("storage", callback);
     window.removeEventListener(CHANGE_EVENT, callback);
@@ -76,6 +87,9 @@ function subscribe(callback: () => void) {
       mediaQuery.removeEventListener("change", handleMediaChange);
     } else if (typeof mediaQuery.removeListener === "function") {
       mediaQuery.removeListener(handleMediaChange);
+    }
+    if (typeof connection?.removeEventListener === "function") {
+      connection.removeEventListener("change", handleMediaChange);
     }
   };
 }
@@ -93,7 +107,9 @@ function getReducedGamificationSnapshot() {
     return false;
   }
 
-  return window.matchMedia(REDUCED_MOTION_QUERY).matches;
+  const reducedMotion = window.matchMedia(REDUCED_MOTION_QUERY).matches;
+  const saveData = (window.navigator as NavigatorWithConnection).connection?.saveData === true;
+  return reducedMotion || saveData;
 }
 
 function applyGamificationPreference(reduced: boolean) {

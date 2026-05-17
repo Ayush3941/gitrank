@@ -264,7 +264,7 @@ export function SettingsPageClient() {
             <p className="mt-2 text-sm leading-6 text-muted">
               Lowers animated XP ticks, badge shimmer, glow intensity, and rank effects for this account. Scores,
               badges, leaderboard placement, and privacy visibility do not change. If no explicit preference is saved,
-              GitRank follows your system-level reduced-motion setting.
+              GitRank follows your system reduced-motion or reduced-data preference.
             </p>
           </div>
           <Switch
