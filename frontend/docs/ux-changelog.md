@@ -42,6 +42,9 @@
   theme/text switch buttons for better discoverability.
 - Added a settings-level on/off toggle for global display shortcuts to prevent
   workflow conflicts when users prefer to disable hotkeys.
+- Shortcut handler now ignores key-repeat and respects ARIA textbox-like
+  editable widgets (`role="textbox"` / multiline editors) to prevent accidental
+  display toggles while typing in rich inputs.
 - Added a lightweight global network-activity indicator (top progress line)
   driven by React Query fetch/mutation state, with live-region status text for
   screen-reader users during active refreshes.

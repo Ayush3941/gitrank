@@ -26,6 +26,9 @@ export function useDisplayShortcutsStatus(enabled: boolean) {
       if (!event.altKey || !event.shiftKey || event.metaKey || event.ctrlKey) {
         return;
       }
+      if (event.repeat) {
+        return;
+      }
 
       if (isEditableTarget(event.target)) {
         return;
@@ -93,7 +96,7 @@ function isEditableTarget(target: EventTarget | null): boolean {
     return true;
   }
   const closestEditable = target.closest(
-    "input, textarea, select, [contenteditable='true'], [contenteditable='']",
+    "input, textarea, select, [contenteditable='true'], [contenteditable=''], [role='textbox'], [aria-multiline='true']",
   );
   return Boolean(closestEditable);
 }
