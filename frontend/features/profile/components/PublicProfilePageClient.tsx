@@ -23,7 +23,7 @@ export function PublicProfilePageClient({
 }: {
   username: string;
 }) {
-  const { data, isLoading, isError } = useProfile(username);
+  const { data, isLoading, isError, refetch } = useProfile(username);
   const streak = summarizeContributionStreak(data?.user.contributions ?? []);
   const abraPayload = useMemo(() => {
     if (!data) {
@@ -80,6 +80,9 @@ export function PublicProfilePageClient({
       <ErrorState
         title="Profile unavailable"
         description="The public profile could not be loaded. Retry or return to the dashboard snapshot."
+        fallbackLabel="Open dashboard"
+        fallbackHref="/dashboard"
+        analyticsTarget="public-profile:error"
       />
     );
   }
@@ -89,6 +92,9 @@ export function PublicProfilePageClient({
       <EmptyState
         title="Profile unavailable"
         description="This profile is hidden, missing, or has not earned a public GitRank score yet."
+        actionLabel="Open dashboard"
+        actionHref="/dashboard"
+        analyticsTarget="public-profile:empty"
       />
     );
   }
@@ -96,7 +102,15 @@ export function PublicProfilePageClient({
   return (
     <div className="space-y-6">
       {data.isStale ? (
-        <StaleState message={`This profile snapshot was refreshed ${formatRelativeDays(data.refreshedAt)}.`} />
+        <StaleState
+          message={`This profile snapshot was refreshed ${formatRelativeDays(data.refreshedAt)}.`}
+          onRefresh={() => {
+            void refetch();
+          }}
+          actionLabel="Open dashboard"
+          actionHref="/dashboard"
+          analyticsTarget="public-profile:stale"
+        />
       ) : null}
       <PublicProfileHero
         user={data.user}

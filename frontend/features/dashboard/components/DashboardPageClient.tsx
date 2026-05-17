@@ -24,7 +24,7 @@ import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 
 export function DashboardPageClient() {
-  const { data, isLoading, isError } = useDashboard();
+  const { data, isLoading, isError, refetch } = useDashboard();
   const scoreExplanationEventSent = useRef(false);
   const user = data?.user;
   const recentReports = data?.recentReports ?? [];
@@ -132,6 +132,9 @@ export function DashboardPageClient() {
           message={`Your GitRank profile was refreshed ${formatRelativeDays(
             data.refreshedAt,
           )}.`}
+          onRefresh={() => {
+            void refetch();
+          }}
           actionLabel="Open settings"
           actionHref="/dashboard/settings"
           analyticsTarget="dashboard:stale"

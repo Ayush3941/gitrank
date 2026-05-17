@@ -1,8 +1,42 @@
+"use client";
+
+import Link from "next/link";
 import { Clock3 } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 
-export function StaleState({ message }: { message: string }) {
+export function StaleState({
+  message,
+  actionLabel = "Open settings",
+  actionHref = "/dashboard/settings",
+  refreshLabel = "Refresh snapshot",
+  onRefresh,
+  analyticsTarget,
+}: {
+  message: string;
+  actionLabel?: string;
+  actionHref?: string;
+  refreshLabel?: string;
+  onRefresh?: () => void;
+  analyticsTarget?: string;
+}) {
+  const sentEventRef = useRef(false);
+
+  useEffect(() => {
+    if (sentEventRef.current || !analyticsTarget) {
+      return;
+    }
+    sentEventRef.current = true;
+    void emitAnalyticsEvent({
+      eventName: "stale_state.viewed",
+      source: "frontend",
+      target: analyticsTarget,
+      status: "success",
+    });
+  }, [analyticsTarget]);
+
   return (
     <GlowCard className="cyber-sheen flex flex-col gap-3 border border-amber-400/22 bg-amber-400/8 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-start gap-3">
@@ -14,7 +48,16 @@ export function StaleState({ message }: { message: string }) {
           </p>
         </div>
       </div>
-      <Button variant="secondary" disabled>Sync pending</Button>
+      <div className="flex flex-wrap gap-2">
+        {onRefresh ? (
+          <Button variant="secondary" onClick={onRefresh}>
+            {refreshLabel}
+          </Button>
+        ) : null}
+        <Button asChild variant="secondary">
+          <Link href={actionHref}>{actionLabel}</Link>
+        </Button>
+      </div>
     </GlowCard>
   );
 }

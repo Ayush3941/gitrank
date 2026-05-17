@@ -28,8 +28,8 @@ const tabs: LeaderboardTab[] = [
 export function LeaderboardPageClient() {
   const [tab, setTab] = useState<LeaderboardTab>("Global");
   const deferredTab = useDeferredValue(tab);
-  const { data, isLoading, isError, isFetching } = useLeaderboard(deferredTab);
-  const { data: myProfile } = useMyProfile();
+  const { data, isLoading, isError, isFetching, refetch } = useLeaderboard(deferredTab);
+  const { data: myProfile, refetch: refetchMyProfile } = useMyProfile();
   const isSwitchingTab = deferredTab !== tab;
   const currentUserHandle = myProfile?.user.username.toLowerCase() ?? "";
   const rows = (data?.rows ?? []).map((row) => ({
@@ -66,6 +66,10 @@ export function LeaderboardPageClient() {
           message={`Leaderboard context refreshed ${formatRelativeDays(
             myProfile.refreshedAt,
           )}. Rank movement can lag until the next profile sync completes.`}
+          onRefresh={() => {
+            void refetchMyProfile();
+            void refetch();
+          }}
           actionLabel="Open settings"
           actionHref="/dashboard/settings"
           analyticsTarget="leaderboard:stale"

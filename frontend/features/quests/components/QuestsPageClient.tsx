@@ -20,7 +20,7 @@ import type { Quest } from "@/types/gitrank";
 const groups: Array<Quest["cadence"]> = ["Daily", "Weekly", "Long-term", "Skill-based"];
 
 export function QuestsPageClient() {
-  const { data, isLoading, isError } = useQuests();
+  const { data, isLoading, isError, refetch } = useQuests();
   const quests = data?.quests ?? [];
   const profile = data?.profile;
   const contributionRows = profile?.user.contributions ?? [];
@@ -50,6 +50,9 @@ export function QuestsPageClient() {
           message={`Quest snapshot refreshed ${formatRelativeDays(
             data.staleness.refreshedAt,
           )}. Live quest signals may lag until the next sync completes.`}
+          onRefresh={() => {
+            void refetch();
+          }}
           actionLabel="Open settings"
           actionHref="/dashboard/settings"
           analyticsTarget="quests:stale"

@@ -22,6 +22,9 @@
     scanning on laptop/mobile displays
   - removed low-opacity text usage in shared headers, sync pills, and form
     placeholders where contrast was unnecessarily weak.
+- Stale snapshot states now include a direct `Refresh snapshot` action (in
+  addition to settings navigation) across dashboard, contributions, badges,
+  quests, leaderboard, and public profile pages for faster recovery.
 - Smoothed and simplified shell glow layers in `AppShell` to reduce decorative
   overdraw and avoid abrupt glow cutoffs.
 - Added responsive visual cost guard in `app/globals.css`:

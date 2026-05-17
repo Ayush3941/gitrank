@@ -21,7 +21,7 @@ import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics"
 import type { BadgeRarity } from "@/types/gitrank";
 
 export function BadgesPageClient() {
-  const { data, isLoading, isError } = useBadges();
+  const { data, isLoading, isError, refetch } = useBadges();
   const badgeViewedEventSent = useRef(false);
   const previousUnlockedCountRef = useRef<number | null>(null);
   const [rarity, setRarity] = useState<BadgeRarity | "All">("All");
@@ -150,6 +150,9 @@ export function BadgesPageClient() {
           message={`Badge snapshot refreshed ${formatRelativeDays(
             profile.refreshedAt,
           )}. New unlocks can appear after the next completed sync.`}
+          onRefresh={() => {
+            void refetch();
+          }}
           actionLabel="Open settings"
           actionHref="/dashboard/settings"
           analyticsTarget="badges:stale"

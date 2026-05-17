@@ -42,7 +42,7 @@ export function ContributionsPageClient() {
   const deferredFilter = useDeferredValue(filter);
   const deferredSearch = useDeferredValue(search);
   const deferredSort = useDeferredValue(sort);
-  const { data, isLoading, isError } = useContributions({
+  const { data, isLoading, isError, refetch } = useContributions({
     filter: filterMap[deferredFilter],
     search: deferredSearch,
     sort: deferredSort,
@@ -161,6 +161,9 @@ export function ContributionsPageClient() {
           message={`Contribution snapshot refreshed ${formatRelativeDays(
             profile.refreshedAt,
           )}. New PR evidence may still be syncing.`}
+          onRefresh={() => {
+            void refetch();
+          }}
           actionLabel="Open settings"
           actionHref="/dashboard/settings"
           analyticsTarget="contributions:stale"
