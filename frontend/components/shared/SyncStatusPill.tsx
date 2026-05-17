@@ -22,9 +22,11 @@ export function SyncStatusPill({
 }) {
   const meta = statusMap[status.state];
   const Icon = meta.icon;
+  const machineDateTime = normalizeDateTime(status.lastSyncedAt);
   const relative = formatRelativeDays(status.lastSyncedAt);
   const exact = formatDateTime(status.lastSyncedAt);
-  const showExact = exact !== "Unknown";
+  const showExact = exact !== "Unknown" && machineDateTime !== null;
+  const spokenTime = showExact ? `Exact time ${exact}.` : "";
 
   return (
     <div
@@ -33,15 +35,30 @@ export function SyncStatusPill({
         meta.tone,
         className,
       )}
-      title={`Last synced ${exact}`}
-      aria-label={`${meta.label}. Last synced ${relative}. Exact time ${exact}.`}
+      title={showExact ? `Last synced ${exact}` : undefined}
+      aria-label={`${meta.label}. Last synced ${relative}. ${spokenTime}`.trim()}
     >
       <Icon className="h-3.5 w-3.5" />
       <span>{meta.label}</span>
-      <span className="text-current">{relative}</span>
+      <time className="text-current" dateTime={machineDateTime ?? undefined}>
+        {relative}
+      </time>
       {showExact ? (
-        <span className="hidden text-current/90 md:inline">({exact})</span>
+        <time className="hidden text-current/90 md:inline" dateTime={machineDateTime}>
+          ({exact})
+        </time>
       ) : null}
     </div>
   );
+}
+
+function normalizeDateTime(value?: string): string | null {
+  if (!value) {
+    return null;
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+  return date.toISOString();
 }

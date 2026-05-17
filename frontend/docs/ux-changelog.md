@@ -35,6 +35,14 @@
     layouts while keeping the relative age text
   - added `tests/sync-status-pill.test.tsx` to lock visible exact-timestamp
     rendering alongside status + relative freshness copy.
+- Sync and stale freshness timestamps now use semantic `<time datetime>`
+  markup:
+  - `SyncStatusPill` renders relative and exact freshness values with
+    machine-readable `datetime` values when available
+  - `StaleState` renders the exact "Last verified" value using semantic time
+    markup instead of plain text only
+  - updated `tests/sync-status-pill.test.tsx` and
+    `tests/stale-state.test.tsx` to lock semantic datetime output.
 - Dashboard auto-sync now executes direct user sync runs instead of relying on
   queue-only triggers, so authenticated route opens actively refresh profile
   evidence without requiring manual sync controls.

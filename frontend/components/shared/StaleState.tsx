@@ -42,6 +42,9 @@ export function StaleState({
     });
   }, [analyticsTarget]);
 
+  const verifiedDateTime = normalizeDateTime(updatedAt);
+  const verifiedLabel = updatedAt ? formatDateTime(updatedAt) : "Unknown";
+
   return (
     <GlowCard className="cyber-sheen flex flex-col gap-3 border border-amber-400/22 bg-amber-400/8 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-start gap-3">
@@ -51,9 +54,13 @@ export function StaleState({
           <p className="text-sm text-amber-50/75">
             The latest verified snapshot is still visible while a newer sync path is pending.
           </p>
-          {updatedAt ? (
+          {verifiedDateTime ? (
             <p className="text-xs text-amber-100">
-              Last verified at {formatDateTime(updatedAt)}.
+              Last verified at{" "}
+              <time dateTime={verifiedDateTime}>
+                {verifiedLabel}
+              </time>
+              .
             </p>
           ) : null}
         </div>
@@ -75,4 +82,15 @@ export function StaleState({
       </div>
     </GlowCard>
   );
+}
+
+function normalizeDateTime(value?: string): string | null {
+  if (!value) {
+    return null;
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+  return date.toISOString();
 }

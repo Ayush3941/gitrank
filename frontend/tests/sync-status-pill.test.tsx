@@ -17,5 +17,8 @@ describe("SyncStatusPill", () => {
     expect(screen.getByText("Synced")).toBeTruthy();
     expect(screen.getByText(/ago/)).toBeTruthy();
     expect(screen.getByText(/\(.+\)/)).toBeTruthy();
+    const semanticTimes = screen.getAllByText((_content, element) => element?.tagName.toLowerCase() === "time");
+    expect(semanticTimes.length).toBeGreaterThan(0);
+    expect(semanticTimes[0]?.getAttribute("datetime")).toMatch(/2026-05-17T18:20:00/);
   });
 });
