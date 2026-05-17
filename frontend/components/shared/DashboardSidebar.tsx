@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { dashboardNavItems } from "@/components/shared/dashboard-nav";
+import { ThemeQuickSwitcher } from "@/components/shared/ThemeQuickSwitcher";
 
 export function DashboardSidebar() {
   const pathname = usePathname();
@@ -24,7 +25,7 @@ export function DashboardSidebar() {
             <p className="text-[10px] tracking-[0.22em] text-primary uppercase">Dashboard</p>
           </div>
         </Link>
-        <nav aria-label="Dashboard navigation" className="space-y-1">
+        <nav aria-label="Dashboard navigation sidebar" className="space-y-1">
           {dashboardNavItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href, item.exact);
@@ -53,11 +54,14 @@ export function DashboardSidebar() {
           })}
         </nav>
       </div>
-      <div className="cyber-terminal mt-6 p-3.5">
-        <p className="text-[10px] font-semibold tracking-[0.2em] text-primary uppercase">Focus</p>
-        <p className="cyber-copy mt-1.5 text-xs text-foreground/84">
-          Meaningful contribution quality over raw activity volume.
-        </p>
+      <div className="space-y-3">
+        <ThemeQuickSwitcher compact className="w-full justify-start" />
+        <div className="cyber-terminal p-3.5">
+          <p className="text-[10px] font-semibold tracking-[0.2em] text-primary uppercase">Focus</p>
+          <p className="cyber-copy mt-1.5 text-sm text-foreground">
+            Meaningful contribution quality over raw activity volume.
+          </p>
+        </div>
       </div>
     </aside>
   );

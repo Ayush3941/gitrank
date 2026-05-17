@@ -33,7 +33,7 @@ export function SyncStatusPill({
     >
       <Icon className="h-3.5 w-3.5" />
       <span>{meta.label}</span>
-      <span className="text-current/70">{formatRelativeDays(status.lastSyncedAt)}</span>
+      <span className="text-current">{formatRelativeDays(status.lastSyncedAt)}</span>
     </div>
   );
 }

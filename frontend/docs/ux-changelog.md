@@ -6,6 +6,13 @@
   - compressed `public/background.jpg` from large source to web-safe size
   - added `public/background.webp` and CSS `image-set()` fallback selection
   - moved to fixed desktop + scroll-mobile background attachment policy
+- Added always-accessible theme switching and readability pass:
+  - new shared `ThemeQuickSwitcher` action in dashboard top bar + sidebar
+  - stronger global text tokens for body/supporting copy across all themes
+  - raised global type baseline (`16px` floor, higher line-height) for clearer
+    scanning on laptop/mobile displays
+  - removed low-opacity text usage in shared headers, sync pills, and form
+    placeholders where contrast was unnecessarily weak.
 - Smoothed and simplified shell glow layers in `AppShell` to reduce decorative
   overdraw and avoid abrupt glow cutoffs.
 - Added responsive visual cost guard in `app/globals.css`:
@@ -114,6 +121,8 @@
 - Normalized XP/number formatting on key surfaces (top bar, league card, recent
   reports, best PRs, PR report hero, and next-level gate) using locale-aware
   formatting plus shared numeric-readout styling.
+- Hardened `ErrorState` fallback behavior: fallback action now renders only when
+  a valid link target or callback exists, avoiding inert fallback buttons.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`

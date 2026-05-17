@@ -15,7 +15,7 @@ export function PageHeader({
   return (
     <header className={cn("cyber-header cyber-frame flex flex-col gap-4 rounded-[1.85rem] px-5 py-4 sm:px-6 lg:flex-row lg:items-end lg:justify-between", className)}>
       <div className="space-y-2">
-        <p className="cyber-readout text-[11px] text-primary/88">Signal Board</p>
+        <p className="cyber-readout text-[11px] text-primary">Signal Board</p>
         <h1 className="neon-title cyber-title text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h1>
         <p className="cyber-copy-muted readable-measure max-w-[72ch] text-sm leading-7 sm:text-base">{description}</p>
         <div className="cyber-divider max-w-3xl" />

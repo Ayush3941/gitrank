@@ -334,7 +334,7 @@ export function SettingsPageClient() {
                       </span>
                     ) : null}
                   </span>
-                  <span className="text-xs opacity-90">{option.description}</span>
+                  <span className="text-xs text-muted">{option.description}</span>
                 </span>
               </Button>
             ))}
