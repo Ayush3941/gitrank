@@ -3,6 +3,8 @@ set -eu
 
 repo_value="${GITHUB_REPOSITORY:-}"
 inferred_repo_value="${INFERRED_GITHUB_REPOSITORY:-}"
+root_dir="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
+default_env_file="$root_dir/.env"
 
 is_placeholder_value() {
   value=$1
@@ -28,6 +30,20 @@ emit_var_presence() {
     return 0
   fi
   printf '%s=set\n' "$name"
+}
+
+load_env_var_from_file() {
+  file_path=$1
+  key=$2
+  [ -f "$file_path" ] || return 1
+  value=$(awk -F= -v key="$key" '
+    $1 == key {
+      sub(/^[^=]*=/, "", $0)
+      print $0
+    }
+  ' "$file_path" | tail -n 1)
+  [ -n "$value" ] || return 1
+  printf '%s' "$value"
 }
 
 if [ -n "$repo_value" ]; then
@@ -92,6 +108,12 @@ app_key_file_candidate="${GITHUB_APP_PRIVATE_KEY_FILE:-${GITRANK_GITHUB_APP_PRIV
 app_key_pem_candidate="${GITHUB_APP_PRIVATE_KEY_PEM:-${GITRANK_GITHUB_APP_PRIVATE_KEY_PEM:-}}"
 oauth_client_id_candidate="${GITHUB_CLIENT_ID:-${GITHUB_OAUTH_WEB_CLIENT_ID:-}}"
 oauth_client_secret_candidate="${GITHUB_CLIENT_SECRET:-${GITHUB_OAUTH_WEB_CLIENT_SECRET:-}}"
+if [ -z "$oauth_client_id_candidate" ]; then
+  oauth_client_id_candidate=$(load_env_var_from_file "$default_env_file" "GITHUB_CLIENT_ID" || true)
+fi
+if [ -z "$oauth_client_secret_candidate" ]; then
+  oauth_client_secret_candidate=$(load_env_var_from_file "$default_env_file" "GITHUB_CLIENT_SECRET" || true)
+fi
 
 if is_placeholder_value "$token_candidate"; then
   token_candidate=

@@ -123,6 +123,8 @@ run_preflight() {
     GITHUB_TOKEN="$token_value" \
     GH_TOKEN= \
     GITRANK_REPO_ADMIN_TOKEN= \
+    GITHUB_CLIENT_ID=replace-me-oauth-client-id \
+    GITHUB_CLIENT_SECRET=replace-me-oauth-client-secret \
     PROMETHEUS_BASE_URL= \
     GRAFANA_BASE_URL= \
     GRAFANA_API_TOKEN= \

@@ -4,6 +4,7 @@ set -eu
 root_dir="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 repo_dir="$(CDPATH= cd -- "$root_dir/.." && pwd)"
 tmp_root="${TMPDIR:-$root_dir/.tmp}"
+default_env_file="$root_dir/.env"
 mkdir -p "$tmp_root"
 
 LIVE_ENV_FILE="${LIVE_V2_ENV_FILE:-${FINALIZE_V2_ENV_FILE:-}}"
@@ -77,6 +78,20 @@ state_for_value() {
   printf 'set'
 }
 
+load_env_var_from_file() {
+  file_path=$1
+  key=$2
+  [ -f "$file_path" ] || return 1
+  value=$(awk -F= -v key="$key" '
+    $1 == key {
+      sub(/^[^=]*=/, "", $0)
+      print $0
+    }
+  ' "$file_path" | tail -n 1)
+  [ -n "$value" ] || return 1
+  printf '%s' "$value"
+}
+
 resolve_checklist_audit_run_public_probe() {
   resolve_boolean_or_auto_from_github_auth "$CHECKLIST_AUDIT_RUN_PUBLIC_PROBE" "CHECKLIST_AUDIT_RUN_PUBLIC_PROBE"
 }
@@ -135,13 +150,25 @@ resolve_boolean_or_auto_from_github_auth() {
       app_installation_candidate="${GITHUB_APP_INSTALLATION_ID:-${GITRANK_GITHUB_APP_INSTALLATION_ID:-}}"
       app_key_file_candidate="${GITHUB_APP_PRIVATE_KEY_FILE:-${GITRANK_GITHUB_APP_PRIVATE_KEY_FILE:-}}"
       app_key_pem_candidate="${GITHUB_APP_PRIVATE_KEY_PEM:-${GITRANK_GITHUB_APP_PRIVATE_KEY_PEM:-}}"
+      oauth_client_id_candidate="${GITHUB_CLIENT_ID:-${GITHUB_OAUTH_WEB_CLIENT_ID:-}}"
+      oauth_client_secret_candidate="${GITHUB_CLIENT_SECRET:-${GITHUB_OAUTH_WEB_CLIENT_SECRET:-}}"
+      if [ -z "$oauth_client_id_candidate" ]; then
+        oauth_client_id_candidate=$(load_env_var_from_file "$default_env_file" "GITHUB_CLIENT_ID" || true)
+      fi
+      if [ -z "$oauth_client_secret_candidate" ]; then
+        oauth_client_secret_candidate=$(load_env_var_from_file "$default_env_file" "GITHUB_CLIENT_SECRET" || true)
+      fi
       has_app_bootstrap=false
       if [ -n "$app_id_candidate" ] && [ -n "$app_installation_candidate" ]; then
         if [ -n "$app_key_file_candidate" ] || [ -n "$app_key_pem_candidate" ]; then
           has_app_bootstrap=true
         fi
       fi
-      if [ -n "$token_candidate" ] || [ "$has_app_bootstrap" = "true" ]; then
+      has_oauth_bootstrap=false
+      if [ -n "$oauth_client_id_candidate" ] && [ -n "$oauth_client_secret_candidate" ]; then
+        has_oauth_bootstrap=true
+      fi
+      if [ -n "$token_candidate" ] || [ "$has_app_bootstrap" = "true" ] || [ "$has_oauth_bootstrap" = "true" ]; then
         printf 'true'
       elif is_public_repository_accessible "${gitrank_repo:-}"; then
         printf 'true'
@@ -373,6 +400,12 @@ app_key_file_candidate="${GITHUB_APP_PRIVATE_KEY_FILE:-${GITRANK_GITHUB_APP_PRIV
 app_key_pem_candidate="${GITHUB_APP_PRIVATE_KEY_PEM:-${GITRANK_GITHUB_APP_PRIVATE_KEY_PEM:-}}"
 oauth_client_id_candidate="${GITHUB_CLIENT_ID:-${GITHUB_OAUTH_WEB_CLIENT_ID:-}}"
 oauth_client_secret_candidate="${GITHUB_CLIENT_SECRET:-${GITHUB_OAUTH_WEB_CLIENT_SECRET:-}}"
+if [ -z "$oauth_client_id_candidate" ]; then
+  oauth_client_id_candidate=$(load_env_var_from_file "$default_env_file" "GITHUB_CLIENT_ID" || true)
+fi
+if [ -z "$oauth_client_secret_candidate" ]; then
+  oauth_client_secret_candidate=$(load_env_var_from_file "$default_env_file" "GITHUB_CLIENT_SECRET" || true)
+fi
 if is_placeholder_value "$token_candidate"; then
   token_candidate=
 fi

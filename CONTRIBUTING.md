@@ -1441,6 +1441,9 @@ That preflight now prints `input_state.*` fields and a `checklist_probe_mapping`
 section that maps each unresolved checklist line to the probe(s) it depends on.
 It also prints a `Minimal required next inputs` summary derived from failing
 probes so credentials/endpoints can be filled incrementally.
+OAuth bootstrap readiness in that preflight/status flow also checks
+`GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` from `gitrank/.env` when those vars
+are not set in the live-gates env file.
 When `RUN_K8S_RUNTIME=true` and workflow evidence is not used, finalizer runtime
 proof now requires explicit staging and production `STAGING_K8S_*` /
 `PRODUCTION_K8S_*` overrides by default

@@ -4,6 +4,7 @@ set -eu
 root_dir="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 repo_dir="$(CDPATH= cd -- "$root_dir/.." && pwd)"
 tmp_root="${TMPDIR:-$root_dir/.tmp}"
+default_env_file="$root_dir/.env"
 contributing_file="$repo_dir/CONTRIBUTING.md"
 mkdir -p "$tmp_root"
 
@@ -70,6 +71,20 @@ state_for_value() {
   printf 'set'
 }
 
+load_env_var_from_file() {
+  file_path=$1
+  key=$2
+  [ -f "$file_path" ] || return 1
+  value=$(awk -F= -v key="$key" '
+    $1 == key {
+      sub(/^[^=]*=/, "", $0)
+      print $0
+    }
+  ' "$file_path" | tail -n 1)
+  [ -n "$value" ] || return 1
+  printf '%s' "$value"
+}
+
 resolve_repository_from_git_remote() {
   if is_placeholder_value "${GITHUB_REPOSITORY:-}"; then
     GITHUB_REPOSITORY=
@@ -110,8 +125,16 @@ for script_file in \
 done
 
 token_state=$(state_for_value "${GITRANK_REPO_ADMIN_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}")
-oauth_client_id_state=$(state_for_value "${GITHUB_CLIENT_ID:-${GITHUB_OAUTH_WEB_CLIENT_ID:-}}")
-oauth_client_secret_state=$(state_for_value "${GITHUB_CLIENT_SECRET:-${GITHUB_OAUTH_WEB_CLIENT_SECRET:-}}")
+oauth_client_id_candidate="${GITHUB_CLIENT_ID:-${GITHUB_OAUTH_WEB_CLIENT_ID:-}}"
+oauth_client_secret_candidate="${GITHUB_CLIENT_SECRET:-${GITHUB_OAUTH_WEB_CLIENT_SECRET:-}}"
+if [ -z "$oauth_client_id_candidate" ]; then
+  oauth_client_id_candidate=$(load_env_var_from_file "$default_env_file" "GITHUB_CLIENT_ID" || true)
+fi
+if [ -z "$oauth_client_secret_candidate" ]; then
+  oauth_client_secret_candidate=$(load_env_var_from_file "$default_env_file" "GITHUB_CLIENT_SECRET" || true)
+fi
+oauth_client_id_state=$(state_for_value "$oauth_client_id_candidate")
+oauth_client_secret_state=$(state_for_value "$oauth_client_secret_candidate")
 has_oauth_bootstrap=false
 if [ "$oauth_client_id_state" = "set" ] && [ "$oauth_client_secret_state" = "set" ]; then
   has_oauth_bootstrap=true
