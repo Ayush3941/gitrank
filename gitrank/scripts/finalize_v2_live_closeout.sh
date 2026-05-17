@@ -48,7 +48,9 @@ AUTO_GENERATE_ROLLBACK_RESTORE_EVIDENCE="${AUTO_GENERATE_ROLLBACK_RESTORE_EVIDEN
 RUN_EXTERNAL_PREFLIGHT_REPORT="${RUN_EXTERNAL_PREFLIGHT_REPORT:-true}"
 AUDIT_REPORT_FILE="${AUDIT_REPORT_FILE:-$root_dir/docs/releases/v2-contributing-audit-latest.md}"
 AUTO_CREATE_GITHUB_APP_TOKEN="${AUTO_CREATE_GITHUB_APP_TOKEN:-true}"
+AUTO_CREATE_GITHUB_OAUTH_WEB_TOKEN="${AUTO_CREATE_GITHUB_OAUTH_WEB_TOKEN:-false}"
 APP_TOKEN_OUTPUT_FILE="${APP_TOKEN_OUTPUT_FILE:-$tmp_root/gitrank-app-installation-token.txt}"
+OAUTH_WEB_TOKEN_OUTPUT_FILE="${OAUTH_WEB_TOKEN_OUTPUT_FILE:-$tmp_root/gitrank-oauth-web-token.txt}"
 RESOLVED_GITHUB_APP_ID="${GITHUB_APP_ID:-${GITRANK_GITHUB_APP_ID:-}}"
 RESOLVED_GITHUB_APP_INSTALLATION_ID="${GITHUB_APP_INSTALLATION_ID:-${GITRANK_GITHUB_APP_INSTALLATION_ID:-}}"
 RESOLVED_GITHUB_APP_PRIVATE_KEY_FILE="${GITHUB_APP_PRIVATE_KEY_FILE:-${GITRANK_GITHUB_APP_PRIVATE_KEY_FILE:-}}"
@@ -72,6 +74,9 @@ run_make() {
 cleanup() {
   if [ "$cleanup_app_token_file" = "true" ] && [ -f "$APP_TOKEN_OUTPUT_FILE" ]; then
     rm -f "$APP_TOKEN_OUTPUT_FILE"
+  fi
+  if [ "$cleanup_app_token_file" = "true" ] && [ -f "$OAUTH_WEB_TOKEN_OUTPUT_FILE" ]; then
+    rm -f "$OAUTH_WEB_TOKEN_OUTPUT_FILE"
   fi
 }
 trap cleanup EXIT
@@ -184,35 +189,51 @@ resolve_github_admin_token() {
     return 0
   fi
 
+  app_bootstrap_possible=true
   if [ "$AUTO_CREATE_GITHUB_APP_TOKEN" != "true" ]; then
-    fail "GitHub controls enabled but no token provided; set GITHUB_TOKEN, GH_TOKEN, or GITRANK_REPO_ADMIN_TOKEN"
+    app_bootstrap_possible=false
   fi
-
   if [ -z "$RESOLVED_GITHUB_APP_ID" ] || [ -z "$RESOLVED_GITHUB_APP_INSTALLATION_ID" ]; then
-    fail "GitHub controls enabled but no token is set and GitHub App credentials are incomplete"
+    app_bootstrap_possible=false
   fi
-
   if [ -z "$RESOLVED_GITHUB_APP_PRIVATE_KEY_FILE" ] && [ -z "$RESOLVED_GITHUB_APP_PRIVATE_KEY_PEM" ]; then
-    fail "GitHub controls enabled but no token is set and GitHub App private key is missing"
+    app_bootstrap_possible=false
   fi
 
-  GITHUB_APP_ID="$RESOLVED_GITHUB_APP_ID" \
-  GITHUB_APP_INSTALLATION_ID="$RESOLVED_GITHUB_APP_INSTALLATION_ID" \
-  GITHUB_APP_PRIVATE_KEY_FILE="$RESOLVED_GITHUB_APP_PRIVATE_KEY_FILE" \
-  GITHUB_APP_PRIVATE_KEY_PEM="$RESOLVED_GITHUB_APP_PRIVATE_KEY_PEM" \
-  TOKEN_OUTPUT_FILE="$APP_TOKEN_OUTPUT_FILE" \
-  run_make create-github-app-installation-token
-  token_candidate=$(cat "$APP_TOKEN_OUTPUT_FILE" 2>/dev/null || true)
-  [ -n "$token_candidate" ] || fail "GitHub App token creation succeeded but no token file content was produced"
-  cleanup_app_token_file=true
-  export GITHUB_APP_ID="$RESOLVED_GITHUB_APP_ID"
-  export GITHUB_APP_INSTALLATION_ID="$RESOLVED_GITHUB_APP_INSTALLATION_ID"
-  export GITHUB_APP_PRIVATE_KEY_FILE="$RESOLVED_GITHUB_APP_PRIVATE_KEY_FILE"
-  export GITHUB_APP_PRIVATE_KEY_PEM="$RESOLVED_GITHUB_APP_PRIVATE_KEY_PEM"
-  export GITHUB_TOKEN="$token_candidate"
-  export GH_TOKEN="$token_candidate"
-  export GITRANK_REPO_ADMIN_TOKEN="$token_candidate"
-  printf 'github admin token bootstrapped via GitHub App installation credentials\n'
+  if [ "$app_bootstrap_possible" = "true" ]; then
+    GITHUB_APP_ID="$RESOLVED_GITHUB_APP_ID" \
+    GITHUB_APP_INSTALLATION_ID="$RESOLVED_GITHUB_APP_INSTALLATION_ID" \
+    GITHUB_APP_PRIVATE_KEY_FILE="$RESOLVED_GITHUB_APP_PRIVATE_KEY_FILE" \
+    GITHUB_APP_PRIVATE_KEY_PEM="$RESOLVED_GITHUB_APP_PRIVATE_KEY_PEM" \
+    TOKEN_OUTPUT_FILE="$APP_TOKEN_OUTPUT_FILE" \
+    run_make create-github-app-installation-token
+    token_candidate=$(cat "$APP_TOKEN_OUTPUT_FILE" 2>/dev/null || true)
+    [ -n "$token_candidate" ] || fail "GitHub App token creation succeeded but no token file content was produced"
+    cleanup_app_token_file=true
+    export GITHUB_APP_ID="$RESOLVED_GITHUB_APP_ID"
+    export GITHUB_APP_INSTALLATION_ID="$RESOLVED_GITHUB_APP_INSTALLATION_ID"
+    export GITHUB_APP_PRIVATE_KEY_FILE="$RESOLVED_GITHUB_APP_PRIVATE_KEY_FILE"
+    export GITHUB_APP_PRIVATE_KEY_PEM="$RESOLVED_GITHUB_APP_PRIVATE_KEY_PEM"
+    export GITHUB_TOKEN="$token_candidate"
+    export GH_TOKEN="$token_candidate"
+    export GITRANK_REPO_ADMIN_TOKEN="$token_candidate"
+    printf 'github admin token bootstrapped via GitHub App installation credentials\n'
+    return 0
+  fi
+
+  if [ "$AUTO_CREATE_GITHUB_OAUTH_WEB_TOKEN" = "true" ]; then
+    TOKEN_OUTPUT_FILE="$OAUTH_WEB_TOKEN_OUTPUT_FILE" run_make create-github-repo-admin-token-via-oauth-web-flow
+    token_candidate=$(cat "$OAUTH_WEB_TOKEN_OUTPUT_FILE" 2>/dev/null || true)
+    [ -n "$token_candidate" ] || fail "oauth web-flow token bootstrap succeeded but no token file content was produced"
+    cleanup_app_token_file=true
+    export GITHUB_TOKEN="$token_candidate"
+    export GH_TOKEN="$token_candidate"
+    export GITRANK_REPO_ADMIN_TOKEN="$token_candidate"
+    printf 'github admin token bootstrapped via OAuth web flow\n'
+    return 0
+  fi
+
+  fail "GitHub controls enabled but no usable token path is configured; set GITHUB_TOKEN/GH_TOKEN/GITRANK_REPO_ADMIN_TOKEN, or provide GitHub App credentials, or set AUTO_CREATE_GITHUB_OAUTH_WEB_TOKEN=true with OAuth client credentials"
 }
 
 generate_observability_evidence_if_needed() {

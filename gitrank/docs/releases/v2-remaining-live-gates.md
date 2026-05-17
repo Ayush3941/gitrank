@@ -241,6 +241,10 @@ How to complete:
    - `GITRANK_REPO_ADMIN_TOKEN` (or `GITHUB_TOKEN`) with repository admin scope, or
    - GitHub App credentials (`GITHUB_APP_ID`, `GITHUB_APP_INSTALLATION_ID`, and
      private-key input) so scripts can bootstrap short-lived installation tokens.
+   - or OAuth web-flow bootstrap inputs (`GITHUB_CLIENT_ID`,
+     `GITHUB_CLIENT_SECRET`) and run with
+     `GITRANK_ALLOW_OAUTH_WEB_TOKEN_BOOTSTRAP=yes` (apply/verify scripts) or
+     `AUTO_CREATE_GITHUB_OAUTH_WEB_TOKEN=true` (finalizer).
    - Ensure the GitHub App installation has permission to mutate repository
      settings (branch protections/rulesets) and repository contents where
      policy-sync writes are required.
@@ -252,6 +256,8 @@ How to complete:
    - `CONFIRM_FINALIZE_V2=yes RUN_GITHUB_CONTROLS=true make finalize-v2-live-closeout`
      can auto-create a short-lived token from GitHub App credentials when
      `GITHUB_APP_ID`, `GITHUB_APP_INSTALLATION_ID`, and private-key input are set.
+   - `make finalize-v2-live-closeout-via-oauth-web-flow` can run the same
+     closeout path using OAuth web-flow token bootstrap.
 5. Optional GitHub Actions bootstrap:
    - `.github/workflows/verify-live-v2-gates.yml` can mint a short-lived token
      from `GITRANK_GITHUB_APP_ID`, `GITRANK_GITHUB_APP_INSTALLATION_ID`, and

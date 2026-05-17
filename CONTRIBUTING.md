@@ -1426,7 +1426,10 @@ Use `CONFIRM_FINALIZE_V2=yes make finalize-v2-live-closeout` to run preflight,
 verification, evidence checks, checklist marking, and final audit from one
 command. The finalizer accepts `GITRANK_REPO_ADMIN_TOKEN` directly and can
 auto-bootstrap a short-lived GitHub App installation token when no token is
-pre-set and App credentials are provided. It also defaults
+pre-set and App credentials are provided. It can also bootstrap a short-lived
+OAuth admin token via web flow when
+`AUTO_CREATE_GITHUB_OAUTH_WEB_TOKEN=true` is set and OAuth credentials are
+configured. It also defaults
 `AUTO_SYNC_REMOTE_TRIVY_POLICY=true` so Trivy workflow-health failures caused
 by remote policy drift can be auto-remediated when a token is available, and it
 now enforces `make verify-live-github-access` before GitHub-controls apply/verify.
@@ -1448,6 +1451,8 @@ The finalizer can load that file directly with
 `LIVE_V2_ENV_FILE=.env.v2-live-gates.local`) to avoid manual `set -a` export.
 For the default local filename, use
 `CONFIRM_FINALIZE_V2=yes make -C gitrank finalize-v2-live-closeout-local-env`.
+For a one-command OAuth-assisted variant, use
+`make -C gitrank finalize-v2-live-closeout-via-oauth-web-flow`.
 Use `AUDIT_REPORT_FILE=... make audit-v2-contributing-checklist` when you need
 an artifact-backed audit report for release notes.
 Latest local audit snapshot: `gitrank/docs/evidence/v2-completion-audit-2026-05-17-current.txt`
@@ -1465,6 +1470,8 @@ Use `make -C gitrank create-github-repo-admin-token-via-oauth-web-flow` to
 mint a short-lived OAuth token from `GITHUB_CLIENT_ID` /
 `GITHUB_CLIENT_SECRET` when Device Flow is disabled; the helper prints the
 authorization URL and accepts a pasted callback URL or `code`.
+`make -C gitrank finalize-v2-live-closeout-via-oauth-web-flow` uses that same
+flow and then runs the full closeout pipeline automatically.
 The live-gates workflow can also bootstrap a short-lived admin token from
 `GITRANK_GITHUB_APP_ID`, `GITRANK_GITHUB_APP_INSTALLATION_ID`, and
 `GITRANK_GITHUB_APP_PRIVATE_KEY_PEM` when `GITRANK_REPO_ADMIN_TOKEN` is unset.

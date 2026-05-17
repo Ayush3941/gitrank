@@ -202,6 +202,9 @@ make apply-github-repository-controls-auto
 ```
 
 This prompts for one callback URL/code and then continues with live apply.
+The same OAuth bootstrap is available through the finalizer with
+`AUTO_CREATE_GITHUB_OAUTH_WEB_TOKEN=true` or
+`make finalize-v2-live-closeout-via-oauth-web-flow`.
 
 ## Apply Through GitHub UI
 
