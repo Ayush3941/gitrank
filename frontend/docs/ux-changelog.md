@@ -72,6 +72,11 @@
     Badges / Timeline) for faster navigation across long dashboard pages
   - added section anchors with `scroll-mt` offsets so in-page links land on
     readable positions below sticky chrome.
+- Dashboard quick-jump rail now tracks active section while scrolling:
+  - active chip is highlighted with `aria-current="location"` state
+  - lightweight scroll+resize `requestAnimationFrame` tracking keeps updates
+    smooth
+  - quick-jump rail is sticky on larger breakpoints for persistent orientation.
 
 - Optimized hero/background rendering while preserving cyber style:
   - compressed `public/background.jpg` from large source to web-safe size

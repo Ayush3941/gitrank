@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Activity, Flame, Medal, ShieldCheck, Swords, Waypoints } from "lucide-react";
 import { DashboardHeroRankCard } from "@/features/dashboard/components/DashboardHeroRankCard";
 import { ContributionTimelineCard } from "@/features/dashboard/components/ContributionTimelineCard";
@@ -23,9 +23,19 @@ import { formatRelativeDays } from "@/lib/formatters";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 
+const DASHBOARD_SECTION_NAV = [
+  { id: "dashboard-hero", label: "Hero" },
+  { id: "dashboard-league", label: "League" },
+  { id: "dashboard-skills", label: "Skills" },
+  { id: "dashboard-reports", label: "Reports" },
+  { id: "dashboard-badges", label: "Badges" },
+  { id: "dashboard-timeline", label: "Timeline" },
+] as const;
+
 export function DashboardPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useDashboard();
   const scoreExplanationEventSent = useRef(false);
+  const [activeSection, setActiveSection] = useState<string>(DASHBOARD_SECTION_NAV[0].id);
   const user = data?.user;
   const recentReports = data?.recentReports ?? [];
   const streak = useMemo(
@@ -100,6 +110,52 @@ export function DashboardPageClient() {
     });
   }, [data, isError, isLoading]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const sectionNodes = DASHBOARD_SECTION_NAV
+      .map((section) => document.getElementById(section.id))
+      .filter(Boolean) as HTMLElement[];
+
+    if (!sectionNodes.length) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visibleEntries = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((left, right) => {
+            if (right.intersectionRatio !== left.intersectionRatio) {
+              return right.intersectionRatio - left.intersectionRatio;
+            }
+            return left.boundingClientRect.top - right.boundingClientRect.top;
+          });
+
+        const nextSection = visibleEntries[0]?.target?.id;
+        if (!nextSection) {
+          return;
+        }
+        setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
+      },
+      {
+        root: null,
+        rootMargin: "-22% 0px -62% 0px",
+        threshold: [0, 0.2, 0.45, 0.7, 1],
+      },
+    );
+
+    for (const node of sectionNodes) {
+      observer.observe(node);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   if (isLoading) {
     return <LoadingState message="Building your RPG dashboard..." />;
   }
@@ -143,30 +199,29 @@ export function DashboardPageClient() {
       ) : null}
       <section
         aria-label="Dashboard section quick jump"
-        className="cyber-terminal panel-grid flex flex-wrap items-center gap-2 rounded-[1.2rem] px-3 py-3"
+        className="cyber-terminal panel-grid flex flex-wrap items-center gap-2 rounded-[1.2rem] px-3 py-3 xl:sticky xl:top-20 xl:z-20"
       >
         <span className="inline-flex items-center gap-2 px-2 text-xs tracking-[0.14em] text-primary uppercase">
           <Waypoints className="h-3.5 w-3.5" />
           Jump
         </span>
-        <a className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs" href="#dashboard-hero">
-          Hero
-        </a>
-        <a className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs" href="#dashboard-league">
-          League
-        </a>
-        <a className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs" href="#dashboard-skills">
-          Skills
-        </a>
-        <a className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs" href="#dashboard-reports">
-          Reports
-        </a>
-        <a className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs" href="#dashboard-badges">
-          Badges
-        </a>
-        <a className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs" href="#dashboard-timeline">
-          Timeline
-        </a>
+        {DASHBOARD_SECTION_NAV.map((section) => {
+          const active = section.id === activeSection;
+          return (
+            <a
+              key={section.id}
+              className={
+                active
+                  ? "neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold"
+                  : "neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs"
+              }
+              href={`#${section.id}`}
+              aria-current={active ? "location" : undefined}
+            >
+              {section.label}
+            </a>
+          );
+        })}
       </section>
       <section id="dashboard-hero" className="scroll-mt-24">
         <DashboardHeroRankCard
