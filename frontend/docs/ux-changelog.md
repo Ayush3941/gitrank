@@ -109,6 +109,8 @@
     (category/search/sort), reducing reset friction during rapid drill-down
   - filter bar now explicitly shows a `No active filters` state when defaults
     are active, improving orientation during demos and QA checks.
+  - added targeted UI tests in `tests/contribution-filters.test.tsx` to lock
+    default-state messaging and removable chip callback behavior.
 - Sync freshness readability/traceability upgrade:
   - `formatRelativeDays` now reports recent sync age with minute/hour precision
     (for example `2m ago`, `3h ago`) before day-level buckets
