@@ -22,7 +22,11 @@ import { useDisplayShortcutsEnabled } from "@/hooks/use-display-shortcuts-enable
 import { useTextScalePreference } from "@/hooks/use-text-scale-preference";
 import { useThemePreference, type ThemePreference } from "@/hooks/use-theme-preference";
 import { cn } from "@/lib/cn";
-import { filterQuickActions, type QuickActionItem } from "@/lib/quick-actions";
+import {
+  filterQuickActions,
+  groupQuickActions,
+  type QuickActionItem,
+} from "@/lib/quick-actions";
 
 const THEME_ORDER: ThemePreference[] = ["neon", "midnight", "aurora", "high-contrast"];
 
@@ -46,6 +50,7 @@ export function DashboardQuickActions({
   const { textScale, setTextScale } = useTextScalePreference();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const deferredQuery = useDeferredValue(query);
   const shortcutHint = "Ctrl/Cmd+K";
@@ -53,6 +58,7 @@ export function DashboardQuickActions({
   const actions = useMemo<QuickActionItem[]>(() => {
     const routeActions = dashboardNavItems.map((item) => ({
       id: `goto:${item.href}`,
+      group: "Navigate",
       label: `Go to ${item.label}`,
       description: `Open ${item.label.toLowerCase()} lane`,
       keywords: [item.label, item.mobileLabel, item.href.replace("/dashboard/", "")],
@@ -65,6 +71,7 @@ export function DashboardQuickActions({
 
     const profileAction: QuickActionItem = {
       id: "profile:public",
+      group: "Profile",
       label: "Open public profile",
       description: `View /u/${username} share card`,
       keywords: ["profile", "public", "share", username],
@@ -76,6 +83,7 @@ export function DashboardQuickActions({
 
     const syncAction: QuickActionItem = {
       id: "sync:now",
+      group: "Sync",
       label: syncPending ? "Sync already running" : "Run GitHub sync now",
       description: syncPending
         ? "Background sync is already in progress"
@@ -92,6 +100,7 @@ export function DashboardQuickActions({
 
     const themeAction: QuickActionItem = {
       id: "theme:cycle",
+      group: "Display",
       label: `Switch theme (${themeLabel(theme)})`,
       description: "Cycle among Neon, Midnight, Aurora, and High Contrast modes",
       keywords: ["theme", "contrast", "neon", "midnight", "aurora"],
@@ -104,6 +113,7 @@ export function DashboardQuickActions({
 
     const textAction: QuickActionItem = {
       id: "text:toggle",
+      group: "Display",
       label: textScale === "large" ? "Use default text size" : "Use large text size",
       description: "Toggle readability scaling for dense dashboard surfaces",
       keywords: ["text", "size", "readability", "large", "default"],
@@ -121,7 +131,16 @@ export function DashboardQuickActions({
     () => filterQuickActions(actions, deferredQuery),
     [actions, deferredQuery],
   );
-  const topAction = filteredActions[0];
+  const groupedActions = useMemo(
+    () => groupQuickActions(filteredActions),
+    [filteredActions],
+  );
+  const clampedHighlightedIndex =
+    filteredActions.length > 0
+      ? Math.min(Math.max(highlightedIndex, 0), filteredActions.length - 1)
+      : -1;
+  const highlightedAction =
+    clampedHighlightedIndex >= 0 ? filteredActions[clampedHighlightedIndex] : null;
 
   useEffect(() => {
     if (!open) {
@@ -134,6 +153,14 @@ export function DashboardQuickActions({
       window.cancelAnimationFrame(frame);
     };
   }, [open]);
+
+  useEffect(() => {
+    if (!open || !highlightedAction) {
+      return;
+    }
+    const node = document.getElementById(optionIdForAction(highlightedAction.id));
+    node?.scrollIntoView({ block: "nearest" });
+  }, [highlightedAction, open]);
 
   useEffect(() => {
     if (!displayShortcutsEnabled) {
@@ -154,7 +181,13 @@ export function DashboardQuickActions({
         return;
       }
       event.preventDefault();
-      setOpen((current) => !current);
+      setOpen((current) => {
+        const nextOpen = !current;
+        if (nextOpen) {
+          setHighlightedIndex(0);
+        }
+        return nextOpen;
+      });
     }
 
     window.addEventListener("keydown", handleKeyDown);
@@ -167,14 +200,38 @@ export function DashboardQuickActions({
     action.execute();
     setOpen(false);
     setQuery("");
+    setHighlightedIndex(0);
   }
 
   function handleInputKeyDown(event: ReactKeyboardEvent<HTMLInputElement>) {
-    if (event.key !== "Enter" || !topAction) {
+    if (!filteredActions.length) {
       return;
     }
-    event.preventDefault();
-    executeAction(topAction);
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setHighlightedIndex((current) => (current + 1) % filteredActions.length);
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setHighlightedIndex((current) => {
+        if (current <= 0) {
+          return filteredActions.length - 1;
+        }
+        return current - 1;
+      });
+      return;
+    }
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+      const action = highlightedAction ?? filteredActions[0];
+      if (action) {
+        executeAction(action);
+      }
+    }
   }
 
   return (
@@ -184,6 +241,7 @@ export function DashboardQuickActions({
         variant="secondary"
         size="sm"
         onClick={() => {
+          setHighlightedIndex(0);
           setOpen(true);
         }}
         className="gap-2"
@@ -195,6 +253,7 @@ export function DashboardQuickActions({
         open={open}
         onOpenChange={(nextOpen) => {
           setOpen(nextOpen);
+          setHighlightedIndex(0);
           if (!nextOpen) {
             setQuery("");
           }
@@ -214,53 +273,85 @@ export function DashboardQuickActions({
               value={query}
               onChange={(event) => {
                 setQuery(event.target.value);
+                setHighlightedIndex(0);
               }}
               onKeyDown={handleInputKeyDown}
               placeholder="Type an action, route, or keyword..."
               className="w-full bg-transparent text-sm text-white placeholder:text-slate-300 focus:outline-none"
               aria-label="Search quick actions"
+              aria-controls="dashboard-quick-actions-list"
+              aria-activedescendant={highlightedAction ? optionIdForAction(highlightedAction.id) : undefined}
             />
             <span className="text-[11px] tracking-[0.12em] text-cyan-200 uppercase">{shortcutHint}</span>
           </div>
-          <ul role="list" className="max-h-[50vh] space-y-2 overflow-auto pr-1">
-            {filteredActions.length > 0 ? (
-              filteredActions.map((action, index) => {
-                const Icon = action.icon;
-                const tone = actionTone(action.id, syncPending);
-                return (
-                  <li key={action.id}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        executeAction(action);
-                      }}
-                      className={cn(
-                        "focus-ring neon-tile w-full border px-3 py-2.5 text-left transition",
-                        tone === "success" && "border-emerald-300/30 text-emerald-100",
-                        tone === "info" && "border-cyan-300/32 text-cyan-100",
-                      )}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="inline-flex items-center gap-2 text-sm font-semibold text-white">
-                          {Icon ? <Icon className="h-4 w-4 text-primary" /> : null}
-                          {index === 0 ? "↵ " : ""}
-                          {action.label}
-                        </span>
-                        {action.shortcut ? (
-                          <kbd className="text-[11px]">{action.shortcut}</kbd>
-                        ) : null}
-                      </div>
-                      <p className="mt-1 text-xs text-slate-200">{action.description}</p>
-                    </button>
-                  </li>
-                );
-              })
+          {!displayShortcutsEnabled ? (
+            <p className="text-xs text-amber-100">
+              Display shortcuts are disabled in Settings, so <span className="text-white">Alt+Shift+T/L</span> are off.
+            </p>
+          ) : null}
+          <div
+            id="dashboard-quick-actions-list"
+            role="listbox"
+            aria-label="Quick action results"
+            className="max-h-[50vh] space-y-3 overflow-auto pr-1"
+          >
+            {groupedActions.length > 0 ? (
+              groupedActions.map((group) => (
+                <section key={group.title} className="space-y-2">
+                  <p className="px-1 text-[11px] tracking-[0.14em] text-cyan-200 uppercase">
+                    {group.title}
+                  </p>
+                  <div className="space-y-2">
+                    {group.items.map((action) => {
+                      const Icon = action.icon;
+                      const tone = actionTone(action.id, syncPending);
+                      const index = filteredActions.findIndex((entry) => entry.id === action.id);
+                      const highlighted = index === clampedHighlightedIndex;
+                      return (
+                        <button
+                          key={action.id}
+                          id={optionIdForAction(action.id)}
+                          type="button"
+                          role="option"
+                          aria-selected={highlighted}
+                          onMouseEnter={() => {
+                            if (index >= 0) {
+                              setHighlightedIndex(index);
+                            }
+                          }}
+                          onClick={() => {
+                            executeAction(action);
+                          }}
+                          className={cn(
+                            "focus-ring neon-tile w-full border px-3 py-2.5 text-left transition",
+                            highlighted && "border-primary/48 bg-primary/10 shadow-[0_0_20px_rgb(34_226_255_/_0.15)]",
+                            tone === "success" && "border-emerald-300/30 text-emerald-100",
+                            tone === "info" && "border-cyan-300/32 text-cyan-100",
+                          )}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="inline-flex items-center gap-2 text-sm font-semibold text-white">
+                              {Icon ? <Icon className="h-4 w-4 text-primary" /> : null}
+                              {highlighted ? "↵ " : ""}
+                              {action.label}
+                            </span>
+                            {action.shortcut ? (
+                              <kbd className="text-[11px]">{action.shortcut}</kbd>
+                            ) : null}
+                          </div>
+                          <p className="mt-1 text-xs text-slate-200">{action.description}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
+              ))
             ) : (
-              <li className="neon-tile rounded-[0.1rem] border border-dashed border-primary/30 px-3 py-3 text-sm text-slate-200">
+              <div className="neon-tile rounded-[0.1rem] border border-dashed border-primary/30 px-3 py-3 text-sm text-slate-200">
                 No matching action. Try route names like <span className="text-white">contributions</span> or <span className="text-white">settings</span>.
-              </li>
+              </div>
             )}
-          </ul>
+          </div>
         </DialogContent>
       </Dialog>
     </>
@@ -298,6 +389,10 @@ function actionTone(actionId: string, syncPending: boolean): ActionTone {
     return syncPending ? "info" : "success";
   }
   return "default";
+}
+
+function optionIdForAction(actionId: string) {
+  return `dashboard-quick-action-${actionId.replace(/[^a-zA-Z0-9_-]/g, "_")}`;
 }
 
 function isEditableTarget(target: EventTarget | null): boolean {

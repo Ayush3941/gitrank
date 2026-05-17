@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import { filterQuickActions, type QuickActionItem } from "@/lib/quick-actions";
+import {
+  filterQuickActions,
+  groupQuickActions,
+  type QuickActionItem,
+} from "@/lib/quick-actions";
 
 function action(id: string, label: string, description: string, keywords?: string[]): QuickActionItem {
   return {
@@ -36,5 +40,21 @@ describe("filterQuickActions", () => {
 
   it("returns empty array for unmatched query", () => {
     expect(filterQuickActions(actions, "unrelated")).toEqual([]);
+  });
+});
+
+describe("groupQuickActions", () => {
+  it("groups actions while preserving first-seen group order", () => {
+    const actions: QuickActionItem[] = [
+      { ...action("a", "A", "desc"), group: "Navigate" },
+      { ...action("b", "B", "desc"), group: "Display" },
+      { ...action("c", "C", "desc"), group: "Navigate" },
+      action("d", "D", "desc"),
+    ];
+
+    const grouped = groupQuickActions(actions);
+    expect(grouped.map((entry) => entry.title)).toEqual(["Navigate", "Display", "Other"]);
+    expect(grouped[0]?.items.map((entry) => entry.id)).toEqual(["a", "c"]);
+    expect(grouped[2]?.items.map((entry) => entry.id)).toEqual(["d"]);
   });
 });

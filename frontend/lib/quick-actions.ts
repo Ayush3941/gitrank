@@ -4,6 +4,7 @@ export type QuickActionItem = {
   id: string;
   label: string;
   description: string;
+  group?: string;
   keywords?: string[];
   shortcut?: string;
   icon?: LucideIcon;
@@ -30,6 +31,23 @@ export function filterQuickActions(
     .sort(compareRankedActions);
 
   return ranked.map((entry) => entry.action);
+}
+
+export function groupQuickActions(
+  actions: readonly QuickActionItem[],
+): Array<{ title: string; items: QuickActionItem[] }> {
+  const grouped = new Map<string, QuickActionItem[]>();
+  for (const action of actions) {
+    const groupTitle = action.group?.trim() || "Other";
+    if (!grouped.has(groupTitle)) {
+      grouped.set(groupTitle, []);
+    }
+    grouped.get(groupTitle)?.push(action);
+  }
+  return [...grouped.entries()].map(([title, items]) => ({
+    title,
+    items,
+  }));
 }
 
 function scoreAction(action: QuickActionItem, query: string): number {
