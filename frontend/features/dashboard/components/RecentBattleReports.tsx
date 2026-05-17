@@ -21,8 +21,8 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
           <div key={report.contribution.id} className="neon-surface rounded-[1.75rem] p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="break-words text-sm text-muted">{report.contribution.owner}/{report.contribution.repo} #{report.contribution.number}</p>
-                <h3 className="mt-2 break-words text-lg font-medium text-white">{report.contribution.title}</h3>
+                <p className="break-anywhere text-sm text-muted">{report.contribution.owner}/{report.contribution.repo} #{report.contribution.number}</p>
+                <h3 className="mt-2 break-anywhere text-lg font-medium text-white">{report.contribution.title}</h3>
                 <p className="mt-2 text-sm text-muted">
                   {report.contribution.category} • difficulty {report.contribution.difficultyScore} • {report.contribution.status}
                 </p>

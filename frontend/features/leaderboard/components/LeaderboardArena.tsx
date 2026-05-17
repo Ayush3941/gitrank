@@ -16,8 +16,8 @@ export function LeaderboardArena({ snapshot }: { snapshot: LeaderboardSnapshot }
               <CalendarClock className="h-3.5 w-3.5" />
               {snapshot.season.status} season
             </div>
-            <h2 className="mt-4 break-words text-3xl font-semibold text-white">{snapshot.season.name}</h2>
-            <p className="mt-2 break-words text-sm leading-7 text-slate-200/82">{snapshot.season.explanation}</p>
+            <h2 className="mt-4 break-anywhere text-3xl font-semibold text-white">{snapshot.season.name}</h2>
+            <p className="mt-2 break-anywhere text-sm leading-7 text-slate-200/82">{snapshot.season.explanation}</p>
           </div>
           <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[32rem]">
             <Metric label="Window" value={snapshot.season.windowLabel} />
@@ -59,7 +59,7 @@ export function LeaderboardArena({ snapshot }: { snapshot: LeaderboardSnapshot }
                 </div>
                 <div>
                   <div className="flex flex-wrap items-center gap-3">
-                    <p className="break-words text-xl font-semibold text-white">{row.displayName}</p>
+                    <p className="break-anywhere text-xl font-semibold text-white">{row.displayName}</p>
                     <RankBadge rank={row.rankTier} />
                     {row.isCurrentUser ? (
                       <span className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
@@ -67,14 +67,14 @@ export function LeaderboardArena({ snapshot }: { snapshot: LeaderboardSnapshot }
                       </span>
                     ) : null}
                   </div>
-                  <p className="mt-1 break-words text-sm text-muted">@{row.username} • {row.title}</p>
+                  <p className="mt-1 break-anywhere text-sm text-muted">@{row.username} • {row.title}</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <Pill>{row.division}</Pill>
                     {row.promotionZone ? <Pill tone="success">Promotion zone</Pill> : null}
                     {row.demotionRisk ? <Pill tone="warning">Safety watch</Pill> : null}
                     {row.rankEvidenceState ? <Pill tone="warning">Evidence {row.rankEvidenceState}</Pill> : null}
                   </div>
-                  <p className="mt-3 max-w-2xl break-words text-sm leading-6 text-slate-200/76">{row.evidenceSummary}</p>
+                  <p className="mt-3 max-w-2xl break-anywhere text-sm leading-6 text-slate-200/76">{row.evidenceSummary}</p>
                   <p className="mt-2 max-w-2xl text-xs text-muted">
                     Snapshot {row.profileSnapshotVersion || "unknown"} / Score {row.scoreFormulaVersion}
                     {row.sourceWatermark ? ` / Watermark ${new Date(row.sourceWatermark).toLocaleDateString()}` : ""}
@@ -114,7 +114,7 @@ function Rule({
         {icon}
         {label}
       </div>
-      <p className="mt-2 break-words text-sm leading-6 text-slate-200/80">{value}</p>
+      <p className="mt-2 break-anywhere text-sm leading-6 text-slate-200/80">{value}</p>
     </div>
   );
 }

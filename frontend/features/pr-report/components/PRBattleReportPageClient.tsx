@@ -83,8 +83,8 @@ export function PRBattleReportPageClient({
       <GlowCard strong className="space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="break-words text-sm text-muted">{data.contribution.owner}/{data.contribution.repo} #{data.contribution.number}</p>
-            <h1 className="mt-2 break-words text-3xl font-semibold text-white">{data.contribution.title}</h1>
+            <p className="break-anywhere text-sm text-muted">{data.contribution.owner}/{data.contribution.repo} #{data.contribution.number}</p>
+            <h1 className="mt-2 break-anywhere text-3xl font-semibold text-white">{data.contribution.title}</h1>
             <p className="mt-3 text-sm text-slate-200">
               {data.contribution.status} • {data.contribution.category}
             </p>
@@ -124,7 +124,7 @@ export function PRBattleReportPageClient({
             ))}
           </div>
           {evidenceState.reasons.length ? (
-            <p className="mt-3 break-words text-sm text-muted">{evidenceState.reasons.slice(0, 2).join(" · ")}</p>
+            <p className="mt-3 break-anywhere text-sm text-muted">{evidenceState.reasons.slice(0, 2).join(" · ")}</p>
           ) : null}
         </div>
       </GlowCard>
@@ -134,7 +134,7 @@ export function PRBattleReportPageClient({
       </div>
       <GlowCard className="space-y-4">
         <p className="text-xs tracking-[0.24em] text-primary uppercase">AI summary</p>
-        <p className="break-words text-base leading-8 text-slate-200">{data.contribution.aiSummary}</p>
+        <p className="break-anywhere text-base leading-8 text-slate-200">{data.contribution.aiSummary}</p>
       </GlowCard>
       <EvidenceSignalsCard report={data} />
       {data.badgeUnlocks.length ? (

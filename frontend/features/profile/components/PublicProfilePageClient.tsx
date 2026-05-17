@@ -180,8 +180,8 @@ export function PublicProfilePageClient({
                 <div key={repository.name} className="neon-surface rounded-[1.5rem] px-4 py-3">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="break-words font-medium text-white">{repository.name}</p>
-                      <p className="break-words text-sm text-muted">
+                      <p className="break-anywhere font-medium text-white">{repository.name}</p>
+                      <p className="break-anywhere text-sm text-muted">
                         {repository.contributionCount} scored contributions
                         {repository.primarySkill ? ` • ${repository.primarySkill}` : ""}
                       </p>

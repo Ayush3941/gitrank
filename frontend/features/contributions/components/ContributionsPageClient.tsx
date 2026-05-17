@@ -219,7 +219,7 @@ export function ContributionsPageClient() {
                 <h2 className="mt-3 text-2xl font-semibold text-white">
                   {abraInsights.data?.archetype || "Systems Builder"} mode
                 </h2>
-                <p className="mt-2 max-w-3xl break-words text-sm text-slate-200/85">
+                <p className="mt-2 max-w-3xl break-anywhere text-sm text-slate-200/85">
                   {abraInsights.data?.identitySummary ||
                     "Signal synthesis is running in deterministic mode while contribution intelligence resolves."}
                 </p>
@@ -246,7 +246,7 @@ export function ContributionsPageClient() {
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {repositories.map((repository) => (
               <div key={repository.fullName} className="neon-surface rounded-[1.4rem] border-cyan-300/28 px-4 py-3">
-                <p className="break-words text-sm font-medium text-white">{repository.fullName}</p>
+                <p className="break-anywhere text-sm font-medium text-white">{repository.fullName}</p>
                 <p className="mt-1 text-xs text-slate-300">{repository.contributions} contributions</p>
                 <p className="mt-3 text-lg font-semibold text-cyan-200">{repository.totalXp} XP</p>
               </div>
@@ -280,8 +280,8 @@ export function ContributionsPageClient() {
             <div className="space-y-3">
               {topHighlights.map((row) => (
                 <div key={row.id} className="neon-surface rounded-2xl px-3 py-3">
-                  <p className="break-words text-sm font-medium text-white">{row.title}</p>
-                  <p className="mt-1 break-words text-xs text-slate-300">{row.owner}/{row.repo} #{row.number}</p>
+                  <p className="break-anywhere text-sm font-medium text-white">{row.title}</p>
+                  <p className="mt-1 break-anywhere text-xs text-slate-300">{row.owner}/{row.repo} #{row.number}</p>
                   <p className="mt-2 text-sm text-cyan-200">+{row.xpEarned} XP</p>
                 </div>
               ))}

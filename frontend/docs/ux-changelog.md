@@ -47,6 +47,11 @@
   - prevents long owner/repo/title strings from overflowing hero cards and
     panel grids across dashboard, contributions, profile, leaderboard, and
     PR battle report routes.
+- Upgraded long-string handling from `break-word` behavior to
+  `overflow-wrap:anywhere` via shared `.break-anywhere` utility for better
+  protection against unbroken identifiers and deep repo paths.
+- Added `text-wrap: pretty` to shared copy utilities to improve multi-line
+  paragraph rhythm where browser support is available.
 
 - Optimized hero/background rendering while preserving cyber style:
   - compressed `public/background.jpg` from large source to web-safe size

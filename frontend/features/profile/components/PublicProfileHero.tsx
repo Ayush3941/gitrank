@@ -42,23 +42,23 @@ export function PublicProfileHero({
             </div>
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-3">
-                <h1 className="break-words text-3xl font-semibold text-white">{user.displayName}</h1>
+                <h1 className="break-anywhere text-3xl font-semibold text-white">{user.displayName}</h1>
                 <RankBadge rank={user.level.rankTier} />
               </div>
               <p className="text-sm text-muted">@{user.username}</p>
-              <p className="break-words text-sm text-slate-200">
+              <p className="break-anywhere text-sm text-slate-200">
                 {user.title}
                 {archetype ? ` • ${archetype}` : ""}
               </p>
             </div>
           </div>
-          <p className="max-w-3xl break-words text-sm leading-7 text-slate-200/82">{user.bio}</p>
+          <p className="max-w-3xl break-anywhere text-sm leading-7 text-slate-200/82">{user.bio}</p>
           {identitySummary ? (
             <div className="neon-callout rounded-2xl px-4 py-3 text-sm text-slate-200/88">
               <p className="cyber-readout text-xs tracking-[0.24em] text-cyan-200 uppercase">
                 Open Source Identity ({aiMode === "gemini" ? "Gemini" : "Deterministic"})
               </p>
-              <p className="mt-2 break-words leading-6">{identitySummary}</p>
+              <p className="mt-2 break-anywhere leading-6">{identitySummary}</p>
             </div>
           ) : null}
           <div className="flex flex-wrap gap-2">

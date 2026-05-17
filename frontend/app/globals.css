@@ -690,14 +690,22 @@ html[data-text-scale="large"] :where(.text-sm) {
 
 .cyber-copy {
   color: rgb(var(--text-body));
+  text-wrap: pretty;
 }
 
 .cyber-copy-muted {
   color: rgb(var(--text-soft));
+  text-wrap: pretty;
 }
 
 .readable-measure {
   max-width: 72ch;
+  text-wrap: pretty;
+}
+
+.break-anywhere {
+  overflow-wrap: anywhere;
+  word-break: normal;
 }
 
 .numeric-readout {
