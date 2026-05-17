@@ -9,6 +9,13 @@
     `app/globals.css` to disable non-essential animation and smooth-scroll
 - Reduced decorative rendering cost on smaller screens by gating heavier
   background layers in `AppShell` behind responsive breakpoints.
+- Added route-level `loading.tsx` coverage for major surfaces:
+  - `app/(app)/dashboard/loading.tsx`
+  - `app/(public)/u/[username]/loading.tsx`
+  - `app/(public)/pr/[owner]/[repo]/[number]/loading.tsx`
+  - `app/(marketing)/loading.tsx`
+  using a shared `RouteLoadingState` shell for consistent perceived-performance
+  feedback during App Router navigation.
 - Added field web-vitals reporting (`useReportWebVitals`) with bounded
   route-group tagging via `WebVitalsReporter` mounted in root layout.
 - Extended analytics payload and gateway ingestion for `web_vital.sample`
