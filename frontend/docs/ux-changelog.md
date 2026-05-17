@@ -82,6 +82,9 @@
   - dashboard, badges, and quests hooks now reuse cached `profile/me` query
     data via `ensureQueryData` instead of triggering independent profile fetches
   - added short stale-time windows to reduce rapid tab-switch network churn.
+- Leaderboard tab switching now preserves previous snapshot while fetching the
+  next tab (`placeholderData`) and surfaces a lightweight live refresh status
+  instead of full-page flicker.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`

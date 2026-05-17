@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { startTransition, useDeferredValue, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -27,8 +27,10 @@ const tabs: LeaderboardTab[] = [
 
 export function LeaderboardPageClient() {
   const [tab, setTab] = useState<LeaderboardTab>("Global");
-  const { data, isLoading, isError } = useLeaderboard(tab);
+  const deferredTab = useDeferredValue(tab);
+  const { data, isLoading, isError, isFetching } = useLeaderboard(deferredTab);
   const { data: myProfile } = useMyProfile();
+  const isSwitchingTab = deferredTab !== tab;
   const currentUserHandle = myProfile?.user.username.toLowerCase() ?? "";
   const rows = (data?.rows ?? []).map((row) => ({
     ...row,
@@ -43,6 +45,10 @@ export function LeaderboardPageClient() {
         currentUser: rows.find((row) => row.isCurrentUser),
       }
     : null;
+
+  function handleTabChange(value: string) {
+    startTransition(() => setTab(value as LeaderboardTab));
+  }
 
   return (
     <div className="space-y-6">
@@ -65,7 +71,7 @@ export function LeaderboardPageClient() {
           analyticsTarget="leaderboard:stale"
         />
       ) : null}
-      <Tabs value={tab} onValueChange={(value) => setTab(value as LeaderboardTab)}>
+      <Tabs value={tab} onValueChange={handleTabChange}>
         <TabsList className="scrollbar-thin w-full overflow-x-auto whitespace-nowrap">
           {tabs.map((item) => (
             <TabsTrigger key={item} value={item}>
@@ -74,6 +80,11 @@ export function LeaderboardPageClient() {
           ))}
         </TabsList>
       </Tabs>
+      <p role="status" aria-live="polite" className="text-xs tracking-[0.2em] text-cyan-200 uppercase">
+        {isSwitchingTab || (isFetching && snapshot)
+          ? `Refreshing ${tab} snapshot...`
+          : `Viewing ${tab} snapshot`}
+      </p>
       <div className="neon-callout rounded-[1.75rem] px-4 py-3 text-sm text-slate-200">
         Snapshot note: leaderboard placement is directional, not a final measure of engineering ability. Quality weighting reduces the impact of shallow, unreviewed, or repetitive PR floods.
       </div>
