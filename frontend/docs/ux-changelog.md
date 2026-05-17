@@ -43,6 +43,8 @@
     reveal-unavailable/skeleton states
   - added progressive-disclosure details on OAuth connect screen for "what is
     read" vs "what is not read by default".
+- Reveal flow now includes a "What to do next" 3-step action lane and direct
+  CTA to contribution drill-down, reducing post-onboarding dead-end behavior.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`

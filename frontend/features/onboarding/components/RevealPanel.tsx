@@ -20,6 +20,11 @@ export function RevealPanel({
 }) {
   const strongestSignals =
     user.strongestSignals.length > 0 ? user.strongestSignals.join(", ") : "recent contribution";
+  const nextActions = [
+    "Open dashboard to inspect score movement and weekly XP.",
+    "Review contribution drill-down for high-impact PR evidence cards.",
+    "Share your public profile once privacy toggles are set.",
+  ];
 
   return (
     <main className="mx-auto max-w-5xl">
@@ -69,12 +74,26 @@ export function RevealPanel({
             </div>
           ))}
         </div>
+        <div className="neon-surface rounded-[1.75rem] px-5 py-4 text-left">
+          <p className="text-xs tracking-[0.24em] text-primary uppercase">What to do next</p>
+          <div className="mt-3 grid gap-3 sm:grid-cols-3">
+            {nextActions.map((item, index) => (
+              <div key={item} className="neon-metric rounded-[1.25rem] px-3 py-3">
+                <p className="text-[11px] tracking-[0.22em] text-cyan-200 uppercase">Step {index + 1}</p>
+                <p className="mt-2 text-sm leading-6 text-slate-200/88">{item}</p>
+              </div>
+            ))}
+          </div>
+        </div>
         <div className="flex flex-wrap justify-center gap-3">
           <Button asChild size="lg">
             <Link href="/dashboard">
               Enter dashboard
               <ArrowRight className="h-4 w-4" />
             </Link>
+          </Button>
+          <Button asChild variant="secondary" size="lg">
+            <Link href="/dashboard/contributions">Open contributions</Link>
           </Button>
           <Button asChild variant="secondary" size="lg">
             <Link href={`/u/${user.username}`}>View public profile</Link>
