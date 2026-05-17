@@ -9,7 +9,7 @@ export function AppShell({
   className?: string;
 }) {
   return (
-    <div className="page-shell min-h-screen">
+    <main id="main-content" className="page-shell min-h-screen" tabIndex={-1}>
       <div className="pointer-events-none absolute inset-0 neon-vignette" />
       <div className="pointer-events-none absolute inset-0 panel-grid opacity-[0.08] [mask-image:linear-gradient(180deg,black_4%,transparent_82%)]" />
       <div className="pointer-events-none absolute inset-0 opacity-[0.07] [background:repeating-linear-gradient(180deg,rgba(255,255,255,0.04)_0px,rgba(255,255,255,0.04)_1px,transparent_1px,transparent_6px)]" />
@@ -21,6 +21,6 @@ export function AppShell({
       <div className={cn("mx-auto w-full max-w-[92rem] px-4 py-6 sm:px-6 lg:px-8", className)}>
         {children}
       </div>
-    </div>
+    </main>
   );
 }

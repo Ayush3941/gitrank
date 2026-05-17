@@ -214,6 +214,30 @@ select {
   min-height: 24px;
 }
 
+.skip-link {
+  position: fixed;
+  left: 0.75rem;
+  top: 0.75rem;
+  z-index: 100;
+  transform: translateY(-160%);
+  border: 1px solid rgb(var(--primary) / 0.4);
+  background:
+    linear-gradient(155deg, rgb(var(--primary) / 0.22), rgb(var(--primary-2) / 0.16)),
+    rgb(var(--card) / 0.96);
+  color: rgb(var(--text-strong));
+  padding: 0.45rem 0.7rem;
+  font-size: 0.84rem;
+  line-height: 1.3;
+  text-decoration: none;
+  box-shadow:
+    0 8px 24px rgb(1 5 20 / 0.5),
+    0 0 24px rgb(var(--primary) / 0.2);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
 :where(p, li, dd, dt, label, small, figcaption, blockquote) {
   color: rgb(var(--text-body));
 }
@@ -729,6 +753,21 @@ html[data-theme="high-contrast"] .cyber-card {
   box-shadow:
     0 14px 44px rgb(1 5 20 / 0.68),
     inset 0 1px 0 rgb(255 255 255 / 0.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
 }
 
 .text-gradient {

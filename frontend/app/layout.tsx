@@ -47,6 +47,9 @@ export default function RootLayout({
       className={`${spaceGrotesk.variable} ${ibmPlexMono.variable} ${orbitron.variable} h-full antialiased`}
     >
       <body className="min-h-full text-foreground">
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
         <WebVitalsReporter />
         <ThemePreferenceProvider>
           <GamificationPreferenceProvider>
