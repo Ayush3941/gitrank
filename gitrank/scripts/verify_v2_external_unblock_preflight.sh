@@ -301,6 +301,7 @@ if [ "$fail_count" -gt 0 ]; then
     if [ "$token_state" != "set" ] || [ "$github_access_effective_status" = "credential-invalid" ]; then
       required_inputs=$(append_unique_csv "$required_inputs" "GITRANK_REPO_ADMIN_TOKEN (or GITHUB_TOKEN/GH_TOKEN)")
       required_inputs=$(append_unique_csv "$required_inputs" "or GitHub App bootstrap: GITHUB_APP_ID + GITHUB_APP_INSTALLATION_ID + GITHUB_APP_PRIVATE_KEY_FILE/PEM")
+      required_inputs=$(append_unique_csv "$required_inputs" "or OAuth web-flow bootstrap: GITHUB_CLIENT_ID + GITHUB_CLIENT_SECRET + GITRANK_ALLOW_OAUTH_WEB_TOKEN_BOOTSTRAP=yes")
     fi
   fi
   if [ "$observability_inputs_status" = "fail" ]; then

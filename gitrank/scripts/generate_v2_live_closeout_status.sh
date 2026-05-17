@@ -438,7 +438,7 @@ production_public_state="$(state_for_value "${PRODUCTION_K8S_PUBLIC_BASE_URL:-}"
     printf 'Current missing vars: `none`.\n'
   fi
   printf 'REQUIRE_ENV_SPECIFIC_K8S_OVERRIDES: `%s`.\n' "$require_env_specific"
-  printf 'For auth-required commands, use either `GITRANK_REPO_ADMIN_TOKEN` (or `GITHUB_TOKEN`) or GitHub App credentials (`GITHUB_APP_ID`, `GITHUB_APP_INSTALLATION_ID`, and private key).\n'
+  printf 'For auth-required commands, use either `GITRANK_REPO_ADMIN_TOKEN` (or `GITHUB_TOKEN`), GitHub App credentials (`GITHUB_APP_ID`, `GITHUB_APP_INSTALLATION_ID`, and private key), or OAuth web-flow bootstrap (`GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, and `GITRANK_ALLOW_OAUTH_WEB_TOKEN_BOOTSTRAP=yes`).\n'
   printf '\n'
   printf '2. Run public workflow-health check and clear failing origin workflows.\n'
   printf '\n'

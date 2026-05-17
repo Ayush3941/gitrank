@@ -460,12 +460,12 @@ emit_external_unblock_preflight_snapshot() {
 [ -s "$contributing_file" ] || fail "missing CONTRIBUTING.md at $contributing_file"
 bootstrap_probe_token_from_github_app
 
-github_controls_remediation="run make verify-origin-push-access + make verify-live-github-access (token/App preflight) and make verify-github-repository-controls-public (precheck), then apply/verify via make apply-github-repository-controls-auto + make verify-github-repository-controls (admin token or GitHub App creds), or verify successful live-gates workflow evidence via make verify-live-v2-workflow-run"
+github_controls_remediation="run make verify-origin-push-access + make verify-live-github-access (token/App preflight) and make verify-github-repository-controls-public (precheck), then apply/verify via make apply-github-repository-controls-auto + make verify-github-repository-controls (admin token, GitHub App creds, or GITRANK_ALLOW_OAUTH_WEB_TOKEN_BOOTSTRAP=yes), or verify successful live-gates workflow evidence via make verify-live-v2-workflow-run"
 if [ -n "$api_token" ] || {
   [ -n "$github_app_id" ] && [ -n "$github_app_installation_id" ] &&
     { [ -n "$github_app_private_key_file" ] || [ -n "$github_app_private_key_pem" ]; }
 }; then
-  github_controls_remediation="run make verify-live-github-access (token/App preflight) and make verify-github-repository-controls-public (precheck), then apply/verify via make apply-github-repository-controls-auto + make verify-github-repository-controls (admin token or GitHub App creds), or verify successful live-gates workflow evidence via make verify-live-v2-workflow-run (origin push auth is advisory when token/App auth path is active)"
+  github_controls_remediation="run make verify-live-github-access (token/App preflight) and make verify-github-repository-controls-public (precheck), then apply/verify via make apply-github-repository-controls-auto + make verify-github-repository-controls (admin token, GitHub App creds, or GITRANK_ALLOW_OAUTH_WEB_TOKEN_BOOTSTRAP=yes), or verify successful live-gates workflow evidence via make verify-live-v2-workflow-run (origin push auth is advisory when token/App auth path is active)"
 fi
 
 if [ "${RUN_BASELINE_VERIFIERS:-true}" = "true" ]; then
