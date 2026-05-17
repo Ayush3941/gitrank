@@ -400,6 +400,8 @@
   - retains current visual treatment while improving assistive navigation context.
 - Updated primary dashboard navigation semantics:
   - sidebar and mobile app navigation now use list markup (`ul/li`) inside nav landmarks for clearer assistive structure.
+- Wired sidebar visible nav label into accessibility naming:
+  - sidebar navigation now uses `aria-labelledby` bound to visible `Navigate` text instead of a standalone string label.
 
 ## 2026-05-16
 

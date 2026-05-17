@@ -30,8 +30,8 @@ export function DashboardSidebar() {
           </div>
         </Link>
         <div className="space-y-2">
-          <p className="cyber-title text-[10px] tracking-[0.2em] text-cyan-200 uppercase">Navigate</p>
-          <nav aria-label="Dashboard navigation sidebar">
+          <p id="dashboard-sidebar-nav-label" className="cyber-title text-[10px] tracking-[0.2em] text-cyan-200 uppercase">Navigate</p>
+          <nav aria-labelledby="dashboard-sidebar-nav-label">
             <ul role="list" className="space-y-1.5">
               {dashboardNavItems.map((item) => {
                 const Icon = item.icon;
