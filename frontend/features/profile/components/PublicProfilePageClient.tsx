@@ -29,9 +29,9 @@ type PublicProfileSectionID =
 
 const PUBLIC_PROFILE_SECTION_ITEMS: Array<{ id: PublicProfileSectionID; label: string }> = [
   { id: "public-profile-overview", label: "Overview" },
-  { id: "public-profile-badges-skills", label: "Badges+Skills" },
+  { id: "public-profile-badges-skills", label: "Badges & Skills" },
   { id: "public-profile-best-prs", label: "Best PRs" },
-  { id: "public-profile-timeline-repos", label: "Timeline+Repos" },
+  { id: "public-profile-timeline-repos", label: "Timeline & Repos" },
 ];
 
 export function PublicProfilePageClient({

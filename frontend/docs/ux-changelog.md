@@ -93,6 +93,9 @@
 - Copy-link control visibility pass:
   - `CopyLinkButton` now defaults to `secondary` variant styling so share-link
     actions are more discoverable in jump navigators across dashboard surfaces.
+- Public profile nav label readability pass:
+  - refined jump-nav labels from symbol-heavy text (`Badges+Skills`,
+    `Timeline+Repos`) to clearer wording (`Badges & Skills`, `Timeline & Repos`).
 - Anchor target visual orientation pass:
   - added scoped `:target` highlight treatment for dashboard/profile/report
     section anchors so deep-linked shared URLs visibly emphasize the destination
