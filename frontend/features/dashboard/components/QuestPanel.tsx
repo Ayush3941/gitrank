@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { Link2, Target } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 import type { Quest } from "@/types/gitrank";
 
 export function QuestPanel({ quests }: { quests: Quest[] }) {
@@ -17,8 +19,18 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
       </div>
       <div className="space-y-3">
         {quests.length === 0 ? (
-          <div className="neon-surface rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
-            No live quests are available for this profile snapshot yet. Run a sync or wait for new scored evidence to refresh the quest board.
+          <div className="neon-surface space-y-3 rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
+            <p>
+              No live quests are available for this profile snapshot yet. Run a sync or wait for new scored evidence to refresh the quest board.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild size="sm" variant="secondary">
+                <Link href="/dashboard/settings">Run sync in settings</Link>
+              </Button>
+              <Button asChild size="sm" variant="secondary">
+                <Link href="/dashboard/contributions">Open contributions</Link>
+              </Button>
+            </div>
           </div>
         ) : null}
         {quests.slice(0, 3).map((quest) => {

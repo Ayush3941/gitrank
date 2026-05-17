@@ -2,6 +2,11 @@
 
 ## 2026-05-17
 
+- Removed remaining dashboard dead-end empty panels:
+  - `QuestPanel`, `RecentBattleReports`, and `BadgeShelf` now include direct
+    recovery actions (sync settings, contribution drill-down, badge forge)
+  - added explicit `BadgeShelf` zero-data fallback so the section never renders
+    as an empty grid when no badge records are present.
 - Added file-based social-share identity layer:
   - new generated social cards in `app/opengraph-image.tsx` and
     `app/twitter-image.tsx` with cyber-neon branding and high-contrast copy

@@ -13,8 +13,18 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
       </div>
       <div className="grid gap-3">
         {reports.length === 0 ? (
-          <div className="neon-surface rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
-            No persisted PR battle reports are attached to this profile snapshot yet. Direct report URLs will appear here after scoring writes score events with public PR evidence.
+          <div className="neon-surface space-y-3 rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
+            <p>
+              No persisted PR battle reports are attached to this profile snapshot yet. Direct report URLs will appear here after scoring writes score events with public PR evidence.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild size="sm" variant="secondary">
+                <Link href="/dashboard/settings">Refresh sync settings</Link>
+              </Button>
+              <Button asChild size="sm" variant="secondary">
+                <Link href="/dashboard/contributions">Inspect contributions</Link>
+              </Button>
+            </div>
           </div>
         ) : null}
         {reports.map((report) => (

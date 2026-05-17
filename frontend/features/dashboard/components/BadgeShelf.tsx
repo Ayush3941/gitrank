@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { Lock } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { RarityBadge } from "@/components/shared/RarityBadge";
+import { Button } from "@/components/ui/button";
 import type { UserProfile } from "@/types/gitrank";
 
 export function BadgeShelf({ user }: { user: UserProfile }) {
@@ -11,6 +13,21 @@ export function BadgeShelf({ user }: { user: UserProfile }) {
         <h2 className="mt-2 text-2xl font-semibold text-white">Unlocked proof and visible next targets</h2>
       </div>
       <div className="grid gap-3 md:grid-cols-2">
+        {user.badges.length === 0 ? (
+          <div className="neon-surface space-y-3 rounded-[1.75rem] border-dashed p-4 text-sm text-muted md:col-span-2">
+            <p>
+              No badge records are available for this profile snapshot yet. Badge progress appears after contribution scoring evidence is persisted.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild size="sm" variant="secondary">
+                <Link href="/dashboard/settings">Sync profile evidence</Link>
+              </Button>
+              <Button asChild size="sm" variant="secondary">
+                <Link href="/dashboard/badges">Open badge forge</Link>
+              </Button>
+            </div>
+          </div>
+        ) : null}
         {user.badges.slice(0, 6).map((badge) => (
           <div key={badge.id} className="neon-surface rounded-[1.75rem] p-4">
             <div className="flex items-center justify-between gap-3">
