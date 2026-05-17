@@ -72,6 +72,10 @@
     clearer share-readiness framing
   - added compact proof cards (`Snapshot state`, `Evidence scope`, `Trend window`)
     so public profile viewers can interpret profile certainty/context faster.
+- Leaderboard row actionability pass:
+  - each leaderboard row now includes a deterministic `Next action` hint based
+    on promotion-zone, demotion-risk, and xp-to-next-rank states so lane cards
+    communicate what to do next, not only current placement.
 - Sync freshness readability/traceability upgrade:
   - `formatRelativeDays` now reports recent sync age with minute/hour precision
     (for example `2m ago`, `3h ago`) before day-level buckets

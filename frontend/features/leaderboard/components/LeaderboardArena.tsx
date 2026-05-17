@@ -92,6 +92,11 @@ export function LeaderboardArena({ snapshot }: { snapshot: LeaderboardSnapshot }
                     Snapshot {row.profileSnapshotVersion || "unknown"} / Score {row.scoreFormulaVersion}
                     {row.sourceWatermark ? ` / Watermark ${new Date(row.sourceWatermark).toLocaleDateString()}` : ""}
                   </p>
+                  <div className="mt-2">
+                    <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
+                      Next action: {recommendedActionForRow(row)}
+                    </span>
+                  </div>
                 </div>
               </div>
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -176,4 +181,17 @@ function Metric({
       </div>
     </div>
   );
+}
+
+function recommendedActionForRow(row: LeaderboardSnapshot["rows"][number]): string {
+  if (row.promotionZone) {
+    return "protect rank by sustaining merged reviewed work";
+  }
+  if (row.demotionRisk) {
+    return "recover with one high-quality reviewed merge";
+  }
+  if (row.xpToNextRank > 0) {
+    return `${row.xpToNextRank} XP to next band`;
+  }
+  return "maintain signal quality and cadence";
 }
