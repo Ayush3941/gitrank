@@ -61,6 +61,7 @@ export function LeaderboardPageClient() {
         currentUser: rows.find((row) => row.isCurrentUser),
       }
     : null;
+  const sparseArena = !isLoading && !isError && !!snapshot && rows.length > 0 && rows.length < 5;
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -191,14 +192,42 @@ export function LeaderboardPageClient() {
           </GlowCard>
         </section>
       ) : null}
-      {!isLoading && !isError && rows.length < 5 && rows.length > 0 ? (
-        <EmptyState
-          title="Sparse live leaderboard data"
-          description="This arena currently has limited active profiles. Rank movement is real, but competitive context is still building."
-          actionLabel="Open contributions"
-          actionHref="/dashboard/contributions"
-          analyticsTarget="leaderboard:empty"
-        />
+      {sparseArena && snapshot ? (
+        <GlowCard className="space-y-4 border border-amber-400/24 bg-amber-400/8">
+          <div>
+            <p className="text-xs tracking-[0.24em] text-amber-100 uppercase">Arena preview mode</p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">Live competition is still warming up</h2>
+            <p className="mt-2 readable-measure text-sm leading-7 text-amber-50/82">
+              This lane has {rows.length} active public profiles right now. Ranking is live, but bracket density is still low.
+            </p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <ClimbTip
+              title="Your current slot"
+              body={
+                snapshot.currentUser
+                  ? `#${snapshot.currentUser.rank} in ${tab}`
+                  : "Unranked in this lane"
+              }
+            />
+            <ClimbTip
+              title="Promotion target"
+              body={snapshot.currentUser ? `${snapshot.currentUser.xpToNextRank} XP to next band` : "Sync more evidence to enter rank bands"}
+            />
+            <ClimbTip
+              title="Fastest climb lane"
+              body="Prioritize merged PR depth, review quality, and weekly consistency over raw volume."
+            />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="secondary" size="sm">
+              <Link href="/dashboard/contributions">Improve contribution signal</Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/dashboard/quests">Open quest lane</Link>
+            </Button>
+          </div>
+        </GlowCard>
       ) : null}
     </div>
   );

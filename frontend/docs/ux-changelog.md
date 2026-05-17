@@ -361,6 +361,10 @@
 - Improved page-level orientation with contextual headers:
   - `PageHeader` now accepts a route-specific eyebrow label while retaining a default fallback
   - dashboard surfaces now show explicit section context (`Dashboard`, `Contributions`, `Badges`, `Quests`, `Settings`, `Leaderboard`, `PR Report`) instead of a single repeated generic label.
+- Upgraded sparse leaderboard handling from a plain empty-state style message to a live arena preview panel:
+  - keeps rank context visible when few public profiles exist
+  - shows current slot, promotion target, and fastest climb guidance
+  - keeps direct next actions (`contributions`, `quests`) so sparse data still feels actionable.
 
 ## 2026-05-16
 
