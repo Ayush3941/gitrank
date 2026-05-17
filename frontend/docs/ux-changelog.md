@@ -87,6 +87,9 @@
   - leaderboard `Copy section link` now preserves the active lane query
     (`?lane=...#section`) so shared section links restore both lane and panel
     context.
+- Public profile link encoding hardening:
+  - public profile section links now URL-encode usernames before copy so
+    non-trivial handles keep valid, stable share URLs.
 - Route fallback consistency pass:
   - added shared `RouteFallbackCard` (`components/shared/RouteFallbackCard.tsx`)
     and migrated all route-level `not-found` surfaces (global, dashboard,

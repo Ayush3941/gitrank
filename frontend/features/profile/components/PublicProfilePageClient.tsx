@@ -44,7 +44,7 @@ export function PublicProfilePageClient({
   const activeSectionLabel =
     PUBLIC_PROFILE_SECTION_ITEMS.find((section) => section.id === activeSection)?.label ??
     "Overview";
-  const activeSectionLink = `/u/${username}#${activeSection}`;
+  const activeSectionLink = `/u/${encodeURIComponent(username)}#${activeSection}`;
   const streak = summarizeContributionStreak(data?.user.contributions ?? []);
   const abraPayload = useMemo(() => {
     if (!data) {
