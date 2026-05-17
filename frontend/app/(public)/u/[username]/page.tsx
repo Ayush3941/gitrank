@@ -10,6 +10,8 @@ export async function generateMetadata({
   const { username } = await params;
   const path = `/u/${encodeURIComponent(username)}`;
   const url = absolutePublicURL(path);
+  const ogPath = `${path}/opengraph-image`;
+  const twitterPath = `${path}/twitter-image`;
   return {
     title: `@${username}`,
     description: `Public GitRank profile for @${username}, including contribution signals, badges, and score movement.`,
@@ -21,14 +23,14 @@ export async function generateMetadata({
       description:
         "Public contribution profile with evidence-backed score signals, progression, and contribution highlights.",
       url,
-      images: [{ url: absolutePublicURL("/background.jpg") }],
+      images: [{ url: absolutePublicURL(ogPath) }],
     },
     twitter: {
       card: "summary_large_image",
       title: `@${username} on GitRank`,
       description:
         "Public contribution profile with evidence-backed score signals, progression, and contribution highlights.",
-      images: [absolutePublicURL("/background.jpg")],
+      images: [absolutePublicURL(twitterPath)],
     },
   };
 }

@@ -11,6 +11,8 @@ export async function generateMetadata({
   const { owner, repo, number } = await params;
   const path = `/pr/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${encodeURIComponent(number)}`;
   const url = absolutePublicURL(path);
+  const ogPath = `${path}/opengraph-image`;
+  const twitterPath = `${path}/twitter-image`;
   return {
     title: `${owner}/${repo} #${number}`,
     description:
@@ -23,14 +25,14 @@ export async function generateMetadata({
       description:
         "Evidence-backed pull request battle report with score drivers, review depth, and contribution signals.",
       url,
-      images: [{ url: absolutePublicURL("/background.jpg") }],
+      images: [{ url: absolutePublicURL(ogPath) }],
     },
     twitter: {
       card: "summary_large_image",
       title: `${owner}/${repo} #${number} on GitRank`,
       description:
         "Evidence-backed pull request battle report with score drivers, review depth, and contribution signals.",
-      images: [absolutePublicURL("/background.jpg")],
+      images: [absolutePublicURL(twitterPath)],
     },
   };
 }

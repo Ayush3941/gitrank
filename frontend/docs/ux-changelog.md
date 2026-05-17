@@ -2,6 +2,11 @@
 
 ## 2026-05-17
 
+- Added route-specific share cards for public profile and PR report pages:
+  - generated dynamic `opengraph-image` + `twitter-image` handlers in
+    `app/(public)/u/[username]/` and `app/(public)/pr/[owner]/[repo]/[number]/`
+  - public route metadata now points to per-route image endpoints instead of a
+    generic background asset, so shared links carry contextual preview cards.
 - Removed remaining dashboard dead-end empty panels:
   - `QuestPanel`, `RecentBattleReports`, and `BadgeShelf` now include direct
     recovery actions (sync settings, contribution drill-down, badge forge)
