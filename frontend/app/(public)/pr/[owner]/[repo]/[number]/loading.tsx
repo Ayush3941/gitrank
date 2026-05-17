@@ -7,6 +7,7 @@ export default function PublicPRReportLoading() {
       title="Preparing contribution battle report"
       description="GitRank is collecting scored evidence, impact signals, and explanation data for this pull request."
       cardCount={4}
+      variant="report"
     />
   );
 }

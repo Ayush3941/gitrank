@@ -7,6 +7,7 @@ export default function MarketingLoading() {
       title="Booting your contributor arena"
       description="Preparing onboarding, profile preview, and live sync entry points."
       cardCount={3}
+      variant="marketing"
     />
   );
 }

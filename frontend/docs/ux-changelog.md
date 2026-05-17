@@ -62,6 +62,11 @@
     so keyboard focus and text remain visible when gradients/shadows are forced off
   - improved `ExpandableText` semantics with `aria-controls` linkage for
     clearer assistive-technology context on Show more / Show less controls.
+- Route loading UX now uses page-specific skeleton variants:
+  - `dashboard`, `marketing`, `profile`, and `report` loading routes each map
+    to structure-aware placeholder shapes instead of one generic card grid
+  - lowers perceived layout shift during route transitions and better matches
+    final information hierarchy while data is loading.
 
 - Optimized hero/background rendering while preserving cyber style:
   - compressed `public/background.jpg` from large source to web-safe size

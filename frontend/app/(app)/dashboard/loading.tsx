@@ -7,6 +7,7 @@ export default function DashboardLoading() {
       title="Building your command center"
       description="GitRank is loading contribution signals, scores, quests, and leaderboard context for this view."
       cardCount={6}
+      variant="dashboard"
     />
   );
 }
