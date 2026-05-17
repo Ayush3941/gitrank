@@ -4,6 +4,7 @@ import Link from "next/link";
 import { AlertTriangle, ArrowRight, Award, ShieldCheck, Swords } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -124,7 +125,13 @@ export function PRBattleReportPageClient({
             ))}
           </div>
           {evidenceState.reasons.length ? (
-            <p className="mt-3 break-anywhere text-sm text-muted">{evidenceState.reasons.slice(0, 2).join(" · ")}</p>
+            <ExpandableText
+              text={evidenceState.reasons.slice(0, 2).join(" · ")}
+              lines={2}
+              minLengthForToggle={160}
+              className="mt-3"
+              textClassName="break-anywhere text-sm text-muted"
+            />
           ) : null}
         </div>
       </GlowCard>
@@ -134,7 +141,12 @@ export function PRBattleReportPageClient({
       </div>
       <GlowCard className="space-y-4">
         <p className="text-xs tracking-[0.24em] text-primary uppercase">AI summary</p>
-        <p className="break-anywhere text-base leading-8 text-slate-200">{data.contribution.aiSummary}</p>
+        <ExpandableText
+          text={data.contribution.aiSummary}
+          lines={5}
+          minLengthForToggle={260}
+          textClassName="break-anywhere text-base leading-8 text-slate-200"
+        />
       </GlowCard>
       <EvidenceSignalsCard report={data} />
       {data.badgeUnlocks.length ? (

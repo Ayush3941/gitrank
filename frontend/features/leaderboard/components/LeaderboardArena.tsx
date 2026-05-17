@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { ArrowDownRight, ArrowUpRight, CalendarClock, Flame, ShieldCheck } from "lucide-react";
+import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { RankBadge } from "@/components/shared/RankBadge";
 import type { LeaderboardSnapshot } from "@/types/gitrank";
@@ -17,7 +18,13 @@ export function LeaderboardArena({ snapshot }: { snapshot: LeaderboardSnapshot }
               {snapshot.season.status} season
             </div>
             <h2 className="mt-4 break-anywhere text-3xl font-semibold text-white">{snapshot.season.name}</h2>
-            <p className="mt-2 break-anywhere text-sm leading-7 text-slate-200/82">{snapshot.season.explanation}</p>
+            <ExpandableText
+              text={snapshot.season.explanation}
+              lines={4}
+              minLengthForToggle={220}
+              className="mt-2"
+              textClassName="break-anywhere text-sm leading-7 text-slate-200/82"
+            />
           </div>
           <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[32rem]">
             <Metric label="Window" value={snapshot.season.windowLabel} />
@@ -74,7 +81,13 @@ export function LeaderboardArena({ snapshot }: { snapshot: LeaderboardSnapshot }
                     {row.demotionRisk ? <Pill tone="warning">Safety watch</Pill> : null}
                     {row.rankEvidenceState ? <Pill tone="warning">Evidence {row.rankEvidenceState}</Pill> : null}
                   </div>
-                  <p className="mt-3 max-w-2xl break-anywhere text-sm leading-6 text-slate-200/76">{row.evidenceSummary}</p>
+                  <ExpandableText
+                    text={row.evidenceSummary}
+                    lines={3}
+                    minLengthForToggle={190}
+                    className="mt-3 max-w-2xl"
+                    textClassName="break-anywhere text-sm leading-6 text-slate-200/76"
+                  />
                   <p className="mt-2 max-w-2xl text-xs text-muted">
                     Snapshot {row.profileSnapshotVersion || "unknown"} / Score {row.scoreFormulaVersion}
                     {row.sourceWatermark ? ` / Watermark ${new Date(row.sourceWatermark).toLocaleDateString()}` : ""}
@@ -114,7 +127,13 @@ function Rule({
         {icon}
         {label}
       </div>
-      <p className="mt-2 break-anywhere text-sm leading-6 text-slate-200/80">{value}</p>
+      <ExpandableText
+        text={value}
+        lines={3}
+        minLengthForToggle={160}
+        className="mt-2"
+        textClassName="break-anywhere text-sm leading-6 text-slate-200/80"
+      />
     </div>
   );
 }

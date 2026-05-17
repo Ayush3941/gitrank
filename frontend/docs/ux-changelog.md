@@ -52,6 +52,10 @@
   protection against unbroken identifiers and deep repo paths.
 - Added `text-wrap: pretty` to shared copy utilities to improve multi-line
   paragraph rhythm where browser support is available.
+- Added reusable progressive-disclosure text component
+  (`components/shared/ExpandableText.tsx`) and applied it to long AI/summary
+  blocks across contributions, leaderboard, profile hero, best PR panels, and
+  PR battle report so cards stay scan-friendly while preserving full detail.
 
 - Optimized hero/background rendering while preserving cyber style:
   - compressed `public/background.jpg` from large source to web-safe size

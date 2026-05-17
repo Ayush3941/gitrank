@@ -6,6 +6,7 @@ import { FileJson2, ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { CopyTextButton } from "@/components/shared/CopyTextButton";
+import { ExpandableText } from "@/components/shared/ExpandableText";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { TextScaleQuickSwitcher } from "@/components/shared/TextScaleQuickSwitcher";
@@ -52,13 +53,25 @@ export function PublicProfileHero({
               </p>
             </div>
           </div>
-          <p className="max-w-3xl break-anywhere text-sm leading-7 text-slate-200/82">{user.bio}</p>
+          <ExpandableText
+            text={user.bio}
+            lines={4}
+            minLengthForToggle={220}
+            className="max-w-3xl"
+            textClassName="break-anywhere text-sm leading-7 text-slate-200/82"
+          />
           {identitySummary ? (
             <div className="neon-callout rounded-2xl px-4 py-3 text-sm text-slate-200/88">
               <p className="cyber-readout text-xs tracking-[0.24em] text-cyan-200 uppercase">
                 Open Source Identity ({aiMode === "gemini" ? "Gemini" : "Deterministic"})
               </p>
-              <p className="mt-2 break-anywhere leading-6">{identitySummary}</p>
+              <ExpandableText
+                text={identitySummary}
+                lines={4}
+                minLengthForToggle={220}
+                className="mt-2"
+                textClassName="break-anywhere leading-6"
+              />
             </div>
           ) : null}
           <div className="flex flex-wrap gap-2">

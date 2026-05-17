@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Sparkles, Star } from "lucide-react";
 import { AnimatedNumber } from "@/components/shared/AnimatedNumber";
+import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
@@ -102,7 +103,13 @@ export function DashboardHeroRankCard({
           <p className="text-xs tracking-[0.24em] text-cyan-200 uppercase">
             Open-source identity summary ({aiMode === "gemini" ? "Gemini" : "Deterministic"})
           </p>
-          <p className="mt-2 break-anywhere text-sm leading-6 text-slate-200/84">{identitySummary}</p>
+          <ExpandableText
+            text={identitySummary}
+            lines={4}
+            minLengthForToggle={220}
+            className="mt-2"
+            textClassName="break-anywhere text-sm leading-6 text-slate-200/84"
+          />
         </div>
       ) : null}
       <div className="space-y-3">

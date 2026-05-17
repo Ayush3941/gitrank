@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CopyTextButton } from "@/components/shared/CopyTextButton";
+import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import type { FeaturedContribution } from "@/types/gitrank";
 
@@ -26,7 +27,13 @@ export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
                     {report.owner}/{report.repo} #{report.number}
                   </p>
                   <h3 className="mt-2 break-anywhere text-lg font-medium text-white">{report.title}</h3>
-                  <p className="mt-2 break-anywhere text-sm text-slate-200/84">{report.summary}</p>
+                  <ExpandableText
+                    text={report.summary}
+                    lines={3}
+                    minLengthForToggle={180}
+                    className="mt-2"
+                    textClassName="break-anywhere text-sm text-slate-200/84"
+                  />
                   <p className="neon-chip neon-chip-muted mt-3 inline-flex rounded-full px-3 py-1 text-xs">
                     Evidence {report.evidenceState || "partial"} / Formula {report.formulaVersion || "not recorded"}
                   </p>

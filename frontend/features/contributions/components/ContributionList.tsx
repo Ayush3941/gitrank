@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, BookCheck, GitMerge, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CopyTextButton } from "@/components/shared/CopyTextButton";
+import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import type { ContributionNarrative } from "@/lib/ai/abra-insights-types";
 import type { Contribution } from "@/types/gitrank";
@@ -135,19 +136,39 @@ function AIPanel({
       </div>
       {narrative ? (
         <div className="cyber-copy mt-3 grid gap-2 text-sm">
-          <p className="break-anywhere"><span className="text-cyan-200">What:</span> {narrative.what}</p>
-          <p className="break-anywhere"><span className="text-cyan-200">Why it matters:</span> {narrative.why}</p>
-          <p className="break-anywhere"><span className="text-cyan-200">Signal:</span> {narrative.signal}</p>
+          <ExpandableText
+            text={`What: ${narrative.what}`}
+            lines={3}
+            minLengthForToggle={150}
+            textClassName="break-anywhere"
+          />
+          <ExpandableText
+            text={`Why it matters: ${narrative.why}`}
+            lines={3}
+            minLengthForToggle={150}
+            textClassName="break-anywhere"
+          />
+          <ExpandableText
+            text={`Signal: ${narrative.signal}`}
+            lines={3}
+            minLengthForToggle={150}
+            textClassName="break-anywhere"
+          />
           <p className="neon-chip neon-chip-info inline-flex items-start gap-2 break-anywhere rounded-xl px-3 py-2">
             <Zap className="mt-0.5 h-3.5 w-3.5" />
             {narrative.pitch}
           </p>
         </div>
       ) : (
-        <p className="mt-3 inline-flex items-start gap-2 break-anywhere text-sm text-slate-200/84">
+        <div className="mt-3 inline-flex items-start gap-2 text-sm text-slate-200/84">
           <BookCheck className="mt-0.5 h-4 w-4 text-cyan-200" />
-          {fallbackSummary}
-        </p>
+          <ExpandableText
+            text={fallbackSummary}
+            lines={4}
+            minLengthForToggle={210}
+            textClassName="break-anywhere text-slate-200/84"
+          />
+        </div>
       )}
     </div>
   );

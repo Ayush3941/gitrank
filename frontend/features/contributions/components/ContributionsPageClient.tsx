@@ -5,6 +5,7 @@ import { Flame, Radar, Sparkles, Swords } from "lucide-react";
 import { startTransition, useDeferredValue, useMemo, useState, type ReactNode } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -219,10 +220,16 @@ export function ContributionsPageClient() {
                 <h2 className="mt-3 text-2xl font-semibold text-white">
                   {abraInsights.data?.archetype || "Systems Builder"} mode
                 </h2>
-                <p className="mt-2 max-w-3xl break-anywhere text-sm text-slate-200/85">
-                  {abraInsights.data?.identitySummary ||
-                    "Signal synthesis is running in deterministic mode while contribution intelligence resolves."}
-                </p>
+                <ExpandableText
+                  text={
+                    abraInsights.data?.identitySummary ||
+                    "Signal synthesis is running in deterministic mode while contribution intelligence resolves."
+                  }
+                  lines={4}
+                  minLengthForToggle={220}
+                  className="mt-2 max-w-3xl"
+                  textClassName="break-anywhere text-sm text-slate-200/85"
+                />
               </div>
               <div className="neon-chip neon-chip-mythic inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-xs">
                 <Sparkles className="h-3.5 w-3.5" />
