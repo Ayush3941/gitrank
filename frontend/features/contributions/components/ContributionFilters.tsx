@@ -43,6 +43,17 @@ export function ContributionFilters({
   onReset?: () => void;
 }) {
   const statusId = "contribution-filter-status";
+  const activeChips: string[] = [];
+  if (value !== "All") {
+    activeChips.push(`Category: ${value}`);
+  }
+  if (search.trim().length > 0) {
+    const compactSearch = search.trim().length > 28 ? `${search.trim().slice(0, 28)}…` : search.trim();
+    activeChips.push(`Search: ${compactSearch}`);
+  }
+  if (sort !== "Newest") {
+    activeChips.push(`Sort: ${sort}`);
+  }
 
   return (
     <section aria-labelledby="contribution-filter-controls-label" className="space-y-4">
@@ -67,6 +78,15 @@ export function ContributionFilters({
           </Button>
         ) : null}
       </div>
+      {activeChips.length ? (
+        <div className="flex flex-wrap gap-2 text-xs">
+          {activeChips.map((chip) => (
+            <span key={chip} className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+              {chip}
+            </span>
+          ))}
+        </div>
+      ) : null}
       <Tabs value={value} onValueChange={onValueChange}>
         <TabsList className="scrollbar-thin w-full overflow-x-auto whitespace-nowrap" aria-label="Contribution category filters">
           {filters.map((filter) => (

@@ -416,6 +416,9 @@
 - Added accessible chart summaries and data alternatives:
   - timeline and skill radar cards now include expandable text/data summaries beneath charts
   - each summary surfaces strongest/weakest or start/latest/peak insights plus a simple row list of values, so chart meaning is available without relying on visual interpretation.
+- Added active-filter chips to contribution controls:
+  - contribution filter bar now shows currently applied category/search/sort chips
+  - reduces hidden filter state and makes result changes easier to diagnose quickly.
 
 ## 2026-05-16
 
