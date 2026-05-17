@@ -25,6 +25,15 @@ const tabs: LeaderboardTab[] = [
   "Rising Contributors",
 ];
 
+const TAB_LABELS: Record<LeaderboardTab, { full: string; short: string }> = {
+  Global: { full: "Global", short: "Global" },
+  Backend: { full: "Backend", short: "Backend" },
+  Testing: { full: "Testing", short: "Testing" },
+  Documentation: { full: "Documentation", short: "Docs" },
+  "Weekly XP": { full: "Weekly XP", short: "Weekly" },
+  "Rising Contributors": { full: "Rising Contributors", short: "Rising" },
+};
+
 type LeaderboardSectionID =
   | "leaderboard-filters"
   | "leaderboard-arena"
@@ -145,8 +154,14 @@ export function LeaderboardPageClient() {
         <Tabs value={tab} onValueChange={handleTabChange}>
           <TabsList className="scrollbar-thin w-full overflow-x-auto whitespace-nowrap">
             {tabs.map((item) => (
-              <TabsTrigger key={item} value={item}>
-                {item}
+              <TabsTrigger
+                key={item}
+                value={item}
+                aria-label={`${TAB_LABELS[item].full} leaderboard lane`}
+                title={TAB_LABELS[item].full}
+              >
+                <span className="sm:hidden">{TAB_LABELS[item].short}</span>
+                <span className="hidden sm:inline">{TAB_LABELS[item].full}</span>
               </TabsTrigger>
             ))}
           </TabsList>

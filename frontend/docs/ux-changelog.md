@@ -371,6 +371,8 @@
 - Added explicit persona journeys to the landing experience:
   - new `New contributor`, `Returning contributor`, and `Profile sharer` cards
   - each card includes a concrete success moment to make onboarding outcomes immediately legible.
+- Improved leaderboard tab readability on small screens:
+  - added mobile-short labels (`Docs`, `Weekly`, `Rising`) with full labels retained for larger breakpoints and accessibility metadata.
 
 ## 2026-05-16
 
