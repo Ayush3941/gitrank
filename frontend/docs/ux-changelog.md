@@ -38,6 +38,14 @@
     tighten the "achievement artifact" story per PR
   - status chips now use readable title-case labels instead of raw lowercase
     backend status values.
+- Quest mission spotlight and progress hardening:
+  - added a new mission spotlight row in `QuestsPageClient` for
+    `Today's Quest`, `Weekly Challenge`, and `Long-Term Journey`, each with
+    deterministic quest selection and clear recovery CTAs when data is absent
+  - spotlight selection now prefers active quests, then highest safe progress,
+    then higher XP reward to keep next actions clear and stable
+  - `QuestCard` progress math now guards zero/invalid goals to prevent NaN or
+    overflow rendering from malformed backend rows.
 - Sync freshness readability/traceability upgrade:
   - `formatRelativeDays` now reports recent sync age with minute/hour precision
     (for example `2m ago`, `3h ago`) before day-level buckets

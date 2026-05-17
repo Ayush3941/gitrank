@@ -5,7 +5,11 @@ import { Progress } from "@/components/ui/progress";
 import type { Quest } from "@/types/gitrank";
 
 export function QuestCard({ quest }: { quest: Quest }) {
-  const progress = Math.round((quest.progress / quest.goal) * 100);
+  const goal = quest.goal > 0 ? quest.goal : 1;
+  const progress = Math.max(
+    0,
+    Math.min(100, Math.round((quest.progress / goal) * 100)),
+  );
   const statusTone =
     quest.status === "Completed"
       ? "neon-chip neon-chip-success"

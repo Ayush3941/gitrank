@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CalendarClock, Flame, ShieldCheck } from "lucide-react";
+import { ArrowRight, CalendarClock, Flame, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -41,6 +41,11 @@ export function QuestsPageClient() {
     "Long-term": quests.filter((quest) => quest.cadence === "Long-term"),
     "Skill-based": quests.filter((quest) => quest.cadence === "Skill-based"),
   } as const;
+  const todayQuest = selectQuestSpotlight(
+    questMap.Daily.length > 0 ? questMap.Daily : quests,
+  );
+  const weeklyQuest = selectQuestSpotlight(questMap.Weekly);
+  const longTermQuest = selectQuestSpotlight(questMap["Long-term"]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -150,6 +155,42 @@ export function QuestsPageClient() {
               </div>
               <Progress value={dayProgress} />
             </div>
+          </div>
+        </GlowCard>
+      ) : null}
+      {!isLoading && !isError ? (
+        <GlowCard className="space-y-4 border border-primary/18 bg-gradient-to-br from-slate-950/86 to-cyan-950/18">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs tracking-[0.24em] text-cyan-200 uppercase">Mission spotlight</p>
+              <h2 className="mt-2 text-2xl font-semibold text-white">Clear next moves</h2>
+              <p className="mt-2 text-sm text-slate-200/82">
+                Progressive mission framing: take one action now, one this week, and one long-term objective.
+              </p>
+            </div>
+          </div>
+          <div className="grid gap-3 md:grid-cols-3">
+            <MissionSpotlightCard
+              title="Today's Quest"
+              quest={todayQuest}
+              emptyCopy="No daily mission is available yet. Open contributions to generate fresh daily evidence."
+              href="/dashboard/contributions"
+              cta="Open contributions"
+            />
+            <MissionSpotlightCard
+              title="Weekly Challenge"
+              quest={weeklyQuest}
+              emptyCopy="No weekly challenge has been generated yet. Refresh from settings to backfill weekly scoring evidence."
+              href="/dashboard/settings"
+              cta="Open settings"
+            />
+            <MissionSpotlightCard
+              title="Long-Term Journey"
+              quest={longTermQuest}
+              emptyCopy="No long-term objective is attached yet. Continue merged, reviewed work to unlock deeper journey tracks."
+              href="/dashboard/contributions"
+              cta="Keep building"
+            />
           </div>
         </GlowCard>
       ) : null}
@@ -275,4 +316,105 @@ function recoveryLabelForGroup(group: Quest["cadence"]): string {
     return "Inspect contribution skills";
   }
   return "Open contribution lane";
+}
+
+function selectQuestSpotlight(source: Quest[]): Quest | null {
+  if (!source.length) {
+    return null;
+  }
+  const ranked = [...source].sort((left, right) => {
+    const leftRank = questStatusRank(left.status);
+    const rightRank = questStatusRank(right.status);
+    if (leftRank !== rightRank) {
+      return leftRank - rightRank;
+    }
+    const leftProgress = safeQuestProgress(left);
+    const rightProgress = safeQuestProgress(right);
+    if (leftProgress !== rightProgress) {
+      return rightProgress - leftProgress;
+    }
+    if (left.rewardXp !== right.rewardXp) {
+      return right.rewardXp - left.rewardXp;
+    }
+    return left.title.localeCompare(right.title);
+  });
+  return ranked[0] ?? null;
+}
+
+function questStatusRank(status: Quest["status"]): number {
+  if (status === "Active") {
+    return 0;
+  }
+  if (status === "Locked") {
+    return 1;
+  }
+  return 2;
+}
+
+function safeQuestProgress(quest: Quest): number {
+  const goal = quest.goal > 0 ? quest.goal : 1;
+  const ratio = (quest.progress / goal) * 100;
+  if (!Number.isFinite(ratio)) {
+    return 0;
+  }
+  return Math.max(0, Math.min(100, Math.round(ratio)));
+}
+
+function MissionSpotlightCard({
+  title,
+  quest,
+  emptyCopy,
+  href,
+  cta,
+}: {
+  title: string;
+  quest: Quest | null;
+  emptyCopy: string;
+  href: string;
+  cta: string;
+}) {
+  if (!quest) {
+    return (
+      <div className="neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4">
+        <p className="text-xs tracking-[0.2em] text-primary uppercase">{title}</p>
+        <p className="text-sm text-muted">{emptyCopy}</p>
+        <Button asChild variant="secondary" size="sm">
+          <Link href={href}>
+            {cta}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </Button>
+      </div>
+    );
+  }
+
+  const progress = safeQuestProgress(quest);
+
+  return (
+    <div className="neon-surface space-y-3 px-4 py-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs tracking-[0.2em] text-primary uppercase">{title}</p>
+          <p className="mt-2 text-base font-semibold text-white">{quest.title}</p>
+        </div>
+        <span className="neon-chip neon-chip-info rounded-full px-2.5 py-1 text-xs font-semibold">
+          +{quest.rewardXp} XP
+        </span>
+      </div>
+      <p className="text-sm text-muted">{quest.description}</p>
+      <div className="space-y-1">
+        <Progress value={progress} />
+        <div className="flex items-center justify-between text-xs text-slate-200">
+          <span>{quest.progress} / {quest.goal}</span>
+          <span>{progress}%</span>
+        </div>
+      </div>
+      <Button asChild variant="secondary" size="sm">
+        <Link href={recoveryHrefForGroup(quest.cadence)}>
+          {recoveryLabelForGroup(quest.cadence)}
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </Button>
+    </div>
+  );
 }
