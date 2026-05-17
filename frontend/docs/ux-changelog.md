@@ -413,6 +413,9 @@
   - badge detail dialog now surfaces explicit unlocked/locked status chips and earned date metadata.
 - Clarified sign-in onboarding flow:
   - login panel now includes a visible 3-step post-auth path (`OAuth`, `sync`, `dashboard/quests`) to reduce uncertainty before first sign-in.
+- Added accessible chart summaries and data alternatives:
+  - timeline and skill radar cards now include expandable text/data summaries beneath charts
+  - each summary surfaces strongest/weakest or start/latest/peak insights plus a simple row list of values, so chart meaning is available without relying on visual interpretation.
 
 ## 2026-05-16
 

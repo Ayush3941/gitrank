@@ -20,13 +20,39 @@ const SkillRadarChartInner = dynamic(
 );
 
 export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
+  const safeSkills = skills.length > 0
+    ? skills
+    : [{ category: "Unknown", score: 0, delta: 0, note: "No skill evidence available yet." } as SkillNode];
+  const sortedSkills = [...safeSkills].sort((left, right) => right.score - left.score);
+  const strongest = sortedSkills[0];
+  const weakest = sortedSkills[sortedSkills.length - 1];
+
   return (
-    <div className="neon-tile relative h-80 w-full overflow-hidden rounded-[1.75rem] p-3">
-      <div className="pointer-events-none absolute -top-12 right-8 h-28 w-28 rounded-full bg-fuchsia-400/16 blur-3xl" />
-      <SkillRadarChartInner skills={skills} />
-      <p className="sr-only">
-        Skill radar chart showing the most evident contribution signals across documentation, testing, backend, and architecture.
-      </p>
+    <div className="space-y-3">
+      <div className="neon-tile relative h-80 w-full overflow-hidden rounded-[1.75rem] p-3">
+        <div className="pointer-events-none absolute -top-12 right-8 h-28 w-28 rounded-full bg-fuchsia-400/16 blur-3xl" />
+        <SkillRadarChartInner skills={safeSkills} />
+        <p className="sr-only">
+          Skill radar chart showing the most evident contribution signals across documentation, testing, backend, and architecture.
+        </p>
+      </div>
+      <details className="neon-surface px-4 py-3">
+        <summary className="cursor-pointer text-xs font-semibold tracking-[0.2em] text-primary uppercase">
+          Skill signal summary
+        </summary>
+        <p className="mt-2 text-sm text-slate-200/86">
+          Strongest current lane: {strongest.category} ({strongest.score}).
+          {" "}Lowest lane: {weakest.category} ({weakest.score}).
+        </p>
+        <ul role="list" className="mt-3 space-y-1 text-xs text-slate-200/84">
+          {sortedSkills.map((skill) => (
+            <li key={skill.category} className="flex items-center justify-between gap-3">
+              <span>{skill.category}</span>
+              <span>{skill.score}</span>
+            </li>
+          ))}
+        </ul>
+      </details>
     </div>
   );
 }

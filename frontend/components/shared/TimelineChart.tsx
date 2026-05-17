@@ -16,11 +16,39 @@ const TimelineChartInner = dynamic(
 );
 
 export function TimelineChart({ data }: { data: Array<{ label: string; xp: number }> }) {
+  const safeData = data.length > 0 ? data : [{ label: "No data", xp: 0 }];
+  const firstPoint = safeData[0];
+  const lastPoint = safeData[safeData.length - 1];
+  const growth = lastPoint.xp - firstPoint.xp;
+  const topPoint = safeData.reduce((best, point) => (point.xp > best.xp ? point : best), safeData[0]);
+
   return (
-    <div className="neon-tile relative h-72 w-full overflow-hidden rounded-[1.75rem] p-3">
-      <div className="pointer-events-none absolute -left-10 top-14 h-24 w-24 rounded-full bg-cyan-400/14 blur-3xl" />
-      <TimelineChartInner data={data} />
-      <p className="sr-only">Contribution quality timeline showing cumulative XP growth over time.</p>
+    <div className="space-y-3">
+      <div className="neon-tile relative h-72 w-full overflow-hidden rounded-[1.75rem] p-3">
+        <div className="pointer-events-none absolute -left-10 top-14 h-24 w-24 rounded-full bg-cyan-400/14 blur-3xl" />
+        <TimelineChartInner data={safeData} />
+        <p className="sr-only">Contribution quality timeline showing cumulative XP growth over time.</p>
+      </div>
+      <details className="neon-surface px-4 py-3">
+        <summary className="cursor-pointer text-xs font-semibold tracking-[0.2em] text-primary uppercase">
+          Timeline summary
+        </summary>
+        <p className="mt-2 text-sm text-slate-200/86">
+          Start {firstPoint.label}: {firstPoint.xp} XP. Latest {lastPoint.label}: {lastPoint.xp} XP.
+          {" "}Net change: {growth >= 0 ? "+" : ""}{growth} XP.
+        </p>
+        <p className="mt-1 text-sm text-slate-200/86">
+          Peak month: {topPoint.label} ({topPoint.xp} XP).
+        </p>
+        <ul role="list" className="mt-3 space-y-1 text-xs text-slate-200/84">
+          {safeData.map((point) => (
+            <li key={point.label} className="flex items-center justify-between gap-3">
+              <span>{point.label}</span>
+              <span>{point.xp} XP</span>
+            </li>
+          ))}
+        </ul>
+      </details>
     </div>
   );
 }
