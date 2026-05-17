@@ -22,6 +22,7 @@ done
 grep -q "kind: Deployment" "$rendered"
 grep -q "kind: Service" "$rendered"
 grep -q "kind: RoleBinding" "$rendered"
+grep -q "gitrank-frontend-ux-dashboard.json" "$rendered"
 grep -q "gitrank-overview-dashboard.json" "$rendered"
 grep -q "gitrank-slo-dashboard.json" "$rendered"
 grep -q "GitRankSyncBacklogHigh" "$rendered"

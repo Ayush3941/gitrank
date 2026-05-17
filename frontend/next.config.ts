@@ -11,6 +11,27 @@ const cspReportOnly = [
   "connect-src 'self' https://api.github.com",
 ].join("; ");
 
+function contentSecurityHeaders() {
+  const mode = (process.env.GITRANK_CSP_MODE || "report-only").trim().toLowerCase();
+  const headers: Array<{ key: string; value: string }> = [];
+
+  if (mode === "enforce" || mode === "both") {
+    headers.push({
+      key: "Content-Security-Policy",
+      value: cspReportOnly,
+    });
+  }
+
+  if (mode === "report-only" || mode === "both" || headers.length === 0) {
+    headers.push({
+      key: "Content-Security-Policy-Report-Only",
+      value: cspReportOnly,
+    });
+  }
+
+  return headers;
+}
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
@@ -29,10 +50,7 @@ const nextConfig: NextConfig = {
       {
         source: "/:path*",
         headers: [
-          {
-            key: "Content-Security-Policy-Report-Only",
-            value: cspReportOnly,
-          },
+          ...contentSecurityHeaders(),
           {
             key: "Referrer-Policy",
             value: "strict-origin-when-cross-origin",

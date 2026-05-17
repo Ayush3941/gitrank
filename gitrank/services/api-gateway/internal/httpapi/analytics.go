@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"math"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -13,19 +15,30 @@ import (
 )
 
 var allowedAnalyticsEvents = map[string]struct{}{
+	"onboarding.started":       {},
 	"onboarding.completed":     {},
+	"onboarding.sync.started":  {},
 	"sync.succeeded":           {},
 	"sync.failed":              {},
 	"profile.viewed":           {},
 	"score_explanation.opened": {},
 	"badge.viewed":             {},
+	"profile.shared":           {},
+	"empty_state.viewed":       {},
+	"error_state.viewed":       {},
+	"stale_state.viewed":       {},
+	"web_vital.sample":         {},
 }
 
 type analyticsEventRequest struct {
-	EventName string `json:"event_name"`
-	Source    string `json:"source,omitempty"`
-	Target    string `json:"target,omitempty"`
-	Status    string `json:"status,omitempty"`
+	EventName    string  `json:"event_name"`
+	Source       string  `json:"source,omitempty"`
+	Target       string  `json:"target,omitempty"`
+	Status       string  `json:"status,omitempty"`
+	MetricName   string  `json:"metric_name,omitempty"`
+	MetricValue  float64 `json:"metric_value,omitempty"`
+	MetricRating string  `json:"metric_rating,omitempty"`
+	RouteGroup   string  `json:"route_group,omitempty"`
 }
 
 type analyticsMetricsSource struct {
@@ -34,11 +47,24 @@ type analyticsMetricsSource struct {
 
 	mu      sync.Mutex
 	entries map[analyticsMetricKey]uint64
+	vitals  map[webVitalMetricKey]webVitalAggregate
 }
 
 type analyticsMetricKey struct {
 	eventName string
+	target    string
 	status    string
+}
+
+type webVitalMetricKey struct {
+	metricName string
+	routeGroup string
+	rating     string
+}
+
+type webVitalAggregate struct {
+	count uint64
+	sum   float64
 }
 
 func newAnalyticsMetricsSource(service string, log *slog.Logger) *analyticsMetricsSource {
@@ -46,6 +72,7 @@ func newAnalyticsMetricsSource(service string, log *slog.Logger) *analyticsMetri
 		service: strings.TrimSpace(service),
 		log:     log,
 		entries: make(map[analyticsMetricKey]uint64),
+		vitals:  make(map[webVitalMetricKey]webVitalAggregate),
 	}
 }
 
@@ -66,6 +93,26 @@ func handleAnalyticsEvent(w http.ResponseWriter, r *http.Request, analytics *ana
 	source := sanitizeAnalyticsValue(req.Source, 64)
 	target := sanitizeAnalyticsValue(req.Target, 128)
 	analytics.Observe(eventName, source, target, status)
+	if eventName == "web_vital.sample" {
+		metricName, err := normalizeWebVitalName(req.MetricName)
+		if err != nil {
+			httpkit.WriteError(w, http.StatusBadRequest, "invalid_web_vital_metric", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		if math.IsNaN(req.MetricValue) || math.IsInf(req.MetricValue, 0) || req.MetricValue < 0 {
+			httpkit.WriteError(w, http.StatusBadRequest, "invalid_web_vital_value", "metric_value must be a finite non-negative number", httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		rating := normalizeWebVitalRating(req.MetricRating)
+		routeGroup := sanitizeAnalyticsValue(req.RouteGroup, 64)
+		if routeGroup == "" {
+			routeGroup = routeGroupFromTarget(target)
+		}
+		if routeGroup == "" {
+			routeGroup = "other"
+		}
+		analytics.ObserveWebVital(metricName, routeGroup, rating, req.MetricValue)
+	}
 
 	w.Header().Set("Cache-Control", "no-store")
 	httpkit.WriteJSON(w, http.StatusAccepted, map[string]string{"status": "accepted"})
@@ -80,9 +127,11 @@ func (s *analyticsMetricsSource) Observe(eventName, source, target, status strin
 		return
 	}
 	status = normalizeAnalyticsStatus(status, http.StatusOK)
+	target = sanitizeAnalyticsValue(target, 128)
+	source = sanitizeAnalyticsValue(source, 64)
 
 	s.mu.Lock()
-	s.entries[analyticsMetricKey{eventName: eventName, status: status}]++
+	s.entries[analyticsMetricKey{eventName: eventName, target: target, status: status}]++
 	s.mu.Unlock()
 
 	if s.log != nil {
@@ -95,12 +144,46 @@ func (s *analyticsMetricsSource) Observe(eventName, source, target, status strin
 	}
 }
 
+func (s *analyticsMetricsSource) ObserveWebVital(metricName, routeGroup, rating string, value float64) {
+	if s == nil {
+		return
+	}
+	metricName, err := normalizeWebVitalName(metricName)
+	if err != nil {
+		return
+	}
+	if math.IsNaN(value) || math.IsInf(value, 0) || value < 0 {
+		return
+	}
+	rating = normalizeWebVitalRating(rating)
+	routeGroup = sanitizeAnalyticsValue(routeGroup, 64)
+	if routeGroup == "" {
+		routeGroup = "other"
+	}
+
+	s.mu.Lock()
+	key := webVitalMetricKey{
+		metricName: metricName,
+		routeGroup: routeGroup,
+		rating:     rating,
+	}
+	aggregate := s.vitals[key]
+	aggregate.count++
+	aggregate.sum += value
+	s.vitals[key] = aggregate
+	s.mu.Unlock()
+}
+
 func (s *analyticsMetricsSource) WritePrometheus(w io.Writer) {
 	if s == nil {
 		return
 	}
 	_, _ = fmt.Fprintf(w, "# HELP gitrank_product_analytics_events_total Total accepted product analytics events by name and status.\n")
 	_, _ = fmt.Fprintf(w, "# TYPE gitrank_product_analytics_events_total counter\n")
+	_, _ = fmt.Fprintf(w, "# HELP gitrank_frontend_web_vital_samples_total Frontend web vital samples grouped by metric, route group, and rating.\n")
+	_, _ = fmt.Fprintf(w, "# TYPE gitrank_frontend_web_vital_samples_total counter\n")
+	_, _ = fmt.Fprintf(w, "# HELP gitrank_frontend_web_vital_value_total Cumulative frontend web vital values grouped by metric, route group, and rating.\n")
+	_, _ = fmt.Fprintf(w, "# TYPE gitrank_frontend_web_vital_value_total counter\n")
 
 	s.mu.Lock()
 	keys := make([]analyticsMetricKey, 0, len(s.entries))
@@ -110,6 +193,9 @@ func (s *analyticsMetricsSource) WritePrometheus(w io.Writer) {
 	sort.Slice(keys, func(i, j int) bool {
 		if keys[i].eventName != keys[j].eventName {
 			return keys[i].eventName < keys[j].eventName
+		}
+		if keys[i].target != keys[j].target {
+			return keys[i].target < keys[j].target
 		}
 		return keys[i].status < keys[j].status
 	})
@@ -123,17 +209,61 @@ func (s *analyticsMetricsSource) WritePrometheus(w io.Writer) {
 			count uint64
 		}{key: key, count: s.entries[key]})
 	}
+	webVitalKeys := make([]webVitalMetricKey, 0, len(s.vitals))
+	for key := range s.vitals {
+		webVitalKeys = append(webVitalKeys, key)
+	}
+	sort.Slice(webVitalKeys, func(i, j int) bool {
+		if webVitalKeys[i].metricName != webVitalKeys[j].metricName {
+			return webVitalKeys[i].metricName < webVitalKeys[j].metricName
+		}
+		if webVitalKeys[i].routeGroup != webVitalKeys[j].routeGroup {
+			return webVitalKeys[i].routeGroup < webVitalKeys[j].routeGroup
+		}
+		return webVitalKeys[i].rating < webVitalKeys[j].rating
+	})
+	webVitalSnapshots := make([]struct {
+		key       webVitalMetricKey
+		aggregate webVitalAggregate
+	}, 0, len(webVitalKeys))
+	for _, key := range webVitalKeys {
+		webVitalSnapshots = append(webVitalSnapshots, struct {
+			key       webVitalMetricKey
+			aggregate webVitalAggregate
+		}{key: key, aggregate: s.vitals[key]})
+	}
 	service := s.service
 	s.mu.Unlock()
 
 	for _, snapshot := range snapshots {
 		_, _ = fmt.Fprintf(
 			w,
-			`gitrank_product_analytics_events_total{service=%q,event_name=%q,status=%q} %d`+"\n",
+			`gitrank_product_analytics_events_total{service=%q,event_name=%q,target=%q,status=%q} %d`+"\n",
 			service,
 			snapshot.key.eventName,
+			snapshot.key.target,
 			snapshot.key.status,
 			snapshot.count,
+		)
+	}
+	for _, snapshot := range webVitalSnapshots {
+		_, _ = fmt.Fprintf(
+			w,
+			`gitrank_frontend_web_vital_samples_total{service=%q,metric_name=%q,route_group=%q,rating=%q} %d`+"\n",
+			service,
+			snapshot.key.metricName,
+			snapshot.key.routeGroup,
+			snapshot.key.rating,
+			snapshot.aggregate.count,
+		)
+		_, _ = fmt.Fprintf(
+			w,
+			`gitrank_frontend_web_vital_value_total{service=%q,metric_name=%q,route_group=%q,rating=%q} %s`+"\n",
+			service,
+			snapshot.key.metricName,
+			snapshot.key.routeGroup,
+			snapshot.key.rating,
+			strconv.FormatFloat(snapshot.aggregate.sum, 'f', -1, 64),
 		)
 	}
 }
@@ -185,4 +315,35 @@ func sanitizeAnalyticsValue(value string, limit int) string {
 		}
 	}
 	return builder.String()
+}
+
+func normalizeWebVitalName(value string) (string, error) {
+	metricName := strings.ToUpper(strings.TrimSpace(value))
+	switch metricName {
+	case "CLS", "FCP", "LCP", "INP", "TTFB", "FID":
+		return metricName, nil
+	default:
+		return "", fmt.Errorf("unsupported web vital metric %q", value)
+	}
+}
+
+func normalizeWebVitalRating(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "good", "needs-improvement", "poor":
+		return strings.ToLower(strings.TrimSpace(value))
+	default:
+		return "unknown"
+	}
+}
+
+func routeGroupFromTarget(target string) string {
+	target = strings.TrimSpace(target)
+	if target == "" {
+		return ""
+	}
+	parts := strings.Split(target, ":")
+	if len(parts) == 0 {
+		return ""
+	}
+	return sanitizeAnalyticsValue(parts[0], 64)
 }

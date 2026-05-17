@@ -35,11 +35,41 @@ jobs:
       - name: Check production mock imports
         run: npm run check:no-production-mocks
 
+      - name: Check client env safety
+        run: npm run check:client-env-safety
+
+      - name: Check server/client boundaries
+        run: npm run check:server-boundaries
+
+      - name: Check route cache strategy
+        run: npm run check:cache-strategy
+
+      - name: Check design token contrast
+        run: npm run check:contrast
+
+      - name: Check media layout stability
+        run: npm run check:media-stability
+
+      - name: Check main-thread interaction guards
+        run: npm run check:main-thread
+
       - name: Verify V2 no-mock release gate
         run: ../gitrank/scripts/verify_v2_no_mock_release_gate.sh
 
       - name: Run live fixture smoke tests
         run: npm run test:smoke
 
+      - name: Run BFF route contract tests
+        run: npm run test:contracts
+
+      - name: Run accessibility checks
+        run: npm run test:a11y
+
       - name: Run build
         run: npm run build
+
+      - name: Check performance budgets
+        run: npm run check:perf-budgets
+
+      - name: Analyze bundle composition
+        run: npm run analyze:bundle

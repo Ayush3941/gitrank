@@ -1,0 +1,145 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "targets": [
+        {
+          "expr": "sum by (target) (rate(gitrank_product_analytics_events_total{event_name=\"error_state.viewed\",status=\"success\",target!=\"\"}[15m]))",
+          "legendFormat": "{{target}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Frontend Error-State Rate by Route",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "targets": [
+        {
+          "expr": "sum by (target) (rate(gitrank_product_analytics_events_total{event_name=\"stale_state.viewed\",status=\"success\",target!=\"\"}[15m]))",
+          "legendFormat": "{{target}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Frontend Stale-State Rate by Route",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "targets": [
+        {
+          "expr": "sum by (route_group, metric_name, rating) (rate(gitrank_frontend_web_vital_samples_total[30m]))",
+          "legendFormat": "{{route_group}} {{metric_name}} {{rating}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Field Web Vital Sample Rate by Route Group",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*CLS.*"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 4,
+      "targets": [
+        {
+          "expr": "sum by (route_group, metric_name) (rate(gitrank_frontend_web_vital_value_total[30m])) / clamp_min(sum by (route_group, metric_name) (rate(gitrank_frontend_web_vital_samples_total[30m])), 0.000001)",
+          "legendFormat": "{{route_group}} {{metric_name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Average Field Web Vital Value by Route Group",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": [
+    "gitrank",
+    "frontend",
+    "ux"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "GitRank Frontend UX",
+  "uid": "gitrank-frontend-ux",
+  "version": 1,
+  "weekStart": ""
+}

@@ -7,6 +7,7 @@ Contents:
 - `prometheus/alerts.yaml`: alert rules for queue backlog, webhook failures, auth failures, GitHub API rate-limit pressure, scoring service failures, scoring replay failures, and elevated AI analysis cost estimates
 - `grafana/gitrank-overview-dashboard.json`: service health and throughput dashboard
 - `grafana/gitrank-slo-dashboard.json`: SLO and error-budget oriented dashboard
+- `grafana/gitrank-frontend-ux-dashboard.json`: route-level frontend error/stale-state and field web-vitals dashboard
 - `kustomization.yaml` and `k8s/`: optional in-cluster Prometheus and Grafana manifests that mount these rules and dashboards
 
 Current scope:

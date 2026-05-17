@@ -78,6 +78,7 @@ Run these checks before marking production observability complete:
 - Grafana datasource provisioning points at the live Prometheus service.
 - Grafana shows the GitRank overview dashboard.
 - Grafana shows the GitRank SLO dashboard.
+- Grafana shows the GitRank Frontend UX dashboard.
 - At least one request path has produced API metrics.
 - At least one worker or sync path has produced queue/sync metrics, or the
   environment explicitly records that workers are intentionally idle.

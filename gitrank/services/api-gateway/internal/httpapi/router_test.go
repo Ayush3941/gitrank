@@ -118,7 +118,7 @@ func TestProxyPublicProfileRequest(t *testing.T) {
 
 	metricsResponse := httptest.NewRecorder()
 	router.ServeHTTP(metricsResponse, httptest.NewRequest(http.MethodGet, "/metrics", nil))
-	if !strings.Contains(metricsResponse.Body.String(), `gitrank_product_analytics_events_total{service="api-gateway",event_name="profile.viewed",status="success"} 1`) {
+	if !strings.Contains(metricsResponse.Body.String(), `gitrank_product_analytics_events_total{service="api-gateway",event_name="profile.viewed",target="octocat",status="success"} 1`) {
 		t.Fatalf("metrics missing profile viewed analytics counter: %s", metricsResponse.Body.String())
 	}
 }
@@ -194,11 +194,43 @@ func TestAnalyticsEventsRouteTracksAllowedEvents(t *testing.T) {
 	metricsResponse := httptest.NewRecorder()
 	router.ServeHTTP(metricsResponse, httptest.NewRequest(http.MethodGet, "/metrics", nil))
 	body := metricsResponse.Body.String()
-	if !strings.Contains(body, `gitrank_product_analytics_events_total{service="api-gateway",event_name="score_explanation.opened",status="success"} 1`) {
+	if !strings.Contains(body, `gitrank_product_analytics_events_total{service="api-gateway",event_name="score_explanation.opened",target="score-card-secret",status="success"} 1`) {
 		t.Fatalf("metrics missing score explanation analytics counter: %s", body)
 	}
-	if strings.Contains(body, "score-card-secret") {
-		t.Fatalf("metrics leaked analytics target field: %s", body)
+	if strings.Contains(body, "score card secret") {
+		t.Fatalf("metrics failed to sanitize analytics target field: %s", body)
+	}
+}
+
+func TestAnalyticsEventsRouteTracksWebVitalSamples(t *testing.T) {
+	router := NewRouter(testConfig(stubProfileServer().URL, stubAuthServer().URL, stubIngestorServer().URL), testLogger(), "test")
+	request := httptest.NewRequest(http.MethodPost, "/v1/analytics/events", strings.NewReader(`{
+		"event_name":"web_vital.sample",
+		"source":"frontend",
+		"target":"dashboard.overview:lcp",
+		"status":"success",
+		"metric_name":"LCP",
+		"metric_value":1800.25,
+		"metric_rating":"good",
+		"route_group":"dashboard.overview"
+	}`))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusAccepted {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusAccepted, response.Body.String())
+	}
+
+	metricsResponse := httptest.NewRecorder()
+	router.ServeHTTP(metricsResponse, httptest.NewRequest(http.MethodGet, "/metrics", nil))
+	body := metricsResponse.Body.String()
+	if !strings.Contains(body, `gitrank_frontend_web_vital_samples_total{service="api-gateway",metric_name="LCP",route_group="dashboard.overview",rating="good"} 1`) {
+		t.Fatalf("metrics missing web vital sample counter: %s", body)
+	}
+	if !strings.Contains(body, `gitrank_frontend_web_vital_value_total{service="api-gateway",metric_name="LCP",route_group="dashboard.overview",rating="good"} 1800.25`) {
+		t.Fatalf("metrics missing web vital value counter: %s", body)
 	}
 }
 
@@ -443,7 +475,7 @@ func TestSyncRouteDefaultsToAuthenticatedGitHubLogin(t *testing.T) {
 
 	metricsResponse := httptest.NewRecorder()
 	router.ServeHTTP(metricsResponse, httptest.NewRequest(http.MethodGet, "/metrics", nil))
-	if !strings.Contains(metricsResponse.Body.String(), `gitrank_product_analytics_events_total{service="api-gateway",event_name="sync.succeeded",status="success"} 1`) {
+	if !strings.Contains(metricsResponse.Body.String(), `gitrank_product_analytics_events_total{service="api-gateway",event_name="sync.succeeded",target="user",status="success"} 1`) {
 		t.Fatalf("metrics missing sync success analytics counter: %s", metricsResponse.Body.String())
 	}
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/shared/AppShell";
 import { PRBattleReportPageClient } from "@/features/pr-report/components/PRBattleReportPageClient";
+import { absolutePublicURL } from "@/lib/seo/public-url";
 
 export async function generateMetadata({
   params,
@@ -8,10 +9,29 @@ export async function generateMetadata({
   params: Promise<{ owner: string; repo: string; number: string }>;
 }): Promise<Metadata> {
   const { owner, repo, number } = await params;
+  const path = `/pr/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${encodeURIComponent(number)}`;
+  const url = absolutePublicURL(path);
   return {
     title: `${owner}/${repo} #${number}`,
     description:
       "GitRank pull-request battle report with score drivers, strengths, and evidence-backed recommendations.",
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title: `${owner}/${repo} #${number} on GitRank`,
+      description:
+        "Evidence-backed pull request battle report with score drivers, review depth, and contribution signals.",
+      url,
+      images: [{ url: absolutePublicURL("/background.jpg") }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${owner}/${repo} #${number} on GitRank`,
+      description:
+        "Evidence-backed pull request battle report with score drivers, review depth, and contribution signals.",
+      images: [absolutePublicURL("/background.jpg")],
+    },
   };
 }
 

@@ -13,6 +13,24 @@ class TestResizeObserver {
   disconnect() {}
 }
 
+class TestIntersectionObserver {
+  readonly root = null;
+  readonly rootMargin = "0px";
+  readonly thresholds = [0];
+
+  constructor(
+    _callback: IntersectionObserverCallback,
+    _options?: IntersectionObserverInit,
+  ) {}
+
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+  takeRecords(): IntersectionObserverEntry[] {
+    return [];
+  }
+}
+
 Object.defineProperty(window, "ResizeObserver", {
   writable: true,
   value: TestResizeObserver,
@@ -21,6 +39,16 @@ Object.defineProperty(window, "ResizeObserver", {
 Object.defineProperty(globalThis, "ResizeObserver", {
   writable: true,
   value: TestResizeObserver,
+});
+
+Object.defineProperty(window, "IntersectionObserver", {
+  writable: true,
+  value: TestIntersectionObserver,
+});
+
+Object.defineProperty(globalThis, "IntersectionObserver", {
+  writable: true,
+  value: TestIntersectionObserver,
 });
 
 Object.defineProperty(window, "matchMedia", {

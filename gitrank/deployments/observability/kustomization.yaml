@@ -20,6 +20,7 @@ configMapGenerator:
       - dashboards.yaml=k8s/grafana-dashboards.yaml
   - name: gitrank-grafana-dashboards
     files:
+      - gitrank-frontend-ux-dashboard.json=grafana/gitrank-frontend-ux-dashboard.json
       - gitrank-overview-dashboard.json=grafana/gitrank-overview-dashboard.json
       - gitrank-slo-dashboard.json=grafana/gitrank-slo-dashboard.json
 generatorOptions:
