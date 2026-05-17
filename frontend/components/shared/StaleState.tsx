@@ -13,6 +13,7 @@ export function StaleState({
   actionHref = "/dashboard/settings",
   refreshLabel = "Refresh snapshot",
   onRefresh,
+  isRefreshing = false,
   analyticsTarget,
 }: {
   message: string;
@@ -20,6 +21,7 @@ export function StaleState({
   actionHref?: string;
   refreshLabel?: string;
   onRefresh?: () => void;
+  isRefreshing?: boolean;
   analyticsTarget?: string;
 }) {
   const sentEventRef = useRef(false);
@@ -50,8 +52,13 @@ export function StaleState({
       </div>
       <div className="flex flex-wrap gap-2">
         {onRefresh ? (
-          <Button variant="secondary" onClick={onRefresh}>
-            {refreshLabel}
+          <Button
+            variant="secondary"
+            onClick={onRefresh}
+            disabled={isRefreshing}
+            aria-busy={isRefreshing || undefined}
+          >
+            {isRefreshing ? "Refreshing..." : refreshLabel}
           </Button>
         ) : null}
         <Button asChild variant="secondary">

@@ -25,6 +25,8 @@
 - Stale snapshot states now include a direct `Refresh snapshot` action (in
   addition to settings navigation) across dashboard, contributions, badges,
   quests, leaderboard, and public profile pages for faster recovery.
+- Refresh actions now show explicit loading feedback (`Refreshing...`) and
+  disable repeat clicks while refetch is in progress.
 - Smoothed and simplified shell glow layers in `AppShell` to reduce decorative
   overdraw and avoid abrupt glow cutoffs.
 - Added responsive visual cost guard in `app/globals.css`:

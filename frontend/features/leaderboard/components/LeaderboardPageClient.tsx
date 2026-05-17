@@ -29,7 +29,11 @@ export function LeaderboardPageClient() {
   const [tab, setTab] = useState<LeaderboardTab>("Global");
   const deferredTab = useDeferredValue(tab);
   const { data, isLoading, isError, isFetching, refetch } = useLeaderboard(deferredTab);
-  const { data: myProfile, refetch: refetchMyProfile } = useMyProfile();
+  const {
+    data: myProfile,
+    isFetching: isFetchingMyProfile,
+    refetch: refetchMyProfile,
+  } = useMyProfile();
   const isSwitchingTab = deferredTab !== tab;
   const currentUserHandle = myProfile?.user.username.toLowerCase() ?? "";
   const rows = (data?.rows ?? []).map((row) => ({
@@ -70,6 +74,7 @@ export function LeaderboardPageClient() {
             void refetchMyProfile();
             void refetch();
           }}
+          isRefreshing={isFetching || isFetchingMyProfile}
           actionLabel="Open settings"
           actionHref="/dashboard/settings"
           analyticsTarget="leaderboard:stale"

@@ -20,7 +20,7 @@ import type { Quest } from "@/types/gitrank";
 const groups: Array<Quest["cadence"]> = ["Daily", "Weekly", "Long-term", "Skill-based"];
 
 export function QuestsPageClient() {
-  const { data, isLoading, isError, refetch } = useQuests();
+  const { data, isLoading, isError, isFetching, refetch } = useQuests();
   const quests = data?.quests ?? [];
   const profile = data?.profile;
   const contributionRows = profile?.user.contributions ?? [];
@@ -53,6 +53,7 @@ export function QuestsPageClient() {
           onRefresh={() => {
             void refetch();
           }}
+          isRefreshing={isFetching}
           actionLabel="Open settings"
           actionHref="/dashboard/settings"
           analyticsTarget="quests:stale"

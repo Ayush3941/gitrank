@@ -23,7 +23,7 @@ export function PublicProfilePageClient({
 }: {
   username: string;
 }) {
-  const { data, isLoading, isError, refetch } = useProfile(username);
+  const { data, isLoading, isError, isFetching, refetch } = useProfile(username);
   const streak = summarizeContributionStreak(data?.user.contributions ?? []);
   const abraPayload = useMemo(() => {
     if (!data) {
@@ -107,6 +107,7 @@ export function PublicProfilePageClient({
           onRefresh={() => {
             void refetch();
           }}
+          isRefreshing={isFetching}
           actionLabel="Open dashboard"
           actionHref="/dashboard"
           analyticsTarget="public-profile:stale"

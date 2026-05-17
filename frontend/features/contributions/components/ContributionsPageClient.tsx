@@ -42,7 +42,7 @@ export function ContributionsPageClient() {
   const deferredFilter = useDeferredValue(filter);
   const deferredSearch = useDeferredValue(search);
   const deferredSort = useDeferredValue(sort);
-  const { data, isLoading, isError, refetch } = useContributions({
+  const { data, isLoading, isError, isFetching, refetch } = useContributions({
     filter: filterMap[deferredFilter],
     search: deferredSearch,
     sort: deferredSort,
@@ -164,6 +164,7 @@ export function ContributionsPageClient() {
           onRefresh={() => {
             void refetch();
           }}
+          isRefreshing={isFetching}
           actionLabel="Open settings"
           actionHref="/dashboard/settings"
           analyticsTarget="contributions:stale"

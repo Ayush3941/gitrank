@@ -21,7 +21,7 @@ import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics"
 import type { BadgeRarity } from "@/types/gitrank";
 
 export function BadgesPageClient() {
-  const { data, isLoading, isError, refetch } = useBadges();
+  const { data, isLoading, isError, isFetching, refetch } = useBadges();
   const badgeViewedEventSent = useRef(false);
   const previousUnlockedCountRef = useRef<number | null>(null);
   const [rarity, setRarity] = useState<BadgeRarity | "All">("All");
@@ -153,6 +153,7 @@ export function BadgesPageClient() {
           onRefresh={() => {
             void refetch();
           }}
+          isRefreshing={isFetching}
           actionLabel="Open settings"
           actionHref="/dashboard/settings"
           analyticsTarget="badges:stale"
