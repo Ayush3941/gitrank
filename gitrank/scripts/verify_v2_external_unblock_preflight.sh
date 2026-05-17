@@ -110,6 +110,12 @@ for script_file in \
 done
 
 token_state=$(state_for_value "${GITRANK_REPO_ADMIN_TOKEN:-${GITHUB_TOKEN:-${GH_TOKEN:-}}}")
+oauth_client_id_state=$(state_for_value "${GITHUB_CLIENT_ID:-${GITHUB_OAUTH_WEB_CLIENT_ID:-}}")
+oauth_client_secret_state=$(state_for_value "${GITHUB_CLIENT_SECRET:-${GITHUB_OAUTH_WEB_CLIENT_SECRET:-}}")
+has_oauth_bootstrap=false
+if [ "$oauth_client_id_state" = "set" ] && [ "$oauth_client_secret_state" = "set" ]; then
+  has_oauth_bootstrap=true
+fi
 
 run_probe() {
   name=$1
@@ -252,6 +258,8 @@ fi
 
 printf 'input_state.repository: %s\n' "$repo_state"
 printf 'input_state.github_token_or_admin_token: %s\n' "$token_state"
+printf 'input_state.github_oauth_client_id: %s\n' "$oauth_client_id_state"
+printf 'input_state.github_oauth_client_secret: %s\n' "$oauth_client_secret_state"
 printf 'input_state.prometheus_base_url: %s\n' "$prometheus_state"
 printf 'input_state.grafana_base_url: %s\n' "$grafana_base_state"
 printf 'input_state.grafana_api_token: %s\n' "$grafana_token_state"
@@ -298,7 +306,7 @@ fi
 if [ "$fail_count" -gt 0 ]; then
   required_inputs=
   if [ "$github_access_status" = "fail" ] || [ "$remote_workflow_sync_status" = "fail" ] || [ "$controls_public_status" = "fail" ] || [ "$workflow_evidence_status" = "fail" ]; then
-    if [ "$token_state" != "set" ] || [ "$github_access_effective_status" = "credential-invalid" ]; then
+    if { [ "$token_state" != "set" ] && [ "$has_oauth_bootstrap" != "true" ]; } || [ "$github_access_effective_status" = "credential-invalid" ]; then
       required_inputs=$(append_unique_csv "$required_inputs" "GITRANK_REPO_ADMIN_TOKEN (or GITHUB_TOKEN/GH_TOKEN)")
       required_inputs=$(append_unique_csv "$required_inputs" "or GitHub App bootstrap: GITHUB_APP_ID + GITHUB_APP_INSTALLATION_ID + GITHUB_APP_PRIVATE_KEY_FILE/PEM")
       required_inputs=$(append_unique_csv "$required_inputs" "or OAuth web-flow bootstrap: GITHUB_CLIENT_ID + GITHUB_CLIENT_SECRET + GITRANK_ALLOW_OAUTH_WEB_TOKEN_BOOTSTRAP=yes")
@@ -315,7 +323,7 @@ if [ "$fail_count" -gt 0 ]; then
       required_inputs=$(append_unique_csv "$required_inputs" "GRAFANA_API_TOKEN")
     fi
   fi
-  if [ "$origin_push_status" = "fail" ] && [ "$token_state" != "set" ]; then
+  if [ "$origin_push_status" = "fail" ] && [ "$token_state" != "set" ] && [ "$has_oauth_bootstrap" != "true" ]; then
     required_inputs=$(append_unique_csv "$required_inputs" "working origin push auth OR GitHub token/App creds for sync/apply paths")
   fi
 

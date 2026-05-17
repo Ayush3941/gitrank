@@ -371,6 +371,8 @@ app_id_candidate="${GITHUB_APP_ID:-${GITRANK_GITHUB_APP_ID:-}}"
 app_installation_candidate="${GITHUB_APP_INSTALLATION_ID:-${GITRANK_GITHUB_APP_INSTALLATION_ID:-}}"
 app_key_file_candidate="${GITHUB_APP_PRIVATE_KEY_FILE:-${GITRANK_GITHUB_APP_PRIVATE_KEY_FILE:-}}"
 app_key_pem_candidate="${GITHUB_APP_PRIVATE_KEY_PEM:-${GITRANK_GITHUB_APP_PRIVATE_KEY_PEM:-}}"
+oauth_client_id_candidate="${GITHUB_CLIENT_ID:-${GITHUB_OAUTH_WEB_CLIENT_ID:-}}"
+oauth_client_secret_candidate="${GITHUB_CLIENT_SECRET:-${GITHUB_OAUTH_WEB_CLIENT_SECRET:-}}"
 if is_placeholder_value "$token_candidate"; then
   token_candidate=
 fi
@@ -386,14 +388,24 @@ fi
 if is_placeholder_value "$app_key_pem_candidate"; then
   app_key_pem_candidate=
 fi
+if is_placeholder_value "$oauth_client_id_candidate"; then
+  oauth_client_id_candidate=
+fi
+if is_placeholder_value "$oauth_client_secret_candidate"; then
+  oauth_client_secret_candidate=
+fi
 has_app_bootstrap=false
 if [ -n "$app_id_candidate" ] && [ -n "$app_installation_candidate" ]; then
   if [ -n "$app_key_file_candidate" ] || [ -n "$app_key_pem_candidate" ]; then
     has_app_bootstrap=true
   fi
 fi
-if [ -z "$token_candidate" ] && [ "$has_app_bootstrap" != "true" ]; then
-  add_missing_var "GITRANK_REPO_ADMIN_TOKEN_OR_GITHUB_TOKEN_OR_GH_TOKEN_OR_GITHUB_APP_CREDENTIALS"
+has_oauth_bootstrap=false
+if [ -n "$oauth_client_id_candidate" ] && [ -n "$oauth_client_secret_candidate" ]; then
+  has_oauth_bootstrap=true
+fi
+if [ -z "$token_candidate" ] && [ "$has_app_bootstrap" != "true" ] && [ "$has_oauth_bootstrap" != "true" ]; then
+  add_missing_var "GITRANK_REPO_ADMIN_TOKEN_OR_GITHUB_TOKEN_OR_GH_TOKEN_OR_GITHUB_APP_OR_OAUTH_CREDENTIALS"
 fi
 
 display_repo_state="$(state_for_value "${gitrank_repo:-${GITHUB_REPOSITORY:-}}")"
@@ -402,6 +414,8 @@ app_id_state="$(state_for_value "${GITHUB_APP_ID:-${GITRANK_GITHUB_APP_ID:-}}")"
 app_installation_state="$(state_for_value "${GITHUB_APP_INSTALLATION_ID:-${GITRANK_GITHUB_APP_INSTALLATION_ID:-}}")"
 app_key_file_state="$(state_for_value "${GITHUB_APP_PRIVATE_KEY_FILE:-${GITRANK_GITHUB_APP_PRIVATE_KEY_FILE:-}}")"
 app_key_pem_state="$(state_for_value "${GITHUB_APP_PRIVATE_KEY_PEM:-${GITRANK_GITHUB_APP_PRIVATE_KEY_PEM:-}}")"
+oauth_client_id_state="$(state_for_value "${GITHUB_CLIENT_ID:-${GITHUB_OAUTH_WEB_CLIENT_ID:-}}")"
+oauth_client_secret_state="$(state_for_value "${GITHUB_CLIENT_SECRET:-${GITHUB_OAUTH_WEB_CLIENT_SECRET:-}}")"
 prometheus_state="$(state_for_value "${PROMETHEUS_BASE_URL:-}")"
 grafana_base_state="$(state_for_value "${GRAFANA_BASE_URL:-}")"
 grafana_token_state="$(state_for_value "${GRAFANA_API_TOKEN:-}")"
@@ -420,6 +434,7 @@ production_public_state="$(state_for_value "${PRODUCTION_K8S_PUBLIC_BASE_URL:-}"
   printf '| `GITHUB_REPOSITORY` | `%s` | GitHub controls, workflow sync/evidence probes |\n' "$display_repo_state"
   printf '| `GITRANK_REPO_ADMIN_TOKEN` / `GITHUB_TOKEN` / `GH_TOKEN` | `%s` | GitHub controls apply/verify, workflow dispatch/evidence |\n' "$token_state"
   printf '| GitHub App bootstrap (`ID`, `INSTALLATION_ID`, private key file or PEM) | `id:%s install:%s key_file:%s key_pem:%s` | Token bootstrap when PAT is absent |\n' "$app_id_state" "$app_installation_state" "$app_key_file_state" "$app_key_pem_state"
+  printf '| OAuth bootstrap (`GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`) | `id:%s secret:%s` | Interactive admin-token bootstrap for controls/finalizer |\n' "$oauth_client_id_state" "$oauth_client_secret_state"
   printf '| `PROMETHEUS_BASE_URL` | `%s` | `make verify-live-observability` |\n' "$prometheus_state"
   printf '| `GRAFANA_BASE_URL` | `%s` | `make verify-live-observability` |\n' "$grafana_base_state"
   printf '| `GRAFANA_API_TOKEN` | `%s` | `make verify-live-observability` |\n' "$grafana_token_state"

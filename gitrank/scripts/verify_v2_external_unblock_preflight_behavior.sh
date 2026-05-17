@@ -16,6 +16,8 @@ for required in \
   'append_unique_csv() {' \
   'input_state.repository:' \
   'input_state.github_token_or_admin_token:' \
+  'input_state.github_oauth_client_id:' \
+  'input_state.github_oauth_client_secret:' \
   'input_state.prometheus_base_url:' \
   'input_state.grafana_base_url:' \
   'input_state.grafana_api_token:' \
@@ -24,7 +26,7 @@ for required in \
   'probe.origin_push_effective_status:' \
   'origin_push_required_state=false' \
   'github_access_effective_status=credential-invalid' \
-  '[ "$token_state" != "set" ] || [ "$github_access_effective_status" = "credential-invalid" ]' \
+  '{ [ "$token_state" != "set" ] && [ "$has_oauth_bootstrap" != "true" ]; } || [ "$github_access_effective_status" = "credential-invalid" ]' \
   '[ "$origin_push_status" = "fail" ] && [ "$origin_push_required_state" = "true" ]' \
   'workflow_evidence (+ advisory origin_push)' \
   'checklist_probe_mapping' \
@@ -32,6 +34,7 @@ for required in \
   'Minimal required next inputs:' \
   'GITRANK_REPO_ADMIN_TOKEN (or GITHUB_TOKEN/GH_TOKEN)' \
   'GITHUB_APP_ID + GITHUB_APP_INSTALLATION_ID + GITHUB_APP_PRIVATE_KEY_FILE/PEM' \
+  'GITHUB_CLIENT_ID + GITHUB_CLIENT_SECRET + GITRANK_ALLOW_OAUTH_WEB_TOKEN_BOOTSTRAP=yes' \
   'PROMETHEUS_BASE_URL' \
   'GRAFANA_BASE_URL' \
   'GRAFANA_API_TOKEN'; do

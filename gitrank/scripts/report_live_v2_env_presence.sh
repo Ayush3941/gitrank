@@ -50,6 +50,9 @@ for var_name in \
   GITHUB_APP_INSTALLATION_ID \
   GITHUB_APP_PRIVATE_KEY_FILE \
   GITHUB_APP_PRIVATE_KEY_PEM \
+  GITHUB_CLIENT_ID \
+  GITHUB_CLIENT_SECRET \
+  GITRANK_ALLOW_OAUTH_WEB_TOKEN_BOOTSTRAP \
   GITRANK_GITHUB_APP_ID \
   GITRANK_GITHUB_APP_INSTALLATION_ID \
   GITRANK_GITHUB_APP_PRIVATE_KEY_FILE \
@@ -87,6 +90,8 @@ app_id_candidate="${GITHUB_APP_ID:-${GITRANK_GITHUB_APP_ID:-}}"
 app_installation_candidate="${GITHUB_APP_INSTALLATION_ID:-${GITRANK_GITHUB_APP_INSTALLATION_ID:-}}"
 app_key_file_candidate="${GITHUB_APP_PRIVATE_KEY_FILE:-${GITRANK_GITHUB_APP_PRIVATE_KEY_FILE:-}}"
 app_key_pem_candidate="${GITHUB_APP_PRIVATE_KEY_PEM:-${GITRANK_GITHUB_APP_PRIVATE_KEY_PEM:-}}"
+oauth_client_id_candidate="${GITHUB_CLIENT_ID:-${GITHUB_OAUTH_WEB_CLIENT_ID:-}}"
+oauth_client_secret_candidate="${GITHUB_CLIENT_SECRET:-${GITHUB_OAUTH_WEB_CLIENT_SECRET:-}}"
 
 if is_placeholder_value "$token_candidate"; then
   token_candidate=
@@ -103,6 +108,12 @@ fi
 if is_placeholder_value "$app_key_pem_candidate"; then
   app_key_pem_candidate=
 fi
+if is_placeholder_value "$oauth_client_id_candidate"; then
+  oauth_client_id_candidate=
+fi
+if is_placeholder_value "$oauth_client_secret_candidate"; then
+  oauth_client_secret_candidate=
+fi
 
 has_app_bootstrap=false
 if [ -n "$app_id_candidate" ] && [ -n "$app_installation_candidate" ]; then
@@ -110,12 +121,18 @@ if [ -n "$app_id_candidate" ] && [ -n "$app_installation_candidate" ]; then
     has_app_bootstrap=true
   fi
 fi
+has_oauth_bootstrap=false
+if [ -n "$oauth_client_id_candidate" ] && [ -n "$oauth_client_secret_candidate" ]; then
+  has_oauth_bootstrap=true
+fi
 
 auth_mode=none
 if [ -n "$token_candidate" ]; then
   auth_mode=token
 elif [ "$has_app_bootstrap" = "true" ]; then
   auth_mode=app-bootstrap
+elif [ "$has_oauth_bootstrap" = "true" ]; then
+  auth_mode=oauth-web-bootstrap
 fi
 
 workflow_sync_credential_readiness=unavailable
@@ -123,6 +140,8 @@ if [ "$auth_mode" = "token" ]; then
   workflow_sync_credential_readiness=token-present
 elif [ "$auth_mode" = "app-bootstrap" ]; then
   workflow_sync_credential_readiness=app-bootstrap-present
+elif [ "$auth_mode" = "oauth-web-bootstrap" ]; then
+  workflow_sync_credential_readiness=oauth-bootstrap-present
 fi
 
 origin_push_access_readiness=unknown
@@ -140,12 +159,15 @@ fi
 workflow_sync_execution_path=unavailable
 if [ "$workflow_sync_credential_readiness" = "token-present" ] || [ "$workflow_sync_credential_readiness" = "app-bootstrap-present" ]; then
   workflow_sync_execution_path=token-or-app
+elif [ "$workflow_sync_credential_readiness" = "oauth-bootstrap-present" ]; then
+  workflow_sync_execution_path=oauth-web-bootstrap
 elif [ "$origin_push_access_readiness" = "available" ]; then
   workflow_sync_execution_path=git-push
 fi
 
 printf 'derived.auth_mode=%s\n' "$auth_mode"
 printf 'derived.has_app_bootstrap=%s\n' "$has_app_bootstrap"
+printf 'derived.has_oauth_bootstrap=%s\n' "$has_oauth_bootstrap"
 printf 'derived.workflow_sync_credential_readiness=%s\n' "$workflow_sync_credential_readiness"
 printf 'derived.origin_push_access_readiness=%s\n' "$origin_push_access_readiness"
 printf 'derived.workflow_sync_execution_path=%s\n' "$workflow_sync_execution_path"
