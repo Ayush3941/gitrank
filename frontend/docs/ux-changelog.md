@@ -324,6 +324,10 @@
   - sticky `Jump to` rail for overview, badges+skills, best PRs, and timeline+repos
   - active-section highlighting from `IntersectionObserver`
   - badge descriptions now use `ExpandableText` to keep cards scannable without truncation loss.
+- Added PR battle report in-page navigation for presentation flow:
+  - sticky `Jump to` rail for overview, score, AI summary, evidence signals, and rewards
+  - active-section tracking via `IntersectionObserver`
+  - section anchors with `scroll-mt` offsets improve deep linking during demos.
 
 ## 2026-05-16
 

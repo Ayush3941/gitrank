@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { AlertTriangle, ArrowRight, Award, ShieldCheck, Swords } from "lucide-react";
+import { useEffect, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { ExpandableText } from "@/components/shared/ExpandableText";
@@ -17,6 +18,21 @@ import { XPBreakdownCard } from "@/features/pr-report/components/XPBreakdownCard
 import { usePrReport } from "@/hooks/use-pr-report";
 import { formatRelativeDays } from "@/lib/formatters";
 
+type PRReportSectionID =
+  | "pr-report-overview"
+  | "pr-report-score"
+  | "pr-report-ai"
+  | "pr-report-evidence"
+  | "pr-report-rewards";
+
+const PR_REPORT_SECTION_ITEMS: Array<{ id: PRReportSectionID; label: string }> = [
+  { id: "pr-report-overview", label: "Overview" },
+  { id: "pr-report-score", label: "Score" },
+  { id: "pr-report-ai", label: "AI" },
+  { id: "pr-report-evidence", label: "Signals" },
+  { id: "pr-report-rewards", label: "Rewards" },
+];
+
 export function PRBattleReportPageClient({
   owner,
   repo,
@@ -27,6 +43,34 @@ export function PRBattleReportPageClient({
   number: number;
 }) {
   const { data, isLoading, isError } = usePrReport(owner, repo, number);
+  const [activeSection, setActiveSection] = useState<PRReportSectionID>("pr-report-overview");
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((left, right) => right.intersectionRatio - left.intersectionRatio)[0];
+        if (!visible) {
+          return;
+        }
+        const id = visible.target.id as PRReportSectionID;
+        if (id) {
+          setActiveSection(id);
+        }
+      },
+      { rootMargin: "-22% 0px -55% 0px", threshold: [0.2, 0.45, 0.7] },
+    );
+
+    PR_REPORT_SECTION_ITEMS.forEach(({ id }) => {
+      const node = document.getElementById(id);
+      if (node) {
+        observer.observe(node);
+      }
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   if (isLoading) {
     return <LoadingState message="Calculating PR intensity..." />;
@@ -81,7 +125,28 @@ export function PRBattleReportPageClient({
         {data.sourceUpdatedAt ? formatRelativeDays(data.sourceUpdatedAt) : "unknown"}
         {data.isStale ? " • report snapshot is stale" : ""}
       </div>
-      <GlowCard strong className="space-y-5">
+      <nav
+        aria-label="PR report quick sections"
+        className="glass-panel sticky top-4 z-20 flex flex-wrap items-center gap-2 border border-primary/20 p-2"
+      >
+        <p className="cyber-title px-2 text-[10px] tracking-[0.16em] text-cyan-200 uppercase">Jump to</p>
+        {PR_REPORT_SECTION_ITEMS.map((section) => (
+          <a
+            key={section.id}
+            href={`#${section.id}`}
+            aria-current={activeSection === section.id ? "location" : undefined}
+            className={
+              activeSection === section.id
+                ? "focus-ring cyber-title border border-primary/45 bg-primary/16 px-3 py-1.5 text-[11px] tracking-[0.16em] text-white uppercase"
+                : "focus-ring cyber-title border border-transparent px-3 py-1.5 text-[11px] tracking-[0.16em] text-slate-200 uppercase hover:border-primary/28 hover:bg-primary/10"
+            }
+          >
+            {section.label}
+          </a>
+        ))}
+      </nav>
+      <section id="pr-report-overview" className="scroll-mt-24">
+        <GlowCard strong className="space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
             <p className="break-anywhere text-sm text-muted">{data.contribution.owner}/{data.contribution.repo} #{data.contribution.number}</p>
@@ -134,23 +199,31 @@ export function PRBattleReportPageClient({
             />
           ) : null}
         </div>
-      </GlowCard>
-      <div className="grid gap-6 xl:grid-cols-[1.02fr,0.98fr]">
-        <ScoreMatrixCard report={data} />
-        <XPBreakdownCard report={data} />
-      </div>
-      <GlowCard className="space-y-4">
-        <p className="text-xs tracking-[0.24em] text-primary uppercase">AI summary</p>
-        <ExpandableText
-          text={data.contribution.aiSummary}
-          lines={5}
-          minLengthForToggle={260}
-          textClassName="break-anywhere text-base leading-8 text-slate-200"
-        />
-      </GlowCard>
-      <EvidenceSignalsCard report={data} />
-      {data.badgeUnlocks.length ? (
+        </GlowCard>
+      </section>
+      <section id="pr-report-score" className="scroll-mt-24">
+        <div className="grid gap-6 xl:grid-cols-[1.02fr,0.98fr]">
+          <ScoreMatrixCard report={data} />
+          <XPBreakdownCard report={data} />
+        </div>
+      </section>
+      <section id="pr-report-ai" className="scroll-mt-24">
         <GlowCard className="space-y-4">
+          <p className="text-xs tracking-[0.24em] text-primary uppercase">AI summary</p>
+          <ExpandableText
+            text={data.contribution.aiSummary}
+            lines={5}
+            minLengthForToggle={260}
+            textClassName="break-anywhere text-base leading-8 text-slate-200"
+          />
+        </GlowCard>
+      </section>
+      <section id="pr-report-evidence" className="scroll-mt-24">
+        <EvidenceSignalsCard report={data} />
+      </section>
+      {data.badgeUnlocks.length ? (
+        <section id="pr-report-rewards" className="scroll-mt-24">
+          <GlowCard className="space-y-4">
           <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold tracking-[0.24em] text-emerald-100 uppercase">
             <Award className="h-3.5 w-3.5" />
             Badge unlocks
@@ -175,10 +248,15 @@ export function PRBattleReportPageClient({
               </div>
             ))}
           </div>
-        </GlowCard>
+          </GlowCard>
+        </section>
       ) : null}
       {data.suggestedQuestId ? (
-        <GlowCard className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <section
+          id={!data.badgeUnlocks.length ? "pr-report-rewards" : undefined}
+          className={!data.badgeUnlocks.length ? "scroll-mt-24" : undefined}
+        >
+          <GlowCard className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-semibold tracking-[0.24em] text-primary uppercase">
               <Swords className="h-3.5 w-3.5" />
@@ -207,7 +285,8 @@ export function PRBattleReportPageClient({
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
-        </GlowCard>
+          </GlowCard>
+        </section>
       ) : null}
     </div>
   );
