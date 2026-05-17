@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef } from "react";
-import { Activity, Flame, Medal, ShieldCheck, Swords } from "lucide-react";
+import { Activity, Flame, Medal, ShieldCheck, Swords, Waypoints } from "lucide-react";
 import { DashboardHeroRankCard } from "@/features/dashboard/components/DashboardHeroRankCard";
 import { ContributionTimelineCard } from "@/features/dashboard/components/ContributionTimelineCard";
 import { CurrentLeagueCard } from "@/features/dashboard/components/CurrentLeagueCard";
@@ -141,12 +141,41 @@ export function DashboardPageClient() {
           analyticsTarget="dashboard:stale"
         />
       ) : null}
-      <DashboardHeroRankCard
-        user={user}
-        archetype={abraInsights.data?.archetype}
-        identitySummary={abraInsights.data?.identitySummary}
-        aiMode={abraInsights.data?.generatedBy}
-      />
+      <section
+        aria-label="Dashboard section quick jump"
+        className="cyber-terminal panel-grid flex flex-wrap items-center gap-2 rounded-[1.2rem] px-3 py-3"
+      >
+        <span className="inline-flex items-center gap-2 px-2 text-xs tracking-[0.14em] text-primary uppercase">
+          <Waypoints className="h-3.5 w-3.5" />
+          Jump
+        </span>
+        <a className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs" href="#dashboard-hero">
+          Hero
+        </a>
+        <a className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs" href="#dashboard-league">
+          League
+        </a>
+        <a className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs" href="#dashboard-skills">
+          Skills
+        </a>
+        <a className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs" href="#dashboard-reports">
+          Reports
+        </a>
+        <a className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs" href="#dashboard-badges">
+          Badges
+        </a>
+        <a className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs" href="#dashboard-timeline">
+          Timeline
+        </a>
+      </section>
+      <section id="dashboard-hero" className="scroll-mt-24">
+        <DashboardHeroRankCard
+          user={user}
+          archetype={abraInsights.data?.archetype}
+          identitySummary={abraInsights.data?.identitySummary}
+          aiMode={abraInsights.data?.generatedBy}
+        />
+      </section>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         <StatCard label="GitRank score" value={user.gitRankScore} detail="Weighted by impact, reviews, tests, and repository context." icon={<Medal className="h-5 w-5 text-primary" />} />
         <StatCard label="Merged PRs" value={user.mergedPrCount} detail="Only verified merged work receives full progression value." icon={<ShieldCheck className="h-5 w-5 text-primary" />} />
@@ -166,22 +195,32 @@ export function DashboardPageClient() {
       </div>
       <div className="grid gap-6 xl:grid-cols-[0.92fr,1.08fr]">
         <div className="space-y-6">
-          <CurrentLeagueCard user={user} />
+          <section id="dashboard-league" className="scroll-mt-24">
+            <CurrentLeagueCard user={user} />
+          </section>
           <QuestPanel quests={user.quests} />
           <ScoreExplanationCard user={user} />
         </div>
         <div className="space-y-6">
-          <SkillBreakdownCard
-            user={user}
-            skillInsights={abraInsights.data?.skillInsights}
-            aiMode={abraInsights.data?.generatedBy}
-          />
-          <RecentBattleReports reports={recentReports} />
+          <section id="dashboard-skills" className="scroll-mt-24">
+            <SkillBreakdownCard
+              user={user}
+              skillInsights={abraInsights.data?.skillInsights}
+              aiMode={abraInsights.data?.generatedBy}
+            />
+          </section>
+          <section id="dashboard-reports" className="scroll-mt-24">
+            <RecentBattleReports reports={recentReports} />
+          </section>
         </div>
       </div>
       <div className="grid gap-6 xl:grid-cols-[1.04fr,0.96fr]">
-        <BadgeShelf user={user} />
-        <ContributionTimelineCard user={user} />
+        <section id="dashboard-badges" className="scroll-mt-24">
+          <BadgeShelf user={user} />
+        </section>
+        <section id="dashboard-timeline" className="scroll-mt-24">
+          <ContributionTimelineCard user={user} />
+        </section>
       </div>
       <StatCard
         label="Anti-spam rule"

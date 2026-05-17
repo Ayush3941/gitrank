@@ -67,6 +67,11 @@
     to structure-aware placeholder shapes instead of one generic card grid
   - lowers perceived layout shift during route transitions and better matches
     final information hierarchy while data is loading.
+- Dashboard information architecture refinement:
+  - added a compact quick-jump strip (Hero / League / Skills / Reports /
+    Badges / Timeline) for faster navigation across long dashboard pages
+  - added section anchors with `scroll-mt` offsets so in-page links land on
+    readable positions below sticky chrome.
 
 - Optimized hero/background rendering while preserving cyber style:
   - compressed `public/background.jpg` from large source to web-safe size
