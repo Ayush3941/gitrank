@@ -368,6 +368,9 @@
 - Improved PR report first-glance comprehension:
   - added a summary verdict strip above section navigation with `Signal tier`, `Evidence confidence`, and `Best next move`
   - keeps long-form report depth below, while making the immediate interpretation visible within one screen.
+- Added explicit persona journeys to the landing experience:
+  - new `New contributor`, `Returning contributor`, and `Profile sharer` cards
+  - each card includes a concrete success moment to make onboarding outcomes immediately legible.
 
 ## 2026-05-16
 

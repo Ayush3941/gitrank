@@ -107,6 +107,32 @@ export function LandingPage() {
         ))}
       </section>
 
+      <section className="grid gap-6 lg:grid-cols-3">
+        {[
+          {
+            lane: "New contributor",
+            mission: "Connect GitHub and unlock first score snapshot.",
+            success: "Success moment: first synced PR appears with XP and evidence status.",
+          },
+          {
+            lane: "Returning contributor",
+            mission: "Track weekly movement, quests, and impact quality.",
+            success: "Success moment: rank movement updates after a merged high-signal PR.",
+          },
+          {
+            lane: "Profile sharer",
+            mission: "Turn contribution history into a public credibility card.",
+            success: "Success moment: shareable profile headline and card data exported.",
+          },
+        ].map((journey) => (
+          <GlowCard key={journey.lane} className="space-y-3">
+            <p className="text-xs tracking-[0.24em] text-primary uppercase">{journey.lane}</p>
+            <h3 className="text-xl font-semibold text-white">{journey.mission}</h3>
+            <p className="text-sm text-slate-200/82">{journey.success}</p>
+          </GlowCard>
+        ))}
+      </section>
+
       <section className="grid gap-6 lg:grid-cols-[0.95fr,1.05fr]">
         <GlowCard className="space-y-5">
           <SectionHeader
