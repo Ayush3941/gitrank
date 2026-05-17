@@ -23,16 +23,33 @@ const steps = [
   "Building public profile",
 ];
 
+const POLL_INTERVAL_STEPS_MS = [5000, 7000, 10000, 15000, 20000] as const;
+
+function syncPollIntervalMs(attempt: number): number {
+  if (attempt <= 0) {
+    return POLL_INTERVAL_STEPS_MS[0];
+  }
+  const index = Math.min(attempt, POLL_INTERVAL_STEPS_MS.length - 1);
+  return POLL_INTERVAL_STEPS_MS[index];
+}
+
 export function SyncPipeline() {
   const { data, isLoading, isError, refetch } = useMyProfile();
   const userSync = useRunUserSync();
   const [syncStartedAt, setSyncStartedAt] = useState<string | null>(null);
   const [syncNotice, setSyncNotice] = useState("");
+  const [pollIntervalMs, setPollIntervalMs] = useState(POLL_INTERVAL_STEPS_MS[0]);
   const autoRequestedRef = useRef(false);
   const syncStartedEventSent = useRef(false);
   const previousSyncStateRef = useRef<string>("stale");
+  const syncPollingAttemptRef = useRef(0);
+  const isSyncedRef = useRef(false);
   const syncState = data?.user.syncStatus.state ?? "stale";
   const isSynced = syncState === "synced";
+
+  useEffect(() => {
+    isSyncedRef.current = isSynced;
+  }, [isSynced]);
 
   useEffect(() => {
     if (isLoading || isError || !data || autoRequestedRef.current) {
@@ -44,6 +61,8 @@ export function SyncPipeline() {
     }
     userSync.mutate(data.user.username, {
       onSuccess: (result) => {
+        syncPollingAttemptRef.current = 0;
+        setPollIntervalMs(POLL_INTERVAL_STEPS_MS[0]);
         setSyncStartedAt(result.started_at);
       },
     });
@@ -51,13 +70,38 @@ export function SyncPipeline() {
 
   useEffect(() => {
     if (!syncStartedAt || isSynced) {
+      syncPollingAttemptRef.current = 0;
       return;
     }
-    const timer = window.setInterval(() => {
-      void refetch();
-    }, 5000);
+    let cancelled = false;
+    let timer: number | undefined;
+    syncPollingAttemptRef.current = 0;
+
+    const poll = async () => {
+      if (cancelled || isSyncedRef.current) {
+        return;
+      }
+      await refetch();
+      if (cancelled || isSyncedRef.current) {
+        return;
+      }
+      syncPollingAttemptRef.current += 1;
+      const nextDelay = syncPollIntervalMs(syncPollingAttemptRef.current);
+      setPollIntervalMs(nextDelay);
+      timer = window.setTimeout(() => {
+        void poll();
+      }, nextDelay);
+    };
+
+    timer = window.setTimeout(() => {
+      void poll();
+    }, POLL_INTERVAL_STEPS_MS[0]);
+
     return () => {
-      window.clearInterval(timer);
+      cancelled = true;
+      if (timer) {
+        window.clearTimeout(timer);
+      }
     };
   }, [isSynced, refetch, syncStartedAt]);
 
@@ -116,6 +160,12 @@ export function SyncPipeline() {
           {syncStartedAt ? (
             <p className="text-sm text-cyan-100">
               Sync run started at {new Date(syncStartedAt).toLocaleString()}.
+            </p>
+          ) : null}
+          {syncStartedAt && !isSynced ? (
+            <p className="text-sm text-slate-200/84">
+              Auto-refresh cadence slows from 5s up to 20s while sync remains pending to reduce local load.
+              Current cadence: about {Math.max(5, Math.round(pollIntervalMs / 1000))}s.
             </p>
           ) : null}
           {actionError ? (

@@ -7,6 +7,11 @@
     recovery actions (sync settings, contribution drill-down, badge forge)
   - added explicit `BadgeShelf` zero-data fallback so the section never renders
     as an empty grid when no badge records are present.
+- Reduced onboarding sync polling pressure in `SyncPipeline`:
+  - replaced fixed `5s` interval polling with progressive backoff (`5s` → `7s`
+    → `10s` → `15s` → `20s`) while sync is still pending
+  - surfaced active poll cadence in UI so users understand refresh timing and
+    why updates can appear less frequently on longer-running syncs.
 - Added file-based social-share identity layer:
   - new generated social cards in `app/opengraph-image.tsx` and
     `app/twitter-image.tsx` with cyber-neon branding and high-contrast copy
