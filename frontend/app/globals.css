@@ -292,6 +292,21 @@ select {
   color: rgb(var(--text-body));
 }
 
+:where(p, li, dd, dt, small, figcaption, blockquote) a[href] {
+  color: rgb(var(--text-strong));
+  text-decoration-line: underline;
+  text-decoration-color: rgb(var(--primary) / 0.82);
+  text-decoration-thickness: 1.45px;
+  text-underline-offset: 0.2em;
+}
+
+:where(p, li, dd, dt, small, figcaption, blockquote) a[href]:hover,
+:where(p, li, dd, dt, small, figcaption, blockquote) a[href]:focus-visible {
+  color: rgb(var(--primary));
+  text-decoration-color: rgb(var(--primary));
+  text-decoration-thickness: 1.7px;
+}
+
 :where(input, textarea, select, button) {
   line-height: 1.45;
 }

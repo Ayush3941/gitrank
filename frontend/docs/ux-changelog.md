@@ -27,6 +27,9 @@
   quests, leaderboard, and public profile pages for faster recovery.
 - Refresh actions now show explicit loading feedback (`Refreshing...`) and
   disable repeat clicks while refetch is in progress.
+- Added global inline-link readability treatment in text blocks (underline,
+  stronger offset/thickness, clearer hover/focus) so links are not conveyed by
+  color alone.
 - Smoothed and simplified shell glow layers in `AppShell` to reduce decorative
   overdraw and avoid abrupt glow cutoffs.
 - Added responsive visual cost guard in `app/globals.css`:
