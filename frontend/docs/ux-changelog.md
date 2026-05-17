@@ -389,6 +389,9 @@
 - Expanded list-render optimization coverage:
   - added `render-opt-card` to locked badge cards and contribution repository/highlight rows
   - extends deferred paint/layout behavior to more high-count card lists.
+- Applied quick-jump navigation accessibility labeling pass:
+  - switched jump rails to `aria-labelledby` with visible label IDs across dashboard, contributions, badges, quests, settings, leaderboard, public profile, and PR report views
+  - converted remaining non-nav quick-jump wrappers to semantic `nav` landmarks.
 
 ## 2026-05-16
 

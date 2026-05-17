@@ -234,11 +234,11 @@ export function DashboardPageClient() {
           analyticsTarget="dashboard:stale"
         />
       ) : null}
-      <section
-        aria-label="Dashboard section quick jump"
+      <nav
+        aria-labelledby="dashboard-jump-nav-label"
         className="cyber-terminal panel-grid flex flex-wrap items-center gap-2 rounded-[1.2rem] px-3 py-3 xl:sticky xl:top-20 xl:z-20"
       >
-        <span className="inline-flex items-center gap-2 px-2 text-xs tracking-[0.14em] text-primary uppercase">
+        <span id="dashboard-jump-nav-label" className="inline-flex items-center gap-2 px-2 text-xs tracking-[0.14em] text-primary uppercase">
           <Waypoints className="h-3.5 w-3.5" />
           Jump
         </span>
@@ -259,7 +259,7 @@ export function DashboardPageClient() {
             </a>
           );
         })}
-      </section>
+      </nav>
       <section id="dashboard-hero" className="scroll-mt-24">
         <DashboardHeroRankCard
           user={user}

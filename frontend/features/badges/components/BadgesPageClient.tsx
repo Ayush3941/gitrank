@@ -187,10 +187,10 @@ export function BadgesPageClient() {
         )}
       />
       <nav
-        aria-label="Badge page quick sections"
+        aria-labelledby="badges-jump-nav-label"
         className="glass-panel flex flex-wrap items-center gap-2 border border-primary/20 p-2 xl:sticky xl:top-20 xl:z-20"
       >
-        <p className="cyber-title px-2 text-[10px] tracking-[0.16em] text-cyan-200 uppercase">Jump to</p>
+        <p id="badges-jump-nav-label" className="cyber-title px-2 text-[10px] tracking-[0.16em] text-cyan-200 uppercase">Jump to</p>
         {BADGE_SECTION_ITEMS.map((section) => (
           <a
             key={section.id}

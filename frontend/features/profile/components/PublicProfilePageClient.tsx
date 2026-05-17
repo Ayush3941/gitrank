@@ -157,10 +157,10 @@ export function PublicProfilePageClient({
         />
       ) : null}
       <nav
-        aria-label="Public profile quick sections"
+        aria-labelledby="public-profile-jump-nav-label"
         className="glass-panel flex flex-wrap items-center gap-2 border border-primary/20 p-2 lg:sticky lg:top-4 lg:z-20"
       >
-        <p className="cyber-title px-2 text-[10px] tracking-[0.16em] text-cyan-200 uppercase">Jump to</p>
+        <p id="public-profile-jump-nav-label" className="cyber-title px-2 text-[10px] tracking-[0.16em] text-cyan-200 uppercase">Jump to</p>
         {PUBLIC_PROFILE_SECTION_ITEMS.map((section) => (
           <a
             key={section.id}

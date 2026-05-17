@@ -153,11 +153,11 @@ export function QuestsPageClient() {
         </GlowCard>
       ) : null}
       {!isLoading && !isError && quests.length > 0 ? (
-        <section
-          aria-label="Quest cadence quick jump"
+        <nav
+          aria-labelledby="quests-jump-nav-label"
           className="cyber-terminal panel-grid flex flex-wrap items-center gap-2 rounded-[1.2rem] px-3 py-3 xl:sticky xl:top-20 xl:z-20"
         >
-          <span className="px-2 text-xs tracking-[0.14em] text-primary uppercase">Cadence</span>
+          <span id="quests-jump-nav-label" className="px-2 text-xs tracking-[0.14em] text-primary uppercase">Cadence</span>
           {groups.map((group) => {
             const active = group === activeGroup;
             return (
@@ -175,7 +175,7 @@ export function QuestsPageClient() {
               </a>
             );
           })}
-        </section>
+        </nav>
       ) : null}
       {isLoading ? <LoadingState message="Building your skill tree..." /> : null}
       {isError ? (
