@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/shared/AppShell";
+import { JsonLdScript } from "@/components/shared/JsonLdScript";
 import { PRBattleReportPageClient } from "@/features/pr-report/components/PRBattleReportPageClient";
 import { absolutePublicURL } from "@/lib/seo/public-url";
 
@@ -43,9 +44,35 @@ export default async function PRBattleReportPage({
   params: Promise<{ owner: string; repo: string; number: string }>;
 }) {
   const { owner, repo, number } = await params;
+  const path = `/pr/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${encodeURIComponent(number)}`;
+  const url = absolutePublicURL(path);
+  const repoUrl = `https://github.com/${owner}/${repo}`;
+  const prUrl = `${repoUrl}/pull/${number}`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: `GitRank battle report for ${owner}/${repo} #${number}`,
+    url,
+    mainEntity: {
+      "@type": "CreativeWork",
+      name: `${owner}/${repo} #${number}`,
+      url: prUrl,
+      isPartOf: {
+        "@type": "SoftwareSourceCode",
+        name: `${owner}/${repo}`,
+        codeRepository: repoUrl,
+      },
+    },
+    isPartOf: {
+      "@type": "WebSite",
+      name: "GitRank",
+      url: absolutePublicURL("/"),
+    },
+  };
 
   return (
     <AppShell className="max-w-6xl">
+      <JsonLdScript id="public-pr-report-jsonld" data={jsonLd} />
       <PRBattleReportPageClient owner={owner} repo={repo} number={Number(number)} />
     </AppShell>
   );

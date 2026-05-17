@@ -15,6 +15,12 @@
     `reveal`) metadata to include canonical URLs and OpenGraph/Twitter cards
   - switched these routes from static background image previews to the branded
     generated image endpoints (`/opengraph-image`, `/twitter-image`).
+- Added JSON-LD structured data for public share routes:
+  - introduced reusable `JsonLdScript` helper for safe server-rendered
+    `application/ld+json` output
+  - public profile pages now emit `ProfilePage` + `Person` structured data
+  - public PR report pages now emit `WebPage` + `CreativeWork` references to
+    canonical GitHub repository/PR URLs.
 - Settings repository privacy empty-state refinement:
   - `PrivacyRepositoryToggleList` now distinguishes between
     “no repository data synced yet” and “no filter match” states

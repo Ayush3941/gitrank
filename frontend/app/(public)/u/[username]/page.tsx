@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { JsonLdScript } from "@/components/shared/JsonLdScript";
 import { PublicProfilePageClient } from "@/features/profile/components/PublicProfilePageClient";
 import { absolutePublicURL } from "@/lib/seo/public-url";
 
@@ -41,5 +42,30 @@ export default async function PublicProfilePage({
   params: Promise<{ username: string }>;
 }) {
   const { username } = await params;
-  return <PublicProfilePageClient username={username} />;
+  const path = `/u/${encodeURIComponent(username)}`;
+  const url = absolutePublicURL(path);
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    name: `GitRank profile for @${username}`,
+    url,
+    mainEntity: {
+      "@type": "Person",
+      name: username,
+      identifier: username,
+      url,
+    },
+    isPartOf: {
+      "@type": "WebSite",
+      name: "GitRank",
+      url: absolutePublicURL("/"),
+    },
+  };
+
+  return (
+    <>
+      <JsonLdScript id="public-profile-jsonld" data={jsonLd} />
+      <PublicProfilePageClient username={username} />
+    </>
+  );
 }
