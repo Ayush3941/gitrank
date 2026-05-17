@@ -100,6 +100,8 @@
     contribution summary text, and formula/analysis version traceability fields
   - battle report cards now surface confidence percentages and a concise
     quality-priority footer to reinforce how ranking signal is interpreted.
+  - confidence labels now switch to deterministic/fallback/rate-limited mode
+    text when percentage confidence would be misleading.
 - Mobile navigation orientation cue:
   - `MobileNav` now renders a small live current-lane label (`Current lane:
     <route>`) above nav tiles for stronger in-flow orientation on compact

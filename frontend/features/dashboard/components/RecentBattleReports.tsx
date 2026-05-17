@@ -78,7 +78,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
                 </p>
                 <p className="mt-2 inline-flex items-center gap-1 text-xs text-cyan-100">
                   <ShieldCheck className="h-3.5 w-3.5 text-cyan-200" />
-                  Confidence {Math.round(report.aiConfidence * 100)}%
+                  {confidenceLabel(report)}
                 </p>
               </div>
             </div>
@@ -115,4 +115,18 @@ function formatContributionStatus(status: PullRequestAnalysis["contribution"]["s
 
 function formatEvidenceState(status: PullRequestAnalysis["evidenceState"]["status"]): string {
   return status.replaceAll("_", " ");
+}
+
+function confidenceLabel(report: PullRequestAnalysis): string {
+  if (report.evidenceState.deterministicOnly) {
+    return "Deterministic scoring mode";
+  }
+  if (report.evidenceState.aiFallback) {
+    return "AI fallback mode";
+  }
+  if (report.evidenceState.rateLimited) {
+    return "Rate-limited evidence mode";
+  }
+  const confidence = Math.max(0, Math.min(100, Math.round(report.aiConfidence * 100)));
+  return `Confidence ${confidence}%`;
 }
