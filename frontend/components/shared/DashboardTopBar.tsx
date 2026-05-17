@@ -19,6 +19,13 @@ export function DashboardTopBar({
   user: UserProfile;
   autoSyncNote?: AutoSyncNote | null;
 }) {
+  const autoSyncToneClass =
+    autoSyncNote?.tone === "success"
+      ? "text-emerald-100"
+      : autoSyncNote?.tone === "warning"
+        ? "text-amber-100"
+        : "text-slate-200";
+
   return (
     <div className="glass-panel cyber-card cyber-frame panel-grid sticky top-4 z-30 mb-6 rounded-[2rem] px-5 py-4">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -50,21 +57,14 @@ export function DashboardTopBar({
           />
         </div>
       </div>
-      {autoSyncNote ? (
-        <p
-          role="status"
-          aria-live="polite"
-          className={
-            autoSyncNote.tone === "success"
-              ? "mt-3 text-sm text-emerald-100"
-              : autoSyncNote.tone === "warning"
-                ? "mt-3 text-sm text-amber-100"
-                : "mt-3 text-sm text-slate-200"
-          }
-        >
-          {autoSyncNote.message}
-        </p>
-      ) : null}
+      <p
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className={autoSyncNote ? `mt-3 text-sm ${autoSyncToneClass}` : "sr-only"}
+      >
+        {autoSyncNote?.message ?? ""}
+      </p>
     </div>
   );
 }

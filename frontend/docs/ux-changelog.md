@@ -22,6 +22,10 @@
   - success/failure outcomes from auto-sync attempts are surfaced as plain
     language follow-up notes so users can understand whether evidence refresh
     completed or needs attention.
+  - top-bar background-sync status now uses a persistent live region node
+    (`role="status"`, `aria-live="polite"`, `aria-atomic="true"`) so assistive
+    tech can consistently announce complete message updates across sync state
+    transitions.
 - Stale-state banners now include exact “last verified” timestamps:
   - `StaleState` accepts `updatedAt` and renders precise local time alongside
     the relative stale summary
