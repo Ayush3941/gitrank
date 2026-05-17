@@ -78,6 +78,10 @@
   - search by repository or visibility reason
   - All/Public/Hidden quick filter chips
   - reset control and empty-filter state messaging.
+- Query reuse optimization:
+  - dashboard, badges, and quests hooks now reuse cached `profile/me` query
+    data via `ensureQueryData` instead of triggering independent profile fetches
+  - added short stale-time windows to reduce rapid tab-switch network churn.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`
