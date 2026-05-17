@@ -27,6 +27,11 @@ export function LandingPage() {
               <h1 className="neon-title cyber-title max-w-3xl text-4xl font-semibold tracking-tight sm:text-6xl">
                 Turn open-source work into a reputation system.
               </h1>
+              <div className="flex flex-wrap gap-2">
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">For maintainers</span>
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">For contributors</span>
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">For hiring teams</span>
+              </div>
               <p className="cyber-copy readable-measure max-w-[72ch] text-base leading-8 sm:text-lg">
                 GitRank analyzes meaningful PR difficulty, review depth, tests, and project context, then turns that evidence into XP, levels, badges, and shareable profile snapshots.
               </p>
@@ -37,6 +42,9 @@ export function LandingPage() {
                   Connect GitHub
                   <ArrowRight className="h-4 w-4" />
                 </Link>
+              </Button>
+              <Button asChild variant="secondary" size="lg">
+                <Link href="/onboarding/connect-github">See onboarding flow</Link>
               </Button>
             </div>
             <p className="readable-measure max-w-[72ch] text-sm leading-7 text-muted">

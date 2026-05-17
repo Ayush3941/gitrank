@@ -48,6 +48,9 @@
 - Added shared numeric readability utility (`font-variant-numeric:
   tabular-nums`) and applied it to major stat/leaderboard readouts for more
   stable, legible number scanning.
+- Landing hero clarity update: added audience chips (maintainers/contributors/
+  hiring teams) and a direct "See onboarding flow" CTA for faster first-screen
+  comprehension during demos.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`
