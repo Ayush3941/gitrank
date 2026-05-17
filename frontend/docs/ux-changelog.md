@@ -13,6 +13,14 @@
     overrides for better visibility on dense dashboard surfaces.
   - added focused contract coverage in `tests/sync-state-guide.test.ts` for
     failed and syncing CTA routing behavior.
+- Route fallback consistency pass:
+  - added shared `RouteFallbackCard` (`components/shared/RouteFallbackCard.tsx`)
+    and migrated all route-level `not-found` surfaces (global, dashboard,
+    marketing, public profile, public PR report) to the same structure
+  - keeps 404 experiences aligned on hierarchy (eyebrow/title/description) and
+    guarantees each missing route offers clear recovery actions
+  - added `tests/route-fallback-card.test.tsx` to lock fallback action link
+    rendering.
 - Settings and onboarding error-safety hardening:
   - added shared `sanitizeUserFacingError` mapping in
     `lib/ui-error-messages.ts` to prevent raw upstream/network/backend error
