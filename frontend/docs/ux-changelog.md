@@ -365,6 +365,9 @@
   - keeps rank context visible when few public profiles exist
   - shows current slot, promotion target, and fastest climb guidance
   - keeps direct next actions (`contributions`, `quests`) so sparse data still feels actionable.
+- Improved PR report first-glance comprehension:
+  - added a summary verdict strip above section navigation with `Signal tier`, `Evidence confidence`, and `Best next move`
+  - keeps long-form report depth below, while making the immediate interpretation visible within one screen.
 
 ## 2026-05-16
 

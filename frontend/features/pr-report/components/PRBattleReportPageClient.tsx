@@ -103,6 +103,19 @@ export function PRBattleReportPageClient({
   const suggestedQuest = data.suggestedQuest;
   const evidenceState = data.evidenceState;
   const evidenceAnchored = evidenceState.status === "complete" || evidenceState.status === "deterministic_only";
+  const signalTier =
+    data.contribution.xpEarned >= 250
+      ? "High signal"
+      : data.contribution.xpEarned >= 100
+        ? "Medium signal"
+        : "Early signal";
+  const signalDetail = `${data.contribution.category} • ${data.contribution.changedFilesCount} files changed`;
+  const evidenceDetail = evidenceAnchored
+    ? "Score is anchored by complete or deterministic evidence."
+    : "Score is directional while missing evidence resolves.";
+  const nextMoveTitle = suggestedQuest?.title || "Open contribution lane";
+  const nextMoveDetail = suggestedQuest?.whyRecommended
+    || "Use this report to target stronger review depth, tests, and impact signals in the next PR.";
 
   return (
     <div className="space-y-6">
@@ -126,6 +139,23 @@ export function PRBattleReportPageClient({
         {data.sourceUpdatedAt ? formatRelativeDays(data.sourceUpdatedAt) : "unknown"}
         {data.isStale ? " • report snapshot is stale" : ""}
       </div>
+      <GlowCard className="grid gap-3 md:grid-cols-3">
+        <VerdictTile
+          title="Signal tier"
+          value={signalTier}
+          detail={signalDetail}
+        />
+        <VerdictTile
+          title="Evidence confidence"
+          value={evidenceAnchored ? "Anchored" : "Partial"}
+          detail={evidenceDetail}
+        />
+        <VerdictTile
+          title="Best next move"
+          value={nextMoveTitle}
+          detail={nextMoveDetail}
+        />
+      </GlowCard>
       <nav
         aria-label="PR report quick sections"
         className="glass-panel flex flex-wrap items-center gap-2 border border-primary/20 p-2 lg:sticky lg:top-4 lg:z-20"
@@ -289,6 +319,29 @@ export function PRBattleReportPageClient({
           </GlowCard>
         </section>
       ) : null}
+    </div>
+  );
+}
+
+function VerdictTile({
+  title,
+  value,
+  detail,
+}: {
+  title: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <div className="neon-surface space-y-2 px-4 py-3">
+      <p className="text-xs tracking-[0.22em] text-primary uppercase">{title}</p>
+      <p className="break-anywhere text-lg font-semibold text-white">{value}</p>
+      <ExpandableText
+        text={detail}
+        lines={3}
+        minLengthForToggle={130}
+        textClassName="break-anywhere text-xs leading-6 text-muted"
+      />
     </div>
   );
 }
