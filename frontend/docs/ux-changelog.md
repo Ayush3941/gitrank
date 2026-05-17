@@ -380,6 +380,9 @@
 - Fixed contribution-page quick-jump integrity under sparse data:
   - ensured `Repositories`, `Timeline`, and `Cards` sections always render when page data is loaded
   - replaced hidden-section states with explicit fallback copy so quick links never target missing anchors.
+- Added recovery CTAs to contribution sparse-state panels:
+  - repository/timeline/highlight/card fallback states now include direct next actions (`sync settings`, `quest lane`, `reset filters`)
+  - keeps every fallback state actionable instead of static explanatory text.
 
 ## 2026-05-16
 

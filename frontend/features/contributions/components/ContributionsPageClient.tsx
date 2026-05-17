@@ -329,8 +329,11 @@ export function ContributionsPageClient() {
               ))}
             </div>
           ) : (
-            <GlowCard className="neon-surface border-dashed border-cyan-300/24 p-4 text-sm text-muted">
-              No repository contribution summary is available in this snapshot yet.
+            <GlowCard className="neon-surface space-y-3 border-dashed border-cyan-300/24 p-4 text-sm text-muted">
+              <p>No repository contribution summary is available in this snapshot yet.</p>
+              <Button asChild variant="secondary" size="sm">
+                <Link href="/dashboard/settings">Open sync settings</Link>
+              </Button>
             </GlowCard>
           )}
         </section>
@@ -357,9 +360,14 @@ export function ContributionsPageClient() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted">
-                Timeline points are not available yet for this filtered evidence window.
-              </p>
+              <div className="space-y-3">
+                <p className="text-sm text-muted">
+                  Timeline points are not available yet for this filtered evidence window.
+                </p>
+                <Button asChild variant="secondary" size="sm">
+                  <Link href="/dashboard/settings">Refresh contribution sync</Link>
+                </Button>
+              </div>
             )}
           </GlowCard>
           <GlowCard className="space-y-4 border border-cyan-300/20 bg-gradient-to-br from-slate-950/88 to-cyan-950/25">
@@ -375,9 +383,14 @@ export function ContributionsPageClient() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted">
-                No high-signal highlights are available yet in this snapshot.
-              </p>
+              <div className="space-y-3">
+                <p className="text-sm text-muted">
+                  No high-signal highlights are available yet in this snapshot.
+                </p>
+                <Button asChild variant="secondary" size="sm">
+                  <Link href="/dashboard/quests">Open quest lane</Link>
+                </Button>
+              </div>
             )}
           </GlowCard>
         </section>
@@ -391,8 +404,16 @@ export function ContributionsPageClient() {
               isBusy={isFiltering}
             />
           ) : (
-            <GlowCard className="neon-surface border-dashed border-primary/24 p-4 text-sm text-muted">
-              No contribution cards match this filter set yet. Reset filters or widen the PR evidence window.
+            <GlowCard className="neon-surface space-y-3 border-dashed border-primary/24 p-4 text-sm text-muted">
+              <p>No contribution cards match this filter set yet. Reset filters or widen the PR evidence window.</p>
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" size="sm" variant="secondary" onClick={handleResetFilters}>
+                  Reset filters
+                </Button>
+                <Button asChild size="sm" variant="ghost">
+                  <Link href="/dashboard/settings">Open sync settings</Link>
+                </Button>
+              </div>
             </GlowCard>
           )}
         </section>
