@@ -2,6 +2,11 @@
 
 ## 2026-05-17
 
+- Added dedicated marketing route fallbacks:
+  - new `app/(marketing)/error.tsx` and `app/(marketing)/not-found.tsx`
+    with direct login/onboarding recovery actions
+  - marketing route errors now emit `error_state.viewed` analytics events and
+    use `unstable_retry()` when available for stronger retry behavior.
 - Added route-specific public error/not-found boundaries:
   - `app/(public)/u/[username]/error.tsx` + `not-found.tsx`
   - `app/(public)/pr/[owner]/[repo]/[number]/error.tsx` + `not-found.tsx`
