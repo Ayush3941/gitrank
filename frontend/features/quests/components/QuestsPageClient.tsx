@@ -158,23 +158,26 @@ export function QuestsPageClient() {
           className="cyber-terminal panel-grid flex flex-wrap items-center gap-2 rounded-[1.2rem] px-3 py-3 xl:sticky xl:top-20 xl:z-20"
         >
           <span id="quests-jump-nav-label" className="px-2 text-xs tracking-[0.14em] text-primary uppercase">Cadence</span>
-          {groups.map((group) => {
-            const active = group === activeGroup;
-            return (
-              <a
-                key={group}
-                href={`#${QUEST_SECTION_IDS[group]}`}
-                className={
-                  active
-                    ? "neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold"
-                    : "neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs"
-                }
-                aria-current={active ? "location" : undefined}
-              >
-                {labelForGroup(group)}
-              </a>
-            );
-          })}
+          <ul role="list" className="flex flex-wrap gap-2">
+            {groups.map((group) => {
+              const active = group === activeGroup;
+              return (
+                <li key={group}>
+                  <a
+                    href={`#${QUEST_SECTION_IDS[group]}`}
+                    className={
+                      active
+                        ? "neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold"
+                        : "neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs"
+                    }
+                    aria-current={active ? "location" : undefined}
+                  >
+                    {labelForGroup(group)}
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
         </nav>
       ) : null}
       {isLoading ? <LoadingState message="Building your skill tree..." /> : null}

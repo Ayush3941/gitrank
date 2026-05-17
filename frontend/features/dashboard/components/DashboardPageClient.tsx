@@ -242,23 +242,26 @@ export function DashboardPageClient() {
           <Waypoints className="h-3.5 w-3.5" />
           Jump
         </span>
-        {DASHBOARD_SECTION_NAV.map((section) => {
-          const active = section.id === activeSection;
-          return (
-            <a
-              key={section.id}
-              className={
-                active
-                  ? "neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold"
-                  : "neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs"
-              }
-              href={`#${section.id}`}
-              aria-current={active ? "location" : undefined}
-            >
-              {section.label}
-            </a>
-          );
-        })}
+        <ul role="list" className="flex flex-wrap gap-2">
+          {DASHBOARD_SECTION_NAV.map((section) => {
+            const active = section.id === activeSection;
+            return (
+              <li key={section.id}>
+                <a
+                  className={
+                    active
+                      ? "neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold"
+                      : "neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs"
+                  }
+                  href={`#${section.id}`}
+                  aria-current={active ? "location" : undefined}
+                >
+                  {section.label}
+                </a>
+              </li>
+            );
+          })}
+        </ul>
       </nav>
       <section id="dashboard-hero" className="scroll-mt-24">
         <DashboardHeroRankCard

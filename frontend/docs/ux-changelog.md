@@ -395,6 +395,9 @@
 - Added leaderboard snapshot context chips near lane tabs:
   - surface active row count, time window, and formula version before arena cards
   - improves immediate understanding of what dataset each tab is showing.
+- Upgraded jump-rail structure semantics:
+  - converted jump-link groups to list markup (`ul/li`) across all major dashboard rails
+  - retains current visual treatment while improving assistive navigation context.
 
 ## 2026-05-16
 

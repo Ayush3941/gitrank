@@ -135,20 +135,23 @@ export function LeaderboardPageClient() {
         className="glass-panel flex flex-wrap items-center gap-2 border border-primary/20 p-2 xl:sticky xl:top-20 xl:z-20"
       >
         <p id="leaderboard-jump-nav-label" className="cyber-title px-2 text-[10px] tracking-[0.16em] text-cyan-200 uppercase">Jump to</p>
-        {LEADERBOARD_SECTION_ITEMS.map((section) => (
-          <a
-            key={section.id}
-            href={`#${section.id}`}
-            aria-current={activeSection === section.id ? "location" : undefined}
-            className={
-              activeSection === section.id
-                ? "focus-ring cyber-title border border-primary/45 bg-primary/16 px-3 py-1.5 text-[11px] tracking-[0.16em] text-white uppercase"
-                : "focus-ring cyber-title border border-transparent px-3 py-1.5 text-[11px] tracking-[0.16em] text-slate-200 uppercase hover:border-primary/28 hover:bg-primary/10"
-            }
-          >
-            {section.label}
-          </a>
-        ))}
+        <ul role="list" className="flex flex-wrap gap-2">
+          {LEADERBOARD_SECTION_ITEMS.map((section) => (
+            <li key={section.id}>
+              <a
+                href={`#${section.id}`}
+                aria-current={activeSection === section.id ? "location" : undefined}
+                className={
+                  activeSection === section.id
+                    ? "focus-ring cyber-title border border-primary/45 bg-primary/16 px-3 py-1.5 text-[11px] tracking-[0.16em] text-white uppercase"
+                    : "focus-ring cyber-title border border-transparent px-3 py-1.5 text-[11px] tracking-[0.16em] text-slate-200 uppercase hover:border-primary/28 hover:bg-primary/10"
+                }
+              >
+                {section.label}
+              </a>
+            </li>
+          ))}
+        </ul>
       </nav>
       <section id="leaderboard-filters" className="scroll-mt-24 space-y-3">
         <Tabs value={tab} onValueChange={handleTabChange}>

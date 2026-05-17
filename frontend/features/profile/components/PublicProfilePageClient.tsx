@@ -161,20 +161,23 @@ export function PublicProfilePageClient({
         className="glass-panel flex flex-wrap items-center gap-2 border border-primary/20 p-2 lg:sticky lg:top-4 lg:z-20"
       >
         <p id="public-profile-jump-nav-label" className="cyber-title px-2 text-[10px] tracking-[0.16em] text-cyan-200 uppercase">Jump to</p>
-        {PUBLIC_PROFILE_SECTION_ITEMS.map((section) => (
-          <a
-            key={section.id}
-            href={`#${section.id}`}
-            aria-current={activeSection === section.id ? "location" : undefined}
-            className={
-              activeSection === section.id
-                ? "focus-ring cyber-title border border-primary/45 bg-primary/16 px-3 py-1.5 text-[11px] tracking-[0.16em] text-white uppercase"
-                : "focus-ring cyber-title border border-transparent px-3 py-1.5 text-[11px] tracking-[0.16em] text-slate-200 uppercase hover:border-primary/28 hover:bg-primary/10"
-            }
-          >
-            {section.label}
-          </a>
-        ))}
+        <ul role="list" className="flex flex-wrap gap-2">
+          {PUBLIC_PROFILE_SECTION_ITEMS.map((section) => (
+            <li key={section.id}>
+              <a
+                href={`#${section.id}`}
+                aria-current={activeSection === section.id ? "location" : undefined}
+                className={
+                  activeSection === section.id
+                    ? "focus-ring cyber-title border border-primary/45 bg-primary/16 px-3 py-1.5 text-[11px] tracking-[0.16em] text-white uppercase"
+                    : "focus-ring cyber-title border border-transparent px-3 py-1.5 text-[11px] tracking-[0.16em] text-slate-200 uppercase hover:border-primary/28 hover:bg-primary/10"
+                }
+              >
+                {section.label}
+              </a>
+            </li>
+          ))}
+        </ul>
       </nav>
       <section id="public-profile-overview" className="scroll-mt-24 space-y-6">
         <PublicProfileHero
