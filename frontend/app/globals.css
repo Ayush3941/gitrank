@@ -587,6 +587,10 @@ select {
   max-width: 72ch;
 }
 
+.numeric-readout {
+  font-variant-numeric: tabular-nums;
+}
+
 .cyber-link {
   color: rgb(var(--text-soft));
   transition:

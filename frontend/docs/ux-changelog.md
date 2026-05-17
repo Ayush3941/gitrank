@@ -45,6 +45,9 @@
     read" vs "what is not read by default".
 - Reveal flow now includes a "What to do next" 3-step action lane and direct
   CTA to contribution drill-down, reducing post-onboarding dead-end behavior.
+- Added shared numeric readability utility (`font-variant-numeric:
+  tabular-nums`) and applied it to major stat/leaderboard readouts for more
+  stable, legible number scanning.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`

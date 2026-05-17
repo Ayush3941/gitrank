@@ -18,8 +18,8 @@ export function StatCard({
         <span className="text-sm">{label}</span>
         <span className="hud-pill rounded-2xl p-2">{icon}</span>
       </div>
-      <div className="text-3xl font-semibold tracking-tight">{value}</div>
-      <p className="text-sm text-muted">{detail}</p>
+      <div className="numeric-readout text-3xl font-semibold tracking-tight">{value}</div>
+      <p className="text-sm leading-7 text-muted">{detail}</p>
     </GlowCard>
   );
 }

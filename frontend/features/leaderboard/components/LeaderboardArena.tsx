@@ -54,7 +54,7 @@ export function LeaderboardArena({ snapshot }: { snapshot: LeaderboardSnapshot }
           >
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex items-center gap-4">
-                <div className="neon-surface flex h-14 w-14 items-center justify-center rounded-3xl text-xl font-semibold text-white">
+                <div className="neon-surface numeric-readout flex h-14 w-14 items-center justify-center rounded-3xl text-xl font-semibold text-white">
                   #{row.rank}
                 </div>
                 <div>
@@ -151,7 +151,7 @@ function Metric({
   return (
     <div className="neon-metric rounded-3xl px-4 py-3">
       <p className="text-xs tracking-[0.24em] text-muted uppercase">{label}</p>
-      <div className="mt-2 flex items-center gap-2 text-xl font-semibold text-white">
+      <div className="numeric-readout mt-2 flex items-center gap-2 text-xl font-semibold text-white">
         <span>{value}</span>
         {icon}
       </div>
