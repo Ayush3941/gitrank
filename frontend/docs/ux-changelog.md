@@ -57,6 +57,15 @@
   - for `@media (any-pointer: coarse)`, body background now uses
     `background-attachment: scroll` (instead of fixed) with top-centered
     positioning to reduce heavy repaint pressure on constrained devices.
+- Leaderboard progression context upgrade:
+  - added a personalized `Your arena mission` panel when the current user is
+    present in the active lane (rank, focus lane, gap-to-leader, movement, and
+    progress-to-next-band)
+  - upgraded the zero-row leaderboard state with a non-fake rank-band preview
+    card and explicit unlock steps so the tab stays useful before live
+    participants appear
+  - included deterministic progress calculation helper for next-band progress,
+    bounded to safe 0-100 output.
 - Sync freshness readability/traceability upgrade:
   - `formatRelativeDays` now reports recent sync age with minute/hour precision
     (for example `2m ago`, `3h ago`) before day-level buckets
