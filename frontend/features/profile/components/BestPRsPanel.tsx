@@ -16,7 +16,15 @@ export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
       <div className="space-y-3">
         {reports.length === 0 ? (
           <div className="neon-surface rounded-[1.75rem] border-dashed border-primary/24 p-4 text-sm text-muted">
-            Exact pull request evidence is hidden on this profile or there are no scored contributions yet.
+            <p>Exact pull request evidence is hidden on this profile or there are no scored contributions yet.</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button asChild variant="secondary" size="sm">
+                <Link href="/dashboard/contributions">Open contributions lane</Link>
+              </Button>
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/dashboard/settings">Open visibility settings</Link>
+              </Button>
+            </div>
           </div>
         ) : (
           reports.slice(0, 5).map((report) => (

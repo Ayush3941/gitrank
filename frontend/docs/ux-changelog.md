@@ -383,6 +383,9 @@
 - Added recovery CTAs to contribution sparse-state panels:
   - repository/timeline/highlight/card fallback states now include direct next actions (`sync settings`, `quest lane`, `reset filters`)
   - keeps every fallback state actionable instead of static explanatory text.
+- Added action paths to public-profile sparse evidence panels:
+  - `Best PRs` empty state now links to contribution lane and visibility settings
+  - top-repositories empty state now offers in-page jumps back to summary or PR evidence.
 
 ## 2026-05-16
 

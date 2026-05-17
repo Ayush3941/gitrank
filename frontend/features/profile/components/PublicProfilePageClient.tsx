@@ -12,6 +12,7 @@ import { TimelineChart } from "@/components/shared/TimelineChart";
 import { RarityBadge } from "@/components/shared/RarityBadge";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
+import { Button } from "@/components/ui/button";
 import { BestPRsPanel } from "@/features/profile/components/BestPRsPanel";
 import { PublicProfileHero } from "@/features/profile/components/PublicProfileHero";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
@@ -250,7 +251,15 @@ export function PublicProfilePageClient({
             <div className="space-y-3">
               {data.topRepositories.length === 0 ? (
                 <div className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
-                  Repository-level signal is not available on this snapshot yet.
+                  <p>Repository-level signal is not available on this snapshot yet.</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Button asChild variant="secondary" size="sm">
+                      <a href="#public-profile-best-prs">Review best PR evidence</a>
+                    </Button>
+                    <Button asChild variant="ghost" size="sm">
+                      <a href="#public-profile-overview">Back to profile summary</a>
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 data.topRepositories.slice(0, 4).map((repository) => (
