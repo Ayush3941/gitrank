@@ -341,6 +341,10 @@
 - Refined dashboard navigation formatting for clearer hierarchy:
   - strengthened inactive text contrast in sidebar and mobile nav
   - tightened active-state styling and added a top active indicator on mobile cards.
+- Reworked dashboard top information architecture into a summary-first snapshot lane:
+  - added `Snapshot` jump section after hero with a bento-style split between `Immediate next move` and key KPIs
+  - introduced deterministic next-action guidance (recover sync, first sync, continue active quest, or review contribution cards)
+  - kept drill-down depth below the snapshot lane to reduce first-screen cognitive load.
 
 ## 2026-05-16
 

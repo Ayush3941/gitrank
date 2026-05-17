@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Activity, Flame, Medal, ShieldCheck, Swords, Waypoints } from "lucide-react";
+import { Activity, ArrowRight, Flame, Medal, ShieldCheck, Sparkles, Swords, Waypoints } from "lucide-react";
 import { DashboardHeroRankCard } from "@/features/dashboard/components/DashboardHeroRankCard";
 import { ContributionTimelineCard } from "@/features/dashboard/components/ContributionTimelineCard";
 import { CurrentLeagueCard } from "@/features/dashboard/components/CurrentLeagueCard";
@@ -25,6 +25,7 @@ import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics"
 
 const DASHBOARD_SECTION_NAV = [
   { id: "dashboard-hero", label: "Hero" },
+  { id: "dashboard-snapshot", label: "Snapshot" },
   { id: "dashboard-league", label: "League" },
   { id: "dashboard-skills", label: "Skills" },
   { id: "dashboard-reports", label: "Reports" },
@@ -51,6 +52,41 @@ export function DashboardPageClient() {
     contributionWindowCap > 0
       ? Math.round((contributionWindowCount / contributionWindowCap) * 100)
       : 0;
+  const nextAction = useMemo(() => {
+    if (!user) {
+      return {
+        href: "/dashboard/settings",
+        label: "Open sync and privacy settings",
+        detail: "Reconnect GitHub or refresh your profile data to continue.",
+      };
+    }
+    if (user.syncStatus.state === "failed" || user.syncStatus.state === "rate_limited") {
+      return {
+        href: "/dashboard/settings",
+        label: "Recover sync pipeline",
+        detail: "GitHub evidence is blocked. Retry sync and inspect account connection settings.",
+      };
+    }
+    if (user.mergedPrCount <= 0) {
+      return {
+        href: "/dashboard/settings",
+        label: "Run first GitHub sync",
+        detail: "Bring your merged PR history into GitRank so score, skills, and quests can activate.",
+      };
+    }
+    if (user.quests.some((quest) => quest.status === "Active")) {
+      return {
+        href: "/dashboard/quests",
+        label: "Continue active quest",
+        detail: "Your fastest rank-up path is currently in the quest lane with verified weak-skill targets.",
+      };
+    }
+    return {
+      href: "/dashboard/contributions",
+      label: "Review highest-impact PR cards",
+      detail: "Inspect battle reports and impact narratives to optimize your next contribution cycle.",
+    };
+  }, [user]);
   const abraPayload = useMemo(() => {
     if (!user) {
       return null;
@@ -231,23 +267,39 @@ export function DashboardPageClient() {
           aiMode={abraInsights.data?.generatedBy}
         />
       </section>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-        <StatCard label="GitRank score" value={user.gitRankScore} detail="Weighted by impact, reviews, tests, and repository context." icon={<Medal className="h-5 w-5 text-primary" />} />
-        <StatCard label="Merged PRs" value={user.mergedPrCount} detail="Only verified merged work receives full progression value." icon={<ShieldCheck className="h-5 w-5 text-primary" />} />
-        <StatCard
-          label="PR evidence window"
-          value={`${contributionWindowCount}/${contributionWindowCap}`}
-          detail={`Current profile includes ${contributionWindowFillRate}% of the capped recent PR history window.`}
-          icon={<Activity className="h-5 w-5 text-primary" />}
-        />
-        <StatCard
-          label="Current streak"
-          value={`${streak.currentStreakDays}d`}
-          detail={`Best streak ${streak.bestStreakDays} days • active days this year ${streak.activeDaysThisYear}.`}
-          icon={<Flame className="h-5 w-5 text-primary" />}
-        />
-        <StatCard label="Reviewed PRs" value={user.reviewedPrCount} detail="Review participation increases trust and unlocks deeper quests." icon={<Activity className="h-5 w-5 text-primary" />} />
-      </div>
+      <section id="dashboard-snapshot" className="scroll-mt-24 grid gap-4 xl:grid-cols-[1.25fr,1fr]">
+        <div className="glass-panel cyber-card cyber-frame space-y-4 p-5 sm:p-6">
+          <p className="text-xs tracking-[0.22em] text-primary uppercase">Immediate next move</p>
+          <h2 className="text-2xl font-semibold text-white">{nextAction.label}</h2>
+          <p className="readable-measure text-sm leading-7 text-muted">{nextAction.detail}</p>
+          <div className="flex flex-wrap gap-2 pt-1">
+            <Button asChild size="sm">
+              <Link href={nextAction.href}>
+                Open lane
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button asChild variant="secondary" size="sm">
+              <Link href="/dashboard/contributions">Inspect contribution cards</Link>
+            </Button>
+          </div>
+          <p className="inline-flex items-center gap-2 text-xs text-cyan-100/88">
+            <Sparkles className="h-3.5 w-3.5 text-cyan-200" />
+            Dashboard follows a summary-first flow: snapshot, then drill-down panels.
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <StatCard label="GitRank score" value={user.gitRankScore} detail="Weighted by impact, reviews, tests, and repository context." icon={<Medal className="h-5 w-5 text-primary" />} />
+          <StatCard label="Merged PRs" value={user.mergedPrCount} detail="Only verified merged work receives full progression value." icon={<ShieldCheck className="h-5 w-5 text-primary" />} />
+          <StatCard
+            label="PR evidence window"
+            value={`${contributionWindowCount}/${contributionWindowCap}`}
+            detail={`Current profile includes ${contributionWindowFillRate}% of the capped recent PR history window.`}
+            icon={<Activity className="h-5 w-5 text-primary" />}
+          />
+          <StatCard label="Reviewed PRs" value={user.reviewedPrCount} detail="Review participation increases trust and unlocks deeper quests." icon={<Activity className="h-5 w-5 text-primary" />} />
+        </div>
+      </section>
       <div className="grid gap-6 xl:grid-cols-[0.92fr,1.08fr]">
         <div className="space-y-6">
           <section id="dashboard-league" className="scroll-mt-24">
@@ -277,12 +329,20 @@ export function DashboardPageClient() {
           <ContributionTimelineCard user={user} />
         </section>
       </div>
-      <StatCard
-        label="Anti-spam rule"
-        value="Meaning over volume"
-        detail="Spam PRs do not make you powerful here. Thin unreviewed work gets penalized or capped."
-        icon={<Swords className="h-5 w-5 text-primary" />}
-      />
+      <div className="grid gap-4 md:grid-cols-2">
+        <StatCard
+          label="Anti-spam rule"
+          value="Meaning over volume"
+          detail="Spam PRs do not make you powerful here. Thin unreviewed work gets penalized or capped."
+          icon={<Swords className="h-5 w-5 text-primary" />}
+        />
+        <StatCard
+          label="Current streak"
+          value={`${streak.currentStreakDays}d`}
+          detail={`Best streak ${streak.bestStreakDays} days • active days this year ${streak.activeDaysThisYear}.`}
+          icon={<Flame className="h-5 w-5 text-primary" />}
+        />
+      </div>
     </div>
   );
 }
