@@ -302,7 +302,7 @@ export function BadgesPageClient() {
             <p id={badgesFilterStatusId} role="status" aria-live="polite" className="text-xs tracking-[0.2em] text-fuchsia-200 uppercase">
               Showing {filtered.length} of {totalCount} badges
             </p>
-            <div className="flex flex-wrap gap-2 text-xs">
+            <div className="flex flex-wrap items-center gap-2 text-xs">
               {rarity !== "All" ? (
                 <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
                   Rarity: {rarity}
@@ -313,17 +313,23 @@ export function BadgesPageClient() {
                   State: {visibility}
                 </span>
               ) : null}
+              {!canResetFilters ? (
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+                  No active filters
+                </span>
+              ) : null}
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={handleResetFilters}
+                disabled={!canResetFilters}
+                title={canResetFilters ? "Reset active filters" : "No filters to reset"}
+              >
+                Reset filters
+              </Button>
             </div>
           </div>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            onClick={handleResetFilters}
-            disabled={!canResetFilters}
-          >
-            Reset filters
-          </Button>
         </div>
         <div className="grid gap-3 md:grid-cols-2">
           <Select value={rarity} onValueChange={(value) => handleRarityChange(value as BadgeRarity | "All")}>

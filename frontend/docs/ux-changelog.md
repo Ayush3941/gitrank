@@ -419,6 +419,9 @@
 - Added active-filter chips to contribution controls:
   - contribution filter bar now shows currently applied category/search/sort chips
   - reduces hidden filter state and makes result changes easier to diagnose quickly.
+- Tightened badge filter control-bar grouping:
+  - aligned active filter chips and reset action into one control cluster
+  - added explicit `No active filters` state chip for immediate context when filters are clear.
 
 ## 2026-05-16
 
