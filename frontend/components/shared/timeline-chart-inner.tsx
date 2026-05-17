@@ -32,7 +32,7 @@ export function TimelineChartInner({ data }: { data: Array<{ label: string; xp: 
           contentStyle={{
             background: "rgb(var(--card-2) / 0.95)",
             border: "1px solid rgb(var(--primary) / 0.28)",
-            borderRadius: "0.6rem",
+            borderRadius: "var(--radius-universal)",
             color: "rgb(var(--text-strong))",
           }}
           labelStyle={{ color: "rgb(var(--text-strong))", fontWeight: 600 }}

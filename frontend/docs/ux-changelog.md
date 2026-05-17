@@ -345,6 +345,11 @@
   - added `Snapshot` jump section after hero with a bento-style split between `Immediate next move` and key KPIs
   - introduced deterministic next-action guidance (recover sync, first sync, continue active quest, or review contribution cards)
   - kept drill-down depth below the snapshot lane to reduce first-screen cognitive load.
+- Removed a remaining non-uniform radius override in chart tooltip rendering:
+  - `timeline-chart-inner` tooltip now uses `var(--radius-universal)` instead of a fixed `0.6rem`.
+- Added recovery actions for empty quest cadence sections:
+  - empty daily/weekly/skill lanes now link directly to contribution drill-down
+  - empty long-term lane links to sync/settings recovery instead of a dead-end message.
 
 ## 2026-05-16
 
