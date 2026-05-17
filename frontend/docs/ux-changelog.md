@@ -73,6 +73,11 @@
   - live "showing X of Y" status
   - one-click reset filters action
   - transitions for filter state updates to keep interactions smooth.
+- Repository privacy panel now supports large account lists better:
+  - live total/public/hidden counters
+  - search by repository or visibility reason
+  - All/Public/Hidden quick filter chips
+  - reset control and empty-filter state messaging.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`
