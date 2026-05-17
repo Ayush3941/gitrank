@@ -479,7 +479,8 @@ export function SettingsPageClient() {
             <p className="text-xs tracking-[0.24em] text-primary uppercase">Keyboard controls</p>
             <h3 className="mt-2 text-xl font-semibold text-white">Display shortcuts</h3>
             <p className="mt-2 text-sm leading-6 text-muted">
-              Enables global display shortcuts when focus is not in an editable field.
+              Enables global display shortcuts when focus is not in an editable field. Navigation shortcuts
+              like <kbd>Ctrl/Cmd + K</kbd> and dashboard shortcut help <kbd>?</kbd> remain available.
             </p>
           </div>
           <Switch
@@ -543,6 +544,7 @@ export function SettingsPageClient() {
             </p>
             <p className="mt-2 text-xs leading-6 text-slate-200">
               Keyboard shortcuts: <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> toggles theme, and <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd> toggles text size.
+              {" "}Use <kbd>?</kbd> on dashboard pages for the full shortcut reference.
             </p>
           </div>
           <div className="grid w-full gap-2 sm:w-auto sm:min-w-[18rem]">

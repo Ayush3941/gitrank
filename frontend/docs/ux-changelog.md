@@ -9,6 +9,8 @@
     (non-editable-field safe) for fast discovery
   - wired quick actions to include `Open keyboard shortcuts help` in a
     dedicated `Help` group so shortcut discovery is reachable from `Ctrl/Cmd+K`.
+  - updated Settings display copy to clarify which shortcuts are always
+    available (`Ctrl/Cmd+K`, `?`) versus gated display shortcuts.
 - Dashboard quick-actions command palette:
   - added `DashboardQuickActions` (`components/shared/DashboardQuickActions.tsx`)
     with searchable keyboard-first actions (`Ctrl/Cmd+K`) for route jumps,
