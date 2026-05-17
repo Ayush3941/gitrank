@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/
 import { GlowCard } from "@/components/shared/GlowCard";
 import { RarityBadge } from "@/components/shared/RarityBadge";
 import { SignalIcon } from "@/components/shared/SignalIcon";
+import { Progress } from "@/components/ui/progress";
 import type { BadgeStory } from "@/lib/ai/abra-insights-types";
 import { formatDate } from "@/lib/formatters";
 import type { Badge } from "@/types/gitrank";
@@ -69,7 +70,10 @@ export function BadgeDetailDialog({
               </p>
             ) : null}
             {typeof badge.progress === "number" ? (
-              <p className="text-sm text-primary">{badge.progress}% progress</p>
+              <div className="space-y-2">
+                <Progress value={badge.progress} />
+                <p className="text-sm text-primary">{badge.progress}% progress</p>
+              </div>
             ) : null}
           </GlowCard>
           {story ? (

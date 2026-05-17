@@ -46,6 +46,13 @@
     then higher XP reward to keep next actions clear and stable
   - `QuestCard` progress math now guards zero/invalid goals to prevent NaN or
     overflow rendering from malformed backend rows.
+- Badge card narrative clarity pass:
+  - badge grid cards now frame `why earned` (description) separately from the
+    `trigger pattern` (unlock condition) for clearer achievement storytelling
+  - locked badges now include visual progress bars directly on cards (not only
+    percentage text) and keep deterministic fallback when no story payload exists
+  - badge detail dialog now renders progress with a bar + numeric value for
+    better scanability during demos and reviews.
 - Sync freshness readability/traceability upgrade:
   - `formatRelativeDays` now reports recent sync age with minute/hour precision
     (for example `2m ago`, `3h ago`) before day-level buckets

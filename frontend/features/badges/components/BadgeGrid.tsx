@@ -4,6 +4,7 @@ import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { RarityBadge } from "@/components/shared/RarityBadge";
 import { SignalIcon } from "@/components/shared/SignalIcon";
+import { Progress } from "@/components/ui/progress";
 import { BadgeDetailDialog } from "@/features/badges/components/BadgeDetailDialog";
 import type { BadgeStory } from "@/lib/ai/abra-insights-types";
 import { formatDate } from "@/lib/formatters";
@@ -31,13 +32,23 @@ export function BadgeGrid({
               <div>
                 <h2 className="text-xl font-semibold text-white">{badge.name}</h2>
                 <ExpandableText
-                  text={badge.unlockCondition}
+                  text={badge.description}
                   lines={3}
                   minLengthForToggle={120}
                   className="mt-2"
                   textClassName="text-sm text-muted"
-                  showMoreLabel="More"
-                  showLessLabel="Less"
+                  showMoreLabel="Read why"
+                  showLessLabel="Hide why"
+                />
+                <p className="mt-2 text-xs tracking-[0.2em] text-primary uppercase">Trigger pattern</p>
+                <ExpandableText
+                  text={badge.unlockCondition}
+                  lines={2}
+                  minLengthForToggle={120}
+                  className="mt-1"
+                  textClassName="text-xs text-slate-200/84"
+                  showMoreLabel="Read trigger"
+                  showLessLabel="Hide trigger"
                 />
               </div>
               <div className="flex items-center justify-between text-sm">
@@ -51,6 +62,12 @@ export function BadgeGrid({
                   </span>
                 ) : null}
               </div>
+              {!badge.unlocked ? (
+                <div className="space-y-1">
+                  <Progress value={badge.progress ?? 0} />
+                  <p className="text-xs text-slate-300">{badge.progress ?? 0}% toward unlock</p>
+                </div>
+              ) : null}
               {stories?.[badge.id] ? (
                 <div className="neon-surface rounded-xl border-fuchsia-300/24 px-3 py-2 text-xs text-slate-200/86">
                   <div className="flex items-center justify-end">
