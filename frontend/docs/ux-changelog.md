@@ -93,6 +93,13 @@
     rendering when backend rows provide zero/invalid goals
   - `BadgeShelf` now shows unlocked completion progress (`x/y`, percentage, bar)
     and renders locked badge progress with bars instead of text-only percentages.
+- Dashboard battle-report readability pass:
+  - `RecentBattleReports` now sorts rows by XP impact and exposes report count
+    context chips for quicker scanability
+  - each report card now shows clear category/difficulty/status/evidence chips,
+    contribution summary text, and formula/analysis version traceability fields
+  - battle report cards now surface confidence percentages and a concise
+    quality-priority footer to reinforce how ranking signal is interpreted.
 - Sync freshness readability/traceability upgrade:
   - `formatRelativeDays` now reports recent sync age with minute/hour precision
     (for example `2m ago`, `3h ago`) before day-level buckets
