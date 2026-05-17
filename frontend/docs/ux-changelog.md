@@ -20,6 +20,11 @@
     “no repository data synced yet” and “no filter match” states
   - added direct recovery actions in empty states (`Reset filters`, `Run sync
     in account section`) to avoid dead-end outcomes inside Settings.
+  - improved repository filter accessibility semantics by wiring
+    `aria-describedby` status context for search/filter controls and adding
+    grouped filter labeling.
+  - added regression coverage in `tests/accessibility-controls.test.tsx` for
+    the zero-repository empty-state action path.
 - Removed remaining dashboard dead-end empty panels:
   - `QuestPanel`, `RecentBattleReports`, and `BadgeShelf` now include direct
     recovery actions (sync settings, contribution drill-down, badge forge)

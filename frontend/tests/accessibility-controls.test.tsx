@@ -62,4 +62,20 @@ describe("accessibility control naming", () => {
       expect(name.trim().length, `${element.outerHTML} should expose an accessible name`).toBeGreaterThan(0);
     }
   });
+
+  it("exposes actionable controls when repository privacy list is empty", () => {
+    const rendered = render(
+      <PrivacyRepositoryToggleList repositories={[]} />
+    );
+
+    const reset = rendered.getByRole("button", { name: "Reset" });
+    const syncAction = rendered.getByRole("link", { name: "Run sync in account section" });
+    const search = rendered.getByRole("textbox", { name: "Search repositories" });
+
+    expect(reset).toBeTruthy();
+    expect(reset.hasAttribute("disabled")).toBe(true);
+    expect(syncAction).toBeTruthy();
+    expect(syncAction.getAttribute("href")).toBe("/dashboard/settings#settings-account");
+    expect(search.getAttribute("aria-describedby")).toBe("settings-repositories-filter-status");
+  });
 });

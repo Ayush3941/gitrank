@@ -26,6 +26,8 @@ export function PrivacyRepositoryToggleList({
   const visibleItems = controlled ? repositories : items;
   const isFiltering = deferredSearch !== search || deferredFilter !== visibilityFilter;
   const canReset = search.trim().length > 0 || visibilityFilter !== "All";
+  const statusId = "settings-repositories-filter-status";
+  const visibilityGroupId = "settings-repositories-visibility-group";
   const counts = useMemo(() => {
     const publicCount = visibleItems.filter((repo) => repo.visibility === "Public").length;
     return {
@@ -59,7 +61,7 @@ export function PrivacyRepositoryToggleList({
     <div className="space-y-3">
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p role="status" aria-live="polite" className="text-xs tracking-[0.2em] text-cyan-200 uppercase">
+          <p id={statusId} role="status" aria-live="polite" className="text-xs tracking-[0.2em] text-cyan-200 uppercase">
             {isFiltering
               ? "Updating repository list..."
               : `${filteredItems.length} of ${counts.total} repositories`}
@@ -90,9 +92,13 @@ export function PrivacyRepositoryToggleList({
               className="pl-11"
               placeholder="Search repository or reason"
               aria-label="Search repositories"
+              aria-describedby={statusId}
             />
           </div>
-          <div className="grid grid-cols-3 gap-2">
+          <div aria-labelledby={visibilityGroupId} className="grid grid-cols-3 gap-2">
+            <span id={visibilityGroupId} className="sr-only">
+              Repository visibility filter
+            </span>
             {(["All", "Public", "Hidden"] as const).map((item) => (
               <Button
                 key={item}
@@ -101,6 +107,7 @@ export function PrivacyRepositoryToggleList({
                 variant={visibilityFilter === item ? "default" : "secondary"}
                 onClick={() => startTransition(() => setVisibilityFilter(item))}
                 disabled={isFiltering}
+                aria-describedby={statusId}
               >
                 {item}
               </Button>
