@@ -304,6 +304,10 @@
   - strengthened muted-text legibility defaults
   - switched runtime background image source to `/assets/background.*` and
     added matching public asset paths for stable rendering.
+- Reformatted dashboard navigation shells for clearer scanability:
+  - sidebar now includes explicit `Navigate` section framing
+  - desktop/mobile inactive items default to stronger readable muted tone
+  - nav item styling keeps state clarity without extra transition churn.
 
 ## 2026-05-16
 
