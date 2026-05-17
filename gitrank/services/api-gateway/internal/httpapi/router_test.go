@@ -191,11 +191,27 @@ func TestAnalyticsEventsRouteTracksAllowedEvents(t *testing.T) {
 		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusAccepted, response.Body.String())
 	}
 
+	copyRequest := httptest.NewRequest(http.MethodPost, "/v1/analytics/events", strings.NewReader(`{
+		"event_name":"copy_text.used",
+		"source":"frontend",
+		"target":"dashboard-profile/copy-link",
+		"status":"success"
+	}`))
+	copyRequest.Header.Set("Content-Type", "application/json")
+	copyResponse := httptest.NewRecorder()
+	router.ServeHTTP(copyResponse, copyRequest)
+	if copyResponse.Code != http.StatusAccepted {
+		t.Fatalf("copy_text status = %d, want %d, body=%s", copyResponse.Code, http.StatusAccepted, copyResponse.Body.String())
+	}
+
 	metricsResponse := httptest.NewRecorder()
 	router.ServeHTTP(metricsResponse, httptest.NewRequest(http.MethodGet, "/metrics", nil))
 	body := metricsResponse.Body.String()
 	if !strings.Contains(body, `gitrank_product_analytics_events_total{service="api-gateway",event_name="score_explanation.opened",target="score-card-secret",status="success"} 1`) {
 		t.Fatalf("metrics missing score explanation analytics counter: %s", body)
+	}
+	if !strings.Contains(body, `gitrank_product_analytics_events_total{service="api-gateway",event_name="copy_text.used",target="dashboard-profile/copy-link",status="success"} 1`) {
+		t.Fatalf("metrics missing copy_text analytics counter: %s", body)
 	}
 	if strings.Contains(body, "score card secret") {
 		t.Fatalf("metrics failed to sanitize analytics target field: %s", body)

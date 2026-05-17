@@ -23,6 +23,7 @@ var allowedAnalyticsEvents = map[string]struct{}{
 	"profile.viewed":           {},
 	"score_explanation.opened": {},
 	"badge.viewed":             {},
+	"copy_text.used":           {},
 	"profile.shared":           {},
 	"empty_state.viewed":       {},
 	"error_state.viewed":       {},
