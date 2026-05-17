@@ -7,6 +7,7 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { ThemeQuickSwitcher } from "@/components/shared/ThemeQuickSwitcher";
 import { Button } from "@/components/ui/button";
 import { EvidenceSignalsCard } from "@/features/pr-report/components/EvidenceSignalsCard";
 import { ScoreMatrixCard } from "@/features/pr-report/components/ScoreMatrixCard";
@@ -63,9 +64,12 @@ export function PRBattleReportPageClient({
         title="PR battle report"
         description="Explainable contribution scoring, not a mysterious number."
         actions={(
-          <Button asChild variant="secondary">
-            <Link href="/dashboard/contributions">Back to contributions</Link>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <ThemeQuickSwitcher compact />
+            <Button asChild variant="secondary">
+              <Link href="/dashboard/contributions">Back to contributions</Link>
+            </Button>
+          </div>
         )}
       />
       <div className="neon-callout rounded-[1.75rem] px-4 py-3 text-sm text-slate-200">
