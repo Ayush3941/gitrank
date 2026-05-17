@@ -92,9 +92,24 @@ export GITRANK_REPO_ADMIN_TOKEN="$(cat /tmp/gitrank-repo-admin-token.txt)"
 Then run apply/verify as usual with `GITRANK_REPO_ADMIN_TOKEN`.
 
 If the command returns `Device Flow must be explicitly enabled for this App`,
-enable Device Flow in GitHub App/OAuth app settings first, or use a temporary
-fine-grained PAT with repository administration plus Dependabot-alert read
-access as `GITRANK_REPO_ADMIN_TOKEN`.
+enable Device Flow in GitHub App/OAuth app settings first, use the OAuth web
+flow bootstrap below, or use a temporary fine-grained PAT with repository
+administration plus Dependabot-alert read access as
+`GITRANK_REPO_ADMIN_TOKEN`.
+
+OAuth web-flow fallback (works even when Device Flow is disabled):
+
+```bash
+cd gitrank
+GITHUB_OAUTH_WEB_SCOPES="repo read:org admin:repo_hook security_events" \
+TOKEN_OUTPUT_FILE=/tmp/gitrank-repo-admin-token.txt \
+make create-github-repo-admin-token-via-oauth-web-flow
+
+export GITRANK_REPO_ADMIN_TOKEN="$(cat /tmp/gitrank-repo-admin-token.txt)"
+```
+
+The command prints an authorization URL. Open it, approve scopes, and paste the
+callback URL (or `code`) when prompted.
 
 The script refuses to mutate live settings unless both the confirmation flag
 and exact status check names are provided.

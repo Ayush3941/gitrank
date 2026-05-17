@@ -1456,6 +1456,10 @@ audit automatically switches to the token-first path and treats origin-push auth
 as advisory.
 Use `make create-github-app-installation-token` when GitHub App credentials are
 preferred over long-lived PATs for repository-controls gates.
+Use `make -C gitrank create-github-repo-admin-token-via-oauth-web-flow` to
+mint a short-lived OAuth token from `GITHUB_CLIENT_ID` /
+`GITHUB_CLIENT_SECRET` when Device Flow is disabled; the helper prints the
+authorization URL and accepts a pasted callback URL or `code`.
 The live-gates workflow can also bootstrap a short-lived admin token from
 `GITRANK_GITHUB_APP_ID`, `GITRANK_GITHUB_APP_INSTALLATION_ID`, and
 `GITRANK_GITHUB_APP_PRIVATE_KEY_PEM` when `GITRANK_REPO_ADMIN_TOKEN` is unset.
