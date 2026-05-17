@@ -2,6 +2,14 @@
 
 ## 2026-05-17
 
+- Added route-specific public error/not-found boundaries:
+  - `app/(public)/u/[username]/error.tsx` + `not-found.tsx`
+  - `app/(public)/pr/[owner]/[repo]/[number]/error.tsx` + `not-found.tsx`
+  - these now provide contextual recovery CTAs instead of falling back to the
+    generic global fallback UX for public share routes.
+- Public route error boundaries now emit `error_state.viewed` analytics events
+  and prefer `unstable_retry()` when available (falling back to `reset()`),
+  aligning retry behavior with current Next.js App Router guidance.
 - Added route-specific share cards for public profile and PR report pages:
   - generated dynamic `opengraph-image` + `twitter-image` handlers in
     `app/(public)/u/[username]/` and `app/(public)/pr/[owner]/[repo]/[number]/`
