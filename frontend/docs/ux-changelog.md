@@ -13,6 +13,8 @@
     available (`Ctrl/Cmd+K`, `?`) versus gated display shortcuts.
   - decluttered mobile top-bar controls by hiding inline theme/text toggles on
     extra-small screens (still available via quick actions and Settings).
+  - added focused hotkey coverage to ensure `?` opens shortcut help only when
+    focus is outside editable fields.
 - Dashboard quick-actions command palette:
   - added `DashboardQuickActions` (`components/shared/DashboardQuickActions.tsx`)
     with searchable keyboard-first actions (`Ctrl/Cmd+K`) for route jumps,
@@ -21,6 +23,9 @@
     when search is empty, improving repeat-task speed without fake data
   - added `Clear recent` control so users can reset command history directly
     from the palette.
+  - improved combobox semantics for the search input (`role=combobox`,
+    `aria-autocomplete=list`, popup state attributes) to align with
+    listbox-popup keyboard navigation patterns.
   - upgraded quick actions with grouped sections (`Navigate`, `Profile`, `Sync`,
     `Display`) and arrow-key traversal (`↑/↓`) + `Enter` execution for
     keyboard-only command flows

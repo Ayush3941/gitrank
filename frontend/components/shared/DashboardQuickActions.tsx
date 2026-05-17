@@ -319,6 +319,7 @@ export function DashboardQuickActions({
             <Search className="h-4 w-4 text-cyan-200" />
             <input
               ref={inputRef}
+              role="combobox"
               value={query}
               onChange={(event) => {
                 setQuery(event.target.value);
@@ -328,6 +329,9 @@ export function DashboardQuickActions({
               placeholder="Type an action, route, or keyword..."
               className="w-full bg-transparent text-sm text-white placeholder:text-slate-300 focus:outline-none"
               aria-label="Search quick actions"
+              aria-autocomplete="list"
+              aria-expanded={open}
+              aria-haspopup="listbox"
               aria-controls="dashboard-quick-actions-list"
               aria-activedescendant={highlightedAction ? optionIdForAction(highlightedAction.id) : undefined}
             />

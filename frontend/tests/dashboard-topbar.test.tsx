@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { DashboardTopBar } from "@/components/shared/DashboardTopBar";
 import type { UserProfile } from "@/types/gitrank";
@@ -51,5 +51,21 @@ describe("DashboardTopBar", () => {
   it("renders a visible keyboard shortcut help trigger", () => {
     render(<DashboardTopBar user={userFixture as unknown as UserProfile} />);
     expect(screen.getByRole("button", { name: /Shortcuts/i })).toBeTruthy();
+  });
+
+  it("opens shortcuts help when ? is pressed outside editable fields", () => {
+    render(<DashboardTopBar user={userFixture as unknown as UserProfile} />);
+    fireEvent.keyDown(window, { key: "?", shiftKey: true });
+    expect(screen.getByRole("heading", { name: "Keyboard shortcuts" })).toBeTruthy();
+  });
+
+  it("does not open shortcuts help when typing in editable fields", () => {
+    render(<DashboardTopBar user={userFixture as unknown as UserProfile} />);
+    const input = document.createElement("input");
+    document.body.appendChild(input);
+    input.focus();
+    fireEvent.keyDown(input, { key: "?", shiftKey: true });
+    expect(screen.queryByRole("heading", { name: "Keyboard shortcuts" })).toBeNull();
+    input.remove();
   });
 });
