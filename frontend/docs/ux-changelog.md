@@ -2,6 +2,14 @@
 
 ## 2026-05-17
 
+- Settings and onboarding error-safety hardening:
+  - added shared `sanitizeUserFacingError` mapping in
+    `lib/ui-error-messages.ts` to prevent raw upstream/network/backend error
+    text from leaking into user-visible surfaces
+  - wired sanitizer into `SettingsPageClient` account/privacy action errors and
+    onboarding `SyncPipeline` sync errors
+  - added `tests/ui-error-messages.test.ts` to lock timeout/CSRF/500 fallback
+    behavior and preserve clear user-facing messages when already safe.
 - Sync freshness readability/traceability upgrade:
   - `formatRelativeDays` now reports recent sync age with minute/hour precision
     (for example `2m ago`, `3h ago`) before day-level buckets

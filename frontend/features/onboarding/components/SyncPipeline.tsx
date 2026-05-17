@@ -11,6 +11,7 @@ import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useMyProfile } from "@/hooks/use-profile";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { formatRelativeDays } from "@/lib/formatters";
+import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 
 const steps = [
   "Connecting GitHub",
@@ -137,9 +138,11 @@ export function SyncPipeline() {
     isSynced ? steps.length : syncStartedAt || userSync.isPending ? 3 : 1;
   const pipelineProgress = Math.round((completedSteps / steps.length) * 100);
 
-  const actionError =
+  const actionError = sanitizeUserFacingError(
     (userSync.error as Error | null)?.message ||
-    (isError ? "Authenticated profile snapshot is unavailable." : "");
+      (isError ? "Authenticated profile snapshot is unavailable." : ""),
+    "onboarding-sync",
+  );
 
   return (
     <main className="mx-auto max-w-4xl">

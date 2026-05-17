@@ -35,6 +35,7 @@ import {
   type TextScalePreference,
   useTextScalePreference,
 } from "@/hooks/use-text-scale-preference";
+import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import { type ThemePreference, useThemePreference } from "@/hooks/use-theme-preference";
 
 type BackedPrivacyKey =
@@ -179,17 +180,21 @@ export function SettingsPageClient() {
     );
   }
 
-  const mutationError =
+  const mutationError = sanitizeUserFacingError(
     (updatePrivacy.error as Error | null)?.message ||
-    (updateRepositoryVisibility.error as Error | null)?.message ||
-    "";
-  const actionError =
+      (updateRepositoryVisibility.error as Error | null)?.message ||
+      "",
+    "settings-privacy",
+  );
+  const actionError = sanitizeUserFacingError(
     (logoutSession.error as Error | null)?.message ||
-    (unlinkAccount.error as Error | null)?.message ||
-    (deleteAccount.error as Error | null)?.message ||
-    (exportAccount.error as Error | null)?.message ||
-    (accountLinkStart.error as Error | null)?.message ||
-    "";
+      (unlinkAccount.error as Error | null)?.message ||
+      (deleteAccount.error as Error | null)?.message ||
+      (exportAccount.error as Error | null)?.message ||
+      (accountLinkStart.error as Error | null)?.message ||
+      "",
+    "settings-account-actions",
+  );
   const isSaving = updatePrivacy.isPending || updateRepositoryVisibility.isPending;
   const isActing =
     logoutSession.isPending ||
