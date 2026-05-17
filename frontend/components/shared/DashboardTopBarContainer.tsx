@@ -6,7 +6,7 @@ import {
   DashboardTopBarSkeleton,
   DashboardTopBarUnavailable,
 } from "@/components/shared/DashboardTopBar";
-import { useRequestProfileSync } from "@/hooks/use-account-actions";
+import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useAccountGamificationPreference } from "@/hooks/use-gamification-preference";
 import { useMyProfile } from "@/hooks/use-profile";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
@@ -17,7 +17,7 @@ const AUTO_SYNC_MAX_ATTEMPTS_PER_MOUNT = 3;
 
 export function DashboardTopBarContainer() {
   const { data, isError, isLoading } = useMyProfile();
-  const { mutate: requestProfileSync, isPending: isProfileSyncPending } = useRequestProfileSync();
+  const { mutate: runUserSync, isPending: isUserSyncPending } = useRunUserSync();
   const autoSyncLastAttempt = useRef(0);
   const autoSyncAttempts = useRef(0);
   useAccountGamificationPreference(data);
@@ -37,7 +37,7 @@ export function DashboardTopBarContainer() {
     if (!shouldAutoSync) {
       return;
     }
-    if (isProfileSyncPending) {
+    if (isUserSyncPending) {
       return;
     }
     if (autoSyncAttempts.current >= AUTO_SYNC_MAX_ATTEMPTS_PER_MOUNT) {
@@ -48,7 +48,7 @@ export function DashboardTopBarContainer() {
     }
     autoSyncLastAttempt.current = now;
     autoSyncAttempts.current += 1;
-    requestProfileSync(undefined, {
+    runUserSync(data.user.username, {
       onSuccess: () => {
         void emitAnalyticsEvent({
           eventName: "sync.succeeded",
@@ -66,7 +66,7 @@ export function DashboardTopBarContainer() {
         });
       },
     });
-  }, [data, isError, isLoading, isProfileSyncPending, requestProfileSync]);
+  }, [data, isError, isLoading, isUserSyncPending, runUserSync]);
 
   if (isLoading) {
     return <DashboardTopBarSkeleton />;
