@@ -30,6 +30,8 @@
 - Added global inline-link readability treatment in text blocks (underline,
   stronger offset/thickness, clearer hover/focus) so links are not conveyed by
   color alone.
+- Settings now includes a one-click display reset action that restores
+  `Midnight` theme and `Default` text scale with immediate confirmation text.
 - Smoothed and simplified shell glow layers in `AppShell` to reduce decorative
   overdraw and avoid abrupt glow cutoffs.
 - Added responsive visual cost guard in `app/globals.css`:

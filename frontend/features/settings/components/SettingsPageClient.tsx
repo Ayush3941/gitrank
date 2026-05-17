@@ -98,9 +98,16 @@ export function SettingsPageClient() {
   const { textScale, setTextScale } = useTextScalePreference();
   useAccountGamificationPreference(data);
   const [actionNotice, setActionNotice] = useState("");
+  const [displayNotice, setDisplayNotice] = useState("");
   const currentSettings = data?.user.privacy ?? null;
   const activeThemeOption =
     THEME_OPTIONS.find((option) => option.value === theme) ?? THEME_OPTIONS[1];
+
+  function handleResetDisplayPreferences() {
+    setTheme("midnight");
+    setTextScale("default");
+    setDisplayNotice("Display preferences reset to Midnight theme and Default text size.");
+  }
 
   if (isLoading) {
     return <LoadingState message="Checking privacy controls..." />;
@@ -396,8 +403,22 @@ export function SettingsPageClient() {
                 </span>
               </Button>
             ))}
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="justify-start"
+              onClick={handleResetDisplayPreferences}
+            >
+              Reset display preferences
+            </Button>
           </div>
         </div>
+        {displayNotice ? (
+          <p role="status" aria-live="polite" className="text-sm text-cyan-100">
+            {displayNotice}
+          </p>
+        ) : null}
         <div className="neon-surface-strong space-y-3 px-4 py-4">
           <p className="text-xs tracking-[0.2em] text-primary uppercase">Live readability preview</p>
           <h3 className="text-lg font-semibold text-white">
