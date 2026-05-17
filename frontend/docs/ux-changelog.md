@@ -8,6 +8,7 @@
   - moved to fixed desktop + scroll-mobile background attachment policy
 - Added always-accessible theme switching and readability pass:
   - new shared `ThemeQuickSwitcher` action in dashboard top bar + sidebar
+  - theme switcher is also available on landing and login onboarding screens
   - settings now includes a live readability preview panel for current theme
   - stronger global text tokens for body/supporting copy across all themes
   - raised global type baseline (`16px` floor, higher line-height) for clearer
