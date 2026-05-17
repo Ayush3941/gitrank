@@ -1426,6 +1426,11 @@ html[data-gamification="reduced"] .page-shell::after {
 }
 
 @media (any-pointer: coarse) {
+  body {
+    background-attachment: scroll;
+    background-position: center top;
+  }
+
   .focus-ring {
     min-width: 44px;
     min-height: 44px;

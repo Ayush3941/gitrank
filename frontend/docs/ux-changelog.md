@@ -53,6 +53,10 @@
     percentage text) and keep deterministic fallback when no story payload exists
   - badge detail dialog now renders progress with a bar + numeric value for
     better scanability during demos and reviews.
+- Mobile/coarse-pointer shell smoothness:
+  - for `@media (any-pointer: coarse)`, body background now uses
+    `background-attachment: scroll` (instead of fixed) with top-centered
+    positioning to reduce heavy repaint pressure on constrained devices.
 - Sync freshness readability/traceability upgrade:
   - `formatRelativeDays` now reports recent sync age with minute/hour precision
     (for example `2m ago`, `3h ago`) before day-level buckets
