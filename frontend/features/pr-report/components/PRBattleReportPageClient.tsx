@@ -9,6 +9,7 @@ import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { CopyLinkButton } from "@/components/shared/CopyLinkButton";
 import { TextScaleQuickSwitcher } from "@/components/shared/TextScaleQuickSwitcher";
 import { ThemeQuickSwitcher } from "@/components/shared/ThemeQuickSwitcher";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,11 @@ export function PRBattleReportPageClient({
 }) {
   const { data, isLoading, isError } = usePrReport(owner, repo, number);
   const [activeSection, setActiveSection] = useState<PRReportSectionID>("pr-report-overview");
+  const activeSectionLabel =
+    PR_REPORT_SECTION_ITEMS.find((section) => section.id === activeSection)?.label ??
+    "Overview";
+  const activeSectionLink =
+    `/pr/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${number}#${activeSection}`;
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -161,6 +167,9 @@ export function PRBattleReportPageClient({
         className="glass-panel flex flex-wrap items-center gap-2 border border-primary/20 p-2 lg:sticky lg:top-4 lg:z-20"
       >
         <p id="pr-report-jump-nav-label" className="cyber-title px-2 text-[10px] tracking-[0.16em] text-cyan-200 uppercase">Jump to</p>
+        <p role="status" aria-live="polite" className="px-2 text-xs tracking-[0.16em] text-cyan-200 uppercase">
+          {activeSectionLabel}
+        </p>
         <ul role="list" className="flex flex-wrap gap-2">
           {PR_REPORT_SECTION_ITEMS.map((section) => (
             <li key={section.id}>
@@ -178,6 +187,14 @@ export function PRBattleReportPageClient({
             </li>
           ))}
         </ul>
+        <div className="ml-auto">
+          <CopyLinkButton
+            href={activeSectionLink}
+            label="Copy section link"
+            copiedLabel="Section link copied"
+            analyticsTarget="pr-report/copy-section-link"
+          />
+        </div>
       </nav>
       <section id="pr-report-overview" className="scroll-mt-24">
         <GlowCard strong className="space-y-5">

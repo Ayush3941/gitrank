@@ -79,6 +79,10 @@
     and public-profile copy-link actions to this shared behavior
   - added `tests/share-links.test.ts` to lock absolute/relative URL
     normalization semantics.
+- PR report section share-link refinement:
+  - PR battle report jump navigator now includes active section context and a
+    `Copy section link` action (`/pr/<owner>/<repo>/<number>#...`) for direct
+    shareable anchors to score/AI/evidence/rewards panels.
 - Route fallback consistency pass:
   - added shared `RouteFallbackCard` (`components/shared/RouteFallbackCard.tsx`)
     and migrated all route-level `not-found` surfaces (global, dashboard,
