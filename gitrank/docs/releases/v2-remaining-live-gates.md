@@ -244,7 +244,8 @@ How to complete:
    - or OAuth web-flow bootstrap inputs (`GITHUB_CLIENT_ID`,
      `GITHUB_CLIENT_SECRET`) and run with
      `GITRANK_ALLOW_OAUTH_WEB_TOKEN_BOOTSTRAP=yes` (apply/verify scripts) or
-     `AUTO_CREATE_GITHUB_OAUTH_WEB_TOKEN=true` (finalizer).
+     `AUTO_CREATE_GITHUB_OAUTH_WEB_TOKEN=true` (finalizer; falls back to
+     `gitrank/.env` if those vars are not set in the live-gates env file).
    - Ensure the GitHub App installation has permission to mutate repository
      settings (branch protections/rulesets) and repository contents where
      policy-sync writes are required.

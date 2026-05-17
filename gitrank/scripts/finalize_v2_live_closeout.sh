@@ -4,6 +4,7 @@ set -eu
 root_dir="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 tmp_root="${TMPDIR:-$root_dir/.tmp}"
 mkdir -p "$tmp_root"
+default_env_file="$root_dir/.env"
 
 FINALIZE_V2_ENV_FILE="${FINALIZE_V2_ENV_FILE:-${LIVE_V2_ENV_FILE:-}}"
 if [ -n "$FINALIZE_V2_ENV_FILE" ]; then
@@ -91,6 +92,20 @@ get_prefixed_or_default() {
   else
     printf '%s' "$default_value"
   fi
+}
+
+load_env_var_from_file() {
+  file_path=$1
+  key=$2
+  [ -f "$file_path" ] || return 1
+  value=$(awk -F= -v key="$key" '
+    $1 == key {
+      sub(/^[^=]*=/, "", $0)
+      print $0
+    }
+  ' "$file_path" | tail -n 1)
+  [ -n "$value" ] || return 1
+  printf '%s' "$value"
 }
 
 is_placeholder_value() {
@@ -222,6 +237,37 @@ resolve_github_admin_token() {
   fi
 
   if [ "$AUTO_CREATE_GITHUB_OAUTH_WEB_TOKEN" = "true" ]; then
+    if [ -z "${GITHUB_CLIENT_ID:-}" ]; then
+      fallback_client_id=$(load_env_var_from_file "$default_env_file" "GITHUB_CLIENT_ID" || true)
+      if [ -n "$fallback_client_id" ]; then
+        export GITHUB_CLIENT_ID="$fallback_client_id"
+      fi
+    fi
+    if [ -z "${GITHUB_CLIENT_SECRET:-}" ]; then
+      fallback_client_secret=$(load_env_var_from_file "$default_env_file" "GITHUB_CLIENT_SECRET" || true)
+      if [ -n "$fallback_client_secret" ]; then
+        export GITHUB_CLIENT_SECRET="$fallback_client_secret"
+      fi
+    fi
+    if [ -z "${GITHUB_OAUTH_AUTHORIZE_URL:-}" ]; then
+      fallback_authorize_url=$(load_env_var_from_file "$default_env_file" "GITHUB_OAUTH_AUTHORIZE_URL" || true)
+      if [ -n "$fallback_authorize_url" ]; then
+        export GITHUB_OAUTH_AUTHORIZE_URL="$fallback_authorize_url"
+      fi
+    fi
+    if [ -z "${GITHUB_OAUTH_EXCHANGE_URL:-}" ]; then
+      fallback_exchange_url=$(load_env_var_from_file "$default_env_file" "GITHUB_OAUTH_EXCHANGE_URL" || true)
+      if [ -n "$fallback_exchange_url" ]; then
+        export GITHUB_OAUTH_EXCHANGE_URL="$fallback_exchange_url"
+      fi
+    fi
+    if [ -z "${GITHUB_OAUTH_REDIRECT_URL:-}" ]; then
+      fallback_redirect_url=$(load_env_var_from_file "$default_env_file" "GITHUB_OAUTH_REDIRECT_URL" || true)
+      if [ -n "$fallback_redirect_url" ]; then
+        export GITHUB_OAUTH_REDIRECT_URL="$fallback_redirect_url"
+      fi
+    fi
+
     TOKEN_OUTPUT_FILE="$OAUTH_WEB_TOKEN_OUTPUT_FILE" run_make create-github-repo-admin-token-via-oauth-web-flow
     token_candidate=$(cat "$OAUTH_WEB_TOKEN_OUTPUT_FILE" 2>/dev/null || true)
     [ -n "$token_candidate" ] || fail "oauth web-flow token bootstrap succeeded but no token file content was produced"

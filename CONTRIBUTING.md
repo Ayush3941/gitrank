@@ -1429,7 +1429,8 @@ auto-bootstrap a short-lived GitHub App installation token when no token is
 pre-set and App credentials are provided. It can also bootstrap a short-lived
 OAuth admin token via web flow when
 `AUTO_CREATE_GITHUB_OAUTH_WEB_TOKEN=true` is set and OAuth credentials are
-configured. It also defaults
+configured (with fallback to `gitrank/.env` when the OAuth vars are not set in
+the live-gates env file). It also defaults
 `AUTO_SYNC_REMOTE_TRIVY_POLICY=true` so Trivy workflow-health failures caused
 by remote policy drift can be auto-remediated when a token is available, and it
 now enforces `make verify-live-github-access` before GitHub-controls apply/verify.
