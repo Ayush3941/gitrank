@@ -1445,6 +1445,9 @@ For the default local filename, use
 `CONFIRM_FINALIZE_V2=yes make -C gitrank finalize-v2-live-closeout-local-env`.
 Use `AUDIT_REPORT_FILE=... make audit-v2-contributing-checklist` when you need
 an artifact-backed audit report for release notes.
+Latest local audit snapshot: `gitrank/docs/evidence/v2-completion-audit-2026-05-17-current.txt`
+captures the current unresolved live prerequisites (10 unchecked external gates as
+of May 17, 2026).
 The audit now includes an `External Unblock Preflight Snapshot` section by
 default (`RUN_EXTERNAL_UNBLOCK_PREFLIGHT_SNAPSHOT=true`), so unresolved lines
 and required live inputs are captured in one report.
