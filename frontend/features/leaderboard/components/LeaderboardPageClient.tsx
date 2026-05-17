@@ -120,6 +120,7 @@ export function LeaderboardPageClient() {
           message={`Leaderboard context refreshed ${formatRelativeDays(
             myProfile.refreshedAt,
           )}. Rank movement can lag until the next profile sync completes.`}
+          updatedAt={myProfile.refreshedAt}
           onRefresh={() => {
             void refetchMyProfile();
             void refetch();

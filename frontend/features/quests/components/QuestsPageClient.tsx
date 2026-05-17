@@ -113,6 +113,7 @@ export function QuestsPageClient() {
           message={`Quest snapshot refreshed ${formatRelativeDays(
             data.staleness.refreshedAt,
           )}. Live quest signals may lag until the next sync completes.`}
+          updatedAt={data.staleness.refreshedAt}
           onRefresh={() => {
             void refetch();
           }}

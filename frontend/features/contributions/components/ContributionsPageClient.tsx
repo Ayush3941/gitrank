@@ -206,6 +206,7 @@ export function ContributionsPageClient() {
           message={`Contribution snapshot refreshed ${formatRelativeDays(
             profile.refreshedAt,
           )}. New PR evidence may still be syncing.`}
+          updatedAt={profile.refreshedAt}
           onRefresh={() => {
             void refetch();
           }}

@@ -225,6 +225,7 @@ export function DashboardPageClient() {
           message={`Your GitRank profile was refreshed ${formatRelativeDays(
             data.refreshedAt,
           )}.`}
+          updatedAt={data.refreshedAt}
           onRefresh={() => {
             void refetch();
           }}

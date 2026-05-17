@@ -147,6 +147,7 @@ export function PublicProfilePageClient({
       {data.isStale ? (
         <StaleState
           message={`This profile snapshot was refreshed ${formatRelativeDays(data.refreshedAt)}.`}
+          updatedAt={data.refreshedAt}
           onRefresh={() => {
             void refetch();
           }}

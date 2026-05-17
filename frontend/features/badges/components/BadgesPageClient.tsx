@@ -216,6 +216,7 @@ export function BadgesPageClient() {
             message={`Badge snapshot refreshed ${formatRelativeDays(
               profile.refreshedAt,
             )}. New unlocks can appear after the next completed sync.`}
+            updatedAt={profile.refreshedAt}
             onRefresh={() => {
               void refetch();
             }}

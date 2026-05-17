@@ -22,6 +22,11 @@
   - success/failure outcomes from auto-sync attempts are surfaced as plain
     language follow-up notes so users can understand whether evidence refresh
     completed or needs attention.
+- Stale-state banners now include exact “last verified” timestamps:
+  - `StaleState` accepts `updatedAt` and renders precise local time alongside
+    the relative stale summary
+  - applied across dashboard, contributions, badges, quests, leaderboard, and
+    public profile stale banners for stronger snapshot trust.
 - Dashboard auto-sync now executes direct user sync runs instead of relying on
   queue-only triggers, so authenticated route opens actively refresh profile
   evidence without requiring manual sync controls.

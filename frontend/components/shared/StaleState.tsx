@@ -6,9 +6,11 @@ import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
+import { formatDateTime } from "@/lib/formatters";
 
 export function StaleState({
   message,
+  updatedAt,
   actionLabel = "Open settings",
   actionHref = "/dashboard/settings",
   refreshLabel = "Refresh snapshot",
@@ -17,6 +19,7 @@ export function StaleState({
   analyticsTarget,
 }: {
   message: string;
+  updatedAt?: string;
   actionLabel?: string;
   actionHref?: string;
   refreshLabel?: string;
@@ -48,6 +51,11 @@ export function StaleState({
           <p className="text-sm text-amber-50/75">
             The latest verified snapshot is still visible while a newer sync path is pending.
           </p>
+          {updatedAt ? (
+            <p className="text-xs text-amber-100">
+              Last verified at {formatDateTime(updatedAt)}.
+            </p>
+          ) : null}
         </div>
       </div>
       <div className="flex flex-wrap gap-2">
