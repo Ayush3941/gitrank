@@ -24,6 +24,13 @@
     to cut render cost while preserving layout and information hierarchy
   - updated Settings copy so users know reduced mode now explicitly prioritizes
     lower GPU/render overhead in addition to animation/glow reduction.
+- `backdrop-filter` support fallback hardening:
+  - added `@supports not ((backdrop-filter...) or (-webkit-backdrop-filter...))`
+    fallback so glass/cyber surfaces render readable static backgrounds without
+    blur/polyfill assumptions on unsupported or constrained browsers
+  - fallback covers shared surface primitives (`glass-panel`, `cyber-card`,
+    `neon-surface`, `neon-tile`, `neon-metric`) to keep visual hierarchy
+    consistent even when blur effects are unavailable.
 - Sync freshness readability/traceability upgrade:
   - `formatRelativeDays` now reports recent sync age with minute/hour precision
     (for example `2m ago`, `3h ago`) before day-level buckets
