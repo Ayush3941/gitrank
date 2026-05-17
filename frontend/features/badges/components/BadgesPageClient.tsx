@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Crown, ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import { startTransition, type ReactNode, useEffect, useRef, useState } from "react";
+import { ExpandableText } from "@/components/shared/ExpandableText";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -20,10 +21,19 @@ import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import type { BadgeRarity } from "@/types/gitrank";
 
+type BadgeSectionId = "badges-forge" | "badges-earned" | "badges-locked";
+
+const BADGE_SECTION_ITEMS: Array<{ id: BadgeSectionId; label: string }> = [
+  { id: "badges-forge", label: "Forge" },
+  { id: "badges-earned", label: "Earned" },
+  { id: "badges-locked", label: "Locked" },
+];
+
 export function BadgesPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useBadges();
   const badgeViewedEventSent = useRef(false);
   const previousUnlockedCountRef = useRef<number | null>(null);
+  const [activeSection, setActiveSection] = useState<BadgeSectionId>("badges-forge");
   const [rarity, setRarity] = useState<BadgeRarity | "All">("All");
   const [visibility, setVisibility] = useState<"All" | "Unlocked" | "Locked">("All");
   const [unlockNotice, setUnlockNotice] = useState("");
@@ -119,6 +129,33 @@ export function BadgesPageClient() {
     );
   }, [data, isError, isLoading, unlockedCount]);
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (!visible) {
+          return;
+        }
+        const id = visible.target.id as BadgeSectionId;
+        if (id) {
+          setActiveSection(id);
+        }
+      },
+      { rootMargin: "-25% 0px -55% 0px", threshold: [0.25, 0.45, 0.7] },
+    );
+
+    BADGE_SECTION_ITEMS.forEach(({ id }) => {
+      const node = document.getElementById(id);
+      if (node) {
+        observer.observe(node);
+      }
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   function handleRarityChange(value: BadgeRarity | "All") {
     startTransition(() => setRarity(value));
   }
@@ -145,127 +182,150 @@ export function BadgesPageClient() {
           </Button>
         )}
       />
-      {profile?.user.syncStatus.state === "stale" ? (
-        <StaleState
-          message={`Badge snapshot refreshed ${formatRelativeDays(
-            profile.refreshedAt,
-          )}. New unlocks can appear after the next completed sync.`}
-          onRefresh={() => {
-            void refetch();
-          }}
-          isRefreshing={isFetching}
-          actionLabel="Open settings"
-          actionHref="/dashboard/settings"
-          analyticsTarget="badges:stale"
-        />
-      ) : null}
-      {!isLoading && !isError && profile ? (
-        <GlowCard strong className="cyber-hero-shell relative overflow-hidden">
-          <div className="cyber-hero-overlay pointer-events-none absolute inset-0" />
-          <div className="relative space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs tracking-[0.24em] text-fuchsia-100 uppercase">
-                  <Trophy className="h-3.5 w-3.5" />
-                  Achievement Forge
-                </p>
-                <h2 className="mt-3 text-2xl font-semibold text-white">
-                  {abraInsights.data?.archetype || "Systems Builder"} progression
-                </h2>
-                <p className="mt-2 max-w-3xl text-sm text-slate-200/84">
-                  {abraInsights.data?.identitySummary ||
-                    "Badge narratives are running in deterministic fallback mode."}
-                </p>
+      <nav
+        aria-label="Badge page quick sections"
+        className="glass-panel sticky top-4 z-20 flex flex-wrap items-center gap-2 border border-primary/20 p-2"
+      >
+        {BADGE_SECTION_ITEMS.map((section) => (
+          <a
+            key={section.id}
+            href={`#${section.id}`}
+            aria-current={activeSection === section.id ? "location" : undefined}
+            className={
+              activeSection === section.id
+                ? "focus-ring cyber-title border border-primary/45 bg-primary/16 px-3 py-1.5 text-[11px] tracking-[0.16em] text-white uppercase"
+                : "focus-ring cyber-title border border-transparent px-3 py-1.5 text-[11px] tracking-[0.16em] text-slate-200 uppercase hover:border-primary/28 hover:bg-primary/10"
+            }
+          >
+            {section.label}
+          </a>
+        ))}
+      </nav>
+      <section id="badges-forge" className="scroll-mt-24 space-y-4">
+        {profile?.user.syncStatus.state === "stale" ? (
+          <StaleState
+            message={`Badge snapshot refreshed ${formatRelativeDays(
+              profile.refreshedAt,
+            )}. New unlocks can appear after the next completed sync.`}
+            onRefresh={() => {
+              void refetch();
+            }}
+            isRefreshing={isFetching}
+            actionLabel="Open settings"
+            actionHref="/dashboard/settings"
+            analyticsTarget="badges:stale"
+          />
+        ) : null}
+        {!isLoading && !isError && profile ? (
+          <GlowCard strong className="cyber-hero-shell relative overflow-hidden">
+            <div className="cyber-hero-overlay pointer-events-none absolute inset-0" />
+            <div className="relative space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs tracking-[0.24em] text-fuchsia-100 uppercase">
+                    <Trophy className="h-3.5 w-3.5" />
+                    Achievement Forge
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold text-white">
+                    {abraInsights.data?.archetype || "Systems Builder"} progression
+                  </h2>
+                  <p className="mt-2 max-w-3xl text-sm text-slate-200/84">
+                    {abraInsights.data?.identitySummary ||
+                      "Badge narratives are running in deterministic fallback mode."}
+                  </p>
+                </div>
+                <div className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-xs">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  {abraInsights.data?.generatedBy === "gemini"
+                    ? "Gemini achievement stories"
+                    : "Deterministic achievement stories"}
+                </div>
               </div>
-              <div className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-xs">
-                <Sparkles className="h-3.5 w-3.5" />
-                {abraInsights.data?.generatedBy === "gemini"
-                  ? "Gemini achievement stories"
-                  : "Deterministic achievement stories"}
+              <div className="grid gap-3 md:grid-cols-4">
+                <BadgeMetric label="Unlocked" value={unlockedCount} icon={<ShieldCheck className="h-4 w-4 text-cyan-200" />} />
+                <BadgeMetric label="Completion" value={`${completionPercent}%`} icon={<Crown className="h-4 w-4 text-fuchsia-200" />} />
+                <BadgeMetric label="Level" value={profile.user.level.currentLevel} icon={<Trophy className="h-4 w-4 text-violet-200" />} />
+                <BadgeMetric label="Current streak" value={`${streak.currentStreakDays}d`} icon={<Sparkles className="h-4 w-4 text-emerald-200" />} />
               </div>
+              <div className="space-y-2">
+                <p className="text-xs tracking-[0.24em] text-cyan-200 uppercase">Badge lane progress</p>
+                <Progress value={completionPercent} />
+              </div>
+              {unlockNotice ? (
+                <p role="status" aria-live="polite" className="text-sm text-emerald-200">
+                  {unlockNotice}
+                </p>
+              ) : null}
             </div>
-            <div className="grid gap-3 md:grid-cols-4">
-              <BadgeMetric label="Unlocked" value={unlockedCount} icon={<ShieldCheck className="h-4 w-4 text-cyan-200" />} />
-              <BadgeMetric label="Completion" value={`${completionPercent}%`} icon={<Crown className="h-4 w-4 text-fuchsia-200" />} />
-              <BadgeMetric label="Level" value={profile.user.level.currentLevel} icon={<Trophy className="h-4 w-4 text-violet-200" />} />
-              <BadgeMetric label="Current streak" value={`${streak.currentStreakDays}d`} icon={<Sparkles className="h-4 w-4 text-emerald-200" />} />
-            </div>
-            <div className="space-y-2">
-              <p className="text-xs tracking-[0.24em] text-cyan-200 uppercase">Badge lane progress</p>
-              <Progress value={completionPercent} />
-            </div>
-            {unlockNotice ? (
-              <p role="status" aria-live="polite" className="text-sm text-emerald-200">
-                {unlockNotice}
-              </p>
-            ) : null}
-          </div>
-        </GlowCard>
-      ) : null}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p role="status" aria-live="polite" className="text-xs tracking-[0.2em] text-fuchsia-200 uppercase">
-          Showing {filtered.length} of {totalCount} badges
-        </p>
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          onClick={handleResetFilters}
-          disabled={!canResetFilters}
-        >
-          Reset filters
-        </Button>
-      </div>
-      <div className="grid gap-3 md:grid-cols-2">
-        <Select value={rarity} onValueChange={(value) => handleRarityChange(value as BadgeRarity | "All")}>
-          <SelectTrigger aria-label="Filter by rarity">
-            <SelectValue placeholder="Filter by rarity" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="All">All rarities</SelectItem>
-            {["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic"].map((item) => (
-              <SelectItem key={item} value={item}>{item}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={visibility} onValueChange={(value) => handleVisibilityChange(value as typeof visibility)}>
-          <SelectTrigger aria-label="Filter by unlock state">
-            <SelectValue placeholder="Filter by state" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="All">All badges</SelectItem>
-            <SelectItem value="Unlocked">Unlocked</SelectItem>
-            <SelectItem value="Locked">Locked</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      {isLoading ? <LoadingState message="Polishing your badge shelf..." /> : null}
-      {isError ? (
-        <ErrorState
-          title="Badge sync failed"
-          description="Some badge evidence could not be verified from GitHub. Retry sync or use partial profile data."
-          fallbackLabel="Open settings"
-          fallbackHref="/dashboard/settings"
-          analyticsTarget="badges:error"
-        />
-      ) : null}
-      {!isLoading && !isError && filtered.length === 0 ? (
-        <EmptyState
-          title="Your badge shelf is waiting."
-          description="Complete your first meaningful merged PR to start unlocking visible reputation proof."
-          actionLabel="Open quests"
-          actionHref="/dashboard/quests"
-          analyticsTarget="badges:empty"
-        />
-      ) : null}
-      {!isLoading && !isError && filtered.length ? (
-        <BadgeGrid
-          badges={filtered}
-          stories={abraInsights.data?.badgeStories}
-        />
-      ) : null}
+          </GlowCard>
+        ) : null}
+      </section>
+      <section id="badges-earned" className="scroll-mt-24 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p role="status" aria-live="polite" className="text-xs tracking-[0.2em] text-fuchsia-200 uppercase">
+            Showing {filtered.length} of {totalCount} badges
+          </p>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={handleResetFilters}
+            disabled={!canResetFilters}
+          >
+            Reset filters
+          </Button>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          <Select value={rarity} onValueChange={(value) => handleRarityChange(value as BadgeRarity | "All")}>
+            <SelectTrigger aria-label="Filter by rarity">
+              <SelectValue placeholder="Filter by rarity" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All">All rarities</SelectItem>
+              {["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic"].map((item) => (
+                <SelectItem key={item} value={item}>{item}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={visibility} onValueChange={(value) => handleVisibilityChange(value as typeof visibility)}>
+            <SelectTrigger aria-label="Filter by unlock state">
+              <SelectValue placeholder="Filter by state" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All">All badges</SelectItem>
+              <SelectItem value="Unlocked">Unlocked</SelectItem>
+              <SelectItem value="Locked">Locked</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        {isLoading ? <LoadingState message="Polishing your badge shelf..." /> : null}
+        {isError ? (
+          <ErrorState
+            title="Badge sync failed"
+            description="Some badge evidence could not be verified from GitHub. Retry sync or use partial profile data."
+            fallbackLabel="Open settings"
+            fallbackHref="/dashboard/settings"
+            analyticsTarget="badges:error"
+          />
+        ) : null}
+        {!isLoading && !isError && filtered.length === 0 ? (
+          <EmptyState
+            title="Your badge shelf is waiting."
+            description="Complete your first meaningful merged PR to start unlocking visible reputation proof."
+            actionLabel="Open quests"
+            actionHref="/dashboard/quests"
+            analyticsTarget="badges:empty"
+          />
+        ) : null}
+        {!isLoading && !isError && filtered.length ? (
+          <BadgeGrid
+            badges={filtered}
+            stories={abraInsights.data?.badgeStories}
+          />
+        ) : null}
+      </section>
       {!isLoading && !isError ? (
-        <section className="space-y-3">
+        <section id="badges-locked" className="scroll-mt-24 space-y-3">
           <p className="text-xs tracking-[0.24em] text-fuchsia-200 uppercase">Locked / upcoming badges</p>
           {lockedBadges.length > 0 ? (
             <div className="grid gap-3 md:grid-cols-3">
@@ -273,7 +333,15 @@ export function BadgesPageClient() {
                 <div key={badge.id} className="neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4">
                   <p className="text-xs tracking-[0.24em] text-fuchsia-200 uppercase">{badge.rarity}</p>
                   <h3 className="mt-2 text-base font-semibold text-white">{badge.name}</h3>
-                  <p className="mt-2 text-sm text-slate-300">{badge.unlockCondition}</p>
+                  <ExpandableText
+                    text={badge.unlockCondition}
+                    lines={3}
+                    minLengthForToggle={120}
+                    className="mt-2"
+                    textClassName="text-sm text-slate-300"
+                    showMoreLabel="Expand condition"
+                    showLessLabel="Collapse condition"
+                  />
                   <div className="mt-3 space-y-1">
                     <Progress value={badge.progress ?? 0} />
                     <p className="text-xs text-slate-300">{badge.progress ?? 0}% verified progress</p>

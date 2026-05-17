@@ -21,13 +21,13 @@
   --cyber-lime: 133 255 196;
   --text-strong: 251 253 255;
   --text-body: 242 248 255;
-  --text-soft: 231 240 255;
-  --page-overlay-top-alpha: 0.14;
-  --page-overlay-bottom-alpha: 0.46;
-  --page-grid-opacity: 0.14;
-  --page-glow-opacity: 0.42;
-  --surface-blur: 16px;
-  --surface-blur-strong: 18px;
+  --text-soft: 236 245 255;
+  --page-overlay-top-alpha: 0.08;
+  --page-overlay-bottom-alpha: 0.24;
+  --page-grid-opacity: 0.08;
+  --page-glow-opacity: 0.26;
+  --surface-blur: 12px;
+  --surface-blur-strong: 14px;
   --radius-card: 0.1rem;
   --eyebrow-tracking-wide: 0.14em;
   --eyebrow-tracking-tight: 0.12em;
@@ -52,13 +52,13 @@ html[data-theme="midnight"] {
   --cyber-grid-alt: 178 141 255;
   --text-strong: 252 254 255;
   --text-body: 244 249 255;
-  --text-soft: 234 242 255;
-  --page-overlay-top-alpha: 0.22;
-  --page-overlay-bottom-alpha: 0.58;
-  --page-grid-opacity: 0.12;
-  --page-glow-opacity: 0.36;
-  --surface-blur: 14px;
-  --surface-blur-strong: 16px;
+  --text-soft: 238 246 255;
+  --page-overlay-top-alpha: 0.12;
+  --page-overlay-bottom-alpha: 0.32;
+  --page-grid-opacity: 0.08;
+  --page-glow-opacity: 0.22;
+  --surface-blur: 10px;
+  --surface-blur-strong: 12px;
 }
 
 html[data-theme="aurora"] {
@@ -80,13 +80,13 @@ html[data-theme="aurora"] {
   --cyber-grid-alt: 134 194 255;
   --text-strong: 251 254 255;
   --text-body: 246 250 255;
-  --text-soft: 237 245 255;
-  --page-overlay-top-alpha: 0.1;
-  --page-overlay-bottom-alpha: 0.34;
-  --page-grid-opacity: 0.08;
-  --page-glow-opacity: 0.28;
-  --surface-blur: 12px;
-  --surface-blur-strong: 14px;
+  --text-soft: 240 248 255;
+  --page-overlay-top-alpha: 0.06;
+  --page-overlay-bottom-alpha: 0.2;
+  --page-grid-opacity: 0.05;
+  --page-glow-opacity: 0.16;
+  --surface-blur: 9px;
+  --surface-blur-strong: 11px;
 }
 
 html[data-theme="high-contrast"] {
@@ -158,16 +158,9 @@ body {
       rgb(0 3 12 / var(--page-overlay-top-alpha)),
       rgb(var(--background) / var(--page-overlay-bottom-alpha))
     ),
-    url("/background.jpg");
-  background-image:
-    linear-gradient(
-      180deg,
-      rgb(0 3 12 / var(--page-overlay-top-alpha)),
-      rgb(var(--background) / var(--page-overlay-bottom-alpha))
-    ),
     image-set(
-      url("/background.webp") type("image/webp"),
-      url("/background.jpg") type("image/jpeg")
+      url("/assets/background.webp") type("image/webp"),
+      url("/assets/background.jpg") type("image/jpeg")
     );
   background-position:
     center center,
@@ -206,13 +199,13 @@ body::before {
     linear-gradient(
       to bottom,
       transparent 0%,
-      rgb(255 255 255 / 0.02) 50%,
+      rgb(255 255 255 / 0.01) 50%,
       transparent 100%
     ),
     repeating-linear-gradient(
       to right,
-      transparent 0 34px,
-      rgb(var(--primary) / 0.06) 34px 35px
+      transparent 0 44px,
+      rgb(var(--primary) / 0.03) 44px 45px
     );
   background-size:
     100% 5px,
@@ -229,14 +222,14 @@ body::after {
   background:
     radial-gradient(
       circle at 50% -16%,
-      rgb(var(--primary-2) / 0.12) 0%,
-      rgb(var(--primary-2) / 0.08) 30%,
+      rgb(var(--primary-2) / 0.08) 0%,
+      rgb(var(--primary-2) / 0.05) 30%,
       transparent 68%
     ),
     radial-gradient(
       circle at -8% 94%,
-      rgb(var(--primary) / 0.1) 0%,
-      rgb(var(--primary) / 0.07) 34%,
+      rgb(var(--primary) / 0.07) 0%,
+      rgb(var(--primary) / 0.04) 34%,
       transparent 64%
     );
   opacity: var(--page-glow-opacity);
@@ -264,8 +257,8 @@ select {
     [role="tab"],
     [role="switch"]
   ) {
-  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
-  transition-duration: 160ms;
+  transition-property: color, background-color, border-color, box-shadow;
+  transition-duration: 120ms;
   transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
 
@@ -787,15 +780,15 @@ html[data-text-scale="large"] :where(.text-sm) {
     ),
     repeating-linear-gradient(
       90deg,
-      transparent 0 26px,
-      rgb(var(--primary) / 0.08) 26px 27px,
-      transparent 27px 50px,
-      rgb(var(--primary-2) / 0.08) 50px 51px
+      transparent 0 30px,
+      rgb(var(--primary) / 0.05) 30px 31px,
+      transparent 31px 50px,
+      rgb(var(--primary-2) / 0.05) 50px 51px
     );
   background-size:
     100% 10px,
     100% 100%;
-  opacity: 0.33;
+  opacity: 0.22;
   mask-image: linear-gradient(180deg, black 0%, black 72%, transparent 100%);
 }
 
@@ -846,7 +839,7 @@ html[data-text-scale="large"] :where(.text-sm) {
   pointer-events: none;
   z-index: -1;
   border-radius: 999px;
-  filter: blur(62px);
+  filter: blur(42px);
 }
 
 .page-shell::before {
@@ -869,10 +862,13 @@ html[data-text-scale="large"] :where(.text-sm) {
   color: rgb(var(--text-soft));
 }
 
-.text-muted,
-.cyber-copy-muted,
-.section-subtitle {
+.cyber-copy-muted {
   color: rgb(var(--text-soft));
+}
+
+.text-muted,
+.section-subtitle {
+  color: rgb(var(--text-body));
 }
 
 [class*="text-foreground/"] {
@@ -1004,7 +1000,7 @@ html[data-theme="high-contrast"] .neon-title {
   body::after,
   .page-shell::before,
   .page-shell::after {
-    opacity: 0.26;
+    opacity: 0.18;
   }
 }
 

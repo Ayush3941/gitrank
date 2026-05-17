@@ -293,6 +293,17 @@
 - Hardened client analytics emission with short abort windows plus `keepalive`
   so telemetry failures do not hold open route transitions in local/offline
   conditions.
+- Added badges quick-jump rail with active section tracking (`Forge`, `Earned`,
+  `Locked`) so long badge pages keep orientation and faster navigation.
+- Improved badge readability for long content:
+  - unlock conditions and AI stories now use shared `ExpandableText` patterns
+    in card and dialog views
+  - locked badge conditions now clamp/expand instead of overflowing dense cards
+- Tuned global visual performance and legibility:
+  - reduced heavy overlay/blur intensity and broad transition scope
+  - strengthened muted-text legibility defaults
+  - switched runtime background image source to `/assets/background.*` and
+    added matching public asset paths for stable rendering.
 
 ## 2026-05-16
 

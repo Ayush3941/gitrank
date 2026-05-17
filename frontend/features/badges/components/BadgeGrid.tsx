@@ -1,5 +1,6 @@
 import { Lock } from "lucide-react";
 import { CopyTextButton } from "@/components/shared/CopyTextButton";
+import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { RarityBadge } from "@/components/shared/RarityBadge";
 import { SignalIcon } from "@/components/shared/SignalIcon";
@@ -28,7 +29,15 @@ export function BadgeGrid({
               </div>
               <div>
                 <h2 className="text-xl font-semibold text-white">{badge.name}</h2>
-                <p className="mt-2 text-sm text-muted">{badge.unlockCondition}</p>
+                <ExpandableText
+                  text={badge.unlockCondition}
+                  lines={3}
+                  minLengthForToggle={120}
+                  className="mt-2"
+                  textClassName="text-sm text-muted"
+                  showMoreLabel="More"
+                  showLessLabel="Less"
+                />
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className={badge.unlocked ? "text-emerald-200" : "text-muted"}>
@@ -51,7 +60,15 @@ export function BadgeGrid({
                       analyticsTarget="badges/copy-story"
                     />
                   </div>
-                  <p className="mt-2">{stories[badge.id].story}</p>
+                  <ExpandableText
+                    text={stories[badge.id].story}
+                    lines={4}
+                    minLengthForToggle={180}
+                    className="mt-2"
+                    textClassName="text-slate-200/86"
+                    showMoreLabel="Read story"
+                    showLessLabel="Hide story"
+                  />
                 </div>
               ) : null}
             </GlowCard>

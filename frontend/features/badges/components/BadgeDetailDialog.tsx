@@ -1,7 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ExpandableText } from "@/components/shared/ExpandableText";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { RarityBadge } from "@/components/shared/RarityBadge";
 import { SignalIcon } from "@/components/shared/SignalIcon";
@@ -28,13 +29,29 @@ export function BadgeDetailDialog({
                 <SignalIcon icon={badge.icon} className="h-5 w-5" />
               </div>
               <DialogTitle className="text-2xl font-semibold text-white">{badge.name}</DialogTitle>
-              <DialogDescription className="text-sm text-muted">{badge.description}</DialogDescription>
+              <div>
+                <ExpandableText
+                  text={badge.description}
+                  lines={4}
+                  minLengthForToggle={160}
+                  textClassName="text-sm text-muted"
+                  showMoreLabel="Read description"
+                  showLessLabel="Hide description"
+                />
+              </div>
             </div>
             <RarityBadge rarity={badge.rarity} />
           </div>
           <GlowCard className="cyber-sheen space-y-3 neon-surface p-4">
             <p className="text-xs tracking-[0.24em] text-primary uppercase">Unlock condition</p>
-            <p className="text-sm text-slate-200">{badge.unlockCondition}</p>
+            <ExpandableText
+              text={badge.unlockCondition}
+              lines={4}
+              minLengthForToggle={140}
+              textClassName="text-sm text-slate-200"
+              showMoreLabel="Read condition"
+              showLessLabel="Hide condition"
+            />
             {typeof badge.rarityScore === "number" ? (
               <p className="text-sm text-muted">
                 Rarity index {badge.rarityScore}/100 from the current badge rules.
@@ -47,13 +64,40 @@ export function BadgeDetailDialog({
           {story ? (
             <GlowCard className="cyber-sheen space-y-3 neon-surface border-fuchsia-300/24 p-4">
               <p className="text-xs tracking-[0.24em] text-fuchsia-200 uppercase">Achievement story</p>
-              <p className="text-sm text-slate-200/88">{story.story}</p>
-              <p className="text-sm text-slate-200/84">
-                <span className="text-cyan-200">Trigger:</span> {story.trigger}
-              </p>
-              <p className="text-sm text-slate-200/84">
-                <span className="text-cyan-200">Next:</span> {story.nextFocus}
-              </p>
+              <ExpandableText
+                text={story.story}
+                lines={5}
+                minLengthForToggle={220}
+                textClassName="text-sm text-slate-200/88"
+                showMoreLabel="Read full story"
+                showLessLabel="Hide full story"
+              />
+              <div className="space-y-2 text-sm text-slate-200/84">
+                <p>
+                  <span className="text-cyan-200">Trigger:</span>
+                </p>
+                <ExpandableText
+                  text={story.trigger}
+                  lines={3}
+                  minLengthForToggle={130}
+                  textClassName="text-sm text-slate-200/84"
+                  showMoreLabel="Expand trigger"
+                  showLessLabel="Collapse trigger"
+                />
+              </div>
+              <div className="space-y-2 text-sm text-slate-200/84">
+                <p>
+                  <span className="text-cyan-200">Next:</span>
+                </p>
+                <ExpandableText
+                  text={story.nextFocus}
+                  lines={3}
+                  minLengthForToggle={130}
+                  textClassName="text-sm text-slate-200/84"
+                  showMoreLabel="Expand next"
+                  showLessLabel="Collapse next"
+                />
+              </div>
             </GlowCard>
           ) : null}
           <div className="space-y-2">
