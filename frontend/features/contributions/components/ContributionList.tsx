@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, BookCheck, GitMerge, ShieldCheck, Sparkles, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { GlowCard } from "@/components/shared/GlowCard";
 import type { ContributionNarrative } from "@/lib/ai/abra-insights-types";
 import type { Contribution } from "@/types/gitrank";
@@ -120,10 +121,18 @@ function AIPanel({
 }) {
   return (
     <div className="neon-surface rounded-[1.35rem] border-fuchsia-300/28 px-4 py-4">
-      <p className="inline-flex items-center gap-2 text-xs tracking-[0.24em] text-fuchsia-200 uppercase">
-        <Sparkles className="h-3.5 w-3.5" />
-        Contribution Impact Explanation
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="inline-flex items-center gap-2 text-xs tracking-[0.24em] text-fuchsia-200 uppercase">
+          <Sparkles className="h-3.5 w-3.5" />
+          Contribution Impact Explanation
+        </p>
+        <CopyTextButton
+          text={narrative?.pitch || fallbackSummary}
+          label="Copy statement"
+          copiedLabel="Statement copied"
+          analyticsTarget="contributions/copy-impact-statement"
+        />
+      </div>
       {narrative ? (
         <div className="cyber-copy mt-3 grid gap-2 text-sm">
           <p><span className="text-cyan-200">What:</span> {narrative.what}</p>

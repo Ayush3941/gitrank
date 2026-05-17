@@ -98,6 +98,10 @@
   across the major authenticated profile surfaces.
 - Added `aria-busy` state hints on contribution and leaderboard list surfaces
   during client-side filter/tab refresh transitions.
+- Added reusable copy-text control for content snippets and integrated it into:
+  - contribution impact statement cards
+  - badge achievement story cards
+  so users can quickly reuse polished lines for profiles, resumes, and demos.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`

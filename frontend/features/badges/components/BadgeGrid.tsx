@@ -1,4 +1,5 @@
 import { Lock } from "lucide-react";
+import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { RarityBadge } from "@/components/shared/RarityBadge";
 import { SignalIcon } from "@/components/shared/SignalIcon";
@@ -42,7 +43,15 @@ export function BadgeGrid({
               </div>
               {stories?.[badge.id] ? (
                 <div className="neon-surface rounded-xl border-fuchsia-300/24 px-3 py-2 text-xs text-slate-200/86">
-                  {stories[badge.id].story}
+                  <div className="flex items-center justify-end">
+                    <CopyTextButton
+                      text={stories[badge.id].story}
+                      label="Copy story"
+                      copiedLabel="Story copied"
+                      analyticsTarget="badges/copy-story"
+                    />
+                  </div>
+                  <p className="mt-2">{stories[badge.id].story}</p>
                 </div>
               ) : null}
             </GlowCard>
