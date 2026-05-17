@@ -43,12 +43,17 @@ const THEME_OPTIONS: Array<{
   {
     value: "neon",
     label: "Neon grid",
-    description: "Cyan-magenta glow with expressive surfaces.",
+    description: "Bold cyberpunk glow and vivid HUD accents.",
   },
   {
     value: "midnight",
     label: "Midnight contrast",
-    description: "Higher contrast text with toned glow intensity.",
+    description: "Balanced readability with cleaner dark surfaces.",
+  },
+  {
+    value: "high-contrast",
+    label: "High contrast",
+    description: "Maximum text clarity and reduced background noise.",
   },
 ];
 

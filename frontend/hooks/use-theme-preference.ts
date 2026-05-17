@@ -5,12 +5,12 @@ import { useCallback, useEffect, useSyncExternalStore } from "react";
 const STORAGE_KEY = "gitrank:theme";
 const CHANGE_EVENT = "gitrank:theme-preference";
 
-const SUPPORTED_THEMES = ["neon", "midnight"] as const;
+const SUPPORTED_THEMES = ["neon", "midnight", "high-contrast"] as const;
 
 export type ThemePreference = (typeof SUPPORTED_THEMES)[number];
 
 export function useThemePreference() {
-  const theme = useSyncExternalStore(subscribe, getThemeSnapshot, () => "neon");
+  const theme = useSyncExternalStore(subscribe, getThemeSnapshot, () => "midnight");
 
   const setTheme = useCallback((value: ThemePreference) => {
     if (typeof window === "undefined") {
@@ -47,13 +47,13 @@ function subscribe(callback: () => void) {
 
 function getThemeSnapshot(): ThemePreference {
   if (typeof window === "undefined") {
-    return "neon";
+    return "midnight";
   }
   const stored = window.localStorage.getItem(STORAGE_KEY);
   if (stored && isThemePreference(stored)) {
     return stored;
   }
-  return "neon";
+  return "midnight";
 }
 
 function isThemePreference(value: string): value is ThemePreference {
