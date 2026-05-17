@@ -99,8 +99,8 @@ export function DashboardTopBar({
               Shortcuts
               <kbd className="hidden text-[11px] sm:inline">?</kbd>
             </Button>
-            <ThemeQuickSwitcher compact />
-            <TextScaleQuickSwitcher compact />
+            <ThemeQuickSwitcher compact className="hidden sm:inline-flex" />
+            <TextScaleQuickSwitcher compact className="hidden sm:inline-flex" />
             <Link
               href={`/u/${user.username}`}
               className="focus-ring cyber-link inline-flex items-center gap-2 text-sm font-medium"
