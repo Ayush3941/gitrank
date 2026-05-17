@@ -328,7 +328,11 @@ fi
 
 if [ "$fail_count" -gt 0 ]; then
   required_inputs=
+  oauth_bootstrap_next_step=false
   if [ "$github_access_status" = "fail" ] || [ "$remote_workflow_sync_status" = "fail" ] || [ "$controls_public_status" = "fail" ] || [ "$workflow_evidence_status" = "fail" ]; then
+    if [ "$token_state" != "set" ] && [ "$has_oauth_bootstrap" = "true" ]; then
+      oauth_bootstrap_next_step=true
+    fi
     if { [ "$token_state" != "set" ] && [ "$has_oauth_bootstrap" != "true" ]; } || [ "$github_access_effective_status" = "credential-invalid" ]; then
       required_inputs=$(append_unique_csv "$required_inputs" "GITRANK_REPO_ADMIN_TOKEN (or GITHUB_TOKEN/GH_TOKEN)")
       required_inputs=$(append_unique_csv "$required_inputs" "or GitHub App bootstrap: GITHUB_APP_ID + GITHUB_APP_INSTALLATION_ID + GITHUB_APP_PRIVATE_KEY_FILE/PEM")
@@ -354,7 +358,11 @@ if [ "$fail_count" -gt 0 ]; then
   if [ -n "$required_inputs" ]; then
     printf '0. Minimal required next inputs: %s\n' "$required_inputs"
   fi
-  printf '1. Prepare live env file: make -C %s scaffold-v2-live-env\n' "$root_dir"
+  if [ "$oauth_bootstrap_next_step" = "true" ]; then
+    printf '1. Bootstrap GitHub controls via OAuth web flow: make -C %s finalize-v2-live-closeout-via-oauth-web-flow\n' "$root_dir"
+  else
+    printf '1. Prepare live env file: make -C %s scaffold-v2-live-env\n' "$root_dir"
+  fi
   printf '2. Fill credentials and endpoints in %s/.env.v2-live-gates.local\n' "$root_dir"
   printf '3. Re-run this preflight: make -C %s verify-v2-external-unblock-preflight\n' "$root_dir"
   printf '4. Execute live gates: CONFIRM_FINALIZE_V2=yes make -C %s finalize-v2-live-closeout-local-env\n' "$root_dir"
