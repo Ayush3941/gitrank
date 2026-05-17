@@ -2,6 +2,13 @@
 
 ## 2026-05-17
 
+- Added global accessibility navigation + motion-respect refinements:
+  - root `Skip to main content` link in `app/layout.tsx`
+  - `AppShell` now renders semantic `<main id="main-content">`
+  - system-level `@media (prefers-reduced-motion: reduce)` guard in
+    `app/globals.css` to disable non-essential animation and smooth-scroll
+- Reduced decorative rendering cost on smaller screens by gating heavier
+  background layers in `AppShell` behind responsive breakpoints.
 - Added field web-vitals reporting (`useReportWebVitals`) with bounded
   route-group tagging via `WebVitalsReporter` mounted in root layout.
 - Extended analytics payload and gateway ingestion for `web_vital.sample`
