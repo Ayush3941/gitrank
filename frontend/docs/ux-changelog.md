@@ -8,6 +8,9 @@
     recovery actions (never synced, syncing, partial, stale, failed, rate-limited)
   - wired `SyncStateGuide` into Settings account section so users always see
     what current sync state means and where to go next
+  - added a lightweight `Refresh profile view` action in Settings account
+    controls (query refetch only) so stale UI can be updated without
+    reintroducing manual sync execution buttons
   - raised tiny utility label legibility by normalizing `text-[10px]` and
     `text-[11px]` classes in `app/globals.css`, including large-text mode
     overrides for better visibility on dense dashboard surfaces.

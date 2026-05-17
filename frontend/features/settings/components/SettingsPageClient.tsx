@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Download, FolderGit2, LogOut, Palette, Sparkles, Trash2 } from "lucide-react";
+import { Download, FolderGit2, LogOut, Palette, RefreshCw, Sparkles, Trash2 } from "lucide-react";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -111,7 +111,7 @@ const TEXT_SCALE_OPTIONS: Array<{
 ];
 
 export function SettingsPageClient() {
-  const { data, isLoading, isError } = useMyProfile();
+  const { data, isLoading, isError, isFetching, refetch } = useMyProfile();
   const updatePrivacy = useUpdateProfilePrivacy();
   const updateRepositoryVisibility = useUpdateRepositoryVisibility();
   const unlinkAccount = useUnlinkMyAccount();
@@ -349,6 +349,16 @@ export function SettingsPageClient() {
           <SyncStatusPill status={data.user.syncStatus} />
         </div>
         <div className="flex flex-wrap gap-3">
+          <Button
+            variant="secondary"
+            disabled={isActing || isFetching}
+            onClick={() => {
+              void refetch();
+            }}
+          >
+            <RefreshCw className="h-4 w-4" />
+            {isFetching ? "Refreshing view..." : "Refresh profile view"}
+          </Button>
           <Button variant="secondary" disabled={isActing} onClick={handleAccountRelink}>
             <FolderGit2 className="h-4 w-4" />
             {accountLinkStart.isPending ? "Starting relink..." : "Reconnect GitHub"}
