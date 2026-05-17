@@ -398,6 +398,8 @@
 - Upgraded jump-rail structure semantics:
   - converted jump-link groups to list markup (`ul/li`) across all major dashboard rails
   - retains current visual treatment while improving assistive navigation context.
+- Updated primary dashboard navigation semantics:
+  - sidebar and mobile app navigation now use list markup (`ul/li`) inside nav landmarks for clearer assistive structure.
 
 ## 2026-05-16
 
