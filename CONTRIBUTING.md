@@ -226,6 +226,7 @@ Baseline references for this section:
 - [x] Remove dead-end screens; every page should have a clear next action.
 - [x] Ensure empty states always show recovery paths (sync, retry, navigate, docs).
 - [x] Ensure stale states are visible and understandable (last refresh time + what to do next).
+- [x] Use bounded automatic authenticated-route sync instead of a manual "Sync now" button dependency; surface stale/partial states while auto-refresh runs.
 
 ### B. Design System and Visual Consistency
 
