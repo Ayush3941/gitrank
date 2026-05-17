@@ -2,6 +2,16 @@
 
 ## 2026-05-17
 
+- Added file-based social-share identity layer:
+  - new generated social cards in `app/opengraph-image.tsx` and
+    `app/twitter-image.tsx` with cyber-neon branding and high-contrast copy
+  - added descriptive `opengraph-image.alt.txt` and `twitter-image.alt.txt`
+    metadata companions for accessibility.
+- Upgraded root metadata defaults in `app/layout.tsx`:
+  - configured `metadataBase`, canonical root path, and baseline OpenGraph /
+    Twitter defaults so page-level metadata composes cleanly
+  - switched default social image references to generated metadata routes
+    (`/opengraph-image`, `/twitter-image`) for consistent link previews.
 - Added a new `Aurora clarity` theme tuned for long-read dashboard sessions:
   - brighter body/supporting copy tokens with softer accent glow
   - exposed in settings, quick theme switcher, and keyboard theme-cycle flow

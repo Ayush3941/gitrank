@@ -1,0 +1,1 @@
+GitRank social preview showing evidence-backed contributor scoring, XP progression, and profile sharing.

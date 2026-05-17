@@ -6,6 +6,7 @@ import { DisplayShortcutsProvider } from "@/components/providers/display-shortcu
 import { TextScalePreferenceProvider } from "@/components/providers/text-scale-preference-provider";
 import { ThemePreferenceProvider } from "@/components/providers/theme-preference-provider";
 import { WebVitalsReporter } from "@/components/providers/web-vitals-reporter";
+import { publicBaseURL } from "@/lib/seo/public-url";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -28,13 +29,42 @@ const orbitron = Orbitron({
   display: "swap",
 });
 
+const metadataBase = new URL(publicBaseURL());
+
 export const metadata: Metadata = {
+  metadataBase,
+  applicationName: "GitRank",
   title: {
     default: "GitRank",
     template: "%s | GitRank",
   },
   description:
     "GitRank turns meaningful open-source work into explainable reputation signals, XP, badges, and public proof.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    siteName: "GitRank",
+    title: "GitRank",
+    description:
+      "Evidence-backed contribution scoring, progression loops, and public contributor proof.",
+    url: "/",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "GitRank",
+    description:
+      "Evidence-backed contribution scoring, progression loops, and public contributor proof.",
+    images: ["/twitter-image"],
+  },
 };
 
 export default function RootLayout({

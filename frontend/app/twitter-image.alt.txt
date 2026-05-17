@@ -1,0 +1,1 @@
+GitRank social card for open-source contributor intelligence with synced PR impact and progression loops.
