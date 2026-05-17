@@ -32,6 +32,9 @@
   color alone.
 - Settings now includes a one-click display reset action that restores
   `Midnight` theme and `Default` text scale with immediate confirmation text.
+- Upgraded shared `LoadingState` component with structured skeleton placeholders
+  and explicit live-region loading announcements, improving perceived progress
+  and accessibility across all major routes that reuse this component.
 - Smoothed and simplified shell glow layers in `AppShell` to reduce decorative
   overdraw and avoid abrupt glow cutoffs.
 - Added responsive visual cost guard in `app/globals.css`:
