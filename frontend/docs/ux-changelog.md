@@ -32,6 +32,11 @@
     CSS theme tokens (`--primary`, `--primary-2`, `--text-body`, `--text-soft`)
   - tuned axis/tick/tooltip typography and colors for better legibility in
     Neon, Aurora, Midnight, and High Contrast modes.
+- Shared cyber-label/readout readability pass:
+  - reduced HUD/readout letter-spacing (`.hud-eyebrow`, `.cyber-readout`) to
+    improve scan speed on compact metric labels
+  - increased muted chip and data-badge text clarity by moving to stronger text
+    tokens (`--text-body`, `--text-strong`).
 
 - Optimized hero/background rendering while preserving cyber style:
   - compressed `public/background.jpg` from large source to web-safe size
