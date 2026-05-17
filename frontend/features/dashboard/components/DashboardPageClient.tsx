@@ -250,8 +250,8 @@ export function DashboardPageClient() {
                 <a
                   className={
                     active
-                      ? "neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold"
-                      : "neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs"
+                      ? "focus-ring neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold"
+                      : "focus-ring neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs"
                   }
                   href={`#${section.id}`}
                   aria-current={active ? "location" : undefined}
