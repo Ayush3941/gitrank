@@ -354,6 +354,10 @@
   - removed per-card decorative blurred glow element
   - replaced with a low-cost top gradient rule for hierarchy
   - strengthened chip text weight for faster scanability without extra visual effects.
+- Improved onboarding connect reveal clarity:
+  - added explicit 3-step OAuth-to-reveal path cards (`Authorize`, `Sync evidence`, `Reveal profile`)
+  - surfaced expected first-snapshot timing (`~60-90s`) as a visible callout
+  - clarified post-OAuth destination and no-fabricated-user behavior in onboarding copy.
 
 ## 2026-05-16
 

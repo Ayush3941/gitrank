@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { FolderGit2, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, FolderGit2, ShieldCheck, Sparkles, Timer } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Button } from "@/components/ui/button";
 import { OnboardingStepper } from "@/features/onboarding/components/OnboardingStepper";
@@ -38,16 +38,34 @@ export function ConnectGithubPanel() {
             We analyze public contribution evidence by default. Private code is not inspected unless you later choose to opt in.
           </p>
         </div>
-        <div className="grid gap-3">
+        <div className="grid gap-3 sm:grid-cols-3">
           {[
-            "Read public profile metadata and contribution history.",
-            "Inspect merged PRs, reviews, changed files, linked issues, and repository context.",
-            "Build an explainable score instead of a raw activity count.",
+            {
+              step: "Step 1",
+              title: "Authorize GitHub",
+              text: "Sign in and approve read-only access for your contribution metadata.",
+            },
+            {
+              step: "Step 2",
+              title: "Sync evidence",
+              text: "GitRank pulls recent merged PR, review, and repository context data.",
+            },
+            {
+              step: "Step 3",
+              title: "Reveal profile",
+              text: "You land in the analyzing flow and unlock your first score snapshot.",
+            },
           ].map((item) => (
-            <div key={item} className="neon-surface rounded-3xl px-4 py-3 text-sm text-slate-200">
-              {item}
+            <div key={item.step} className="neon-surface space-y-2 rounded-3xl px-4 py-3 text-sm text-slate-200">
+              <p className="text-xs tracking-[0.2em] text-primary uppercase">{item.step}</p>
+              <p className="font-semibold text-white">{item.title}</p>
+              <p className="text-xs leading-6 text-slate-200/82">{item.text}</p>
             </div>
           ))}
+        </div>
+        <div className="neon-callout inline-flex items-center gap-2 px-3 py-2 text-xs text-cyan-100">
+          <Timer className="h-4 w-4 text-cyan-200" />
+          Typical first snapshot path: about 60-90 seconds after OAuth success.
         </div>
         <div className="space-y-3">
           <details className="neon-surface rounded-3xl px-4 py-3">
@@ -73,7 +91,10 @@ export function ConnectGithubPanel() {
         </div>
         <div className="flex flex-wrap gap-3">
           <Button asChild size="lg">
-            <Link href="/oauth/github/start?return_to=/onboarding/analyzing">Connect GitHub</Link>
+            <Link href="/oauth/github/start?return_to=/onboarding/analyzing">
+              Connect GitHub
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </Button>
           <Button asChild variant="secondary" size="lg">
             <Link href="/">Back to landing</Link>
@@ -101,6 +122,12 @@ export function ConnectGithubPanel() {
               {item}
             </div>
           ))}
+        </div>
+        <div className="neon-surface rounded-[1.75rem] border-primary/22 px-4 py-4">
+          <p className="text-xs tracking-[0.22em] text-primary uppercase">Where this goes next</p>
+          <p className="mt-2 text-sm text-slate-100">
+            After OAuth, GitRank redirects to <span className="font-semibold text-white">Analyzing</span> and starts live sync. You will not see fabricated leaderboard identities during this flow.
+          </p>
         </div>
         <div className="rounded-[1.75rem] border border-primary/18 bg-primary/8 p-4 text-sm text-slate-200">
           <div className="flex items-center gap-2 text-primary">
