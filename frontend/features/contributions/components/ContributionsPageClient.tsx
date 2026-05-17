@@ -9,7 +9,7 @@ import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { CopyTextButton } from "@/components/shared/CopyTextButton";
+import { CopyLinkButton } from "@/components/shared/CopyLinkButton";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { StaleState } from "@/components/shared/StaleState";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
@@ -265,8 +265,8 @@ export function ContributionsPageClient() {
           ))}
         </ul>
         <div className="ml-auto">
-          <CopyTextButton
-            text={activeSectionLink}
+          <CopyLinkButton
+            href={activeSectionLink}
             label="Copy section link"
             copiedLabel="Section link copied"
             analyticsTarget="contributions/copy-section-link"

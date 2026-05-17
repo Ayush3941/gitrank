@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, CalendarClock, Flame, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
-import { CopyTextButton } from "@/components/shared/CopyTextButton";
+import { CopyLinkButton } from "@/components/shared/CopyLinkButton";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -227,8 +227,8 @@ export function QuestsPageClient() {
             })}
           </ul>
           <div className="ml-auto">
-            <CopyTextButton
-              text={activeCadenceLink}
+            <CopyLinkButton
+              href={activeCadenceLink}
               label="Copy cadence link"
               copiedLabel="Cadence link copied"
               analyticsTarget="quests/copy-cadence-link"

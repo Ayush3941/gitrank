@@ -71,6 +71,14 @@
   - public profile jump navigator now shows active section context and a
     `Copy section link` action (`/u/<username>#...`) so shared profile links
     can point to exact sections.
+- Absolute share-link normalization:
+  - added shared `CopyLinkButton` + `toAbsoluteShareUrl` helper so copied
+    dashboard/profile section links resolve to absolute URLs in the browser
+    instead of relative path fragments
+  - migrated dashboard, contributions, badges, quests, settings, leaderboard,
+    and public-profile copy-link actions to this shared behavior
+  - added `tests/share-links.test.ts` to lock absolute/relative URL
+    normalization semantics.
 - Route fallback consistency pass:
   - added shared `RouteFallbackCard` (`components/shared/RouteFallbackCard.tsx`)
     and migrated all route-level `not-found` surfaces (global, dashboard,

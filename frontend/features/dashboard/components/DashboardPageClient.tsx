@@ -17,7 +17,7 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { CopyTextButton } from "@/components/shared/CopyTextButton";
+import { CopyLinkButton } from "@/components/shared/CopyLinkButton";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
 import { Button } from "@/components/ui/button";
@@ -273,8 +273,8 @@ export function DashboardPageClient() {
             })}
           </ul>
         <div className="ml-auto">
-          <CopyTextButton
-            text={activeSectionLink}
+          <CopyLinkButton
+            href={activeSectionLink}
             label="Copy section link"
             copiedLabel="Section link copied"
             analyticsTarget="dashboard/copy-section-link"

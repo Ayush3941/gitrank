@@ -7,7 +7,7 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
-import { CopyTextButton } from "@/components/shared/CopyTextButton";
+import { CopyLinkButton } from "@/components/shared/CopyLinkButton";
 import { SkillRadarChart } from "@/components/shared/SkillRadarChart";
 import { TimelineChart } from "@/components/shared/TimelineChart";
 import { RarityBadge } from "@/components/shared/RarityBadge";
@@ -188,8 +188,8 @@ export function PublicProfilePageClient({
           ))}
         </ul>
         <div className="ml-auto">
-          <CopyTextButton
-            text={activeSectionLink}
+          <CopyLinkButton
+            href={activeSectionLink}
             label="Copy section link"
             copiedLabel="Section link copied"
             analyticsTarget="public-profile/copy-section-link"
