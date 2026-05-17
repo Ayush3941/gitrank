@@ -61,6 +61,8 @@ describe("accessibility control naming", () => {
       const name = computeAccessibleName(element);
       expect(name.trim().length, `${element.outerHTML} should expose an accessible name`).toBeGreaterThan(0);
     }
+
+    expect(rendered.getAllByText("Current lane: Dashboard").length).toBeGreaterThanOrEqual(2);
   });
 
   it("exposes actionable controls when repository privacy list is empty", () => {

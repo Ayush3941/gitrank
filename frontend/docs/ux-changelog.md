@@ -109,6 +109,8 @@
 - Sidebar navigation orientation cue:
   - `DashboardSidebar` now mirrors mobile behavior with a live
     `Current lane: <route>` status line above desktop nav links.
+  - added accessibility regression coverage so desktop + mobile current-lane
+    cues remain present (`tests/accessibility-controls.test.tsx`).
 - Contribution filter iteration upgrade:
   - active contribution filters are now removable directly from inline chips
     (category/search/sort), reducing reset friction during rapid drill-down
