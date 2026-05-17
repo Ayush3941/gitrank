@@ -1,5 +1,8 @@
 "use client";
 
+import Link from "next/link";
+import { useEffect } from "react";
+import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Button } from "@/components/ui/button";
 
@@ -10,6 +13,15 @@ export default function DashboardError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    void emitAnalyticsEvent({
+      eventName: "error_state.viewed",
+      source: "frontend",
+      target: "dashboard:route-error",
+      status: "failure",
+    });
+  }, []);
+
   return (
     <GlowCard strong className="space-y-4">
       <p className="text-xs tracking-[0.24em] text-danger uppercase">Dashboard error</p>
@@ -22,7 +34,7 @@ export default function DashboardError({
           Retry panel
         </Button>
         <Button asChild>
-          <a href="/dashboard/settings">Open settings</a>
+          <Link href="/dashboard/settings">Open settings</Link>
         </Button>
       </div>
       {error.digest ? <p className="text-xs text-slate-400">Error digest: {error.digest}</p> : null}

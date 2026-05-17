@@ -1,5 +1,8 @@
 "use client";
 
+import Link from "next/link";
+import { useEffect } from "react";
+import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { AppShell } from "@/components/shared/AppShell";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Button } from "@/components/ui/button";
@@ -11,6 +14,15 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    void emitAnalyticsEvent({
+      eventName: "error_state.viewed",
+      source: "frontend",
+      target: "global:route-error",
+      status: "failure",
+    });
+  }, []);
+
   return (
     <html lang="en">
       <body className="min-h-full text-foreground">
@@ -27,7 +39,7 @@ export default function GlobalError({
                 Retry view
               </Button>
               <Button asChild>
-                <a href="/dashboard">Open dashboard</a>
+                <Link href="/dashboard">Open dashboard</Link>
               </Button>
             </div>
             {error.digest ? (

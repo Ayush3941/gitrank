@@ -12,6 +12,11 @@
     → `10s` → `15s` → `20s`) while sync is still pending
   - surfaced active poll cadence in UI so users understand refresh timing and
     why updates can appear less frequently on longer-running syncs.
+- Route-level error UX instrumentation and navigation consistency:
+  - `app/(app)/dashboard/error.tsx` and `app/global-error.tsx` now emit
+    `error_state.viewed` analytics events for error incidence visibility
+  - replaced raw anchor navigation with `next/link` actions so fallback
+    navigation remains in-app and consistent with App Router behavior.
 - Added file-based social-share identity layer:
   - new generated social cards in `app/opengraph-image.tsx` and
     `app/twitter-image.tsx` with cyber-neon branding and high-contrast copy
