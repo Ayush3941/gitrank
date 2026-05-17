@@ -377,6 +377,9 @@
   - added `Closest next unlock` panel in badge forge with direct recovery action
   - added per-locked-badge `Next move` guidance plus lane action buttons
   - added missing `Jump to` heading in badge quick navigation rail for consistency with other pages.
+- Fixed contribution-page quick-jump integrity under sparse data:
+  - ensured `Repositories`, `Timeline`, and `Cards` sections always render when page data is loaded
+  - replaced hidden-section states with explicit fallback copy so quick links never target missing anchors.
 
 ## 2026-05-16
 

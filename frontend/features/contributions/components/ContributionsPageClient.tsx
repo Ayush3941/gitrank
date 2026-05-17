@@ -315,62 +315,86 @@ export function ContributionsPageClient() {
           </GlowCard>
         </section>
       ) : null}
-      {!isLoading && !isError && repositories.length ? (
+      {!isLoading && !isError ? (
         <section id="contributions-repositories" className="scroll-mt-24 space-y-3">
           <p className="text-xs tracking-[0.24em] text-cyan-200 uppercase">Repositories touched</p>
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {repositories.map((repository) => (
-              <div key={repository.fullName} className="neon-surface rounded-[1.4rem] border-cyan-300/28 px-4 py-3">
-                <p className="break-anywhere text-sm font-medium text-white">{repository.fullName}</p>
-                <p className="mt-1 text-xs text-slate-300">{repository.contributions} contributions</p>
-                <p className="mt-3 text-lg font-semibold text-cyan-200">{repository.totalXp} XP</p>
-              </div>
-            ))}
-          </div>
+          {repositories.length ? (
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {repositories.map((repository) => (
+                <div key={repository.fullName} className="neon-surface rounded-[1.4rem] border-cyan-300/28 px-4 py-3">
+                  <p className="break-anywhere text-sm font-medium text-white">{repository.fullName}</p>
+                  <p className="mt-1 text-xs text-slate-300">{repository.contributions} contributions</p>
+                  <p className="mt-3 text-lg font-semibold text-cyan-200">{repository.totalXp} XP</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <GlowCard className="neon-surface border-dashed border-cyan-300/24 p-4 text-sm text-muted">
+              No repository contribution summary is available in this snapshot yet.
+            </GlowCard>
+          )}
         </section>
       ) : null}
-      {!isLoading && !isError && monthly.length ? (
+      {!isLoading && !isError ? (
         <section id="contributions-timeline" className="scroll-mt-24 grid gap-4 xl:grid-cols-[1.2fr,0.8fr]">
           <GlowCard className="space-y-4 border border-fuchsia-400/20 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/30">
             <p className="text-xs tracking-[0.24em] text-fuchsia-200 uppercase">Contribution timeline</p>
-            <div className="space-y-3">
-              {monthly.map((point) => (
-                <div key={point.month} className="space-y-1">
-                  <div className="flex items-center justify-between text-xs text-slate-200">
-                    <span>{point.month}</span>
-                    <span>{point.xp} XP</span>
+            {monthly.length ? (
+              <div className="space-y-3">
+                {monthly.map((point) => (
+                  <div key={point.month} className="space-y-1">
+                    <div className="flex items-center justify-between text-xs text-slate-200">
+                      <span>{point.month}</span>
+                      <span>{point.xp} XP</span>
+                    </div>
+                    <div className="neon-track h-2 rounded-full">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300 shadow-[0_0_18px_rgba(147,197,253,0.45)]"
+                        style={{ width: `${Math.max(8, Math.round((point.xp / maxMonthlyXp) * 100))}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="neon-track h-2 rounded-full">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300 shadow-[0_0_18px_rgba(147,197,253,0.45)]"
-                      style={{ width: `${Math.max(8, Math.round((point.xp / maxMonthlyXp) * 100))}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted">
+                Timeline points are not available yet for this filtered evidence window.
+              </p>
+            )}
           </GlowCard>
           <GlowCard className="space-y-4 border border-cyan-300/20 bg-gradient-to-br from-slate-950/88 to-cyan-950/25">
             <p className="text-xs tracking-[0.24em] text-cyan-200 uppercase">Top highlights</p>
-            <div className="space-y-3">
-              {topHighlights.map((row) => (
-                <div key={row.id} className="neon-surface rounded-2xl px-3 py-3">
-                  <p className="break-anywhere text-sm font-medium text-white">{row.title}</p>
-                  <p className="mt-1 break-anywhere text-xs text-slate-300">{row.owner}/{row.repo} #{row.number}</p>
-                  <p className="mt-2 text-sm text-cyan-200">+{row.xpEarned} XP</p>
-                </div>
-              ))}
-            </div>
+            {topHighlights.length ? (
+              <div className="space-y-3">
+                {topHighlights.map((row) => (
+                  <div key={row.id} className="neon-surface rounded-2xl px-3 py-3">
+                    <p className="break-anywhere text-sm font-medium text-white">{row.title}</p>
+                    <p className="mt-1 break-anywhere text-xs text-slate-300">{row.owner}/{row.repo} #{row.number}</p>
+                    <p className="mt-2 text-sm text-cyan-200">+{row.xpEarned} XP</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted">
+                No high-signal highlights are available yet in this snapshot.
+              </p>
+            )}
           </GlowCard>
         </section>
       ) : null}
-      {!isLoading && !isError && filteredRows.length ? (
+      {!isLoading && !isError ? (
         <section id="contributions-cards" className="scroll-mt-24">
-          <ContributionList
-            items={filteredRows}
-            narratives={abraInsights.data?.contributionNarratives}
-            isBusy={isFiltering}
-          />
+          {filteredRows.length ? (
+            <ContributionList
+              items={filteredRows}
+              narratives={abraInsights.data?.contributionNarratives}
+              isBusy={isFiltering}
+            />
+          ) : (
+            <GlowCard className="neon-surface border-dashed border-primary/24 p-4 text-sm text-muted">
+              No contribution cards match this filter set yet. Reset filters or widen the PR evidence window.
+            </GlowCard>
+          )}
         </section>
       ) : null}
     </div>
