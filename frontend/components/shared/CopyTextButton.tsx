@@ -9,6 +9,8 @@ export function CopyTextButton({
   text,
   label = "Copy",
   copiedLabel = "Copied",
+  manualLabel = "Copy manually",
+  errorLabel = "Copy failed",
   analyticsTarget = "copy-text",
   size = "sm",
   variant = "ghost",
@@ -16,11 +18,13 @@ export function CopyTextButton({
   text: string;
   label?: string;
   copiedLabel?: string;
+  manualLabel?: string;
+  errorLabel?: string;
   analyticsTarget?: string;
   size?: "sm" | "md" | "lg" | "icon";
   variant?: "default" | "secondary" | "ghost" | "danger";
 }) {
-  const [copied, setCopied] = useState(false);
+  const [state, setState] = useState<"idle" | "copied" | "manual" | "error">("idle");
   const timerRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
@@ -32,39 +36,73 @@ export function CopyTextButton({
   }, []);
 
   async function handleCopy() {
-    if (window.isSecureContext && navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(text);
-    } else {
-      window.prompt("Copy text", text);
-      return;
-    }
+    try {
+      if (window.isSecureContext && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        setState("copied");
+        void emitAnalyticsEvent({
+          eventName: "copy_text.used",
+          source: "frontend",
+          target: analyticsTarget,
+          status: "success",
+        });
+        scheduleReset();
+        return;
+      }
 
-    setCopied(true);
-    void emitAnalyticsEvent({
-      eventName: "copy_text.used",
-      source: "frontend",
-      target: analyticsTarget,
-      status: "success",
-    });
+      window.prompt("Copy text", text);
+      setState("manual");
+      void emitAnalyticsEvent({
+        eventName: "copy_text.used",
+        source: "frontend",
+        target: `${analyticsTarget}/manual`,
+        status: "success",
+      });
+      scheduleReset();
+    } catch {
+      setState("error");
+      void emitAnalyticsEvent({
+        eventName: "copy_text.used",
+        source: "frontend",
+        target: `${analyticsTarget}/error`,
+        status: "failure",
+      });
+      scheduleReset();
+    }
+  }
+
+  function scheduleReset() {
     if (timerRef.current) {
       window.clearTimeout(timerRef.current);
     }
     timerRef.current = window.setTimeout(() => {
-      setCopied(false);
+      setState("idle");
     }, 1400);
   }
 
+  const currentLabel =
+    state === "copied"
+      ? copiedLabel
+      : state === "manual"
+        ? manualLabel
+        : state === "error"
+          ? errorLabel
+          : label;
+
   return (
-    <Button
-      type="button"
-      size={size}
-      variant={variant}
-      onClick={handleCopy}
-      aria-live="polite"
-      aria-atomic="true"
-    >
-      {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-      {copied ? copiedLabel : label}
-    </Button>
+    <div className="inline-flex flex-col items-start gap-1">
+      <Button
+        type="button"
+        size={size}
+        variant={variant}
+        onClick={handleCopy}
+      >
+        {state === "copied" ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+        {currentLabel}
+      </Button>
+      <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {currentLabel}
+      </span>
+    </div>
   );
 }

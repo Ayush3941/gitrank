@@ -15,6 +15,8 @@ export function ShareProfileButton({
   label = "Share profile",
   copiedLabel = "Link copied",
   sharedLabel = "Shared",
+  manualLabel = "Copy manually",
+  errorLabel = "Share failed",
   analyticsTargetPrefix = "profile",
   preferNativeShare = true,
   ...buttonProps
@@ -25,10 +27,12 @@ export function ShareProfileButton({
   label?: string;
   copiedLabel?: string;
   sharedLabel?: string;
+  manualLabel?: string;
+  errorLabel?: string;
   analyticsTargetPrefix?: string;
   preferNativeShare?: boolean;
 }) {
-  const [state, setState] = useState<"idle" | "copied" | "shared">("idle");
+  const [state, setState] = useState<"idle" | "copied" | "shared" | "manual" | "error">("idle");
   const resetTimerRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
@@ -42,46 +46,64 @@ export function ShareProfileButton({
   async function handleShare() {
     const url = `${window.location.origin}/u/${encodeURIComponent(username)}`;
 
-    if (
-      preferNativeShare &&
-      typeof navigator !== "undefined" &&
-      typeof navigator.share === "function"
-    ) {
-      try {
-        await navigator.share({
-          title: `${displayName} on GitRank`,
-          text: shareHeadline,
-          url,
-        });
-        setState("shared");
+    try {
+      if (
+        preferNativeShare &&
+        typeof navigator !== "undefined" &&
+        typeof navigator.share === "function"
+      ) {
+        try {
+          await navigator.share({
+            title: `${displayName} on GitRank`,
+            text: shareHeadline,
+            url,
+          });
+          setState("shared");
+          void emitAnalyticsEvent({
+            eventName: "profile.shared",
+            source: "frontend",
+            target: `${analyticsTargetPrefix}/native-share`,
+            status: "success",
+          });
+          scheduleReset();
+          return;
+        } catch {
+          // Fallback to clipboard/manual path.
+        }
+      }
+
+      if (window.isSecureContext && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+        setState("copied");
         void emitAnalyticsEvent({
           eventName: "profile.shared",
           source: "frontend",
-          target: `${analyticsTargetPrefix}/native-share`,
+          target: `${analyticsTargetPrefix}/copy-link`,
           status: "success",
         });
         scheduleReset();
         return;
-      } catch {
-        // Fallback to clipboard path.
       }
-    }
 
-    if (window.isSecureContext && navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(url);
-    } else {
       window.prompt("Copy this profile URL", url);
-      return;
+      setState("manual");
+      void emitAnalyticsEvent({
+        eventName: "profile.shared",
+        source: "frontend",
+        target: `${analyticsTargetPrefix}/manual-copy`,
+        status: "success",
+      });
+      scheduleReset();
+    } catch {
+      setState("error");
+      void emitAnalyticsEvent({
+        eventName: "profile.shared",
+        source: "frontend",
+        target: `${analyticsTargetPrefix}/error`,
+        status: "failure",
+      });
+      scheduleReset();
     }
-
-    setState("copied");
-    void emitAnalyticsEvent({
-      eventName: "profile.shared",
-      source: "frontend",
-      target: `${analyticsTargetPrefix}/copy-link`,
-      status: "success",
-    });
-    scheduleReset();
   }
 
   function scheduleReset() {
@@ -93,10 +115,26 @@ export function ShareProfileButton({
     }, 1600);
   }
 
+  const currentLabel =
+    state === "copied"
+      ? copiedLabel
+      : state === "shared"
+        ? sharedLabel
+        : state === "manual"
+          ? manualLabel
+          : state === "error"
+            ? errorLabel
+            : label;
+
   return (
-    <Button {...buttonProps} onClick={handleShare}>
-      <Share2 className="h-4 w-4" />
-      {state === "copied" ? copiedLabel : state === "shared" ? sharedLabel : label}
-    </Button>
+    <div className="inline-flex flex-col items-start gap-1">
+      <Button {...buttonProps} onClick={handleShare}>
+        <Share2 className="h-4 w-4" />
+        {currentLabel}
+      </Button>
+      <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {currentLabel}
+      </span>
+    </div>
   );
 }

@@ -105,6 +105,10 @@
   so users can quickly reuse polished lines for profiles, resumes, and demos.
 - Added settings-header profile sharing action so public-link copy/share is
   available directly from privacy controls.
+- Hardened copy/share controls:
+  - explicit manual-copy and failure states
+  - failure analytics targets for clipboard/share errors
+  - dedicated polite live-region status output for assistive tech.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`
