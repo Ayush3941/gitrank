@@ -69,6 +69,10 @@
   - contributions and badges routes now show explicit stale snapshot banners
     when profile sync state is stale, with direct settings CTA.
   - leaderboard route now shows stale profile context warning with sync CTA.
+- Badges filter UX now mirrors contributions:
+  - live "showing X of Y" status
+  - one-click reset filters action
+  - transitions for filter state updates to keep interactions smooth.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`

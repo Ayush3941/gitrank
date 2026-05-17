@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Crown, ShieldCheck, Sparkles, Trophy } from "lucide-react";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { startTransition, type ReactNode, useEffect, useRef, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -27,6 +27,7 @@ export function BadgesPageClient() {
   const [rarity, setRarity] = useState<BadgeRarity | "All">("All");
   const [visibility, setVisibility] = useState<"All" | "Unlocked" | "Locked">("All");
   const [unlockNotice, setUnlockNotice] = useState("");
+  const canResetFilters = rarity !== "All" || visibility !== "All";
 
   const filtered =
     data?.badges.filter((badge) => {
@@ -118,6 +119,21 @@ export function BadgesPageClient() {
     );
   }, [data, isError, isLoading, unlockedCount]);
 
+  function handleRarityChange(value: BadgeRarity | "All") {
+    startTransition(() => setRarity(value));
+  }
+
+  function handleVisibilityChange(value: "All" | "Unlocked" | "Locked") {
+    startTransition(() => setVisibility(value));
+  }
+
+  function handleResetFilters() {
+    startTransition(() => {
+      setRarity("All");
+      setVisibility("All");
+    });
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -182,8 +198,22 @@ export function BadgesPageClient() {
           </div>
         </GlowCard>
       ) : null}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p role="status" aria-live="polite" className="text-xs tracking-[0.2em] text-fuchsia-200 uppercase">
+          Showing {filtered.length} of {totalCount} badges
+        </p>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          onClick={handleResetFilters}
+          disabled={!canResetFilters}
+        >
+          Reset filters
+        </Button>
+      </div>
       <div className="grid gap-3 md:grid-cols-2">
-        <Select value={rarity} onValueChange={(value) => setRarity(value as BadgeRarity | "All")}>
+        <Select value={rarity} onValueChange={(value) => handleRarityChange(value as BadgeRarity | "All")}>
           <SelectTrigger aria-label="Filter by rarity">
             <SelectValue placeholder="Filter by rarity" />
           </SelectTrigger>
@@ -194,7 +224,7 @@ export function BadgesPageClient() {
             ))}
           </SelectContent>
         </Select>
-        <Select value={visibility} onValueChange={(value) => setVisibility(value as typeof visibility)}>
+        <Select value={visibility} onValueChange={(value) => handleVisibilityChange(value as typeof visibility)}>
           <SelectTrigger aria-label="Filter by unlock state">
             <SelectValue placeholder="Filter by state" />
           </SelectTrigger>
