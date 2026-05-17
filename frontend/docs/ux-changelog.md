@@ -17,6 +17,13 @@
     Aurora, and High Contrast themes for smoother, less harsh atmosphere layers
   - widened vignette falloff in `.neon-vignette` to make glow transitions
     longer and less abrupt at page edges.
+- Reduced-gamification performance hardening:
+  - `html[data-gamification="reduced"]` now disables expensive glass blur
+    rendering (`backdrop-filter`) across major card/surface primitives
+  - reduced mode now suppresses decorative panel-grid/page-shell overlay layers
+    to cut render cost while preserving layout and information hierarchy
+  - updated Settings copy so users know reduced mode now explicitly prioritizes
+    lower GPU/render overhead in addition to animation/glow reduction.
 - Sync freshness readability/traceability upgrade:
   - `formatRelativeDays` now reports recent sync age with minute/hour precision
     (for example `2m ago`, `3h ago`) before day-level buckets
