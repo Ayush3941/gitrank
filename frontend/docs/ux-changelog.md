@@ -2,6 +2,16 @@
 
 ## 2026-05-17
 
+- Optimized hero/background rendering while preserving cyber style:
+  - compressed `public/background.jpg` from large source to web-safe size
+  - added `public/background.webp` and CSS `image-set()` fallback selection
+  - moved to fixed desktop + scroll-mobile background attachment policy
+- Smoothed and simplified shell glow layers in `AppShell` to reduce decorative
+  overdraw and avoid abrupt glow cutoffs.
+- Added responsive visual cost guard in `app/globals.css`:
+  - disables expensive backdrop blur on smaller screens
+  - reduces heavy shadows and background overlays for lower GPU pressure
+  - kept reduced-motion behavior while removing duplicate global motion rules
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`

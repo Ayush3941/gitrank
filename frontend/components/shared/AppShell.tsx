@@ -11,13 +11,9 @@ export function AppShell({
   return (
     <main id="main-content" className="page-shell min-h-screen" tabIndex={-1}>
       <div className="pointer-events-none absolute inset-0 neon-vignette" />
-      <div className="pointer-events-none absolute inset-0 panel-grid opacity-[0.05] md:opacity-[0.08] [mask-image:linear-gradient(180deg,black_4%,transparent_82%)]" />
-      <div className="pointer-events-none absolute inset-0 hidden md:block opacity-[0.07] [background:repeating-linear-gradient(180deg,rgba(255,255,255,0.04)_0px,rgba(255,255,255,0.04)_1px,transparent_1px,transparent_6px)]" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-64 md:h-96 bg-[radial-gradient(circle_at_top,rgba(34,226,255,0.28),transparent_52%)]" />
-      <div className="pointer-events-none absolute inset-x-[-16%] top-[-4rem] hidden h-40 rotate-[-4deg] bg-[linear-gradient(90deg,transparent,rgba(34,226,255,0.18),rgba(244,114,255,0.16),transparent)] blur-2xl lg:block" />
-      <div className="pointer-events-none absolute -right-16 top-24 hidden h-56 w-56 rounded-full bg-fuchsia-500/24 blur-3xl xl:block" />
-      <div className="pointer-events-none absolute -left-24 top-52 hidden h-64 w-64 rounded-full bg-emerald-300/16 blur-3xl xl:block" />
-      <div className="pointer-events-none absolute left-1/3 top-6 hidden h-40 w-40 rounded-full bg-cyan-400/12 blur-3xl xl:block" />
+      <div className="pointer-events-none absolute inset-0 hidden md:block panel-grid opacity-[0.035] [mask-image:linear-gradient(180deg,black_6%,transparent_84%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 md:h-[28rem] bg-[radial-gradient(ellipse_at_top,rgba(34,226,255,0.22)_0%,rgba(244,114,255,0.14)_36%,transparent_74%)]" />
+      <div className="pointer-events-none absolute inset-x-[-14%] top-[-6rem] hidden h-56 bg-[radial-gradient(ellipse_at_center,rgba(34,226,255,0.22)_0%,rgba(244,114,255,0.14)_42%,transparent_72%)] blur-3xl lg:block" />
       <div className={cn("mx-auto w-full max-w-[92rem] px-4 py-6 sm:px-6 lg:px-8", className)}>
         {children}
       </div>
