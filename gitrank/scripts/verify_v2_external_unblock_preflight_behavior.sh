@@ -24,6 +24,7 @@ for required in \
   'input_state.origin_push_required:' \
   'probe.github_access_effective_status:' \
   'probe.origin_push_effective_status:' \
+  'probe.remote_workflow_sync_effective_status:' \
   'origin_push_required_state=false' \
   'github_access_effective_status=credential-invalid' \
   '{ [ "$token_state" != "set" ] && [ "$has_oauth_bootstrap" != "true" ]; } || [ "$github_access_effective_status" = "credential-invalid" ]' \

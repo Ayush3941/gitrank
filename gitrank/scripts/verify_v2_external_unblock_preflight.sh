@@ -267,13 +267,25 @@ if [ "$github_access_status" = "fail" ]; then
   esac
 fi
 
+remote_workflow_sync_required_state=true
+if [ "$remote_workflow_sync_status" = "fail" ] &&
+  [ "$github_access_effective_status" = "credential-missing" ] &&
+  [ "$origin_push_required_state" = "false" ]; then
+  remote_workflow_sync_required_state=false
+fi
+
+remote_workflow_sync_effective_status=required
+if [ "$remote_workflow_sync_required_state" = "false" ]; then
+  remote_workflow_sync_effective_status=advisory
+fi
+
 if [ "$github_access_status" = "fail" ]; then
   fail_count=$((fail_count + 1))
 fi
 if [ "$origin_push_status" = "fail" ] && [ "$origin_push_required_state" = "true" ]; then
   fail_count=$((fail_count + 1))
 fi
-if [ "$remote_workflow_sync_status" = "fail" ]; then
+if [ "$remote_workflow_sync_status" = "fail" ] && [ "$remote_workflow_sync_required_state" = "true" ]; then
   fail_count=$((fail_count + 1))
 fi
 if [ "$controls_public_status" = "fail" ]; then
@@ -298,6 +310,7 @@ printf 'input_state.workflow_event: %s\n' "$workflow_event_state"
 printf 'input_state.origin_push_required: %s\n' "$origin_push_required_state"
 printf 'probe.github_access_effective_status: %s\n' "$github_access_effective_status"
 printf 'probe.origin_push_effective_status: %s\n' "$origin_push_effective_status"
+printf 'probe.remote_workflow_sync_effective_status: %s\n' "$remote_workflow_sync_effective_status"
 
 if [ -s "$contributing_file" ]; then
   unresolved_file=$(mktemp "$tmp_root/gitrank-v2-unblock-unresolved.XXXXXX")
@@ -318,7 +331,11 @@ if [ -s "$contributing_file" ]; then
         if [ "$origin_push_required_state" = "true" ]; then
           probes="github_access, origin_push, remote_workflow_sync, controls_public, workflow_evidence"
         else
-          probes="github_access, remote_workflow_sync, controls_public, workflow_evidence (+ advisory origin_push)"
+          if [ "$remote_workflow_sync_required_state" = "true" ]; then
+            probes="github_access, remote_workflow_sync, controls_public, workflow_evidence (+ advisory origin_push)"
+          else
+            probes="github_access, controls_public, workflow_evidence (+ advisory remote_workflow_sync, advisory origin_push)"
+          fi
         fi
         ;;
       *"observability"*|*"Prometheus"*|*"Grafana"*|*"real traffic"*)
