@@ -22,10 +22,10 @@
   --text-strong: 251 253 255;
   --text-body: 242 248 255;
   --text-soft: 236 245 255;
-  --page-overlay-top-alpha: 0.03;
-  --page-overlay-bottom-alpha: 0.16;
-  --page-grid-opacity: 0.03;
-  --page-glow-opacity: 0.18;
+  --page-overlay-top-alpha: 0.02;
+  --page-overlay-bottom-alpha: 0.1;
+  --page-grid-opacity: 0.02;
+  --page-glow-opacity: 0.14;
   --surface-blur: 8px;
   --surface-blur-strong: 10px;
   --radius-universal: 0.1rem;
@@ -54,10 +54,10 @@ html[data-theme="midnight"] {
   --text-strong: 252 254 255;
   --text-body: 244 249 255;
   --text-soft: 238 246 255;
-  --page-overlay-top-alpha: 0.04;
-  --page-overlay-bottom-alpha: 0.18;
-  --page-grid-opacity: 0.03;
-  --page-glow-opacity: 0.16;
+  --page-overlay-top-alpha: 0.03;
+  --page-overlay-bottom-alpha: 0.12;
+  --page-grid-opacity: 0.02;
+  --page-glow-opacity: 0.13;
   --surface-blur: 7px;
   --surface-blur-strong: 9px;
 }
@@ -82,10 +82,10 @@ html[data-theme="aurora"] {
   --text-strong: 251 254 255;
   --text-body: 246 250 255;
   --text-soft: 240 248 255;
-  --page-overlay-top-alpha: 0.02;
-  --page-overlay-bottom-alpha: 0.12;
+  --page-overlay-top-alpha: 0.015;
+  --page-overlay-bottom-alpha: 0.08;
   --page-grid-opacity: 0.02;
-  --page-glow-opacity: 0.12;
+  --page-glow-opacity: 0.1;
   --surface-blur: 6px;
   --surface-blur-strong: 8px;
 }
@@ -110,10 +110,10 @@ html[data-theme="high-contrast"] {
   --text-strong: 254 255 255;
   --text-body: 247 251 255;
   --text-soft: 239 246 255;
-  --page-overlay-top-alpha: 0.1;
-  --page-overlay-bottom-alpha: 0.32;
+  --page-overlay-top-alpha: 0.06;
+  --page-overlay-bottom-alpha: 0.2;
   --page-grid-opacity: 0.02;
-  --page-glow-opacity: 0.14;
+  --page-glow-opacity: 0.12;
   --surface-blur: 5px;
   --surface-blur-strong: 7px;
 }
@@ -820,8 +820,8 @@ html[data-text-scale="large"] :where(.text-sm) {
 
 .neon-vignette {
   background:
-    radial-gradient(circle at 50% 8%, transparent 0, transparent 58%, rgb(0 0 0 / 0.3) 100%),
-    radial-gradient(circle at 50% 100%, transparent 0, transparent 62%, rgb(0 0 0 / 0.44) 100%);
+    radial-gradient(circle at 50% 8%, transparent 0, transparent 68%, rgb(0 0 0 / 0.2) 100%),
+    radial-gradient(circle at 50% 100%, transparent 0, transparent 72%, rgb(0 0 0 / 0.3) 100%);
 }
 
 .page-shell {

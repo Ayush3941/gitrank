@@ -10,6 +10,13 @@
     onboarding `SyncPipeline` sync errors
   - added `tests/ui-error-messages.test.ts` to lock timeout/CSRF/500 fallback
     behavior and preserve clear user-facing messages when already safe.
+- Background readability tuning:
+  - reduced shell vignette opacity in `AppShell` so fixed background artwork
+    remains visible during dashboard use
+  - softened global page overlay/grid/glow alpha levels across Neon, Midnight,
+    Aurora, and High Contrast themes for smoother, less harsh atmosphere layers
+  - widened vignette falloff in `.neon-vignette` to make glow transitions
+    longer and less abrupt at page edges.
 - Sync freshness readability/traceability upgrade:
   - `formatRelativeDays` now reports recent sync age with minute/hour precision
     (for example `2m ago`, `3h ago`) before day-level buckets
