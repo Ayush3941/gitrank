@@ -263,7 +263,8 @@ export function SettingsPageClient() {
             <h2 className="mt-2 text-2xl font-semibold text-white">Reduced gamification</h2>
             <p className="mt-2 text-sm leading-6 text-muted">
               Lowers animated XP ticks, badge shimmer, glow intensity, and rank effects for this account. Scores,
-              badges, leaderboard placement, and privacy visibility do not change.
+              badges, leaderboard placement, and privacy visibility do not change. If no explicit preference is saved,
+              GitRank follows your system-level reduced-motion setting.
             </p>
           </div>
           <Switch

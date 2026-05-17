@@ -5,6 +5,7 @@ import type { ProfileViewData } from "@/types/gitrank";
 
 const STORAGE_KEY = "gitrank:reduced-gamification";
 const CHANGE_EVENT = "gitrank:gamification-preference";
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
 export function useGamificationPreference() {
   const reducedGamification = useSyncExternalStore(
@@ -55,11 +56,27 @@ function subscribe(callback: () => void) {
     return () => {};
   }
 
+  const mediaQuery = window.matchMedia(REDUCED_MOTION_QUERY);
+  const handleMediaChange = () => {
+    window.dispatchEvent(new Event(CHANGE_EVENT));
+    callback();
+  };
+
   window.addEventListener("storage", callback);
   window.addEventListener(CHANGE_EVENT, callback);
+  if (typeof mediaQuery.addEventListener === "function") {
+    mediaQuery.addEventListener("change", handleMediaChange);
+  } else if (typeof mediaQuery.addListener === "function") {
+    mediaQuery.addListener(handleMediaChange);
+  }
   return () => {
     window.removeEventListener("storage", callback);
     window.removeEventListener(CHANGE_EVENT, callback);
+    if (typeof mediaQuery.removeEventListener === "function") {
+      mediaQuery.removeEventListener("change", handleMediaChange);
+    } else if (typeof mediaQuery.removeListener === "function") {
+      mediaQuery.removeListener(handleMediaChange);
+    }
   };
 }
 
@@ -67,7 +84,16 @@ function getReducedGamificationSnapshot() {
   if (typeof window === "undefined") {
     return false;
   }
-  return window.localStorage.getItem(STORAGE_KEY) === "true";
+
+  const storedPreference = window.localStorage.getItem(STORAGE_KEY);
+  if (storedPreference === "true") {
+    return true;
+  }
+  if (storedPreference === "false") {
+    return false;
+  }
+
+  return window.matchMedia(REDUCED_MOTION_QUERY).matches;
 }
 
 function applyGamificationPreference(reduced: boolean) {
