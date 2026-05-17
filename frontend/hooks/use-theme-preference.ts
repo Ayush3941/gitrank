@@ -4,6 +4,7 @@ import { useCallback, useEffect, useSyncExternalStore } from "react";
 
 const STORAGE_KEY = "gitrank:theme";
 const CHANGE_EVENT = "gitrank:theme-preference";
+const HIGH_CONTRAST_QUERY = "(prefers-contrast: more)";
 
 const SUPPORTED_THEMES = ["neon", "midnight", "high-contrast"] as const;
 
@@ -37,11 +38,27 @@ function subscribe(callback: () => void) {
     return () => {};
   }
 
+  const contrastQuery = window.matchMedia(HIGH_CONTRAST_QUERY);
+  const handleContrastChange = () => {
+    window.dispatchEvent(new Event(CHANGE_EVENT));
+    callback();
+  };
+
   window.addEventListener("storage", callback);
   window.addEventListener(CHANGE_EVENT, callback);
+  if (typeof contrastQuery.addEventListener === "function") {
+    contrastQuery.addEventListener("change", handleContrastChange);
+  } else if (typeof contrastQuery.addListener === "function") {
+    contrastQuery.addListener(handleContrastChange);
+  }
   return () => {
     window.removeEventListener("storage", callback);
     window.removeEventListener(CHANGE_EVENT, callback);
+    if (typeof contrastQuery.removeEventListener === "function") {
+      contrastQuery.removeEventListener("change", handleContrastChange);
+    } else if (typeof contrastQuery.removeListener === "function") {
+      contrastQuery.removeListener(handleContrastChange);
+    }
   };
 }
 
@@ -52,6 +69,9 @@ function getThemeSnapshot(): ThemePreference {
   const stored = window.localStorage.getItem(STORAGE_KEY);
   if (stored && isThemePreference(stored)) {
     return stored;
+  }
+  if (window.matchMedia(HIGH_CONTRAST_QUERY).matches) {
+    return "high-contrast";
   }
   return "midnight";
 }

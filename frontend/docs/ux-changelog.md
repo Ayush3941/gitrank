@@ -17,6 +17,9 @@
 - Extended reduced-gamification defaults to include browser reduced-data
   preference (`navigator.connection.saveData`) when no explicit account/local
   override is set.
+- Added theme fallback behavior for accessibility: when no stored theme exists,
+  the app now auto-selects `high-contrast` if the OS/browser advertises
+  `prefers-contrast: more`.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`

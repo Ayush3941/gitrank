@@ -285,6 +285,7 @@ export function SettingsPageClient() {
             <h2 className="mt-2 text-2xl font-semibold text-white">Readable style mode</h2>
             <p className="mt-2 text-sm leading-6 text-muted">
               Theme choice only changes visual treatment. Ranking, scoring, privacy, and sync behavior stay identical.
+              If no explicit theme is stored, GitRank follows your system high-contrast preference.
             </p>
           </div>
           <div className="grid w-full gap-2 sm:w-auto sm:min-w-[18rem]">
