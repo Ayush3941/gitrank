@@ -43,6 +43,10 @@
     battle-report, and badge cards inside dashboard panels
   - reduces offscreen rendering work on long dashboard sessions while
     preserving existing layout and styling.
+- Quest cadence share-link refinement:
+  - cadence navigator now exposes a live active-lane status label and a
+    `Copy cadence link` action (`/dashboard/quests#...`) so mission lanes can
+    be shared directly with preserved in-page anchor context.
 - Route fallback consistency pass:
   - added shared `RouteFallbackCard` (`components/shared/RouteFallbackCard.tsx`)
     and migrated all route-level `not-found` surfaces (global, dashboard,

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, CalendarClock, Flame, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
+import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -46,6 +47,8 @@ export function QuestsPageClient() {
   );
   const weeklyQuest = selectQuestSpotlight(questMap.Weekly);
   const longTermQuest = selectQuestSpotlight(questMap["Long-term"]);
+  const activeQuestSectionId = QUEST_SECTION_IDS[activeGroup];
+  const activeCadenceLink = `/dashboard/quests#${activeQuestSectionId}`;
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -200,6 +203,9 @@ export function QuestsPageClient() {
           className="cyber-terminal panel-grid flex flex-wrap items-center gap-2 rounded-[1.2rem] px-3 py-3 xl:sticky xl:top-20 xl:z-20"
         >
           <span id="quests-jump-nav-label" className="px-2 text-xs tracking-[0.14em] text-primary uppercase">Cadence</span>
+          <p role="status" aria-live="polite" className="px-2 text-xs tracking-[0.14em] text-cyan-200 uppercase">
+            {labelForGroup(activeGroup)}
+          </p>
           <ul role="list" className="flex flex-wrap gap-2">
             {groups.map((group) => {
               const active = group === activeGroup;
@@ -220,6 +226,14 @@ export function QuestsPageClient() {
               );
             })}
           </ul>
+          <div className="ml-auto">
+            <CopyTextButton
+              text={activeCadenceLink}
+              label="Copy cadence link"
+              copiedLabel="Cadence link copied"
+              analyticsTarget="quests/copy-cadence-link"
+            />
+          </div>
         </nav>
       ) : null}
       {isLoading ? <LoadingState message="Building your skill tree..." /> : null}
