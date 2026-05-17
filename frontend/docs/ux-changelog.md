@@ -51,6 +51,11 @@
 - Landing hero clarity update: added audience chips (maintainers/contributors/
   hiring teams) and a direct "See onboarding flow" CTA for faster first-screen
   comprehension during demos.
+- Mobile interaction pass:
+  - fixed bottom mobile nav now respects iOS safe-area insets via `env()`
+  - hover-only glow behavior is neutralized on non-hover devices
+  - coarse-pointer devices now enforce larger minimum interactive hit areas via
+    `.focus-ring`.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`

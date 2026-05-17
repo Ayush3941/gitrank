@@ -12,8 +12,8 @@ export function MobileNav() {
 
   return (
     <nav
-      aria-label="Dashboard navigation"
-      className="glass-panel cyber-card cyber-frame neon-outline fixed inset-x-3 bottom-3 z-40 grid grid-cols-5 gap-1 p-1.5 xl:hidden"
+      aria-label="Dashboard navigation mobile"
+      className="mobile-nav-shell glass-panel cyber-card cyber-frame neon-outline fixed inset-x-3 z-40 grid grid-cols-5 gap-1 p-1.5 xl:hidden"
     >
       {dashboardNavItems.map((item) => {
         const Icon = item.icon;
