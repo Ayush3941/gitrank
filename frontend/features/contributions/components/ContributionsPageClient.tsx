@@ -9,6 +9,7 @@ import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { StaleState } from "@/components/shared/StaleState";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
@@ -70,6 +71,10 @@ export function ContributionsPageClient() {
   const isFiltering =
     deferredFilter !== filter || deferredSearch !== search || deferredSort !== sort;
   const canReset = filter !== "All" || search.trim().length > 0 || sort !== "Newest";
+  const activeSectionLabel =
+    CONTRIBUTION_SECTION_ITEMS.find((section) => section.id === activeSection)?.label ??
+    "Filters";
+  const activeSectionLink = `/dashboard/contributions#${activeSection}`;
 
   const streak = useMemo(
     () => summarizeContributionStreak(profile?.user.contributions ?? []),
@@ -239,6 +244,9 @@ export function ContributionsPageClient() {
         className="glass-panel flex flex-wrap items-center gap-2 border border-primary/20 p-2 xl:sticky xl:top-20 xl:z-20"
       >
         <p id="contributions-jump-nav-label" className="cyber-title px-2 text-[10px] tracking-[0.16em] text-cyan-200 uppercase">Jump to</p>
+        <p role="status" aria-live="polite" className="px-2 text-xs tracking-[0.16em] text-cyan-200 uppercase">
+          {activeSectionLabel}
+        </p>
         <ul role="list" className="flex flex-wrap gap-2">
           {CONTRIBUTION_SECTION_ITEMS.map((section) => (
             <li key={section.id}>
@@ -256,6 +264,14 @@ export function ContributionsPageClient() {
             </li>
           ))}
         </ul>
+        <div className="ml-auto">
+          <CopyTextButton
+            text={activeSectionLink}
+            label="Copy section link"
+            copiedLabel="Section link copied"
+            analyticsTarget="contributions/copy-section-link"
+          />
+        </div>
       </nav>
       <section id="contributions-filters" className="scroll-mt-24">
         <ContributionFilters

@@ -47,6 +47,10 @@
   - cadence navigator now exposes a live active-lane status label and a
     `Copy cadence link` action (`/dashboard/quests#...`) so mission lanes can
     be shared directly with preserved in-page anchor context.
+- Contribution section share-link refinement:
+  - contribution jump navigator now shows active section context and a
+    `Copy section link` action (`/dashboard/contributions#...`) for
+    shareable drill-down state.
 - Route fallback consistency pass:
   - added shared `RouteFallbackCard` (`components/shared/RouteFallbackCard.tsx`)
     and migrated all route-level `not-found` surfaces (global, dashboard,
