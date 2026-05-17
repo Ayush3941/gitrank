@@ -22,10 +22,10 @@
   --text-strong: 251 253 255;
   --text-body: 238 245 255;
   --text-soft: 220 233 255;
-  --page-overlay-top-alpha: 0.2;
-  --page-overlay-bottom-alpha: 0.56;
-  --page-grid-opacity: 0.2;
-  --page-glow-opacity: 0.52;
+  --page-overlay-top-alpha: 0.14;
+  --page-overlay-bottom-alpha: 0.46;
+  --page-grid-opacity: 0.14;
+  --page-glow-opacity: 0.42;
   --surface-blur: 16px;
   --surface-blur-strong: 18px;
   --radius-card: 0.1rem;
@@ -51,10 +51,10 @@ html[data-theme="midnight"] {
   --text-strong: 252 254 255;
   --text-body: 240 247 255;
   --text-soft: 226 236 255;
-  --page-overlay-top-alpha: 0.3;
-  --page-overlay-bottom-alpha: 0.68;
-  --page-grid-opacity: 0.16;
-  --page-glow-opacity: 0.46;
+  --page-overlay-top-alpha: 0.22;
+  --page-overlay-bottom-alpha: 0.58;
+  --page-grid-opacity: 0.12;
+  --page-glow-opacity: 0.36;
   --surface-blur: 14px;
   --surface-blur-strong: 16px;
 }
@@ -79,10 +79,10 @@ html[data-theme="high-contrast"] {
   --text-strong: 254 255 255;
   --text-body: 245 250 255;
   --text-soft: 235 243 255;
-  --page-overlay-top-alpha: 0.44;
-  --page-overlay-bottom-alpha: 0.84;
+  --page-overlay-top-alpha: 0.4;
+  --page-overlay-bottom-alpha: 0.8;
   --page-grid-opacity: 0.08;
-  --page-glow-opacity: 0.3;
+  --page-glow-opacity: 0.26;
   --surface-blur: 8px;
   --surface-blur-strong: 10px;
 }
@@ -294,6 +294,7 @@ select {
     0 18px 60px rgb(1 5 20 / 0.55),
     0 0 0 1px rgb(var(--primary-2) / 0.08),
     inset 0 1px 0 rgb(255 255 255 / 0.08);
+  -webkit-backdrop-filter: blur(var(--surface-blur));
   backdrop-filter: blur(var(--surface-blur));
 }
 
@@ -306,6 +307,7 @@ select {
     0 18px 60px rgb(1 5 20 / 0.52),
     0 0 48px rgb(var(--primary) / 0.16),
     inset 0 1px 0 rgb(255 255 255 / 0.12);
+  -webkit-backdrop-filter: blur(var(--surface-blur-strong));
   backdrop-filter: blur(var(--surface-blur-strong));
 }
 
@@ -796,6 +798,15 @@ html[data-theme="high-contrast"] .cyber-card {
   box-shadow:
     0 14px 44px rgb(1 5 20 / 0.68),
     inset 0 1px 0 rgb(255 255 255 / 0.08);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .glass-panel,
+  .glass-panel-strong {
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 0.08), rgb(255 255 255 / 0.02)),
+      rgb(var(--card-2) / 0.92);
+  }
 }
 
 html[data-theme="high-contrast"] .neon-title {

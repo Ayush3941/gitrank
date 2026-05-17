@@ -28,6 +28,9 @@
 - Interaction refinement: global interactive transition baseline now limits
   transition properties to color/background/border/shadow/opacity/transform
   instead of broad implicit transitions.
+- Adjusted overlay density to reveal more of the locked background image while
+  preserving readable text contrast, and added Safari-compatible
+  `-webkit-backdrop-filter` + no-backdrop fallback surfaces.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`
