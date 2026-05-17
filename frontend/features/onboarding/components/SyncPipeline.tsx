@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, LoaderCircle, RefreshCcw } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { OnboardingStepper } from "@/features/onboarding/components/OnboardingStepper";
 import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useMyProfile } from "@/hooks/use-profile";
@@ -90,6 +91,7 @@ export function SyncPipeline() {
 
   const completedSteps =
     isSynced ? steps.length : syncStartedAt || userSync.isPending ? 3 : 1;
+  const pipelineProgress = Math.round((completedSteps / steps.length) * 100);
 
   const actionError =
     (userSync.error as Error | null)?.message ||
@@ -126,6 +128,16 @@ export function SyncPipeline() {
               {syncNotice}
             </p>
           ) : null}
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs tracking-[0.2em] text-primary uppercase">
+            <span>Pipeline progress</span>
+            <span className="numeric-readout">{pipelineProgress}%</span>
+          </div>
+          <Progress value={pipelineProgress} />
+          <p className="text-sm text-slate-200/84">
+            {completedSteps} of {steps.length} sync phases completed.
+          </p>
         </div>
         <div className="space-y-3">
           {steps.map((step, index) => {

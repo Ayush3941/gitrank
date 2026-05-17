@@ -56,6 +56,8 @@
   - hover-only glow behavior is neutralized on non-hover devices
   - coarse-pointer devices now enforce larger minimum interactive hit areas via
     `.focus-ring`.
+- Sync pipeline now includes an explicit completion progress meter with text
+  equivalent (`N of M phases completed`) to improve status clarity.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`
