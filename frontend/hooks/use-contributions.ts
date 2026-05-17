@@ -17,15 +17,14 @@ type ContributionsQueryData = {
 };
 
 export function useContributions(params: ContributionParams) {
-  return useQuery<ContributionsQueryData>({
-    queryKey: ["contributions", params],
-    queryFn: async () => {
-      const profile = await getMyProfile();
-      return {
-        rows: filterContributions(profile.user.contributions, params),
-        profile,
-      };
-    },
+  return useQuery<ProfileViewData, Error, ContributionsQueryData>({
+    queryKey: ["contributions", "profile"],
+    queryFn: getMyProfile,
+    staleTime: 60_000,
+    select: (profile) => ({
+      rows: filterContributions(profile.user.contributions, params),
+      profile,
+    }),
   });
 }
 

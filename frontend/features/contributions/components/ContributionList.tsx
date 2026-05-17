@@ -37,7 +37,7 @@ export function ContributionList({
             </div>
             <div className="text-right">
               <p className="text-xs tracking-[0.24em] text-primary uppercase">Earned</p>
-              <p className="mt-2 text-3xl font-semibold text-white">{item.xpEarned} XP</p>
+              <p className="numeric-readout mt-2 text-3xl font-semibold text-white">{item.xpEarned} XP</p>
             </div>
           </div>
           <AIPanel
@@ -104,7 +104,7 @@ function Metric({ label, value }: { label: string; value: number }) {
   return (
     <div className="neon-metric rounded-3xl px-4 py-3">
       <p className="text-xs tracking-[0.24em] text-muted uppercase">{label}</p>
-      <p className="mt-2 text-xl font-semibold text-white">{value}</p>
+      <p className="numeric-readout mt-2 text-xl font-semibold text-white">{value}</p>
     </div>
   );
 }

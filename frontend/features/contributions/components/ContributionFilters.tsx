@@ -1,6 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -14,6 +15,10 @@ export function ContributionFilters({
   onSearchChange,
   sort,
   onSortChange,
+  resultCount,
+  isFiltering,
+  canReset,
+  onReset,
 }: {
   value: string;
   onValueChange: (value: string) => void;
@@ -21,9 +26,31 @@ export function ContributionFilters({
   onSearchChange: (value: string) => void;
   sort: string;
   onSortChange: (value: "Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact") => void;
+  resultCount?: number;
+  isFiltering?: boolean;
+  canReset?: boolean;
+  onReset?: () => void;
 }) {
   return (
     <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p role="status" aria-live="polite" className="text-xs tracking-[0.2em] text-cyan-200 uppercase">
+          {isFiltering
+            ? "Updating contribution list..."
+            : `Showing ${resultCount ?? 0} contribution cards`}
+        </p>
+        {onReset ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={onReset}
+            disabled={!canReset || isFiltering}
+          >
+            Reset filters
+          </Button>
+        ) : null}
+      </div>
       <Tabs value={value} onValueChange={onValueChange}>
         <TabsList className="scrollbar-thin w-full overflow-x-auto whitespace-nowrap">
           {filters.map((filter) => (

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Flame, Radar, Sparkles, Swords } from "lucide-react";
-import { useMemo, useState, type ReactNode } from "react";
+import { startTransition, useDeferredValue, useMemo, useState, type ReactNode } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -37,13 +37,19 @@ export function ContributionsPageClient() {
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact">("Newest");
+  const deferredFilter = useDeferredValue(filter);
+  const deferredSearch = useDeferredValue(search);
+  const deferredSort = useDeferredValue(sort);
   const { data, isLoading, isError } = useContributions({
-    filter: filterMap[filter],
-    search,
-    sort,
+    filter: filterMap[deferredFilter],
+    search: deferredSearch,
+    sort: deferredSort,
   });
   const profile = data?.profile;
   const filteredRows = useMemo(() => data?.rows ?? [], [data?.rows]);
+  const isFiltering =
+    deferredFilter !== filter || deferredSearch !== search || deferredSort !== sort;
+  const canReset = filter !== "All" || search.trim().length > 0 || sort !== "Newest";
 
   const streak = useMemo(
     () => summarizeContributionStreak(profile?.user.contributions ?? []),
@@ -117,6 +123,26 @@ export function ContributionsPageClient() {
   const abraInsights = useAbraInsights(abraPayload);
   const maxMonthlyXp = Math.max(1, ...monthly.map((point) => point.xp));
 
+  function handleFilterChange(next: string) {
+    startTransition(() => setFilter(next));
+  }
+
+  function handleSearchChange(next: string) {
+    startTransition(() => setSearch(next));
+  }
+
+  function handleSortChange(next: "Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact") {
+    startTransition(() => setSort(next));
+  }
+
+  function handleResetFilters() {
+    startTransition(() => {
+      setFilter("All");
+      setSearch("");
+      setSort("Newest");
+    });
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -135,11 +161,15 @@ export function ContributionsPageClient() {
       ) : null}
       <ContributionFilters
         value={filter}
-        onValueChange={setFilter}
+        onValueChange={handleFilterChange}
         search={search}
-        onSearchChange={setSearch}
+        onSearchChange={handleSearchChange}
         sort={sort}
-        onSortChange={setSort}
+        onSortChange={handleSortChange}
+        resultCount={filteredRows.length}
+        isFiltering={isFiltering}
+        canReset={canReset}
+        onReset={handleResetFilters}
       />
       {isLoading ? <LoadingState message="Checking review depth and PR intensity..." /> : null}
       {isError ? (

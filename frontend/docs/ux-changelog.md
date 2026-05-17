@@ -58,6 +58,13 @@
     `.focus-ring`.
 - Sync pipeline now includes an explicit completion progress meter with text
   equivalent (`N of M phases completed`) to improve status clarity.
+- Contributions UX/performance pass:
+  - contributions query now caches profile data under a stable key and applies
+    filter/sort/search transforms via `select`, avoiding redundant profile
+    refetch on every filter keystroke
+  - contributions page now uses deferred filter/search/sort state updates to
+    keep interactions responsive
+  - added live result count + reset-filters action in the filter bar.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`
