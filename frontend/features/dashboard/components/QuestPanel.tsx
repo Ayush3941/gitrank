@@ -34,7 +34,7 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
           </div>
         ) : null}
         {quests.slice(0, 3).map((quest) => {
-          const progress = Math.round((quest.progress / quest.goal) * 100);
+          const progress = safeQuestProgress(quest.progress, quest.goal);
           return (
             <div key={quest.id} className="neon-surface rounded-[1.75rem] p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -69,4 +69,13 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
       </div>
     </GlowCard>
   );
+}
+
+function safeQuestProgress(progress: number, goal: number): number {
+  const safeGoal = goal > 0 ? goal : 1;
+  const ratio = (progress / safeGoal) * 100;
+  if (!Number.isFinite(ratio)) {
+    return 0;
+  }
+  return Math.max(0, Math.min(100, Math.round(ratio)));
 }

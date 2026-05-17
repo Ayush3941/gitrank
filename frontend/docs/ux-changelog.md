@@ -88,6 +88,11 @@
     cards with sync state, contribution window scope, and current pipeline step
   - surfaces explicit freshness + scope framing near the top of the command
     center so score and progression interpretation starts from verified context.
+- Dashboard quest/badge card safety and progress clarity:
+  - `QuestPanel` now uses safe progress math for quest cards to prevent invalid
+    rendering when backend rows provide zero/invalid goals
+  - `BadgeShelf` now shows unlocked completion progress (`x/y`, percentage, bar)
+    and renders locked badge progress with bars instead of text-only percentages.
 - Sync freshness readability/traceability upgrade:
   - `formatRelativeDays` now reports recent sync age with minute/hour precision
     (for example `2m ago`, `3h ago`) before day-level buckets
