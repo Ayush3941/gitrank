@@ -5,6 +5,7 @@ root_dir="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 repo_dir="$(CDPATH= cd -- "$root_dir/.." && pwd)"
 contributing_file="$repo_dir/CONTRIBUTING.md"
 live_env_template="$root_dir/.env.v2-live-gates.example"
+default_env_file="$root_dir/.env"
 audit_report_file="${AUDIT_REPORT_FILE:-}"
 display_repository="${GITHUB_REPOSITORY_DISPLAY:-}"
 run_public_probe="${RUN_PUBLIC_PROBE:-true}"
@@ -43,10 +44,26 @@ github_app_id="${GITHUB_APP_ID:-${GITRANK_GITHUB_APP_ID:-}}"
 github_app_installation_id="${GITHUB_APP_INSTALLATION_ID:-${GITRANK_GITHUB_APP_INSTALLATION_ID:-}}"
 github_app_private_key_file="${GITHUB_APP_PRIVATE_KEY_FILE:-${GITRANK_GITHUB_APP_PRIVATE_KEY_FILE:-}}"
 github_app_private_key_pem="${GITHUB_APP_PRIVATE_KEY_PEM:-${GITRANK_GITHUB_APP_PRIVATE_KEY_PEM:-}}"
+oauth_client_id="${GITHUB_CLIENT_ID:-${GITHUB_OAUTH_WEB_CLIENT_ID:-}}"
+oauth_client_secret="${GITHUB_CLIENT_SECRET:-${GITHUB_OAUTH_WEB_CLIENT_SECRET:-}}"
 
 fail() {
   printf 'v2 contributing audit failed: %s\n' "$1" >&2
   exit 1
+}
+
+load_env_var_from_file() {
+  file_path=$1
+  key=$2
+  [ -f "$file_path" ] || return 1
+  value=$(awk -F= -v key="$key" '
+    $1 == key {
+      sub(/^[^=]*=/, "", $0)
+      print $0
+    }
+  ' "$file_path" | tail -n 1)
+  [ -n "$value" ] || return 1
+  printf '%s' "$value"
 }
 
 run_make() {
@@ -66,6 +83,28 @@ is_placeholder_value() {
       ;;
   esac
 }
+
+if [ -z "$oauth_client_id" ]; then
+  oauth_client_id=$(load_env_var_from_file "$default_env_file" "GITHUB_CLIENT_ID" || true)
+fi
+if [ -z "$oauth_client_secret" ]; then
+  oauth_client_secret=$(load_env_var_from_file "$default_env_file" "GITHUB_CLIENT_SECRET" || true)
+fi
+if is_placeholder_value "$oauth_client_id"; then
+  oauth_client_id=
+fi
+if is_placeholder_value "$oauth_client_secret"; then
+  oauth_client_secret=
+fi
+has_oauth_bootstrap=false
+oauth_bootstrap_opt_in="${GITRANK_ALLOW_OAUTH_WEB_TOKEN_BOOTSTRAP:-}"
+case "$oauth_bootstrap_opt_in" in
+  1|true|TRUE|yes|YES|on|ON) oauth_bootstrap_opt_in=true ;;
+  *) oauth_bootstrap_opt_in=false ;;
+esac
+if [ "$oauth_bootstrap_opt_in" = "true" ] && [ -n "$oauth_client_id" ] && [ -n "$oauth_client_secret" ]; then
+  has_oauth_bootstrap=true
+fi
 
 resolve_repository_from_git_remote() {
   if is_placeholder_value "${GITHUB_REPOSITORY:-}"; then
@@ -464,7 +503,7 @@ github_controls_remediation="run make verify-origin-push-access + make verify-li
 if [ -n "$api_token" ] || {
   [ -n "$github_app_id" ] && [ -n "$github_app_installation_id" ] &&
     { [ -n "$github_app_private_key_file" ] || [ -n "$github_app_private_key_pem" ]; }
-}; then
+} || [ "$has_oauth_bootstrap" = "true" ]; then
   github_controls_remediation="run make verify-live-github-access (token/App preflight) and make verify-github-repository-controls-public (precheck), then apply/verify via make apply-github-repository-controls-auto + make verify-github-repository-controls (admin token, GitHub App creds, or GITRANK_ALLOW_OAUTH_WEB_TOKEN_BOOTSTRAP=yes), or verify successful live-gates workflow evidence via make verify-live-v2-workflow-run (origin push auth is advisory when token/App auth path is active)"
 fi
 
