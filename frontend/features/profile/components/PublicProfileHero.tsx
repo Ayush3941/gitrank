@@ -38,6 +38,8 @@ export function PublicProfileHero({
                 alt={`${user.displayName} avatar`}
                 width={96}
                 height={96}
+                sizes="96px"
+                priority
                 className="cyber-avatar h-24 w-24 rounded-[2rem]"
               />
             </div>

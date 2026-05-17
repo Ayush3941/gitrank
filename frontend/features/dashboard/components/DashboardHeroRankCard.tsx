@@ -31,6 +31,8 @@ export function DashboardHeroRankCard({
               alt={`${user.displayName} avatar`}
               width={72}
               height={72}
+              sizes="72px"
+              priority
               className="cyber-avatar h-[72px] w-[72px] rounded-[1.85rem]"
             />
           </div>

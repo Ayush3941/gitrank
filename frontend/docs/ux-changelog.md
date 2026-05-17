@@ -34,6 +34,10 @@
     can be shared directly without manual URL editing
   - added `tests/leaderboard-lane-param.test.ts` to lock param-to-tab and
     tab-to-param mappings.
+- Hero avatar image optimization pass:
+  - dashboard and public-profile hero avatars now set explicit Next.js `sizes`
+    plus `priority` preload hints to reduce first-view image uncertainty and
+    improve above-the-fold visual stabilization.
 - Route fallback consistency pass:
   - added shared `RouteFallbackCard` (`components/shared/RouteFallbackCard.tsx`)
     and migrated all route-level `not-found` surfaces (global, dashboard,
