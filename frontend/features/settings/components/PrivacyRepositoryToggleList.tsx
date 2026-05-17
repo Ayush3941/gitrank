@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Search } from "lucide-react";
 import { startTransition, useDeferredValue, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -145,8 +146,34 @@ export function PrivacyRepositoryToggleList({
           </div>
         ))
       ) : (
-        <div className="neon-surface rounded-[1.75rem] border-dashed px-4 py-4 text-sm text-muted">
-          No repositories match the current search and visibility filter.
+        <div className="neon-surface space-y-3 rounded-[1.75rem] border-dashed px-4 py-4 text-sm text-muted">
+          {counts.total === 0 ? (
+            <p>
+              Repository visibility records are not available in this profile snapshot yet.
+              Run a sync to refresh repository privacy controls.
+            </p>
+          ) : (
+            <p>
+              No repositories match the current search and visibility filter.
+              Reset filters or widen the search scope.
+            </p>
+          )}
+          <div className="flex flex-wrap gap-2">
+            {canReset ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                onClick={handleReset}
+                disabled={isFiltering}
+              >
+                Reset filters
+              </Button>
+            ) : null}
+            <Button asChild size="sm" variant="secondary">
+              <Link href="/dashboard/settings#settings-account">Run sync in account section</Link>
+            </Button>
+          </div>
         </div>
       )}
     </div>
