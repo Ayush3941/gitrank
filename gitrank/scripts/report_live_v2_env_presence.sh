@@ -1,8 +1,6 @@
 #!/usr/bin/env sh
 set -eu
 
-repo_value="${GITHUB_REPOSITORY:-}"
-inferred_repo_value="${INFERRED_GITHUB_REPOSITORY:-}"
 root_dir="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 default_env_file="$root_dir/.env"
 LIVE_ENV_FILE="${LIVE_V2_ENV_FILE:-${FINALIZE_V2_ENV_FILE:-}}"
@@ -73,6 +71,9 @@ if [ -n "$LIVE_ENV_FILE" ]; then
     esac
   done
 fi
+
+repo_value="${GITHUB_REPOSITORY:-}"
+inferred_repo_value="${INFERRED_GITHUB_REPOSITORY:-}"
 
 if [ -n "$repo_value" ]; then
   if is_placeholder_value "$repo_value"; then
