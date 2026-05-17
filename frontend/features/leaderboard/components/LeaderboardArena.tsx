@@ -50,7 +50,7 @@ export function LeaderboardArena({ snapshot }: { snapshot: LeaderboardSnapshot }
         return (
           <GlowCard
             key={`${row.rank}-${row.username}`}
-            className={rowTone || undefined}
+            className={["render-opt-card", rowTone].filter(Boolean).join(" ")}
           >
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex items-center gap-4">

@@ -91,6 +91,9 @@
   - dashboard hero card
   - onboarding reveal completion panel
   for consistent share behavior and copy feedback.
+- Added `content-visibility` rendering optimization class and applied it to
+  high-volume card lists (contributions, leaderboard rows, badges, quests,
+  best PRs, repository privacy list) to reduce offscreen paint/layout cost.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`

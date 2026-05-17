@@ -109,7 +109,7 @@ export function PrivacyRepositoryToggleList({
       </div>
       {filteredItems.length > 0 ? (
         filteredItems.map((repo) => (
-          <div key={repo.name} className="neon-surface flex flex-col gap-3 rounded-[1.75rem] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div key={repo.name} className="render-opt-card neon-surface flex flex-col gap-3 rounded-[1.75rem] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-medium text-white">{repo.name}</p>
               <p className="text-sm text-muted">{repo.reason}</p>

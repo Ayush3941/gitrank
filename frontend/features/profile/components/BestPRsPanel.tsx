@@ -18,7 +18,7 @@ export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
           </div>
         ) : (
           reports.slice(0, 5).map((report) => (
-            <div key={report.id} className="neon-surface cyber-sheen rounded-[1.75rem] border-cyan-300/18 p-4">
+            <div key={report.id} className="render-opt-card neon-surface cyber-sheen rounded-[1.75rem] border-cyan-300/18 p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-sm text-muted">

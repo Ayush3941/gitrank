@@ -596,6 +596,11 @@ select {
   font-variant-numeric: tabular-nums;
 }
 
+.render-opt-card {
+  content-visibility: auto;
+  contain-intrinsic-size: 280px;
+}
+
 .cyber-link {
   color: rgb(var(--text-soft));
   transition:

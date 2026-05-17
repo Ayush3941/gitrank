@@ -17,7 +17,7 @@ export function ContributionList({
       {items.map((item) => (
         <GlowCard
           key={item.id}
-          className="cyber-hero-shell relative space-y-4 overflow-hidden"
+          className="render-opt-card cyber-hero-shell relative space-y-4 overflow-hidden"
         >
           <div className="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-cyan-400/14 blur-2xl" />
           <div className="flex flex-wrap items-start justify-between gap-4">
