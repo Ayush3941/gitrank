@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowUpRight, Target, Trophy } from "lucide-react";
 import { startTransition, useDeferredValue, useEffect, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -13,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LeaderboardArena } from "@/features/leaderboard/components/LeaderboardArena";
+import { laneParamToTab, tabToLaneParam } from "@/features/leaderboard/lib/lane-param";
 import { useLeaderboard } from "@/hooks/use-leaderboard";
 import { useMyProfile } from "@/hooks/use-profile";
 import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
@@ -48,7 +50,11 @@ const LEADERBOARD_SECTION_ITEMS: Array<{ id: LeaderboardSectionID; label: string
 ];
 
 export function LeaderboardPageClient() {
-  const [tab, setTab] = useState<LeaderboardTab>("Global");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const tabFromURL = laneParamToTab(searchParams.get("lane"));
+  const tab = tabFromURL ?? "Global";
   const [activeSection, setActiveSection] = useState<LeaderboardSectionID>("leaderboard-filters");
   const deferredTab = useDeferredValue(tab);
   const { data, isLoading, isError, isFetching, refetch } = useLeaderboard(deferredTab);
@@ -83,6 +89,17 @@ export function LeaderboardPageClient() {
     : 0;
 
   useEffect(() => {
+    const lane = tabToLaneParam(tab);
+    const nextParams = new URLSearchParams(searchParams.toString());
+    if (nextParams.get("lane") === lane) {
+      return;
+    }
+    nextParams.set("lane", lane);
+    const query = nextParams.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams, tab]);
+
+  useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries
@@ -110,7 +127,14 @@ export function LeaderboardPageClient() {
   }, []);
 
   function handleTabChange(value: string) {
-    startTransition(() => setTab(value as LeaderboardTab));
+    const nextTab = value as LeaderboardTab;
+    const lane = tabToLaneParam(nextTab);
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.set("lane", lane);
+    const query = nextParams.toString();
+    startTransition(() => {
+      router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+    });
   }
 
   return (

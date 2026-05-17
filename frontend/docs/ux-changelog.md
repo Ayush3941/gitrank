@@ -25,6 +25,13 @@
     recovery CTA
   - upgraded timeline/highlights panel titles to explicit heading elements
     instead of label-only text.
+- Leaderboard deep-link state pass:
+  - leaderboard lane tabs now persist in URL query state (`?lane=`), enabling
+    direct sharing and refresh-stable reconstruction of the selected lane
+  - added typed lane mapping helpers in
+    `features/leaderboard/lib/lane-param.ts` to keep route semantics stable
+  - added `tests/leaderboard-lane-param.test.ts` to lock param-to-tab and
+    tab-to-param mappings.
 - Route fallback consistency pass:
   - added shared `RouteFallbackCard` (`components/shared/RouteFallbackCard.tsx`)
     and migrated all route-level `not-found` surfaces (global, dashboard,
