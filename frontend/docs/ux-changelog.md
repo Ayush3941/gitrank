@@ -63,6 +63,10 @@
   - settings jump navigator now includes active section context and
     `Copy section link` (`/dashboard/settings#...`) so privacy and account
     panels can be shared with direct anchors.
+- Leaderboard section share-link refinement:
+  - leaderboard jump navigator now includes active section context and
+    `Copy section link` (`/dashboard/leaderboard#...`) in addition to lane
+    query sharing, making both lane and panel context shareable.
 - Route fallback consistency pass:
   - added shared `RouteFallbackCard` (`components/shared/RouteFallbackCard.tsx`)
     and migrated all route-level `not-found` surfaces (global, dashboard,

@@ -89,6 +89,10 @@ export function LeaderboardPageClient() {
   const currentUserProgressToNextBand = snapshot?.currentUser
     ? progressToNextBand(snapshot.currentUser.seasonXp, snapshot.currentUser.xpToNextRank)
     : 0;
+  const activeSectionLabel =
+    LEADERBOARD_SECTION_ITEMS.find((section) => section.id === activeSection)?.label ??
+    "Tabs";
+  const activeSectionLink = `/dashboard/leaderboard#${activeSection}`;
 
   useEffect(() => {
     const lane = tabToLaneParam(tab);
@@ -172,6 +176,9 @@ export function LeaderboardPageClient() {
         className="glass-panel flex flex-wrap items-center gap-2 border border-primary/20 p-2 xl:sticky xl:top-20 xl:z-20"
       >
         <p id="leaderboard-jump-nav-label" className="cyber-title px-2 text-[10px] tracking-[0.16em] text-cyan-200 uppercase">Jump to</p>
+        <p role="status" aria-live="polite" className="px-2 text-xs tracking-[0.16em] text-cyan-200 uppercase">
+          {activeSectionLabel}
+        </p>
         <ul role="list" className="flex flex-wrap gap-2">
           {LEADERBOARD_SECTION_ITEMS.map((section) => (
             <li key={section.id}>
@@ -189,6 +196,14 @@ export function LeaderboardPageClient() {
             </li>
           ))}
         </ul>
+        <div className="ml-auto">
+          <CopyTextButton
+            text={activeSectionLink}
+            label="Copy section link"
+            copiedLabel="Section link copied"
+            analyticsTarget="leaderboard/copy-section-link"
+          />
+        </div>
       </nav>
       <section id="leaderboard-filters" className="scroll-mt-24 space-y-3">
         <Tabs value={tab} onValueChange={handleTabChange}>
