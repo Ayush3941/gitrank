@@ -27,6 +27,11 @@
     CSS overrides to improve scan speed on dashboard cards and metrics
   - added `prefers-contrast: more` enhancements for stronger focus outlines and
     clearer muted/supporting text in user high-contrast environments.
+- Chart readability and theme consistency pass:
+  - switched radar/timeline chart palette from hardcoded hex values to shared
+    CSS theme tokens (`--primary`, `--primary-2`, `--text-body`, `--text-soft`)
+  - tuned axis/tick/tooltip typography and colors for better legibility in
+    Neon, Aurora, Midnight, and High Contrast modes.
 
 - Optimized hero/background rendering while preserving cyber style:
   - compressed `public/background.jpg` from large source to web-safe size

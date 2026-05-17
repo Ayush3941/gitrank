@@ -7,12 +7,15 @@ export function SkillRadarChartInner({ skills }: { skills: SkillNode[] }) {
   return (
     <ResponsiveContainer width="100%" height="100%">
       <RadarChart data={skills}>
-        <PolarGrid stroke="rgba(34,226,255,0.18)" />
-        <PolarAngleAxis dataKey="category" tick={{ fill: "#d8deff", fontSize: 12 }} />
+        <PolarGrid stroke="rgb(var(--primary) / 0.18)" />
+        <PolarAngleAxis
+          dataKey="category"
+          tick={{ fill: "rgb(var(--text-body))", fontSize: 12.5, fontWeight: 500 }}
+        />
         <Radar
           dataKey="score"
-          stroke="#22e2ff"
-          fill="rgba(34,226,255,0.28)"
+          stroke="rgb(var(--primary))"
+          fill="rgb(var(--primary) / 0.26)"
           fillOpacity={1}
           strokeWidth={2.4}
         />
