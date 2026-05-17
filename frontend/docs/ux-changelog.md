@@ -51,6 +51,10 @@
   - contribution jump navigator now shows active section context and a
     `Copy section link` action (`/dashboard/contributions#...`) for
     shareable drill-down state.
+- Badge section share-link refinement:
+  - badge jump navigator now mirrors other tabs with active section context and
+    a `Copy section link` action (`/dashboard/badges#...`) for shareable shelf
+    and locked-lane views.
 - Route fallback consistency pass:
   - added shared `RouteFallbackCard` (`components/shared/RouteFallbackCard.tsx`)
     and migrated all route-level `not-found` surfaces (global, dashboard,
