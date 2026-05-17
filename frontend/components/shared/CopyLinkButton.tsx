@@ -10,7 +10,7 @@ export function CopyLinkButton({
   copiedLabel = "Link copied",
   analyticsTarget = "copy-link",
   size = "sm",
-  variant = "ghost",
+  variant = "secondary",
 }: {
   href: string;
   label?: string;

@@ -90,6 +90,9 @@
 - Public profile link encoding hardening:
   - public profile section links now URL-encode usernames before copy so
     non-trivial handles keep valid, stable share URLs.
+- Copy-link control visibility pass:
+  - `CopyLinkButton` now defaults to `secondary` variant styling so share-link
+    actions are more discoverable in jump navigators across dashboard surfaces.
 - Route fallback consistency pass:
   - added shared `RouteFallbackCard` (`components/shared/RouteFallbackCard.tsx`)
     and migrated all route-level `not-found` surfaces (global, dashboard,
