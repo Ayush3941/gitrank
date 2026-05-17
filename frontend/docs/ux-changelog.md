@@ -104,6 +104,11 @@
   - `MobileNav` now renders a small live current-lane label (`Current lane:
     <route>`) above nav tiles for stronger in-flow orientation on compact
     screens and demo recordings.
+- Contribution filter iteration upgrade:
+  - active contribution filters are now removable directly from inline chips
+    (category/search/sort), reducing reset friction during rapid drill-down
+  - filter bar now explicitly shows a `No active filters` state when defaults
+    are active, improving orientation during demos and QA checks.
 - Sync freshness readability/traceability upgrade:
   - `formatRelativeDays` now reports recent sync age with minute/hour precision
     (for example `2m ago`, `3h ago`) before day-level buckets

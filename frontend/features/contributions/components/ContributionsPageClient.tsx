@@ -189,6 +189,18 @@ export function ContributionsPageClient() {
     });
   }
 
+  function handleClearCategoryFilter() {
+    startTransition(() => setFilter("All"));
+  }
+
+  function handleClearSearchFilter() {
+    startTransition(() => setSearch(""));
+  }
+
+  function handleClearSortFilter() {
+    startTransition(() => setSort("Newest"));
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -256,6 +268,9 @@ export function ContributionsPageClient() {
           isFiltering={isFiltering}
           canReset={canReset}
           onReset={handleResetFilters}
+          onClearCategory={handleClearCategoryFilter}
+          onClearSearch={handleClearSearchFilter}
+          onClearSort={handleClearSortFilter}
         />
       </section>
       {isLoading ? <LoadingState message="Checking review depth and PR intensity..." /> : null}

@@ -30,6 +30,9 @@ export function ContributionFilters({
   isFiltering,
   canReset,
   onReset,
+  onClearCategory,
+  onClearSearch,
+  onClearSort,
 }: {
   value: string;
   onValueChange: (value: string) => void;
@@ -41,18 +44,37 @@ export function ContributionFilters({
   isFiltering?: boolean;
   canReset?: boolean;
   onReset?: () => void;
+  onClearCategory?: () => void;
+  onClearSearch?: () => void;
+  onClearSort?: () => void;
 }) {
   const statusId = "contribution-filter-status";
-  const activeChips: string[] = [];
+  const activeChips: Array<{
+    key: "category" | "search" | "sort";
+    label: string;
+    onRemove?: () => void;
+  }> = [];
   if (value !== "All") {
-    activeChips.push(`Category: ${value}`);
+    activeChips.push({
+      key: "category",
+      label: `Category: ${value}`,
+      onRemove: onClearCategory,
+    });
   }
   if (search.trim().length > 0) {
     const compactSearch = search.trim().length > 28 ? `${search.trim().slice(0, 28)}…` : search.trim();
-    activeChips.push(`Search: ${compactSearch}`);
+    activeChips.push({
+      key: "search",
+      label: `Search: ${compactSearch}`,
+      onRemove: onClearSearch,
+    });
   }
   if (sort !== "Newest") {
-    activeChips.push(`Sort: ${sort}`);
+    activeChips.push({
+      key: "sort",
+      label: `Sort: ${sort}`,
+      onRemove: onClearSort,
+    });
   }
 
   return (
@@ -81,12 +103,30 @@ export function ContributionFilters({
       {activeChips.length ? (
         <div className="flex flex-wrap gap-2 text-xs">
           {activeChips.map((chip) => (
-            <span key={chip} className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-              {chip}
+            <span key={chip.key} className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold">
+              {chip.label}
+              {chip.onRemove ? (
+                <button
+                  type="button"
+                  onClick={chip.onRemove}
+                  disabled={isFiltering}
+                  className="focus-ring rounded-full border border-primary/30 px-1 text-[10px] leading-none text-cyan-100 hover:bg-primary/14 disabled:opacity-60"
+                  aria-label={`Remove ${chip.key} filter`}
+                  title={`Remove ${chip.key} filter`}
+                >
+                  ×
+                </button>
+              ) : null}
             </span>
           ))}
         </div>
-      ) : null}
+      ) : (
+        <div className="flex flex-wrap gap-2 text-xs">
+          <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+            No active filters
+          </span>
+        </div>
+      )}
       <Tabs value={value} onValueChange={onValueChange}>
         <TabsList className="scrollbar-thin w-full overflow-x-auto whitespace-nowrap" aria-label="Contribution category filters">
           {filters.map((filter) => (
