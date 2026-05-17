@@ -20,6 +20,11 @@
 - Added theme fallback behavior for accessibility: when no stored theme exists,
   the app now auto-selects `high-contrast` if the OS/browser advertises
   `prefers-contrast: more`.
+- Improved readability consistency:
+  - shared headers now use constrained reading measure and calmer line-height
+  - heading text uses `text-wrap: balance` for cleaner multi-line wraps
+  - `high-contrast` theme now renders heading titles without gradient text fill
+    to maximize legibility.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`

@@ -27,7 +27,7 @@ export function LandingPage() {
               <h1 className="neon-title cyber-title max-w-3xl text-4xl font-semibold tracking-tight sm:text-6xl">
                 Turn open-source work into a reputation system.
               </h1>
-              <p className="cyber-copy max-w-2xl text-base leading-8 sm:text-lg">
+              <p className="cyber-copy readable-measure max-w-[72ch] text-base leading-8 sm:text-lg">
                 GitRank analyzes meaningful PR difficulty, review depth, tests, and project context, then turns that evidence into XP, levels, badges, and shareable profile snapshots.
               </p>
             </div>
@@ -39,7 +39,7 @@ export function LandingPage() {
                 </Link>
               </Button>
             </div>
-            <p className="max-w-2xl text-sm text-muted">
+            <p className="readable-measure max-w-[72ch] text-sm leading-7 text-muted">
               GitRank does not ask only how much you contributed. It asks what recent contribution evidence suggests about the work.
             </p>
           </div>
@@ -181,7 +181,7 @@ export function LandingPage() {
             Anti-spam promise
           </div>
           <h2 className="text-2xl font-semibold text-amber-50">Spam PRs do not make you powerful here.</h2>
-          <p className="text-sm text-amber-50/80">
+          <p className="readable-measure max-w-[68ch] text-sm leading-7 text-amber-50/80">
             Low-context noise, unreviewed changes, and thin contribution floods are scored down. Transparent scoring is the product, not a hidden trick.
           </p>
         </GlowCard>
@@ -193,7 +193,7 @@ export function LandingPage() {
               Ready to rank your work?
             </div>
             <h2 className="text-3xl font-semibold text-white">Build a profile that recruiters and maintainers can actually trust.</h2>
-            <p className="max-w-2xl text-sm text-slate-200/80">The goal is a legible contribution snapshot, not an absolute ranking of developer worth.</p>
+            <p className="readable-measure max-w-[68ch] text-sm leading-7 text-slate-200/80">The goal is a legible contribution snapshot, not an absolute ranking of developer worth.</p>
           </div>
           <Button asChild size="lg">
             <Link href="/oauth/github/start?return_to=/dashboard">Start the reveal</Link>

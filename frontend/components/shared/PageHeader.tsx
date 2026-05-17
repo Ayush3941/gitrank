@@ -17,7 +17,7 @@ export function PageHeader({
       <div className="space-y-2">
         <p className="cyber-readout text-[11px] text-primary/88">Signal Board</p>
         <h1 className="neon-title cyber-title text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h1>
-        <p className="cyber-copy-muted max-w-3xl text-sm sm:text-base">{description}</p>
+        <p className="cyber-copy-muted readable-measure max-w-[72ch] text-sm leading-7 sm:text-base">{description}</p>
         <div className="cyber-divider max-w-3xl" />
       </div>
       {actions}
