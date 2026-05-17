@@ -45,6 +45,9 @@
 - Added a lightweight global network-activity indicator (top progress line)
   driven by React Query fetch/mutation state, with live-region status text for
   screen-reader users during active refreshes.
+- Split heavy chart rendering into lazy-loaded client chunks for
+  `SkillRadarChart` and `TimelineChart`, with themed skeleton fallbacks to
+  reduce initial JS pressure on primary routes.
 - Smoothed and simplified shell glow layers in `AppShell` to reduce decorative
   overdraw and avoid abrupt glow cutoffs.
 - Added responsive visual cost guard in `app/globals.css`:
