@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
+import { TextScaleQuickSwitcher } from "@/components/shared/TextScaleQuickSwitcher";
 import { ThemeQuickSwitcher } from "@/components/shared/ThemeQuickSwitcher";
 import { XPProgress } from "@/components/shared/XPProgress";
 import type { UserProfile } from "@/types/gitrank";
@@ -69,6 +70,7 @@ export function PublicProfileHero({
           </div>
           <div className="flex flex-wrap gap-2">
             <ThemeQuickSwitcher compact />
+            <TextScaleQuickSwitcher compact />
             <ShareProfileButton
               variant="secondary"
               username={user.username}

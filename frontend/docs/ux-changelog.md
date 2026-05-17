@@ -11,6 +11,9 @@
   - theme switcher is also available on landing and login onboarding screens
   - public profile hero and PR battle report now expose quick theme switching
   - theme changes now announce via polite live region for assistive tech
+  - added shared `TextScaleQuickSwitcher` so `Default`/`Large` text mode is
+    quickly reachable in dashboard, landing, login, public profile, and PR
+    report surfaces without opening settings
   - new global text-scale preference (`Default` / `Large`) with settings
     controls and persisted document-level rendering mode
   - settings now includes a live readability preview panel for current theme

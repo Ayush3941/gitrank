@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, ChartNoAxesCombined, GitPullRequestArrow, ShieldCheck, Sparkles, Swords, Trophy } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { SectionHeader } from "@/components/shared/SectionHeader";
+import { TextScaleQuickSwitcher } from "@/components/shared/TextScaleQuickSwitcher";
 import { ThemeQuickSwitcher } from "@/components/shared/ThemeQuickSwitcher";
 import { Button } from "@/components/ui/button";
 
@@ -25,7 +26,10 @@ export function LandingPage() {
                 <Sparkles className="h-3.5 w-3.5" />
                 Open-source battle pass
               </div>
-              <ThemeQuickSwitcher compact />
+              <div className="flex flex-wrap gap-2">
+                <ThemeQuickSwitcher compact />
+                <TextScaleQuickSwitcher compact />
+              </div>
             </div>
             <div className="space-y-4">
               <h1 className="neon-title cyber-title max-w-3xl text-4xl font-semibold tracking-tight sm:text-6xl">

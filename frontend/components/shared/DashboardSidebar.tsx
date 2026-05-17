@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { dashboardNavItems } from "@/components/shared/dashboard-nav";
+import { TextScaleQuickSwitcher } from "@/components/shared/TextScaleQuickSwitcher";
 import { ThemeQuickSwitcher } from "@/components/shared/ThemeQuickSwitcher";
 
 export function DashboardSidebar() {
@@ -55,7 +56,10 @@ export function DashboardSidebar() {
         </nav>
       </div>
       <div className="space-y-3">
-        <ThemeQuickSwitcher compact className="w-full justify-start" />
+        <div className="grid gap-2">
+          <ThemeQuickSwitcher compact className="w-full justify-start" />
+          <TextScaleQuickSwitcher compact className="w-full justify-start" />
+        </div>
         <div className="cyber-terminal p-3.5">
           <p className="text-[10px] font-semibold tracking-[0.2em] text-primary uppercase">Focus</p>
           <p className="cyber-copy mt-1.5 text-sm text-foreground">

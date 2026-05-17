@@ -3,6 +3,7 @@ import { AlertTriangle, ArrowUpRight, Zap } from "lucide-react";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
+import { TextScaleQuickSwitcher } from "@/components/shared/TextScaleQuickSwitcher";
 import { ThemeQuickSwitcher } from "@/components/shared/ThemeQuickSwitcher";
 import type { UserProfile } from "@/types/gitrank";
 
@@ -19,6 +20,7 @@ export function DashboardTopBar({ user }: { user: UserProfile }) {
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <ThemeQuickSwitcher compact />
+        <TextScaleQuickSwitcher compact />
         <Link
           href={`/u/${user.username}`}
           className="focus-ring cyber-link inline-flex items-center gap-2 text-sm font-medium"

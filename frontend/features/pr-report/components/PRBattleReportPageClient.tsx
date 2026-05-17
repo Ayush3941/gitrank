@@ -7,6 +7,7 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { TextScaleQuickSwitcher } from "@/components/shared/TextScaleQuickSwitcher";
 import { ThemeQuickSwitcher } from "@/components/shared/ThemeQuickSwitcher";
 import { Button } from "@/components/ui/button";
 import { EvidenceSignalsCard } from "@/features/pr-report/components/EvidenceSignalsCard";
@@ -66,6 +67,7 @@ export function PRBattleReportPageClient({
         actions={(
           <div className="flex flex-wrap gap-2">
             <ThemeQuickSwitcher compact />
+            <TextScaleQuickSwitcher compact />
             <Button asChild variant="secondary">
               <Link href="/dashboard/contributions">Back to contributions</Link>
             </Button>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { FolderGit2, LockKeyhole, Sparkles } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { TextScaleQuickSwitcher } from "@/components/shared/TextScaleQuickSwitcher";
 import { ThemeQuickSwitcher } from "@/components/shared/ThemeQuickSwitcher";
 import { Button } from "@/components/ui/button";
 import { OnboardingStepper } from "@/features/onboarding/components/OnboardingStepper";
@@ -14,7 +15,10 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
         <div className="space-y-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <OnboardingStepper currentStep="sign-in" />
-            <ThemeQuickSwitcher compact />
+            <div className="flex flex-wrap gap-2">
+              <ThemeQuickSwitcher compact />
+              <TextScaleQuickSwitcher compact />
+            </div>
           </div>
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-semibold tracking-[0.24em] text-primary uppercase">
             <LockKeyhole className="h-3.5 w-3.5" />
