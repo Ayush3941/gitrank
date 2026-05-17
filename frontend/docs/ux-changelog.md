@@ -59,6 +59,10 @@
   - dashboard jump navigator now exposes active section context plus
     `Copy section link` (`/dashboard#...`) to share specific command-center
     panels directly.
+- Settings section share-link refinement:
+  - settings jump navigator now includes active section context and
+    `Copy section link` (`/dashboard/settings#...`) so privacy and account
+    panels can be shared with direct anchors.
 - Route fallback consistency pass:
   - added shared `RouteFallbackCard` (`components/shared/RouteFallbackCard.tsx`)
     and migrated all route-level `not-found` surfaces (global, dashboard,

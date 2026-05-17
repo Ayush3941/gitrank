@@ -7,6 +7,7 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { SyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
@@ -128,6 +129,10 @@ export function SettingsPageClient() {
   const [actionNotice, setActionNotice] = useState("");
   const [displayNotice, setDisplayNotice] = useState("");
   const [activeSection, setActiveSection] = useState<SettingsSectionID>("settings-account");
+  const activeSectionLabel =
+    SETTINGS_SECTION_ITEMS.find((section) => section.id === activeSection)?.label ??
+    "Account";
+  const activeSectionLink = `/dashboard/settings#${activeSection}`;
   const currentSettings = data?.user.privacy ?? null;
   const activeThemeOption =
     THEME_OPTIONS.find((option) => option.value === theme) ?? THEME_OPTIONS[1];
@@ -321,6 +326,9 @@ export function SettingsPageClient() {
         className="glass-panel flex flex-wrap items-center gap-2 border border-primary/20 p-2 xl:sticky xl:top-20 xl:z-20"
       >
         <p id="settings-jump-nav-label" className="cyber-title px-2 text-[10px] tracking-[0.16em] text-cyan-200 uppercase">Jump to</p>
+        <p role="status" aria-live="polite" className="px-2 text-xs tracking-[0.16em] text-cyan-200 uppercase">
+          {activeSectionLabel}
+        </p>
         <ul role="list" className="flex flex-wrap gap-2">
           {SETTINGS_SECTION_ITEMS.map((section) => (
             <li key={section.id}>
@@ -338,6 +346,14 @@ export function SettingsPageClient() {
             </li>
           ))}
         </ul>
+        <div className="ml-auto">
+          <CopyTextButton
+            text={activeSectionLink}
+            label="Copy section link"
+            copiedLabel="Section link copied"
+            analyticsTarget="settings/copy-section-link"
+          />
+        </div>
       </nav>
       <section id="settings-account" className="scroll-mt-24">
         <GlowCard className="space-y-4">
