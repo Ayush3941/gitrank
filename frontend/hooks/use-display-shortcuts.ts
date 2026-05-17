@@ -6,7 +6,7 @@ import { useThemePreference, type ThemePreference } from "@/hooks/use-theme-pref
 
 const THEME_ORDER: ThemePreference[] = ["neon", "midnight", "high-contrast"];
 
-export function useDisplayShortcutsStatus() {
+export function useDisplayShortcutsStatus(enabled: boolean) {
   const { theme, setTheme } = useThemePreference();
   const { textScale, setTextScale } = useTextScalePreference();
   const [statusMessage, setStatusMessage] = useState("");
@@ -50,6 +50,9 @@ export function useDisplayShortcutsStatus() {
       }
     }
 
+    if (!enabled) {
+      return;
+    }
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
@@ -57,7 +60,7 @@ export function useDisplayShortcutsStatus() {
         window.clearTimeout(clearStatusTimeoutRef.current);
       }
     };
-  }, [queueStatusMessage, setTextScale, setTheme, textScale, theme]);
+  }, [enabled, queueStatusMessage, setTextScale, setTheme, textScale, theme]);
 
   return statusMessage;
 }

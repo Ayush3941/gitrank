@@ -40,6 +40,8 @@
   live-region confirmation announcements and settings-page shortcut hints.
 - Added `aria-keyshortcuts` metadata and explicit shortcut hints on quick
   theme/text switch buttons for better discoverability.
+- Added a settings-level on/off toggle for global display shortcuts to prevent
+  workflow conflicts when users prefer to disable hotkeys.
 - Smoothed and simplified shell glow layers in `AppShell` to reduce decorative
   overdraw and avoid abrupt glow cutoffs.
 - Added responsive visual cost guard in `app/globals.css`:

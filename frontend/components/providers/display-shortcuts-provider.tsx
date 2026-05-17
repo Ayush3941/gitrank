@@ -1,10 +1,12 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useDisplayShortcutsEnabled } from "@/hooks/use-display-shortcuts-enabled";
 import { useDisplayShortcutsStatus } from "@/hooks/use-display-shortcuts";
 
 export function DisplayShortcutsProvider({ children }: { children: ReactNode }) {
-  const statusMessage = useDisplayShortcutsStatus();
+  const { enabled } = useDisplayShortcutsEnabled();
+  const statusMessage = useDisplayShortcutsStatus(enabled);
 
   return (
     <>

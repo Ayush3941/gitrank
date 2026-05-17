@@ -29,6 +29,9 @@ import {
   useGamificationPreference,
 } from "@/hooks/use-gamification-preference";
 import {
+  useDisplayShortcutsEnabled,
+} from "@/hooks/use-display-shortcuts-enabled";
+import {
   type TextScalePreference,
   useTextScalePreference,
 } from "@/hooks/use-text-scale-preference";
@@ -96,6 +99,8 @@ export function SettingsPageClient() {
   const { setReducedGamification } = useGamificationPreference();
   const { theme, setTheme } = useThemePreference();
   const { textScale, setTextScale } = useTextScalePreference();
+  const { enabled: displayShortcutsEnabled, setEnabled: setDisplayShortcutsEnabled } =
+    useDisplayShortcutsEnabled();
   useAccountGamificationPreference(data);
   const [actionNotice, setActionNotice] = useState("");
   const [displayNotice, setDisplayNotice] = useState("");
@@ -325,6 +330,22 @@ export function SettingsPageClient() {
             checked={currentSettings.reducedGamification}
             disabled={isSaving}
             onCheckedChange={(checked) => handlePrivacyToggle("reducedGamification", checked)}
+          />
+        </div>
+        <div className="cyber-divider" />
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="max-w-2xl">
+            <p className="text-xs tracking-[0.24em] text-primary uppercase">Keyboard controls</p>
+            <h3 className="mt-2 text-xl font-semibold text-white">Display shortcuts</h3>
+            <p className="mt-2 text-sm leading-6 text-muted">
+              Enables global display shortcuts when focus is not in an editable field.
+            </p>
+          </div>
+          <Switch
+            id="display-shortcuts-enabled"
+            aria-label="Enable display shortcuts"
+            checked={displayShortcutsEnabled}
+            onCheckedChange={setDisplayShortcutsEnabled}
           />
         </div>
         <div className="cyber-divider" />
