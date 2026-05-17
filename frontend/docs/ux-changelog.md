@@ -76,6 +76,13 @@
   - each leaderboard row now includes a deterministic `Next action` hint based
     on promotion-zone, demotion-risk, and xp-to-next-rank states so lane cards
     communicate what to do next, not only current placement.
+- Onboarding reveal resilience upgrade:
+  - reveal panel now includes a compact metric row (merged PRs, reviewed PRs,
+    unlocked badges, evidence rows) plus explicit snapshot-state context
+  - no-evidence users now get deterministic fallback badge cards and tailored
+    next steps instead of thin/empty reveal sections
+  - next-step guidance now branches based on whether merged contribution
+    evidence exists, improving first-run onboarding clarity.
 - Sync freshness readability/traceability upgrade:
   - `formatRelativeDays` now reports recent sync age with minute/hour precision
     (for example `2m ago`, `3h ago`) before day-level buckets

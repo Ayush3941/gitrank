@@ -21,11 +21,20 @@ export function RevealPanel({
 }) {
   const strongestSignals =
     user.strongestSignals.length > 0 ? user.strongestSignals.join(", ") : "recent contribution";
-  const nextActions = [
-    "Open dashboard to inspect score movement and weekly XP.",
-    "Review contribution drill-down for high-impact PR evidence cards.",
-    "Share your public profile once privacy toggles are set.",
-  ];
+  const unlockedBadges = user.badges.filter((badge) => badge.unlocked).slice(0, 3);
+  const evidenceRows = user.contributions.length;
+  const nextActions =
+    user.mergedPrCount === 0
+      ? [
+          "Merge your first meaningful PR so score movement can activate.",
+          "Run a full sync to attach fresh GitHub evidence to this profile.",
+          "Open quests to target your first high-signal contribution lane.",
+        ]
+      : [
+          "Open dashboard to inspect score movement and weekly XP.",
+          "Review contribution drill-down for high-impact PR evidence cards.",
+          "Share your public profile once privacy toggles are set.",
+        ];
 
   return (
     <main className="mx-auto max-w-5xl">
@@ -48,6 +57,21 @@ export function RevealPanel({
           <p className="mx-auto max-w-2xl text-base text-muted">
             This first snapshot shows recurring signals in {strongestSignals} work. Meaningful merged contributions currently place you in {user.level.rankTier}.
           </p>
+          <div className="mx-auto grid w-full max-w-4xl gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <RevealMetric label="Merged PRs" value={user.mergedPrCount.toLocaleString("en-US")} />
+            <RevealMetric label="Reviewed PRs" value={user.reviewedPrCount.toLocaleString("en-US")} />
+            <RevealMetric label="Unlocked badges" value={unlockedBadges.length.toLocaleString("en-US")} />
+            <RevealMetric label="Evidence rows" value={evidenceRows.toLocaleString("en-US")} />
+          </div>
+          <div className="mx-auto max-w-3xl rounded-2xl border border-primary/24 bg-primary/10 px-4 py-3 text-left text-sm text-slate-100/88">
+            <p className="text-xs tracking-[0.24em] text-primary uppercase">Snapshot state</p>
+            <p className="mt-2 leading-6">
+              Sync status is <span className="font-semibold text-white">{formatSyncState(user.syncStatus.state)}</span>.
+              {evidenceRows > 0
+                ? ` This reveal currently includes ${evidenceRows} persisted contribution evidence row${evidenceRows === 1 ? "" : "s"}.`
+                : " No scored contribution evidence is attached yet; complete one merged contribution and re-sync to unlock deeper profile interpretation."}
+            </p>
+          </div>
           {identitySummary ? (
             <div className="mx-auto max-w-3xl rounded-2xl border border-fuchsia-300/25 bg-fuchsia-400/9 px-4 py-3 text-left text-sm text-slate-100/86">
               <p className="text-xs tracking-[0.24em] text-fuchsia-200 uppercase">
@@ -64,7 +88,8 @@ export function RevealPanel({
           </div>
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
-          {user.badges.slice(0, 3).map((badge) => (
+          {unlockedBadges.length > 0 ? (
+            unlockedBadges.map((badge) => (
             <div key={badge.id} className="rounded-[1.75rem] border border-cyan-300/16 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/22 p-5 text-left">
               <div className="flex items-center justify-between">
                 <Award className="h-5 w-5 text-primary" />
@@ -73,7 +98,23 @@ export function RevealPanel({
               <h2 className="mt-4 text-xl font-semibold text-white">{badge.name}</h2>
               <p className="mt-2 text-sm text-muted">{badge.description}</p>
             </div>
-          ))}
+            ))
+          ) : (
+            <>
+              <RevealFallbackCard
+                title="First merge unlock"
+                body="Merge one meaningful PR to activate the first badge lane."
+              />
+              <RevealFallbackCard
+                title="Review depth unlock"
+                body="Maintainer-reviewed work speeds up trust and progression."
+              />
+              <RevealFallbackCard
+                title="Consistency unlock"
+                body="Sustained weekly contribution evidence unlocks rarer badge tiers."
+              />
+            </>
+          )}
         </div>
         <div className="neon-surface rounded-[1.75rem] px-5 py-4 text-left">
           <p className="text-xs tracking-[0.24em] text-primary uppercase">What to do next</p>
@@ -111,6 +152,40 @@ export function RevealPanel({
       </GlowCard>
     </main>
   );
+}
+
+function RevealMetric({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="neon-metric rounded-[1.35rem] px-4 py-3 text-left">
+      <p className="text-[11px] tracking-[0.2em] text-cyan-200 uppercase">{label}</p>
+      <p className="mt-2 text-xl font-semibold text-white">{value}</p>
+    </div>
+  );
+}
+
+function RevealFallbackCard({
+  title,
+  body,
+}: {
+  title: string;
+  body: string;
+}) {
+  return (
+    <div className="rounded-[1.75rem] border border-dashed border-cyan-300/20 bg-gradient-to-br from-slate-950/82 to-cyan-950/20 p-5 text-left">
+      <h2 className="text-lg font-semibold text-white">{title}</h2>
+      <p className="mt-2 text-sm text-muted">{body}</p>
+    </div>
+  );
+}
+
+function formatSyncState(state: UserProfile["syncStatus"]["state"]): string {
+  return state.replaceAll("_", " ");
 }
 
 export function RevealPanelSkeleton() {
