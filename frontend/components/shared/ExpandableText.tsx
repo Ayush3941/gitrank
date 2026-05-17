@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 
@@ -22,6 +22,7 @@ export function ExpandableText({
   minLengthForToggle?: number;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const paragraphId = useId();
   const canToggle = text.trim().length >= minLengthForToggle;
   const clampStyle = useMemo(
     () =>
@@ -38,7 +39,7 @@ export function ExpandableText({
 
   return (
     <div className={cn("space-y-2", className)}>
-      <p className={cn("break-anywhere", textClassName)} style={clampStyle}>
+      <p id={paragraphId} className={cn("break-anywhere", textClassName)} style={clampStyle}>
         {text}
       </p>
       {canToggle ? (
@@ -49,6 +50,7 @@ export function ExpandableText({
           className="h-auto px-0 py-0 text-xs"
           onClick={() => setExpanded((current) => !current)}
           aria-expanded={expanded}
+          aria-controls={paragraphId}
         >
           {expanded ? showLessLabel : showMoreLabel}
         </Button>

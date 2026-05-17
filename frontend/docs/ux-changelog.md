@@ -56,6 +56,12 @@
   (`components/shared/ExpandableText.tsx`) and applied it to long AI/summary
   blocks across contributions, leaderboard, profile hero, best PR panels, and
   PR battle report so cards stay scan-friendly while preserving full detail.
+- Accessibility hardening for OS-enforced contrast modes:
+  - added `@media (forced-colors: active)` stylesheet fallback with system
+    color tokens (`Canvas`, `CanvasText`, `Highlight`) and simplified surfaces
+    so keyboard focus and text remain visible when gradients/shadows are forced off
+  - improved `ExpandableText` semantics with `aria-controls` linkage for
+    clearer assistive-technology context on Show more / Show less controls.
 
 - Optimized hero/background rendering while preserving cyber style:
   - compressed `public/background.jpg` from large source to web-safe size

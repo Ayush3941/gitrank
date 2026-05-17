@@ -1196,6 +1196,66 @@ html[data-gamification="reduced"] .rank-orbit {
   }
 }
 
+@media (forced-colors: active) {
+  :where(
+      a[href],
+      button,
+      input:not([type="hidden"]),
+      select,
+      textarea,
+      summary,
+      [role="button"],
+      [tabindex]:not([tabindex="-1"])
+    ):focus-visible {
+    outline: 2px solid Highlight !important;
+    outline-offset: 2px;
+  }
+
+  .glass-panel,
+  .glass-panel-strong,
+  .cyber-card,
+  .cyber-header,
+  .neon-surface,
+  .neon-surface-strong,
+  .neon-tile,
+  .neon-metric,
+  .neon-chip,
+  .neon-chip-muted,
+  .neon-track,
+  .cyber-terminal {
+    forced-color-adjust: auto;
+    background: Canvas !important;
+    color: CanvasText !important;
+    border-color: CanvasText !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  .neon-title,
+  .text-gradient {
+    -webkit-text-fill-color: CanvasText !important;
+    color: CanvasText !important;
+    background: none !important;
+    text-shadow: none !important;
+  }
+
+  .rank-orbit,
+  .rank-orbit::after,
+  .player-card-shell::before,
+  .season-arena-card::before,
+  .cyber-sheen::after,
+  .rarity-badge::after,
+  .cyber-card::after,
+  .cyber-hero-overlay,
+  .panel-grid,
+  .page-shell::before,
+  .page-shell::after,
+  body::before,
+  body::after {
+    display: none !important;
+  }
+}
+
 @media (prefers-reduced-transparency: reduce) {
   .glass-panel,
   .glass-panel-strong,
