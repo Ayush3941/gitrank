@@ -17,6 +17,7 @@ import { QuestCard } from "@/features/quests/components/QuestCard";
 import { useQuests } from "@/hooks/use-quests";
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
+import { initialSectionFromHash } from "@/lib/section-nav";
 import type { Quest } from "@/types/gitrank";
 
 const groups: Array<Quest["cadence"]> = ["Daily", "Weekly", "Long-term", "Skill-based"];
@@ -26,6 +27,10 @@ const QUEST_SECTION_IDS: Record<Quest["cadence"], string> = {
   "Long-term": "quests-long-term",
   "Skill-based": "quests-skill-based",
 };
+type QuestSectionID = (typeof QUEST_SECTION_IDS)[Quest["cadence"]];
+const QUEST_SECTION_ID_LIST = Object.values(QUEST_SECTION_IDS) as QuestSectionID[];
+const QUEST_DEFAULT_GROUP: Quest["cadence"] = "Daily";
+const QUEST_DEFAULT_SECTION: QuestSectionID = QUEST_SECTION_IDS[QUEST_DEFAULT_GROUP];
 
 export function QuestsPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useQuests();
@@ -35,7 +40,7 @@ export function QuestsPageClient() {
   const streak = summarizeContributionStreak(contributionRows);
   const dayOfYear = dayOfYearUTC(new Date());
   const dayProgress = Math.round((dayOfYear / 365) * 100);
-  const [activeGroup, setActiveGroup] = useState<Quest["cadence"]>("Daily");
+  const [activeGroup, setActiveGroup] = useState<Quest["cadence"]>(QUEST_DEFAULT_GROUP);
   const questMap = {
     Daily: quests.filter((quest) => quest.cadence === "Daily"),
     Weekly: quests.filter((quest) => quest.cadence === "Weekly"),
@@ -55,15 +60,29 @@ export function QuestsPageClient() {
       return;
     }
 
+    const syncFromHash = () => {
+      const nextSection = initialSectionFromHash(
+        QUEST_SECTION_ID_LIST,
+        QUEST_DEFAULT_SECTION,
+        window.location.hash,
+      );
+      const nextGroup =
+        groups.find((group) => QUEST_SECTION_IDS[group] === nextSection) ?? QUEST_DEFAULT_GROUP;
+      setActiveGroup((current) => (current === nextGroup ? current : nextGroup));
+    };
+    syncFromHash();
+    window.addEventListener("hashchange", syncFromHash);
+
     const sectionNodes = groups
       .map((group) => {
-        const id = QUEST_SECTION_IDS[group];
+        const id = QUEST_SECTION_IDS[group] as QuestSectionID;
         const node = document.getElementById(id);
         return node ? ({ id, group, node }) : null;
       })
-      .filter(Boolean) as Array<{ id: string; group: Quest["cadence"]; node: HTMLElement }>;
+      .filter(Boolean) as Array<{ id: QuestSectionID; group: Quest["cadence"]; node: HTMLElement }>;
 
     if (!sectionNodes.length) {
+      window.removeEventListener("hashchange", syncFromHash);
       return;
     }
 
@@ -100,6 +119,7 @@ export function QuestsPageClient() {
     }
 
     return () => {
+      window.removeEventListener("hashchange", syncFromHash);
       observer.disconnect();
     };
   }, []);
@@ -213,6 +233,9 @@ export function QuestsPageClient() {
                 <li key={group}>
                   <a
                     href={`#${QUEST_SECTION_IDS[group]}`}
+                    onClick={() => {
+                      setActiveGroup(group);
+                    }}
                     className={
                       active
                         ? "focus-ring neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold"

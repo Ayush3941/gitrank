@@ -39,6 +39,7 @@ import {
 } from "@/hooks/use-text-scale-preference";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import { type ThemePreference, useThemePreference } from "@/hooks/use-theme-preference";
+import { initialSectionFromHash } from "@/lib/section-nav";
 
 type BackedPrivacyKey =
   | "publicProfileEnabled"
@@ -61,6 +62,10 @@ const SETTINGS_SECTION_ITEMS: Array<{ id: SettingsSectionID; label: string }> = 
   { id: "settings-repositories", label: "Repositories" },
   { id: "settings-data-controls", label: "Data" },
 ];
+const SETTINGS_SECTION_IDS = SETTINGS_SECTION_ITEMS.map(
+  (section) => section.id,
+) as SettingsSectionID[];
+const SETTINGS_DEFAULT_SECTION: SettingsSectionID = "settings-account";
 
 const THEME_OPTIONS: Array<{
   value: ThemePreference;
@@ -128,7 +133,8 @@ export function SettingsPageClient() {
   useAccountGamificationPreference(data);
   const [actionNotice, setActionNotice] = useState("");
   const [displayNotice, setDisplayNotice] = useState("");
-  const [activeSection, setActiveSection] = useState<SettingsSectionID>("settings-account");
+  const [activeSection, setActiveSection] =
+    useState<SettingsSectionID>(SETTINGS_DEFAULT_SECTION);
   const activeSectionLabel =
     SETTINGS_SECTION_ITEMS.find((section) => section.id === activeSection)?.label ??
     "Account";
@@ -138,6 +144,21 @@ export function SettingsPageClient() {
     THEME_OPTIONS.find((option) => option.value === theme) ?? THEME_OPTIONS[1];
 
   useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const syncFromHash = () => {
+      const nextSection = initialSectionFromHash(
+        SETTINGS_SECTION_IDS,
+        SETTINGS_DEFAULT_SECTION,
+        window.location.hash,
+      );
+      setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
+    };
+    syncFromHash();
+    window.addEventListener("hashchange", syncFromHash);
+
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries
@@ -146,10 +167,12 @@ export function SettingsPageClient() {
         if (!visible) {
           return;
         }
-        const id = visible.target.id as SettingsSectionID;
-        if (id) {
-          setActiveSection(id);
-        }
+        const nextSection = initialSectionFromHash(
+          SETTINGS_SECTION_IDS,
+          SETTINGS_DEFAULT_SECTION,
+          `#${visible.target.id}`,
+        );
+        setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
       },
       { rootMargin: "-22% 0px -55% 0px", threshold: [0.2, 0.45, 0.7] },
     );
@@ -161,7 +184,10 @@ export function SettingsPageClient() {
       }
     });
 
-    return () => observer.disconnect();
+    return () => {
+      window.removeEventListener("hashchange", syncFromHash);
+      observer.disconnect();
+    };
   }, []);
 
   function handleResetDisplayPreferences() {
@@ -334,6 +360,9 @@ export function SettingsPageClient() {
             <li key={section.id}>
               <a
                 href={`#${section.id}`}
+                onClick={() => {
+                  setActiveSection(section.id);
+                }}
                 aria-current={activeSection === section.id ? "location" : undefined}
                 className={
                   activeSection === section.id

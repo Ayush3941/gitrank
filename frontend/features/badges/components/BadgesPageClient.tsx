@@ -20,6 +20,7 @@ import { useBadges } from "@/hooks/use-badges";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
+import { initialSectionFromHash } from "@/lib/section-nav";
 import type { BadgeRarity } from "@/types/gitrank";
 
 type BadgeSectionId = "badges-forge" | "badges-earned" | "badges-locked";
@@ -29,12 +30,14 @@ const BADGE_SECTION_ITEMS: Array<{ id: BadgeSectionId; label: string }> = [
   { id: "badges-earned", label: "Earned" },
   { id: "badges-locked", label: "Locked" },
 ];
+const BADGE_SECTION_IDS = BADGE_SECTION_ITEMS.map((section) => section.id) as BadgeSectionId[];
+const BADGE_DEFAULT_SECTION: BadgeSectionId = "badges-forge";
 
 export function BadgesPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useBadges();
   const badgeViewedEventSent = useRef(false);
   const previousUnlockedCountRef = useRef<number | null>(null);
-  const [activeSection, setActiveSection] = useState<BadgeSectionId>("badges-forge");
+  const [activeSection, setActiveSection] = useState<BadgeSectionId>(BADGE_DEFAULT_SECTION);
   const [rarity, setRarity] = useState<BadgeRarity | "All">("All");
   const [visibility, setVisibility] = useState<"All" | "Unlocked" | "Locked">("All");
   const [unlockNotice, setUnlockNotice] = useState("");
@@ -138,6 +141,21 @@ export function BadgesPageClient() {
   }, [data, isError, isLoading, unlockedCount]);
 
   useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const syncFromHash = () => {
+      const nextSection = initialSectionFromHash(
+        BADGE_SECTION_IDS,
+        BADGE_DEFAULT_SECTION,
+        window.location.hash,
+      );
+      setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
+    };
+    syncFromHash();
+    window.addEventListener("hashchange", syncFromHash);
+
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries
@@ -146,10 +164,12 @@ export function BadgesPageClient() {
         if (!visible) {
           return;
         }
-        const id = visible.target.id as BadgeSectionId;
-        if (id) {
-          setActiveSection(id);
-        }
+        const nextSection = initialSectionFromHash(
+          BADGE_SECTION_IDS,
+          BADGE_DEFAULT_SECTION,
+          `#${visible.target.id}`,
+        );
+        setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
       },
       { rootMargin: "-25% 0px -55% 0px", threshold: [0.25, 0.45, 0.7] },
     );
@@ -161,7 +181,10 @@ export function BadgesPageClient() {
       }
     });
 
-    return () => observer.disconnect();
+    return () => {
+      window.removeEventListener("hashchange", syncFromHash);
+      observer.disconnect();
+    };
   }, []);
 
   function handleRarityChange(value: BadgeRarity | "All") {
@@ -204,6 +227,9 @@ export function BadgesPageClient() {
             <li key={section.id}>
               <a
                 href={`#${section.id}`}
+                onClick={() => {
+                  setActiveSection(section.id);
+                }}
                 aria-current={activeSection === section.id ? "location" : undefined}
                 className={
                   activeSection === section.id

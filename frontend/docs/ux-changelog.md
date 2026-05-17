@@ -2,6 +2,15 @@
 
 ## 2026-05-17
 
+- Deep-link jump-nav state consistency pass:
+  - added shared `initialSectionFromHash` helper (`lib/section-nav.ts`) with
+    malformed-hash safety fallback handling
+  - wired dashboard, contributions, badges, quests, settings, leaderboard,
+    public profile, and PR report jump navs to:
+    1) initialize active nav state from URL hash after mount,
+    2) react to browser `hashchange`, and
+    3) update active state immediately on anchor click.
+  - added `tests/section-nav.test.ts` to lock hash parsing/fallback behavior.
 - Sync-state clarity and micro-text readability upgrade:
   - added shared `SyncStateGuide` (`components/shared/SyncStateGuide.tsx`) to
     convert raw sync status into explicit state narratives and deterministic

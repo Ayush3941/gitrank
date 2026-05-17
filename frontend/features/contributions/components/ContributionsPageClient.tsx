@@ -24,6 +24,7 @@ import {
   summarizeRepositories,
   uniqueContributionDayCount,
 } from "@/lib/metrics/contribution-metrics";
+import { initialSectionFromHash } from "@/lib/section-nav";
 
 const filterMap: Record<string, string> = {
   All: "All",
@@ -52,12 +53,17 @@ const CONTRIBUTION_SECTION_ITEMS: Array<{ id: ContributionSectionID; label: stri
   { id: "contributions-timeline", label: "Timeline" },
   { id: "contributions-cards", label: "Cards" },
 ];
+const CONTRIBUTION_SECTION_IDS = CONTRIBUTION_SECTION_ITEMS.map(
+  (section) => section.id,
+) as ContributionSectionID[];
+const CONTRIBUTION_DEFAULT_SECTION: ContributionSectionID = "contributions-filters";
 
 export function ContributionsPageClient() {
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact">("Newest");
-  const [activeSection, setActiveSection] = useState<ContributionSectionID>("contributions-filters");
+  const [activeSection, setActiveSection] =
+    useState<ContributionSectionID>(CONTRIBUTION_DEFAULT_SECTION);
   const deferredFilter = useDeferredValue(filter);
   const deferredSearch = useDeferredValue(search);
   const deferredSort = useDeferredValue(sort);
@@ -149,6 +155,21 @@ export function ContributionsPageClient() {
   const maxMonthlyXp = Math.max(1, ...monthly.map((point) => point.xp));
 
   useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const syncFromHash = () => {
+      const nextSection = initialSectionFromHash(
+        CONTRIBUTION_SECTION_IDS,
+        CONTRIBUTION_DEFAULT_SECTION,
+        window.location.hash,
+      );
+      setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
+    };
+    syncFromHash();
+    window.addEventListener("hashchange", syncFromHash);
+
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries
@@ -157,10 +178,12 @@ export function ContributionsPageClient() {
         if (!visible) {
           return;
         }
-        const id = visible.target.id as ContributionSectionID;
-        if (id) {
-          setActiveSection(id);
-        }
+        const nextSection = initialSectionFromHash(
+          CONTRIBUTION_SECTION_IDS,
+          CONTRIBUTION_DEFAULT_SECTION,
+          `#${visible.target.id}`,
+        );
+        setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
       },
       { rootMargin: "-22% 0px -55% 0px", threshold: [0.2, 0.45, 0.7] },
     );
@@ -172,7 +195,10 @@ export function ContributionsPageClient() {
       }
     });
 
-    return () => observer.disconnect();
+    return () => {
+      window.removeEventListener("hashchange", syncFromHash);
+      observer.disconnect();
+    };
   }, []);
 
   function handleFilterChange(next: string) {
@@ -252,6 +278,9 @@ export function ContributionsPageClient() {
             <li key={section.id}>
               <a
                 href={`#${section.id}`}
+                onClick={() => {
+                  setActiveSection(section.id);
+                }}
                 aria-current={activeSection === section.id ? "location" : undefined}
                 className={
                   activeSection === section.id

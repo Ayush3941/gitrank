@@ -20,6 +20,7 @@ import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useProfile } from "@/hooks/use-profile";
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
+import { initialSectionFromHash } from "@/lib/section-nav";
 
 type PublicProfileSectionID =
   | "public-profile-overview"
@@ -33,6 +34,10 @@ const PUBLIC_PROFILE_SECTION_ITEMS: Array<{ id: PublicProfileSectionID; label: s
   { id: "public-profile-best-prs", label: "Best PRs" },
   { id: "public-profile-timeline-repos", label: "Timeline & Repos" },
 ];
+const PUBLIC_PROFILE_SECTION_IDS = PUBLIC_PROFILE_SECTION_ITEMS.map(
+  (section) => section.id,
+) as PublicProfileSectionID[];
+const PUBLIC_PROFILE_DEFAULT_SECTION: PublicProfileSectionID = "public-profile-overview";
 
 export function PublicProfilePageClient({
   username,
@@ -40,7 +45,8 @@ export function PublicProfilePageClient({
   username: string;
 }) {
   const { data, isLoading, isError, isFetching, refetch } = useProfile(username);
-  const [activeSection, setActiveSection] = useState<PublicProfileSectionID>("public-profile-overview");
+  const [activeSection, setActiveSection] =
+    useState<PublicProfileSectionID>(PUBLIC_PROFILE_DEFAULT_SECTION);
   const activeSectionLabel =
     PUBLIC_PROFILE_SECTION_ITEMS.find((section) => section.id === activeSection)?.label ??
     "Overview";
@@ -93,6 +99,21 @@ export function PublicProfilePageClient({
   const abraInsights = useAbraInsights(abraPayload);
 
   useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const syncFromHash = () => {
+      const nextSection = initialSectionFromHash(
+        PUBLIC_PROFILE_SECTION_IDS,
+        PUBLIC_PROFILE_DEFAULT_SECTION,
+        window.location.hash,
+      );
+      setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
+    };
+    syncFromHash();
+    window.addEventListener("hashchange", syncFromHash);
+
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries
@@ -101,10 +122,12 @@ export function PublicProfilePageClient({
         if (!visible) {
           return;
         }
-        const id = visible.target.id as PublicProfileSectionID;
-        if (id) {
-          setActiveSection(id);
-        }
+        const nextSection = initialSectionFromHash(
+          PUBLIC_PROFILE_SECTION_IDS,
+          PUBLIC_PROFILE_DEFAULT_SECTION,
+          `#${visible.target.id}`,
+        );
+        setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
       },
       { rootMargin: "-22% 0px -55% 0px", threshold: [0.2, 0.45, 0.7] },
     );
@@ -116,7 +139,10 @@ export function PublicProfilePageClient({
       }
     });
 
-    return () => observer.disconnect();
+    return () => {
+      window.removeEventListener("hashchange", syncFromHash);
+      observer.disconnect();
+    };
   }, []);
 
   if (isLoading) {
@@ -175,6 +201,9 @@ export function PublicProfilePageClient({
             <li key={section.id}>
               <a
                 href={`#${section.id}`}
+                onClick={() => {
+                  setActiveSection(section.id);
+                }}
                 aria-current={activeSection === section.id ? "location" : undefined}
                 className={
                   activeSection === section.id

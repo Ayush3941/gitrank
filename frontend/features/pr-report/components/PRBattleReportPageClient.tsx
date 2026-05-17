@@ -18,6 +18,7 @@ import { ScoreMatrixCard } from "@/features/pr-report/components/ScoreMatrixCard
 import { XPBreakdownCard } from "@/features/pr-report/components/XPBreakdownCard";
 import { usePrReport } from "@/hooks/use-pr-report";
 import { formatRelativeDays } from "@/lib/formatters";
+import { initialSectionFromHash } from "@/lib/section-nav";
 
 type PRReportSectionID =
   | "pr-report-overview"
@@ -33,6 +34,10 @@ const PR_REPORT_SECTION_ITEMS: Array<{ id: PRReportSectionID; label: string }> =
   { id: "pr-report-evidence", label: "Signals" },
   { id: "pr-report-rewards", label: "Rewards" },
 ];
+const PR_REPORT_SECTION_IDS = PR_REPORT_SECTION_ITEMS.map(
+  (section) => section.id,
+) as PRReportSectionID[];
+const PR_REPORT_DEFAULT_SECTION: PRReportSectionID = "pr-report-overview";
 
 export function PRBattleReportPageClient({
   owner,
@@ -44,7 +49,8 @@ export function PRBattleReportPageClient({
   number: number;
 }) {
   const { data, isLoading, isError } = usePrReport(owner, repo, number);
-  const [activeSection, setActiveSection] = useState<PRReportSectionID>("pr-report-overview");
+  const [activeSection, setActiveSection] =
+    useState<PRReportSectionID>(PR_REPORT_DEFAULT_SECTION);
   const activeSectionLabel =
     PR_REPORT_SECTION_ITEMS.find((section) => section.id === activeSection)?.label ??
     "Overview";
@@ -52,6 +58,21 @@ export function PRBattleReportPageClient({
     `/pr/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${number}#${activeSection}`;
 
   useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const syncFromHash = () => {
+      const nextSection = initialSectionFromHash(
+        PR_REPORT_SECTION_IDS,
+        PR_REPORT_DEFAULT_SECTION,
+        window.location.hash,
+      );
+      setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
+    };
+    syncFromHash();
+    window.addEventListener("hashchange", syncFromHash);
+
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries
@@ -60,10 +81,12 @@ export function PRBattleReportPageClient({
         if (!visible) {
           return;
         }
-        const id = visible.target.id as PRReportSectionID;
-        if (id) {
-          setActiveSection(id);
-        }
+        const nextSection = initialSectionFromHash(
+          PR_REPORT_SECTION_IDS,
+          PR_REPORT_DEFAULT_SECTION,
+          `#${visible.target.id}`,
+        );
+        setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
       },
       { rootMargin: "-22% 0px -55% 0px", threshold: [0.2, 0.45, 0.7] },
     );
@@ -75,7 +98,10 @@ export function PRBattleReportPageClient({
       }
     });
 
-    return () => observer.disconnect();
+    return () => {
+      window.removeEventListener("hashchange", syncFromHash);
+      observer.disconnect();
+    };
   }, []);
 
   if (isLoading) {
@@ -175,6 +201,9 @@ export function PRBattleReportPageClient({
             <li key={section.id}>
               <a
                 href={`#${section.id}`}
+                onClick={() => {
+                  setActiveSection(section.id);
+                }}
                 aria-current={activeSection === section.id ? "location" : undefined}
                 className={
                   activeSection === section.id

@@ -20,6 +20,7 @@ import { useLeaderboard } from "@/hooks/use-leaderboard";
 import { useMyProfile } from "@/hooks/use-profile";
 import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
 import { formatRelativeDays } from "@/lib/formatters";
+import { initialSectionFromHash } from "@/lib/section-nav";
 
 const tabs: LeaderboardTab[] = [
   "Global",
@@ -49,6 +50,10 @@ const LEADERBOARD_SECTION_ITEMS: Array<{ id: LeaderboardSectionID; label: string
   { id: "leaderboard-arena", label: "Arena" },
   { id: "leaderboard-climb", label: "Climb" },
 ];
+const LEADERBOARD_SECTION_IDS = LEADERBOARD_SECTION_ITEMS.map(
+  (section) => section.id,
+) as LeaderboardSectionID[];
+const LEADERBOARD_DEFAULT_SECTION: LeaderboardSectionID = "leaderboard-filters";
 
 export function LeaderboardPageClient() {
   const router = useRouter();
@@ -56,7 +61,8 @@ export function LeaderboardPageClient() {
   const searchParams = useSearchParams();
   const tabFromURL = laneParamToTab(searchParams.get("lane"));
   const tab = tabFromURL ?? "Global";
-  const [activeSection, setActiveSection] = useState<LeaderboardSectionID>("leaderboard-filters");
+  const [activeSection, setActiveSection] =
+    useState<LeaderboardSectionID>(LEADERBOARD_DEFAULT_SECTION);
   const deferredTab = useDeferredValue(tab);
   const { data, isLoading, isError, isFetching, refetch } = useLeaderboard(deferredTab);
   const {
@@ -107,6 +113,21 @@ export function LeaderboardPageClient() {
   }, [pathname, router, searchParams, tab]);
 
   useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const syncFromHash = () => {
+      const nextSection = initialSectionFromHash(
+        LEADERBOARD_SECTION_IDS,
+        LEADERBOARD_DEFAULT_SECTION,
+        window.location.hash,
+      );
+      setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
+    };
+    syncFromHash();
+    window.addEventListener("hashchange", syncFromHash);
+
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries
@@ -115,10 +136,12 @@ export function LeaderboardPageClient() {
         if (!visible) {
           return;
         }
-        const id = visible.target.id as LeaderboardSectionID;
-        if (id) {
-          setActiveSection(id);
-        }
+        const nextSection = initialSectionFromHash(
+          LEADERBOARD_SECTION_IDS,
+          LEADERBOARD_DEFAULT_SECTION,
+          `#${visible.target.id}`,
+        );
+        setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
       },
       { rootMargin: "-22% 0px -55% 0px", threshold: [0.2, 0.45, 0.7] },
     );
@@ -130,7 +153,10 @@ export function LeaderboardPageClient() {
       }
     });
 
-    return () => observer.disconnect();
+    return () => {
+      window.removeEventListener("hashchange", syncFromHash);
+      observer.disconnect();
+    };
   }, []);
 
   function handleTabChange(value: string) {
@@ -185,6 +211,9 @@ export function LeaderboardPageClient() {
             <li key={section.id}>
               <a
                 href={`#${section.id}`}
+                onClick={() => {
+                  setActiveSection(section.id);
+                }}
                 aria-current={activeSection === section.id ? "location" : undefined}
                 className={
                   activeSection === section.id

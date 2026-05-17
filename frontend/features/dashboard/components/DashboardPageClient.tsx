@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { formatRelativeDays } from "@/lib/formatters";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
+import { initialSectionFromHash } from "@/lib/section-nav";
 
 const DASHBOARD_SECTION_NAV = [
   { id: "dashboard-hero", label: "Hero" },
@@ -34,11 +35,17 @@ const DASHBOARD_SECTION_NAV = [
   { id: "dashboard-badges", label: "Badges" },
   { id: "dashboard-timeline", label: "Timeline" },
 ] as const;
+type DashboardSectionID = (typeof DASHBOARD_SECTION_NAV)[number]["id"];
+const DASHBOARD_SECTION_IDS = DASHBOARD_SECTION_NAV.map(
+  (section) => section.id,
+) as DashboardSectionID[];
+const DASHBOARD_DEFAULT_SECTION: DashboardSectionID = "dashboard-hero";
 
 export function DashboardPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useDashboard();
   const scoreExplanationEventSent = useRef(false);
-  const [activeSection, setActiveSection] = useState<string>(DASHBOARD_SECTION_NAV[0].id);
+  const [activeSection, setActiveSection] =
+    useState<DashboardSectionID>(DASHBOARD_DEFAULT_SECTION);
   const user = data?.user;
   const recentReports = data?.recentReports ?? [];
   const streak = useMemo(
@@ -157,11 +164,23 @@ export function DashboardPageClient() {
       return;
     }
 
+    const syncFromHash = () => {
+      const nextSection = initialSectionFromHash(
+        DASHBOARD_SECTION_IDS,
+        DASHBOARD_DEFAULT_SECTION,
+        window.location.hash,
+      );
+      setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
+    };
+    syncFromHash();
+    window.addEventListener("hashchange", syncFromHash);
+
     const sectionNodes = DASHBOARD_SECTION_NAV
       .map((section) => document.getElementById(section.id))
       .filter(Boolean) as HTMLElement[];
 
     if (!sectionNodes.length) {
+      window.removeEventListener("hashchange", syncFromHash);
       return;
     }
 
@@ -176,10 +195,15 @@ export function DashboardPageClient() {
             return left.boundingClientRect.top - right.boundingClientRect.top;
           });
 
-        const nextSection = visibleEntries[0]?.target?.id;
-        if (!nextSection) {
+        const nextSectionId = visibleEntries[0]?.target?.id;
+        if (!nextSectionId) {
           return;
         }
+        const nextSection = initialSectionFromHash(
+          DASHBOARD_SECTION_IDS,
+          DASHBOARD_DEFAULT_SECTION,
+          `#${nextSectionId}`,
+        );
         setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
       },
       {
@@ -194,6 +218,7 @@ export function DashboardPageClient() {
     }
 
     return () => {
+      window.removeEventListener("hashchange", syncFromHash);
       observer.disconnect();
     };
   }, []);
@@ -264,6 +289,9 @@ export function DashboardPageClient() {
                       : "focus-ring neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs"
                   }
                   href={`#${section.id}`}
+                  onClick={() => {
+                    setActiveSection(section.id);
+                  }}
                   aria-current={active ? "location" : undefined}
                 >
                   {section.label}
