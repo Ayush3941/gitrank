@@ -55,8 +55,9 @@ export function ThemeQuickSwitcher({
         size={compact ? "sm" : "md"}
         variant="secondary"
         className={className}
-        title={`Theme: ${current.longLabel}. Switch to ${next.longLabel}.`}
-        aria-label={`Theme ${current.longLabel}. Switch to ${next.longLabel}.`}
+        title={`Theme: ${current.longLabel}. Switch to ${next.longLabel}. Shortcut: Alt+Shift+T.`}
+        aria-label={`Theme ${current.longLabel}. Switch to ${next.longLabel}. Shortcut Alt Shift T.`}
+        aria-keyshortcuts="Alt+Shift+T"
         onClick={handleSwitchTheme}
       >
         <Palette className="h-4 w-4 text-primary" />

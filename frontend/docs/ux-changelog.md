@@ -38,6 +38,8 @@
 - Added global display accessibility shortcuts (when not typing in inputs):
   `Alt+Shift+T` cycles theme and `Alt+Shift+L` toggles text size, with
   live-region confirmation announcements and settings-page shortcut hints.
+- Added `aria-keyshortcuts` metadata and explicit shortcut hints on quick
+  theme/text switch buttons for better discoverability.
 - Smoothed and simplified shell glow layers in `AppShell` to reduce decorative
   overdraw and avoid abrupt glow cutoffs.
 - Added responsive visual cost guard in `app/globals.css`:

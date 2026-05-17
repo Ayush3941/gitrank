@@ -46,8 +46,9 @@ export function TextScaleQuickSwitcher({
         size={compact ? "sm" : "md"}
         variant="secondary"
         className={className}
-        title={`Text size: ${currentLabel}. Switch to ${nextLabel}.`}
-        aria-label={`Text size ${currentLabel}. Switch to ${nextLabel}.`}
+        title={`Text size: ${currentLabel}. Switch to ${nextLabel}. Shortcut: Alt+Shift+L.`}
+        aria-label={`Text size ${currentLabel}. Switch to ${nextLabel}. Shortcut Alt Shift L.`}
+        aria-keyshortcuts="Alt+Shift+L"
         onClick={handleSwitchTextScale}
       >
         <Type className="h-4 w-4 text-primary" />
