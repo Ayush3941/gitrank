@@ -373,6 +373,10 @@
   - each card includes a concrete success moment to make onboarding outcomes immediately legible.
 - Improved leaderboard tab readability on small screens:
   - added mobile-short labels (`Docs`, `Weekly`, `Rising`) with full labels retained for larger breakpoints and accessibility metadata.
+- Strengthened badge progression guidance:
+  - added `Closest next unlock` panel in badge forge with direct recovery action
+  - added per-locked-badge `Next move` guidance plus lane action buttons
+  - added missing `Jump to` heading in badge quick navigation rail for consistency with other pages.
 
 ## 2026-05-16
 

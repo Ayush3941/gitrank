@@ -54,6 +54,9 @@ export function BadgesPageClient() {
   const totalCount = data?.badges.length ?? 0;
   const completionPercent = totalCount > 0 ? Math.round((unlockedCount / totalCount) * 100) : 0;
   const streak = summarizeContributionStreak(profile?.user.contributions ?? []);
+  const nextUnlockTarget = lockedBadges.length
+    ? [...lockedBadges].sort((left, right) => (right.progress ?? 0) - (left.progress ?? 0))[0]
+    : null;
 
   const abraInsights = useAbraInsights(
     profile
@@ -187,6 +190,7 @@ export function BadgesPageClient() {
         aria-label="Badge page quick sections"
         className="glass-panel flex flex-wrap items-center gap-2 border border-primary/20 p-2 xl:sticky xl:top-20 xl:z-20"
       >
+        <p className="cyber-title px-2 text-[10px] tracking-[0.16em] text-cyan-200 uppercase">Jump to</p>
         {BADGE_SECTION_ITEMS.map((section) => (
           <a
             key={section.id}
@@ -256,6 +260,32 @@ export function BadgesPageClient() {
                 <p role="status" aria-live="polite" className="text-sm text-emerald-200">
                   {unlockNotice}
                 </p>
+              ) : null}
+              {nextUnlockTarget ? (
+                <div className="neon-surface space-y-3 border border-primary/22 px-4 py-4">
+                  <p className="text-xs tracking-[0.24em] text-primary uppercase">Closest next unlock</p>
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-lg font-semibold text-white">{nextUnlockTarget.name}</p>
+                      <p className="mt-1 text-sm text-slate-200/82">
+                        {nextUnlockTarget.progress ?? 0}% complete • {nextUnlockTarget.rarity}
+                      </p>
+                    </div>
+                    <Button asChild variant="secondary" size="sm">
+                      <Link href={unlockRecoveryHref(nextUnlockTarget.unlockCondition)}>
+                        {unlockRecoveryLabel(nextUnlockTarget.unlockCondition)}
+                      </Link>
+                    </Button>
+                  </div>
+                  <ExpandableText
+                    text={nextUnlockTarget.unlockCondition}
+                    lines={3}
+                    minLengthForToggle={140}
+                    textClassName="text-sm text-muted"
+                    showMoreLabel="Read unlock path"
+                    showLessLabel="Hide unlock path"
+                  />
+                </div>
               ) : null}
             </div>
           </GlowCard>
@@ -347,6 +377,14 @@ export function BadgesPageClient() {
                     <Progress value={badge.progress ?? 0} />
                     <p className="text-xs text-slate-300">{badge.progress ?? 0}% verified progress</p>
                   </div>
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-xs text-cyan-100/88">
+                      Next move: {unlockRecoveryLabel(badge.unlockCondition)}
+                    </p>
+                    <Button asChild variant="ghost" size="sm">
+                      <Link href={unlockRecoveryHref(badge.unlockCondition)}>Open lane</Link>
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -359,6 +397,32 @@ export function BadgesPageClient() {
       ) : null}
     </div>
   );
+}
+
+function unlockRecoveryHref(condition: string): string {
+  const text = condition.toLowerCase();
+  if (
+    text.includes("streak")
+    || text.includes("weekly")
+    || text.includes("daily")
+    || text.includes("quest")
+  ) {
+    return "/dashboard/quests";
+  }
+  return "/dashboard/contributions";
+}
+
+function unlockRecoveryLabel(condition: string): string {
+  const text = condition.toLowerCase();
+  if (
+    text.includes("streak")
+    || text.includes("weekly")
+    || text.includes("daily")
+    || text.includes("quest")
+  ) {
+    return "Open quest lane";
+  }
+  return "Open contribution lane";
 }
 
 function BadgeMetric({
