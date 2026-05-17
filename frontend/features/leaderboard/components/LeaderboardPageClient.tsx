@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { startTransition, useDeferredValue, useState } from "react";
+import { startTransition, useDeferredValue, useEffect, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -25,8 +25,20 @@ const tabs: LeaderboardTab[] = [
   "Rising Contributors",
 ];
 
+type LeaderboardSectionID =
+  | "leaderboard-filters"
+  | "leaderboard-arena"
+  | "leaderboard-climb";
+
+const LEADERBOARD_SECTION_ITEMS: Array<{ id: LeaderboardSectionID; label: string }> = [
+  { id: "leaderboard-filters", label: "Tabs" },
+  { id: "leaderboard-arena", label: "Arena" },
+  { id: "leaderboard-climb", label: "Climb" },
+];
+
 export function LeaderboardPageClient() {
   const [tab, setTab] = useState<LeaderboardTab>("Global");
+  const [activeSection, setActiveSection] = useState<LeaderboardSectionID>("leaderboard-filters");
   const deferredTab = useDeferredValue(tab);
   const { data, isLoading, isError, isFetching, refetch } = useLeaderboard(deferredTab);
   const {
@@ -49,6 +61,33 @@ export function LeaderboardPageClient() {
         currentUser: rows.find((row) => row.isCurrentUser),
       }
     : null;
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((left, right) => right.intersectionRatio - left.intersectionRatio)[0];
+        if (!visible) {
+          return;
+        }
+        const id = visible.target.id as LeaderboardSectionID;
+        if (id) {
+          setActiveSection(id);
+        }
+      },
+      { rootMargin: "-22% 0px -55% 0px", threshold: [0.2, 0.45, 0.7] },
+    );
+
+    LEADERBOARD_SECTION_ITEMS.forEach(({ id }) => {
+      const node = document.getElementById(id);
+      if (node) {
+        observer.observe(node);
+      }
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   function handleTabChange(value: string) {
     startTransition(() => setTab(value as LeaderboardTab));
@@ -80,23 +119,45 @@ export function LeaderboardPageClient() {
           analyticsTarget="leaderboard:stale"
         />
       ) : null}
-      <Tabs value={tab} onValueChange={handleTabChange}>
-        <TabsList className="scrollbar-thin w-full overflow-x-auto whitespace-nowrap">
-          {tabs.map((item) => (
-            <TabsTrigger key={item} value={item}>
-              {item}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
-      <p role="status" aria-live="polite" className="text-xs tracking-[0.2em] text-cyan-200 uppercase">
-        {isSwitchingTab || (isFetching && snapshot)
-          ? `Refreshing ${tab} snapshot...`
-          : `Viewing ${tab} snapshot`}
-      </p>
-      <div className="neon-callout rounded-[1.75rem] px-4 py-3 text-sm text-slate-200">
-        Snapshot note: leaderboard placement is directional, not a final measure of engineering ability. Quality weighting reduces the impact of shallow, unreviewed, or repetitive PR floods.
-      </div>
+      <nav
+        aria-label="Leaderboard page quick sections"
+        className="glass-panel sticky top-4 z-20 flex flex-wrap items-center gap-2 border border-primary/20 p-2"
+      >
+        <p className="cyber-title px-2 text-[10px] tracking-[0.16em] text-cyan-200 uppercase">Jump to</p>
+        {LEADERBOARD_SECTION_ITEMS.map((section) => (
+          <a
+            key={section.id}
+            href={`#${section.id}`}
+            aria-current={activeSection === section.id ? "location" : undefined}
+            className={
+              activeSection === section.id
+                ? "focus-ring cyber-title border border-primary/45 bg-primary/16 px-3 py-1.5 text-[11px] tracking-[0.16em] text-white uppercase"
+                : "focus-ring cyber-title border border-transparent px-3 py-1.5 text-[11px] tracking-[0.16em] text-slate-200 uppercase hover:border-primary/28 hover:bg-primary/10"
+            }
+          >
+            {section.label}
+          </a>
+        ))}
+      </nav>
+      <section id="leaderboard-filters" className="scroll-mt-24 space-y-3">
+        <Tabs value={tab} onValueChange={handleTabChange}>
+          <TabsList className="scrollbar-thin w-full overflow-x-auto whitespace-nowrap">
+            {tabs.map((item) => (
+              <TabsTrigger key={item} value={item}>
+                {item}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+        <p role="status" aria-live="polite" className="text-xs tracking-[0.2em] text-cyan-200 uppercase">
+          {isSwitchingTab || (isFetching && snapshot)
+            ? `Refreshing ${tab} snapshot...`
+            : `Viewing ${tab} snapshot`}
+        </p>
+        <div className="neon-callout rounded-[1.75rem] px-4 py-3 text-sm text-slate-200">
+          Snapshot note: leaderboard placement is directional, not a final measure of engineering ability. Quality weighting reduces the impact of shallow, unreviewed, or repetitive PR floods.
+        </div>
+      </section>
       {isLoading ? <LoadingState message="Updating the arena ladder..." /> : null}
       {isError ? (
         <ErrorState
@@ -117,9 +178,9 @@ export function LeaderboardPageClient() {
         />
       ) : null}
       {!isLoading && !isError && snapshot && rows.length ? (
-        <>
+        <section id="leaderboard-arena" className="scroll-mt-24 space-y-4">
           <LeaderboardArena snapshot={snapshot} />
-          <GlowCard className="space-y-3 border border-fuchsia-300/22 bg-gradient-to-br from-slate-950/90 to-fuchsia-950/20">
+          <GlowCard id="leaderboard-climb" className="scroll-mt-24 space-y-3 border border-fuchsia-300/22 bg-gradient-to-br from-slate-950/90 to-fuchsia-950/20">
             <p className="text-xs tracking-[0.24em] text-fuchsia-200 uppercase">How to climb</p>
             <div className="grid gap-3 md:grid-cols-3">
               <ClimbTip title="Raise review depth" body="Address maintainer feedback loops quickly; review quality raises signal trust." />
@@ -127,7 +188,7 @@ export function LeaderboardPageClient() {
               <ClimbTip title="Preserve streak cadence" body="Consistent weekly evidence improves movement and reduces demotion risk." />
             </div>
           </GlowCard>
-        </>
+        </section>
       ) : null}
       {!isLoading && !isError && rows.length < 5 && rows.length > 0 ? (
         <EmptyState

@@ -316,6 +316,10 @@
   - sticky `Jump to` rail with anchors for filters, overview, repositories, timeline, and contribution cards
   - active section highlighting with `IntersectionObserver`
   - hash-friendly section IDs and `scroll-mt` offsets for cleaner deep links.
+- Added leaderboard in-page navigation for snapshot-heavy layouts:
+  - sticky `Jump to` rail for tabs, arena view, and climb guidance
+  - active section tracking via `IntersectionObserver`
+  - section anchors with `scroll-mt` offsets so hash links land correctly with sticky UI.
 
 ## 2026-05-16
 
