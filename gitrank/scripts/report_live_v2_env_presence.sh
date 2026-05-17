@@ -5,6 +5,7 @@ repo_value="${GITHUB_REPOSITORY:-}"
 inferred_repo_value="${INFERRED_GITHUB_REPOSITORY:-}"
 root_dir="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 default_env_file="$root_dir/.env"
+LIVE_ENV_FILE="${LIVE_V2_ENV_FILE:-${FINALIZE_V2_ENV_FILE:-}}"
 
 is_placeholder_value() {
   value=$1
@@ -45,6 +46,33 @@ load_env_var_from_file() {
   [ -n "$value" ] || return 1
   printf '%s' "$value"
 }
+
+if [ -n "$LIVE_ENV_FILE" ]; then
+  resolved_live_env_file="$LIVE_ENV_FILE"
+  case "$resolved_live_env_file" in
+    /*) ;;
+    *)
+      if [ -f "$root_dir/$resolved_live_env_file" ]; then
+        resolved_live_env_file="$root_dir/$resolved_live_env_file"
+      fi
+      ;;
+  esac
+  if [ ! -f "$resolved_live_env_file" ]; then
+    printf 'report live v2 env presence failed: env file not found: %s\n' "$LIVE_ENV_FILE" >&2
+    exit 1
+  fi
+  set -a
+  # shellcheck disable=SC1090
+  . "$resolved_live_env_file"
+  set +a
+
+  for token_var in GITRANK_REPO_ADMIN_TOKEN GITHUB_TOKEN GH_TOKEN GRAFANA_API_TOKEN; do
+    eval token_value="\${$token_var:-}"
+    case "$token_value" in
+      replace-me*|changeme*|example-token*) eval "$token_var=''" ;;
+    esac
+  done
+fi
 
 if [ -n "$repo_value" ]; then
   if is_placeholder_value "$repo_value"; then
