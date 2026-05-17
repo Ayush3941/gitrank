@@ -7,6 +7,9 @@
     `app/(public)/u/[username]/` and `app/(public)/pr/[owner]/[repo]/[number]/`
   - public route metadata now points to per-route image endpoints instead of a
     generic background asset, so shared links carry contextual preview cards.
+  - added metadata contract test coverage in
+    `tests/public-metadata-sharecards.test.ts` to keep encoded image route
+    mapping stable.
 - Removed remaining dashboard dead-end empty panels:
   - `QuestPanel`, `RecentBattleReports`, and `BadgeShelf` now include direct
     recovery actions (sync settings, contribution drill-down, badge forge)
