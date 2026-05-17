@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FileJson2, ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { XPProgress } from "@/components/shared/XPProgress";
@@ -72,6 +73,13 @@ export function PublicProfileHero({
               displayName={user.displayName}
               shareHeadline={shareHeadline}
               analyticsTargetPrefix="public-profile"
+            />
+            <CopyTextButton
+              variant="ghost"
+              label="Copy headline"
+              copiedLabel="Headline copied"
+              text={shareHeadline}
+              analyticsTarget="public-profile/copy-headline"
             />
             <Button asChild variant="ghost">
               <Link

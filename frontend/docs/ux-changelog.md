@@ -109,6 +109,8 @@
   - explicit manual-copy and failure states
   - failure analytics targets for clipboard/share errors
   - dedicated polite live-region status output for assistive tech.
+- Public profile hero now includes one-click "copy headline" action for
+  presentation-ready identity copy reuse.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`
