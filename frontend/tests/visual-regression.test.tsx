@@ -3,10 +3,12 @@ import { screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DashboardPageClient } from "@/features/dashboard/components/DashboardPageClient";
 import { LeaderboardPageClient } from "@/features/leaderboard/components/LeaderboardPageClient";
+import { PublicProfilePageClient } from "@/features/profile/components/PublicProfilePageClient";
 import {
   abraInsightsFixture,
   leaderboardFixture,
   privateProfileFixture,
+  publicProfileFixture,
   questFixture,
   renderWithClient,
 } from "@/tests/helpers/live-fixtures";
@@ -51,6 +53,14 @@ describe("route-level visual regression snapshots", () => {
     await screen.findByText("Live Leaderboard Maintainer");
     expect(normalizeSnapshotHTML(rendered.container.innerHTML)).toMatchSnapshot();
   });
+
+  it("matches public profile visual shell snapshot", async () => {
+    const rendered = renderWithClient(
+      <PublicProfilePageClient username="live-maintainer" />,
+    );
+    await screen.findByText("Live Fixture Maintainer");
+    expect(normalizeSnapshotHTML(rendered.container.innerHTML)).toMatchSnapshot();
+  });
 });
 
 async function visualFixtureFetch(input: RequestInfo | URL): Promise<Response> {
@@ -58,6 +68,9 @@ async function visualFixtureFetch(input: RequestInfo | URL): Promise<Response> {
 
   if (path === "/api/profile/me") {
     return jsonResponse(privateProfileFixture);
+  }
+  if (path === "/api/profile/public/live-maintainer") {
+    return jsonResponse(publicProfileFixture);
   }
   if (path === "/api/profile/me/quests") {
     return jsonResponse(questFixture);

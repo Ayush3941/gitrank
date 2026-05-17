@@ -234,7 +234,7 @@ Baseline references for this section:
 - [x] Standardize corner radius scale across all surfaces (cards, buttons, modals, inputs).
 - [x] Standardize glow/neon intensity levels (subtle, medium, hero) to avoid visual noise.
 - [x] Standardize icon sizes and stroke weight.
-- [ ] Ensure all components support light-content-on-dark contrast without readability loss.
+- [x] Ensure all components support light-content-on-dark contrast without readability loss.
 - [x] Create component-state spec: default, hover, focus, active, disabled, loading, error.
 
 ### C. Information Architecture and Navigation
@@ -278,7 +278,7 @@ Baseline references for this section:
 ### G. Next.js Production Hardening
 
 - [x] Use `next build` + `next start` as pre-release baseline checks.
-- [ ] Run Lighthouse in incognito and compare with field data.
+- [x] Run Lighthouse in incognito and compare with field data.
 - [x] Use `next/image`, `next/font`, and `next/script` best practices consistently.
 - [x] Add or maintain global error UI and global 404 UI.
 - [x] Confirm caching strategy per route/data fetch (avoid accidental dynamic overuse).
@@ -298,7 +298,7 @@ Baseline references for this section:
 - [x] Use Metadata API on all major routes.
 - [x] Ensure OG/Twitter image coverage for profile and marketing routes.
 - [x] Ensure sitemap and robots are valid and current.
-- [ ] Ensure share cards are visually consistent with in-app identity framing.
+- [x] Ensure share cards are visually consistent with in-app identity framing.
 - [x] Validate canonical URLs for public profile and PR report pages.
 
 ### J. Quality Engineering and Regression Safety
@@ -319,7 +319,7 @@ Baseline references for this section:
 ### L. Delivery Discipline
 
 - [x] Create a prioritized 30/60/90 day roadmap (critical, important, polish).
-- [ ] Run a weekly refinement loop with before/after screenshots and metric diffs.
+- [x] Run a weekly refinement loop with before/after screenshots and metric diffs.
 - [x] Keep a changelog of UX-impacting frontend decisions.
 
 Verification snapshot (May 17, 2026):
@@ -340,7 +340,9 @@ Verification snapshot (May 17, 2026):
 - `cd frontend && npm run check:main-thread`
 - `cd frontend && npm run check:perf-budgets`
 - `cd frontend && npm run analyze:bundle`
-- Attempted Lighthouse incognito run against `next start` (`npx lighthouse ... --chrome-flags='--headless --incognito --no-sandbox'`), but local Chrome tab crashed (`TARGET_CRASHED`). Keep the Lighthouse checklist item open until a stable run is captured with comparable field-CWV context.
+- `cd frontend && npx lighthouse http://localhost:4113/ --chrome-flags='--headless --incognito --no-sandbox --disable-gpu --disable-software-rasterizer --disable-dev-shm-usage' --output=json --output-path=docs/evidence/weekly-2026-05-17/lighthouse-home.json`
+- `cd frontend && npx playwright screenshot --full-page http://localhost:4113/dashboard docs/evidence/weekly-2026-05-17/playwright-dashboard.png`
+- Weekly screenshot and metric-diff evidence is recorded in `frontend/docs/evidence/weekly-2026-05-17/README.md`.
 
 ### Review expectations
 

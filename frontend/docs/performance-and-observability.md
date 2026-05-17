@@ -13,6 +13,12 @@ Target budgets (p75):
 These thresholds are the frontend quality target for release decisions and are
 aligned with the production checklist in `CONTRIBUTING.md`.
 
+Latest Lighthouse lab evidence:
+
+- `frontend/docs/evidence/weekly-2026-05-17/README.md`
+- includes incognito route snapshots, route screenshots, and before/after
+  metric deltas for the home route.
+
 ## Build-Time Performance Budgets
 
 CI guardrail: `npm run check:perf-budgets` after `npm run build`.

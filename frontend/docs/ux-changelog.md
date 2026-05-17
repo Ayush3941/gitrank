@@ -25,6 +25,17 @@
   `role="status"` / `role="alert"`.
 - Added dedicated settings accessibility regression coverage to enforce
   non-empty control names and privacy error announcement/linkage behavior.
+- Fixed visual-regression fixture isolation by moving shared live fixtures into
+  `tests/helpers/live-fixtures.tsx` so visual tests do not import/execute smoke
+  test suites as side effects.
+- Added public-profile route visual regression coverage to keep share-card hero
+  presentation stable in snapshot tests.
+- Added weekly refinement evidence bundle under
+  `frontend/docs/evidence/weekly-2026-05-17/` with route screenshots plus
+  Lighthouse JSON artifacts and before/after metric diffs.
+- Hardened client analytics emission with short abort windows plus `keepalive`
+  so telemetry failures do not hold open route transitions in local/offline
+  conditions.
 
 ## 2026-05-16
 
