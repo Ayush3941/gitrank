@@ -27,6 +27,8 @@
     the relative stale summary
   - applied across dashboard, contributions, badges, quests, leaderboard, and
     public profile stale banners for stronger snapshot trust.
+  - added `tests/stale-state.test.tsx` to lock rendering of the exact
+    verification timestamp hint.
 - Dashboard auto-sync now executes direct user sync runs instead of relying on
   queue-only triggers, so authenticated route opens actively refresh profile
   evidence without requiring manual sync controls.
