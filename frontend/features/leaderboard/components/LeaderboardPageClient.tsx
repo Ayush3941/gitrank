@@ -171,6 +171,19 @@ export function LeaderboardPageClient() {
             ? `Refreshing ${tab} snapshot...`
             : `Viewing ${tab} snapshot`}
         </p>
+        {snapshot ? (
+          <div className="flex flex-wrap gap-2 text-xs">
+            <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+              {rows.length} active rows
+            </span>
+            <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+              Window {snapshot.season.windowLabel}
+            </span>
+            <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+              Formula {snapshot.season.scoringVersion}
+            </span>
+          </div>
+        ) : null}
         <div className="neon-callout rounded-[1.75rem] px-4 py-3 text-sm text-slate-200">
           Snapshot note: leaderboard placement is directional, not a final measure of engineering ability. Quality weighting reduces the impact of shallow, unreviewed, or repetitive PR floods.
         </div>

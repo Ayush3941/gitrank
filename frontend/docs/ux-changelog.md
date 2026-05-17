@@ -392,6 +392,9 @@
 - Applied quick-jump navigation accessibility labeling pass:
   - switched jump rails to `aria-labelledby` with visible label IDs across dashboard, contributions, badges, quests, settings, leaderboard, public profile, and PR report views
   - converted remaining non-nav quick-jump wrappers to semantic `nav` landmarks.
+- Added leaderboard snapshot context chips near lane tabs:
+  - surface active row count, time window, and formula version before arena cards
+  - improves immediate understanding of what dataset each tab is showing.
 
 ## 2026-05-16
 
