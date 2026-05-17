@@ -13,6 +13,7 @@ export function DashboardSidebar() {
 
   const isActive = (href: string, exact = false) =>
     exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+  const activeItem = dashboardNavItems.find((item) => isActive(item.href, item.exact));
 
   return (
     <aside className="glass-panel cyber-card cyber-frame neon-outline hidden h-fit w-64 shrink-0 p-4 xl:sticky xl:top-6 xl:flex xl:flex-col xl:justify-between">
@@ -31,6 +32,13 @@ export function DashboardSidebar() {
         </Link>
         <div className="space-y-2">
           <p id="dashboard-sidebar-nav-label" className="cyber-title text-[10px] tracking-[0.2em] text-cyan-200 uppercase">Navigate</p>
+          <p
+            role="status"
+            aria-live="polite"
+            className="text-[10px] tracking-[0.16em] text-cyan-200 uppercase"
+          >
+            {activeItem ? `Current lane: ${activeItem.label}` : "Dashboard navigation"}
+          </p>
           <nav aria-labelledby="dashboard-sidebar-nav-label">
             <ul role="list" className="space-y-1.5">
               {dashboardNavItems.map((item) => {

@@ -106,6 +106,9 @@
   - `MobileNav` now renders a small live current-lane label (`Current lane:
     <route>`) above nav tiles for stronger in-flow orientation on compact
     screens and demo recordings.
+- Sidebar navigation orientation cue:
+  - `DashboardSidebar` now mirrors mobile behavior with a live
+    `Current lane: <route>` status line above desktop nav links.
 - Contribution filter iteration upgrade:
   - active contribution filters are now removable directly from inline chips
     (category/search/sort), reducing reset friction during rapid drill-down
