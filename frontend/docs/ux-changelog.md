@@ -66,6 +66,12 @@
     participants appear
   - included deterministic progress calculation helper for next-band progress,
     bounded to safe 0-100 output.
+- Public profile proof-strip upgrade:
+  - added a new `Profile proof strip` panel in `PublicProfilePageClient`
+    summarizing snapshot freshness, evidence scope, and trend-window bounds for
+    clearer share-readiness framing
+  - added compact proof cards (`Snapshot state`, `Evidence scope`, `Trend window`)
+    so public profile viewers can interpret profile certainty/context faster.
 - Sync freshness readability/traceability upgrade:
   - `formatRelativeDays` now reports recent sync age with minute/hour precision
     (for example `2m ago`, `3h ago`) before day-level buckets
