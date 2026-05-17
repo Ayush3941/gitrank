@@ -2,6 +2,17 @@
 
 ## 2026-05-17
 
+- Sync-state clarity and micro-text readability upgrade:
+  - added shared `SyncStateGuide` (`components/shared/SyncStateGuide.tsx`) to
+    convert raw sync status into explicit state narratives and deterministic
+    recovery actions (never synced, syncing, partial, stale, failed, rate-limited)
+  - wired `SyncStateGuide` into Settings account section so users always see
+    what current sync state means and where to go next
+  - raised tiny utility label legibility by normalizing `text-[10px]` and
+    `text-[11px]` classes in `app/globals.css`, including large-text mode
+    overrides for better visibility on dense dashboard surfaces.
+  - added focused contract coverage in `tests/sync-state-guide.test.ts` for
+    failed and syncing CTA routing behavior.
 - Settings and onboarding error-safety hardening:
   - added shared `sanitizeUserFacingError` mapping in
     `lib/ui-error-messages.ts` to prevent raw upstream/network/backend error

@@ -8,6 +8,7 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
+import { SyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -364,6 +365,7 @@ export function SettingsPageClient() {
         <p className="text-sm text-muted">
           Automatic GitHub sync runs in the background when you open authenticated dashboard routes. Export excludes token secrets and secret hashes.
         </p>
+        <SyncStateGuide status={data.user.syncStatus} />
         {actionNotice ? (
           <p id={accountActionNoticeId} role="status" aria-live="polite" className="text-sm text-sky-100">
             {actionNotice}

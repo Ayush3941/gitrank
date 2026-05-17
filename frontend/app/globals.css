@@ -372,6 +372,24 @@ html[data-text-scale="large"] :where(.text-sm) {
   line-height: 1.58;
 }
 
+[class*="text-[10px]"] {
+  font-size: 0.78rem !important;
+  line-height: 1.5 !important;
+}
+
+[class*="text-[11px]"] {
+  font-size: 0.82rem !important;
+  line-height: 1.5 !important;
+}
+
+html[data-text-scale="large"] [class*="text-[10px]"] {
+  font-size: 0.88rem !important;
+}
+
+html[data-text-scale="large"] [class*="text-[11px]"] {
+  font-size: 0.92rem !important;
+}
+
 :where(strong, b, th, h1, h2, h3, h4, h5, h6) {
   color: rgb(var(--text-strong));
 }
