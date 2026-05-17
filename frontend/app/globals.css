@@ -26,8 +26,8 @@
   --page-overlay-bottom-alpha: 0.16;
   --page-grid-opacity: 0.03;
   --page-glow-opacity: 0.18;
-  --surface-blur: 12px;
-  --surface-blur-strong: 14px;
+  --surface-blur: 8px;
+  --surface-blur-strong: 10px;
   --radius-universal: 0.1rem;
   --radius-card: 0.1rem;
   --eyebrow-tracking-wide: 0.14em;
@@ -58,8 +58,8 @@ html[data-theme="midnight"] {
   --page-overlay-bottom-alpha: 0.18;
   --page-grid-opacity: 0.03;
   --page-glow-opacity: 0.16;
-  --surface-blur: 10px;
-  --surface-blur-strong: 12px;
+  --surface-blur: 7px;
+  --surface-blur-strong: 9px;
 }
 
 html[data-theme="aurora"] {
@@ -86,8 +86,8 @@ html[data-theme="aurora"] {
   --page-overlay-bottom-alpha: 0.12;
   --page-grid-opacity: 0.02;
   --page-glow-opacity: 0.12;
-  --surface-blur: 9px;
-  --surface-blur-strong: 11px;
+  --surface-blur: 6px;
+  --surface-blur-strong: 8px;
 }
 
 html[data-theme="high-contrast"] {
@@ -114,8 +114,8 @@ html[data-theme="high-contrast"] {
   --page-overlay-bottom-alpha: 0.32;
   --page-grid-opacity: 0.02;
   --page-glow-opacity: 0.14;
-  --surface-blur: 8px;
-  --surface-blur-strong: 10px;
+  --surface-blur: 5px;
+  --surface-blur-strong: 7px;
 }
 
 @theme inline {
@@ -255,8 +255,8 @@ select {
     [role="tab"],
     [role="switch"]
   ) {
-  transition-property: color, background-color, border-color, box-shadow;
-  transition-duration: 120ms;
+  transition-property: color, background-color, border-color, opacity, transform;
+  transition-duration: 160ms;
   transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
 
@@ -1094,11 +1094,7 @@ html[data-theme="high-contrast"] .neon-title {
 }
 
 .rarity-badge::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  translate: -110% 0;
-  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.22), transparent);
+  display: none;
 }
 
 .cyber-sheen {
@@ -1107,11 +1103,7 @@ html[data-theme="high-contrast"] .neon-title {
 }
 
 .cyber-sheen::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  translate: -120% 0;
-  background: linear-gradient(100deg, transparent 35%, rgb(255 255 255 / 0.26), transparent 65%);
+  display: none;
 }
 
 html[data-gamification="reduced"] .player-card-shell::before,
