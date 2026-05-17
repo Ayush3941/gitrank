@@ -16,6 +16,12 @@
     upstream-unavailable failures into plain-language, actionable recovery copy
   - added `tests/account-api-sync-errors.test.ts` to lock timeout and
     rate-limit message mapping behavior.
+- Dashboard top bar now exposes background auto-sync state as an inline status
+  note:
+  - running state now explicitly says sync is happening in the background
+  - success/failure outcomes from auto-sync attempts are surfaced as plain
+    language follow-up notes so users can understand whether evidence refresh
+    completed or needs attention.
 - Dashboard auto-sync now executes direct user sync runs instead of relying on
   queue-only triggers, so authenticated route opens actively refresh profile
   evidence without requiring manual sync controls.

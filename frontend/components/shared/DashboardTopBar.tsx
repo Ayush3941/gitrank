@@ -7,36 +7,64 @@ import { TextScaleQuickSwitcher } from "@/components/shared/TextScaleQuickSwitch
 import { ThemeQuickSwitcher } from "@/components/shared/ThemeQuickSwitcher";
 import type { UserProfile } from "@/types/gitrank";
 
-export function DashboardTopBar({ user }: { user: UserProfile }) {
+export type AutoSyncNote = {
+  tone: "info" | "success" | "warning";
+  message: string;
+};
+
+export function DashboardTopBar({
+  user,
+  autoSyncNote,
+}: {
+  user: UserProfile;
+  autoSyncNote?: AutoSyncNote | null;
+}) {
   return (
-    <div className="glass-panel cyber-card cyber-frame panel-grid sticky top-4 z-30 mb-6 flex flex-col gap-4 rounded-[2rem] px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
-      <div className="flex flex-wrap items-center gap-3">
-        <SyncStatusPill status={user.syncStatus} />
-        <RankBadge rank={user.level.rankTier} />
-        <div className="hud-pill inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs text-foreground">
-          <Zap className="h-3.5 w-3.5 text-primary" />
-          <span className="numeric-readout">{user.weeklyXp.toLocaleString("en-US")}</span> weekly XP
+    <div className="glass-panel cyber-card cyber-frame panel-grid sticky top-4 z-30 mb-6 rounded-[2rem] px-5 py-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-wrap items-center gap-3">
+          <SyncStatusPill status={user.syncStatus} />
+          <RankBadge rank={user.level.rankTier} />
+          <div className="hud-pill inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs text-foreground">
+            <Zap className="h-3.5 w-3.5 text-primary" />
+            <span className="numeric-readout">{user.weeklyXp.toLocaleString("en-US")}</span> weekly XP
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <ThemeQuickSwitcher compact />
+          <TextScaleQuickSwitcher compact />
+          <Link
+            href={`/u/${user.username}`}
+            className="focus-ring cyber-link inline-flex items-center gap-2 text-sm font-medium"
+          >
+            View public profile
+            <ArrowUpRight className="h-4 w-4" />
+          </Link>
+          <ShareProfileButton
+            variant="ghost"
+            size="sm"
+            username={user.username}
+            displayName={user.displayName}
+            shareHeadline={`${user.displayName} is ${user.title} on GitRank.`}
+            analyticsTargetPrefix="dashboard-topbar"
+          />
         </div>
       </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <ThemeQuickSwitcher compact />
-        <TextScaleQuickSwitcher compact />
-        <Link
-          href={`/u/${user.username}`}
-          className="focus-ring cyber-link inline-flex items-center gap-2 text-sm font-medium"
+      {autoSyncNote ? (
+        <p
+          role="status"
+          aria-live="polite"
+          className={
+            autoSyncNote.tone === "success"
+              ? "mt-3 text-sm text-emerald-100"
+              : autoSyncNote.tone === "warning"
+                ? "mt-3 text-sm text-amber-100"
+                : "mt-3 text-sm text-slate-200"
+          }
         >
-          View public profile
-          <ArrowUpRight className="h-4 w-4" />
-        </Link>
-        <ShareProfileButton
-          variant="ghost"
-          size="sm"
-          username={user.username}
-          displayName={user.displayName}
-          shareHeadline={`${user.displayName} is ${user.title} on GitRank.`}
-          analyticsTargetPrefix="dashboard-topbar"
-        />
-      </div>
+          {autoSyncNote.message}
+        </p>
+      ) : null}
     </div>
   );
 }

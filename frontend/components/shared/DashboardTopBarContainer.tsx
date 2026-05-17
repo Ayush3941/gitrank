@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  type AutoSyncNote,
   DashboardTopBar,
   DashboardTopBarSkeleton,
   DashboardTopBarUnavailable,
@@ -20,6 +21,7 @@ export function DashboardTopBarContainer() {
   const { mutate: runUserSync, isPending: isUserSyncPending } = useRunUserSync();
   const autoSyncLastAttempt = useRef(0);
   const autoSyncAttempts = useRef(0);
+  const [autoSyncOutcome, setAutoSyncOutcome] = useState<AutoSyncNote | null>(null);
   useAccountGamificationPreference(data);
 
   useEffect(() => {
@@ -50,6 +52,12 @@ export function DashboardTopBarContainer() {
     autoSyncAttempts.current += 1;
     runUserSync(data.user.username, {
       onSuccess: () => {
+        autoSyncAttempts.current = 0;
+        autoSyncLastAttempt.current = Date.now();
+        setAutoSyncOutcome({
+          tone: "success",
+          message: "Background sync finished and profile evidence is up to date.",
+        });
         void emitAnalyticsEvent({
           eventName: "sync.succeeded",
           source: "frontend",
@@ -58,6 +66,14 @@ export function DashboardTopBarContainer() {
         });
       },
       onError: () => {
+        const attemptsRemaining = AUTO_SYNC_MAX_ATTEMPTS_PER_MOUNT - autoSyncAttempts.current;
+        setAutoSyncOutcome({
+          tone: "warning",
+          message:
+            attemptsRemaining > 0
+              ? `Background sync hit a temporary issue. GitRank will retry automatically (${attemptsRemaining} retries left).`
+              : "Background sync failed repeatedly for this page. Reconnect in Settings or reload to retry.",
+        });
         void emitAnalyticsEvent({
           eventName: "sync.failed",
           source: "frontend",
@@ -76,5 +92,12 @@ export function DashboardTopBarContainer() {
     return <DashboardTopBarUnavailable />;
   }
 
-  return <DashboardTopBar user={data.user} />;
+  const autoSyncNote: AutoSyncNote | null = isUserSyncPending
+    ? {
+      tone: "info",
+      message: "Background sync is running. Keep exploring while GitRank refreshes evidence.",
+    }
+    : autoSyncOutcome;
+
+  return <DashboardTopBar user={data.user} autoSyncNote={autoSyncNote} />;
 }
