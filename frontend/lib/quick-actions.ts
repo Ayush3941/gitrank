@@ -50,6 +50,29 @@ export function groupQuickActions(
   }));
 }
 
+export function promoteRecentActions(
+  actions: readonly QuickActionItem[],
+  recentIds: readonly string[],
+  groupTitle = "Recent",
+): QuickActionItem[] {
+  if (!actions.length || !recentIds.length) {
+    return [...actions];
+  }
+
+  const promoted = recentIds
+    .map((actionId) => actions.find((entry) => entry.id === actionId))
+    .filter(Boolean)
+    .map((entry) => ({ ...entry, group: groupTitle } as QuickActionItem));
+
+  if (!promoted.length) {
+    return [...actions];
+  }
+
+  const promotedIds = new Set(promoted.map((entry) => entry.id));
+  const rest = actions.filter((entry) => !promotedIds.has(entry.id));
+  return [...promoted, ...rest];
+}
+
 function scoreAction(action: QuickActionItem, query: string): number {
   const label = normalize(action.label);
   const description = normalize(action.description);

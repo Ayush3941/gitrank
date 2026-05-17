@@ -13,6 +13,8 @@
   - added `DashboardQuickActions` (`components/shared/DashboardQuickActions.tsx`)
     with searchable keyboard-first actions (`Ctrl/Cmd+K`) for route jumps,
     profile open, manual sync trigger, theme cycle, and text-scale toggle
+  - palette now promotes recently executed actions into a `Recent` section
+    when search is empty, improving repeat-task speed without fake data
   - upgraded quick actions with grouped sections (`Navigate`, `Profile`, `Sync`,
     `Display`) and arrow-key traversal (`↑/↓`) + `Enter` execution for
     keyboard-only command flows

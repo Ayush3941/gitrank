@@ -25,10 +25,13 @@ import { cn } from "@/lib/cn";
 import {
   filterQuickActions,
   groupQuickActions,
+  promoteRecentActions,
   type QuickActionItem,
 } from "@/lib/quick-actions";
 
 const THEME_ORDER: ThemePreference[] = ["neon", "midnight", "aurora", "high-contrast"];
+const RECENT_ACTION_IDS_STORAGE_KEY = "gitrank:quick-actions-recent-ids";
+const MAX_RECENT_ACTIONS = 5;
 
 type ActionTone = "default" | "success" | "info";
 
@@ -55,6 +58,7 @@ export function DashboardQuickActions({
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const deferredQuery = useDeferredValue(query);
+  const normalizedQuery = deferredQuery.trim();
   const shortcutHint = "Ctrl/Cmd+K";
 
   const actions = useMemo<QuickActionItem[]>(() => {
@@ -163,16 +167,26 @@ export function DashboardQuickActions({
     () => filterQuickActions(actions, deferredQuery),
     [actions, deferredQuery],
   );
+  const recentActionIds = useMemo(
+    () => (open ? loadRecentActionIds() : []),
+    [open],
+  );
+  const visibleActions = useMemo(() => {
+    if (normalizedQuery.length > 0 || recentActionIds.length === 0) {
+      return filteredActions;
+    }
+    return promoteRecentActions(filteredActions, recentActionIds, "Recent");
+  }, [filteredActions, normalizedQuery.length, recentActionIds]);
   const groupedActions = useMemo(
-    () => groupQuickActions(filteredActions),
-    [filteredActions],
+    () => groupQuickActions(visibleActions),
+    [visibleActions],
   );
   const clampedHighlightedIndex =
-    filteredActions.length > 0
-      ? Math.min(Math.max(highlightedIndex, 0), filteredActions.length - 1)
+    visibleActions.length > 0
+      ? Math.min(Math.max(highlightedIndex, 0), visibleActions.length - 1)
       : -1;
   const highlightedAction =
-    clampedHighlightedIndex >= 0 ? filteredActions[clampedHighlightedIndex] : null;
+    clampedHighlightedIndex >= 0 ? visibleActions[clampedHighlightedIndex] : null;
 
   useEffect(() => {
     if (!open) {
@@ -229,6 +243,7 @@ export function DashboardQuickActions({
   }, [displayShortcutsEnabled]);
 
   function executeAction(action: QuickActionItem) {
+    recordRecentAction(action.id);
     action.execute();
     setOpen(false);
     setQuery("");
@@ -236,13 +251,13 @@ export function DashboardQuickActions({
   }
 
   function handleInputKeyDown(event: ReactKeyboardEvent<HTMLInputElement>) {
-    if (!filteredActions.length) {
+    if (!visibleActions.length) {
       return;
     }
 
     if (event.key === "ArrowDown") {
       event.preventDefault();
-      setHighlightedIndex((current) => (current + 1) % filteredActions.length);
+      setHighlightedIndex((current) => (current + 1) % visibleActions.length);
       return;
     }
 
@@ -250,7 +265,7 @@ export function DashboardQuickActions({
       event.preventDefault();
       setHighlightedIndex((current) => {
         if (current <= 0) {
-          return filteredActions.length - 1;
+          return visibleActions.length - 1;
         }
         return current - 1;
       });
@@ -259,7 +274,7 @@ export function DashboardQuickActions({
 
     if (event.key === "Enter") {
       event.preventDefault();
-      const action = highlightedAction ?? filteredActions[0];
+      const action = highlightedAction ?? visibleActions[0];
       if (action) {
         executeAction(action);
       }
@@ -337,7 +352,7 @@ export function DashboardQuickActions({
                     {group.items.map((action) => {
                       const Icon = action.icon;
                       const tone = actionTone(action.id, syncPending);
-                      const index = filteredActions.findIndex((entry) => entry.id === action.id);
+                      const index = visibleActions.findIndex((entry) => entry.id === action.id);
                       const highlighted = index === clampedHighlightedIndex;
                       return (
                         <button
@@ -443,4 +458,35 @@ function isEditableTarget(target: EventTarget | null): boolean {
       "input, textarea, select, [contenteditable='true'], [contenteditable=''], [role='textbox'], [aria-multiline='true']",
     ),
   );
+}
+
+function loadRecentActionIds() {
+  if (typeof window === "undefined") {
+    return [];
+  }
+  const raw = window.localStorage.getItem(RECENT_ACTION_IDS_STORAGE_KEY);
+  if (!raw) {
+    return [];
+  }
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    return parsed.filter((entry): entry is string => typeof entry === "string");
+  } catch {
+    return [];
+  }
+}
+
+function recordRecentAction(actionId: string) {
+  if (typeof window === "undefined") {
+    return;
+  }
+  const current = loadRecentActionIds();
+  const next = [actionId, ...current.filter((entry) => entry !== actionId)].slice(
+    0,
+    MAX_RECENT_ACTIONS,
+  );
+  window.localStorage.setItem(RECENT_ACTION_IDS_STORAGE_KEY, JSON.stringify(next));
 }

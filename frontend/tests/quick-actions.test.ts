@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   filterQuickActions,
   groupQuickActions,
+  promoteRecentActions,
   type QuickActionItem,
 } from "@/lib/quick-actions";
 
@@ -56,5 +57,30 @@ describe("groupQuickActions", () => {
     expect(grouped.map((entry) => entry.title)).toEqual(["Navigate", "Display", "Other"]);
     expect(grouped[0]?.items.map((entry) => entry.id)).toEqual(["a", "c"]);
     expect(grouped[2]?.items.map((entry) => entry.id)).toEqual(["d"]);
+  });
+});
+
+describe("promoteRecentActions", () => {
+  it("moves recent actions to top and tags them with Recent group", () => {
+    const actions: QuickActionItem[] = [
+      { ...action("one", "One", "desc"), group: "Navigate" },
+      { ...action("two", "Two", "desc"), group: "Navigate" },
+      { ...action("three", "Three", "desc"), group: "Display" },
+    ];
+
+    const promoted = promoteRecentActions(actions, ["three", "one"]);
+    expect(promoted.map((entry) => entry.id)).toEqual(["three", "one", "two"]);
+    expect(promoted[0]?.group).toBe("Recent");
+    expect(promoted[1]?.group).toBe("Recent");
+    expect(promoted[2]?.group).toBe("Navigate");
+  });
+
+  it("ignores unknown recent ids", () => {
+    const actions: QuickActionItem[] = [
+      { ...action("one", "One", "desc"), group: "Navigate" },
+      { ...action("two", "Two", "desc"), group: "Navigate" },
+    ];
+    const promoted = promoteRecentActions(actions, ["missing", "one"]);
+    expect(promoted.map((entry) => entry.id)).toEqual(["one", "two"]);
   });
 });
