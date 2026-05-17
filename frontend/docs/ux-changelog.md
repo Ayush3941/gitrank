@@ -30,6 +30,8 @@
     direct sharing and refresh-stable reconstruction of the selected lane
   - added typed lane mapping helpers in
     `features/leaderboard/lib/lane-param.ts` to keep route semantics stable
+  - added `Copy lane link` action in leaderboard filters so current lane state
+    can be shared directly without manual URL editing
   - added `tests/leaderboard-lane-param.test.ts` to lock param-to-tab and
     tab-to-param mappings.
 - Route fallback consistency pass:

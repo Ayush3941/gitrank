@@ -9,6 +9,7 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { StaleState } from "@/components/shared/StaleState";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -84,6 +85,7 @@ export function LeaderboardPageClient() {
     snapshot?.currentUser && laneLeader
       ? Math.max(0, laneLeader.seasonXp - snapshot.currentUser.seasonXp)
       : 0;
+  const laneSharePath = `/dashboard/leaderboard?lane=${tabToLaneParam(tab)}`;
   const currentUserProgressToNextBand = snapshot?.currentUser
     ? progressToNextBand(snapshot.currentUser.seasonXp, snapshot.currentUser.xpToNextRank)
     : 0;
@@ -204,11 +206,19 @@ export function LeaderboardPageClient() {
             ))}
           </TabsList>
         </Tabs>
-        <p role="status" aria-live="polite" className="text-xs tracking-[0.2em] text-cyan-200 uppercase">
-          {isSwitchingTab || (isFetching && snapshot)
-            ? `Refreshing ${tab} snapshot...`
-            : `Viewing ${tab} snapshot`}
-        </p>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p role="status" aria-live="polite" className="text-xs tracking-[0.2em] text-cyan-200 uppercase">
+            {isSwitchingTab || (isFetching && snapshot)
+              ? `Refreshing ${tab} snapshot...`
+              : `Viewing ${tab} snapshot`}
+          </p>
+          <CopyTextButton
+            text={laneSharePath}
+            label="Copy lane link"
+            copiedLabel="Lane link copied"
+            analyticsTarget="leaderboard/copy-lane-link"
+          />
+        </div>
         {snapshot ? (
           <div className="flex flex-wrap gap-2 text-xs">
             <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
