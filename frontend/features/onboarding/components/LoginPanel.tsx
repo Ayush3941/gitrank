@@ -28,6 +28,18 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
           <p className="text-base leading-8 text-slate-200/80">
             GitRank feels like a battle pass, but the scoring model is built for maintainers, recruiters, and people who care whether the work mattered.
           </p>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {[
+              { step: "Step 1", text: "Sign in with GitHub OAuth." },
+              { step: "Step 2", text: "GitRank syncs recent contribution evidence." },
+              { step: "Step 3", text: "You land in dashboard snapshot + quests." },
+            ].map((item) => (
+              <div key={item.step} className="neon-surface space-y-2 rounded-3xl px-4 py-3 text-sm text-slate-200">
+                <p className="text-xs tracking-[0.2em] text-primary uppercase">{item.step}</p>
+                <p className="text-xs leading-6 text-slate-200/84">{item.text}</p>
+              </div>
+            ))}
+          </div>
           <div className="flex flex-wrap gap-3">
             <Button asChild size="lg">
               <Link href={oauthURL}>

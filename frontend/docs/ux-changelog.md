@@ -411,6 +411,8 @@
 - Improved badge date/status presentation:
   - normalized earned-date display to formatted date strings on badge cards
   - badge detail dialog now surfaces explicit unlocked/locked status chips and earned date metadata.
+- Clarified sign-in onboarding flow:
+  - login panel now includes a visible 3-step post-auth path (`OAuth`, `sync`, `dashboard/quests`) to reduce uncertainty before first sign-in.
 
 ## 2026-05-16
 
