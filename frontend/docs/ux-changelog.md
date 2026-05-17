@@ -34,6 +34,8 @@
 - Added consistent `PageHeader` primary actions across key routes
   (dashboard/contributions/badges/quests/leaderboard/settings/PR report) so
   each page has a clear next action instead of dead-end reading states.
+- Upgraded settings theme chooser with visual swatches and explicit `Active`
+  status chip for faster mode recognition.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`

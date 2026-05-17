@@ -40,21 +40,25 @@ const THEME_OPTIONS: Array<{
   value: ThemePreference;
   label: string;
   description: string;
+  swatchClassName: string;
 }> = [
   {
     value: "neon",
     label: "Neon grid",
     description: "Bold cyberpunk glow and vivid HUD accents.",
+    swatchClassName: "from-cyan-300 via-fuchsia-300 to-emerald-300",
   },
   {
     value: "midnight",
     label: "Midnight contrast",
     description: "Balanced readability with cleaner dark surfaces.",
+    swatchClassName: "from-sky-300 via-indigo-300 to-violet-300",
   },
   {
     value: "high-contrast",
     label: "High contrast",
     description: "Maximum text clarity and reduced background noise.",
+    swatchClassName: "from-slate-100 via-cyan-200 to-slate-100",
   },
 ];
 
@@ -301,11 +305,24 @@ export function SettingsPageClient() {
                 type="button"
                 size="sm"
                 variant={theme === option.value ? "default" : "secondary"}
-                className="h-auto justify-start px-4 py-3 text-left"
+                className="h-auto justify-start gap-3 px-4 py-3 text-left"
                 onClick={() => setTheme(option.value)}
               >
+                <span className="neon-track h-8 w-10 shrink-0 overflow-hidden rounded-md border border-primary/30">
+                  <span
+                    className={`block h-full w-full bg-gradient-to-r ${option.swatchClassName}`}
+                    aria-hidden="true"
+                  />
+                </span>
                 <span className="flex flex-col items-start">
-                  <span>{option.label}</span>
+                  <span className="inline-flex items-center gap-2">
+                    {option.label}
+                    {theme === option.value ? (
+                      <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-[10px] tracking-[0.12em] text-emerald-50 uppercase">
+                        Active
+                      </span>
+                    ) : null}
+                  </span>
                   <span className="text-xs opacity-90">{option.description}</span>
                 </span>
               </Button>
