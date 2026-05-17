@@ -77,6 +77,8 @@ export function SettingsPageClient() {
   useAccountGamificationPreference(data);
   const [actionNotice, setActionNotice] = useState("");
   const currentSettings = data?.user.privacy ?? null;
+  const activeThemeOption =
+    THEME_OPTIONS.find((option) => option.value === theme) ?? THEME_OPTIONS[1];
 
   if (isLoading) {
     return <LoadingState message="Checking privacy controls..." />;
@@ -339,6 +341,24 @@ export function SettingsPageClient() {
               </Button>
             ))}
           </div>
+        </div>
+        <div className="neon-surface-strong space-y-3 px-4 py-4">
+          <p className="text-xs tracking-[0.2em] text-primary uppercase">Live readability preview</p>
+          <h3 className="text-lg font-semibold text-white">
+            GitRank highlights meaningful contribution quality clearly before style.
+          </h3>
+          <p className="text-sm leading-7 text-muted">
+            Current theme:
+            {" "}
+            <span className="font-semibold text-foreground">{activeThemeOption.label}</span>
+            {" "}
+            ·
+            {" "}
+            {activeThemeOption.description}
+          </p>
+          <p className="text-sm leading-7 text-slate-200">
+            Use this preview to confirm headings, supporting copy, and small labels stay easy to read on your screen.
+          </p>
         </div>
       </GlowCard>
 
