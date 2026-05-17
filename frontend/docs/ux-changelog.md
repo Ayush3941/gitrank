@@ -2,6 +2,14 @@
 
 ## 2026-05-17
 
+- Dashboard auto-sync now executes direct user sync runs instead of relying on
+  queue-only triggers, so authenticated route opens actively refresh profile
+  evidence without requiring manual sync controls.
+- Added global readability overrides for remaining translucent utility text
+  classes used across dashboard/badges/quests/profile/report surfaces
+  (`text-cyan-100/*`, `text-amber-50/*`, `text-amber-100/*`,
+  `text-emerald-100/*`, `text-rose-100/*`) with theme-aware fallbacks for
+  Aurora and High Contrast modes.
 - Added dedicated marketing route fallbacks:
   - new `app/(marketing)/error.tsx` and `app/(marketing)/not-found.tsx`
     with direct login/onboarding recovery actions
