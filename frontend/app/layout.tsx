@@ -2,23 +2,28 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, Orbitron, Space_Grotesk } from "next/font/google";
 import { GamificationPreferenceProvider } from "@/components/providers/gamification-preference-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
+import { ThemePreferenceProvider } from "@/components/providers/theme-preference-provider";
+import { WebVitalsReporter } from "@/components/providers/web-vitals-reporter";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const ibmPlexMono = IBM_Plex_Mono({
   variable: "--font-ibm-plex-mono",
   subsets: ["latin"],
   weight: ["400", "500", "600"],
+  display: "swap",
 });
 
 const orbitron = Orbitron({
   variable: "--font-orbitron",
   subsets: ["latin"],
   weight: ["500", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -41,10 +46,13 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${spaceGrotesk.variable} ${ibmPlexMono.variable} ${orbitron.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-background text-foreground">
-        <GamificationPreferenceProvider>
-          <QueryProvider>{children}</QueryProvider>
-        </GamificationPreferenceProvider>
+      <body className="min-h-full text-foreground">
+        <WebVitalsReporter />
+        <ThemePreferenceProvider>
+          <GamificationPreferenceProvider>
+            <QueryProvider>{children}</QueryProvider>
+          </GamificationPreferenceProvider>
+        </ThemePreferenceProvider>
       </body>
     </html>
   );

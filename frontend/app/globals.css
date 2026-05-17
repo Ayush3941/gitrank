@@ -3,8 +3,8 @@
 :root {
   color-scheme: dark;
   --background: 4 7 20;
-  --foreground: 229 231 255;
-  --muted: 153 165 206;
+  --foreground: 244 247 255;
+  --muted: 205 216 245;
   --card: 10 15 35;
   --card-2: 13 22 52;
   --border: 79 70 229;
@@ -20,6 +20,25 @@
   --cyber-grid-alt: 244 114 255;
   --cyber-lime: 133 255 196;
   --radius-card: 0.1rem;
+}
+
+html[data-theme="midnight"] {
+  --background: 1 5 14;
+  --foreground: 250 252 255;
+  --muted: 215 226 248;
+  --card: 7 13 30;
+  --card-2: 10 20 44;
+  --border: 67 95 182;
+  --line: 89 113 189;
+  --primary: 123 210 255;
+  --primary-2: 178 141 255;
+  --success: 45 212 191;
+  --warning: 251 191 36;
+  --danger: 248 113 113;
+  --neon-accent: 140 255 228;
+  --neon-hot: 214 153 255;
+  --cyber-grid: 123 210 255;
+  --cyber-grid-alt: 178 141 255;
 }
 
 @theme inline {
@@ -58,11 +77,13 @@ body {
   overflow-x: hidden;
   min-height: 100vh;
   background:
-    linear-gradient(180deg, rgb(0 3 12 / 0.34), rgb(var(--background) / 0.48)),
+    linear-gradient(180deg, rgb(0 3 12 / 0.14), rgb(var(--background) / 0.28)),
     url("/background.jpg") center center / cover no-repeat fixed;
   color: rgb(var(--foreground));
   font-family: var(--font-space-grotesk), sans-serif;
   text-rendering: optimizeLegibility;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 body::before {
@@ -98,8 +119,7 @@ body::after {
   background:
     radial-gradient(circle at 50% -20%, rgb(var(--primary-2) / 0.12), transparent 40%),
     radial-gradient(circle at -10% 90%, rgb(var(--primary) / 0.1), transparent 34%);
-  opacity: 0.62;
-  animation: gitrank-background-glow 72s cubic-bezier(0.42, 0, 0.58, 1) infinite;
+  opacity: 0.5;
 }
 
 ::selection {
@@ -112,6 +132,20 @@ button,
 input,
 select {
   outline-offset: 2px;
+}
+
+:where(
+    a,
+    button,
+    input,
+    select,
+    textarea,
+    [role="button"],
+    [role="tab"],
+    [role="switch"]
+  ) {
+  transition-duration: 160ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
 
 :where(
@@ -581,6 +615,40 @@ select {
   color: rgb(var(--muted));
 }
 
+.text-muted,
+.cyber-copy-muted,
+.section-subtitle {
+  color: rgb(var(--muted) / 0.99);
+}
+
+[class*="text-foreground/"] {
+  color: rgb(var(--foreground) / 0.97);
+}
+
+[class*="text-white/"] {
+  color: rgb(250 252 255 / 0.98);
+}
+
+[class*="text-slate-200/"],
+[class~="text-slate-200"] {
+  color: rgb(226 232 240 / 0.96);
+}
+
+[class*="text-slate-300/"],
+[class~="text-slate-300"] {
+  color: rgb(203 213 225 / 0.97);
+}
+
+[class*="text-slate-400/"],
+[class~="text-slate-400"] {
+  color: rgb(148 163 184 / 0.98);
+}
+
+[class*="text-slate-500/"],
+[class~="text-slate-500"] {
+  color: rgb(148 163 184 / 0.99);
+}
+
 .text-gradient {
   background: linear-gradient(135deg, white, rgb(var(--primary)), rgb(var(--primary-2)));
   -webkit-background-clip: text;
@@ -680,21 +748,6 @@ select {
   background: linear-gradient(100deg, transparent 35%, rgb(255 255 255 / 0.26), transparent 65%);
 }
 
-@keyframes gitrank-background-glow {
-  0%,
-  18%,
-  100% {
-    opacity: 0.56;
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-
-  48%,
-  62% {
-    opacity: 0.74;
-    transform: translate3d(-1.5%, 1.2%, 0) scale(1.04);
-  }
-}
-
 html[data-gamification="reduced"] .player-card-shell::before,
 html[data-gamification="reduced"] .season-arena-card::before,
 html[data-gamification="reduced"] .rank-orbit::after,
@@ -703,10 +756,6 @@ html[data-gamification="reduced"] .cyber-sheen::after,
 html[data-gamification="reduced"] .cyber-card::after,
 html[data-gamification="reduced"] .neon-skeleton,
 html[data-gamification="reduced"] body::before {
-  animation: none !important;
-}
-
-html[data-gamification="reduced"] body {
   animation: none !important;
 }
 
@@ -765,7 +814,4 @@ html[data-gamification="reduced"] .rank-orbit {
     animation: none !important;
   }
 
-  body {
-    animation: none !important;
-  }
 }

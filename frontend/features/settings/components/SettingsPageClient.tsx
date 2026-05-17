@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Download, FolderGit2, LogOut, Sparkles, Trash2 } from "lucide-react";
+import { Download, FolderGit2, LogOut, Palette, Sparkles, Trash2 } from "lucide-react";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -26,6 +26,7 @@ import {
   useAccountGamificationPreference,
   useGamificationPreference,
 } from "@/hooks/use-gamification-preference";
+import { type ThemePreference, useThemePreference } from "@/hooks/use-theme-preference";
 
 type BackedPrivacyKey =
   | "publicProfileEnabled"
@@ -33,6 +34,23 @@ type BackedPrivacyKey =
   | "showAiSummaries"
   | "showLeaderboardParticipation"
   | "reducedGamification";
+
+const THEME_OPTIONS: Array<{
+  value: ThemePreference;
+  label: string;
+  description: string;
+}> = [
+  {
+    value: "neon",
+    label: "Neon grid",
+    description: "Cyan-magenta glow with expressive surfaces.",
+  },
+  {
+    value: "midnight",
+    label: "Midnight contrast",
+    description: "Higher contrast text with toned glow intensity.",
+  },
+];
 
 export function SettingsPageClient() {
   const { data, isLoading, isError } = useMyProfile();
@@ -44,6 +62,7 @@ export function SettingsPageClient() {
   const logoutSession = useLogoutSession();
   const accountLinkStart = useStartAccountLink();
   const { setReducedGamification } = useGamificationPreference();
+  const { theme, setTheme } = useThemePreference();
   useAccountGamificationPreference(data);
   const [actionNotice, setActionNotice] = useState("");
   const currentSettings = data?.user.privacy ?? null;
@@ -249,6 +268,36 @@ export function SettingsPageClient() {
             disabled={isSaving}
             onCheckedChange={(checked) => handlePrivacyToggle("reducedGamification", checked)}
           />
+        </div>
+        <div className="cyber-divider" />
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="max-w-2xl">
+            <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
+              <Palette className="h-5 w-5" />
+            </div>
+            <p className="mt-4 text-xs tracking-[0.24em] text-primary uppercase">Visual theme</p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">Readable style mode</h2>
+            <p className="mt-2 text-sm leading-6 text-muted">
+              Theme choice only changes visual treatment. Ranking, scoring, privacy, and sync behavior stay identical.
+            </p>
+          </div>
+          <div className="grid w-full gap-2 sm:w-auto sm:min-w-[18rem]">
+            {THEME_OPTIONS.map((option) => (
+              <Button
+                key={option.value}
+                type="button"
+                size="sm"
+                variant={theme === option.value ? "default" : "secondary"}
+                className="h-auto justify-start px-4 py-3 text-left"
+                onClick={() => setTheme(option.value)}
+              >
+                <span className="flex flex-col items-start">
+                  <span>{option.label}</span>
+                  <span className="text-xs opacity-90">{option.description}</span>
+                </span>
+              </Button>
+            ))}
+          </div>
         </div>
       </GlowCard>
 
