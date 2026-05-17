@@ -111,6 +111,9 @@
   - dedicated polite live-region status output for assistive tech.
 - Public profile hero now includes one-click "copy headline" action for
   presentation-ready identity copy reuse.
+- Normalized XP/number formatting on key surfaces (top bar, league card, recent
+  reports, best PRs, PR report hero, and next-level gate) using locale-aware
+  formatting plus shared numeric-readout styling.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`

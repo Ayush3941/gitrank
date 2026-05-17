@@ -33,7 +33,9 @@ export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
                 </div>
                 <div className="text-right">
                   <p className="text-xs tracking-[0.24em] text-primary uppercase">XP</p>
-                  <p className="mt-2 text-2xl font-semibold text-white">{report.xpEarned}</p>
+                  <p className="numeric-readout mt-2 text-2xl font-semibold text-white">
+                    {report.xpEarned.toLocaleString("en-US")}
+                  </p>
                 </div>
               </div>
               <div className="mt-4 flex flex-wrap justify-end gap-2">

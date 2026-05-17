@@ -29,7 +29,9 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
               </div>
               <div className="text-right">
                 <p className="text-xs tracking-[0.24em] text-primary uppercase">XP earned</p>
-                <p className="mt-2 text-3xl font-semibold text-white">{report.contribution.xpEarned}</p>
+                <p className="numeric-readout mt-2 text-3xl font-semibold text-white">
+                  {report.contribution.xpEarned.toLocaleString("en-US")}
+                </p>
               </div>
             </div>
             <div className="mt-4 flex justify-end">

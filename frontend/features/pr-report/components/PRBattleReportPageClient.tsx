@@ -85,7 +85,9 @@ export function PRBattleReportPageClient({
           </div>
           <div className="text-right">
             <p className="text-xs tracking-[0.24em] text-primary uppercase">XP earned</p>
-            <p className="mt-2 text-4xl font-semibold text-white">{data.contribution.xpEarned}</p>
+            <p className="numeric-readout mt-2 text-4xl font-semibold text-white">
+              {data.contribution.xpEarned.toLocaleString("en-US")}
+            </p>
             <div
               className={
                 evidenceAnchored

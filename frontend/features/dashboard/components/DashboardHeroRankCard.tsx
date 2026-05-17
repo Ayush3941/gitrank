@@ -77,7 +77,9 @@ export function DashboardHeroRankCard({
         </div>
         <div className="neon-metric rounded-[1.75rem] p-5">
           <p className="text-xs tracking-[0.24em] text-primary uppercase">Next title gate</p>
-          <p className="mt-3 text-lg font-medium text-white">Reach {user.level.nextLevelXp} XP</p>
+          <p className="mt-3 text-lg font-medium text-white">
+            Reach <span className="numeric-readout">{user.level.nextLevelXp.toLocaleString("en-US")}</span> XP
+          </p>
           <p className="mt-2 text-sm text-muted">Unlock stronger rank movement, harder quests, and rarer badge lanes.</p>
         </div>
       </div>

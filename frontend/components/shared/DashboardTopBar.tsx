@@ -13,7 +13,7 @@ export function DashboardTopBar({ user }: { user: UserProfile }) {
         <RankBadge rank={user.level.rankTier} />
         <div className="hud-pill inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs text-foreground">
           <Zap className="h-3.5 w-3.5 text-primary" />
-          {user.weeklyXp} weekly XP
+          <span className="numeric-readout">{user.weeklyXp.toLocaleString("en-US")}</span> weekly XP
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-2">
