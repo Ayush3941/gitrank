@@ -14,6 +14,7 @@ import { BadgeShelf } from "@/features/dashboard/components/BadgeShelf";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
@@ -305,6 +306,38 @@ export function DashboardPageClient() {
           <StatCard label="Reviewed PRs" value={user.reviewedPrCount} detail="Review participation increases trust and unlocks deeper quests." icon={<Activity className="h-5 w-5 text-primary" />} />
         </div>
       </section>
+      <GlowCard className="space-y-4 border border-primary/22 bg-gradient-to-br from-slate-950/90 to-cyan-950/18">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-xs tracking-[0.24em] text-primary uppercase">Evidence context</p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">How current this snapshot is</h2>
+            <p className="mt-2 text-sm text-slate-200/84">
+              Dashboard values are generated from persisted score and profile evidence. Use this strip to confirm freshness and scope before making comparisons.
+            </p>
+          </div>
+          <span className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold">
+            <Sparkles className="h-3.5 w-3.5" />
+            Refreshed {formatRelativeDays(data.refreshedAt)}
+          </span>
+        </div>
+        <div className="grid gap-3 md:grid-cols-3">
+          <EvidenceContextItem
+            label="Sync state"
+            value={formatSyncState(user.syncStatus.state)}
+            detail={user.syncStatus.partialProfileAvailable ? "Partial profile mode active" : "Full profile evidence mode"}
+          />
+          <EvidenceContextItem
+            label="Evidence scope"
+            value={`${contributionWindowCount}/${contributionWindowCap} PR rows`}
+            detail={`${contributionWindowFillRate}% of the capped recent PR history window`}
+          />
+          <EvidenceContextItem
+            label="Current step"
+            value={user.syncStatus.currentStep || "Idle"}
+            detail="Last known pipeline stage reported by the authenticated sync state"
+          />
+        </div>
+      </GlowCard>
       <div className="grid gap-6 xl:grid-cols-[0.92fr,1.08fr]">
         <div className="space-y-6">
           <section id="dashboard-league" className="scroll-mt-24">
@@ -350,4 +383,26 @@ export function DashboardPageClient() {
       </div>
     </div>
   );
+}
+
+function EvidenceContextItem({
+  label,
+  value,
+  detail,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <div className="neon-surface space-y-2 px-4 py-4">
+      <p className="text-xs tracking-[0.2em] text-primary uppercase">{label}</p>
+      <p className="text-lg font-semibold text-white">{value}</p>
+      <p className="text-xs text-slate-200/84">{detail}</p>
+    </div>
+  );
+}
+
+function formatSyncState(state: string): string {
+  return state.replaceAll("_", " ");
 }

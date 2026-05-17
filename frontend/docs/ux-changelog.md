@@ -83,6 +83,11 @@
     next steps instead of thin/empty reveal sections
   - next-step guidance now branches based on whether merged contribution
     evidence exists, improving first-run onboarding clarity.
+- Dashboard evidence-context strip:
+  - added a new top-level `Evidence context` block below dashboard snapshot
+    cards with sync state, contribution window scope, and current pipeline step
+  - surfaces explicit freshness + scope framing near the top of the command
+    center so score and progression interpretation starts from verified context.
 - Sync freshness readability/traceability upgrade:
   - `formatRelativeDays` now reports recent sync age with minute/hour precision
     (for example `2m ago`, `3h ago`) before day-level buckets
