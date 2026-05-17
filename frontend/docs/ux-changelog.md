@@ -96,6 +96,8 @@
   best PRs, repository privacy list) to reduce offscreen paint/layout cost.
 - Added dashboard top-bar profile share action to align sharing affordances
   across the major authenticated profile surfaces.
+- Added `aria-busy` state hints on contribution and leaderboard list surfaces
+  during client-side filter/tab refresh transitions.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`

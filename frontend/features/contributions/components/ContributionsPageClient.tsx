@@ -289,6 +289,7 @@ export function ContributionsPageClient() {
         <ContributionList
           items={filteredRows}
           narratives={abraInsights.data?.contributionNarratives}
+          isBusy={isFiltering}
         />
       ) : null}
     </div>

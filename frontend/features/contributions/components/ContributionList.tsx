@@ -8,12 +8,14 @@ import type { Contribution } from "@/types/gitrank";
 export function ContributionList({
   items,
   narratives,
+  isBusy,
 }: {
   items: Contribution[];
   narratives?: Record<string, ContributionNarrative>;
+  isBusy?: boolean;
 }) {
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-4" aria-busy={isBusy || undefined}>
       {items.map((item) => (
         <GlowCard
           key={item.id}
