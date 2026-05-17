@@ -8,6 +8,12 @@ describe("toAbsoluteShareUrl", () => {
     );
   });
 
+  it("preserves query and hash context when composing absolute URLs", () => {
+    expect(
+      toAbsoluteShareUrl("/dashboard/leaderboard?lane=global#leaderboard-arena", "http://localhost:3000"),
+    ).toBe("http://localhost:3000/dashboard/leaderboard?lane=global#leaderboard-arena");
+  });
+
   it("keeps absolute URLs unchanged", () => {
     expect(
       toAbsoluteShareUrl("https://gitrank.dev/u/example#public-profile-overview", "http://localhost:3000"),

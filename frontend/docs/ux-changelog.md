@@ -83,6 +83,10 @@
   - PR battle report jump navigator now includes active section context and a
     `Copy section link` action (`/pr/<owner>/<repo>/<number>#...`) for direct
     shareable anchors to score/AI/evidence/rewards panels.
+- Leaderboard section link context fix:
+  - leaderboard `Copy section link` now preserves the active lane query
+    (`?lane=...#section`) so shared section links restore both lane and panel
+    context.
 - Route fallback consistency pass:
   - added shared `RouteFallbackCard` (`components/shared/RouteFallbackCard.tsx`)
     and migrated all route-level `not-found` surfaces (global, dashboard,

@@ -92,7 +92,8 @@ export function LeaderboardPageClient() {
   const activeSectionLabel =
     LEADERBOARD_SECTION_ITEMS.find((section) => section.id === activeSection)?.label ??
     "Tabs";
-  const activeSectionLink = `/dashboard/leaderboard#${activeSection}`;
+  const activeSectionLink =
+    `/dashboard/leaderboard?lane=${tabToLaneParam(tab)}#${activeSection}`;
 
   useEffect(() => {
     const lane = tabToLaneParam(tab);
