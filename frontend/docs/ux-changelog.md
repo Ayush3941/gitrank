@@ -7,6 +7,10 @@
     with direct login/onboarding recovery actions
   - marketing route errors now emit `error_state.viewed` analytics events and
     use `unstable_retry()` when available for stronger retry behavior.
+- Added metadata contract coverage for marketing/onboarding routes in
+  `tests/marketing-metadata.test.ts`:
+  - locks canonical URLs and generated social image endpoints for landing,
+    login, and onboarding route metadata.
 - Added route-specific public error/not-found boundaries:
   - `app/(public)/u/[username]/error.tsx` + `not-found.tsx`
   - `app/(public)/pr/[owner]/[repo]/[number]/error.tsx` + `not-found.tsx`
