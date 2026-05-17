@@ -1288,7 +1288,11 @@ func (e *Executor) fetchPullRequestsRESTDetails(ctx context.Context, owner, name
 			"per_page": []string{fmt.Sprintf("%d", perPage)},
 		}, githubapi.ConditionalRequest{}, &reviews)
 		if err != nil {
-			return nil, nil, err
+			if !isSkippableGitHubSyncError(err) {
+				return nil, nil, err
+			}
+			reviewsByNumber[number] = nil
+			continue
 		}
 		reviewsByNumber[number] = reviews
 	}
