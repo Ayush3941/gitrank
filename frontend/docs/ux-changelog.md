@@ -12,6 +12,8 @@
   - disables expensive backdrop blur on smaller screens
   - reduces heavy shadows and background overlays for lower GPU pressure
   - kept reduced-motion behavior while removing duplicate global motion rules
+- Tuned shared `cyber-card` overlays and hover shadows to reduce per-card paint
+  work while retaining visual hierarchy.
 - Added global accessibility navigation + motion-respect refinements:
   - root `Skip to main content` link in `app/layout.tsx`
   - `AppShell` now renders semantic `<main id="main-content">`
