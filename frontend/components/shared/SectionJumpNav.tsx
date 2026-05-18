@@ -41,7 +41,7 @@ export function SectionJumpNav({
       <p
         role="status"
         aria-live="polite"
-        className="shrink-0 px-2 text-xs tracking-[0.16em] text-cyan-200 uppercase"
+        className="shrink-0 px-2 text-sm font-medium text-cyan-100"
       >
         {activeSectionLabel}
       </p>
@@ -57,8 +57,8 @@ export function SectionJumpNav({
                 aria-current={activeSection === section.id ? "location" : undefined}
                 className={
                   activeSection === section.id
-                    ? "focus-ring cyber-title border border-primary/45 bg-primary/16 px-3 py-1.5 text-[11px] tracking-[0.16em] text-white uppercase"
-                    : "focus-ring cyber-title border border-transparent px-3 py-1.5 text-[11px] tracking-[0.16em] text-slate-200 uppercase hover:border-primary/28 hover:bg-primary/10"
+                    ? "focus-ring border border-primary/45 bg-primary/16 px-3 py-2 text-xs font-semibold text-white"
+                    : "focus-ring border border-transparent px-3 py-2 text-xs text-slate-100 hover:border-primary/28 hover:bg-primary/10"
                 }
               >
                 {section.label}
