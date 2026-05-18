@@ -34,7 +34,7 @@ export function SectionJumpNav({
     >
       <p
         id={navLabelID}
-        className="cyber-title shrink-0 px-2 text-[10px] tracking-[0.16em] text-cyan-200 uppercase"
+        className="shrink-0 px-2 text-xs font-medium text-cyan-100"
       >
         Jump to
       </p>
