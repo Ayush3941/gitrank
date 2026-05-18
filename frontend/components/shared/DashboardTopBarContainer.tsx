@@ -51,9 +51,25 @@ export function DashboardTopBarContainer() {
     autoSyncLastAttempt.current = now;
     autoSyncAttempts.current += 1;
     runUserSync(data.user.username, {
-      onSuccess: () => {
-        autoSyncAttempts.current = 0;
+      onSuccess: (result) => {
+        const queuedFallback =
+          result.status === "queued" || result.fetched?.fallback_queued === 1;
         autoSyncLastAttempt.current = Date.now();
+        if (queuedFallback) {
+          setAutoSyncOutcome({
+            tone: "info",
+            message:
+              "Sync execution was queued because live GitHub sync is slow right now. Dashboard data will refresh as background jobs complete.",
+          });
+          void emitAnalyticsEvent({
+            eventName: "sync.queued",
+            source: "frontend",
+            target: "dashboard",
+            status: "success",
+          });
+          return;
+        }
+        autoSyncAttempts.current = 0;
         setAutoSyncOutcome({
           tone: "success",
           message: "Background sync finished and profile evidence is up to date.",

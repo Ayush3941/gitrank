@@ -65,6 +65,11 @@ export function SyncPipeline() {
         syncPollingAttemptRef.current = 0;
         setPollIntervalMs(POLL_INTERVAL_STEPS_MS[0]);
         setSyncStartedAt(result.started_at);
+        if (result.status === "queued" || result.fetched?.fallback_queued === 1) {
+          setSyncNotice(
+            "Initial sync execution was queued because live GitHub fetch is saturated. GitRank will keep polling for refreshed profile evidence.",
+          );
+        }
       },
     });
   }, [data, isError, isLoading, userSync]);
