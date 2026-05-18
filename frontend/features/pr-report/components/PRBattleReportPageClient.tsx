@@ -9,7 +9,7 @@ import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { CopyLinkButton } from "@/components/shared/CopyLinkButton";
+import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
 import { TextScaleQuickSwitcher } from "@/components/shared/TextScaleQuickSwitcher";
 import { ThemeQuickSwitcher } from "@/components/shared/ThemeQuickSwitcher";
 import { Button } from "@/components/ui/button";
@@ -188,43 +188,16 @@ export function PRBattleReportPageClient({
           detail={nextMoveDetail}
         />
       </GlowCard>
-      <nav
-        aria-labelledby="pr-report-jump-nav-label"
-        className="glass-panel flex flex-wrap items-center gap-2 border border-primary/20 p-2 lg:sticky lg:top-4 lg:z-20"
-      >
-        <p id="pr-report-jump-nav-label" className="cyber-title px-2 text-[10px] tracking-[0.16em] text-cyan-200 uppercase">Jump to</p>
-        <p role="status" aria-live="polite" className="px-2 text-xs tracking-[0.16em] text-cyan-200 uppercase">
-          {activeSectionLabel}
-        </p>
-        <ul role="list" className="flex flex-wrap gap-2">
-          {PR_REPORT_SECTION_ITEMS.map((section) => (
-            <li key={section.id}>
-              <a
-                href={`#${section.id}`}
-                onClick={() => {
-                  setActiveSection(section.id);
-                }}
-                aria-current={activeSection === section.id ? "location" : undefined}
-                className={
-                  activeSection === section.id
-                    ? "focus-ring cyber-title border border-primary/45 bg-primary/16 px-3 py-1.5 text-[11px] tracking-[0.16em] text-white uppercase"
-                    : "focus-ring cyber-title border border-transparent px-3 py-1.5 text-[11px] tracking-[0.16em] text-slate-200 uppercase hover:border-primary/28 hover:bg-primary/10"
-                }
-              >
-                {section.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-        <div className="ml-auto">
-          <CopyLinkButton
-            href={activeSectionLink}
-            label="Copy section link"
-            copiedLabel="Section link copied"
-            analyticsTarget="pr-report/copy-section-link"
-          />
-        </div>
-      </nav>
+      <SectionJumpNav
+        navLabelID="pr-report-jump-nav-label"
+        activeSectionLabel={activeSectionLabel}
+        items={PR_REPORT_SECTION_ITEMS}
+        activeSection={activeSection}
+        onSectionSelect={setActiveSection}
+        copyHref={activeSectionLink}
+        copyAnalyticsTarget="pr-report/copy-section-link"
+        stickyClassName="lg:sticky lg:top-4 lg:z-20"
+      />
       <section id="pr-report-overview" className="scroll-mt-24">
         <GlowCard strong className="space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
@@ -281,13 +254,13 @@ export function PRBattleReportPageClient({
         </div>
         </GlowCard>
       </section>
-      <section id="pr-report-score" className="scroll-mt-24">
+      <section id="pr-report-score" className="render-opt-section scroll-mt-24">
         <div className="grid gap-6 xl:grid-cols-[1.02fr,0.98fr]">
           <ScoreMatrixCard report={data} />
           <XPBreakdownCard report={data} />
         </div>
       </section>
-      <section id="pr-report-ai" className="scroll-mt-24">
+      <section id="pr-report-ai" className="render-opt-section scroll-mt-24">
         <GlowCard className="space-y-4">
           <p className="text-xs tracking-[0.24em] text-primary uppercase">AI summary</p>
           <ExpandableText
@@ -298,11 +271,11 @@ export function PRBattleReportPageClient({
           />
         </GlowCard>
       </section>
-      <section id="pr-report-evidence" className="scroll-mt-24">
+      <section id="pr-report-evidence" className="render-opt-section scroll-mt-24">
         <EvidenceSignalsCard report={data} />
       </section>
       {data.badgeUnlocks.length ? (
-        <section id="pr-report-rewards" className="scroll-mt-24">
+        <section id="pr-report-rewards" className="render-opt-section scroll-mt-24">
           <GlowCard className="space-y-4">
           <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold tracking-[0.24em] text-emerald-100 uppercase">
             <Award className="h-3.5 w-3.5" />
@@ -334,7 +307,7 @@ export function PRBattleReportPageClient({
       {data.suggestedQuestId ? (
         <section
           id={!data.badgeUnlocks.length ? "pr-report-rewards" : undefined}
-          className={!data.badgeUnlocks.length ? "scroll-mt-24" : undefined}
+          className={!data.badgeUnlocks.length ? "render-opt-section scroll-mt-24" : "render-opt-section"}
         >
           <GlowCard className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
