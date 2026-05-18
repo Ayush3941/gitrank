@@ -19,7 +19,7 @@ export function MobileNav() {
       <p
         role="status"
         aria-live="polite"
-        className="col-span-5 px-1 text-[10px] tracking-[0.16em] text-cyan-200 uppercase"
+        className="col-span-5 px-1 text-xs font-medium text-cyan-100"
       >
         {activeItem ? `Current lane: ${activeItem.label}` : "Dashboard navigation"}
       </p>

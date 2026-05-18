@@ -27,15 +27,15 @@ export function DashboardSidebar() {
           </div>
           <div className="min-w-0">
             <p className="cyber-title truncate text-base font-semibold text-white">GitRank</p>
-            <p className="text-[11px] tracking-[0.18em] text-primary uppercase">Dashboard</p>
+            <p className="text-xs font-medium text-primary">Dashboard</p>
           </div>
         </Link>
         <div className="space-y-2">
-          <p id="dashboard-sidebar-nav-label" className="cyber-title text-[10px] tracking-[0.2em] text-cyan-200 uppercase">Navigate</p>
+          <p id="dashboard-sidebar-nav-label" className="cyber-title text-xs font-medium text-cyan-100">Navigate</p>
           <p
             role="status"
             aria-live="polite"
-            className="text-[10px] tracking-[0.16em] text-cyan-200 uppercase"
+            className="text-xs text-cyan-100"
           >
             {activeItem ? `Current lane: ${activeItem.label}` : "Dashboard navigation"}
           </p>
@@ -78,11 +78,11 @@ export function DashboardSidebar() {
           <TextScaleQuickSwitcher compact className="w-full justify-start" />
         </div>
         <div className="cyber-terminal p-3.5">
-          <p className="text-[10px] font-semibold tracking-[0.2em] text-primary uppercase">Focus</p>
+          <p className="text-xs font-semibold text-primary">Focus</p>
           <p className="cyber-copy mt-1.5 text-sm text-foreground">
             Meaningful contribution quality over raw activity volume.
           </p>
-          <p className="mt-2 text-[11px] tracking-[0.12em] text-cyan-200 uppercase">
+          <p className="mt-2 text-xs text-cyan-100">
             Quick actions: Ctrl/Cmd+K
           </p>
         </div>
