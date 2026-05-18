@@ -770,6 +770,65 @@ func TestSyncRouteRejectsInvalidCSRF(t *testing.T) {
 	}
 }
 
+func TestSyncRunsRouteFiltersByAuthenticatedActor(t *testing.T) {
+	auth := stubAuthServer()
+	defer auth.Close()
+
+	var observedPath string
+	var observedRequestedBySubject string
+	var observedRequestedByGitHubLogin string
+	var observedLimit string
+	ingestor := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		observedPath = r.URL.Path
+		observedRequestedBySubject = r.URL.Query().Get("requested_by_subject")
+		observedRequestedByGitHubLogin = r.URL.Query().Get("requested_by_github_login")
+		observedLimit = r.URL.Query().Get("limit")
+		_ = json.NewEncoder(w).Encode(contracts.GitHubSyncRunListResponse{
+			Runs: []contracts.GitHubSyncRunView{
+				{
+					ID:                     "run-1",
+					RunType:                "user",
+					Status:                 "completed",
+					Subject:                "octocat",
+					RequestedBySubject:     "user-1",
+					RequestedByGitHubLogin: "octocat",
+					StartedAt:              time.Date(2026, 5, 8, 9, 0, 0, 0, time.UTC),
+				},
+			},
+			AppliedFilter: contracts.GitHubSyncRunFilter{
+				RequestedBySubject:     "user-1",
+				RequestedByGitHubLogin: "octocat",
+				Limit:                  10,
+			},
+			LastUpdatedAt: time.Date(2026, 5, 8, 9, 2, 0, 0, time.UTC),
+		})
+	}))
+	defer ingestor.Close()
+
+	router := NewRouter(testConfig(stubProfileServer().URL, auth.URL, ingestor.URL), testLogger(), "test")
+	request := httptest.NewRequest(http.MethodGet, "/v1/sync/runs?limit=10", nil)
+	request.Header.Set("Cookie", "gitrank_session=session-original; gitrank_csrf=csrf-original")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusOK, response.Body.String())
+	}
+	if observedPath != "/v1/sync/runs" {
+		t.Fatalf("path = %q, want %q", observedPath, "/v1/sync/runs")
+	}
+	if observedRequestedBySubject != "user-1" {
+		t.Fatalf("requested_by_subject = %q, want %q", observedRequestedBySubject, "user-1")
+	}
+	if observedRequestedByGitHubLogin != "octocat" {
+		t.Fatalf("requested_by_github_login = %q, want %q", observedRequestedByGitHubLogin, "octocat")
+	}
+	if observedLimit != "10" {
+		t.Fatalf("limit = %q, want %q", observedLimit, "10")
+	}
+}
+
 func TestSyncRouteAcceptsPreviousSessionSecretCSRF(t *testing.T) {
 	profile := stubProfileServer()
 	defer profile.Close()

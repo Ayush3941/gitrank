@@ -50,6 +50,15 @@ describe("BFF route mapping contracts", () => {
     expect(proxyGateway).toHaveBeenCalledWith(request, "/v1/sync/user/execute");
   });
 
+  it("maps /api/sync/runs GET to /v1/sync/runs", async () => {
+    const route = await import("@/app/api/sync/runs/route");
+    const request = new Request("http://gitrank.test/api/sync/runs?limit=10", { method: "GET" });
+
+    await route.GET(request);
+
+    expect(proxyGateway).toHaveBeenCalledWith(request, "/v1/sync/runs");
+  });
+
   it("maps PR report route params to encoded /v1/pr/.../report path", async () => {
     const route = await import("@/app/api/pr/[owner]/[repo]/[number]/report/route");
     const request = new Request("http://gitrank.test/api/pr/acme/repo/42/report", { method: "GET" });

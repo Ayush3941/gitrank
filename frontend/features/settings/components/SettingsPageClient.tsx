@@ -14,6 +14,7 @@ import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { PrivacyRepositoryToggleList } from "@/features/settings/components/PrivacyRepositoryToggleList";
+import { SyncRunActivityPanel } from "@/features/settings/components/SyncRunActivityPanel";
 import {
   useDeleteMyAccount,
   useExportMyAccountData,
@@ -26,6 +27,7 @@ import {
   useUpdateProfilePrivacy,
   useUpdateRepositoryVisibility,
 } from "@/hooks/use-profile";
+import { useSyncRuns } from "@/hooks/use-sync-runs";
 import {
   useAccountGamificationPreference,
   useGamificationPreference,
@@ -50,6 +52,7 @@ type BackedPrivacyKey =
 
 type SettingsSectionID =
   | "settings-account"
+  | "settings-sync-activity"
   | "settings-public-profile"
   | "settings-display"
   | "settings-repositories"
@@ -57,6 +60,7 @@ type SettingsSectionID =
 
 const SETTINGS_SECTION_ITEMS: Array<{ id: SettingsSectionID; label: string }> = [
   { id: "settings-account", label: "Account" },
+  { id: "settings-sync-activity", label: "Sync log" },
   { id: "settings-public-profile", label: "Privacy" },
   { id: "settings-display", label: "Display" },
   { id: "settings-repositories", label: "Repositories" },
@@ -118,6 +122,7 @@ const TEXT_SCALE_OPTIONS: Array<{
 
 export function SettingsPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useMyProfile();
+  const syncRunsQuery = useSyncRuns(12);
   const updatePrivacy = useUpdateProfilePrivacy();
   const updateRepositoryVisibility = useUpdateRepositoryVisibility();
   const unlinkAccount = useUnlinkMyAccount();
@@ -226,6 +231,10 @@ export function SettingsPageClient() {
       (accountLinkStart.error as Error | null)?.message ||
       "",
     "settings-account-actions",
+  );
+  const syncRunsError = sanitizeUserFacingError(
+    (syncRunsQuery.error as Error | null)?.message || "",
+    "settings-sync-runs",
   );
   const isSaving = updatePrivacy.isPending || updateRepositoryVisibility.isPending;
   const isActing =
@@ -431,6 +440,22 @@ export function SettingsPageClient() {
             {actionError}
           </p>
         ) : null}
+        </GlowCard>
+      </section>
+
+      <section id="settings-sync-activity" className="scroll-mt-24">
+        <GlowCard className="space-y-4">
+          <SyncRunActivityPanel
+            runs={syncRunsQuery.data?.runs ?? []}
+            lastUpdatedAt={syncRunsQuery.data?.last_updated_at}
+            isLoading={syncRunsQuery.isLoading}
+            isRefreshing={syncRunsQuery.isFetching}
+            isError={syncRunsQuery.isError}
+            errorMessage={syncRunsError}
+            onRefresh={() => {
+              void syncRunsQuery.refetch();
+            }}
+          />
         </GlowCard>
       </section>
 

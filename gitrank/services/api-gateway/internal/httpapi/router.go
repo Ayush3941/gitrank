@@ -276,6 +276,17 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		handleSyncRequest(w, r, client, ingestorBaseURL, analytics)
 	})))
 
+	mux.Handle("/v1/sync/runs", sessionAuth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			writeMethodNotAllowed(w, r)
+			return
+		}
+		if !allowRateLimit(w, r, privateReadLimiter, "sync_runs") {
+			return
+		}
+		handleSyncRunList(w, r, client, ingestorBaseURL)
+	})))
+
 	mux.Handle("/v1/analytics/events", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !allowRateLimit(w, r, writeLimiter, "analytics_event") {
 			return

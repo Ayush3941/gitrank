@@ -84,6 +84,29 @@ func handleSyncRequest(w http.ResponseWriter, r *http.Request, client *http.Clie
 	})
 }
 
+func handleSyncRunList(w http.ResponseWriter, r *http.Request, client *http.Client, ingestorBaseURL string) {
+	principal, _ := authkit.PrincipalFromContext(r.Context())
+	query := r.URL.Query()
+	if strings.TrimSpace(query.Get("requested_by_subject")) == "" {
+		query.Set("requested_by_subject", strings.TrimSpace(principal.Subject))
+	}
+	if strings.TrimSpace(query.Get("requested_by_github_login")) == "" {
+		query.Set("requested_by_github_login", strings.TrimSpace(principal.GitHubLogin))
+	}
+	if strings.TrimSpace(query.Get("limit")) == "" {
+		query.Set("limit", "25")
+	}
+
+	request := r.Clone(r.Context())
+	request.URL.RawQuery = query.Encode()
+	proxyRequest(w, request, client, ingestorBaseURL, "/v1/sync/runs", proxyOptions{
+		ForwardHeaders: defaultForwardHeaders(r),
+		ResponseHeaders: map[string]string{
+			"Cache-Control": "private, no-store",
+		},
+	})
+}
+
 func handleRepositorySyncExecution(w http.ResponseWriter, r *http.Request, client *http.Client, ingestorBaseURL string) {
 	var req contracts.SyncRequest
 	if err := httpkit.DecodeJSON(r, &req, 1<<20); err != nil {

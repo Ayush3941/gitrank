@@ -85,6 +85,14 @@ async function settingsFetch(input: RequestInfo | URL, init?: RequestInit): Prom
   if (path === "/api/account/export") {
     return jsonResponse({ export_version: "test" });
   }
+  if (path === "/api/sync/runs" && method === "GET") {
+    return jsonResponse({
+      runs: [],
+      total: 0,
+      limit: 12,
+      offset: 0,
+    });
+  }
   return jsonResponse({ error: { message: `Unhandled route: ${path}` } }, 404);
 }
 

@@ -39,6 +39,29 @@ export type ApiSyncExecutionResponse = {
   persisted?: Record<string, number>;
 };
 
+export type ApiSyncRunRecord = {
+  id: string;
+  run_type: string;
+  status: string;
+  subject?: string;
+  requested_repository?: string;
+  requested_user?: string;
+  requested_by_subject?: string;
+  requested_by_github_login?: string;
+  installation?: number;
+  delivery_id?: string;
+  correlation_id?: string;
+  started_at: string;
+  finished_at?: string;
+  last_error?: string;
+  metrics?: Record<string, number>;
+};
+
+export type ApiSyncRunListResponse = {
+  runs?: ApiSyncRunRecord[];
+  last_updated_at: string;
+};
+
 export type QueueSyncInput = {
   mode:
     | "user"
@@ -106,6 +129,19 @@ export async function queueSyncRequest(input: QueueSyncInput): Promise<ApiSyncRe
     }),
   });
   return adaptJSON<ApiSyncResponse>(response, "Sync request failed.");
+}
+
+export async function listMySyncRuns(limit = 25): Promise<ApiSyncRunListResponse> {
+  const params = new URLSearchParams();
+  const normalizedLimit = Number.isFinite(limit) ? Math.max(1, Math.min(200, Math.floor(limit))) : 25;
+  params.set("limit", String(normalizedLimit));
+
+  const response = await fetch(`/api/sync/runs?${params.toString()}`, {
+    method: "GET",
+    credentials: "same-origin",
+    cache: "no-store",
+  });
+  return adaptJSON<ApiSyncRunListResponse>(response, "Sync activity request failed.");
 }
 
 export async function startAccountLink(
