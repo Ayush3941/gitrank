@@ -10,6 +10,7 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { CopyLinkButton } from "@/components/shared/CopyLinkButton";
+import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
 import { StaleState } from "@/components/shared/StaleState";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -198,43 +199,15 @@ export function LeaderboardPageClient() {
           analyticsTarget="leaderboard:stale"
         />
       ) : null}
-      <nav
-        aria-labelledby="leaderboard-jump-nav-label"
-        className="glass-panel flex flex-wrap items-center gap-2 border border-primary/20 p-2 xl:sticky xl:top-20 xl:z-20"
-      >
-        <p id="leaderboard-jump-nav-label" className="cyber-title px-2 text-[10px] tracking-[0.16em] text-cyan-200 uppercase">Jump to</p>
-        <p role="status" aria-live="polite" className="px-2 text-xs tracking-[0.16em] text-cyan-200 uppercase">
-          {activeSectionLabel}
-        </p>
-        <ul role="list" className="flex flex-wrap gap-2">
-          {LEADERBOARD_SECTION_ITEMS.map((section) => (
-            <li key={section.id}>
-              <a
-                href={`#${section.id}`}
-                onClick={() => {
-                  setActiveSection(section.id);
-                }}
-                aria-current={activeSection === section.id ? "location" : undefined}
-                className={
-                  activeSection === section.id
-                    ? "focus-ring cyber-title border border-primary/45 bg-primary/16 px-3 py-1.5 text-[11px] tracking-[0.16em] text-white uppercase"
-                    : "focus-ring cyber-title border border-transparent px-3 py-1.5 text-[11px] tracking-[0.16em] text-slate-200 uppercase hover:border-primary/28 hover:bg-primary/10"
-                }
-              >
-                {section.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-        <div className="ml-auto">
-          <CopyLinkButton
-            href={activeSectionLink}
-            label="Copy section link"
-            copiedLabel="Section link copied"
-            analyticsTarget="leaderboard/copy-section-link"
-          />
-        </div>
-      </nav>
+      <SectionJumpNav
+        navLabelID="leaderboard-jump-nav-label"
+        activeSectionLabel={activeSectionLabel}
+        items={LEADERBOARD_SECTION_ITEMS}
+        activeSection={activeSection}
+        onSectionSelect={setActiveSection}
+        copyHref={activeSectionLink}
+        copyAnalyticsTarget="leaderboard/copy-section-link"
+      />
       <section id="leaderboard-filters" className="scroll-mt-24 space-y-3">
         <Tabs value={tab} onValueChange={handleTabChange}>
           <TabsList className="scrollbar-thin w-full overflow-x-auto whitespace-nowrap">
