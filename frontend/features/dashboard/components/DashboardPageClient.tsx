@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Activity, ArrowRight, Flame, Medal, ShieldCheck, Sparkles, Swords, Waypoints } from "lucide-react";
+import { Activity, ArrowRight, CheckCircle2, Circle, Flame, ListChecks, Medal, ShieldCheck, Sparkles, Swords, Waypoints } from "lucide-react";
 import { DashboardHeroRankCard } from "@/features/dashboard/components/DashboardHeroRankCard";
 import { ContributionTimelineCard } from "@/features/dashboard/components/ContributionTimelineCard";
 import { CurrentLeagueCard } from "@/features/dashboard/components/CurrentLeagueCard";
@@ -65,6 +65,49 @@ export function DashboardPageClient() {
     contributionWindowCap > 0
       ? Math.round((contributionWindowCount / contributionWindowCap) * 100)
       : 0;
+  const firstRunSteps = useMemo(() => {
+    const syncState = user?.syncStatus.state;
+    const partialProfileAvailable = user?.syncStatus.partialProfileAvailable ?? false;
+    const mergedPrCount = user?.mergedPrCount ?? 0;
+    return [
+      {
+        id: "connected",
+        label: "GitHub account connected",
+        detail: "OAuth identity is linked and ready for evidence sync.",
+        done: Boolean(user?.username),
+        href: "/dashboard/settings",
+        actionLabel: "Open account settings",
+      },
+      {
+        id: "synced",
+        label: "Profile sync completed",
+        detail:
+          "A full snapshot is marked synced without partial evidence mode.",
+        done: syncState === "synced" && !partialProfileAvailable,
+        href: "/dashboard/settings",
+        actionLabel: "Review sync state",
+      },
+      {
+        id: "first-merge",
+        label: "First merged PR detected",
+        detail:
+          "Merged contribution evidence unlocks full score movement and quest depth.",
+        done: mergedPrCount > 0,
+        href: "/dashboard/contributions",
+        actionLabel: "Open contribution lane",
+      },
+    ];
+  }, [
+    user?.mergedPrCount,
+    user?.syncStatus.partialProfileAvailable,
+    user?.syncStatus.state,
+    user?.username,
+  ]);
+  const firstRunCompletedCount = firstRunSteps.filter((step) => step.done).length;
+  const firstRunProgress = Math.round((firstRunCompletedCount / firstRunSteps.length) * 100);
+  const showFirstRunChecklist =
+    (user?.mergedPrCount ?? 0) <= 0 && contributionWindowCount === 0;
+  const firstRunNextAction = firstRunSteps.find((step) => !step.done) ?? null;
   const nextAction = useMemo(() => {
     if (!user) {
       return {
@@ -350,6 +393,15 @@ export function DashboardPageClient() {
           <StatCard label="Reviewed PRs" value={user.reviewedPrCount} detail="Review participation increases trust and unlocks deeper quests." icon={<Activity className="h-5 w-5 text-primary" />} />
         </div>
       </section>
+      {showFirstRunChecklist ? (
+        <FirstRunChecklistCard
+          steps={firstRunSteps}
+          completedCount={firstRunCompletedCount}
+          totalCount={firstRunSteps.length}
+          progress={firstRunProgress}
+          nextAction={firstRunNextAction}
+        />
+      ) : null}
       <GlowCard className="space-y-4 border border-primary/22 bg-gradient-to-br from-slate-950/90 to-cyan-950/18">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -426,6 +478,100 @@ export function DashboardPageClient() {
         />
       </div>
     </div>
+  );
+}
+
+type FirstRunStep = {
+  id: string;
+  label: string;
+  detail: string;
+  done: boolean;
+  href: string;
+  actionLabel: string;
+};
+
+function FirstRunChecklistCard({
+  steps,
+  completedCount,
+  totalCount,
+  progress,
+  nextAction,
+}: {
+  steps: FirstRunStep[];
+  completedCount: number;
+  totalCount: number;
+  progress: number;
+  nextAction: FirstRunStep | null;
+}) {
+  return (
+    <GlowCard className="space-y-4 border border-cyan-300/25 bg-gradient-to-br from-slate-950/90 to-cyan-950/20">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="inline-flex items-center gap-2 text-xs tracking-[0.24em] text-cyan-200 uppercase">
+            <ListChecks className="h-3.5 w-3.5" />
+            First-run checklist
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold text-white">Activation path</h2>
+          <p className="mt-2 text-sm text-slate-200/84">
+            Complete these steps to move from an empty snapshot to meaningful score and quest progression.
+          </p>
+        </div>
+        <span className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold">
+          {completedCount}/{totalCount} complete
+        </span>
+      </div>
+      <div className="space-y-2">
+        <div className="flex items-center justify-between text-xs tracking-[0.2em] text-primary uppercase">
+          <span>Progress</span>
+          <span className="numeric-readout">{progress}%</span>
+        </div>
+        <div
+          className="h-2 w-full rounded-full border border-primary/25 bg-primary/8"
+          role="progressbar"
+          aria-label="Activation checklist progress"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={progress}
+        >
+          <div
+            className="h-full bg-gradient-to-r from-cyan-300 to-fuchsia-300"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+      <div className="grid gap-2">
+        {steps.map((step, index) => (
+          <div key={step.id} className="neon-surface flex items-start gap-3 rounded-[0.1rem] border px-3 py-3">
+            <div className="mt-0.5 text-primary">
+              {step.done ? (
+                <CheckCircle2 className="h-4 w-4 text-emerald-300" />
+              ) : (
+                <Circle className="h-4 w-4 text-cyan-200/78" />
+              )}
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-white">
+                Step {index + 1}: {step.label}
+              </p>
+              <p className="mt-1 text-xs text-slate-200/84">{step.detail}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+      {nextAction ? (
+        <div className="flex flex-wrap gap-2">
+          <Button asChild size="sm">
+            <Link href={nextAction.href}>
+              {nextAction.actionLabel}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
+          <Button asChild variant="secondary" size="sm">
+            <Link href="/onboarding/reveal">Review reveal summary</Link>
+          </Button>
+        </div>
+      ) : null}
+    </GlowCard>
   );
 }
 
