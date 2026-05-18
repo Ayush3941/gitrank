@@ -715,16 +715,15 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 
 .cyber-title {
   font-family: var(--font-orbitron), var(--font-space-grotesk), sans-serif;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  letter-spacing: 0.012em;
   text-wrap: balance;
 }
 
 .hud-eyebrow {
   font-family: var(--font-orbitron), var(--font-space-grotesk), sans-serif;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.14em;
   color: rgb(var(--primary));
-  text-shadow: 0 0 24px rgb(var(--primary) / 0.4);
+  text-shadow: 0 0 16px rgb(var(--primary) / 0.32);
 }
 
 .cyber-copy {
@@ -856,8 +855,7 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 
 .cyber-readout {
   font-family: var(--font-ibm-plex-mono), monospace;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .cyber-terminal {
