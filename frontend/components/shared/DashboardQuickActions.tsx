@@ -10,7 +10,6 @@ import {
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  GitPullRequest,
   Search,
   ShieldCheck,
   Sparkles,
@@ -33,20 +32,14 @@ const THEME_ORDER: ThemePreference[] = ["neon", "midnight", "aurora", "high-cont
 const RECENT_ACTION_IDS_STORAGE_KEY = "gitrank:quick-actions-recent-ids";
 const MAX_RECENT_ACTIONS = 5;
 
-type ActionTone = "default" | "success" | "info";
-
 type DashboardQuickActionsProps = {
   username: string;
-  onRunSyncNow?: () => void;
   onOpenShortcutsHelp?: () => void;
-  syncPending?: boolean;
 };
 
 export function DashboardQuickActions({
   username,
-  onRunSyncNow,
   onOpenShortcutsHelp,
-  syncPending = false,
 }: DashboardQuickActionsProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -85,23 +78,6 @@ export function DashboardQuickActions({
       icon: Sparkles,
       execute: () => {
         router.push(`/u/${encodeURIComponent(username)}`);
-      },
-    };
-
-    const syncAction: QuickActionItem = {
-      id: "sync:now",
-      group: "Sync",
-      label: syncPending ? "Sync already running" : "Run GitHub sync now",
-      description: syncPending
-        ? "Background sync is already in progress"
-        : "Trigger immediate evidence refresh for dashboard lanes",
-      keywords: ["sync", "refresh", "github", "evidence"],
-      icon: GitPullRequest,
-      execute: () => {
-        if (syncPending) {
-          return;
-        }
-        onRunSyncNow?.();
       },
     };
 
@@ -146,19 +122,16 @@ export function DashboardQuickActions({
     return [
       ...routeActions,
       profileAction,
-      syncAction,
       themeAction,
       textAction,
       shortcutsAction,
     ];
   }, [
     onOpenShortcutsHelp,
-    onRunSyncNow,
     pathname,
     router,
     setTextScale,
     setTheme,
-    syncPending,
     textScale,
     theme,
     username,
@@ -373,7 +346,6 @@ export function DashboardQuickActions({
                   <div className="space-y-2">
                     {group.items.map((action) => {
                       const Icon = action.icon;
-                      const tone = actionTone(action.id, syncPending);
                       const index = visibleActions.findIndex((entry) => entry.id === action.id);
                       const highlighted = index === clampedHighlightedIndex;
                       return (
@@ -394,8 +366,6 @@ export function DashboardQuickActions({
                           className={cn(
                             "focus-ring neon-tile w-full border px-3 py-2.5 text-left transition",
                             highlighted && "border-primary/48 bg-primary/10 shadow-[0_0_20px_rgb(34_226_255_/_0.15)]",
-                            tone === "success" && "border-emerald-300/30 text-emerald-100",
-                            tone === "info" && "border-cyan-300/32 text-cyan-100",
                           )}
                         >
                           <div className="flex items-start justify-between gap-2">
@@ -451,13 +421,6 @@ function activeLaneShortcut(pathname: string, href: string) {
     return "Current";
   }
   return undefined;
-}
-
-function actionTone(actionId: string, syncPending: boolean): ActionTone {
-  if (actionId === "sync:now") {
-    return syncPending ? "info" : "success";
-  }
-  return "default";
 }
 
 function optionIdForAction(actionId: string) {

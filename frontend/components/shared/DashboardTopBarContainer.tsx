@@ -103,41 +103,7 @@ export function DashboardTopBarContainer() {
     <DashboardTopBar
       user={data.user}
       autoSyncNote={autoSyncNote}
-      syncPending={isUserSyncPending}
       showQuickActions
-      onRunSyncNow={() => {
-        if (isUserSyncPending) {
-          return;
-        }
-        runUserSync(data.user.username, {
-          onSuccess: () => {
-            autoSyncAttempts.current = 0;
-            autoSyncLastAttempt.current = Date.now();
-            setAutoSyncOutcome({
-              tone: "success",
-              message: "Manual sync finished and profile evidence is refreshed.",
-            });
-            void emitAnalyticsEvent({
-              eventName: "sync.succeeded",
-              source: "frontend",
-              target: "dashboard",
-              status: "success",
-            });
-          },
-          onError: () => {
-            setAutoSyncOutcome({
-              tone: "warning",
-              message: "Manual sync could not finish. Retry from quick actions or reconnect in Settings.",
-            });
-            void emitAnalyticsEvent({
-              eventName: "sync.failed",
-              source: "frontend",
-              target: "dashboard",
-              status: "failure",
-            });
-          },
-        });
-      }}
     />
   );
 }

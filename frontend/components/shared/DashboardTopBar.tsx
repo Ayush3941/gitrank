@@ -21,14 +21,10 @@ export type AutoSyncNote = {
 export function DashboardTopBar({
   user,
   autoSyncNote,
-  onRunSyncNow,
-  syncPending = false,
   showQuickActions = false,
 }: {
   user: UserProfile;
   autoSyncNote?: AutoSyncNote | null;
-  onRunSyncNow?: () => void;
-  syncPending?: boolean;
   showQuickActions?: boolean;
 }) {
   const [shortcutHelpOpen, setShortcutHelpOpen] = useState(false);
@@ -80,11 +76,9 @@ export function DashboardTopBar({
             {showQuickActions ? (
               <DashboardQuickActions
                 username={user.username}
-                onRunSyncNow={onRunSyncNow}
                 onOpenShortcutsHelp={() => {
                   setShortcutHelpOpen(true);
                 }}
-                syncPending={syncPending}
               />
             ) : null}
             <Button
