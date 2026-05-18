@@ -151,6 +151,7 @@ export async function runRepositorySync(
 
 export async function runUserSync(user?: string): Promise<ApiSyncExecutionResponse> {
   const csrfToken = requireCSRFToken();
+  const normalizedUser = typeof user === "string" ? user.trim() : "";
   const response = await fetch("/api/sync/user", {
     method: "POST",
     headers: {
@@ -160,13 +161,39 @@ export async function runUserSync(user?: string): Promise<ApiSyncExecutionRespon
     credentials: "same-origin",
     cache: "no-store",
     body: JSON.stringify({
-      user,
+      user: normalizedUser || undefined,
     }),
   });
-  return adaptJSON<ApiSyncExecutionResponse>(response, "User sync failed.", {
-    transformError: (message, status, code) =>
-      sanitizeSyncExecutionError(message, status, code, "user"),
-  });
+  if (response.ok) {
+    return (await response.json()) as ApiSyncExecutionResponse;
+  }
+
+  const parsed = await parseErrorResponse(response, "User sync failed.");
+  if (isTransientUserSyncExecutionFailure(parsed.message, response.status, parsed.code)) {
+    try {
+      const queued = await queueSyncRequest({
+        mode: "user",
+        user: normalizedUser || undefined,
+      });
+      const acceptedAt = queued.accepted_at;
+      return {
+        status: "queued",
+        mode: "user",
+        user: normalizedUser || undefined,
+        correlation_id: queued.correlation_id,
+        started_at: acceptedAt,
+        finished_at: acceptedAt,
+        fetched: { fallback_queued: 1 },
+        persisted: {},
+      };
+    } catch {
+      // Fall through to sanitized execution error if queue fallback is unavailable.
+    }
+  }
+
+  throw new Error(
+    sanitizeSyncExecutionError(parsed.message, response.status, parsed.code, "user"),
+  );
 }
 
 export async function runInstallationSync(
@@ -303,6 +330,29 @@ function sanitizeSyncExecutionError(
     return syncRecoveryMessage(mode, "Sync services are temporarily unavailable.");
   }
   return message;
+}
+
+function isTransientUserSyncExecutionFailure(
+  message: string,
+  status: number,
+  code: string | undefined,
+): boolean {
+  const normalized = message.toLowerCase();
+  if (status >= 500) {
+    return true;
+  }
+  if (code === "dependency_unavailable" || code === "upstream_timeout") {
+    return true;
+  }
+  return (
+    normalized.includes("context deadline exceeded") ||
+    normalized.includes("client.timeout exceeded") ||
+    normalized.includes("timeout exceeded while awaiting headers") ||
+    normalized.includes("timeout awaiting response headers") ||
+    normalized.includes("i/o timeout") ||
+    normalized.includes("status 429") ||
+    normalized.includes("rate limit")
+  );
 }
 
 function syncRecoveryMessage(
