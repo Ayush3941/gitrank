@@ -311,9 +311,9 @@ export function BadgesPageClient() {
       </section>
       <section id="badges-earned" className="render-opt-section scroll-mt-24 space-y-4">
         <div className="space-y-2">
-          <p className="text-xs tracking-[0.2em] text-fuchsia-200 uppercase">Filter controls</p>
+          <p className="text-sm font-medium text-fuchsia-100">Filter controls</p>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p id={badgesFilterStatusId} role="status" aria-live="polite" className="text-xs tracking-[0.2em] text-fuchsia-200 uppercase">
+            <p id={badgesFilterStatusId} role="status" aria-live="polite" className="text-sm text-fuchsia-100">
               Showing {filtered.length} of {totalCount} badges
             </p>
             <div className="flex flex-wrap items-center gap-2 text-xs">

@@ -225,7 +225,7 @@ export function LeaderboardPageClient() {
           </TabsList>
         </Tabs>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p role="status" aria-live="polite" className="text-xs tracking-[0.2em] text-cyan-200 uppercase">
+          <p role="status" aria-live="polite" className="text-sm font-medium text-cyan-100">
             {isSwitchingTab || (isFetching && snapshot)
               ? `Refreshing ${tab} snapshot...`
               : `Viewing ${tab} snapshot`}

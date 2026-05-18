@@ -80,10 +80,10 @@ export function ContributionFilters({
   return (
     <section aria-labelledby="contribution-filter-controls-label" className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p id="contribution-filter-controls-label" className="text-xs tracking-[0.2em] text-cyan-200 uppercase">
+        <p id="contribution-filter-controls-label" className="text-sm font-medium text-cyan-100">
           Filter controls
         </p>
-        <p id={statusId} role="status" aria-live="polite" className="text-xs tracking-[0.2em] text-cyan-200 uppercase">
+        <p id={statusId} role="status" aria-live="polite" className="text-sm text-cyan-100">
           {isFiltering
             ? "Updating contribution list..."
             : `Showing ${resultCount ?? 0} contribution cards`}
