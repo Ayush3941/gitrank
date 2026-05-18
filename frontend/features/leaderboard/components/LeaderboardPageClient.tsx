@@ -298,7 +298,7 @@ export function LeaderboardPageClient() {
         </div>
       ) : null}
       {!isLoading && !isError && snapshot && rows.length ? (
-        <section id="leaderboard-arena" className="scroll-mt-24 space-y-4">
+        <section id="leaderboard-arena" className="render-opt-section scroll-mt-24 space-y-4">
           {snapshot.currentUser ? (
             <GlowCard className="space-y-4 border border-cyan-300/22 bg-gradient-to-br from-slate-950/88 to-cyan-950/24">
               <div className="flex items-start justify-between gap-3">

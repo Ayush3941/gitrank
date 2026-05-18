@@ -436,30 +436,30 @@ export function DashboardPageClient() {
       </GlowCard>
       <div className="grid gap-6 xl:grid-cols-[0.92fr,1.08fr]">
         <div className="space-y-6">
-          <section id="dashboard-league" className="scroll-mt-24">
+          <section id="dashboard-league" className="render-opt-section scroll-mt-24">
             <CurrentLeagueCard user={user} />
           </section>
           <QuestPanel quests={user.quests} />
           <ScoreExplanationCard user={user} />
         </div>
         <div className="space-y-6">
-          <section id="dashboard-skills" className="scroll-mt-24">
+          <section id="dashboard-skills" className="render-opt-section scroll-mt-24">
             <SkillBreakdownCard
               user={user}
               skillInsights={abraInsights.data?.skillInsights}
               aiMode={abraInsights.data?.generatedBy}
             />
           </section>
-          <section id="dashboard-reports" className="scroll-mt-24">
+          <section id="dashboard-reports" className="render-opt-section scroll-mt-24">
             <RecentBattleReports reports={recentReports} />
           </section>
         </div>
       </div>
       <div className="grid gap-6 xl:grid-cols-[1.04fr,0.96fr]">
-        <section id="dashboard-badges" className="scroll-mt-24">
+        <section id="dashboard-badges" className="render-opt-section scroll-mt-24">
           <BadgeShelf user={user} />
         </section>
-        <section id="dashboard-timeline" className="scroll-mt-24">
+        <section id="dashboard-timeline" className="render-opt-section scroll-mt-24">
           <ContributionTimelineCard user={user} />
         </section>
       </div>

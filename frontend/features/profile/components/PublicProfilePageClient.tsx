@@ -248,7 +248,7 @@ export function PublicProfilePageClient({
           <StatCard label="Consistency" value={`${data.user.consistencyScore}%`} detail={`Trend window: ${data.trendWindowLabel}`} icon={<CheckCircle2 className="h-5 w-5 text-primary" />} />
         </div>
       </section>
-      <section id="public-profile-badges-skills" className="scroll-mt-24">
+      <section id="public-profile-badges-skills" className="render-opt-section scroll-mt-24">
         <div className="grid gap-6 xl:grid-cols-[1fr,1fr]">
           <GlowCard className="space-y-5">
             <div>
@@ -282,10 +282,10 @@ export function PublicProfilePageClient({
           </GlowCard>
         </div>
       </section>
-      <section id="public-profile-best-prs" className="scroll-mt-24">
+      <section id="public-profile-best-prs" className="render-opt-section scroll-mt-24">
         <BestPRsPanel reports={data.featuredContributions} />
       </section>
-      <section id="public-profile-timeline-repos" className="scroll-mt-24">
+      <section id="public-profile-timeline-repos" className="render-opt-section scroll-mt-24">
         <div className="grid gap-6 xl:grid-cols-[1.08fr,0.92fr]">
           <GlowCard className="space-y-5">
             <div>

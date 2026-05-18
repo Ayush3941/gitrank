@@ -756,6 +756,11 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   contain-intrinsic-size: 280px;
 }
 
+.render-opt-section {
+  content-visibility: auto;
+  contain-intrinsic-size: 680px;
+}
+
 .cyber-link {
   color: rgb(var(--text-soft));
   transition:

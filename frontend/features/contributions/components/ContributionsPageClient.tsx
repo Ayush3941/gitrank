@@ -311,7 +311,7 @@ export function ContributionsPageClient() {
         />
       ) : null}
       {!isLoading && !isError && profile ? (
-        <section id="contributions-overview" className="scroll-mt-24">
+        <section id="contributions-overview" className="render-opt-section scroll-mt-24">
           <GlowCard strong className="cyber-hero-shell relative overflow-hidden">
           <div className="cyber-hero-overlay pointer-events-none absolute inset-0" />
           <div className="relative space-y-4">
@@ -353,7 +353,7 @@ export function ContributionsPageClient() {
         </section>
       ) : null}
       {!isLoading && !isError ? (
-        <section id="contributions-repositories" className="scroll-mt-24 space-y-3">
+        <section id="contributions-repositories" className="render-opt-section scroll-mt-24 space-y-3">
           <SectionHeader
             eyebrow="Repositories"
             title="Repositories touched"
@@ -379,7 +379,7 @@ export function ContributionsPageClient() {
         </section>
       ) : null}
       {!isLoading && !isError ? (
-        <section id="contributions-timeline" className="scroll-mt-24 space-y-4">
+        <section id="contributions-timeline" className="render-opt-section scroll-mt-24 space-y-4">
           <SectionHeader
             eyebrow="History"
             title="Contribution timeline and highlights"
@@ -437,7 +437,7 @@ export function ContributionsPageClient() {
         </section>
       ) : null}
       {!isLoading && !isError ? (
-        <section id="contributions-cards" className="scroll-mt-24 space-y-4">
+        <section id="contributions-cards" className="render-opt-section scroll-mt-24 space-y-4">
           <SectionHeader
             eyebrow="PR cards"
             title="Achievement cards"

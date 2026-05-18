@@ -223,7 +223,7 @@ export function BadgesPageClient() {
         copyHref={activeSectionLink}
         copyAnalyticsTarget="badges/copy-section-link"
       />
-      <section id="badges-forge" className="scroll-mt-24 space-y-4">
+      <section id="badges-forge" className="render-opt-section scroll-mt-24 space-y-4">
         {profile?.user.syncStatus.state === "stale" ? (
           <StaleState
             message={`Badge snapshot refreshed ${formatRelativeDays(
@@ -309,7 +309,7 @@ export function BadgesPageClient() {
           </GlowCard>
         ) : null}
       </section>
-      <section id="badges-earned" className="scroll-mt-24 space-y-4">
+      <section id="badges-earned" className="render-opt-section scroll-mt-24 space-y-4">
         <div className="space-y-2">
           <p className="text-xs tracking-[0.2em] text-fuchsia-200 uppercase">Filter controls</p>
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -395,7 +395,7 @@ export function BadgesPageClient() {
         ) : null}
       </section>
       {!isLoading && !isError ? (
-        <section id="badges-locked" className="scroll-mt-24 space-y-3">
+        <section id="badges-locked" className="render-opt-section scroll-mt-24 space-y-3">
           <p className="text-xs tracking-[0.24em] text-fuchsia-200 uppercase">Locked / upcoming badges</p>
           {lockedBadges.length > 0 ? (
             <div className="grid gap-3 md:grid-cols-3">
