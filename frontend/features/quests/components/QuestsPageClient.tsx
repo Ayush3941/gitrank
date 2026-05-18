@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { ArrowRight, CalendarClock, Flame, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
-import { CopyLinkButton } from "@/components/shared/CopyLinkButton";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { StaleState } from "@/components/shared/StaleState";
 import { Button } from "@/components/ui/button";
@@ -54,6 +54,10 @@ export function QuestsPageClient() {
   const longTermQuest = selectQuestSpotlight(questMap["Long-term"]);
   const activeQuestSectionId = QUEST_SECTION_IDS[activeGroup];
   const activeCadenceLink = `/dashboard/quests#${activeQuestSectionId}`;
+  const questSectionItems = groups.map((group) => ({
+    id: QUEST_SECTION_IDS[group],
+    label: labelForGroup(group),
+  }));
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -218,46 +222,21 @@ export function QuestsPageClient() {
         </GlowCard>
       ) : null}
       {!isLoading && !isError && quests.length > 0 ? (
-        <nav
-          aria-labelledby="quests-jump-nav-label"
-          className="cyber-terminal panel-grid flex flex-wrap items-center gap-2 rounded-[1.2rem] px-3 py-3 xl:sticky xl:top-20 xl:z-20"
-        >
-          <span id="quests-jump-nav-label" className="px-2 text-xs tracking-[0.14em] text-primary uppercase">Cadence</span>
-          <p role="status" aria-live="polite" className="px-2 text-xs tracking-[0.14em] text-cyan-200 uppercase">
-            {labelForGroup(activeGroup)}
-          </p>
-          <ul role="list" className="flex flex-wrap gap-2">
-            {groups.map((group) => {
-              const active = group === activeGroup;
-              return (
-                <li key={group}>
-                  <a
-                    href={`#${QUEST_SECTION_IDS[group]}`}
-                    onClick={() => {
-                      setActiveGroup(group);
-                    }}
-                    className={
-                      active
-                        ? "focus-ring neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold"
-                        : "focus-ring neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs"
-                    }
-                    aria-current={active ? "location" : undefined}
-                  >
-                    {labelForGroup(group)}
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
-          <div className="ml-auto">
-            <CopyLinkButton
-              href={activeCadenceLink}
-              label="Copy cadence link"
-              copiedLabel="Cadence link copied"
-              analyticsTarget="quests/copy-cadence-link"
-            />
-          </div>
-        </nav>
+        <SectionJumpNav
+          navLabelID="quests-jump-nav-label"
+          activeSectionLabel={labelForGroup(activeGroup)}
+          items={questSectionItems}
+          activeSection={activeQuestSectionId}
+          onSectionSelect={(sectionID) => {
+            const matchGroup = groups.find((group) => QUEST_SECTION_IDS[group] === sectionID);
+            if (!matchGroup) {
+              return;
+            }
+            setActiveGroup(matchGroup);
+          }}
+          copyHref={activeCadenceLink}
+          copyAnalyticsTarget="quests/copy-cadence-link"
+        />
       ) : null}
       {isLoading ? <LoadingState message="Building your skill tree..." /> : null}
       {isError ? (
@@ -286,7 +265,7 @@ export function QuestsPageClient() {
             <section
               key={group}
               id={QUEST_SECTION_IDS[group]}
-              className="space-y-4 scroll-mt-24"
+              className="render-opt-section space-y-4 scroll-mt-24"
             >
               <SectionHeader
                 title={labelForGroup(group)}
