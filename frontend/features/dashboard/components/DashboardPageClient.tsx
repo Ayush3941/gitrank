@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Activity, ArrowRight, CheckCircle2, Circle, Flame, ListChecks, Medal, ShieldCheck, Sparkles, Swords, Waypoints } from "lucide-react";
+import { Activity, ArrowRight, CheckCircle2, Circle, Flame, ListChecks, Medal, ShieldCheck, Sparkles, Swords } from "lucide-react";
 import { DashboardHeroRankCard } from "@/features/dashboard/components/DashboardHeroRankCard";
 import { ContributionTimelineCard } from "@/features/dashboard/components/ContributionTimelineCard";
 import { CurrentLeagueCard } from "@/features/dashboard/components/CurrentLeagueCard";
@@ -17,7 +17,7 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { CopyLinkButton } from "@/components/shared/CopyLinkButton";
+import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
 import { Button } from "@/components/ui/button";
@@ -309,49 +309,15 @@ export function DashboardPageClient() {
           analyticsTarget="dashboard:stale"
         />
       ) : null}
-      <nav
-        aria-labelledby="dashboard-jump-nav-label"
-        className="cyber-terminal panel-grid flex flex-wrap items-center gap-2 rounded-[1.2rem] px-3 py-3 xl:sticky xl:top-20 xl:z-20"
-      >
-        <span id="dashboard-jump-nav-label" className="inline-flex items-center gap-2 px-2 text-xs tracking-[0.14em] text-primary uppercase">
-          <Waypoints className="h-3.5 w-3.5" />
-          Jump
-        </span>
-        <p role="status" aria-live="polite" className="px-2 text-xs tracking-[0.14em] text-cyan-200 uppercase">
-          {activeSectionLabel}
-        </p>
-        <ul role="list" className="flex flex-wrap gap-2">
-          {DASHBOARD_SECTION_NAV.map((section) => {
-            const active = section.id === activeSection;
-            return (
-              <li key={section.id}>
-                <a
-                  className={
-                    active
-                      ? "focus-ring neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold"
-                      : "focus-ring neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs"
-                  }
-                  href={`#${section.id}`}
-                  onClick={() => {
-                    setActiveSection(section.id);
-                  }}
-                  aria-current={active ? "location" : undefined}
-                >
-                  {section.label}
-                </a>
-              </li>
-              );
-            })}
-          </ul>
-        <div className="ml-auto">
-          <CopyLinkButton
-            href={activeSectionLink}
-            label="Copy section link"
-            copiedLabel="Section link copied"
-            analyticsTarget="dashboard/copy-section-link"
-          />
-        </div>
-      </nav>
+      <SectionJumpNav
+        navLabelID="dashboard-jump-nav-label"
+        activeSectionLabel={activeSectionLabel}
+        items={DASHBOARD_SECTION_NAV}
+        activeSection={activeSection}
+        onSectionSelect={setActiveSection}
+        copyHref={activeSectionLink}
+        copyAnalyticsTarget="dashboard/copy-section-link"
+      />
       <section id="dashboard-hero" className="scroll-mt-24">
         <DashboardHeroRankCard
           user={user}
