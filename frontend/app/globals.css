@@ -23,11 +23,11 @@
   --text-body: 242 248 255;
   --text-soft: 236 245 255;
   --page-overlay-top-alpha: 0.02;
-  --page-overlay-bottom-alpha: 0.1;
-  --page-grid-opacity: 0.02;
-  --page-glow-opacity: 0.14;
-  --surface-blur: 8px;
-  --surface-blur-strong: 10px;
+  --page-overlay-bottom-alpha: 0.08;
+  --page-grid-opacity: 0.015;
+  --page-glow-opacity: 0.1;
+  --surface-blur: 4px;
+  --surface-blur-strong: 5px;
   --radius-universal: 0.1rem;
   --radius-card: 0.1rem;
   --eyebrow-tracking-wide: 0.14em;
@@ -55,11 +55,11 @@ html[data-theme="midnight"] {
   --text-body: 244 249 255;
   --text-soft: 238 246 255;
   --page-overlay-top-alpha: 0.03;
-  --page-overlay-bottom-alpha: 0.12;
-  --page-grid-opacity: 0.02;
-  --page-glow-opacity: 0.13;
-  --surface-blur: 7px;
-  --surface-blur-strong: 9px;
+  --page-overlay-bottom-alpha: 0.1;
+  --page-grid-opacity: 0.015;
+  --page-glow-opacity: 0.1;
+  --surface-blur: 4px;
+  --surface-blur-strong: 5px;
 }
 
 html[data-theme="aurora"] {
@@ -83,11 +83,11 @@ html[data-theme="aurora"] {
   --text-body: 246 250 255;
   --text-soft: 240 248 255;
   --page-overlay-top-alpha: 0.015;
-  --page-overlay-bottom-alpha: 0.08;
-  --page-grid-opacity: 0.02;
-  --page-glow-opacity: 0.1;
-  --surface-blur: 6px;
-  --surface-blur-strong: 8px;
+  --page-overlay-bottom-alpha: 0.065;
+  --page-grid-opacity: 0.012;
+  --page-glow-opacity: 0.085;
+  --surface-blur: 4px;
+  --surface-blur-strong: 5px;
 }
 
 html[data-theme="high-contrast"] {
@@ -112,10 +112,10 @@ html[data-theme="high-contrast"] {
   --text-soft: 239 246 255;
   --page-overlay-top-alpha: 0.06;
   --page-overlay-bottom-alpha: 0.2;
-  --page-grid-opacity: 0.02;
-  --page-glow-opacity: 0.12;
-  --surface-blur: 5px;
-  --surface-blur-strong: 7px;
+  --page-grid-opacity: 0.015;
+  --page-glow-opacity: 0.09;
+  --surface-blur: 3px;
+  --surface-blur-strong: 4px;
 }
 
 @theme inline {
@@ -885,7 +885,7 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   pointer-events: none;
   z-index: -1;
   border-radius: 999px;
-  filter: blur(42px);
+  filter: blur(24px);
 }
 
 .page-shell::before {
@@ -1293,20 +1293,6 @@ html[data-gamification="reduced"] .page-shell::after {
   box-shadow:
     0 0 0 1px rgb(var(--primary) / 0.52),
     0 0 32px rgb(var(--primary) / 0.24);
-  animation: anchor-target-glow 1200ms ease-out 1;
-}
-
-@keyframes anchor-target-glow {
-  0% {
-    box-shadow:
-      0 0 0 1px rgb(var(--primary) / 0.72),
-      0 0 46px rgb(var(--primary) / 0.34);
-  }
-  100% {
-    box-shadow:
-      0 0 0 1px rgb(var(--primary) / 0.52),
-      0 0 32px rgb(var(--primary) / 0.24);
-  }
 }
 
 @media (prefers-contrast: more) {
