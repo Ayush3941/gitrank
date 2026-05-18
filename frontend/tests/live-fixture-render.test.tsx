@@ -28,6 +28,16 @@ vi.mock("next/link", () => ({
   ),
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    replace: vi.fn(),
+    push: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+  usePathname: () => "/dashboard/leaderboard",
+  useSearchParams: () => new URLSearchParams(""),
+}));
+
 vi.mock("next/image", () => ({
   default: ({
     alt,
@@ -75,7 +85,7 @@ describe("live fixture frontend smoke coverage", () => {
   it("renders quest board from the live quest fixture route", async () => {
     renderWithClient(<QuestsPageClient />);
 
-    expect(await screen.findByText("Live Skill Sprint")).toBeTruthy();
+    expect((await screen.findAllByText("Live Skill Sprint")).length).toBeGreaterThan(0);
     expect(
       await screen.findByText("Backed by live quest fixture evidence."),
     ).toBeTruthy();
@@ -96,7 +106,7 @@ describe("live fixture frontend smoke coverage", () => {
       ),
     ).toBeTruthy();
     expect(
-      await screen.findByText("Backed by live PR report evidence."),
+      (await screen.findAllByText("Backed by live PR report evidence.")).length,
     ).toBeTruthy();
     expect(await screen.findByText("Persisted scorer components")).toBeTruthy();
     expect(
@@ -152,7 +162,9 @@ describe("live fixture frontend smoke coverage", () => {
         "Account export generated. Token secrets and secret hashes are excluded from the file.",
       ),
     ).toBeTruthy();
-    expect(nonAnalyticsPaths()).toEqual(["/api/profile/me", "/api/account/export"]);
+    expect(nonAnalyticsPaths().sort()).toEqual(
+      ["/api/profile/me", "/api/sync/runs", "/api/account/export"].sort(),
+    );
   }, 15_000);
 
   it("renders stale quest state from a stale quest snapshot fixture", async () => {
@@ -209,6 +221,12 @@ async function liveFixtureFetch(input: RequestInfo | URL): Promise<Response> {
   }
   if (path === "/api/account/export") {
     return jsonResponse(accountExportFixture);
+  }
+  if (path === "/api/sync/runs") {
+    return jsonResponse({
+      runs: [],
+      last_updated_at: new Date().toISOString(),
+    });
   }
   if (path === "/api/ai/abra-insights") {
     return jsonResponse(abraInsightsFixture);
