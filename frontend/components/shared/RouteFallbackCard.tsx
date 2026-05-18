@@ -33,7 +33,7 @@ export function RouteFallbackCard({
         className,
       )}
     >
-      <p className="text-xs tracking-[0.24em] text-primary uppercase">{eyebrow}</p>
+      <p className="text-xs font-medium text-primary">{eyebrow}</p>
       <h1 className="text-3xl font-semibold text-white sm:text-4xl">{title}</h1>
       <p className={cn("text-sm text-slate-200/84 sm:text-base", centered ? "mx-auto max-w-xl" : "max-w-2xl")}>
         {description}
