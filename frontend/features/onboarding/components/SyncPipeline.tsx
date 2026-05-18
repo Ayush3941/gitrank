@@ -60,6 +60,9 @@ export function SyncPipeline() {
     if (data.user.syncStatus.state === "synced") {
       return;
     }
+    if (data.user.syncStatus.state === "syncing") {
+      return;
+    }
     userSync.mutate(data.user.username, {
       onSuccess: (result) => {
         syncPollingAttemptRef.current = 0;
@@ -174,6 +177,11 @@ export function SyncPipeline() {
             <p className="text-sm text-slate-200/84">
               Auto-refresh cadence slows from 5s up to 20s while sync remains pending to reduce local load.
               Current cadence: about {Math.max(5, Math.round(pollIntervalMs / 1000))}s.
+            </p>
+          ) : null}
+          {syncState === "syncing" ? (
+            <p className="text-sm text-cyan-100">
+              Sync is already running. GitRank is waiting for the refreshed profile snapshot.
             </p>
           ) : null}
           {actionError ? (

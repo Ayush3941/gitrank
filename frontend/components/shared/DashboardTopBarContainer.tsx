@@ -39,6 +39,9 @@ export function DashboardTopBarContainer() {
     if (!shouldAutoSync) {
       return;
     }
+    if (syncState.state === "syncing") {
+      return;
+    }
     if (isUserSyncPending) {
       return;
     }
@@ -113,7 +116,12 @@ export function DashboardTopBarContainer() {
       tone: "info",
       message: "Background sync is running. Keep exploring while GitRank refreshes evidence.",
     }
-    : autoSyncOutcome;
+    : data.user.syncStatus.state === "syncing"
+      ? {
+        tone: "info",
+        message: "Profile sync is already running. Dashboard data will refresh automatically.",
+      }
+      : autoSyncOutcome;
 
   return (
     <DashboardTopBar
