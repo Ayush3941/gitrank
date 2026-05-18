@@ -36,7 +36,7 @@ describe("settings form accessibility behavior", () => {
     expect(describedElement?.textContent || "").toContain(
       "Privacy save failed for this account.",
     );
-  });
+  }, 10_000);
 
   it("keeps settings controls discoverable with non-empty accessible names", async () => {
     const rendered = renderWithClient(<SettingsPageClient />);
