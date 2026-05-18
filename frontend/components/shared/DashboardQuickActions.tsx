@@ -166,11 +166,11 @@ export function DashboardQuickActions({
     if (!open) {
       return;
     }
-    const frame = window.requestAnimationFrame(() => {
+    const timer = window.setTimeout(() => {
       inputRef.current?.focus();
-    });
+    }, 0);
     return () => {
-      window.cancelAnimationFrame(frame);
+      window.clearTimeout(timer);
     };
   }, [open]);
 
