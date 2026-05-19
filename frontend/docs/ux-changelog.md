@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Sync-log error readability pass:
+  - sanitized per-run `last_error` text in Settings sync activity so technical upstream/network strings are no longer rendered raw in cards.
+  - reused existing `sanitizeUserFacingError(..., "settings-sync-runs")` mapping for consistent timeout/rate-limit/auth wording.
+  - keeps sync diagnosis understandable to end users while avoiding noisy transport-level error output in the primary UI.
 - Background-visibility and glow-smoothing pass:
   - softened `neon-vignette` edge ramps to reduce dark-edge clipping and keep the locked background image visible across dashboard and marketing shells.
   - expanded page-shell glow gradients (`::before`/`::after`) with longer falloff stops so accent glow starts/stops are smoother and less abrupt.

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { formatDateTime, formatRelativeDays } from "@/lib/formatters";
+import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import { syncRunStatusLabel } from "@/features/settings/lib/sync-run-status";
 
 export function SyncRunActivityPanel({
@@ -234,35 +235,38 @@ export function SyncRunActivityPanel({
         </div>
       ) : (
         <div className="grid gap-2">
-          {filteredRuns.map((run) => (
-            <article key={run.id} className="render-opt-card neon-surface space-y-2 px-4 py-3">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="break-anywhere text-sm font-semibold text-white">
-                    {runLabel(run)}
-                  </p>
-                  <p className="mt-1 break-anywhere text-xs text-muted">
-                    {run.subject || "No subject"} • {run.run_type}
-                  </p>
+          {filteredRuns.map((run) => {
+            const safeLastError = sanitizeSyncRunErrorMessage(run.last_error);
+            return (
+              <article key={run.id} className="render-opt-card neon-surface space-y-2 px-4 py-3">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="break-anywhere text-sm font-semibold text-white">
+                      {runLabel(run)}
+                    </p>
+                    <p className="mt-1 break-anywhere text-xs text-muted">
+                      {run.subject || "No subject"} • {run.run_type}
+                    </p>
+                  </div>
+                  <StatusChip status={run.status} />
                 </div>
-                <StatusChip status={run.status} />
-              </div>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-200/84">
-                <span>
-                  Started {toFriendlyTimestamp(run.started_at)}
-                </span>
-                {run.finished_at ? <span>Duration {runDuration(run.started_at, run.finished_at)}</span> : null}
-                {run.correlation_id ? (
-                  <span className="break-anywhere">Correlation {run.correlation_id}</span>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-200/84">
+                  <span>
+                    Started {toFriendlyTimestamp(run.started_at)}
+                  </span>
+                  {run.finished_at ? <span>Duration {runDuration(run.started_at, run.finished_at)}</span> : null}
+                  {run.correlation_id ? (
+                    <span className="break-anywhere">Correlation {run.correlation_id}</span>
+                  ) : null}
+                </div>
+                {safeLastError ? (
+                  <p className="break-anywhere text-xs text-rose-100">
+                    Last error: {safeLastError}
+                  </p>
                 ) : null}
-              </div>
-              {run.last_error ? (
-                <p className="break-anywhere text-xs text-rose-100">
-                  Last error: {run.last_error}
-                </p>
-              ) : null}
-            </article>
-          ))}
+              </article>
+            );
+          })}
         </div>
       )}
     </div>
@@ -352,4 +356,11 @@ function toNormalizedDateTime(value?: string): string | null {
     return null;
   }
   return parsed.toISOString();
+}
+
+function sanitizeSyncRunErrorMessage(value?: string): string | null {
+  if (!value || !value.trim()) {
+    return null;
+  }
+  return sanitizeUserFacingError(value, "settings-sync-runs");
 }
