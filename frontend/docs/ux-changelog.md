@@ -76,6 +76,11 @@
     after all component references were removed
   - cleaned related reduced-mode/forced-colors selector lists to shrink CSS
     surface area and avoid dead-style maintenance.
+- Loading skeleton simplification pass:
+  - simplified shared `neon-skeleton` gradients/shadows to reduce paint-heavy
+    loading surfaces across route and panel placeholders
+  - added a `prefers-reduced-data` fallback for skeletons with flatter static
+    backgrounds and lighter borders.
 
 ## 2026-05-17
 
