@@ -81,6 +81,9 @@
     loading surfaces across route and panel placeholders
   - added a `prefers-reduced-data` fallback for skeletons with flatter static
     backgrounds and lighter borders.
+- Dialog viewport resilience pass:
+  - added max-height and internal vertical scrolling to shared dialog content
+    shell so long modal content remains reachable on shorter/mobile viewports.
 
 ## 2026-05-17
 
