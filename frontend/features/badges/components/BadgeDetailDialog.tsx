@@ -1,11 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { RarityBadge } from "@/components/shared/RarityBadge";
 import { SignalIcon } from "@/components/shared/SignalIcon";
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import type { BadgeStory } from "@/lib/ai/abra-insights-types";
 import { formatDate } from "@/lib/formatters";
@@ -125,9 +127,19 @@ export function BadgeDetailDialog({
                   </span>
                 ))
               ) : (
-                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 text-sm">
-                  No qualifying PRs yet
-                </span>
+                <div className="space-y-2">
+                  <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 text-sm">
+                    No qualifying PRs yet
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    <Button asChild variant="secondary" size="sm">
+                      <Link href="/dashboard/contributions">Open contributions</Link>
+                    </Button>
+                    <Button asChild variant="ghost" size="sm">
+                      <Link href="/dashboard/quests">Open quests</Link>
+                    </Button>
+                  </div>
+                </div>
               )}
             </div>
           </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, Search, XCircle } from "lucide-react";
 import { startTransition, useDeferredValue, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -162,8 +163,16 @@ export function SyncRunActivityPanel({
       </div>
 
       {isError ? (
-        <div role="alert" className="neon-surface border-rose-300/28 px-4 py-3 text-sm text-rose-100">
-          {errorMessage || "Sync activity is temporarily unavailable."}
+        <div role="alert" className="neon-surface space-y-3 border-rose-300/28 px-4 py-3 text-sm text-rose-100">
+          <p>{errorMessage || "Sync activity is temporarily unavailable."}</p>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" size="sm" variant="secondary" onClick={onRefresh} disabled={isRefreshing}>
+              {isRefreshing ? "Refreshing..." : "Retry log fetch"}
+            </Button>
+            <Button asChild type="button" size="sm" variant="ghost">
+              <Link href="/dashboard/settings">Open settings</Link>
+            </Button>
+          </div>
         </div>
       ) : null}
 
@@ -172,12 +181,34 @@ export function SyncRunActivityPanel({
           <p>Loading recent sync activity…</p>
         </div>
       ) : runs.length === 0 ? (
-        <div className="neon-surface border-dashed border-primary/24 px-4 py-4 text-sm text-muted">
-          No sync runs recorded for this account yet. Open dashboard lanes and GitRank will enqueue background sync automatically.
+        <div className="neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted">
+          <p>No sync runs recorded for this account yet. Open dashboard lanes and GitRank will enqueue background sync automatically.</p>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild size="sm" variant="secondary">
+              <Link href="/dashboard">Open dashboard</Link>
+            </Button>
+            <Button asChild size="sm" variant="ghost">
+              <Link href="/dashboard/settings">Open settings</Link>
+            </Button>
+          </div>
         </div>
       ) : filteredRuns.length === 0 ? (
-        <div className="neon-surface border-dashed border-primary/24 px-4 py-4 text-sm text-muted">
-          No sync runs match the current search or status filter.
+        <div className="neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted">
+          <p>No sync runs match the current search or status filter.</p>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              onClick={handleResetFilters}
+              disabled={isFiltering || !canReset}
+            >
+              Reset filters
+            </Button>
+            <Button asChild size="sm" variant="ghost">
+              <Link href="/dashboard/settings">Open settings</Link>
+            </Button>
+          </div>
         </div>
       ) : (
         <div className="grid gap-2">

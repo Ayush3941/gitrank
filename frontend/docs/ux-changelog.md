@@ -42,6 +42,11 @@
   - added `contain: layout paint style` to `render-opt-card` and
     `render-opt-section` helpers to improve containment behavior for long card
     lists and section-heavy pages.
+- Dead-end state recovery pass:
+  - upgraded sync activity panel sparse/error states with explicit recovery
+    actions (`retry`, `open dashboard`, `open settings`, `reset filters`)
+  - upgraded badge detail dialog empty evidence state with direct navigation
+    actions to contribution and quest lanes.
 
 ## 2026-05-17
 
