@@ -78,6 +78,18 @@ export function syncStateGuideCopy(state: SyncState): SyncStateGuideCopy {
   return SYNC_STATE_COPY[state];
 }
 
+export function syncStateGuideState(status: SyncStatus): SyncState {
+  if (status.partialProfileAvailable && status.state === "synced") {
+    return "partially_synced";
+  }
+  return status.state;
+}
+
+export function shouldShowSyncStateGuide(status: SyncStatus): boolean {
+  const state = syncStateGuideState(status);
+  return state !== "synced" && state !== "stale";
+}
+
 export function SyncStateGuide({
   status,
   className,
@@ -85,7 +97,8 @@ export function SyncStateGuide({
   status: SyncStatus;
   className?: string;
 }) {
-  const copy = syncStateGuideCopy(status.state);
+  const guideState = syncStateGuideState(status);
+  const copy = syncStateGuideCopy(guideState);
   const Icon = copy.icon;
   const boundedProgress = Number.isFinite(status.progress)
     ? Math.max(0, Math.min(100, Math.round(status.progress)))
@@ -97,7 +110,7 @@ export function SyncStateGuide({
   if (boundedProgress !== null && status.state === "syncing") {
     contextParts.push(`Progress ${boundedProgress}%.`);
   }
-  if (status.partialProfileAvailable && status.state !== "partially_synced") {
+  if (status.partialProfileAvailable && guideState !== "partially_synced") {
     contextParts.push("Partial profile data is still available.");
   }
 

@@ -11,6 +11,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { StaleState } from "@/components/shared/StaleState";
+import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { QuestCard } from "@/features/quests/components/QuestCard";
@@ -140,6 +141,12 @@ export function QuestsPageClient() {
           </Button>
         )}
       />
+      {profile && shouldShowSyncStateGuide(profile.user.syncStatus) ? (
+        <SyncStateGuide
+          status={profile.user.syncStatus}
+          className="render-opt-section border-primary/24 bg-primary/8"
+        />
+      ) : null}
       {data?.staleness?.isStale ? (
         <StaleState
           message={`Quest snapshot refreshed ${formatRelativeDays(

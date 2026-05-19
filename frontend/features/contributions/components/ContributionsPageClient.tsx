@@ -12,6 +12,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { StaleState } from "@/components/shared/StaleState";
+import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
 import { ContributionList } from "@/features/contributions/components/ContributionList";
 import { useContributions } from "@/hooks/use-contributions";
@@ -245,6 +246,12 @@ export function ContributionsPageClient() {
           </Button>
         )}
       />
+      {profile && shouldShowSyncStateGuide(profile.user.syncStatus) ? (
+        <SyncStateGuide
+          status={profile.user.syncStatus}
+          className="render-opt-section border-primary/24 bg-primary/8"
+        />
+      ) : null}
       {profile?.user.syncStatus.state === "stale" ? (
         <StaleState
           message={`Contribution snapshot refreshed ${formatRelativeDays(

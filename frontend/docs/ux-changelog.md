@@ -129,6 +129,12 @@
     both a primary next step and a fallback route
   - wired dual-path actions into contributions, badges, quests, PR report, and
     public-profile empty states to reduce dead-end navigation.
+- Cross-tab sync-attention state visibility:
+  - exported sync-attention gating helpers from `SyncStateGuide` and normalized
+    synced-plus-partial status to `partially_synced` messaging
+  - added sync-state notice banners to contributions, badges, quests, and
+    leaderboard pages when profile sync is incomplete (never synced, syncing,
+    partial, failed, rate-limited), not just when stale.
 
 ## 2026-05-17
 

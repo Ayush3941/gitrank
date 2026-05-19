@@ -11,6 +11,7 @@ import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
 import { StaleState } from "@/components/shared/StaleState";
+import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -214,6 +215,12 @@ export function BadgesPageClient() {
           </Button>
         )}
       />
+      {profile && shouldShowSyncStateGuide(profile.user.syncStatus) ? (
+        <SyncStateGuide
+          status={profile.user.syncStatus}
+          className="render-opt-section border-primary/24 bg-primary/8"
+        />
+      ) : null}
       <SectionJumpNav
         navLabelID="badges-jump-nav-label"
         activeSectionLabel={activeSectionLabel}

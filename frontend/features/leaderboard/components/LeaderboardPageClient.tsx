@@ -12,6 +12,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { CopyLinkButton } from "@/components/shared/CopyLinkButton";
 import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
 import { StaleState } from "@/components/shared/StaleState";
+import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -183,6 +184,12 @@ export function LeaderboardPageClient() {
           </Button>
         )}
       />
+      {myProfile && shouldShowSyncStateGuide(myProfile.user.syncStatus) ? (
+        <SyncStateGuide
+          status={myProfile.user.syncStatus}
+          className="render-opt-section border-primary/24 bg-primary/8"
+        />
+      ) : null}
       {myProfile?.user.syncStatus.state === "stale" ? (
         <StaleState
           message={`Leaderboard context refreshed ${formatRelativeDays(
