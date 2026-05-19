@@ -207,7 +207,7 @@ for svc in "${BACKEND_SERVICES[@]}"; do
   (
     cd "$BACKEND_DIR"
     go build -o "$BIN_DIR/$svc" "./services/$svc/cmd/$svc"
-    nohup "$BIN_DIR/$svc" >"$LOG_DIR/$svc.log" 2>&1 &
+    setsid "$BIN_DIR/$svc" </dev/null >"$LOG_DIR/$svc.log" 2>&1 &
     pid="$!"
     echo "$pid" >"$RUN_DIR/$svc.pid"
   )
