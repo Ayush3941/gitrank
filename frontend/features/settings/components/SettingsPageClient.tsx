@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Download, FolderGit2, LogOut, Palette, RefreshCw, Sparkles, Trash2 } from "lucide-react";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -449,269 +450,279 @@ export function SettingsPageClient() {
       </section>
 
       <section id="settings-sync-activity" className="render-opt-section scroll-mt-24">
-        <GlowCard className="space-y-4">
-          <SyncRunActivityPanel
-            runs={syncRunsQuery.data?.runs ?? []}
-            lastUpdatedAt={syncRunsQuery.data?.last_updated_at}
-            isLoading={syncRunsQuery.isLoading}
-            isRefreshing={syncRunsQuery.isFetching}
-            isError={syncRunsQuery.isError}
-            errorMessage={syncRunsError}
-            onRefresh={() => {
-              void syncRunsQuery.refetch();
-            }}
-          />
-        </GlowCard>
+        <DeferUntilVisible fallback={<SettingsSectionPlaceholder title="Loading sync activity" />}>
+          <GlowCard className="space-y-4">
+            <SyncRunActivityPanel
+              runs={syncRunsQuery.data?.runs ?? []}
+              lastUpdatedAt={syncRunsQuery.data?.last_updated_at}
+              isLoading={syncRunsQuery.isLoading}
+              isRefreshing={syncRunsQuery.isFetching}
+              isError={syncRunsQuery.isError}
+              errorMessage={syncRunsError}
+              onRefresh={() => {
+                void syncRunsQuery.refetch();
+              }}
+            />
+          </GlowCard>
+        </DeferUntilVisible>
       </section>
 
       <section id="settings-public-profile" className="render-opt-section scroll-mt-24">
-        <SettingSection
-          title="Public profile"
-          saving={isSaving}
-          disabled={isSaving}
-          errorMessage={mutationError}
-          rows={[
-            ["Enable public profile", currentSettings.publicProfileEnabled, (checked) => handlePrivacyToggle("publicProfileEnabled", checked)],
-            ["Show exact PRs", currentSettings.showExactPRs, (checked) => handlePrivacyToggle("showExactPRs", checked)],
-            ["Show AI summaries", currentSettings.showAiSummaries, (checked) => handlePrivacyToggle("showAiSummaries", checked)],
-            ["Show leaderboard participation", currentSettings.showLeaderboardParticipation, (checked) => handlePrivacyToggle("showLeaderboardParticipation", checked)],
-          ]}
-        />
+        <DeferUntilVisible fallback={<SettingsSectionPlaceholder title="Loading profile privacy controls" />}>
+          <SettingSection
+            title="Public profile"
+            saving={isSaving}
+            disabled={isSaving}
+            errorMessage={mutationError}
+            rows={[
+              ["Enable public profile", currentSettings.publicProfileEnabled, (checked) => handlePrivacyToggle("publicProfileEnabled", checked)],
+              ["Show exact PRs", currentSettings.showExactPRs, (checked) => handlePrivacyToggle("showExactPRs", checked)],
+              ["Show AI summaries", currentSettings.showAiSummaries, (checked) => handlePrivacyToggle("showAiSummaries", checked)],
+              ["Show leaderboard participation", currentSettings.showLeaderboardParticipation, (checked) => handlePrivacyToggle("showLeaderboardParticipation", checked)],
+            ]}
+          />
+        </DeferUntilVisible>
       </section>
 
       <section id="settings-display" className="render-opt-section scroll-mt-24">
-        <GlowCard className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="max-w-2xl">
-            <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
-              <Sparkles className="h-5 w-5" />
+        <DeferUntilVisible fallback={<SettingsSectionPlaceholder title="Loading display controls" />}>
+          <GlowCard className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="max-w-2xl">
+              <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <p className="mt-4 text-xs font-medium text-primary">Display preference</p>
+              <h2 className="mt-2 text-2xl font-semibold text-white">Reduced gamification</h2>
+              <p className="mt-2 text-sm leading-6 text-muted">
+                Lowers animated XP ticks, badge shimmer, glow intensity, and rank effects for this account. Scores,
+                badges, leaderboard placement, and privacy visibility do not change. It also disables heavy glass blur
+                layers and background overlays for better performance on constrained devices. If no explicit preference is saved,
+                GitRank follows your system reduced-motion or reduced-data preference.
+              </p>
             </div>
-            <p className="mt-4 text-xs font-medium text-primary">Display preference</p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">Reduced gamification</h2>
-            <p className="mt-2 text-sm leading-6 text-muted">
-              Lowers animated XP ticks, badge shimmer, glow intensity, and rank effects for this account. Scores,
-              badges, leaderboard placement, and privacy visibility do not change. It also disables heavy glass blur
-              layers and background overlays for better performance on constrained devices. If no explicit preference is saved,
-              GitRank follows your system reduced-motion or reduced-data preference.
-            </p>
+            <Switch
+              id="reduced-gamification"
+              aria-label="Reduced gamification"
+              checked={currentSettings.reducedGamification}
+              disabled={isSaving}
+              onCheckedChange={(checked) => handlePrivacyToggle("reducedGamification", checked)}
+            />
           </div>
-          <Switch
-            id="reduced-gamification"
-            aria-label="Reduced gamification"
-            checked={currentSettings.reducedGamification}
-            disabled={isSaving}
-            onCheckedChange={(checked) => handlePrivacyToggle("reducedGamification", checked)}
-          />
-        </div>
-        <div className="cyber-divider" />
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="max-w-2xl">
-            <p className="text-xs font-medium text-primary">Keyboard controls</p>
-            <h3 className="mt-2 text-xl font-semibold text-white">Display shortcuts</h3>
-            <p className="mt-2 text-sm leading-6 text-muted">
-              Enables global display shortcuts when focus is not in an editable field. Navigation shortcuts
-              like <kbd>Ctrl/Cmd + K</kbd> and dashboard shortcut help <kbd>?</kbd> remain available.
-            </p>
-          </div>
-          <Switch
-            id="display-shortcuts-enabled"
-            aria-label="Enable display shortcuts"
-            checked={displayShortcutsEnabled}
-            onCheckedChange={setDisplayShortcutsEnabled}
-          />
-        </div>
-        <div className="cyber-divider" />
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="max-w-2xl">
-            <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
-              <Palette className="h-5 w-5" />
+          <div className="cyber-divider" />
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="max-w-2xl">
+              <p className="text-xs font-medium text-primary">Keyboard controls</p>
+              <h3 className="mt-2 text-xl font-semibold text-white">Display shortcuts</h3>
+              <p className="mt-2 text-sm leading-6 text-muted">
+                Enables global display shortcuts when focus is not in an editable field. Navigation shortcuts
+                like <kbd>Ctrl/Cmd + K</kbd> and dashboard shortcut help <kbd>?</kbd> remain available.
+              </p>
             </div>
-            <p className="mt-4 text-xs font-medium text-primary">Visual theme</p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">Readable style mode</h2>
-            <p className="mt-2 text-sm leading-6 text-muted">
-              Theme choice only changes visual treatment. Ranking, scoring, privacy, and sync behavior stay identical.
-              If no explicit theme is stored, GitRank follows your system high-contrast preference.
-            </p>
-            <p className="mt-2 text-xs text-slate-200">
-              Theme source:
-              {" "}
-              <span className="font-semibold text-foreground">
-                {themeSource === "stored" ? "Manual override" : "System preference"}
-              </span>
-            </p>
+            <Switch
+              id="display-shortcuts-enabled"
+              aria-label="Enable display shortcuts"
+              checked={displayShortcutsEnabled}
+              onCheckedChange={setDisplayShortcutsEnabled}
+            />
           </div>
-          <div className="grid w-full gap-2 sm:w-auto sm:min-w-[22rem]">
-            {THEME_OPTIONS.map((option) => (
-              <Button
-                key={option.value}
-                type="button"
-                size="sm"
-                variant={theme === option.value ? "default" : "secondary"}
-                className="h-auto justify-start gap-3 px-4 py-3 text-left"
-                onClick={() => setTheme(option.value)}
-              >
-                <span
-                  className={`neon-track flex w-full flex-col gap-2 overflow-hidden border bg-gradient-to-br px-3 py-2 ${option.previewShellClassName}`}
-                  aria-hidden="true"
+          <div className="cyber-divider" />
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="max-w-2xl">
+              <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
+                <Palette className="h-5 w-5" />
+              </div>
+              <p className="mt-4 text-xs font-medium text-primary">Visual theme</p>
+              <h2 className="mt-2 text-2xl font-semibold text-white">Readable style mode</h2>
+              <p className="mt-2 text-sm leading-6 text-muted">
+                Theme choice only changes visual treatment. Ranking, scoring, privacy, and sync behavior stay identical.
+                If no explicit theme is stored, GitRank follows your system high-contrast preference.
+              </p>
+              <p className="mt-2 text-xs text-slate-200">
+                Theme source:
+                {" "}
+                <span className="font-semibold text-foreground">
+                  {themeSource === "stored" ? "Manual override" : "System preference"}
+                </span>
+              </p>
+            </div>
+            <div className="grid w-full gap-2 sm:w-auto sm:min-w-[22rem]">
+              {THEME_OPTIONS.map((option) => (
+                <Button
+                  key={option.value}
+                  type="button"
+                  size="sm"
+                  variant={theme === option.value ? "default" : "secondary"}
+                  className="h-auto justify-start gap-3 px-4 py-3 text-left"
+                  onClick={() => setTheme(option.value)}
                 >
-                  <span className={`h-1.5 w-2/3 ${option.previewAccentClassName}`} />
-                  <span className={`h-1.5 w-5/6 ${option.previewTextClassName} bg-current/85`} />
-                  <span className={`h-1.5 w-4/6 ${option.previewTextClassName} bg-current/65`} />
-                  <span className="mt-0.5 flex items-center gap-1.5">
-                    <span
-                      className={`h-4 min-w-10 px-2 text-[9px] leading-4 tracking-[0.08em] uppercase ${option.previewChipClassName}`}
-                    >
-                      xp
-                    </span>
-                    <span
-                      className={`h-4 min-w-12 px-2 text-[9px] leading-4 tracking-[0.08em] uppercase ${option.previewChipClassName}`}
-                    >
-                      rank
-                    </span>
-                  </span>
-                </span>
-                <span className="flex flex-col items-start">
-                  <span className="inline-flex items-center gap-2">
-                    {option.label}
-                    {theme === option.value ? (
-                      <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-[10px] font-semibold text-emerald-50">
-                        Active
+                  <span
+                    className={`neon-track flex w-full flex-col gap-2 overflow-hidden border bg-gradient-to-br px-3 py-2 ${option.previewShellClassName}`}
+                    aria-hidden="true"
+                  >
+                    <span className={`h-1.5 w-2/3 ${option.previewAccentClassName}`} />
+                    <span className={`h-1.5 w-5/6 ${option.previewTextClassName} bg-current/85`} />
+                    <span className={`h-1.5 w-4/6 ${option.previewTextClassName} bg-current/65`} />
+                    <span className="mt-0.5 flex items-center gap-1.5">
+                      <span
+                        className={`h-4 min-w-10 px-2 text-[9px] leading-4 tracking-[0.08em] uppercase ${option.previewChipClassName}`}
+                      >
+                        xp
                       </span>
-                    ) : null}
+                      <span
+                        className={`h-4 min-w-12 px-2 text-[9px] leading-4 tracking-[0.08em] uppercase ${option.previewChipClassName}`}
+                      >
+                        rank
+                      </span>
+                    </span>
                   </span>
-                  <span className="text-xs text-muted">{option.description}</span>
-                  <span className="mt-1 inline-flex h-2.5 w-16 overflow-hidden rounded-full border border-primary/28">
-                    <span
-                      className={`block h-full w-full bg-gradient-to-r ${option.swatchClassName}`}
-                      aria-hidden="true"
-                    />
+                  <span className="flex flex-col items-start">
+                    <span className="inline-flex items-center gap-2">
+                      {option.label}
+                      {theme === option.value ? (
+                        <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-[10px] font-semibold text-emerald-50">
+                          Active
+                        </span>
+                      ) : null}
+                    </span>
+                    <span className="text-xs text-muted">{option.description}</span>
+                    <span className="mt-1 inline-flex h-2.5 w-16 overflow-hidden rounded-full border border-primary/28">
+                      <span
+                        className={`block h-full w-full bg-gradient-to-r ${option.swatchClassName}`}
+                        aria-hidden="true"
+                      />
+                    </span>
                   </span>
-                </span>
-              </Button>
-            ))}
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              className="justify-start"
-              onClick={clearThemePreference}
-              disabled={themeSource === "system"}
-            >
-              {themeSource === "system" ? "Following system theme" : "Follow system theme"}
-            </Button>
-          </div>
-        </div>
-        <div className="cyber-divider" />
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="max-w-2xl">
-            <p className="text-xs font-medium text-primary">Text scale</p>
-            <h3 className="mt-2 text-xl font-semibold text-white">Readable text size</h3>
-            <p className="mt-2 text-sm leading-6 text-muted">
-              Choose a denser or larger text rendering mode. This affects frontend reading size only.
-            </p>
-            <p className="mt-2 text-xs leading-6 text-slate-200">
-              Keyboard shortcuts: <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> toggles theme, and <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd> toggles text size.
-              {" "}Use <kbd>?</kbd> on dashboard pages for the full shortcut reference.
-            </p>
-          </div>
-          <div className="grid w-full gap-2 sm:w-auto sm:min-w-[18rem]">
-            {TEXT_SCALE_OPTIONS.map((option) => (
+                </Button>
+              ))}
               <Button
-                key={option.value}
                 type="button"
                 size="sm"
-                variant={textScale === option.value ? "default" : "secondary"}
-                className="h-auto justify-start px-4 py-3 text-left"
-                onClick={() => setTextScale(option.value)}
+                variant="ghost"
+                className="justify-start"
+                onClick={clearThemePreference}
+                disabled={themeSource === "system"}
               >
-                <span className="flex flex-col items-start">
-                  <span className="inline-flex items-center gap-2">
-                    {option.label}
-                    {textScale === option.value ? (
-                      <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-[10px] font-semibold text-emerald-50">
-                        Active
-                      </span>
-                    ) : null}
-                  </span>
-                  <span className="text-xs text-muted">{option.description}</span>
-                </span>
+                {themeSource === "system" ? "Following system theme" : "Follow system theme"}
               </Button>
-            ))}
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              className="justify-start"
-              onClick={handleResetDisplayPreferences}
-            >
-              Reset display preferences
-            </Button>
+            </div>
           </div>
-        </div>
-        {displayNotice ? (
-          <p role="status" aria-live="polite" className="text-sm text-cyan-100">
-            {displayNotice}
-          </p>
-        ) : null}
-        <div className="neon-surface-strong space-y-3 px-4 py-4">
-          <p className="text-xs font-medium text-primary">Live readability preview</p>
-          <h3 className="text-lg font-semibold text-white">
-            GitRank highlights meaningful contribution quality clearly before style.
-          </h3>
-          <p className="text-sm leading-7 text-muted">
-            Current theme:
-            {" "}
-            <span className="font-semibold text-foreground">{activeThemeOption.label}</span>
-            {" "}
-            ·
-            {" "}
-            {activeThemeOption.description}
-          </p>
-          <p className="text-sm leading-7 text-slate-200">
-            Use this preview to confirm headings, supporting copy, and small labels stay easy to read on your screen.
-          </p>
-        </div>
-        </GlowCard>
+          <div className="cyber-divider" />
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="max-w-2xl">
+              <p className="text-xs font-medium text-primary">Text scale</p>
+              <h3 className="mt-2 text-xl font-semibold text-white">Readable text size</h3>
+              <p className="mt-2 text-sm leading-6 text-muted">
+                Choose a denser or larger text rendering mode. This affects frontend reading size only.
+              </p>
+              <p className="mt-2 text-xs leading-6 text-slate-200">
+                Keyboard shortcuts: <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> toggles theme, and <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd> toggles text size.
+                {" "}Use <kbd>?</kbd> on dashboard pages for the full shortcut reference.
+              </p>
+            </div>
+            <div className="grid w-full gap-2 sm:w-auto sm:min-w-[18rem]">
+              {TEXT_SCALE_OPTIONS.map((option) => (
+                <Button
+                  key={option.value}
+                  type="button"
+                  size="sm"
+                  variant={textScale === option.value ? "default" : "secondary"}
+                  className="h-auto justify-start px-4 py-3 text-left"
+                  onClick={() => setTextScale(option.value)}
+                >
+                  <span className="flex flex-col items-start">
+                    <span className="inline-flex items-center gap-2">
+                      {option.label}
+                      {textScale === option.value ? (
+                        <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-[10px] font-semibold text-emerald-50">
+                          Active
+                        </span>
+                      ) : null}
+                    </span>
+                    <span className="text-xs text-muted">{option.description}</span>
+                  </span>
+                </Button>
+              ))}
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="justify-start"
+                onClick={handleResetDisplayPreferences}
+              >
+                Reset display preferences
+              </Button>
+            </div>
+          </div>
+          {displayNotice ? (
+            <p role="status" aria-live="polite" className="text-sm text-cyan-100">
+              {displayNotice}
+            </p>
+          ) : null}
+          <div className="neon-surface-strong space-y-3 px-4 py-4">
+            <p className="text-xs font-medium text-primary">Live readability preview</p>
+            <h3 className="text-lg font-semibold text-white">
+              GitRank highlights meaningful contribution quality clearly before style.
+            </h3>
+            <p className="text-sm leading-7 text-muted">
+              Current theme:
+              {" "}
+              <span className="font-semibold text-foreground">{activeThemeOption.label}</span>
+              {" "}
+              ·
+              {" "}
+              {activeThemeOption.description}
+            </p>
+            <p className="text-sm leading-7 text-slate-200">
+              Use this preview to confirm headings, supporting copy, and small labels stay easy to read on your screen.
+            </p>
+          </div>
+          </GlowCard>
+        </DeferUntilVisible>
       </section>
 
       <section id="settings-repositories" className="render-opt-section scroll-mt-24">
-        <GlowCard className="space-y-4">
-          <div>
-            <p className="text-xs font-medium text-primary">Repository privacy</p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">Choose what stays on your public card</h2>
-          </div>
-          <PrivacyRepositoryToggleList
-            repositories={data.user.repositories}
-            pendingRepository={pendingRepository}
-            onToggle={
-              (repository, checked) =>
-                updateRepositoryVisibility.mutate({
-                  fullName: repository.name,
-                  visibility: checked ? "Public" : "Hidden",
-                  reason: repository.reason,
-                })
-            }
-          />
-        </GlowCard>
+        <DeferUntilVisible fallback={<SettingsSectionPlaceholder title="Loading repository controls" />}>
+          <GlowCard className="space-y-4">
+            <div>
+              <p className="text-xs font-medium text-primary">Repository privacy</p>
+              <h2 className="mt-2 text-2xl font-semibold text-white">Choose what stays on your public card</h2>
+            </div>
+            <PrivacyRepositoryToggleList
+              repositories={data.user.repositories}
+              pendingRepository={pendingRepository}
+              onToggle={
+                (repository, checked) =>
+                  updateRepositoryVisibility.mutate({
+                    fullName: repository.name,
+                    visibility: checked ? "Public" : "Hidden",
+                    reason: repository.reason,
+                  })
+              }
+            />
+          </GlowCard>
+        </DeferUntilVisible>
       </section>
 
       <section id="settings-data-controls" className="render-opt-section scroll-mt-24">
-        <GlowCard className="space-y-4">
-          <div>
-            <p className="text-xs font-medium text-primary">Data controls</p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">Export or remove account data</h2>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <Button variant="secondary" disabled={isActing} onClick={handleExportAccountData}>
-              <Download className="h-4 w-4" />
-              {exportAccount.isPending ? "Exporting..." : "Export data"}
-            </Button>
-            <Button variant="danger" disabled={isActing} onClick={handleDeleteAccount}>
-              <Trash2 className="h-4 w-4" />
-              {deleteAccount.isPending ? "Deleting account..." : "Delete account"}
-            </Button>
-          </div>
-        </GlowCard>
+        <DeferUntilVisible fallback={<SettingsSectionPlaceholder title="Loading data controls" />}>
+          <GlowCard className="space-y-4">
+            <div>
+              <p className="text-xs font-medium text-primary">Data controls</p>
+              <h2 className="mt-2 text-2xl font-semibold text-white">Export or remove account data</h2>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Button variant="secondary" disabled={isActing} onClick={handleExportAccountData}>
+                <Download className="h-4 w-4" />
+                {exportAccount.isPending ? "Exporting..." : "Export data"}
+              </Button>
+              <Button variant="danger" disabled={isActing} onClick={handleDeleteAccount}>
+                <Trash2 className="h-4 w-4" />
+                {deleteAccount.isPending ? "Deleting account..." : "Delete account"}
+              </Button>
+            </div>
+          </GlowCard>
+        </DeferUntilVisible>
       </section>
     </div>
   );
@@ -760,6 +771,23 @@ function SettingSection({
           </div>
           );
         })}
+      </div>
+    </GlowCard>
+  );
+}
+
+function SettingsSectionPlaceholder({ title }: { title: string }) {
+  return (
+    <GlowCard className="space-y-4">
+      <p className="text-xs font-medium text-primary">{title}</p>
+      <div className="neon-skeleton h-8 w-2/3 rounded-[0.1rem]" />
+      <div className="space-y-2">
+        <div className="neon-skeleton h-4 w-full rounded-[0.1rem]" />
+        <div className="neon-skeleton h-4 w-11/12 rounded-[0.1rem]" />
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <div className="neon-skeleton h-12 rounded-[0.1rem]" />
+        <div className="neon-skeleton h-12 rounded-[0.1rem]" />
       </div>
     </GlowCard>
   );

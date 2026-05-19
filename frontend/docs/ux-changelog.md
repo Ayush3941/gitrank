@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- Settings deferred-render pass:
+  - applied `DeferUntilVisible` to sync activity, profile privacy, display controls, repository visibility, and data-control sections.
+  - added lightweight settings placeholders so jump-nav and account controls remain interactive while heavier section content mounts near viewport.
 - Dashboard deferred-render pass:
   - added shared `DeferUntilVisible` section helper using
     `IntersectionObserver` + positive `rootMargin` preloading window to delay
