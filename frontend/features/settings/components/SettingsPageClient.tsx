@@ -559,12 +559,12 @@ export function SettingsPageClient() {
                     <span className={`h-1.5 w-4/6 ${option.previewTextClassName} bg-current/65`} />
                     <span className="mt-0.5 flex items-center gap-1.5">
                       <span
-                        className={`h-4 min-w-10 px-2 text-[9px] leading-4 tracking-[0.08em] uppercase ${option.previewChipClassName}`}
+                        className={`inline-flex h-5 min-w-10 items-center justify-center px-2 text-[10px] leading-5 tracking-[0.06em] ${option.previewChipClassName}`}
                       >
                         xp
                       </span>
                       <span
-                        className={`h-4 min-w-12 px-2 text-[9px] leading-4 tracking-[0.08em] uppercase ${option.previewChipClassName}`}
+                        className={`inline-flex h-5 min-w-12 items-center justify-center px-2 text-[10px] leading-5 tracking-[0.06em] ${option.previewChipClassName}`}
                       >
                         rank
                       </span>

@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Settings micro-type readability pass:
+  - removed remaining `text-[9px]` usage from theme preview chips in Settings.
+  - increased preview chip labels to `text-[10px]` with taller chip height and centered alignment for clearer at-a-glance legibility.
+  - keeps compact preview density while avoiding tiny microtext in the primary display-preferences surface.
 - Section jump-nav formatting pass:
   - refined `SectionJumpNav` layout to stack cleanly on narrow widths and keep desktop status copy grouped without crowding.
   - removed tiny uppercase mobile active-label styling in favor of clearer `text-xs` title-case rendering.
