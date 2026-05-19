@@ -457,8 +457,20 @@ export function DashboardQuickActions({
                 </section>
               ))
             ) : (
-              <div className="neon-tile rounded-[0.1rem] border border-dashed border-primary/30 px-3 py-3 text-sm text-slate-200">
-                No matching action. Try route names like <span className="text-white">contributions</span> or <span className="text-white">settings</span>.
+              <div className="neon-tile space-y-3 rounded-[0.1rem] border border-dashed border-primary/30 px-3 py-3 text-sm text-slate-200">
+                <p>
+                  No matching action. Try route names like <span className="text-white">contributions</span> or <span className="text-white">settings</span>.
+                </p>
+                {normalizedQuery.length > 0 ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    onClick={handleClearQuery}
+                  >
+                    Clear search
+                  </Button>
+                ) : null}
               </div>
             )}
           </div>

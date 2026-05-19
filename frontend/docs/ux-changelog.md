@@ -5,6 +5,7 @@
 - Quick-actions keyboard jump pass:
   - added `Home` / `End` navigation in quick actions to jump directly to first or last result.
   - updated shortcut-help reference so keyboard guidance matches live behavior.
+  - added a `Clear search` recovery action in the no-results state for faster palette reset.
 - Quick-actions search clarity and efficiency pass:
   - added inline clear-search control and live result-count status in the dashboard quick-actions palette.
   - replaced per-item `findIndex` lookups with a memoized action-index map to reduce repeated list scanning during palette rendering.
