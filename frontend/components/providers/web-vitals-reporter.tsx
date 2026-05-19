@@ -81,7 +81,13 @@ function routeGroupFromPathname(pathname: string | null): string {
   if (value.startsWith("/dashboard")) return "dashboard.overview";
   if (value.startsWith("/u/")) return "public.profile";
   if (value.startsWith("/pr/")) return "public.pr_report";
-  return "other";
+  if (value.startsWith("/onboarding")) return "onboarding.other";
+
+  const segments = value.split("/").filter(Boolean);
+  if (segments.length === 0) {
+    return "other.root";
+  }
+  return `other.${segments[0]}`;
 }
 
 function normalizeRating(value: string | undefined): "good" | "needs-improvement" | "poor" | "unknown" {

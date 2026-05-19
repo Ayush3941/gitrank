@@ -141,6 +141,8 @@
   - added deterministic client-side sampling controlled by
     `NEXT_PUBLIC_WEB_VITALS_SAMPLE_RATE` (default `0.35`) so route-level vitals
     telemetry remains useful without overloading analytics traffic.
+  - improved route-group fallback tagging from generic `other` to
+    `other.<first-segment>` so unknown routes still produce actionable buckets.
 
 ## 2026-05-17
 
