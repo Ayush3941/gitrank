@@ -1,9 +1,15 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { inferReducedGamificationPreference } from "@/hooks/use-gamification-preference";
+import {
+  inferNetworkConstraintReason,
+  inferReducedGamificationPreference,
+} from "@/hooks/use-gamification-preference";
 
 type MutableNavigator = Navigator & {
+  deviceMemory?: number;
+  hardwareConcurrency?: number;
   connection?: {
     saveData?: boolean;
+    effectiveType?: "slow-2g" | "2g" | "3g" | "4g";
   };
 };
 
@@ -66,5 +72,37 @@ describe("inferReducedGamificationPreference", () => {
     window.matchMedia = vi.fn(() => ({ matches: false } as MediaQueryList));
 
     expect(inferReducedGamificationPreference()).toBe(false);
+  });
+});
+
+describe("inferNetworkConstraintReason", () => {
+  it("returns low-device-memory when RAM hint is small", () => {
+    Object.defineProperty(window, "navigator", {
+      configurable: true,
+      value: {
+        ...originalNavigator,
+        connection: { saveData: false, effectiveType: "4g" },
+        deviceMemory: 2,
+        hardwareConcurrency: 8,
+      } satisfies MutableNavigator,
+    });
+    window.matchMedia = vi.fn(() => ({ matches: false } as MediaQueryList));
+
+    expect(inferNetworkConstraintReason()).toBe("low-device-memory");
+  });
+
+  it("returns low-cpu-cores when hardwareConcurrency is constrained", () => {
+    Object.defineProperty(window, "navigator", {
+      configurable: true,
+      value: {
+        ...originalNavigator,
+        connection: { saveData: false, effectiveType: "4g" },
+        deviceMemory: 8,
+        hardwareConcurrency: 2,
+      } satisfies MutableNavigator,
+    });
+    window.matchMedia = vi.fn(() => ({ matches: false } as MediaQueryList));
+
+    expect(inferNetworkConstraintReason()).toBe("low-cpu-cores");
   });
 });

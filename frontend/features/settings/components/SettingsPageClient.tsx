@@ -492,7 +492,8 @@ export function SettingsPageClient() {
                 Lowers animated XP ticks, badge shimmer, glow intensity, and rank effects for this account. Scores,
                 badges, leaderboard placement, and privacy visibility do not change. It also disables heavy glass blur
                 layers and background overlays for better performance on constrained devices. If no explicit preference is saved,
-                GitRank follows your system reduced-motion or reduced-data preference.
+                GitRank follows your system reduced-motion/reduced-data preference plus adaptive low-memory and low-CPU
+                device detection.
               </p>
             </div>
             <Switch

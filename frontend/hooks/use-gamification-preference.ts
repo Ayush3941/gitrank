@@ -8,8 +8,12 @@ const CHANGE_EVENT = "gitrank:gamification-preference";
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 const REDUCED_DATA_QUERY = "(prefers-reduced-data: reduce)";
 const REDUCED_TRANSPARENCY_QUERY = "(prefers-reduced-transparency: reduce)";
+const UPDATE_SLOW_QUERY = "(update: slow)";
+const LOW_DEVICE_MEMORY_GB_THRESHOLD = 4;
+const LOW_CPU_CORE_THRESHOLD = 4;
 
 type NavigatorWithConnection = Navigator & {
+  deviceMemory?: number;
   connection?: {
     saveData?: boolean;
     effectiveType?: "slow-2g" | "2g" | "3g" | "4g";
@@ -17,6 +21,14 @@ type NavigatorWithConnection = Navigator & {
     removeEventListener?: (type: "change", listener: () => void) => void;
   };
 };
+
+export type NetworkConstraintReason =
+  | "save-data"
+  | "slow-connection"
+  | "reduced-data-preference"
+  | "low-device-memory"
+  | "low-cpu-cores"
+  | "slow-display-updates";
 
 export function useGamificationPreference() {
   const reducedGamification = useSyncExternalStore(
@@ -43,10 +55,19 @@ export function useReducedGamification() {
 }
 
 export function useNetworkConstraintPreference() {
-  return useSyncExternalStore(
+  const networkConstraintReason = useSyncExternalStore<NetworkConstraintReason | null>(
     subscribeNetworkConstraint,
-    getNetworkConstraintSnapshot,
-    () => true,
+    getNetworkConstraintReasonSnapshot,
+    () => "reduced-data-preference",
+  );
+  return Boolean(networkConstraintReason);
+}
+
+export function useNetworkConstraintReason() {
+  return useSyncExternalStore<NetworkConstraintReason | null>(
+    subscribeNetworkConstraint,
+    getNetworkConstraintReasonSnapshot,
+    () => "reduced-data-preference",
   );
 }
 
@@ -59,11 +80,11 @@ export function useApplyGamificationPreference() {
 }
 
 export function useApplyNetworkConstraintPreference() {
-  const constrainedNetwork = useNetworkConstraintPreference();
+  const networkConstraintReason = useNetworkConstraintReason();
 
   useEffect(() => {
-    applyNetworkConstraintPreference(constrainedNetwork);
-  }, [constrainedNetwork]);
+    applyNetworkConstraintPreference(Boolean(networkConstraintReason), networkConstraintReason);
+  }, [networkConstraintReason]);
 }
 
 export function useAccountGamificationPreference(profile?: ProfileViewData | null) {
@@ -87,6 +108,7 @@ function subscribe(callback: () => void) {
     window.matchMedia(REDUCED_MOTION_QUERY),
     window.matchMedia(REDUCED_DATA_QUERY),
     window.matchMedia(REDUCED_TRANSPARENCY_QUERY),
+    window.matchMedia(UPDATE_SLOW_QUERY),
   ];
   const connection = (window.navigator as NavigatorWithConnection).connection;
   const handleMediaChange = () => {
@@ -143,14 +165,23 @@ function applyGamificationPreference(reduced: boolean) {
     return;
   }
   document.documentElement.dataset.gamification = reduced ? "reduced" : "full";
-  applyNetworkConstraintPreference(inferNetworkConstraintPreference());
+  const networkConstraintReason = inferNetworkConstraintReason();
+  applyNetworkConstraintPreference(Boolean(networkConstraintReason), networkConstraintReason);
 }
 
-function applyNetworkConstraintPreference(constrained: boolean) {
+function applyNetworkConstraintPreference(
+  constrained: boolean,
+  reason: NetworkConstraintReason | null = null,
+) {
   if (typeof document === "undefined") {
     return;
   }
   document.documentElement.dataset.network = constrained ? "constrained" : "default";
+  if (reason) {
+    document.documentElement.dataset.networkReason = reason;
+    return;
+  }
+  delete document.documentElement.dataset.networkReason;
 }
 
 function subscribeNetworkConstraint(callback: () => void) {
@@ -159,6 +190,7 @@ function subscribeNetworkConstraint(callback: () => void) {
   }
 
   const reducedDataQuery = window.matchMedia(REDUCED_DATA_QUERY);
+  const slowUpdateQuery = window.matchMedia(UPDATE_SLOW_QUERY);
   const connection = (window.navigator as NavigatorWithConnection).connection;
   const handleChange = () => callback();
 
@@ -166,6 +198,11 @@ function subscribeNetworkConstraint(callback: () => void) {
     reducedDataQuery.addEventListener("change", handleChange);
   } else if (typeof reducedDataQuery.addListener === "function") {
     reducedDataQuery.addListener(handleChange);
+  }
+  if (typeof slowUpdateQuery.addEventListener === "function") {
+    slowUpdateQuery.addEventListener("change", handleChange);
+  } else if (typeof slowUpdateQuery.addListener === "function") {
+    slowUpdateQuery.addListener(handleChange);
   }
   if (typeof connection?.addEventListener === "function") {
     connection.addEventListener("change", handleChange);
@@ -177,17 +214,22 @@ function subscribeNetworkConstraint(callback: () => void) {
     } else if (typeof reducedDataQuery.removeListener === "function") {
       reducedDataQuery.removeListener(handleChange);
     }
+    if (typeof slowUpdateQuery.removeEventListener === "function") {
+      slowUpdateQuery.removeEventListener("change", handleChange);
+    } else if (typeof slowUpdateQuery.removeListener === "function") {
+      slowUpdateQuery.removeListener(handleChange);
+    }
     if (typeof connection?.removeEventListener === "function") {
       connection.removeEventListener("change", handleChange);
     }
   };
 }
 
-function getNetworkConstraintSnapshot() {
+function getNetworkConstraintReasonSnapshot() {
   if (typeof window === "undefined") {
-    return true;
+    return "reduced-data-preference" as NetworkConstraintReason;
   }
-  return inferNetworkConstraintPreference();
+  return inferNetworkConstraintReason();
 }
 
 export function inferReducedGamificationPreference(): boolean {
@@ -195,7 +237,7 @@ export function inferReducedGamificationPreference(): boolean {
     return true;
   }
 
-  if (inferNetworkConstraintPreference()) {
+  if (inferNetworkConstraintReason()) {
     return true;
   }
 
@@ -205,16 +247,36 @@ export function inferReducedGamificationPreference(): boolean {
   );
 }
 
-function inferNetworkConstraintPreference(): boolean {
+export function inferNetworkConstraintReason(): NetworkConstraintReason | null {
   if (typeof window === "undefined") {
-    return true;
+    return "reduced-data-preference";
   }
-  const connection = (window.navigator as NavigatorWithConnection).connection;
+
+  const navigatorWithConnection = window.navigator as NavigatorWithConnection;
+  const connection = navigatorWithConnection.connection;
   if (connection?.saveData === true) {
-    return true;
+    return "save-data";
   }
   if (connection?.effectiveType === "slow-2g" || connection?.effectiveType === "2g") {
-    return true;
+    return "slow-connection";
   }
-  return window.matchMedia(REDUCED_DATA_QUERY).matches;
+  if (window.matchMedia(REDUCED_DATA_QUERY).matches) {
+    return "reduced-data-preference";
+  }
+  if (window.matchMedia(UPDATE_SLOW_QUERY).matches) {
+    return "slow-display-updates";
+  }
+  if (
+    typeof navigatorWithConnection.deviceMemory === "number" &&
+    navigatorWithConnection.deviceMemory <= LOW_DEVICE_MEMORY_GB_THRESHOLD
+  ) {
+    return "low-device-memory";
+  }
+  if (
+    typeof window.navigator.hardwareConcurrency === "number" &&
+    window.navigator.hardwareConcurrency <= LOW_CPU_CORE_THRESHOLD
+  ) {
+    return "low-cpu-cores";
+  }
+  return null;
 }

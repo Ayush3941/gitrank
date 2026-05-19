@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Adaptive constrained-device mode pass:
+  - expanded constrained-mode detection beyond network-only hints to include low device-memory, low CPU core count, and slow display update-rate signals.
+  - surfaced the active constrained-mode reason in the shared `ConstrainedNetworkPill` (for example low-memory/low-CPU mode) so users understand why visual effects are reduced.
+  - tightened constrained-mode interaction transitions and disabled cyber-link glow hover text-shadow in constrained mode to reduce paint cost on weaker devices.
 - Onboarding connect-return path pass:
   - added a direct `Continue analyzing` action on connect screen for returning users who already linked GitHub in the current browser context.
   - added explicit copy explaining that analyzing can be opened directly when OAuth is already complete.

@@ -2,7 +2,7 @@
 
 import { WifiOff } from "lucide-react";
 import { useMemo } from "react";
-import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
+import { useNetworkConstraintReason } from "@/hooks/use-gamification-preference";
 
 type NavigatorWithConnection = Navigator & {
   connection?: {
@@ -11,28 +11,35 @@ type NavigatorWithConnection = Navigator & {
   };
 };
 
-const REDUCED_DATA_QUERY = "(prefers-reduced-data: reduce)";
-
 export function ConstrainedNetworkPill() {
-  const constrainedNetwork = useNetworkConstraintPreference();
+  const networkConstraintReason = useNetworkConstraintReason();
   const detail = useMemo(() => {
-    if (!constrainedNetwork || typeof window === "undefined") {
+    if (typeof window === "undefined" || !networkConstraintReason) {
       return "Adaptive network mode";
     }
-    const connection = (window.navigator as NavigatorWithConnection).connection;
-    if (connection?.saveData) {
+    if (networkConstraintReason === "save-data") {
       return "Save-Data enabled";
     }
-    if (connection?.effectiveType === "slow-2g" || connection?.effectiveType === "2g") {
-      return `Connection ${connection.effectiveType}`;
+    if (networkConstraintReason === "slow-connection") {
+      const connection = (window.navigator as NavigatorWithConnection).connection;
+      return connection?.effectiveType ? `Connection ${connection.effectiveType}` : "Slow connection";
     }
-    if (window.matchMedia(REDUCED_DATA_QUERY).matches) {
+    if (networkConstraintReason === "reduced-data-preference") {
       return "Reduced-data preference";
     }
+    if (networkConstraintReason === "low-device-memory") {
+      return "Low-memory device mode";
+    }
+    if (networkConstraintReason === "low-cpu-cores") {
+      return "Low-CPU device mode";
+    }
+    if (networkConstraintReason === "slow-display-updates") {
+      return "Slow display updates";
+    }
     return "Adaptive network mode";
-  }, [constrainedNetwork]);
+  }, [networkConstraintReason]);
 
-  if (!constrainedNetwork) {
+  if (!networkConstraintReason) {
     return null;
   }
 
