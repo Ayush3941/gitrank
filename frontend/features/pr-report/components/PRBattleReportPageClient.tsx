@@ -306,7 +306,7 @@ export function PRBattleReportPageClient({
             </div>
             <div className="grid gap-3 md:grid-cols-2">
               {data.badgeUnlocks.map((badge) => (
-                <div key={badge.key} className="neon-surface rounded-[1.75rem] p-4">
+                <div key={badge.key} className="render-opt-card neon-surface rounded-[1.75rem] p-4">
                   <p className="text-lg font-semibold text-white">{badge.name}</p>
                   {badge.description ? <p className="mt-2 text-sm text-muted">{badge.description}</p> : null}
                   <p className="mt-3 text-xs text-emerald-100">

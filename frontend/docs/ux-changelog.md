@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- Card virtualization-style containment pass:
+  - applied the existing `render-opt-card` containment utility to additional repeated card lists in dashboard skill lanes and PR report badge unlock cards.
+  - improves offscreen render skipping consistency across high-density card sections without changing data contracts or visual hierarchy.
 - Constrained-device chart fallback pass:
   - `SkillRadarChart` and `TimelineChart` now skip heavy chart rendering in constrained-network or reduced-gamification mode and render lightweight static bar summaries instead.
   - keeps metric visibility and section semantics intact while reducing dynamic chart work on low-end or reduced-data devices.

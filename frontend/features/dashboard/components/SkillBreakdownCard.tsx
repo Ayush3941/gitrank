@@ -35,7 +35,7 @@ export function SkillBreakdownCard({
           const insight = skillInsights?.[normalizeKey(skill.category)];
           const confidence = insight?.confidence ?? "emerging";
           return (
-            <div key={skill.category} className="neon-surface space-y-2 rounded-[1.5rem] p-4">
+            <div key={skill.category} className="render-opt-card neon-surface space-y-2 rounded-[1.5rem] p-4">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-semibold text-white">{skill.category}</p>
                 <span className="neon-chip neon-chip-muted rounded-full px-2.5 py-1 text-xs font-semibold">
