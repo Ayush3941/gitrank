@@ -157,7 +157,7 @@ export function SyncPipeline() {
       <GlowCard strong className="space-y-8">
         <OnboardingStepper currentStep="analyze" />
         <div className="space-y-3">
-          <p className="text-xs font-semibold tracking-[0.3em] text-primary uppercase">Analyzing</p>
+          <p className="text-xs font-semibold text-primary">Analyzing</p>
           <h1 className="text-4xl font-semibold text-white">Reading your open-source history…</h1>
           <p className="max-w-2xl text-base text-muted">
             GitRank is processing your real GitHub data and waiting for a refreshed profile snapshot.
@@ -196,7 +196,7 @@ export function SyncPipeline() {
           ) : null}
         </div>
         <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs tracking-[0.2em] text-primary uppercase">
+          <div className="flex items-center justify-between text-xs font-medium text-primary">
             <span>Pipeline progress</span>
             <span className="numeric-readout">{pipelineProgress}%</span>
           </div>

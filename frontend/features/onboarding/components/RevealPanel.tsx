@@ -43,7 +43,7 @@ export function RevealPanel({
         <div className="pointer-events-none absolute -right-20 top-16 h-56 w-56 rounded-full bg-fuchsia-400/15 blur-3xl" />
         <OnboardingStepper currentStep="reveal" />
         <div className="space-y-4">
-          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-3 py-1.5 text-xs font-semibold tracking-[0.24em] text-cyan-100 uppercase">
+          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-3 py-1.5 text-xs font-semibold text-cyan-100">
             <Sparkles className="h-3.5 w-3.5" />
             Analysis complete
           </div>
@@ -64,7 +64,7 @@ export function RevealPanel({
             <RevealMetric label="Evidence rows" value={evidenceRows.toLocaleString("en-US")} />
           </div>
           <div className="mx-auto max-w-3xl rounded-2xl border border-primary/24 bg-primary/10 px-4 py-3 text-left text-sm text-slate-100/88">
-            <p className="text-xs tracking-[0.24em] text-primary uppercase">Snapshot state</p>
+            <p className="text-xs font-medium text-primary">Snapshot state</p>
             <p className="mt-2 leading-6">
               Sync status is <span className="font-semibold text-white">{formatSyncState(user.syncStatus.state)}</span>.
               {evidenceRows > 0
@@ -74,7 +74,7 @@ export function RevealPanel({
           </div>
           {identitySummary ? (
             <div className="mx-auto max-w-3xl rounded-2xl border border-fuchsia-300/25 bg-fuchsia-400/9 px-4 py-3 text-left text-sm text-slate-100/86">
-              <p className="text-xs tracking-[0.24em] text-fuchsia-200 uppercase">
+              <p className="text-xs font-medium text-fuchsia-100">
                 Open source identity ({aiMode === "gemini" ? "Gemini" : "Deterministic"})
               </p>
               <p className="mt-2 leading-6">{identitySummary}</p>
@@ -117,11 +117,11 @@ export function RevealPanel({
           )}
         </div>
         <div className="neon-surface rounded-[1.75rem] px-5 py-4 text-left">
-          <p className="text-xs tracking-[0.24em] text-primary uppercase">What to do next</p>
+          <p className="text-xs font-medium text-primary">What to do next</p>
           <div className="mt-3 grid gap-3 sm:grid-cols-3">
             {nextActions.map((item, index) => (
               <div key={item} className="neon-metric rounded-[1.25rem] px-3 py-3">
-                <p className="text-[11px] tracking-[0.22em] text-cyan-200 uppercase">Step {index + 1}</p>
+                <p className="text-xs font-medium text-cyan-100">Step {index + 1}</p>
                 <p className="mt-2 text-sm leading-6 text-slate-200/88">{item}</p>
               </div>
             ))}
@@ -163,7 +163,7 @@ function RevealMetric({
 }) {
   return (
     <div className="neon-metric rounded-[1.35rem] px-4 py-3 text-left">
-      <p className="text-[11px] tracking-[0.2em] text-cyan-200 uppercase">{label}</p>
+      <p className="text-xs font-medium text-cyan-100">{label}</p>
       <p className="mt-2 text-xl font-semibold text-white">{value}</p>
     </div>
   );
@@ -211,7 +211,7 @@ export function RevealPanelUnavailable() {
     <main className="mx-auto max-w-3xl">
       <GlowCard strong className="space-y-6 panel-grid text-center">
         <OnboardingStepper currentStep="connect" />
-        <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-amber-400/25 bg-amber-400/12 px-3 py-1.5 text-xs font-semibold tracking-[0.24em] text-amber-100 uppercase">
+        <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-amber-400/25 bg-amber-400/12 px-3 py-1.5 text-xs font-semibold text-amber-100">
           <Sparkles className="h-3.5 w-3.5" />
           Profile unavailable
         </div>

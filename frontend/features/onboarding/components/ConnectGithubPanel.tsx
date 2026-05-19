@@ -28,7 +28,7 @@ export function ConnectGithubPanel() {
     <main className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[1.05fr,0.95fr]">
       <GlowCard strong className="space-y-6">
         <OnboardingStepper currentStep="connect" />
-        <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-semibold tracking-[0.24em] text-primary uppercase">
+        <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
           <FolderGit2 className="h-3.5 w-3.5" />
           GitHub OAuth
         </div>
@@ -57,7 +57,7 @@ export function ConnectGithubPanel() {
             },
           ].map((item) => (
             <div key={item.step} className="neon-surface space-y-2 rounded-3xl px-4 py-3 text-sm text-slate-200">
-              <p className="text-xs tracking-[0.2em] text-primary uppercase">{item.step}</p>
+              <p className="text-xs font-medium text-primary">{item.step}</p>
               <p className="font-semibold text-white">{item.title}</p>
               <p className="text-xs leading-6 text-slate-200/82">{item.text}</p>
             </div>
@@ -124,7 +124,7 @@ export function ConnectGithubPanel() {
           ))}
         </div>
         <div className="neon-surface rounded-[1.75rem] border-primary/22 px-4 py-4">
-          <p className="text-xs tracking-[0.22em] text-primary uppercase">Where this goes next</p>
+          <p className="text-xs font-medium text-primary">Where this goes next</p>
           <p className="mt-2 text-sm text-slate-100">
             After OAuth, GitRank redirects to <span className="font-semibold text-white">Analyzing</span> and starts live sync. You will not see fabricated leaderboard identities during this flow.
           </p>
