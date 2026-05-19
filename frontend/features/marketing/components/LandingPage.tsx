@@ -22,7 +22,7 @@ export function LandingPage() {
         <div className="grid gap-10 lg:grid-cols-[1.2fr,0.8fr] lg:items-center">
           <div className="space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-semibold tracking-[0.24em] text-primary uppercase">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
                 <Sparkles className="h-3.5 w-3.5" />
                 Open-source battle pass
               </div>
@@ -62,7 +62,7 @@ export function LandingPage() {
           <GlowCard strong className="space-y-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs tracking-[0.24em] text-primary uppercase">Live rank arena</p>
+                <p className="text-xs font-medium text-primary">Live rank arena</p>
                 <h2 className="cyber-title mt-2 text-2xl font-semibold text-white">Live contributor card</h2>
               </div>
             </div>
@@ -126,7 +126,7 @@ export function LandingPage() {
           },
         ].map((journey) => (
           <GlowCard key={journey.lane} className="space-y-3">
-            <p className="text-xs tracking-[0.24em] text-primary uppercase">{journey.lane}</p>
+            <p className="text-xs font-medium text-primary">{journey.lane}</p>
             <h3 className="text-xl font-semibold text-white">{journey.mission}</h3>
             <p className="text-sm text-slate-200/82">{journey.success}</p>
           </GlowCard>
@@ -162,7 +162,7 @@ export function LandingPage() {
           <div className="grid gap-3 sm:grid-cols-2">
             {loop.map((step, index) => (
               <div key={step} className="neon-surface rounded-3xl p-4">
-                <p className="text-xs tracking-[0.24em] text-primary uppercase">Step {index + 1}</p>
+                <p className="text-xs font-medium text-primary">Step {index + 1}</p>
                 <p className="mt-2 text-lg font-medium text-white">{step}</p>
               </div>
             ))}
@@ -205,7 +205,7 @@ export function LandingPage() {
               "Cross-repository impact",
             ].map((lane) => (
               <div key={lane} className="neon-surface rounded-[1.75rem] p-4">
-                <p className="text-xs tracking-[0.24em] text-primary uppercase">Badge lane</p>
+                <p className="text-xs font-medium text-primary">Badge lane</p>
                 <h3 className="mt-3 text-lg font-semibold text-white">{lane}</h3>
                 <p className="mt-2 text-sm text-muted">
                   This lane remains locked until real evidence is ingested from your GitHub history.
@@ -218,7 +218,7 @@ export function LandingPage() {
 
       <section className="grid gap-6 lg:grid-cols-[0.9fr,1.1fr]">
         <GlowCard className="space-y-4 border border-amber-400/18 bg-amber-400/6">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/25 bg-amber-400/12 px-3 py-1.5 text-xs font-semibold tracking-[0.24em] text-amber-100 uppercase">
+          <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/25 bg-amber-400/12 px-3 py-1.5 text-xs font-semibold text-amber-100">
             <Swords className="h-3.5 w-3.5" />
             Anti-spam promise
           </div>
@@ -230,7 +230,7 @@ export function LandingPage() {
 
         <GlowCard strong className="flex flex-col justify-between gap-6 sm:flex-row sm:items-center">
           <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/12 px-3 py-1.5 text-xs font-semibold tracking-[0.24em] text-primary uppercase">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/12 px-3 py-1.5 text-xs font-semibold text-primary">
               <Trophy className="h-3.5 w-3.5" />
               Ready to rank your work?
             </div>
@@ -249,7 +249,7 @@ export function LandingPage() {
 function Metric({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="neon-metric rounded-3xl px-4 py-3">
-      <p className="text-xs tracking-[0.24em] text-muted uppercase">{label}</p>
+      <p className="text-xs font-medium text-muted">{label}</p>
       <p className="mt-2 text-2xl font-semibold text-white">{value}</p>
     </div>
   );
