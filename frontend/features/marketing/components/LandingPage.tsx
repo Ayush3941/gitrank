@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, ChartNoAxesCombined, GitPullRequestArrow, ShieldCheck, Sparkles, Swords, Trophy } from "lucide-react";
+import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { TextScaleQuickSwitcher } from "@/components/shared/TextScaleQuickSwitcher";
@@ -81,6 +82,7 @@ export function LandingPage() {
         </div>
       </section>
 
+      <DeferUntilVisible fallback={<LandingSectionPlaceholder title="Loading reputation context lanes" />}>
       <section className="render-opt-section grid gap-6 lg:grid-cols-3">
         {[
           {
@@ -106,7 +108,9 @@ export function LandingPage() {
           </GlowCard>
         ))}
       </section>
+      </DeferUntilVisible>
 
+      <DeferUntilVisible fallback={<LandingSectionPlaceholder title="Loading journey flows" />}>
       <section className="render-opt-section grid gap-6 lg:grid-cols-3">
         {[
           {
@@ -132,7 +136,9 @@ export function LandingPage() {
           </GlowCard>
         ))}
       </section>
+      </DeferUntilVisible>
 
+      <DeferUntilVisible fallback={<LandingSectionPlaceholder title="Loading solution and loop cards" />}>
       <section className="render-opt-section grid gap-6 lg:grid-cols-[0.95fr,1.05fr]">
         <GlowCard className="space-y-5">
           <SectionHeader
@@ -169,7 +175,9 @@ export function LandingPage() {
           </div>
         </GlowCard>
       </section>
+      </DeferUntilVisible>
 
+      <DeferUntilVisible fallback={<LandingSectionPlaceholder title="Loading battle report preview" />}>
       <section className="render-opt-section grid gap-6 lg:grid-cols-[1.08fr,0.92fr]">
         <GlowCard className="space-y-5">
           <SectionHeader
@@ -215,7 +223,9 @@ export function LandingPage() {
           </div>
         </GlowCard>
       </section>
+      </DeferUntilVisible>
 
+      <DeferUntilVisible fallback={<LandingSectionPlaceholder title="Loading anti-spam and CTA lanes" />}>
       <section className="render-opt-section grid gap-6 lg:grid-cols-[0.9fr,1.1fr]">
         <GlowCard className="space-y-4 border border-amber-400/18 bg-amber-400/6">
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/25 bg-amber-400/12 px-3 py-1.5 text-xs font-semibold text-amber-100">
@@ -242,7 +252,26 @@ export function LandingPage() {
           </Button>
         </GlowCard>
       </section>
+      </DeferUntilVisible>
     </main>
+  );
+}
+
+function LandingSectionPlaceholder({ title }: { title: string }) {
+  return (
+    <GlowCard className="space-y-4">
+      <p className="text-xs font-medium text-primary">{title}</p>
+      <div className="neon-skeleton h-8 w-2/3 rounded-[0.1rem]" />
+      <div className="space-y-2">
+        <div className="neon-skeleton h-4 w-full rounded-[0.1rem]" />
+        <div className="neon-skeleton h-4 w-11/12 rounded-[0.1rem]" />
+      </div>
+      <div className="grid gap-2 sm:grid-cols-3">
+        <div className="neon-skeleton h-16 rounded-[0.1rem]" />
+        <div className="neon-skeleton h-16 rounded-[0.1rem]" />
+        <div className="neon-skeleton h-16 rounded-[0.1rem]" />
+      </div>
+    </GlowCard>
   );
 }
 
