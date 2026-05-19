@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, Orbitron, Space_Grotesk } from "next/font/google";
 import { GamificationPreferenceProvider } from "@/components/providers/gamification-preference-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
@@ -65,6 +65,14 @@ export const metadata: Metadata = {
       "Evidence-backed contribution scoring, progression loops, and public contributor proof.",
     images: ["/twitter-image"],
   },
+};
+
+export const viewport: Viewport = {
+  colorScheme: "dark",
+  themeColor: [
+    { media: "(prefers-contrast: more)", color: "#00020A" },
+    { color: "#040714" },
+  ],
 };
 
 export default function RootLayout({
