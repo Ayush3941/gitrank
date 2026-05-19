@@ -60,14 +60,14 @@ export function ErrorState({
   }
 
   return (
-    <GlowCard className="cyber-sheen space-y-4 border border-rose-400/24">
+    <GlowCard className="cyber-sheen space-y-4 border border-rose-400/24" role="alert" aria-live="assertive">
       <div className="flex items-center gap-3 text-rose-100">
         <AlertTriangle className="h-5 w-5" />
         <h2 className="text-lg font-semibold tracking-wide">{title}</h2>
       </div>
       <p className="text-sm text-muted">{description}</p>
       <div className="flex flex-wrap gap-3">
-        <Button onClick={handleRetry}>
+        <Button type="button" onClick={handleRetry}>
           <RotateCcw className="h-4 w-4" />
           {retryLabel}
         </Button>
@@ -76,7 +76,7 @@ export function ErrorState({
             <Link href={fallbackHref}>{fallbackLabel}</Link>
           </Button>
         ) : onFallback ? (
-          <Button variant="secondary" onClick={handleFallback}>
+          <Button type="button" variant="secondary" onClick={handleFallback}>
             {fallbackLabel}
           </Button>
         ) : null}

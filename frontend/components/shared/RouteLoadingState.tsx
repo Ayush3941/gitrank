@@ -17,6 +17,7 @@ export function RouteLoadingState({
 
   return (
     <div className="space-y-6" role="status" aria-live="polite" aria-busy="true">
+      <p className="sr-only">{`Loading ${title}. ${description}`}</p>
       <GlowCard className="space-y-4">
         <p className="text-xs font-medium text-primary">{eyebrow}</p>
         <h1 className="text-3xl font-semibold text-white">{title}</h1>

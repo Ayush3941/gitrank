@@ -143,6 +143,11 @@
     telemetry remains useful without overloading analytics traffic.
   - improved route-group fallback tagging from generic `other` to
     `other.<first-segment>` so unknown routes still produce actionable buckets.
+- Status-surface accessibility polish:
+  - `ErrorState` now exposes alert semantics (`role=alert`, assertive live
+    region) and explicit button types for retry/fallback actions
+  - `RouteLoadingState` now includes an SR-only summary sentence so route-level
+    loading contexts are announced with meaningful page intent.
 
 ## 2026-05-17
 
