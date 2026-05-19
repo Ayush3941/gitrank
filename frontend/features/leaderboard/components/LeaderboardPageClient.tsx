@@ -172,8 +172,10 @@ export function LeaderboardPageClient() {
     });
   }
 
+  const isBusy = isSwitchingTab || (isFetching && Boolean(snapshot));
+
   return (
-    <div className="space-y-6" aria-busy={(isSwitchingTab || (isFetching && snapshot)) || undefined}>
+    <div className="space-y-6" aria-busy={isBusy || undefined}>
       <PageHeader
         eyebrow="Leaderboard"
         title="Leaderboard arena"
@@ -233,7 +235,7 @@ export function LeaderboardPageClient() {
         </Tabs>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p role="status" aria-live="polite" className="text-sm font-medium text-cyan-100">
-            {isSwitchingTab || (isFetching && snapshot)
+            {isBusy
               ? `Refreshing ${tab} snapshot...`
               : `Viewing ${tab} snapshot`}
           </p>

@@ -1,6 +1,7 @@
 type UserFacingErrorContext =
   | "settings-account-actions"
   | "settings-privacy"
+  | "settings-sync-runs"
   | "onboarding-sync";
 
 const CONTEXT_FALLBACK_MESSAGES: Record<UserFacingErrorContext, string> = {
@@ -8,6 +9,8 @@ const CONTEXT_FALLBACK_MESSAGES: Record<UserFacingErrorContext, string> = {
     "Account action failed for now. Retry in a moment or reconnect GitHub from Settings.",
   "settings-privacy":
     "Privacy update failed for now. Retry in a moment. Existing visibility settings remain unchanged.",
+  "settings-sync-runs":
+    "Sync run history is unavailable right now. Retry shortly while the latest profile snapshot remains visible.",
   "onboarding-sync":
     "Sync failed for now. Keep this page open and retry shortly while background refresh continues.",
 };

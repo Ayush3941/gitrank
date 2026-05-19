@@ -54,7 +54,7 @@ export default async function ProfileOpenGraphImage({
         <div style={{ display: "flex", flexDirection: "column", gap: "15px", position: "relative" }}>
           <div
             style={{
-              display: "inline-flex",
+              display: "flex",
               alignItems: "center",
               alignSelf: "flex-start",
               padding: "10px 16px",

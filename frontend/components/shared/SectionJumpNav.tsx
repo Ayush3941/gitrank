@@ -1,11 +1,11 @@
 import { CopyLinkButton } from "@/components/shared/CopyLinkButton";
 
-type SectionJumpNavItem = {
-  id: string;
+type SectionJumpNavItem<SectionID extends string = string> = {
+  id: SectionID;
   label: string;
 };
 
-export function SectionJumpNav({
+export function SectionJumpNav<SectionID extends string>({
   navLabelID,
   activeSectionLabel,
   items,
@@ -18,9 +18,9 @@ export function SectionJumpNav({
 }: {
   navLabelID: string;
   activeSectionLabel: string;
-  items: SectionJumpNavItem[];
-  activeSection: string;
-  onSectionSelect: (sectionID: string) => void;
+  items: readonly SectionJumpNavItem<SectionID>[];
+  activeSection: SectionID;
+  onSectionSelect: (sectionID: SectionID) => void;
   copyHref: string;
   copyAnalyticsTarget: string;
   className?: string;
@@ -46,6 +46,9 @@ export function SectionJumpNav({
         {activeSectionLabel}
       </p>
       <div className="min-w-0 flex-1 sm:hidden">
+        <p className="mb-1 px-1 text-[11px] font-medium tracking-[0.06em] text-cyan-100/88 uppercase">
+          {activeSectionLabel}
+        </p>
         <label htmlFor={`${navLabelID}-select`} className="sr-only">
           Jump to section
         </label>
@@ -53,7 +56,7 @@ export function SectionJumpNav({
           id={`${navLabelID}-select`}
           value={activeSection}
           onChange={(event) => {
-            const sectionID = event.target.value;
+            const sectionID = event.target.value as SectionID;
             onSectionSelect(sectionID);
             if (typeof window !== "undefined") {
               window.location.hash = sectionID;

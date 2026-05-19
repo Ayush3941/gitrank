@@ -54,7 +54,7 @@ export default async function PRReportOpenGraphImage({
         <div style={{ display: "flex", flexDirection: "column", gap: "15px", position: "relative" }}>
           <div
             style={{
-              display: "inline-flex",
+              display: "flex",
               alignSelf: "flex-start",
               padding: "10px 16px",
               border: "1px solid rgba(34,226,255,0.42)",

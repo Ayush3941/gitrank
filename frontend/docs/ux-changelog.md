@@ -2,6 +2,16 @@
 
 ## 2026-05-19
 
+- Frontend production build hardening pass:
+  - fixed typed preference-store inference for theme/text hooks to keep strict unions (`neon|midnight|aurora|high-contrast`, `default|large`) across render and action surfaces
+  - fixed shared section-jump typing to support strongly typed route section IDs via generic-safe `SectionJumpNav`
+  - fixed leaderboard `aria-busy` computation to always emit booleanish values
+  - fixed onboarding polling state typing and settings sync-run error-sanitizer context coverage
+  - fixed skill radar fallback typing so sparse snapshots compile under strict type checks.
+- Social image renderer compatibility pass:
+  - replaced unsupported `display: "inline-flex"` with `display: "flex"` across root and public OG/Twitter image routes so `next build` can prerender image routes reliably.
+- Mobile jump-nav clarity pass:
+  - surfaced current active section label above compact mobile jump-select controls for faster section orientation on small screens.
 - Cyberpunk palette + visibility tuning pass:
   - shifted base theme tokens toward electric-blue / deep-pink / lime / amber accents while preserving readability-first text contrast
   - updated key accent utilities (`neon-title`, divider, selection, status chips) to use the new palette language instead of flat cyan-magenta defaults

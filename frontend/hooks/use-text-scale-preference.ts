@@ -9,7 +9,11 @@ const SUPPORTED_TEXT_SCALES = ["default", "large"] as const;
 export type TextScalePreference = (typeof SUPPORTED_TEXT_SCALES)[number];
 
 export function useTextScalePreference() {
-  const textScale = useSyncExternalStore(subscribe, getTextScaleSnapshot, () => "default");
+  const textScale = useSyncExternalStore<TextScalePreference>(
+    subscribe,
+    getTextScaleSnapshot,
+    () => "default",
+  );
 
   const setTextScale = useCallback((value: TextScalePreference) => {
     if (typeof window === "undefined") {

@@ -39,7 +39,7 @@ export function SyncPipeline() {
   const userSync = useRunUserSync();
   const [syncStartedAt, setSyncStartedAt] = useState<string | null>(null);
   const [syncNotice, setSyncNotice] = useState("");
-  const [pollIntervalMs, setPollIntervalMs] = useState(POLL_INTERVAL_STEPS_MS[0]);
+  const [pollIntervalMs, setPollIntervalMs] = useState<number>(POLL_INTERVAL_STEPS_MS[0]);
   const autoRequestedRef = useRef(false);
   const syncStartedEventSent = useRef(false);
   const previousSyncStateRef = useRef<string>("stale");
