@@ -404,16 +404,21 @@ export function SettingsPageClient() {
           Automatic GitHub sync runs in the background when you open authenticated dashboard routes. Export excludes token secrets and secret hashes.
         </p>
         <SyncStateGuide status={data.user.syncStatus} />
-        {actionNotice ? (
-          <p id={accountActionNoticeId} role="status" aria-live="polite" className="text-sm text-sky-100">
-            {actionNotice}
-          </p>
-        ) : null}
-        {actionError ? (
-          <p id={accountActionErrorId} role="alert" className="text-sm text-rose-200">
-            {actionError}
-          </p>
-        ) : null}
+        <div className="min-h-6">
+          {actionError ? (
+            <p id={accountActionErrorId} role="alert" className="text-sm text-rose-200">
+              {actionError}
+            </p>
+          ) : actionNotice ? (
+            <p id={accountActionNoticeId} role="status" aria-live="polite" className="text-sm text-sky-100">
+              {actionNotice}
+            </p>
+          ) : (
+            <p aria-hidden="true" className="text-sm opacity-0 select-none">
+              Account action status
+            </p>
+          )}
+        </div>
         </GlowCard>
       </section>
 

@@ -112,14 +112,22 @@ export function DashboardTopBar({
             />
           </div>
         </div>
-        <p
-          role="status"
-          aria-live="polite"
-          aria-atomic="true"
-          className={autoSyncNote ? `mt-3 text-sm ${autoSyncToneClass}` : "sr-only"}
-        >
-          {autoSyncNote?.message ?? ""}
-        </p>
+        <div className="mt-3 min-h-6">
+          {autoSyncNote ? (
+            <p
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              className={`text-sm ${autoSyncToneClass}`}
+            >
+              {autoSyncNote.message}
+            </p>
+          ) : (
+            <p aria-hidden="true" className="text-sm opacity-0 select-none">
+              Background sync status
+            </p>
+          )}
+        </div>
       </div>
       <DashboardShortcutHelpDialog open={shortcutHelpOpen} onOpenChange={setShortcutHelpOpen} />
     </>
