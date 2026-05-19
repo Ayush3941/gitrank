@@ -90,14 +90,15 @@ export function LeaderboardArena({
                 : "You are leading this lane"}
             </div>
           </div>
-          <div className="grid gap-2">
+          <ol className="grid gap-2">
             {localBracketRows.map((row) => {
               const gapToCurrent = row.seasonXp - currentUser.seasonXp;
               const movementLabel = `${row.movement >= 0 ? "+" : ""}${row.movement}`;
               return (
-                <div
+                <li
                   key={`local-${row.rank}-${row.username}`}
-                  className={`neon-surface flex flex-wrap items-center justify-between gap-3 px-4 py-3 ${
+                  value={row.rank}
+                  className={`list-none neon-surface flex flex-wrap items-center justify-between gap-3 px-4 py-3 ${
                     row.isCurrentUser ? "border-primary/42 bg-primary/10" : ""
                   }`}
                 >
@@ -125,88 +126,91 @@ export function LeaderboardArena({
                       </span>
                     ) : null}
                   </div>
-                </div>
+                </li>
               );
             })}
-          </div>
+          </ol>
         </GlowCard>
       ) : null}
-      {visibleRows.map((row) => {
-        const positive = row.movement >= 0;
-        const podiumTone =
-          row.rank === 1
-            ? "cyber-podium-gold"
-            : row.rank === 2
-              ? "cyber-podium-silver"
-                : row.rank === 3
-                ? "cyber-podium-bronze"
-                : "";
-        const rowTone = [
-          "cyber-sheen",
-          row.isCurrentUser ? "ring-glow border border-primary/22 bg-primary/8" : "",
-          podiumTone,
-        ]
-          .filter(Boolean)
-          .join(" ");
-        return (
-          <GlowCard
-            key={`${row.rank}-${row.username}`}
-            className={["render-opt-card", rowTone].filter(Boolean).join(" ")}
-          >
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex items-center gap-4">
-                <div className="neon-surface numeric-readout flex h-14 w-14 items-center justify-center rounded-3xl text-xl font-semibold text-white">
-                  #{row.rank}
+      <ol className="grid gap-4">
+        {visibleRows.map((row) => {
+          const positive = row.movement >= 0;
+          const podiumTone =
+            row.rank === 1
+              ? "cyber-podium-gold"
+              : row.rank === 2
+                ? "cyber-podium-silver"
+                  : row.rank === 3
+                  ? "cyber-podium-bronze"
+                  : "";
+          const rowTone = [
+            "cyber-sheen",
+            row.isCurrentUser ? "ring-glow border border-primary/22 bg-primary/8" : "",
+            podiumTone,
+          ]
+            .filter(Boolean)
+            .join(" ");
+          return (
+            <li key={`${row.rank}-${row.username}`} value={row.rank} className="list-none">
+              <GlowCard
+                className={["render-opt-card", rowTone].filter(Boolean).join(" ")}
+              >
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="neon-surface numeric-readout flex h-14 w-14 items-center justify-center rounded-3xl text-xl font-semibold text-white">
+                      #{row.rank}
+                    </div>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <p className="break-anywhere text-xl font-semibold text-white">{row.displayName}</p>
+                        <RankBadge rank={row.rankTier} />
+                        {row.isCurrentUser ? (
+                          <span className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
+                            You
+                          </span>
+                        ) : null}
+                      </div>
+                      <p className="mt-1 break-anywhere text-sm text-muted">@{row.username} • {row.title}</p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Pill>{row.division}</Pill>
+                        {row.promotionZone ? <Pill tone="success">Promotion zone</Pill> : null}
+                        {row.demotionRisk ? <Pill tone="warning">Safety watch</Pill> : null}
+                        {row.rankEvidenceState ? <Pill tone="warning">Evidence {row.rankEvidenceState}</Pill> : null}
+                      </div>
+                      <ExpandableText
+                        text={row.evidenceSummary}
+                        lines={3}
+                        minLengthForToggle={190}
+                        className="mt-3 max-w-2xl"
+                        textClassName="break-anywhere text-sm leading-6 text-slate-200/76"
+                      />
+                      <p className="mt-2 max-w-2xl text-xs text-muted">
+                        Snapshot {row.profileSnapshotVersion || "unknown"} / Score {row.scoreFormulaVersion}
+                        {row.sourceWatermark ? ` / Watermark ${new Date(row.sourceWatermark).toLocaleDateString()}` : ""}
+                      </p>
+                      <div className="mt-2">
+                        <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
+                          Next action: {recommendedActionForRow(row)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    <Metric label="Season XP" value={row.seasonXp} />
+                    <Metric label="To next rank" value={row.xpToNextRank ? `${row.xpToNextRank} XP` : "Lead"} />
+                    <Metric label="Total XP" value={row.totalXp} />
+                    <Metric
+                      label="Movement"
+                      value={`${positive ? "+" : ""}${row.movement}`}
+                      icon={positive ? <ArrowUpRight className="h-4 w-4 text-emerald-300" /> : <ArrowDownRight className="h-4 w-4 text-rose-100" />}
+                    />
+                  </div>
                 </div>
-                <div>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <p className="break-anywhere text-xl font-semibold text-white">{row.displayName}</p>
-                    <RankBadge rank={row.rankTier} />
-                    {row.isCurrentUser ? (
-                      <span className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
-                        You
-                      </span>
-                    ) : null}
-                  </div>
-                  <p className="mt-1 break-anywhere text-sm text-muted">@{row.username} • {row.title}</p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <Pill>{row.division}</Pill>
-                    {row.promotionZone ? <Pill tone="success">Promotion zone</Pill> : null}
-                    {row.demotionRisk ? <Pill tone="warning">Safety watch</Pill> : null}
-                    {row.rankEvidenceState ? <Pill tone="warning">Evidence {row.rankEvidenceState}</Pill> : null}
-                  </div>
-                  <ExpandableText
-                    text={row.evidenceSummary}
-                    lines={3}
-                    minLengthForToggle={190}
-                    className="mt-3 max-w-2xl"
-                    textClassName="break-anywhere text-sm leading-6 text-slate-200/76"
-                  />
-                  <p className="mt-2 max-w-2xl text-xs text-muted">
-                    Snapshot {row.profileSnapshotVersion || "unknown"} / Score {row.scoreFormulaVersion}
-                    {row.sourceWatermark ? ` / Watermark ${new Date(row.sourceWatermark).toLocaleDateString()}` : ""}
-                  </p>
-                  <div className="mt-2">
-                    <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
-                      Next action: {recommendedActionForRow(row)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <Metric label="Season XP" value={row.seasonXp} />
-                <Metric label="To next rank" value={row.xpToNextRank ? `${row.xpToNextRank} XP` : "Lead"} />
-                <Metric label="Total XP" value={row.totalXp} />
-                <Metric
-                  label="Movement"
-                  value={`${positive ? "+" : ""}${row.movement}`}
-                  icon={positive ? <ArrowUpRight className="h-4 w-4 text-emerald-300" /> : <ArrowDownRight className="h-4 w-4 text-rose-100" />}
-                />
-              </div>
-            </div>
-          </GlowCard>
-        );
-      })}
+              </GlowCard>
+            </li>
+          );
+        })}
+      </ol>
     </div>
   );
 }

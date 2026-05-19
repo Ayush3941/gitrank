@@ -17,89 +17,90 @@ export function ContributionList({
   isBusy?: boolean;
 }) {
   return (
-    <div className="grid gap-4" aria-busy={isBusy || undefined}>
+    <ol className="grid gap-4" aria-busy={isBusy || undefined}>
       {items.map((item) => {
         const tier = contributionTier(item);
         return (
-        <GlowCard
-          key={item.id}
-          className="render-opt-card relative space-y-4"
-        >
-          <div className="h-px w-28 bg-gradient-to-r from-primary/62 via-primary-2/42 to-transparent" />
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="min-w-0">
-              <p className="break-anywhere text-sm text-muted">{item.owner}/{item.repo} #{item.number}</p>
-              <h2 className="mt-2 break-anywhere text-xl font-semibold text-white">{item.title}</h2>
-              <div className="mt-3 flex flex-wrap gap-2 text-xs cyber-copy">
-                <span className={`neon-chip rounded-full px-3 py-1.5 font-semibold ${tier.className}`}>{tier.label}</span>
-                <span className="neon-chip neon-chip-info rounded-full px-3 py-1.5 font-semibold">{item.category}</span>
-                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 font-semibold">{formatContributionStatus(item.status)}</span>
-                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 font-semibold">{item.changedFilesCount} files changed</span>
-                <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-3 py-1.5 font-semibold">
-                  <CalendarDays className="h-3 w-3" />
-                  {formatContributionDate(item.mergedAt)}
-                </span>
-                {item.maintainerReviewed ? (
-                  <span className="neon-chip neon-chip-success rounded-full px-3 py-1.5 font-semibold">Maintainer reviewed</span>
-                ) : null}
-                {item.ciPassed ? (
-                  <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 font-semibold">CI passed</span>
-                ) : null}
-                {item.evidenceState ? (
-                  <span className="neon-chip rounded-full px-3 py-1.5 font-semibold">
-                    Evidence {item.evidenceState}
-                  </span>
-                ) : null}
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-xs font-medium text-primary">Earned</p>
-              <p className="numeric-readout mt-2 text-3xl font-semibold text-white">{item.xpEarned} XP</p>
-            </div>
-          </div>
-          <AIPanel
-            fallbackSummary={item.aiSummary}
-            narrative={narratives?.[item.id]}
-          />
-          {hasDetailedMetrics(item) ? (
-            <SignalProfile item={item} />
-          ) : (
-            <div className="neon-surface rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
-              This live profile row comes from persisted score-history evidence. Formula version:{" "}
-              {item.formulaVersion || "not recorded"}.{" "}
-              {item.evidenceMissing?.length
-                ? `Missing evidence links: ${item.evidenceMissing.join(", ")}.`
-                : "Score event, PR, and analysis links are present."}
-            </div>
-          )}
-          <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted">
-            {hasDetailedMetrics(item) ? (
-              <>
-                <div className="flex flex-wrap gap-4">
-                  <span className="inline-flex items-center gap-2">
-                    <GitMerge className="h-4 w-4 text-primary" />
-                    Repo weight {item.repoWeight.toFixed(2)}
-                  </span>
-                  <span className="inline-flex items-center gap-2">
-                    <ShieldCheck className="h-4 w-4 text-primary" />
-                    Anti-spam {item.antiSpamMultiplier.toFixed(2)}x
-                  </span>
+          <li key={item.id} className="list-none">
+            <GlowCard
+              className="render-opt-card relative space-y-4"
+            >
+              <div className="h-px w-28 bg-gradient-to-r from-primary/62 via-primary-2/42 to-transparent" />
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="break-anywhere text-sm text-muted">{item.owner}/{item.repo} #{item.number}</p>
+                  <h2 className="mt-2 break-anywhere text-xl font-semibold text-white">{item.title}</h2>
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs cyber-copy">
+                    <span className={`neon-chip rounded-full px-3 py-1.5 font-semibold ${tier.className}`}>{tier.label}</span>
+                    <span className="neon-chip neon-chip-info rounded-full px-3 py-1.5 font-semibold">{item.category}</span>
+                    <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 font-semibold">{formatContributionStatus(item.status)}</span>
+                    <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 font-semibold">{item.changedFilesCount} files changed</span>
+                    <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-3 py-1.5 font-semibold">
+                      <CalendarDays className="h-3 w-3" />
+                      {formatContributionDate(item.mergedAt)}
+                    </span>
+                    {item.maintainerReviewed ? (
+                      <span className="neon-chip neon-chip-success rounded-full px-3 py-1.5 font-semibold">Maintainer reviewed</span>
+                    ) : null}
+                    {item.ciPassed ? (
+                      <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 font-semibold">CI passed</span>
+                    ) : null}
+                    {item.evidenceState ? (
+                      <span className="neon-chip rounded-full px-3 py-1.5 font-semibold">
+                        Evidence {item.evidenceState}
+                      </span>
+                    ) : null}
+                  </div>
                 </div>
-                <Button asChild variant="secondary" size="sm">
-                  <Link href={`/pr/${item.owner}/${item.repo}/${item.number}`} prefetch={false}>
-                    View battle report
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-              </>
-            ) : (
-              <span>Score-history snapshot evidence</span>
-            )}
-          </div>
-        </GlowCard>
+                <div className="text-right">
+                  <p className="text-xs font-medium text-primary">Earned</p>
+                  <p className="numeric-readout mt-2 text-3xl font-semibold text-white">{item.xpEarned} XP</p>
+                </div>
+              </div>
+              <AIPanel
+                fallbackSummary={item.aiSummary}
+                narrative={narratives?.[item.id]}
+              />
+              {hasDetailedMetrics(item) ? (
+                <SignalProfile item={item} />
+              ) : (
+                <div className="neon-surface rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
+                  This live profile row comes from persisted score-history evidence. Formula version:{" "}
+                  {item.formulaVersion || "not recorded"}.{" "}
+                  {item.evidenceMissing?.length
+                    ? `Missing evidence links: ${item.evidenceMissing.join(", ")}.`
+                    : "Score event, PR, and analysis links are present."}
+                </div>
+              )}
+              <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted">
+                {hasDetailedMetrics(item) ? (
+                  <>
+                    <div className="flex flex-wrap gap-4">
+                      <span className="inline-flex items-center gap-2">
+                        <GitMerge className="h-4 w-4 text-primary" />
+                        Repo weight {item.repoWeight.toFixed(2)}
+                      </span>
+                      <span className="inline-flex items-center gap-2">
+                        <ShieldCheck className="h-4 w-4 text-primary" />
+                        Anti-spam {item.antiSpamMultiplier.toFixed(2)}x
+                      </span>
+                    </div>
+                    <Button asChild variant="secondary" size="sm">
+                      <Link href={`/pr/${item.owner}/${item.repo}/${item.number}`} prefetch={false}>
+                        View battle report
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </>
+                ) : (
+                  <span>Score-history snapshot evidence</span>
+                )}
+              </div>
+            </GlowCard>
+          </li>
         );
       })}
-    </div>
+    </ol>
   );
 }
 
