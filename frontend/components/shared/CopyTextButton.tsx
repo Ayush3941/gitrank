@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/cn";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 
 export function CopyTextButton({
@@ -88,6 +89,7 @@ export function CopyTextButton({
         : state === "error"
           ? errorLabel
           : label;
+  const stableWidth = size !== "icon";
 
   return (
     <div className="inline-flex flex-col items-start gap-1">
@@ -96,6 +98,7 @@ export function CopyTextButton({
         size={size}
         variant={variant}
         onClick={handleCopy}
+        className={cn(stableWidth ? "min-w-[8.5rem] justify-center" : undefined)}
       >
         {state === "copied" ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
         {currentLabel}

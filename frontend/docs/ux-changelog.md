@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- Copy-action layout stability pass:
+  - made shared copy-text controls use a stable minimum width for non-icon variants so state transitions (`Copy` -> `Copied`) do not shift nearby layout.
+  - improves header and section-nav interaction polish where copy-link controls are frequently used.
 - Repository visibility filter-recovery pass:
   - added active-filter chips and one-tap clear actions for repository search query and visibility filter in Settings.
   - added inline clear-search affordance in repository privacy search input for faster mobile/desktop recovery.
