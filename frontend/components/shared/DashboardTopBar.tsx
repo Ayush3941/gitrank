@@ -12,6 +12,7 @@ import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
 import { TextScaleQuickSwitcher } from "@/components/shared/TextScaleQuickSwitcher";
 import { ThemeQuickSwitcher } from "@/components/shared/ThemeQuickSwitcher";
 import { Button } from "@/components/ui/button";
+import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import type { UserProfile } from "@/types/gitrank";
 
 export type AutoSyncNote = {
@@ -29,6 +30,7 @@ export function DashboardTopBar({
   showQuickActions?: boolean;
 }) {
   const [shortcutHelpOpen, setShortcutHelpOpen] = useState(false);
+  const constrainedNetwork = useNetworkConstraintPreference();
   const autoSyncToneClass =
     autoSyncNote?.tone === "success"
       ? "neon-chip neon-chip-success border-emerald-300/30 text-emerald-100"
@@ -105,6 +107,7 @@ export function DashboardTopBar({
             <TextScaleQuickSwitcher compact className="hidden sm:inline-flex" />
             <Link
               href={`/u/${user.username}`}
+              prefetch={!constrainedNetwork}
               className="focus-ring cyber-link inline-flex items-center gap-2 text-sm font-medium"
             >
               View public profile

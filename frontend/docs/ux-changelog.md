@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Adaptive link-prefetch pass:
+  - dashboard sidebar, mobile nav, and top-bar public-profile links now disable `next/link` prefetch when constrained-network mode is detected.
+  - default-network users keep normal prefetch behavior; reduced-data users avoid unnecessary route payload warmups.
+  - this aligns routing behavior with the existing constrained-network rendering and polling reductions.
 - Mobile nav quick-controls pass:
   - added a separated quick-controls row inside `MobileNav` for theme, text-size, and effects toggles.
   - keeps primary lane navigation intact while giving one-tap display adjustments on small screens.

@@ -5,7 +5,10 @@ import { usePathname } from "next/navigation";
 import { Gauge, Palette, Type } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { dashboardNavItems } from "@/components/shared/dashboard-nav";
-import { useGamificationPreference } from "@/hooks/use-gamification-preference";
+import {
+  useGamificationPreference,
+  useNetworkConstraintPreference,
+} from "@/hooks/use-gamification-preference";
 import { useTextScalePreference } from "@/hooks/use-text-scale-preference";
 import { useThemePreference, type ThemePreference } from "@/hooks/use-theme-preference";
 
@@ -16,6 +19,7 @@ export function MobileNav() {
   const { theme, setTheme } = useThemePreference();
   const { textScale, setTextScale } = useTextScalePreference();
   const { reducedGamification, setReducedGamification } = useGamificationPreference();
+  const constrainedNetwork = useNetworkConstraintPreference();
   const isActive = (href: string, exact = false) =>
     exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
   const activeItem = dashboardNavItems.find((item) => isActive(item.href, item.exact));
@@ -39,6 +43,7 @@ export function MobileNav() {
             <li key={item.href}>
               <Link
                 href={item.href}
+                prefetch={!constrainedNetwork}
                 aria-current={active ? "page" : undefined}
                 aria-label={item.label}
                 title={item.label}
