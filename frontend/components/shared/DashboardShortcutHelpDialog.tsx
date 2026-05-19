@@ -29,6 +29,10 @@ const SHORTCUT_SECTIONS: Array<{
         action: "Move through quick-action results",
       },
       {
+        keys: "Home / End",
+        action: "Jump to first or last quick-action result",
+      },
+      {
         keys: "Enter",
         action: "Run highlighted quick action",
       },

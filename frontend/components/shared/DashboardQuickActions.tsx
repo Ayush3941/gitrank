@@ -263,6 +263,18 @@ export function DashboardQuickActions({
       return;
     }
 
+    if (event.key === "Home") {
+      event.preventDefault();
+      setHighlightedIndex(0);
+      return;
+    }
+
+    if (event.key === "End") {
+      event.preventDefault();
+      setHighlightedIndex(visibleActions.length - 1);
+      return;
+    }
+
     if (event.key === "ArrowDown") {
       event.preventDefault();
       setHighlightedIndex((current) => (current + 1) % visibleActions.length);
