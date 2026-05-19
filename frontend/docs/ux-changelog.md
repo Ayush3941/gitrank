@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- Mobile shortcut metadata pass:
+  - added `aria-keyshortcuts` to mobile quick-display controls (theme/text/effects) for parity with desktop quick-switcher controls.
+  - keeps mobile behavior unchanged while improving assistive-technology awareness of available keyboard shortcuts.
 - Keyboard shortcut discoverability pass:
   - added `aria-keyshortcuts` metadata to shortcut entry buttons for quick actions (`Meta+K`/`Control+K`) and shortcuts help (`?`).
   - added matching `title` hints so pointer users also see available keyboard triggers.
