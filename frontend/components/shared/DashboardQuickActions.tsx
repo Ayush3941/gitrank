@@ -364,7 +364,7 @@ export function DashboardQuickActions({
                             executeAction(action);
                           }}
                           className={cn(
-                            "focus-ring neon-tile w-full border px-3 py-2.5 text-left transition",
+                            "focus-ring neon-tile w-full border px-3 py-2.5 text-left",
                             highlighted && "border-primary/48 bg-primary/10 shadow-[0_0_20px_rgb(34_226_255_/_0.15)]",
                           )}
                         >

@@ -28,7 +28,7 @@ export function TabsTrigger({
   return (
     <TabsPrimitive.Trigger
       className={cn(
-        "focus-ring rounded-full border border-transparent px-4 py-2 text-sm font-semibold text-muted transition hover:border-primary/24 hover:text-foreground data-[state=active]:border-primary/35 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary-2 data-[state=active]:text-background data-[state=active]:shadow-[0_0_18px_rgb(34_226_255_/_0.26)]",
+        "focus-ring rounded-full border border-transparent px-4 py-2 text-sm font-semibold text-muted hover:border-primary/24 hover:text-foreground data-[state=active]:border-primary/35 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary-2 data-[state=active]:text-background data-[state=active]:shadow-[0_0_18px_rgb(34_226_255_/_0.26)]",
         className,
       )}
       {...props}
