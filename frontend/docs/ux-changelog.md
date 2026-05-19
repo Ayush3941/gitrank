@@ -47,6 +47,11 @@
     actions (`retry`, `open dashboard`, `open settings`, `reset filters`)
   - upgraded badge detail dialog empty evidence state with direct navigation
     actions to contribution and quest lanes.
+- Interaction-surface glow reduction:
+  - reduced shadow intensity on primary button variants and tab controls to
+    keep neon hierarchy while lowering paint-heavy glow effects
+  - reduced global top fetch-indicator glow intensity for calmer visual
+    feedback during background network activity.
 
 ## 2026-05-17
 
