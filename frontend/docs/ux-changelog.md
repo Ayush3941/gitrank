@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Loading-surface simplification pass:
+  - added `GlowCard` `variant="loading"` to render lightweight panel shells without the full cyber-frame/cyber-sheen layered effects.
+  - switched shared `RouteLoadingState` and `LoadingState` to the loading variant so first-route/loading skeletons mount with lower paint and compositing cost.
+  - preserved the same structure and messaging while reducing visual effect overhead during boot and route transitions.
 - Global readability + paint-cost pass:
   - introduced `--copy-line-height` and applied it to body + key narrative copy classes (`.cyber-copy`, `.cyber-copy-muted`) for steadier long-form readability.
   - tightened readable paragraph measure from `72ch` to `68ch` to keep scan width closer to accessibility guidance for comfortable reading.
