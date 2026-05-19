@@ -57,6 +57,11 @@ export function PublicProfilePageClient({
     if (!data) {
       return null;
     }
+    const aiSummariesEnabled = data.user.privacy.showAiSummaries !== false;
+    const hasContributionEvidence = data.user.mergedPrCount > 0 && data.user.contributions.length > 0;
+    if (!aiSummariesEnabled || !hasContributionEvidence) {
+      return null;
+    }
     return {
       profile: {
         username: data.user.username,
@@ -98,6 +103,23 @@ export function PublicProfilePageClient({
     };
   }, [data, streak.currentStreakDays]);
   const abraInsights = useAbraInsights(abraPayload);
+  const fallbackIdentitySummary = useMemo(() => {
+    if (!data) {
+      return undefined;
+    }
+    return deterministicIdentitySummary({
+      displayName: data.user.displayName,
+      rankTier: data.user.level.rankTier,
+      level: data.user.level.currentLevel,
+      totalXp: data.user.level.currentXp,
+      mergedPrCount: data.user.mergedPrCount,
+      strongestSignals: data.user.strongestSignals,
+      repositoriesTouched: data.topRepositories.length,
+      streakDays: streak.currentStreakDays,
+      isStale: data.isStale,
+      trendWindowLabel: data.trendWindowLabel,
+    });
+  }, [data, streak.currentStreakDays]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -206,8 +228,8 @@ export function PublicProfilePageClient({
           user={data.user}
           shareHeadline={data.shareHeadline}
           archetype={abraInsights.data?.archetype}
-          identitySummary={abraInsights.data?.identitySummary}
-          aiMode={abraInsights.data?.generatedBy}
+          identitySummary={abraInsights.data?.identitySummary ?? fallbackIdentitySummary}
+          aiMode={abraInsights.data?.generatedBy ?? "deterministic"}
         />
         <GlowCard className="space-y-4 border border-primary/22 bg-gradient-to-br from-slate-950/90 to-cyan-950/18">
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -349,6 +371,35 @@ export function PublicProfilePageClient({
       </section>
     </div>
   );
+}
+
+function deterministicIdentitySummary({
+  displayName,
+  rankTier,
+  level,
+  totalXp,
+  mergedPrCount,
+  strongestSignals,
+  repositoriesTouched,
+  streakDays,
+  isStale,
+  trendWindowLabel,
+}: {
+  displayName: string;
+  rankTier: string;
+  level: number;
+  totalXp: number;
+  mergedPrCount: number;
+  strongestSignals: string[];
+  repositoriesTouched: number;
+  streakDays: number;
+  isStale: boolean;
+  trendWindowLabel: string;
+}) {
+  const signalSummary =
+    strongestSignals.length > 0 ? strongestSignals.slice(0, 2).join(" and ") : "early contribution patterns";
+  const staleNote = isStale ? " This snapshot is currently marked stale and will sharpen after refresh." : "";
+  return `${displayName} is currently ${rankTier} (Level ${level}) with ${totalXp.toLocaleString("en-US")} total XP from ${mergedPrCount} merged PRs across ${repositoriesTouched} repositories. Recent strength signals are concentrated around ${signalSummary}, with a current streak of ${streakDays} day${streakDays === 1 ? "" : "s"} in the ${trendWindowLabel} window.${staleNote}`;
 }
 
 function PublicProfileSectionPlaceholder({ title }: { title: string }) {

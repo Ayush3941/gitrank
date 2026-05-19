@@ -9,6 +9,8 @@
 - Public profile deferred-render pass:
   - applied `DeferUntilVisible` to badges/skills, best-PR panel, and timeline/repository lanes.
   - kept profile section anchors intact while reducing initial mount pressure from charts and dense card grids.
+  - gated ABRA/Gemini identity generation behind real contribution evidence (`mergedPrCount > 0` and contribution history present) and user AI-summary visibility preference.
+  - added deterministic identity-summary fallback text so the profile remains informative when AI is disabled, unavailable, or intentionally skipped.
 - PR battle report deferred-render pass:
   - applied `DeferUntilVisible` to score matrix, AI summary, evidence signals, badge unlocks, and suggested-quest sections.
   - preserved explainability and section-jump flow while reducing above-the-fold render cost on deep report pages.
