@@ -2,6 +2,14 @@
 
 ## 2026-05-19
 
+- Dashboard deferred-render pass:
+  - added shared `DeferUntilVisible` section helper using
+    `IntersectionObserver` + positive `rootMargin` preloading window to delay
+    below-the-fold panel mounts
+  - applied deferred mounts to heavy dashboard sections (league, quests, score
+    explanation, skill breakdown, battle reports, badges, timeline) with
+    stable loading placeholders so first paint does less work while preserving
+    route structure and jump-nav anchors.
 - Dashboard lane readability pass:
   - expanded dashboard nav item contracts with route-level hints so lane intent
     is visible across sidebar, mobile nav, and command palette surfaces

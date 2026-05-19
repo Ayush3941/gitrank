@@ -14,6 +14,7 @@ import { BadgeShelf } from "@/features/dashboard/components/BadgeShelf";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -403,34 +404,48 @@ export function DashboardPageClient() {
       <div className="grid gap-6 xl:grid-cols-[0.92fr,1.08fr]">
         <div className="space-y-6">
           <section id="dashboard-league" className="render-opt-section scroll-mt-24">
-            <CurrentLeagueCard user={user} />
+            <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading league snapshot" />}>
+              <CurrentLeagueCard user={user} />
+            </DeferUntilVisible>
           </section>
           <section className="render-opt-section">
-            <QuestPanel quests={user.quests} />
+            <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading quest board" />}>
+              <QuestPanel quests={user.quests} />
+            </DeferUntilVisible>
           </section>
           <section className="render-opt-section">
-            <ScoreExplanationCard user={user} />
+            <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading score explanation" />}>
+              <ScoreExplanationCard user={user} />
+            </DeferUntilVisible>
           </section>
         </div>
         <div className="space-y-6">
           <section id="dashboard-skills" className="render-opt-section scroll-mt-24">
-            <SkillBreakdownCard
-              user={user}
-              skillInsights={abraInsights.data?.skillInsights}
-              aiMode={abraInsights.data?.generatedBy}
-            />
+            <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading skill breakdown" />}>
+              <SkillBreakdownCard
+                user={user}
+                skillInsights={abraInsights.data?.skillInsights}
+                aiMode={abraInsights.data?.generatedBy}
+              />
+            </DeferUntilVisible>
           </section>
           <section id="dashboard-reports" className="render-opt-section scroll-mt-24">
-            <RecentBattleReports reports={recentReports} />
+            <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading battle reports" />}>
+              <RecentBattleReports reports={recentReports} />
+            </DeferUntilVisible>
           </section>
         </div>
       </div>
       <div className="grid gap-6 xl:grid-cols-[1.04fr,0.96fr]">
         <section id="dashboard-badges" className="render-opt-section scroll-mt-24">
-          <BadgeShelf user={user} />
+          <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading badge shelf" />}>
+            <BadgeShelf user={user} />
+          </DeferUntilVisible>
         </section>
         <section id="dashboard-timeline" className="render-opt-section scroll-mt-24">
-          <ContributionTimelineCard user={user} />
+          <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading contribution timeline" />}>
+            <ContributionTimelineCard user={user} />
+          </DeferUntilVisible>
         </section>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
@@ -559,6 +574,19 @@ function EvidenceContextItem({
       <p className="text-xs font-medium text-primary">{label}</p>
       <p className="text-lg font-semibold text-white">{value}</p>
       <p className="text-xs text-slate-200/84">{detail}</p>
+    </div>
+  );
+}
+
+function SectionDeferredPlaceholder({ title }: { title: string }) {
+  return (
+    <div
+      className="glass-panel cyber-card cyber-frame flex min-h-[12rem] items-center justify-center p-5"
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+    >
+      <p className="text-sm text-slate-200/84">{title}</p>
     </div>
   );
 }
