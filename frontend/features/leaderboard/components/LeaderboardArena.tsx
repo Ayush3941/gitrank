@@ -52,7 +52,7 @@ export function LeaderboardArena({
               lines={4}
               minLengthForToggle={220}
               className="mt-2"
-              textClassName="break-anywhere text-sm leading-7 text-slate-200/82"
+              textClassName="break-anywhere text-sm leading-7 text-muted"
             />
           </div>
           <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[32rem]">
@@ -65,14 +65,18 @@ export function LeaderboardArena({
           <Rule icon={<Flame className="h-4 w-4" />} label="Promotion" value={snapshot.season.promotionRule} />
           <Rule icon={<ShieldCheck className="h-4 w-4" />} label="Reset" value={snapshot.season.resetRule} />
         </div>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs font-semibold">
-            Season ends {formatDate(snapshot.season.endsAt)}
-          </span>
-          <span className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
-            {formatTimeUntil(snapshot.season.endsAt)}
-          </span>
-        </div>
+        <ul role="list" className="mt-3 flex flex-wrap gap-2">
+          <li>
+            <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs font-semibold">
+              Season ends {formatDate(snapshot.season.endsAt)}
+            </span>
+          </li>
+          <li>
+            <span className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
+              {formatTimeUntil(snapshot.season.endsAt)}
+            </span>
+          </li>
+        </ul>
       </GlowCard>
       {currentUser && localBracketRows.length > 0 ? (
         <GlowCard className="space-y-4 border border-primary/22 bg-gradient-to-br from-slate-950/90 to-cyan-950/18">
@@ -80,7 +84,7 @@ export function LeaderboardArena({
             <div>
               <p className="text-xs font-medium text-primary">Local bracket</p>
               <h3 className="mt-2 text-xl font-semibold text-white">Closest rank neighbors</h3>
-              <p className="mt-2 text-sm text-slate-200/82">
+              <p className="mt-2 text-sm text-muted">
                 Track nearby competitors to keep movement goals tangible each week.
               </p>
             </div>
@@ -109,7 +113,7 @@ export function LeaderboardArena({
                       #{row.rank} {row.displayName}
                       {row.isCurrentUser ? " (You)" : ""}
                     </p>
-                    <p className="mt-1 break-anywhere text-xs text-slate-200/84">
+                    <p className="mt-1 break-anywhere text-xs text-muted">
                       @{row.username} • {row.title}
                     </p>
                   </div>
@@ -190,7 +194,7 @@ export function LeaderboardArena({
                         lines={3}
                         minLengthForToggle={190}
                         className="mt-3 max-w-2xl"
-                        textClassName="break-anywhere text-sm leading-6 text-slate-200/76"
+                        textClassName="break-anywhere text-sm leading-6 text-muted"
                       />
                       <p className="mt-2 max-w-2xl text-xs text-muted">
                         Snapshot {row.profileSnapshotVersion || "unknown"} / Score {row.scoreFormulaVersion}
@@ -243,7 +247,7 @@ function Rule({
         lines={3}
         minLengthForToggle={160}
         className="mt-2"
-        textClassName="break-anywhere text-sm leading-6 text-slate-200/80"
+        textClassName="break-anywhere text-sm leading-6 text-muted"
       />
     </div>
   );

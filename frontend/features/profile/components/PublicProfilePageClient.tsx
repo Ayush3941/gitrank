@@ -274,7 +274,7 @@ export function PublicProfilePageClient({
             <div>
               <p className="text-xs font-medium text-primary">Profile proof strip</p>
               <h2 className="mt-2 text-2xl font-semibold text-white">Share-ready evidence context</h2>
-              <p className="mt-2 text-sm text-slate-200/84">
+              <p className="mt-2 text-sm text-muted">
                 Public profile claims are snapshot-based and explainable. Use these fields to communicate freshness, scope, and confidence when sharing this card.
               </p>
             </div>
@@ -301,7 +301,7 @@ export function PublicProfilePageClient({
             />
           </div>
         </GlowCard>
-        <div className="neon-callout rounded-[1.75rem] px-4 py-3 text-sm text-slate-200">
+        <div className="neon-callout rounded-[1.75rem] px-4 py-3 text-sm text-muted">
           Public profiles summarize recent contribution evidence. Skill areas and repository rankings are snapshot-based signals, not absolute claims of expertise.
         </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -319,9 +319,9 @@ export function PublicProfilePageClient({
                 <p className="text-xs font-medium text-primary">Badge showcase</p>
                 <h2 className="mt-2 text-2xl font-semibold text-white">Top unlocked badges</h2>
               </div>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <ul role="list" className="grid gap-3 sm:grid-cols-2">
                 {data.user.badges.filter((badge) => badge.unlocked).slice(0, 4).map((badge) => (
-                  <div key={badge.id} className="render-opt-card neon-surface rounded-[1.75rem] p-4">
+                  <li key={badge.id} className="render-opt-card neon-surface rounded-[1.75rem] p-4">
                     <RarityBadge rarity={badge.rarity} />
                     <h3 className="mt-3 text-lg font-medium text-white">{badge.name}</h3>
                     <ExpandableText
@@ -333,9 +333,9 @@ export function PublicProfilePageClient({
                       showMoreLabel="More"
                       showLessLabel="Less"
                     />
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </GlowCard>
             <GlowCard className="space-y-5">
               <div>
@@ -384,8 +384,9 @@ export function PublicProfilePageClient({
                     </div>
                   </div>
                 ) : (
-                  data.topRepositories.slice(0, 4).map((repository) => (
-                    <div key={repository.name} className="render-opt-card neon-surface rounded-[1.5rem] px-4 py-3">
+                  <ul role="list" className="space-y-3">
+                    {data.topRepositories.slice(0, 4).map((repository) => (
+                    <li key={repository.name} className="render-opt-card neon-surface rounded-[1.5rem] px-4 py-3">
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="break-anywhere font-medium text-white">{repository.name}</p>
@@ -399,8 +400,9 @@ export function PublicProfilePageClient({
                           <p className="mt-1 text-lg font-semibold text-white">{repository.totalXp}</p>
                         </div>
                       </div>
-                    </div>
-                  ))
+                    </li>
+                    ))}
+                  </ul>
                 )}
               </div>
             </GlowCard>
@@ -441,7 +443,7 @@ function ProofStripItem({
     <div className="neon-surface space-y-2 px-4 py-4">
       <p className="text-xs font-medium text-primary">{label}</p>
       <p className="text-lg font-semibold text-white">{value}</p>
-      <p className="text-xs text-slate-200/84">{detail}</p>
+      <p className="text-xs text-muted">{detail}</p>
     </div>
   );
 }

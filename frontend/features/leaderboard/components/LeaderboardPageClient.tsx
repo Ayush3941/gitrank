@@ -299,7 +299,7 @@ export function LeaderboardPageClient() {
             </span>
           </div>
         ) : null}
-        <div className="neon-callout rounded-[1.75rem] px-4 py-3 text-sm text-slate-200">
+        <div className="neon-callout rounded-[1.75rem] px-4 py-3 text-sm text-muted">
           Snapshot note: leaderboard placement is directional, not a final measure of engineering ability. Quality weighting reduces the impact of shallow, unreviewed, or repetitive PR floods.
         </div>
       </section>
@@ -327,7 +327,7 @@ export function LeaderboardPageClient() {
             <div>
               <p className="text-xs font-medium text-primary">Arena preview state</p>
               <h2 className="mt-2 text-2xl font-semibold text-white">How ranking unlocks</h2>
-              <p className="mt-2 text-sm text-slate-200/84">
+              <p className="mt-2 text-sm text-muted">
                 When public participants are present, GitRank places profiles into weekly rank bands using score evidence quality, consistency, and merged impact.
               </p>
             </div>
@@ -358,7 +358,7 @@ export function LeaderboardPageClient() {
                     <h2 className="mt-2 text-2xl font-semibold text-white">
                       #{snapshot.currentUser.rank} in {tab}
                     </h2>
-                    <p className="mt-2 text-sm text-slate-200/84">
+                    <p className="mt-2 text-sm text-muted">
                       Focus lane: {snapshot.currentUser.focus}. Keep quality-weighted merged evidence flowing to move bands safely.
                     </p>
                   </div>
@@ -412,7 +412,7 @@ export function LeaderboardPageClient() {
               <LeaderboardArena snapshot={snapshot} rowLimit={safeVisibleRowCount} />
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <p role="status" aria-live="polite" aria-atomic="true" className="text-sm text-slate-300">
+              <p role="status" aria-live="polite" aria-atomic="true" className="text-sm text-muted">
                 Showing {safeVisibleRowCount} of {rows.length} ranked rows.
               </p>
               {hasMoreRows ? (
@@ -450,7 +450,7 @@ export function LeaderboardPageClient() {
           <div>
             <p className="text-xs font-medium text-amber-100">Arena preview mode</p>
             <h2 className="mt-2 text-2xl font-semibold text-white">Live competition is still warming up</h2>
-            <p className="mt-2 readable-measure text-sm leading-7 text-amber-50/82">
+            <p className="mt-2 readable-measure text-sm leading-7 text-amber-50">
               This lane has {rows.length} active public profiles right now. Ranking is live, but bracket density is still low.
             </p>
           </div>
@@ -489,7 +489,7 @@ export function LeaderboardPageClient() {
 function LeaderboardSectionPlaceholder({ title }: { title: string }) {
   return (
     <GlowCard className="glass-panel cyber-card cyber-frame flex min-h-[11rem] items-center justify-center p-4">
-      <p className="text-sm text-slate-200/84">{title}</p>
+      <p className="text-sm text-muted">{title}</p>
     </GlowCard>
   );
 }
@@ -504,7 +504,7 @@ function ClimbTip({
   return (
     <div className="neon-metric rounded-[1.35rem] px-4 py-3">
       <p className="text-sm font-semibold text-white">{title}</p>
-      <p className="mt-1 text-xs text-slate-300">{body}</p>
+      <p className="mt-1 text-xs text-muted">{body}</p>
     </div>
   );
 }

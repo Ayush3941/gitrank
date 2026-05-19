@@ -60,10 +60,10 @@ export function PublicProfileHero({
             lines={4}
             minLengthForToggle={220}
             className="max-w-3xl"
-            textClassName="break-anywhere text-sm leading-7 text-slate-200/82"
+            textClassName="break-anywhere text-sm leading-7 text-muted"
           />
           {identitySummary ? (
-            <div className="neon-callout rounded-2xl px-4 py-3 text-sm text-slate-200/88">
+            <div className="neon-callout rounded-2xl px-4 py-3 text-sm text-muted">
               <p className="cyber-readout text-xs font-medium text-cyan-200">
                 Open Source Identity ({aiMode === "gemini" ? "Gemini" : "Deterministic"})
               </p>
@@ -76,13 +76,15 @@ export function PublicProfileHero({
               />
             </div>
           ) : null}
-          <div className="flex flex-wrap gap-2">
+          <ul role="list" className="flex flex-wrap gap-2">
             {user.topSkills.map((skill) => (
-              <div key={skill} className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 text-sm text-slate-200">
-                {skill}
-              </div>
+              <li key={skill}>
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 text-sm text-muted">
+                  {skill}
+                </span>
+              </li>
             ))}
-          </div>
+          </ul>
           <div className="flex flex-wrap gap-2">
             <ThemeQuickSwitcher compact />
             <TextScaleQuickSwitcher compact />

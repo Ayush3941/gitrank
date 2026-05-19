@@ -2,6 +2,11 @@
 
 ## 2026-05-19
 
+- Leaderboard/profile readability + semantics pass:
+  - normalized remaining low-opacity body copy on leaderboard and public-profile surfaces to shared readable text tokens.
+  - converted repeated leaderboard season chips and profile/top-skill/repository/best-PR card groups to semantic list structures.
+  - converted public badge showcase cards to semantic list markup while preserving existing visual card hierarchy.
+  - keeps ranking/profile behavior unchanged while improving assistive-tech traversal and text legibility on dense information views.
 - Onboarding readability + semantics pass:
   - converted onboarding step/reason/badge/action card groups in login, connect, and reveal screens to semantic list markup.
   - normalized low-opacity onboarding narrative text to shared readable text tokens while preserving neon surface styling.

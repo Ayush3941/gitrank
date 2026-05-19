@@ -27,8 +27,9 @@ export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
             </div>
           </div>
         ) : (
-          reports.slice(0, 5).map((report) => (
-            <div key={report.id} className="render-opt-card neon-surface cyber-sheen rounded-[1.75rem] border-cyan-300/18 p-4">
+          <ol role="list" className="space-y-3">
+            {reports.slice(0, 5).map((report) => (
+            <li key={report.id} className="render-opt-card neon-surface cyber-sheen rounded-[1.75rem] border-cyan-300/18 p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="break-anywhere text-sm text-muted">
@@ -40,7 +41,7 @@ export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
                     lines={3}
                     minLengthForToggle={180}
                     className="mt-2"
-                    textClassName="break-anywhere text-sm text-slate-200/84"
+                    textClassName="break-anywhere text-sm text-muted"
                   />
                   <p className="neon-chip neon-chip-muted mt-3 inline-flex rounded-full px-3 py-1 text-xs">
                     Evidence {report.evidenceState || "partial"} / Formula {report.formulaVersion || "not recorded"}
@@ -67,8 +68,9 @@ export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
                   </Link>
                 </Button>
               </div>
-            </div>
-          ))
+            </li>
+            ))}
+          </ol>
         )}
       </div>
     </GlowCard>
