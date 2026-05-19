@@ -270,7 +270,7 @@ select {
     [role="button"],
     [tabindex]:not([tabindex="-1"])
   ):focus-visible {
-  outline: 2px solid rgb(var(--primary) / 0.8);
+  outline: 3px solid rgb(var(--primary) / 0.88);
   outline-offset: 2px;
 }
 
@@ -283,6 +283,14 @@ select {
   @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
   min-width: 24px;
   min-height: 24px;
+}
+
+.focus-ring:focus-visible {
+  outline: 3px solid rgb(var(--primary) / 0.95);
+  outline-offset: 2px;
+  box-shadow:
+    0 0 0 2px rgb(var(--background) / 0.92),
+    0 0 0 5px rgb(var(--primary) / 0.35);
 }
 
 .skip-link {
