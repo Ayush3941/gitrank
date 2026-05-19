@@ -6,6 +6,10 @@
   - added runtime network constraint detection from `navigator.connection.saveData` and `effectiveType` (`slow-2g`/`2g`) inside `use-gamification-preference`.
   - now sets `html[data-network="constrained"]` so low-data render reductions apply even where `prefers-reduced-data` media query is unsupported.
   - mirrored reduced-data visual trims (background simplification, overlay removal, blur/shadow reduction) under the new constrained-network attribute in global CSS.
+- AI privacy redaction consistency pass:
+  - profile adaptation now redacts contribution/report AI summary text when `privacy.showAiSummaries` is disabled.
+  - applies to contribution cards, featured contribution summaries, and recent PR reports derived from `/api/profile/me`.
+  - keeps deterministic evidence signals visible while ensuring AI-generated wording does not appear when the user has opted out.
 - Settings deferred-render pass:
   - applied `DeferUntilVisible` to sync activity, profile privacy, display controls, repository visibility, and data-control sections.
   - added lightweight settings placeholders so jump-nav and account controls remain interactive while heavier section content mounts near viewport.

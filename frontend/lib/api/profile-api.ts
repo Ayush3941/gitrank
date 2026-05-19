@@ -266,16 +266,25 @@ function toProfileViewData(
   response: ApiPublicProfileResponse | ApiPrivateProfileResponse,
   mode: "public" | "private",
 ): ProfileViewData {
+  const privacy = toPrivacySettings(
+    "privacy" in response ? response.privacy : undefined,
+  );
+  const showAiSummaries = privacy.showAiSummaries;
   const topSkills = (response.top_skill_areas ?? []).map((skill) => normalizeSkillCategory(skill.key));
   const skillTree = toSkillTree(response.top_skill_areas ?? []);
-  const featuredContributions = toFeaturedContributions(response.score_history ?? []);
-  const recentReports =
+  const featuredContributions = toFeaturedContributions(
+    response.score_history ?? [],
+    showAiSummaries,
+  );
+  const recentReportsRaw =
     "recent_pr_reports" in response
       ? (response.recent_pr_reports ?? []).map(toPullRequestAnalysis)
       : [];
+  const recentReports = redactReportSummaries(recentReportsRaw, showAiSummaries);
   const contributions = mergeContributionDetails(
-    toContributions(response.score_history ?? []),
+    toContributions(response.score_history ?? [], showAiSummaries),
     recentReports,
+    showAiSummaries,
   );
   const reviewedPrCount = contributions.filter((row) => row.maintainerReviewed).length;
   const scoringVersion = scoreVersionFromHistory(response.score_history ?? []);
@@ -350,9 +359,7 @@ function toProfileViewData(
     leaguePosition: 0,
     movement: 0,
     repositories,
-    privacy: toPrivacySettings(
-      "privacy" in response ? response.privacy : undefined,
-    ),
+    privacy,
   };
 
   return {
@@ -397,7 +404,10 @@ function skillNote(skill: ApiSkillArea): string {
   return `${base} Evidence source: ${source}${confidence}${state}.`;
 }
 
-function toFeaturedContributions(entries: ApiScoreHistoryEntry[]): FeaturedContribution[] {
+function toFeaturedContributions(
+  entries: ApiScoreHistoryEntry[],
+  showAiSummaries: boolean,
+): FeaturedContribution[] {
   return entries
     .filter((entry) => entry.delta_xp > 0 && entry.pull_request)
     .slice(0, 5)
@@ -417,15 +427,20 @@ function toFeaturedContributions(entries: ApiScoreHistoryEntry[]): FeaturedContr
         number: entry.pull_request?.number ?? 0,
         title: entry.pull_request?.title || "Contribution",
         summary:
-          entry.explanation?.find((line) => line.trim().length > 0) ||
-          "Exact contribution details are limited to verified score evidence.",
+          showAiSummaries
+            ? entry.explanation?.find((line) => line.trim().length > 0) ||
+              "Exact contribution details are limited to verified score evidence."
+            : REDACTED_AI_SUMMARY,
         xpEarned: entry.delta_xp,
         happenedAt: entry.created_at,
       };
     });
 }
 
-function toContributions(entries: ApiScoreHistoryEntry[]): Contribution[] {
+function toContributions(
+  entries: ApiScoreHistoryEntry[],
+  showAiSummaries: boolean,
+): Contribution[] {
   return entries
     .filter((entry) => entry.pull_request)
     .map((entry) => {
@@ -459,9 +474,10 @@ function toContributions(entries: ApiScoreHistoryEntry[]): Contribution[] {
         maintainerReviewed: false,
         linkedIssue: false,
         ciPassed: false,
-        aiSummary:
-          entry.explanation?.find((line) => line.trim().length > 0) ||
-          "Profile snapshot evidence does not include detailed PR analysis metrics yet.",
+        aiSummary: showAiSummaries
+          ? entry.explanation?.find((line) => line.trim().length > 0) ||
+            "Profile snapshot evidence does not include detailed PR analysis metrics yet."
+          : REDACTED_AI_SUMMARY,
         evidenceSignals: entry.explanation ?? [],
       };
     });
@@ -470,6 +486,7 @@ function toContributions(entries: ApiScoreHistoryEntry[]): Contribution[] {
 function mergeContributionDetails(
   contributions: Contribution[],
   reports: PullRequestAnalysis[],
+  showAiSummaries: boolean,
 ): Contribution[] {
   if (reports.length === 0) {
     return contributions;
@@ -510,12 +527,31 @@ function mergeContributionDetails(
       maintainerReviewed: live.maintainerReviewed,
       linkedIssue: live.linkedIssue,
       ciPassed: live.ciPassed,
-      aiSummary: live.aiSummary || row.aiSummary,
+      aiSummary: showAiSummaries ? live.aiSummary || row.aiSummary : REDACTED_AI_SUMMARY,
       evidenceSignals:
         live.evidenceSignals.length > 0 ? live.evidenceSignals : row.evidenceSignals,
     };
   });
 }
+
+function redactReportSummaries(
+  reports: PullRequestAnalysis[],
+  showAiSummaries: boolean,
+): PullRequestAnalysis[] {
+  if (showAiSummaries) {
+    return reports;
+  }
+  return reports.map((report) => ({
+    ...report,
+    contribution: {
+      ...report.contribution,
+      aiSummary: REDACTED_AI_SUMMARY,
+    },
+  }));
+}
+
+const REDACTED_AI_SUMMARY =
+  "AI summaries are hidden by your current privacy setting.";
 
 function contributionKey(owner: string, repo: string, number: number): string {
   return `${owner.toLowerCase()}/${repo.toLowerCase()}#${number}`;
