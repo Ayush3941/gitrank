@@ -161,6 +161,11 @@
     `tests/sync-run-status.test.ts`.
   - enabled explicit refetch on window focus/reconnect for sync-run queries so
     users returning to Settings see fresh queue state immediately.
+- Web-vitals observability testability pass:
+  - extracted route-group mapping, metric-rating normalization, tracked-metric
+    registry, and sampling logic into `lib/web-vitals.ts`
+  - added focused regression coverage in `tests/web-vitals.test.ts` so route
+    bucketing and deterministic sampling behavior stay stable as telemetry evolves.
 
 ## 2026-05-17
 
