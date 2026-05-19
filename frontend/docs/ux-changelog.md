@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Repository visibility filter-recovery pass:
+  - added active-filter chips and one-tap clear actions for repository search query and visibility filter in Settings.
+  - added inline clear-search affordance in repository privacy search input for faster mobile/desktop recovery.
+  - keeps existing privacy toggle behavior and backend sync contracts unchanged.
 - Contributions filter quick-clear pass:
   - added inline clear-search control in the contributions filter input, aligned with other filter-heavy surfaces.
   - preserves existing active-filter chips and reset behavior while reducing taps needed to recover from narrow searches.

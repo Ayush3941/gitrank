@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { startTransition, useDeferredValue, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,6 +57,18 @@ export function PrivacyRepositoryToggleList({
     });
   }
 
+  function handleClearSearch() {
+    startTransition(() => {
+      setSearch("");
+    });
+  }
+
+  function handleClearVisibilityFilter() {
+    startTransition(() => {
+      setVisibilityFilter("All");
+    });
+  }
+
   return (
     <div className="space-y-3">
       <div className="space-y-3">
@@ -80,6 +92,38 @@ export function PrivacyRepositoryToggleList({
             </Button>
           </div>
         </div>
+        {canReset ? (
+          <div className="flex flex-wrap items-center gap-2">
+            {search.trim().length > 0 ? (
+              <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs">
+                Query: {search.trim()}
+                <button
+                  type="button"
+                  onClick={handleClearSearch}
+                  className="focus-ring inline-flex min-h-6 min-w-6 items-center justify-center rounded-full border border-primary/30 px-1 text-xs leading-none text-cyan-100 hover:bg-primary/14"
+                  aria-label="Clear repository search query"
+                  title="Clear search"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </span>
+            ) : null}
+            {visibilityFilter !== "All" ? (
+              <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs">
+                State: {visibilityFilter}
+                <button
+                  type="button"
+                  onClick={handleClearVisibilityFilter}
+                  className="focus-ring inline-flex min-h-6 min-w-6 items-center justify-center rounded-full border border-primary/30 px-1 text-xs leading-none text-cyan-100 hover:bg-primary/14"
+                  aria-label="Clear repository visibility filter"
+                  title="Clear visibility filter"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </span>
+            ) : null}
+          </div>
+        ) : null}
         <div className="grid gap-3 md:grid-cols-[1fr,15rem]">
           <div className="relative">
             <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted" />
@@ -89,11 +133,22 @@ export function PrivacyRepositoryToggleList({
                 const value = event.target.value;
                 startTransition(() => setSearch(value));
               }}
-              className="pl-11"
+              className="pl-11 pr-11"
               placeholder="Search repository or reason"
               aria-label="Search repositories"
               aria-describedby={statusId}
             />
+            {search.trim().length > 0 ? (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="focus-ring absolute top-1/2 right-3 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-cyan-100 hover:text-white"
+                aria-label="Clear repository search"
+                title="Clear search"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            ) : null}
           </div>
           <div aria-labelledby={visibilityGroupId} className="grid grid-cols-3 gap-2">
             <span id={visibilityGroupId} className="sr-only">
