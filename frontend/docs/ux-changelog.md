@@ -66,6 +66,11 @@
     `Progress` component to prevent layout glitches from malformed values
   - reduced progress-indicator glow intensity to lower paint-heavy effects
     across dashboard, quest, badge, and profile progress bars.
+- Expandable-details keyboard focus pass:
+  - added `focus-ring` styling to summary controls in skill/timeline chart
+    summaries and onboarding data-policy disclosure panels
+  - improves visible keyboard focus on `<summary>` interactions without
+    changing disclosure behavior.
 
 ## 2026-05-17
 

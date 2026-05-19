@@ -69,7 +69,7 @@ export function ConnectGithubPanel() {
         </div>
         <div className="space-y-3">
           <details className="neon-surface rounded-3xl px-4 py-3">
-            <summary className="cursor-pointer text-sm font-medium text-white">
+            <summary className="focus-ring inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-white">
               What data is read in v1
             </summary>
             <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-200/84">
@@ -79,7 +79,7 @@ export function ConnectGithubPanel() {
             </ul>
           </details>
           <details className="neon-surface rounded-3xl px-4 py-3">
-            <summary className="cursor-pointer text-sm font-medium text-white">
+            <summary className="focus-ring inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-white">
               What is not read by default
             </summary>
             <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-200/84">
