@@ -477,10 +477,17 @@ export function ContributionsPageClient() {
                 {topHighlights.length ? (
                   <div className="space-y-3">
                     {topHighlights.map((row) => (
-                      <div key={row.id} className="render-opt-card neon-surface rounded-2xl px-3 py-3">
+                      <div key={row.id} className="render-opt-card neon-surface space-y-2 rounded-2xl px-3 py-3">
                         <p className="break-anywhere text-sm font-medium text-white">{row.title}</p>
                         <p className="mt-1 break-anywhere text-xs text-slate-300">{row.owner}/{row.repo} #{row.number}</p>
                         <p className="mt-2 text-sm text-cyan-200">+{row.xpEarned} XP</p>
+                        <div className="pt-1">
+                          <Button asChild size="sm" variant="secondary">
+                            <Link href={`/pr/${row.owner}/${row.repo}/${row.number}`} prefetch={false}>
+                              View report
+                            </Link>
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>

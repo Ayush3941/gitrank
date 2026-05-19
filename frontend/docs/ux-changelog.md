@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- Contributions highlight deep-link pass:
+  - added direct `View report` actions on top-highlight cards in the contributions timeline lane for faster drill-down into PR battle reports.
+  - report links in this dense highlight list explicitly disable prefetch to avoid unnecessary background network churn.
 - Dense-list link prefetch reduction pass:
   - disabled route prefetch on repeated PR-report links in `ContributionList`, `RecentBattleReports`, and `BestPRsPanel`.
   - reduces background prefetch churn on card-dense views while preserving direct navigation behavior.
