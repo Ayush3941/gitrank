@@ -15,7 +15,7 @@ GitRank uses broad product analytics in v1, but the analytics scope is still bou
 Track product behavior for:
 
 - onboarding completion through `onboarding.completed`
-- sync success and failure outcomes through API-gateway server-side `sync.succeeded` and `sync.failed`
+- sync success, failure, and queued fallback outcomes through API-gateway server-side `sync.succeeded`, `sync.failed`, and `sync.queued`
 - dashboard visits and section engagement
 - public and authenticated profile views through API-gateway server-side `profile.viewed`
 - share-card actions as a future client event after the tracked frontend adds a share interaction contract
@@ -35,6 +35,8 @@ Accepted event names:
 - `onboarding.completed`
 - `score_explanation.opened`
 - `badge.viewed`
+- `copy_text.used`
+- `sync.queued`
 
 Server-side events emitted by the gateway:
 

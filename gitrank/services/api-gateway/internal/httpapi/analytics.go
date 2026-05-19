@@ -20,6 +20,7 @@ var allowedAnalyticsEvents = map[string]struct{}{
 	"onboarding.sync.started":  {},
 	"sync.succeeded":           {},
 	"sync.failed":              {},
+	"sync.queued":              {},
 	"profile.viewed":           {},
 	"score_explanation.opened": {},
 	"badge.viewed":             {},

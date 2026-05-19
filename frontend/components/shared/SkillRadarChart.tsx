@@ -26,7 +26,7 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
   const { ref: viewportRef, inView } = useLazyInView();
   const safeSkills = skills.length > 0
     ? skills
-    : [{ category: "Unknown", score: 0, delta: 0, note: "No skill evidence available yet." } as SkillNode];
+    : [{ category: "Documentation", score: 0, delta: 0, note: "No skill evidence available yet." }];
   const sortedSkills = [...safeSkills].sort((left, right) => right.score - left.score);
   const strongest = sortedSkills[0];
   const weakest = sortedSkills[sortedSkills.length - 1];

@@ -158,9 +158,10 @@ Frontend emits bounded events through `POST /api/analytics/events`, proxied to
 Coverage implemented:
 
 - onboarding: `onboarding.started`, `onboarding.sync.started`, `onboarding.completed`
-- sync outcomes: `sync.succeeded`, `sync.failed`
+- sync outcomes: `sync.succeeded`, `sync.failed`, `sync.queued`
 - score explanation: `score_explanation.opened`
 - badge view: `badge.viewed`
+- copy interactions: `copy_text.used`
 - share actions: `profile.shared`
 - empty/error/stale state incidence:
   `empty_state.viewed`, `error_state.viewed`, `stale_state.viewed`

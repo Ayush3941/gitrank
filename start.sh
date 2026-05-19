@@ -99,12 +99,30 @@ wait_for_health() {
   return 1
 }
 
+wait_for_http() {
+  url="$1"
+  timeout_seconds="$2"
+  elapsed=0
+  while (( elapsed < timeout_seconds )); do
+    if curl -fsS "$url" >/dev/null 2>&1; then
+      log "endpoint is ready: $url"
+      return 0
+    fi
+    sleep 1
+    elapsed=$((elapsed + 1))
+  done
+  log "timed out waiting for endpoint: $url"
+  return 1
+}
+
 need_cmd docker
 need_cmd go
 need_cmd npm
 need_cmd psql
 need_cmd openssl
 need_cmd lsof
+need_cmd curl
+need_cmd setsid
 
 mkdir -p "$LOG_DIR" "$RUN_DIR"
 mkdir -p "$BIN_DIR"
@@ -207,9 +225,19 @@ fi
 log "starting frontend dev server"
 (
   cd "$FRONTEND_DIR"
-  nohup npm run dev -- --port 3000 >"$LOG_DIR/frontend.log" 2>&1 &
+  # Turbopack can terminate unexpectedly in some local Linux/devbox setups.
+  # Default to webpack dev mode for a stable always-on local server.
+  FRONTEND_DEV_ENGINE="${FRONTEND_DEV_ENGINE:-webpack}"
+  if [[ "$FRONTEND_DEV_ENGINE" == "turbo" || "$FRONTEND_DEV_ENGINE" == "turbopack" ]]; then
+    setsid npm run dev -- --port 3000 </dev/null >"$LOG_DIR/frontend.log" 2>&1 &
+  else
+    setsid npm run dev -- --webpack --port 3000 </dev/null >"$LOG_DIR/frontend.log" 2>&1 &
+  fi
   echo "$!" >"$RUN_DIR/frontend.pid"
 )
+
+wait_for_http "http://localhost:3000" 120
+wait_for_http "http://localhost:8080/healthz" 30
 
 log "startup complete"
 log "frontend: http://localhost:3000"

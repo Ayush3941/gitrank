@@ -11,7 +11,7 @@ const SUPPORTED_THEMES = ["neon", "midnight", "aurora", "high-contrast"] as cons
 export type ThemePreference = (typeof SUPPORTED_THEMES)[number];
 
 export function useThemePreference() {
-  const theme = useSyncExternalStore(subscribe, getThemeSnapshot, () => "neon");
+  const theme = useSyncExternalStore<ThemePreference>(subscribe, getThemeSnapshot, () => "neon");
 
   const setTheme = useCallback((value: ThemePreference) => {
     if (typeof window === "undefined") {
