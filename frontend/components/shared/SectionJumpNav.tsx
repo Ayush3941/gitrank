@@ -30,23 +30,22 @@ export function SectionJumpNav<SectionID extends string>({
   return (
     <nav
       aria-labelledby={navLabelID}
-      className={`glass-panel flex items-center gap-2 border border-primary/20 p-2 ${stickyClasses} ${className ?? ""}`}
+      className={`glass-panel flex flex-col gap-2 border border-primary/20 p-2 sm:flex-row sm:items-center ${stickyClasses} ${className ?? ""}`}
     >
-      <p
-        id={navLabelID}
-        className="hidden shrink-0 px-2 text-xs font-medium text-cyan-100 sm:block"
-      >
-        Jump to
-      </p>
-      <p
-        role="status"
-        aria-live="polite"
-        className="hidden shrink-0 px-2 text-sm font-medium text-cyan-100 sm:block"
-      >
-        {activeSectionLabel}
-      </p>
+      <div className="hidden shrink-0 items-center gap-2 px-2 sm:flex">
+        <p id={navLabelID} className="text-xs font-medium text-cyan-100">
+          Jump to
+        </p>
+        <p
+          role="status"
+          aria-live="polite"
+          className="text-sm font-medium text-cyan-100"
+        >
+          {activeSectionLabel}
+        </p>
+      </div>
       <div className="min-w-0 flex-1 sm:hidden">
-        <p className="mb-1 px-1 text-[11px] font-medium tracking-[0.06em] text-cyan-100/88 uppercase">
+        <p className="mb-1 px-1 text-xs font-medium text-cyan-100/92">
           {activeSectionLabel}
         </p>
         <label htmlFor={`${navLabelID}-select`} className="sr-only">
@@ -83,8 +82,8 @@ export function SectionJumpNav<SectionID extends string>({
                 aria-current={activeSection === section.id ? "location" : undefined}
                 className={
                   activeSection === section.id
-                    ? "focus-ring border border-primary/45 bg-primary/16 px-3 py-2 text-xs font-semibold text-white"
-                    : "focus-ring border border-transparent px-3 py-2 text-xs text-slate-100 hover:border-primary/28 hover:bg-primary/10"
+                    ? "focus-ring inline-flex min-h-9 items-center border border-primary/45 bg-primary/16 px-3 py-2 text-xs font-semibold text-white"
+                    : "focus-ring inline-flex min-h-9 items-center border border-transparent px-3 py-2 text-xs text-slate-100 hover:border-primary/28 hover:bg-primary/10"
                 }
               >
                 {section.label}

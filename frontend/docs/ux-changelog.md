@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Section jump-nav formatting pass:
+  - refined `SectionJumpNav` layout to stack cleanly on narrow widths and keep desktop status copy grouped without crowding.
+  - removed tiny uppercase mobile active-label styling in favor of clearer `text-xs` title-case rendering.
+  - increased desktop jump-pill tap area (`min-h-9`) for more reliable pointer and touch navigation.
 - Background preload pass:
   - added `app/head.tsx` preload link for `/assets/background.webp` (gated by `prefers-reduced-data: no-preference`) so the locked background visual appears faster on initial load.
   - keeps reduced-data users on the lighter path while improving first-paint visual consistency for default-network sessions.
