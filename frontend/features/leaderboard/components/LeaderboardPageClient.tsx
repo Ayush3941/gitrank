@@ -222,6 +222,7 @@ export function LeaderboardPageClient() {
       ) : null}
       <SectionJumpNav
         navLabelID="leaderboard-jump-nav-label"
+        landmarkLabel="Leaderboard section navigation"
         activeSectionLabel={activeSectionLabel}
         items={LEADERBOARD_SECTION_ITEMS}
         activeSection={activeSection}

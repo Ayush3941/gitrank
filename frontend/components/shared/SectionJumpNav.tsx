@@ -10,6 +10,7 @@ type SectionJumpNavItem<SectionID extends string = string> = {
 
 export function SectionJumpNav<SectionID extends string>({
   navLabelID,
+  landmarkLabel,
   activeSectionLabel,
   items,
   activeSection,
@@ -20,6 +21,7 @@ export function SectionJumpNav<SectionID extends string>({
   stickyClassName,
 }: {
   navLabelID: string;
+  landmarkLabel?: string;
   activeSectionLabel: string;
   items: readonly SectionJumpNavItem<SectionID>[];
   activeSection: SectionID;
@@ -49,7 +51,7 @@ export function SectionJumpNav<SectionID extends string>({
 
   return (
     <nav
-      aria-label="Jump to section"
+      aria-label={landmarkLabel ?? "Section navigation"}
       className={`glass-panel flex flex-col gap-2 border border-primary/20 p-2 sm:flex-row sm:items-center ${stickyClasses} ${className ?? ""}`}
     >
       <div className="hidden shrink-0 items-center gap-2 px-2 sm:flex">

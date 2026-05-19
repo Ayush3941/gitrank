@@ -246,6 +246,7 @@ export function QuestsPageClient() {
       {!isLoading && !isError && quests.length > 0 ? (
         <SectionJumpNav
           navLabelID="quests-jump-nav-label"
+          landmarkLabel="Quests cadence navigation"
           activeSectionLabel={labelForGroup(activeGroup)}
           items={questSectionItems}
           activeSection={activeQuestSectionId}

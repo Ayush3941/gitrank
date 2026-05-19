@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- Unique navigation landmark labeling pass:
+  - added explicit per-route landmark labels for all `SectionJumpNav` usages (dashboard, contributions, badges, quests, settings, leaderboard, public profile, PR report).
+  - updated shared `SectionJumpNav` to accept `landmarkLabel`, improving screen-reader landmark navigation when multiple nav regions are present on the same page.
 - Route loading skeleton density pass:
   - reduced skeleton block count across shared `RouteLoadingState` variants (dashboard, marketing, profile, report, default) to lower first-render DOM and paint cost.
   - preserved route-specific loading hierarchy while trimming non-essential placeholder rows/cards for smoother low-end device behavior.

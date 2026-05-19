@@ -309,6 +309,7 @@ export function ContributionsPageClient() {
       ) : null}
       <SectionJumpNav
         navLabelID="contributions-jump-nav-label"
+        landmarkLabel="Contributions section navigation"
         activeSectionLabel={activeSectionLabel}
         items={CONTRIBUTION_SECTION_ITEMS}
         activeSection={activeSection}

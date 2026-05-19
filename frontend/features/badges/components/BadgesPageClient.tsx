@@ -259,6 +259,7 @@ export function BadgesPageClient() {
       ) : null}
       <SectionJumpNav
         navLabelID="badges-jump-nav-label"
+        landmarkLabel="Badges section navigation"
         activeSectionLabel={activeSectionLabel}
         items={BADGE_SECTION_ITEMS}
         activeSection={activeSection}

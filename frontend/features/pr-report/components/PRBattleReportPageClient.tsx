@@ -205,6 +205,7 @@ export function PRBattleReportPageClient({
       </GlowCard>
       <SectionJumpNav
         navLabelID="pr-report-jump-nav-label"
+        landmarkLabel="PR report section navigation"
         activeSectionLabel={activeSectionLabel}
         items={PR_REPORT_SECTION_ITEMS}
         activeSection={activeSection}

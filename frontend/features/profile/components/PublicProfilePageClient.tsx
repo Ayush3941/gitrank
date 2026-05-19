@@ -229,6 +229,7 @@ export function PublicProfilePageClient({
       ) : null}
       <SectionJumpNav
         navLabelID="public-profile-jump-nav-label"
+        landmarkLabel="Public profile section navigation"
         activeSectionLabel={activeSectionLabel}
         items={PUBLIC_PROFILE_SECTION_ITEMS}
         activeSection={activeSection}

@@ -393,6 +393,7 @@ export function SettingsPageClient() {
       />
       <SectionJumpNav
         navLabelID="settings-jump-nav-label"
+        landmarkLabel="Settings section navigation"
         activeSectionLabel={activeSectionLabel}
         items={SETTINGS_SECTION_ITEMS}
         activeSection={activeSection}

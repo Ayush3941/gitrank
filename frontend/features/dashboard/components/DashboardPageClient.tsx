@@ -358,6 +358,7 @@ export function DashboardPageClient() {
       ) : null}
       <SectionJumpNav
         navLabelID="dashboard-jump-nav-label"
+        landmarkLabel="Dashboard section navigation"
         activeSectionLabel={activeSectionLabel}
         items={DASHBOARD_SECTION_NAV}
         activeSection={activeSection}
