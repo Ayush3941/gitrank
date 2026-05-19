@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- Section jump-nav landmark-label fix:
+  - switched shared `SectionJumpNav` landmark labeling to a direct `aria-label` so the navigation region keeps a stable accessible name on both mobile and desktop layouts.
+  - resolves a small-screen labeling edge case where `aria-labelledby` pointed at an element hidden by responsive classes.
 - Dashboard breadcrumb orientation pass:
   - added a semantic breadcrumb landmark in the dashboard top bar (`nav` + ordered list + `aria-current="page"`) for explicit “you are here” orientation.
   - breadcrumb now links parent lane (`Dashboard`) and marks current lane as the active page while preserving existing lane hint chips.

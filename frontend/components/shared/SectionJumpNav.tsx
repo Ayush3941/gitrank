@@ -49,11 +49,11 @@ export function SectionJumpNav<SectionID extends string>({
 
   return (
     <nav
-      aria-labelledby={navLabelID}
+      aria-label="Jump to section"
       className={`glass-panel flex flex-col gap-2 border border-primary/20 p-2 sm:flex-row sm:items-center ${stickyClasses} ${className ?? ""}`}
     >
       <div className="hidden shrink-0 items-center gap-2 px-2 sm:flex">
-        <p id={navLabelID} className="text-xs font-medium text-cyan-100">
+        <p className="text-xs font-medium text-cyan-100">
           Jump to
         </p>
         <p
