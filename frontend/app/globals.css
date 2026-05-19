@@ -337,6 +337,11 @@ select {
   line-height: 1.45;
 }
 
+:where(button, summary, [role="button"], [role="tab"], [role="switch"], .focus-ring) {
+  min-width: 24px;
+  min-height: 24px;
+}
+
 :where(input, textarea)::placeholder {
   color: rgb(var(--text-soft));
   opacity: 0.96;
@@ -417,6 +422,15 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 .cyber-data-badge,
 .hud-eyebrow {
   text-transform: none !important;
+}
+
+[class*="text-slate-200/"] {
+  color: rgb(var(--text-soft)) !important;
+}
+
+[class*="text-slate-100/"],
+[class*="text-white/"] {
+  color: rgb(var(--text-strong)) !important;
 }
 
 .glass-panel {
