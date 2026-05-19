@@ -1,5 +1,26 @@
 # Frontend UX Changelog
 
+## 2026-05-19
+
+- Readability-first surface tuning pass:
+  - reduced global blur/shadow/glow intensity tokens in `app/globals.css`
+    to keep cyberpunk styling while improving text clarity on translucent panels
+  - increased baseline `glass-panel` opacity so body copy sits on denser, more
+    stable contrast surfaces over the fixed background image
+  - lowered decorative cyber-card overlay opacity and blur halo intensity to
+    reduce visual noise and repaint pressure.
+- Dashboard navigation formatting refinement:
+  - widened desktop sidebar to prevent label crowding
+  - wrapped sidebar nav list in a clearer `neon-surface` container and softened
+    active-state gradients for better hierarchy
+  - simplified mobile bottom nav by moving route-status text to SR-only and
+    tightening icon/label alignment with clearer active indicator placement.
+- Sticky-header simplification:
+  - removed dense `panel-grid` texture from dashboard sticky top bars to reduce
+    clutter and improve first-screen scanability
+  - normalized shared `PageHeader` shell shape usage to the global radius
+    system (no extra hardcoded rounded shell).
+
 ## 2026-05-17
 
 - Keyboard shortcut help overlay:
