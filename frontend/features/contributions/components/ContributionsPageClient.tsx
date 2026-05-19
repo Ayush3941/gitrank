@@ -85,6 +85,9 @@ export function ContributionsPageClient() {
   const isFiltering =
     deferredFilter !== filter || deferredSearch !== search || deferredSort !== sort;
   const canReset = filter !== "All" || search.trim().length > 0 || sort !== "Newest";
+  const totalContributionEvidence = profile?.user.contributions.length ?? 0;
+  const isFilteredNoResults =
+    canReset && totalContributionEvidence > 0 && filteredRows.length === 0;
   const activeSectionLabel =
     CONTRIBUTION_SECTION_ITEMS.find((section) => section.id === activeSection)?.label ??
     "Filters";
@@ -342,14 +345,23 @@ export function ContributionsPageClient() {
       ) : null}
       {!isLoading && !isError && filteredRows.length === 0 ? (
         <EmptyState
-          eyebrow="Contribution evidence"
-          title="No merged PRs found yet."
-          description="Start with a small real contribution: docs, tests, or a bug fix. Meaningful work unlocks the shelf."
-          actionLabel="Review quest queue"
-          actionHref="/dashboard/quests"
+          eyebrow={isFilteredNoResults ? "Filter results" : "Contribution evidence"}
+          title={
+            isFilteredNoResults
+              ? "No contributions match current filters."
+              : "No merged PRs found yet."
+          }
+          description={
+            isFilteredNoResults
+              ? "Try resetting filters or widening your search to recover cards from this scored evidence window."
+              : "Start with a small real contribution: docs, tests, or a bug fix. Meaningful work unlocks the shelf."
+          }
+          actionLabel={isFilteredNoResults ? "Reset filters" : "Review quest queue"}
+          actionHref={isFilteredNoResults ? undefined : "/dashboard/quests"}
+          onAction={isFilteredNoResults ? handleResetFilters : undefined}
           secondaryActionLabel="Open settings"
           secondaryActionHref="/dashboard/settings"
-          analyticsTarget="contributions:empty"
+          analyticsTarget={isFilteredNoResults ? "contributions:empty-filtered" : "contributions:empty"}
         />
       ) : null}
       {!isLoading && !isError && profile ? (

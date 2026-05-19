@@ -412,14 +412,25 @@ export function BadgesPageClient() {
         ) : null}
         {!isLoading && !isError && filtered.length === 0 ? (
           <EmptyState
-            eyebrow="Badge progression"
-            title="Your badge shelf is waiting."
-            description="Complete your first meaningful merged PR to start unlocking visible reputation proof."
-            actionLabel="Open quests"
-            actionHref="/dashboard/quests"
+            eyebrow={canResetFilters && totalCount > 0 ? "Filter results" : "Badge progression"}
+            title={
+              canResetFilters && totalCount > 0
+                ? "No badges match current filters."
+                : "Your badge shelf is waiting."
+            }
+            description={
+              canResetFilters && totalCount > 0
+                ? "Reset filters to view all earned and locked lanes, or choose a wider rarity/state range."
+                : "Complete your first meaningful merged PR to start unlocking visible reputation proof."
+            }
+            actionLabel={canResetFilters && totalCount > 0 ? "Reset filters" : "Open quests"}
+            actionHref={canResetFilters && totalCount > 0 ? undefined : "/dashboard/quests"}
+            onAction={canResetFilters && totalCount > 0 ? handleResetFilters : undefined}
             secondaryActionLabel="Open contributions"
             secondaryActionHref="/dashboard/contributions"
-            analyticsTarget="badges:empty"
+            analyticsTarget={
+              canResetFilters && totalCount > 0 ? "badges:empty-filtered" : "badges:empty"
+            }
           />
         ) : null}
         {!isLoading && !isError && filtered.length ? (

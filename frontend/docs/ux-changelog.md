@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Filter-aware empty-state pass:
+  - updated Contributions and Badges root empty states to distinguish true no-data onboarding states from filter/search no-result states.
+  - filter-generated no-results now provide direct `Reset filters` primary actions instead of showing first-use copy that implies no evidence exists.
+  - kept existing recovery links to Settings/Contributions/Quests so users always have a clear next action regardless of state.
 - Tabs overflow orientation pass:
   - upgraded shared `TabsList` to auto-scroll the active tab trigger into view as tab state changes, including initial mount.
   - behavior respects reduced-motion preference by switching to instant scroll when `prefers-reduced-motion` is enabled.
