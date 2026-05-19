@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useId } from "react";
 import type { SkillNode } from "@/types/gitrank";
 
 const SkillRadarChartInner = dynamic(
@@ -20,6 +21,7 @@ const SkillRadarChartInner = dynamic(
 );
 
 export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
+  const summaryId = useId();
   const safeSkills = skills.length > 0
     ? skills
     : [{ category: "Unknown", score: 0, delta: 0, note: "No skill evidence available yet." } as SkillNode];
@@ -29,7 +31,11 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
 
   return (
     <div className="space-y-3">
-      <div className="neon-tile relative h-80 w-full overflow-hidden rounded-[1.75rem] p-3">
+      <div
+        className="neon-tile relative h-80 w-full overflow-hidden rounded-[1.75rem] p-3"
+        role="img"
+        aria-describedby={summaryId}
+      >
         <SkillRadarChartInner skills={safeSkills} />
         <p className="sr-only">
           Skill radar chart showing the most evident contribution signals across documentation, testing, backend, and architecture.
@@ -39,7 +45,7 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
         <summary className="cursor-pointer text-xs font-semibold text-primary">
           Skill signal summary
         </summary>
-        <p className="mt-2 text-sm text-slate-200/86">
+        <p id={summaryId} className="mt-2 text-sm text-slate-200/86">
           Strongest current lane: {strongest.category} ({strongest.score}).
           {" "}Lowest lane: {weakest.category} ({weakest.score}).
         </p>

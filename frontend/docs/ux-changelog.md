@@ -55,6 +55,12 @@
 - Badge modal accessibility semantics pass:
   - added explicit `DialogDescription` to badge detail modal so assistive tech
     receives structural context on open (purpose + expected content).
+- Chart motion/accessibility pass:
+  - disabled Recharts animation on timeline area and skill radar surfaces to
+    remove non-essential motion and reduce rendering work on dashboard/profile
+    pages
+  - added explicit `role="img"` + `aria-describedby` linkage from chart
+    containers to nearby summary copy for stronger non-visual chart context.
 
 ## 2026-05-17
 

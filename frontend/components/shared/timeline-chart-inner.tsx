@@ -44,6 +44,7 @@ export function TimelineChartInner({ data }: { data: Array<{ label: string; xp: 
           stroke="rgb(var(--primary))"
           strokeWidth={2.4}
           fill="url(#xpGradient)"
+          isAnimationActive={false}
         />
       </AreaChart>
     </ResponsiveContainer>

@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useId } from "react";
 
 const TimelineChartInner = dynamic(
   () => import("@/components/shared/timeline-chart-inner").then((mod) => mod.TimelineChartInner),
@@ -16,6 +17,7 @@ const TimelineChartInner = dynamic(
 );
 
 export function TimelineChart({ data }: { data: Array<{ label: string; xp: number }> }) {
+  const summaryId = useId();
   const safeData = data.length > 0 ? data : [{ label: "No data", xp: 0 }];
   const firstPoint = safeData[0];
   const lastPoint = safeData[safeData.length - 1];
@@ -24,7 +26,11 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
 
   return (
     <div className="space-y-3">
-      <div className="neon-tile relative h-72 w-full overflow-hidden rounded-[1.75rem] p-3">
+      <div
+        className="neon-tile relative h-72 w-full overflow-hidden rounded-[1.75rem] p-3"
+        role="img"
+        aria-describedby={summaryId}
+      >
         <TimelineChartInner data={safeData} />
         <p className="sr-only">Contribution quality timeline showing cumulative XP growth over time.</p>
       </div>
@@ -32,7 +38,7 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
         <summary className="cursor-pointer text-xs font-semibold text-primary">
           Timeline summary
         </summary>
-        <p className="mt-2 text-sm text-slate-200/86">
+        <p id={summaryId} className="mt-2 text-sm text-slate-200/86">
           Start {firstPoint.label}: {firstPoint.xp} XP. Latest {lastPoint.label}: {lastPoint.xp} XP.
           {" "}Net change: {growth >= 0 ? "+" : ""}{growth} XP.
         </p>

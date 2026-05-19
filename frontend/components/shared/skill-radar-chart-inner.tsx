@@ -18,6 +18,7 @@ export function SkillRadarChartInner({ skills }: { skills: SkillNode[] }) {
           fill="rgb(var(--primary) / 0.26)"
           fillOpacity={1}
           strokeWidth={2.4}
+          isAnimationActive={false}
         />
       </RadarChart>
     </ResponsiveContainer>
