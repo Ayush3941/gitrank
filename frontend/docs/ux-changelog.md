@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Onboarding reveal recovery pass:
+  - added sync-recovery primary action on reveal when evidence is missing or sync state is `never_synced`, `partially_synced`, `failed`, or `rate_limited`.
+  - surfaced relative last-sync timing in reveal snapshot state copy when available.
+  - normalized sync-state labels to user-facing casing (`Never synced`, `Rate limited`, etc.) for clearer onboarding messaging.
 - Quick-actions keyboard jump pass:
   - added `Home` / `End` navigation in quick actions to jump directly to first or last result.
   - updated shortcut-help reference so keyboard guidance matches live behavior.

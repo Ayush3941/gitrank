@@ -6,6 +6,7 @@ import { RarityBadge } from "@/components/shared/RarityBadge";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { Button } from "@/components/ui/button";
 import { OnboardingStepper } from "@/features/onboarding/components/OnboardingStepper";
+import { formatRelativeDays } from "@/lib/formatters";
 import type { UserProfile } from "@/types/gitrank";
 
 export function RevealPanel({
@@ -23,6 +24,16 @@ export function RevealPanel({
     user.strongestSignals.length > 0 ? user.strongestSignals.join(", ") : "recent contribution";
   const unlockedBadges = user.badges.filter((badge) => badge.unlocked).slice(0, 3);
   const evidenceRows = user.contributions.length;
+  const needsSyncRecovery =
+    evidenceRows === 0 ||
+    user.syncStatus.state === "never_synced" ||
+    user.syncStatus.state === "partially_synced" ||
+    user.syncStatus.state === "failed" ||
+    user.syncStatus.state === "rate_limited";
+  const recoveryActionLabel =
+    user.syncStatus.state === "failed" || user.syncStatus.state === "rate_limited"
+      ? "Retry sync analysis"
+      : "Continue sync analysis";
   const nextActions =
     user.mergedPrCount === 0
       ? [
@@ -65,6 +76,8 @@ export function RevealPanel({
             <p className="text-xs font-medium text-primary">Snapshot state</p>
             <p className="mt-2 leading-6">
               Sync status is <span className="font-semibold text-white">{formatSyncState(user.syncStatus.state)}</span>.
+              {" "}
+              {user.syncStatus.lastSyncedAt ? `Last sync ${formatRelativeDays(user.syncStatus.lastSyncedAt)}.` : ""}
               {evidenceRows > 0
                 ? ` This reveal currently includes ${evidenceRows} persisted contribution evidence row${evidenceRows === 1 ? "" : "s"}.`
                 : " No scored contribution evidence is attached yet; complete one merged contribution and re-sync to unlock deeper profile interpretation."}
@@ -126,7 +139,15 @@ export function RevealPanel({
           </div>
         </div>
         <div className="flex flex-wrap justify-center gap-3">
-          <Button asChild size="lg">
+          {needsSyncRecovery ? (
+            <Button asChild size="lg">
+              <Link href="/onboarding/analyzing">
+                {recoveryActionLabel}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          ) : null}
+          <Button asChild size="lg" variant={needsSyncRecovery ? "secondary" : "default"}>
             <Link href="/dashboard">
               Enter dashboard
               <ArrowRight className="h-4 w-4" />
@@ -183,7 +204,13 @@ function RevealFallbackCard({
 }
 
 function formatSyncState(state: UserProfile["syncStatus"]["state"]): string {
-  return state.replaceAll("_", " ");
+  if (state === "never_synced") return "Never synced";
+  if (state === "partially_synced") return "Partially synced";
+  if (state === "rate_limited") return "Rate limited";
+  if (state === "syncing") return "Syncing";
+  if (state === "stale") return "Stale";
+  if (state === "failed") return "Failed";
+  return "Synced";
 }
 
 export function RevealPanelSkeleton() {
