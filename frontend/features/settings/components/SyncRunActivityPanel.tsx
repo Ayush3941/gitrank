@@ -33,6 +33,8 @@ export function SyncRunActivityPanel({
   const deferredStatusFilter = useDeferredValue(statusFilter);
   const isFiltering = deferredSearch !== search || deferredStatusFilter !== statusFilter;
   const canReset = search.trim().length > 0 || statusFilter !== "All";
+  const compactSearch =
+    search.trim().length > 32 ? `${search.trim().slice(0, 32)}…` : search.trim();
   const filterStatusId = "settings-sync-filter-status";
   const statusCounts = useMemo(() => {
     const next = {
@@ -154,7 +156,7 @@ export function SyncRunActivityPanel({
           <div className="flex flex-wrap items-center gap-2">
             {search.trim().length > 0 ? (
               <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs">
-                Query: {search.trim()}
+                Query: {compactSearch}
                 <button
                   type="button"
                   onClick={handleClearSearch}

@@ -26,6 +26,8 @@ export function PrivacyRepositoryToggleList({
   const visibleItems = controlled ? repositories : items;
   const isFiltering = deferredSearch !== search || deferredFilter !== visibilityFilter;
   const canReset = search.trim().length > 0 || visibilityFilter !== "All";
+  const compactSearch =
+    search.trim().length > 32 ? `${search.trim().slice(0, 32)}…` : search.trim();
   const statusId = "settings-repositories-filter-status";
   const visibilityGroupId = "settings-repositories-visibility-group";
   const counts = useMemo(() => {
@@ -96,7 +98,7 @@ export function PrivacyRepositoryToggleList({
           <div className="flex flex-wrap items-center gap-2">
             {search.trim().length > 0 ? (
               <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs">
-                Query: {search.trim()}
+                Query: {compactSearch}
                 <button
                   type="button"
                   onClick={handleClearSearch}

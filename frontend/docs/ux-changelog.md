@@ -8,6 +8,7 @@
 - Repository visibility filter-recovery pass:
   - added active-filter chips and one-tap clear actions for repository search query and visibility filter in Settings.
   - added inline clear-search affordance in repository privacy search input for faster mobile/desktop recovery.
+  - compacted long query chip labels to preserve layout on narrow screens.
   - keeps existing privacy toggle behavior and backend sync contracts unchanged.
 - Contributions filter quick-clear pass:
   - added inline clear-search control in the contributions filter input, aligned with other filter-heavy surfaces.
@@ -19,6 +20,7 @@
 - Settings sync-log filter-recovery pass:
   - added active-filter chips for sync-run search query and status filter, each with one-tap clear controls.
   - added inline clear-search affordance in the sync-log search field for faster filter recovery on mobile and desktop.
+  - compacted long query chip labels to preserve layout on narrow screens.
   - keeps existing backend contract and polling behavior unchanged while reducing dead-end filtered states.
 - Mobile quick-controls state visibility pass:
   - updated mobile display controls to show current state labels directly on each button (`Theme`, `Text`, `Effects`) instead of generic labels only.
