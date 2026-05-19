@@ -408,7 +408,7 @@ export function LeaderboardPageClient() {
             ) : null}
             <LeaderboardArena snapshot={snapshot} rowLimit={safeVisibleRowCount} />
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm text-slate-300">
+              <p role="status" aria-live="polite" aria-atomic="true" className="text-sm text-slate-300">
                 Showing {safeVisibleRowCount} of {rows.length} ranked rows.
               </p>
               {hasMoreRows ? (

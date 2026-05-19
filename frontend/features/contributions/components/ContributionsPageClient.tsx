@@ -568,7 +568,7 @@ export function ContributionsPageClient() {
                   isBusy={isFiltering}
                 />
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p className="text-sm text-slate-300">
+                  <p role="status" aria-live="polite" aria-atomic="true" className="text-sm text-slate-300">
                     Showing {visibleRows.length} of {filteredRows.length} cards from the current evidence window.
                   </p>
                   {hasMoreRows ? (
