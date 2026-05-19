@@ -13,15 +13,15 @@ export const dashboardNavItems: DashboardNavItem[] = [
   {
     href: "/dashboard",
     label: "Dashboard",
-    mobileLabel: "Dashboard",
-    hint: "Identity, XP, and score movement",
+    mobileLabel: "Home",
+    hint: "Identity snapshot, XP, and score movement",
     icon: LayoutDashboard,
     exact: true,
   },
   {
     href: "/dashboard/contributions",
     label: "Contributions",
-    mobileLabel: "Contributions",
+    mobileLabel: "Contribs",
     hint: "PR impact cards and evidence timeline",
     icon: Shield,
   },
@@ -29,7 +29,7 @@ export const dashboardNavItems: DashboardNavItem[] = [
     href: "/dashboard/badges",
     label: "Badges",
     mobileLabel: "Badges",
-    hint: "Unlocked achievements and progress",
+    hint: "Unlocked achievements and progress lanes",
     icon: Award,
   },
   {

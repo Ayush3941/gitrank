@@ -5,6 +5,7 @@
 - Cross-surface readability + nav-density pass:
   - raised global microtext baselines (`text-xs`, `text-[10px]`, `text-[11px]`, and large-text-scale variants) for stronger dark-theme legibility on dashboard-heavy lanes.
   - increased mobile dashboard nav readability by enlarging active-lane copy and lane labels while preserving five-lane layout and touch-target footprint.
+  - shortened mobile lane labels (`Home`, `Contribs`) so bottom-nav scanning stays clean after text-size increases.
   - tightened mobile nav control-button typography so quick display controls remain readable without increasing footer clutter.
   - softened AppShell vignette opacity to keep the locked background image more visible while retaining foreground text contrast.
 - Leaderboard progressive-render pass:
