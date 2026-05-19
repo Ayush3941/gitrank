@@ -12,6 +12,8 @@
   - replaced unsupported `display: "inline-flex"` with `display: "flex"` across root and public OG/Twitter image routes so `next build` can prerender image routes reliably.
 - Mobile jump-nav clarity pass:
   - surfaced current active section label above compact mobile jump-select controls for faster section orientation on small screens.
+- Theme-switcher visual identity pass:
+  - added compact three-swatch theme signatures to `ThemeQuickSwitcher` so the current theme is recognizable at a glance without opening settings.
 - Cyberpunk palette + visibility tuning pass:
   - shifted base theme tokens toward electric-blue / deep-pink / lime / amber accents while preserving readability-first text contrast
   - updated key accent utilities (`neon-title`, divider, selection, status chips) to use the new palette language instead of flat cyan-magenta defaults
