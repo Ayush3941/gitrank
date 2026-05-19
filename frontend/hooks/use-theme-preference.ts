@@ -11,7 +11,7 @@ const SUPPORTED_THEMES = ["neon", "midnight", "aurora", "high-contrast"] as cons
 export type ThemePreference = (typeof SUPPORTED_THEMES)[number];
 
 export function useThemePreference() {
-  const theme = useSyncExternalStore(subscribe, getThemeSnapshot, () => "high-contrast");
+  const theme = useSyncExternalStore(subscribe, getThemeSnapshot, () => "neon");
 
   const setTheme = useCallback((value: ThemePreference) => {
     if (typeof window === "undefined") {
@@ -64,7 +64,7 @@ function subscribe(callback: () => void) {
 
 function getThemeSnapshot(): ThemePreference {
   if (typeof window === "undefined") {
-    return "high-contrast";
+    return "neon";
   }
   const stored = window.localStorage.getItem(STORAGE_KEY);
   if (stored && isThemePreference(stored)) {
@@ -73,7 +73,7 @@ function getThemeSnapshot(): ThemePreference {
   if (window.matchMedia(HIGH_CONTRAST_QUERY).matches) {
     return "high-contrast";
   }
-  return "high-contrast";
+  return "neon";
 }
 
 function isThemePreference(value: string): value is ThemePreference {

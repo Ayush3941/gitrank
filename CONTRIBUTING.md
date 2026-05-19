@@ -219,6 +219,17 @@ Baseline references for this section:
 - https://owasp.org/www-project-secure-headers/
 - https://almanac.httparchive.org/en/2025/performance
 
+Cyberpunk inspiration references (style direction only, no copy-paste):
+
+- https://github.com/cyberpunk-ui
+- https://gist.github.com/bo0ts/3723433
+
+Inspiration usage rule:
+
+- Extract palette/mood/layout language only (contrast, hierarchy, accent strategy, typography vibe).
+- Re-implement with GitRank tokens/components and accessibility/performance rules.
+- Do not copy source CSS/theme files or component markup verbatim.
+
 ### A. Product Direction and UX
 
 - [x] Define 3 primary user journeys (new user onboarding, returning contributor, profile sharing).

@@ -2,6 +2,12 @@
 
 ## 2026-05-19
 
+- Cyberpunk palette + visibility tuning pass:
+  - shifted base theme tokens toward electric-blue / deep-pink / lime / amber accents while preserving readability-first text contrast
+  - updated key accent utilities (`neon-title`, divider, selection, status chips) to use the new palette language instead of flat cyan-magenta defaults
+  - changed theme default fallback to `neon` (system high-contrast still respected) so first-load visuals match the intended dashboard mood.
+- Background image compatibility hardening:
+  - added an explicit `background.jpg` fallback before `image-set(...)` so fixed background rendering remains reliable on browsers with partial `image-set` support.
 - Section jump-nav mobile formatting pass:
   - switched small-screen jump navigation to a compact `<select>` control with
     direct hash navigation, keeping the larger chip-based horizontal jump rail
