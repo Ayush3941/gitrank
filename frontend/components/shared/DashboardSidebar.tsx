@@ -31,7 +31,7 @@ export function DashboardSidebar() {
             <Sparkles className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <p className="cyber-title truncate text-base font-semibold text-white">GitRank</p>
+            <p className="cyber-title break-anywhere text-base font-semibold text-white">GitRank</p>
             <p className="text-xs font-medium text-primary/92">Contributor Console</p>
           </div>
         </Link>
@@ -71,12 +71,12 @@ export function DashboardSidebar() {
                         )}
                       />
                       <Icon className={cn("mt-0.5 h-4 w-4", active ? "text-primary" : "text-slate-200 group-hover:text-primary")} />
-                      <span className="min-w-0">
-                        <span className="block truncate font-semibold">{item.label}</span>
-                        <span className={cn("mt-0.5 block truncate text-xs", active ? "text-slate-200" : "text-slate-300")}>
-                          {item.hint}
-                        </span>
+                    <span className="min-w-0 text-left">
+                      <span className="block break-anywhere font-semibold leading-5">{item.label}</span>
+                      <span className={cn("mt-0.5 block break-anywhere text-xs leading-5", active ? "text-slate-200" : "text-slate-300")}>
+                        {item.hint}
                       </span>
+                    </span>
                     </Link>
                   </li>
                 );

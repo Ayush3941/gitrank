@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Dashboard sidebar readability pass:
+  - removed hard truncation on sidebar brand/nav labels and hint copy in favor of controlled wrapping (`break-anywhere`, explicit line-height).
+  - improves lane-name legibility and prevents clipped semantics on narrower desktop widths or larger text-scale settings.
+  - keeps the same route structure and interaction model while making navigation copy easier to scan.
 - Settings micro-type readability pass:
   - removed remaining `text-[9px]` usage from theme preview chips in Settings.
   - increased preview chip labels to `text-[10px]` with taller chip height and centered alignment for clearer at-a-glance legibility.
