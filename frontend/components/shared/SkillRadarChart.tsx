@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useId } from "react";
+import { useLazyInView } from "@/hooks/use-lazy-in-view";
 import type { SkillNode } from "@/types/gitrank";
 
 const SkillRadarChartInner = dynamic(
@@ -22,6 +23,7 @@ const SkillRadarChartInner = dynamic(
 
 export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
   const summaryId = useId();
+  const { ref: viewportRef, inView } = useLazyInView();
   const safeSkills = skills.length > 0
     ? skills
     : [{ category: "Unknown", score: 0, delta: 0, note: "No skill evidence available yet." } as SkillNode];
@@ -32,11 +34,12 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
   return (
     <div className="space-y-3">
       <div
+        ref={viewportRef}
         className="neon-tile relative h-80 w-full overflow-hidden rounded-[1.75rem] p-3"
         role="img"
         aria-describedby={summaryId}
       >
-        <SkillRadarChartInner skills={safeSkills} />
+        {inView ? <SkillRadarChartInner skills={safeSkills} /> : <SkillRadarChartFallback />}
         <p className="sr-only">
           Skill radar chart showing the most evident contribution signals across documentation, testing, backend, and architecture.
         </p>
@@ -58,6 +61,15 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
           ))}
         </ul>
       </details>
+    </div>
+  );
+}
+
+function SkillRadarChartFallback() {
+  return (
+    <div className="grid h-full w-full gap-2 p-3">
+      <div className="neon-skeleton h-6 w-1/2 rounded-lg" />
+      <div className="neon-skeleton h-full rounded-2xl" />
     </div>
   );
 }

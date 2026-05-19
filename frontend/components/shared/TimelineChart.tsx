@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useId } from "react";
+import { useLazyInView } from "@/hooks/use-lazy-in-view";
 
 const TimelineChartInner = dynamic(
   () => import("@/components/shared/timeline-chart-inner").then((mod) => mod.TimelineChartInner),
@@ -18,6 +19,7 @@ const TimelineChartInner = dynamic(
 
 export function TimelineChart({ data }: { data: Array<{ label: string; xp: number }> }) {
   const summaryId = useId();
+  const { ref: viewportRef, inView } = useLazyInView();
   const safeData = data.length > 0 ? data : [{ label: "No data", xp: 0 }];
   const firstPoint = safeData[0];
   const lastPoint = safeData[safeData.length - 1];
@@ -27,11 +29,12 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
   return (
     <div className="space-y-3">
       <div
+        ref={viewportRef}
         className="neon-tile relative h-72 w-full overflow-hidden rounded-[1.75rem] p-3"
         role="img"
         aria-describedby={summaryId}
       >
-        <TimelineChartInner data={safeData} />
+        {inView ? <TimelineChartInner data={safeData} /> : <TimelineChartFallback />}
         <p className="sr-only">Contribution quality timeline showing cumulative XP growth over time.</p>
       </div>
       <details className="neon-surface px-4 py-3">
@@ -54,6 +57,15 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
           ))}
         </ul>
       </details>
+    </div>
+  );
+}
+
+function TimelineChartFallback() {
+  return (
+    <div className="grid h-full w-full gap-2 p-3">
+      <div className="neon-skeleton h-6 w-1/2 rounded-lg" />
+      <div className="neon-skeleton h-full rounded-2xl" />
     </div>
   );
 }

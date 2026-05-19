@@ -84,6 +84,11 @@
 - Dialog viewport resilience pass:
   - added max-height and internal vertical scrolling to shared dialog content
     shell so long modal content remains reachable on shorter/mobile viewports.
+- Lazy chart-mount optimization:
+  - added shared `use-lazy-in-view` hook and applied it to timeline/skill
+    chart shells so heavy chart modules load only near viewport
+  - chart panels now render lightweight skeleton placeholders until in-view,
+    reducing initial dashboard/profile work.
 
 ## 2026-05-17
 
