@@ -33,8 +33,8 @@ export function MobileNav() {
                 className={cn(
                   "focus-ring relative flex min-h-14 flex-col items-center justify-center gap-1 border px-1 py-2 text-[11px] leading-tight font-semibold",
                   active
-                    ? "border-primary/46 bg-gradient-to-r from-primary/26 via-primary/18 to-primary-2/24 text-white shadow-[0_0_10px_rgb(34_226_255_/_0.13)]"
-                    : "border-transparent text-slate-100 hover:border-primary/26 hover:bg-primary/10 hover:text-white",
+                    ? "border-primary/42 bg-primary/14 text-white"
+                    : "border-transparent text-slate-100 hover:border-primary/22 hover:bg-primary/8 hover:text-white",
                 )}
               >
                 <span
@@ -43,7 +43,7 @@ export function MobileNav() {
                     active && "bg-primary",
                   )}
                 />
-                <Icon className="h-4 w-4" />
+                <Icon className={cn("h-4 w-4", active ? "text-primary" : "text-slate-200")} />
                 <span className="max-w-full truncate">{item.mobileLabel}</span>
               </Link>
             </li>

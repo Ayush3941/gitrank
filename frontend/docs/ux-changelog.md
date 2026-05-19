@@ -99,6 +99,13 @@
 - Dead utility cleanup:
   - removed unused `.grid-fade` utility class from global stylesheet to keep
     CSS surface area tighter.
+- Navigation contrast + shell-glow smoothing pass:
+  - finalized `AppShell` vignette reduction so full-page overlays interfere
+    less with text over the fixed background image
+  - simplified active/hover visual states in desktop sidebar and mobile nav to
+    reduce gradient noise while preserving clear route state
+  - softened global glow/vignette falloff and enlarged decorative shell glows
+    at lower opacity for longer, smoother start/stop gradients.
 
 ## 2026-05-17
 

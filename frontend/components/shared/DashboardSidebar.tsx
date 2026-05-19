@@ -20,6 +20,7 @@ export function DashboardSidebar() {
       <div className="space-y-6">
         <Link
           href="/dashboard"
+          aria-label="Open dashboard home"
           className="flex items-center gap-3 border border-primary/24 bg-gradient-to-r from-primary/10 to-primary-2/8 px-3 py-2.5"
         >
           <div className="bg-primary/16 p-2.5 text-primary ring-glow">
@@ -27,15 +28,15 @@ export function DashboardSidebar() {
           </div>
           <div className="min-w-0">
             <p className="cyber-title truncate text-base font-semibold text-white">GitRank</p>
-            <p className="text-xs font-medium text-primary">Dashboard</p>
+            <p className="text-xs font-medium text-primary/92">Contributor Console</p>
           </div>
         </Link>
-        <div className="space-y-2">
-          <p id="dashboard-sidebar-nav-label" className="cyber-title text-xs font-medium text-cyan-100">Navigate</p>
+        <div className="space-y-2.5">
+          <p id="dashboard-sidebar-nav-label" className="cyber-title text-xs font-medium text-cyan-100">Navigation</p>
           <p
             role="status"
             aria-live="polite"
-            className="text-xs text-cyan-100/90"
+            className="text-xs text-cyan-100/84"
           >
             {activeItem ? `Current lane: ${activeItem.label}` : "Dashboard navigation"}
           </p>
@@ -52,8 +53,8 @@ export function DashboardSidebar() {
                       className={cn(
                         "focus-ring relative flex items-center gap-3 border px-3 py-2.5 text-sm leading-5 font-semibold",
                         active
-                          ? "border-primary/45 bg-gradient-to-r from-primary/18 via-primary/14 to-primary-2/18 text-white shadow-[0_0_10px_rgb(34_226_255_/_0.12)]"
-                          : "border-transparent text-slate-100 hover:border-primary/28 hover:bg-primary/10 hover:text-white",
+                          ? "border-primary/40 bg-primary/12 text-white"
+                          : "border-transparent text-slate-100 hover:border-primary/24 hover:bg-primary/8 hover:text-white",
                       )}
                     >
                       <span
@@ -62,7 +63,7 @@ export function DashboardSidebar() {
                           active && "bg-primary",
                         )}
                       />
-                      <Icon className="h-4 w-4" />
+                      <Icon className={cn("h-4 w-4", active ? "text-primary" : "text-slate-200")} />
                       <span>{item.label}</span>
                     </Link>
                   </li>
@@ -82,7 +83,7 @@ export function DashboardSidebar() {
           <p className="cyber-copy mt-1.5 text-sm text-foreground">
             Meaningful contribution quality over raw activity volume.
           </p>
-          <p className="mt-2 text-xs text-cyan-100">
+          <p className="mt-2 text-xs text-cyan-100/88">
             Quick actions: Ctrl/Cmd+K
           </p>
         </div>
