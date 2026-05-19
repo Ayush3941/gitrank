@@ -8,6 +8,10 @@
   - added polite live-status announcements for visible-row counters so assistive tech receives progressive-disclosure updates after row expansion.
   - added `aria-controls` plus remaining-row labels on row expansion controls and anchored the ranked-list region with a stable ID.
   - aligned first-render row window with constrained-mode page-size defaults to avoid oversized initial lane mounts on low-end devices.
+- Reduced-gamification scroll-jank hardening:
+  - switched reduced-gamification background attachment to `scroll` (from fixed behavior) and anchored background position to `center top`.
+  - expanded reduced-gamification animation suppression to include `body::after` alongside existing reduced-motion shell overlays.
+  - keeps the visual theme while lowering repaint pressure during long dashboard scroll sessions.
 - Contributions progressive-disclosure performance pass:
   - capped contribution timeline rendering to a recent-month window (`12` default, `8` on constrained networks) and added explicit window copy for scan clarity.
   - switched contribution card lane to progressive disclosure (`Show more cards`) so initial render mounts a bounded subset (`24` default, `12` constrained) instead of the full list.
