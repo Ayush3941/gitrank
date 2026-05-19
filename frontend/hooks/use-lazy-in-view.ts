@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 type UseLazyInViewOptions = {
   rootMargin?: string;
@@ -14,18 +14,17 @@ export function useLazyInView(options?: UseLazyInViewOptions) {
     threshold = 0,
     triggerOnce = true,
   } = options ?? {};
-  const nodeRef = useRef<HTMLElement | null>(null);
+  const [node, setNode] = useState<HTMLElement | null>(null);
   const [inView, setInView] = useState(false);
 
-  const ref = useCallback((node: HTMLElement | null) => {
-    nodeRef.current = node;
+  const ref = useCallback((nextNode: HTMLElement | null) => {
+    setNode(nextNode);
   }, []);
 
   useEffect(() => {
     if (inView && triggerOnce) {
       return;
     }
-    const node = nodeRef.current;
     if (!node) {
       return;
     }
@@ -59,7 +58,7 @@ export function useLazyInView(options?: UseLazyInViewOptions) {
     return () => {
       observer.disconnect();
     };
-  }, [inView, rootMargin, threshold, triggerOnce]);
+  }, [inView, node, rootMargin, threshold, triggerOnce]);
 
   return { ref, inView };
 }

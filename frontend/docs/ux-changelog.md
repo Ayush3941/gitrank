@@ -89,6 +89,8 @@
     chart shells so heavy chart modules load only near viewport
   - chart panels now render lightweight skeleton placeholders until in-view,
     reducing initial dashboard/profile work.
+  - hook follow-up hardening: switched to callback-ref + node state tracking so
+    observer attachment is deterministic across mount/remount transitions.
 
 ## 2026-05-17
 
