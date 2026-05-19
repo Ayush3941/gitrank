@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Badges and leaderboard filter-recovery pass:
+  - added removable active-filter chips for badge rarity and visibility filters, each with one-tap clear actions.
+  - added a quick `Reset to Global` action in leaderboard lane controls when viewing non-global tabs.
+  - improves recovery from narrow-filter and deep-lane states without changing backend contracts.
 - Settings sync-log filter-recovery pass:
   - added active-filter chips for sync-run search query and status filter, each with one-tap clear controls.
   - added inline clear-search affordance in the sync-log search field for faster filter recovery on mobile and desktop.

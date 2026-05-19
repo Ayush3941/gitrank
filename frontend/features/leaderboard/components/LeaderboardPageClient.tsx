@@ -251,12 +251,26 @@ export function LeaderboardPageClient() {
               ? `Refreshing ${tab} snapshot...`
               : `Viewing ${tab} snapshot`}
           </p>
-          <CopyLinkButton
-            href={laneSharePath}
-            label="Copy lane link"
-            copiedLabel="Lane link copied"
-            analyticsTarget="leaderboard/copy-lane-link"
-          />
+          <div className="flex flex-wrap items-center gap-2">
+            {tab !== "Global" ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => handleTabChange("Global")}
+                disabled={isBusy}
+                title="Return to Global lane"
+              >
+                Reset to Global
+              </Button>
+            ) : null}
+            <CopyLinkButton
+              href={laneSharePath}
+              label="Copy lane link"
+              copiedLabel="Lane link copied"
+              analyticsTarget="leaderboard/copy-lane-link"
+            />
+          </div>
         </div>
         {snapshot ? (
           <div className="flex flex-wrap gap-2 text-xs">
