@@ -4,11 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 import { dashboardNavItems } from "@/components/shared/dashboard-nav";
-import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 
 export function MobileNav() {
   const pathname = usePathname();
-  const constrainedNetwork = useNetworkConstraintPreference();
   const isActive = (href: string, exact = false) =>
     exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
   const activeItem = dashboardNavItems.find((item) => isActive(item.href, item.exact));
@@ -27,7 +25,7 @@ export function MobileNav() {
         </p>
         <Link
           href="/dashboard/settings#settings-display"
-          prefetch={!constrainedNetwork}
+          prefetch={false}
           className="focus-ring inline-flex min-h-8 items-center justify-center border border-primary/20 bg-primary/8 px-2 text-[11px] font-semibold text-cyan-100 hover:border-primary/30 hover:text-white"
         >
           Display controls
@@ -41,7 +39,7 @@ export function MobileNav() {
             <li key={item.href}>
               <Link
                 href={item.href}
-                prefetch={!constrainedNetwork}
+                prefetch={false}
                 aria-current={active ? "page" : undefined}
                 aria-label={item.label}
                 title={item.label}

@@ -6,6 +6,9 @@
   - capped contribution timeline rendering to a recent-month window (`12` default, `8` on constrained networks) and added explicit window copy for scan clarity.
   - switched contribution card lane to progressive disclosure (`Show more cards`) so initial render mounts a bounded subset (`24` default, `12` constrained) instead of the full list.
   - bounded ABRA contribution payload sampling to a fixed top slice (`24`) so AI narrative requests stay predictable on dense histories.
+- Dashboard route prefetch-throttle pass:
+  - disabled automatic Next.js prefetch on dense dashboard navigation links (sidebar lanes, mobile lanes, breadcrumb parent, and top-bar profile link).
+  - reduces background route compilation/network churn on low-end machines while preserving direct navigation behavior.
 - Dense-surface shadow simplification pass:
   - removed per-item active-state glow shadows from sidebar and mobile nav lane tiles while preserving active border/background contrast.
   - removed per-row timeline bar glow shadow in contributions history to reduce repaint-heavy effects in repeated rows.

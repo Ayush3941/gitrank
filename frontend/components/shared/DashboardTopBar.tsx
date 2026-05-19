@@ -14,7 +14,6 @@ import { TextScaleQuickSwitcher } from "@/components/shared/TextScaleQuickSwitch
 import { ThemeQuickSwitcher } from "@/components/shared/ThemeQuickSwitcher";
 import { dashboardNavItems } from "@/components/shared/dashboard-nav";
 import { Button } from "@/components/ui/button";
-import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import type { UserProfile } from "@/types/gitrank";
 
 export type AutoSyncNote = {
@@ -33,7 +32,6 @@ export function DashboardTopBar({
 }) {
   const pathname = usePathname();
   const [shortcutHelpOpen, setShortcutHelpOpen] = useState(false);
-  const constrainedNetwork = useNetworkConstraintPreference();
   const activeLane =
     dashboardNavItems.find((item) =>
       item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`),
@@ -102,7 +100,7 @@ export function DashboardTopBar({
                       ) : (
                         <Link
                           href={item.href}
-                          prefetch={!constrainedNetwork}
+                          prefetch={false}
                           className="focus-ring text-cyan-100 hover:text-white"
                         >
                           {item.label}
@@ -160,7 +158,7 @@ export function DashboardTopBar({
             <TextScaleQuickSwitcher compact className="hidden 2xl:inline-flex" />
             <Link
               href={`/u/${user.username}`}
-              prefetch={!constrainedNetwork}
+              prefetch={false}
               className="focus-ring cyber-link inline-flex items-center gap-2 text-sm font-medium"
             >
               View public profile

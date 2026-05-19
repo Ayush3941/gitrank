@@ -6,13 +6,11 @@ import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { dashboardNavItems } from "@/components/shared/dashboard-nav";
 import { GamificationQuickSwitcher } from "@/components/shared/GamificationQuickSwitcher";
-import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { TextScaleQuickSwitcher } from "@/components/shared/TextScaleQuickSwitcher";
 import { ThemeQuickSwitcher } from "@/components/shared/ThemeQuickSwitcher";
 
 export function DashboardSidebar() {
   const pathname = usePathname();
-  const constrainedNetwork = useNetworkConstraintPreference();
 
   const isActive = (href: string, exact = false) =>
     exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
@@ -24,7 +22,7 @@ export function DashboardSidebar() {
       <div className="space-y-5">
         <Link
           href="/dashboard"
-          prefetch={!constrainedNetwork}
+          prefetch={false}
           aria-label="Open dashboard home"
           className="focus-ring flex items-center gap-3 border border-primary/24 bg-gradient-to-r from-primary/10 to-primary-2/8 px-3 py-2.5"
         >
@@ -57,7 +55,7 @@ export function DashboardSidebar() {
                   <li key={item.href}>
                     <Link
                       href={item.href}
-                      prefetch={!constrainedNetwork}
+                      prefetch={false}
                       aria-current={active ? "page" : undefined}
                       className={cn(
                         "focus-ring group relative grid min-h-14 grid-cols-[1.1rem,1fr] items-start gap-3 border px-3 py-2.5 text-sm leading-5",
