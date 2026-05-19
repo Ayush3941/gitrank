@@ -163,6 +163,8 @@ html[data-theme="high-contrast"] {
 html {
   min-height: 100%;
   scroll-behavior: smooth;
+  scroll-padding-top: max(6.5rem, env(safe-area-inset-top));
+  scroll-padding-bottom: max(7rem, env(safe-area-inset-bottom));
 }
 
 body {
@@ -282,6 +284,8 @@ select {
     [role="button"],
     [tabindex]:not([tabindex="-1"])
   ):focus-visible {
+  scroll-margin-top: max(6.5rem, env(safe-area-inset-top));
+  scroll-margin-bottom: max(7rem, env(safe-area-inset-bottom));
   outline: 3px solid rgb(var(--primary) / 0.88);
   outline-offset: 2px;
 }
@@ -1169,6 +1173,25 @@ html[data-theme="high-contrast"] .neon-title {
 @media (pointer: coarse) {
   body {
     background-attachment: scroll;
+  }
+}
+
+@media (min-width: 1280px) {
+  html {
+    scroll-padding-bottom: 2rem;
+  }
+
+  :where(
+      a[href],
+      button,
+      input:not([type="hidden"]),
+      select,
+      textarea,
+      summary,
+      [role="button"],
+      [tabindex]:not([tabindex="-1"])
+    ):focus-visible {
+    scroll-margin-bottom: 2rem;
   }
 }
 
