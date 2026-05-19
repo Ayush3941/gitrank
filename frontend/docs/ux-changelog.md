@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Coarse-pointer readability and performance pass:
+  - added a dedicated `@media (any-pointer: coarse)` surface fallback that disables `backdrop-filter` on glass/neon card families for touch-first devices.
+  - increased mobile surface opacity and simplified shadow stacks to preserve text contrast over the locked background while reducing scroll jank risk from layered blur effects.
+  - kept existing touch-target sizing (`44x44` focus-ring minimum) and route structure unchanged.
 - Sync-log error readability pass:
   - sanitized per-run `last_error` text in Settings sync activity so technical upstream/network strings are no longer rendered raw in cards.
   - reused existing `sanitizeUserFacingError(..., "settings-sync-runs")` mapping for consistent timeout/rate-limit/auth wording.
