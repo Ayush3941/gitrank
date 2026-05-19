@@ -131,7 +131,7 @@ export function SettingsPageClient() {
   const logoutSession = useLogoutSession();
   const accountLinkStart = useStartAccountLink();
   const { setReducedGamification } = useGamificationPreference();
-  const { theme, setTheme } = useThemePreference();
+  const { theme, themeSource, setTheme, clearThemePreference } = useThemePreference();
   const { textScale, setTextScale } = useTextScalePreference();
   const { enabled: displayShortcutsEnabled, setEnabled: setDisplayShortcutsEnabled } =
     useDisplayShortcutsEnabled();
@@ -198,9 +198,11 @@ export function SettingsPageClient() {
   }, []);
 
   function handleResetDisplayPreferences() {
-    setTheme("high-contrast");
+    clearThemePreference();
     setTextScale("default");
-    setDisplayNotice("Display preferences reset to High contrast theme and Default text size.");
+    setDisplayNotice(
+      "Display preferences reset. Theme now follows your system high-contrast setting and text scale is Default.",
+    );
   }
 
   if (isLoading) {
@@ -506,6 +508,13 @@ export function SettingsPageClient() {
               Theme choice only changes visual treatment. Ranking, scoring, privacy, and sync behavior stay identical.
               If no explicit theme is stored, GitRank follows your system high-contrast preference.
             </p>
+            <p className="mt-2 text-xs text-slate-200">
+              Theme source:
+              {" "}
+              <span className="font-semibold text-foreground">
+                {themeSource === "stored" ? "Manual override" : "System preference"}
+              </span>
+            </p>
           </div>
           <div className="grid w-full gap-2 sm:w-auto sm:min-w-[18rem]">
             {THEME_OPTIONS.map((option) => (
@@ -536,6 +545,16 @@ export function SettingsPageClient() {
                 </span>
               </Button>
             ))}
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="justify-start"
+              onClick={clearThemePreference}
+              disabled={themeSource === "system"}
+            >
+              {themeSource === "system" ? "Following system theme" : "Follow system theme"}
+            </Button>
           </div>
         </div>
         <div className="cyber-divider" />

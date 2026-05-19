@@ -9,9 +9,20 @@ const HIGH_CONTRAST_QUERY = "(prefers-contrast: more)";
 const SUPPORTED_THEMES = ["neon", "midnight", "aurora", "high-contrast"] as const;
 
 export type ThemePreference = (typeof SUPPORTED_THEMES)[number];
+export type ThemePreferenceSource = "stored" | "system";
+
+type ThemeSnapshot = {
+  theme: ThemePreference;
+  source: ThemePreferenceSource;
+};
 
 export function useThemePreference() {
   const theme = useSyncExternalStore<ThemePreference>(subscribe, getThemeSnapshot, () => "neon");
+  const themeSource = useSyncExternalStore<ThemePreferenceSource>(
+    subscribe,
+    getThemeSourceSnapshot,
+    () => "system",
+  );
 
   const setTheme = useCallback((value: ThemePreference) => {
     if (typeof window === "undefined") {
@@ -22,7 +33,17 @@ export function useThemePreference() {
     window.dispatchEvent(new Event(CHANGE_EVENT));
   }, []);
 
-  return { theme, setTheme };
+  const clearThemePreference = useCallback(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    window.localStorage.removeItem(STORAGE_KEY);
+    const snapshot = getThemeSnapshotWithSource();
+    applyThemePreference(snapshot.theme);
+    window.dispatchEvent(new Event(CHANGE_EVENT));
+  }, []);
+
+  return { theme, themeSource, setTheme, clearThemePreference };
 }
 
 export function useApplyThemePreference() {
@@ -63,21 +84,29 @@ function subscribe(callback: () => void) {
 }
 
 function getThemeSnapshot(): ThemePreference {
-  if (typeof window === "undefined") {
-    return "neon";
-  }
-  const stored = window.localStorage.getItem(STORAGE_KEY);
-  if (stored && isThemePreference(stored)) {
-    return stored;
-  }
-  if (window.matchMedia(HIGH_CONTRAST_QUERY).matches) {
-    return "high-contrast";
-  }
-  return "neon";
+  return getThemeSnapshotWithSource().theme;
+}
+
+function getThemeSourceSnapshot(): ThemePreferenceSource {
+  return getThemeSnapshotWithSource().source;
 }
 
 function isThemePreference(value: string): value is ThemePreference {
   return SUPPORTED_THEMES.some((theme) => theme === value);
+}
+
+function getThemeSnapshotWithSource(): ThemeSnapshot {
+  if (typeof window === "undefined") {
+    return { theme: "neon", source: "system" };
+  }
+  const stored = window.localStorage.getItem(STORAGE_KEY);
+  if (stored && isThemePreference(stored)) {
+    return { theme: stored, source: "stored" };
+  }
+  if (window.matchMedia(HIGH_CONTRAST_QUERY).matches) {
+    return { theme: "high-contrast", source: "system" };
+  }
+  return { theme: "neon", source: "system" };
 }
 
 function applyThemePreference(theme: ThemePreference) {
