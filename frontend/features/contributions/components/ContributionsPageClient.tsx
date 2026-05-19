@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Flame, Radar, Sparkles, Swords } from "lucide-react";
 import { startTransition, useDeferredValue, useEffect, useMemo, useState, type ReactNode } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -321,43 +322,45 @@ export function ContributionsPageClient() {
       ) : null}
       {!isLoading && !isError && profile ? (
         <section id="contributions-overview" className="render-opt-section scroll-mt-24">
-          <GlowCard strong className="cyber-hero-shell relative overflow-hidden">
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-cyan-100">
-                  <Radar className="h-3.5 w-3.5" />
-                  Contribution Ops
-                </p>
-                <h2 className="mt-3 text-2xl font-semibold text-white">
-                  {abraInsights.data?.archetype || "Systems Builder"} mode
-                </h2>
-                <ExpandableText
-                  text={
-                    abraInsights.data?.identitySummary ||
-                    "Signal synthesis is running in deterministic mode while contribution intelligence resolves."
-                  }
-                  lines={4}
-                  minLengthForToggle={220}
-                  className="mt-2 max-w-3xl"
-                  textClassName="break-anywhere text-sm text-slate-200/85"
-                />
+          <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading contribution overview" />}>
+            <GlowCard strong className="cyber-hero-shell relative overflow-hidden">
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-cyan-100">
+                      <Radar className="h-3.5 w-3.5" />
+                      Contribution Ops
+                    </p>
+                    <h2 className="mt-3 text-2xl font-semibold text-white">
+                      {abraInsights.data?.archetype || "Systems Builder"} mode
+                    </h2>
+                    <ExpandableText
+                      text={
+                        abraInsights.data?.identitySummary ||
+                        "Signal synthesis is running in deterministic mode while contribution intelligence resolves."
+                      }
+                      lines={4}
+                      minLengthForToggle={220}
+                      className="mt-2 max-w-3xl"
+                      textClassName="break-anywhere text-sm text-slate-200/85"
+                    />
+                  </div>
+                  <div className="neon-chip neon-chip-mythic inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-xs">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    {abraInsights.data?.generatedBy === "gemini"
+                      ? "Gemini impact synthesis enabled"
+                      : "Deterministic fallback active"}
+                  </div>
+                </div>
+                <div className="grid gap-3 md:grid-cols-4">
+                  <Metric label="Current streak" value={`${streak.currentStreakDays}d`} icon={<Flame className="h-4 w-4 text-orange-300" />} />
+                  <Metric label="Best streak" value={`${streak.bestStreakDays}d`} icon={<Flame className="h-4 w-4 text-fuchsia-300" />} />
+                  <Metric label="Active days (year)" value={streak.activeDaysThisYear} icon={<Swords className="h-4 w-4 text-cyan-200" />} />
+                  <Metric label="Unique contribution days" value={uniqueDays} icon={<Sparkles className="h-4 w-4 text-violet-200" />} />
+                </div>
               </div>
-              <div className="neon-chip neon-chip-mythic inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-xs">
-                <Sparkles className="h-3.5 w-3.5" />
-                {abraInsights.data?.generatedBy === "gemini"
-                  ? "Gemini impact synthesis enabled"
-                  : "Deterministic fallback active"}
-              </div>
-            </div>
-            <div className="grid gap-3 md:grid-cols-4">
-              <Metric label="Current streak" value={`${streak.currentStreakDays}d`} icon={<Flame className="h-4 w-4 text-orange-300" />} />
-              <Metric label="Best streak" value={`${streak.bestStreakDays}d`} icon={<Flame className="h-4 w-4 text-fuchsia-300" />} />
-              <Metric label="Active days (year)" value={streak.activeDaysThisYear} icon={<Swords className="h-4 w-4 text-cyan-200" />} />
-              <Metric label="Unique contribution days" value={uniqueDays} icon={<Sparkles className="h-4 w-4 text-violet-200" />} />
-            </div>
-          </div>
-          </GlowCard>
+            </GlowCard>
+          </DeferUntilVisible>
         </section>
       ) : null}
       {!isLoading && !isError ? (
@@ -367,23 +370,25 @@ export function ContributionsPageClient() {
             title="Repositories touched"
             description="Where contribution effort concentrated in this scored evidence window."
           />
-          {repositories.length ? (
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {repositories.map((repository) => (
-                <div key={repository.fullName} className="render-opt-card neon-surface rounded-[1.4rem] border-cyan-300/28 px-4 py-3">
-                  <p className="break-anywhere text-sm font-medium text-white">{repository.fullName}</p>
-                  <p className="mt-1 text-xs text-slate-300">{repository.contributions} contributions</p>
-                  <p className="mt-3 text-lg font-semibold text-cyan-200">{repository.totalXp} XP</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <SubsectionEmptyState
-              message="No repository contribution summary is available in this snapshot yet."
-              actionLabel="Open sync settings"
-              actionHref="/dashboard/settings"
-            />
-          )}
+          <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading repository impact lanes" />}>
+            {repositories.length ? (
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {repositories.map((repository) => (
+                  <div key={repository.fullName} className="render-opt-card neon-surface rounded-[1.4rem] border-cyan-300/28 px-4 py-3">
+                    <p className="break-anywhere text-sm font-medium text-white">{repository.fullName}</p>
+                    <p className="mt-1 text-xs text-slate-300">{repository.contributions} contributions</p>
+                    <p className="mt-3 text-lg font-semibold text-cyan-200">{repository.totalXp} XP</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <SubsectionEmptyState
+                message="No repository contribution summary is available in this snapshot yet."
+                actionLabel="Open sync settings"
+                actionHref="/dashboard/settings"
+              />
+            )}
+          </DeferUntilVisible>
         </section>
       ) : null}
       {!isLoading && !isError ? (
@@ -393,55 +398,57 @@ export function ContributionsPageClient() {
             title="Contribution timeline and highlights"
             description="Momentum and top-impact snapshots from the current PR evidence window."
           />
-          <div className="grid gap-4 xl:grid-cols-[1.2fr,0.8fr]">
-          <GlowCard className="space-y-4 border border-fuchsia-400/20 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/30">
-            <h3 className="cyber-title text-sm font-medium text-fuchsia-200">Contribution timeline</h3>
-            {monthly.length ? (
-              <div className="space-y-3">
-                {monthly.map((point) => (
-                  <div key={point.month} className="space-y-1">
-                    <div className="flex items-center justify-between text-xs text-slate-200">
-                      <span>{point.month}</span>
-                      <span>{point.xp} XP</span>
-                    </div>
-                    <div className="neon-track h-2 rounded-full">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300 shadow-[0_0_18px_rgba(147,197,253,0.45)]"
-                        style={{ width: `${Math.max(8, Math.round((point.xp / maxMonthlyXp) * 100))}%` }}
-                      />
-                    </div>
+          <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading timeline and highlights" />}>
+            <div className="grid gap-4 xl:grid-cols-[1.2fr,0.8fr]">
+              <GlowCard className="space-y-4 border border-fuchsia-400/20 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/30">
+                <h3 className="cyber-title text-sm font-medium text-fuchsia-200">Contribution timeline</h3>
+                {monthly.length ? (
+                  <div className="space-y-3">
+                    {monthly.map((point) => (
+                      <div key={point.month} className="space-y-1">
+                        <div className="flex items-center justify-between text-xs text-slate-200">
+                          <span>{point.month}</span>
+                          <span>{point.xp} XP</span>
+                        </div>
+                        <div className="neon-track h-2 rounded-full">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300 shadow-[0_0_18px_rgba(147,197,253,0.45)]"
+                            style={{ width: `${Math.max(8, Math.round((point.xp / maxMonthlyXp) * 100))}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            ) : (
-              <SubsectionEmptyState
-                message="Timeline points are not available yet for this filtered evidence window."
-                actionLabel="Open sync settings"
-                actionHref="/dashboard/settings"
-              />
-            )}
-          </GlowCard>
-          <GlowCard className="space-y-4 border border-cyan-300/20 bg-gradient-to-br from-slate-950/88 to-cyan-950/25">
-            <h3 className="cyber-title text-sm font-medium text-cyan-200">Top highlights</h3>
-            {topHighlights.length ? (
-              <div className="space-y-3">
-                {topHighlights.map((row) => (
-                  <div key={row.id} className="render-opt-card neon-surface rounded-2xl px-3 py-3">
-                    <p className="break-anywhere text-sm font-medium text-white">{row.title}</p>
-                    <p className="mt-1 break-anywhere text-xs text-slate-300">{row.owner}/{row.repo} #{row.number}</p>
-                    <p className="mt-2 text-sm text-cyan-200">+{row.xpEarned} XP</p>
+                ) : (
+                  <SubsectionEmptyState
+                    message="Timeline points are not available yet for this filtered evidence window."
+                    actionLabel="Open sync settings"
+                    actionHref="/dashboard/settings"
+                  />
+                )}
+              </GlowCard>
+              <GlowCard className="space-y-4 border border-cyan-300/20 bg-gradient-to-br from-slate-950/88 to-cyan-950/25">
+                <h3 className="cyber-title text-sm font-medium text-cyan-200">Top highlights</h3>
+                {topHighlights.length ? (
+                  <div className="space-y-3">
+                    {topHighlights.map((row) => (
+                      <div key={row.id} className="render-opt-card neon-surface rounded-2xl px-3 py-3">
+                        <p className="break-anywhere text-sm font-medium text-white">{row.title}</p>
+                        <p className="mt-1 break-anywhere text-xs text-slate-300">{row.owner}/{row.repo} #{row.number}</p>
+                        <p className="mt-2 text-sm text-cyan-200">+{row.xpEarned} XP</p>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            ) : (
-              <SubsectionEmptyState
-                message="No high-signal highlights are available yet in this snapshot."
-                actionLabel="Open quest lane"
-                actionHref="/dashboard/quests"
-              />
-            )}
-          </GlowCard>
-          </div>
+                ) : (
+                  <SubsectionEmptyState
+                    message="No high-signal highlights are available yet in this snapshot."
+                    actionLabel="Open quest lane"
+                    actionHref="/dashboard/quests"
+                  />
+                )}
+              </GlowCard>
+            </div>
+          </DeferUntilVisible>
         </section>
       ) : null}
       {!isLoading && !isError ? (
@@ -451,23 +458,33 @@ export function ContributionsPageClient() {
             title="Achievement cards"
             description="Per-PR score signal, evidence tags, and impact narrative prepared for profile and presentation use."
           />
-          {filteredRows.length ? (
-            <ContributionList
-              items={filteredRows}
-              narratives={abraInsights.data?.contributionNarratives}
-              isBusy={isFiltering}
-            />
-          ) : (
-            <SubsectionEmptyState
-              message="No contribution cards match this filter set yet. Reset filters or widen the PR evidence window."
-              actionLabel="Open sync settings"
-              actionHref="/dashboard/settings"
-              onResetFilters={handleResetFilters}
-            />
-          )}
+          <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading achievement card lane" />}>
+            {filteredRows.length ? (
+              <ContributionList
+                items={filteredRows}
+                narratives={abraInsights.data?.contributionNarratives}
+                isBusy={isFiltering}
+              />
+            ) : (
+              <SubsectionEmptyState
+                message="No contribution cards match this filter set yet. Reset filters or widen the PR evidence window."
+                actionLabel="Open sync settings"
+                actionHref="/dashboard/settings"
+                onResetFilters={handleResetFilters}
+              />
+            )}
+          </DeferUntilVisible>
         </section>
       ) : null}
     </div>
+  );
+}
+
+function ContributionSectionPlaceholder({ title }: { title: string }) {
+  return (
+    <GlowCard className="glass-panel cyber-card cyber-frame flex min-h-[11rem] items-center justify-center p-4">
+      <p className="text-sm text-slate-200/84">{title}</p>
+    </GlowCard>
   );
 }
 

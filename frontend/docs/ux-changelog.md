@@ -10,6 +10,11 @@
     explanation, skill breakdown, battle reports, badges, timeline) with
     stable loading placeholders so first paint does less work while preserving
     route structure and jump-nav anchors.
+- Contributions deferred-render pass:
+  - applied `DeferUntilVisible` to contributions overview, repositories,
+    timeline/highlights, and achievement-card lanes
+  - added lightweight section placeholders so filters and top-level routing
+    stay interactive while heavier PR-card blocks mount near viewport.
 - Dashboard lane readability pass:
   - expanded dashboard nav item contracts with route-level hints so lane intent
     is visible across sidebar, mobile nav, and command palette surfaces
