@@ -163,9 +163,13 @@
     users returning to Settings see fresh queue state immediately.
 - Web-vitals observability testability pass:
   - extracted route-group mapping, metric-rating normalization, tracked-metric
-    registry, and sampling logic into `lib/web-vitals.ts`
+  registry, and sampling logic into `lib/web-vitals.ts`
   - added focused regression coverage in `tests/web-vitals.test.ts` so route
-    bucketing and deterministic sampling behavior stay stable as telemetry evolves.
+  bucketing and deterministic sampling behavior stay stable as telemetry evolves.
+- Sync-state guide regression coverage expansion:
+  - extended `tests/sync-state-guide.test.ts` to cover partial-snapshot
+    normalization (`synced` + partial -> `partially_synced`) and visibility
+    gating behavior used across dashboard tabs.
 
 ## 2026-05-17
 
