@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Dashboard navigation formatting pass:
+  - refined sidebar lane hierarchy with clearer spacing rhythm between lane groups and individual links.
+  - surfaced current lane state as a visible status chip in sidebar and mobile nav headers for faster orientation.
+  - improved mobile nav readability by using consistent `text-xs` labels and a visible quick-controls caption.
 - Filter-aware empty-state pass:
   - updated Contributions and Badges root empty states to distinguish true no-data onboarding states from filter/search no-result states.
   - filter-generated no-results now provide direct `Reset filters` primary actions instead of showing first-use copy that implies no evidence exists.

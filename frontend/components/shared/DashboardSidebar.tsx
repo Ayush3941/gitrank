@@ -35,19 +35,19 @@ export function DashboardSidebar() {
             <p className="text-xs font-medium text-primary/92">Contributor Console</p>
           </div>
         </Link>
-        <div className="neon-surface space-y-2.5 p-3">
+        <div className="neon-surface space-y-3 p-3.5">
           <p id="dashboard-sidebar-nav-label" className="cyber-title text-xs font-semibold text-cyan-100">
             Primary lanes
           </p>
           <p
             role="status"
             aria-live="polite"
-            className="text-xs text-cyan-100/90"
+            className="inline-flex items-center rounded-full border border-primary/22 bg-primary/10 px-2.5 py-1 text-xs text-cyan-100/90"
           >
             {activeItem ? `Current lane: ${activeItem.label}` : "Dashboard navigation"}
           </p>
-          <nav aria-labelledby="dashboard-sidebar-nav-label" className="space-y-1.5">
-            <ul role="list" className="space-y-1.5">
+          <nav aria-labelledby="dashboard-sidebar-nav-label" className="space-y-2">
+            <ul role="list" className="space-y-2">
               {dashboardNavItems.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.href, item.exact);
@@ -58,7 +58,7 @@ export function DashboardSidebar() {
                       prefetch={!constrainedNetwork}
                       aria-current={active ? "page" : undefined}
                       className={cn(
-                        "focus-ring group relative grid grid-cols-[1.1rem,1fr] items-start gap-3 border px-3 py-2.5 text-sm leading-5",
+                        "focus-ring group relative grid min-h-14 grid-cols-[1.1rem,1fr] items-start gap-3 border px-3 py-2.5 text-sm leading-5",
                         active
                           ? "border-primary/40 bg-primary/12 text-white shadow-[0_0_18px_rgb(34_226_255_/_0.12)]"
                           : "border-transparent text-slate-100 hover:border-primary/24 hover:bg-primary/8 hover:text-white",
@@ -70,13 +70,23 @@ export function DashboardSidebar() {
                           active && "bg-primary",
                         )}
                       />
-                      <Icon className={cn("mt-0.5 h-4 w-4", active ? "text-primary" : "text-slate-200 group-hover:text-primary")} />
-                    <span className="min-w-0 text-left">
-                      <span className="block break-anywhere font-semibold leading-5">{item.label}</span>
-                      <span className={cn("mt-0.5 block break-anywhere text-xs leading-5", active ? "text-slate-200" : "text-slate-300")}>
-                        {item.hint}
+                      <Icon
+                        className={cn(
+                          "mt-0.5 h-4 w-4",
+                          active ? "text-primary" : "text-slate-200 group-hover:text-primary",
+                        )}
+                      />
+                      <span className="min-w-0 text-left">
+                        <span className="block break-anywhere font-semibold leading-5">{item.label}</span>
+                        <span
+                          className={cn(
+                            "mt-0.5 block break-anywhere text-xs leading-5",
+                            active ? "text-slate-200" : "text-slate-300",
+                          )}
+                        >
+                          {item.hint}
+                        </span>
                       </span>
-                    </span>
                     </Link>
                   </li>
                 );
