@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Leaderboard local-bracket pass:
+  - added a “Closest rank neighbors” block in leaderboard arena to show the current user’s immediate rank neighborhood instead of only global top-heavy context.
+  - surfaces clear short-range progression framing (`XP to pass #N`) and per-neighbor XP gap/movement chips.
+  - improves mid-table motivation and reduces leaderboard disengagement risk without introducing synthetic users or new scoring rules.
 - Season urgency framing pass:
   - added shared `formatTimeUntil()` formatter for stable time-remaining copy without live ticking animations.
   - surfaced season end date + remaining window on dashboard `CurrentLeagueCard` and leaderboard arena hero cards.

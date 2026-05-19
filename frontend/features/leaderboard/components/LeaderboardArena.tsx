@@ -8,6 +8,24 @@ import type { LeaderboardSnapshot } from "@/types/gitrank";
 
 export function LeaderboardArena({ snapshot }: { snapshot: LeaderboardSnapshot }) {
   const rows = snapshot.rows;
+  const currentUser =
+    snapshot.currentUser ?? rows.find((row) => row.isCurrentUser) ?? null;
+  const currentUserIndex = currentUser
+    ? rows.findIndex((row) => row.username === currentUser.username)
+    : -1;
+  const localBracketRows =
+    currentUser && currentUserIndex >= 0
+      ? rows.slice(
+          Math.max(0, currentUserIndex - 2),
+          Math.min(rows.length, currentUserIndex + 3),
+        )
+      : [];
+  const nextAboveRow =
+    currentUserIndex > 0 ? rows[currentUserIndex - 1] : null;
+  const nextAboveGap =
+    currentUser && nextAboveRow
+      ? Math.max(0, nextAboveRow.seasonXp - currentUser.seasonXp)
+      : 0;
 
   return (
     <div className="grid gap-4">
@@ -46,6 +64,63 @@ export function LeaderboardArena({ snapshot }: { snapshot: LeaderboardSnapshot }
           </span>
         </div>
       </GlowCard>
+      {currentUser && localBracketRows.length > 0 ? (
+        <GlowCard className="space-y-4 border border-primary/22 bg-gradient-to-br from-slate-950/90 to-cyan-950/18">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-medium text-primary">Local bracket</p>
+              <h3 className="mt-2 text-xl font-semibold text-white">Closest rank neighbors</h3>
+              <p className="mt-2 text-sm text-slate-200/82">
+                Track nearby competitors to keep movement goals tangible each week.
+              </p>
+            </div>
+            <div className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
+              {nextAboveRow
+                ? `${nextAboveGap} XP to pass #${nextAboveRow.rank}`
+                : "You are leading this lane"}
+            </div>
+          </div>
+          <div className="grid gap-2">
+            {localBracketRows.map((row) => {
+              const gapToCurrent = row.seasonXp - currentUser.seasonXp;
+              const movementLabel = `${row.movement >= 0 ? "+" : ""}${row.movement}`;
+              return (
+                <div
+                  key={`local-${row.rank}-${row.username}`}
+                  className={`neon-surface flex flex-wrap items-center justify-between gap-3 px-4 py-3 ${
+                    row.isCurrentUser ? "border-primary/42 bg-primary/10" : ""
+                  }`}
+                >
+                  <div className="min-w-0">
+                    <p className="break-anywhere text-sm font-semibold text-white">
+                      #{row.rank} {row.displayName}
+                      {row.isCurrentUser ? " (You)" : ""}
+                    </p>
+                    <p className="mt-1 break-anywhere text-xs text-slate-200/84">
+                      @{row.username} • {row.title}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+                      {row.seasonXp} XP
+                    </span>
+                    <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+                      Move {movementLabel}
+                    </span>
+                    {!row.isCurrentUser ? (
+                      <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+                        {gapToCurrent > 0
+                          ? `+${gapToCurrent} vs you`
+                          : `${Math.abs(gapToCurrent)} behind you`}
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </GlowCard>
+      ) : null}
       {rows.map((row) => {
         const positive = row.movement >= 0;
         const podiumTone =
