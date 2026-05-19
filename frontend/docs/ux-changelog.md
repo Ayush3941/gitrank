@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- Skip-link safe-area pass:
+  - updated `.skip-link` top position to `max(0.75rem, env(safe-area-inset-top, 0px))`.
+  - keeps keyboard "Skip to main content" control visible and reachable on notched/mobile devices where top inset can obscure fixed UI.
 - Mobile dashboard safe-area spacing pass:
   - replaced static dashboard content bottom padding (`pb-24`) with a dedicated safe-area-aware class.
   - new `.dashboard-mobile-safe-bottom` applies `calc(6rem + env(safe-area-inset-bottom, 0px))` so fixed mobile nav does not overlap bottom content on devices with home-indicator inset.
