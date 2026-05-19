@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Adaptive polling pass for constrained networks:
+  - `useMyProfile` now uses longer stale-time and slower auto-poll intervals when reduced-data/constrained-network mode is detected.
+  - `useSyncRuns` now also shifts to slower active/idle polling windows on constrained networks and disables focus-triggered refetch bursts in that mode.
+  - keeps normal freshness behavior on default networks while reducing repeated sync/profile request pressure on slower links and lower-end devices.
 - Visual-effects quick-control pass:
   - added `GamificationQuickSwitcher` so users can switch between full and reduced visual effects from dashboard surfaces without opening Settings.
   - wired the new control into sidebar and top-bar quick controls with an explicit `Alt+Shift+G` accelerator.

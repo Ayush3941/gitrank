@@ -7,11 +7,14 @@ import {
   updateMyProfilePrivacy,
   updateMyProfileRepositoryVisibility,
 } from "@/lib/api/profile-api";
+import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import type { PrivacySettings, RepositoryVisibility } from "@/types/gitrank";
 
 export const myProfileQueryKey = ["profile", "me"] as const;
 const PROFILE_SYNC_REFETCH_INTERVAL_MS = 20_000;
+const PROFILE_SYNC_REFETCH_INTERVAL_CONSTRAINED_MS = 75_000;
 const PROFILE_SYNC_STALE_TIME_MS = 20_000;
+const PROFILE_SYNC_STALE_TIME_CONSTRAINED_MS = 60_000;
 const derivedProfileQueryKeys = [
   myProfileQueryKey,
   ["dashboard"],
@@ -83,16 +86,22 @@ export function useProfile(username: string) {
 }
 
 export function useMyProfile() {
+  const constrainedNetwork = useNetworkConstraintPreference();
+
   return useQuery({
     queryKey: myProfileQueryKey,
     queryFn: getMyProfile,
-    staleTime: PROFILE_SYNC_STALE_TIME_MS,
+    staleTime: constrainedNetwork
+      ? PROFILE_SYNC_STALE_TIME_CONSTRAINED_MS
+      : PROFILE_SYNC_STALE_TIME_MS,
     refetchOnMount: "always",
     refetchOnReconnect: true,
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: !constrainedNetwork,
     refetchInterval: (query) =>
       shouldPollMyProfile(query.state.data)
-        ? PROFILE_SYNC_REFETCH_INTERVAL_MS
+        ? constrainedNetwork
+          ? PROFILE_SYNC_REFETCH_INTERVAL_CONSTRAINED_MS
+          : PROFILE_SYNC_REFETCH_INTERVAL_MS
         : false,
     refetchIntervalInBackground: false,
   });
