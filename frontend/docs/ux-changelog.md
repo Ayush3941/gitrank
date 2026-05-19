@@ -20,6 +20,11 @@
     clutter and improve first-screen scanability
   - normalized shared `PageHeader` shell shape usage to the global radius
     system (no extra hardcoded rounded shell).
+- Decorative blur-trim pass:
+  - removed non-informational blurred glow blobs from skill radar, timeline,
+    quest cards, and onboarding reveal hero panels
+  - keeps neon identity via existing gradients/chips while reducing costly
+    blur compositing on dense dashboard routes.
 
 ## 2026-05-17
 

@@ -25,7 +25,6 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
   return (
     <div className="space-y-3">
       <div className="neon-tile relative h-72 w-full overflow-hidden rounded-[1.75rem] p-3">
-        <div className="pointer-events-none absolute -left-10 top-14 h-24 w-24 rounded-full bg-cyan-400/14 blur-3xl" />
         <TimelineChartInner data={safeData} />
         <p className="sr-only">Contribution quality timeline showing cumulative XP growth over time.</p>
       </div>

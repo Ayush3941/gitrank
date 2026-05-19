@@ -30,7 +30,6 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
   return (
     <div className="space-y-3">
       <div className="neon-tile relative h-80 w-full overflow-hidden rounded-[1.75rem] p-3">
-        <div className="pointer-events-none absolute -top-12 right-8 h-28 w-28 rounded-full bg-fuchsia-400/16 blur-3xl" />
         <SkillRadarChartInner skills={safeSkills} />
         <p className="sr-only">
           Skill radar chart showing the most evident contribution signals across documentation, testing, backend, and architecture.
