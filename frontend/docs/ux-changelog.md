@@ -36,6 +36,12 @@
     and badge hero summary cards
   - retained existing card structure/content while reducing non-informational
     compositing in primary dashboard routes.
+- Reduced-data and containment hardening:
+  - `prefers-reduced-data` mode now also strips glass blur and heavy shadows
+    from major surface primitives for lighter rendering on constrained devices
+  - added `contain: layout paint style` to `render-opt-card` and
+    `render-opt-section` helpers to improve containment behavior for long card
+    lists and section-heavy pages.
 
 ## 2026-05-17
 

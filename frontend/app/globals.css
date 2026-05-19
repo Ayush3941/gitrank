@@ -824,11 +824,13 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 .render-opt-card {
   content-visibility: auto;
   contain-intrinsic-size: 280px;
+  contain: layout paint style;
 }
 
 .render-opt-section {
   content-visibility: auto;
   contain-intrinsic-size: 680px;
+  contain: layout paint style;
 }
 
 .cyber-link {
@@ -1529,6 +1531,22 @@ html[data-theme="high-contrast"] .neon-title {
   body::before,
   body::after {
     display: none !important;
+  }
+
+  .glass-panel,
+  .glass-panel-strong,
+  .neon-surface,
+  .neon-surface-strong,
+  .neon-tile,
+  .neon-tile-strong,
+  .neon-metric,
+  .cyber-card,
+  .cyber-terminal {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    box-shadow:
+      0 8px 20px rgb(1 5 20 / 0.26),
+      inset 0 1px 0 rgb(255 255 255 / 0.04) !important;
   }
 }
 
