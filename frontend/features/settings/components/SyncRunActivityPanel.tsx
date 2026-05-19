@@ -134,6 +134,15 @@ export function SyncRunActivityPanel({
             Active sync runs detected. This panel auto-refreshes more frequently until active jobs settle.
           </p>
         ) : null}
+        {statusCounts.running === 0 && statusCounts.failed > 0 ? (
+          <p className="text-xs text-rose-100">
+            Recent sync failures detected. Reconnect GitHub in{" "}
+            <Link href="/dashboard/settings" className="underline decoration-rose-300/70 underline-offset-2">
+              account settings
+            </Link>
+            {" "}if failures persist.
+          </p>
+        ) : null}
         <div className="grid gap-3 md:grid-cols-[1fr,22rem]">
           <div className="relative">
             <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted" />
@@ -291,7 +300,13 @@ function runStatusLabel(status: string): "Completed" | "Failed" | "Running" | "O
   if (normalized === "completed") {
     return "Completed";
   }
-  if (normalized === "failed") {
+  if (
+    normalized === "failed" ||
+    normalized === "cancelled" ||
+    normalized === "canceled" ||
+    normalized === "timed_out" ||
+    normalized === "timeout"
+  ) {
     return "Failed";
   }
   if (

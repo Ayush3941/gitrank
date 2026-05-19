@@ -153,6 +153,8 @@
     when idle) instead of fixed-interval refresh
   - expanded active run detection/status labeling to include `queued`,
     `pending`, and `in_progress` states so queue progress is surfaced clearly.
+  - added explicit failure guidance copy when recent sync runs fail and no jobs
+    are active, with direct link back to account settings recovery paths.
 
 ## 2026-05-17
 
