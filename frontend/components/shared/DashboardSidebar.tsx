@@ -62,7 +62,7 @@ export function DashboardSidebar() {
                       className={cn(
                         "focus-ring group relative grid min-h-14 grid-cols-[1.1rem,1fr] items-start gap-3 border px-3 py-2.5 text-sm leading-5",
                         active
-                          ? "border-primary/40 bg-primary/12 text-white shadow-[0_0_18px_rgb(34_226_255_/_0.12)]"
+                          ? "border-primary/40 bg-primary/12 text-white"
                           : "border-transparent text-slate-100 hover:border-primary/24 hover:bg-primary/8 hover:text-white",
                       )}
                     >

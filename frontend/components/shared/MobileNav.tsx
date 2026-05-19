@@ -48,7 +48,7 @@ export function MobileNav() {
                 className={cn(
                   "focus-ring relative flex min-h-16 flex-col items-center justify-center gap-1 border px-1 py-1.5 text-xs leading-tight font-semibold",
                   active
-                    ? "border-primary/42 bg-primary/14 text-white shadow-[0_0_14px_rgb(34_226_255_/_0.14)]"
+                    ? "border-primary/42 bg-primary/14 text-white"
                     : "border-transparent text-slate-100 hover:border-primary/22 hover:bg-primary/8 hover:text-white",
                 )}
               >

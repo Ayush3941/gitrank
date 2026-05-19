@@ -457,7 +457,7 @@ export function ContributionsPageClient() {
                         </div>
                         <div className="neon-track h-2 rounded-full">
                           <div
-                            className="h-full rounded-full bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300 shadow-[0_0_18px_rgba(147,197,253,0.45)]"
+                            className="h-full rounded-full bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300"
                             style={{ width: `${Math.max(8, Math.round((point.xp / maxMonthlyXp) * 100))}%` }}
                           />
                         </div>

@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Dense-surface shadow simplification pass:
+  - removed per-item active-state glow shadows from sidebar and mobile nav lane tiles while preserving active border/background contrast.
+  - removed per-row timeline bar glow shadow in contributions history to reduce repaint-heavy effects in repeated rows.
+  - keeps hierarchy cues intact with lower per-element paint pressure on scroll-heavy surfaces.
 - Contributions highlight deep-link pass:
   - added direct `View report` actions on top-highlight cards in the contributions timeline lane for faster drill-down into PR battle reports.
   - report links in this dense highlight list explicitly disable prefetch to avoid unnecessary background network churn.
