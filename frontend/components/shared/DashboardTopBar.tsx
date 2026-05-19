@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { AlertTriangle, ArrowUpRight, Zap } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, CheckCircle2, Info, Zap } from "lucide-react";
 import { DashboardQuickActions } from "@/components/shared/DashboardQuickActions";
 import { DashboardShortcutHelpDialog } from "@/components/shared/DashboardShortcutHelpDialog";
 import { RankBadge } from "@/components/shared/RankBadge";
@@ -30,10 +30,16 @@ export function DashboardTopBar({
   const [shortcutHelpOpen, setShortcutHelpOpen] = useState(false);
   const autoSyncToneClass =
     autoSyncNote?.tone === "success"
-      ? "text-emerald-100"
+      ? "neon-chip neon-chip-success border-emerald-300/30 text-emerald-100"
       : autoSyncNote?.tone === "warning"
-        ? "text-amber-100"
-        : "text-slate-200";
+        ? "neon-chip neon-chip-warning border-amber-300/34 text-amber-100"
+        : "neon-chip neon-chip-info border-primary/28 text-slate-100";
+  const AutoSyncIcon =
+    autoSyncNote?.tone === "success"
+      ? CheckCircle2
+      : autoSyncNote?.tone === "warning"
+        ? AlertTriangle
+        : Info;
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -113,14 +119,21 @@ export function DashboardTopBar({
           </div>
         </div>
         <div className="mt-3 min-h-6">
-          <p
-            role="status"
-            aria-live="polite"
-            aria-atomic="true"
-            className={autoSyncNote ? `text-sm ${autoSyncToneClass}` : "text-sm text-transparent select-none"}
-          >
-            {autoSyncNote?.message ?? " "}
-          </p>
+          {autoSyncNote ? (
+            <p
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium ${autoSyncToneClass}`}
+            >
+              {AutoSyncIcon ? <AutoSyncIcon className="h-4 w-4 shrink-0" /> : null}
+              <span>{autoSyncNote.message}</span>
+            </p>
+          ) : (
+            <p aria-hidden="true" className="text-sm text-transparent select-none">
+              Sync note
+            </p>
+          )}
         </div>
       </div>
       <DashboardShortcutHelpDialog open={shortcutHelpOpen} onOpenChange={setShortcutHelpOpen} />
