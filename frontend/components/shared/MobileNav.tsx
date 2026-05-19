@@ -46,7 +46,7 @@ export function MobileNav() {
                 aria-label={item.label}
                 title={item.label}
                 className={cn(
-                  "focus-ring relative flex min-h-14 flex-col items-center justify-center gap-1 border px-1 py-1.5 text-xs leading-tight font-semibold",
+                  "focus-ring relative flex min-h-16 flex-col items-center justify-center gap-1 border px-1 py-1.5 text-xs leading-tight font-semibold",
                   active
                     ? "border-primary/42 bg-primary/14 text-white shadow-[0_0_14px_rgb(34_226_255_/_0.14)]"
                     : "border-transparent text-slate-100 hover:border-primary/22 hover:bg-primary/8 hover:text-white",
@@ -59,7 +59,7 @@ export function MobileNav() {
                   )}
                 />
                 <Icon className={cn("h-4 w-4", active ? "text-primary" : "text-slate-200")} />
-                <span className="max-w-full text-center text-[11px] leading-4">{item.mobileLabel}</span>
+                <span className="max-w-[4.9rem] break-words text-center text-[11px] leading-4">{item.mobileLabel}</span>
                 <span className="sr-only">{item.hint}</span>
               </Link>
             </li>

@@ -13,7 +13,7 @@ export const dashboardNavItems: DashboardNavItem[] = [
   {
     href: "/dashboard",
     label: "Dashboard",
-    mobileLabel: "Dash",
+    mobileLabel: "Dashboard",
     hint: "Identity, XP, and score movement",
     icon: LayoutDashboard,
     exact: true,
@@ -21,7 +21,7 @@ export const dashboardNavItems: DashboardNavItem[] = [
   {
     href: "/dashboard/contributions",
     label: "Contributions",
-    mobileLabel: "PRs",
+    mobileLabel: "Contributions",
     hint: "PR impact cards and evidence timeline",
     icon: Shield,
   },

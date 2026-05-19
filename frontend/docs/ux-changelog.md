@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- Mobile lane-label consistency pass:
+  - aligned mobile bottom-nav lane labels with desktop lane labels (`Dashboard`, `Contributions`, `Badges`, `Quests`, `Settings`) to improve cross-device navigation scent.
+  - increased mobile nav tile minimum height and bounded label width with controlled wrapping so full labels remain readable without truncation.
 - Dashboard nav formatting pass:
   - simplified mobile bottom navigation by removing always-visible inline display toggles and replacing them with a single `Display controls` shortcut to Settings.
   - tightened mobile tab label sizing/spacing for cleaner five-lane scan behavior and reduced footer clutter.
