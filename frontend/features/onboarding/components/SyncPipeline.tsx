@@ -151,6 +151,34 @@ export function SyncPipeline() {
       (isError ? "Authenticated profile snapshot is unavailable." : ""),
     "onboarding-sync",
   );
+  const canRetrySync =
+    Boolean(data) &&
+    !userSync.isPending &&
+    syncState !== "syncing" &&
+    (syncState === "failed" ||
+      syncState === "rate_limited" ||
+      syncState === "stale" ||
+      syncState === "partially_synced" ||
+      syncState === "never_synced");
+
+  function handleRetrySync() {
+    if (!data || userSync.isPending) {
+      return;
+    }
+    setSyncNotice("");
+    userSync.mutate(data.user.username, {
+      onSuccess: (result) => {
+        syncPollingAttemptRef.current = 0;
+        setPollIntervalMs(POLL_INTERVAL_STEPS_MS[0]);
+        setSyncStartedAt(result.started_at);
+        if (result.status === "queued" || result.fetched?.fallback_queued === 1) {
+          setSyncNotice(
+            "Retry was queued because live GitHub fetch is saturated. GitRank will keep polling for refreshed profile evidence.",
+          );
+        }
+      },
+    });
+  }
 
   return (
     <main className="mx-auto max-w-4xl">
@@ -164,7 +192,7 @@ export function SyncPipeline() {
           </p>
           {data ? (
             <p className="text-sm text-slate-200/86">
-              Snapshot status: {data.user.syncStatus.state.replace("_", " ")} • last refresh{" "}
+              Snapshot status: {formatSyncState(data.user.syncStatus.state)} • last refresh{" "}
               {formatRelativeDays(data.refreshedAt)}
             </p>
           ) : null}
@@ -236,6 +264,16 @@ export function SyncPipeline() {
           })}
         </div>
         <div className="flex flex-wrap gap-3">
+          {canRetrySync ? (
+            <Button
+              variant="secondary"
+              onClick={handleRetrySync}
+              disabled={userSync.isPending}
+            >
+              <RefreshCcw className="h-4 w-4" />
+              Retry sync
+            </Button>
+          ) : null}
           <Button
             variant="secondary"
             onClick={() => void refetch()}
@@ -258,4 +296,15 @@ export function SyncPipeline() {
       </GlowCard>
     </main>
   );
+}
+
+function formatSyncState(state: string): string {
+  if (state === "never_synced") return "Never synced";
+  if (state === "partially_synced") return "Partially synced";
+  if (state === "rate_limited") return "Rate limited";
+  if (state === "syncing") return "Syncing";
+  if (state === "stale") return "Stale";
+  if (state === "failed") return "Failed";
+  if (state === "synced") return "Synced";
+  return state.replaceAll("_", " ");
 }

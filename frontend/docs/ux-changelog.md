@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Onboarding analyzing retry-control pass:
+  - added explicit `Retry sync` action when onboarding sync state is recoverable (`never_synced`, `partially_synced`, `stale`, `failed`, `rate_limited`) and no sync is currently running.
+  - normalized sync-state labels in analyzing copy to user-facing casing for clearer status reading.
+  - keeps existing auto-sync polling behavior while adding a direct manual recovery path.
 - Onboarding reveal recovery pass:
   - added sync-recovery primary action on reveal when evidence is missing or sync state is `never_synced`, `partially_synced`, `failed`, or `rate_limited`.
   - surfaced relative last-sync timing in reveal snapshot state copy when available.
