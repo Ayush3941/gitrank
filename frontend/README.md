@@ -105,6 +105,13 @@ Frontend product analytics now posts bounded events to backend `POST /v1/analyti
 - sync success and failure
 - score explanation views
 - badge page views
+- sampled Core Web Vitals (`CLS`, `FCP`, `LCP`, `INP`, `TTFB`, `FID`) with route-group tags
+
+Adjust vitals sampling in `frontend/.env.local` if needed:
+
+```bash
+NEXT_PUBLIC_WEB_VITALS_SAMPLE_RATE=0.35
+```
 
 ## Backend Configuration
 

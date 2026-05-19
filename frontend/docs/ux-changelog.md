@@ -135,6 +135,12 @@
   - added sync-state notice banners to contributions, badges, quests, and
     leaderboard pages when profile sync is incomplete (never synced, syncing,
     partial, failed, rate-limited), not just when stale.
+- Web-vitals signal quality refinement:
+  - hardened `WebVitalsReporter` with in-memory deduplication keyed by route,
+    metric name, and metric id to avoid repeated emission noise
+  - added deterministic client-side sampling controlled by
+    `NEXT_PUBLIC_WEB_VITALS_SAMPLE_RATE` (default `0.35`) so route-level vitals
+    telemetry remains useful without overloading analytics traffic.
 
 ## 2026-05-17
 
