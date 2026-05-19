@@ -62,12 +62,7 @@ export function ContributionList({
             narrative={narratives?.[item.id]}
           />
           {hasDetailedMetrics(item) ? (
-            <div className="grid gap-3 md:grid-cols-4">
-              <Metric label="Difficulty" value={item.difficultyScore} />
-              <Metric label="Impact" value={item.impactScore} />
-              <Metric label="Review depth" value={item.reviewDepthScore} />
-              <Metric label="Test signal" value={item.testSignalScore} />
-            </div>
+            <SignalProfile item={item} />
           ) : (
             <div className="neon-surface rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
               This live profile row comes from persisted score-history evidence. Formula version:{" "}
@@ -108,6 +103,63 @@ export function ContributionList({
   );
 }
 
+function SignalProfile({ item }: { item: Contribution }) {
+  const index = contributionSignalIndex(item);
+  const rows: Array<{ label: string; value: number }> = [
+    { label: "Difficulty", value: item.difficultyScore },
+    { label: "Impact", value: item.impactScore },
+    { label: "Review depth", value: item.reviewDepthScore },
+    { label: "Test signal", value: item.testSignalScore },
+  ];
+
+  return (
+    <div className="neon-surface rounded-[1.55rem] border-primary/24 p-4">
+      <div className="grid gap-3 md:grid-cols-[0.38fr,0.62fr] md:items-start">
+        <div className="neon-metric rounded-[1.2rem] px-4 py-3">
+          <p className="text-[11px] font-medium tracking-[0.08em] text-primary uppercase">
+            Signal index
+          </p>
+          <p className="numeric-readout mt-2 text-3xl font-semibold text-white">{index}</p>
+          <p className="mt-1 text-xs text-muted">
+            Weighted by impact, review depth, difficulty, and test evidence.
+          </p>
+          <div className="mt-3 text-xs text-slate-200/84">
+            <span className="font-medium text-emerald-200">+</span>
+            {" "}
+            {item.additions} /{" "}
+            <span className="font-medium text-rose-200">-</span>
+            {" "}
+            {item.deletions} lines
+          </div>
+        </div>
+        <div className="space-y-2">
+          {rows.map((row) => (
+            <SignalRow key={row.label} label={row.label} value={row.value} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SignalRow({ label, value }: { label: string; value: number }) {
+  const normalized = clampScore(value);
+  return (
+    <div className="neon-tile rounded-[1rem] border-primary/22 px-3 py-2">
+      <div className="flex items-center justify-between gap-3 text-xs">
+        <p className="text-slate-200">{label}</p>
+        <p className="numeric-readout font-semibold text-white">{Math.round(value)}</p>
+      </div>
+      <div className="neon-track mt-1.5 h-1.5 rounded-full">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-cyan-300 via-primary to-primary-2"
+          style={{ width: `${normalized}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 function hasDetailedMetrics(item: Contribution) {
   return (
     item.difficultyScore > 0 ||
@@ -118,13 +170,19 @@ function hasDetailedMetrics(item: Contribution) {
   );
 }
 
-function Metric({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="neon-metric rounded-3xl px-4 py-3">
-      <p className="text-xs font-medium text-muted">{label}</p>
-      <p className="numeric-readout mt-2 text-xl font-semibold text-white">{value}</p>
-    </div>
-  );
+function contributionSignalIndex(item: Contribution): number {
+  const impact = clampScore(item.impactScore);
+  const review = clampScore(item.reviewDepthScore);
+  const difficulty = clampScore(item.difficultyScore);
+  const testSignal = clampScore(item.testSignalScore);
+  return Math.round(impact * 0.35 + review * 0.25 + difficulty * 0.2 + testSignal * 0.2);
+}
+
+function clampScore(value: number): number {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+  return Math.min(100, Math.max(0, value));
 }
 
 type ContributionTier = {
