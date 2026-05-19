@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- PR report header-consistency pass:
+  - added `SnapshotFreshnessPill` and constrained-network context to the PR report page header so it matches other dashboard lanes.
+  - removed duplicate page-level heading semantics by changing the PR title in the overview card from `h1` to `h2`.
 - Mobile lane-label consistency pass:
   - aligned mobile bottom-nav lane labels with desktop lane labels (`Dashboard`, `Contributions`, `Badges`, `Quests`, `Settings`) to improve cross-device navigation scent.
   - increased mobile nav tile minimum height and bounded label width with controlled wrapping so full labels remain readable without truncation.

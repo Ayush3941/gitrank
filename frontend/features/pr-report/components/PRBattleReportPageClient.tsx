@@ -10,9 +10,11 @@ import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
 import { TextScaleQuickSwitcher } from "@/components/shared/TextScaleQuickSwitcher";
 import { ThemeQuickSwitcher } from "@/components/shared/ThemeQuickSwitcher";
+import { ConstrainedNetworkPill } from "@/components/shared/ConstrainedNetworkPill";
 import { Button } from "@/components/ui/button";
 import { EvidenceSignalsCard } from "@/features/pr-report/components/EvidenceSignalsCard";
 import { ScoreMatrixCard } from "@/features/pr-report/components/ScoreMatrixCard";
@@ -159,6 +161,15 @@ export function PRBattleReportPageClient({
         eyebrow="PR Report"
         title="PR battle report"
         description="Explainable contribution scoring, not a mysterious number."
+        meta={(
+          <>
+            <SnapshotFreshnessPill
+              refreshedAt={data.sourceUpdatedAt}
+              label="Report snapshot"
+            />
+            <ConstrainedNetworkPill />
+          </>
+        )}
         actions={(
           <div className="flex flex-wrap gap-2">
             <ThemeQuickSwitcher compact />
@@ -207,7 +218,7 @@ export function PRBattleReportPageClient({
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
             <p className="break-anywhere text-sm text-muted">{data.contribution.owner}/{data.contribution.repo} #{data.contribution.number}</p>
-            <h1 className="mt-2 break-anywhere text-3xl font-semibold text-white">{data.contribution.title}</h1>
+            <h2 className="mt-2 break-anywhere text-3xl font-semibold text-white">{data.contribution.title}</h2>
             <p className="mt-3 text-sm text-slate-200">
               {data.contribution.status} • {data.contribution.category}
             </p>
