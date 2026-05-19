@@ -569,6 +569,8 @@ export function ContributionsPageClient() {
                     items={visibleRows}
                     narratives={abraInsights.data?.contributionNarratives}
                     isBusy={isFiltering}
+                    totalCount={filteredRows.length}
+                    startPosition={1}
                   />
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-3">

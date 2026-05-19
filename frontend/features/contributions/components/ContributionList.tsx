@@ -11,17 +11,30 @@ export function ContributionList({
   items,
   narratives,
   isBusy,
+  totalCount,
+  startPosition = 1,
 }: {
   items: Contribution[];
   narratives?: Record<string, ContributionNarrative>;
   isBusy?: boolean;
+  totalCount?: number;
+  startPosition?: number;
 }) {
+  const fullSetCount = Math.max(items.length, totalCount ?? items.length);
+  const isPartialSet = fullSetCount > items.length;
+
   return (
     <ol className="grid gap-4" aria-busy={isBusy || undefined}>
-      {items.map((item) => {
+      {items.map((item, index) => {
         const tier = contributionTier(item);
+        const position = startPosition + index;
         return (
-          <li key={item.id} className="list-none">
+          <li
+            key={item.id}
+            className="list-none"
+            aria-posinset={isPartialSet ? position : undefined}
+            aria-setsize={isPartialSet ? fullSetCount : undefined}
+          >
             <GlowCard
               className="render-opt-card relative space-y-4"
             >

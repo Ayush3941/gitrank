@@ -98,6 +98,8 @@ export function LeaderboardArena({
                 <li
                   key={`local-${row.rank}-${row.username}`}
                   value={row.rank}
+                  aria-posinset={row.rank}
+                  aria-setsize={rows.length}
                   className={`list-none neon-surface flex flex-wrap items-center justify-between gap-3 px-4 py-3 ${
                     row.isCurrentUser ? "border-primary/42 bg-primary/10" : ""
                   }`}
@@ -151,7 +153,13 @@ export function LeaderboardArena({
             .filter(Boolean)
             .join(" ");
           return (
-            <li key={`${row.rank}-${row.username}`} value={row.rank} className="list-none">
+            <li
+              key={`${row.rank}-${row.username}`}
+              value={row.rank}
+              className="list-none"
+              aria-posinset={visibleRows.length < rows.length ? row.rank : undefined}
+              aria-setsize={visibleRows.length < rows.length ? rows.length : undefined}
+            >
               <GlowCard
                 className={["render-opt-card", rowTone].filter(Boolean).join(" ")}
               >

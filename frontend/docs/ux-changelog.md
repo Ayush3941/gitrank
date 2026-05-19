@@ -9,6 +9,7 @@
   - added `aria-controls` plus remaining-row labels on row expansion controls and anchored the ranked-list region with a stable ID.
   - aligned first-render row window with constrained-mode page-size defaults to avoid oversized initial lane mounts on low-end devices.
   - migrated ranked rows and local-bracket rows to semantic ordered-list markup (`ol`/`li`) to improve assistive-tech list navigation and positional context.
+  - when the leaderboard list is partially rendered, row items now expose `aria-posinset` and `aria-setsize` so assistive tech still has full-rank position context.
 - Reduced-gamification scroll-jank hardening:
   - switched reduced-gamification background attachment to `scroll` (from fixed behavior) and anchored background position to `center top`.
   - expanded reduced-gamification animation suppression to include `body::after` alongside existing reduced-motion shell overlays.
@@ -20,6 +21,7 @@
   - added `aria-controls` plus remaining-card labels on card expansion controls and anchored the contribution-card region with a stable ID.
   - aligned first-render card window with constrained-mode page-size defaults to avoid oversized initial card mounts on low-end devices.
   - migrated contribution cards to semantic ordered-list markup (`ol`/`li`) for stronger list semantics and clearer screen-reader traversal.
+  - when contribution cards are partially rendered, card items now expose `aria-posinset` and `aria-setsize` so assistive tech receives full-list position context.
   - bounded ABRA contribution payload sampling to a fixed top slice (`24`) so AI narrative requests stay predictable on dense histories.
 - Dashboard route prefetch-throttle pass:
   - disabled automatic Next.js prefetch on dense dashboard navigation links (sidebar lanes, mobile lanes, breadcrumb parent, and top-bar profile link).
