@@ -2,6 +2,11 @@
 
 ## 2026-05-19
 
+- Dashboard/settings readability pass:
+  - normalized low-opacity dashboard body copy (`rank preview`, `evidence context`, `first-run checklist`, and deferred section placeholders) to shared readable text tokens.
+  - strengthened first-run checklist icon contrast for incomplete steps to improve state legibility.
+  - upgraded settings sync-activity removable-filter controls to larger icon-button footprints for easier pointer use.
+  - converted sync-run history rendering to semantic ordered-list structure (`ol/li`) while preserving per-run card layout.
 - Dashboard top-bar density pass:
   - restructured top-bar layout into a two-column grid (`lane context` + `status/actions`) at desktop widths to reduce control crowding and wrap jitter.
   - removed top-bar lane-hint truncation in favor of readable wrapped hint copy.

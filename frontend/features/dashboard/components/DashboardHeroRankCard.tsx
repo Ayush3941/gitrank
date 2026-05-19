@@ -92,7 +92,7 @@ export function DashboardHeroRankCard({
           <Sparkles className="mt-0.5 h-4 w-4 text-emerald-200" />
           <div>
             <p className="text-sm font-semibold text-white">Rank-up preview</p>
-            <p className="mt-1 text-sm leading-6 text-slate-200/78">
+            <p className="mt-1 text-sm leading-6 text-muted">
               {user.rankProgress.nextTier
                 ? `This season needs ${user.rankProgress.xpToNextTier.toLocaleString("en-US")} more evidence-backed XP before ${user.rankProgress.nextTier} review.`
                 : "The current profile is already at the highest configured rank tier."}
@@ -110,7 +110,7 @@ export function DashboardHeroRankCard({
             lines={4}
             minLengthForToggle={220}
             className="mt-2"
-            textClassName="break-anywhere text-sm leading-6 text-slate-200/84"
+            textClassName="break-anywhere text-sm leading-6 text-muted"
           />
         </div>
       ) : null}

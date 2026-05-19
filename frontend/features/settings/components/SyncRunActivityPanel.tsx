@@ -160,7 +160,7 @@ export function SyncRunActivityPanel({
                 <button
                   type="button"
                   onClick={handleClearSearch}
-                  className="focus-ring inline-flex h-5 w-5 items-center justify-center rounded-full text-cyan-100 hover:text-white"
+                  className="focus-ring inline-flex h-6 w-6 items-center justify-center rounded-full text-cyan-100 hover:text-white"
                   aria-label="Clear sync run search query"
                   title="Clear search"
                 >
@@ -174,7 +174,7 @@ export function SyncRunActivityPanel({
                 <button
                   type="button"
                   onClick={handleClearStatusFilter}
-                  className="focus-ring inline-flex h-5 w-5 items-center justify-center rounded-full text-cyan-100 hover:text-white"
+                  className="focus-ring inline-flex h-6 w-6 items-center justify-center rounded-full text-cyan-100 hover:text-white"
                   aria-label="Clear sync run status filter"
                   title="Clear status filter"
                 >
@@ -291,11 +291,12 @@ export function SyncRunActivityPanel({
           </div>
         </div>
       ) : (
-        <div className="grid gap-2">
+        <ol role="list" className="grid gap-2">
           {filteredRuns.map((run) => {
             const safeLastError = sanitizeSyncRunErrorMessage(run.last_error);
             return (
-              <article key={run.id} className="render-opt-card neon-surface space-y-2 px-4 py-3">
+              <li key={run.id}>
+                <article className="render-opt-card neon-surface space-y-2 px-4 py-3">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="break-anywhere text-sm font-semibold text-white">
@@ -307,7 +308,7 @@ export function SyncRunActivityPanel({
                   </div>
                   <StatusChip status={run.status} />
                 </div>
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-200/84">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
                   <span>
                     Started {toFriendlyTimestamp(run.started_at)}
                   </span>
@@ -321,10 +322,11 @@ export function SyncRunActivityPanel({
                     Last error: {safeLastError}
                   </p>
                 ) : null}
-              </article>
+                </article>
+              </li>
             );
           })}
-        </div>
+        </ol>
       )}
     </div>
   );

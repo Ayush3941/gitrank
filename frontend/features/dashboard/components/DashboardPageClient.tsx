@@ -390,7 +390,7 @@ export function DashboardPageClient() {
               <Link href="/dashboard/contributions">Inspect contribution cards</Link>
             </Button>
           </div>
-          <p className="inline-flex items-center gap-2 text-xs text-cyan-100/88">
+          <p className="inline-flex items-center gap-2 text-xs text-cyan-100">
             <Sparkles className="h-3.5 w-3.5 text-cyan-200" />
             Dashboard follows a summary-first flow: snapshot, then drill-down panels.
           </p>
@@ -421,7 +421,7 @@ export function DashboardPageClient() {
           <div>
             <p className="text-xs font-medium text-primary">Evidence context</p>
             <h2 className="mt-2 text-2xl font-semibold text-white">How current this snapshot is</h2>
-            <p className="mt-2 text-sm text-slate-200/84">
+            <p className="mt-2 text-sm text-muted">
               Dashboard values are generated from persisted score and profile evidence. Use this strip to confirm freshness and scope before making comparisons.
             </p>
           </div>
@@ -544,7 +544,7 @@ function FirstRunChecklistCard({
             First-run checklist
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-white">Activation path</h2>
-          <p className="mt-2 text-sm text-slate-200/84">
+          <p className="mt-2 text-sm text-muted">
             Complete these steps to move from an empty snapshot to meaningful score and quest progression.
           </p>
         </div>
@@ -578,14 +578,14 @@ function FirstRunChecklistCard({
               {step.done ? (
                 <CheckCircle2 className="h-4 w-4 text-emerald-300" />
               ) : (
-                <Circle className="h-4 w-4 text-cyan-200/78" />
+                <Circle className="h-4 w-4 text-cyan-200" />
               )}
             </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold text-white">
                 Step {index + 1}: {step.label}
               </p>
-              <p className="mt-1 text-xs text-slate-200/84">{step.detail}</p>
+              <p className="mt-1 text-xs text-muted">{step.detail}</p>
             </div>
           </div>
         ))}
@@ -620,7 +620,7 @@ function EvidenceContextItem({
     <div className="neon-surface space-y-2 px-4 py-4">
       <p className="text-xs font-medium text-primary">{label}</p>
       <p className="text-lg font-semibold text-white">{value}</p>
-      <p className="text-xs text-slate-200/84">{detail}</p>
+      <p className="text-xs text-muted">{detail}</p>
     </div>
   );
 }
@@ -633,7 +633,7 @@ function SectionDeferredPlaceholder({ title }: { title: string }) {
       aria-live="polite"
       aria-busy="true"
     >
-      <p className="text-sm text-slate-200/84">{title}</p>
+      <p className="text-sm text-muted">{title}</p>
     </div>
   );
 }
