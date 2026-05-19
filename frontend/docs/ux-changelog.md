@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- Leaderboard progressive-render pass:
+  - switched leaderboard ranked-row rendering to a bounded initial window (`24` default, `12` constrained-network mode) with explicit `Show more rows` disclosure.
+  - preserves full season context and local-bracket insights while reducing initial leaderboard DOM work on dense lanes.
 - Contributions progressive-disclosure performance pass:
   - capped contribution timeline rendering to a recent-month window (`12` default, `8` on constrained networks) and added explicit window copy for scan clarity.
   - switched contribution card lane to progressive disclosure (`Show more cards`) so initial render mounts a bounded subset (`24` default, `12` constrained) instead of the full list.

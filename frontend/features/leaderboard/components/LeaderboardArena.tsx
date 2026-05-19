@@ -6,8 +6,18 @@ import { RankBadge } from "@/components/shared/RankBadge";
 import { formatDate, formatTimeUntil } from "@/lib/formatters";
 import type { LeaderboardSnapshot } from "@/types/gitrank";
 
-export function LeaderboardArena({ snapshot }: { snapshot: LeaderboardSnapshot }) {
+export function LeaderboardArena({
+  snapshot,
+  rowLimit,
+}: {
+  snapshot: LeaderboardSnapshot;
+  rowLimit?: number;
+}) {
   const rows = snapshot.rows;
+  const visibleRows =
+    typeof rowLimit === "number" && rowLimit > 0
+      ? rows.slice(0, rowLimit)
+      : rows;
   const currentUser =
     snapshot.currentUser ?? rows.find((row) => row.isCurrentUser) ?? null;
   const currentUserIndex = currentUser
@@ -121,7 +131,7 @@ export function LeaderboardArena({ snapshot }: { snapshot: LeaderboardSnapshot }
           </div>
         </GlowCard>
       ) : null}
-      {rows.map((row) => {
+      {visibleRows.map((row) => {
         const positive = row.movement >= 0;
         const podiumTone =
           row.rank === 1

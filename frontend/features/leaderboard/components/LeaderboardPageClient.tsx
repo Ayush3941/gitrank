@@ -22,6 +22,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LeaderboardArena } from "@/features/leaderboard/components/LeaderboardArena";
 import { laneParamToTab, tabToLaneParam } from "@/features/leaderboard/lib/lane-param";
 import { useLeaderboard } from "@/hooks/use-leaderboard";
+import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { useMyProfile } from "@/hooks/use-profile";
 import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
 import { formatRelativeDays } from "@/lib/formatters";
@@ -59,11 +60,18 @@ const LEADERBOARD_SECTION_IDS = LEADERBOARD_SECTION_ITEMS.map(
   (section) => section.id,
 ) as LeaderboardSectionID[];
 const LEADERBOARD_DEFAULT_SECTION: LeaderboardSectionID = "leaderboard-filters";
+const LEADERBOARD_ROW_PAGE_SIZE_DEFAULT = 24;
+const LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED = 12;
 
 export function LeaderboardPageClient() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const constrainedNetwork = useNetworkConstraintPreference();
+  const rowPageSize = constrainedNetwork
+    ? LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED
+    : LEADERBOARD_ROW_PAGE_SIZE_DEFAULT;
+  const [visibleRowCount, setVisibleRowCount] = useState(LEADERBOARD_ROW_PAGE_SIZE_DEFAULT);
   const tabFromURL = laneParamToTab(searchParams.get("lane"));
   const tab = tabFromURL ?? "Global";
   const [activeSection, setActiveSection] =
@@ -90,6 +98,8 @@ export function LeaderboardPageClient() {
         currentUser: rows.find((row) => row.isCurrentUser),
       }
     : null;
+  const safeVisibleRowCount = Math.min(rows.length, visibleRowCount);
+  const hasMoreRows = rows.length > safeVisibleRowCount;
   const sparseArena = !isLoading && !isError && !!snapshot && rows.length > 0 && rows.length < 5;
   const laneLeader = rows[0];
   const laneGapToLeader =
@@ -171,6 +181,7 @@ export function LeaderboardPageClient() {
     nextParams.set("lane", lane);
     const query = nextParams.toString();
     startTransition(() => {
+      setVisibleRowCount(rowPageSize);
       router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
     });
   }
@@ -395,7 +406,28 @@ export function LeaderboardPageClient() {
                 </div>
               </GlowCard>
             ) : null}
-            <LeaderboardArena snapshot={snapshot} />
+            <LeaderboardArena snapshot={snapshot} rowLimit={safeVisibleRowCount} />
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-slate-300">
+                Showing {safeVisibleRowCount} of {rows.length} ranked rows.
+              </p>
+              {hasMoreRows ? (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    startTransition(() => {
+                      setVisibleRowCount((current) =>
+                        Math.min(rows.length, current + rowPageSize),
+                      );
+                    });
+                  }}
+                >
+                  Show more rows
+                </Button>
+              ) : null}
+            </div>
             <GlowCard id="leaderboard-climb" className="scroll-mt-24 space-y-3 border border-fuchsia-300/22 bg-gradient-to-br from-slate-950/90 to-fuchsia-950/20">
               <p className="text-xs font-medium text-fuchsia-200">How to climb</p>
               <div className="grid gap-3 md:grid-cols-3">
