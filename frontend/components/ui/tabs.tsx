@@ -8,16 +8,69 @@ export const Tabs = TabsPrimitive.Root;
 
 export function TabsList({
   className,
+  children,
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.List>) {
+  const listRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    const listNode = listRef.current;
+    if (!listNode || typeof window === "undefined") {
+      return;
+    }
+
+    const scrollActiveTabIntoView = () => {
+      const activeTab = listNode.querySelector<HTMLElement>(
+        '[role="tab"][data-state="active"]',
+      );
+      if (!activeTab) {
+        return;
+      }
+      const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      activeTab.scrollIntoView({
+        block: "nearest",
+        inline: "center",
+        behavior: prefersReducedMotion ? "auto" : "smooth",
+      });
+    };
+
+    const initialFrame = window.requestAnimationFrame(scrollActiveTabIntoView);
+    const observer = new MutationObserver((entries) => {
+      for (const entry of entries) {
+        if (
+          entry.type === "attributes" &&
+          entry.attributeName === "data-state"
+        ) {
+          scrollActiveTabIntoView();
+          return;
+        }
+      }
+    });
+    observer.observe(listNode, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["data-state"],
+    });
+
+    return () => {
+      window.cancelAnimationFrame(initialFrame);
+      observer.disconnect();
+    };
+  }, []);
+
   return (
     <TabsPrimitive.List
+      ref={listRef}
       className={cn(
         "glass-panel cyber-frame inline-flex h-auto flex-wrap gap-2 rounded-3xl border border-primary/26 p-1.5 shadow-[0_0_18px_rgb(34_226_255_/_0.1)]",
         className,
       )}
       {...props}
-    />
+    >
+      {children}
+    </TabsPrimitive.List>
   );
 }
 

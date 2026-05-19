@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Tabs overflow orientation pass:
+  - upgraded shared `TabsList` to auto-scroll the active tab trigger into view as tab state changes, including initial mount.
+  - behavior respects reduced-motion preference by switching to instant scroll when `prefers-reduced-motion` is enabled.
+  - improves lane-switch orientation in horizontally scrollable tab strips (notably leaderboard lane tabs) without route or data-contract changes.
 - Section jump-nav focus-tracking pass:
   - upgraded shared `SectionJumpNav` to auto-scroll the active section chip into view when the horizontal chip rail overflows.
   - motion now respects `prefers-reduced-motion` (smooth by default, instant when reduced motion is enabled).
