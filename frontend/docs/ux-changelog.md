@@ -61,6 +61,11 @@
     pages
   - added explicit `role="img"` + `aria-describedby` linkage from chart
     containers to nearby summary copy for stronger non-visual chart context.
+- Shared progress primitive hardening:
+  - clamped progress input values to safe `0-100` bounds in the shared
+    `Progress` component to prevent layout glitches from malformed values
+  - reduced progress-indicator glow intensity to lower paint-heavy effects
+    across dashboard, quest, badge, and profile progress bars.
 
 ## 2026-05-17
 
