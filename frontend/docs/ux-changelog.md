@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Background-visibility and glow-smoothing pass:
+  - softened `neon-vignette` edge ramps to reduce dark-edge clipping and keep the locked background image visible across dashboard and marketing shells.
+  - expanded page-shell glow gradients (`::before`/`::after`) with longer falloff stops so accent glow starts/stops are smoother and less abrupt.
+  - lowered shell vignette overlay opacity in `AppShell` (`0.08/0.12`) to improve text-background separation without reintroducing heavy motion/effects.
 - Dialog safe-area resilience pass:
   - completed safe-area-aware modal layout classes (`.dialog-safe-content`, `.dialog-safe-close`) used by shared `DialogContent`.
   - dialog max-height now respects top/bottom insets and dynamic viewport height (`dvh` with `vh` fallback), reducing clipped content on mobile browser chrome changes.

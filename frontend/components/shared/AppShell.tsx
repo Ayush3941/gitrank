@@ -10,7 +10,7 @@ export function AppShell({
 }) {
   return (
     <main id="main-content" className="page-shell min-h-screen" tabIndex={-1}>
-      <div className="pointer-events-none absolute inset-0 neon-vignette opacity-[0.16] sm:opacity-[0.2]" />
+      <div className="pointer-events-none absolute inset-0 neon-vignette opacity-[0.08] sm:opacity-[0.12]" />
       <div className={cn("mx-auto w-full max-w-[92rem] px-4 py-6 sm:px-6 lg:px-8", className)}>
         {children}
       </div>

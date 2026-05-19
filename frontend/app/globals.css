@@ -1003,8 +1003,20 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 
 .neon-vignette {
   background:
-    radial-gradient(circle at 50% 8%, transparent 0, transparent 74%, rgb(0 0 0 / 0.16) 100%),
-    radial-gradient(circle at 50% 100%, transparent 0, transparent 78%, rgb(0 0 0 / 0.24) 100%);
+    radial-gradient(
+      circle at 50% 6%,
+      transparent 0,
+      transparent 62%,
+      rgb(0 0 0 / 0.08) 84%,
+      rgb(0 0 0 / 0.12) 100%
+    ),
+    radial-gradient(
+      circle at 50% 100%,
+      transparent 0,
+      transparent 64%,
+      rgb(0 0 0 / 0.1) 84%,
+      rgb(0 0 0 / 0.14) 100%
+    );
 }
 
 .page-shell {
@@ -1024,28 +1036,30 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 }
 
 .page-shell::before {
-  top: 8rem;
-  left: -6rem;
-  width: 22rem;
-  height: 22rem;
+  top: 6rem;
+  left: -10rem;
+  width: 30rem;
+  height: 30rem;
   background: radial-gradient(
     circle,
-    rgb(var(--primary) / 0.16) 0%,
-    rgb(var(--primary) / 0.08) 34%,
-    rgb(var(--primary) / 0) 74%
+    rgb(var(--primary) / 0.14) 0%,
+    rgb(var(--primary) / 0.08) 46%,
+    rgb(var(--primary) / 0.03) 68%,
+    rgb(var(--primary) / 0) 90%
   );
 }
 
 .page-shell::after {
-  right: -8rem;
-  bottom: 5rem;
-  width: 26rem;
-  height: 26rem;
+  right: -12rem;
+  bottom: 2rem;
+  width: 34rem;
+  height: 34rem;
   background: radial-gradient(
     circle,
-    rgb(var(--primary-2) / 0.16) 0%,
-    rgb(var(--primary-2) / 0.08) 34%,
-    rgb(var(--primary-2) / 0) 74%
+    rgb(var(--primary-2) / 0.14) 0%,
+    rgb(var(--primary-2) / 0.08) 46%,
+    rgb(var(--primary-2) / 0.03) 68%,
+    rgb(var(--primary-2) / 0) 90%
   );
 }
 
