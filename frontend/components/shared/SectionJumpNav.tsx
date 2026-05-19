@@ -34,18 +34,41 @@ export function SectionJumpNav({
     >
       <p
         id={navLabelID}
-        className="shrink-0 px-2 text-xs font-medium text-cyan-100"
+        className="hidden shrink-0 px-2 text-xs font-medium text-cyan-100 sm:block"
       >
         Jump to
       </p>
       <p
         role="status"
         aria-live="polite"
-        className="shrink-0 px-2 text-sm font-medium text-cyan-100"
+        className="hidden shrink-0 px-2 text-sm font-medium text-cyan-100 sm:block"
       >
         {activeSectionLabel}
       </p>
-      <div className="scrollbar-thin min-w-0 flex-1 overflow-x-auto">
+      <div className="min-w-0 flex-1 sm:hidden">
+        <label htmlFor={`${navLabelID}-select`} className="sr-only">
+          Jump to section
+        </label>
+        <select
+          id={`${navLabelID}-select`}
+          value={activeSection}
+          onChange={(event) => {
+            const sectionID = event.target.value;
+            onSectionSelect(sectionID);
+            if (typeof window !== "undefined") {
+              window.location.hash = sectionID;
+            }
+          }}
+          className="focus-ring w-full border border-primary/28 bg-primary/8 px-3 py-2 text-sm text-white"
+        >
+          {items.map((section) => (
+            <option key={section.id} value={section.id}>
+              {section.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="scrollbar-thin hidden min-w-0 flex-1 overflow-x-auto sm:block">
         <ul role="list" className="flex w-max min-w-full flex-nowrap gap-2">
           {items.map((section) => (
             <li key={section.id}>

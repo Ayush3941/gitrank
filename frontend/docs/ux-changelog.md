@@ -2,6 +2,12 @@
 
 ## 2026-05-19
 
+- Section jump-nav mobile formatting pass:
+  - switched small-screen jump navigation to a compact `<select>` control with
+    direct hash navigation, keeping the larger chip-based horizontal jump rail
+    for `sm+` breakpoints
+  - reduces cramped header controls on mobile while preserving keyboard and
+    assistive-label coverage.
 - Adaptive presentation + performance baseline correction:
   - fixed reduced-gamification default inference so sessions without an explicit
     user setting now follow real device/browser signals (`prefers-reduced-motion`,
