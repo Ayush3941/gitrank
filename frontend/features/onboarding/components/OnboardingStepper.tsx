@@ -29,7 +29,7 @@ export function OnboardingStepper({
             <li key={step.key} aria-current={isCurrent ? "step" : undefined} className="min-w-0 flex-1">
               <div
                 className={cn(
-                  "flex min-w-[9rem] items-center gap-2 border px-3 py-2 text-xs tracking-[0.12em] uppercase",
+                  "flex min-w-[9rem] items-center gap-2 border px-3 py-2 text-sm font-medium",
                   isDone
                     ? "neon-chip neon-chip-success border-emerald-300/40 text-emerald-50"
                     : isCurrent
