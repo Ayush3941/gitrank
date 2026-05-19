@@ -18,6 +18,8 @@
   - added explicit system-vs-manual theme source state to `use-theme-preference`
   - added one-click “Follow system theme” action in Settings
   - fixed “Reset display preferences” to clear manual theme override (system-follow mode) instead of forcing high-contrast.
+- Settings theme chooser preview pass:
+  - upgraded theme rows to mini preview cards with sample title/body/chip lanes so readability and accent density can be compared before applying a theme.
 - Cyberpunk palette + visibility tuning pass:
   - shifted base theme tokens toward electric-blue / deep-pink / lime / amber accents while preserving readability-first text contrast
   - updated key accent utilities (`neon-title`, divider, selection, status chips) to use the new palette language instead of flat cyan-magenta defaults

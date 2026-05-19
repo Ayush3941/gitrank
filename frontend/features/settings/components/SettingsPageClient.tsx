@@ -76,30 +76,54 @@ const THEME_OPTIONS: Array<{
   label: string;
   description: string;
   swatchClassName: string;
+  previewShellClassName: string;
+  previewAccentClassName: string;
+  previewTextClassName: string;
+  previewChipClassName: string;
 }> = [
   {
     value: "neon",
     label: "Neon grid",
     description: "Bold cyberpunk glow and vivid HUD accents.",
     swatchClassName: "from-cyan-300 via-fuchsia-300 to-emerald-300",
+    previewShellClassName:
+      "from-[rgb(6_10_24_/_0.95)] via-[rgb(14_19_44_/_0.93)] to-[rgb(23_16_37_/_0.91)] border-cyan-300/42",
+    previewAccentClassName: "bg-gradient-to-r from-cyan-200 to-fuchsia-200",
+    previewTextClassName: "text-cyan-50",
+    previewChipClassName: "bg-fuchsia-300/16 text-fuchsia-100",
   },
   {
     value: "midnight",
     label: "Midnight contrast",
     description: "Balanced readability with cleaner dark surfaces.",
     swatchClassName: "from-sky-300 via-indigo-300 to-violet-300",
+    previewShellClassName:
+      "from-[rgb(8_11_26_/_0.95)] via-[rgb(13_17_36_/_0.93)] to-[rgb(18_24_42_/_0.91)] border-sky-300/36",
+    previewAccentClassName: "bg-gradient-to-r from-sky-200 to-indigo-200",
+    previewTextClassName: "text-sky-50",
+    previewChipClassName: "bg-indigo-300/16 text-indigo-100",
   },
   {
     value: "aurora",
     label: "Aurora clarity",
     description: "Softer glow with stronger body-copy contrast for long reading.",
     swatchClassName: "from-teal-200 via-cyan-200 to-blue-300",
+    previewShellClassName:
+      "from-[rgb(7_15_29_/_0.95)] via-[rgb(13_24_40_/_0.93)] to-[rgb(14_30_43_/_0.9)] border-teal-300/36",
+    previewAccentClassName: "bg-gradient-to-r from-teal-200 to-cyan-200",
+    previewTextClassName: "text-teal-50",
+    previewChipClassName: "bg-teal-300/14 text-teal-100",
   },
   {
     value: "high-contrast",
     label: "High contrast",
     description: "Maximum text clarity and reduced background noise.",
     swatchClassName: "from-slate-100 via-cyan-200 to-slate-100",
+    previewShellClassName:
+      "from-[rgb(12_14_28_/_0.98)] via-[rgb(16_19_33_/_0.96)] to-[rgb(18_22_36_/_0.95)] border-slate-100/45",
+    previewAccentClassName: "bg-gradient-to-r from-slate-100 to-cyan-100",
+    previewTextClassName: "text-slate-50",
+    previewChipClassName: "bg-slate-200/20 text-slate-100",
   },
 ];
 
@@ -516,7 +540,7 @@ export function SettingsPageClient() {
               </span>
             </p>
           </div>
-          <div className="grid w-full gap-2 sm:w-auto sm:min-w-[18rem]">
+          <div className="grid w-full gap-2 sm:w-auto sm:min-w-[22rem]">
             {THEME_OPTIONS.map((option) => (
               <Button
                 key={option.value}
@@ -526,11 +550,25 @@ export function SettingsPageClient() {
                 className="h-auto justify-start gap-3 px-4 py-3 text-left"
                 onClick={() => setTheme(option.value)}
               >
-                <span className="neon-track h-8 w-10 shrink-0 overflow-hidden rounded-md border border-primary/30">
-                  <span
-                    className={`block h-full w-full bg-gradient-to-r ${option.swatchClassName}`}
-                    aria-hidden="true"
-                  />
+                <span
+                  className={`neon-track flex w-full flex-col gap-2 overflow-hidden border bg-gradient-to-br px-3 py-2 ${option.previewShellClassName}`}
+                  aria-hidden="true"
+                >
+                  <span className={`h-1.5 w-2/3 ${option.previewAccentClassName}`} />
+                  <span className={`h-1.5 w-5/6 ${option.previewTextClassName} bg-current/85`} />
+                  <span className={`h-1.5 w-4/6 ${option.previewTextClassName} bg-current/65`} />
+                  <span className="mt-0.5 flex items-center gap-1.5">
+                    <span
+                      className={`h-4 min-w-10 px-2 text-[9px] leading-4 tracking-[0.08em] uppercase ${option.previewChipClassName}`}
+                    >
+                      xp
+                    </span>
+                    <span
+                      className={`h-4 min-w-12 px-2 text-[9px] leading-4 tracking-[0.08em] uppercase ${option.previewChipClassName}`}
+                    >
+                      rank
+                    </span>
+                  </span>
                 </span>
                 <span className="flex flex-col items-start">
                   <span className="inline-flex items-center gap-2">
@@ -542,6 +580,12 @@ export function SettingsPageClient() {
                     ) : null}
                   </span>
                   <span className="text-xs text-muted">{option.description}</span>
+                  <span className="mt-1 inline-flex h-2.5 w-16 overflow-hidden rounded-full border border-primary/28">
+                    <span
+                      className={`block h-full w-full bg-gradient-to-r ${option.swatchClassName}`}
+                      aria-hidden="true"
+                    />
+                  </span>
                 </span>
               </Button>
             ))}
