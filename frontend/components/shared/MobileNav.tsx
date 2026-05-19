@@ -35,7 +35,7 @@ export function MobileNav() {
                 aria-label={item.label}
                 title={item.label}
                 className={cn(
-                  "focus-ring relative flex min-h-14 flex-col items-center justify-center gap-1 border px-1.5 py-1.5 text-[11px] leading-none font-semibold tracking-[0.02em]",
+                  "focus-ring relative flex min-h-14 flex-col items-center justify-center gap-1 border px-1.5 py-1.5 text-[11px] leading-tight font-semibold",
                   active
                     ? "border-primary/46 bg-gradient-to-r from-primary/26 via-primary/18 to-primary-2/24 text-white shadow-[0_0_10px_rgb(34_226_255_/_0.13)]"
                     : "border-transparent text-slate-100 hover:border-primary/26 hover:bg-primary/10 hover:text-white",

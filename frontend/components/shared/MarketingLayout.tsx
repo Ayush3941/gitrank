@@ -15,7 +15,7 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
             </div>
             <div>
               <p className="cyber-title text-lg font-semibold text-white">GitRank</p>
-              <p className="hud-eyebrow text-xs font-semibold uppercase">Open-source reputation</p>
+              <p className="hud-eyebrow text-xs font-semibold">Open-source reputation</p>
             </div>
           </Link>
           <div className="flex items-center gap-3">
