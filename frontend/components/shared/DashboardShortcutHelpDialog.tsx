@@ -35,6 +35,7 @@ const SHORTCUT_SECTIONS: Array<{
       {
         keys: "Esc",
         action: "Close open dialog or palette",
+        note: "In quick actions: clears active search first, then closes on the next press.",
       },
     ],
   },

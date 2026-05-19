@@ -6,6 +6,7 @@
   - added inline clear-search control and live result-count status in the dashboard quick-actions palette.
   - replaced per-item `findIndex` lookups with a memoized action-index map to reduce repeated list scanning during palette rendering.
   - added `Esc` behavior that clears an active query before closing the palette, improving keyboard recovery.
+  - updated shortcut-help copy to document the two-step `Esc` behavior.
   - keeps shortcut behavior and command execution contracts unchanged.
 - Page-header measure consistency pass:
   - aligned shared `PageHeader` description max width to `68ch` to match project readability baseline.
