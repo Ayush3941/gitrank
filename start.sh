@@ -28,6 +28,21 @@ log() {
   printf '[start.sh] %s\n' "$*"
 }
 
+persist_env_value() {
+  env_file="$1"
+  env_key="$2"
+  env_value="$3"
+
+  escaped_value="${env_value//\\/\\\\}"
+  escaped_value="${escaped_value//&/\\&}"
+  escaped_value="${escaped_value//\//\\/}"
+  if grep -qE "^${env_key}=" "$env_file"; then
+    sed -i "s/^${env_key}=.*/${env_key}=${escaped_value}/" "$env_file"
+  else
+    printf '\n%s=%s\n' "$env_key" "$env_value" >>"$env_file"
+  fi
+}
+
 need_cmd() {
   if ! command -v "$1" >/dev/null 2>&1; then
     log "missing required command: $1"
@@ -124,19 +139,22 @@ fi
 if [[ -z "${GITRANK_SESSION_SECRET:-}" || "${GITRANK_SESSION_SECRET}" == replace-* ]]; then
   GITRANK_SESSION_SECRET="$(openssl rand -hex 32)"
   export GITRANK_SESSION_SECRET
-  log "using ephemeral GITRANK_SESSION_SECRET for this run"
+  persist_env_value "$BACKEND_ENV_FILE" "GITRANK_SESSION_SECRET" "$GITRANK_SESSION_SECRET"
+  log "generated and persisted GITRANK_SESSION_SECRET"
 fi
 
 if [[ -z "${GITRANK_JWT_SIGNING_KEY:-}" || "${GITRANK_JWT_SIGNING_KEY}" == replace-* ]]; then
   GITRANK_JWT_SIGNING_KEY="$(openssl rand -hex 32)"
   export GITRANK_JWT_SIGNING_KEY
-  log "using ephemeral GITRANK_JWT_SIGNING_KEY for this run"
+  persist_env_value "$BACKEND_ENV_FILE" "GITRANK_JWT_SIGNING_KEY" "$GITRANK_JWT_SIGNING_KEY"
+  log "generated and persisted GITRANK_JWT_SIGNING_KEY"
 fi
 
 if [[ -z "${GITHUB_TOKEN_ENCRYPTION_KEY:-}" || "${GITHUB_TOKEN_ENCRYPTION_KEY}" == replace-* ]]; then
   GITHUB_TOKEN_ENCRYPTION_KEY="$(openssl rand -base64 32)"
   export GITHUB_TOKEN_ENCRYPTION_KEY
-  log "using ephemeral GITHUB_TOKEN_ENCRYPTION_KEY for this run"
+  persist_env_value "$BACKEND_ENV_FILE" "GITHUB_TOKEN_ENCRYPTION_KEY" "$GITHUB_TOKEN_ENCRYPTION_KEY"
+  log "generated and persisted GITHUB_TOKEN_ENCRYPTION_KEY"
 fi
 
 log "stopping old frontend/backend processes from prior start.sh runs"
