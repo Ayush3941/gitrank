@@ -161,6 +161,8 @@
     `tests/sync-run-status.test.ts`.
   - enabled explicit refetch on window focus/reconnect for sync-run queries so
     users returning to Settings see fresh queue state immediately.
+  - added semantic `<time>` freshness labeling in sync log header with both
+    relative and absolute timestamps for clearer freshness verification.
 - Web-vitals observability testability pass:
   - extracted route-group mapping, metric-rating normalization, tracked-metric
   registry, and sampling logic into `lib/web-vitals.ts`

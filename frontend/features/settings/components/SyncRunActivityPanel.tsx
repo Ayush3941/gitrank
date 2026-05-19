@@ -6,7 +6,7 @@ import { startTransition, useDeferredValue, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
-import { formatRelativeDays } from "@/lib/formatters";
+import { formatDateTime, formatRelativeDays } from "@/lib/formatters";
 import { syncRunStatusLabel } from "@/features/settings/lib/sync-run-status";
 
 export function SyncRunActivityPanel({
@@ -93,7 +93,14 @@ export function SyncRunActivityPanel({
         <div className="flex flex-wrap items-center gap-2">
           {lastUpdatedAt ? (
             <p className="text-xs font-medium text-cyan-200">
-              Updated {formatRelativeDays(lastUpdatedAt)}
+              Updated{" "}
+              <time
+                dateTime={toNormalizedDateTime(lastUpdatedAt) ?? undefined}
+                title={formatDateTime(lastUpdatedAt)}
+                aria-label={`Updated ${formatRelativeDays(lastUpdatedAt)}, ${formatDateTime(lastUpdatedAt)}`}
+              >
+                {formatRelativeDays(lastUpdatedAt)}
+              </time>
             </p>
           ) : null}
           <Button
@@ -334,4 +341,15 @@ function runDuration(startedAt: string, finishedAt: string): string {
   }
   const hours = Math.floor(minutes / 60);
   return `${hours}h ${minutes % 60}m`;
+}
+
+function toNormalizedDateTime(value?: string): string | null {
+  if (!value) {
+    return null;
+  }
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+  return parsed.toISOString();
 }
