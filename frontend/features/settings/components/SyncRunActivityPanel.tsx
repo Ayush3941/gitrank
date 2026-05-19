@@ -1,7 +1,9 @@
 "use client";
 
-import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, Search, XCircle } from "lucide-react";
+import { startTransition, useDeferredValue, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { formatRelativeDays } from "@/lib/formatters";
 
@@ -22,6 +24,60 @@ export function SyncRunActivityPanel({
   errorMessage?: string;
   onRefresh: () => void;
 }) {
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"All" | "Completed" | "Running" | "Failed">("All");
+  const deferredSearch = useDeferredValue(search);
+  const deferredStatusFilter = useDeferredValue(statusFilter);
+  const isFiltering = deferredSearch !== search || deferredStatusFilter !== statusFilter;
+  const canReset = search.trim().length > 0 || statusFilter !== "All";
+  const filterStatusId = "settings-sync-filter-status";
+  const statusCounts = useMemo(() => {
+    const next = {
+      all: runs.length,
+      completed: 0,
+      running: 0,
+      failed: 0,
+    };
+    for (const run of runs) {
+      const status = runStatusLabel(run.status);
+      if (status === "Completed") {
+        next.completed += 1;
+      } else if (status === "Running") {
+        next.running += 1;
+      } else if (status === "Failed") {
+        next.failed += 1;
+      }
+    }
+    return next;
+  }, [runs]);
+  const filteredRuns = useMemo(() => {
+    const term = deferredSearch.trim().toLowerCase();
+    return runs.filter((run) => {
+      const normalizedStatus = runStatusLabel(run.status);
+      const statusMatch =
+        deferredStatusFilter === "All" || normalizedStatus === deferredStatusFilter;
+      if (!statusMatch) {
+        return false;
+      }
+      if (term.length === 0) {
+        return true;
+      }
+      return (
+        runLabel(run).toLowerCase().includes(term) ||
+        (run.subject ?? "").toLowerCase().includes(term) ||
+        run.run_type.toLowerCase().includes(term) ||
+        (run.last_error ?? "").toLowerCase().includes(term)
+      );
+    });
+  }, [deferredSearch, deferredStatusFilter, runs]);
+
+  function handleResetFilters() {
+    startTransition(() => {
+      setSearch("");
+      setStatusFilter("All");
+    });
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -50,6 +106,60 @@ export function SyncRunActivityPanel({
           </Button>
         </div>
       </div>
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p id={filterStatusId} role="status" aria-live="polite" className="text-xs font-medium text-cyan-200">
+            {isFiltering
+              ? "Updating sync log..."
+              : `${filteredRuns.length} of ${statusCounts.all} runs`}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">Completed {statusCounts.completed}</span>
+            <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">Running {statusCounts.running}</span>
+            <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">Failed {statusCounts.failed}</span>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={handleResetFilters}
+              disabled={!canReset || isFiltering}
+            >
+              Reset
+            </Button>
+          </div>
+        </div>
+        <div className="grid gap-3 md:grid-cols-[1fr,22rem]">
+          <div className="relative">
+            <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted" />
+            <Input
+              value={search}
+              onChange={(event) => {
+                const value = event.target.value;
+                startTransition(() => setSearch(value));
+              }}
+              className="pl-11"
+              placeholder="Search run subject, mode, or error"
+              aria-label="Search sync runs"
+              aria-describedby={filterStatusId}
+            />
+          </div>
+          <div className="grid grid-cols-4 gap-2">
+            {(["All", "Completed", "Running", "Failed"] as const).map((item) => (
+              <Button
+                key={item}
+                type="button"
+                size="sm"
+                variant={statusFilter === item ? "default" : "secondary"}
+                onClick={() => startTransition(() => setStatusFilter(item))}
+                disabled={isFiltering}
+                aria-describedby={filterStatusId}
+              >
+                {item}
+              </Button>
+            ))}
+          </div>
+        </div>
+      </div>
 
       {isError ? (
         <div role="alert" className="neon-surface border-rose-300/28 px-4 py-3 text-sm text-rose-100">
@@ -65,10 +175,14 @@ export function SyncRunActivityPanel({
         <div className="neon-surface border-dashed border-primary/24 px-4 py-4 text-sm text-muted">
           No sync runs recorded for this account yet. Open dashboard lanes and GitRank will enqueue background sync automatically.
         </div>
+      ) : filteredRuns.length === 0 ? (
+        <div className="neon-surface border-dashed border-primary/24 px-4 py-4 text-sm text-muted">
+          No sync runs match the current search or status filter.
+        </div>
       ) : (
         <div className="grid gap-2">
-          {runs.map((run) => (
-            <article key={run.id} className="neon-surface space-y-2 px-4 py-3">
+          {filteredRuns.map((run) => (
+            <article key={run.id} className="render-opt-card neon-surface space-y-2 px-4 py-3">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="break-anywhere text-sm font-semibold text-white">
@@ -103,8 +217,8 @@ export function SyncRunActivityPanel({
 }
 
 function StatusChip({ status }: { status: string }) {
-  const normalized = status.trim().toLowerCase();
-  if (normalized === "completed") {
+  const normalized = runStatusLabel(status);
+  if (normalized === "Completed") {
     return (
       <span className="neon-chip neon-chip-success inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold">
         <CheckCircle2 className="h-3.5 w-3.5" />
@@ -112,7 +226,7 @@ function StatusChip({ status }: { status: string }) {
       </span>
     );
   }
-  if (normalized === "failed") {
+  if (normalized === "Failed") {
     return (
       <span className="neon-chip inline-flex items-center gap-1.5 rounded-full border-rose-300/30 bg-rose-500/12 px-2.5 py-1 text-xs font-semibold text-rose-100">
         <XCircle className="h-3.5 w-3.5" />
@@ -120,7 +234,7 @@ function StatusChip({ status }: { status: string }) {
       </span>
     );
   }
-  if (normalized === "running" || normalized === "syncing") {
+  if (normalized === "Running") {
     return (
       <span className="neon-chip neon-chip-info inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold">
         <Clock3 className="h-3.5 w-3.5" />
@@ -134,6 +248,20 @@ function StatusChip({ status }: { status: string }) {
       {status || "Unknown"}
     </span>
   );
+}
+
+function runStatusLabel(status: string): "Completed" | "Failed" | "Running" | "Other" {
+  const normalized = status.trim().toLowerCase();
+  if (normalized === "completed") {
+    return "Completed";
+  }
+  if (normalized === "failed") {
+    return "Failed";
+  }
+  if (normalized === "running" || normalized === "syncing") {
+    return "Running";
+  }
+  return "Other";
 }
 
 function runLabel(run: ApiSyncRunRecord): string {
