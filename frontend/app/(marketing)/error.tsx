@@ -36,7 +36,7 @@ export default function MarketingRouteError({
 
   return (
     <GlowCard strong className="space-y-4">
-      <p className="text-xs tracking-[0.24em] text-danger uppercase">Marketing route error</p>
+      <p className="text-xs font-medium text-danger">Marketing route error</p>
       <h1 className="text-3xl font-semibold text-white">GitRank landing route failed to render</h1>
       <p className="max-w-2xl text-sm text-slate-200/84">
         Retry this route now. If the issue persists, open login directly and continue with GitHub OAuth.

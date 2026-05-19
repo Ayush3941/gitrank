@@ -24,7 +24,7 @@ export default function DashboardError({
 
   return (
     <GlowCard strong className="space-y-4">
-      <p className="text-xs tracking-[0.24em] text-danger uppercase">Dashboard error</p>
+      <p className="text-xs font-medium text-danger">Dashboard error</p>
       <h1 className="text-3xl font-semibold text-white">Dashboard panel failed to render</h1>
       <p className="max-w-2xl text-sm text-slate-200/84">
         Retry this panel now. If the issue persists, open settings and re-run profile sync.

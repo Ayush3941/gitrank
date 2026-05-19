@@ -36,7 +36,7 @@ export default function PublicProfileRouteError({
 
   return (
     <GlowCard strong className="space-y-4">
-      <p className="text-xs tracking-[0.24em] text-danger uppercase">Public profile error</p>
+      <p className="text-xs font-medium text-danger">Public profile error</p>
       <h1 className="text-3xl font-semibold text-white">Profile view failed to render</h1>
       <p className="max-w-2xl text-sm text-slate-200/84">
         Retry this profile route now. If it still fails, return to dashboard sync settings

@@ -36,7 +36,7 @@ export default function PublicPRReportRouteError({
 
   return (
     <GlowCard strong className="space-y-4">
-      <p className="text-xs tracking-[0.24em] text-danger uppercase">PR report error</p>
+      <p className="text-xs font-medium text-danger">PR report error</p>
       <h1 className="text-3xl font-semibold text-white">Battle report view failed to render</h1>
       <p className="max-w-2xl text-sm text-slate-200/84">
         Retry this report route now. If the issue continues, return to contribution drill-down
