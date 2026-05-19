@@ -129,6 +129,11 @@ export function SyncRunActivityPanel({
             </Button>
           </div>
         </div>
+        {statusCounts.running > 0 ? (
+          <p className="text-xs text-cyan-100">
+            Active sync runs detected. This panel auto-refreshes more frequently until active jobs settle.
+          </p>
+        ) : null}
         <div className="grid gap-3 md:grid-cols-[1fr,22rem]">
           <div className="relative">
             <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted" />
@@ -289,7 +294,13 @@ function runStatusLabel(status: string): "Completed" | "Failed" | "Running" | "O
   if (normalized === "failed") {
     return "Failed";
   }
-  if (normalized === "running" || normalized === "syncing") {
+  if (
+    normalized === "running" ||
+    normalized === "syncing" ||
+    normalized === "queued" ||
+    normalized === "pending" ||
+    normalized === "in_progress"
+  ) {
     return "Running";
   }
   return "Other";

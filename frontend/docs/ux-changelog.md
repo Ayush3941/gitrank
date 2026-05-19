@@ -148,6 +148,11 @@
     region) and explicit button types for retry/fallback actions
   - `RouteLoadingState` now includes an SR-only summary sentence so route-level
     loading contexts are announced with meaningful page intent.
+- Sync activity panel cadence refinement:
+  - `useSyncRuns` now uses adaptive polling (fast when runs are active, slower
+    when idle) instead of fixed-interval refresh
+  - expanded active run detection/status labeling to include `queued`,
+    `pending`, and `in_progress` states so queue progress is surfaced clearly.
 
 ## 2026-05-17
 
