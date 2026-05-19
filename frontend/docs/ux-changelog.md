@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Dashboard breadcrumb orientation pass:
+  - added a semantic breadcrumb landmark in the dashboard top bar (`nav` + ordered list + `aria-current="page"`) for explicit “you are here” orientation.
+  - breadcrumb now links parent lane (`Dashboard`) and marks current lane as the active page while preserving existing lane hint chips.
+  - keeps visual styling consistent with the neon shell while improving screen-reader navigation context.
 - PR report header-consistency pass:
   - added `SnapshotFreshnessPill` and constrained-network context to the PR report page header so it matches other dashboard lanes.
   - removed duplicate page-level heading semantics by changing the PR title in the overview card from `h1` to `h2`.

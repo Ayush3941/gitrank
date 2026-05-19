@@ -39,6 +39,13 @@ export function DashboardTopBar({
       item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`),
     ) ?? dashboardNavItems[0];
   const ActiveLaneIcon = activeLane.icon;
+  const breadcrumbItems =
+    activeLane.href === "/dashboard"
+      ? [{ label: "Dashboard", href: "/dashboard" }]
+      : [
+          { label: "Dashboard", href: "/dashboard" },
+          { label: activeLane.label, href: activeLane.href },
+        ];
   const autoSyncToneClass =
     autoSyncNote?.tone === "success"
       ? "neon-chip neon-chip-success border-emerald-300/30 text-emerald-100"
@@ -81,15 +88,43 @@ export function DashboardTopBar({
     <>
       <div className="glass-panel cyber-card cyber-frame sticky sticky-safe-top-4 z-30 mb-6 px-5 py-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-col gap-2">
+            <nav aria-label="Breadcrumb" className="min-w-0">
+              <ol className="flex min-w-0 items-center gap-1.5 text-xs text-cyan-100">
+                {breadcrumbItems.map((item, index) => {
+                  const isCurrent = index === breadcrumbItems.length - 1;
+                  return (
+                    <li key={item.href} className="inline-flex min-w-0 items-center gap-1.5">
+                      {isCurrent ? (
+                        <span aria-current="page" className="break-anywhere font-semibold text-white">
+                          {item.label}
+                        </span>
+                      ) : (
+                        <Link
+                          href={item.href}
+                          prefetch={!constrainedNetwork}
+                          className="focus-ring text-cyan-100 hover:text-white"
+                        >
+                          {item.label}
+                        </Link>
+                      )}
+                      {!isCurrent ? (
+                        <span aria-hidden="true" className="text-cyan-100/70">
+                          /
+                        </span>
+                      ) : null}
+                    </li>
+                  );
+                })}
+              </ol>
+            </nav>
             <div className="hud-pill inline-flex max-w-full items-center gap-2 rounded-full px-3 py-1.5 text-xs text-cyan-100">
               <ActiveLaneIcon className="h-3.5 w-3.5 text-primary" />
-              <span className="font-semibold text-white">{activeLane.label}</span>
-              <span aria-hidden="true" className="hidden text-cyan-100/85 lg:inline">
-                |
-              </span>
               <span className="hidden max-w-[24rem] truncate lg:inline">{activeLane.hint}</span>
+              <span className="max-w-[18rem] truncate lg:hidden">{activeLane.hint}</span>
             </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
             <SyncStatusPill status={user.syncStatus} />
             <RankBadge rank={user.level.rankTier} />
             <div className="hud-pill inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs text-foreground">
