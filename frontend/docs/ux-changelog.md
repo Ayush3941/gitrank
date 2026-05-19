@@ -5,6 +5,12 @@
 - Settings deferred-render pass:
   - applied `DeferUntilVisible` to sync activity, profile privacy, display controls, repository visibility, and data-control sections.
   - added lightweight settings placeholders so jump-nav and account controls remain interactive while heavier section content mounts near viewport.
+- Public profile deferred-render pass:
+  - applied `DeferUntilVisible` to badges/skills, best-PR panel, and timeline/repository lanes.
+  - kept profile section anchors intact while reducing initial mount pressure from charts and dense card grids.
+- PR battle report deferred-render pass:
+  - applied `DeferUntilVisible` to score matrix, AI summary, evidence signals, badge unlocks, and suggested-quest sections.
+  - preserved explainability and section-jump flow while reducing above-the-fold render cost on deep report pages.
 - Dashboard deferred-render pass:
   - added shared `DeferUntilVisible` section helper using
     `IntersectionObserver` + positive `rootMargin` preloading window to delay
