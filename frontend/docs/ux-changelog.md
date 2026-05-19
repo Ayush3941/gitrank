@@ -116,6 +116,9 @@
     rate-limited, failed, or still at zero merged PR evidence
   - once evidence is present and sync state stabilizes, polling automatically
     stops to reduce unnecessary network load.
+- Query devtools production-load trim:
+  - switched React Query devtools to dynamic client loading gated to non-production
+    environments so production sessions avoid shipping and mounting devtools code.
 
 ## 2026-05-17
 
