@@ -19,7 +19,7 @@ export function MobileNav() {
       <p role="status" aria-live="polite" className="sr-only">
         {activeItem ? `Current lane: ${activeItem.label}` : "Dashboard navigation"}
       </p>
-      <ul role="list" className="grid grid-cols-5 gap-1.5 p-2">
+      <ul role="list" className="grid grid-cols-5 gap-1 p-1.5">
         {dashboardNavItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href, item.exact);
@@ -31,9 +31,9 @@ export function MobileNav() {
                 aria-label={item.label}
                 title={item.label}
                 className={cn(
-                  "focus-ring relative flex min-h-14 flex-col items-center justify-center gap-1 border px-1 py-2 text-[11px] leading-tight font-semibold",
+                  "focus-ring relative flex min-h-14 flex-col items-center justify-center gap-1 border px-1 py-2 text-[12px] leading-tight font-semibold",
                   active
-                    ? "border-primary/42 bg-primary/14 text-white"
+                    ? "border-primary/42 bg-primary/14 text-white shadow-[0_0_14px_rgb(34_226_255_/_0.14)]"
                     : "border-transparent text-slate-100 hover:border-primary/22 hover:bg-primary/8 hover:text-white",
                 )}
               >
@@ -45,6 +45,7 @@ export function MobileNav() {
                 />
                 <Icon className={cn("h-4 w-4", active ? "text-primary" : "text-slate-200")} />
                 <span className="max-w-full truncate">{item.mobileLabel}</span>
+                <span className="sr-only">{item.hint}</span>
               </Link>
             </li>
           );

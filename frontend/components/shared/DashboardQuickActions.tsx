@@ -60,7 +60,7 @@ export function DashboardQuickActions({
       id: `goto:${item.href}`,
       group: "Navigate",
       label: `Go to ${item.label}`,
-      description: `Open ${item.label.toLowerCase()} lane`,
+      description: item.hint,
       keywords: [item.label, item.mobileLabel, item.href.replace("/dashboard/", "")],
       shortcut: activeLaneShortcut(pathname, item.href),
       icon: item.icon,

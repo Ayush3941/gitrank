@@ -2,6 +2,13 @@
 
 ## 2026-05-19
 
+- Dashboard lane readability pass:
+  - expanded dashboard nav item contracts with route-level hints so lane intent
+    is visible across sidebar, mobile nav, and command palette surfaces
+  - reformatted desktop sidebar lane cards into two-line label + hint rows with
+    stronger active-state contrast and cleaner section hierarchy
+  - tightened mobile bottom-nav typography and active signal while keeping
+    compact five-lane layout and accessible hidden lane descriptions.
 - Frontend production build hardening pass:
   - fixed typed preference-store inference for theme/text hooks to keep strict unions (`neon|midnight|aurora|high-contrast`, `default|large`) across render and action surfaces
   - fixed shared section-jump typing to support strongly typed route section IDs via generic-safe `SectionJumpNav`
@@ -20,6 +27,10 @@
   - fixed “Reset display preferences” to clear manual theme override (system-follow mode) instead of forcing high-contrast.
 - Settings theme chooser preview pass:
   - upgraded theme rows to mini preview cards with sample title/body/chip lanes so readability and accent density can be compared before applying a theme.
+- Contribution card signal-profile pass:
+  - replaced flat metric tiles with a compact signal-profile block
+  - added weighted `Signal index` plus per-signal bars (difficulty, impact, review depth, test signal)
+  - surfaced line-change footprint (`+additions/-deletions`) inside each card for quicker contribution scope read.
 - Cyberpunk palette + visibility tuning pass:
   - shifted base theme tokens toward electric-blue / deep-pink / lime / amber accents while preserving readability-first text contrast
   - updated key accent utilities (`neon-title`, divider, selection, status chips) to use the new palette language instead of flat cyan-magenta defaults
