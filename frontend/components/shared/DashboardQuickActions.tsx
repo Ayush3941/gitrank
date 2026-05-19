@@ -252,6 +252,13 @@ export function DashboardQuickActions({
   }
 
   function handleInputKeyDown(event: ReactKeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Escape" && query.trim().length > 0) {
+      event.preventDefault();
+      event.stopPropagation();
+      handleClearQuery();
+      return;
+    }
+
     if (!visibleActions.length) {
       return;
     }
