@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- Target-size accessibility pass:
+  - increased the contributions active-filter chip remove control hit area to at least `24x24` CSS pixels (`min-h-6 min-w-6`) in line with WCAG 2.2 SC 2.5.8 guidance.
+  - keeps the visual chip density while improving touch and imprecise-pointer usability.
 - Constrained-network visibility pass:
   - added shared `ConstrainedNetworkPill` that surfaces active reduced-data/constrained-connection mode with reason hints (Save-Data, 2g/slow-2g, or reduced-data preference).
   - attached this indicator to dashboard `PageHeader` meta lanes across Dashboard, Contributions, Badges, Quests, Leaderboard, and Settings.

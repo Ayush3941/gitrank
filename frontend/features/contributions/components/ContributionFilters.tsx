@@ -110,7 +110,7 @@ export function ContributionFilters({
                   type="button"
                   onClick={chip.onRemove}
                   disabled={isFiltering}
-                  className="focus-ring rounded-full border border-primary/30 px-1 text-[10px] leading-none text-cyan-100 hover:bg-primary/14 disabled:opacity-60"
+                  className="focus-ring inline-flex min-h-6 min-w-6 items-center justify-center rounded-full border border-primary/30 px-1 text-[11px] leading-none text-cyan-100 hover:bg-primary/14 disabled:opacity-60"
                   aria-label={`Remove ${chip.key} filter`}
                   title={`Remove ${chip.key} filter`}
                 >
