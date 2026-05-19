@@ -708,6 +708,27 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   color: rgb(252 231 255);
 }
 
+.neon-cta {
+  --cta-reference: rgb(var(--primary));
+  color: rgb(6 12 24);
+  font-weight: 700;
+  text-shadow: 0 0 6px rgb(255 255 255 / 0.2);
+}
+
+.neon-cta-danger {
+  --cta-reference: rgb(var(--danger));
+  color: rgb(var(--text-strong));
+  font-weight: 700;
+}
+
+@supports (color: contrast-color(red)) {
+  .neon-cta,
+  .neon-cta-danger {
+    color: contrast-color(var(--cta-reference));
+    text-shadow: none;
+  }
+}
+
 .cyber-avatar {
   border: 1px solid rgb(var(--primary) / 0.26);
   background:
