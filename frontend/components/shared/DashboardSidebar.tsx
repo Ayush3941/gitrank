@@ -16,7 +16,7 @@ export function DashboardSidebar() {
   const activeItem = dashboardNavItems.find((item) => isActive(item.href, item.exact));
 
   return (
-    <aside className="glass-panel cyber-card cyber-frame neon-outline hidden h-fit w-64 shrink-0 p-4 xl:sticky xl:top-6 xl:flex xl:flex-col xl:justify-between">
+    <aside className="glass-panel cyber-card cyber-frame neon-outline hidden h-fit w-[17rem] shrink-0 p-4 xl:sticky xl:top-6 xl:flex xl:flex-col xl:justify-between">
       <div className="space-y-6">
         <Link
           href="/dashboard"
@@ -35,11 +35,11 @@ export function DashboardSidebar() {
           <p
             role="status"
             aria-live="polite"
-            className="text-xs text-cyan-100"
+            className="text-xs text-cyan-100/90"
           >
             {activeItem ? `Current lane: ${activeItem.label}` : "Dashboard navigation"}
           </p>
-          <nav aria-labelledby="dashboard-sidebar-nav-label">
+          <nav aria-labelledby="dashboard-sidebar-nav-label" className="neon-surface p-2">
             <ul role="list" className="space-y-1.5">
               {dashboardNavItems.map((item) => {
                 const Icon = item.icon;
@@ -52,7 +52,7 @@ export function DashboardSidebar() {
                       className={cn(
                         "focus-ring relative flex items-center gap-3 border px-3 py-2.5 text-sm leading-5 font-semibold",
                         active
-                          ? "border-primary/45 bg-gradient-to-r from-primary/24 via-primary/16 to-primary-2/22 text-white shadow-[0_0_12px_rgb(34_226_255_/_0.14)]"
+                          ? "border-primary/45 bg-gradient-to-r from-primary/18 via-primary/14 to-primary-2/18 text-white shadow-[0_0_10px_rgb(34_226_255_/_0.12)]"
                           : "border-transparent text-slate-100 hover:border-primary/28 hover:bg-primary/10 hover:text-white",
                       )}
                     >

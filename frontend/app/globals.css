@@ -22,18 +22,18 @@
   --text-strong: 251 253 255;
   --text-body: 242 248 255;
   --text-soft: 236 245 255;
-  --page-overlay-top-alpha: 0.02;
-  --page-overlay-bottom-alpha: 0.08;
-  --page-grid-opacity: 0.015;
-  --page-glow-opacity: 0.1;
-  --surface-blur: 4px;
-  --surface-blur-strong: 5px;
-  --shadow-depth-soft: 0 10px 28px rgb(1 5 20 / 0.34);
-  --shadow-depth-medium: 0 14px 40px rgb(1 6 22 / 0.44);
-  --shadow-depth-strong: 0 18px 56px rgb(1 6 22 / 0.52);
-  --glow-subtle: 0 0 18px rgb(var(--primary) / 0.1);
-  --glow-medium: 0 0 30px rgb(var(--primary) / 0.14);
-  --glow-hero: 0 0 42px rgb(var(--primary) / 0.18);
+  --page-overlay-top-alpha: 0.015;
+  --page-overlay-bottom-alpha: 0.065;
+  --page-grid-opacity: 0.01;
+  --page-glow-opacity: 0.08;
+  --surface-blur: 2px;
+  --surface-blur-strong: 3px;
+  --shadow-depth-soft: 0 8px 22px rgb(1 5 20 / 0.28);
+  --shadow-depth-medium: 0 12px 32px rgb(1 6 22 / 0.36);
+  --shadow-depth-strong: 0 16px 46px rgb(1 6 22 / 0.44);
+  --glow-subtle: 0 0 14px rgb(var(--primary) / 0.08);
+  --glow-medium: 0 0 24px rgb(var(--primary) / 0.12);
+  --glow-hero: 0 0 36px rgb(var(--primary) / 0.16);
   --radius-universal: 0.1rem;
   --radius-card: 0.1rem;
   --eyebrow-tracking-wide: 0.1em;
@@ -64,8 +64,8 @@ html[data-theme="midnight"] {
   --page-overlay-bottom-alpha: 0.1;
   --page-grid-opacity: 0.015;
   --page-glow-opacity: 0.1;
-  --surface-blur: 4px;
-  --surface-blur-strong: 5px;
+  --surface-blur: 2px;
+  --surface-blur-strong: 3px;
 }
 
 html[data-theme="aurora"] {
@@ -92,8 +92,8 @@ html[data-theme="aurora"] {
   --page-overlay-bottom-alpha: 0.065;
   --page-grid-opacity: 0.012;
   --page-glow-opacity: 0.085;
-  --surface-blur: 4px;
-  --surface-blur-strong: 5px;
+  --surface-blur: 2px;
+  --surface-blur-strong: 3px;
 }
 
 html[data-theme="high-contrast"] {
@@ -120,8 +120,8 @@ html[data-theme="high-contrast"] {
   --page-overlay-bottom-alpha: 0.2;
   --page-grid-opacity: 0.015;
   --page-glow-opacity: 0.09;
-  --surface-blur: 3px;
-  --surface-blur-strong: 4px;
+  --surface-blur: 1px;
+  --surface-blur-strong: 2px;
   --shadow-depth-soft: 0 8px 24px rgb(1 4 18 / 0.4);
   --shadow-depth-medium: 0 12px 34px rgb(1 5 20 / 0.44);
   --shadow-depth-strong: 0 14px 40px rgb(1 6 22 / 0.46);
@@ -460,7 +460,7 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 .glass-panel {
   background:
     linear-gradient(180deg, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0.025)),
-    rgb(var(--card) / 0.82);
+    rgb(var(--card) / 0.9);
   border: 1px solid rgb(var(--primary) / 0.18);
   box-shadow:
     var(--shadow-depth-medium),
@@ -523,8 +523,8 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
     linear-gradient(200deg, rgb(var(--primary-2) / 0.08), transparent 45%),
     linear-gradient(180deg, rgb(var(--card-2) / 0.95), rgb(var(--card) / 0.86));
   box-shadow:
-    var(--shadow-depth-strong),
-    var(--glow-medium),
+    var(--shadow-depth-medium),
+    var(--glow-subtle),
     inset 0 1px 0 rgb(255 255 255 / 0.08);
 }
 
@@ -569,7 +569,7 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   background:
     radial-gradient(circle at 0% 0%, rgb(var(--primary) / 0.24), transparent 30%),
     radial-gradient(circle at 100% 100%, rgb(var(--primary-2) / 0.2), transparent 30%);
-  opacity: 0.55;
+  opacity: 0.42;
 }
 
 .cyber-card::after {
@@ -583,14 +583,14 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
     0 0,
     0 0;
   mask-image: linear-gradient(170deg, black 22%, transparent 82%);
-  opacity: 0.14;
+  opacity: 0.08;
 }
 
 .cyber-card:hover {
   border-color: rgb(var(--primary) / 0.4);
   box-shadow:
-    var(--shadow-depth-strong),
-    var(--glow-hero),
+    var(--shadow-depth-medium),
+    var(--glow-medium),
     inset 0 1px 0 rgb(255 255 255 / 0.1);
 }
 
@@ -959,7 +959,7 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   pointer-events: none;
   z-index: -1;
   border-radius: 999px;
-  filter: blur(24px);
+  filter: blur(18px);
 }
 
 .page-shell::before {
