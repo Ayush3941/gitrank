@@ -367,6 +367,10 @@ select {
   padding-bottom: max(0.375rem, env(safe-area-inset-bottom));
 }
 
+.dashboard-mobile-safe-bottom {
+  padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+}
+
 :where(p, li, dd, dt, label, small, figcaption, blockquote) {
   color: rgb(var(--text-body));
 }
@@ -1207,6 +1211,10 @@ html[data-theme="high-contrast"] .neon-title {
 }
 
 @media (min-width: 1280px) {
+  .dashboard-mobile-safe-bottom {
+    padding-bottom: 0;
+  }
+
   html {
     scroll-padding-bottom: 2rem;
   }

@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Mobile dashboard safe-area spacing pass:
+  - replaced static dashboard content bottom padding (`pb-24`) with a dedicated safe-area-aware class.
+  - new `.dashboard-mobile-safe-bottom` applies `calc(6rem + env(safe-area-inset-bottom, 0px))` so fixed mobile nav does not overlap bottom content on devices with home-indicator inset.
+  - keeps zero extra padding on `xl` and up to preserve desktop layout density.
 - Contributions and badges metric-label readability pass:
   - increased key metric label styling from `text-[11px]` to `text-xs` in contributions and badges summary cards.
   - normalized the contribution signal-index header away from highly tracked uppercase into clearer title-case `text-xs`.

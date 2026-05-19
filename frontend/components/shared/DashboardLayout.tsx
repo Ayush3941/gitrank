@@ -10,7 +10,7 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
       <DashboardSidebar />
       <div className="min-w-0">
         <DashboardTopBarContainer />
-        <div className="pb-24 xl:pb-0">{children}</div>
+        <div className="dashboard-mobile-safe-bottom">{children}</div>
       </div>
       <MobileNav />
     </AppShell>
