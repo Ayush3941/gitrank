@@ -10,6 +10,8 @@ import {
 import type { PrivacySettings, RepositoryVisibility } from "@/types/gitrank";
 
 export const myProfileQueryKey = ["profile", "me"] as const;
+const PROFILE_SYNC_REFETCH_INTERVAL_MS = 20_000;
+const PROFILE_SYNC_STALE_TIME_MS = 20_000;
 const derivedProfileQueryKeys = [
   myProfileQueryKey,
   ["dashboard"],
@@ -19,6 +21,42 @@ const derivedProfileQueryKeys = [
   ["leaderboard"],
   ["profile", "public"],
 ] as const;
+
+function shouldPollMyProfile(data: unknown): boolean {
+  if (!data || typeof data !== "object") {
+    return false;
+  }
+
+  const candidate = data as {
+    user?: {
+      mergedPrCount?: number;
+      syncStatus?: {
+        state?: string;
+        partialProfileAvailable?: boolean;
+      };
+    };
+  };
+  const syncStatus = candidate.user?.syncStatus;
+  const state = syncStatus?.state;
+  const partial = syncStatus?.partialProfileAvailable ?? false;
+  const mergedPrCount = candidate.user?.mergedPrCount ?? 0;
+
+  if (partial) {
+    return true;
+  }
+  if (mergedPrCount <= 0) {
+    return true;
+  }
+
+  return (
+    state === "never_synced" ||
+    state === "syncing" ||
+    state === "partially_synced" ||
+    state === "stale" ||
+    state === "failed" ||
+    state === "rate_limited"
+  );
+}
 
 function invalidateProfileDerivedQueries(queryClient: QueryClient) {
   for (const queryKey of derivedProfileQueryKeys) {
@@ -48,6 +86,15 @@ export function useMyProfile() {
   return useQuery({
     queryKey: myProfileQueryKey,
     queryFn: getMyProfile,
+    staleTime: PROFILE_SYNC_STALE_TIME_MS,
+    refetchOnMount: "always",
+    refetchOnReconnect: true,
+    refetchOnWindowFocus: true,
+    refetchInterval: (query) =>
+      shouldPollMyProfile(query.state.data)
+        ? PROFILE_SYNC_REFETCH_INTERVAL_MS
+        : false,
+    refetchIntervalInBackground: false,
   });
 }
 

@@ -111,6 +111,11 @@
     corners to interactive/surface primitives and rounded utility classes
   - preserved explicit `rounded-full` and `rounded-none` semantics so avatars,
     badges, and deliberate hard/smooth corners render predictably.
+- Profile auto-refresh reliability pass for background sync:
+  - `useMyProfile` now polls every 20s while sync is incomplete, stale, partial,
+    rate-limited, failed, or still at zero merged PR evidence
+  - once evidence is present and sync state stabilizes, polling automatically
+    stops to reduce unnecessary network load.
 
 ## 2026-05-17
 
