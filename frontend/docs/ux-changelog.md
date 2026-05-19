@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- Dense-list link prefetch reduction pass:
+  - disabled route prefetch on repeated PR-report links in `ContributionList`, `RecentBattleReports`, and `BestPRsPanel`.
+  - reduces background prefetch churn on card-dense views while preserving direct navigation behavior.
 - Card virtualization-style containment pass:
   - applied the existing `render-opt-card` containment utility to additional repeated card lists in dashboard skill lanes and PR report badge unlock cards.
   - improves offscreen render skipping consistency across high-density card sections without changing data contracts or visual hierarchy.

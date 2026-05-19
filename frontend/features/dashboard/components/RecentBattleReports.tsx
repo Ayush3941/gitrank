@@ -84,7 +84,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
             </div>
             <div className="mt-4 flex justify-end">
               <Button asChild variant="secondary" size="sm">
-                <Link href={`/pr/${report.contribution.owner}/${report.contribution.repo}/${report.contribution.number}`}>
+                <Link href={`/pr/${report.contribution.owner}/${report.contribution.repo}/${report.contribution.number}`} prefetch={false}>
                   View report
                   <ArrowRight className="h-4 w-4" />
                 </Link>

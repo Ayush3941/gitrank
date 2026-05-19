@@ -61,7 +61,7 @@ export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
                   analyticsTarget="public-profile/copy-pr-summary"
                 />
                 <Button asChild variant="secondary" size="sm">
-                  <Link href={`/pr/${report.owner}/${report.repo}/${report.number}`}>
+                  <Link href={`/pr/${report.owner}/${report.repo}/${report.number}`} prefetch={false}>
                     View report
                     <ArrowRight className="h-4 w-4" />
                   </Link>

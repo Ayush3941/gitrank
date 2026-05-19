@@ -86,7 +86,7 @@ export function ContributionList({
                   </span>
                 </div>
                 <Button asChild variant="secondary" size="sm">
-                  <Link href={`/pr/${item.owner}/${item.repo}/${item.number}`}>
+                  <Link href={`/pr/${item.owner}/${item.repo}/${item.number}`} prefetch={false}>
                     View battle report
                     <ArrowRight className="h-4 w-4" />
                   </Link>
