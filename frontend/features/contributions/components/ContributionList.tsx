@@ -33,7 +33,7 @@ export function ContributionList({
               <div className="mt-3 flex flex-wrap gap-2 text-xs cyber-copy">
                 <span className={`neon-chip rounded-full px-3 py-1.5 font-semibold ${tier.className}`}>{tier.label}</span>
                 <span className="neon-chip neon-chip-info rounded-full px-3 py-1.5 font-semibold">{item.category}</span>
-                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 font-semibold uppercase">{formatContributionStatus(item.status)}</span>
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 font-semibold">{formatContributionStatus(item.status)}</span>
                 <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 font-semibold">{item.changedFilesCount} files changed</span>
                 <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-3 py-1.5 font-semibold">
                   <CalendarDays className="h-3 w-3" />
@@ -53,7 +53,7 @@ export function ContributionList({
               </div>
             </div>
             <div className="text-right">
-              <p className="text-xs tracking-[0.24em] text-primary uppercase">Earned</p>
+              <p className="text-xs font-medium text-primary">Earned</p>
               <p className="numeric-readout mt-2 text-3xl font-semibold text-white">{item.xpEarned} XP</p>
             </div>
           </div>
@@ -121,7 +121,7 @@ function hasDetailedMetrics(item: Contribution) {
 function Metric({ label, value }: { label: string; value: number }) {
   return (
     <div className="neon-metric rounded-3xl px-4 py-3">
-      <p className="text-xs tracking-[0.24em] text-muted uppercase">{label}</p>
+      <p className="text-xs font-medium text-muted">{label}</p>
       <p className="numeric-readout mt-2 text-xl font-semibold text-white">{value}</p>
     </div>
   );
@@ -178,7 +178,7 @@ function AIPanel({
   return (
     <div className="neon-surface rounded-[1.35rem] border-fuchsia-300/28 px-4 py-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="inline-flex items-center gap-2 text-xs tracking-[0.24em] text-fuchsia-200 uppercase">
+        <p className="inline-flex items-center gap-2 text-xs font-medium text-fuchsia-100">
           <Sparkles className="h-3.5 w-3.5" />
           Contribution Impact Explanation
         </p>
