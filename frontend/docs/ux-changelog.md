@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- Quick-actions readability pass:
+  - increased quick-action trigger/modal microtext from `text-[11px]` to `text-xs` for shortcut badges, group labels, and command hints.
+  - improves scan speed in the keyboard command surface without changing command routing, ranking, or action behavior.
 - Skip-link safe-area pass:
   - updated `.skip-link` top position to `max(0.75rem, env(safe-area-inset-top, 0px))`.
   - keeps keyboard "Skip to main content" control visible and reachable on notched/mobile devices where top inset can obscure fixed UI.

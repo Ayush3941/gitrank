@@ -290,7 +290,7 @@ export function DashboardQuickActions({
         className="gap-2"
       >
         Quick actions
-        <kbd className="hidden text-[11px] sm:inline">⌘/Ctrl K</kbd>
+        <kbd className="hidden text-xs sm:inline">⌘/Ctrl K</kbd>
       </Button>
       <Dialog
         open={open}
@@ -329,7 +329,7 @@ export function DashboardQuickActions({
               aria-controls="dashboard-quick-actions-list"
               aria-activedescendant={highlightedAction ? optionIdForAction(highlightedAction.id) : undefined}
             />
-            <span className="text-[11px] font-medium text-cyan-200">{shortcutHint}</span>
+            <span className="text-xs font-medium text-cyan-200">{shortcutHint}</span>
           </div>
           {!displayShortcutsEnabled ? (
             <p className="text-xs text-amber-100">
@@ -361,7 +361,7 @@ export function DashboardQuickActions({
             {groupedActions.length > 0 ? (
               groupedActions.map((group) => (
                 <section key={group.title} className="space-y-2">
-                  <p className="px-1 text-[11px] font-medium text-cyan-200">
+                  <p className="px-1 text-xs font-medium text-cyan-200">
                     {group.title}
                   </p>
                   <div className="space-y-2">
@@ -396,7 +396,7 @@ export function DashboardQuickActions({
                               {action.label}
                             </span>
                             {action.shortcut ? (
-                              <kbd className="text-[11px]">{action.shortcut}</kbd>
+                              <kbd className="text-xs">{action.shortcut}</kbd>
                             ) : null}
                           </div>
                           <p className="mt-1 text-xs text-slate-200">{action.description}</p>
