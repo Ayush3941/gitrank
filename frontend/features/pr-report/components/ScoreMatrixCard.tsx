@@ -7,7 +7,7 @@ export function ScoreMatrixCard({ report }: { report: PullRequestAnalysis }) {
   return (
     <GlowCard className="space-y-5">
       <div>
-        <p className="text-xs tracking-[0.24em] text-primary uppercase">Score matrix</p>
+        <p className="text-xs font-medium text-primary">Score matrix</p>
         <h2 className="mt-2 text-2xl font-semibold text-white">What drove the XP</h2>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -25,7 +25,7 @@ export function ScoreMatrixCard({ report }: { report: PullRequestAnalysis }) {
 function Metric({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="neon-metric rounded-[1.75rem] px-4 py-4">
-      <p className="text-xs tracking-[0.24em] text-muted uppercase">{label}</p>
+      <p className="text-xs font-medium text-muted">{label}</p>
       <p className="mt-3 text-2xl font-semibold text-white">{value}</p>
     </div>
   );

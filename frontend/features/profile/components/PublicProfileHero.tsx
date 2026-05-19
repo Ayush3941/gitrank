@@ -64,7 +64,7 @@ export function PublicProfileHero({
           />
           {identitySummary ? (
             <div className="neon-callout rounded-2xl px-4 py-3 text-sm text-slate-200/88">
-              <p className="cyber-readout text-xs tracking-[0.24em] text-cyan-200 uppercase">
+              <p className="cyber-readout text-xs font-medium text-cyan-200">
                 Open Source Identity ({aiMode === "gemini" ? "Gemini" : "Deterministic"})
               </p>
               <ExpandableText
@@ -115,7 +115,7 @@ export function PublicProfileHero({
         <div className="neon-surface rounded-[1.85rem] p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs tracking-[0.24em] text-primary uppercase">Player card</p>
+              <p className="text-xs font-medium text-primary">Player card</p>
               <p className="mt-2 text-4xl font-semibold text-white">Lv. {user.level.currentLevel}</p>
             </div>
             <div className="hud-pill rounded-3xl p-3 text-primary">
@@ -147,7 +147,7 @@ function MiniMetric({
 }) {
   return (
     <div className="neon-metric rounded-[1.4rem] px-4 py-3">
-      <div className="flex items-center gap-2 text-xs tracking-[0.2em] text-muted uppercase">
+      <div className="flex items-center gap-2 text-xs font-medium text-muted">
         {icon}
         {label}
       </div>

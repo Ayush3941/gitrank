@@ -209,7 +209,7 @@ export function PublicProfilePageClient({
         <GlowCard className="space-y-4 border border-primary/22 bg-gradient-to-br from-slate-950/90 to-cyan-950/18">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs tracking-[0.24em] text-primary uppercase">Profile proof strip</p>
+              <p className="text-xs font-medium text-primary">Profile proof strip</p>
               <h2 className="mt-2 text-2xl font-semibold text-white">Share-ready evidence context</h2>
               <p className="mt-2 text-sm text-slate-200/84">
                 Public profile claims are snapshot-based and explainable. Use these fields to communicate freshness, scope, and confidence when sharing this card.
@@ -252,7 +252,7 @@ export function PublicProfilePageClient({
         <div className="grid gap-6 xl:grid-cols-[1fr,1fr]">
           <GlowCard className="space-y-5">
             <div>
-              <p className="text-xs tracking-[0.24em] text-primary uppercase">Badge showcase</p>
+              <p className="text-xs font-medium text-primary">Badge showcase</p>
               <h2 className="mt-2 text-2xl font-semibold text-white">Top unlocked badges</h2>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -275,7 +275,7 @@ export function PublicProfilePageClient({
           </GlowCard>
           <GlowCard className="space-y-5">
             <div>
-              <p className="text-xs tracking-[0.24em] text-primary uppercase">Skill radar</p>
+              <p className="text-xs font-medium text-primary">Skill radar</p>
               <h2 className="mt-2 text-2xl font-semibold text-white">Strength map</h2>
             </div>
             <SkillRadarChart skills={data.user.skillTree} />
@@ -289,7 +289,7 @@ export function PublicProfilePageClient({
         <div className="grid gap-6 xl:grid-cols-[1.08fr,0.92fr]">
           <GlowCard className="space-y-5">
             <div>
-              <p className="text-xs tracking-[0.24em] text-primary uppercase">Contribution quality timeline</p>
+              <p className="text-xs font-medium text-primary">Contribution quality timeline</p>
               <h2 className="mt-2 text-2xl font-semibold text-white">{data.trendWindowLabel}</h2>
             </div>
             <TimelineChart data={data.user.xpTimeline} />
@@ -299,7 +299,7 @@ export function PublicProfilePageClient({
               <Award className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs tracking-[0.24em] text-primary uppercase">Top repositories</p>
+              <p className="text-xs font-medium text-primary">Top repositories</p>
               <h2 className="mt-2 text-2xl font-semibold text-white">Where recent contribution signal is strongest</h2>
             </div>
             <div className="space-y-3">
@@ -327,7 +327,7 @@ export function PublicProfilePageClient({
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-xs tracking-[0.24em] text-primary uppercase">XP</p>
+                        <p className="text-xs font-medium text-primary">XP</p>
                         <p className="mt-1 text-lg font-semibold text-white">{repository.totalXp}</p>
                       </div>
                     </div>
@@ -353,7 +353,7 @@ function ProofStripItem({
 }) {
   return (
     <div className="neon-surface space-y-2 px-4 py-4">
-      <p className="text-xs tracking-[0.2em] text-primary uppercase">{label}</p>
+      <p className="text-xs font-medium text-primary">{label}</p>
       <p className="text-lg font-semibold text-white">{value}</p>
       <p className="text-xs text-slate-200/84">{detail}</p>
     </div>

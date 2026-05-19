@@ -16,7 +16,7 @@ export function EvidenceSignalsCard({ report }: { report: PullRequestAnalysis })
   return (
     <GlowCard className="space-y-5">
       <div>
-        <p className="text-xs tracking-[0.24em] text-primary uppercase">Evidence signals</p>
+        <p className="text-xs font-medium text-primary">Evidence signals</p>
         <h2 className="mt-2 text-2xl font-semibold text-white">Why this PR earned what it earned</h2>
       </div>
       <div className="grid gap-3 md:grid-cols-2">
@@ -36,7 +36,7 @@ export function EvidenceSignalsCard({ report }: { report: PullRequestAnalysis })
         })}
       </div>
       <div className="neon-surface rounded-[1.75rem] p-4">
-        <p className="text-xs tracking-[0.24em] text-primary uppercase">Stored evidence labels</p>
+        <p className="text-xs font-medium text-primary">Stored evidence labels</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {contribution.evidenceSignals.map((signal) => (
             <span key={signal} className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">

@@ -209,7 +209,7 @@ export function PRBattleReportPageClient({
             </p>
           </div>
           <div className="text-right">
-            <p className="text-xs tracking-[0.24em] text-primary uppercase">XP earned</p>
+            <p className="text-xs font-medium text-primary">XP earned</p>
             <p className="numeric-readout mt-2 text-4xl font-semibold text-white">
               {data.contribution.xpEarned.toLocaleString("en-US")}
             </p>
@@ -226,7 +226,7 @@ export function PRBattleReportPageClient({
           </div>
         </div>
         <div className="neon-tile rounded-[1.5rem] p-4">
-          <p className="text-xs tracking-[0.22em] text-muted uppercase">Evidence state</p>
+          <p className="text-xs font-medium text-muted">Evidence state</p>
           <div className="mt-3 flex flex-wrap gap-2">
             <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
               analysis: {evidenceState.analysisSource ?? "unknown"}
@@ -262,7 +262,7 @@ export function PRBattleReportPageClient({
       </section>
       <section id="pr-report-ai" className="render-opt-section scroll-mt-24">
         <GlowCard className="space-y-4">
-          <p className="text-xs tracking-[0.24em] text-primary uppercase">AI summary</p>
+          <p className="text-xs font-medium text-primary">AI summary</p>
           <ExpandableText
             text={data.contribution.aiSummary}
             lines={5}
@@ -277,7 +277,7 @@ export function PRBattleReportPageClient({
       {data.badgeUnlocks.length ? (
         <section id="pr-report-rewards" className="render-opt-section scroll-mt-24">
           <GlowCard className="space-y-4">
-          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold tracking-[0.24em] text-emerald-100 uppercase">
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-100">
             <Award className="h-3.5 w-3.5" />
             Badge unlocks
           </div>
@@ -311,7 +311,7 @@ export function PRBattleReportPageClient({
         >
           <GlowCard className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-semibold tracking-[0.24em] text-primary uppercase">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
               <Swords className="h-3.5 w-3.5" />
               Suggested next quest
             </div>
@@ -356,7 +356,7 @@ function VerdictTile({
 }) {
   return (
     <div className="neon-surface space-y-2 px-4 py-3">
-      <p className="text-xs tracking-[0.22em] text-primary uppercase">{title}</p>
+      <p className="text-xs font-medium text-primary">{title}</p>
       <p className="break-anywhere text-lg font-semibold text-white">{value}</p>
       <ExpandableText
         text={detail}

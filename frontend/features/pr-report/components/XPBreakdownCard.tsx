@@ -54,7 +54,7 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
   return (
     <GlowCard className="space-y-5">
       <div>
-        <p className="text-xs tracking-[0.24em] text-primary uppercase">
+        <p className="text-xs font-medium text-primary">
           XP calculation
         </p>
         <h2 className="mt-2 text-2xl font-semibold text-white">
