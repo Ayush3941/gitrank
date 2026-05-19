@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { AlertTriangle, ArrowUpRight, CheckCircle2, Info, Zap } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, CheckCircle2, Info, UserRound, Zap } from "lucide-react";
 import { DashboardQuickActions } from "@/components/shared/DashboardQuickActions";
 import { DashboardShortcutHelpDialog } from "@/components/shared/DashboardShortcutHelpDialog";
 import { GamificationQuickSwitcher } from "@/components/shared/GamificationQuickSwitcher";
@@ -85,7 +85,7 @@ export function DashboardTopBar({
   return (
     <>
       <div className="glass-panel cyber-card cyber-frame sticky sticky-safe-top-4 z-30 mb-6 px-5 py-4">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
           <div className="flex flex-col gap-2">
             <nav aria-label="Breadcrumb" className="min-w-0">
               <ol className="flex min-w-0 items-center gap-1.5 text-xs text-cyan-100">
@@ -118,60 +118,67 @@ export function DashboardTopBar({
             </nav>
             <div className="hud-pill inline-flex max-w-full items-center gap-2 rounded-full px-3 py-1.5 text-xs text-cyan-100">
               <ActiveLaneIcon className="h-3.5 w-3.5 text-primary" />
-              <span className="hidden max-w-[24rem] truncate lg:inline">{activeLane.hint}</span>
-              <span className="max-w-[18rem] truncate lg:hidden">{activeLane.hint}</span>
+              <span className="break-anywhere leading-5">{activeLane.hint}</span>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <SyncStatusPill status={user.syncStatus} />
-            <RankBadge rank={user.level.rankTier} />
-            <div className="hud-pill inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs text-foreground">
-              <Zap className="h-3.5 w-3.5 text-primary" />
-              <span className="numeric-readout">{user.weeklyXp.toLocaleString("en-US")}</span> weekly XP
+          <div className="flex flex-col items-start gap-3 xl:items-end">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <SyncStatusPill status={user.syncStatus} />
+              <RankBadge rank={user.level.rankTier} />
+              <div className="hud-pill inline-flex items-center gap-2 px-3 py-1.5 text-xs text-foreground">
+                <Zap className="h-3.5 w-3.5 text-primary" />
+                <span className="numeric-readout">{user.weeklyXp.toLocaleString("en-US")}</span> weekly XP
+              </div>
             </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {showQuickActions ? (
-              <DashboardQuickActions
-                username={user.username}
-                onOpenShortcutsHelp={() => {
+            <div className="flex flex-wrap items-center gap-2">
+              {showQuickActions ? (
+                <DashboardQuickActions
+                  username={user.username}
+                  onOpenShortcutsHelp={() => {
+                    setShortcutHelpOpen(true);
+                  }}
+                />
+              ) : null}
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                aria-keyshortcuts="?"
+                title="Open shortcuts help (?)"
+                onClick={() => {
                   setShortcutHelpOpen(true);
                 }}
+                className="gap-2"
+              >
+                Shortcuts
+                <kbd className="hidden text-xs sm:inline">?</kbd>
+              </Button>
+              <GamificationQuickSwitcher compact className="hidden 2xl:inline-flex" />
+              <ThemeQuickSwitcher compact className="hidden 2xl:inline-flex" />
+              <TextScaleQuickSwitcher compact className="hidden 2xl:inline-flex" />
+              <Button asChild variant="secondary" size="sm" className="xl:hidden">
+                <Link href={`/u/${user.username}`} prefetch={false}>
+                  <UserRound className="h-4 w-4" />
+                  Profile
+                </Link>
+              </Button>
+              <Link
+                href={`/u/${user.username}`}
+                prefetch={false}
+                className="focus-ring cyber-link hidden items-center gap-2 text-sm font-medium xl:inline-flex"
+              >
+                View public profile
+                <ArrowUpRight className="h-4 w-4" />
+              </Link>
+              <ShareProfileButton
+                variant="ghost"
+                size="sm"
+                username={user.username}
+                displayName={user.displayName}
+                shareHeadline={`${user.displayName} is ${user.title} on GitRank.`}
+                analyticsTargetPrefix="dashboard-topbar"
               />
-            ) : null}
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              aria-keyshortcuts="?"
-              title="Open shortcuts help (?)"
-              onClick={() => {
-                setShortcutHelpOpen(true);
-              }}
-              className="gap-2"
-            >
-              Shortcuts
-              <kbd className="hidden text-xs sm:inline">?</kbd>
-            </Button>
-            <GamificationQuickSwitcher compact className="hidden 2xl:inline-flex" />
-            <ThemeQuickSwitcher compact className="hidden 2xl:inline-flex" />
-            <TextScaleQuickSwitcher compact className="hidden 2xl:inline-flex" />
-            <Link
-              href={`/u/${user.username}`}
-              prefetch={false}
-              className="focus-ring cyber-link inline-flex items-center gap-2 text-sm font-medium"
-            >
-              View public profile
-              <ArrowUpRight className="h-4 w-4" />
-            </Link>
-            <ShareProfileButton
-              variant="ghost"
-              size="sm"
-              username={user.username}
-              displayName={user.displayName}
-              shareHeadline={`${user.displayName} is ${user.title} on GitRank.`}
-              analyticsTargetPrefix="dashboard-topbar"
-            />
+            </div>
           </div>
         </div>
         <div className="mt-3 min-h-6">
@@ -205,14 +212,22 @@ export function DashboardTopBar({
 export function DashboardTopBarSkeleton() {
   return (
     <div className="glass-panel cyber-card cyber-frame sticky sticky-safe-top-4 z-30 mb-6 px-5 py-4">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="neon-skeleton h-8 w-52 rounded-full" />
-          <div className="neon-skeleton h-8 w-32 rounded-full" />
-          <div className="neon-skeleton h-8 w-24 rounded-full" />
-          <div className="neon-skeleton h-8 w-28 rounded-full" />
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
+        <div className="space-y-2">
+          <div className="neon-skeleton h-5 w-44 rounded-full" />
+          <div className="neon-skeleton h-8 w-[min(34rem,100%)] rounded-full" />
         </div>
-        <div className="neon-skeleton h-5 w-36 rounded-full" />
+        <div className="flex flex-col items-start gap-3 xl:items-end">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="neon-skeleton h-8 w-32 rounded-full" />
+            <div className="neon-skeleton h-8 w-24 rounded-full" />
+            <div className="neon-skeleton h-8 w-28 rounded-full" />
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="neon-skeleton h-8 w-28 rounded-full" />
+            <div className="neon-skeleton h-8 w-32 rounded-full" />
+          </div>
+        </div>
       </div>
       <div className="mt-3 min-h-6">
         <div className="neon-skeleton h-4 w-3/4 rounded-full" />

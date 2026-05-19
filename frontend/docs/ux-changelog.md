@@ -2,6 +2,11 @@
 
 ## 2026-05-19
 
+- Dashboard top-bar density pass:
+  - restructured top-bar layout into a two-column grid (`lane context` + `status/actions`) at desktop widths to reduce control crowding and wrap jitter.
+  - removed top-bar lane-hint truncation in favor of readable wrapped hint copy.
+  - added a compact mobile/tablet `Profile` button while keeping full `View public profile` copy for larger breakpoints.
+  - aligned top-bar loading skeleton structure with the new layout to reduce hydration layout shifts.
 - Cross-surface readability + nav-density pass:
   - raised global microtext baselines (`text-xs`, `text-[10px]`, `text-[11px]`, and large-text-scale variants) for stronger dark-theme legibility on dashboard-heavy lanes.
   - increased mobile dashboard nav readability by enlarging active-lane copy and lane labels while preserving five-lane layout and touch-target footprint.
