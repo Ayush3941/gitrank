@@ -146,7 +146,9 @@ export function SettingsPageClient() {
   const activeSectionLink = `/dashboard/settings#${activeSection}`;
   const currentSettings = data?.user.privacy ?? null;
   const activeThemeOption =
-    THEME_OPTIONS.find((option) => option.value === theme) ?? THEME_OPTIONS[1];
+    THEME_OPTIONS.find((option) => option.value === theme) ??
+    THEME_OPTIONS.find((option) => option.value === "high-contrast") ??
+    THEME_OPTIONS[0];
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -196,9 +198,9 @@ export function SettingsPageClient() {
   }, []);
 
   function handleResetDisplayPreferences() {
-    setTheme("midnight");
+    setTheme("high-contrast");
     setTextScale("default");
-    setDisplayNotice("Display preferences reset to Midnight theme and Default text size.");
+    setDisplayNotice("Display preferences reset to High contrast theme and Default text size.");
   }
 
   if (isLoading) {
