@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Settings sync-log filter-recovery pass:
+  - added active-filter chips for sync-run search query and status filter, each with one-tap clear controls.
+  - added inline clear-search affordance in the sync-log search field for faster filter recovery on mobile and desktop.
+  - keeps existing backend contract and polling behavior unchanged while reducing dead-end filtered states.
 - Mobile quick-controls state visibility pass:
   - updated mobile display controls to show current state labels directly on each button (`Theme`, `Text`, `Effects`) instead of generic labels only.
   - added compact active-state styling for non-default text scale and reduced-effects mode to improve at-a-glance orientation.

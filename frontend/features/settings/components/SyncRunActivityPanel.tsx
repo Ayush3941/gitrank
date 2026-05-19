@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, Search, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, Search, X, XCircle } from "lucide-react";
 import { startTransition, useDeferredValue, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -81,6 +81,18 @@ export function SyncRunActivityPanel({
     });
   }
 
+  function handleClearSearch() {
+    startTransition(() => {
+      setSearch("");
+    });
+  }
+
+  function handleClearStatusFilter() {
+    startTransition(() => {
+      setStatusFilter("All");
+    });
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -138,6 +150,38 @@ export function SyncRunActivityPanel({
             </Button>
           </div>
         </div>
+        {canReset ? (
+          <div className="flex flex-wrap items-center gap-2">
+            {search.trim().length > 0 ? (
+              <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs">
+                Query: {search.trim()}
+                <button
+                  type="button"
+                  onClick={handleClearSearch}
+                  className="focus-ring inline-flex h-5 w-5 items-center justify-center rounded-full text-cyan-100 hover:text-white"
+                  aria-label="Clear sync run search query"
+                  title="Clear search"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </span>
+            ) : null}
+            {statusFilter !== "All" ? (
+              <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs">
+                Status: {statusFilter}
+                <button
+                  type="button"
+                  onClick={handleClearStatusFilter}
+                  className="focus-ring inline-flex h-5 w-5 items-center justify-center rounded-full text-cyan-100 hover:text-white"
+                  aria-label="Clear sync run status filter"
+                  title="Clear status filter"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </span>
+            ) : null}
+          </div>
+        ) : null}
         {statusCounts.running > 0 ? (
           <p className="text-xs text-cyan-100">
             Active sync runs detected. This panel auto-refreshes more frequently until active jobs settle.
@@ -161,11 +205,22 @@ export function SyncRunActivityPanel({
                 const value = event.target.value;
                 startTransition(() => setSearch(value));
               }}
-              className="pl-11"
+              className="pl-11 pr-11"
               placeholder="Search run subject, mode, or error"
               aria-label="Search sync runs"
               aria-describedby={filterStatusId}
             />
+            {search.trim().length > 0 ? (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="focus-ring absolute top-1/2 right-3 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-cyan-100 hover:text-white"
+                aria-label="Clear sync run search"
+                title="Clear search"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            ) : null}
           </div>
           <div className="grid grid-cols-4 gap-2">
             {(["All", "Completed", "Running", "Failed"] as const).map((item) => (
