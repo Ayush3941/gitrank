@@ -38,7 +38,7 @@ export function RevealPanel({
 
   return (
     <main className="mx-auto max-w-5xl">
-      <GlowCard strong className="relative space-y-8 overflow-hidden panel-grid text-center">
+      <GlowCard strong className="relative space-y-8 overflow-hidden text-center">
         <OnboardingStepper currentStep="reveal" />
         <div className="space-y-4">
           <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-3 py-1.5 text-xs font-semibold text-cyan-100">
@@ -189,7 +189,7 @@ function formatSyncState(state: UserProfile["syncStatus"]["state"]): string {
 export function RevealPanelSkeleton() {
   return (
     <main className="mx-auto max-w-5xl">
-      <GlowCard strong className="space-y-8 panel-grid text-center">
+      <GlowCard strong className="space-y-8 text-center">
         <OnboardingStepper currentStep="reveal" />
         <div className="neon-skeleton mx-auto h-8 w-48 rounded-full" />
         <div className="neon-skeleton mx-auto h-16 w-full max-w-2xl rounded-3xl" />
@@ -207,7 +207,7 @@ export function RevealPanelSkeleton() {
 export function RevealPanelUnavailable() {
   return (
     <main className="mx-auto max-w-3xl">
-      <GlowCard strong className="space-y-6 panel-grid text-center">
+      <GlowCard strong className="space-y-6 text-center">
         <OnboardingStepper currentStep="connect" />
         <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-amber-400/25 bg-amber-400/12 px-3 py-1.5 text-xs font-semibold text-amber-100">
           <Sparkles className="h-3.5 w-3.5" />

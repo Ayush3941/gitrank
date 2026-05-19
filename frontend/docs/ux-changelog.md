@@ -25,6 +25,12 @@
     quest cards, and onboarding reveal hero panels
   - keeps neon identity via existing gradients/chips while reducing costly
     blur compositing on dense dashboard routes.
+- Overlay and texture simplification pass:
+  - removed modal overlay blur from shared dialog primitives and tightened
+    overlay contrast for cleaner text focus during auth/settings flows
+  - removed `panel-grid` texture from marketing shell header/footer, landing
+    hero shell, and onboarding reveal shells to reduce visual clutter and
+    improve first-screen readability.
 
 ## 2026-05-17
 
