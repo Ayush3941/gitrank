@@ -94,6 +94,8 @@ export function DashboardTopBar({
               type="button"
               variant="secondary"
               size="sm"
+              aria-keyshortcuts="?"
+              title="Open shortcuts help (?)"
               onClick={() => {
                 setShortcutHelpOpen(true);
               }}

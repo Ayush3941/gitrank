@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Keyboard shortcut discoverability pass:
+  - added `aria-keyshortcuts` metadata to shortcut entry buttons for quick actions (`Meta+K`/`Control+K`) and shortcuts help (`?`).
+  - added matching `title` hints so pointer users also see available keyboard triggers.
+  - improves assistive-technology discoverability without changing existing shortcut handlers.
 - Label truncation resilience pass:
   - removed hard `truncate` from onboarding step labels and mobile nav lane labels.
   - switched to controlled wrapping (`break-anywhere`, explicit line-height, centered mobile labels) to preserve readability when labels expand.

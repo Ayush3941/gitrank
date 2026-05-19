@@ -283,6 +283,8 @@ export function DashboardQuickActions({
         type="button"
         variant="secondary"
         size="sm"
+        aria-keyshortcuts="Meta+K Control+K"
+        title="Quick actions (Cmd/Ctrl+K)"
         onClick={() => {
           setHighlightedIndex(0);
           setOpen(true);
