@@ -76,7 +76,7 @@ export function LeaderboardArena({ snapshot }: { snapshot: LeaderboardSnapshot }
             </div>
             <div className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
               {nextAboveRow
-                ? `${nextAboveGap} XP to pass #${nextAboveRow.rank}`
+                ? `${nextAboveGap.toLocaleString("en-US")} XP to pass #${nextAboveRow.rank}`
                 : "You are leading this lane"}
             </div>
           </div>
@@ -102,7 +102,7 @@ export function LeaderboardArena({ snapshot }: { snapshot: LeaderboardSnapshot }
                   </div>
                   <div className="flex flex-wrap items-center gap-2 text-xs">
                     <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-                      {row.seasonXp} XP
+                      {row.seasonXp.toLocaleString("en-US")} XP
                     </span>
                     <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
                       Move {movementLabel}
@@ -110,8 +110,8 @@ export function LeaderboardArena({ snapshot }: { snapshot: LeaderboardSnapshot }
                     {!row.isCurrentUser ? (
                       <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
                         {gapToCurrent > 0
-                          ? `+${gapToCurrent} vs you`
-                          : `${Math.abs(gapToCurrent)} behind you`}
+                          ? `+${gapToCurrent.toLocaleString("en-US")} vs you`
+                          : `${Math.abs(gapToCurrent).toLocaleString("en-US")} behind you`}
                       </span>
                     ) : null}
                   </div>
@@ -260,7 +260,7 @@ function Metric({
     <div className="neon-metric rounded-3xl px-4 py-3">
       <p className="text-xs font-medium text-muted">{label}</p>
       <div className="numeric-readout mt-2 flex items-center gap-2 text-xl font-semibold text-white">
-        <span>{value}</span>
+        <span>{typeof value === "number" ? value.toLocaleString("en-US") : value}</span>
         {icon}
       </div>
     </div>
@@ -275,7 +275,7 @@ function recommendedActionForRow(row: LeaderboardSnapshot["rows"][number]): stri
     return "recover with one high-quality reviewed merge";
   }
   if (row.xpToNextRank > 0) {
-    return `${row.xpToNextRank} XP to next band`;
+    return `${row.xpToNextRank.toLocaleString("en-US")} XP to next band`;
   }
   return "maintain signal quality and cadence";
 }

@@ -11,6 +11,9 @@
   - added a “Closest rank neighbors” block in leaderboard arena to show the current user’s immediate rank neighborhood instead of only global top-heavy context.
   - surfaces clear short-range progression framing (`XP to pass #N`) and per-neighbor XP gap/movement chips.
   - improves mid-table motivation and reduces leaderboard disengagement risk without introducing synthetic users or new scoring rules.
+- Leaderboard number-scan pass:
+  - normalized leaderboard arena numeric readouts to locale-formatted values (for example `12,450` instead of `12450`) across metrics, local-bracket chips, and gap guidance text.
+  - improves quick visual scanning and reduces misread risk on dense score cards.
 - Season urgency framing pass:
   - added shared `formatTimeUntil()` formatter for stable time-remaining copy without live ticking animations.
   - surfaced season end date + remaining window on dashboard `CurrentLeagueCard` and leaderboard arena hero cards.
