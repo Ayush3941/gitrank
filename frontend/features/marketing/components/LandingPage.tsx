@@ -81,7 +81,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-3">
+      <section className="render-opt-section grid gap-6 lg:grid-cols-3">
         {[
           {
             icon: <ChartNoAxesCombined className="h-5 w-5 text-primary" />,
@@ -107,7 +107,7 @@ export function LandingPage() {
         ))}
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-3">
+      <section className="render-opt-section grid gap-6 lg:grid-cols-3">
         {[
           {
             lane: "New contributor",
@@ -133,7 +133,7 @@ export function LandingPage() {
         ))}
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[0.95fr,1.05fr]">
+      <section className="render-opt-section grid gap-6 lg:grid-cols-[0.95fr,1.05fr]">
         <GlowCard className="space-y-5">
           <SectionHeader
             eyebrow="Solution"
@@ -170,7 +170,7 @@ export function LandingPage() {
         </GlowCard>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[1.08fr,0.92fr]">
+      <section className="render-opt-section grid gap-6 lg:grid-cols-[1.08fr,0.92fr]">
         <GlowCard className="space-y-5">
           <SectionHeader
             eyebrow="Battle report"
@@ -216,7 +216,7 @@ export function LandingPage() {
         </GlowCard>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[0.9fr,1.1fr]">
+      <section className="render-opt-section grid gap-6 lg:grid-cols-[0.9fr,1.1fr]">
         <GlowCard className="space-y-4 border border-amber-400/18 bg-amber-400/6">
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/25 bg-amber-400/12 px-3 py-1.5 text-xs font-semibold text-amber-100">
             <Swords className="h-3.5 w-3.5" />
