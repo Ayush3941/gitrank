@@ -10,6 +10,7 @@ import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 export function EmptyState({
   title,
   description,
+  eyebrow = "No live data yet",
   actionLabel,
   actionHref,
   onAction,
@@ -20,6 +21,7 @@ export function EmptyState({
 }: {
   title: string;
   description: string;
+  eyebrow?: string;
   actionLabel?: string;
   actionHref?: string;
   onAction?: () => void;
@@ -47,14 +49,14 @@ export function EmptyState({
     <GlowCard className="cyber-sheen flex flex-col items-start gap-4 border-dashed border-primary/24">
       <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/12 px-3 py-1.5 text-sm font-semibold text-primary">
         <Sparkles className="h-4 w-4" />
-        No live data yet
+        {eyebrow}
       </div>
       <div className="space-y-2">
         <h2 className="text-xl font-semibold text-white">{title}</h2>
         <p className="max-w-xl text-sm text-slate-100">{description}</p>
       </div>
       {actionLabel || secondaryActionLabel ? (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-col items-start gap-2">
           {actionLabel && actionHref ? (
             <Button asChild>
               <Link href={actionHref}>{actionLabel}</Link>
@@ -66,14 +68,21 @@ export function EmptyState({
             </Button>
           ) : null}
           {secondaryActionLabel && secondaryActionHref ? (
-            <Button asChild variant="secondary">
-              <Link href={secondaryActionHref}>{secondaryActionLabel}</Link>
-            </Button>
+            <Link
+              href={secondaryActionHref}
+              className="focus-ring text-sm font-medium text-cyan-100 underline decoration-cyan-300/70 underline-offset-2 hover:text-cyan-50"
+            >
+              {secondaryActionLabel}
+            </Link>
           ) : null}
           {secondaryActionLabel && !secondaryActionHref && onSecondaryAction ? (
-            <Button variant="secondary" onClick={onSecondaryAction}>
+            <button
+              type="button"
+              onClick={onSecondaryAction}
+              className="focus-ring text-sm font-medium text-cyan-100 underline decoration-cyan-300/70 underline-offset-2 hover:text-cyan-50"
+            >
               {secondaryActionLabel}
-            </Button>
+            </button>
           ) : null}
         </div>
       ) : null}

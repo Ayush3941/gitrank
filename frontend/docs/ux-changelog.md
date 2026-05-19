@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Empty-state CTA hierarchy pass:
+  - updated shared `EmptyState` to keep one clear primary action while rendering secondary actions as lower-emphasis inline links.
+  - added optional `eyebrow` support so empty-state intent can be tuned per surface without duplicating component structure.
+  - reduces multi-button decision load and aligns empty-state behavior with one-primary-action guidance.
 - Leaderboard local-bracket pass:
   - added a “Closest rank neighbors” block in leaderboard arena to show the current user’s immediate rank neighborhood instead of only global top-heavy context.
   - surfaces clear short-range progression framing (`XP to pass #N`) and per-neighbor XP gap/movement chips.
