@@ -91,7 +91,7 @@ export function ConnectGithubPanel() {
         </div>
         <div className="flex flex-wrap gap-3">
           <Button asChild size="lg">
-            <Link href="/oauth/github/start?return_to=/onboarding/analyzing">
+            <Link href="/oauth/github/start?return_to=/onboarding/analyzing" prefetch={false}>
               Connect GitHub
               <ArrowRight className="h-4 w-4" />
             </Link>

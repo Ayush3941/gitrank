@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- OAuth-start prefetch hardening pass:
+  - disabled `next/link` prefetch on all `GET /oauth/github/start` entry links (marketing header/hero, onboarding connect/login/reveal).
+  - avoids background route warmups from creating premature OAuth-start side effects (state/cookie generation before user intent).
+  - keeps explicit click-driven auth start behavior deterministic and easier to reason about during local demo flows.
 - Adaptive link-prefetch pass:
   - dashboard sidebar, mobile nav, and top-bar public-profile links now disable `next/link` prefetch when constrained-network mode is detected.
   - default-network users keep normal prefetch behavior; reduced-data users avoid unnecessary route payload warmups.

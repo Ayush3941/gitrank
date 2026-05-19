@@ -42,7 +42,7 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
           </div>
           <div className="flex flex-wrap gap-3">
             <Button asChild size="lg">
-              <Link href={oauthURL}>
+              <Link href={oauthURL} prefetch={false}>
                 <FolderGit2 className="h-4 w-4" />
                 Continue with GitHub
               </Link>

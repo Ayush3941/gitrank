@@ -47,7 +47,7 @@ export function LandingPage() {
             </div>
             <div className="flex flex-wrap gap-3">
               <Button asChild size="lg">
-                <Link href="/oauth/github/start?return_to=/dashboard">
+                <Link href="/oauth/github/start?return_to=/dashboard" prefetch={false}>
                   Connect GitHub
                   <ArrowRight className="h-4 w-4" />
                 </Link>
@@ -248,7 +248,7 @@ export function LandingPage() {
             <p className="readable-measure max-w-[68ch] text-sm leading-7 text-slate-200/80">The goal is a legible contribution snapshot, not an absolute ranking of developer worth.</p>
           </div>
           <Button asChild size="lg">
-            <Link href="/oauth/github/start?return_to=/dashboard">Start the reveal</Link>
+            <Link href="/oauth/github/start?return_to=/dashboard" prefetch={false}>Start the reveal</Link>
           </Button>
         </GlowCard>
       </section>

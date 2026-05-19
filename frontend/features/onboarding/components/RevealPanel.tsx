@@ -220,7 +220,7 @@ export function RevealPanelUnavailable() {
           The reveal page now reads the authenticated profile snapshot instead of a static sample. Start or refresh the GitHub connection to generate the live view.
         </p>
         <Button asChild size="lg">
-          <Link href="/oauth/github/start?return_to=/dashboard">
+          <Link href="/oauth/github/start?return_to=/dashboard" prefetch={false}>
             Connect GitHub
             <ArrowRight className="h-4 w-4" />
           </Link>
