@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- Background preload pass:
+  - added `app/head.tsx` preload link for `/assets/background.webp` (gated by `prefers-reduced-data: no-preference`) so the locked background visual appears faster on initial load.
+  - keeps reduced-data users on the lighter path while improving first-paint visual consistency for default-network sessions.
 - Loading-surface simplification pass:
   - added `GlowCard` `variant="loading"` to render lightweight panel shells without the full cyber-frame/cyber-sheen layered effects.
   - switched shared `RouteLoadingState` and `LoadingState` to the loading variant so first-route/loading skeletons mount with lower paint and compositing cost.
