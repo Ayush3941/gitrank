@@ -69,7 +69,7 @@ export function DashboardShortcutHelpDialog({
         <div className="space-y-4">
           {SHORTCUT_SECTIONS.map((section) => (
             <section key={section.title} className="space-y-2">
-              <p className="px-0.5 text-[11px] tracking-[0.14em] text-cyan-200 uppercase">
+              <p className="px-0.5 text-xs font-medium text-cyan-100">
                 {section.title}
               </p>
               <div className="space-y-2">
