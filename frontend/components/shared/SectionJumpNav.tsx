@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useRef } from "react";
 import { CopyLinkButton } from "@/components/shared/CopyLinkButton";
 
 type SectionJumpNavItem<SectionID extends string = string> = {
@@ -26,7 +29,24 @@ export function SectionJumpNav<SectionID extends string>({
   className?: string;
   stickyClassName?: string;
 }) {
+  const itemRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
   const stickyClasses = stickyClassName ?? "xl:sticky xl:z-20 sticky-safe-top-20";
+
+  useEffect(() => {
+    const activeItem = itemRefs.current[activeSection];
+    if (!activeItem) {
+      return;
+    }
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    activeItem.scrollIntoView({
+      block: "nearest",
+      inline: "center",
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+    });
+  }, [activeSection]);
+
   return (
     <nav
       aria-labelledby={navLabelID}
@@ -75,6 +95,9 @@ export function SectionJumpNav<SectionID extends string>({
           {items.map((section) => (
             <li key={section.id}>
               <a
+                ref={(node) => {
+                  itemRefs.current[section.id] = node;
+                }}
                 href={`#${section.id}`}
                 onClick={() => {
                   onSectionSelect(section.id);

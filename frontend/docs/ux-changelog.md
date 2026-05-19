@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Section jump-nav focus-tracking pass:
+  - upgraded shared `SectionJumpNav` to auto-scroll the active section chip into view when the horizontal chip rail overflows.
+  - motion now respects `prefers-reduced-motion` (smooth by default, instant when reduced motion is enabled).
+  - improves orientation consistency across dashboard, contributions, badges, quests, leaderboard, settings, public profile, and PR report section rails.
 - Empty-state CTA hierarchy pass:
   - updated shared `EmptyState` to keep one clear primary action while rendering secondary actions as lower-emphasis inline links.
   - added optional `eyebrow` support so empty-state intent can be tuned per surface without duplicating component structure.
