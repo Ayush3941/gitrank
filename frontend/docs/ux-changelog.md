@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- Onboarding connect-return path pass:
+  - added a direct `Continue analyzing` action on connect screen for returning users who already linked GitHub in the current browser context.
+  - added explicit copy explaining that analyzing can be opened directly when OAuth is already complete.
 - Onboarding analyzing retry-control pass:
   - added explicit `Retry sync` action when onboarding sync state is recoverable (`never_synced`, `partially_synced`, `stale`, `failed`, `rate_limited`) and no sync is currently running.
   - normalized sync-state labels in analyzing copy to user-facing casing for clearer status reading.

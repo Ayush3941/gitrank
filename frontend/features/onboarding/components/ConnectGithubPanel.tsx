@@ -97,6 +97,9 @@ export function ConnectGithubPanel() {
             </Link>
           </Button>
           <Button asChild variant="secondary" size="lg">
+            <Link href="/onboarding/analyzing">Continue analyzing</Link>
+          </Button>
+          <Button asChild variant="secondary" size="lg">
             <Link href="/">Back to landing</Link>
           </Button>
         </div>
@@ -127,6 +130,9 @@ export function ConnectGithubPanel() {
           <p className="text-xs font-medium text-primary">Where this goes next</p>
           <p className="mt-2 text-sm text-slate-100">
             After OAuth, GitRank redirects to <span className="font-semibold text-white">Analyzing</span> and starts live sync. You will not see fabricated leaderboard identities during this flow.
+          </p>
+          <p className="mt-2 text-xs text-slate-200/84">
+            If GitHub was already connected in this browser, you can skip OAuth and continue directly to Analyzing.
           </p>
         </div>
         <div className="rounded-[1.75rem] border border-primary/18 bg-primary/8 p-4 text-sm text-slate-200">
