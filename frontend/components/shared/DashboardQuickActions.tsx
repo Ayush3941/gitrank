@@ -13,6 +13,7 @@ import {
   Search,
   ShieldCheck,
   Sparkles,
+  X,
 } from "lucide-react";
 import { dashboardNavItems } from "@/components/shared/dashboard-nav";
 import { Button } from "@/components/ui/button";
@@ -176,6 +177,10 @@ export function DashboardQuickActions({
     () => groupQuickActions(visibleActions),
     [visibleActions],
   );
+  const actionIndexMap = useMemo(() => {
+    const entries = visibleActions.map((action, index) => [action.id, index] as const);
+    return new Map(entries);
+  }, [visibleActions]);
   const clampedHighlightedIndex =
     visibleActions.length > 0
       ? Math.min(Math.max(highlightedIndex, 0), visibleActions.length - 1)
@@ -277,6 +282,12 @@ export function DashboardQuickActions({
     }
   }
 
+  function handleClearQuery() {
+    setQuery("");
+    setHighlightedIndex(0);
+    inputRef.current?.focus();
+  }
+
   return (
     <>
       <Button
@@ -331,8 +342,26 @@ export function DashboardQuickActions({
               aria-controls="dashboard-quick-actions-list"
               aria-activedescendant={highlightedAction ? optionIdForAction(highlightedAction.id) : undefined}
             />
+            {query.trim().length > 0 ? (
+              <button
+                type="button"
+                onClick={handleClearQuery}
+                className="focus-ring inline-flex h-7 w-7 items-center justify-center rounded-full text-cyan-100 hover:text-white"
+                aria-label="Clear quick action search"
+                title="Clear search"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            ) : null}
             <span className="text-xs font-medium text-cyan-200">{shortcutHint}</span>
           </div>
+          <p role="status" aria-live="polite" className="text-xs text-cyan-100">
+            {normalizedQuery.length > 0
+              ? `${visibleActions.length} matching actions`
+              : recentActionIds.length > 0
+                ? `${visibleActions.length} actions (recent prioritized)`
+                : `${visibleActions.length} actions`}
+          </p>
           {!displayShortcutsEnabled ? (
             <p className="text-xs text-amber-100">
               Display shortcuts are disabled in Settings, so <span className="text-white">Alt+Shift+T/L</span> are off.
@@ -369,7 +398,7 @@ export function DashboardQuickActions({
                   <div className="space-y-2">
                     {group.items.map((action) => {
                       const Icon = action.icon;
-                      const index = visibleActions.findIndex((entry) => entry.id === action.id);
+                      const index = actionIndexMap.get(action.id) ?? -1;
                       const highlighted = index === clampedHighlightedIndex;
                       return (
                         <button
