@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowUpRight, Target, Trophy } from "lucide-react";
 import { startTransition, useDeferredValue, useEffect, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -308,73 +309,75 @@ export function LeaderboardPageClient() {
       ) : null}
       {!isLoading && !isError && snapshot && rows.length ? (
         <section id="leaderboard-arena" className="render-opt-section scroll-mt-24 space-y-4">
-          {snapshot.currentUser ? (
-            <GlowCard className="space-y-4 border border-cyan-300/22 bg-gradient-to-br from-slate-950/88 to-cyan-950/24">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs font-medium text-cyan-200">Your arena mission</p>
-                  <h2 className="mt-2 text-2xl font-semibold text-white">
-                    #{snapshot.currentUser.rank} in {tab}
-                  </h2>
-                  <p className="mt-2 text-sm text-slate-200/84">
-                    Focus lane: {snapshot.currentUser.focus}. Keep quality-weighted merged evidence flowing to move bands safely.
-                  </p>
+          <DeferUntilVisible fallback={<LeaderboardSectionPlaceholder title="Loading leaderboard arena" />}>
+            {snapshot.currentUser ? (
+              <GlowCard className="space-y-4 border border-cyan-300/22 bg-gradient-to-br from-slate-950/88 to-cyan-950/24">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-medium text-cyan-200">Your arena mission</p>
+                    <h2 className="mt-2 text-2xl font-semibold text-white">
+                      #{snapshot.currentUser.rank} in {tab}
+                    </h2>
+                    <p className="mt-2 text-sm text-slate-200/84">
+                      Focus lane: {snapshot.currentUser.focus}. Keep quality-weighted merged evidence flowing to move bands safely.
+                    </p>
+                  </div>
+                  <span className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold">
+                    <Target className="h-3.5 w-3.5" />
+                    {snapshot.currentUser.division}
+                  </span>
                 </div>
-                <span className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold">
-                  <Target className="h-3.5 w-3.5" />
-                  {snapshot.currentUser.division}
-                </span>
-              </div>
+                <div className="grid gap-3 md:grid-cols-3">
+                  <ClimbTip
+                    title="To next band"
+                    body={
+                      snapshot.currentUser.xpToNextRank > 0
+                        ? `${snapshot.currentUser.xpToNextRank} XP required`
+                        : "You are currently leading this lane"
+                    }
+                  />
+                  <ClimbTip
+                    title="Gap to lane leader"
+                    body={laneGapToLeader > 0 ? `${laneGapToLeader} season XP` : "You currently hold lane lead"}
+                  />
+                  <ClimbTip
+                    title="Current movement"
+                    body={`${snapshot.currentUser.movement >= 0 ? "+" : ""}${snapshot.currentUser.movement} this cycle`}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs text-slate-200">
+                    <span>Band progress</span>
+                    <span>{currentUserProgressToNextBand}%</span>
+                  </div>
+                  <Progress value={currentUserProgressToNextBand} />
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button asChild size="sm" variant="secondary">
+                    <Link href="/dashboard/contributions">
+                      Improve contribution signal
+                      <ArrowUpRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <Button asChild size="sm" variant="ghost">
+                    <Link href="/dashboard/quests">
+                      Open tactical quests
+                      <Trophy className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              </GlowCard>
+            ) : null}
+            <LeaderboardArena snapshot={snapshot} />
+            <GlowCard id="leaderboard-climb" className="scroll-mt-24 space-y-3 border border-fuchsia-300/22 bg-gradient-to-br from-slate-950/90 to-fuchsia-950/20">
+              <p className="text-xs font-medium text-fuchsia-200">How to climb</p>
               <div className="grid gap-3 md:grid-cols-3">
-                <ClimbTip
-                  title="To next band"
-                  body={
-                    snapshot.currentUser.xpToNextRank > 0
-                      ? `${snapshot.currentUser.xpToNextRank} XP required`
-                      : "You are currently leading this lane"
-                  }
-                />
-                <ClimbTip
-                  title="Gap to lane leader"
-                  body={laneGapToLeader > 0 ? `${laneGapToLeader} season XP` : "You currently hold lane lead"}
-                />
-                <ClimbTip
-                  title="Current movement"
-                  body={`${snapshot.currentUser.movement >= 0 ? "+" : ""}${snapshot.currentUser.movement} this cycle`}
-                />
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs text-slate-200">
-                  <span>Band progress</span>
-                  <span>{currentUserProgressToNextBand}%</span>
-                </div>
-                <Progress value={currentUserProgressToNextBand} />
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Button asChild size="sm" variant="secondary">
-                  <Link href="/dashboard/contributions">
-                    Improve contribution signal
-                    <ArrowUpRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button asChild size="sm" variant="ghost">
-                  <Link href="/dashboard/quests">
-                    Open tactical quests
-                    <Trophy className="h-4 w-4" />
-                  </Link>
-                </Button>
+                <ClimbTip title="Raise review depth" body="Address maintainer feedback loops quickly; review quality raises signal trust." />
+                <ClimbTip title="Increase weekly impact" body="Prefer merged changes with measurable scope over low-signal micro churn." />
+                <ClimbTip title="Preserve streak cadence" body="Consistent weekly evidence improves movement and reduces demotion risk." />
               </div>
             </GlowCard>
-          ) : null}
-          <LeaderboardArena snapshot={snapshot} />
-          <GlowCard id="leaderboard-climb" className="scroll-mt-24 space-y-3 border border-fuchsia-300/22 bg-gradient-to-br from-slate-950/90 to-fuchsia-950/20">
-            <p className="text-xs font-medium text-fuchsia-200">How to climb</p>
-            <div className="grid gap-3 md:grid-cols-3">
-              <ClimbTip title="Raise review depth" body="Address maintainer feedback loops quickly; review quality raises signal trust." />
-              <ClimbTip title="Increase weekly impact" body="Prefer merged changes with measurable scope over low-signal micro churn." />
-              <ClimbTip title="Preserve streak cadence" body="Consistent weekly evidence improves movement and reduces demotion risk." />
-            </div>
-          </GlowCard>
+          </DeferUntilVisible>
         </section>
       ) : null}
       {sparseArena && snapshot ? (
@@ -415,6 +418,14 @@ export function LeaderboardPageClient() {
         </GlowCard>
       ) : null}
     </div>
+  );
+}
+
+function LeaderboardSectionPlaceholder({ title }: { title: string }) {
+  return (
+    <GlowCard className="glass-panel cyber-card cyber-frame flex min-h-[11rem] items-center justify-center p-4">
+      <p className="text-sm text-slate-200/84">{title}</p>
+    </GlowCard>
   );
 }
 

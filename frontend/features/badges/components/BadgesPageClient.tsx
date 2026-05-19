@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Crown, ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import { startTransition, type ReactNode, useEffect, useRef, useState } from "react";
 import { ExpandableText } from "@/components/shared/ExpandableText";
+import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -247,72 +248,74 @@ export function BadgesPageClient() {
           />
         ) : null}
         {!isLoading && !isError && profile ? (
-          <GlowCard strong className="cyber-hero-shell relative overflow-hidden">
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-fuchsia-100">
-                    <Trophy className="h-3.5 w-3.5" />
-                    Achievement Forge
-                  </p>
-                  <h2 className="mt-3 text-2xl font-semibold text-white">
-                    {abraInsights.data?.archetype || "Systems Builder"} progression
-                  </h2>
-                  <p className="mt-2 max-w-3xl text-sm text-slate-200/84">
-                    {abraInsights.data?.identitySummary ||
-                      "Badge narratives are running in deterministic fallback mode."}
-                  </p>
-                </div>
-                <div className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-xs">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  {abraInsights.data?.generatedBy === "gemini"
-                    ? "Gemini achievement stories"
-                    : "Deterministic achievement stories"}
-                </div>
-              </div>
-              <div className="grid gap-3 md:grid-cols-4">
-                <BadgeMetric label="Unlocked" value={unlockedCount} icon={<ShieldCheck className="h-4 w-4 text-cyan-200" />} />
-                <BadgeMetric label="Completion" value={`${completionPercent}%`} icon={<Crown className="h-4 w-4 text-fuchsia-200" />} />
-                <BadgeMetric label="Level" value={profile.user.level.currentLevel} icon={<Trophy className="h-4 w-4 text-violet-200" />} />
-                <BadgeMetric label="Current streak" value={`${streak.currentStreakDays}d`} icon={<Sparkles className="h-4 w-4 text-emerald-200" />} />
-              </div>
-              <div className="space-y-2">
-                <p className="text-xs font-medium text-cyan-200">Badge lane progress</p>
-                <Progress value={completionPercent} />
-              </div>
-              {unlockNotice ? (
-                <p role="status" aria-live="polite" className="text-sm text-emerald-200">
-                  {unlockNotice}
-                </p>
-              ) : null}
-              {nextUnlockTarget ? (
-                <div className="neon-surface space-y-3 border border-primary/22 px-4 py-4">
-                  <p className="text-xs font-medium text-primary">Closest next unlock</p>
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="text-lg font-semibold text-white">{nextUnlockTarget.name}</p>
-                      <p className="mt-1 text-sm text-slate-200/82">
-                        {nextUnlockTarget.progress ?? 0}% complete • {nextUnlockTarget.rarity}
-                      </p>
-                    </div>
-                    <Button asChild variant="secondary" size="sm">
-                      <Link href={unlockRecoveryHref(nextUnlockTarget.unlockCondition)}>
-                        {unlockRecoveryLabel(nextUnlockTarget.unlockCondition)}
-                      </Link>
-                    </Button>
+          <DeferUntilVisible fallback={<BadgeSectionPlaceholder title="Loading badge forge" />}>
+            <GlowCard strong className="cyber-hero-shell relative overflow-hidden">
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-fuchsia-100">
+                      <Trophy className="h-3.5 w-3.5" />
+                      Achievement Forge
+                    </p>
+                    <h2 className="mt-3 text-2xl font-semibold text-white">
+                      {abraInsights.data?.archetype || "Systems Builder"} progression
+                    </h2>
+                    <p className="mt-2 max-w-3xl text-sm text-slate-200/84">
+                      {abraInsights.data?.identitySummary ||
+                        "Badge narratives are running in deterministic fallback mode."}
+                    </p>
                   </div>
-                  <ExpandableText
-                    text={nextUnlockTarget.unlockCondition}
-                    lines={3}
-                    minLengthForToggle={140}
-                    textClassName="text-sm text-muted"
-                    showMoreLabel="Read unlock path"
-                    showLessLabel="Hide unlock path"
-                  />
+                  <div className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-xs">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    {abraInsights.data?.generatedBy === "gemini"
+                      ? "Gemini achievement stories"
+                      : "Deterministic achievement stories"}
+                  </div>
                 </div>
-              ) : null}
-            </div>
-          </GlowCard>
+                <div className="grid gap-3 md:grid-cols-4">
+                  <BadgeMetric label="Unlocked" value={unlockedCount} icon={<ShieldCheck className="h-4 w-4 text-cyan-200" />} />
+                  <BadgeMetric label="Completion" value={`${completionPercent}%`} icon={<Crown className="h-4 w-4 text-fuchsia-200" />} />
+                  <BadgeMetric label="Level" value={profile.user.level.currentLevel} icon={<Trophy className="h-4 w-4 text-violet-200" />} />
+                  <BadgeMetric label="Current streak" value={`${streak.currentStreakDays}d`} icon={<Sparkles className="h-4 w-4 text-emerald-200" />} />
+                </div>
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-cyan-200">Badge lane progress</p>
+                  <Progress value={completionPercent} />
+                </div>
+                {unlockNotice ? (
+                  <p role="status" aria-live="polite" className="text-sm text-emerald-200">
+                    {unlockNotice}
+                  </p>
+                ) : null}
+                {nextUnlockTarget ? (
+                  <div className="neon-surface space-y-3 border border-primary/22 px-4 py-4">
+                    <p className="text-xs font-medium text-primary">Closest next unlock</p>
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="text-lg font-semibold text-white">{nextUnlockTarget.name}</p>
+                        <p className="mt-1 text-sm text-slate-200/82">
+                          {nextUnlockTarget.progress ?? 0}% complete • {nextUnlockTarget.rarity}
+                        </p>
+                      </div>
+                      <Button asChild variant="secondary" size="sm">
+                        <Link href={unlockRecoveryHref(nextUnlockTarget.unlockCondition)}>
+                          {unlockRecoveryLabel(nextUnlockTarget.unlockCondition)}
+                        </Link>
+                      </Button>
+                    </div>
+                    <ExpandableText
+                      text={nextUnlockTarget.unlockCondition}
+                      lines={3}
+                      minLengthForToggle={140}
+                      textClassName="text-sm text-muted"
+                      showMoreLabel="Read unlock path"
+                      showLessLabel="Hide unlock path"
+                    />
+                  </div>
+                ) : null}
+              </div>
+            </GlowCard>
+          </DeferUntilVisible>
         ) : null}
       </section>
       <section id="badges-earned" className="render-opt-section scroll-mt-24 space-y-4">
@@ -396,53 +399,65 @@ export function BadgesPageClient() {
           />
         ) : null}
         {!isLoading && !isError && filtered.length ? (
-          <BadgeGrid
-            badges={filtered}
-            stories={abraInsights.data?.badgeStories}
-          />
+          <DeferUntilVisible fallback={<BadgeSectionPlaceholder title="Loading earned badge cards" />}>
+            <BadgeGrid
+              badges={filtered}
+              stories={abraInsights.data?.badgeStories}
+            />
+          </DeferUntilVisible>
         ) : null}
       </section>
       {!isLoading && !isError ? (
         <section id="badges-locked" className="render-opt-section scroll-mt-24 space-y-3">
           <p className="text-xs font-medium text-fuchsia-200">Locked / upcoming badges</p>
-          {lockedBadges.length > 0 ? (
-            <div className="grid gap-3 md:grid-cols-3">
-              {lockedBadges.map((badge) => (
-                <div key={badge.id} className="render-opt-card neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4">
-                  <p className="text-xs font-medium text-fuchsia-200">{badge.rarity}</p>
-                  <h3 className="mt-2 text-base font-semibold text-white">{badge.name}</h3>
-                  <ExpandableText
-                    text={badge.unlockCondition}
-                    lines={3}
-                    minLengthForToggle={120}
-                    className="mt-2"
-                    textClassName="text-sm text-slate-300"
-                    showMoreLabel="Expand condition"
-                    showLessLabel="Collapse condition"
-                  />
-                  <div className="mt-3 space-y-1">
-                    <Progress value={badge.progress ?? 0} />
-                    <p className="text-xs text-slate-300">{badge.progress ?? 0}% verified progress</p>
+          <DeferUntilVisible fallback={<BadgeSectionPlaceholder title="Loading locked badge lanes" />}>
+            {lockedBadges.length > 0 ? (
+              <div className="grid gap-3 md:grid-cols-3">
+                {lockedBadges.map((badge) => (
+                  <div key={badge.id} className="render-opt-card neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4">
+                    <p className="text-xs font-medium text-fuchsia-200">{badge.rarity}</p>
+                    <h3 className="mt-2 text-base font-semibold text-white">{badge.name}</h3>
+                    <ExpandableText
+                      text={badge.unlockCondition}
+                      lines={3}
+                      minLengthForToggle={120}
+                      className="mt-2"
+                      textClassName="text-sm text-slate-300"
+                      showMoreLabel="Expand condition"
+                      showLessLabel="Collapse condition"
+                    />
+                    <div className="mt-3 space-y-1">
+                      <Progress value={badge.progress ?? 0} />
+                      <p className="text-xs text-slate-300">{badge.progress ?? 0}% verified progress</p>
+                    </div>
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-xs text-cyan-100/88">
+                        Next move: {unlockRecoveryLabel(badge.unlockCondition)}
+                      </p>
+                      <Button asChild variant="ghost" size="sm">
+                        <Link href={unlockRecoveryHref(badge.unlockCondition)}>Open lane</Link>
+                      </Button>
+                    </div>
                   </div>
-                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-xs text-cyan-100/88">
-                      Next move: {unlockRecoveryLabel(badge.unlockCondition)}
-                    </p>
-                    <Button asChild variant="ghost" size="sm">
-                      <Link href={unlockRecoveryHref(badge.unlockCondition)}>Open lane</Link>
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4 text-sm text-slate-300">
-              No locked badge definitions are currently returned by the backend profile snapshot.
-            </div>
-          )}
+                ))}
+              </div>
+            ) : (
+              <div className="neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4 text-sm text-slate-300">
+                No locked badge definitions are currently returned by the backend profile snapshot.
+              </div>
+            )}
+          </DeferUntilVisible>
         </section>
       ) : null}
     </div>
+  );
+}
+
+function BadgeSectionPlaceholder({ title }: { title: string }) {
+  return (
+    <GlowCard className="glass-panel cyber-card cyber-frame flex min-h-[11rem] items-center justify-center p-4">
+      <p className="text-sm text-slate-200/84">{title}</p>
+    </GlowCard>
   );
 }
 

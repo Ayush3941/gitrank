@@ -15,6 +15,11 @@
     timeline/highlights, and achievement-card lanes
   - added lightweight section placeholders so filters and top-level routing
     stay interactive while heavier PR-card blocks mount near viewport.
+- Leaderboard and badges deferred-render pass:
+  - applied `DeferUntilVisible` to leaderboard arena/climb blocks and badge
+    forge/earned/locked sections
+  - preserved section anchors and recovery states while reducing initial mount
+    pressure from dense grids and table surfaces.
 - Dashboard lane readability pass:
   - expanded dashboard nav item contracts with route-level hints so lane intent
     is visible across sidebar, mobile nav, and command palette surfaces
