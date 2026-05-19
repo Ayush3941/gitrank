@@ -20,6 +20,11 @@
     forge/earned/locked sections
   - preserved section anchors and recovery states while reducing initial mount
     pressure from dense grids and table surfaces.
+- Quests deferred-render pass:
+  - applied `DeferUntilVisible` to journey hero, mission spotlight, and all
+    cadence section card grids
+  - kept cadence deep links and empty-state recovery actions intact while
+    reducing immediate mount cost of multi-lane quest boards.
 - Dashboard lane readability pass:
   - expanded dashboard nav item contracts with route-level hints so lane intent
     is visible across sidebar, mobile nav, and command palette surfaces

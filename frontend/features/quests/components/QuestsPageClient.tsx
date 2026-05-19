@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight, CalendarClock, Flame, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -163,69 +164,73 @@ export function QuestsPageClient() {
         />
       ) : null}
       {!isLoading && !isError && profile ? (
-        <GlowCard strong className="cyber-hero-shell relative overflow-hidden">
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-cyan-100">
-                  <CalendarClock className="h-3.5 w-3.5" />
-                  365-day contributor journey
-                </p>
-                <h2 className="mt-3 text-2xl font-semibold text-white">Day {dayOfYear} of 365</h2>
-                <p className="mt-2 text-sm text-slate-200/82">
-                  Keep streak momentum and compound high-signal contributions over the full year.
-                </p>
+        <DeferUntilVisible fallback={<QuestSectionPlaceholder title="Loading contributor journey frame" />}>
+          <GlowCard strong className="cyber-hero-shell relative overflow-hidden">
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-cyan-100">
+                    <CalendarClock className="h-3.5 w-3.5" />
+                    365-day contributor journey
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold text-white">Day {dayOfYear} of 365</h2>
+                  <p className="mt-2 text-sm text-slate-200/82">
+                    Keep streak momentum and compound high-signal contributions over the full year.
+                  </p>
+                </div>
+                <div className="grid gap-2 rounded-2xl border border-fuchsia-300/28 bg-fuchsia-400/10 px-4 py-3 text-sm text-fuchsia-100">
+                  <span className="inline-flex items-center gap-2"><Flame className="h-4 w-4" /> Current streak: {streak.currentStreakDays}d</span>
+                  <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Best streak: {streak.bestStreakDays}d</span>
+                </div>
               </div>
-              <div className="grid gap-2 rounded-2xl border border-fuchsia-300/28 bg-fuchsia-400/10 px-4 py-3 text-sm text-fuchsia-100">
-                <span className="inline-flex items-center gap-2"><Flame className="h-4 w-4" /> Current streak: {streak.currentStreakDays}d</span>
-                <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Best streak: {streak.bestStreakDays}d</span>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs text-slate-200">
+                  <span>Annual progression</span>
+                  <span>{dayProgress}%</span>
+                </div>
+                <Progress value={dayProgress} />
               </div>
             </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs text-slate-200">
-                <span>Annual progression</span>
-                <span>{dayProgress}%</span>
-              </div>
-              <Progress value={dayProgress} />
-            </div>
-          </div>
-        </GlowCard>
+          </GlowCard>
+        </DeferUntilVisible>
       ) : null}
       {!isLoading && !isError ? (
-        <GlowCard className="space-y-4 border border-primary/18 bg-gradient-to-br from-slate-950/86 to-cyan-950/18">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-medium text-cyan-200">Mission spotlight</p>
-              <h2 className="mt-2 text-2xl font-semibold text-white">Clear next moves</h2>
-              <p className="mt-2 text-sm text-slate-200/82">
-                Progressive mission framing: take one action now, one this week, and one long-term objective.
-              </p>
+        <DeferUntilVisible fallback={<QuestSectionPlaceholder title="Loading mission spotlight" />}>
+          <GlowCard className="space-y-4 border border-primary/18 bg-gradient-to-br from-slate-950/86 to-cyan-950/18">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-medium text-cyan-200">Mission spotlight</p>
+                <h2 className="mt-2 text-2xl font-semibold text-white">Clear next moves</h2>
+                <p className="mt-2 text-sm text-slate-200/82">
+                  Progressive mission framing: take one action now, one this week, and one long-term objective.
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="grid gap-3 md:grid-cols-3">
-            <MissionSpotlightCard
-              title="Today's Quest"
-              quest={todayQuest}
-              emptyCopy="No daily mission is available yet. Open contributions to generate fresh daily evidence."
-              href="/dashboard/contributions"
-              cta="Open contributions"
-            />
-            <MissionSpotlightCard
-              title="Weekly Challenge"
-              quest={weeklyQuest}
-              emptyCopy="No weekly challenge has been generated yet. Refresh from settings to backfill weekly scoring evidence."
-              href="/dashboard/settings"
-              cta="Open settings"
-            />
-            <MissionSpotlightCard
-              title="Long-Term Journey"
-              quest={longTermQuest}
-              emptyCopy="No long-term objective is attached yet. Continue merged, reviewed work to unlock deeper journey tracks."
-              href="/dashboard/contributions"
-              cta="Keep building"
-            />
-          </div>
-        </GlowCard>
+            <div className="grid gap-3 md:grid-cols-3">
+              <MissionSpotlightCard
+                title="Today's Quest"
+                quest={todayQuest}
+                emptyCopy="No daily mission is available yet. Open contributions to generate fresh daily evidence."
+                href="/dashboard/contributions"
+                cta="Open contributions"
+              />
+              <MissionSpotlightCard
+                title="Weekly Challenge"
+                quest={weeklyQuest}
+                emptyCopy="No weekly challenge has been generated yet. Refresh from settings to backfill weekly scoring evidence."
+                href="/dashboard/settings"
+                cta="Open settings"
+              />
+              <MissionSpotlightCard
+                title="Long-Term Journey"
+                quest={longTermQuest}
+                emptyCopy="No long-term objective is attached yet. Continue merged, reviewed work to unlock deeper journey tracks."
+                href="/dashboard/contributions"
+                cta="Keep building"
+              />
+            </div>
+          </GlowCard>
+        </DeferUntilVisible>
       ) : null}
       {!isLoading && !isError && quests.length > 0 ? (
         <SectionJumpNav
@@ -279,29 +284,39 @@ export function QuestsPageClient() {
                 title={labelForGroup(group)}
                 description={descriptionForGroup(group)}
               />
-              {grouped.length > 0 ? (
-                <div className="grid gap-4 xl:grid-cols-2">
-                  {grouped.map((quest) => (
-                    <QuestCard key={quest.id} quest={quest} />
-                  ))}
-                </div>
-              ) : (
-                <GlowCard className="neon-surface rounded-[1.5rem] border-dashed border-cyan-300/24 p-4 text-sm text-slate-300">
-                  <p>
-                    No {labelForGroup(group).toLowerCase()} has been generated by the backend for this profile snapshot yet.
-                  </p>
-                  <div className="mt-3">
-                    <Button asChild variant="secondary" size="sm">
-                      <Link href={recoveryHrefForGroup(group)}>{recoveryLabelForGroup(group)}</Link>
-                    </Button>
+              <DeferUntilVisible fallback={<QuestSectionPlaceholder title={`Loading ${labelForGroup(group)}`} />}>
+                {grouped.length > 0 ? (
+                  <div className="grid gap-4 xl:grid-cols-2">
+                    {grouped.map((quest) => (
+                      <QuestCard key={quest.id} quest={quest} />
+                    ))}
                   </div>
-                </GlowCard>
-              )}
+                ) : (
+                  <GlowCard className="neon-surface rounded-[1.5rem] border-dashed border-cyan-300/24 p-4 text-sm text-slate-300">
+                    <p>
+                      No {labelForGroup(group).toLowerCase()} has been generated by the backend for this profile snapshot yet.
+                    </p>
+                    <div className="mt-3">
+                      <Button asChild variant="secondary" size="sm">
+                        <Link href={recoveryHrefForGroup(group)}>{recoveryLabelForGroup(group)}</Link>
+                      </Button>
+                    </div>
+                  </GlowCard>
+                )}
+              </DeferUntilVisible>
             </section>
           );
         })
       ) : null}
     </div>
+  );
+}
+
+function QuestSectionPlaceholder({ title }: { title: string }) {
+  return (
+    <GlowCard className="glass-panel cyber-card cyber-frame flex min-h-[11rem] items-center justify-center p-4">
+      <p className="text-sm text-slate-200/84">{title}</p>
+    </GlowCard>
   );
 }
 
