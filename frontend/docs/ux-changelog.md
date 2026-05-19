@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Label truncation resilience pass:
+  - removed hard `truncate` from onboarding step labels and mobile nav lane labels.
+  - switched to controlled wrapping (`break-anywhere`, explicit line-height, centered mobile labels) to preserve readability when labels expand.
+  - keeps the same nav/onboarding flow while reducing clipped text risk under larger text-scale or future copy updates.
 - Sticky top-bar safe-area pass:
   - added reusable `.sticky-safe-top-4` helper to keep sticky dashboard bars offset from top safe-area insets.
   - applied this helper to all dashboard top-bar variants (live, loading, unavailable).

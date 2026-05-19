@@ -44,7 +44,7 @@ export function OnboardingStepper({
                     {index + 1}
                   </span>
                 )}
-                <span className="truncate">{step.label}</span>
+                <span className="break-anywhere leading-5">{step.label}</span>
               </div>
             </li>
           );

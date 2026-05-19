@@ -61,7 +61,7 @@ export function MobileNav() {
                   )}
                 />
                 <Icon className={cn("h-4 w-4", active ? "text-primary" : "text-slate-200")} />
-                <span className="max-w-full truncate">{item.mobileLabel}</span>
+                <span className="max-w-full break-anywhere text-center leading-4">{item.mobileLabel}</span>
                 <span className="sr-only">{item.hint}</span>
               </Link>
             </li>
