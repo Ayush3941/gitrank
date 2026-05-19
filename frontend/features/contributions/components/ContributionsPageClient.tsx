@@ -19,6 +19,7 @@ import { ContributionList } from "@/features/contributions/components/Contributi
 import { useContributions } from "@/hooks/use-contributions";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { Button } from "@/components/ui/button";
+import { shouldRequestAbraInsights } from "@/lib/ai/deterministic-identity-summary";
 import { formatRelativeDays } from "@/lib/formatters";
 import {
   monthTimeline,
@@ -110,6 +111,15 @@ export function ContributionsPageClient() {
 
   const abraPayload = useMemo(() => {
     if (!profile) {
+      return null;
+    }
+    if (
+      !shouldRequestAbraInsights({
+        showAiSummaries: profile.user.privacy.showAiSummaries !== false,
+        mergedPrCount: profile.user.mergedPrCount,
+        contributionCount: filteredRows.length,
+      })
+    ) {
       return null;
     }
     return {

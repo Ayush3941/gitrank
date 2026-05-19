@@ -20,6 +20,7 @@ import { BadgeGrid } from "@/features/badges/components/BadgeGrid";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useBadges } from "@/hooks/use-badges";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
+import { shouldRequestAbraInsights } from "@/lib/ai/deterministic-identity-summary";
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { initialSectionFromHash } from "@/lib/section-nav";
@@ -69,7 +70,12 @@ export function BadgesPageClient() {
     : null;
 
   const abraInsights = useAbraInsights(
-    profile
+    profile &&
+      shouldRequestAbraInsights({
+        showAiSummaries: profile.user.privacy.showAiSummaries !== false,
+        mergedPrCount: profile.user.mergedPrCount,
+        contributionCount: profile.user.contributions.length,
+      })
       ? {
           profile: {
             username: profile.user.username,

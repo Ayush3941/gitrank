@@ -22,6 +22,10 @@ import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
 import { Button } from "@/components/ui/button";
+import {
+  buildDeterministicIdentitySummary,
+  shouldRequestAbraInsights,
+} from "@/lib/ai/deterministic-identity-summary";
 import { formatRelativeDays } from "@/lib/formatters";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
@@ -148,6 +152,15 @@ export function DashboardPageClient() {
     if (!user) {
       return null;
     }
+    if (
+      !shouldRequestAbraInsights({
+        showAiSummaries: user.privacy.showAiSummaries !== false,
+        mergedPrCount: user.mergedPrCount,
+        contributionCount: user.contributions.length,
+      })
+    ) {
+      return null;
+    }
     return {
       profile: {
         username: user.username,
@@ -189,6 +202,23 @@ export function DashboardPageClient() {
     };
   }, [streak.currentStreakDays, user]);
   const abraInsights = useAbraInsights(abraPayload);
+  const fallbackIdentitySummary = useMemo(() => {
+    if (!data || !user) {
+      return undefined;
+    }
+    return buildDeterministicIdentitySummary({
+      displayName: user.displayName,
+      rankTier: user.level.rankTier,
+      level: user.level.currentLevel,
+      totalXp: user.level.currentXp,
+      mergedPrCount: user.mergedPrCount,
+      strongestSignals: user.strongestSignals,
+      repositoriesTouched: user.repositories.length,
+      streakDays: streak.currentStreakDays,
+      isStale: data.isStale,
+      trendWindowLabel: data.trendWindowLabel,
+    });
+  }, [data, streak.currentStreakDays, user]);
 
   useEffect(() => {
     if (isLoading || isError || !data || scoreExplanationEventSent.current) {
@@ -323,8 +353,8 @@ export function DashboardPageClient() {
         <DashboardHeroRankCard
           user={user}
           archetype={abraInsights.data?.archetype}
-          identitySummary={abraInsights.data?.identitySummary}
-          aiMode={abraInsights.data?.generatedBy}
+          identitySummary={abraInsights.data?.identitySummary ?? fallbackIdentitySummary}
+          aiMode={abraInsights.data?.generatedBy ?? "deterministic"}
         />
       </section>
       <section id="dashboard-snapshot" className="scroll-mt-24 grid gap-4 xl:grid-cols-[1.25fr,1fr]">

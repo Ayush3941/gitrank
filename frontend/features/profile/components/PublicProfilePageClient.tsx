@@ -19,6 +19,10 @@ import { BestPRsPanel } from "@/features/profile/components/BestPRsPanel";
 import { PublicProfileHero } from "@/features/profile/components/PublicProfileHero";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useProfile } from "@/hooks/use-profile";
+import {
+  buildDeterministicIdentitySummary,
+  shouldRequestAbraInsights,
+} from "@/lib/ai/deterministic-identity-summary";
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { initialSectionFromHash } from "@/lib/section-nav";
@@ -57,9 +61,13 @@ export function PublicProfilePageClient({
     if (!data) {
       return null;
     }
-    const aiSummariesEnabled = data.user.privacy.showAiSummaries !== false;
-    const hasContributionEvidence = data.user.mergedPrCount > 0 && data.user.contributions.length > 0;
-    if (!aiSummariesEnabled || !hasContributionEvidence) {
+    if (
+      !shouldRequestAbraInsights({
+        showAiSummaries: data.user.privacy.showAiSummaries !== false,
+        mergedPrCount: data.user.mergedPrCount,
+        contributionCount: data.user.contributions.length,
+      })
+    ) {
       return null;
     }
     return {
@@ -107,7 +115,7 @@ export function PublicProfilePageClient({
     if (!data) {
       return undefined;
     }
-    return deterministicIdentitySummary({
+    return buildDeterministicIdentitySummary({
       displayName: data.user.displayName,
       rankTier: data.user.level.rankTier,
       level: data.user.level.currentLevel,
@@ -371,35 +379,6 @@ export function PublicProfilePageClient({
       </section>
     </div>
   );
-}
-
-function deterministicIdentitySummary({
-  displayName,
-  rankTier,
-  level,
-  totalXp,
-  mergedPrCount,
-  strongestSignals,
-  repositoriesTouched,
-  streakDays,
-  isStale,
-  trendWindowLabel,
-}: {
-  displayName: string;
-  rankTier: string;
-  level: number;
-  totalXp: number;
-  mergedPrCount: number;
-  strongestSignals: string[];
-  repositoriesTouched: number;
-  streakDays: number;
-  isStale: boolean;
-  trendWindowLabel: string;
-}) {
-  const signalSummary =
-    strongestSignals.length > 0 ? strongestSignals.slice(0, 2).join(" and ") : "early contribution patterns";
-  const staleNote = isStale ? " This snapshot is currently marked stale and will sharpen after refresh." : "";
-  return `${displayName} is currently ${rankTier} (Level ${level}) with ${totalXp.toLocaleString("en-US")} total XP from ${mergedPrCount} merged PRs across ${repositoriesTouched} repositories. Recent strength signals are concentrated around ${signalSummary}, with a current streak of ${streakDays} day${streakDays === 1 ? "" : "s"} in the ${trendWindowLabel} window.${staleNote}`;
 }
 
 function PublicProfileSectionPlaceholder({ title }: { title: string }) {

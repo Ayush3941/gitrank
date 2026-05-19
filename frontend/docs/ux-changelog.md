@@ -11,6 +11,10 @@
   - kept profile section anchors intact while reducing initial mount pressure from charts and dense card grids.
   - gated ABRA/Gemini identity generation behind real contribution evidence (`mergedPrCount > 0` and contribution history present) and user AI-summary visibility preference.
   - added deterministic identity-summary fallback text so the profile remains informative when AI is disabled, unavailable, or intentionally skipped.
+- ABRA evidence-gating consistency pass:
+  - introduced shared `shouldRequestAbraInsights` + deterministic identity-summary helper under `lib/ai/deterministic-identity-summary.ts`.
+  - applied the evidence/privacy gate to dashboard, onboarding reveal, contributions, and badges surfaces so AI generation is skipped when users disable AI summaries or have no real contribution evidence.
+  - wired deterministic fallback summaries into dashboard and onboarding hero/reveal panels to keep copy meaningful without synthetic claims.
 - PR battle report deferred-render pass:
   - applied `DeferUntilVisible` to score matrix, AI summary, evidence signals, badge unlocks, and suggested-quest sections.
   - preserved explainability and section-jump flow while reducing above-the-fold render cost on deep report pages.

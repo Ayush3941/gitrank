@@ -10,6 +10,10 @@ import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useAccountGamificationPreference } from "@/hooks/use-gamification-preference";
 import { useMyProfile } from "@/hooks/use-profile";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
+import {
+  buildDeterministicIdentitySummary,
+  shouldRequestAbraInsights,
+} from "@/lib/ai/deterministic-identity-summary";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 
 export function RevealPanelContainer() {
@@ -22,6 +26,15 @@ export function RevealPanelContainer() {
   );
   const abraPayload = useMemo(() => {
     if (!data) {
+      return null;
+    }
+    if (
+      !shouldRequestAbraInsights({
+        showAiSummaries: data.user.privacy.showAiSummaries !== false,
+        mergedPrCount: data.user.mergedPrCount,
+        contributionCount: data.user.contributions.length,
+      })
+    ) {
       return null;
     }
     return {
@@ -65,6 +78,23 @@ export function RevealPanelContainer() {
     };
   }, [data, streak.currentStreakDays]);
   const abraInsights = useAbraInsights(abraPayload);
+  const fallbackIdentitySummary = useMemo(() => {
+    if (!data) {
+      return undefined;
+    }
+    return buildDeterministicIdentitySummary({
+      displayName: data.user.displayName,
+      rankTier: data.user.level.rankTier,
+      level: data.user.level.currentLevel,
+      totalXp: data.user.level.currentXp,
+      mergedPrCount: data.user.mergedPrCount,
+      strongestSignals: data.user.strongestSignals,
+      repositoriesTouched: data.topRepositories.length,
+      streakDays: streak.currentStreakDays,
+      isStale: data.isStale,
+      trendWindowLabel: data.trendWindowLabel,
+    });
+  }, [data, streak.currentStreakDays]);
 
   useEffect(() => {
     if (isLoading || isError || !data) {
@@ -95,8 +125,8 @@ export function RevealPanelContainer() {
     <RevealPanel
       user={data.user}
       archetype={abraInsights.data?.archetype}
-      identitySummary={abraInsights.data?.identitySummary}
-      aiMode={abraInsights.data?.generatedBy}
+      identitySummary={abraInsights.data?.identitySummary ?? fallbackIdentitySummary}
+      aiMode={abraInsights.data?.generatedBy ?? "deterministic"}
     />
   );
 }
