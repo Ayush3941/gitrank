@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Global readability + paint-cost pass:
+  - introduced `--copy-line-height` and applied it to body + key narrative copy classes (`.cyber-copy`, `.cyber-copy-muted`) for steadier long-form readability.
+  - tightened readable paragraph measure from `72ch` to `68ch` to keep scan width closer to accessibility guidance for comfortable reading.
+  - reduced high-cost visual paint pressure by replacing blurred page-shell glow blobs with gradient-based soft glows (no CSS blur filter) and by trimming oversized hero/ring shadow stacks.
 - Target-size accessibility pass:
   - increased the contributions active-filter chip remove control hit area to at least `24x24` CSS pixels (`min-h-6 min-w-6`) in line with WCAG 2.2 SC 2.5.8 guidance.
   - keeps the visual chip density while improving touch and imprecise-pointer usability.

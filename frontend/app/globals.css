@@ -34,6 +34,7 @@
   --glow-subtle: 0 0 16px rgb(var(--primary) / 0.07);
   --glow-medium: 0 0 28px rgb(var(--primary) / 0.11);
   --glow-hero: 0 0 42px rgb(var(--primary) / 0.14);
+  --copy-line-height: 1.68;
   --radius-universal: 0.1rem;
   --radius-card: 0.1rem;
   --eyebrow-tracking-wide: 0.1em;
@@ -212,7 +213,7 @@ body {
   font-family: var(--font-space-grotesk), sans-serif;
   text-rendering: optimizeLegibility;
   font-size: clamp(16px, 0.16vw + 16px, 18px);
-  line-height: 1.64;
+  line-height: var(--copy-line-height);
   letter-spacing: 0.01em;
   -webkit-font-smoothing: antialiased;
 }
@@ -835,16 +836,18 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 
 .cyber-copy {
   color: rgb(var(--text-body));
+  line-height: var(--copy-line-height);
   text-wrap: pretty;
 }
 
 .cyber-copy-muted {
   color: rgb(var(--text-soft));
+  line-height: var(--copy-line-height);
   text-wrap: pretty;
 }
 
 .readable-measure {
-  max-width: 72ch;
+  max-width: 68ch;
   text-wrap: pretty;
 }
 
@@ -925,9 +928,8 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
     linear-gradient(220deg, rgb(var(--primary-2) / 0.2), transparent 44%),
     linear-gradient(180deg, rgb(var(--card-2) / 0.94), rgb(var(--card) / 0.88)) !important;
   box-shadow:
-    0 20px 62px rgb(1 5 20 / 0.62),
-    0 0 66px rgb(var(--primary) / 0.19),
-    0 0 48px rgb(var(--primary-2) / 0.12),
+    0 16px 46px rgb(1 5 20 / 0.52),
+    0 0 42px rgb(var(--primary) / 0.16),
     inset 0 1px 0 rgb(255 255 255 / 0.14);
 }
 
@@ -977,8 +979,7 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   pointer-events: none;
   z-index: -1;
   border-radius: 999px;
-  filter: blur(28px);
-  opacity: 0.76;
+  opacity: 0.6;
 }
 
 .page-shell::before {
@@ -986,7 +987,12 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   left: -6rem;
   width: 22rem;
   height: 22rem;
-  background: rgb(var(--primary) / 0.11);
+  background: radial-gradient(
+    circle,
+    rgb(var(--primary) / 0.16) 0%,
+    rgb(var(--primary) / 0.08) 34%,
+    rgb(var(--primary) / 0) 74%
+  );
 }
 
 .page-shell::after {
@@ -994,7 +1000,12 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   bottom: 5rem;
   width: 26rem;
   height: 26rem;
-  background: rgb(var(--primary-2) / 0.1);
+  background: radial-gradient(
+    circle,
+    rgb(var(--primary-2) / 0.16) 0%,
+    rgb(var(--primary-2) / 0.08) 34%,
+    rgb(var(--primary-2) / 0) 74%
+  );
 }
 
 .section-subtitle {
@@ -1239,7 +1250,7 @@ html[data-theme="high-contrast"] .neon-title {
 .ring-glow {
   box-shadow:
     0 0 0 1px rgb(var(--primary) / 0.18),
-    0 0 44px rgb(var(--primary) / 0.22);
+    0 0 28px rgb(var(--primary) / 0.18);
 }
 
 .neon-skeleton {
