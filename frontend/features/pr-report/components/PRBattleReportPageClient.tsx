@@ -199,7 +199,7 @@ export function PRBattleReportPageClient({
         onSectionSelect={setActiveSection}
         copyHref={activeSectionLink}
         copyAnalyticsTarget="pr-report/copy-section-link"
-        stickyClassName="lg:sticky lg:top-4 lg:z-20"
+        stickyClassName="lg:sticky lg:z-20 sticky-safe-top-4"
       />
       <section id="pr-report-overview" className="scroll-mt-24">
         <GlowCard strong className="space-y-5">

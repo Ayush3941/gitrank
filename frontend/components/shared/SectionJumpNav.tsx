@@ -26,7 +26,7 @@ export function SectionJumpNav<SectionID extends string>({
   className?: string;
   stickyClassName?: string;
 }) {
-  const stickyClasses = stickyClassName ?? "xl:sticky xl:top-20 xl:z-20";
+  const stickyClasses = stickyClassName ?? "xl:sticky xl:z-20 sticky-safe-top-20";
   return (
     <nav
       aria-labelledby={navLabelID}

@@ -234,7 +234,7 @@ export function PublicProfilePageClient({
         onSectionSelect={setActiveSection}
         copyHref={activeSectionLink}
         copyAnalyticsTarget="public-profile/copy-section-link"
-        stickyClassName="lg:sticky lg:top-4 lg:z-20"
+        stickyClassName="lg:sticky lg:z-20 sticky-safe-top-4"
       />
       <section id="public-profile-overview" className="scroll-mt-24 space-y-6">
         <PublicProfileHero

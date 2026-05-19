@@ -375,6 +375,14 @@ select {
   top: max(1rem, calc(env(safe-area-inset-top, 0px) + 0.5rem));
 }
 
+.sticky-safe-top-6 {
+  top: max(1.5rem, calc(env(safe-area-inset-top, 0px) + 0.5rem));
+}
+
+.sticky-safe-top-20 {
+  top: max(5rem, calc(env(safe-area-inset-top, 0px) + 1rem));
+}
+
 :where(p, li, dd, dt, label, small, figcaption, blockquote) {
   color: rgb(var(--text-body));
 }

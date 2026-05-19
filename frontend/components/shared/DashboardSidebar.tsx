@@ -19,7 +19,7 @@ export function DashboardSidebar() {
   const activeItem = dashboardNavItems.find((item) => isActive(item.href, item.exact));
 
   return (
-    <aside className="glass-panel cyber-card cyber-frame neon-outline hidden h-fit w-full shrink-0 p-4 xl:sticky xl:top-6 xl:flex xl:flex-col xl:justify-between">
+    <aside className="glass-panel cyber-card cyber-frame neon-outline hidden h-fit w-full shrink-0 p-4 xl:sticky sticky-safe-top-6 xl:flex xl:flex-col xl:justify-between">
       <div className="space-y-5">
         <Link
           href="/dashboard"
