@@ -371,6 +371,10 @@ select {
   padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
 }
 
+.sticky-safe-top-4 {
+  top: max(1rem, calc(env(safe-area-inset-top, 0px) + 0.5rem));
+}
+
 :where(p, li, dd, dt, label, small, figcaption, blockquote) {
   color: rgb(var(--text-body));
 }

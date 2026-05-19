@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Sticky top-bar safe-area pass:
+  - added reusable `.sticky-safe-top-4` helper to keep sticky dashboard bars offset from top safe-area insets.
+  - applied this helper to all dashboard top-bar variants (live, loading, unavailable).
+  - improves top-edge breathing room on notched/mobile devices while preserving desktop sticky spacing.
 - Cross-surface microtext legibility pass:
   - raised remaining high-visibility `text-[10px]/text-[11px]` spots to `text-xs` across skill confidence chips, profile hero readout, dashboard shortcut hint, mobile quick-display controls, and settings theme/text active chips.
   - enlarged onboarding step index badges (`h-5 w-5`) while moving step numerals to `text-xs` for clearer progress visibility.
