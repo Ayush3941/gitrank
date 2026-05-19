@@ -435,7 +435,7 @@ export function ContributionsPageClient() {
                       lines={4}
                       minLengthForToggle={220}
                       className="mt-2 max-w-3xl"
-                      textClassName="break-anywhere text-sm text-slate-200/85"
+                      textClassName="break-anywhere text-sm text-muted"
                     />
                   </div>
                   <div className="neon-chip neon-chip-mythic inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-xs">
@@ -465,15 +465,15 @@ export function ContributionsPageClient() {
           />
           <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading repository impact lanes" />}>
             {repositories.length ? (
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              <ul role="list" className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 {repositories.map((repository) => (
-                  <div key={repository.fullName} className="render-opt-card neon-surface rounded-[1.4rem] border-cyan-300/28 px-4 py-3">
+                  <li key={repository.fullName} className="render-opt-card neon-surface rounded-[1.4rem] border-cyan-300/28 px-4 py-3">
                     <p className="break-anywhere text-sm font-medium text-white">{repository.fullName}</p>
-                    <p className="mt-1 text-xs text-slate-300">{repository.contributions} contributions</p>
+                    <p className="mt-1 text-xs text-muted">{repository.contributions} contributions</p>
                     <p className="mt-3 text-lg font-semibold text-cyan-200">{repository.totalXp} XP</p>
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ul>
             ) : (
               <SubsectionEmptyState
                 message="No repository contribution summary is available in this snapshot yet."
@@ -497,7 +497,7 @@ export function ContributionsPageClient() {
                 <h3 className="cyber-title text-sm font-medium text-fuchsia-200">Contribution timeline</h3>
                 {monthlyWindow.length ? (
                   <div className="space-y-3">
-                    <p className="text-xs text-slate-300">
+                    <p className="text-xs text-muted">
                       Showing latest {monthlyWindow.length} months to keep scan and render cost predictable.
                     </p>
                     {monthlyWindow.map((point) => (
@@ -530,7 +530,7 @@ export function ContributionsPageClient() {
                     {topHighlights.map((row) => (
                       <div key={row.id} className="render-opt-card neon-surface space-y-2 rounded-2xl px-3 py-3">
                         <p className="break-anywhere text-sm font-medium text-white">{row.title}</p>
-                        <p className="mt-1 break-anywhere text-xs text-slate-300">{row.owner}/{row.repo} #{row.number}</p>
+                        <p className="mt-1 break-anywhere text-xs text-muted">{row.owner}/{row.repo} #{row.number}</p>
                         <p className="mt-2 text-sm text-cyan-200">+{row.xpEarned} XP</p>
                         <div className="pt-1">
                           <Button asChild size="sm" variant="secondary">
@@ -574,7 +574,7 @@ export function ContributionsPageClient() {
                   />
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p role="status" aria-live="polite" aria-atomic="true" className="text-sm text-slate-300">
+                  <p role="status" aria-live="polite" aria-atomic="true" className="text-sm text-muted">
                     Showing {visibleRows.length} of {filteredRows.length} cards from the current evidence window.
                   </p>
                   {hasMoreRows ? (
@@ -614,7 +614,7 @@ export function ContributionsPageClient() {
 function ContributionSectionPlaceholder({ title }: { title: string }) {
   return (
     <GlowCard className="glass-panel cyber-card cyber-frame flex min-h-[11rem] items-center justify-center p-4">
-      <p className="text-sm text-slate-200/84">{title}</p>
+      <p className="text-sm text-muted">{title}</p>
     </GlowCard>
   );
 }
@@ -658,7 +658,7 @@ function Metric({
 }) {
   return (
     <div className="neon-metric rounded-[1.4rem] px-4 py-3">
-      <p className="text-xs font-medium text-slate-300">{label}</p>
+      <p className="text-xs font-medium text-muted">{label}</p>
       <p className="mt-2 flex items-center gap-2 text-xl font-semibold text-white">
         {value}
         {icon}

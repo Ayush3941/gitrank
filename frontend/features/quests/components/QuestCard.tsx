@@ -37,7 +37,7 @@ export function QuestCard({ quest }: { quest: Quest }) {
             text={quest.whyRecommended}
             lines={3}
             minLengthForToggle={170}
-            textClassName="break-anywhere text-sm leading-6 text-slate-200/76"
+            textClassName="break-anywhere text-sm leading-6 text-muted"
           />
         </div>
         <div className="neon-chip neon-chip-info rounded-3xl px-3 py-2 text-sm font-medium">
@@ -49,17 +49,21 @@ export function QuestCard({ quest }: { quest: Quest }) {
         <span>{quest.progress} / {quest.goal}</span>
         <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusTone}`}>{quest.status}</span>
       </div>
-      <div className="flex flex-wrap gap-2">
+      <ul role="list" className="flex flex-wrap gap-2">
         {quest.evidenceSignals.map((signal) => (
-          <span key={signal} className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
-            {signal}
-          </span>
+          <li key={signal}>
+            <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
+              {signal}
+            </span>
+          </li>
         ))}
-        <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs">
-          <Link2 className="h-3 w-3" />
-          {quest.linkedContributionIds.length} evidence PRs
-        </span>
-      </div>
+        <li>
+          <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs">
+            <Link2 className="h-3 w-3" />
+            {quest.linkedContributionIds.length} evidence PRs
+          </span>
+        </li>
+      </ul>
       {quest.rewardBadgeId ? (
         <div className="neon-chip neon-chip-warning inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm text-amber-100">
           <Gift className="h-3.5 w-3.5" />

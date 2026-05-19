@@ -296,7 +296,7 @@ export function BadgesPageClient() {
                     <h2 className="mt-3 text-2xl font-semibold text-white">
                       {abraInsights.data?.archetype ?? fallbackArchetype} progression
                     </h2>
-                    <p className="mt-2 max-w-3xl text-sm text-slate-200/84">
+                    <p className="mt-2 max-w-3xl text-sm text-muted">
                       {abraInsights.data?.identitySummary ||
                         "Badge narratives are running in deterministic fallback mode."}
                     </p>
@@ -329,7 +329,7 @@ export function BadgesPageClient() {
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <p className="text-lg font-semibold text-white">{nextUnlockTarget.name}</p>
-                        <p className="mt-1 text-sm text-slate-200/82">
+                        <p className="mt-1 text-sm text-muted">
                           {nextUnlockTarget.progress ?? 0}% complete • {nextUnlockTarget.rarity}
                         </p>
                       </div>
@@ -478,9 +478,9 @@ export function BadgesPageClient() {
           <p className="text-xs font-medium text-fuchsia-200">Locked / upcoming badges</p>
           <DeferUntilVisible fallback={<BadgeSectionPlaceholder title="Loading locked badge lanes" />}>
             {lockedBadges.length > 0 ? (
-              <div className="grid gap-3 md:grid-cols-3">
+              <ul role="list" className="grid gap-3 md:grid-cols-3">
                 {lockedBadges.map((badge) => (
-                  <div key={badge.id} className="render-opt-card neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4">
+                  <li key={badge.id} className="render-opt-card neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4">
                     <p className="text-xs font-medium text-fuchsia-200">{badge.rarity}</p>
                     <h3 className="mt-2 text-base font-semibold text-white">{badge.name}</h3>
                     <ExpandableText
@@ -488,13 +488,13 @@ export function BadgesPageClient() {
                       lines={3}
                       minLengthForToggle={120}
                       className="mt-2"
-                      textClassName="text-sm text-slate-300"
+                      textClassName="text-sm text-muted"
                       showMoreLabel="Expand condition"
                       showLessLabel="Collapse condition"
                     />
                     <div className="mt-3 space-y-1">
                       <Progress value={badge.progress ?? 0} />
-                      <p className="text-xs text-slate-300">{badge.progress ?? 0}% verified progress</p>
+                      <p className="text-xs text-muted">{badge.progress ?? 0}% verified progress</p>
                     </div>
                     <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                       <p className="text-xs text-cyan-100/88">
@@ -504,11 +504,11 @@ export function BadgesPageClient() {
                         <Link href={unlockRecoveryHref(badge.unlockCondition)}>Open lane</Link>
                       </Button>
                     </div>
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ul>
             ) : (
-              <div className="neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4 text-sm text-slate-300">
+              <div className="neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4 text-sm text-muted">
                 No locked badge definitions are currently returned by the backend profile snapshot.
               </div>
             )}
@@ -522,7 +522,7 @@ export function BadgesPageClient() {
 function BadgeSectionPlaceholder({ title }: { title: string }) {
   return (
     <GlowCard className="glass-panel cyber-card cyber-frame flex min-h-[11rem] items-center justify-center p-4">
-      <p className="text-sm text-slate-200/84">{title}</p>
+      <p className="text-sm text-muted">{title}</p>
     </GlowCard>
   );
 }
@@ -564,7 +564,7 @@ function BadgeMetric({
 }) {
   return (
     <div className="neon-metric rounded-[1.4rem] px-4 py-3">
-      <p className="text-xs font-medium text-slate-300">{label}</p>
+      <p className="text-xs font-medium text-muted">{label}</p>
       <p className="mt-2 flex items-center gap-2 text-xl font-semibold text-white">
         {value}
         {icon}

@@ -2,6 +2,11 @@
 
 ## 2026-05-19
 
+- Contributions/badges/quests consistency pass:
+  - normalized low-opacity lane copy in contributions, badges, and quests surfaces to shared readable text tokens.
+  - converted repeated repository, locked-badge, and quest evidence card groups to semantic list structures.
+  - updated lane placeholders and metric labels to use the same readable muted text baseline as the rest of dashboard routes.
+  - keeps lane behavior unchanged while improving cross-lane readability consistency and assistive-tech list traversal.
 - Leaderboard/profile readability + semantics pass:
   - normalized remaining low-opacity body copy on leaderboard and public-profile surfaces to shared readable text tokens.
   - converted repeated leaderboard season chips and profile/top-skill/repository/best-PR card groups to semantic list structures.
