@@ -48,10 +48,13 @@ export function StaleState({
   return (
     <GlowCard className="cyber-sheen flex flex-col gap-3 border border-amber-400/22 bg-amber-400/8 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-start gap-3">
-        <Clock3 className="mt-0.5 h-5 w-5 text-amber-100" />
+        <div className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-amber-300/35 bg-amber-400/14 px-2.5 py-1 text-sm font-semibold text-amber-100">
+          <Clock3 className="h-4 w-4" />
+          Stale snapshot
+        </div>
         <div className="space-y-1">
-          <p className="font-medium text-amber-50">{message}</p>
-          <p className="text-sm text-amber-50/75">
+          <p className="font-medium text-amber-100">{message}</p>
+          <p className="text-sm text-amber-100">
             The latest verified snapshot is still visible while a newer sync path is pending.
           </p>
           {verifiedDateTime ? (

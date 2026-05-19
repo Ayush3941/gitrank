@@ -39,20 +39,21 @@ export function EmptyState({
 
   return (
     <GlowCard className="cyber-sheen flex flex-col items-start gap-4 border-dashed border-primary/24">
-      <div className="hud-pill rounded-3xl p-3 text-primary">
-        <Sparkles className="h-5 w-5" />
+      <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/12 px-3 py-1.5 text-sm font-semibold text-primary">
+        <Sparkles className="h-4 w-4" />
+        No live data yet
       </div>
       <div className="space-y-2">
-        <h2 className="neon-title text-xl font-semibold">{title}</h2>
-        <p className="max-w-xl text-sm text-muted">{description}</p>
+        <h2 className="text-xl font-semibold text-white">{title}</h2>
+        <p className="max-w-xl text-sm text-slate-100">{description}</p>
       </div>
       {actionLabel && actionHref ? (
-        <Button asChild variant="secondary">
+        <Button asChild>
           <Link href={actionHref}>{actionLabel}</Link>
         </Button>
       ) : null}
       {actionLabel && !actionHref && onAction ? (
-        <Button variant="secondary" onClick={onAction}>
+        <Button onClick={onAction}>
           {actionLabel}
         </Button>
       ) : null}
