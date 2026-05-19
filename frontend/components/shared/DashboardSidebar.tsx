@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { dashboardNavItems } from "@/components/shared/dashboard-nav";
+import { GamificationQuickSwitcher } from "@/components/shared/GamificationQuickSwitcher";
 import { TextScaleQuickSwitcher } from "@/components/shared/TextScaleQuickSwitcher";
 import { ThemeQuickSwitcher } from "@/components/shared/ThemeQuickSwitcher";
 
@@ -82,6 +83,7 @@ export function DashboardSidebar() {
       </div>
       <div className="space-y-3">
         <div className="grid gap-2">
+          <GamificationQuickSwitcher compact className="w-full justify-start" />
           <ThemeQuickSwitcher compact className="w-full justify-start" />
           <TextScaleQuickSwitcher compact className="w-full justify-start" />
         </div>

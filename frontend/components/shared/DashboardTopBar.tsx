@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { AlertTriangle, ArrowUpRight, CheckCircle2, Info, Zap } from "lucide-react";
 import { DashboardQuickActions } from "@/components/shared/DashboardQuickActions";
 import { DashboardShortcutHelpDialog } from "@/components/shared/DashboardShortcutHelpDialog";
+import { GamificationQuickSwitcher } from "@/components/shared/GamificationQuickSwitcher";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
@@ -99,6 +100,7 @@ export function DashboardTopBar({
               Shortcuts
               <kbd className="hidden text-[11px] sm:inline">?</kbd>
             </Button>
+            <GamificationQuickSwitcher compact className="hidden md:inline-flex" />
             <ThemeQuickSwitcher compact className="hidden sm:inline-flex" />
             <TextScaleQuickSwitcher compact className="hidden sm:inline-flex" />
             <Link

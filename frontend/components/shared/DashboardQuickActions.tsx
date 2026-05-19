@@ -18,6 +18,7 @@ import { dashboardNavItems } from "@/components/shared/dashboard-nav";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { useDisplayShortcutsEnabled } from "@/hooks/use-display-shortcuts-enabled";
+import { useGamificationPreference } from "@/hooks/use-gamification-preference";
 import { useTextScalePreference } from "@/hooks/use-text-scale-preference";
 import { useThemePreference, type ThemePreference } from "@/hooks/use-theme-preference";
 import { cn } from "@/lib/cn";
@@ -46,6 +47,7 @@ export function DashboardQuickActions({
   const { enabled: displayShortcutsEnabled } = useDisplayShortcutsEnabled();
   const { theme, setTheme } = useThemePreference();
   const { textScale, setTextScale } = useTextScalePreference();
+  const { reducedGamification, setReducedGamification } = useGamificationPreference();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [highlightedIndex, setHighlightedIndex] = useState(0);
@@ -107,6 +109,22 @@ export function DashboardQuickActions({
       },
     };
 
+    const effectsAction: QuickActionItem = {
+      id: "effects:toggle",
+      group: "Display",
+      label: reducedGamification
+        ? "Use full visual effects"
+        : "Use reduced visual effects",
+      description:
+        "Toggle glow intensity, decorative overlays, and effect density for readability and performance.",
+      keywords: ["effects", "focus", "performance", "reduced", "glow", "overlay"],
+      icon: ShieldCheck,
+      shortcut: "Alt+Shift+G",
+      execute: () => {
+        setReducedGamification(!reducedGamification);
+      },
+    };
+
     const shortcutsAction: QuickActionItem = {
       id: "help:shortcuts",
       group: "Help",
@@ -124,12 +142,15 @@ export function DashboardQuickActions({
       profileAction,
       themeAction,
       textAction,
+      effectsAction,
       shortcutsAction,
     ];
   }, [
     onOpenShortcutsHelp,
     pathname,
+    reducedGamification,
     router,
+    setReducedGamification,
     setTextScale,
     setTheme,
     textScale,

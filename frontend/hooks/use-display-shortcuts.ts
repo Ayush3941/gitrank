@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useGamificationPreference } from "@/hooks/use-gamification-preference";
 import { useTextScalePreference } from "@/hooks/use-text-scale-preference";
 import { useThemePreference, type ThemePreference } from "@/hooks/use-theme-preference";
 
@@ -9,6 +10,7 @@ const THEME_ORDER: ThemePreference[] = ["neon", "midnight", "aurora", "high-cont
 export function useDisplayShortcutsStatus(enabled: boolean) {
   const { theme, setTheme } = useThemePreference();
   const { textScale, setTextScale } = useTextScalePreference();
+  const { reducedGamification, setReducedGamification } = useGamificationPreference();
   const [statusMessage, setStatusMessage] = useState("");
   const clearStatusTimeoutRef = useRef<number | null>(null);
   const queueStatusMessage = useCallback((message: string) => {
@@ -50,6 +52,16 @@ export function useDisplayShortcutsStatus(enabled: boolean) {
         queueStatusMessage(
           `Text size changed to ${nextTextScale === "large" ? "Large text" : "Default text"}.`,
         );
+        return;
+      }
+
+      if (key === "g") {
+        event.preventDefault();
+        const nextReducedState = !reducedGamification;
+        setReducedGamification(nextReducedState);
+        queueStatusMessage(
+          `Visual effects changed to ${nextReducedState ? "Reduced effects" : "Full effects"}.`,
+        );
       }
     }
 
@@ -63,7 +75,16 @@ export function useDisplayShortcutsStatus(enabled: boolean) {
         window.clearTimeout(clearStatusTimeoutRef.current);
       }
     };
-  }, [enabled, queueStatusMessage, setTextScale, setTheme, textScale, theme]);
+  }, [
+    enabled,
+    queueStatusMessage,
+    reducedGamification,
+    setReducedGamification,
+    setTextScale,
+    setTheme,
+    textScale,
+    theme,
+  ]);
 
   return statusMessage;
 }

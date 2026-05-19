@@ -600,6 +600,8 @@ export function SettingsPageClient() {
               </p>
               <p className="mt-2 text-xs leading-6 text-slate-200">
                 Keyboard shortcuts: <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> toggles theme, and <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd> toggles text size.
+                {" "}
+                <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd> toggles visual effects between full and reduced modes.
                 {" "}Use <kbd>?</kbd> on dashboard pages for the full shortcut reference.
               </p>
             </div>

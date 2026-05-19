@@ -49,6 +49,10 @@ const SHORTCUT_SECTIONS: Array<{
         keys: "Alt + Shift + L",
         action: "Toggle text size (default / large)",
       },
+      {
+        keys: "Alt + Shift + G",
+        action: "Toggle visual effects (full / reduced)",
+      },
     ],
   },
 ];

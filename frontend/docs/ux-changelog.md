@@ -2,6 +2,11 @@
 
 ## 2026-05-19
 
+- Visual-effects quick-control pass:
+  - added `GamificationQuickSwitcher` so users can switch between full and reduced visual effects from dashboard surfaces without opening Settings.
+  - wired the new control into sidebar and top-bar quick controls with an explicit `Alt+Shift+G` accelerator.
+  - extended keyboard-help and quick-action palette to include the effects toggle for consistent discoverability.
+  - added global display-shortcut handling for `Alt+Shift+G`, with live status announcements matching existing theme/text controls.
 - Constrained-network runtime fallback pass:
   - added runtime network constraint detection from `navigator.connection.saveData` and `effectiveType` (`slow-2g`/`2g`) inside `use-gamification-preference`.
   - now sets `html[data-network="constrained"]` so low-data render reductions apply even where `prefers-reduced-data` media query is unsupported.
