@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { formatRelativeDays } from "@/lib/formatters";
+import { syncRunStatusLabel } from "@/features/settings/lib/sync-run-status";
 
 export function SyncRunActivityPanel({
   runs,
@@ -40,7 +41,7 @@ export function SyncRunActivityPanel({
       failed: 0,
     };
     for (const run of runs) {
-      const status = runStatusLabel(run.status);
+      const status = syncRunStatusLabel(run.status);
       if (status === "Completed") {
         next.completed += 1;
       } else if (status === "Running") {
@@ -54,7 +55,7 @@ export function SyncRunActivityPanel({
   const filteredRuns = useMemo(() => {
     const term = deferredSearch.trim().toLowerCase();
     return runs.filter((run) => {
-      const normalizedStatus = runStatusLabel(run.status);
+      const normalizedStatus = syncRunStatusLabel(run.status);
       const statusMatch =
         deferredStatusFilter === "All" || normalizedStatus === deferredStatusFilter;
       if (!statusMatch) {
@@ -262,7 +263,7 @@ export function SyncRunActivityPanel({
 }
 
 function StatusChip({ status }: { status: string }) {
-  const normalized = runStatusLabel(status);
+  const normalized = syncRunStatusLabel(status);
   if (normalized === "Completed") {
     return (
       <span className="neon-chip neon-chip-success inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold">
@@ -293,32 +294,6 @@ function StatusChip({ status }: { status: string }) {
       {status || "Unknown"}
     </span>
   );
-}
-
-function runStatusLabel(status: string): "Completed" | "Failed" | "Running" | "Other" {
-  const normalized = status.trim().toLowerCase();
-  if (normalized === "completed") {
-    return "Completed";
-  }
-  if (
-    normalized === "failed" ||
-    normalized === "cancelled" ||
-    normalized === "canceled" ||
-    normalized === "timed_out" ||
-    normalized === "timeout"
-  ) {
-    return "Failed";
-  }
-  if (
-    normalized === "running" ||
-    normalized === "syncing" ||
-    normalized === "queued" ||
-    normalized === "pending" ||
-    normalized === "in_progress"
-  ) {
-    return "Running";
-  }
-  return "Other";
 }
 
 function runLabel(run: ApiSyncRunRecord): string {

@@ -155,6 +155,10 @@
     `pending`, and `in_progress` states so queue progress is surfaced clearly.
   - added explicit failure guidance copy when recent sync runs fail and no jobs
     are active, with direct link back to account settings recovery paths.
+  - centralized sync-run status classification in
+    `features/settings/lib/sync-run-status.ts` so UI chips and polling cadence
+    rely on one source of truth, with focused regression coverage in
+    `tests/sync-run-status.test.ts`.
 
 ## 2026-05-17
 
