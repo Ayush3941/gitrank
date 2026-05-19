@@ -92,6 +92,11 @@ func TestIsSkippableGitHubSyncError(t *testing.T) {
 			want: true,
 		},
 		{
+			name: "context canceled errors are skippable",
+			err:  context.Canceled,
+			want: true,
+		},
+		{
 			name: "client timeout errors are skippable",
 			err:  errors.New("Get \"https://api.github.com/repos/llvm/llvm-project/pulls/182707/reviews?per_page=20\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)"),
 			want: true,
@@ -155,6 +160,46 @@ func TestIsRecoverableUserSyncSelectionError(t *testing.T) {
 			t.Parallel()
 			if got := isRecoverableUserSyncSelectionError(test.err); got != test.want {
 				t.Fatalf("isRecoverableUserSyncSelectionError() = %v, want %v", got, test.want)
+			}
+		})
+	}
+}
+
+func TestBoundedUserPRSyncTimeout(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		cfg  config.App
+		want time.Duration
+	}{
+		{
+			name: "uses fallback when timeout is missing",
+			cfg:  config.App{},
+			want: defaultUserPRSyncTimeout,
+		},
+		{
+			name: "uses fallback floor when timeout is too short",
+			cfg: config.App{
+				GitHub: config.GitHub{RequestTimeout: 12 * time.Second},
+			},
+			want: defaultUserPRSyncTimeout,
+		},
+		{
+			name: "uses configured timeout when above floor",
+			cfg: config.App{
+				GitHub: config.GitHub{RequestTimeout: 90 * time.Second},
+			},
+			want: 90 * time.Second,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			if got := boundedUserPRSyncTimeout(test.cfg); got != test.want {
+				t.Fatalf("boundedUserPRSyncTimeout() = %s, want %s", got, test.want)
 			}
 		})
 	}

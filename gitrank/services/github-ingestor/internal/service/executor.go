@@ -25,6 +25,7 @@ const (
 	defaultUserRepositoryLimit       = 100
 	defaultAuthoredPRSearchLimit     = 100
 	defaultAuthoredPRSyncLimit       = 10
+	defaultUserPRSyncTimeout         = 45 * time.Second
 )
 
 var gitHubStatusCodePattern = regexp.MustCompile(`status (\d{3})`)
@@ -284,11 +285,13 @@ func (e *Executor) SyncUser(
 		if target.Repository == "" || target.Number <= 0 {
 			continue
 		}
-		child, err := runtime.SyncPullRequest(ctx, contracts.SyncRequest{
+		childCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), boundedUserPRSyncTimeout(e.cfg))
+		child, err := runtime.SyncPullRequest(childCtx, contracts.SyncRequest{
 			Mode:       "pull_request",
 			Repository: target.Repository,
 			Number:     target.Number,
 		}, actor, fmt.Sprintf("%s:authored-pr:%d", baseCorrelationID, index+1), time.Now().UTC())
+		cancel()
 		if err != nil {
 			response.Fetched["authored_pull_requests_skipped"]++
 			if !isSkippableGitHubSyncError(err) {
@@ -302,7 +305,8 @@ func (e *Executor) SyncUser(
 	}
 
 	finishedAt := time.Now().UTC()
-	_, err = e.store.WithTx(ctx, func(tx *TxStore) (PersistResult, error) {
+	persistCtx := context.WithoutCancel(ctx)
+	_, err = e.store.WithTx(persistCtx, func(tx *TxStore) (PersistResult, error) {
 		return aggregatePersisted, tx.InsertSyncRun(payloadSyncRunInput{
 			CorrelationID:          strings.TrimSpace(correlationID),
 			EventType:              "user",
@@ -1444,6 +1448,9 @@ func isSkippableGitHubTimeoutError(err error) bool {
 	if errors.Is(err, context.DeadlineExceeded) {
 		return true
 	}
+	if errors.Is(err, context.Canceled) {
+		return true
+	}
 
 	var netErr net.Error
 	if errors.As(err, &netErr) && netErr.Timeout() {
@@ -1452,7 +1459,21 @@ func isSkippableGitHubTimeoutError(err error) bool {
 
 	message := strings.ToLower(err.Error())
 	return strings.Contains(message, "context deadline exceeded") ||
-		strings.Contains(message, "client.timeout exceeded")
+		strings.Contains(message, "context canceled") ||
+		strings.Contains(message, "client.timeout exceeded") ||
+		strings.Contains(message, "timeout while awaiting headers") ||
+		strings.Contains(message, "timeout awaiting response headers")
+}
+
+func boundedUserPRSyncTimeout(cfg config.App) time.Duration {
+	timeout := cfg.GitHub.RequestTimeout
+	if timeout <= 0 {
+		return defaultUserPRSyncTimeout
+	}
+	if timeout < defaultUserPRSyncTimeout {
+		return defaultUserPRSyncTimeout
+	}
+	return timeout
 }
 
 func gitHubStatusCodeFromError(err error) (int, bool) {
