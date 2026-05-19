@@ -383,6 +383,31 @@ select {
   top: max(5rem, calc(env(safe-area-inset-top, 0px) + 1rem));
 }
 
+.dialog-safe-content {
+  max-height: min(
+    44rem,
+    calc(
+      100vh - max(2rem, calc(env(safe-area-inset-top, 0px) + 1rem)) - max(2rem, calc(env(safe-area-inset-bottom, 0px) + 1rem))
+    )
+  );
+}
+
+@supports (height: 100dvh) {
+  .dialog-safe-content {
+    max-height: min(
+      44rem,
+      calc(
+        100dvh - max(2rem, calc(env(safe-area-inset-top, 0px) + 1rem)) - max(2rem, calc(env(safe-area-inset-bottom, 0px) + 1rem))
+      )
+    );
+  }
+}
+
+.dialog-safe-close {
+  top: max(0.75rem, calc(env(safe-area-inset-top, 0px) + 0.25rem));
+  right: max(0.75rem, calc(env(safe-area-inset-right, 0px) + 0.25rem));
+}
+
 :where(p, li, dd, dt, label, small, figcaption, blockquote) {
   color: rgb(var(--text-body));
 }

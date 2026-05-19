@@ -19,13 +19,16 @@ export function DialogContent({
       <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-[radial-gradient(circle_at_top,rgba(34,226,255,0.08),rgba(0,0,0,0.9))]" />
       <DialogPrimitive.Content
         className={cn(
-          "glass-panel-strong cyber-card fixed top-1/2 left-1/2 z-50 max-h-[min(90vh,44rem)] w-[min(92vw,40rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto p-6 shadow-2xl",
+          "dialog-safe-content glass-panel-strong cyber-card fixed top-1/2 left-1/2 z-50 w-[min(92vw,40rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto p-6 shadow-2xl",
           className,
         )}
         {...props}
       >
         {children}
-        <DialogPrimitive.Close className="focus-ring neon-tile absolute top-4 right-4 rounded-full p-2 text-muted hover:text-foreground">
+        <DialogPrimitive.Close
+          aria-label="Close dialog"
+          className="dialog-safe-close focus-ring neon-tile absolute rounded-full p-2 text-muted hover:text-foreground"
+        >
           <X className="h-4 w-4" />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>

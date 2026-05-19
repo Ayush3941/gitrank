@@ -2,6 +2,14 @@
 
 ## 2026-05-19
 
+- Dialog safe-area resilience pass:
+  - completed safe-area-aware modal layout classes (`.dialog-safe-content`, `.dialog-safe-close`) used by shared `DialogContent`.
+  - dialog max-height now respects top/bottom insets and dynamic viewport height (`dvh` with `vh` fallback), reducing clipped content on mobile browser chrome changes.
+  - close control now respects right/top safe-area insets for notch and gesture-area devices.
+- Legacy dashboard-route alias pass:
+  - added top-level route aliases for `/contributions`, `/badges`, `/quests`, `/settings`, and `/leaderboard`.
+  - each alias now server-redirects to the dashboard namespace equivalent (`/dashboard/*`) so bookmarked or manually entered legacy paths no longer 404.
+  - improves navigation recovery without changing dashboard data contracts or auth flow.
 - Mobile shortcut metadata pass:
   - added `aria-keyshortcuts` to mobile quick-display controls (theme/text/effects) for parity with desktop quick-switcher controls.
   - keeps mobile behavior unchanged while improving assistive-technology awareness of available keyboard shortcuts.
