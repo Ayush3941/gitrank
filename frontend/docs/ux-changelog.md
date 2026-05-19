@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Dashboard nav formatting pass:
+  - simplified mobile bottom navigation by removing always-visible inline display toggles and replacing them with a single `Display controls` shortcut to Settings.
+  - tightened mobile tab label sizing/spacing for cleaner five-lane scan behavior and reduced footer clutter.
+  - improved active-lane visibility in desktop shells by adding lane icons to top-bar and sidebar status pills and showing the lane hint earlier (`lg` breakpoint).
 - Adaptive constrained-device mode pass:
   - expanded constrained-mode detection beyond network-only hints to include low device-memory, low CPU core count, and slow display update-rate signals.
   - surfaced the active constrained-mode reason in the shared `ConstrainedNetworkPill` (for example low-memory/low-CPU mode) so users understand why visual effects are reduced.

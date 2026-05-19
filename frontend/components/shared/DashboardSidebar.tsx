@@ -17,6 +17,7 @@ export function DashboardSidebar() {
   const isActive = (href: string, exact = false) =>
     exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
   const activeItem = dashboardNavItems.find((item) => isActive(item.href, item.exact));
+  const ActiveLaneIcon = activeItem?.icon;
 
   return (
     <aside className="glass-panel cyber-card cyber-frame neon-outline hidden h-fit w-full shrink-0 p-4 xl:sticky sticky-safe-top-6 xl:flex xl:flex-col xl:justify-between">
@@ -42,8 +43,9 @@ export function DashboardSidebar() {
           <p
             role="status"
             aria-live="polite"
-            className="inline-flex items-center rounded-full border border-primary/22 bg-primary/10 px-2.5 py-1 text-xs text-cyan-100/90"
+            className="inline-flex items-center gap-2 rounded-full border border-primary/22 bg-primary/10 px-2.5 py-1 text-xs text-cyan-100/90"
           >
+            {ActiveLaneIcon ? <ActiveLaneIcon className="h-3.5 w-3.5 text-primary" /> : null}
             {activeItem ? `Current lane: ${activeItem.label}` : "Dashboard navigation"}
           </p>
           <nav aria-labelledby="dashboard-sidebar-nav-label" className="space-y-2">

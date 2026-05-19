@@ -2,33 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Gauge, Palette, Type } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { dashboardNavItems } from "@/components/shared/dashboard-nav";
-import {
-  useGamificationPreference,
-  useNetworkConstraintPreference,
-} from "@/hooks/use-gamification-preference";
-import { useTextScalePreference } from "@/hooks/use-text-scale-preference";
-import { useThemePreference, type ThemePreference } from "@/hooks/use-theme-preference";
-
-const THEME_ORDER: ThemePreference[] = ["neon", "midnight", "aurora", "high-contrast"];
+import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 
 export function MobileNav() {
   const pathname = usePathname();
-  const { theme, setTheme } = useThemePreference();
-  const { textScale, setTextScale } = useTextScalePreference();
-  const { reducedGamification, setReducedGamification } = useGamificationPreference();
   const constrainedNetwork = useNetworkConstraintPreference();
   const isActive = (href: string, exact = false) =>
     exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
   const activeItem = dashboardNavItems.find((item) => isActive(item.href, item.exact));
-  const nextTheme = getNextTheme(theme);
-  const nextTextScale = textScale === "large" ? "default" : "large";
-  const nextReducedState = !reducedGamification;
-  const themeStateLabel = formatThemeState(theme);
-  const textStateLabel = textScale === "large" ? "Large" : "Default";
-  const effectsStateLabel = reducedGamification ? "Reduced" : "Full";
 
   return (
     <nav
@@ -38,10 +21,17 @@ export function MobileNav() {
       <p role="status" aria-live="polite" className="sr-only">
         {activeItem ? `Current lane: ${activeItem.label}` : "Dashboard navigation"}
       </p>
-      <div className="border-b border-primary/16 px-3 pb-1.5 pt-2">
-        <p className="text-xs text-cyan-100/90">
+      <div className="flex items-center justify-between gap-2 border-b border-primary/16 px-3 pb-1.5 pt-2">
+        <p className="min-w-0 text-xs text-cyan-100/90">
           {activeItem ? `Current lane: ${activeItem.label}` : "Dashboard navigation"}
         </p>
+        <Link
+          href="/dashboard/settings#settings-display"
+          prefetch={!constrainedNetwork}
+          className="focus-ring inline-flex min-h-8 items-center justify-center border border-primary/20 bg-primary/8 px-2 text-[11px] font-semibold text-cyan-100 hover:border-primary/30 hover:text-white"
+        >
+          Display controls
+        </Link>
       </div>
       <ul role="list" className="grid grid-cols-5 gap-1 p-1.5">
         {dashboardNavItems.map((item) => {
@@ -56,7 +46,7 @@ export function MobileNav() {
                 aria-label={item.label}
                 title={item.label}
                 className={cn(
-                  "focus-ring relative flex min-h-14 flex-col items-center justify-center gap-1 border px-1 py-2 text-xs leading-tight font-semibold",
+                  "focus-ring relative flex min-h-14 flex-col items-center justify-center gap-1 border px-1 py-1.5 text-xs leading-tight font-semibold",
                   active
                     ? "border-primary/42 bg-primary/14 text-white shadow-[0_0_14px_rgb(34_226_255_/_0.14)]"
                     : "border-transparent text-slate-100 hover:border-primary/22 hover:bg-primary/8 hover:text-white",
@@ -69,77 +59,13 @@ export function MobileNav() {
                   )}
                 />
                 <Icon className={cn("h-4 w-4", active ? "text-primary" : "text-slate-200")} />
-                <span className="max-w-full break-anywhere text-center leading-4">{item.mobileLabel}</span>
+                <span className="max-w-full text-center text-[11px] leading-4">{item.mobileLabel}</span>
                 <span className="sr-only">{item.hint}</span>
               </Link>
             </li>
           );
         })}
       </ul>
-      <div className="border-t border-primary/18 px-1.5 pb-1.5 pt-1">
-        <p className="px-1 pb-1 text-xs text-cyan-100/80">Quick display controls</p>
-        <div className="grid grid-cols-3 gap-1">
-          <button
-            type="button"
-            onClick={() => setTheme(nextTheme)}
-            className="focus-ring inline-flex min-h-11 flex-col items-center justify-center gap-0.5 border border-primary/24 bg-primary/8 px-2 py-1.5 text-xs font-semibold text-slate-100"
-            aria-label={`Theme ${theme}. Switch to ${nextTheme}. Shortcut Alt Shift T.`}
-            aria-keyshortcuts="Alt+Shift+T"
-            title={`Theme: ${theme} → ${nextTheme}`}
-          >
-            <Palette className="h-3.5 w-3.5 text-primary" />
-            <span>Theme</span>
-            <span className="text-[10px] font-medium text-cyan-100/88">{themeStateLabel}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setTextScale(nextTextScale)}
-            className={cn(
-              "focus-ring inline-flex min-h-11 flex-col items-center justify-center gap-0.5 border px-2 py-1.5 text-xs font-semibold",
-              textScale === "large"
-                ? "border-primary/42 bg-primary/14 text-white"
-                : "border-primary/24 bg-primary/8 text-slate-100",
-            )}
-            aria-label={`Text size ${textScale}. Switch to ${nextTextScale}. Shortcut Alt Shift L.`}
-            aria-keyshortcuts="Alt+Shift+L"
-            title={`Text size: ${textScale} → ${nextTextScale}`}
-          >
-            <Type className="h-3.5 w-3.5 text-primary" />
-            <span>Text</span>
-            <span className="text-[10px] font-medium text-cyan-100/88">{textStateLabel}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setReducedGamification(nextReducedState)}
-            className={cn(
-              "focus-ring inline-flex min-h-11 flex-col items-center justify-center gap-0.5 border px-2 py-1.5 text-xs font-semibold",
-              reducedGamification
-                ? "border-primary/42 bg-primary/14 text-white"
-                : "border-primary/24 bg-primary/8 text-slate-100",
-            )}
-            aria-label={`Effects ${reducedGamification ? "reduced" : "full"}. Switch to ${nextReducedState ? "reduced" : "full"}. Shortcut Alt Shift G.`}
-            aria-keyshortcuts="Alt+Shift+G"
-            title={`Effects: ${reducedGamification ? "reduced" : "full"} → ${nextReducedState ? "reduced" : "full"}`}
-          >
-            <Gauge className="h-3.5 w-3.5 text-primary" />
-            <span>Effects</span>
-            <span className="text-[10px] font-medium text-cyan-100/88">{effectsStateLabel}</span>
-          </button>
-        </div>
-      </div>
     </nav>
   );
-}
-
-function getNextTheme(current: ThemePreference): ThemePreference {
-  const index = THEME_ORDER.indexOf(current);
-  const safeIndex = index >= 0 ? index : 0;
-  return THEME_ORDER[(safeIndex + 1) % THEME_ORDER.length];
-}
-
-function formatThemeState(theme: ThemePreference): string {
-  if (theme === "high-contrast") {
-    return "High";
-  }
-  return theme.slice(0, 1).toUpperCase() + theme.slice(1);
 }

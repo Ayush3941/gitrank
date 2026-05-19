@@ -38,6 +38,7 @@ export function DashboardTopBar({
     dashboardNavItems.find((item) =>
       item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`),
     ) ?? dashboardNavItems[0];
+  const ActiveLaneIcon = activeLane.icon;
   const autoSyncToneClass =
     autoSyncNote?.tone === "success"
       ? "neon-chip neon-chip-success border-emerald-300/30 text-emerald-100"
@@ -82,11 +83,12 @@ export function DashboardTopBar({
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap items-center gap-3">
             <div className="hud-pill inline-flex max-w-full items-center gap-2 rounded-full px-3 py-1.5 text-xs text-cyan-100">
+              <ActiveLaneIcon className="h-3.5 w-3.5 text-primary" />
               <span className="font-semibold text-white">{activeLane.label}</span>
-              <span aria-hidden="true" className="hidden text-cyan-100/85 xl:inline">
+              <span aria-hidden="true" className="hidden text-cyan-100/85 lg:inline">
                 |
               </span>
-              <span className="hidden xl:inline">{activeLane.hint}</span>
+              <span className="hidden max-w-[24rem] truncate lg:inline">{activeLane.hint}</span>
             </div>
             <SyncStatusPill status={user.syncStatus} />
             <RankBadge rank={user.level.rankTier} />
