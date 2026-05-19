@@ -119,6 +119,11 @@
 - Query devtools production-load trim:
   - switched React Query devtools to dynamic client loading gated to non-production
     environments so production sessions avoid shipping and mounting devtools code.
+- Auto-sync retry resilience refinement:
+  - dashboard auto-sync now resets retry counters on sync-state transitions and
+    allows cool-down-based retry recovery after repeated transient failures
+  - prevents long-lived sessions from getting stuck after one burst of sync
+    timeouts while still rate-limiting repeated attempts.
 
 ## 2026-05-17
 

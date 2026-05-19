@@ -15,12 +15,14 @@ import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 const AUTO_SYNC_RETRY_INTERVAL_MS = 90_000;
 const AUTO_SYNC_STALE_AGE_MS = 6 * 60 * 60 * 1000;
 const AUTO_SYNC_MAX_ATTEMPTS_PER_MOUNT = 3;
+const AUTO_SYNC_ATTEMPT_RECOVERY_COOLDOWN_MS = 10 * 60 * 1000;
 
 export function DashboardTopBarContainer() {
   const { data, isError, isLoading } = useMyProfile();
   const { mutate: runUserSync, isPending: isUserSyncPending } = useRunUserSync();
   const autoSyncLastAttempt = useRef(0);
   const autoSyncAttempts = useRef(0);
+  const lastObservedSyncState = useRef<string | null>(null);
   const [autoSyncOutcome, setAutoSyncOutcome] = useState<AutoSyncNote | null>(null);
   useAccountGamificationPreference(data);
 
@@ -29,6 +31,10 @@ export function DashboardTopBarContainer() {
       return;
     }
     const syncState = data.user.syncStatus;
+    if (lastObservedSyncState.current !== syncState.state) {
+      lastObservedSyncState.current = syncState.state;
+      autoSyncAttempts.current = 0;
+    }
     const now = Date.now();
     const lastSyncedAt = Date.parse(syncState.lastSyncedAt ?? "");
     const syncAgeMs = Number.isNaN(lastSyncedAt) ? Number.POSITIVE_INFINITY : now - lastSyncedAt;
@@ -46,7 +52,11 @@ export function DashboardTopBarContainer() {
       return;
     }
     if (autoSyncAttempts.current >= AUTO_SYNC_MAX_ATTEMPTS_PER_MOUNT) {
-      return;
+      if (now - autoSyncLastAttempt.current >= AUTO_SYNC_ATTEMPT_RECOVERY_COOLDOWN_MS) {
+        autoSyncAttempts.current = 0;
+      } else {
+        return;
+      }
     }
     if (now - autoSyncLastAttempt.current < AUTO_SYNC_RETRY_INTERVAL_MS) {
       return;
