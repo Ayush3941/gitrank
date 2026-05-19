@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { CalendarClock, TrendingDown, TrendingUp, Trophy } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Progress } from "@/components/ui/progress";
+import { formatDate, formatTimeUntil } from "@/lib/formatters";
 import type { UserProfile } from "@/types/gitrank";
 
 export function CurrentLeagueCard({ user }: { user: UserProfile }) {
@@ -58,6 +59,9 @@ export function CurrentLeagueCard({ user }: { user: UserProfile }) {
           <p className="text-xs leading-5 text-muted">{user.rankProgress.season.promotionRule}</p>
           <p className="text-xs leading-5 text-muted">{user.rankProgress.season.resetRule}</p>
         </div>
+        <p className="mt-3 text-xs text-slate-200/84">
+          Season end: {formatDate(user.rankProgress.season.endsAt)} • {formatTimeUntil(user.rankProgress.season.endsAt)}
+        </p>
       </div>
       <div className="flex flex-wrap gap-2">
         {user.rankProgress.evidenceSignals.map((signal) => (

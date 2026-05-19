@@ -3,6 +3,7 @@ import { ArrowDownRight, ArrowUpRight, CalendarClock, Flame, ShieldCheck } from 
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { RankBadge } from "@/components/shared/RankBadge";
+import { formatDate, formatTimeUntil } from "@/lib/formatters";
 import type { LeaderboardSnapshot } from "@/types/gitrank";
 
 export function LeaderboardArena({ snapshot }: { snapshot: LeaderboardSnapshot }) {
@@ -35,6 +36,14 @@ export function LeaderboardArena({ snapshot }: { snapshot: LeaderboardSnapshot }
         <div className="mt-5 grid gap-3 md:grid-cols-2">
           <Rule icon={<Flame className="h-4 w-4" />} label="Promotion" value={snapshot.season.promotionRule} />
           <Rule icon={<ShieldCheck className="h-4 w-4" />} label="Reset" value={snapshot.season.resetRule} />
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs font-semibold">
+            Season ends {formatDate(snapshot.season.endsAt)}
+          </span>
+          <span className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
+            {formatTimeUntil(snapshot.season.endsAt)}
+          </span>
         </div>
       </GlowCard>
       {rows.map((row) => {

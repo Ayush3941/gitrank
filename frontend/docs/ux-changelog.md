@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Season urgency framing pass:
+  - added shared `formatTimeUntil()` formatter for stable time-remaining copy without live ticking animations.
+  - surfaced season end date + remaining window on dashboard `CurrentLeagueCard` and leaderboard arena hero cards.
+  - improves progression clarity and urgency framing with deterministic backend season metadata (`endsAt`) only.
 - Coarse-pointer readability and performance pass:
   - added a dedicated `@media (any-pointer: coarse)` surface fallback that disables `backdrop-filter` on glass/neon card families for touch-first devices.
   - increased mobile surface opacity and simplified shadow stacks to preserve text contrast over the locked background while reducing scroll jank risk from layered blur effects.
