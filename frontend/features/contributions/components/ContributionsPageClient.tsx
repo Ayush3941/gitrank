@@ -20,6 +20,7 @@ import { ContributionFilters } from "@/features/contributions/components/Contrib
 import { ContributionList } from "@/features/contributions/components/ContributionList";
 import { useContributions } from "@/hooks/use-contributions";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
+import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { Button } from "@/components/ui/button";
 import {
   deriveDeterministicArchetype,
@@ -65,6 +66,11 @@ const CONTRIBUTION_SECTION_IDS = CONTRIBUTION_SECTION_ITEMS.map(
   (section) => section.id,
 ) as ContributionSectionID[];
 const CONTRIBUTION_DEFAULT_SECTION: ContributionSectionID = "contributions-filters";
+const CONTRIBUTION_CARD_PAGE_SIZE_DEFAULT = 24;
+const CONTRIBUTION_CARD_PAGE_SIZE_CONSTRAINED = 12;
+const CONTRIBUTION_TIMELINE_MONTH_WINDOW_DEFAULT = 12;
+const CONTRIBUTION_TIMELINE_MONTH_WINDOW_CONSTRAINED = 8;
+const ABRA_CONTRIBUTION_SAMPLE_LIMIT = 24;
 
 export function ContributionsPageClient() {
   const [filter, setFilter] = useState("All");
@@ -75,6 +81,14 @@ export function ContributionsPageClient() {
   const deferredFilter = useDeferredValue(filter);
   const deferredSearch = useDeferredValue(search);
   const deferredSort = useDeferredValue(sort);
+  const constrainedNetwork = useNetworkConstraintPreference();
+  const cardPageSize = constrainedNetwork
+    ? CONTRIBUTION_CARD_PAGE_SIZE_CONSTRAINED
+    : CONTRIBUTION_CARD_PAGE_SIZE_DEFAULT;
+  const timelineMonthWindow = constrainedNetwork
+    ? CONTRIBUTION_TIMELINE_MONTH_WINDOW_CONSTRAINED
+    : CONTRIBUTION_TIMELINE_MONTH_WINDOW_DEFAULT;
+  const [visibleCardCount, setVisibleCardCount] = useState(CONTRIBUTION_CARD_PAGE_SIZE_DEFAULT);
   const { data, isLoading, isError, isFetching, refetch } = useContributions({
     filter: filterMap[deferredFilter],
     search: deferredSearch,
@@ -82,6 +96,11 @@ export function ContributionsPageClient() {
   });
   const profile = data?.profile;
   const filteredRows = useMemo(() => data?.rows ?? [], [data?.rows]);
+  const visibleRows = useMemo(
+    () => filteredRows.slice(0, visibleCardCount),
+    [filteredRows, visibleCardCount],
+  );
+  const hasMoreRows = filteredRows.length > visibleRows.length;
   const isFiltering =
     deferredFilter !== filter || deferredSearch !== search || deferredSort !== sort;
   const canReset = filter !== "All" || search.trim().length > 0 || sort !== "Newest";
@@ -105,12 +124,20 @@ export function ContributionsPageClient() {
     () => monthTimeline(profile?.user.contributions ?? []),
     [profile?.user.contributions],
   );
+  const monthlyWindow = useMemo(
+    () => monthly.slice(-timelineMonthWindow),
+    [monthly, timelineMonthWindow],
+  );
   const topHighlights = useMemo(
     () =>
       [...(profile?.user.contributions ?? [])]
         .sort((left, right) => right.xpEarned - left.xpEarned)
         .slice(0, 3),
     [profile?.user.contributions],
+  );
+  const abraContributionSample = useMemo(
+    () => filteredRows.slice(0, ABRA_CONTRIBUTION_SAMPLE_LIMIT),
+    [filteredRows],
   );
   const uniqueDays = useMemo(
     () => uniqueContributionDayCount(profile?.user.contributions ?? []),
@@ -125,7 +152,7 @@ export function ContributionsPageClient() {
       !shouldRequestAbraInsights({
         showAiSummaries: profile.user.privacy.showAiSummaries !== false,
         mergedPrCount: profile.user.mergedPrCount,
-        contributionCount: filteredRows.length,
+        contributionCount: abraContributionSample.length,
       })
     ) {
       return null;
@@ -144,7 +171,7 @@ export function ContributionsPageClient() {
         badgeCount: profile.user.badges.filter((badge) => badge.unlocked).length,
         streakDays: streak.currentStreakDays,
       },
-      contributions: filteredRows.map((row) => ({
+      contributions: abraContributionSample.map((row) => ({
         id: row.id,
         title: row.title,
         owner: row.owner,
@@ -169,7 +196,7 @@ export function ContributionsPageClient() {
         evidencePrIds: badge.evidencePrIds,
       })),
     };
-  }, [filteredRows, profile, repositories.length, streak.currentStreakDays]);
+  }, [abraContributionSample, profile, repositories.length, streak.currentStreakDays]);
 
   const abraInsights = useAbraInsights(abraPayload);
   const fallbackArchetype = useMemo(
@@ -179,7 +206,7 @@ export function ContributionsPageClient() {
         : "Systems Builder",
     [profile],
   );
-  const maxMonthlyXp = Math.max(1, ...monthly.map((point) => point.xp));
+  const maxMonthlyXp = Math.max(1, ...monthlyWindow.map((point) => point.xp));
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -229,15 +256,24 @@ export function ContributionsPageClient() {
   }, []);
 
   function handleFilterChange(next: string) {
-    startTransition(() => setFilter(next));
+    startTransition(() => {
+      setFilter(next);
+      setVisibleCardCount(cardPageSize);
+    });
   }
 
   function handleSearchChange(next: string) {
-    startTransition(() => setSearch(next));
+    startTransition(() => {
+      setSearch(next);
+      setVisibleCardCount(cardPageSize);
+    });
   }
 
   function handleSortChange(next: "Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact") {
-    startTransition(() => setSort(next));
+    startTransition(() => {
+      setSort(next);
+      setVisibleCardCount(cardPageSize);
+    });
   }
 
   function handleResetFilters() {
@@ -245,19 +281,29 @@ export function ContributionsPageClient() {
       setFilter("All");
       setSearch("");
       setSort("Newest");
+      setVisibleCardCount(cardPageSize);
     });
   }
 
   function handleClearCategoryFilter() {
-    startTransition(() => setFilter("All"));
+    startTransition(() => {
+      setFilter("All");
+      setVisibleCardCount(cardPageSize);
+    });
   }
 
   function handleClearSearchFilter() {
-    startTransition(() => setSearch(""));
+    startTransition(() => {
+      setSearch("");
+      setVisibleCardCount(cardPageSize);
+    });
   }
 
   function handleClearSortFilter() {
-    startTransition(() => setSort("Newest"));
+    startTransition(() => {
+      setSort("Newest");
+      setVisibleCardCount(cardPageSize);
+    });
   }
 
   return (
@@ -447,9 +493,12 @@ export function ContributionsPageClient() {
             <div className="grid gap-4 xl:grid-cols-[1.2fr,0.8fr]">
               <GlowCard className="space-y-4 border border-fuchsia-400/20 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/30">
                 <h3 className="cyber-title text-sm font-medium text-fuchsia-200">Contribution timeline</h3>
-                {monthly.length ? (
+                {monthlyWindow.length ? (
                   <div className="space-y-3">
-                    {monthly.map((point) => (
+                    <p className="text-xs text-slate-300">
+                      Showing latest {monthlyWindow.length} months to keep scan and render cost predictable.
+                    </p>
+                    {monthlyWindow.map((point) => (
                       <div key={point.month} className="space-y-1">
                         <div className="flex items-center justify-between text-xs text-slate-200">
                           <span>{point.month}</span>
@@ -512,11 +561,33 @@ export function ContributionsPageClient() {
           />
           <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading achievement card lane" />}>
             {filteredRows.length ? (
-              <ContributionList
-                items={filteredRows}
-                narratives={abraInsights.data?.contributionNarratives}
-                isBusy={isFiltering}
-              />
+              <div className="space-y-4">
+                <ContributionList
+                  items={visibleRows}
+                  narratives={abraInsights.data?.contributionNarratives}
+                  isBusy={isFiltering}
+                />
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-sm text-slate-300">
+                    Showing {visibleRows.length} of {filteredRows.length} cards from the current evidence window.
+                  </p>
+                  {hasMoreRows ? (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => {
+                        startTransition(() => {
+                          setVisibleCardCount((current) =>
+                            Math.min(filteredRows.length, current + cardPageSize),
+                          );
+                        });
+                      }}
+                    >
+                      Show more cards
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
             ) : (
               <SubsectionEmptyState
                 message="No contribution cards match this filter set yet. Reset filters or widen the PR evidence window."
