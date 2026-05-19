@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AlertTriangle, ArrowUpRight, CheckCircle2, Info, Zap } from "lucide-react";
 import { DashboardQuickActions } from "@/components/shared/DashboardQuickActions";
@@ -11,6 +12,7 @@ import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
 import { TextScaleQuickSwitcher } from "@/components/shared/TextScaleQuickSwitcher";
 import { ThemeQuickSwitcher } from "@/components/shared/ThemeQuickSwitcher";
+import { dashboardNavItems } from "@/components/shared/dashboard-nav";
 import { Button } from "@/components/ui/button";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import type { UserProfile } from "@/types/gitrank";
@@ -29,8 +31,13 @@ export function DashboardTopBar({
   autoSyncNote?: AutoSyncNote | null;
   showQuickActions?: boolean;
 }) {
+  const pathname = usePathname();
   const [shortcutHelpOpen, setShortcutHelpOpen] = useState(false);
   const constrainedNetwork = useNetworkConstraintPreference();
+  const activeLane =
+    dashboardNavItems.find((item) =>
+      item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`),
+    ) ?? dashboardNavItems[0];
   const autoSyncToneClass =
     autoSyncNote?.tone === "success"
       ? "neon-chip neon-chip-success border-emerald-300/30 text-emerald-100"
@@ -74,6 +81,13 @@ export function DashboardTopBar({
       <div className="glass-panel cyber-card cyber-frame sticky sticky-safe-top-4 z-30 mb-6 px-5 py-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap items-center gap-3">
+            <div className="hud-pill inline-flex max-w-full items-center gap-2 rounded-full px-3 py-1.5 text-xs text-cyan-100">
+              <span className="font-semibold text-white">{activeLane.label}</span>
+              <span aria-hidden="true" className="hidden text-cyan-100/85 xl:inline">
+                |
+              </span>
+              <span className="hidden xl:inline">{activeLane.hint}</span>
+            </div>
             <SyncStatusPill status={user.syncStatus} />
             <RankBadge rank={user.level.rankTier} />
             <div className="hud-pill inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs text-foreground">
@@ -104,9 +118,9 @@ export function DashboardTopBar({
               Shortcuts
               <kbd className="hidden text-xs sm:inline">?</kbd>
             </Button>
-            <GamificationQuickSwitcher compact className="hidden md:inline-flex" />
-            <ThemeQuickSwitcher compact className="hidden sm:inline-flex" />
-            <TextScaleQuickSwitcher compact className="hidden sm:inline-flex" />
+            <GamificationQuickSwitcher compact className="hidden 2xl:inline-flex" />
+            <ThemeQuickSwitcher compact className="hidden 2xl:inline-flex" />
+            <TextScaleQuickSwitcher compact className="hidden 2xl:inline-flex" />
             <Link
               href={`/u/${user.username}`}
               prefetch={!constrainedNetwork}

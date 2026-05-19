@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Dashboard top-bar wayfinding pass:
+  - added a visible current-lane context chip in the top bar (`Dashboard`, `Contributions`, `Badges`, `Quests`, `Settings`) so route context stays obvious when the sidebar is off-screen.
+  - reduced top-bar control crowding by moving display toggles (effects/theme/text) to very wide breakpoints only, while preserving quick controls in sidebar/mobile nav.
+  - keeps primary top-bar actions focused on sync status, rank/XP, quick actions, and profile/share tasks.
 - Dashboard navigation formatting pass:
   - refined sidebar lane hierarchy with clearer spacing rhythm between lane groups and individual links.
   - surfaced current lane state as a visible status chip in sidebar and mobile nav headers for faster orientation.
