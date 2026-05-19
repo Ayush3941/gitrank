@@ -9,6 +9,11 @@
     stronger active-state contrast and cleaner section hierarchy
   - tightened mobile bottom-nav typography and active signal while keeping
     compact five-lane layout and accessible hidden lane descriptions.
+- Shell render stability pass:
+  - removed `next/dynamic` + `ssr:false` wrappers from root query provider and
+    dashboard topbar helpers inside client-only modules
+  - eliminated root-route server render bailout traces tied to `next/dynamic`,
+    improving first paint consistency on local dev startup.
 - Frontend production build hardening pass:
   - fixed typed preference-store inference for theme/text hooks to keep strict unions (`neon|midnight|aurora|high-contrast`, `default|large`) across render and action surfaces
   - fixed shared section-jump typing to support strongly typed route section IDs via generic-safe `SectionJumpNav`
