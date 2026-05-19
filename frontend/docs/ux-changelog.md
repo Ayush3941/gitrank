@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Viewport safe-area enablement pass:
+  - extended root `viewport` metadata with `viewportFit: "cover"` so `env(safe-area-inset-*)` spacing rules can fully engage on notched mobile devices.
+  - set `interactiveWidget: "resizes-visual"` to reduce keyboard-overlay surprises on mobile form surfaces.
+  - keeps existing theme-color/copy styling unchanged while improving layout behavior around browser/device UI chrome.
 - Quick-actions readability pass:
   - increased quick-action trigger/modal microtext from `text-[11px]` to `text-xs` for shortcut badges, group labels, and command hints.
   - improves scan speed in the keyboard command surface without changing command routing, ranking, or action behavior.
