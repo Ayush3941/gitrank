@@ -1,10 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect } from "react";
-import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
-import { GlowCard } from "@/components/shared/GlowCard";
-import { Button } from "@/components/ui/button";
+import { RouteErrorCard } from "@/components/shared/RouteErrorCard";
 
 type RouteErrorProps = {
   error: Error & { digest?: string };
@@ -17,43 +13,21 @@ export default function PublicPRReportRouteError({
   reset,
   unstable_retry,
 }: RouteErrorProps) {
-  useEffect(() => {
-    void emitAnalyticsEvent({
-      eventName: "error_state.viewed",
-      source: "frontend",
-      target: "public-pr-report:route-error",
-      status: "failure",
-    });
-  }, []);
-
-  function handleRetry() {
-    if (typeof unstable_retry === "function") {
-      unstable_retry();
-      return;
-    }
-    reset();
-  }
-
   return (
-    <GlowCard strong className="space-y-4">
-      <p className="text-xs font-medium text-danger">PR report error</p>
-      <h1 className="text-3xl font-semibold text-white">Battle report view failed to render</h1>
-      <p className="max-w-2xl text-sm text-slate-200/84">
-        Retry this report route now. If the issue continues, return to contribution drill-down
-        and refresh sync settings before opening the report again.
-      </p>
-      <div className="flex flex-wrap gap-3">
-        <Button variant="secondary" onClick={handleRetry}>
-          Retry report route
-        </Button>
-        <Button asChild variant="secondary">
-          <Link href="/dashboard/contributions">Open contributions</Link>
-        </Button>
-        <Button asChild>
-          <Link href="/dashboard/settings">Open settings</Link>
-        </Button>
-      </div>
-      {error.digest ? <p className="text-xs text-slate-400">Error digest: {error.digest}</p> : null}
-    </GlowCard>
+    <RouteErrorCard
+      centered
+      eyebrow="PR report route error"
+      title="Battle report view failed to render"
+      description="Retry this report route now. If the issue continues, return to contribution drill-down and refresh sync settings before opening the report again."
+      retryLabel="Retry report route"
+      actions={[
+        { label: "Open contributions", href: "/dashboard/contributions", variant: "secondary" },
+        { label: "Open settings", href: "/dashboard/settings", variant: "default" },
+      ]}
+      analyticsTarget="public-pr-report:route-error"
+      errorDigest={error.digest}
+      reset={reset}
+      unstableRetry={unstable_retry}
+    />
   );
 }

@@ -3,6 +3,7 @@ import { RouteFallbackCard } from "@/components/shared/RouteFallbackCard";
 export default function DashboardNotFound() {
   return (
     <RouteFallbackCard
+      centered
       eyebrow="Dashboard route missing"
       title="This dashboard page does not exist"
       description="The requested dashboard route is unavailable in this build. Use the core dashboard routes below."

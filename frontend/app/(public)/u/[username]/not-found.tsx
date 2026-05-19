@@ -3,6 +3,7 @@ import { RouteFallbackCard } from "@/components/shared/RouteFallbackCard";
 export default function PublicProfileNotFound() {
   return (
     <RouteFallbackCard
+      centered
       eyebrow="Public profile not found"
       title="This contributor profile is unavailable"
       description="The requested profile path does not exist in the current GitRank snapshot. Try the dashboard profile view or return to the main landing route."

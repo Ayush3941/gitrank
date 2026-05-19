@@ -1,10 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect } from "react";
-import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
-import { GlowCard } from "@/components/shared/GlowCard";
-import { Button } from "@/components/ui/button";
+import { RouteErrorCard } from "@/components/shared/RouteErrorCard";
 
 type RouteErrorProps = {
   error: Error & { digest?: string };
@@ -17,43 +13,21 @@ export default function PublicProfileRouteError({
   reset,
   unstable_retry,
 }: RouteErrorProps) {
-  useEffect(() => {
-    void emitAnalyticsEvent({
-      eventName: "error_state.viewed",
-      source: "frontend",
-      target: "public-profile:route-error",
-      status: "failure",
-    });
-  }, []);
-
-  function handleRetry() {
-    if (typeof unstable_retry === "function") {
-      unstable_retry();
-      return;
-    }
-    reset();
-  }
-
   return (
-    <GlowCard strong className="space-y-4">
-      <p className="text-xs font-medium text-danger">Public profile error</p>
-      <h1 className="text-3xl font-semibold text-white">Profile view failed to render</h1>
-      <p className="max-w-2xl text-sm text-slate-200/84">
-        Retry this profile route now. If it still fails, return to dashboard sync settings
-        and refresh the account snapshot.
-      </p>
-      <div className="flex flex-wrap gap-3">
-        <Button variant="secondary" onClick={handleRetry}>
-          Retry profile route
-        </Button>
-        <Button asChild variant="secondary">
-          <Link href="/dashboard/settings">Open settings</Link>
-        </Button>
-        <Button asChild>
-          <Link href="/dashboard">Open dashboard</Link>
-        </Button>
-      </div>
-      {error.digest ? <p className="text-xs text-slate-400">Error digest: {error.digest}</p> : null}
-    </GlowCard>
+    <RouteErrorCard
+      centered
+      eyebrow="Public profile route error"
+      title="Profile view failed to render"
+      description="Retry this profile route now. If it still fails, return to dashboard sync settings and refresh the account snapshot."
+      retryLabel="Retry profile route"
+      actions={[
+        { label: "Open settings", href: "/dashboard/settings", variant: "secondary" },
+        { label: "Open dashboard", href: "/dashboard", variant: "default" },
+      ]}
+      analyticsTarget="public-profile:route-error"
+      errorDigest={error.digest}
+      reset={reset}
+      unstableRetry={unstable_retry}
+    />
   );
 }

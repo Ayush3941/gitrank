@@ -3,6 +3,7 @@ import { RouteFallbackCard } from "@/components/shared/RouteFallbackCard";
 export default function PublicPRReportNotFound() {
   return (
     <RouteFallbackCard
+      centered
       eyebrow="PR report not found"
       title="This battle report route is unavailable"
       description="The requested pull-request report path does not exist in the current GitRank build. Open contribution drill-down or return to dashboard overview."
