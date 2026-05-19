@@ -989,3 +989,103 @@ func TestExecutorFetchPullRequestsRESTSkipsSkippableReviewErrors(t *testing.T) {
 		t.Fatalf("reviewsByNumber[7] len = %d, want 0 after skippable review error", len(reviews))
 	}
 }
+
+func TestExecutorFetchPullRequestsRESTSkipsSkippablePullRequestDetailErrors(t *testing.T) {
+	t.Parallel()
+
+	restRequests := map[string]int{}
+	restServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		restRequests[r.URL.Path]++
+		w.Header().Set("Content-Type", "application/json")
+		switch r.URL.Path {
+		case "/repos/octo/repo/pulls":
+			_ = json.NewEncoder(w).Encode([]map[string]any{
+				{"number": 7},
+				{"number": 8},
+			})
+		case "/repos/octo/repo/pulls/7":
+			http.NotFound(w, r)
+		case "/repos/octo/repo/pulls/8":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"id":            202,
+				"number":        8,
+				"title":         "feat: keep partial sync",
+				"state":         "closed",
+				"draft":         false,
+				"merged_at":     "2026-05-02T12:00:00Z",
+				"created_at":    "2026-05-01T12:00:00Z",
+				"updated_at":    "2026-05-02T12:00:00Z",
+				"closed_at":     "2026-05-02T12:00:00Z",
+				"changed_files": 3,
+				"additions":     20,
+				"deletions":     5,
+				"commits":       2,
+				"user": map[string]any{
+					"id":    1002,
+					"login": "alice",
+				},
+				"base": map[string]any{"ref": "main"},
+				"head": map[string]any{"ref": "keep-sync"},
+			})
+		case "/repos/octo/repo/pulls/8/reviews":
+			_ = json.NewEncoder(w).Encode([]map[string]any{
+				{
+					"id": 4001,
+				},
+			})
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer restServer.Close()
+
+	restClient, err := githubapi.NewRESTClient(githubapi.ClientConfig{
+		BaseURL:          restServer.URL,
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		HTTPClient:       restServer.Client(),
+		SecondaryBackoff: time.Millisecond,
+		MaxConcurrency:   1,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	executor := NewExecutor(config.App{
+		GitHub: config.GitHub{
+			APIVersion:       "2026-03-10",
+			UserAgent:        "GitRank/test",
+			RequestTimeout:   time.Second,
+			MaxPageSize:      50,
+			GraphQLPageSize:  20,
+			SecondaryBackoff: time.Millisecond,
+			MaxConcurrency:   1,
+		},
+	}, nil, restClient)
+	executor.graphqlTokenSource = nil
+	executor.graphqlClientFactory = nil
+
+	pullRequests, reviewsByNumber, err := executor.fetchPullRequests(context.Background(), "octo", "repo", SyncRequestActor{})
+	if err != nil {
+		t.Fatalf("fetchPullRequests() error = %v", err)
+	}
+	if len(pullRequests) != 1 {
+		t.Fatalf("pullRequests len = %d, want 1 after skippable detail error", len(pullRequests))
+	}
+	if intValue(pullRequests[0]["number"]) != 8 {
+		t.Fatalf("pull request number = %v, want 8", pullRequests[0]["number"])
+	}
+	if restRequests["/repos/octo/repo/pulls/7/reviews"] != 0 {
+		t.Fatalf("REST review requests for skipped detail = %d, want 0", restRequests["/repos/octo/repo/pulls/7/reviews"])
+	}
+	skipped, ok := reviewsByNumber[7]
+	if !ok {
+		t.Fatalf("reviewsByNumber missing key 7 for skipped detail path")
+	}
+	if len(skipped) != 0 {
+		t.Fatalf("reviewsByNumber[7] len = %d, want 0 for skipped detail path", len(skipped))
+	}
+	if len(reviewsByNumber[8]) != 1 {
+		t.Fatalf("reviewsByNumber[8] len = %d, want 1", len(reviewsByNumber[8]))
+	}
+}

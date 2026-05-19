@@ -19,11 +19,12 @@ import (
 )
 
 const (
-	defaultRepositorySyncPageSize = 20
-	defaultCommitSyncPageSize     = 50
-	defaultUserRepositoryLimit    = 100
-	defaultAuthoredPRSearchLimit  = 100
-	defaultAuthoredPRSyncLimit    = 10
+	defaultRepositorySyncPageSize    = 20
+	defaultPullRequestReviewPageSize = 10
+	defaultCommitSyncPageSize        = 50
+	defaultUserRepositoryLimit       = 100
+	defaultAuthoredPRSearchLimit     = 100
+	defaultAuthoredPRSyncLimit       = 10
 )
 
 var gitHubStatusCodePattern = regexp.MustCompile(`status (\d{3})`)
@@ -1159,7 +1160,7 @@ func (e *Executor) fetchPullRequest(ctx context.Context, owner, name string, num
 }
 
 func (e *Executor) fetchPullRequestReviews(ctx context.Context, owner, name string, number int) ([]map[string]any, error) {
-	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, defaultRepositorySyncPageSize)
+	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, defaultPullRequestReviewPageSize)
 	var reviews []map[string]any
 	_, err := e.client.GetJSON(ctx, fmt.Sprintf("/repos/%s/%s/pulls/%d/reviews", owner, name, number), url.Values{
 		"per_page": []string{fmt.Sprintf("%d", perPage)},
@@ -1274,6 +1275,7 @@ func (e *Executor) fetchPullRequestSummaries(ctx context.Context, owner, name st
 func (e *Executor) fetchPullRequestsRESTDetails(ctx context.Context, owner, name string, summaries []map[string]any, perPage int) ([]map[string]any, map[int][]map[string]any, error) {
 	pullRequests := make([]map[string]any, 0, len(summaries))
 	reviewsByNumber := make(map[int][]map[string]any, len(summaries))
+	reviewPerPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, defaultPullRequestReviewPageSize)
 	for _, summary := range summaries {
 		number := intValue(summary["number"])
 		if number <= 0 {
@@ -1283,13 +1285,17 @@ func (e *Executor) fetchPullRequestsRESTDetails(ctx context.Context, owner, name
 		var pullRequest map[string]any
 		_, err := e.client.GetJSON(ctx, fmt.Sprintf("/repos/%s/%s/pulls/%d", owner, name, number), nil, githubapi.ConditionalRequest{}, &pullRequest)
 		if err != nil {
+			if isSkippableGitHubSyncError(err) {
+				reviewsByNumber[number] = nil
+				continue
+			}
 			return nil, nil, err
 		}
 		pullRequests = append(pullRequests, normalizePullRequest(pullRequest))
 
 		var reviews []map[string]any
 		_, err = e.client.GetJSON(ctx, fmt.Sprintf("/repos/%s/%s/pulls/%d/reviews", owner, name, number), url.Values{
-			"per_page": []string{fmt.Sprintf("%d", perPage)},
+			"per_page": []string{fmt.Sprintf("%d", reviewPerPage)},
 		}, githubapi.ConditionalRequest{}, &reviews)
 		if err != nil {
 			if !isSkippableGitHubSyncError(err) {
