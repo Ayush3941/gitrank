@@ -34,11 +34,11 @@ export function ConnectGithubPanel() {
         </div>
         <div className="space-y-3">
           <h1 className="text-4xl font-semibold tracking-tight text-white">Connect GitHub and let the scoring engine read your contribution history.</h1>
-          <p className="max-w-2xl text-base leading-8 text-slate-200/80">
+          <p className="max-w-2xl text-base leading-8 text-muted">
             We analyze public contribution evidence by default. Private code is not inspected unless you later choose to opt in.
           </p>
         </div>
-        <div className="grid gap-3 sm:grid-cols-3">
+        <ol className="grid gap-3 sm:grid-cols-3">
           {[
             {
               step: "Step 1",
@@ -56,13 +56,13 @@ export function ConnectGithubPanel() {
               text: "You land in the analyzing flow and unlock your first score snapshot.",
             },
           ].map((item) => (
-            <div key={item.step} className="neon-surface space-y-2 rounded-3xl px-4 py-3 text-sm text-slate-200">
+            <li key={item.step} className="neon-surface space-y-2 rounded-3xl px-4 py-3 text-sm text-muted">
               <p className="text-xs font-medium text-primary">{item.step}</p>
               <p className="font-semibold text-white">{item.title}</p>
-              <p className="text-xs leading-6 text-slate-200/82">{item.text}</p>
-            </div>
+              <p className="text-xs leading-6 text-muted">{item.text}</p>
+            </li>
           ))}
-        </div>
+        </ol>
         <div className="neon-callout inline-flex items-center gap-2 px-3 py-2 text-xs text-cyan-100">
           <Timer className="h-4 w-4 text-cyan-200" />
           Typical first snapshot path: about 60-90 seconds after OAuth success.
@@ -72,7 +72,7 @@ export function ConnectGithubPanel() {
             <summary className="focus-ring inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-white">
               What data is read in v1
             </summary>
-            <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-200/84">
+            <ul className="mt-3 space-y-2 text-sm leading-6 text-muted">
               <li>Public profile basics and contribution activity.</li>
               <li>Merged PR metadata, review activity, and changed-file context.</li>
               <li>Repository visibility and recency signals used for scoring explanation.</li>
@@ -82,7 +82,7 @@ export function ConnectGithubPanel() {
             <summary className="focus-ring inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-white">
               What is not read by default
             </summary>
-            <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-200/84">
+            <ul className="mt-3 space-y-2 text-sm leading-6 text-muted">
               <li>Private repository code content in v1 baseline.</li>
               <li>Any hidden secrets from your local environment.</li>
               <li>Manual score overrides or admin-only edits.</li>
@@ -115,27 +115,25 @@ export function ConnectGithubPanel() {
             <p className="text-sm text-muted">You control what becomes public later.</p>
           </div>
         </div>
-        <div className="space-y-3">
+        <ul role="list" className="space-y-3">
           {[
             "Public profile can be disabled at any time.",
             "Exact PRs, AI summaries, and leaderboard participation are individually controllable.",
             "Repository-level visibility can be hidden without deleting the account.",
           ].map((item) => (
-            <div key={item} className="neon-surface rounded-3xl px-4 py-3 text-sm text-slate-200">
-              {item}
-            </div>
+            <li key={item} className="neon-surface rounded-3xl px-4 py-3 text-sm text-muted">{item}</li>
           ))}
-        </div>
+        </ul>
         <div className="neon-surface rounded-[1.75rem] border-primary/22 px-4 py-4">
           <p className="text-xs font-medium text-primary">Where this goes next</p>
           <p className="mt-2 text-sm text-slate-100">
             After OAuth, GitRank redirects to <span className="font-semibold text-white">Analyzing</span> and starts live sync. You will not see fabricated leaderboard identities during this flow.
           </p>
-          <p className="mt-2 text-xs text-slate-200/84">
+          <p className="mt-2 text-xs text-muted">
             If GitHub was already connected in this browser, you can skip OAuth and continue directly to Analyzing.
           </p>
         </div>
-        <div className="rounded-[1.75rem] border border-primary/18 bg-primary/8 p-4 text-sm text-slate-200">
+        <div className="rounded-[1.75rem] border border-primary/18 bg-primary/8 p-4 text-sm text-muted">
           <div className="flex items-center gap-2 text-primary">
             <Sparkles className="h-4 w-4" />
             Meaning-first scoring

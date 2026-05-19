@@ -25,21 +25,21 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
             Sign in
           </div>
           <h1 className="text-4xl font-semibold tracking-tight text-white">Enter GitRank and unlock a serious contribution profile.</h1>
-          <p className="text-base leading-8 text-slate-200/80">
+          <p className="text-base leading-8 text-muted">
             GitRank feels like a battle pass, but the scoring model is built for maintainers, recruiters, and people who care whether the work mattered.
           </p>
-          <div className="grid gap-3 sm:grid-cols-3">
+          <ol className="grid gap-3 sm:grid-cols-3">
             {[
               { step: "Step 1", text: "Sign in with GitHub OAuth." },
               { step: "Step 2", text: "GitRank syncs recent contribution evidence." },
               { step: "Step 3", text: "You land in dashboard snapshot + quests." },
             ].map((item) => (
-              <div key={item.step} className="neon-surface space-y-2 rounded-3xl px-4 py-3 text-sm text-slate-200">
+              <li key={item.step} className="neon-surface space-y-2 rounded-3xl px-4 py-3 text-sm text-muted">
                 <p className="text-xs font-medium text-primary">{item.step}</p>
-                <p className="text-xs leading-6 text-slate-200/84">{item.text}</p>
-              </div>
+                <p className="text-xs leading-6 text-muted">{item.text}</p>
+              </li>
             ))}
-          </div>
+          </ol>
           <div className="flex flex-wrap gap-3">
             <Button asChild size="lg">
               <Link href={oauthURL} prefetch={false}>
@@ -60,18 +60,16 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
           <p className="text-sm text-muted">
             GitRank does not ask only how much you contributed. It asks how meaningful your contribution was.
           </p>
-          <div className="grid gap-3">
+          <ul role="list" className="grid gap-3">
             {[
               "Merged work outranks raw streaks.",
               "Review depth matters.",
               "Tests and repo context change XP.",
               "Spam PR floods get reduced multipliers.",
             ].map((line) => (
-              <div key={line} className="neon-surface rounded-3xl px-4 py-3 text-sm text-slate-200">
-                {line}
-              </div>
+              <li key={line} className="neon-surface rounded-3xl px-4 py-3 text-sm text-muted">{line}</li>
             ))}
-          </div>
+          </ul>
         </GlowCard>
       </GlowCard>
     </main>

@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Onboarding readability + semantics pass:
+  - converted onboarding step/reason/badge/action card groups in login, connect, and reveal screens to semantic list markup.
+  - normalized low-opacity onboarding narrative text to shared readable text tokens while preserving neon surface styling.
+  - improved reveal snapshot and identity explanation block readability by removing extra opacity attenuation.
 - Dashboard semantic-list + contrast pass:
   - converted dashboard first-run checklist and quest cards/signals to semantic list structures (`ol/li`, `ul/li`) for clearer assistive-tech reading order.
   - converted current-league evidence chips to list semantics while preserving visual chip layout.

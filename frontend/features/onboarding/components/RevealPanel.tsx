@@ -59,7 +59,7 @@ export function RevealPanel({
           <h1 className="text-5xl font-semibold tracking-tight text-white sm:text-6xl">
             Level {user.level.currentLevel} <span className="text-gradient">{user.title}</span>
           </h1>
-          <p className="mx-auto max-w-2xl text-sm text-cyan-100/86">
+          <p className="mx-auto max-w-2xl text-sm text-cyan-100">
             GitRank has analyzed your open-source identity.
             {archetype ? ` Archetype: ${archetype}.` : ""}
           </p>
@@ -72,7 +72,7 @@ export function RevealPanel({
             <RevealMetric label="Unlocked badges" value={unlockedBadges.length.toLocaleString("en-US")} />
             <RevealMetric label="Evidence rows" value={evidenceRows.toLocaleString("en-US")} />
           </div>
-          <div className="mx-auto max-w-3xl rounded-2xl border border-primary/24 bg-primary/10 px-4 py-3 text-left text-sm text-slate-100/88">
+          <div className="mx-auto max-w-3xl rounded-2xl border border-primary/24 bg-primary/10 px-4 py-3 text-left text-sm text-slate-100">
             <p className="text-xs font-medium text-primary">Snapshot state</p>
             <p className="mt-2 leading-6">
               Sync status is <span className="font-semibold text-white">{formatSyncState(user.syncStatus.state)}</span>.
@@ -84,7 +84,7 @@ export function RevealPanel({
             </p>
           </div>
           {identitySummary ? (
-            <div className="mx-auto max-w-3xl rounded-2xl border border-fuchsia-300/25 bg-fuchsia-400/9 px-4 py-3 text-left text-sm text-slate-100/86">
+            <div className="mx-auto max-w-3xl rounded-2xl border border-fuchsia-300/25 bg-fuchsia-400/9 px-4 py-3 text-left text-sm text-slate-100">
               <p className="text-xs font-medium text-fuchsia-100">
                 Open source identity ({aiMode === "gemini" ? "Gemini" : "Deterministic"})
               </p>
@@ -94,49 +94,40 @@ export function RevealPanel({
         </div>
         <div className="flex flex-wrap items-center justify-center gap-3">
           <RankBadge rank={user.level.rankTier} />
-          <div className="neon-chip neon-chip-muted rounded-full px-4 py-2 text-sm text-slate-200">
+          <div className="neon-chip neon-chip-muted rounded-full px-4 py-2 text-sm text-muted">
             {user.level.currentXp} / {user.level.nextLevelXp} XP
           </div>
         </div>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <ul role="list" className="grid gap-4 sm:grid-cols-3">
           {unlockedBadges.length > 0 ? (
             unlockedBadges.map((badge) => (
-            <div key={badge.id} className="rounded-[1.75rem] border border-cyan-300/16 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/22 p-5 text-left">
+            <li key={badge.id} className="rounded-[1.75rem] border border-cyan-300/16 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/22 p-5 text-left">
               <div className="flex items-center justify-between">
                 <Award className="h-5 w-5 text-primary" />
                 <RarityBadge rarity={badge.rarity} />
               </div>
               <h2 className="mt-4 text-xl font-semibold text-white">{badge.name}</h2>
               <p className="mt-2 text-sm text-muted">{badge.description}</p>
-            </div>
+            </li>
             ))
           ) : (
             <>
-              <RevealFallbackCard
-                title="First merge unlock"
-                body="Merge one meaningful PR to activate the first badge lane."
-              />
-              <RevealFallbackCard
-                title="Review depth unlock"
-                body="Maintainer-reviewed work speeds up trust and progression."
-              />
-              <RevealFallbackCard
-                title="Consistency unlock"
-                body="Sustained weekly contribution evidence unlocks rarer badge tiers."
-              />
+              <li><RevealFallbackCard title="First merge unlock" body="Merge one meaningful PR to activate the first badge lane." /></li>
+              <li><RevealFallbackCard title="Review depth unlock" body="Maintainer-reviewed work speeds up trust and progression." /></li>
+              <li><RevealFallbackCard title="Consistency unlock" body="Sustained weekly contribution evidence unlocks rarer badge tiers." /></li>
             </>
           )}
-        </div>
+        </ul>
         <div className="neon-surface rounded-[1.75rem] px-5 py-4 text-left">
           <p className="text-xs font-medium text-primary">What to do next</p>
-          <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          <ol className="mt-3 grid gap-3 sm:grid-cols-3">
             {nextActions.map((item, index) => (
-              <div key={item} className="neon-metric rounded-[1.25rem] px-3 py-3">
+              <li key={item} className="neon-metric rounded-[1.25rem] px-3 py-3">
                 <p className="text-xs font-medium text-cyan-100">Step {index + 1}</p>
-                <p className="mt-2 text-sm leading-6 text-slate-200/88">{item}</p>
-              </div>
+                <p className="mt-2 text-sm leading-6 text-muted">{item}</p>
+              </li>
             ))}
-          </div>
+          </ol>
         </div>
         <div className="flex flex-wrap justify-center gap-3">
           {needsSyncRecovery ? (
