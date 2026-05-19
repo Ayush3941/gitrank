@@ -30,8 +30,8 @@
   --surface-blur-strong: 5px;
   --radius-universal: 0.1rem;
   --radius-card: 0.1rem;
-  --eyebrow-tracking-wide: 0.14em;
-  --eyebrow-tracking-tight: 0.12em;
+  --eyebrow-tracking-wide: 0.1em;
+  --eyebrow-tracking-tight: 0.08em;
 }
 
 html[data-theme="midnight"] {
@@ -404,7 +404,7 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 }
 
 [class*="tracking-[0.32em]"] {
-  letter-spacing: 0.18em !important;
+  letter-spacing: 0.12em !important;
 }
 
 .glass-panel {
@@ -721,7 +721,7 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 
 .hud-eyebrow {
   font-family: var(--font-orbitron), var(--font-space-grotesk), sans-serif;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   color: rgb(var(--primary));
   text-shadow: 0 0 16px rgb(var(--primary) / 0.32);
 }
