@@ -405,8 +405,12 @@ export function DashboardPageClient() {
           <section id="dashboard-league" className="render-opt-section scroll-mt-24">
             <CurrentLeagueCard user={user} />
           </section>
-          <QuestPanel quests={user.quests} />
-          <ScoreExplanationCard user={user} />
+          <section className="render-opt-section">
+            <QuestPanel quests={user.quests} />
+          </section>
+          <section className="render-opt-section">
+            <ScoreExplanationCard user={user} />
+          </section>
         </div>
         <div className="space-y-6">
           <section id="dashboard-skills" className="render-opt-section scroll-mt-24">
