@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- Route loading skeleton density pass:
+  - reduced skeleton block count across shared `RouteLoadingState` variants (dashboard, marketing, profile, report, default) to lower first-render DOM and paint cost.
+  - preserved route-specific loading hierarchy while trimming non-essential placeholder rows/cards for smoother low-end device behavior.
 - Section jump-nav landmark-label fix:
   - switched shared `SectionJumpNav` landmark labeling to a direct `aria-label` so the navigation region keeps a stable accessible name on both mobile and desktop layouts.
   - resolves a small-screen labeling edge case where `aria-labelledby` pointed at an element hidden by responsive classes.

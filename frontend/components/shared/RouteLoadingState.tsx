@@ -40,7 +40,6 @@ function DefaultLoadingGrid({ cards }: { cards: unknown[] }) {
           <div className="neon-skeleton h-5 w-32 rounded-full" />
           <div className="neon-skeleton h-10 w-24 rounded-full" />
           <div className="neon-skeleton h-4 w-full rounded-full" />
-          <div className="neon-skeleton h-4 w-4/5 rounded-full" />
         </GlowCard>
       ))}
     </div>
@@ -53,29 +52,25 @@ function DashboardLoadingGrid({ cards }: { cards: unknown[] }) {
       <div className="grid gap-4 xl:grid-cols-[1.1fr,0.9fr]">
         <GlowCard variant="loading" className="space-y-4">
           <div className="neon-skeleton h-6 w-40 rounded-full" />
-          <div className="neon-skeleton h-12 w-3/5 rounded-xl" />
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="neon-skeleton h-20 rounded-[1.2rem]" />
+          <div className="neon-skeleton h-10 w-3/5 rounded-xl" />
+          <div className="grid gap-3 sm:grid-cols-2">
             <div className="neon-skeleton h-20 rounded-[1.2rem]" />
             <div className="neon-skeleton h-20 rounded-[1.2rem]" />
           </div>
           <div className="neon-skeleton h-4 w-full rounded-full" />
-          <div className="neon-skeleton h-4 w-4/5 rounded-full" />
         </GlowCard>
         <GlowCard variant="loading" className="space-y-3">
           <div className="neon-skeleton h-6 w-36 rounded-full" />
           <div className="neon-skeleton h-24 rounded-[1.2rem]" />
           <div className="neon-skeleton h-24 rounded-[1.2rem]" />
-          <div className="neon-skeleton h-24 rounded-[1.2rem]" />
         </GlowCard>
       </div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {cards.slice(0, 3).map((_, index) => (
+        {cards.slice(0, 2).map((_, index) => (
           <GlowCard variant="loading" key={`route-loading-dashboard-${index}`} className="space-y-3">
             <div className="neon-skeleton h-5 w-32 rounded-full" />
             <div className="neon-skeleton h-10 w-24 rounded-full" />
             <div className="neon-skeleton h-4 w-full rounded-full" />
-            <div className="neon-skeleton h-4 w-4/5 rounded-full" />
           </GlowCard>
         ))}
       </div>
@@ -91,17 +86,15 @@ function MarketingLoadingGrid({ cards }: { cards: unknown[] }) {
         <div className="neon-skeleton h-12 w-4/5 rounded-xl" />
         <div className="neon-skeleton h-5 w-3/4 rounded-full" />
         <div className="flex flex-wrap gap-3">
-          <div className="neon-skeleton h-9 w-40 rounded-full" />
-          <div className="neon-skeleton h-9 w-36 rounded-full" />
+          <div className="neon-skeleton h-9 w-44 rounded-full" />
         </div>
       </GlowCard>
       <div className="grid gap-4 md:grid-cols-3">
-        {cards.map((_, index) => (
+        {cards.slice(0, 2).map((_, index) => (
           <GlowCard variant="loading" key={`route-loading-marketing-${index}`} className="space-y-3">
             <div className="neon-skeleton h-9 w-9 rounded-xl" />
             <div className="neon-skeleton h-6 w-3/4 rounded-full" />
             <div className="neon-skeleton h-4 w-full rounded-full" />
-            <div className="neon-skeleton h-4 w-5/6 rounded-full" />
           </GlowCard>
         ))}
       </div>
@@ -123,7 +116,6 @@ function ProfileLoadingGrid({ cards }: { cards: unknown[] }) {
         <div className="grid gap-3 md:grid-cols-3">
           <div className="neon-skeleton h-16 rounded-[1rem]" />
           <div className="neon-skeleton h-16 rounded-[1rem]" />
-          <div className="neon-skeleton h-16 rounded-[1rem]" />
         </div>
       </GlowCard>
       <div className="grid gap-4 xl:grid-cols-[1.15fr,0.85fr]">
@@ -132,7 +124,7 @@ function ProfileLoadingGrid({ cards }: { cards: unknown[] }) {
           <div className="neon-skeleton h-52 rounded-[1.2rem]" />
         </GlowCard>
         <GlowCard variant="loading" className="space-y-3">
-          {cards.slice(0, 3).map((_, index) => (
+          {cards.slice(0, 2).map((_, index) => (
             <div key={`route-loading-profile-${index}`} className="neon-skeleton h-20 rounded-[1rem]" />
           ))}
         </GlowCard>
@@ -147,20 +139,19 @@ function ReportLoadingGrid({ cards }: { cards: unknown[] }) {
       <GlowCard variant="loading" className="space-y-4">
         <div className="neon-skeleton h-5 w-56 rounded-full" />
         <div className="neon-skeleton h-10 w-4/5 rounded-xl" />
-        <div className="grid gap-3 sm:grid-cols-3">
-          <div className="neon-skeleton h-16 rounded-[1rem]" />
+        <div className="grid gap-3 sm:grid-cols-2">
           <div className="neon-skeleton h-16 rounded-[1rem]" />
           <div className="neon-skeleton h-16 rounded-[1rem]" />
         </div>
       </GlowCard>
       <div className="grid gap-4 xl:grid-cols-2">
         <GlowCard variant="loading" className="space-y-3">
-          {cards.slice(0, 2).map((_, index) => (
+          {cards.slice(0, 1).map((_, index) => (
             <div key={`route-loading-report-left-${index}`} className="neon-skeleton h-28 rounded-[1rem]" />
           ))}
         </GlowCard>
         <GlowCard variant="loading" className="space-y-3">
-          {cards.slice(2, 4).map((_, index) => (
+          {cards.slice(1, 2).map((_, index) => (
             <div key={`route-loading-report-right-${index}`} className="neon-skeleton h-28 rounded-[1rem]" />
           ))}
         </GlowCard>
