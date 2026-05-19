@@ -55,6 +55,51 @@ describe("account sync error messaging", () => {
     expect(fetchMock).toHaveBeenNthCalledWith(2, "/api/sync", expect.any(Object));
   });
 
+  it("degrades to local queued state when queue fallback is also unavailable", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            error: {
+              code: "upstream_timeout",
+              message:
+                "Get \"https://api.github.com/repos/llvm/llvm-project/pulls/182707/reviews?per_page=20\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)",
+            },
+          }),
+          {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            error: {
+              code: "dependency_unavailable",
+              message: "API gateway is unavailable. Retry after backend services are running.",
+            },
+          }),
+          {
+            status: 502,
+            headers: { "Content-Type": "application/json" },
+          },
+        ),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await runUserSync("octocat");
+    expect(result.status).toBe("queued");
+    expect(result.mode).toBe("user");
+    expect(result.user).toBe("octocat");
+    expect(result.fetched?.fallback_queued).toBe(1);
+    expect(result.fetched?.fallback_queue_unavailable).toBe(1);
+    expect(result.started_at).toBeTruthy();
+    expect(result.finished_at).toBe(result.started_at);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it("maps rate-limit repository sync errors to actionable copy", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => {
       return new Response(

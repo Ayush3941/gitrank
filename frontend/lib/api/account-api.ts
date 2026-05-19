@@ -206,6 +206,7 @@ export async function runUserSync(user?: string): Promise<ApiSyncExecutionRespon
 
   const parsed = await parseErrorResponse(response, "User sync failed.");
   if (isTransientUserSyncExecutionFailure(parsed.message, response.status, parsed.code)) {
+    const fallbackTimestamp = new Date().toISOString();
     try {
       const queued = await queueSyncRequest({
         mode: "user",
@@ -223,7 +224,18 @@ export async function runUserSync(user?: string): Promise<ApiSyncExecutionRespon
         persisted: {},
       };
     } catch {
-      // Fall through to sanitized execution error if queue fallback is unavailable.
+      return {
+        status: "queued",
+        mode: "user",
+        user: normalizedUser || undefined,
+        started_at: fallbackTimestamp,
+        finished_at: fallbackTimestamp,
+        fetched: {
+          fallback_queued: 1,
+          fallback_queue_unavailable: 1,
+        },
+        persisted: {},
+      };
     }
   }
 
