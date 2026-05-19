@@ -245,7 +245,7 @@ export function BadgesPageClient() {
             <div className="relative space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs tracking-[0.24em] text-fuchsia-100 uppercase">
+                  <p className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-fuchsia-100">
                     <Trophy className="h-3.5 w-3.5" />
                     Achievement Forge
                   </p>
@@ -271,7 +271,7 @@ export function BadgesPageClient() {
                 <BadgeMetric label="Current streak" value={`${streak.currentStreakDays}d`} icon={<Sparkles className="h-4 w-4 text-emerald-200" />} />
               </div>
               <div className="space-y-2">
-                <p className="text-xs tracking-[0.24em] text-cyan-200 uppercase">Badge lane progress</p>
+                <p className="text-xs font-medium text-cyan-200">Badge lane progress</p>
                 <Progress value={completionPercent} />
               </div>
               {unlockNotice ? (
@@ -281,7 +281,7 @@ export function BadgesPageClient() {
               ) : null}
               {nextUnlockTarget ? (
                 <div className="neon-surface space-y-3 border border-primary/22 px-4 py-4">
-                  <p className="text-xs tracking-[0.24em] text-primary uppercase">Closest next unlock</p>
+                  <p className="text-xs font-medium text-primary">Closest next unlock</p>
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="text-lg font-semibold text-white">{nextUnlockTarget.name}</p>
@@ -396,12 +396,12 @@ export function BadgesPageClient() {
       </section>
       {!isLoading && !isError ? (
         <section id="badges-locked" className="render-opt-section scroll-mt-24 space-y-3">
-          <p className="text-xs tracking-[0.24em] text-fuchsia-200 uppercase">Locked / upcoming badges</p>
+          <p className="text-xs font-medium text-fuchsia-200">Locked / upcoming badges</p>
           {lockedBadges.length > 0 ? (
             <div className="grid gap-3 md:grid-cols-3">
               {lockedBadges.map((badge) => (
                 <div key={badge.id} className="render-opt-card neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4">
-                  <p className="text-xs tracking-[0.24em] text-fuchsia-200 uppercase">{badge.rarity}</p>
+                  <p className="text-xs font-medium text-fuchsia-200">{badge.rarity}</p>
                   <h3 className="mt-2 text-base font-semibold text-white">{badge.name}</h3>
                   <ExpandableText
                     text={badge.unlockCondition}
@@ -475,7 +475,7 @@ function BadgeMetric({
 }) {
   return (
     <div className="neon-metric rounded-[1.4rem] px-4 py-3">
-      <p className="text-[11px] tracking-[0.2em] text-slate-300 uppercase">{label}</p>
+      <p className="text-[11px] font-medium text-slate-300">{label}</p>
       <p className="mt-2 flex items-center gap-2 text-xl font-semibold text-white">
         {value}
         {icon}

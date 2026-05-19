@@ -55,7 +55,7 @@ export function BadgeDetailDialog({
                 </span>
               ) : null}
             </div>
-            <p className="text-xs tracking-[0.24em] text-primary uppercase">Unlock condition</p>
+            <p className="text-xs font-medium text-primary">Unlock condition</p>
             <ExpandableText
               text={badge.unlockCondition}
               lines={4}
@@ -78,7 +78,7 @@ export function BadgeDetailDialog({
           </GlowCard>
           {story ? (
             <GlowCard className="cyber-sheen space-y-3 neon-surface border-fuchsia-300/24 p-4">
-              <p className="text-xs tracking-[0.24em] text-fuchsia-200 uppercase">Achievement story</p>
+              <p className="text-xs font-medium text-fuchsia-200">Achievement story</p>
               <ExpandableText
                 text={story.story}
                 lines={5}
@@ -116,7 +116,7 @@ export function BadgeDetailDialog({
             </GlowCard>
           ) : null}
           <div className="space-y-2">
-            <p className="text-xs tracking-[0.24em] text-primary uppercase">Evidence PRs</p>
+            <p className="text-xs font-medium text-primary">Evidence PRs</p>
             <div className="flex flex-wrap gap-2">
               {badge.evidencePrIds.length ? (
                 badge.evidencePrIds.map((prId) => (

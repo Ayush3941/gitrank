@@ -26,7 +26,7 @@ export function SyncRunActivityPanel({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs tracking-[0.24em] text-primary uppercase">Sync activity</p>
+          <p className="text-xs font-medium text-primary">Sync activity</p>
           <h2 className="mt-2 text-2xl font-semibold text-white">Recent sync runs</h2>
           <p className="mt-2 text-sm text-muted">
             Reverse-chronological execution history for your authenticated sync requests.
@@ -34,7 +34,7 @@ export function SyncRunActivityPanel({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {lastUpdatedAt ? (
-            <p className="text-xs tracking-[0.18em] text-cyan-200 uppercase">
+            <p className="text-xs font-medium text-cyan-200">
               Updated {formatRelativeDays(lastUpdatedAt)}
             </p>
           ) : null}

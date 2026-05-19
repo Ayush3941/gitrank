@@ -40,7 +40,7 @@ export function BadgeGrid({
                   showMoreLabel="Read why"
                   showLessLabel="Hide why"
                 />
-                <p className="mt-2 text-xs tracking-[0.2em] text-primary uppercase">Trigger pattern</p>
+                <p className="mt-2 text-xs font-medium text-primary">Trigger pattern</p>
                 <ExpandableText
                   text={badge.unlockCondition}
                   lines={2}

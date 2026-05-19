@@ -20,7 +20,7 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
               <TextScaleQuickSwitcher compact />
             </div>
           </div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-semibold tracking-[0.24em] text-primary uppercase">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
             <LockKeyhole className="h-3.5 w-3.5" />
             Sign in
           </div>
@@ -35,7 +35,7 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
               { step: "Step 3", text: "You land in dashboard snapshot + quests." },
             ].map((item) => (
               <div key={item.step} className="neon-surface space-y-2 rounded-3xl px-4 py-3 text-sm text-slate-200">
-                <p className="text-xs tracking-[0.2em] text-primary uppercase">{item.step}</p>
+                <p className="text-xs font-medium text-primary">{item.step}</p>
                 <p className="text-xs leading-6 text-slate-200/84">{item.text}</p>
               </div>
             ))}

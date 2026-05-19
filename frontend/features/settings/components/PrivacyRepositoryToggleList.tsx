@@ -61,7 +61,7 @@ export function PrivacyRepositoryToggleList({
     <div className="space-y-3">
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p id={statusId} role="status" aria-live="polite" className="text-xs tracking-[0.2em] text-cyan-200 uppercase">
+          <p id={statusId} role="status" aria-live="polite" className="text-xs font-medium text-cyan-200">
             {isFiltering
               ? "Updating repository list..."
               : `${filteredItems.length} of ${counts.total} repositories`}

@@ -371,7 +371,7 @@ export function SettingsPageClient() {
         <GlowCard className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs tracking-[0.24em] text-primary uppercase">GitHub account</p>
+            <p className="text-xs font-medium text-primary">GitHub account</p>
             <h2 className="mt-2 text-2xl font-semibold text-white">@{data.user.username}</h2>
           </div>
           <SyncStatusPill status={data.user.syncStatus} />
@@ -460,7 +460,7 @@ export function SettingsPageClient() {
             <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
               <Sparkles className="h-5 w-5" />
             </div>
-            <p className="mt-4 text-xs tracking-[0.24em] text-primary uppercase">Display preference</p>
+            <p className="mt-4 text-xs font-medium text-primary">Display preference</p>
             <h2 className="mt-2 text-2xl font-semibold text-white">Reduced gamification</h2>
             <p className="mt-2 text-sm leading-6 text-muted">
               Lowers animated XP ticks, badge shimmer, glow intensity, and rank effects for this account. Scores,
@@ -480,7 +480,7 @@ export function SettingsPageClient() {
         <div className="cyber-divider" />
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="max-w-2xl">
-            <p className="text-xs tracking-[0.24em] text-primary uppercase">Keyboard controls</p>
+            <p className="text-xs font-medium text-primary">Keyboard controls</p>
             <h3 className="mt-2 text-xl font-semibold text-white">Display shortcuts</h3>
             <p className="mt-2 text-sm leading-6 text-muted">
               Enables global display shortcuts when focus is not in an editable field. Navigation shortcuts
@@ -500,7 +500,7 @@ export function SettingsPageClient() {
             <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
               <Palette className="h-5 w-5" />
             </div>
-            <p className="mt-4 text-xs tracking-[0.24em] text-primary uppercase">Visual theme</p>
+            <p className="mt-4 text-xs font-medium text-primary">Visual theme</p>
             <h2 className="mt-2 text-2xl font-semibold text-white">Readable style mode</h2>
             <p className="mt-2 text-sm leading-6 text-muted">
               Theme choice only changes visual treatment. Ranking, scoring, privacy, and sync behavior stay identical.
@@ -527,7 +527,7 @@ export function SettingsPageClient() {
                   <span className="inline-flex items-center gap-2">
                     {option.label}
                     {theme === option.value ? (
-                      <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-[10px] tracking-[0.12em] text-emerald-50 uppercase">
+                      <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-[10px] font-semibold text-emerald-50">
                         Active
                       </span>
                     ) : null}
@@ -541,7 +541,7 @@ export function SettingsPageClient() {
         <div className="cyber-divider" />
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="max-w-2xl">
-            <p className="text-xs tracking-[0.24em] text-primary uppercase">Text scale</p>
+            <p className="text-xs font-medium text-primary">Text scale</p>
             <h3 className="mt-2 text-xl font-semibold text-white">Readable text size</h3>
             <p className="mt-2 text-sm leading-6 text-muted">
               Choose a denser or larger text rendering mode. This affects frontend reading size only.
@@ -565,7 +565,7 @@ export function SettingsPageClient() {
                   <span className="inline-flex items-center gap-2">
                     {option.label}
                     {textScale === option.value ? (
-                      <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-[10px] tracking-[0.12em] text-emerald-50 uppercase">
+                      <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-[10px] font-semibold text-emerald-50">
                         Active
                       </span>
                     ) : null}
@@ -591,7 +591,7 @@ export function SettingsPageClient() {
           </p>
         ) : null}
         <div className="neon-surface-strong space-y-3 px-4 py-4">
-          <p className="text-xs tracking-[0.2em] text-primary uppercase">Live readability preview</p>
+          <p className="text-xs font-medium text-primary">Live readability preview</p>
           <h3 className="text-lg font-semibold text-white">
             GitRank highlights meaningful contribution quality clearly before style.
           </h3>
@@ -614,7 +614,7 @@ export function SettingsPageClient() {
       <section id="settings-repositories" className="render-opt-section scroll-mt-24">
         <GlowCard className="space-y-4">
           <div>
-            <p className="text-xs tracking-[0.24em] text-primary uppercase">Repository privacy</p>
+            <p className="text-xs font-medium text-primary">Repository privacy</p>
             <h2 className="mt-2 text-2xl font-semibold text-white">Choose what stays on your public card</h2>
           </div>
           <PrivacyRepositoryToggleList
@@ -635,7 +635,7 @@ export function SettingsPageClient() {
       <section id="settings-data-controls" className="render-opt-section scroll-mt-24">
         <GlowCard className="space-y-4">
           <div>
-            <p className="text-xs tracking-[0.24em] text-primary uppercase">Data controls</p>
+            <p className="text-xs font-medium text-primary">Data controls</p>
             <h2 className="mt-2 text-2xl font-semibold text-white">Export or remove account data</h2>
           </div>
           <div className="flex flex-wrap gap-3">

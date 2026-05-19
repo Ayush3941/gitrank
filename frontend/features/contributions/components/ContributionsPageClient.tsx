@@ -317,7 +317,7 @@ export function ContributionsPageClient() {
           <div className="relative space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs tracking-[0.24em] text-cyan-100 uppercase">
+                <p className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-cyan-100">
                   <Radar className="h-3.5 w-3.5" />
                   Contribution Ops
                 </p>
@@ -387,7 +387,7 @@ export function ContributionsPageClient() {
           />
           <div className="grid gap-4 xl:grid-cols-[1.2fr,0.8fr]">
           <GlowCard className="space-y-4 border border-fuchsia-400/20 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/30">
-            <h3 className="cyber-title text-sm tracking-[0.2em] text-fuchsia-200 uppercase">Contribution timeline</h3>
+            <h3 className="cyber-title text-sm font-medium text-fuchsia-200">Contribution timeline</h3>
             {monthly.length ? (
               <div className="space-y-3">
                 {monthly.map((point) => (
@@ -414,7 +414,7 @@ export function ContributionsPageClient() {
             )}
           </GlowCard>
           <GlowCard className="space-y-4 border border-cyan-300/20 bg-gradient-to-br from-slate-950/88 to-cyan-950/25">
-            <h3 className="cyber-title text-sm tracking-[0.2em] text-cyan-200 uppercase">Top highlights</h3>
+            <h3 className="cyber-title text-sm font-medium text-cyan-200">Top highlights</h3>
             {topHighlights.length ? (
               <div className="space-y-3">
                 {topHighlights.map((row) => (
@@ -502,7 +502,7 @@ function Metric({
 }) {
   return (
     <div className="neon-metric rounded-[1.4rem] px-4 py-3">
-      <p className="text-[11px] tracking-[0.2em] text-slate-300 uppercase">{label}</p>
+      <p className="text-[11px] font-medium text-slate-300">{label}</p>
       <p className="mt-2 flex items-center gap-2 text-xl font-semibold text-white">
         {value}
         {icon}
