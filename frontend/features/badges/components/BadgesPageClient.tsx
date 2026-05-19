@@ -412,6 +412,7 @@ export function BadgesPageClient() {
         ) : null}
         {!isLoading && !isError && filtered.length === 0 ? (
           <EmptyState
+            eyebrow="Badge progression"
             title="Your badge shelf is waiting."
             description="Complete your first meaningful merged PR to start unlocking visible reputation proof."
             actionLabel="Open quests"

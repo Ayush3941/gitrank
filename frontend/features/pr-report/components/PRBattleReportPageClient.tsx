@@ -124,6 +124,7 @@ export function PRBattleReportPageClient({
   if (!data) {
     return (
       <EmptyState
+        eyebrow="PR evidence"
         title="Battle report not found"
         description="This PR either has not been synced, is private, or has not produced a persisted analysis and score report yet."
         actionLabel="Open contributions"

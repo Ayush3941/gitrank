@@ -272,6 +272,7 @@ export function QuestsPageClient() {
       ) : null}
       {!isLoading && !isError && quests.length === 0 ? (
         <EmptyState
+          eyebrow="Quest generation"
           title="No quests ready yet."
           description="Leaderboard unlocks after your first verified score, and quests sharpen once the system sees enough meaningful work."
           actionLabel="Sync profile"

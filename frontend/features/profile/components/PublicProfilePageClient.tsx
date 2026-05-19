@@ -200,6 +200,7 @@ export function PublicProfilePageClient({
   if (!data) {
     return (
       <EmptyState
+        eyebrow="Public profile visibility"
         title="Profile unavailable"
         description="This profile is hidden, missing, or has not earned a public GitRank score yet."
         actionLabel="Open dashboard"

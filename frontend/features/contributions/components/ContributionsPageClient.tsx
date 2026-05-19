@@ -342,6 +342,7 @@ export function ContributionsPageClient() {
       ) : null}
       {!isLoading && !isError && filteredRows.length === 0 ? (
         <EmptyState
+          eyebrow="Contribution evidence"
           title="No merged PRs found yet."
           description="Start with a small real contribution: docs, tests, or a bug fix. Meaningful work unlocks the shelf."
           actionLabel="Review quest queue"

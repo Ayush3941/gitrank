@@ -288,6 +288,7 @@ export function LeaderboardPageClient() {
       {!isLoading && !isError && rows.length === 0 ? (
         <div className="space-y-4">
           <EmptyState
+            eyebrow="Leaderboard participation"
             title="No public leaderboard rows yet"
             description="GitRank does not fabricate leaderboard identities. Rows appear only after contributors complete OAuth, sync, and enable public participation."
             actionLabel="Open contributions"
