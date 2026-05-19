@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Constrained-network runtime fallback pass:
+  - added runtime network constraint detection from `navigator.connection.saveData` and `effectiveType` (`slow-2g`/`2g`) inside `use-gamification-preference`.
+  - now sets `html[data-network="constrained"]` so low-data render reductions apply even where `prefers-reduced-data` media query is unsupported.
+  - mirrored reduced-data visual trims (background simplification, overlay removal, blur/shadow reduction) under the new constrained-network attribute in global CSS.
 - Settings deferred-render pass:
   - applied `DeferUntilVisible` to sync activity, profile privacy, display controls, repository visibility, and data-control sections.
   - added lightweight settings placeholders so jump-nav and account controls remain interactive while heavier section content mounts near viewport.

@@ -12,6 +12,7 @@ const REDUCED_TRANSPARENCY_QUERY = "(prefers-reduced-transparency: reduce)";
 type NavigatorWithConnection = Navigator & {
   connection?: {
     saveData?: boolean;
+    effectiveType?: "slow-2g" | "2g" | "3g" | "4g";
     addEventListener?: (type: "change", listener: () => void) => void;
     removeEventListener?: (type: "change", listener: () => void) => void;
   };
@@ -41,12 +42,28 @@ export function useReducedGamification() {
   return Boolean(reducedGamification);
 }
 
+export function useNetworkConstraintPreference() {
+  return useSyncExternalStore(
+    subscribeNetworkConstraint,
+    getNetworkConstraintSnapshot,
+    () => true,
+  );
+}
+
 export function useApplyGamificationPreference() {
   const { reducedGamification } = useGamificationPreference();
 
   useEffect(() => {
     applyGamificationPreference(reducedGamification);
   }, [reducedGamification]);
+}
+
+export function useApplyNetworkConstraintPreference() {
+  const constrainedNetwork = useNetworkConstraintPreference();
+
+  useEffect(() => {
+    applyNetworkConstraintPreference(constrainedNetwork);
+  }, [constrainedNetwork]);
 }
 
 export function useAccountGamificationPreference(profile?: ProfileViewData | null) {
@@ -126,6 +143,51 @@ function applyGamificationPreference(reduced: boolean) {
     return;
   }
   document.documentElement.dataset.gamification = reduced ? "reduced" : "full";
+  applyNetworkConstraintPreference(inferNetworkConstraintPreference());
+}
+
+function applyNetworkConstraintPreference(constrained: boolean) {
+  if (typeof document === "undefined") {
+    return;
+  }
+  document.documentElement.dataset.network = constrained ? "constrained" : "default";
+}
+
+function subscribeNetworkConstraint(callback: () => void) {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
+  const reducedDataQuery = window.matchMedia(REDUCED_DATA_QUERY);
+  const connection = (window.navigator as NavigatorWithConnection).connection;
+  const handleChange = () => callback();
+
+  if (typeof reducedDataQuery.addEventListener === "function") {
+    reducedDataQuery.addEventListener("change", handleChange);
+  } else if (typeof reducedDataQuery.addListener === "function") {
+    reducedDataQuery.addListener(handleChange);
+  }
+  if (typeof connection?.addEventListener === "function") {
+    connection.addEventListener("change", handleChange);
+  }
+
+  return () => {
+    if (typeof reducedDataQuery.removeEventListener === "function") {
+      reducedDataQuery.removeEventListener("change", handleChange);
+    } else if (typeof reducedDataQuery.removeListener === "function") {
+      reducedDataQuery.removeListener(handleChange);
+    }
+    if (typeof connection?.removeEventListener === "function") {
+      connection.removeEventListener("change", handleChange);
+    }
+  };
+}
+
+function getNetworkConstraintSnapshot() {
+  if (typeof window === "undefined") {
+    return true;
+  }
+  return inferNetworkConstraintPreference();
 }
 
 export function inferReducedGamificationPreference(): boolean {
@@ -133,14 +195,26 @@ export function inferReducedGamificationPreference(): boolean {
     return true;
   }
 
-  const connection = (window.navigator as NavigatorWithConnection).connection;
-  if (connection?.saveData === true) {
+  if (inferNetworkConstraintPreference()) {
     return true;
   }
 
   return (
     window.matchMedia(REDUCED_MOTION_QUERY).matches ||
-    window.matchMedia(REDUCED_DATA_QUERY).matches ||
     window.matchMedia(REDUCED_TRANSPARENCY_QUERY).matches
   );
+}
+
+function inferNetworkConstraintPreference(): boolean {
+  if (typeof window === "undefined") {
+    return true;
+  }
+  const connection = (window.navigator as NavigatorWithConnection).connection;
+  if (connection?.saveData === true) {
+    return true;
+  }
+  if (connection?.effectiveType === "slow-2g" || connection?.effectiveType === "2g") {
+    return true;
+  }
+  return window.matchMedia(REDUCED_DATA_QUERY).matches;
 }

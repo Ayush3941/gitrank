@@ -1560,6 +1560,45 @@ html[data-theme="high-contrast"] .neon-title {
   }
 }
 
+:where(html[data-network="constrained"]) body {
+  background-image: linear-gradient(
+    180deg,
+    rgb(0 3 12 / var(--page-overlay-top-alpha)),
+    rgb(var(--background) / 0.9)
+  );
+  background-attachment: scroll;
+}
+
+:where(html[data-network="constrained"]) .neon-vignette,
+:where(html[data-network="constrained"]) .page-shell::before,
+:where(html[data-network="constrained"]) .page-shell::after,
+:where(html[data-network="constrained"]) body::before,
+:where(html[data-network="constrained"]) body::after {
+  display: none !important;
+}
+
+:where(html[data-network="constrained"]) .glass-panel,
+:where(html[data-network="constrained"]) .glass-panel-strong,
+:where(html[data-network="constrained"]) .neon-surface,
+:where(html[data-network="constrained"]) .neon-surface-strong,
+:where(html[data-network="constrained"]) .neon-tile,
+:where(html[data-network="constrained"]) .neon-tile-strong,
+:where(html[data-network="constrained"]) .neon-metric,
+:where(html[data-network="constrained"]) .cyber-card,
+:where(html[data-network="constrained"]) .cyber-terminal {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  box-shadow:
+    0 8px 20px rgb(1 5 20 / 0.26),
+    inset 0 1px 0 rgb(255 255 255 / 0.04) !important;
+}
+
+:where(html[data-network="constrained"]) .neon-skeleton {
+  background: rgb(var(--card) / 0.84) !important;
+  border-color: rgb(var(--line) / 0.66) !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.03) !important;
+}
+
 @media (update: slow) {
   body {
     background-attachment: scroll;
