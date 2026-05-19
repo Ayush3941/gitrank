@@ -150,13 +150,40 @@ html[data-theme="high-contrast"] {
   border-color: rgb(var(--line) / 0.7);
 }
 
-*,
-*::before,
-*::after {
+:where([class~="rounded"], [class*=" rounded"], [class^="rounded-"], [class*="rounded-"]) {
   border-radius: var(--radius-universal) !important;
 }
 
-:where([class~="rounded"], [class*=" rounded"], [class^="rounded-"], [class*="rounded-"]) {
+:where([class~="rounded-none"], [class*=" rounded-none"], [class^="rounded-none"], [class*="rounded-none"]) {
+  border-radius: 0 !important;
+}
+
+:where([class~="rounded-full"], [class*=" rounded-full"], [class^="rounded-full"], [class*="rounded-full"]) {
+  border-radius: 9999px !important;
+}
+
+:where(
+    button,
+    input:not([type="radio"]):not([type="checkbox"]),
+    select,
+    textarea,
+    summary,
+    [role="button"],
+    [role="tab"],
+    [role="switch"],
+    .glass-panel,
+    .glass-panel-strong,
+    .cyber-card,
+    .cyber-terminal,
+    .neon-surface,
+    .neon-surface-strong,
+    .neon-tile,
+    .neon-tile-strong,
+    .neon-metric,
+    .neon-chip,
+    .neon-chip-muted,
+    .neon-track
+  ) {
   border-radius: var(--radius-universal) !important;
 }
 

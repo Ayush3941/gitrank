@@ -106,6 +106,11 @@
     reduce gradient noise while preserving clear route state
   - softened global glow/vignette falloff and enlarged decorative shell glows
     at lower opacity for longer, smoother start/stop gradients.
+- Radius-scope correction for decorative layers:
+  - removed global pseudo-element radius forcing and scoped universal `0.1rem`
+    corners to interactive/surface primitives and rounded utility classes
+  - preserved explicit `rounded-full` and `rounded-none` semantics so avatars,
+    badges, and deliberate hard/smooth corners render predictably.
 
 ## 2026-05-17
 
