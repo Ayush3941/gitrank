@@ -38,7 +38,7 @@ export function SkillBreakdownCard({
             <div key={skill.category} className="neon-surface space-y-2 rounded-[1.5rem] p-4">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-semibold text-white">{skill.category}</p>
-                <span className="neon-chip neon-chip-muted rounded-full px-2.5 py-1 text-[11px] font-semibold">
+                <span className="neon-chip neon-chip-muted rounded-full px-2.5 py-1 text-xs font-semibold">
                   {confidence}
                 </span>
               </div>

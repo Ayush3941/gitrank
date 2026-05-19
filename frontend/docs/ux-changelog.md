@@ -2,6 +2,11 @@
 
 ## 2026-05-19
 
+- Cross-surface microtext legibility pass:
+  - raised remaining high-visibility `text-[10px]/text-[11px]` spots to `text-xs` across skill confidence chips, profile hero readout, dashboard shortcut hint, mobile quick-display controls, and settings theme/text active chips.
+  - enlarged onboarding step index badges (`h-5 w-5`) while moving step numerals to `text-xs` for clearer progress visibility.
+  - updated contributions active-filter remove control glyph text to `text-xs` while preserving its `24x24` target-size footprint.
+  - keeps compact dashboard density while reducing eye strain on small/medium displays.
 - Viewport safe-area enablement pass:
   - extended root `viewport` metadata with `viewportFit: "cover"` so `env(safe-area-inset-*)` spacing rules can fully engage on notched mobile devices.
   - set `interactiveWidget: "resizes-visual"` to reduce keyboard-overlay surprises on mobile form surfaces.

@@ -559,12 +559,12 @@ export function SettingsPageClient() {
                     <span className={`h-1.5 w-4/6 ${option.previewTextClassName} bg-current/65`} />
                     <span className="mt-0.5 flex items-center gap-1.5">
                       <span
-                        className={`inline-flex h-5 min-w-10 items-center justify-center px-2 text-[10px] leading-5 tracking-[0.06em] ${option.previewChipClassName}`}
+                        className={`inline-flex h-5 min-w-10 items-center justify-center px-2 text-xs leading-5 tracking-[0.06em] ${option.previewChipClassName}`}
                       >
                         xp
                       </span>
                       <span
-                        className={`inline-flex h-5 min-w-12 items-center justify-center px-2 text-[10px] leading-5 tracking-[0.06em] ${option.previewChipClassName}`}
+                        className={`inline-flex h-5 min-w-12 items-center justify-center px-2 text-xs leading-5 tracking-[0.06em] ${option.previewChipClassName}`}
                       >
                         rank
                       </span>
@@ -574,7 +574,7 @@ export function SettingsPageClient() {
                     <span className="inline-flex items-center gap-2">
                       {option.label}
                       {theme === option.value ? (
-                        <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-[10px] font-semibold text-emerald-50">
+                        <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-xs font-semibold text-emerald-50">
                           Active
                         </span>
                       ) : null}
@@ -630,7 +630,7 @@ export function SettingsPageClient() {
                     <span className="inline-flex items-center gap-2">
                       {option.label}
                       {textScale === option.value ? (
-                        <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-[10px] font-semibold text-emerald-50">
+                        <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-xs font-semibold text-emerald-50">
                           Active
                         </span>
                       ) : null}

@@ -127,7 +127,7 @@ export function PublicProfileHero({
             <MiniMetric icon={<Sparkles className="h-4 w-4" />} label="Season XP" value={user.rankProgress.seasonXp.toLocaleString("en-US")} />
             <MiniMetric icon={<ShieldCheck className="h-4 w-4" />} label="Formula" value={user.rankProgress.season.scoringVersion} />
           </div>
-          <p className="cyber-readout mt-4 text-[11px] leading-5 text-muted">
+          <p className="cyber-readout mt-4 text-xs leading-5 text-muted">
             {shareHeadline}. Public claims are backed by score events, badges, and PR evidence where visibility allows.
           </p>
         </div>

@@ -100,7 +100,7 @@ export function DashboardTopBar({
               className="gap-2"
             >
               Shortcuts
-              <kbd className="hidden text-[11px] sm:inline">?</kbd>
+              <kbd className="hidden text-xs sm:inline">?</kbd>
             </Button>
             <GamificationQuickSwitcher compact className="hidden md:inline-flex" />
             <ThemeQuickSwitcher compact className="hidden sm:inline-flex" />

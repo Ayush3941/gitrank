@@ -74,7 +74,7 @@ export function MobileNav() {
           <button
             type="button"
             onClick={() => setTheme(nextTheme)}
-            className="focus-ring inline-flex min-h-11 items-center justify-center gap-1 border border-primary/24 bg-primary/8 px-2 py-2 text-[11px] font-semibold text-slate-100"
+            className="focus-ring inline-flex min-h-11 items-center justify-center gap-1 border border-primary/24 bg-primary/8 px-2 py-2 text-xs font-semibold text-slate-100"
             aria-label={`Theme ${theme}. Switch to ${nextTheme}. Shortcut Alt Shift T.`}
             title={`Theme: ${theme} → ${nextTheme}`}
           >
@@ -84,7 +84,7 @@ export function MobileNav() {
           <button
             type="button"
             onClick={() => setTextScale(nextTextScale)}
-            className="focus-ring inline-flex min-h-11 items-center justify-center gap-1 border border-primary/24 bg-primary/8 px-2 py-2 text-[11px] font-semibold text-slate-100"
+            className="focus-ring inline-flex min-h-11 items-center justify-center gap-1 border border-primary/24 bg-primary/8 px-2 py-2 text-xs font-semibold text-slate-100"
             aria-label={`Text size ${textScale}. Switch to ${nextTextScale}. Shortcut Alt Shift L.`}
             title={`Text size: ${textScale} → ${nextTextScale}`}
           >
@@ -94,7 +94,7 @@ export function MobileNav() {
           <button
             type="button"
             onClick={() => setReducedGamification(nextReducedState)}
-            className="focus-ring inline-flex min-h-11 items-center justify-center gap-1 border border-primary/24 bg-primary/8 px-2 py-2 text-[11px] font-semibold text-slate-100"
+            className="focus-ring inline-flex min-h-11 items-center justify-center gap-1 border border-primary/24 bg-primary/8 px-2 py-2 text-xs font-semibold text-slate-100"
             aria-label={`Effects ${reducedGamification ? "reduced" : "full"}. Switch to ${nextReducedState ? "reduced" : "full"}. Shortcut Alt Shift G.`}
             title={`Effects: ${reducedGamification ? "reduced" : "full"} → ${nextReducedState ? "reduced" : "full"}`}
           >
