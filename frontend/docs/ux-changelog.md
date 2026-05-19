@@ -159,6 +159,8 @@
     `features/settings/lib/sync-run-status.ts` so UI chips and polling cadence
     rely on one source of truth, with focused regression coverage in
     `tests/sync-run-status.test.ts`.
+  - enabled explicit refetch on window focus/reconnect for sync-run queries so
+    users returning to Settings see fresh queue state immediately.
 
 ## 2026-05-17
 

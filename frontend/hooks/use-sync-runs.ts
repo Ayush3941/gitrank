@@ -12,6 +12,8 @@ export function useSyncRuns(limit = 25) {
     queryKey: ["sync", "runs", limit],
     queryFn: () => listMySyncRuns(limit),
     staleTime: 30_000,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
     refetchInterval: (query) =>
       hasActiveSyncRuns(query.state.data as ApiSyncRunListResponse | undefined)
         ? SYNC_RUNS_ACTIVE_REFETCH_INTERVAL_MS
