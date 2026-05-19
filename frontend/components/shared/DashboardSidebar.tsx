@@ -41,7 +41,7 @@ export function DashboardSidebar() {
           <p
             role="status"
             aria-live="polite"
-            className="inline-flex items-center gap-2 rounded-full border border-primary/22 bg-primary/10 px-2.5 py-1 text-xs text-cyan-100/90"
+            className="inline-flex items-center gap-2 border border-primary/22 bg-primary/10 px-2.5 py-1.5 text-xs text-cyan-100/90"
           >
             {ActiveLaneIcon ? <ActiveLaneIcon className="h-3.5 w-3.5 text-primary" /> : null}
             {activeItem ? `Current lane: ${activeItem.label}` : "Dashboard navigation"}
@@ -77,7 +77,7 @@ export function DashboardSidebar() {
                         )}
                       />
                       <span className="min-w-0 text-left">
-                        <span className="block break-anywhere font-semibold leading-5">{item.label}</span>
+                        <span className="block break-anywhere text-[0.95rem] font-semibold leading-5">{item.label}</span>
                         <span
                           className={cn(
                             "mt-0.5 block break-anywhere text-xs leading-5",

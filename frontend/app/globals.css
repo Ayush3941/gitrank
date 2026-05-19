@@ -456,37 +456,37 @@ select {
 }
 
 :where(.text-xs) {
-  font-size: 0.84rem;
-  line-height: 1.5;
+  font-size: 0.875rem;
+  line-height: 1.55;
   font-weight: 500;
 }
 
 html[data-text-scale="large"] :where(.text-xs) {
-  font-size: 0.92rem;
-  line-height: 1.54;
+  font-size: 0.96rem;
+  line-height: 1.6;
 }
 
 html[data-text-scale="large"] :where(.text-sm) {
-  font-size: 1rem;
-  line-height: 1.58;
+  font-size: 1.03rem;
+  line-height: 1.62;
 }
 
 [class*="text-[10px]"] {
-  font-size: 0.78rem !important;
-  line-height: 1.5 !important;
+  font-size: 0.82rem !important;
+  line-height: 1.52 !important;
 }
 
 [class*="text-[11px]"] {
-  font-size: 0.82rem !important;
-  line-height: 1.5 !important;
+  font-size: 0.86rem !important;
+  line-height: 1.54 !important;
 }
 
 html[data-text-scale="large"] [class*="text-[10px]"] {
-  font-size: 0.88rem !important;
+  font-size: 0.92rem !important;
 }
 
 html[data-text-scale="large"] [class*="text-[11px]"] {
-  font-size: 0.92rem !important;
+  font-size: 0.96rem !important;
 }
 
 :where(strong, b, th, h1, h2, h3, h4, h5, h6) {
