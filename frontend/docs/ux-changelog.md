@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- Public profile header-structure pass:
+  - added a route-level `PageHeader` to the public profile page with snapshot freshness and constrained-network context for consistency with other major product routes.
+  - moved the primary page-level heading responsibility to the route header and changed the profile hero display-name heading from `h1` to `h2` to keep heading hierarchy clearer.
 - Unique navigation landmark labeling pass:
   - added explicit per-route landmark labels for all `SectionJumpNav` usages (dashboard, contributions, badges, quests, settings, leaderboard, public profile, PR report).
   - updated shared `SectionJumpNav` to accept `landmarkLabel`, improving screen-reader landmark navigation when multiple nav regions are present on the same page.

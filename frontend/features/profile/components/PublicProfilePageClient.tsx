@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Award, CalendarClock, CheckCircle2, GitPullRequest, ShieldCheck, Stars } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -8,12 +9,15 @@ import { ExpandableText } from "@/components/shared/ExpandableText";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
 import { SkillRadarChart } from "@/components/shared/SkillRadarChart";
+import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { TimelineChart } from "@/components/shared/TimelineChart";
 import { RarityBadge } from "@/components/shared/RarityBadge";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
+import { ConstrainedNetworkPill } from "@/components/shared/ConstrainedNetworkPill";
 import { Button } from "@/components/ui/button";
 import { BestPRsPanel } from "@/features/profile/components/BestPRsPanel";
 import { PublicProfileHero } from "@/features/profile/components/PublicProfileHero";
@@ -214,6 +218,25 @@ export function PublicProfilePageClient({
 
   return (
     <div className="space-y-6">
+      <PageHeader
+        eyebrow="Public profile"
+        title={`${data.user.displayName} on GitRank`}
+        description="Share-ready contributor identity with evidence-backed score context, progression signals, and verifiable contribution highlights."
+        meta={(
+          <>
+            <SnapshotFreshnessPill
+              refreshedAt={data.refreshedAt}
+              label="Public snapshot"
+            />
+            <ConstrainedNetworkPill />
+          </>
+        )}
+        actions={(
+          <Button asChild variant="secondary">
+            <Link href="/dashboard">Open dashboard</Link>
+          </Button>
+        )}
+      />
       {data.isStale ? (
         <StaleState
           message={`This profile snapshot was refreshed ${formatRelativeDays(data.refreshedAt)}.`}

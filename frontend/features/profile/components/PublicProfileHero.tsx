@@ -45,7 +45,7 @@ export function PublicProfileHero({
             </div>
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-3">
-                <h1 className="break-anywhere text-3xl font-semibold text-white">{user.displayName}</h1>
+                <h2 className="break-anywhere text-3xl font-semibold text-white">{user.displayName}</h2>
                 <RankBadge rank={user.level.rankTier} />
               </div>
               <p className="text-sm text-muted">@{user.username}</p>
