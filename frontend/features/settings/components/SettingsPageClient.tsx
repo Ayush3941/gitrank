@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Download, FolderGit2, LogOut, Palette, RefreshCw, Sparkles, Trash2 } from "lucide-react";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { ConstrainedNetworkPill } from "@/components/shared/ConstrainedNetworkPill";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -366,10 +367,13 @@ export function SettingsPageClient() {
         title="Settings and privacy"
         description="Choose what becomes public, which repositories stay visible, and how much of your GitRank profile is shared."
         meta={
-          <SnapshotFreshnessPill
-            refreshedAt={data?.refreshedAt}
-            label="Settings snapshot"
-          />
+          <>
+            <SnapshotFreshnessPill
+              refreshedAt={data?.refreshedAt}
+              label="Settings snapshot"
+            />
+            <ConstrainedNetworkPill />
+          </>
         }
         actions={(
           <div className="flex flex-wrap gap-2">

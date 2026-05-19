@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Flame, Radar, Sparkles, Swords } from "lucide-react";
 import { startTransition, useDeferredValue, useEffect, useMemo, useState, type ReactNode } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { ConstrainedNetworkPill } from "@/components/shared/ConstrainedNetworkPill";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { ExpandableText } from "@/components/shared/ExpandableText";
@@ -263,10 +264,13 @@ export function ContributionsPageClient() {
         title="Contribution drill-down"
         description="Achievement-grade contribution intelligence with score signals, timeline momentum, and AI-ready impact copy."
         meta={
-          <SnapshotFreshnessPill
-            refreshedAt={profile?.refreshedAt}
-            label="Contribution snapshot"
-          />
+          <>
+            <SnapshotFreshnessPill
+              refreshedAt={profile?.refreshedAt}
+              label="Contribution snapshot"
+            />
+            <ConstrainedNetworkPill />
+          </>
         }
         actions={(
           <Button asChild variant="secondary">

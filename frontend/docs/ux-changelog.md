@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Constrained-network visibility pass:
+  - added shared `ConstrainedNetworkPill` that surfaces active reduced-data/constrained-connection mode with reason hints (Save-Data, 2g/slow-2g, or reduced-data preference).
+  - attached this indicator to dashboard `PageHeader` meta lanes across Dashboard, Contributions, Badges, Quests, Leaderboard, and Settings.
+  - makes adaptive prefetch/polling reductions explicit to users so lower-refresh behavior is explainable rather than silent.
 - OAuth-start prefetch hardening pass:
   - disabled `next/link` prefetch on all `GET /oauth/github/start` entry links (marketing header/hero, onboarding connect/login/reveal).
   - avoids background route warmups from creating premature OAuth-start side effects (state/cookie generation before user intent).

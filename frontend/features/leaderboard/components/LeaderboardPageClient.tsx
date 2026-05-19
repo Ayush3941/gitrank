@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowUpRight, Target, Trophy } from "lucide-react";
 import { startTransition, useDeferredValue, useEffect, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { ConstrainedNetworkPill } from "@/components/shared/ConstrainedNetworkPill";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -183,10 +184,13 @@ export function LeaderboardPageClient() {
         title="Leaderboard arena"
         description="A time-windowed ranking snapshot weighted by meaningful merged work, review depth, tests, and project context."
         meta={
-          <SnapshotFreshnessPill
-            refreshedAt={myProfile?.refreshedAt}
-            label="Leaderboard context"
-          />
+          <>
+            <SnapshotFreshnessPill
+              refreshedAt={myProfile?.refreshedAt}
+              label="Leaderboard context"
+            />
+            <ConstrainedNetworkPill />
+          </>
         }
         actions={(
           <Button asChild variant="secondary">

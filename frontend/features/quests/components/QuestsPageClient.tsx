@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight, CalendarClock, Flame, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { ConstrainedNetworkPill } from "@/components/shared/ConstrainedNetworkPill";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -138,10 +139,13 @@ export function QuestsPageClient() {
         title="Quest board"
         description="Daily, weekly, and long-term missions from the backend quest engine with evidence-aware completion states."
         meta={
-          <SnapshotFreshnessPill
-            refreshedAt={data?.staleness?.refreshedAt ?? profile?.refreshedAt}
-            label="Quest snapshot"
-          />
+          <>
+            <SnapshotFreshnessPill
+              refreshedAt={data?.staleness?.refreshedAt ?? profile?.refreshedAt}
+              label="Quest snapshot"
+            />
+            <ConstrainedNetworkPill />
+          </>
         }
         actions={(
           <Button asChild variant="secondary">

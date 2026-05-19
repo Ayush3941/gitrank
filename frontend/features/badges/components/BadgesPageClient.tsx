@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Crown, ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import { startTransition, type ReactNode, useEffect, useRef, useState } from "react";
 import { ExpandableText } from "@/components/shared/ExpandableText";
+import { ConstrainedNetworkPill } from "@/components/shared/ConstrainedNetworkPill";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -224,10 +225,13 @@ export function BadgesPageClient() {
         title="Badge shelf"
         description="Turn each unlocked badge into a story, track locked paths, and frame progression as a visible contributor journey."
         meta={
-          <SnapshotFreshnessPill
-            refreshedAt={profile?.refreshedAt}
-            label="Badge snapshot"
-          />
+          <>
+            <SnapshotFreshnessPill
+              refreshedAt={profile?.refreshedAt}
+              label="Badge snapshot"
+            />
+            <ConstrainedNetworkPill />
+          </>
         }
         actions={(
           <Button asChild variant="secondary">

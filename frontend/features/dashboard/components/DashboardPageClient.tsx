@@ -15,6 +15,7 @@ import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
+import { ConstrainedNetworkPill } from "@/components/shared/ConstrainedNetworkPill";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -326,10 +327,13 @@ export function DashboardPageClient() {
         title="Command center"
         description="Snapshot-based contribution analytics, progression, and score explanations weighted toward meaningful merged work."
         meta={
-          <SnapshotFreshnessPill
-            refreshedAt={data?.refreshedAt}
-            label="Dashboard snapshot"
-          />
+          <>
+            <SnapshotFreshnessPill
+              refreshedAt={data?.refreshedAt}
+              label="Dashboard snapshot"
+            />
+            <ConstrainedNetworkPill />
+          </>
         }
         actions={(
           <Button asChild variant="secondary">
