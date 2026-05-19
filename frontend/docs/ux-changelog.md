@@ -15,6 +15,8 @@
   - introduced shared `shouldRequestAbraInsights` + deterministic identity-summary helper under `lib/ai/deterministic-identity-summary.ts`.
   - applied the evidence/privacy gate to dashboard, onboarding reveal, contributions, and badges surfaces so AI generation is skipped when users disable AI summaries or have no real contribution evidence.
   - wired deterministic fallback summaries into dashboard and onboarding hero/reveal panels to keep copy meaningful without synthetic claims.
+  - added deterministic archetype derivation from strongest-signal categories and wired it into dashboard, public profile, onboarding reveal, contributions, and badges headings.
+  - removed generic fallback archetype text when AI is skipped so progression labels stay evidence-linked instead of static.
 - Landing page deferred-render pass:
   - kept the hero section immediate, then deferred below-the-fold marketing sections (context lanes, journeys, solution loop, battle preview, anti-spam/CTA) using `DeferUntilVisible`.
   - added lightweight landing placeholders to keep the first paint responsive while preserving the same visual narrative and call-to-action flow.

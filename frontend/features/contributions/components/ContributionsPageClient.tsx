@@ -19,7 +19,10 @@ import { ContributionList } from "@/features/contributions/components/Contributi
 import { useContributions } from "@/hooks/use-contributions";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { Button } from "@/components/ui/button";
-import { shouldRequestAbraInsights } from "@/lib/ai/deterministic-identity-summary";
+import {
+  deriveDeterministicArchetype,
+  shouldRequestAbraInsights,
+} from "@/lib/ai/deterministic-identity-summary";
 import { formatRelativeDays } from "@/lib/formatters";
 import {
   monthTimeline,
@@ -164,6 +167,13 @@ export function ContributionsPageClient() {
   }, [filteredRows, profile, repositories.length, streak.currentStreakDays]);
 
   const abraInsights = useAbraInsights(abraPayload);
+  const fallbackArchetype = useMemo(
+    () =>
+      profile
+        ? deriveDeterministicArchetype(profile.user.strongestSignals)
+        : "Systems Builder",
+    [profile],
+  );
   const maxMonthlyXp = Math.max(1, ...monthly.map((point) => point.xp));
 
   useEffect(() => {
@@ -342,7 +352,7 @@ export function ContributionsPageClient() {
                       Contribution Ops
                     </p>
                     <h2 className="mt-3 text-2xl font-semibold text-white">
-                      {abraInsights.data?.archetype || "Systems Builder"} mode
+                      {abraInsights.data?.archetype ?? fallbackArchetype} mode
                     </h2>
                     <ExpandableText
                       text={

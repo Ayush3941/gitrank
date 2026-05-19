@@ -12,6 +12,7 @@ import { useMyProfile } from "@/hooks/use-profile";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import {
   buildDeterministicIdentitySummary,
+  deriveDeterministicArchetype,
   shouldRequestAbraInsights,
 } from "@/lib/ai/deterministic-identity-summary";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
@@ -78,6 +79,10 @@ export function RevealPanelContainer() {
     };
   }, [data, streak.currentStreakDays]);
   const abraInsights = useAbraInsights(abraPayload);
+  const fallbackArchetype = useMemo(
+    () => (data ? deriveDeterministicArchetype(data.user.strongestSignals) : "Systems Builder"),
+    [data],
+  );
   const fallbackIdentitySummary = useMemo(() => {
     if (!data) {
       return undefined;
@@ -124,7 +129,7 @@ export function RevealPanelContainer() {
   return (
     <RevealPanel
       user={data.user}
-      archetype={abraInsights.data?.archetype}
+      archetype={abraInsights.data?.archetype ?? fallbackArchetype}
       identitySummary={abraInsights.data?.identitySummary ?? fallbackIdentitySummary}
       aiMode={abraInsights.data?.generatedBy ?? "deterministic"}
     />

@@ -20,7 +20,10 @@ import { BadgeGrid } from "@/features/badges/components/BadgeGrid";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useBadges } from "@/hooks/use-badges";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
-import { shouldRequestAbraInsights } from "@/lib/ai/deterministic-identity-summary";
+import {
+  deriveDeterministicArchetype,
+  shouldRequestAbraInsights,
+} from "@/lib/ai/deterministic-identity-summary";
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { initialSectionFromHash } from "@/lib/section-nav";
@@ -117,6 +120,9 @@ export function BadgesPageClient() {
         }
       : null,
   );
+  const fallbackArchetype = profile
+    ? deriveDeterministicArchetype(profile.user.strongestSignals)
+    : "Systems Builder";
 
   useEffect(() => {
     if (isLoading || isError || !data || badgeViewedEventSent.current) {
@@ -264,7 +270,7 @@ export function BadgesPageClient() {
                       Achievement Forge
                     </p>
                     <h2 className="mt-3 text-2xl font-semibold text-white">
-                      {abraInsights.data?.archetype || "Systems Builder"} progression
+                      {abraInsights.data?.archetype ?? fallbackArchetype} progression
                     </h2>
                     <p className="mt-2 max-w-3xl text-sm text-slate-200/84">
                       {abraInsights.data?.identitySummary ||

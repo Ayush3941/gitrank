@@ -10,6 +10,29 @@ export function shouldRequestAbraInsights({
   return showAiSummaries && mergedPrCount > 0 && contributionCount > 0;
 }
 
+export function deriveDeterministicArchetype(strongestSignals: string[]): string {
+  const topSignal = strongestSignals[0]?.toLowerCase() ?? "";
+  if (topSignal.includes("security")) {
+    return "Guardian Engineer";
+  }
+  if (topSignal.includes("performance")) {
+    return "Performance Strategist";
+  }
+  if (topSignal.includes("architecture")) {
+    return "Systems Architect";
+  }
+  if (topSignal.includes("infrastructure") || topSignal.includes("devops")) {
+    return "Infrastructure Operator";
+  }
+  if (topSignal.includes("testing") || topSignal.includes("review")) {
+    return "Quality Champion";
+  }
+  if (topSignal.includes("documentation")) {
+    return "Knowledge Builder";
+  }
+  return "Systems Builder";
+}
+
 export function buildDeterministicIdentitySummary({
   displayName,
   rankTier,

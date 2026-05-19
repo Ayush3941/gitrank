@@ -24,6 +24,7 @@ import { StatCard } from "@/components/shared/StatCard";
 import { Button } from "@/components/ui/button";
 import {
   buildDeterministicIdentitySummary,
+  deriveDeterministicArchetype,
   shouldRequestAbraInsights,
 } from "@/lib/ai/deterministic-identity-summary";
 import { formatRelativeDays } from "@/lib/formatters";
@@ -202,6 +203,10 @@ export function DashboardPageClient() {
     };
   }, [streak.currentStreakDays, user]);
   const abraInsights = useAbraInsights(abraPayload);
+  const fallbackArchetype = useMemo(
+    () => (user ? deriveDeterministicArchetype(user.strongestSignals) : "Systems Builder"),
+    [user],
+  );
   const fallbackIdentitySummary = useMemo(() => {
     if (!data || !user) {
       return undefined;
@@ -352,7 +357,7 @@ export function DashboardPageClient() {
       <section id="dashboard-hero" className="scroll-mt-24">
         <DashboardHeroRankCard
           user={user}
-          archetype={abraInsights.data?.archetype}
+          archetype={abraInsights.data?.archetype ?? fallbackArchetype}
           identitySummary={abraInsights.data?.identitySummary ?? fallbackIdentitySummary}
           aiMode={abraInsights.data?.generatedBy ?? "deterministic"}
         />
