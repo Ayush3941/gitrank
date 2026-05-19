@@ -161,7 +161,7 @@ export function QuestsPageClient() {
           <div className="relative space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs tracking-[0.24em] text-cyan-100 uppercase">
+                <p className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-cyan-100">
                   <CalendarClock className="h-3.5 w-3.5" />
                   365-day contributor journey
                 </p>
@@ -189,7 +189,7 @@ export function QuestsPageClient() {
         <GlowCard className="space-y-4 border border-primary/18 bg-gradient-to-br from-slate-950/86 to-cyan-950/18">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs tracking-[0.24em] text-cyan-200 uppercase">Mission spotlight</p>
+              <p className="text-xs font-medium text-cyan-200">Mission spotlight</p>
               <h2 className="mt-2 text-2xl font-semibold text-white">Clear next moves</h2>
               <p className="mt-2 text-sm text-slate-200/82">
                 Progressive mission framing: take one action now, one this week, and one long-term objective.
@@ -392,7 +392,7 @@ function MissionSpotlightCard({
   if (!quest) {
     return (
       <div className="neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4">
-        <p className="text-xs tracking-[0.2em] text-primary uppercase">{title}</p>
+        <p className="text-xs font-medium text-primary">{title}</p>
         <p className="text-sm text-muted">{emptyCopy}</p>
         <Button asChild variant="secondary" size="sm">
           <Link href={href}>
@@ -410,7 +410,7 @@ function MissionSpotlightCard({
     <div className="neon-surface space-y-3 px-4 py-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs tracking-[0.2em] text-primary uppercase">{title}</p>
+          <p className="text-xs font-medium text-primary">{title}</p>
           <p className="mt-2 text-base font-semibold text-white">{quest.title}</p>
         </div>
         <span className="neon-chip neon-chip-info rounded-full px-2.5 py-1 text-xs font-semibold">

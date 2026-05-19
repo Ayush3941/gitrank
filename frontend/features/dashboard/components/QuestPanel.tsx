@@ -10,7 +10,7 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
     <GlowCard className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs tracking-[0.24em] text-primary uppercase">Active quests</p>
+          <p className="text-xs font-medium text-primary">Active quests</p>
           <h2 className="mt-2 text-2xl font-semibold text-white">Weak lanes become your next ladder.</h2>
         </div>
         <div className="neon-surface rounded-3xl p-3 text-primary">

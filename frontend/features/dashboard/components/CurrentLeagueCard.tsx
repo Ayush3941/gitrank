@@ -12,7 +12,7 @@ export function CurrentLeagueCard({ user }: { user: UserProfile }) {
     <GlowCard className="season-arena-card space-y-5 overflow-hidden">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs tracking-[0.24em] text-primary uppercase">Current league</p>
+          <p className="text-xs font-medium text-primary">Current league</p>
           <h2 className="mt-2 text-2xl font-semibold text-white">{user.level.rankTier}</h2>
           <p className="mt-2 text-sm text-muted">{user.rankProgress.season.windowLabel}</p>
         </div>
@@ -31,7 +31,7 @@ export function CurrentLeagueCard({ user }: { user: UserProfile }) {
       <div className="neon-tile rounded-[1.75rem] p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs tracking-[0.24em] text-muted uppercase">Promotion track</p>
+            <p className="text-xs font-medium text-muted">Promotion track</p>
             <p className="mt-2 text-sm text-slate-200">
               {user.rankProgress.nextTier
                 ? `${user.rankProgress.xpToNextTier.toLocaleString("en-US")} XP to ${user.rankProgress.nextTier}`
@@ -81,7 +81,7 @@ function Metric({
 }) {
   return (
     <div className="neon-metric rounded-3xl p-4">
-      <p className="text-xs tracking-[0.24em] text-muted uppercase">{label}</p>
+      <p className="text-xs font-medium text-muted">{label}</p>
       <div className="numeric-readout mt-2 flex items-center gap-2 text-xl font-semibold text-white">
         <span>{value}</span>
         {icon}

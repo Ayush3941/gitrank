@@ -13,7 +13,7 @@ export function LeaderboardArena({ snapshot }: { snapshot: LeaderboardSnapshot }
       <GlowCard strong className="season-arena-card cyber-hero-shell overflow-hidden">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
-            <div className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold tracking-[0.22em] text-primary uppercase">
+            <div className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold text-primary">
               <CalendarClock className="h-3.5 w-3.5" />
               {snapshot.season.status} season
             </div>
@@ -128,7 +128,7 @@ function Rule({
 }) {
   return (
     <div className="neon-surface rounded-[1.5rem] px-4 py-3">
-      <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-primary uppercase">
+      <div className="flex items-center gap-2 text-xs font-semibold text-primary">
         {icon}
         {label}
       </div>
@@ -174,7 +174,7 @@ function Metric({
 }) {
   return (
     <div className="neon-metric rounded-3xl px-4 py-3">
-      <p className="text-xs tracking-[0.24em] text-muted uppercase">{label}</p>
+      <p className="text-xs font-medium text-muted">{label}</p>
       <div className="numeric-readout mt-2 flex items-center gap-2 text-xl font-semibold text-white">
         <span>{value}</span>
         {icon}

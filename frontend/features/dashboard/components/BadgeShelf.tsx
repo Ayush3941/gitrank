@@ -15,7 +15,7 @@ export function BadgeShelf({ user }: { user: UserProfile }) {
   return (
     <GlowCard className="space-y-5">
       <div>
-        <p className="text-xs tracking-[0.24em] text-primary uppercase">Badge shelf</p>
+        <p className="text-xs font-medium text-primary">Badge shelf</p>
         <h2 className="mt-2 text-2xl font-semibold text-white">Unlocked proof and visible next targets</h2>
         <div className="mt-3 space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-200">

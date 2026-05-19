@@ -275,7 +275,7 @@ export function LeaderboardPageClient() {
           />
           <GlowCard className="space-y-4 border border-primary/20 bg-gradient-to-br from-slate-950/90 to-cyan-950/20">
             <div>
-              <p className="text-xs tracking-[0.24em] text-primary uppercase">Arena preview state</p>
+              <p className="text-xs font-medium text-primary">Arena preview state</p>
               <h2 className="mt-2 text-2xl font-semibold text-white">How ranking unlocks</h2>
               <p className="mt-2 text-sm text-slate-200/84">
                 When public participants are present, GitRank places profiles into weekly rank bands using score evidence quality, consistency, and merged impact.
@@ -303,7 +303,7 @@ export function LeaderboardPageClient() {
             <GlowCard className="space-y-4 border border-cyan-300/22 bg-gradient-to-br from-slate-950/88 to-cyan-950/24">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs tracking-[0.24em] text-cyan-200 uppercase">Your arena mission</p>
+                  <p className="text-xs font-medium text-cyan-200">Your arena mission</p>
                   <h2 className="mt-2 text-2xl font-semibold text-white">
                     #{snapshot.currentUser.rank} in {tab}
                   </h2>
@@ -359,7 +359,7 @@ export function LeaderboardPageClient() {
           ) : null}
           <LeaderboardArena snapshot={snapshot} />
           <GlowCard id="leaderboard-climb" className="scroll-mt-24 space-y-3 border border-fuchsia-300/22 bg-gradient-to-br from-slate-950/90 to-fuchsia-950/20">
-            <p className="text-xs tracking-[0.24em] text-fuchsia-200 uppercase">How to climb</p>
+            <p className="text-xs font-medium text-fuchsia-200">How to climb</p>
             <div className="grid gap-3 md:grid-cols-3">
               <ClimbTip title="Raise review depth" body="Address maintainer feedback loops quickly; review quality raises signal trust." />
               <ClimbTip title="Increase weekly impact" body="Prefer merged changes with measurable scope over low-signal micro churn." />
@@ -371,7 +371,7 @@ export function LeaderboardPageClient() {
       {sparseArena && snapshot ? (
         <GlowCard className="space-y-4 border border-amber-400/24 bg-amber-400/8">
           <div>
-            <p className="text-xs tracking-[0.24em] text-amber-100 uppercase">Arena preview mode</p>
+            <p className="text-xs font-medium text-amber-100">Arena preview mode</p>
             <h2 className="mt-2 text-2xl font-semibold text-white">Live competition is still warming up</h2>
             <p className="mt-2 readable-measure text-sm leading-7 text-amber-50/82">
               This lane has {rows.length} active public profiles right now. Ranking is live, but bracket density is still low.

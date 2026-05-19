@@ -8,7 +8,7 @@ export function ContributionTimelineCard({ user }: { user: UserProfile }) {
     <GlowCard className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs tracking-[0.24em] text-primary uppercase">Contribution timeline</p>
+          <p className="text-xs font-medium text-primary">Contribution timeline</p>
           <h2 className="mt-2 text-2xl font-semibold text-white">XP over time</h2>
         </div>
         <div className="neon-tile rounded-3xl p-3 text-primary">

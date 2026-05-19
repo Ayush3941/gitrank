@@ -13,7 +13,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
   return (
     <GlowCard className="space-y-5">
       <div>
-        <p className="text-xs tracking-[0.24em] text-primary uppercase">Recent battle reports</p>
+        <p className="text-xs font-medium text-primary">Recent battle reports</p>
         <h2 className="mt-2 text-2xl font-semibold text-white">High-signal PRs from the last cycle</h2>
         <div className="mt-3 flex flex-wrap gap-2 text-xs">
           <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
@@ -72,7 +72,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-xs tracking-[0.24em] text-primary uppercase">XP earned</p>
+                <p className="text-xs font-medium text-primary">XP earned</p>
                 <p className="numeric-readout mt-2 text-3xl font-semibold text-white">
                   {report.contribution.xpEarned.toLocaleString("en-US")}
                 </p>

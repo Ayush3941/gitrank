@@ -67,19 +67,19 @@ export function DashboardHeroRankCard({
       </div>
       <div className="grid gap-4 md:grid-cols-3">
         <div className="neon-metric rounded-[1.75rem] p-5">
-          <p className="text-xs tracking-[0.24em] text-primary uppercase">Level</p>
+          <p className="text-xs font-medium text-primary">Level</p>
           <p className="mt-3 text-4xl font-semibold text-white">
             <AnimatedNumber value={user.level.currentLevel} />
           </p>
         </div>
         <div className="neon-metric rounded-[1.75rem] p-5">
-          <p className="text-xs tracking-[0.24em] text-primary uppercase">Total XP</p>
+          <p className="text-xs font-medium text-primary">Total XP</p>
           <p className="mt-3 text-4xl font-semibold text-white">
             <AnimatedNumber value={user.level.currentXp} />
           </p>
         </div>
         <div className="neon-metric rounded-[1.75rem] p-5">
-          <p className="text-xs tracking-[0.24em] text-primary uppercase">Next title gate</p>
+          <p className="text-xs font-medium text-primary">Next title gate</p>
           <p className="mt-3 text-lg font-medium text-white">
             Reach <span className="numeric-readout">{user.level.nextLevelXp.toLocaleString("en-US")}</span> XP
           </p>
@@ -102,7 +102,7 @@ export function DashboardHeroRankCard({
       </div>
       {identitySummary ? (
         <div className="rounded-[1.75rem] border border-cyan-300/20 bg-cyan-400/8 p-4">
-          <p className="text-xs tracking-[0.24em] text-cyan-200 uppercase">
+          <p className="text-xs font-medium text-cyan-200">
             Open-source identity summary ({aiMode === "gemini" ? "Gemini" : "Deterministic"})
           </p>
           <ExpandableText
@@ -115,7 +115,7 @@ export function DashboardHeroRankCard({
         </div>
       ) : null}
       <div className="space-y-3">
-        <p className="text-xs tracking-[0.24em] text-primary uppercase">Top observed signals in this snapshot</p>
+        <p className="text-xs font-medium text-primary">Top observed signals in this snapshot</p>
         <div className="flex flex-wrap gap-2">
           {user.strongestSignals.map((signal) => (
             <div key={signal} className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm">

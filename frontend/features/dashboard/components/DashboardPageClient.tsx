@@ -328,7 +328,7 @@ export function DashboardPageClient() {
       </section>
       <section id="dashboard-snapshot" className="scroll-mt-24 grid gap-4 xl:grid-cols-[1.25fr,1fr]">
         <div className="glass-panel cyber-card cyber-frame space-y-4 p-5 sm:p-6">
-          <p className="text-xs tracking-[0.22em] text-primary uppercase">Immediate next move</p>
+          <p className="text-xs font-medium text-primary">Immediate next move</p>
           <h2 className="text-2xl font-semibold text-white">{nextAction.label}</h2>
           <p className="readable-measure text-sm leading-7 text-muted">{nextAction.detail}</p>
           <div className="flex flex-wrap gap-2 pt-1">
@@ -371,7 +371,7 @@ export function DashboardPageClient() {
       <GlowCard className="space-y-4 border border-primary/22 bg-gradient-to-br from-slate-950/90 to-cyan-950/18">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-xs tracking-[0.24em] text-primary uppercase">Evidence context</p>
+            <p className="text-xs font-medium text-primary">Evidence context</p>
             <h2 className="mt-2 text-2xl font-semibold text-white">How current this snapshot is</h2>
             <p className="mt-2 text-sm text-slate-200/84">
               Dashboard values are generated from persisted score and profile evidence. Use this strip to confirm freshness and scope before making comparisons.
@@ -477,7 +477,7 @@ function FirstRunChecklistCard({
     <GlowCard className="space-y-4 border border-cyan-300/25 bg-gradient-to-br from-slate-950/90 to-cyan-950/20">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="inline-flex items-center gap-2 text-xs tracking-[0.24em] text-cyan-200 uppercase">
+          <p className="inline-flex items-center gap-2 text-xs font-medium text-cyan-200">
             <ListChecks className="h-3.5 w-3.5" />
             First-run checklist
           </p>
@@ -491,7 +491,7 @@ function FirstRunChecklistCard({
         </span>
       </div>
       <div className="space-y-2">
-        <div className="flex items-center justify-between text-xs tracking-[0.2em] text-primary uppercase">
+        <div className="flex items-center justify-between text-xs font-medium text-primary">
           <span>Progress</span>
           <span className="numeric-readout">{progress}%</span>
         </div>
@@ -556,7 +556,7 @@ function EvidenceContextItem({
 }) {
   return (
     <div className="neon-surface space-y-2 px-4 py-4">
-      <p className="text-xs tracking-[0.2em] text-primary uppercase">{label}</p>
+      <p className="text-xs font-medium text-primary">{label}</p>
       <p className="text-lg font-semibold text-white">{value}</p>
       <p className="text-xs text-slate-200/84">{detail}</p>
     </div>

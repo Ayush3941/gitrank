@@ -6,7 +6,7 @@ export function ScoreExplanationCard({ user }: { user: UserProfile }) {
   return (
     <GlowCard className="space-y-5">
       <div>
-        <p className="text-xs tracking-[0.24em] text-primary uppercase">Why your score changed this week</p>
+        <p className="text-xs font-medium text-primary">Why your score changed this week</p>
         <h2 className="mt-2 text-2xl font-semibold text-white">Transparent XP sources and penalties</h2>
       </div>
       <div className="space-y-3">
