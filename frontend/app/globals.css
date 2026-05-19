@@ -255,8 +255,8 @@ select {
     [role="tab"],
     [role="switch"]
   ) {
-  transition-property: color, background-color, border-color, opacity, transform;
-  transition-duration: 160ms;
+  transition-property: color, background-color, border-color, opacity;
+  transition-duration: 110ms;
   transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
 
@@ -403,8 +403,20 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   letter-spacing: var(--eyebrow-tracking-tight) !important;
 }
 
+[class*="tracking-[0.18em]"],
+[class*="tracking-[0.14em]"],
+[class*="tracking-[0.12em]"] {
+  letter-spacing: 0.06em !important;
+}
+
 [class*="tracking-[0.32em]"] {
   letter-spacing: 0.12em !important;
+}
+
+[class*="uppercase"][class*="tracking-["],
+.cyber-data-badge,
+.hud-eyebrow {
+  text-transform: none !important;
 }
 
 .glass-panel {
@@ -1205,56 +1217,56 @@ html[data-theme="high-contrast"] .neon-title {
   display: none;
 }
 
-html[data-gamification="reduced"] .player-card-shell::before,
-html[data-gamification="reduced"] .season-arena-card::before,
-html[data-gamification="reduced"] .rank-orbit::after,
-html[data-gamification="reduced"] .rarity-badge::after,
-html[data-gamification="reduced"] .cyber-sheen::after,
-html[data-gamification="reduced"] .cyber-card::after,
-html[data-gamification="reduced"] .neon-skeleton,
-html[data-gamification="reduced"] body::before {
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .player-card-shell::before,
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .season-arena-card::before,
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .rank-orbit::after,
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .rarity-badge::after,
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .cyber-sheen::after,
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .cyber-card::after,
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .neon-skeleton,
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) body::before {
   animation: none !important;
 }
 
-html[data-gamification="reduced"] .glass-panel,
-html[data-gamification="reduced"] .glass-panel-strong,
-html[data-gamification="reduced"] .rank-orbit {
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .glass-panel,
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .glass-panel-strong,
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .rank-orbit {
   box-shadow:
     0 10px 32px rgb(1 5 20 / 0.36),
     inset 0 1px 0 rgb(255 255 255 / 0.06);
 }
 
-html[data-gamification="reduced"] .glass-panel,
-html[data-gamification="reduced"] .glass-panel-strong,
-html[data-gamification="reduced"] .neon-surface,
-html[data-gamification="reduced"] .neon-surface-strong,
-html[data-gamification="reduced"] .neon-metric,
-html[data-gamification="reduced"] .neon-tile,
-html[data-gamification="reduced"] .cyber-card {
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .glass-panel,
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .glass-panel-strong,
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .neon-surface,
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .neon-surface-strong,
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .neon-metric,
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .neon-tile,
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .cyber-card {
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
 }
 
-html[data-gamification="reduced"] .glass-panel,
-html[data-gamification="reduced"] .neon-surface,
-html[data-gamification="reduced"] .neon-metric,
-html[data-gamification="reduced"] .neon-tile,
-html[data-gamification="reduced"] .cyber-card {
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .glass-panel,
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .neon-surface,
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .neon-metric,
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .neon-tile,
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .cyber-card {
   background:
     linear-gradient(180deg, rgb(255 255 255 / 0.03), rgb(255 255 255 / 0.01)),
     rgb(var(--card) / 0.92);
 }
 
-html[data-gamification="reduced"] .glass-panel-strong,
-html[data-gamification="reduced"] .neon-surface-strong {
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .glass-panel-strong,
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .neon-surface-strong {
   background:
     linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.02)),
     rgb(var(--card-2) / 0.94);
 }
 
-html[data-gamification="reduced"] .panel-grid,
-html[data-gamification="reduced"] .page-shell::before,
-html[data-gamification="reduced"] .page-shell::after {
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .panel-grid,
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .page-shell::before,
+:where(html:not([data-gamification]), html[data-gamification="reduced"]) .page-shell::after {
   display: none !important;
 }
 

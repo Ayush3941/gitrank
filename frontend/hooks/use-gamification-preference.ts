@@ -18,7 +18,7 @@ export function useGamificationPreference() {
   const reducedGamification = useSyncExternalStore(
     subscribe,
     getReducedGamificationSnapshot,
-    () => false,
+    () => true,
   );
 
   const setReducedGamification = useCallback((value: boolean) => {
@@ -96,7 +96,7 @@ function subscribe(callback: () => void) {
 
 function getReducedGamificationSnapshot() {
   if (typeof window === "undefined") {
-    return false;
+    return true;
   }
 
   const storedPreference = window.localStorage.getItem(STORAGE_KEY);
@@ -107,9 +107,7 @@ function getReducedGamificationSnapshot() {
     return false;
   }
 
-  const reducedMotion = window.matchMedia(REDUCED_MOTION_QUERY).matches;
-  const saveData = (window.navigator as NavigatorWithConnection).connection?.saveData === true;
-  return reducedMotion || saveData;
+  return true;
 }
 
 function applyGamificationPreference(reduced: boolean) {
