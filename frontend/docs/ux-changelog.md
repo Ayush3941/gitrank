@@ -7,6 +7,10 @@
   - removed top-bar lane-hint truncation in favor of readable wrapped hint copy.
   - added a compact mobile/tablet `Profile` button while keeping full `View public profile` copy for larger breakpoints.
   - aligned top-bar loading skeleton structure with the new layout to reduce hydration layout shifts.
+- Marketing-page semantic-card pass:
+  - converted repeated journey, progression-loop, and badge-lane card grids to semantic list markup (`ul/li`, `ol/li`) for clearer assistive-tech navigation.
+  - raised low-opacity marketing copy to stronger readable tokens (`text-muted` / solid amber) in high-importance narrative blocks.
+  - preserves existing visual hierarchy and route flow while strengthening scanability and accessibility semantics.
 - Cross-surface readability + nav-density pass:
   - raised global microtext baselines (`text-xs`, `text-[10px]`, `text-[11px]`, and large-text-scale variants) for stronger dark-theme legibility on dashboard-heavy lanes.
   - increased mobile dashboard nav readability by enlarging active-lane copy and lane labels while preserving five-lane layout and touch-target footprint.

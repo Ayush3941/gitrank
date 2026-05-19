@@ -111,8 +111,9 @@ export function LandingPage() {
       </DeferUntilVisible>
 
       <DeferUntilVisible fallback={<LandingSectionPlaceholder title="Loading journey flows" />}>
-      <section className="render-opt-section grid gap-6 lg:grid-cols-3">
-        {[
+      <section className="render-opt-section">
+        <ul role="list" className="grid gap-6 lg:grid-cols-3">
+          {[
           {
             lane: "New contributor",
             mission: "Connect GitHub and unlock first score snapshot.",
@@ -128,13 +129,16 @@ export function LandingPage() {
             mission: "Turn contribution history into a public credibility card.",
             success: "Success moment: shareable profile headline and card data exported.",
           },
-        ].map((journey) => (
-          <GlowCard key={journey.lane} className="space-y-3">
+          ].map((journey) => (
+          <li key={journey.lane}>
+            <GlowCard className="space-y-3">
             <p className="text-xs font-medium text-primary">{journey.lane}</p>
             <h3 className="text-xl font-semibold text-white">{journey.mission}</h3>
-            <p className="text-sm text-slate-200/82">{journey.success}</p>
-          </GlowCard>
-        ))}
+            <p className="text-sm text-muted">{journey.success}</p>
+            </GlowCard>
+          </li>
+          ))}
+        </ul>
       </section>
       </DeferUntilVisible>
 
@@ -165,14 +169,14 @@ export function LandingPage() {
             title="A serious progression loop"
             description="Structured like an RPG profile and battle pass, but disciplined enough for maintainers and hiring teams."
           />
-          <div className="grid gap-3 sm:grid-cols-2">
+          <ol className="grid gap-3 sm:grid-cols-2">
             {loop.map((step, index) => (
-              <div key={step} className="neon-surface rounded-3xl p-4">
+              <li key={step} className="neon-surface rounded-3xl p-4">
                 <p className="text-xs font-medium text-primary">Step {index + 1}</p>
                 <p className="mt-2 text-lg font-medium text-white">{step}</p>
-              </div>
+              </li>
             ))}
-          </div>
+          </ol>
         </GlowCard>
       </section>
       </DeferUntilVisible>
@@ -205,22 +209,22 @@ export function LandingPage() {
             title="Visible milestones, not vanity clutter"
             description="Badges are unlocked by sustained evidence. Legendary badges stay locked until the work deserves them."
           />
-          <div className="grid gap-3 sm:grid-cols-2">
+          <ul role="list" className="grid gap-3 sm:grid-cols-2">
             {[
               "Merged contribution cadence",
               "Review depth consistency",
               "Testing and reliability signal",
               "Cross-repository impact",
             ].map((lane) => (
-              <div key={lane} className="neon-surface rounded-[1.75rem] p-4">
+              <li key={lane} className="neon-surface rounded-[1.75rem] p-4">
                 <p className="text-xs font-medium text-primary">Badge lane</p>
                 <h3 className="mt-3 text-lg font-semibold text-white">{lane}</h3>
                 <p className="mt-2 text-sm text-muted">
                   This lane remains locked until real evidence is ingested from your GitHub history.
                 </p>
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
         </GlowCard>
       </section>
       </DeferUntilVisible>
@@ -233,7 +237,7 @@ export function LandingPage() {
             Anti-spam promise
           </div>
           <h2 className="text-2xl font-semibold text-amber-50">Spam PRs do not make you powerful here.</h2>
-          <p className="readable-measure max-w-[68ch] text-sm leading-7 text-amber-50/80">
+          <p className="readable-measure max-w-[68ch] text-sm leading-7 text-amber-50">
             Low-context noise, unreviewed changes, and thin contribution floods are scored down. Transparent scoring is the product, not a hidden trick.
           </p>
         </GlowCard>
@@ -245,7 +249,7 @@ export function LandingPage() {
               Ready to rank your work?
             </div>
             <h2 className="text-3xl font-semibold text-white">Build a profile that recruiters and maintainers can actually trust.</h2>
-            <p className="readable-measure max-w-[68ch] text-sm leading-7 text-slate-200/80">The goal is a legible contribution snapshot, not an absolute ranking of developer worth.</p>
+            <p className="readable-measure max-w-[68ch] text-sm leading-7 text-muted">The goal is a legible contribution snapshot, not an absolute ranking of developer worth.</p>
           </div>
           <Button asChild size="lg">
             <Link href="/oauth/github/start?return_to=/dashboard" prefetch={false}>Start the reveal</Link>
