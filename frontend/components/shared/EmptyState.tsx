@@ -13,6 +13,9 @@ export function EmptyState({
   actionLabel,
   actionHref,
   onAction,
+  secondaryActionLabel,
+  secondaryActionHref,
+  onSecondaryAction,
   analyticsTarget,
 }: {
   title: string;
@@ -20,6 +23,9 @@ export function EmptyState({
   actionLabel?: string;
   actionHref?: string;
   onAction?: () => void;
+  secondaryActionLabel?: string;
+  secondaryActionHref?: string;
+  onSecondaryAction?: () => void;
   analyticsTarget?: string;
 }) {
   const sentEventRef = useRef(false);
@@ -47,15 +53,29 @@ export function EmptyState({
         <h2 className="text-xl font-semibold text-white">{title}</h2>
         <p className="max-w-xl text-sm text-slate-100">{description}</p>
       </div>
-      {actionLabel && actionHref ? (
-        <Button asChild>
-          <Link href={actionHref}>{actionLabel}</Link>
-        </Button>
-      ) : null}
-      {actionLabel && !actionHref && onAction ? (
-        <Button onClick={onAction}>
-          {actionLabel}
-        </Button>
+      {actionLabel || secondaryActionLabel ? (
+        <div className="flex flex-wrap gap-2">
+          {actionLabel && actionHref ? (
+            <Button asChild>
+              <Link href={actionHref}>{actionLabel}</Link>
+            </Button>
+          ) : null}
+          {actionLabel && !actionHref && onAction ? (
+            <Button onClick={onAction}>
+              {actionLabel}
+            </Button>
+          ) : null}
+          {secondaryActionLabel && secondaryActionHref ? (
+            <Button asChild variant="secondary">
+              <Link href={secondaryActionHref}>{secondaryActionLabel}</Link>
+            </Button>
+          ) : null}
+          {secondaryActionLabel && !secondaryActionHref && onSecondaryAction ? (
+            <Button variant="secondary" onClick={onSecondaryAction}>
+              {secondaryActionLabel}
+            </Button>
+          ) : null}
+        </div>
       ) : null}
     </GlowCard>
   );

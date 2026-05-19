@@ -383,6 +383,8 @@ export function BadgesPageClient() {
             description="Complete your first meaningful merged PR to start unlocking visible reputation proof."
             actionLabel="Open quests"
             actionHref="/dashboard/quests"
+            secondaryActionLabel="Open contributions"
+            secondaryActionHref="/dashboard/contributions"
             analyticsTarget="badges:empty"
           />
         ) : null}

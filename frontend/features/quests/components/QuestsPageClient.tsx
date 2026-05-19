@@ -253,6 +253,8 @@ export function QuestsPageClient() {
           description="Leaderboard unlocks after your first verified score, and quests sharpen once the system sees enough meaningful work."
           actionLabel="Sync profile"
           actionHref="/dashboard/settings"
+          secondaryActionLabel="Open contributions"
+          secondaryActionHref="/dashboard/contributions"
           analyticsTarget="quests:empty"
         />
       ) : null}

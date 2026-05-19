@@ -168,6 +168,8 @@ export function PublicProfilePageClient({
         description="This profile is hidden, missing, or has not earned a public GitRank score yet."
         actionLabel="Open dashboard"
         actionHref="/dashboard"
+        secondaryActionLabel="Open homepage"
+        secondaryActionHref="/"
         analyticsTarget="public-profile:empty"
       />
     );

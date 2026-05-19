@@ -124,6 +124,11 @@
     allows cool-down-based retry recovery after repeated transient failures
   - prevents long-lived sessions from getting stuck after one burst of sync
     timeouts while still rate-limiting repeated attempts.
+- Empty-state recovery-path expansion:
+  - shared `EmptyState` now supports a secondary CTA so no-data views can offer
+    both a primary next step and a fallback route
+  - wired dual-path actions into contributions, badges, quests, PR report, and
+    public-profile empty states to reduce dead-end navigation.
 
 ## 2026-05-17
 

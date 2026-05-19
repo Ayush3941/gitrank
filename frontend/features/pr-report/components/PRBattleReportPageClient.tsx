@@ -127,6 +127,8 @@ export function PRBattleReportPageClient({
         description="This PR either has not been synced, is private, or has not produced a persisted analysis and score report yet."
         actionLabel="Open contributions"
         actionHref="/dashboard/contributions"
+        secondaryActionLabel="Open settings"
+        secondaryActionHref="/dashboard/settings"
         analyticsTarget="pr-report:empty"
       />
     );
