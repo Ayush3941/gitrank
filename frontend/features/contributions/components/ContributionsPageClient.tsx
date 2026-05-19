@@ -313,8 +313,7 @@ export function ContributionsPageClient() {
       {!isLoading && !isError && profile ? (
         <section id="contributions-overview" className="render-opt-section scroll-mt-24">
           <GlowCard strong className="cyber-hero-shell relative overflow-hidden">
-          <div className="cyber-hero-overlay pointer-events-none absolute inset-0" />
-          <div className="relative space-y-4">
+          <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-cyan-100">

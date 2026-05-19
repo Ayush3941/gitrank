@@ -31,6 +31,11 @@
   - removed `panel-grid` texture from marketing shell header/footer, landing
     hero shell, and onboarding reveal shells to reduce visual clutter and
     improve first-screen readability.
+- Hero-overlay cleanup in high-traffic app tabs:
+  - removed decorative `cyber-hero-overlay` layers from contribution, quest,
+    and badge hero summary cards
+  - retained existing card structure/content while reducing non-informational
+    compositing in primary dashboard routes.
 
 ## 2026-05-17
 
