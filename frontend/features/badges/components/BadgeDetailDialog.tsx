@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ExpandableText } from "@/components/shared/ExpandableText";
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { RarityBadge } from "@/components/shared/RarityBadge";
 import { SignalIcon } from "@/components/shared/SignalIcon";
@@ -27,6 +27,9 @@ export function BadgeDetailDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <div className="space-y-5">
+          <DialogDescription className="sr-only">
+            Badge detail panel with unlock condition, progress, and qualifying evidence links.
+          </DialogDescription>
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-3">
               <div className="neon-tile cyber-sheen inline-flex rounded-3xl p-3 text-primary">

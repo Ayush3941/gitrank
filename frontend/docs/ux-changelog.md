@@ -52,6 +52,9 @@
     keep neon hierarchy while lowering paint-heavy glow effects
   - reduced global top fetch-indicator glow intensity for calmer visual
     feedback during background network activity.
+- Badge modal accessibility semantics pass:
+  - added explicit `DialogDescription` to badge detail modal so assistive tech
+    receives structural context on open (purpose + expected content).
 
 ## 2026-05-17
 
