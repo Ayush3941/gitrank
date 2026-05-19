@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Mobile quick-controls state visibility pass:
+  - updated mobile display controls to show current state labels directly on each button (`Theme`, `Text`, `Effects`) instead of generic labels only.
+  - added compact active-state styling for non-default text scale and reduced-effects mode to improve at-a-glance orientation.
+  - keeps existing shortcuts and interactions unchanged while reducing settings round-trips.
 - Dashboard top-bar wayfinding pass:
   - added a visible current-lane context chip in the top bar (`Dashboard`, `Contributions`, `Badges`, `Quests`, `Settings`) so route context stays obvious when the sidebar is off-screen.
   - reduced top-bar control crowding by moving display toggles (effects/theme/text) to very wide breakpoints only, while preserving quick controls in sidebar/mobile nav.
