@@ -19,6 +19,7 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
+import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
 import { Button } from "@/components/ui/button";
@@ -324,6 +325,12 @@ export function DashboardPageClient() {
         eyebrow="Dashboard"
         title="Command center"
         description="Snapshot-based contribution analytics, progression, and score explanations weighted toward meaningful merged work."
+        meta={
+          <SnapshotFreshnessPill
+            refreshedAt={data?.refreshedAt}
+            label="Dashboard snapshot"
+          />
+        }
         actions={(
           <Button asChild variant="secondary">
             <Link href="/dashboard/settings">Sync and privacy</Link>

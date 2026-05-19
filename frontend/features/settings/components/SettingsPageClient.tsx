@@ -9,6 +9,7 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
+import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { SyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
@@ -364,6 +365,12 @@ export function SettingsPageClient() {
         eyebrow="Settings"
         title="Settings and privacy"
         description="Choose what becomes public, which repositories stay visible, and how much of your GitRank profile is shared."
+        meta={
+          <SnapshotFreshnessPill
+            refreshedAt={data?.refreshedAt}
+            label="Settings snapshot"
+          />
+        }
         actions={(
           <div className="flex flex-wrap gap-2">
             <Button asChild variant="secondary">

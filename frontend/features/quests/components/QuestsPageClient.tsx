@@ -11,6 +11,7 @@ import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
 import { SectionHeader } from "@/components/shared/SectionHeader";
+import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { StaleState } from "@/components/shared/StaleState";
 import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { Button } from "@/components/ui/button";
@@ -136,6 +137,12 @@ export function QuestsPageClient() {
         eyebrow="Quests"
         title="Quest board"
         description="Daily, weekly, and long-term missions from the backend quest engine with evidence-aware completion states."
+        meta={
+          <SnapshotFreshnessPill
+            refreshedAt={data?.staleness?.refreshedAt ?? profile?.refreshedAt}
+            label="Quest snapshot"
+          />
+        }
         actions={(
           <Button asChild variant="secondary">
             <Link href="/dashboard/contributions">Open contributions</Link>

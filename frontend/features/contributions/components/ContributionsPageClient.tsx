@@ -12,6 +12,7 @@ import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
 import { SectionHeader } from "@/components/shared/SectionHeader";
+import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { StaleState } from "@/components/shared/StaleState";
 import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
@@ -261,6 +262,12 @@ export function ContributionsPageClient() {
         eyebrow="Contributions"
         title="Contribution drill-down"
         description="Achievement-grade contribution intelligence with score signals, timeline momentum, and AI-ready impact copy."
+        meta={
+          <SnapshotFreshnessPill
+            refreshedAt={profile?.refreshedAt}
+            label="Contribution snapshot"
+          />
+        }
         actions={(
           <Button asChild variant="secondary">
             <Link href="/dashboard/settings">Sync settings</Link>

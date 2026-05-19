@@ -11,6 +11,7 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
+import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { StaleState } from "@/components/shared/StaleState";
 import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { Progress } from "@/components/ui/progress";
@@ -222,6 +223,12 @@ export function BadgesPageClient() {
         eyebrow="Badges"
         title="Badge shelf"
         description="Turn each unlocked badge into a story, track locked paths, and frame progression as a visible contributor journey."
+        meta={
+          <SnapshotFreshnessPill
+            refreshedAt={profile?.refreshedAt}
+            label="Badge snapshot"
+          />
+        }
         actions={(
           <Button asChild variant="secondary">
             <Link href="/dashboard/quests">Open quests</Link>

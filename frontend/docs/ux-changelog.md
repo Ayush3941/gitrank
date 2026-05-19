@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Snapshot-freshness visibility pass:
+  - added shared `SnapshotFreshnessPill` component with relative + exact timestamp hints.
+  - extended `PageHeader` with an optional `meta` lane for compact status chips under header copy.
+  - wired freshness pills into Dashboard, Contributions, Badges, Quests, Leaderboard, and Settings headers so each major route now shows "last refreshed" context without requiring stale/error states to trigger first.
 - Adaptive polling pass for constrained networks:
   - `useMyProfile` now uses longer stale-time and slower auto-poll intervals when reduced-data/constrained-network mode is detected.
   - `useSyncRuns` now also shifts to slower active/idle polling windows on constrained networks and disables focus-triggered refetch bursts in that mode.

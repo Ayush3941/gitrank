@@ -5,12 +5,14 @@ export function PageHeader({
   eyebrow = "Signal Board",
   title,
   description,
+  meta,
   actions,
   className,
 }: {
   eyebrow?: string;
   title: string;
   description: string;
+  meta?: ReactNode;
   actions?: ReactNode;
   className?: string;
 }) {
@@ -21,6 +23,7 @@ export function PageHeader({
         <h1 className="neon-title cyber-title break-anywhere text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h1>
         <p className="cyber-copy-muted readable-measure break-anywhere max-w-[72ch] text-sm leading-7 sm:text-base">{description}</p>
         <div className="cyber-divider max-w-3xl" />
+        {meta ? <div className="flex flex-wrap items-center gap-2">{meta}</div> : null}
       </div>
       {actions}
     </header>

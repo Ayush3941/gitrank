@@ -12,6 +12,7 @@ import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { CopyLinkButton } from "@/components/shared/CopyLinkButton";
 import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
+import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { StaleState } from "@/components/shared/StaleState";
 import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { Button } from "@/components/ui/button";
@@ -181,6 +182,12 @@ export function LeaderboardPageClient() {
         eyebrow="Leaderboard"
         title="Leaderboard arena"
         description="A time-windowed ranking snapshot weighted by meaningful merged work, review depth, tests, and project context."
+        meta={
+          <SnapshotFreshnessPill
+            refreshedAt={myProfile?.refreshedAt}
+            label="Leaderboard context"
+          />
+        }
         actions={(
           <Button asChild variant="secondary">
             <Link href="/dashboard/contributions">Open contributions</Link>
