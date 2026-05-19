@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- Constrained-device chart fallback pass:
+  - `SkillRadarChart` and `TimelineChart` now skip heavy chart rendering in constrained-network or reduced-gamification mode and render lightweight static bar summaries instead.
+  - keeps metric visibility and section semantics intact while reducing dynamic chart work on low-end or reduced-data devices.
 - Public profile header-structure pass:
   - added a route-level `PageHeader` to the public profile page with snapshot freshness and constrained-network context for consistency with other major product routes.
   - moved the primary page-level heading responsibility to the route header and changed the profile hero display-name heading from `h1` to `h2` to keep heading hierarchy clearer.
