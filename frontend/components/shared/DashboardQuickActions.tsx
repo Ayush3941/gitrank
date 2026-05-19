@@ -308,7 +308,7 @@ export function DashboardQuickActions({
               aria-controls="dashboard-quick-actions-list"
               aria-activedescendant={highlightedAction ? optionIdForAction(highlightedAction.id) : undefined}
             />
-            <span className="text-[11px] tracking-[0.12em] text-cyan-200 uppercase">{shortcutHint}</span>
+            <span className="text-[11px] font-medium text-cyan-200">{shortcutHint}</span>
           </div>
           {!displayShortcutsEnabled ? (
             <p className="text-xs text-amber-100">
@@ -340,7 +340,7 @@ export function DashboardQuickActions({
             {groupedActions.length > 0 ? (
               groupedActions.map((group) => (
                 <section key={group.title} className="space-y-2">
-                  <p className="px-1 text-[11px] tracking-[0.14em] text-cyan-200 uppercase">
+                  <p className="px-1 text-[11px] font-medium text-cyan-200">
                     {group.title}
                   </p>
                   <div className="space-y-2">

@@ -30,7 +30,7 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
         <p className="sr-only">Contribution quality timeline showing cumulative XP growth over time.</p>
       </div>
       <details className="neon-surface px-4 py-3">
-        <summary className="cursor-pointer text-xs font-semibold tracking-[0.2em] text-primary uppercase">
+        <summary className="cursor-pointer text-xs font-semibold text-primary">
           Timeline summary
         </summary>
         <p className="mt-2 text-sm text-slate-200/86">
