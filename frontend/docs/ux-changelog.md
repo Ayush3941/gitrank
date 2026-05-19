@@ -96,6 +96,9 @@
     `DashboardTopBar` to dynamic client loading
   - shortcut-help dialog now mounts only when opened, reducing always-mounted
     dashboard top-bar module weight.
+- Dead utility cleanup:
+  - removed unused `.grid-fade` utility class from global stylesheet to keep
+    CSS surface area tighter.
 
 ## 2026-05-17
 

@@ -1324,10 +1324,6 @@ html[data-theme="high-contrast"] .neon-title {
   display: none !important;
 }
 
-.grid-fade {
-  mask-image: linear-gradient(180deg, black, transparent);
-}
-
 .scrollbar-thin {
   scrollbar-width: thin;
   scrollbar-color: rgb(var(--primary) / 0.5) transparent;
