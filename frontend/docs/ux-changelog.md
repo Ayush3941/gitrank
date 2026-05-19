@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- Page-header measure consistency pass:
+  - aligned shared `PageHeader` description max width to `68ch` to match project readability baseline.
+  - improves long-form header scan comfort on wider displays without changing route structure or content.
 - Copy-action layout stability pass:
   - made shared copy-text controls use a stable minimum width for non-icon variants so state transitions (`Copy` -> `Copied`) do not shift nearby layout.
   - improves header and section-nav interaction polish where copy-link controls are frequently used.
