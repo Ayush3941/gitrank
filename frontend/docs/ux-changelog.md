@@ -5,6 +5,7 @@
 - Settings deferred-render pass:
   - applied `DeferUntilVisible` to sync activity, profile privacy, display controls, repository visibility, and data-control sections.
   - added lightweight settings placeholders so jump-nav and account controls remain interactive while heavier section content mounts near viewport.
+  - moved sync-run query subscription inside the deferred sync-activity section so background polling does not start until the section is near viewport.
 - Public profile deferred-render pass:
   - applied `DeferUntilVisible` to badges/skills, best-PR panel, and timeline/repository lanes.
   - kept profile section anchors intact while reducing initial mount pressure from charts and dense card grids.

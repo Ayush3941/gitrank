@@ -147,7 +147,6 @@ const TEXT_SCALE_OPTIONS: Array<{
 
 export function SettingsPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useMyProfile();
-  const syncRunsQuery = useSyncRuns(12);
   const updatePrivacy = useUpdateProfilePrivacy();
   const updateRepositoryVisibility = useUpdateRepositoryVisibility();
   const unlinkAccount = useUnlinkMyAccount();
@@ -260,10 +259,6 @@ export function SettingsPageClient() {
       (accountLinkStart.error as Error | null)?.message ||
       "",
     "settings-account-actions",
-  );
-  const syncRunsError = sanitizeUserFacingError(
-    (syncRunsQuery.error as Error | null)?.message || "",
-    "settings-sync-runs",
   );
   const isSaving = updatePrivacy.isPending || updateRepositoryVisibility.isPending;
   const isActing =
@@ -451,19 +446,7 @@ export function SettingsPageClient() {
 
       <section id="settings-sync-activity" className="render-opt-section scroll-mt-24">
         <DeferUntilVisible fallback={<SettingsSectionPlaceholder title="Loading sync activity" />}>
-          <GlowCard className="space-y-4">
-            <SyncRunActivityPanel
-              runs={syncRunsQuery.data?.runs ?? []}
-              lastUpdatedAt={syncRunsQuery.data?.last_updated_at}
-              isLoading={syncRunsQuery.isLoading}
-              isRefreshing={syncRunsQuery.isFetching}
-              isError={syncRunsQuery.isError}
-              errorMessage={syncRunsError}
-              onRefresh={() => {
-                void syncRunsQuery.refetch();
-              }}
-            />
-          </GlowCard>
+          <SettingsSyncActivitySection />
         </DeferUntilVisible>
       </section>
 
@@ -725,6 +708,30 @@ export function SettingsPageClient() {
         </DeferUntilVisible>
       </section>
     </div>
+  );
+}
+
+function SettingsSyncActivitySection() {
+  const syncRunsQuery = useSyncRuns(12);
+  const syncRunsError = sanitizeUserFacingError(
+    (syncRunsQuery.error as Error | null)?.message || "",
+    "settings-sync-runs",
+  );
+
+  return (
+    <GlowCard className="space-y-4">
+      <SyncRunActivityPanel
+        runs={syncRunsQuery.data?.runs ?? []}
+        lastUpdatedAt={syncRunsQuery.data?.last_updated_at}
+        isLoading={syncRunsQuery.isLoading}
+        isRefreshing={syncRunsQuery.isFetching}
+        isError={syncRunsQuery.isError}
+        errorMessage={syncRunsError}
+        onRefresh={() => {
+          void syncRunsQuery.refetch();
+        }}
+      />
+    </GlowCard>
   );
 }
 
