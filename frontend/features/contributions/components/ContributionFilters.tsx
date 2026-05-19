@@ -1,6 +1,6 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -148,11 +148,23 @@ export function ContributionFilters({
           <Input
             value={search}
             onChange={(event) => onSearchChange(event.target.value)}
-            className="pl-11"
+            className="pl-11 pr-11"
             placeholder="Search repo, PR title, or owner"
             aria-label="Search contributions"
             aria-describedby={statusId}
           />
+          {search.trim().length > 0 ? (
+            <button
+              type="button"
+              onClick={onClearSearch}
+              disabled={isFiltering}
+              className="focus-ring absolute top-1/2 right-3 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-cyan-100 hover:text-white disabled:opacity-60"
+              aria-label="Clear contribution search"
+              title="Clear search"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          ) : null}
         </div>
         <Select value={sort} onValueChange={onSortChange}>
           <SelectTrigger aria-label="Sort contributions" aria-describedby={statusId}>

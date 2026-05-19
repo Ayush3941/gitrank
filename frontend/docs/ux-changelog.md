@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- Contributions filter quick-clear pass:
+  - added inline clear-search control in the contributions filter input, aligned with other filter-heavy surfaces.
+  - preserves existing active-filter chips and reset behavior while reducing taps needed to recover from narrow searches.
 - Badges and leaderboard filter-recovery pass:
   - added removable active-filter chips for badge rarity and visibility filters, each with one-tap clear actions.
   - added a quick `Reset to Global` action in leaderboard lane controls when viewing non-global tabs.
