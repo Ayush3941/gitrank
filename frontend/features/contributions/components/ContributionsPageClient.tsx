@@ -71,6 +71,7 @@ const CONTRIBUTION_CARD_PAGE_SIZE_CONSTRAINED = 12;
 const CONTRIBUTION_TIMELINE_MONTH_WINDOW_DEFAULT = 12;
 const CONTRIBUTION_TIMELINE_MONTH_WINDOW_CONSTRAINED = 8;
 const ABRA_CONTRIBUTION_SAMPLE_LIMIT = 24;
+const CONTRIBUTION_CARDS_REGION_ID = "contributions-cards-region";
 
 export function ContributionsPageClient() {
   const [filter, setFilter] = useState("All");
@@ -88,7 +89,7 @@ export function ContributionsPageClient() {
   const timelineMonthWindow = constrainedNetwork
     ? CONTRIBUTION_TIMELINE_MONTH_WINDOW_CONSTRAINED
     : CONTRIBUTION_TIMELINE_MONTH_WINDOW_DEFAULT;
-  const [visibleCardCount, setVisibleCardCount] = useState(CONTRIBUTION_CARD_PAGE_SIZE_DEFAULT);
+  const [visibleCardCount, setVisibleCardCount] = useState(cardPageSize);
   const { data, isLoading, isError, isFetching, refetch } = useContributions({
     filter: filterMap[deferredFilter],
     search: deferredSearch,
@@ -101,6 +102,7 @@ export function ContributionsPageClient() {
     [filteredRows, visibleCardCount],
   );
   const hasMoreRows = filteredRows.length > visibleRows.length;
+  const remainingRows = Math.max(0, filteredRows.length - visibleRows.length);
   const isFiltering =
     deferredFilter !== filter || deferredSearch !== search || deferredSort !== sort;
   const canReset = filter !== "All" || search.trim().length > 0 || sort !== "Newest";
@@ -562,11 +564,13 @@ export function ContributionsPageClient() {
           <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading achievement card lane" />}>
             {filteredRows.length ? (
               <div className="space-y-4">
-                <ContributionList
-                  items={visibleRows}
-                  narratives={abraInsights.data?.contributionNarratives}
-                  isBusy={isFiltering}
-                />
+                <div id={CONTRIBUTION_CARDS_REGION_ID}>
+                  <ContributionList
+                    items={visibleRows}
+                    narratives={abraInsights.data?.contributionNarratives}
+                    isBusy={isFiltering}
+                  />
+                </div>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <p role="status" aria-live="polite" aria-atomic="true" className="text-sm text-slate-300">
                     Showing {visibleRows.length} of {filteredRows.length} cards from the current evidence window.
@@ -575,6 +579,8 @@ export function ContributionsPageClient() {
                     <Button
                       type="button"
                       variant="secondary"
+                      aria-controls={CONTRIBUTION_CARDS_REGION_ID}
+                      aria-label={`Show ${Math.min(cardPageSize, remainingRows)} more contribution cards. ${remainingRows} remaining.`}
                       onClick={() => {
                         startTransition(() => {
                           setVisibleCardCount((current) =>
@@ -583,7 +589,7 @@ export function ContributionsPageClient() {
                         });
                       }}
                     >
-                      Show more cards
+                      Show more cards ({remainingRows} left)
                     </Button>
                   ) : null}
                 </div>

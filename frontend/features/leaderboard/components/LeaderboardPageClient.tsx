@@ -62,6 +62,7 @@ const LEADERBOARD_SECTION_IDS = LEADERBOARD_SECTION_ITEMS.map(
 const LEADERBOARD_DEFAULT_SECTION: LeaderboardSectionID = "leaderboard-filters";
 const LEADERBOARD_ROW_PAGE_SIZE_DEFAULT = 24;
 const LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED = 12;
+const LEADERBOARD_ROWS_REGION_ID = "leaderboard-rows-region";
 
 export function LeaderboardPageClient() {
   const router = useRouter();
@@ -71,7 +72,7 @@ export function LeaderboardPageClient() {
   const rowPageSize = constrainedNetwork
     ? LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED
     : LEADERBOARD_ROW_PAGE_SIZE_DEFAULT;
-  const [visibleRowCount, setVisibleRowCount] = useState(LEADERBOARD_ROW_PAGE_SIZE_DEFAULT);
+  const [visibleRowCount, setVisibleRowCount] = useState(rowPageSize);
   const tabFromURL = laneParamToTab(searchParams.get("lane"));
   const tab = tabFromURL ?? "Global";
   const [activeSection, setActiveSection] =
@@ -100,6 +101,7 @@ export function LeaderboardPageClient() {
     : null;
   const safeVisibleRowCount = Math.min(rows.length, visibleRowCount);
   const hasMoreRows = rows.length > safeVisibleRowCount;
+  const remainingRows = Math.max(0, rows.length - safeVisibleRowCount);
   const sparseArena = !isLoading && !isError && !!snapshot && rows.length > 0 && rows.length < 5;
   const laneLeader = rows[0];
   const laneGapToLeader =
@@ -406,7 +408,9 @@ export function LeaderboardPageClient() {
                 </div>
               </GlowCard>
             ) : null}
-            <LeaderboardArena snapshot={snapshot} rowLimit={safeVisibleRowCount} />
+            <div id={LEADERBOARD_ROWS_REGION_ID}>
+              <LeaderboardArena snapshot={snapshot} rowLimit={safeVisibleRowCount} />
+            </div>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p role="status" aria-live="polite" aria-atomic="true" className="text-sm text-slate-300">
                 Showing {safeVisibleRowCount} of {rows.length} ranked rows.
@@ -416,6 +420,8 @@ export function LeaderboardPageClient() {
                   type="button"
                   variant="secondary"
                   size="sm"
+                  aria-controls={LEADERBOARD_ROWS_REGION_ID}
+                  aria-label={`Show ${Math.min(rowPageSize, remainingRows)} more ranked rows. ${remainingRows} remaining.`}
                   onClick={() => {
                     startTransition(() => {
                       setVisibleRowCount((current) =>
@@ -424,7 +430,7 @@ export function LeaderboardPageClient() {
                     });
                   }}
                 >
-                  Show more rows
+                  Show more rows ({remainingRows} left)
                 </Button>
               ) : null}
             </div>

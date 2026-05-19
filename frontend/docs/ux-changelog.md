@@ -6,10 +6,14 @@
   - switched leaderboard ranked-row rendering to a bounded initial window (`24` default, `12` constrained-network mode) with explicit `Show more rows` disclosure.
   - preserves full season context and local-bracket insights while reducing initial leaderboard DOM work on dense lanes.
   - added polite live-status announcements for visible-row counters so assistive tech receives progressive-disclosure updates after row expansion.
+  - added `aria-controls` plus remaining-row labels on row expansion controls and anchored the ranked-list region with a stable ID.
+  - aligned first-render row window with constrained-mode page-size defaults to avoid oversized initial lane mounts on low-end devices.
 - Contributions progressive-disclosure performance pass:
   - capped contribution timeline rendering to a recent-month window (`12` default, `8` on constrained networks) and added explicit window copy for scan clarity.
   - switched contribution card lane to progressive disclosure (`Show more cards`) so initial render mounts a bounded subset (`24` default, `12` constrained) instead of the full list.
   - added polite live-status announcements for visible-card counters so assistive tech receives progressive-disclosure updates after card expansion.
+  - added `aria-controls` plus remaining-card labels on card expansion controls and anchored the contribution-card region with a stable ID.
+  - aligned first-render card window with constrained-mode page-size defaults to avoid oversized initial card mounts on low-end devices.
   - bounded ABRA contribution payload sampling to a fixed top slice (`24`) so AI narrative requests stay predictable on dense histories.
 - Dashboard route prefetch-throttle pass:
   - disabled automatic Next.js prefetch on dense dashboard navigation links (sidebar lanes, mobile lanes, breadcrumb parent, and top-bar profile link).
