@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Contributions and badges metric-label readability pass:
+  - increased key metric label styling from `text-[11px]` to `text-xs` in contributions and badges summary cards.
+  - normalized the contribution signal-index header away from highly tracked uppercase into clearer title-case `text-xs`.
+  - improves quick-scan clarity in dense metric tiles without altering card structure or scoring semantics.
 - Dashboard sidebar readability pass:
   - removed hard truncation on sidebar brand/nav labels and hint copy in favor of controlled wrapping (`break-anywhere`, explicit line-height).
   - improves lane-name legibility and prevents clipped semantics on narrower desktop widths or larger text-scale settings.

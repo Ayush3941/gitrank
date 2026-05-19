@@ -116,7 +116,7 @@ function SignalProfile({ item }: { item: Contribution }) {
     <div className="neon-surface rounded-[1.55rem] border-primary/24 p-4">
       <div className="grid gap-3 md:grid-cols-[0.38fr,0.62fr] md:items-start">
         <div className="neon-metric rounded-[1.2rem] px-4 py-3">
-          <p className="text-[11px] font-medium tracking-[0.08em] text-primary uppercase">
+          <p className="text-xs font-medium text-primary">
             Signal index
           </p>
           <p className="numeric-readout mt-2 text-3xl font-semibold text-white">{index}</p>

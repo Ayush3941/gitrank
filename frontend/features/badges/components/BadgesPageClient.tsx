@@ -521,7 +521,7 @@ function BadgeMetric({
 }) {
   return (
     <div className="neon-metric rounded-[1.4rem] px-4 py-3">
-      <p className="text-[11px] font-medium text-slate-300">{label}</p>
+      <p className="text-xs font-medium text-slate-300">{label}</p>
       <p className="mt-2 flex items-center gap-2 text-xl font-semibold text-white">
         {value}
         {icon}
