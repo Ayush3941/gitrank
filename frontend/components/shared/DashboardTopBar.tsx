@@ -172,6 +172,7 @@ export function DashboardTopBarSkeleton() {
     <div className="glass-panel cyber-card cyber-frame sticky sticky-safe-top-4 z-30 mb-6 px-5 py-4">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-wrap items-center gap-3">
+          <div className="neon-skeleton h-8 w-52 rounded-full" />
           <div className="neon-skeleton h-8 w-32 rounded-full" />
           <div className="neon-skeleton h-8 w-24 rounded-full" />
           <div className="neon-skeleton h-8 w-28 rounded-full" />
