@@ -1166,6 +1166,12 @@ html[data-theme="high-contrast"] .neon-title {
   }
 }
 
+@media (pointer: coarse) {
+  body {
+    background-attachment: scroll;
+  }
+}
+
 @media (hover: none) {
   .cyber-card:hover {
     border-color: rgb(var(--primary) / 0.24);
