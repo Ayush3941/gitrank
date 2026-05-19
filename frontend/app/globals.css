@@ -1542,6 +1542,53 @@ html[data-theme="high-contrast"] .neon-title {
   }
 }
 
+@media (update: slow) {
+  body {
+    background-attachment: scroll;
+  }
+
+  .neon-vignette,
+  .page-shell::before,
+  .page-shell::after,
+  body::before,
+  body::after,
+  .cyber-card::after,
+  .cyber-sheen::after,
+  .rarity-badge::after,
+  .rank-orbit::after {
+    display: none !important;
+  }
+
+  .glass-panel,
+  .glass-panel-strong,
+  .neon-surface,
+  .neon-surface-strong,
+  .neon-tile,
+  .neon-tile-strong,
+  .neon-metric,
+  .cyber-card,
+  .cyber-terminal {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    box-shadow:
+      0 8px 20px rgb(1 5 20 / 0.24),
+      inset 0 1px 0 rgb(255 255 255 / 0.03) !important;
+  }
+
+  :where(
+      a,
+      button,
+      input,
+      select,
+      textarea,
+      [role="button"],
+      [role="tab"],
+      [role="switch"]
+    ) {
+    transition-duration: 70ms !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

@@ -6,6 +6,9 @@ import type { ProfileViewData } from "@/types/gitrank";
 const STORAGE_KEY = "gitrank:reduced-gamification";
 const CHANGE_EVENT = "gitrank:gamification-preference";
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+const REDUCED_DATA_QUERY = "(prefers-reduced-data: reduce)";
+const REDUCED_TRANSPARENCY_QUERY = "(prefers-reduced-transparency: reduce)";
+
 type NavigatorWithConnection = Navigator & {
   connection?: {
     saveData?: boolean;
@@ -63,7 +66,11 @@ function subscribe(callback: () => void) {
     return () => {};
   }
 
-  const mediaQuery = window.matchMedia(REDUCED_MOTION_QUERY);
+  const mediaQueries = [
+    window.matchMedia(REDUCED_MOTION_QUERY),
+    window.matchMedia(REDUCED_DATA_QUERY),
+    window.matchMedia(REDUCED_TRANSPARENCY_QUERY),
+  ];
   const connection = (window.navigator as NavigatorWithConnection).connection;
   const handleMediaChange = () => {
     window.dispatchEvent(new Event(CHANGE_EVENT));
@@ -72,10 +79,12 @@ function subscribe(callback: () => void) {
 
   window.addEventListener("storage", callback);
   window.addEventListener(CHANGE_EVENT, callback);
-  if (typeof mediaQuery.addEventListener === "function") {
-    mediaQuery.addEventListener("change", handleMediaChange);
-  } else if (typeof mediaQuery.addListener === "function") {
-    mediaQuery.addListener(handleMediaChange);
+  for (const mediaQuery of mediaQueries) {
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", handleMediaChange);
+    } else if (typeof mediaQuery.addListener === "function") {
+      mediaQuery.addListener(handleMediaChange);
+    }
   }
   if (typeof connection?.addEventListener === "function") {
     connection.addEventListener("change", handleMediaChange);
@@ -83,10 +92,12 @@ function subscribe(callback: () => void) {
   return () => {
     window.removeEventListener("storage", callback);
     window.removeEventListener(CHANGE_EVENT, callback);
-    if (typeof mediaQuery.removeEventListener === "function") {
-      mediaQuery.removeEventListener("change", handleMediaChange);
-    } else if (typeof mediaQuery.removeListener === "function") {
-      mediaQuery.removeListener(handleMediaChange);
+    for (const mediaQuery of mediaQueries) {
+      if (typeof mediaQuery.removeEventListener === "function") {
+        mediaQuery.removeEventListener("change", handleMediaChange);
+      } else if (typeof mediaQuery.removeListener === "function") {
+        mediaQuery.removeListener(handleMediaChange);
+      }
     }
     if (typeof connection?.removeEventListener === "function") {
       connection.removeEventListener("change", handleMediaChange);
@@ -107,7 +118,7 @@ function getReducedGamificationSnapshot() {
     return false;
   }
 
-  return true;
+  return inferReducedGamificationPreference();
 }
 
 function applyGamificationPreference(reduced: boolean) {
@@ -115,4 +126,21 @@ function applyGamificationPreference(reduced: boolean) {
     return;
   }
   document.documentElement.dataset.gamification = reduced ? "reduced" : "full";
+}
+
+export function inferReducedGamificationPreference(): boolean {
+  if (typeof window === "undefined") {
+    return true;
+  }
+
+  const connection = (window.navigator as NavigatorWithConnection).connection;
+  if (connection?.saveData === true) {
+    return true;
+  }
+
+  return (
+    window.matchMedia(REDUCED_MOTION_QUERY).matches ||
+    window.matchMedia(REDUCED_DATA_QUERY).matches ||
+    window.matchMedia(REDUCED_TRANSPARENCY_QUERY).matches
+  );
 }

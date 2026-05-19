@@ -2,6 +2,13 @@
 
 ## 2026-05-19
 
+- Adaptive presentation + performance baseline correction:
+  - fixed reduced-gamification default inference so sessions without an explicit
+    user setting now follow real device/browser signals (`prefers-reduced-motion`,
+    `prefers-reduced-data`, `prefers-reduced-transparency`, and `navigator.connection.saveData`)
+    instead of always forcing reduced mode
+  - added `@media (update: slow)` fallback styles to trim heavy overlays,
+    backdrop blur, and transition cost on slow-refresh or constrained displays.
 - Readability-first surface tuning pass:
   - reduced global blur/shadow/glow intensity tokens in `app/globals.css`
     to keep cyberpunk styling while improving text clarity on translucent panels
