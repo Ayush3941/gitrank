@@ -33,15 +33,17 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
             </div>
           </div>
         ) : null}
-        {quests.slice(0, 3).map((quest) => {
-          const progress = safeQuestProgress(quest.progress, quest.goal);
-          return (
-            <div key={quest.id} className="render-opt-card neon-surface rounded-[1.75rem] p-4">
+        <ol role="list" className="space-y-3">
+          {quests.slice(0, 3).map((quest) => {
+            const progress = safeQuestProgress(quest.progress, quest.goal);
+            return (
+              <li key={quest.id}>
+                <article className="render-opt-card neon-surface rounded-[1.75rem] p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-lg font-medium text-white">{quest.title}</p>
                   <p className="text-sm text-muted">{quest.description}</p>
-                  <p className="mt-2 text-sm leading-6 text-slate-200/72">{quest.whyRecommended}</p>
+                  <p className="mt-2 text-sm leading-6 text-muted">{quest.whyRecommended}</p>
                 </div>
                 <div className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-sm text-primary">
                   +{quest.rewardXp} XP
@@ -52,20 +54,26 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
                 <span>{quest.progress} / {quest.goal}</span>
                 <span>{quest.weakAreaTarget ? `Targets ${quest.weakAreaTarget}` : quest.cadence}</span>
               </div>
-              <div className="mt-3 flex flex-wrap gap-2">
+              <ul role="list" className="mt-3 flex flex-wrap gap-2">
                 {quest.evidenceSignals.slice(0, 3).map((signal) => (
-                  <span key={signal} className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
-                    {signal}
-                  </span>
+                  <li key={signal}>
+                    <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
+                      {signal}
+                    </span>
+                  </li>
                 ))}
-                <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs">
-                  <Link2 className="h-3 w-3" />
-                  {quest.linkedContributionIds.length} linked PRs
-                </span>
-              </div>
-            </div>
-          );
-        })}
+                <li>
+                  <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs">
+                    <Link2 className="h-3 w-3" />
+                    {quest.linkedContributionIds.length} linked PRs
+                  </span>
+                </li>
+              </ul>
+                </article>
+              </li>
+            );
+          })}
+        </ol>
       </div>
     </GlowCard>
   );

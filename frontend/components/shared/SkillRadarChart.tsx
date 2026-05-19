@@ -61,11 +61,11 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
         <summary className="focus-ring inline-flex cursor-pointer items-center gap-2 text-xs font-semibold text-primary">
           Skill signal summary
         </summary>
-        <p id={summaryId} className="mt-2 text-sm text-slate-200/86">
+        <p id={summaryId} className="mt-2 text-sm text-muted">
           Strongest current lane: {strongest.category} ({strongest.score}).
           {" "}Lowest lane: {weakest.category} ({weakest.score}).
         </p>
-        <ul role="list" className="mt-3 space-y-1 text-xs text-slate-200/84">
+        <ul role="list" className="mt-3 space-y-1 text-xs text-muted">
           {sortedSkills.map((skill) => (
             <li key={skill.category} className="flex items-center justify-between gap-3">
               <span>{skill.category}</span>
@@ -97,7 +97,7 @@ function SkillRadarLite({ skills }: { skills: SkillNode[] }) {
           const fill = Math.max(0, Math.min(100, Math.round((skill.score / maxScore) * 100)));
           return (
             <div key={skill.category} className="space-y-1">
-              <div className="flex items-center justify-between gap-3 text-xs text-slate-200/88">
+              <div className="flex items-center justify-between gap-3 text-xs text-muted">
                 <span>{skill.category}</span>
                 <span>{skill.score}</span>
               </div>

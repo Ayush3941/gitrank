@@ -2,6 +2,11 @@
 
 ## 2026-05-19
 
+- Dashboard semantic-list + contrast pass:
+  - converted dashboard first-run checklist and quest cards/signals to semantic list structures (`ol/li`, `ul/li`) for clearer assistive-tech reading order.
+  - converted current-league evidence chips to list semantics while preserving visual chip layout.
+  - normalized low-opacity helper text in current league, quest rationale, and chart summary/detail panels to shared readable text tokens.
+  - keeps dashboard composition unchanged while improving cross-panel readability consistency.
 - Dashboard/settings readability pass:
   - normalized low-opacity dashboard body copy (`rank preview`, `evidence context`, `first-run checklist`, and deferred section placeholders) to shared readable text tokens.
   - strengthened first-run checklist icon contrast for incomplete steps to improve state legibility.

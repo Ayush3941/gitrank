@@ -571,9 +571,10 @@ function FirstRunChecklistCard({
           />
         </div>
       </div>
-      <div className="grid gap-2">
+      <ol role="list" className="grid gap-2">
         {steps.map((step, index) => (
-          <div key={step.id} className="neon-surface flex items-start gap-3 rounded-[0.1rem] border px-3 py-3">
+          <li key={step.id}>
+            <div className="neon-surface flex items-start gap-3 rounded-[0.1rem] border px-3 py-3">
             <div className="mt-0.5 text-primary">
               {step.done ? (
                 <CheckCircle2 className="h-4 w-4 text-emerald-300" />
@@ -587,9 +588,10 @@ function FirstRunChecklistCard({
               </p>
               <p className="mt-1 text-xs text-muted">{step.detail}</p>
             </div>
-          </div>
+            </div>
+          </li>
         ))}
-      </div>
+      </ol>
       {nextAction ? (
         <div className="flex flex-wrap gap-2">
           <Button asChild size="sm">

@@ -54,14 +54,14 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
         <summary className="focus-ring inline-flex cursor-pointer items-center gap-2 text-xs font-semibold text-primary">
           Timeline summary
         </summary>
-        <p id={summaryId} className="mt-2 text-sm text-slate-200/86">
+        <p id={summaryId} className="mt-2 text-sm text-muted">
           Start {firstPoint.label}: {firstPoint.xp} XP. Latest {lastPoint.label}: {lastPoint.xp} XP.
           {" "}Net change: {growth >= 0 ? "+" : ""}{growth} XP.
         </p>
-        <p className="mt-1 text-sm text-slate-200/86">
+        <p className="mt-1 text-sm text-muted">
           Peak month: {topPoint.label} ({topPoint.xp} XP).
         </p>
-        <ul role="list" className="mt-3 space-y-1 text-xs text-slate-200/84">
+        <ul role="list" className="mt-3 space-y-1 text-xs text-muted">
           {safeData.map((point) => (
             <li key={point.label} className="flex items-center justify-between gap-3">
               <span>{point.label}</span>
@@ -95,7 +95,7 @@ function TimelineChartLite({ data }: { data: Array<{ label: string; xp: number }
           const fill = Math.max(0, Math.min(100, Math.round((point.xp / maxXP) * 100)));
           return (
             <div key={point.label} className="space-y-1">
-              <div className="flex items-center justify-between gap-3 text-xs text-slate-200/88">
+              <div className="flex items-center justify-between gap-3 text-xs text-muted">
                 <span>{point.label}</span>
                 <span>{point.xp} XP</span>
               </div>

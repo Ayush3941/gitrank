@@ -59,17 +59,19 @@ export function CurrentLeagueCard({ user }: { user: UserProfile }) {
           <p className="text-xs leading-5 text-muted">{user.rankProgress.season.promotionRule}</p>
           <p className="text-xs leading-5 text-muted">{user.rankProgress.season.resetRule}</p>
         </div>
-        <p className="mt-3 text-xs text-slate-200/84">
+        <p className="mt-3 text-xs text-muted">
           Season end: {formatDate(user.rankProgress.season.endsAt)} • {formatTimeUntil(user.rankProgress.season.endsAt)}
         </p>
       </div>
-      <div className="flex flex-wrap gap-2">
+      <ul role="list" className="flex flex-wrap gap-2">
         {user.rankProgress.evidenceSignals.map((signal) => (
-          <span key={signal} className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
-            {signal}
-          </span>
+          <li key={signal}>
+            <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
+              {signal}
+            </span>
+          </li>
         ))}
-      </div>
+      </ul>
     </GlowCard>
   );
 }
