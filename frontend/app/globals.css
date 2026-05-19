@@ -845,13 +845,6 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   text-shadow: 0 0 20px rgb(var(--primary) / 0.34);
 }
 
-.panel-grid {
-  background-image:
-    linear-gradient(rgb(var(--primary) / 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(var(--primary-2) / 0.1) 1px, transparent 1px);
-  background-size: 28px 28px;
-}
-
 .cyber-header {
   border: 1px solid rgb(var(--primary) / 0.2);
   background:
@@ -891,28 +884,6 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
     0 0 66px rgb(var(--primary) / 0.19),
     0 0 48px rgb(var(--primary-2) / 0.12),
     inset 0 1px 0 rgb(255 255 255 / 0.14);
-}
-
-.cyber-hero-overlay {
-  background:
-    linear-gradient(
-      to bottom,
-      transparent 0%,
-      rgb(255 255 255 / 0.055) 50%,
-      transparent 100%
-    ),
-    repeating-linear-gradient(
-      90deg,
-      transparent 0 30px,
-      rgb(var(--primary) / 0.05) 30px 31px,
-      transparent 31px 50px,
-      rgb(var(--primary-2) / 0.05) 50px 51px
-    );
-  background-size:
-    100% 10px,
-    100% 100%;
-  opacity: 0.22;
-  mask-image: linear-gradient(180deg, black 0%, black 72%, transparent 100%);
 }
 
 .cyber-data-badge {
@@ -1350,7 +1321,6 @@ html[data-theme="high-contrast"] .neon-title {
     rgb(var(--card-2) / 0.94);
 }
 
-:where(html:not([data-gamification]), html[data-gamification="reduced"]) .panel-grid,
 :where(html:not([data-gamification]), html[data-gamification="reduced"]) .page-shell::before,
 :where(html:not([data-gamification]), html[data-gamification="reduced"]) .page-shell::after {
   display: none !important;
@@ -1478,8 +1448,6 @@ html[data-theme="high-contrast"] .neon-title {
   .cyber-sheen::after,
   .rarity-badge::after,
   .cyber-card::after,
-  .cyber-hero-overlay,
-  .panel-grid,
   .page-shell::before,
   .page-shell::after,
   body::before,
@@ -1506,9 +1474,7 @@ html[data-theme="high-contrast"] .neon-title {
   body::before,
   body::after,
   .page-shell::before,
-  .page-shell::after,
-  .panel-grid,
-  .cyber-hero-overlay {
+  .page-shell::after {
     opacity: 0.1 !important;
   }
 }
@@ -1523,9 +1489,7 @@ html[data-theme="high-contrast"] .neon-title {
     background-attachment: scroll;
   }
 
-  .panel-grid,
   .neon-vignette,
-  .cyber-hero-overlay,
   .page-shell::before,
   .page-shell::after,
   body::before,

@@ -71,6 +71,11 @@
     summaries and onboarding data-policy disclosure panels
   - improves visible keyboard focus on `<summary>` interactions without
     changing disclosure behavior.
+- Removed dead visual-overlay CSS paths:
+  - deleted unused `.panel-grid` and `.cyber-hero-overlay` style definitions
+    after all component references were removed
+  - cleaned related reduced-mode/forced-colors selector lists to shrink CSS
+    surface area and avoid dead-style maintenance.
 
 ## 2026-05-17
 
