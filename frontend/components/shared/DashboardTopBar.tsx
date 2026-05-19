@@ -1,10 +1,9 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AlertTriangle, ArrowUpRight, CheckCircle2, Info, Zap } from "lucide-react";
-import { DashboardQuickActions } from "@/components/shared/DashboardQuickActions";
-import { DashboardShortcutHelpDialog } from "@/components/shared/DashboardShortcutHelpDialog";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
@@ -12,6 +11,22 @@ import { TextScaleQuickSwitcher } from "@/components/shared/TextScaleQuickSwitch
 import { ThemeQuickSwitcher } from "@/components/shared/ThemeQuickSwitcher";
 import { Button } from "@/components/ui/button";
 import type { UserProfile } from "@/types/gitrank";
+
+const DashboardQuickActions = dynamic(
+  () =>
+    import("@/components/shared/DashboardQuickActions").then(
+      (mod) => mod.DashboardQuickActions,
+    ),
+  { ssr: false, loading: () => null },
+);
+
+const DashboardShortcutHelpDialog = dynamic(
+  () =>
+    import("@/components/shared/DashboardShortcutHelpDialog").then(
+      (mod) => mod.DashboardShortcutHelpDialog,
+    ),
+  { ssr: false, loading: () => null },
+);
 
 export type AutoSyncNote = {
   tone: "info" | "success" | "warning";
@@ -136,7 +151,12 @@ export function DashboardTopBar({
           )}
         </div>
       </div>
-      <DashboardShortcutHelpDialog open={shortcutHelpOpen} onOpenChange={setShortcutHelpOpen} />
+      {shortcutHelpOpen ? (
+        <DashboardShortcutHelpDialog
+          open={shortcutHelpOpen}
+          onOpenChange={setShortcutHelpOpen}
+        />
+      ) : null}
     </>
   );
 }

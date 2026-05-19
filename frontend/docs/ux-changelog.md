@@ -91,6 +91,11 @@
     reducing initial dashboard/profile work.
   - hook follow-up hardening: switched to callback-ref + node state tracking so
     observer attachment is deterministic across mount/remount transitions.
+- Top-bar lazy module loading:
+  - switched dashboard command palette and shortcut-help dialog imports in
+    `DashboardTopBar` to dynamic client loading
+  - shortcut-help dialog now mounts only when opened, reducing always-mounted
+    dashboard top-bar module weight.
 
 ## 2026-05-17
 
