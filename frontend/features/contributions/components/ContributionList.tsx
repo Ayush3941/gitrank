@@ -113,36 +113,30 @@ export function ContributionList({
                 <SignalProfile item={item} />
               ) : (
                 <div className="neon-surface rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
-                  This row uses persisted score evidence. Formula:{" "}
-                  {formatFormulaVersion(item.formulaVersion)}.{" "}
-                  {item.evidenceMissing?.length
-                    ? `Missing evidence links: ${item.evidenceMissing.join(", ")}.`
-                    : "Score event, PR, and report links are present."}
+                  Detailed score components are still being prepared for this report.
                 </div>
               )}
               <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted">
                 {detailedMetricsAvailable ? (
-                  <>
-                    <div className="flex flex-wrap gap-4">
-                      <span className="inline-flex items-center gap-2">
-                        <GitMerge className="h-4 w-4 text-primary" />
-                        Repo weight {item.repoWeight.toFixed(2)}
-                      </span>
-                      <span className="inline-flex items-center gap-2">
-                        <ShieldCheck className="h-4 w-4 text-primary" />
-                        Anti-spam {item.antiSpamMultiplier.toFixed(2)}x
-                      </span>
-                    </div>
-                    <Button asChild variant="secondary" size="sm">
-                      <Link href={`/pr/${item.owner}/${item.repo}/${item.number}`} prefetch={false}>
-                        View battle report
-                        <ArrowRight className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </>
+                  <div className="flex flex-wrap gap-4">
+                    <span className="inline-flex items-center gap-2">
+                      <GitMerge className="h-4 w-4 text-primary" />
+                      Repo weight {item.repoWeight.toFixed(2)}
+                    </span>
+                    <span className="inline-flex items-center gap-2">
+                      <ShieldCheck className="h-4 w-4 text-primary" />
+                      Anti-spam {item.antiSpamMultiplier.toFixed(2)}x
+                    </span>
+                  </div>
                 ) : (
-                  <span>Score-history snapshot evidence</span>
+                  <span>Detailed metrics pending</span>
                 )}
+                <Button asChild variant="secondary" size="sm">
+                  <Link href={`/pr/${item.owner}/${item.repo}/${item.number}`} prefetch={false}>
+                    View battle report
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
               </div>
             </GlowCard>
           </li>
@@ -286,11 +280,6 @@ function formatContributionTimeline(item: Contribution): string {
     return `Open contribution snapshot as of ${formatContributionDate(item.mergedAt)}.`;
   }
   return `Closed contribution snapshot as of ${formatContributionDate(item.mergedAt)}.`;
-}
-
-function formatFormulaVersion(formulaVersion?: string): string {
-  const value = (formulaVersion ?? "").trim();
-  return value.length > 0 ? value : "pending";
 }
 
 function AIPanel({

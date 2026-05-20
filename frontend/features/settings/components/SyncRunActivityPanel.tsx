@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, Search, X, XCircle } from "lucide-react";
-import { startTransition, useMemo, useState } from "react";
+import { startTransition, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
@@ -29,6 +29,7 @@ export function SyncRunActivityPanel({
 }) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"All" | "Completed" | "Running" | "Failed">("All");
+  const viewportAnchorY = useRef<number | null>(null);
   const canReset = search.trim().length > 0 || statusFilter !== "All";
   const compactSearch =
     search.trim().length > 32 ? `${search.trim().slice(0, 32)}…` : search.trim();
@@ -76,21 +77,36 @@ export function SyncRunActivityPanel({
   const resultsRegionClassName =
     "min-h-[20rem] max-h-[26rem] overflow-y-auto pr-1 [scrollbar-gutter:stable] [overflow-anchor:none]";
 
+  function preserveViewportDuring(update: () => void) {
+    if (typeof window !== "undefined") {
+      viewportAnchorY.current = window.scrollY;
+    }
+    startTransition(update);
+    if (typeof window !== "undefined") {
+      requestAnimationFrame(() => {
+        const y = viewportAnchorY.current;
+        if (typeof y === "number") {
+          window.scrollTo({ top: y, left: 0, behavior: "auto" });
+        }
+      });
+    }
+  }
+
   function handleResetFilters() {
-    startTransition(() => {
+    preserveViewportDuring(() => {
       setSearch("");
       setStatusFilter("All");
     });
   }
 
   function handleClearSearch() {
-    startTransition(() => {
+    preserveViewportDuring(() => {
       setSearch("");
     });
   }
 
   function handleClearStatusFilter() {
-    startTransition(() => {
+    preserveViewportDuring(() => {
       setStatusFilter("All");
     });
   }
@@ -237,7 +253,7 @@ export function SyncRunActivityPanel({
                   type="button"
                   size="sm"
                   variant={statusFilter === item ? "default" : "secondary"}
-                  onClick={() => startTransition(() => setStatusFilter(item))}
+                  onClick={() => preserveViewportDuring(() => setStatusFilter(item))}
                   aria-describedby={filterStatusId}
                   aria-pressed={statusFilter === item}
                   aria-controls={syncRunsRegionId}

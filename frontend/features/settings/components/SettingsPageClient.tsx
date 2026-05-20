@@ -1,14 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { Download, FolderGit2, LogOut, Palette, RefreshCw, Sparkles, Trash2 } from "lucide-react";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
-import { PageHeader } from "@/components/shared/PageHeader";
-import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { SyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
 import { Button } from "@/components/ui/button";
@@ -296,26 +293,9 @@ export function SettingsPageClient() {
 
   return (
     <div className="space-y-6 [overflow-anchor:none]">
-      <PageHeader
-        eyebrow="Settings"
-        title="Settings and privacy"
-        description="Choose what becomes public, which repositories stay visible, and how much of your GitRank profile is shared."
-        actions={(
-          <div className="flex flex-wrap gap-2">
-            <Button asChild variant="secondary">
-              <Link href={`/u/${data.user.username}`}>View public profile</Link>
-            </Button>
-            <ShareProfileButton
-              variant="ghost"
-              size="sm"
-              username={data.user.username}
-              displayName={data.user.displayName}
-              shareHeadline={`${data.user.displayName} is ${data.user.title} on GitRank.`}
-              analyticsTargetPrefix="settings-profile"
-            />
-          </div>
-        )}
-      />
+      <header className="space-y-1">
+        <h1 className="text-2xl font-semibold text-white sm:text-3xl">Settings and privacy</h1>
+      </header>
       <section id="settings-account" className="scroll-mt-24">
         <GlowCard className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">

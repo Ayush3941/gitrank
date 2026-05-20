@@ -7,7 +7,6 @@ import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
-import { SectionHeader } from "@/components/shared/SectionHeader";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
 import { ContributionList } from "@/features/contributions/components/ContributionList";
 import { useContributions } from "@/hooks/use-contributions";
@@ -268,11 +267,6 @@ export function ContributionsPageClient() {
       ) : null}
       {!isLoading && !isError ? (
         <section id="contributions-cards" className="render-opt-section scroll-mt-24 space-y-4">
-          <SectionHeader
-            eyebrow="Primary lane"
-            title="Achievement cards"
-            description="PR-by-PR impact evidence and narrative first."
-          />
           <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading achievement card lane" />}>
             {filteredRows.length ? (
               <div className="space-y-4">
