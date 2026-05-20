@@ -124,7 +124,7 @@ export function RevealPanel({
           <p className="text-xs font-medium text-primary">What to do next</p>
           <ol className="mt-3 grid gap-3 sm:grid-cols-3">
             {nextActions.map((item, index) => (
-              <li key={item} className="neon-metric rounded-[1.25rem] px-3 py-3">
+              <li key={`${item}-${index}`} className="neon-metric rounded-[1.25rem] px-3 py-3">
                 <p className="text-xs font-medium text-cyan-100">Step {index + 1}</p>
                 <p className="mt-2 text-sm leading-6 text-muted">{item}</p>
               </li>

@@ -120,8 +120,8 @@ export function ConnectGithubPanel() {
             "Public profile can be disabled at any time.",
             "Exact PRs, AI summaries, and leaderboard participation are individually controllable.",
             "Repository-level visibility can be hidden without deleting the account.",
-          ].map((item) => (
-            <li key={item} className="neon-surface rounded-3xl px-4 py-3 text-sm text-muted">{item}</li>
+          ].map((item, index) => (
+            <li key={`${item}-${index}`} className="neon-surface rounded-3xl px-4 py-3 text-sm text-muted">{item}</li>
           ))}
         </ul>
         <div className="neon-surface rounded-[1.75rem] border-primary/22 px-4 py-4">
