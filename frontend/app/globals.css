@@ -283,13 +283,14 @@ body::before {
     radial-gradient(
       circle at 50% -16%,
       rgb(var(--primary) / 0.05) 0%,
-      rgb(var(--primary-2) / 0.025) 30%,
-      transparent 70%
+      rgb(var(--primary-2) / 0.026) 42%,
+      rgb(var(--primary-2) / 0.01) 64%,
+      transparent 88%
     ),
     repeating-linear-gradient(
       90deg,
       transparent 0 120px,
-      rgb(255 255 255 / 0.008) 120px 121px
+      rgb(255 255 255 / 0.005) 120px 121px
     );
   background-size:
     100% 100%,
@@ -307,16 +308,16 @@ body::after {
   background:
     radial-gradient(
       circle at 18% 14%,
-      rgb(var(--primary) / 0.06) 0%,
-      rgb(var(--primary) / 0.022) 48%,
-      rgb(var(--primary) / 0.008) 68%,
+      rgb(var(--primary) / 0.055) 0%,
+      rgb(var(--primary) / 0.024) 52%,
+      rgb(var(--primary) / 0.01) 72%,
       transparent 96%
     ),
     radial-gradient(
       circle at 82% 84%,
-      rgb(var(--primary-2) / 0.06) 0%,
-      rgb(var(--primary-2) / 0.022) 46%,
-      rgb(var(--primary-2) / 0.008) 66%,
+      rgb(var(--primary-2) / 0.055) 0%,
+      rgb(var(--primary-2) / 0.024) 50%,
+      rgb(var(--primary-2) / 0.01) 70%,
       transparent 96%
     );
   opacity: var(--page-glow-opacity);
@@ -1110,33 +1111,33 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   pointer-events: none;
   z-index: -1;
   border-radius: 999px;
-  opacity: 0.42;
+  opacity: 0.32;
 }
 
 .page-shell::before {
   top: 6rem;
-  left: -10rem;
-  width: 30rem;
-  height: 30rem;
+  left: -12rem;
+  width: 36rem;
+  height: 36rem;
   background: radial-gradient(
     circle,
-      rgb(var(--primary) / 0.11) 0%,
-      rgb(var(--primary) / 0.06) 52%,
-      rgb(var(--primary) / 0.022) 74%,
+      rgb(var(--primary) / 0.1) 0%,
+      rgb(var(--primary) / 0.058) 58%,
+      rgb(var(--primary) / 0.022) 78%,
       rgb(var(--primary) / 0) 96%
     );
 }
 
 .page-shell::after {
-  right: -12rem;
-  bottom: 2rem;
-  width: 34rem;
-  height: 34rem;
+  right: -14rem;
+  bottom: 1rem;
+  width: 38rem;
+  height: 38rem;
   background: radial-gradient(
     circle,
-      rgb(var(--primary-2) / 0.11) 0%,
-      rgb(var(--primary-2) / 0.06) 52%,
-      rgb(var(--primary-2) / 0.022) 74%,
+      rgb(var(--primary-2) / 0.1) 0%,
+      rgb(var(--primary-2) / 0.058) 58%,
+      rgb(var(--primary-2) / 0.022) 78%,
       rgb(var(--primary-2) / 0) 96%
     );
 }
