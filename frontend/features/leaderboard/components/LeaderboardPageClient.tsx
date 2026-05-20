@@ -3,13 +3,12 @@
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowUpRight, Target, Trophy } from "lucide-react";
-import { startTransition, useDeferredValue, useEffect, useState } from "react";
+import { startTransition, useDeferredValue, useEffect, useRef, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
-import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
 import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { Button } from "@/components/ui/button";
@@ -53,6 +52,7 @@ export function LeaderboardPageClient() {
   const rowPageSize = constrainedNetwork
     ? LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED
     : LEADERBOARD_ROW_PAGE_SIZE_DEFAULT;
+  const viewportAnchorY = useRef<number | null>(null);
   const [visibleRowCount, setVisibleRowCount] = useState(rowPageSize);
   const tabFromURL = laneParamToTab(searchParams.get("lane"));
   const tab = tabFromURL ?? "Global";
@@ -108,26 +108,27 @@ export function LeaderboardPageClient() {
     const nextParams = new URLSearchParams(searchParams.toString());
     nextParams.set("lane", lane);
     const query = nextParams.toString();
+    if (typeof window !== "undefined") {
+      viewportAnchorY.current = window.scrollY;
+    }
     startTransition(() => {
       setVisibleRowCount(rowPageSize);
       router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
     });
+    if (typeof window !== "undefined") {
+      requestAnimationFrame(() => {
+        const y = viewportAnchorY.current;
+        if (typeof y === "number") {
+          window.scrollTo({ top: y, left: 0, behavior: "auto" });
+        }
+      });
+    }
   }
 
   const isBusy = isSwitchingTab || (isFetching && Boolean(snapshot));
 
   return (
     <div className="space-y-6" aria-busy={isBusy || undefined}>
-      <PageHeader
-        eyebrow="Leaderboard"
-        title="Leaderboard arena"
-        description="Weekly ranking weighted by meaningful merged work."
-        actions={(
-          <Button asChild variant="secondary">
-            <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
-          </Button>
-        )}
-      />
       {myProfile && shouldShowSyncStateGuide(myProfile.user.syncStatus) ? (
         <SyncStateGuide
           status={myProfile.user.syncStatus}
