@@ -250,7 +250,7 @@ export function PrivacyRepositoryToggleList({
               </Button>
             ) : null}
             <Button asChild size="sm" variant="secondary">
-              <Link href="/dashboard/settings#settings-account">Run sync in account section</Link>
+              <Link href="/dashboard/settings">Run sync in account section</Link>
             </Button>
           </div>
         </div>

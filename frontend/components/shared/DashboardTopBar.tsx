@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { AlertTriangle, ArrowUpRight, CheckCircle2, Info, UserRound, Zap } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, CheckCircle2, Info, Zap } from "lucide-react";
 import { RankBadge } from "@/components/shared/RankBadge";
-import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
 import { dashboardNavItems } from "@/components/shared/dashboard-nav";
 import type { UserProfile } from "@/types/gitrank";
@@ -59,27 +58,11 @@ export function DashboardTopBar({
           <Link
             href={`/u/${user.username}`}
             prefetch={false}
-            className="focus-ring cyber-link hidden items-center gap-2 text-sm font-medium xl:inline-flex"
+            className="focus-ring cyber-link inline-flex items-center gap-2 text-sm font-medium"
           >
             View public profile
             <ArrowUpRight className="h-4 w-4" />
           </Link>
-          <Link
-            href={`/u/${user.username}`}
-            prefetch={false}
-            className="focus-ring inline-flex items-center gap-2 border border-primary/24 bg-primary/10 px-3 py-1.5 text-sm font-medium text-cyan-100 xl:hidden"
-          >
-            <UserRound className="h-4 w-4" />
-            Profile
-          </Link>
-          <ShareProfileButton
-            variant="ghost"
-            size="sm"
-            username={user.username}
-            displayName={user.displayName}
-            shareHeadline={`${user.displayName} is ${user.title} on GitRank.`}
-            analyticsTargetPrefix="dashboard-topbar"
-          />
         </div>
       </div>
       <p

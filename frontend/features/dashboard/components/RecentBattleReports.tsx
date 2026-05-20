@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, ShieldCheck } from "lucide-react";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Button } from "@/components/ui/button";
@@ -16,14 +16,9 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
       <div>
         <p className="text-xs font-medium text-primary">Recent battle reports</p>
         <h2 className="mt-2 text-2xl font-semibold text-white">High-signal PRs from the last cycle</h2>
-        <div className="mt-3 flex flex-wrap gap-2 text-xs">
-          <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-            {sortedReports.length} report rows
-          </span>
-          <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-            Sorted by XP impact
-          </span>
-        </div>
+        <p className="mt-2 text-sm text-muted">
+          Showing {sortedReports.length} distinct PR reports ordered by XP impact.
+        </p>
       </div>
       <ul role="list" className="grid gap-3">
         {reports.length === 0 ? (
@@ -71,9 +66,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
                   className="mt-3 max-w-3xl"
                   textClassName="break-anywhere text-sm leading-6 text-muted"
                 />
-                <p className="mt-2 text-xs text-muted">
-                  Score formula {formatScoreVersion(report.scoreVersion)} · insight {formatAnalysisVersion(report.analysisVersion)}
-                </p>
+                <p className="mt-2 text-xs text-muted">Formula {formatScoreVersion(report.scoreVersion)} · Analysis {formatAnalysisVersion(report.analysisVersion)}</p>
               </div>
               <div className="text-right">
                 <p className="text-xs font-medium text-primary">XP earned</p>
@@ -97,12 +90,6 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
           </li>
         ))}
       </ul>
-      {sortedReports.length > 0 ? (
-        <p className="inline-flex items-center gap-2 text-xs text-cyan-100">
-          <Sparkles className="h-3.5 w-3.5 text-cyan-200" />
-          Report cards prioritize merged contribution quality over raw activity volume.
-        </p>
-      ) : null}
     </GlowCard>
   );
 }

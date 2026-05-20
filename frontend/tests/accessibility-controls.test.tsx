@@ -93,7 +93,7 @@ describe("accessibility control naming", () => {
     expect(reset).toBeTruthy();
     expect(reset.hasAttribute("disabled")).toBe(true);
     expect(syncAction).toBeTruthy();
-    expect(syncAction.getAttribute("href")).toBe("/dashboard/settings#settings-account");
+    expect(syncAction.getAttribute("href")).toBe("/dashboard/settings");
     expect(search.getAttribute("aria-describedby")).toBe("settings-repositories-filter-status");
   });
 });
