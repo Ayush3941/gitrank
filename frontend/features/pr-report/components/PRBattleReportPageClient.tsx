@@ -62,6 +62,7 @@ export function PRBattleReportPageClient({
   const evidenceAnchored = evidenceState.status === "complete" || evidenceState.status === "deterministic_only";
   const fallbackReason = extractFallbackReason(data.contribution.evidenceSignals);
   const fallbackDetail = fallbackReason ? formatFallbackReason(fallbackReason) : null;
+  const evidenceReasonSummary = summarizeEvidenceReasons(evidenceState.reasons);
   const signalTier =
     data.contribution.xpEarned >= 250
       ? "High signal"
@@ -156,9 +157,9 @@ export function PRBattleReportPageClient({
               </li>
             ) : null}
           </ul>
-          {evidenceState.reasons.length ? (
+          {evidenceReasonSummary ? (
             <ExpandableText
-              text={evidenceState.reasons.slice(0, 2).join(" · ")}
+              text={evidenceReasonSummary}
               lines={2}
               minLengthForToggle={160}
               className="mt-3"
@@ -340,4 +341,34 @@ function formatAnalysisSource(source?: string): string {
     return "pending";
   }
   return normalized;
+}
+
+function summarizeEvidenceReasons(reasons: string[]): string | null {
+  if (!reasons.length) {
+    return null;
+  }
+  const normalized = reasons
+    .map((reason) => normalizeEvidenceReason(reason))
+    .filter((reason): reason is string => Boolean(reason));
+  if (!normalized.length) {
+    return null;
+  }
+  return normalized.slice(0, 2).join(" · ");
+}
+
+function normalizeEvidenceReason(reason: string): string | null {
+  const normalized = reason.trim().toLowerCase();
+  if (!normalized) {
+    return null;
+  }
+  if (normalized.includes("analysis has not been persisted")) {
+    return "Gemini analysis is still processing for this PR.";
+  }
+  if (normalized.includes("report is stale until analysis and scoring both complete")) {
+    return "Report refresh is pending the next scoring replay.";
+  }
+  if (normalized.includes("fallback reason")) {
+    return null;
+  }
+  return reason;
 }
