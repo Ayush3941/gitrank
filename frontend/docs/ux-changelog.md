@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Dashboard quest-card heading pass:
+  - promoted quest titles in dashboard `QuestPanel` list cards from paragraph text to `h3` headings.
+  - normalized quest list-item semantics (`list-none`) for consistent card-list structure.
+  - preserves quest rendering behavior while improving heading clarity in repeated mission cards.
 - Repeated-card heading hierarchy pass:
   - downgraded repeated contribution and badge card titles from `h2` to `h3` in list-rendered components.
   - keeps visual styling unchanged while preserving cleaner page heading structure for assistive navigation.
