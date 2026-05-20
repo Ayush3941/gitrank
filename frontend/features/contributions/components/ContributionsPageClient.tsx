@@ -320,103 +320,103 @@ export function ContributionsPageClient() {
         </section>
       ) : null}
       {!isLoading && !isError ? (
-        <section id="contributions-repositories" className="render-opt-section scroll-mt-24 space-y-3">
-          <SectionHeader
-            eyebrow="Repositories"
-            title="Repositories touched"
-            description="Where effort concentrated."
-          />
-          <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading repository impact lanes" />}>
-            {repositories.length ? (
-              <ul role="list" className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {repositories.map((repository) => (
-                  <li key={repository.fullName} className="render-opt-card neon-surface rounded-[1.4rem] border-cyan-300/28 px-4 py-3">
-                    <p className="break-anywhere text-sm font-medium text-white">{repository.fullName}</p>
-                    <p className="mt-1 text-xs text-muted">{repository.contributions} contributions</p>
-                    <p className="mt-3 text-lg font-semibold text-cyan-200">{repository.totalXp} XP</p>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <SubsectionEmptyState
-                message="No repository contribution summary is available in this snapshot yet."
-                actionLabel="Open sync settings"
-                actionHref="/dashboard/settings"
-              />
-            )}
-          </DeferUntilVisible>
+        <section id="contributions-repositories" className="render-opt-section scroll-mt-24">
+          <details className="space-y-3" open={repositories.length > 0 && repositories.length <= 3}>
+            <summary className="focus-ring neon-surface cursor-pointer list-none px-4 py-3 text-sm font-semibold text-white marker:content-none">
+              Repositories touched ({repositories.length})
+            </summary>
+            <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading repository impact lanes" />}>
+              {repositories.length ? (
+                <ul role="list" className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  {repositories.map((repository) => (
+                    <li key={repository.fullName} className="render-opt-card neon-surface rounded-[1.4rem] border-cyan-300/28 px-4 py-3">
+                      <p className="break-anywhere text-sm font-medium text-white">{repository.fullName}</p>
+                      <p className="mt-1 text-xs text-muted">{repository.contributions} contributions</p>
+                      <p className="mt-3 text-lg font-semibold text-cyan-200">{repository.totalXp} XP</p>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <SubsectionEmptyState
+                  message="No repository contribution summary is available in this snapshot yet."
+                  actionLabel="Open sync settings"
+                  actionHref="/dashboard/settings"
+                />
+              )}
+            </DeferUntilVisible>
+          </details>
         </section>
       ) : null}
       {!isLoading && !isError ? (
-        <section id="contributions-timeline" className="render-opt-section scroll-mt-24 space-y-4">
-          <SectionHeader
-            eyebrow="History"
-            title="Contribution timeline and highlights"
-            description="Momentum and top-impact PRs."
-          />
-          <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading timeline and highlights" />}>
-            <div className="grid gap-4 xl:grid-cols-[1.2fr,0.8fr]">
-              <GlowCard className="space-y-4 border border-fuchsia-400/20 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/30">
-                <h3 className="cyber-title text-sm font-medium text-fuchsia-200">Contribution timeline</h3>
-                {monthlyWindow.length ? (
-                  <div className="space-y-3">
+        <section id="contributions-timeline" className="render-opt-section scroll-mt-24">
+          <details className="space-y-4">
+            <summary className="focus-ring neon-surface cursor-pointer list-none px-4 py-3 text-sm font-semibold text-white marker:content-none">
+              Timeline and highlights ({monthlyWindow.length} months, {topHighlights.length} top PRs)
+            </summary>
+            <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading timeline and highlights" />}>
+              <div className="grid gap-4 xl:grid-cols-[1.2fr,0.8fr]">
+                <GlowCard className="space-y-4 border border-fuchsia-400/20 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/30">
+                  <h3 className="cyber-title text-sm font-medium text-fuchsia-200">Contribution timeline</h3>
+                  {monthlyWindow.length ? (
+                    <div className="space-y-3">
+                      <ul role="list" className="space-y-3">
+                        {monthlyWindow.map((point) => (
+                          <li key={point.month} className="list-none space-y-1">
+                            <div className="flex items-center justify-between text-xs text-muted">
+                              <span>{point.month}</span>
+                              <span>{point.xp} XP</span>
+                            </div>
+                            <div className="neon-track h-2 rounded-full">
+                              <div
+                                className="h-full rounded-full bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300"
+                                style={{ width: `${Math.max(8, Math.round((point.xp / maxMonthlyXp) * 100))}%` }}
+                              />
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : (
+                    <SubsectionEmptyState
+                      message="Timeline points are not available yet for this filtered evidence window."
+                      actionLabel="Open sync settings"
+                      actionHref="/dashboard/settings"
+                    />
+                  )}
+                </GlowCard>
+                <GlowCard className="space-y-4 border border-cyan-300/20 bg-gradient-to-br from-slate-950/88 to-cyan-950/25">
+                  <h3 className="cyber-title text-sm font-medium text-cyan-200">Top highlights</h3>
+                  {topHighlights.length ? (
                     <ul role="list" className="space-y-3">
-                      {monthlyWindow.map((point) => (
-                        <li key={point.month} className="list-none space-y-1">
-                          <div className="flex items-center justify-between text-xs text-muted">
-                            <span>{point.month}</span>
-                            <span>{point.xp} XP</span>
-                          </div>
-                          <div className="neon-track h-2 rounded-full">
-                            <div
-                              className="h-full rounded-full bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300"
-                              style={{ width: `${Math.max(8, Math.round((point.xp / maxMonthlyXp) * 100))}%` }}
-                            />
+                      {topHighlights.map((row, index) => (
+                        <li
+                          key={`${row.owner}/${row.repo}#${row.number}-${row.id}-${index}`}
+                          className="list-none render-opt-card neon-surface space-y-2 rounded-2xl px-3 py-3"
+                        >
+                          <p className="break-anywhere text-sm font-medium text-white">{row.title}</p>
+                          <p className="mt-1 break-anywhere text-xs text-muted">{row.owner}/{row.repo} #{row.number}</p>
+                          <p className="mt-2 text-sm text-cyan-200">+{row.xpEarned} XP</p>
+                          <div className="pt-1">
+                            <Button asChild size="sm" variant="secondary">
+                              <Link href={`/pr/${row.owner}/${row.repo}/${row.number}`} prefetch={false}>
+                                View report
+                              </Link>
+                            </Button>
                           </div>
                         </li>
                       ))}
                     </ul>
-                  </div>
-                ) : (
-                  <SubsectionEmptyState
-                    message="Timeline points are not available yet for this filtered evidence window."
-                    actionLabel="Open sync settings"
-                    actionHref="/dashboard/settings"
-                  />
-                )}
-              </GlowCard>
-              <GlowCard className="space-y-4 border border-cyan-300/20 bg-gradient-to-br from-slate-950/88 to-cyan-950/25">
-                <h3 className="cyber-title text-sm font-medium text-cyan-200">Top highlights</h3>
-                {topHighlights.length ? (
-                  <ul role="list" className="space-y-3">
-                    {topHighlights.map((row, index) => (
-                      <li
-                        key={`${row.owner}/${row.repo}#${row.number}-${row.id}-${index}`}
-                        className="list-none render-opt-card neon-surface space-y-2 rounded-2xl px-3 py-3"
-                      >
-                        <p className="break-anywhere text-sm font-medium text-white">{row.title}</p>
-                        <p className="mt-1 break-anywhere text-xs text-muted">{row.owner}/{row.repo} #{row.number}</p>
-                        <p className="mt-2 text-sm text-cyan-200">+{row.xpEarned} XP</p>
-                        <div className="pt-1">
-                          <Button asChild size="sm" variant="secondary">
-                            <Link href={`/pr/${row.owner}/${row.repo}/${row.number}`} prefetch={false}>
-                              View report
-                            </Link>
-                          </Button>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <SubsectionEmptyState
-                    message="No high-signal highlights are available yet in this snapshot."
-                    actionLabel="Open quest lane"
-                    actionHref="/dashboard/quests"
-                  />
-                )}
-              </GlowCard>
-            </div>
-          </DeferUntilVisible>
+                  ) : (
+                    <SubsectionEmptyState
+                      message="No high-signal highlights are available yet in this snapshot."
+                      actionLabel="Open quest lane"
+                      actionHref="/dashboard/quests"
+                    />
+                  )}
+                </GlowCard>
+              </div>
+            </DeferUntilVisible>
+          </details>
         </section>
       ) : null}
     </div>
