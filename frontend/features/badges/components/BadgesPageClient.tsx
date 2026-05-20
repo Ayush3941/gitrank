@@ -199,7 +199,7 @@ export function BadgesPageClient() {
         description="Turn each unlocked badge into a story, track locked paths, and frame progression as a visible contributor journey."
         actions={(
           <Button asChild variant="secondary">
-            <Link href="/dashboard/quests">Open quests</Link>
+            <Link href="/dashboard/quests" prefetch={false}>Open quests</Link>
           </Button>
         )}
       />
@@ -276,7 +276,7 @@ export function BadgesPageClient() {
                         </p>
                       </div>
                       <Button asChild variant="secondary" size="sm">
-                        <Link href={unlockRecoveryHref(nextUnlockTarget.unlockCondition)}>
+                        <Link href={unlockRecoveryHref(nextUnlockTarget.unlockCondition)} prefetch={false}>
                           {unlockRecoveryLabel(nextUnlockTarget.unlockCondition)}
                         </Link>
                       </Button>
@@ -467,7 +467,7 @@ export function BadgesPageClient() {
                           Next move: {unlockRecoveryLabel(badge.unlockCondition)}
                         </p>
                         <Button asChild variant="ghost" size="sm">
-                          <Link href={unlockRecoveryHref(badge.unlockCondition)}>Open lane</Link>
+                          <Link href={unlockRecoveryHref(badge.unlockCondition)} prefetch={false}>Open lane</Link>
                         </Button>
                       </div>
                     </li>

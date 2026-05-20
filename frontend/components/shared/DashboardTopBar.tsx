@@ -71,8 +71,8 @@ export function DashboardTopBar({
         aria-atomic="true"
         className={
           autoSyncNote
-            ? `mt-3 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium ${autoSyncToneClass}`
-            : "sr-only"
+            ? `mt-3 inline-flex min-h-6 items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium ${autoSyncToneClass}`
+            : "mt-3 min-h-6 text-xs opacity-0 pointer-events-none select-none"
         }
       >
         {autoSyncNote ? (
@@ -81,7 +81,7 @@ export function DashboardTopBar({
             <span className="break-anywhere">{autoSyncNote.message}</span>
           </>
         ) : (
-          "No background sync updates."
+          "Background sync status"
         )}
       </p>
     </div>
@@ -119,6 +119,7 @@ export function DashboardTopBarUnavailable() {
         </div>
         <Link
           href="/login?return_to=/dashboard"
+          prefetch={false}
           className="focus-ring cyber-link inline-flex items-center gap-2 text-sm font-medium"
         >
           Reconnect GitHub

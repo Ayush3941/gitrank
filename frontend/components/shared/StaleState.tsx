@@ -80,7 +80,7 @@ export function StaleState({
           </Button>
         ) : null}
         <Button asChild variant="secondary">
-          <Link href={actionHref}>{actionLabel}</Link>
+          <Link href={actionHref} prefetch={false}>{actionLabel}</Link>
         </Button>
       </div>
     </GlowCard>

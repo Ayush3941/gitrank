@@ -75,7 +75,7 @@ export function RouteErrorCard({
         </Button>
         {actions.map((action) => (
           <Button key={action.href} asChild variant={action.variant ?? "default"}>
-            <Link href={action.href}>{action.label}</Link>
+            <Link href={action.href} prefetch={false}>{action.label}</Link>
           </Button>
         ))}
       </div>

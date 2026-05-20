@@ -28,10 +28,10 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
             </p>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" variant="secondary">
-                <Link href="/dashboard/settings">Refresh sync settings</Link>
+                <Link href="/dashboard/settings" prefetch={false}>Refresh sync settings</Link>
               </Button>
               <Button asChild size="sm" variant="secondary">
-                <Link href="/dashboard/contributions">Inspect contributions</Link>
+                <Link href="/dashboard/contributions" prefetch={false}>Inspect contributions</Link>
               </Button>
             </div>
           </li>

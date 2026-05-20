@@ -452,7 +452,7 @@ function SubsectionEmptyState({
           </Button>
         ) : null}
         <Button asChild size="sm" variant="secondary">
-          <Link href={actionHref}>{actionLabel}</Link>
+          <Link href={actionHref} prefetch={false}>{actionLabel}</Link>
         </Button>
       </div>
     </GlowCard>

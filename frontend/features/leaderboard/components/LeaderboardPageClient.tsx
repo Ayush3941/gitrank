@@ -124,7 +124,7 @@ export function LeaderboardPageClient() {
         description="Time-windowed ranking weighted by meaningful merged work."
         actions={(
           <Button asChild variant="secondary">
-            <Link href="/dashboard/contributions">Open contributions</Link>
+            <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
           </Button>
         )}
       />
@@ -231,10 +231,10 @@ export function LeaderboardPageClient() {
             </div>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" variant="secondary">
-                <Link href="/dashboard/settings">Sync and enable profile visibility</Link>
+                <Link href="/dashboard/settings" prefetch={false}>Sync and enable profile visibility</Link>
               </Button>
               <Button asChild size="sm" variant="ghost">
-                <Link href="/dashboard/quests">Open quest lane</Link>
+                <Link href="/dashboard/quests" prefetch={false}>Open quest lane</Link>
               </Button>
             </div>
           </GlowCard>
@@ -291,13 +291,13 @@ export function LeaderboardPageClient() {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button asChild size="sm" variant="secondary">
-                      <Link href="/dashboard/contributions">
+                      <Link href="/dashboard/contributions" prefetch={false}>
                         Improve contribution signal
                         <ArrowUpRight className="h-4 w-4" />
                       </Link>
                     </Button>
                     <Button asChild size="sm" variant="ghost">
-                      <Link href="/dashboard/quests">
+                      <Link href="/dashboard/quests" prefetch={false}>
                         Open tactical quests
                         <Trophy className="h-4 w-4" />
                       </Link>
@@ -355,10 +355,10 @@ export function LeaderboardPageClient() {
           </p>
           <div className="flex flex-wrap gap-2">
             <Button asChild variant="secondary" size="sm">
-              <Link href="/dashboard/contributions">Improve contribution signal</Link>
+              <Link href="/dashboard/contributions" prefetch={false}>Improve contribution signal</Link>
             </Button>
             <Button asChild variant="ghost" size="sm">
-              <Link href="/dashboard/quests">Open quest lane</Link>
+              <Link href="/dashboard/quests" prefetch={false}>Open quest lane</Link>
             </Button>
           </div>
         </GlowCard>

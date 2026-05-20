@@ -21,10 +21,10 @@ export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
             <p>Exact pull request evidence is hidden on this profile or there are no scored contributions yet.</p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Button asChild variant="secondary" size="sm">
-                <Link href="/dashboard/contributions">Open contributions lane</Link>
+                <Link href="/dashboard/contributions" prefetch={false}>Open contributions lane</Link>
               </Button>
               <Button asChild variant="ghost" size="sm">
-                <Link href="/dashboard/settings">Open visibility settings</Link>
+                <Link href="/dashboard/settings" prefetch={false}>Open visibility settings</Link>
               </Button>
             </div>
           </div>

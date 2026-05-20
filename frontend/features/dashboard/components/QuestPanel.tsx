@@ -25,10 +25,10 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
             </p>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" variant="secondary">
-                <Link href="/dashboard/settings">Run sync in settings</Link>
+                <Link href="/dashboard/settings" prefetch={false}>Run sync in settings</Link>
               </Button>
               <Button asChild size="sm" variant="secondary">
-                <Link href="/dashboard/contributions">Open contributions</Link>
+                <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
               </Button>
             </div>
           </div>

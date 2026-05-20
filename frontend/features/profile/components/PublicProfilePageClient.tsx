@@ -150,7 +150,7 @@ export function PublicProfilePageClient({
         description="Share-ready contributor identity with evidence-backed score context, progression signals, and verifiable contribution highlights."
         actions={(
           <Button asChild variant="secondary">
-            <Link href="/dashboard">Open dashboard</Link>
+            <Link href="/dashboard" prefetch={false}>Open dashboard</Link>
           </Button>
         )}
       />
@@ -247,10 +247,10 @@ export function PublicProfilePageClient({
                     <p>Repository-level signal is not available on this snapshot yet.</p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <Button asChild variant="secondary" size="sm">
-                        <Link href="/dashboard/contributions">Open contribution lane</Link>
+                        <Link href="/dashboard/contributions" prefetch={false}>Open contribution lane</Link>
                       </Button>
                       <Button asChild variant="ghost" size="sm">
-                        <Link href="/dashboard/settings">Open sync settings</Link>
+                        <Link href="/dashboard/settings" prefetch={false}>Open sync settings</Link>
                       </Button>
                     </div>
                   </div>

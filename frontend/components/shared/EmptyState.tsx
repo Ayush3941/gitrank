@@ -59,7 +59,7 @@ export function EmptyState({
         <div className="flex flex-col items-start gap-2">
           {actionLabel && actionHref ? (
             <Button asChild>
-              <Link href={actionHref}>{actionLabel}</Link>
+              <Link href={actionHref} prefetch={false}>{actionLabel}</Link>
             </Button>
           ) : null}
           {actionLabel && !actionHref && onAction ? (
@@ -70,6 +70,7 @@ export function EmptyState({
           {secondaryActionLabel && secondaryActionHref ? (
             <Link
               href={secondaryActionHref}
+              prefetch={false}
               className="focus-ring text-sm font-medium text-cyan-100 underline decoration-cyan-300/70 underline-offset-2 hover:text-cyan-50"
             >
               {secondaryActionLabel}
