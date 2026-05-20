@@ -90,7 +90,7 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
         </li>
         <li className="list-none rounded-[1.75rem] border border-emerald-400/18 bg-emerald-400/8 px-4 py-4">
           <p className="text-sm font-semibold text-white">Evidence lock</p>
-          <p className="mt-2 text-xs leading-5 text-emerald-100/76">
+          <p className="mt-2 text-xs leading-5 text-emerald-100">
             This report links XP to PR facts: changed files, review depth, CI
             state, issue linkage, and category signals.
           </p>
@@ -106,7 +106,7 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
                 {penalty.deltaXp} XP
               </p>
             </div>
-            <p className="mt-2 text-xs leading-5 text-rose-100/72">
+            <p className="mt-2 text-xs leading-5 text-rose-100">
               {penalty.reason}
             </p>
           </li>

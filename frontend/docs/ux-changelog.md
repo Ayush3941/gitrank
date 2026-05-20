@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- PR breakdown readability pass:
+  - normalized remaining low-opacity evidence/penalty helper copy in `XPBreakdownCard` to full readable tokens.
+  - keeps scoring explanations unchanged while improving dense report legibility.
 - Quests semantic structure pass:
   - converted mission spotlight cards from plain grid children to semantic `ul/li` entries.
   - converted cadence quest-card grids to semantic `ul/li` rendering for clearer assistive list traversal.
