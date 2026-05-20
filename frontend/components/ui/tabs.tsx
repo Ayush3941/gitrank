@@ -36,7 +36,8 @@ export function TabsList({
       });
     };
 
-    const initialFrame = window.requestAnimationFrame(scrollActiveTabIntoView);
+    // Run once on mount so preselected tabs in overflow rails are visible.
+    scrollActiveTabIntoView();
     const observer = new MutationObserver((entries) => {
       for (const entry of entries) {
         if (
@@ -55,7 +56,6 @@ export function TabsList({
     });
 
     return () => {
-      window.cancelAnimationFrame(initialFrame);
       observer.disconnect();
     };
   }, []);

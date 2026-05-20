@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Tabs main-thread guard hardening pass:
+  - removed `requestAnimationFrame` usage from shared `TabsList` mount behavior and switched to immediate mount-time active-tab alignment.
+  - keeps active-tab auto-centering behavior for overflow tab rails while satisfying frontend main-thread guard expectations.
+  - validated with `npm run check:main-thread`.
 - Leaderboard lane-tab labeling pass:
   - added explicit `aria-label` on leaderboard `TabsList` so the lane selector is announced consistently as a filter control in assistive navigation.
   - preserves existing tab behavior and route semantics.
