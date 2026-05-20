@@ -110,27 +110,23 @@ export function ContributionList({
                 narrative={narratives?.[item.id]}
               />
               {detailedMetricsAvailable ? (
-                <SignalProfile item={item} />
+                <SignalProfileDisclosure item={item} />
               ) : (
                 <div className="neon-surface rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
                   Detailed score components are still being prepared for this report.
                 </div>
               )}
               <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted">
-                {detailedMetricsAvailable ? (
-                  <div className="flex flex-wrap gap-4">
-                    <span className="inline-flex items-center gap-2">
-                      <GitMerge className="h-4 w-4 text-primary" />
-                      Repo weight {item.repoWeight.toFixed(2)}
-                    </span>
-                    <span className="inline-flex items-center gap-2">
-                      <ShieldCheck className="h-4 w-4 text-primary" />
-                      Anti-spam {item.antiSpamMultiplier.toFixed(2)}x
-                    </span>
-                  </div>
-                ) : (
-                  <span>Detailed metrics pending</span>
-                )}
+                <div className="flex flex-wrap gap-4">
+                  <span className="inline-flex items-center gap-2">
+                    <GitMerge className="h-4 w-4 text-primary" />
+                    Repo {item.repoWeight.toFixed(2)}
+                  </span>
+                  <span className="inline-flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4 text-primary" />
+                    Anti-spam {item.antiSpamMultiplier.toFixed(2)}x
+                  </span>
+                </div>
                 <Button asChild variant="secondary" size="sm">
                   <Link href={`/pr/${item.owner}/${item.repo}/${item.number}`} prefetch={false}>
                     View battle report
@@ -143,6 +139,17 @@ export function ContributionList({
         );
       })}
     </ol>
+  );
+}
+
+function SignalProfileDisclosure({ item }: { item: Contribution }) {
+  return (
+    <details className="space-y-3">
+      <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-primary/24 px-4 py-3 text-sm font-medium text-white marker:content-none">
+        View score factors
+      </summary>
+      <SignalProfile item={item} />
+    </details>
   );
 }
 
