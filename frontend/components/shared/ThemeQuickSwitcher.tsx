@@ -66,7 +66,7 @@ export function ThemeQuickSwitcher({
         size={compact ? "sm" : "md"}
         variant="secondary"
         className={className}
-        title={`Theme: ${current.longLabel}. Switch to ${next.longLabel}. Shortcut: Alt+Shift+T.`}
+        title={`Current theme ${current.longLabel}. Switch to ${next.longLabel}. Shortcut: Alt+Shift+T.`}
         aria-label={`Theme ${current.longLabel}. Switch to ${next.longLabel}. Shortcut Alt Shift T.`}
         aria-keyshortcuts="Alt+Shift+T"
         onClick={handleSwitchTheme}
@@ -76,11 +76,7 @@ export function ThemeQuickSwitcher({
           {compact ? (
             <span className="font-semibold">{current.shortLabel}</span>
           ) : (
-            <>
-              Theme:
-              {" "}
-              <span className="font-semibold">{current.shortLabel}</span>
-            </>
+            <span className="font-semibold">{current.longLabel}</span>
           )}
         </span>
         <span className="inline-flex items-center gap-1" aria-hidden="true">

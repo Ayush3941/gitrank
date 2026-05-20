@@ -46,7 +46,7 @@ export function TextScaleQuickSwitcher({
         size={compact ? "sm" : "md"}
         variant="secondary"
         className={className}
-        title={`Text size: ${currentLabel}. Switch to ${nextLabel}. Shortcut: Alt+Shift+L.`}
+        title={`Current text size ${currentLabel}. Switch to ${nextLabel}. Shortcut: Alt+Shift+L.`}
         aria-label={`Text size ${currentLabel}. Switch to ${nextLabel}. Shortcut Alt Shift L.`}
         aria-keyshortcuts="Alt+Shift+L"
         onClick={handleSwitchTextScale}
@@ -56,11 +56,7 @@ export function TextScaleQuickSwitcher({
           {compact ? (
             <span className="font-semibold">{currentLabel}</span>
           ) : (
-            <>
-              Text:
-              {" "}
-              <span className="font-semibold">{currentLabel}</span>
-            </>
+            <span className="font-semibold">{currentLabel} text</span>
           )}
         </span>
       </Button>
