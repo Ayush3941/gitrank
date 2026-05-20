@@ -40,7 +40,7 @@ export function DashboardTopBar({
         : Info;
 
   return (
-    <div className="glass-panel cyber-card cyber-frame mb-6 px-5 py-4">
+    <div className="glass-panel cyber-card cyber-frame mb-6 px-5 py-4 [overflow-anchor:none]">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="inline-flex min-w-0 items-center gap-2">
           <span className="hud-pill inline-flex h-8 w-8 items-center justify-center rounded-full text-primary">

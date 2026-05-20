@@ -13,7 +13,7 @@ export function DashboardRouteNav() {
   return (
     <nav
       aria-label="Dashboard navigation"
-      className="dashboard-nav-shell p-1.5"
+      className="dashboard-nav-shell p-1.5 [overflow-anchor:none]"
     >
       <ul role="list" className="scrollbar-thin flex gap-1.5 overflow-x-auto p-0.5">
         {dashboardNavItems.map((item) => {
