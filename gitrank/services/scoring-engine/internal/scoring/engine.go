@@ -182,6 +182,7 @@ func distributeSkillXP(skills []string, totalXP int) map[string]int {
 func buildExplanation(req contracts.ScoreContributionRequest, totalXP int, spamPenalty, diminishingReturns float64) []string {
 	explanation := []string{
 		"score version " + ScoreVersion,
+		"strict PR XP award strategy executed before AI summaries",
 		"category " + strings.ReplaceAll(req.Analysis.Category, "_", " "),
 		"technical depth and review strength were applied deterministically",
 	}

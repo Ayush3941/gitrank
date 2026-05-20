@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Activity, ArrowRight, CheckCircle2, Circle, Flame, ListChecks, Medal, ShieldCheck, Sparkles, Swords } from "lucide-react";
 import { DashboardHeroRankCard } from "@/features/dashboard/components/DashboardHeroRankCard";
 import { ContributionTimelineCard } from "@/features/dashboard/components/ContributionTimelineCard";
@@ -17,7 +17,6 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
-import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
 import { Button } from "@/components/ui/button";
@@ -29,28 +28,10 @@ import {
 import { formatRelativeDays } from "@/lib/formatters";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
-import { initialSectionFromHash } from "@/lib/section-nav";
-
-const DASHBOARD_SECTION_NAV = [
-  { id: "dashboard-hero", label: "Hero" },
-  { id: "dashboard-snapshot", label: "Snapshot" },
-  { id: "dashboard-league", label: "League" },
-  { id: "dashboard-skills", label: "Skills" },
-  { id: "dashboard-reports", label: "Reports" },
-  { id: "dashboard-badges", label: "Badges" },
-  { id: "dashboard-timeline", label: "Timeline" },
-] as const;
-type DashboardSectionID = (typeof DASHBOARD_SECTION_NAV)[number]["id"];
-const DASHBOARD_SECTION_IDS = DASHBOARD_SECTION_NAV.map(
-  (section) => section.id,
-) as DashboardSectionID[];
-const DASHBOARD_DEFAULT_SECTION: DashboardSectionID = "dashboard-hero";
 
 export function DashboardPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useDashboard();
   const scoreExplanationEventSent = useRef(false);
-  const [activeSection, setActiveSection] =
-    useState<DashboardSectionID>(DASHBOARD_DEFAULT_SECTION);
   const user = data?.user;
   const recentReports = data?.recentReports ?? [];
   const streak = useMemo(
@@ -62,10 +43,6 @@ export function DashboardPageClient() {
     user?.contributions.length ?? 0,
     contributionWindowCap,
   );
-  const activeSectionLabel =
-    DASHBOARD_SECTION_NAV.find((section) => section.id === activeSection)?.label ??
-    "Hero";
-  const activeSectionLink = `/dashboard#${activeSection}`;
   const contributionWindowFillRate =
     contributionWindowCap > 0
       ? Math.round((contributionWindowCount / contributionWindowCap) * 100)
@@ -237,70 +214,6 @@ export function DashboardPageClient() {
     });
   }, [data, isError, isLoading]);
 
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const syncFromHash = () => {
-      const nextSection = initialSectionFromHash(
-        DASHBOARD_SECTION_IDS,
-        DASHBOARD_DEFAULT_SECTION,
-        window.location.hash,
-      );
-      setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
-    };
-    syncFromHash();
-    window.addEventListener("hashchange", syncFromHash);
-
-    const sectionNodes = DASHBOARD_SECTION_NAV
-      .map((section) => document.getElementById(section.id))
-      .filter(Boolean) as HTMLElement[];
-
-    if (!sectionNodes.length) {
-      window.removeEventListener("hashchange", syncFromHash);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visibleEntries = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((left, right) => {
-            if (right.intersectionRatio !== left.intersectionRatio) {
-              return right.intersectionRatio - left.intersectionRatio;
-            }
-            return left.boundingClientRect.top - right.boundingClientRect.top;
-          });
-
-        const nextSectionId = visibleEntries[0]?.target?.id;
-        if (!nextSectionId) {
-          return;
-        }
-        const nextSection = initialSectionFromHash(
-          DASHBOARD_SECTION_IDS,
-          DASHBOARD_DEFAULT_SECTION,
-          `#${nextSectionId}`,
-        );
-        setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
-      },
-      {
-        root: null,
-        rootMargin: "-22% 0px -62% 0px",
-        threshold: [0, 0.2, 0.45, 0.7, 1],
-      },
-    );
-
-    for (const node of sectionNodes) {
-      observer.observe(node);
-    }
-
-    return () => {
-      window.removeEventListener("hashchange", syncFromHash);
-      observer.disconnect();
-    };
-  }, []);
-
   if (isLoading) {
     return <LoadingState message="Building your RPG dashboard..." />;
   }
@@ -334,17 +247,6 @@ export function DashboardPageClient() {
           analyticsTarget="dashboard:stale"
         />
       ) : null}
-      <SectionJumpNav
-        navLabelID="dashboard-jump-nav-label"
-        landmarkLabel="Dashboard section navigation"
-        activeSectionLabel={activeSectionLabel}
-        items={DASHBOARD_SECTION_NAV}
-        activeSection={activeSection}
-        onSectionSelect={setActiveSection}
-        copyHref={activeSectionLink}
-        copyAnalyticsTarget="dashboard/copy-section-link"
-        className="mb-1"
-      />
       <section id="dashboard-hero" className="scroll-mt-24">
         <DashboardHeroRankCard
           user={user}

@@ -11,6 +11,15 @@ Think: contributor analytics + RPG progression + shareable public profile.
 - Progression is visible: XP, levels, badges, quests, streak framing, leaderboard.
 - AI explains outcomes, but deterministic scoring stays in control.
 
+## Strict PR XP Award Strategy (Before Gemini)
+
+GitRank enforces a hard separation between scoring and AI narrative:
+
+- PR XP is awarded only by deterministic backend scoring (`pr-analyzer` + `scoring-engine`).
+- Gemini runs after scoring and receives read-only scored evidence.
+- Gemini cannot create, edit, or override XP, levels, ranks, or badge awards.
+- If Gemini is unavailable, scoring and profile progression continue with deterministic fallback copy.
+
 ## Product Surface
 
 | Area | What users see |

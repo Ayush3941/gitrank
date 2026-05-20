@@ -295,6 +295,9 @@ function buildGeminiPrompt(input: AbraInsightsRequest): string {
   return [
     "You are writing gamified but accurate contributor intelligence copy for GitRank.",
     "Do not invent facts. Use only the provided structured data.",
+    "Strict policy: deterministic PR XP is already finalized before this step.",
+    "Never change, infer, or suggest new XP totals, rank changes, or score formula outcomes.",
+    "You may only explain the provided evidence and already-awarded XP values.",
     "Tone: concise, energetic, evidence-aware, professional.",
     "Output must match the JSON schema exactly.",
     "",

@@ -84,7 +84,7 @@ export function DashboardTopBar({
 
   return (
     <>
-      <div className="glass-panel cyber-card cyber-frame sticky sticky-safe-top-4 z-30 mb-6 px-5 py-4">
+      <div className="glass-panel cyber-card cyber-frame mb-6 px-5 py-4">
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
           <div className="flex flex-col gap-2">
             <nav aria-label="Breadcrumb" className="min-w-0">
@@ -211,7 +211,7 @@ export function DashboardTopBar({
 
 export function DashboardTopBarSkeleton() {
   return (
-    <div className="glass-panel cyber-card cyber-frame sticky sticky-safe-top-4 z-30 mb-6 px-5 py-4">
+    <div className="glass-panel cyber-card cyber-frame mb-6 px-5 py-4">
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
         <div className="space-y-2">
           <div className="neon-skeleton h-5 w-44 rounded-full" />
@@ -238,7 +238,7 @@ export function DashboardTopBarSkeleton() {
 
 export function DashboardTopBarUnavailable() {
   return (
-    <div className="glass-panel cyber-card cyber-frame sticky sticky-safe-top-4 z-30 mb-6 border border-amber-400/24 px-5 py-4">
+    <div className="glass-panel cyber-card cyber-frame mb-6 border border-amber-400/24 px-5 py-4">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="inline-flex items-center gap-2 text-sm text-amber-100">
           <AlertTriangle className="h-4 w-4" />

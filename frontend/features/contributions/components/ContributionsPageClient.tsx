@@ -2,20 +2,14 @@
 
 import Link from "next/link";
 import { Flame, Radar, Sparkles, Swords } from "lucide-react";
-import { startTransition, useDeferredValue, useEffect, useMemo, useState, type ReactNode } from "react";
+import { startTransition, useDeferredValue, useMemo, useState, type ReactNode } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { ConstrainedNetworkPill } from "@/components/shared/ConstrainedNetworkPill";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
-import { PageHeader } from "@/components/shared/PageHeader";
-import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
 import { SectionHeader } from "@/components/shared/SectionHeader";
-import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
-import { StaleState } from "@/components/shared/StaleState";
-import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
 import { ContributionList } from "@/features/contributions/components/ContributionList";
 import { useContributions } from "@/hooks/use-contributions";
@@ -26,14 +20,12 @@ import {
   deriveDeterministicArchetype,
   shouldRequestAbraInsights,
 } from "@/lib/ai/deterministic-identity-summary";
-import { formatRelativeDays } from "@/lib/formatters";
 import {
   monthTimeline,
   summarizeContributionStreak,
   summarizeRepositories,
   uniqueContributionDayCount,
 } from "@/lib/metrics/contribution-metrics";
-import { initialSectionFromHash } from "@/lib/section-nav";
 
 const filterMap: Record<string, string> = {
   All: "All",
@@ -48,24 +40,6 @@ const filterMap: Record<string, string> = {
   "High XP": "High XP",
 };
 
-type ContributionSectionID =
-  | "contributions-filters"
-  | "contributions-overview"
-  | "contributions-repositories"
-  | "contributions-timeline"
-  | "contributions-cards";
-
-const CONTRIBUTION_SECTION_ITEMS: Array<{ id: ContributionSectionID; label: string }> = [
-  { id: "contributions-filters", label: "Filters" },
-  { id: "contributions-overview", label: "Overview" },
-  { id: "contributions-repositories", label: "Repos" },
-  { id: "contributions-timeline", label: "Timeline" },
-  { id: "contributions-cards", label: "Cards" },
-];
-const CONTRIBUTION_SECTION_IDS = CONTRIBUTION_SECTION_ITEMS.map(
-  (section) => section.id,
-) as ContributionSectionID[];
-const CONTRIBUTION_DEFAULT_SECTION: ContributionSectionID = "contributions-filters";
 const CONTRIBUTION_CARD_PAGE_SIZE_DEFAULT = 24;
 const CONTRIBUTION_CARD_PAGE_SIZE_CONSTRAINED = 12;
 const CONTRIBUTION_TIMELINE_MONTH_WINDOW_DEFAULT = 12;
@@ -77,8 +51,6 @@ export function ContributionsPageClient() {
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact">("Newest");
-  const [activeSection, setActiveSection] =
-    useState<ContributionSectionID>(CONTRIBUTION_DEFAULT_SECTION);
   const deferredFilter = useDeferredValue(filter);
   const deferredSearch = useDeferredValue(search);
   const deferredSort = useDeferredValue(sort);
@@ -90,7 +62,7 @@ export function ContributionsPageClient() {
     ? CONTRIBUTION_TIMELINE_MONTH_WINDOW_CONSTRAINED
     : CONTRIBUTION_TIMELINE_MONTH_WINDOW_DEFAULT;
   const [visibleCardCount, setVisibleCardCount] = useState(cardPageSize);
-  const { data, isLoading, isError, isFetching, refetch } = useContributions({
+  const { data, isLoading, isError } = useContributions({
     filter: filterMap[deferredFilter],
     search: deferredSearch,
     sort: deferredSort,
@@ -109,10 +81,6 @@ export function ContributionsPageClient() {
   const totalContributionEvidence = profile?.user.contributions.length ?? 0;
   const isFilteredNoResults =
     canReset && totalContributionEvidence > 0 && filteredRows.length === 0;
-  const activeSectionLabel =
-    CONTRIBUTION_SECTION_ITEMS.find((section) => section.id === activeSection)?.label ??
-    "Filters";
-  const activeSectionLink = `/dashboard/contributions#${activeSection}`;
 
   const streak = useMemo(
     () => summarizeContributionStreak(profile?.user.contributions ?? []),
@@ -210,53 +178,6 @@ export function ContributionsPageClient() {
   );
   const maxMonthlyXp = Math.max(1, ...monthlyWindow.map((point) => point.xp));
 
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const syncFromHash = () => {
-      const nextSection = initialSectionFromHash(
-        CONTRIBUTION_SECTION_IDS,
-        CONTRIBUTION_DEFAULT_SECTION,
-        window.location.hash,
-      );
-      setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
-    };
-    syncFromHash();
-    window.addEventListener("hashchange", syncFromHash);
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((left, right) => right.intersectionRatio - left.intersectionRatio)[0];
-        if (!visible) {
-          return;
-        }
-        const nextSection = initialSectionFromHash(
-          CONTRIBUTION_SECTION_IDS,
-          CONTRIBUTION_DEFAULT_SECTION,
-          `#${visible.target.id}`,
-        );
-        setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
-      },
-      { rootMargin: "-22% 0px -55% 0px", threshold: [0.2, 0.45, 0.7] },
-    );
-
-    CONTRIBUTION_SECTION_ITEMS.forEach(({ id }) => {
-      const node = document.getElementById(id);
-      if (node) {
-        observer.observe(node);
-      }
-    });
-
-    return () => {
-      window.removeEventListener("hashchange", syncFromHash);
-      observer.disconnect();
-    };
-  }, []);
-
   function handleFilterChange(next: string) {
     startTransition(() => {
       setFilter(next);
@@ -310,61 +231,6 @@ export function ContributionsPageClient() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        eyebrow="Contributions"
-        title="Contribution drill-down"
-        description="Achievement-grade contribution intelligence with score signals, timeline momentum, and AI-ready impact copy."
-        meta={
-          <>
-            <SnapshotFreshnessPill
-              refreshedAt={profile?.refreshedAt}
-              label="Contribution snapshot"
-            />
-            <ConstrainedNetworkPill />
-          </>
-        }
-        actions={(
-          <Button asChild variant="secondary">
-            <Link href="/dashboard/settings">Sync settings</Link>
-          </Button>
-        )}
-      />
-      {profile && shouldShowSyncStateGuide(profile.user.syncStatus) ? (
-        <SyncStateGuide
-          status={profile.user.syncStatus}
-          className="render-opt-section border-primary/24 bg-primary/8"
-        />
-      ) : null}
-      {profile?.user.syncStatus.state === "stale" ? (
-        <StaleState
-          message={`Contribution snapshot refreshed ${formatRelativeDays(
-            profile.refreshedAt,
-          )}. New PR evidence may still be syncing.`}
-          updatedAt={profile.refreshedAt}
-          onRefresh={() => {
-            void refetch();
-          }}
-          isRefreshing={isFetching}
-          actionLabel="Open settings"
-          actionHref="/dashboard/settings"
-          analyticsTarget="contributions:stale"
-        />
-      ) : null}
-      {profile ? (
-        <div className="neon-callout rounded-[1.5rem] px-4 py-3 text-sm text-muted">
-          Contribution window: latest {profile.user.contributions.length} scored PR-linked events (capped at 100 by backend profile history projection).
-        </div>
-      ) : null}
-      <SectionJumpNav
-        navLabelID="contributions-jump-nav-label"
-        landmarkLabel="Contributions section navigation"
-        activeSectionLabel={activeSectionLabel}
-        items={CONTRIBUTION_SECTION_ITEMS}
-        activeSection={activeSection}
-        onSectionSelect={setActiveSection}
-        copyHref={activeSectionLink}
-        copyAnalyticsTarget="contributions/copy-section-link"
-      />
       <section id="contributions-filters" className="scroll-mt-24">
         <ContributionFilters
           value={filter}
@@ -376,8 +242,7 @@ export function ContributionsPageClient() {
           resultsRegionId={CONTRIBUTION_CARDS_REGION_ID}
           resultCount={filteredRows.length}
           isFiltering={isFiltering}
-          canReset={canReset}
-          onReset={handleResetFilters}
+          compact
           onClearCategory={handleClearCategoryFilter}
           onClearSearch={handleClearSearchFilter}
           onClearSort={handleClearSortFilter}

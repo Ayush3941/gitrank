@@ -31,7 +31,7 @@ export function SectionJumpNav<SectionID extends string>({
   className?: string;
   stickyClassName?: string;
 }) {
-  const itemRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
+  const itemRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const stickyClasses = stickyClassName ?? "";
 
   useEffect(() => {
@@ -52,6 +52,22 @@ export function SectionJumpNav<SectionID extends string>({
     });
   }, [activeSection]);
 
+  function focusSection(sectionID: SectionID) {
+    onSectionSelect(sectionID);
+    if (typeof window === "undefined") {
+      return;
+    }
+    const node = document.getElementById(sectionID);
+    if (!node || typeof node.scrollIntoView !== "function") {
+      return;
+    }
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    node.scrollIntoView({
+      block: "start",
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+    });
+  }
+
   return (
     <nav
       aria-label={landmarkLabel ?? "Section navigation"}
@@ -69,10 +85,7 @@ export function SectionJumpNav<SectionID extends string>({
           value={activeSection}
           onChange={(event) => {
             const sectionID = event.target.value as SectionID;
-            onSectionSelect(sectionID);
-            if (typeof window !== "undefined") {
-              window.location.hash = sectionID;
-            }
+            focusSection(sectionID);
           }}
           className="focus-ring w-full border border-primary/28 bg-primary/8 px-3 py-2 text-sm text-white"
         >
@@ -87,13 +100,13 @@ export function SectionJumpNav<SectionID extends string>({
         <ul role="list" className="flex w-max min-w-full flex-nowrap gap-2">
           {items.map((section) => (
             <li key={section.id}>
-              <a
+              <button
+                type="button"
                 ref={(node) => {
                   itemRefs.current[section.id] = node;
                 }}
-                href={`#${section.id}`}
                 onClick={() => {
-                  onSectionSelect(section.id);
+                  focusSection(section.id);
                 }}
                 aria-current={activeSection === section.id ? "location" : undefined}
                 className={
@@ -103,7 +116,7 @@ export function SectionJumpNav<SectionID extends string>({
                 }
               >
                 {section.label}
-              </a>
+              </button>
             </li>
           ))}
         </ul>

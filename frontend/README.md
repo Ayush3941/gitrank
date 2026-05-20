@@ -152,6 +152,8 @@ These routes proxy to auth-service and preserve auth cookies on the frontend ori
 
 ABRA insight generation (contribution impact explanation, badge story, identity summary) runs through the frontend server route `POST /api/ai/abra-insights`.
 
+PR XP and rank progression are not AI-authored: deterministic backend scoring is finalized before this route runs, and Gemini receives read-only scored evidence for explanation only.
+
 Set these in `frontend/.env.local`:
 
 ```bash

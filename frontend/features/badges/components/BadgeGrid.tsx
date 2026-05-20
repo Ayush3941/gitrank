@@ -1,5 +1,4 @@
 import { Lock } from "lucide-react";
-import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { RarityBadge } from "@/components/shared/RarityBadge";
@@ -22,7 +21,12 @@ export function BadgeGrid({
       {badges.map((badge) => (
         <li key={badge.id} className="list-none">
           <BadgeDetailDialog badge={badge} story={stories?.[badge.id]}>
-            <button type="button" className="focus-ring text-left">
+            <div
+              role="button"
+              tabIndex={0}
+              className="focus-ring cursor-pointer text-left"
+              aria-label={`Open ${badge.name} details`}
+            >
               <GlowCard className="render-opt-card cyber-hero-shell h-full space-y-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="rounded-3xl bg-primary/12 p-3 text-primary">
@@ -91,14 +95,6 @@ export function BadgeGrid({
                 ) : null}
                 {stories?.[badge.id] ? (
                   <div className="neon-surface rounded-xl border-fuchsia-300/24 px-3 py-2 text-xs text-muted">
-                    <div className="flex items-center justify-end">
-                      <CopyTextButton
-                        text={stories[badge.id].story}
-                        label="Copy story"
-                        copiedLabel="Story copied"
-                        analyticsTarget="badges/copy-story"
-                      />
-                    </div>
                     <ExpandableText
                       text={stories[badge.id].story}
                       lines={4}
@@ -111,7 +107,7 @@ export function BadgeGrid({
                   </div>
                 ) : null}
               </GlowCard>
-            </button>
+            </div>
           </BadgeDetailDialog>
         </li>
       ))}
