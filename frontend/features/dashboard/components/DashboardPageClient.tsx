@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useRef } from "react";
-import { Activity, ArrowRight, CheckCircle2, Circle, Flame, ListChecks, Medal, ShieldCheck, Swords } from "lucide-react";
+import { Activity, Flame, Medal, ShieldCheck } from "lucide-react";
 import { DashboardHeroRankCard } from "@/features/dashboard/components/DashboardHeroRankCard";
 import { ContributionTimelineCard } from "@/features/dashboard/components/ContributionTimelineCard";
 import { CurrentLeagueCard } from "@/features/dashboard/components/CurrentLeagueCard";
@@ -15,11 +14,9 @@ import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
-import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
-import { Button } from "@/components/ui/button";
 import {
   buildDeterministicIdentitySummary,
   deriveDeterministicArchetype,
@@ -47,47 +44,6 @@ export function DashboardPageClient() {
     contributionWindowCap > 0
       ? Math.round((contributionWindowCount / contributionWindowCap) * 100)
       : 0;
-  const firstRunSteps = useMemo(() => {
-    const syncState = user?.syncStatus.state;
-    const partialProfileAvailable = user?.syncStatus.partialProfileAvailable ?? false;
-    const mergedPrCount = user?.mergedPrCount ?? 0;
-    return [
-      {
-        id: "connected",
-        label: "GitHub account connected",
-        detail: "OAuth identity is linked.",
-        done: Boolean(user?.username),
-        href: "/dashboard/settings",
-        actionLabel: "Open account settings",
-      },
-      {
-        id: "synced",
-        label: "Profile sync completed",
-        detail: "Snapshot is synced and complete.",
-        done: syncState === "synced" && !partialProfileAvailable,
-        href: "/dashboard/settings",
-        actionLabel: "Review sync state",
-      },
-      {
-        id: "first-merge",
-        label: "First merged PR detected",
-        detail: "Merged evidence unlocks full scoring.",
-        done: mergedPrCount > 0,
-        href: "/dashboard/contributions",
-        actionLabel: "Open contribution lane",
-      },
-    ];
-  }, [
-    user?.mergedPrCount,
-    user?.syncStatus.partialProfileAvailable,
-    user?.syncStatus.state,
-    user?.username,
-  ]);
-  const firstRunCompletedCount = firstRunSteps.filter((step) => step.done).length;
-  const firstRunProgress = Math.round((firstRunCompletedCount / firstRunSteps.length) * 100);
-  const showFirstRunChecklist =
-    (user?.mergedPrCount ?? 0) <= 0 && contributionWindowCount === 0;
-  const firstRunNextAction = firstRunSteps.find((step) => !step.done) ?? null;
   const abraPayload = useMemo(() => {
     if (!user) {
       return null;
@@ -229,15 +185,6 @@ export function DashboardPageClient() {
         />
         <StatCard label="Reviewed PRs" value={user.reviewedPrCount} detail="Review participation increases trust and unlocks deeper quests." icon={<Activity className="h-5 w-5 text-primary" />} />
       </section>
-      {showFirstRunChecklist ? (
-        <FirstRunChecklistCard
-          steps={firstRunSteps}
-          completedCount={firstRunCompletedCount}
-          totalCount={firstRunSteps.length}
-          progress={firstRunProgress}
-          nextAction={firstRunNextAction}
-        />
-      ) : null}
       <div className="grid gap-6 xl:grid-cols-[0.92fr,1.08fr]">
         <div className="space-y-6">
           <section id="dashboard-league" className="render-opt-section scroll-mt-24">
@@ -287,12 +234,6 @@ export function DashboardPageClient() {
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <StatCard
-          label="Anti-spam rule"
-          value="Meaning over volume"
-          detail="Spam PRs do not make you powerful here. Thin unreviewed work gets penalized or capped."
-          icon={<Swords className="h-5 w-5 text-primary" />}
-        />
-        <StatCard
           label="Current streak"
           value={`${streak.currentStreakDays}d`}
           detail={`Best streak ${streak.bestStreakDays} days • active days this year ${streak.activeDaysThisYear}.`}
@@ -300,97 +241,6 @@ export function DashboardPageClient() {
         />
       </div>
     </div>
-  );
-}
-
-type FirstRunStep = {
-  id: string;
-  label: string;
-  detail: string;
-  done: boolean;
-  href: string;
-  actionLabel: string;
-};
-
-function FirstRunChecklistCard({
-  steps,
-  completedCount,
-  totalCount,
-  progress,
-  nextAction,
-}: {
-  steps: FirstRunStep[];
-  completedCount: number;
-  totalCount: number;
-  progress: number;
-  nextAction: FirstRunStep | null;
-}) {
-  return (
-    <GlowCard className="space-y-4 border border-cyan-300/25 bg-gradient-to-br from-slate-950/90 to-cyan-950/20">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="inline-flex items-center gap-2 text-xs font-medium text-cyan-200">
-            <ListChecks className="h-3.5 w-3.5" />
-            First-run checklist
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">Activation path</h2>
-          <p className="mt-2 text-sm text-muted">Complete these steps to unlock full scoring.</p>
-        </div>
-        <span className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold">
-          {completedCount}/{totalCount} complete
-        </span>
-      </div>
-      <div className="space-y-2">
-        <div className="flex items-center justify-between text-xs font-medium text-primary">
-          <span>Progress</span>
-          <span className="numeric-readout">{progress}%</span>
-        </div>
-        <div
-          className="h-2 w-full rounded-full border border-primary/25 bg-primary/8"
-          role="progressbar"
-          aria-label="Activation checklist progress"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={progress}
-        >
-          <div
-            className="h-full bg-gradient-to-r from-cyan-300 to-fuchsia-300"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      </div>
-      <ol role="list" className="grid gap-2">
-        {steps.map((step, index) => (
-          <li key={step.id}>
-            <div className="neon-surface flex items-start gap-3 rounded-[0.1rem] border px-3 py-3">
-            <div className="mt-0.5 text-primary">
-              {step.done ? (
-                <CheckCircle2 className="h-4 w-4 text-emerald-300" />
-              ) : (
-                <Circle className="h-4 w-4 text-cyan-200" />
-              )}
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-white">
-                Step {index + 1}: {step.label}
-              </p>
-              <p className="mt-1 text-xs text-muted">{step.detail}</p>
-            </div>
-            </div>
-          </li>
-        ))}
-      </ol>
-      {nextAction ? (
-        <div className="flex flex-wrap gap-2">
-          <Button asChild size="sm">
-            <Link href={nextAction.href}>
-              {nextAction.actionLabel}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
-      ) : null}
-    </GlowCard>
   );
 }
 
