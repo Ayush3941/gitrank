@@ -445,6 +445,7 @@ function MissionSpotlightCard({
   }
 
   const progress = safeQuestProgress(quest);
+  const statusMeta = questStatusMeta(quest.status);
 
   return (
     <li className="list-none">
@@ -453,6 +454,9 @@ function MissionSpotlightCard({
           <div>
             <p className="text-xs font-medium text-primary">{title}</p>
             <p className="mt-2 text-base font-semibold text-white">{quest.title}</p>
+            <span className={statusMeta.className}>
+              {statusMeta.label}
+            </span>
           </div>
           <span className="neon-chip neon-chip-info rounded-full px-2.5 py-1 text-xs font-semibold">
             +{quest.rewardXp} XP
@@ -466,6 +470,9 @@ function MissionSpotlightCard({
             <span>{progress}%</span>
           </div>
         </div>
+        <p className="text-xs text-cyan-100">
+          Next move: {recoveryLabelForGroup(quest.cadence)}
+        </p>
         <Button asChild variant="secondary" size="sm">
           <Link href={recoveryHrefForGroup(quest.cadence)}>
             {recoveryLabelForGroup(quest.cadence)}
@@ -475,4 +482,23 @@ function MissionSpotlightCard({
       </div>
     </li>
   );
+}
+
+function questStatusMeta(status: Quest["status"]): { label: string; className: string } {
+  if (status === "Completed") {
+    return {
+      label: "Completed",
+      className: "mt-2 inline-flex neon-chip neon-chip-success rounded-full px-2.5 py-1 text-xs font-semibold",
+    };
+  }
+  if (status === "Locked") {
+    return {
+      label: "Locked",
+      className: "mt-2 inline-flex neon-chip neon-chip-warning rounded-full px-2.5 py-1 text-xs font-semibold",
+    };
+  }
+  return {
+    label: "Active",
+    className: "mt-2 inline-flex neon-chip neon-chip-info rounded-full px-2.5 py-1 text-xs font-semibold",
+  };
 }

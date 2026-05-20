@@ -22,7 +22,7 @@ export function BadgeGrid({
       {badges.map((badge) => (
         <li key={badge.id} className="list-none">
           <BadgeDetailDialog badge={badge} story={stories?.[badge.id]}>
-            <button className="focus-ring text-left">
+            <button type="button" className="focus-ring text-left">
               <GlowCard className="render-opt-card cyber-hero-shell h-full space-y-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="rounded-3xl bg-primary/12 p-3 text-primary">
@@ -31,6 +31,22 @@ export function BadgeGrid({
                   <RarityBadge rarity={badge.rarity} />
                 </div>
                 <div>
+                  <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
+                    <span
+                      className={
+                        badge.unlocked
+                          ? "neon-chip neon-chip-success rounded-full px-3 py-1 font-semibold"
+                          : "neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold"
+                      }
+                    >
+                      {badge.unlocked ? "Unlocked" : "Locked"}
+                    </span>
+                    {!badge.unlocked ? (
+                      <span className="neon-chip neon-chip-info rounded-full px-3 py-1 font-semibold">
+                        Progress {badge.progress ?? 0}%
+                      </span>
+                    ) : null}
+                  </div>
                   <h3 className="text-xl font-semibold text-white">{badge.name}</h3>
                   <ExpandableText
                     text={badge.description}
@@ -41,7 +57,9 @@ export function BadgeGrid({
                     showMoreLabel="Read why"
                     showLessLabel="Hide why"
                   />
-                  <p className="mt-2 text-xs font-medium text-primary">Trigger pattern</p>
+                  <p className="mt-2 text-xs font-medium text-primary">
+                    {badge.unlocked ? "Unlock pattern" : "How to unlock"}
+                  </p>
                   <ExpandableText
                     text={badge.unlockCondition}
                     lines={2}
@@ -66,7 +84,9 @@ export function BadgeGrid({
                 {!badge.unlocked ? (
                   <div className="space-y-1">
                     <Progress value={badge.progress ?? 0} />
-                    <p className="text-xs text-muted">{badge.progress ?? 0}% toward unlock</p>
+                    <p className="text-xs text-muted">
+                      {badge.progress ?? 0}% toward unlock • {Math.max(0, 100 - (badge.progress ?? 0))}% remaining
+                    </p>
                   </div>
                 ) : null}
                 {stories?.[badge.id] ? (

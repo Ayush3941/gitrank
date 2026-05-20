@@ -64,6 +64,13 @@ export function BadgesPageClient() {
     }) ?? [];
   const profile = data?.profile;
   const lockedBadges = data?.badges.filter((badge) => !badge.unlocked) ?? [];
+  const lockedBadgesSorted = [...lockedBadges].sort((left, right) => {
+    const progressDelta = (right.progress ?? 0) - (left.progress ?? 0);
+    if (progressDelta !== 0) {
+      return progressDelta;
+    }
+    return left.name.localeCompare(right.name);
+  });
   const unlockedCount = data?.badges.filter((badge) => badge.unlocked).length ?? 0;
   const totalCount = data?.badges.length ?? 0;
   const completionPercent = totalCount > 0 ? Math.round((unlockedCount / totalCount) * 100) : 0;
@@ -71,9 +78,7 @@ export function BadgesPageClient() {
     BADGE_SECTION_ITEMS.find((section) => section.id === activeSection)?.label ?? "Forge";
   const activeSectionLink = `/dashboard/badges#${activeSection}`;
   const streak = summarizeContributionStreak(profile?.user.contributions ?? []);
-  const nextUnlockTarget = lockedBadges.length
-    ? [...lockedBadges].sort((left, right) => (right.progress ?? 0) - (left.progress ?? 0))[0]
-    : null;
+  const nextUnlockTarget = lockedBadgesSorted[0] ?? null;
 
   const abraInsights = useAbraInsights(
     profile &&
@@ -501,9 +506,14 @@ export function BadgesPageClient() {
           <DeferUntilVisible fallback={<BadgeSectionPlaceholder title="Loading locked badge lanes" />}>
             {lockedBadges.length > 0 ? (
               <ul role="list" className="grid gap-3 md:grid-cols-3">
-                {lockedBadges.map((badge) => (
+                {lockedBadgesSorted.map((badge) => (
                   <li key={badge.id} className="render-opt-card neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4">
-                    <p className="text-xs font-medium text-fuchsia-200">{badge.rarity}</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-xs font-medium text-fuchsia-200">{badge.rarity}</p>
+                      <span className="neon-chip neon-chip-info rounded-full px-2.5 py-1 text-xs font-semibold">
+                        {badge.progress ?? 0}% complete
+                      </span>
+                    </div>
                     <h3 className="mt-2 text-base font-semibold text-white">{badge.name}</h3>
                     <ExpandableText
                       text={badge.unlockCondition}
@@ -516,7 +526,9 @@ export function BadgesPageClient() {
                     />
                     <div className="mt-3 space-y-1">
                       <Progress value={badge.progress ?? 0} />
-                      <p className="text-xs text-muted">{badge.progress ?? 0}% verified progress</p>
+                      <p className="text-xs text-muted">
+                        {badge.progress ?? 0}% verified progress • {Math.max(0, 100 - (badge.progress ?? 0))}% remaining
+                      </p>
                     </div>
                     <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                       <p className="text-xs text-cyan-100">

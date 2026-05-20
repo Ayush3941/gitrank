@@ -1613,11 +1613,14 @@ html[data-theme="high-contrast"] .neon-title {
 
 @media (prefers-reduced-data: reduce) {
   body {
-    background-image: linear-gradient(
-      180deg,
-      rgb(0 3 12 / var(--page-overlay-top-alpha)),
-      rgb(var(--background) / 0.9)
+    background-image: url("/assets/background.webp");
+    background-image: image-set(
+      url("/assets/background.webp") type("image/webp"),
+      url("/assets/background.jpg") type("image/jpeg")
     );
+    background-position: center top;
+    background-size: cover;
+    background-repeat: no-repeat;
     background-attachment: scroll;
   }
 
@@ -1653,11 +1656,14 @@ html[data-theme="high-contrast"] .neon-title {
 }
 
 :where(html[data-network="constrained"]) body {
-  background-image: linear-gradient(
-    180deg,
-    rgb(0 3 12 / var(--page-overlay-top-alpha)),
-    rgb(var(--background) / 0.9)
+  background-image: url("/assets/background.webp");
+  background-image: image-set(
+    url("/assets/background.webp") type("image/webp"),
+    url("/assets/background.jpg") type("image/jpeg")
   );
+  background-position: center top;
+  background-size: cover;
+  background-repeat: no-repeat;
   background-attachment: scroll;
 }
 

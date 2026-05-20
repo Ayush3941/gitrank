@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Badges and quest spotlight progression pass:
+  - prioritized locked badges by progress so “closest to unlock” appears first across shelf summaries and locked lanes.
+  - improved badge cards with explicit unlocked/locked status chips, clearer unlock-heading copy, and remaining-progress text.
+  - added quest spotlight status chips (`Active`, `Locked`, `Completed`) and explicit `Next move` guidance under each mission progress bar.
 - Contributions card hierarchy pass:
   - restructured each contribution card header into clearer scan blocks: repo lane, PR number/status, title, timeline sentence, and semantic metadata chips.
   - added compact XP/signal summary slab on the right side of each card for faster at-a-glance comparison.
