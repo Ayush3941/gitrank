@@ -18,7 +18,7 @@ export function DashboardSidebar() {
   const ActiveLaneIcon = activeItem?.icon;
 
   return (
-    <aside className="glass-panel cyber-card cyber-frame neon-outline hidden h-fit w-full shrink-0 p-4 xl:sticky sticky-safe-top-6 xl:flex xl:flex-col xl:justify-between">
+    <aside className="glass-panel cyber-card cyber-frame neon-outline hidden h-fit w-full shrink-0 p-4 xl:flex xl:flex-col xl:justify-between">
       <div className="space-y-5">
         <Link
           href="/dashboard"
@@ -98,15 +98,6 @@ export function DashboardSidebar() {
           <GamificationQuickSwitcher compact className="w-full justify-start" />
           <ThemeQuickSwitcher compact className="w-full justify-start" />
           <TextScaleQuickSwitcher compact className="w-full justify-start" />
-        </div>
-        <div className="cyber-terminal p-3.5">
-          <p className="text-xs font-semibold text-primary">Focus</p>
-          <p className="cyber-copy mt-1.5 text-sm text-foreground">
-            Meaningful contribution quality over raw activity volume.
-          </p>
-          <p className="mt-2 text-xs text-cyan-100">
-            Quick actions: Ctrl/Cmd+K
-          </p>
         </div>
       </div>
     </aside>

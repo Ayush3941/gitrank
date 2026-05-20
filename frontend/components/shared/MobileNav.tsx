@@ -14,23 +14,11 @@ export function MobileNav() {
   return (
     <nav
       aria-label="Dashboard navigation mobile"
-      className="mobile-nav-shell dashboard-nav-shell fixed inset-x-3 z-40 xl:hidden"
+      className="mobile-nav-shell dashboard-nav-shell xl:hidden"
     >
       <p role="status" aria-live="polite" className="sr-only">
         {activeItem ? `Current lane: ${activeItem.label}` : "Dashboard navigation"}
       </p>
-      <div className="flex items-center justify-between gap-2 border-b border-primary/16 px-3 pb-2 pt-2.5">
-        <p className="min-w-0 text-sm font-medium text-foreground">
-          {activeItem ? `Current lane: ${activeItem.label}` : "Dashboard navigation"}
-        </p>
-        <Link
-          href="/dashboard/settings#settings-display"
-          prefetch={false}
-          className="focus-ring inline-flex min-h-9 items-center justify-center border border-primary/22 bg-primary/9 px-2.5 text-xs font-semibold text-foreground hover:border-primary/32 hover:text-white"
-        >
-          Display controls
-        </Link>
-      </div>
       <ul role="list" className="scrollbar-thin flex snap-x gap-1.5 overflow-x-auto px-2 pb-2 pt-1.5">
         {dashboardNavItems.map((item) => {
           const Icon = item.icon;
