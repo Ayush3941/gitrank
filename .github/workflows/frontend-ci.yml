@@ -47,6 +47,9 @@ jobs:
       - name: Check design token contrast
         run: npm run check:contrast
 
+      - name: Check readable text token usage
+        run: npm run check:readable-text
+
       - name: Check media layout stability
         run: npm run check:media-stability
 

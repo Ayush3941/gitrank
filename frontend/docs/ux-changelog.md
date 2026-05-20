@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Readability regression guardrail:
+  - added `frontend/scripts/check-readable-text-tokens.mjs` to block legacy low-contrast `text-slate-*` helper classes from re-entering product routes.
+  - wired guard into `frontend/package.json` as `check:readable-text` and into `.github/workflows/frontend-ci.yml`.
+  - kept a narrow allowlist for intentional theme-preview swatch tokens in settings visual-preview metadata.
 - Global readability normalization pass across core lanes:
   - replaced remaining low-contrast slate helper text across dashboard, contributions, quests, badges, onboarding, profile, leaderboard, and shared fallback surfaces with unified readable tokens (`text-muted`/`text-foreground` as appropriate).
   - normalized navigation and action microcopy contrast in sidebar, mobile nav, jump rails, top-bar sync chips, and ghost-button default text.

@@ -12,6 +12,7 @@
     "check:server-boundaries": "node scripts/check-server-boundaries.mjs",
     "check:cache-strategy": "node scripts/check-route-cache-strategy.mjs",
     "check:contrast": "node scripts/check-contrast-tokens.mjs",
+    "check:readable-text": "node scripts/check-readable-text-tokens.mjs",
     "check:media-stability": "node scripts/check-media-layout-stability.mjs",
     "check:main-thread": "node scripts/check-main-thread-guards.mjs",
     "check:perf-budgets": "node scripts/check-performance-budgets.mjs",
