@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { startTransition, useDeferredValue, useMemo, useState } from "react";
+import { startTransition, useDeferredValue, useMemo, useRef, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -46,6 +46,7 @@ const CONTRIBUTION_CARDS_REGION_ID = "contributions-cards-region";
 const CONTRIBUTION_SEARCH_DEBOUNCE_MS = 220;
 
 export function ContributionsPageClient() {
+  const viewportAnchorY = useRef<number | null>(null);
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact">("Newest");
@@ -168,29 +169,44 @@ export function ContributionsPageClient() {
   const abraInsights = useAbraInsights(abraPayload);
   const maxMonthlyXp = Math.max(1, ...monthlyWindow.map((point) => point.xp));
 
+  function preserveViewportDuring(update: () => void) {
+    if (typeof window !== "undefined") {
+      viewportAnchorY.current = window.scrollY;
+    }
+    startTransition(update);
+    if (typeof window !== "undefined") {
+      requestAnimationFrame(() => {
+        const y = viewportAnchorY.current;
+        if (typeof y === "number") {
+          window.scrollTo({ top: y, left: 0, behavior: "auto" });
+        }
+      });
+    }
+  }
+
   function handleFilterChange(next: string) {
-    startTransition(() => {
+    preserveViewportDuring(() => {
       setFilter(next);
       setVisibleCardCount(cardPageSize);
     });
   }
 
   function handleSearchChange(next: string) {
-    startTransition(() => {
+    preserveViewportDuring(() => {
       setSearch(next);
       setVisibleCardCount(cardPageSize);
     });
   }
 
   function handleSortChange(next: "Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact") {
-    startTransition(() => {
+    preserveViewportDuring(() => {
       setSort(next);
       setVisibleCardCount(cardPageSize);
     });
   }
 
   function handleResetFilters() {
-    startTransition(() => {
+    preserveViewportDuring(() => {
       setFilter("All");
       setSearch("");
       setSort("Newest");
@@ -199,21 +215,21 @@ export function ContributionsPageClient() {
   }
 
   function handleClearCategoryFilter() {
-    startTransition(() => {
+    preserveViewportDuring(() => {
       setFilter("All");
       setVisibleCardCount(cardPageSize);
     });
   }
 
   function handleClearSearchFilter() {
-    startTransition(() => {
+    preserveViewportDuring(() => {
       setSearch("");
       setVisibleCardCount(cardPageSize);
     });
   }
 
   function handleClearSortFilter() {
-    startTransition(() => {
+    preserveViewportDuring(() => {
       setSort("Newest");
       setVisibleCardCount(cardPageSize);
     });
