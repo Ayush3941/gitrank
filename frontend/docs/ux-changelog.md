@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Client env-safety hardening pass:
+  - removed non-public `process.env.NODE_ENV` usage from the client-side query provider.
+  - switched React Query devtools gating to a runtime local-host detector backed by `useSyncExternalStore`, keeping hydration-safe defaults.
+  - validated with `npm run check:client-env-safety`.
 - Tabs main-thread guard hardening pass:
   - removed `requestAnimationFrame` usage from shared `TabsList` mount behavior and switched to immediate mount-time active-tab alignment.
   - keeps active-tab auto-centering behavior for overflow tab rails while satisfying frontend main-thread guard expectations.
