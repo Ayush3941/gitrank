@@ -9,8 +9,6 @@ import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
-import { TextScaleQuickSwitcher } from "@/components/shared/TextScaleQuickSwitcher";
-import { ThemeQuickSwitcher } from "@/components/shared/ThemeQuickSwitcher";
 import { XPProgress } from "@/components/shared/XPProgress";
 import type { UserProfile } from "@/types/gitrank";
 
@@ -77,8 +75,8 @@ export function PublicProfileHero({
             </div>
           ) : null}
           <ul role="list" className="flex flex-wrap gap-2">
-            {user.topSkills.map((skill) => (
-              <li key={skill}>
+            {user.topSkills.map((skill, index) => (
+              <li key={`${skill}-${index}`}>
                 <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 text-sm text-muted">
                   {skill}
                 </span>
@@ -86,8 +84,6 @@ export function PublicProfileHero({
             ))}
           </ul>
           <div className="flex flex-wrap gap-2">
-            <ThemeQuickSwitcher compact />
-            <TextScaleQuickSwitcher compact />
             <ShareProfileButton
               variant="secondary"
               username={user.username}
