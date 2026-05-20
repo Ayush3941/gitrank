@@ -42,7 +42,7 @@ export function ContributionList({
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0">
                   <p className="break-anywhere text-sm text-muted">{item.owner}/{item.repo} #{item.number}</p>
-                  <h2 className="mt-2 break-anywhere text-xl font-semibold text-white">{item.title}</h2>
+                  <h3 className="mt-2 break-anywhere text-xl font-semibold text-white">{item.title}</h3>
                   <div className="mt-3 flex flex-wrap gap-2 text-xs cyber-copy">
                     <span className={`neon-chip rounded-full px-3 py-1.5 font-semibold ${tier.className}`}>{tier.label}</span>
                     <span className="neon-chip neon-chip-info rounded-full px-3 py-1.5 font-semibold">{item.category}</span>

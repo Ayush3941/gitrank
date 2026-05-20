@@ -31,7 +31,7 @@ export function BadgeGrid({
                   <RarityBadge rarity={badge.rarity} />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-white">{badge.name}</h2>
+                  <h3 className="text-xl font-semibold text-white">{badge.name}</h3>
                   <ExpandableText
                     text={badge.description}
                     lines={3}

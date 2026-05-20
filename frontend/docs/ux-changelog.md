@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- Repeated-card heading hierarchy pass:
+  - downgraded repeated contribution and badge card titles from `h2` to `h3` in list-rendered components.
+  - keeps visual styling unchanged while preserving cleaner page heading structure for assistive navigation.
 - Deferred-section accessibility stability pass:
   - updated `DeferUntilVisible` to eagerly render in jsdom-like runtimes, preventing deferred settings/privacy controls from disappearing in a11y regression environments.
   - restored full pass for `npm run test:a11y` while keeping IntersectionObserver-based deferral in normal browsers.
