@@ -26,8 +26,8 @@ export function SectionJumpNav<SectionID extends string>({
   items: readonly SectionJumpNavItem<SectionID>[];
   activeSection: SectionID;
   onSectionSelect: (sectionID: SectionID) => void;
-  copyHref: string;
-  copyAnalyticsTarget: string;
+  copyHref?: string;
+  copyAnalyticsTarget?: string;
   className?: string;
   stickyClassName?: string;
 }) {
@@ -55,20 +55,8 @@ export function SectionJumpNav<SectionID extends string>({
   return (
     <nav
       aria-label={landmarkLabel ?? "Section navigation"}
-      className={`glass-panel flex flex-col gap-2 border border-primary/20 p-2 sm:flex-row sm:items-center ${stickyClasses} ${className ?? ""}`}
+      className={`neon-surface flex flex-col gap-2 border border-primary/20 p-1.5 sm:flex-row sm:items-center ${stickyClasses} ${className ?? ""}`}
     >
-      <div className="hidden shrink-0 items-center gap-2 px-2 sm:flex">
-        <p className="text-xs font-medium text-cyan-100">
-          Jump to
-        </p>
-        <p
-          role="status"
-          aria-live="polite"
-          className="text-sm font-medium text-cyan-100"
-        >
-          {activeSectionLabel}
-        </p>
-      </div>
       <div className="min-w-0 flex-1 sm:hidden">
         <p className="mb-1 px-1 text-xs font-medium text-cyan-100">
           {activeSectionLabel}
@@ -120,14 +108,16 @@ export function SectionJumpNav<SectionID extends string>({
           ))}
         </ul>
       </div>
-      <div className="shrink-0">
-        <CopyLinkButton
-          href={copyHref}
-          label="Copy section link"
-          copiedLabel="Section link copied"
-          analyticsTarget={copyAnalyticsTarget}
-        />
-      </div>
+      {copyHref && copyAnalyticsTarget ? (
+        <div className="shrink-0">
+          <CopyLinkButton
+            href={copyHref}
+            label="Copy section link"
+            copiedLabel="Section link copied"
+            analyticsTarget={copyAnalyticsTarget}
+          />
+        </div>
+      ) : null}
     </nav>
   );
 }

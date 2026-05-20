@@ -13,9 +13,9 @@ export function DashboardRouteNav() {
   return (
     <nav
       aria-label="Dashboard navigation"
-      className="glass-panel"
+      className="neon-surface border border-primary/22 p-1.5"
     >
-      <ul role="list" className="scrollbar-thin flex gap-2 overflow-x-auto p-2">
+      <ul role="list" className="scrollbar-thin flex gap-1.5 overflow-x-auto p-0.5">
         {dashboardNavItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href, item.exact);
@@ -28,8 +28,8 @@ export function DashboardRouteNav() {
                 className={cn(
                   "focus-ring inline-flex min-h-10 items-center gap-2 border px-3 py-2 text-sm font-medium whitespace-nowrap",
                   active
-                    ? "border-primary/42 bg-primary/14 text-white"
-                    : "border-transparent text-foreground hover:border-primary/26 hover:bg-primary/10 hover:text-white",
+                    ? "border-primary/42 bg-primary/14 text-white shadow-[0_0_14px_rgb(34_226_255_/_0.12)]"
+                    : "border-primary/16 text-foreground hover:border-primary/26 hover:bg-primary/10 hover:text-white",
                 )}
                 title={item.hint}
               >

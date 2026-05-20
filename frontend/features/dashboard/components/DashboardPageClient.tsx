@@ -15,12 +15,9 @@ import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
-import { ConstrainedNetworkPill } from "@/components/shared/ConstrainedNetworkPill";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
-import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
-import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
 import { Button } from "@/components/ui/button";
@@ -322,25 +319,6 @@ export function DashboardPageClient() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        eyebrow="Dashboard"
-        title="Command center"
-        description="Snapshot-based contribution analytics, progression, and score explanations weighted toward meaningful merged work."
-        meta={
-          <>
-            <SnapshotFreshnessPill
-              refreshedAt={data?.refreshedAt}
-              label="Dashboard snapshot"
-            />
-            <ConstrainedNetworkPill />
-          </>
-        }
-        actions={(
-          <Button asChild variant="secondary">
-            <Link href="/dashboard/settings">Sync and privacy</Link>
-          </Button>
-        )}
-      />
       {user.syncStatus.state === "stale" ? (
         <StaleState
           message={`Your GitRank profile was refreshed ${formatRelativeDays(
@@ -365,6 +343,7 @@ export function DashboardPageClient() {
         onSectionSelect={setActiveSection}
         copyHref={activeSectionLink}
         copyAnalyticsTarget="dashboard/copy-section-link"
+        className="mb-1"
       />
       <section id="dashboard-hero" className="scroll-mt-24">
         <DashboardHeroRankCard
