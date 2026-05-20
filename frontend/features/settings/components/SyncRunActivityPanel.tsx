@@ -238,6 +238,7 @@ export function SyncRunActivityPanel({
                   onClick={() => startTransition(() => setStatusFilter(item))}
                   disabled={isFiltering}
                   aria-describedby={filterStatusId}
+                  aria-pressed={statusFilter === item}
                 >
                   {item}
                 </Button>

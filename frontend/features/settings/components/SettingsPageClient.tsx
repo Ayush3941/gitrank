@@ -552,6 +552,7 @@ export function SettingsPageClient() {
                       variant={theme === option.value ? "default" : "secondary"}
                       className="h-auto justify-start gap-3 px-4 py-3 text-left"
                       onClick={() => setTheme(option.value)}
+                      aria-pressed={theme === option.value}
                     >
                       <span
                         className={`neon-track flex w-full flex-col gap-2 overflow-hidden border bg-gradient-to-br px-3 py-2 ${option.previewShellClassName}`}
@@ -631,6 +632,7 @@ export function SettingsPageClient() {
                       variant={textScale === option.value ? "default" : "secondary"}
                       className="h-auto justify-start px-4 py-3 text-left"
                       onClick={() => setTextScale(option.value)}
+                      aria-pressed={textScale === option.value}
                     >
                       <span className="flex flex-col items-start">
                         <span className="inline-flex items-center gap-2">

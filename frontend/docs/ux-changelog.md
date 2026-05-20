@@ -5,6 +5,7 @@
 - Settings semantic-list consistency pass:
   - converted settings display theme/text option maps to explicit semantic list markup (`ul/li`) while preserving existing preview and active-state behavior.
   - converted sync-log status filter options and repository visibility filter options to semantic list structures for clearer assistive traversal.
+  - added explicit `aria-pressed` state metadata on option buttons (theme, text scale, sync status, repository visibility) for clearer assistive selected-state feedback.
   - converted repository visibility card rendering to a semantic list container so repeated repository rows expose consistent list semantics.
   - no backend/API contract changes; frontend structure-only accessibility consistency refinement.
 - PR report semantic-lane pass:

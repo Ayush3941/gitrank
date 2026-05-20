@@ -165,6 +165,7 @@ export function PrivacyRepositoryToggleList({
                   onClick={() => startTransition(() => setVisibilityFilter(item))}
                   disabled={isFiltering}
                   aria-describedby={statusId}
+                  aria-pressed={visibilityFilter === item}
                 >
                   {item}
                 </Button>
