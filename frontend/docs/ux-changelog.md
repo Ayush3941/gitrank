@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- Viewport-locked background framing pass:
+  - forced `background-attachment: fixed` across responsive, reduced-data, constrained-network, reduced-gamification, and coarse-pointer paths.
+  - normalized fallback background framing to `center center` so the image stays anchored to the screen viewpoint while content scrolls.
 - Badges and quest spotlight progression pass:
   - prioritized locked badges by progress so “closest to unlock” appears first across shelf summaries and locked lanes.
   - improved badge cards with explicit unlocked/locked status chips, clearer unlock-heading copy, and remaining-progress text.

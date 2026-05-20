@@ -1247,7 +1247,7 @@ html[data-theme="high-contrast"] .neon-title {
 
 @media (max-width: 1100px) {
   body {
-    background-attachment: scroll;
+    background-attachment: fixed;
   }
 
   .glass-panel,
@@ -1273,7 +1273,7 @@ html[data-theme="high-contrast"] .neon-title {
 
 @media (pointer: coarse) {
   body {
-    background-attachment: scroll;
+    background-attachment: fixed;
   }
 }
 
@@ -1417,8 +1417,8 @@ html[data-theme="high-contrast"] .neon-title {
 }
 
 :where(html:not([data-gamification]), html[data-gamification="reduced"]) body {
-  background-attachment: scroll;
-  background-position: center top;
+  background-attachment: fixed;
+  background-position: center center;
 }
 
 :where(html:not([data-gamification]), html[data-gamification="reduced"]) .glass-panel,
@@ -1618,10 +1618,10 @@ html[data-theme="high-contrast"] .neon-title {
       url("/assets/background.webp") type("image/webp"),
       url("/assets/background.jpg") type("image/jpeg")
     );
-    background-position: center top;
+    background-position: center center;
     background-size: cover;
     background-repeat: no-repeat;
-    background-attachment: scroll;
+    background-attachment: fixed;
   }
 
   .neon-vignette,
@@ -1661,10 +1661,10 @@ html[data-theme="high-contrast"] .neon-title {
     url("/assets/background.webp") type("image/webp"),
     url("/assets/background.jpg") type("image/jpeg")
   );
-  background-position: center top;
+  background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
-  background-attachment: scroll;
+  background-attachment: fixed;
 }
 
 :where(html[data-network="constrained"]) .neon-vignette,
@@ -1716,7 +1716,7 @@ html[data-theme="high-contrast"] .neon-title {
 
 @media (update: slow) {
   body {
-    background-attachment: scroll;
+    background-attachment: fixed;
   }
 
   .neon-vignette,
@@ -1803,8 +1803,8 @@ html[data-theme="high-contrast"] .neon-title {
 
 @media (any-pointer: coarse) {
   body {
-    background-attachment: scroll;
-    background-position: center top;
+    background-attachment: fixed;
+    background-position: center center;
   }
 
   .glass-panel,
