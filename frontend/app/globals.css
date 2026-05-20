@@ -397,6 +397,8 @@ select {
   top: max(0.75rem, env(safe-area-inset-top, 0px));
   z-index: 100;
   transform: translateY(-160%);
+  opacity: 0;
+  pointer-events: none;
   border: 1px solid rgb(var(--primary) / 0.4);
   background:
     linear-gradient(155deg, rgb(var(--primary) / 0.22), rgb(var(--primary-2) / 0.16)),
@@ -413,6 +415,8 @@ select {
 
 .skip-link:focus-visible {
   transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .mobile-nav-shell {
