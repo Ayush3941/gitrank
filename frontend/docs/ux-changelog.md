@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Filter control-to-results mapping pass:
+  - added `aria-controls` on contributions category tab triggers and sort selector trigger, targeting the contribution cards region.
+  - added `aria-controls` on badges rarity/state selector triggers, targeting the earned-badges region.
+  - keeps filtering behavior unchanged while tightening assistive linkage from filter widgets to result containers.
 - Settings filter-to-results linkage pass:
   - connected sync-run filter actions (status/search/reset) to a stable sync-runs results region via `aria-controls`.
   - connected repository-visibility filter actions (search/state/reset) to a stable repository-results region via `aria-controls`.

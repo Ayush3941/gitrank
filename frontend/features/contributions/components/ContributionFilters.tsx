@@ -143,6 +143,7 @@ export function ContributionFilters({
               value={filter.value}
               title={filter.value}
               aria-label={`${filter.value} contributions`}
+              aria-controls={resultsRegionId}
             >
               <span className="sm:hidden">{filter.short}</span>
               <span className="hidden sm:inline">{filter.value}</span>
@@ -176,7 +177,11 @@ export function ContributionFilters({
           ) : null}
         </div>
         <Select value={sort} onValueChange={onSortChange}>
-          <SelectTrigger aria-label="Sort contributions" aria-describedby={statusId}>
+          <SelectTrigger
+            aria-label="Sort contributions"
+            aria-describedby={statusId}
+            aria-controls={resultsRegionId}
+          >
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
           <SelectContent>

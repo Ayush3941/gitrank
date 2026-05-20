@@ -422,7 +422,11 @@ export function BadgesPageClient() {
         </div>
         <div className="grid gap-3 md:grid-cols-2">
           <Select value={rarity} onValueChange={(value) => handleRarityChange(value as BadgeRarity | "All")}>
-            <SelectTrigger aria-label="Filter by rarity" aria-describedby={badgesFilterStatusId}>
+            <SelectTrigger
+              aria-label="Filter by rarity"
+              aria-describedby={badgesFilterStatusId}
+              aria-controls={BADGES_EARNED_REGION_ID}
+            >
               <SelectValue placeholder="Filter by rarity" />
             </SelectTrigger>
             <SelectContent>
@@ -433,7 +437,11 @@ export function BadgesPageClient() {
             </SelectContent>
           </Select>
           <Select value={visibility} onValueChange={(value) => handleVisibilityChange(value as typeof visibility)}>
-            <SelectTrigger aria-label="Filter by unlock state" aria-describedby={badgesFilterStatusId}>
+            <SelectTrigger
+              aria-label="Filter by unlock state"
+              aria-describedby={badgesFilterStatusId}
+              aria-controls={BADGES_EARNED_REGION_ID}
+            >
               <SelectValue placeholder="Filter by state" />
             </SelectTrigger>
             <SelectContent>
