@@ -46,7 +46,7 @@ export function DashboardTopBar({
           <span className="hud-pill inline-flex h-8 w-8 items-center justify-center rounded-full text-primary">
             <ActiveLaneIcon className="h-4 w-4" />
           </span>
-          <p className="truncate text-base font-semibold text-white">{activeLane.label}</p>
+          <h1 className="truncate text-base font-semibold text-white">{activeLane.label}</h1>
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
           <SyncStatusPill status={user.syncStatus} />

@@ -294,7 +294,7 @@ export function SettingsPageClient() {
   return (
     <div className="space-y-6 [overflow-anchor:none]">
       <header className="space-y-1">
-        <h1 className="text-2xl font-semibold text-white sm:text-3xl">Settings and privacy</h1>
+        <h2 className="text-xl font-semibold text-white sm:text-2xl">Settings and privacy</h2>
       </header>
       <section id="settings-account" className="scroll-mt-24">
         <GlowCard className="space-y-4">
