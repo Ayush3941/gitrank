@@ -40,6 +40,7 @@ const BADGE_SECTION_ITEMS: Array<{ id: BadgeSectionId; label: string }> = [
 ];
 const BADGE_SECTION_IDS = BADGE_SECTION_ITEMS.map((section) => section.id) as BadgeSectionId[];
 const BADGE_DEFAULT_SECTION: BadgeSectionId = "badges-forge";
+const BADGES_EARNED_REGION_ID = "badges-earned-region";
 
 export function BadgesPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useBadges();
@@ -361,51 +362,62 @@ export function BadgesPageClient() {
             <p id={badgesFilterStatusId} role="status" aria-live="polite" className="text-sm text-fuchsia-100">
               Showing {filtered.length} of {totalCount} badges
             </p>
-            <div className="flex flex-wrap items-center gap-2 text-xs">
+            <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
               {rarity !== "All" ? (
-                <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold">
-                  Rarity: {rarity}
-                  <button
-                    type="button"
-                    onClick={handleClearRarityFilter}
-                    className="focus-ring inline-flex min-h-6 min-w-6 items-center justify-center rounded-full border border-primary/30 px-1 text-xs leading-none text-cyan-100 hover:bg-primary/14"
-                    aria-label="Clear badge rarity filter"
-                    title="Clear rarity filter"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </span>
+                <li className="list-none">
+                  <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold">
+                    Rarity: {rarity}
+                    <button
+                      type="button"
+                      onClick={handleClearRarityFilter}
+                      className="focus-ring inline-flex min-h-6 min-w-6 items-center justify-center rounded-full border border-primary/30 px-1 text-xs leading-none text-cyan-100 hover:bg-primary/14"
+                      aria-label="Clear badge rarity filter"
+                      aria-controls={BADGES_EARNED_REGION_ID}
+                      title="Clear rarity filter"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </span>
+                </li>
               ) : null}
               {visibility !== "All" ? (
-                <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold">
-                  State: {visibility}
-                  <button
-                    type="button"
-                    onClick={handleClearVisibilityFilter}
-                    className="focus-ring inline-flex min-h-6 min-w-6 items-center justify-center rounded-full border border-primary/30 px-1 text-xs leading-none text-cyan-100 hover:bg-primary/14"
-                    aria-label="Clear badge visibility filter"
-                    title="Clear visibility filter"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </span>
+                <li className="list-none">
+                  <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold">
+                    State: {visibility}
+                    <button
+                      type="button"
+                      onClick={handleClearVisibilityFilter}
+                      className="focus-ring inline-flex min-h-6 min-w-6 items-center justify-center rounded-full border border-primary/30 px-1 text-xs leading-none text-cyan-100 hover:bg-primary/14"
+                      aria-label="Clear badge visibility filter"
+                      aria-controls={BADGES_EARNED_REGION_ID}
+                      title="Clear visibility filter"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </span>
+                </li>
               ) : null}
               {!canResetFilters ? (
-                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-                  No active filters
-                </span>
+                <li className="list-none">
+                  <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+                    No active filters
+                  </span>
+                </li>
               ) : null}
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                onClick={handleResetFilters}
-                disabled={!canResetFilters}
-                title={canResetFilters ? "Reset active filters" : "No filters to reset"}
-              >
-                Reset filters
-              </Button>
-            </div>
+              <li className="list-none">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleResetFilters}
+                  disabled={!canResetFilters}
+                  aria-controls={BADGES_EARNED_REGION_ID}
+                  title={canResetFilters ? "Reset active filters" : "No filters to reset"}
+                >
+                  Reset filters
+                </Button>
+              </li>
+            </ul>
           </div>
         </div>
         <div className="grid gap-3 md:grid-cols-2">
@@ -431,47 +443,49 @@ export function BadgesPageClient() {
             </SelectContent>
           </Select>
         </div>
-        {isLoading ? <LoadingState message="Polishing your badge shelf..." /> : null}
-        {isError ? (
-          <ErrorState
-            title="Badge sync failed"
-            description="Some badge evidence could not be verified from GitHub. Retry sync or use partial profile data."
-            fallbackLabel="Open settings"
-            fallbackHref="/dashboard/settings"
-            analyticsTarget="badges:error"
-          />
-        ) : null}
-        {!isLoading && !isError && filtered.length === 0 ? (
-          <EmptyState
-            eyebrow={canResetFilters && totalCount > 0 ? "Filter results" : "Badge progression"}
-            title={
-              canResetFilters && totalCount > 0
-                ? "No badges match current filters."
-                : "Your badge shelf is waiting."
-            }
-            description={
-              canResetFilters && totalCount > 0
-                ? "Reset filters to view all earned and locked lanes, or choose a wider rarity/state range."
-                : "Complete your first meaningful merged PR to start unlocking visible reputation proof."
-            }
-            actionLabel={canResetFilters && totalCount > 0 ? "Reset filters" : "Open quests"}
-            actionHref={canResetFilters && totalCount > 0 ? undefined : "/dashboard/quests"}
-            onAction={canResetFilters && totalCount > 0 ? handleResetFilters : undefined}
-            secondaryActionLabel="Open contributions"
-            secondaryActionHref="/dashboard/contributions"
-            analyticsTarget={
-              canResetFilters && totalCount > 0 ? "badges:empty-filtered" : "badges:empty"
-            }
-          />
-        ) : null}
-        {!isLoading && !isError && filtered.length ? (
-          <DeferUntilVisible fallback={<BadgeSectionPlaceholder title="Loading earned badge cards" />}>
-            <BadgeGrid
-              badges={filtered}
-              stories={abraInsights.data?.badgeStories}
+        <div id={BADGES_EARNED_REGION_ID}>
+          {isLoading ? <LoadingState message="Polishing your badge shelf..." /> : null}
+          {isError ? (
+            <ErrorState
+              title="Badge sync failed"
+              description="Some badge evidence could not be verified from GitHub. Retry sync or use partial profile data."
+              fallbackLabel="Open settings"
+              fallbackHref="/dashboard/settings"
+              analyticsTarget="badges:error"
             />
-          </DeferUntilVisible>
-        ) : null}
+          ) : null}
+          {!isLoading && !isError && filtered.length === 0 ? (
+            <EmptyState
+              eyebrow={canResetFilters && totalCount > 0 ? "Filter results" : "Badge progression"}
+              title={
+                canResetFilters && totalCount > 0
+                  ? "No badges match current filters."
+                  : "Your badge shelf is waiting."
+              }
+              description={
+                canResetFilters && totalCount > 0
+                  ? "Reset filters to view all earned and locked lanes, or choose a wider rarity/state range."
+                  : "Complete your first meaningful merged PR to start unlocking visible reputation proof."
+              }
+              actionLabel={canResetFilters && totalCount > 0 ? "Reset filters" : "Open quests"}
+              actionHref={canResetFilters && totalCount > 0 ? undefined : "/dashboard/quests"}
+              onAction={canResetFilters && totalCount > 0 ? handleResetFilters : undefined}
+              secondaryActionLabel="Open contributions"
+              secondaryActionHref="/dashboard/contributions"
+              analyticsTarget={
+                canResetFilters && totalCount > 0 ? "badges:empty-filtered" : "badges:empty"
+              }
+            />
+          ) : null}
+          {!isLoading && !isError && filtered.length ? (
+            <DeferUntilVisible fallback={<BadgeSectionPlaceholder title="Loading earned badge cards" />}>
+              <BadgeGrid
+                badges={filtered}
+                stories={abraInsights.data?.badgeStories}
+              />
+            </DeferUntilVisible>
+          ) : null}
+        </div>
       </section>
       {!isLoading && !isError ? (
         <section id="badges-locked" className="render-opt-section scroll-mt-24 space-y-3">

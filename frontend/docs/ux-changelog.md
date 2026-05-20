@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Badges filter-control semantics pass:
+  - converted badges active-filter chip cluster to semantic list markup, with per-chip clear actions.
+  - linked badge filter clear/reset controls to the earned-badges region via `aria-controls`.
+  - added a stable earned-badges region container ID so filter actions always target an existing results region.
 - Contributions filter-control semantics pass:
   - converted active-filter chip rendering to semantic list markup and kept clear actions attached to each chip.
   - wired filter reset/clear actions with `aria-controls` targeting the contribution cards region for clearer assistive context.
