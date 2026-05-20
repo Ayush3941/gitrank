@@ -17,7 +17,13 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 }
 
 func NewRouterWithStore(cfg config.App, analysisStore *analyzer.Store, log *slog.Logger, version string) http.Handler {
-	service := analyzer.New()
+	service := analyzer.NewWithAI(analyzer.AIConfig{
+		Provider:       cfg.AI.Provider,
+		APIKey:         cfg.AI.APIKey,
+		Model:          cfg.AI.Model,
+		BaseURL:        cfg.AI.BaseURL,
+		RequestTimeout: cfg.AI.RequestTimeout,
+	})
 	metrics := httpkit.NewMetrics(cfg.ServiceName)
 	analysisMetrics := newAnalysisMetricsSource(cfg.ServiceName)
 	manifest := contracts.ServiceManifest{

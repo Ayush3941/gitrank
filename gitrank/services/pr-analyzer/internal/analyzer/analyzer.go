@@ -1,23 +1,46 @@
 package analyzer
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/gitrank/gitrank/packages/contracts"
 )
 
 const analyzerVersion = "deterministic.v1"
+const aiSummaryPromptVersion = "gemini.summary.v1"
 
-type Service struct{}
+type AIConfig struct {
+	Provider       string
+	APIKey         string
+	Model          string
+	BaseURL        string
+	RequestTimeout time.Duration
+}
+
+type Service struct {
+	summaryClient *geminiSummaryClient
+}
 
 func New() Service {
 	return Service{}
 }
 
-func (Service) Analyze(req contracts.PullRequestAnalysisRequest) (contracts.PullRequestAnalysisResponse, error) {
+func NewWithAI(cfg AIConfig) Service {
+	return Service{
+		summaryClient: newGeminiSummaryClient(cfg),
+	}
+}
+
+func (s Service) Analyze(req contracts.PullRequestAnalysisRequest) (contracts.PullRequestAnalysisResponse, error) {
+	return s.analyze(context.Background(), req)
+}
+
+func (s Service) analyze(ctx context.Context, req contracts.PullRequestAnalysisRequest) (contracts.PullRequestAnalysisResponse, error) {
 	if err := req.Validate(); err != nil {
 		return contracts.PullRequestAnalysisResponse{}, err
 	}
@@ -60,7 +83,72 @@ func (Service) Analyze(req contracts.PullRequestAnalysisRequest) (contracts.Pull
 	if err := response.Validate(); err != nil {
 		return contracts.PullRequestAnalysisResponse{}, errors.New("analysis response failed validation: " + err.Error())
 	}
+
+	if s.summaryClient == nil {
+		return response, nil
+	}
+
+	aiSummary, err := s.summaryClient.Summarize(ctx, req, response)
+	if err != nil {
+		response.FallbackReason = aiFallbackReason(err)
+		response.Signals = appendFallbackReasonSignal(response.Signals, response.FallbackReason)
+		return response, nil
+	}
+	if strings.TrimSpace(aiSummary) == "" {
+		response.FallbackReason = "ai_empty_summary"
+		response.Signals = appendFallbackReasonSignal(response.Signals, response.FallbackReason)
+		return response, nil
+	}
+	response.Summary = aiSummary
+	response.AnalysisSource = contracts.AnalysisSourceHybrid
+	response.PromptVersion = aiSummaryPromptVersion
+	response.ModelName = s.summaryClient.model
+	response.FallbackReason = ""
+
+	if err := applyHallucinationGuardrails(req, breakdown, features, response); err != nil {
+		response.Summary = summary
+		response.AnalysisSource = contracts.AnalysisSourceDeterministic
+		response.PromptVersion = ""
+		response.ModelName = ""
+		response.FallbackReason = "ai_guardrail_rejected"
+		response.Signals = appendFallbackReasonSignal(response.Signals, response.FallbackReason)
+		return response, nil
+	}
+	if err := response.Validate(); err != nil {
+		response.Summary = summary
+		response.AnalysisSource = contracts.AnalysisSourceDeterministic
+		response.PromptVersion = ""
+		response.ModelName = ""
+		response.FallbackReason = "ai_validation_failed"
+		response.Signals = appendFallbackReasonSignal(response.Signals, response.FallbackReason)
+		return response, nil
+	}
 	return response, nil
+}
+
+func aiFallbackReason(err error) string {
+	var summaryErr *aiSummaryError
+	if errors.As(err, &summaryErr) {
+		reason := strings.TrimSpace(summaryErr.reason)
+		if reason != "" {
+			return reason
+		}
+	}
+	return "ai_request_failed"
+}
+
+func appendFallbackReasonSignal(signals []string, reason string) []string {
+	reason = strings.TrimSpace(reason)
+	if reason == "" {
+		return signals
+	}
+	signal := "fallback_reason=" + reason
+	for _, existing := range signals {
+		if strings.EqualFold(existing, signal) {
+			return signals
+		}
+	}
+	return append(signals, signal)
 }
 
 func classifyFiles(files []contracts.ChangedFile) contracts.FileBreakdown {
