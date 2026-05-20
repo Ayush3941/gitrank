@@ -191,7 +191,7 @@ export function LeaderboardPageClient() {
       <PageHeader
         eyebrow="Leaderboard"
         title="Leaderboard arena"
-        description="A time-windowed ranking snapshot weighted by meaningful merged work, review depth, tests, and project context."
+        description="Time-windowed ranking weighted by meaningful merged work."
         actions={(
           <Button asChild variant="secondary">
             <Link href="/dashboard/contributions">Open contributions</Link>
@@ -251,8 +251,8 @@ export function LeaderboardPageClient() {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p role="status" aria-live="polite" className="text-sm font-medium text-cyan-100">
             {isBusy
-              ? `Refreshing ${tab} snapshot...`
-              : `Viewing ${tab} snapshot`}
+              ? `Refreshing ${tab}...`
+              : `Viewing ${tab}`}
           </p>
           <div className="flex flex-wrap items-center gap-2">
             {tab !== "Global" ? (
@@ -282,16 +282,10 @@ export function LeaderboardPageClient() {
               {rows.length} active rows
             </span>
             <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-              Window {snapshot.season.windowLabel}
-            </span>
-            <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
               Formula {snapshot.season.scoringVersion}
             </span>
           </div>
         ) : null}
-        <div className="neon-callout rounded-[1.75rem] px-4 py-3 text-sm text-muted">
-          Snapshot note: leaderboard placement is directional, not a final measure of engineering ability. Quality weighting reduces the impact of shallow, unreviewed, or repetitive PR floods.
-        </div>
       </section>
       {isLoading ? <LoadingState message="Updating the arena ladder..." /> : null}
       {isError ? (
@@ -424,14 +418,6 @@ export function LeaderboardPageClient() {
                 </Button>
               ) : null}
             </div>
-            <GlowCard id="leaderboard-climb" className="scroll-mt-24 space-y-3 border border-fuchsia-300/22 bg-gradient-to-br from-slate-950/90 to-fuchsia-950/20">
-              <p className="text-xs font-medium text-fuchsia-200">How to climb</p>
-              <div className="grid gap-3 md:grid-cols-3">
-                <ClimbTip title="Raise review depth" body="Address maintainer feedback loops quickly; review quality raises signal trust." />
-                <ClimbTip title="Increase weekly impact" body="Prefer merged changes with measurable scope over low-signal micro churn." />
-                <ClimbTip title="Preserve streak cadence" body="Consistent weekly evidence improves movement and reduces demotion risk." />
-              </div>
-            </GlowCard>
           </DeferUntilVisible>
         </section>
       ) : null}

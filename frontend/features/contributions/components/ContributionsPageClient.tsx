@@ -252,7 +252,7 @@ export function ContributionsPageClient() {
       {isError ? (
         <ErrorState
           title="Contribution sync failed"
-          description="GitHub rate limit reached or the PR analysis cache expired. Retry or inspect the last synced profile snapshot."
+          description="GitHub data could not be refreshed. Retry or open settings."
           fallbackLabel="Open settings"
           fallbackHref="/dashboard/settings"
           analyticsTarget="contributions:error"
@@ -327,7 +327,7 @@ export function ContributionsPageClient() {
           <SectionHeader
             eyebrow="Repositories"
             title="Repositories touched"
-            description="Where contribution effort concentrated in this scored evidence window."
+            description="Where effort concentrated."
           />
           <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading repository impact lanes" />}>
             {repositories.length ? (
@@ -355,7 +355,7 @@ export function ContributionsPageClient() {
           <SectionHeader
             eyebrow="History"
             title="Contribution timeline and highlights"
-            description="Momentum and top-impact snapshots from the current PR evidence window."
+            description="Momentum and top-impact PRs."
           />
           <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading timeline and highlights" />}>
             <div className="grid gap-4 xl:grid-cols-[1.2fr,0.8fr]">
@@ -363,9 +363,6 @@ export function ContributionsPageClient() {
                 <h3 className="cyber-title text-sm font-medium text-fuchsia-200">Contribution timeline</h3>
                 {monthlyWindow.length ? (
                   <div className="space-y-3">
-                    <p className="text-xs text-muted">
-                      Showing latest {monthlyWindow.length} months to keep scan and render cost predictable.
-                    </p>
                     <ul role="list" className="space-y-3">
                       {monthlyWindow.map((point) => (
                         <li key={point.month} className="list-none space-y-1">
@@ -427,7 +424,7 @@ export function ContributionsPageClient() {
           <SectionHeader
             eyebrow="PR cards"
             title="Achievement cards"
-            description="Per-PR score signal, evidence tags, and impact narrative prepared for profile and presentation use."
+            description="Per-PR score signal and impact narrative."
           />
           <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading achievement card lane" />}>
             {filteredRows.length ? (
@@ -443,7 +440,7 @@ export function ContributionsPageClient() {
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <p role="status" aria-live="polite" aria-atomic="true" className="text-sm text-muted">
-                    Showing {visibleRows.length} of {filteredRows.length} cards from the current evidence window.
+                    Showing {visibleRows.length} of {filteredRows.length} cards.
                   </p>
                   {hasMoreRows ? (
                     <Button

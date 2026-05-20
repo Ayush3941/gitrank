@@ -134,7 +134,7 @@ export function QuestsPageClient() {
       <PageHeader
         eyebrow="Quests"
         title="Quest board"
-        description="Daily, weekly, and long-term missions from the backend quest engine with evidence-aware completion states."
+        description="Daily, weekly, and long-term contribution missions."
         actions={(
           <Button asChild variant="secondary">
             <Link href="/dashboard/contributions">Open contributions</Link>
@@ -200,9 +200,6 @@ export function QuestsPageClient() {
               <div>
                 <p className="text-xs font-medium text-cyan-200">Mission spotlight</p>
                 <h2 className="mt-2 text-2xl font-semibold text-white">Clear next moves</h2>
-                <p className="mt-2 text-sm text-muted">
-                  Progressive mission framing: take one action now, one this week, and one long-term objective.
-                </p>
               </div>
             </div>
             <ul role="list" className="grid gap-3 md:grid-cols-3">
@@ -335,10 +332,10 @@ function labelForGroup(group: Quest["cadence"]): string {
 }
 
 function descriptionForGroup(group: Quest["cadence"]): string {
-  if (group === "Daily") return "Short-horizon mission from live backend quest recommendations.";
-  if (group === "Weekly") return "Higher impact challenge tuned to contribution quality and consistency.";
-  if (group === "Long-term") return "Long arc objective that compounds verified work across snapshots.";
-  return "Target weak lanes with precision missions from profile evidence.";
+  if (group === "Daily") return "Short-horizon mission.";
+  if (group === "Weekly") return "Higher-impact weekly challenge.";
+  if (group === "Long-term") return "Long-arc objective.";
+  return "Target weak skill lanes.";
 }
 
 function recoveryHrefForGroup(group: Quest["cadence"]): string {
