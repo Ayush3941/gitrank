@@ -196,7 +196,7 @@ export function BadgesPageClient() {
       <PageHeader
         eyebrow="Badges"
         title="Badge shelf"
-        description="Turn each unlocked badge into a story, track locked paths, and frame progression as a visible contributor journey."
+        description="Unlocked stories, locked paths, and clear progress to the next achievement."
         actions={(
           <Button asChild variant="secondary">
             <Link href="/dashboard/quests" prefetch={false}>Open quests</Link>

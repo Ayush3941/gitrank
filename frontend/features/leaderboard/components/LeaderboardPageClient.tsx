@@ -121,7 +121,7 @@ export function LeaderboardPageClient() {
       <PageHeader
         eyebrow="Leaderboard"
         title="Leaderboard arena"
-        description="Time-windowed ranking weighted by meaningful merged work."
+        description="Weekly ranking weighted by meaningful merged work."
         actions={(
           <Button asChild variant="secondary">
             <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
@@ -190,11 +190,7 @@ export function LeaderboardPageClient() {
             </Button>
           ) : null}
         </div>
-        {snapshot ? (
-          <p className="text-xs text-muted">
-            {rows.length} ranked rows · formula {snapshot.season.scoringVersion}
-          </p>
-        ) : null}
+        {snapshot ? <p className="text-xs text-muted">{rows.length} ranked rows</p> : null}
       </section>
       {isLoading ? <LoadingState message="Updating the arena ladder..." /> : null}
       {isError ? (

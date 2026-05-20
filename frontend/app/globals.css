@@ -22,10 +22,10 @@
   --text-strong: 252 253 255;
   --text-body: 246 249 255;
   --text-soft: 244 248 255;
-  --page-overlay-top-alpha: 0.28;
-  --page-overlay-bottom-alpha: 0.5;
+  --page-overlay-top-alpha: 0.18;
+  --page-overlay-bottom-alpha: 0.36;
   --page-grid-opacity: 1;
-  --page-glow-opacity: 0.04;
+  --page-glow-opacity: 0.045;
   --surface-blur: 1px;
   --surface-blur-strong: 2px;
   --shadow-depth-soft: 0 8px 22px rgb(1 5 20 / 0.28);
@@ -61,10 +61,10 @@ html[data-theme="midnight"] {
   --text-strong: 252 254 255;
   --text-body: 246 250 255;
   --text-soft: 244 248 255;
-  --page-overlay-top-alpha: 0.3;
-  --page-overlay-bottom-alpha: 0.54;
+  --page-overlay-top-alpha: 0.2;
+  --page-overlay-bottom-alpha: 0.4;
   --page-grid-opacity: 1;
-  --page-glow-opacity: 0.042;
+  --page-glow-opacity: 0.046;
   --surface-blur: 1px;
   --surface-blur-strong: 2px;
 }
@@ -89,10 +89,10 @@ html[data-theme="terminal"] {
   --text-strong: 246 254 250;
   --text-body: 236 247 243;
   --text-soft: 230 244 239;
-  --page-overlay-top-alpha: 0.28;
-  --page-overlay-bottom-alpha: 0.5;
+  --page-overlay-top-alpha: 0.19;
+  --page-overlay-bottom-alpha: 0.38;
   --page-grid-opacity: 1;
-  --page-glow-opacity: 0.038;
+  --page-glow-opacity: 0.042;
   --surface-blur: 1px;
   --surface-blur-strong: 2px;
 }
@@ -117,10 +117,10 @@ html[data-theme="aurora"] {
   --text-strong: 251 254 255;
   --text-body: 246 251 255;
   --text-soft: 245 250 255;
-  --page-overlay-top-alpha: 0.28;
-  --page-overlay-bottom-alpha: 0.5;
+  --page-overlay-top-alpha: 0.18;
+  --page-overlay-bottom-alpha: 0.36;
   --page-grid-opacity: 1;
-  --page-glow-opacity: 0.04;
+  --page-glow-opacity: 0.044;
   --surface-blur: 1px;
   --surface-blur-strong: 2px;
 }
@@ -281,16 +281,16 @@ body::before {
       rgb(2 7 18 / var(--page-overlay-bottom-alpha))
     ),
     radial-gradient(
-      circle at 50% -16%,
-      rgb(var(--primary) / 0.05) 0%,
-      rgb(var(--primary-2) / 0.026) 42%,
-      rgb(var(--primary-2) / 0.01) 64%,
-      transparent 88%
+      circle at 50% -6%,
+      rgb(var(--primary) / 0.045) 0%,
+      rgb(var(--primary-2) / 0.024) 52%,
+      rgb(var(--primary-2) / 0.01) 76%,
+      transparent 100%
     ),
     repeating-linear-gradient(
       90deg,
       transparent 0 120px,
-      rgb(255 255 255 / 0.005) 120px 121px
+      rgb(255 255 255 / 0.003) 120px 121px
     );
   background-size:
     100% 100%,
@@ -307,18 +307,18 @@ body::after {
   z-index: -1;
   background:
     radial-gradient(
-      circle at 18% 14%,
-      rgb(var(--primary) / 0.055) 0%,
-      rgb(var(--primary) / 0.024) 52%,
-      rgb(var(--primary) / 0.01) 72%,
-      transparent 96%
+      circle at 16% 18%,
+      rgb(var(--primary) / 0.065) 0%,
+      rgb(var(--primary) / 0.028) 58%,
+      rgb(var(--primary) / 0.008) 82%,
+      transparent 100%
     ),
     radial-gradient(
-      circle at 82% 84%,
-      rgb(var(--primary-2) / 0.055) 0%,
-      rgb(var(--primary-2) / 0.024) 50%,
-      rgb(var(--primary-2) / 0.01) 70%,
-      transparent 96%
+      circle at 84% 82%,
+      rgb(var(--primary-2) / 0.065) 0%,
+      rgb(var(--primary-2) / 0.028) 56%,
+      rgb(var(--primary-2) / 0.008) 80%,
+      transparent 100%
     );
   opacity: var(--page-glow-opacity);
 }
@@ -1115,14 +1115,14 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   pointer-events: none;
   z-index: -1;
   border-radius: 999px;
-  opacity: 0.32;
+  opacity: 0.24;
 }
 
 .page-shell::before {
   top: 6rem;
-  left: -12rem;
-  width: 36rem;
-  height: 36rem;
+  left: -18rem;
+  width: 52rem;
+  height: 52rem;
   background: radial-gradient(
     circle,
       rgb(var(--primary) / 0.1) 0%,
@@ -1133,10 +1133,10 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 }
 
 .page-shell::after {
-  right: -14rem;
-  bottom: 1rem;
-  width: 38rem;
-  height: 38rem;
+  right: -20rem;
+  bottom: -2rem;
+  width: 54rem;
+  height: 54rem;
   background: radial-gradient(
     circle,
       rgb(var(--primary-2) / 0.1) 0%,
