@@ -1,12 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Flame, Radar, Sparkles, Swords } from "lucide-react";
-import { startTransition, useDeferredValue, useMemo, useState, type ReactNode } from "react";
+import { startTransition, useDeferredValue, useMemo, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
-import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { SectionHeader } from "@/components/shared/SectionHeader";
@@ -17,14 +15,12 @@ import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { Button } from "@/components/ui/button";
 import {
-  deriveDeterministicArchetype,
   shouldRequestAbraInsights,
 } from "@/lib/ai/deterministic-identity-summary";
 import {
   monthTimeline,
   summarizeContributionStreak,
   summarizeRepositories,
-  uniqueContributionDayCount,
 } from "@/lib/metrics/contribution-metrics";
 import type { Contribution } from "@/types/gitrank";
 
@@ -83,12 +79,12 @@ export function ContributionsPageClient() {
   const isFilteredNoResults =
     canReset && totalContributionEvidence > 0 && filteredRows.length === 0;
 
-  const streak = useMemo(
-    () => summarizeContributionStreak(profile?.user.contributions ?? []),
-    [profile?.user.contributions],
-  );
   const repositories = useMemo(
     () => summarizeRepositories(profile?.user.contributions ?? []),
+    [profile?.user.contributions],
+  );
+  const streak = useMemo(
+    () => summarizeContributionStreak(profile?.user.contributions ?? []),
     [profile?.user.contributions],
   );
   const monthly = useMemo(
@@ -110,11 +106,6 @@ export function ContributionsPageClient() {
     () => filteredRows.slice(0, ABRA_CONTRIBUTION_SAMPLE_LIMIT),
     [filteredRows],
   );
-  const uniqueDays = useMemo(
-    () => uniqueContributionDayCount(profile?.user.contributions ?? []),
-    [profile?.user.contributions],
-  );
-
   const abraPayload = useMemo(() => {
     if (!profile) {
       return null;
@@ -170,13 +161,6 @@ export function ContributionsPageClient() {
   }, [abraContributionSample, profile, repositories.length, streak.currentStreakDays]);
 
   const abraInsights = useAbraInsights(abraPayload);
-  const fallbackArchetype = useMemo(
-    () =>
-      profile
-        ? deriveDeterministicArchetype(profile.user.strongestSignals)
-        : "Systems Builder",
-    [profile],
-  );
   const maxMonthlyXp = Math.max(1, ...monthlyWindow.map((point) => point.xp));
 
   function handleFilterChange(next: string) {
@@ -281,49 +265,6 @@ export function ContributionsPageClient() {
           secondaryActionHref="/dashboard/settings"
           analyticsTarget={isFilteredNoResults ? "contributions:empty-filtered" : "contributions:empty"}
         />
-      ) : null}
-      {!isLoading && !isError && profile ? (
-        <section id="contributions-overview" className="render-opt-section scroll-mt-24">
-          <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading contribution overview" />}>
-            <GlowCard strong className="cyber-hero-shell relative overflow-hidden">
-              <div className="space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-cyan-100">
-                      <Radar className="h-3.5 w-3.5" />
-                      Contribution Ops
-                    </p>
-                    <h2 className="mt-3 text-2xl font-semibold text-white">
-                      {abraInsights.data?.archetype ?? fallbackArchetype} mode
-                    </h2>
-                    <ExpandableText
-                      text={
-                        abraInsights.data?.identitySummary ||
-                        "Signal synthesis is running in deterministic mode while contribution intelligence resolves."
-                      }
-                      lines={4}
-                      minLengthForToggle={220}
-                      className="mt-2 max-w-3xl"
-                      textClassName="break-anywhere text-sm text-muted"
-                    />
-                  </div>
-                  <div className="neon-chip neon-chip-mythic inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-xs">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    {abraInsights.data?.generatedBy === "gemini"
-                      ? "Gemini impact synthesis enabled"
-                      : "Deterministic fallback active"}
-                  </div>
-                </div>
-                <div className="grid gap-3 md:grid-cols-4">
-                  <Metric label="Current streak" value={`${streak.currentStreakDays}d`} icon={<Flame className="h-4 w-4 text-orange-300" />} />
-                  <Metric label="Best streak" value={`${streak.bestStreakDays}d`} icon={<Flame className="h-4 w-4 text-fuchsia-300" />} />
-                  <Metric label="Active days (year)" value={streak.activeDaysThisYear} icon={<Swords className="h-4 w-4 text-cyan-200" />} />
-                  <Metric label="Unique contribution days" value={uniqueDays} icon={<Sparkles className="h-4 w-4 text-violet-200" />} />
-                </div>
-              </div>
-            </GlowCard>
-          </DeferUntilVisible>
-        </section>
       ) : null}
       {!isLoading && !isError ? (
         <section id="contributions-cards" className="render-opt-section scroll-mt-24 space-y-4">
@@ -515,26 +456,6 @@ function SubsectionEmptyState({
         </Button>
       </div>
     </GlowCard>
-  );
-}
-
-function Metric({
-  label,
-  value,
-  icon,
-}: {
-  label: string;
-  value: number | string;
-  icon: ReactNode;
-}) {
-  return (
-    <div className="neon-metric rounded-[1.4rem] px-4 py-3">
-      <p className="text-xs font-medium text-muted">{label}</p>
-      <p className="mt-2 flex items-center gap-2 text-xl font-semibold text-white">
-        {value}
-        {icon}
-      </p>
-    </div>
   );
 }
 

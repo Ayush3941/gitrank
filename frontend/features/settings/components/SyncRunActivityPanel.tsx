@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, Search, X, XCircle } from "lucide-react";
-import { startTransition, useDeferredValue, useMemo, useState } from "react";
+import { startTransition, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
@@ -29,9 +29,6 @@ export function SyncRunActivityPanel({
 }) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"All" | "Completed" | "Running" | "Failed">("All");
-  const deferredSearch = useDeferredValue(search);
-  const deferredStatusFilter = useDeferredValue(statusFilter);
-  const isFiltering = deferredSearch !== search || deferredStatusFilter !== statusFilter;
   const canReset = search.trim().length > 0 || statusFilter !== "All";
   const compactSearch =
     search.trim().length > 32 ? `${search.trim().slice(0, 32)}…` : search.trim();
@@ -57,11 +54,11 @@ export function SyncRunActivityPanel({
     return next;
   }, [runs]);
   const filteredRuns = useMemo(() => {
-    const term = deferredSearch.trim().toLowerCase();
+    const term = search.trim().toLowerCase();
     return runs.filter((run) => {
       const normalizedStatus = syncRunStatusLabel(run.status);
       const statusMatch =
-        deferredStatusFilter === "All" || normalizedStatus === deferredStatusFilter;
+        statusFilter === "All" || normalizedStatus === statusFilter;
       if (!statusMatch) {
         return false;
       }
@@ -75,7 +72,7 @@ export function SyncRunActivityPanel({
         (run.last_error ?? "").toLowerCase().includes(term)
       );
     });
-  }, [deferredSearch, deferredStatusFilter, runs]);
+  }, [search, statusFilter, runs]);
   const resultsRegionClassName =
     "min-h-[20rem] max-h-[26rem] overflow-y-auto pr-1 [scrollbar-gutter:stable] [overflow-anchor:none]";
 
@@ -136,9 +133,7 @@ export function SyncRunActivityPanel({
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p id={filterStatusId} role="status" aria-live="polite" className="text-xs font-medium text-cyan-200">
-            {isFiltering
-              ? "Updating sync log..."
-              : `${filteredRuns.length} of ${statusCounts.all} runs`}
+            {filteredRuns.length} of {statusCounts.all} runs
           </p>
           <div className="flex flex-wrap gap-2">
             <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">Completed {statusCounts.completed}</span>
@@ -149,7 +144,7 @@ export function SyncRunActivityPanel({
               size="sm"
               variant="ghost"
               onClick={handleResetFilters}
-              disabled={!canReset || isFiltering}
+              disabled={!canReset}
               aria-controls={syncRunsRegionId}
             >
               Reset
@@ -243,7 +238,6 @@ export function SyncRunActivityPanel({
                   size="sm"
                   variant={statusFilter === item ? "default" : "secondary"}
                   onClick={() => startTransition(() => setStatusFilter(item))}
-                  disabled={isFiltering}
                   aria-describedby={filterStatusId}
                   aria-pressed={statusFilter === item}
                   aria-controls={syncRunsRegionId}
@@ -295,7 +289,7 @@ export function SyncRunActivityPanel({
               size="sm"
               variant="secondary"
               onClick={handleResetFilters}
-              disabled={isFiltering || !canReset}
+              disabled={!canReset}
             >
               Reset filters
             </Button>

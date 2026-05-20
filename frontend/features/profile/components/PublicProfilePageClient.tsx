@@ -175,23 +175,6 @@ export function PublicProfilePageClient({
           identitySummary={abraInsights.data?.identitySummary ?? fallbackIdentitySummary}
           aiMode={abraInsights.data?.generatedBy ?? "deterministic"}
         />
-        <div className="flex flex-wrap gap-2 text-xs">
-          <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-            Refreshed {formatRelativeDays(data.refreshedAt)}
-          </span>
-          <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-            {data.isStale ? "Stale snapshot" : "Fresh snapshot"}
-          </span>
-          <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-            {data.partialProfileAvailable ? "Partial evidence" : "Complete evidence"}
-          </span>
-          <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-            {data.user.contributions.length} events
-          </span>
-          <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-            {data.trendWindowLabel}
-          </span>
-        </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <StatCard label="Total XP" value={data.user.gitRankScore} detail="The explainable score ledger currently served on this profile." icon={<Stars className="h-5 w-5 text-primary" />} />
           <StatCard label="Merged PRs" value={data.user.mergedPrCount} detail="Merged work is the core reputation primitive." icon={<GitPullRequest className="h-5 w-5 text-primary" />} />
@@ -264,10 +247,10 @@ export function PublicProfilePageClient({
                     <p>Repository-level signal is not available on this snapshot yet.</p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <Button asChild variant="secondary" size="sm">
-                        <a href="#public-profile-best-prs">Review best PR evidence</a>
+                        <Link href="/dashboard/contributions">Open contribution lane</Link>
                       </Button>
                       <Button asChild variant="ghost" size="sm">
-                        <a href="#public-profile-overview">Back to profile summary</a>
+                        <Link href="/dashboard/settings">Open sync settings</Link>
                       </Button>
                     </div>
                   </div>
