@@ -113,7 +113,7 @@ export function ContributionList({
                 <SignalProfile item={item} />
               ) : (
                 <div className="neon-surface rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
-                  This live profile row comes from persisted score-history evidence. Formula version:{" "}
+                  This row uses persisted score evidence. Formula:{" "}
                   {formatFormulaVersion(item.formulaVersion)}.{" "}
                   {item.evidenceMissing?.length
                     ? `Missing evidence links: ${item.evidenceMissing.join(", ")}.`

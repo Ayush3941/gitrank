@@ -55,7 +55,7 @@ export function DashboardPageClient() {
       {
         id: "connected",
         label: "GitHub account connected",
-        detail: "OAuth identity is linked and ready for evidence sync.",
+        detail: "OAuth identity is linked.",
         done: Boolean(user?.username),
         href: "/dashboard/settings",
         actionLabel: "Open account settings",
@@ -63,8 +63,7 @@ export function DashboardPageClient() {
       {
         id: "synced",
         label: "Profile sync completed",
-        detail:
-          "A full snapshot is marked synced without partial evidence mode.",
+        detail: "Snapshot is synced and complete.",
         done: syncState === "synced" && !partialProfileAvailable,
         href: "/dashboard/settings",
         actionLabel: "Review sync state",
@@ -72,8 +71,7 @@ export function DashboardPageClient() {
       {
         id: "first-merge",
         label: "First merged PR detected",
-        detail:
-          "Merged contribution evidence unlocks full score movement and quest depth.",
+        detail: "Merged evidence unlocks full scoring.",
         done: mergedPrCount > 0,
         href: "/dashboard/contributions",
         actionLabel: "Open contribution lane",
@@ -187,7 +185,7 @@ export function DashboardPageClient() {
     return (
       <ErrorState
         title="Dashboard sync failed"
-        description="GitHub rate limits or AI analysis delays can leave the dashboard partially unavailable. Retry or fall back to the last verified profile."
+        description="The dashboard could not refresh. Retry or open settings."
         fallbackLabel="Open settings"
         fallbackHref="/dashboard/settings"
         analyticsTarget="dashboard:error"
@@ -336,9 +334,7 @@ function FirstRunChecklistCard({
             First-run checklist
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-white">Activation path</h2>
-          <p className="mt-2 text-sm text-muted">
-            Complete these steps to move from an empty snapshot to meaningful score and quest progression.
-          </p>
+          <p className="mt-2 text-sm text-muted">Complete these steps to unlock full scoring.</p>
         </div>
         <span className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold">
           {completedCount}/{totalCount} complete
@@ -391,9 +387,6 @@ function FirstRunChecklistCard({
               {nextAction.actionLabel}
               <ArrowRight className="h-4 w-4" />
             </Link>
-          </Button>
-          <Button asChild variant="secondary" size="sm">
-            <Link href="/onboarding/reveal">Review reveal summary</Link>
           </Button>
         </div>
       ) : null}
