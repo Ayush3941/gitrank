@@ -62,8 +62,8 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
           Peak month: {topPoint.label} ({topPoint.xp} XP).
         </p>
         <ul role="list" className="mt-3 space-y-1 text-xs text-muted">
-          {safeData.map((point) => (
-            <li key={point.label} className="flex items-center justify-between gap-3">
+          {safeData.map((point, index) => (
+            <li key={`${point.label}-${index}`} className="flex items-center justify-between gap-3">
               <span>{point.label}</span>
               <span>{point.xp} XP</span>
             </li>
@@ -91,10 +91,10 @@ function TimelineChartLite({ data }: { data: Array<{ label: string; xp: number }
     <div className="neon-surface h-full space-y-3 px-4 py-4">
       <p className="text-xs font-semibold text-primary">Lite timeline view</p>
       <div className="space-y-2">
-        {compactWindow.map((point) => {
+        {compactWindow.map((point, index) => {
           const fill = Math.max(0, Math.min(100, Math.round((point.xp / maxXP) * 100)));
           return (
-            <div key={point.label} className="space-y-1">
+            <div key={`${point.label}-${index}`} className="space-y-1">
               <div className="flex items-center justify-between gap-3 text-xs text-muted">
                 <span>{point.label}</span>
                 <span>{point.xp} XP</span>

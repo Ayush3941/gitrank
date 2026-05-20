@@ -64,9 +64,9 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
         </h2>
       </div>
       <ul role="list" className="space-y-3">
-        {rows.map((row) => (
+        {rows.map((row, index) => (
           <li
-            key={row.label}
+            key={`${row.label}-${index}`}
             className="list-none neon-surface rounded-[1.75rem] px-4 py-4"
           >
             <div className="flex items-center justify-between gap-4">
@@ -95,9 +95,9 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
             state, issue linkage, and category signals.
           </p>
         </li>
-        {report.penalties.map((penalty) => (
+        {report.penalties.map((penalty, index) => (
           <li
-            key={penalty.label}
+            key={`${penalty.label}-${index}`}
             className="list-none rounded-[1.75rem] border border-rose-400/18 bg-rose-400/8 px-4 py-4"
           >
             <div className="flex items-center justify-between gap-4">

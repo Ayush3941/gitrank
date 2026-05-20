@@ -256,8 +256,8 @@ export function PRBattleReportPageClient({
                 </span>
               </li>
             ) : null}
-            {evidenceState.missingEvidence.map((missing) => (
-              <li key={missing} className="list-none">
+            {evidenceState.missingEvidence.map((missing, index) => (
+              <li key={`${missing}-${index}`} className="list-none">
                 <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-xs text-amber-100">
                   missing {missing.replace("_", " ")}
                 </span>
@@ -311,8 +311,8 @@ export function PRBattleReportPageClient({
               Badge unlocks
             </div>
             <ul role="list" className="grid gap-3 md:grid-cols-2">
-              {data.badgeUnlocks.map((badge) => (
-                <li key={badge.key} className="list-none render-opt-card neon-surface rounded-[1.75rem] p-4">
+              {data.badgeUnlocks.map((badge, index) => (
+                <li key={`${badge.key}-${index}`} className="list-none render-opt-card neon-surface rounded-[1.75rem] p-4">
                   <p className="text-lg font-semibold text-white">{badge.name}</p>
                   {badge.description ? <p className="mt-2 text-sm text-muted">{badge.description}</p> : null}
                   <p className="mt-3 text-xs text-emerald-100">
@@ -320,8 +320,8 @@ export function PRBattleReportPageClient({
                   </p>
                   {badge.evidenceSignals.length ? (
                     <ul role="list" className="mt-3 flex flex-wrap gap-2">
-                      {badge.evidenceSignals.slice(0, 3).map((signal) => (
-                        <li key={signal} className="list-none">
+                      {badge.evidenceSignals.slice(0, 3).map((signal, signalIndex) => (
+                        <li key={`${badge.key}-${signal}-${signalIndex}`} className="list-none">
                           <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
                             {signal}
                           </span>
@@ -357,8 +357,8 @@ export function PRBattleReportPageClient({
               </p>
               {suggestedQuest?.evidenceSignals.length ? (
                 <ul role="list" className="mt-3 flex flex-wrap gap-2">
-                  {suggestedQuest.evidenceSignals.slice(0, 3).map((signal) => (
-                    <li key={signal} className="list-none">
+                  {suggestedQuest.evidenceSignals.slice(0, 3).map((signal, index) => (
+                    <li key={`${data.suggestedQuestId ?? "suggested-quest"}-${signal}-${index}`} className="list-none">
                       <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
                         {signal}
                       </span>

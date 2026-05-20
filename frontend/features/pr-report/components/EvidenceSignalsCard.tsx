@@ -42,8 +42,8 @@ export function EvidenceSignalsCard({ report }: { report: PullRequestAnalysis })
       <div className="neon-surface rounded-[1.75rem] p-4">
         <p className="text-xs font-medium text-primary">Stored evidence labels</p>
         <ul role="list" className="mt-3 flex flex-wrap gap-2">
-          {contribution.evidenceSignals.map((signal) => (
-            <li key={signal} className="list-none">
+          {contribution.evidenceSignals.map((signal, index) => (
+            <li key={`${signal}-${index}`} className="list-none">
               <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
                 {signal}
               </span>

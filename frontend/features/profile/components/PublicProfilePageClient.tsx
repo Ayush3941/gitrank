@@ -385,8 +385,8 @@ export function PublicProfilePageClient({
                   </div>
                 ) : (
                   <ul role="list" className="space-y-3">
-                    {data.topRepositories.slice(0, 4).map((repository) => (
-                    <li key={repository.name} className="render-opt-card neon-surface rounded-[1.5rem] px-4 py-3">
+                    {data.topRepositories.slice(0, 4).map((repository, index) => (
+                    <li key={`${repository.name}-${index}`} className="render-opt-card neon-surface rounded-[1.5rem] px-4 py-3">
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="break-anywhere font-medium text-white">{repository.name}</p>

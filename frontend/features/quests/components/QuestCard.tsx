@@ -50,8 +50,8 @@ export function QuestCard({ quest }: { quest: Quest }) {
         <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusTone}`}>{quest.status}</span>
       </div>
       <ul role="list" className="flex flex-wrap gap-2">
-        {quest.evidenceSignals.map((signal) => (
-          <li key={signal}>
+        {quest.evidenceSignals.map((signal, index) => (
+          <li key={`${quest.id}-${signal}-${index}`}>
             <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
               {signal}
             </span>

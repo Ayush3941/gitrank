@@ -55,8 +55,8 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
                     <span>{quest.weakAreaTarget ? `Targets ${quest.weakAreaTarget}` : quest.cadence}</span>
                   </div>
                   <ul role="list" className="mt-3 flex flex-wrap gap-2">
-                    {quest.evidenceSignals.slice(0, 3).map((signal) => (
-                      <li key={signal}>
+                    {quest.evidenceSignals.slice(0, 3).map((signal, index) => (
+                      <li key={`${quest.id}-${signal}-${index}`}>
                         <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
                           {signal}
                         </span>
