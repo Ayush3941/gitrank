@@ -34,7 +34,7 @@ export function DashboardSidebar() {
             <p className="text-xs font-medium text-primary/92">Contributor Console</p>
           </div>
         </Link>
-        <div className="neon-surface space-y-3.5 p-3.5">
+        <div className="dashboard-nav-shell space-y-3.5 p-3.5">
           <p id="dashboard-sidebar-nav-label" className="cyber-title text-xs font-semibold text-cyan-100">
             Primary lanes
           </p>
@@ -48,7 +48,7 @@ export function DashboardSidebar() {
           </p>
           <nav aria-labelledby="dashboard-sidebar-nav-label" className="space-y-2">
             <ol role="list" className="space-y-2">
-              {dashboardNavItems.map((item, index) => {
+              {dashboardNavItems.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.href, item.exact);
                 return (
@@ -57,11 +57,9 @@ export function DashboardSidebar() {
                       href={item.href}
                       prefetch={false}
                       aria-current={active ? "page" : undefined}
+                      data-active={active ? "true" : "false"}
                       className={cn(
-                        "focus-ring group relative grid min-h-[3.85rem] grid-cols-[auto_1rem_1fr] items-start gap-3 border px-3 py-2.5 text-sm leading-5",
-                        active
-                          ? "border-primary/40 bg-primary/12 text-white"
-                          : "border-transparent text-foreground hover:border-primary/24 hover:bg-primary/8 hover:text-white",
+                        "focus-ring dashboard-nav-item group relative flex min-h-[3.75rem] items-start gap-3 px-3 py-2.5 text-sm leading-5",
                       )}
                     >
                       <span
@@ -70,19 +68,9 @@ export function DashboardSidebar() {
                           active && "bg-primary",
                         )}
                       />
-                      <span
-                        className={cn(
-                          "mt-0.5 inline-flex min-h-6 min-w-6 items-center justify-center border text-[0.72rem] font-semibold numeric-readout",
-                          active
-                            ? "border-primary/38 bg-primary/16 text-primary"
-                            : "border-primary/18 bg-primary/7 text-muted group-hover:text-primary",
-                        )}
-                      >
-                        {index + 1}
-                      </span>
                       <Icon
                         className={cn(
-                          "mt-0.5 h-4 w-4",
+                          "mt-0.5 h-4 w-4 shrink-0",
                           active ? "text-primary" : "text-muted group-hover:text-primary",
                         )}
                       />

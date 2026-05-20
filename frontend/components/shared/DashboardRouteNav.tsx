@@ -13,7 +13,7 @@ export function DashboardRouteNav() {
   return (
     <nav
       aria-label="Dashboard navigation"
-      className="neon-surface border border-primary/22 p-1.5"
+      className="dashboard-nav-shell p-1.5"
     >
       <ul role="list" className="scrollbar-thin flex gap-1.5 overflow-x-auto p-0.5">
         {dashboardNavItems.map((item) => {
@@ -26,11 +26,9 @@ export function DashboardRouteNav() {
                 prefetch={false}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "focus-ring inline-flex min-h-10 items-center gap-2 border px-3 py-2 text-sm font-medium whitespace-nowrap",
-                  active
-                    ? "border-primary/42 bg-primary/14 text-white shadow-[0_0_14px_rgb(34_226_255_/_0.12)]"
-                    : "border-primary/16 text-foreground hover:border-primary/26 hover:bg-primary/10 hover:text-white",
+                  "focus-ring dashboard-nav-item inline-flex min-h-10 items-center gap-2 px-3 py-2 text-sm font-medium whitespace-nowrap",
                 )}
+                data-active={active ? "true" : "false"}
                 title={item.hint}
               >
                 <Icon className={cn("h-4 w-4", active ? "text-primary" : "text-muted")} />

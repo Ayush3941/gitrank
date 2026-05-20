@@ -14,7 +14,7 @@ export function MobileNav() {
   return (
     <nav
       aria-label="Dashboard navigation mobile"
-      className="mobile-nav-shell glass-panel cyber-card cyber-frame neon-outline fixed inset-x-3 z-40 xl:hidden"
+      className="mobile-nav-shell dashboard-nav-shell fixed inset-x-3 z-40 xl:hidden"
     >
       <p role="status" aria-live="polite" className="sr-only">
         {activeItem ? `Current lane: ${activeItem.label}` : "Dashboard navigation"}
@@ -44,11 +44,9 @@ export function MobileNav() {
                 aria-label={item.label}
                 title={item.label}
                 className={cn(
-                  "focus-ring relative flex min-h-[4.25rem] flex-col items-center justify-center gap-1.5 border px-2 py-2 text-[0.84rem] leading-tight font-semibold",
-                  active
-                    ? "border-primary/42 bg-primary/15 text-white shadow-[0_0_14px_rgb(34_226_255_/_0.12)]"
-                    : "border-primary/14 text-foreground hover:border-primary/24 hover:bg-primary/9 hover:text-white",
+                  "focus-ring dashboard-nav-item relative flex min-h-[4.25rem] flex-col items-center justify-center gap-1.5 px-2 py-2 text-[0.84rem] leading-tight font-semibold",
                 )}
+                data-active={active ? "true" : "false"}
               >
                 <span
                   className={cn(
