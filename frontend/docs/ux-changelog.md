@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Contributions card hierarchy pass:
+  - restructured each contribution card header into clearer scan blocks: repo lane, PR number/status, title, timeline sentence, and semantic metadata chips.
+  - added compact XP/signal summary slab on the right side of each card for faster at-a-glance comparison.
+  - added an explicit `Why this moved your score` heading for signal metrics and an `Impact statement` marker inside AI narratives.
 - Dashboard navigation + background legibility pass:
   - reformatted mobile dashboard nav into horizontally scrollable lane cards with larger touch targets and stronger active-state contrast.
   - added desktop sidebar lane indexing chips to improve scanability of the five primary lanes without changing route semantics.

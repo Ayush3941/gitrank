@@ -28,6 +28,10 @@ export function ContributionList({
       {items.map((item, index) => {
         const tier = contributionTier(item);
         const position = startPosition + index;
+        const detailedMetricsAvailable = hasDetailedMetrics(item);
+        const signalIndex = detailedMetricsAvailable
+          ? contributionSignalIndex(item)
+          : null;
         return (
           <li
             key={item.id}
@@ -40,41 +44,72 @@ export function ContributionList({
             >
               <div className="h-px w-28 bg-gradient-to-r from-primary/62 via-primary-2/42 to-transparent" />
               <div className="flex flex-wrap items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <p className="break-anywhere text-sm text-muted">{item.owner}/{item.repo} #{item.number}</p>
-                  <h3 className="mt-2 break-anywhere text-xl font-semibold text-white">{item.title}</h3>
-                  <div className="mt-3 flex flex-wrap gap-2 text-xs cyber-copy">
-                    <span className={`neon-chip rounded-full px-3 py-1.5 font-semibold ${tier.className}`}>{tier.label}</span>
-                    <span className="neon-chip neon-chip-info rounded-full px-3 py-1.5 font-semibold">{item.category}</span>
-                    <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 font-semibold">{formatContributionStatus(item.status)}</span>
-                    <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 font-semibold">{item.changedFilesCount} files changed</span>
-                    <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-3 py-1.5 font-semibold">
-                      <CalendarDays className="h-3 w-3" />
-                      {formatContributionDate(item.mergedAt)}
+                <div className="min-w-0 space-y-3">
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold break-anywhere">
+                      {item.owner}/{item.repo}
                     </span>
+                    <span className="neon-chip neon-chip-info rounded-full px-3 py-1 font-semibold">
+                      PR #{item.number}
+                    </span>
+                    <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+                      {formatContributionStatus(item.status)}
+                    </span>
+                  </div>
+                  <h3 className="mt-2 break-anywhere text-xl font-semibold text-white">{item.title}</h3>
+                  <p className="text-sm text-muted">
+                    {formatContributionTimeline(item)}
+                  </p>
+                  <ul role="list" className="mt-3 flex flex-wrap gap-2 text-xs cyber-copy">
+                    <li className="list-none">
+                      <span className={`neon-chip rounded-full px-3 py-1.5 font-semibold ${tier.className}`}>{tier.label}</span>
+                    </li>
+                    <li className="list-none">
+                      <span className="neon-chip neon-chip-info rounded-full px-3 py-1.5 font-semibold">{item.category}</span>
+                    </li>
+                    <li className="list-none">
+                      <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 font-semibold">{item.changedFilesCount} files changed</span>
+                    </li>
+                    <li className="list-none">
+                      <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-3 py-1.5 font-semibold">
+                        <CalendarDays className="h-3 w-3" />
+                        {formatContributionDate(item.mergedAt)}
+                      </span>
+                    </li>
                     {item.maintainerReviewed ? (
-                      <span className="neon-chip neon-chip-success rounded-full px-3 py-1.5 font-semibold">Maintainer reviewed</span>
+                      <li className="list-none">
+                        <span className="neon-chip neon-chip-success rounded-full px-3 py-1.5 font-semibold">Maintainer reviewed</span>
+                      </li>
                     ) : null}
                     {item.ciPassed ? (
-                      <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 font-semibold">CI passed</span>
+                      <li className="list-none">
+                        <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 font-semibold">CI passed</span>
+                      </li>
                     ) : null}
                     {item.evidenceState ? (
-                      <span className="neon-chip rounded-full px-3 py-1.5 font-semibold">
-                        Evidence {item.evidenceState}
-                      </span>
+                      <li className="list-none">
+                        <span className="neon-chip rounded-full px-3 py-1.5 font-semibold">
+                          Evidence {item.evidenceState}
+                        </span>
+                      </li>
                     ) : null}
-                  </div>
+                  </ul>
                 </div>
-                <div className="text-right">
+                <div className="neon-surface rounded-[1.25rem] border-primary/28 px-4 py-3 text-right">
                   <p className="text-xs font-medium text-primary">Earned</p>
                   <p className="numeric-readout mt-2 text-3xl font-semibold text-white">{item.xpEarned} XP</p>
+                  {signalIndex !== null ? (
+                    <p className="mt-2 text-xs text-muted">
+                      Signal index {signalIndex}
+                    </p>
+                  ) : null}
                 </div>
               </div>
               <AIPanel
                 fallbackSummary={item.aiSummary}
                 narrative={narratives?.[item.id]}
               />
-              {hasDetailedMetrics(item) ? (
+              {detailedMetricsAvailable ? (
                 <SignalProfile item={item} />
               ) : (
                 <div className="neon-surface rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
@@ -86,7 +121,7 @@ export function ContributionList({
                 </div>
               )}
               <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted">
-                {hasDetailedMetrics(item) ? (
+                {detailedMetricsAvailable ? (
                   <>
                     <div className="flex flex-wrap gap-4">
                       <span className="inline-flex items-center gap-2">
@@ -128,6 +163,9 @@ function SignalProfile({ item }: { item: Contribution }) {
 
   return (
     <div className="neon-surface rounded-[1.55rem] border-primary/24 p-4">
+      <p className="text-xs font-medium text-primary">
+        Why this moved your score
+      </p>
       <div className="grid gap-3 md:grid-cols-[0.38fr,0.62fr] md:items-start">
         <div className="neon-metric rounded-[1.2rem] px-4 py-3">
           <p className="text-xs font-medium text-primary">
@@ -240,6 +278,16 @@ function formatContributionDate(value: string): string {
   });
 }
 
+function formatContributionTimeline(item: Contribution): string {
+  if (item.status === "merged") {
+    return `Merged contribution on ${formatContributionDate(item.mergedAt)}.`;
+  }
+  if (item.status === "open") {
+    return `Open contribution snapshot as of ${formatContributionDate(item.mergedAt)}.`;
+  }
+  return `Closed contribution snapshot as of ${formatContributionDate(item.mergedAt)}.`;
+}
+
 function AIPanel({
   narrative,
   fallbackSummary,
@@ -263,6 +311,7 @@ function AIPanel({
       </div>
       {narrative ? (
         <div className="cyber-copy mt-3 grid gap-2 text-sm">
+          <p className="text-xs font-medium text-primary">Impact statement</p>
           <ExpandableText
             text={`What: ${narrative.what}`}
             lines={3}
