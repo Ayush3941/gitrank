@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- High-contrast preference refinement pass:
+  - added `@media (prefers-contrast: more)` token overrides to boost readable text contrast and reduce background visual noise automatically.
+  - tuned overlay/grid/blur intensity under high-contrast preference so dense surfaces remain legible without changing route logic.
 - Tabs compatibility guard pass:
   - added a safe `scrollIntoView` capability check before auto-centering active tabs in shared `TabsList`.
   - preserves route behavior in browsers while preventing test/runtime crashes in environments where `scrollIntoView` is unavailable.

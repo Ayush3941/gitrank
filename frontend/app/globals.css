@@ -131,6 +131,22 @@ html[data-theme="high-contrast"] {
   --glow-hero: 0 0 34px rgb(var(--primary) / 0.13);
 }
 
+@media (prefers-contrast: more) {
+  :root {
+    --foreground: 252 254 255;
+    --muted: 232 241 255;
+    --text-body: 248 252 255;
+    --text-soft: 242 248 255;
+    --line: 108 138 220;
+    --page-overlay-top-alpha: 0.026;
+    --page-overlay-bottom-alpha: 0.13;
+    --page-grid-opacity: 0.006;
+    --page-glow-opacity: 0.07;
+    --surface-blur: 1px;
+    --surface-blur-strong: 2px;
+  }
+}
+
 @theme inline {
   --color-background: rgb(var(--background));
   --color-foreground: rgb(var(--foreground));
