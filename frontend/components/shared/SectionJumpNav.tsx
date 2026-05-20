@@ -39,6 +39,9 @@ export function SectionJumpNav<SectionID extends string>({
     if (!activeItem) {
       return;
     }
+    if (typeof activeItem.scrollIntoView !== "function") {
+      return;
+    }
     const prefersReducedMotion =
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -67,7 +70,7 @@ export function SectionJumpNav<SectionID extends string>({
         </p>
       </div>
       <div className="min-w-0 flex-1 sm:hidden">
-        <p className="mb-1 px-1 text-xs font-medium text-cyan-100/92">
+        <p className="mb-1 px-1 text-xs font-medium text-cyan-100">
           {activeSectionLabel}
         </p>
         <label htmlFor={`${navLabelID}-select`} className="sr-only">

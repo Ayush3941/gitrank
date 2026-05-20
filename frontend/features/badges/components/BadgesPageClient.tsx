@@ -519,7 +519,7 @@ export function BadgesPageClient() {
                       <p className="text-xs text-muted">{badge.progress ?? 0}% verified progress</p>
                     </div>
                     <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-xs text-cyan-100/88">
+                      <p className="text-xs text-cyan-100">
                         Next move: {unlockRecoveryLabel(badge.unlockCondition)}
                       </p>
                       <Button asChild variant="ghost" size="sm">

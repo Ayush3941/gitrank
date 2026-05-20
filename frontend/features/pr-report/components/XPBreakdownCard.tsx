@@ -83,7 +83,7 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
               {contribution.antiSpamMultiplier.toFixed(2)}x
             </p>
           </div>
-          <p className="mt-2 text-xs leading-5 text-amber-100/72">
+          <p className="mt-2 text-xs leading-5 text-amber-100">
             Repeated, shallow, or unreviewed work is capped so XP stays tied to
             meaningful evidence.
           </p>

@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Navigation/readability polish pass:
+  - added a safe `scrollIntoView` capability guard to shared `SectionJumpNav` active-chip auto-scroll behavior.
+  - normalized remaining low-opacity helper/callout copy in jump-nav mobile label, badge locked-lane next-move text, dashboard report hint text, and PR anti-spam explanation text.
+  - keeps route behavior unchanged while improving legibility consistency and non-browser runtime safety.
 - High-contrast preference refinement pass:
   - added `@media (prefers-contrast: more)` token overrides to boost readable text contrast and reduce background visual noise automatically.
   - tuned overlay/grid/blur intensity under high-contrast preference so dense surfaces remain legible without changing route logic.

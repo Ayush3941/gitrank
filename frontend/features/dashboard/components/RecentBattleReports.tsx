@@ -94,7 +94,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
         ))}
       </ul>
       {sortedReports.length > 0 ? (
-        <p className="inline-flex items-center gap-2 text-xs text-cyan-100/88">
+        <p className="inline-flex items-center gap-2 text-xs text-cyan-100">
           <Sparkles className="h-3.5 w-3.5 text-cyan-200" />
           Report cards prioritize merged contribution quality over raw activity volume.
         </p>
