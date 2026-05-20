@@ -96,7 +96,7 @@ export function SyncRunActivityPanel({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 [overflow-anchor:none]">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-medium text-primary">Sync activity</p>

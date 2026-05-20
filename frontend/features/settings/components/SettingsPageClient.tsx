@@ -295,7 +295,7 @@ export function SettingsPageClient() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 [overflow-anchor:none]">
       <PageHeader
         eyebrow="Settings"
         title="Settings and privacy"
