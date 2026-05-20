@@ -21,7 +21,7 @@ export function DashboardTopBar({
   user: UserProfile;
   autoSyncNote?: AutoSyncNote | null;
 }) {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "/dashboard";
   const activeLane =
     dashboardNavItems.find((item) =>
       item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`),
@@ -42,68 +42,65 @@ export function DashboardTopBar({
 
   return (
     <div className="glass-panel cyber-card cyber-frame mb-6 px-5 py-4">
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
-        <div className="flex flex-col gap-2">
-          <p className="text-sm font-semibold text-white">{activeLane.label}</p>
-          <div className="hud-pill inline-flex max-w-full items-center gap-2 rounded-full px-3 py-1.5 text-xs text-cyan-100">
-            <ActiveLaneIcon className="h-3.5 w-3.5 text-primary" />
-            <span className="break-anywhere leading-5">{activeLane.hint}</span>
-          </div>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="inline-flex min-w-0 items-center gap-2">
+          <span className="hud-pill inline-flex h-8 w-8 items-center justify-center rounded-full text-primary">
+            <ActiveLaneIcon className="h-4 w-4" />
+          </span>
+          <p className="truncate text-base font-semibold text-white">{activeLane.label}</p>
         </div>
-        <div className="flex flex-col items-start gap-3 xl:items-end">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <SyncStatusPill status={user.syncStatus} />
-            <RankBadge rank={user.level.rankTier} />
-            <div className="hud-pill inline-flex items-center gap-2 px-3 py-1.5 text-xs text-foreground">
-              <Zap className="h-3.5 w-3.5 text-primary" />
-              <span className="numeric-readout">{user.weeklyXp.toLocaleString("en-US")}</span> weekly XP
-            </div>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <SyncStatusPill status={user.syncStatus} />
+          <RankBadge rank={user.level.rankTier} />
+          <div className="hud-pill inline-flex items-center gap-2 px-3 py-1.5 text-xs text-foreground">
+            <Zap className="h-3.5 w-3.5 text-primary" />
+            <span className="numeric-readout">{user.weeklyXp.toLocaleString("en-US")}</span> weekly XP
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href={`/u/${user.username}`}
-              prefetch={false}
-              className="focus-ring cyber-link hidden items-center gap-2 text-sm font-medium xl:inline-flex"
-            >
-              View public profile
-              <ArrowUpRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href={`/u/${user.username}`}
-              prefetch={false}
-              className="focus-ring inline-flex items-center gap-2 border border-primary/24 bg-primary/10 px-3 py-1.5 text-sm font-medium text-cyan-100 xl:hidden"
-            >
-              <UserRound className="h-4 w-4" />
-              Profile
-            </Link>
-            <ShareProfileButton
-              variant="ghost"
-              size="sm"
-              username={user.username}
-              displayName={user.displayName}
-              shareHeadline={`${user.displayName} is ${user.title} on GitRank.`}
-              analyticsTargetPrefix="dashboard-topbar"
-            />
-          </div>
-        </div>
-      </div>
-      <div className="mt-3 min-h-6">
-        {autoSyncNote ? (
-          <p
-            role="status"
-            aria-live="polite"
-            aria-atomic="true"
-            className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium ${autoSyncToneClass}`}
+          <Link
+            href={`/u/${user.username}`}
+            prefetch={false}
+            className="focus-ring cyber-link hidden items-center gap-2 text-sm font-medium xl:inline-flex"
           >
-            {AutoSyncIcon ? <AutoSyncIcon className="h-4 w-4 shrink-0" /> : null}
-            <span>{autoSyncNote.message}</span>
-          </p>
-        ) : (
-          <p aria-hidden="true" className="text-sm text-transparent select-none">
-            Sync note
-          </p>
-        )}
+            View public profile
+            <ArrowUpRight className="h-4 w-4" />
+          </Link>
+          <Link
+            href={`/u/${user.username}`}
+            prefetch={false}
+            className="focus-ring inline-flex items-center gap-2 border border-primary/24 bg-primary/10 px-3 py-1.5 text-sm font-medium text-cyan-100 xl:hidden"
+          >
+            <UserRound className="h-4 w-4" />
+            Profile
+          </Link>
+          <ShareProfileButton
+            variant="ghost"
+            size="sm"
+            username={user.username}
+            displayName={user.displayName}
+            shareHeadline={`${user.displayName} is ${user.title} on GitRank.`}
+            analyticsTargetPrefix="dashboard-topbar"
+          />
+        </div>
       </div>
+      <p
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className={
+          autoSyncNote
+            ? `mt-3 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium ${autoSyncToneClass}`
+            : "sr-only"
+        }
+      >
+        {autoSyncNote ? (
+          <>
+            {AutoSyncIcon ? <AutoSyncIcon className="h-3.5 w-3.5 shrink-0" /> : null}
+            <span className="break-anywhere">{autoSyncNote.message}</span>
+          </>
+        ) : (
+          "No background sync updates."
+        )}
+      </p>
     </div>
   );
 }
@@ -111,26 +108,20 @@ export function DashboardTopBar({
 export function DashboardTopBarSkeleton() {
   return (
     <div className="glass-panel cyber-card cyber-frame mb-6 px-5 py-4">
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
-        <div className="space-y-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <div className="neon-skeleton h-8 w-8 rounded-[0.1rem]" />
           <div className="neon-skeleton h-5 w-40 rounded-[0.1rem]" />
-          <div className="neon-skeleton h-8 w-[min(34rem,100%)] rounded-[0.1rem]" />
         </div>
-        <div className="flex flex-col items-start gap-3 xl:items-end">
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="neon-skeleton h-8 w-32 rounded-full" />
-            <div className="neon-skeleton h-8 w-24 rounded-full" />
-            <div className="neon-skeleton h-8 w-28 rounded-full" />
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="neon-skeleton h-8 w-28 rounded-full" />
-            <div className="neon-skeleton h-8 w-32 rounded-full" />
-          </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="neon-skeleton h-8 w-32 rounded-full" />
+          <div className="neon-skeleton h-8 w-24 rounded-full" />
+          <div className="neon-skeleton h-8 w-28 rounded-full" />
+          <div className="neon-skeleton h-8 w-28 rounded-full" />
+          <div className="neon-skeleton h-8 w-32 rounded-full" />
         </div>
       </div>
-      <div className="mt-3 min-h-6">
-        <div className="neon-skeleton h-4 w-3/4 rounded-full" />
-      </div>
+      <div className="neon-skeleton mt-3 h-4 w-3/4 rounded-full" />
     </div>
   );
 }

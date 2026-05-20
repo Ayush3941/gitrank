@@ -1717,6 +1717,50 @@ html[data-theme="high-contrast"] .neon-title {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+
+  .cyber-card::before,
+  .cyber-card::after,
+  .page-shell::before,
+  .page-shell::after,
+  .neon-vignette,
+  body::before,
+  body::after,
+  .player-card-shell::before,
+  .season-arena-card::before {
+    display: none !important;
+  }
+
+  .glass-panel,
+  .glass-panel-strong,
+  .neon-surface,
+  .neon-surface-strong,
+  .neon-tile,
+  .neon-tile-strong,
+  .neon-metric,
+  .cyber-card,
+  .cyber-terminal {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    box-shadow:
+      0 8px 20px rgb(1 5 20 / 0.28),
+      inset 0 1px 0 rgb(255 255 255 / 0.04) !important;
+  }
+
+  .neon-title {
+    text-shadow: none;
+  }
+}
+
 :where(html[data-network="constrained"]) body {
   background-image: url("/assets/background.webp");
   background-image: image-set(

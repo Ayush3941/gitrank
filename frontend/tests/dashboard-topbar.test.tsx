@@ -51,7 +51,6 @@ describe("DashboardTopBar", () => {
   it("renders lane header and profile actions", () => {
     render(<DashboardTopBar user={userFixture as unknown as UserProfile} />);
     expect(screen.getByText("Dashboard")).toBeTruthy();
-    expect(screen.getByText("Identity snapshot, XP, and score movement")).toBeTruthy();
     expect(screen.getByRole("link", { name: /View public profile/i })).toBeTruthy();
   });
 });
