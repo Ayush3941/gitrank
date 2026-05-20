@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { BadgeGrid } from "@/features/badges/components/BadgeGrid";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useBadges } from "@/hooks/use-badges";
+import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import {
   deriveDeterministicArchetype,
@@ -27,14 +28,21 @@ import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import type { BadgeRarity } from "@/types/gitrank";
 const BADGES_EARNED_REGION_ID = "badges-earned-region";
+const LOCKED_BADGE_PAGE_SIZE_DEFAULT = 12;
+const LOCKED_BADGE_PAGE_SIZE_CONSTRAINED = 6;
 
 export function BadgesPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useBadges();
+  const constrainedNetwork = useNetworkConstraintPreference();
+  const lockedBadgePageSize = constrainedNetwork
+    ? LOCKED_BADGE_PAGE_SIZE_CONSTRAINED
+    : LOCKED_BADGE_PAGE_SIZE_DEFAULT;
   const badgeViewedEventSent = useRef(false);
   const previousUnlockedCountRef = useRef<number | null>(null);
   const [rarity, setRarity] = useState<BadgeRarity | "All">("All");
   const [visibility, setVisibility] = useState<"All" | "Unlocked" | "Locked">("All");
   const [unlockNotice, setUnlockNotice] = useState("");
+  const [visibleLockedCount, setVisibleLockedCount] = useState(lockedBadgePageSize);
   const canResetFilters = rarity !== "All" || visibility !== "All";
   const badgesFilterStatusId = "badges-filter-status";
 
@@ -58,6 +66,9 @@ export function BadgesPageClient() {
   });
   const unlockedCount = data?.badges.filter((badge) => badge.unlocked).length ?? 0;
   const totalCount = data?.badges.length ?? 0;
+  const visibleLockedBadges = lockedBadgesSorted.slice(0, visibleLockedCount);
+  const hasMoreLockedBadges = lockedBadgesSorted.length > visibleLockedBadges.length;
+  const remainingLockedBadges = Math.max(0, lockedBadgesSorted.length - visibleLockedBadges.length);
   const completionPercent = totalCount > 0 ? Math.round((unlockedCount / totalCount) * 100) : 0;
   const streak = summarizeContributionStreak(profile?.user.contributions ?? []);
   const nextUnlockTarget = lockedBadgesSorted[0] ?? null;
@@ -145,29 +156,38 @@ export function BadgesPageClient() {
   }, [data, isError, isLoading, unlockedCount]);
 
   function handleRarityChange(value: BadgeRarity | "All") {
-    startTransition(() => setRarity(value));
+    startTransition(() => {
+      setRarity(value);
+      setVisibleLockedCount(lockedBadgePageSize);
+    });
   }
 
   function handleVisibilityChange(value: "All" | "Unlocked" | "Locked") {
-    startTransition(() => setVisibility(value));
+    startTransition(() => {
+      setVisibility(value);
+      setVisibleLockedCount(lockedBadgePageSize);
+    });
   }
 
   function handleResetFilters() {
     startTransition(() => {
       setRarity("All");
       setVisibility("All");
+      setVisibleLockedCount(lockedBadgePageSize);
     });
   }
 
   function handleClearRarityFilter() {
     startTransition(() => {
       setRarity("All");
+      setVisibleLockedCount(lockedBadgePageSize);
     });
   }
 
   function handleClearVisibilityFilter() {
     startTransition(() => {
       setVisibility("All");
+      setVisibleLockedCount(lockedBadgePageSize);
     });
   }
 
@@ -423,10 +443,10 @@ export function BadgesPageClient() {
             {lockedBadges.length > 0 ? (
               <details className="neon-surface rounded-[1.4rem] border border-fuchsia-300/24 p-3" open={lockedBadges.length <= 3}>
                 <summary className="focus-ring cursor-pointer list-none text-sm font-medium text-cyan-100">
-                  {lockedBadges.length} locked badge paths ({lockedBadges.length <= 3 ? "expanded" : "collapsed"})
+                  {visibleLockedBadges.length} of {lockedBadges.length} locked badge paths ({lockedBadges.length <= 3 ? "expanded" : "collapsed"})
                 </summary>
                 <ul role="list" className="mt-3 grid gap-3 md:grid-cols-3">
-                  {lockedBadgesSorted.map((badge) => (
+                  {visibleLockedBadges.map((badge) => (
                     <li key={badge.id} className="render-opt-card neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4">
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="text-xs font-medium text-fuchsia-200">{badge.rarity}</p>
@@ -461,6 +481,25 @@ export function BadgesPageClient() {
                     </li>
                   ))}
                 </ul>
+                {hasMoreLockedBadges ? (
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-xs text-muted">{remainingLockedBadges} locked paths remaining</p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => {
+                        startTransition(() => {
+                          setVisibleLockedCount((current) =>
+                            Math.min(lockedBadgesSorted.length, current + lockedBadgePageSize),
+                          );
+                        });
+                      }}
+                    >
+                      Show more locked paths
+                    </Button>
+                  </div>
+                ) : null}
               </details>
             ) : (
               <div className="neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4 text-sm text-muted">
