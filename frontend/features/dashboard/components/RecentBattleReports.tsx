@@ -65,9 +65,9 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
                   lines={3}
                   minLengthForToggle={160}
                   className="mt-3 max-w-3xl"
-                  textClassName="break-anywhere text-sm leading-6 text-slate-200/80"
+                  textClassName="break-anywhere text-sm leading-6 text-muted"
                 />
-                <p className="mt-2 text-xs text-slate-300">
+                <p className="mt-2 text-xs text-muted">
                   Score formula {report.scoreVersion || "not recorded"} · analysis {report.analysisVersion || "not recorded"}
                 </p>
               </div>

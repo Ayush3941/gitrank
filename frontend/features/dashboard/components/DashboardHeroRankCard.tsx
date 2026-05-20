@@ -42,7 +42,7 @@ export function DashboardHeroRankCard({
               <RankBadge rank={user.level.rankTier} />
             </div>
             <p className="text-sm text-muted">@{user.username}</p>
-            <p className="break-anywhere text-sm text-slate-200">
+            <p className="break-anywhere text-sm text-muted">
               {user.title}
               {archetype ? ` • ${archetype}` : ""}
             </p>

@@ -351,7 +351,7 @@ export function ContributionsPageClient() {
         />
       ) : null}
       {profile ? (
-        <div className="neon-callout rounded-[1.5rem] px-4 py-3 text-sm text-slate-200">
+        <div className="neon-callout rounded-[1.5rem] px-4 py-3 text-sm text-muted">
           Contribution window: latest {profile.user.contributions.length} scored PR-linked events (capped at 100 by backend profile history projection).
         </div>
       ) : null}
@@ -502,7 +502,7 @@ export function ContributionsPageClient() {
                     </p>
                     {monthlyWindow.map((point) => (
                       <div key={point.month} className="space-y-1">
-                        <div className="flex items-center justify-between text-xs text-slate-200">
+                        <div className="flex items-center justify-between text-xs text-muted">
                           <span>{point.month}</span>
                           <span>{point.xp} XP</span>
                         </div>

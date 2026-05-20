@@ -195,7 +195,7 @@ export function QuestsPageClient() {
                 </div>
               </div>
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs text-slate-200">
+                <div className="flex items-center justify-between text-xs text-muted">
                   <span>Annual progression</span>
                   <span>{dayProgress}%</span>
                 </div>
@@ -456,7 +456,7 @@ function MissionSpotlightCard({
       <p className="text-sm text-muted">{quest.description}</p>
       <div className="space-y-1">
         <Progress value={progress} />
-        <div className="flex items-center justify-between text-xs text-slate-200">
+        <div className="flex items-center justify-between text-xs text-muted">
           <span>{quest.progress} / {quest.goal}</span>
           <span>{progress}%</span>
         </div>

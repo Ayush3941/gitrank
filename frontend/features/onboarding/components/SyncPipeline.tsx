@@ -191,7 +191,7 @@ export function SyncPipeline() {
             GitRank is processing your real GitHub data and waiting for a refreshed profile snapshot.
           </p>
           {data ? (
-            <p className="text-sm text-slate-200/86">
+            <p className="text-sm text-muted">
               Snapshot status: {formatSyncState(data.user.syncStatus.state)} • last refresh{" "}
               {formatRelativeDays(data.refreshedAt)}
             </p>
@@ -202,7 +202,7 @@ export function SyncPipeline() {
             </p>
           ) : null}
           {syncStartedAt && !isSynced ? (
-            <p className="text-sm text-slate-200/84">
+            <p className="text-sm text-muted">
               Auto-refresh cadence slows from 5s up to 20s while sync remains pending to reduce local load.
               Current cadence: about {Math.max(5, Math.round(pollIntervalMs / 1000))}s.
             </p>
@@ -229,18 +229,18 @@ export function SyncPipeline() {
             <span className="numeric-readout">{pipelineProgress}%</span>
           </div>
           <Progress value={pipelineProgress} />
-          <p className="text-sm text-slate-200/84">
+          <p className="text-sm text-muted">
             {completedSteps} of {steps.length} sync phases completed.
           </p>
         </div>
-        <div className="space-y-3">
+        <ol className="space-y-3">
           {steps.map((step, index) => {
             const done = index < completedSteps;
             const active = index === completedSteps && !isSynced;
             return (
-              <div
+              <li
                 key={step}
-                className="neon-surface flex items-center gap-4 rounded-[1.75rem] px-4 py-4"
+                className="list-none neon-surface flex items-center gap-4 rounded-[1.75rem] px-4 py-4"
               >
                 <div className="neon-tile rounded-2xl p-2 text-primary">
                   {done ? (
@@ -257,12 +257,12 @@ export function SyncPipeline() {
                       : active
                         ? "In progress against live backend data."
                         : "Pending previous stage completion."}
-                  </p>
+                    </p>
                 </div>
-              </div>
+              </li>
             );
           })}
-        </div>
+        </ol>
         <div className="flex flex-wrap gap-3">
           {canRetrySync ? (
             <Button

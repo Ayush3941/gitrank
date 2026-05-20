@@ -33,7 +33,7 @@ export function CurrentLeagueCard({ user }: { user: UserProfile }) {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs font-medium text-muted">Promotion track</p>
-            <p className="mt-2 text-sm text-slate-200">
+            <p className="mt-2 text-sm text-muted">
               {user.rankProgress.nextTier
                 ? `${user.rankProgress.xpToNextTier.toLocaleString("en-US")} XP to ${user.rankProgress.nextTier}`
                 : "Highest tier reached"}

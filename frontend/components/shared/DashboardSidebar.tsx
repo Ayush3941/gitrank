@@ -61,7 +61,7 @@ export function DashboardSidebar() {
                         "focus-ring group relative grid min-h-14 grid-cols-[1.1rem,1fr] items-start gap-3 border px-3 py-2.5 text-sm leading-5",
                         active
                           ? "border-primary/40 bg-primary/12 text-white"
-                          : "border-transparent text-slate-100 hover:border-primary/24 hover:bg-primary/8 hover:text-white",
+                          : "border-transparent text-foreground hover:border-primary/24 hover:bg-primary/8 hover:text-white",
                       )}
                     >
                       <span
@@ -73,7 +73,7 @@ export function DashboardSidebar() {
                       <Icon
                         className={cn(
                           "mt-0.5 h-4 w-4",
-                          active ? "text-primary" : "text-slate-200 group-hover:text-primary",
+                          active ? "text-primary" : "text-muted group-hover:text-primary",
                         )}
                       />
                       <span className="min-w-0 text-left">
@@ -81,7 +81,7 @@ export function DashboardSidebar() {
                         <span
                           className={cn(
                             "mt-0.5 block break-anywhere text-xs leading-5",
-                            active ? "text-slate-200" : "text-slate-300",
+                            active ? "text-foreground" : "text-muted",
                           )}
                         >
                           {item.hint}

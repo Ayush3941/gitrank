@@ -2,7 +2,7 @@ import { cn } from "@/lib/cn";
 import type { BadgeRarity } from "@/types/gitrank";
 
 const rarityStyles: Record<BadgeRarity, string> = {
-  Common: "neon-chip neon-chip-muted text-slate-200",
+  Common: "neon-chip neon-chip-muted text-muted",
   Uncommon: "neon-chip neon-chip-success",
   Rare: "neon-chip border-sky-400/30 bg-sky-400/12 text-sky-200",
   Epic: "neon-chip border-violet-400/30 bg-violet-400/12 text-violet-200",

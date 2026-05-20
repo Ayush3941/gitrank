@@ -34,7 +34,7 @@ export function OnboardingStepper({
                     ? "neon-chip neon-chip-success border-emerald-300/40 text-emerald-50"
                     : isCurrent
                       ? "neon-chip neon-chip-info border-cyan-300/40 text-cyan-100"
-                      : "neon-chip neon-chip-muted text-slate-300",
+                      : "neon-chip neon-chip-muted text-muted",
                 )}
               >
                 {isDone ? (

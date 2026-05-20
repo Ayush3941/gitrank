@@ -108,7 +108,7 @@ export function SectionJumpNav<SectionID extends string>({
                 className={
                   activeSection === section.id
                     ? "focus-ring inline-flex min-h-9 items-center border border-primary/45 bg-primary/16 px-3 py-2 text-xs font-semibold text-white"
-                    : "focus-ring inline-flex min-h-9 items-center border border-transparent px-3 py-2 text-xs text-slate-100 hover:border-primary/28 hover:bg-primary/10"
+                    : "focus-ring inline-flex min-h-9 items-center border border-transparent px-3 py-2 text-xs text-foreground hover:border-primary/28 hover:bg-primary/10"
                 }
               >
                 {section.label}

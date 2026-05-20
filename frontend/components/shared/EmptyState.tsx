@@ -53,7 +53,7 @@ export function EmptyState({
       </div>
       <div className="space-y-2">
         <h2 className="text-xl font-semibold text-white">{title}</h2>
-        <p className="max-w-xl text-sm text-slate-100">{description}</p>
+        <p className="max-w-xl text-sm text-muted">{description}</p>
       </div>
       {actionLabel || secondaryActionLabel ? (
         <div className="flex flex-col items-start gap-2">

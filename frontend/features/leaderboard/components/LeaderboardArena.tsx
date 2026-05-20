@@ -261,7 +261,7 @@ function Pill({
   tone?: "neutral" | "success" | "warning";
 }) {
   const toneClass = {
-    neutral: "neon-chip neon-chip-muted text-slate-200",
+    neutral: "neon-chip neon-chip-muted text-muted",
     success: "neon-chip neon-chip-success",
     warning: "neon-chip neon-chip-warning",
   }[tone];

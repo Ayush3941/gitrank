@@ -46,7 +46,7 @@ export function BadgeGrid({
                   lines={2}
                   minLengthForToggle={120}
                   className="mt-1"
-                  textClassName="text-xs text-slate-200/84"
+                  textClassName="text-xs text-muted"
                   showMoreLabel="Read trigger"
                   showLessLabel="Hide trigger"
                 />
@@ -65,11 +65,11 @@ export function BadgeGrid({
               {!badge.unlocked ? (
                 <div className="space-y-1">
                   <Progress value={badge.progress ?? 0} />
-                  <p className="text-xs text-slate-300">{badge.progress ?? 0}% toward unlock</p>
+                  <p className="text-xs text-muted">{badge.progress ?? 0}% toward unlock</p>
                 </div>
               ) : null}
               {stories?.[badge.id] ? (
-                <div className="neon-surface rounded-xl border-fuchsia-300/24 px-3 py-2 text-xs text-slate-200/86">
+                <div className="neon-surface rounded-xl border-fuchsia-300/24 px-3 py-2 text-xs text-muted">
                   <div className="flex items-center justify-end">
                     <CopyTextButton
                       text={stories[badge.id].story}
@@ -83,7 +83,7 @@ export function BadgeGrid({
                     lines={4}
                     minLengthForToggle={180}
                     className="mt-2"
-                    textClassName="text-slate-200/86"
+                    textClassName="text-muted"
                     showMoreLabel="Read story"
                     showLessLabel="Hide story"
                   />

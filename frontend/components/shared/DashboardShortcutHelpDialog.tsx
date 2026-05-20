@@ -91,7 +91,7 @@ export function DashboardShortcutHelpDialog({
                       <kbd>{row.keys}</kbd>
                     </p>
                     <div>
-                      <p className="text-sm text-slate-100">{row.action}</p>
+                      <p className="text-sm text-foreground">{row.action}</p>
                       {row.note ? <p className="mt-1 text-xs text-muted">{row.note}</p> : null}
                     </div>
                   </li>

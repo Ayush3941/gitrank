@@ -18,7 +18,7 @@ export function BadgeShelf({ user }: { user: UserProfile }) {
         <p className="text-xs font-medium text-primary">Badge shelf</p>
         <h2 className="mt-2 text-2xl font-semibold text-white">Unlocked proof and visible next targets</h2>
         <div className="mt-3 space-y-2">
-          <div className="flex items-center justify-between text-xs text-slate-200">
+          <div className="flex items-center justify-between text-xs text-muted">
             <span>{unlockedCount} / {totalCount} unlocked</span>
             <span>{completion}%</span>
           </div>

@@ -2,6 +2,11 @@
 
 ## 2026-05-19
 
+- Global readability normalization pass across core lanes:
+  - replaced remaining low-contrast slate helper text across dashboard, contributions, quests, badges, onboarding, profile, leaderboard, and shared fallback surfaces with unified readable tokens (`text-muted`/`text-foreground` as appropriate).
+  - normalized navigation and action microcopy contrast in sidebar, mobile nav, jump rails, top-bar sync chips, and ghost-button default text.
+  - converted onboarding sync pipeline rows to semantic ordered-list markup while preserving existing behavior and state transitions.
+  - keeps architecture and data contracts unchanged while making cross-route body text and helper labels visibly more consistent.
 - Contrast + semantics cleanup pass on settings and report surfaces:
   - normalized remaining low-contrast helper copy in PR report, XP breakdown, sync-state guide, settings display controls, and contribution fallback blocks to shared readable text tokens.
   - converted dashboard quick-actions result groups, keyboard-shortcuts dialog rows, and settings privacy-toggle rows to semantic list markup (`ul/li`) for cleaner assistive traversal.

@@ -72,7 +72,7 @@ export function RevealPanel({
             <RevealMetric label="Unlocked badges" value={unlockedBadges.length.toLocaleString("en-US")} />
             <RevealMetric label="Evidence rows" value={evidenceRows.toLocaleString("en-US")} />
           </div>
-          <div className="mx-auto max-w-3xl rounded-2xl border border-primary/24 bg-primary/10 px-4 py-3 text-left text-sm text-slate-100">
+          <div className="mx-auto max-w-3xl rounded-2xl border border-primary/24 bg-primary/10 px-4 py-3 text-left text-sm text-foreground">
             <p className="text-xs font-medium text-primary">Snapshot state</p>
             <p className="mt-2 leading-6">
               Sync status is <span className="font-semibold text-white">{formatSyncState(user.syncStatus.state)}</span>.
@@ -84,7 +84,7 @@ export function RevealPanel({
             </p>
           </div>
           {identitySummary ? (
-            <div className="mx-auto max-w-3xl rounded-2xl border border-fuchsia-300/25 bg-fuchsia-400/9 px-4 py-3 text-left text-sm text-slate-100">
+            <div className="mx-auto max-w-3xl rounded-2xl border border-fuchsia-300/25 bg-fuchsia-400/9 px-4 py-3 text-left text-sm text-foreground">
               <p className="text-xs font-medium text-fuchsia-100">
                 Open source identity ({aiMode === "gemini" ? "Gemini" : "Deterministic"})
               </p>

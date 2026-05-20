@@ -156,7 +156,7 @@ export function LandingPage() {
               "Turns verified work into XP, badge unlocks, league position, and public proof.",
               "Explains score changes so maintainers and recruiters can inspect the evidence instead of trusting a black box.",
             ].map((line) => (
-              <div key={line} className="neon-surface rounded-3xl px-4 py-3 text-sm text-slate-200">
+              <div key={line} className="neon-surface rounded-3xl px-4 py-3 text-sm text-muted">
                 {line}
               </div>
             ))}

@@ -49,7 +49,7 @@ export function DashboardTopBar({
       ? "neon-chip neon-chip-success border-emerald-300/30 text-emerald-100"
       : autoSyncNote?.tone === "warning"
         ? "neon-chip neon-chip-warning border-amber-300/34 text-amber-100"
-        : "neon-chip neon-chip-info border-primary/28 text-slate-100";
+        : "neon-chip neon-chip-info border-primary/28 text-foreground";
   const AutoSyncIcon =
     autoSyncNote?.tone === "success"
       ? CheckCircle2

@@ -65,7 +65,7 @@ export function BadgeDetailDialog({
               text={badge.unlockCondition}
               lines={4}
               minLengthForToggle={140}
-              textClassName="text-sm text-slate-200"
+              textClassName="text-sm text-muted"
               showMoreLabel="Read condition"
               showLessLabel="Hide condition"
             />
@@ -88,11 +88,11 @@ export function BadgeDetailDialog({
                 text={story.story}
                 lines={5}
                 minLengthForToggle={220}
-                textClassName="text-sm text-slate-200/88"
+                textClassName="text-sm text-muted"
                 showMoreLabel="Read full story"
                 showLessLabel="Hide full story"
               />
-              <div className="space-y-2 text-sm text-slate-200/84">
+              <div className="space-y-2 text-sm text-muted">
                 <p>
                   <span className="text-cyan-200">Trigger:</span>
                 </p>
@@ -100,12 +100,12 @@ export function BadgeDetailDialog({
                   text={story.trigger}
                   lines={3}
                   minLengthForToggle={130}
-                  textClassName="text-sm text-slate-200/84"
+                  textClassName="text-sm text-muted"
                   showMoreLabel="Expand trigger"
                   showLessLabel="Collapse trigger"
                 />
               </div>
-              <div className="space-y-2 text-sm text-slate-200/84">
+              <div className="space-y-2 text-sm text-muted">
                 <p>
                   <span className="text-cyan-200">Next:</span>
                 </p>
@@ -113,7 +113,7 @@ export function BadgeDetailDialog({
                   text={story.nextFocus}
                   lines={3}
                   minLengthForToggle={130}
-                  textClassName="text-sm text-slate-200/84"
+                  textClassName="text-sm text-muted"
                   showMoreLabel="Expand next"
                   showLessLabel="Collapse next"
                 />

@@ -42,7 +42,7 @@ export function SkillBreakdownCard({
                   {confidence}
                 </span>
               </div>
-              <p className="text-xs text-slate-200/86">
+              <p className="text-xs text-muted">
                 {insight?.summary || skill.note}
               </p>
               <p className="text-xs text-muted">

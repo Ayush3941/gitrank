@@ -4,7 +4,7 @@ import { formatDateTime, formatRelativeDays } from "@/lib/formatters";
 import type { SyncStatus } from "@/types/gitrank";
 
 const statusMap = {
-  never_synced: { icon: Clock3, tone: "neon-chip neon-chip-muted text-slate-200", label: "Never synced" },
+  never_synced: { icon: Clock3, tone: "neon-chip neon-chip-muted text-muted", label: "Never synced" },
   syncing: { icon: RefreshCw, tone: "neon-chip neon-chip-info text-cyan-100", label: "Syncing" },
   partially_synced: { icon: AlertTriangle, tone: "neon-chip neon-chip-warning", label: "Partial" },
   synced: { icon: CheckCircle2, tone: "neon-chip neon-chip-success", label: "Synced" },

@@ -13,7 +13,7 @@ const buttonVariants = cva(
         secondary:
           "neon-tile border-primary/32 text-foreground hover:border-primary/48 hover:text-white hover:shadow-[0_0_14px_rgb(34_226_255_/_0.12)]",
         ghost:
-          "text-slate-200 hover:border-primary/24 hover:bg-primary/10 hover:text-white hover:shadow-[0_0_12px_rgb(34_226_255_/_0.1)]",
+          "text-muted hover:border-primary/24 hover:bg-primary/10 hover:text-white hover:shadow-[0_0_12px_rgb(34_226_255_/_0.1)]",
         danger:
           "neon-cta-danger border-danger/40 bg-danger/82 shadow-[0_0_12px_rgb(248_113_113_/_0.18)] hover:bg-danger",
       },
