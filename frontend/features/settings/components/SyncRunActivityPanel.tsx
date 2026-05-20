@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, Search, X, XCircle } from "lucide-react";
-import { startTransition, useDeferredValue, useMemo, useRef, useState } from "react";
+import { startTransition, useDeferredValue, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
@@ -34,9 +34,6 @@ export function SyncRunActivityPanel({
   const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS);
   const deferredSearch = useDeferredValue(debouncedSearch);
   const isFiltering = search !== debouncedSearch || deferredSearch !== debouncedSearch;
-  const viewportAnchorY = useRef<number | null>(null);
-  const resultsRegionScrollTop = useRef<number | null>(null);
-  const resultsRegionRef = useRef<HTMLElement | null>(null);
   const canReset = search.trim().length > 0 || statusFilter !== "All";
   const compactSearch =
     search.trim().length > 32 ? `${search.trim().slice(0, 32)}…` : search.trim();
@@ -85,25 +82,7 @@ export function SyncRunActivityPanel({
     "min-h-[20rem] max-h-[26rem] overflow-y-auto pr-1 [scrollbar-gutter:stable] [overflow-anchor:none]";
 
   function preserveViewportDuring(update: () => void) {
-    if (typeof window !== "undefined") {
-      viewportAnchorY.current = window.scrollY;
-    }
-    const currentResultsRegion = resultsRegionRef.current;
-    resultsRegionScrollTop.current = currentResultsRegion ? currentResultsRegion.scrollTop : null;
     startTransition(update);
-    if (typeof window !== "undefined") {
-      window.setTimeout(() => {
-        const y = viewportAnchorY.current;
-        if (typeof y === "number") {
-          window.scrollTo({ top: y, left: 0, behavior: "auto" });
-        }
-        const nextResultsRegion = resultsRegionRef.current;
-        const scrollTop = resultsRegionScrollTop.current;
-        if (nextResultsRegion && typeof scrollTop === "number") {
-          nextResultsRegion.scrollTop = scrollTop;
-        }
-      }, 0);
-    }
   }
 
   function handleResetFilters() {
@@ -299,9 +278,6 @@ export function SyncRunActivityPanel({
       {isLoading ? (
         <div
           id={syncRunsRegionId}
-          ref={(node) => {
-            resultsRegionRef.current = node;
-          }}
           className={`neon-surface grid gap-2 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}
         >
           <p>Loading recent sync activity…</p>
@@ -309,9 +285,6 @@ export function SyncRunActivityPanel({
       ) : runs.length === 0 ? (
         <div
           id={syncRunsRegionId}
-          ref={(node) => {
-            resultsRegionRef.current = node;
-          }}
           className={`neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}
         >
           <p>No sync runs recorded for this account yet. Open dashboard lanes and GitRank will enqueue background sync automatically.</p>
@@ -327,9 +300,6 @@ export function SyncRunActivityPanel({
       ) : filteredRuns.length === 0 ? (
         <div
           id={syncRunsRegionId}
-          ref={(node) => {
-            resultsRegionRef.current = node;
-          }}
           className={`neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}
         >
           <p>No sync runs match the current search or status filter.</p>
@@ -351,9 +321,6 @@ export function SyncRunActivityPanel({
       ) : (
         <ol
           id={syncRunsRegionId}
-          ref={(node) => {
-            resultsRegionRef.current = node;
-          }}
           role="list"
           aria-busy={isFiltering || undefined}
           className={`grid gap-2 ${resultsRegionClassName}`}

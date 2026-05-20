@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowUpRight, Target, Trophy } from "lucide-react";
-import { startTransition, useDeferredValue, useEffect, useRef, useState } from "react";
+import { startTransition, useDeferredValue, useEffect, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -52,7 +52,6 @@ export function LeaderboardPageClient() {
   const rowPageSize = constrainedNetwork
     ? LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED
     : LEADERBOARD_ROW_PAGE_SIZE_DEFAULT;
-  const viewportAnchorY = useRef<number | null>(null);
   const [visibleRowCount, setVisibleRowCount] = useState(rowPageSize);
   const tabFromURL = laneParamToTab(searchParams.get("lane"));
   const tab = tabFromURL ?? "Global";
@@ -108,21 +107,10 @@ export function LeaderboardPageClient() {
     const nextParams = new URLSearchParams(searchParams.toString());
     nextParams.set("lane", lane);
     const query = nextParams.toString();
-    if (typeof window !== "undefined") {
-      viewportAnchorY.current = window.scrollY;
-    }
     startTransition(() => {
       setVisibleRowCount(rowPageSize);
       router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
     });
-    if (typeof window !== "undefined") {
-      window.setTimeout(() => {
-        const y = viewportAnchorY.current;
-        if (typeof y === "number") {
-          window.scrollTo({ top: y, left: 0, behavior: "auto" });
-        }
-      }, 0);
-    }
   }
 
   const isBusy = isSwitchingTab || (isFetching && Boolean(snapshot));

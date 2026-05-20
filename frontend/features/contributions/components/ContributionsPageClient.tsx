@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { startTransition, useDeferredValue, useMemo, useRef, useState } from "react";
+import { startTransition, useDeferredValue, useMemo, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -46,7 +46,6 @@ const CONTRIBUTION_CARDS_REGION_ID = "contributions-cards-region";
 const CONTRIBUTION_SEARCH_DEBOUNCE_MS = 220;
 
 export function ContributionsPageClient() {
-  const viewportAnchorY = useRef<number | null>(null);
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact">("Newest");
@@ -170,18 +169,7 @@ export function ContributionsPageClient() {
   const maxMonthlyXp = Math.max(1, ...monthlyWindow.map((point) => point.xp));
 
   function preserveViewportDuring(update: () => void) {
-    if (typeof window !== "undefined") {
-      viewportAnchorY.current = window.scrollY;
-    }
     startTransition(update);
-    if (typeof window !== "undefined") {
-      window.setTimeout(() => {
-        const y = viewportAnchorY.current;
-        if (typeof y === "number") {
-          window.scrollTo({ top: y, left: 0, behavior: "auto" });
-        }
-      }, 0);
-    }
   }
 
   function handleFilterChange(next: string) {
