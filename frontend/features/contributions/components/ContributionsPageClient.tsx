@@ -26,6 +26,7 @@ import {
   summarizeRepositories,
   uniqueContributionDayCount,
 } from "@/lib/metrics/contribution-metrics";
+import type { Contribution } from "@/types/gitrank";
 
 const filterMap: Record<string, string> = {
   All: "All",
@@ -100,7 +101,7 @@ export function ContributionsPageClient() {
   );
   const topHighlights = useMemo(
     () =>
-      [...(profile?.user.contributions ?? [])]
+      [...deduplicateContributionRowsByPR(profile?.user.contributions ?? [])]
         .sort((left, right) => right.xpEarned - left.xpEarned)
         .slice(0, 3),
     [profile?.user.contributions],
@@ -533,4 +534,18 @@ function Metric({
       </p>
     </div>
   );
+}
+
+function deduplicateContributionRowsByPR(rows: Contribution[]): Contribution[] {
+  const bestByPR = new Map<string, Contribution>();
+
+  for (const row of rows) {
+    const key = `${row.owner}/${row.repo}#${row.number}`;
+    const existing = bestByPR.get(key);
+    if (!existing || row.xpEarned > existing.xpEarned) {
+      bestByPR.set(key, row);
+    }
+  }
+
+  return Array.from(bestByPR.values());
 }

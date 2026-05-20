@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import type { PullRequestAnalysis } from "@/types/gitrank";
 
 export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[] }) {
-  const sortedReports = [...reports].sort(
+  const uniqueReports = deduplicateReportsByPR(reports);
+  const sortedReports = [...uniqueReports].sort(
     (left, right) => right.contribution.xpEarned - left.contribution.xpEarned,
   );
 
@@ -17,7 +18,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
         <h2 className="mt-2 text-2xl font-semibold text-white">High-signal PRs from the last cycle</h2>
         <div className="mt-3 flex flex-wrap gap-2 text-xs">
           <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-            {reports.length} report rows
+            {sortedReports.length} report rows
           </span>
           <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
             Sorted by XP impact
@@ -104,6 +105,20 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
       ) : null}
     </GlowCard>
   );
+}
+
+function deduplicateReportsByPR(reports: PullRequestAnalysis[]): PullRequestAnalysis[] {
+  const bestByPR = new Map<string, PullRequestAnalysis>();
+
+  for (const report of reports) {
+    const key = `${report.contribution.owner}/${report.contribution.repo}#${report.contribution.number}`;
+    const existing = bestByPR.get(key);
+    if (!existing || report.contribution.xpEarned > existing.contribution.xpEarned) {
+      bestByPR.set(key, report);
+    }
+  }
+
+  return Array.from(bestByPR.values());
 }
 
 function formatContributionStatus(status: PullRequestAnalysis["contribution"]["status"]): string {

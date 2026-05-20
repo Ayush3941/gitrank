@@ -7,6 +7,8 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import type { FeaturedContribution } from "@/types/gitrank";
 
 export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
+  const uniqueReports = deduplicateFeaturedContributionsByPR(reports);
+
   return (
     <GlowCard className="space-y-5">
       <div>
@@ -28,7 +30,7 @@ export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
           </div>
         ) : (
           <ol role="list" className="space-y-3">
-            {reports.slice(0, 5).map((report, index) => (
+            {uniqueReports.slice(0, 5).map((report, index) => (
             <li
               key={`${report.owner}/${report.repo}#${report.number}-${report.id}-${index}`}
               className="render-opt-card neon-surface cyber-sheen rounded-[1.75rem] border-cyan-300/18 p-4"
@@ -78,4 +80,20 @@ export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
       </div>
     </GlowCard>
   );
+}
+
+function deduplicateFeaturedContributionsByPR(
+  reports: FeaturedContribution[],
+): FeaturedContribution[] {
+  const bestByPR = new Map<string, FeaturedContribution>();
+
+  for (const report of reports) {
+    const key = `${report.owner}/${report.repo}#${report.number}`;
+    const existing = bestByPR.get(key);
+    if (!existing || report.xpEarned > existing.xpEarned) {
+      bestByPR.set(key, report);
+    }
+  }
+
+  return Array.from(bestByPR.values());
 }
