@@ -20,7 +20,6 @@ import { EvidenceSignalsCard } from "@/features/pr-report/components/EvidenceSig
 import { ScoreMatrixCard } from "@/features/pr-report/components/ScoreMatrixCard";
 import { XPBreakdownCard } from "@/features/pr-report/components/XPBreakdownCard";
 import { usePrReport } from "@/hooks/use-pr-report";
-import { formatRelativeDays } from "@/lib/formatters";
 import { initialSectionFromHash } from "@/lib/section-nav";
 
 type PRReportSectionID =
@@ -180,12 +179,6 @@ export function PRBattleReportPageClient({
           </div>
         )}
       />
-      <div className="neon-callout rounded-[1.75rem] px-4 py-3 text-sm text-muted">
-        Report metadata: score version {data.scoreVersion || "unknown"} • analysis version{" "}
-        {data.analysisVersion || "unknown"} • source updated{" "}
-        {data.sourceUpdatedAt ? formatRelativeDays(data.sourceUpdatedAt) : "unknown"}
-        {data.isStale ? " • report snapshot is stale" : ""}
-      </div>
       <GlowCard className="grid gap-3 md:grid-cols-3">
         <VerdictTile
           title="Signal tier"
