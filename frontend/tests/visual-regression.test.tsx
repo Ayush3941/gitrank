@@ -29,6 +29,16 @@ vi.mock("next/image", () => ({
   }) => React.createElement("img", { alt, src }),
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    replace: vi.fn(),
+    push: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+  usePathname: () => "/dashboard/leaderboard",
+  useSearchParams: () => new URLSearchParams("lane=global"),
+}));
+
 vi.mock("@/components/shared/SkillRadarChart", () => ({
   SkillRadarChart: () => <div>Live skill radar fixture rendered</div>,
 }));
