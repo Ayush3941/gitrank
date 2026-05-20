@@ -24,6 +24,7 @@ export function PrivacyRepositoryToggleList({
   const [visibilityFilter, setVisibilityFilter] = useState<"All" | "Public" | "Hidden">("All");
   const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS);
   const deferredSearch = useDeferredValue(debouncedSearch);
+  const isFiltering = search !== debouncedSearch || deferredSearch !== debouncedSearch;
   const controlled = typeof onToggle === "function";
   const visibleItems = controlled ? repositories : items;
   const canReset = search.trim().length > 0 || visibilityFilter !== "All";
@@ -78,7 +79,9 @@ export function PrivacyRepositoryToggleList({
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p id={statusId} role="status" aria-live="polite" className="text-xs font-medium text-cyan-200">
-            {filteredItems.length} of {counts.total} repositories
+            {isFiltering
+              ? "Filtering repositories..."
+              : `${filteredItems.length} of ${counts.total} repositories`}
           </p>
           <div className="flex flex-wrap gap-2">
             <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">Public {counts.public}</span>
@@ -179,7 +182,12 @@ export function PrivacyRepositoryToggleList({
         </div>
       </div>
       {filteredItems.length > 0 ? (
-        <ul id={repositoriesRegionId} role="list" className="grid gap-3">
+        <ul
+          id={repositoriesRegionId}
+          role="list"
+          aria-busy={isFiltering || undefined}
+          className="grid gap-3"
+        >
           {filteredItems.map((repo, index) => (
             <li key={`${repo.name}-${index}`} className="list-none">
               <div className="render-opt-card neon-surface flex flex-col gap-3 rounded-[1.75rem] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">

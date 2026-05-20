@@ -33,6 +33,7 @@ export function SyncRunActivityPanel({
   const [statusFilter, setStatusFilter] = useState<"All" | "Completed" | "Running" | "Failed">("All");
   const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS);
   const deferredSearch = useDeferredValue(debouncedSearch);
+  const isFiltering = search !== debouncedSearch || deferredSearch !== debouncedSearch;
   const viewportAnchorY = useRef<number | null>(null);
   const canReset = search.trim().length > 0 || statusFilter !== "All";
   const compactSearch =
@@ -153,7 +154,9 @@ export function SyncRunActivityPanel({
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p id={filterStatusId} role="status" aria-live="polite" className="text-xs font-medium text-cyan-200">
-            {filteredRuns.length} of {statusCounts.all} runs
+            {isFiltering
+              ? "Filtering sync runs..."
+              : `${filteredRuns.length} of ${statusCounts.all} runs`}
           </p>
           <div className="flex flex-wrap gap-2">
             <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">Completed {statusCounts.completed}</span>
@@ -319,7 +322,12 @@ export function SyncRunActivityPanel({
           </div>
         </div>
       ) : (
-        <ol id={syncRunsRegionId} role="list" className={`grid gap-2 ${resultsRegionClassName}`}>
+        <ol
+          id={syncRunsRegionId}
+          role="list"
+          aria-busy={isFiltering || undefined}
+          className={`grid gap-2 ${resultsRegionClassName}`}
+        >
           {filteredRuns.map((run) => {
             const safeLastError = sanitizeSyncRunErrorMessage(run.last_error);
             return (
