@@ -150,6 +150,7 @@ export function SettingsPageClient() {
   useAccountGamificationPreference(data);
   const [actionNotice, setActionNotice] = useState("");
   const [displayNotice, setDisplayNotice] = useState("");
+  const [showAdvancedDisplayControls, setShowAdvancedDisplayControls] = useState(false);
   const currentSettings = data?.user.privacy ?? null;
   const activeThemeOption =
     THEME_OPTIONS.find((option) => option.value === theme) ??
@@ -417,181 +418,202 @@ export function SettingsPageClient() {
             />
           </div>
           <div className="cyber-divider" />
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="max-w-2xl">
-              <p className="text-xs font-medium text-primary">Keyboard controls</p>
-              <h3 className="mt-2 text-xl font-semibold text-white">Display shortcuts</h3>
-              <p className="mt-2 text-sm leading-6 text-muted">
-                Enables global display shortcuts when focus is outside editable fields.
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-medium text-primary">Advanced display options</p>
+              <p className="mt-1 text-sm text-muted">
+                Expand to configure theme, text size, keyboard shortcuts, and live preview.
               </p>
             </div>
-            <Switch
-              id="display-shortcuts-enabled"
-              aria-label="Enable display shortcuts"
-              checked={displayShortcutsEnabled}
-              onCheckedChange={setDisplayShortcutsEnabled}
-            />
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              onClick={() => setShowAdvancedDisplayControls((value) => !value)}
+            >
+              {showAdvancedDisplayControls ? "Hide advanced options" : "Show advanced options"}
+            </Button>
           </div>
-          <div className="cyber-divider" />
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="max-w-2xl">
-              <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
-                <Palette className="h-5 w-5" />
+          {showAdvancedDisplayControls ? (
+            <>
+              <div className="cyber-divider" />
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="max-w-2xl">
+                  <p className="text-xs font-medium text-primary">Keyboard controls</p>
+                  <h3 className="mt-2 text-xl font-semibold text-white">Display shortcuts</h3>
+                  <p className="mt-2 text-sm leading-6 text-muted">
+                    Enables global display shortcuts when focus is outside editable fields.
+                  </p>
+                </div>
+                <Switch
+                  id="display-shortcuts-enabled"
+                  aria-label="Enable display shortcuts"
+                  checked={displayShortcutsEnabled}
+                  onCheckedChange={setDisplayShortcutsEnabled}
+                />
               </div>
-              <p className="mt-4 text-xs font-medium text-primary">Visual theme</p>
-              <h2 className="mt-2 text-2xl font-semibold text-white">Readable style mode</h2>
-              <p className="mt-2 text-sm leading-6 text-muted">
-                Theme changes visuals only. Ranking, scoring, privacy, and sync behavior stay the same.
-                If no theme is saved, GitRank follows your system high-contrast preference.
-              </p>
-              <p className="mt-2 text-xs text-muted">
-                Theme source:
-                {" "}
-                <span className="font-semibold text-foreground">
-                  {themeSource === "stored" ? "Manual override" : "System preference"}
-                </span>
-              </p>
-            </div>
-            <div className="grid w-full gap-2 sm:w-auto sm:min-w-[22rem]">
-              <ul role="list" className="grid gap-2">
-                {THEME_OPTIONS.map((option) => (
-                  <li key={option.value} className="list-none">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={theme === option.value ? "default" : "secondary"}
-                      className="h-auto justify-start gap-3 px-4 py-3 text-left"
-                      onClick={() => setTheme(option.value)}
-                      aria-pressed={theme === option.value}
-                    >
-                      <span
-                        className={`neon-track flex w-full flex-col gap-2 overflow-hidden border bg-gradient-to-br px-3 py-2 ${option.previewShellClassName}`}
-                        aria-hidden="true"
-                      >
-                        <span className={`h-1.5 w-2/3 ${option.previewAccentClassName}`} />
-                        <span className={`h-1.5 w-5/6 ${option.previewTextClassName} bg-current/85`} />
-                        <span className={`h-1.5 w-4/6 ${option.previewTextClassName} bg-current/65`} />
-                        <span className="mt-0.5 flex items-center gap-1.5">
+              <div className="cyber-divider" />
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="max-w-2xl">
+                  <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
+                    <Palette className="h-5 w-5" />
+                  </div>
+                  <p className="mt-4 text-xs font-medium text-primary">Visual theme</p>
+                  <h2 className="mt-2 text-2xl font-semibold text-white">Readable style mode</h2>
+                  <p className="mt-2 text-sm leading-6 text-muted">
+                    Theme changes visuals only. Ranking, scoring, privacy, and sync behavior stay the same.
+                    If no theme is saved, GitRank follows your system high-contrast preference.
+                  </p>
+                  <p className="mt-2 text-xs text-muted">
+                    Theme source:
+                    {" "}
+                    <span className="font-semibold text-foreground">
+                      {themeSource === "stored" ? "Manual override" : "System preference"}
+                    </span>
+                  </p>
+                </div>
+                <div className="grid w-full gap-2 sm:w-auto sm:min-w-[22rem]">
+                  <ul role="list" className="grid gap-2">
+                    {THEME_OPTIONS.map((option) => (
+                      <li key={option.value} className="list-none">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={theme === option.value ? "default" : "secondary"}
+                          className="h-auto justify-start gap-3 px-4 py-3 text-left"
+                          onClick={() => setTheme(option.value)}
+                          aria-pressed={theme === option.value}
+                        >
                           <span
-                            className={`inline-flex h-5 min-w-10 items-center justify-center px-2 text-xs leading-5 tracking-[0.06em] ${option.previewChipClassName}`}
-                          >
-                            xp
-                          </span>
-                          <span
-                            className={`inline-flex h-5 min-w-12 items-center justify-center px-2 text-xs leading-5 tracking-[0.06em] ${option.previewChipClassName}`}
-                          >
-                            rank
-                          </span>
-                        </span>
-                      </span>
-                      <span className="flex flex-col items-start">
-                        <span className="inline-flex items-center gap-2">
-                          {option.label}
-                          {theme === option.value ? (
-                            <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-xs font-semibold text-emerald-50">
-                              Active
-                            </span>
-                          ) : null}
-                        </span>
-                        <span className="text-xs text-muted">{option.description}</span>
-                        <span className="mt-1 inline-flex h-2.5 w-16 overflow-hidden rounded-full border border-primary/28">
-                          <span
-                            className={`block h-full w-full bg-gradient-to-r ${option.swatchClassName}`}
+                            className={`neon-track flex w-full flex-col gap-2 overflow-hidden border bg-gradient-to-br px-3 py-2 ${option.previewShellClassName}`}
                             aria-hidden="true"
-                          />
-                        </span>
-                      </span>
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                className="justify-start"
-                onClick={clearThemePreference}
-                disabled={themeSource === "system"}
-              >
-                {themeSource === "system" ? "Following system theme" : "Follow system theme"}
-              </Button>
-            </div>
-          </div>
-          <div className="cyber-divider" />
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="max-w-2xl">
-              <p className="text-xs font-medium text-primary">Text scale</p>
-              <h3 className="mt-2 text-xl font-semibold text-white">Readable text size</h3>
-              <p className="mt-2 text-sm leading-6 text-muted">
-                Choose default or large text size for frontend readability.
-              </p>
-              <p className="mt-2 text-xs leading-6 text-muted">
-                Shortcuts: <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> (theme),{" "}
-                <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd> (text),{" "}
-                <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd> (effects).
-              </p>
-            </div>
-            <div className="grid w-full gap-2 sm:w-auto sm:min-w-[18rem]">
-              <ul role="list" className="grid gap-2">
-                {TEXT_SCALE_OPTIONS.map((option) => (
-                  <li key={option.value} className="list-none">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={textScale === option.value ? "default" : "secondary"}
-                      className="h-auto justify-start px-4 py-3 text-left"
-                      onClick={() => setTextScale(option.value)}
-                      aria-pressed={textScale === option.value}
-                    >
-                      <span className="flex flex-col items-start">
-                        <span className="inline-flex items-center gap-2">
-                          {option.label}
-                          {textScale === option.value ? (
-                            <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-xs font-semibold text-emerald-50">
-                              Active
+                          >
+                            <span className={`h-1.5 w-2/3 ${option.previewAccentClassName}`} />
+                            <span className={`h-1.5 w-5/6 ${option.previewTextClassName} bg-current/85`} />
+                            <span className={`h-1.5 w-4/6 ${option.previewTextClassName} bg-current/65`} />
+                            <span className="mt-0.5 flex items-center gap-1.5">
+                              <span
+                                className={`inline-flex h-5 min-w-10 items-center justify-center px-2 text-xs leading-5 tracking-[0.06em] ${option.previewChipClassName}`}
+                              >
+                                xp
+                              </span>
+                              <span
+                                className={`inline-flex h-5 min-w-12 items-center justify-center px-2 text-xs leading-5 tracking-[0.06em] ${option.previewChipClassName}`}
+                              >
+                                rank
+                              </span>
                             </span>
-                          ) : null}
-                        </span>
-                        <span className="text-xs text-muted">{option.description}</span>
-                      </span>
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                className="justify-start"
-                onClick={handleResetDisplayPreferences}
-              >
-                Reset display preferences
-              </Button>
-            </div>
-          </div>
-          {displayNotice ? (
-            <p role="status" aria-live="polite" className="text-sm text-cyan-100">
-              {displayNotice}
-            </p>
+                          </span>
+                          <span className="flex flex-col items-start">
+                            <span className="inline-flex items-center gap-2">
+                              {option.label}
+                              {theme === option.value ? (
+                                <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-xs font-semibold text-emerald-50">
+                                  Active
+                                </span>
+                              ) : null}
+                            </span>
+                            <span className="text-xs text-muted">{option.description}</span>
+                            <span className="mt-1 inline-flex h-2.5 w-16 overflow-hidden rounded-full border border-primary/28">
+                              <span
+                                className={`block h-full w-full bg-gradient-to-r ${option.swatchClassName}`}
+                                aria-hidden="true"
+                              />
+                            </span>
+                          </span>
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="justify-start"
+                    onClick={clearThemePreference}
+                    disabled={themeSource === "system"}
+                  >
+                    {themeSource === "system" ? "Following system theme" : "Follow system theme"}
+                  </Button>
+                </div>
+              </div>
+              <div className="cyber-divider" />
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="max-w-2xl">
+                  <p className="text-xs font-medium text-primary">Text scale</p>
+                  <h3 className="mt-2 text-xl font-semibold text-white">Readable text size</h3>
+                  <p className="mt-2 text-sm leading-6 text-muted">
+                    Choose default or large text size for frontend readability.
+                  </p>
+                  <p className="mt-2 text-xs leading-6 text-muted">
+                    Shortcuts: <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> (theme),{" "}
+                    <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd> (text),{" "}
+                    <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd> (effects).
+                  </p>
+                </div>
+                <div className="grid w-full gap-2 sm:w-auto sm:min-w-[18rem]">
+                  <ul role="list" className="grid gap-2">
+                    {TEXT_SCALE_OPTIONS.map((option) => (
+                      <li key={option.value} className="list-none">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={textScale === option.value ? "default" : "secondary"}
+                          className="h-auto justify-start px-4 py-3 text-left"
+                          onClick={() => setTextScale(option.value)}
+                          aria-pressed={textScale === option.value}
+                        >
+                          <span className="flex flex-col items-start">
+                            <span className="inline-flex items-center gap-2">
+                              {option.label}
+                              {textScale === option.value ? (
+                                <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-xs font-semibold text-emerald-50">
+                                  Active
+                                </span>
+                              ) : null}
+                            </span>
+                            <span className="text-xs text-muted">{option.description}</span>
+                          </span>
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="justify-start"
+                    onClick={handleResetDisplayPreferences}
+                  >
+                    Reset display preferences
+                  </Button>
+                </div>
+              </div>
+              {displayNotice ? (
+                <p role="status" aria-live="polite" className="text-sm text-cyan-100">
+                  {displayNotice}
+                </p>
+              ) : null}
+              <div className="neon-surface-strong space-y-3 px-4 py-4">
+                <p className="text-xs font-medium text-primary">Live readability preview</p>
+                <h3 className="text-lg font-semibold text-white">
+                  Verify readability before style.
+                </h3>
+                <p className="text-sm leading-7 text-muted">
+                  Current theme:
+                  {" "}
+                  <span className="font-semibold text-foreground">{activeThemeOption.label}</span>
+                  {" "}
+                  ·
+                  {" "}
+                  {activeThemeOption.description}
+                </p>
+                <p className="text-sm leading-7 text-muted">
+                  Use this preview to confirm headings and labels stay clear on your screen.
+                </p>
+              </div>
+            </>
           ) : null}
-          <div className="neon-surface-strong space-y-3 px-4 py-4">
-            <p className="text-xs font-medium text-primary">Live readability preview</p>
-            <h3 className="text-lg font-semibold text-white">
-              Verify readability before style.
-            </h3>
-            <p className="text-sm leading-7 text-muted">
-              Current theme:
-              {" "}
-              <span className="font-semibold text-foreground">{activeThemeOption.label}</span>
-              {" "}
-              ·
-              {" "}
-              {activeThemeOption.description}
-            </p>
-            <p className="text-sm leading-7 text-muted">
-              Use this preview to confirm headings and labels stay clear on your screen.
-            </p>
-          </div>
           </GlowCard>
         </DeferUntilVisible>
       </section>
