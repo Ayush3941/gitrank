@@ -169,6 +169,31 @@ func TestPullRequestReportFromRecordInfersDeterministicSourceFromScoreMetadata(t
 	}
 }
 
+func TestPullRequestReportFromRecordInfersDeterministicSourceFromScorePayloadWithoutAnalysis(t *testing.T) {
+	now := time.Date(2026, 5, 10, 14, 0, 0, 0, time.UTC)
+	report := pullRequestReportFromRecord(pullRequestReportRecord{
+		PullRequestID:    "pr-db-3",
+		Owner:            "octo",
+		Repo:             "repo",
+		Number:           91,
+		Title:            "chore: harden retry metrics",
+		State:            "closed",
+		Merged:           true,
+		OccurredAt:       now.Add(-3 * time.Hour),
+		UpdatedAt:        now.Add(-2 * time.Hour),
+		ScoreVersion:     "v1alpha1",
+		XP:               95,
+		ScoreExplanation: []string{"score version v1alpha1"},
+	}, now)
+
+	if report.EvidenceState.AnalysisSource != "deterministic" {
+		t.Fatalf("EvidenceState.AnalysisSource = %q, want deterministic", report.EvidenceState.AnalysisSource)
+	}
+	if !report.EvidenceState.DeterministicOnly {
+		t.Fatalf("EvidenceState.DeterministicOnly = false, want true with deterministic score payload")
+	}
+}
+
 func containsString(values []string, expected string) bool {
 	for _, value := range values {
 		if value == expected {

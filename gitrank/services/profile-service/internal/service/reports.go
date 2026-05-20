@@ -1035,6 +1035,15 @@ func inferReportAnalysisSource(record pullRequestReportRecord) string {
 	if strings.TrimSpace(record.ScoreEventID) != "" {
 		return "deterministic"
 	}
+	if strings.TrimSpace(record.ScoreVersion) != "" {
+		return "deterministic"
+	}
+	if record.XP > 0 {
+		return "deterministic"
+	}
+	if len(record.ScoreExplanation) > 0 {
+		return "deterministic"
+	}
 	if hasDeterministicScoreMetadata(record.ScoreMetadata) {
 		return "deterministic"
 	}
