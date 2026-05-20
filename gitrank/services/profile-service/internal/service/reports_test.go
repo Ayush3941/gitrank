@@ -138,6 +138,37 @@ func TestPullRequestReportFromRecordMarksUnscoredReportStale(t *testing.T) {
 	}
 }
 
+func TestPullRequestReportFromRecordInfersDeterministicSourceFromScoreMetadata(t *testing.T) {
+	now := time.Date(2026, 5, 10, 14, 0, 0, 0, time.UTC)
+	report := pullRequestReportFromRecord(pullRequestReportRecord{
+		PullRequestID: "pr-db-2",
+		Owner:         "octo",
+		Repo:          "repo",
+		Number:        77,
+		Title:         "fix: harden retry path",
+		State:         "closed",
+		Merged:        true,
+		OccurredAt:    now.Add(-2 * time.Hour),
+		UpdatedAt:     now.Add(-90 * time.Minute),
+		ScoreEventID:  "score-2",
+		ScoreVersion:  "v1alpha1",
+		ScoreMetadata: map[string]any{
+			"technical_depth":      1.08,
+			"review_strength":      0.75,
+			"diminishing_returns":  0.84,
+			"consistency_modifier": 1.12,
+			"total_xp":             130,
+		},
+	}, now)
+
+	if report.EvidenceState.AnalysisSource != "deterministic" {
+		t.Fatalf("EvidenceState.AnalysisSource = %q, want deterministic", report.EvidenceState.AnalysisSource)
+	}
+	if !containsString(report.EvidenceState.Reasons, "deterministic scoring evidence is available while analysis snapshot persistence is pending") {
+		t.Fatalf("EvidenceState.Reasons = %+v, want deterministic snapshot pending reason", report.EvidenceState.Reasons)
+	}
+}
+
 func containsString(values []string, expected string) bool {
 	for _, value := range values {
 		if value == expected {

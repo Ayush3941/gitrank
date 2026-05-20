@@ -983,11 +983,14 @@ func reportEvidenceState(record pullRequestReportRecord) contracts.PRReportEvide
 		reasons = append(reasons, "changed-file evidence has not been persisted")
 	}
 
-	analysisSource := normalizeReportAnalysisSource(record.AnalysisSource)
+	analysisSource := inferReportAnalysisSource(record)
 	deterministicOnly := analysisSource == "deterministic"
 	aiFallback := stringFromMap(record.ScoreMetadata, "fallback_reason") != "" || reportHasSignal(record, "ai fallback", "deterministic fallback", "fallback_reason")
 	rateLimited := boolFromMap(record.ScoreMetadata, "rate_limited") || reportHasSignal(record, "rate limited", "rate_limit", "github rate")
 	stale := strings.TrimSpace(record.AnalysisID) == "" || strings.TrimSpace(record.ScoreEventID) == ""
+	if strings.TrimSpace(record.AnalysisID) == "" && strings.TrimSpace(record.ScoreEventID) != "" && deterministicOnly {
+		reasons = append(reasons, "deterministic scoring evidence is available while analysis snapshot persistence is pending")
+	}
 
 	status := "complete"
 	switch {
@@ -1018,6 +1021,41 @@ func reportEvidenceState(record pullRequestReportRecord) contracts.PRReportEvide
 		RateLimited:        rateLimited,
 		Stale:              stale,
 	}
+}
+
+func inferReportAnalysisSource(record pullRequestReportRecord) string {
+	analysisSource := normalizeReportAnalysisSource(record.AnalysisSource)
+	if analysisSource != "unknown" {
+		return analysisSource
+	}
+	if strings.TrimSpace(record.ScoreEventID) == "" {
+		return analysisSource
+	}
+	if hasDeterministicScoreMetadata(record.ScoreMetadata) {
+		return "deterministic"
+	}
+	return analysisSource
+}
+
+func hasDeterministicScoreMetadata(metadata map[string]any) bool {
+	if len(metadata) == 0 {
+		return false
+	}
+	for _, key := range []string{
+		"technical_depth",
+		"review_strength",
+		"category_weight",
+		"repository_weight",
+		"outcome_weight",
+		"consistency_modifier",
+		"diminishing_returns_modifier",
+		"total_xp",
+	} {
+		if _, ok := numberEntryFromMap(metadata, key); ok {
+			return true
+		}
+	}
+	return false
 }
 
 func normalizeReportAnalysisSource(source string) string {
