@@ -271,10 +271,6 @@ export function DashboardPageClient() {
               <Link href="/dashboard/contributions">Inspect contribution cards</Link>
             </Button>
           </div>
-          <p className="inline-flex items-center gap-2 text-xs text-cyan-100">
-            <Sparkles className="h-3.5 w-3.5 text-cyan-200" />
-            Dashboard follows a summary-first flow: snapshot, then drill-down panels.
-          </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <StatCard label="GitRank score" value={user.gitRankScore} detail="Weighted by impact, reviews, tests, and repository context." icon={<Medal className="h-5 w-5 text-primary" />} />
@@ -301,10 +297,7 @@ export function DashboardPageClient() {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-xs font-medium text-primary">Evidence context</p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">How current this snapshot is</h2>
-            <p className="mt-2 text-sm text-muted">
-              Dashboard values are generated from persisted score and profile evidence. Use this strip to confirm freshness and scope before making comparisons.
-            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">Snapshot freshness</h2>
           </div>
           <span className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold">
             <Sparkles className="h-3.5 w-3.5" />
