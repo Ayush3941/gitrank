@@ -130,11 +130,11 @@ export function SyncStateGuide({
         </div>
         <div className="space-y-1">
           <h3 className="cyber-title text-sm font-semibold text-white">{copy.title}</h3>
-          <p className="text-sm leading-6 text-slate-200">{copy.detail}</p>
+          <p className="text-sm leading-6 text-muted">{copy.detail}</p>
         </div>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-xs leading-5 text-slate-200">{contextParts.join(" ")}</p>
+        <p className="text-xs leading-5 text-muted">{contextParts.join(" ")}</p>
         <Button asChild size="sm" variant="secondary">
           <Link href={copy.actionHref}>
             {copy.actionLabel}

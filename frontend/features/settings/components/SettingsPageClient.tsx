@@ -534,7 +534,7 @@ export function SettingsPageClient() {
                 Theme choice only changes visual treatment. Ranking, scoring, privacy, and sync behavior stay identical.
                 If no explicit theme is stored, GitRank follows your system high-contrast preference.
               </p>
-              <p className="mt-2 text-xs text-slate-200">
+              <p className="mt-2 text-xs text-muted">
                 Theme source:
                 {" "}
                 <span className="font-semibold text-foreground">
@@ -611,7 +611,7 @@ export function SettingsPageClient() {
               <p className="mt-2 text-sm leading-6 text-muted">
                 Choose a denser or larger text rendering mode. This affects frontend reading size only.
               </p>
-              <p className="mt-2 text-xs leading-6 text-slate-200">
+              <p className="mt-2 text-xs leading-6 text-muted">
                 Keyboard shortcuts: <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> toggles theme, and <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd> toggles text size.
                 {" "}
                 <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd> toggles visual effects between full and reduced modes.
@@ -671,7 +671,7 @@ export function SettingsPageClient() {
               {" "}
               {activeThemeOption.description}
             </p>
-            <p className="text-sm leading-7 text-slate-200">
+            <p className="text-sm leading-7 text-muted">
               Use this preview to confirm headings, supporting copy, and small labels stay easy to read on your screen.
             </p>
           </div>
@@ -774,12 +774,12 @@ function SettingSection({
           {errorMessage}
         </p>
       ) : null}
-      <div className="space-y-3">
+      <ul className="space-y-3">
         {rows.map(([label, checked, onCheckedChange], index) => {
           const controlID = `${toControlID(title)}-${toControlID(label)}-${index}`;
           return (
-          <div key={label} className="neon-surface flex items-center justify-between gap-4 rounded-[1.75rem] px-4 py-4">
-            <label className="text-sm text-slate-200" htmlFor={controlID}>
+          <li key={label} className="list-none neon-surface flex items-center justify-between gap-4 rounded-[1.75rem] px-4 py-4">
+            <label className="text-sm text-muted" htmlFor={controlID}>
               {label}
             </label>
             <Switch
@@ -790,10 +790,10 @@ function SettingSection({
               aria-invalid={errorMessage ? true : undefined}
               aria-describedby={errorMessage ? `${toControlID(title)}-error` : undefined}
             />
-          </div>
+          </li>
           );
         })}
-      </div>
+      </ul>
     </GlowCard>
   );
 }

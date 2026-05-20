@@ -137,7 +137,7 @@ function SignalProfile({ item }: { item: Contribution }) {
           <p className="mt-1 text-xs text-muted">
             Weighted by impact, review depth, difficulty, and test evidence.
           </p>
-          <div className="mt-3 text-xs text-slate-200/84">
+          <div className="mt-3 text-xs text-muted">
             <span className="font-medium text-emerald-200">+</span>
             {" "}
             {item.additions} /{" "}
@@ -161,7 +161,7 @@ function SignalRow({ label, value }: { label: string; value: number }) {
   return (
     <div className="neon-tile rounded-[1rem] border-primary/22 px-3 py-2">
       <div className="flex items-center justify-between gap-3 text-xs">
-        <p className="text-slate-200">{label}</p>
+        <p className="text-muted">{label}</p>
         <p className="numeric-readout font-semibold text-white">{Math.round(value)}</p>
       </div>
       <div className="neon-track mt-1.5 h-1.5 rounded-full">
@@ -287,13 +287,13 @@ function AIPanel({
           </p>
         </div>
       ) : (
-        <div className="mt-3 inline-flex items-start gap-2 text-sm text-slate-200/84">
+        <div className="mt-3 inline-flex items-start gap-2 text-sm text-muted">
           <BookCheck className="mt-0.5 h-4 w-4 text-cyan-200" />
           <ExpandableText
             text={fallbackSummary}
             lines={4}
             minLengthForToggle={210}
-            textClassName="break-anywhere text-slate-200/84"
+            textClassName="break-anywhere text-muted"
           />
         </div>
       )}

@@ -180,7 +180,7 @@ export function PRBattleReportPageClient({
           </div>
         )}
       />
-      <div className="neon-callout rounded-[1.75rem] px-4 py-3 text-sm text-slate-200">
+      <div className="neon-callout rounded-[1.75rem] px-4 py-3 text-sm text-muted">
         Report metadata: score version {data.scoreVersion || "unknown"} • analysis version{" "}
         {data.analysisVersion || "unknown"} • source updated{" "}
         {data.sourceUpdatedAt ? formatRelativeDays(data.sourceUpdatedAt) : "unknown"}
@@ -220,7 +220,7 @@ export function PRBattleReportPageClient({
           <div className="min-w-0">
             <p className="break-anywhere text-sm text-muted">{data.contribution.owner}/{data.contribution.repo} #{data.contribution.number}</p>
             <h2 className="mt-2 break-anywhere text-3xl font-semibold text-white">{data.contribution.title}</h2>
-            <p className="mt-3 text-sm text-slate-200">
+            <p className="mt-3 text-sm text-muted">
               {data.contribution.status} • {data.contribution.category}
             </p>
           </div>
@@ -286,7 +286,7 @@ export function PRBattleReportPageClient({
               text={data.contribution.aiSummary}
               lines={5}
               minLengthForToggle={260}
-              textClassName="break-anywhere text-base leading-8 text-slate-200"
+              textClassName="break-anywhere text-base leading-8 text-muted"
             />
           </GlowCard>
         </DeferUntilVisible>

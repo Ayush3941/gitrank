@@ -71,7 +71,7 @@ export function DashboardShortcutHelpDialog({
       <DialogContent className="w-[min(94vw,44rem)] p-4 sm:p-6">
         <div className="space-y-1">
           <DialogTitle className="text-xl text-white">Keyboard shortcuts</DialogTitle>
-          <DialogDescription className="text-sm text-slate-200">
+          <DialogDescription className="text-sm text-muted">
             Quick-reference controls for dashboard speed and accessibility.
           </DialogDescription>
         </div>
@@ -81,22 +81,22 @@ export function DashboardShortcutHelpDialog({
               <p className="px-0.5 text-xs font-medium text-cyan-100">
                 {section.title}
               </p>
-              <div className="space-y-2">
+              <ul className="space-y-2">
                 {section.rows.map((row) => (
-                  <div
+                  <li
                     key={`${section.title}:${row.keys}:${row.action}`}
-                    className="neon-tile grid gap-2 border px-3 py-2.5 sm:grid-cols-[11rem,1fr]"
+                    className="list-none neon-tile grid gap-2 border px-3 py-2.5 sm:grid-cols-[11rem,1fr]"
                   >
                     <p className="text-sm text-white">
                       <kbd>{row.keys}</kbd>
                     </p>
                     <div>
                       <p className="text-sm text-slate-100">{row.action}</p>
-                      {row.note ? <p className="mt-1 text-xs text-slate-300">{row.note}</p> : null}
+                      {row.note ? <p className="mt-1 text-xs text-muted">{row.note}</p> : null}
                     </div>
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </section>
           ))}
         </div>

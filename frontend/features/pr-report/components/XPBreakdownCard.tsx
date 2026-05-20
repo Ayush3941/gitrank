@@ -70,7 +70,7 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
             className="neon-surface rounded-[1.75rem] px-4 py-4"
           >
             <div className="flex items-center justify-between gap-4">
-              <p className="text-sm text-slate-200">{row.label}</p>
+              <p className="text-sm text-muted">{row.label}</p>
               <p className="text-sm font-semibold text-white">{row.value}</p>
             </div>
             <p className="mt-2 text-xs leading-5 text-muted">{row.detail}</p>

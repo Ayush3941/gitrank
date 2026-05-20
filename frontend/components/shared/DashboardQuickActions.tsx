@@ -337,7 +337,7 @@ export function DashboardQuickActions({
         <DialogContent className="w-[min(94vw,42rem)] p-4 sm:p-5">
           <div className="space-y-1">
             <DialogTitle className="text-xl text-white">Quick actions</DialogTitle>
-            <DialogDescription className="text-sm text-slate-200">
+            <DialogDescription className="text-sm text-muted">
               Jump across dashboard lanes, trigger sync, and tune display in one keyboard-first surface.
             </DialogDescription>
           </div>
@@ -353,7 +353,7 @@ export function DashboardQuickActions({
               }}
               onKeyDown={handleInputKeyDown}
               placeholder="Type an action, route, or keyword..."
-              className="w-full bg-transparent text-sm text-white placeholder:text-slate-300 focus:outline-none"
+              className="w-full bg-transparent text-sm text-white placeholder:text-muted focus:outline-none"
               aria-label="Search quick actions"
               aria-autocomplete="list"
               aria-expanded={open}
@@ -414,14 +414,14 @@ export function DashboardQuickActions({
                   <p className="px-1 text-xs font-medium text-cyan-200">
                     {group.title}
                   </p>
-                  <div className="space-y-2">
+                  <ul className="space-y-2">
                     {group.items.map((action) => {
                       const Icon = action.icon;
                       const index = actionIndexMap.get(action.id) ?? -1;
                       const highlighted = index === clampedHighlightedIndex;
                       return (
+                        <li key={action.id} className="list-none">
                         <button
-                          key={action.id}
                           id={optionIdForAction(action.id)}
                           type="button"
                           role="option"
@@ -449,15 +449,16 @@ export function DashboardQuickActions({
                               <kbd className="text-xs">{action.shortcut}</kbd>
                             ) : null}
                           </div>
-                          <p className="mt-1 text-xs text-slate-200">{action.description}</p>
+                          <p className="mt-1 text-xs text-muted">{action.description}</p>
                         </button>
+                        </li>
                       );
                     })}
-                  </div>
+                  </ul>
                 </section>
               ))
             ) : (
-              <div className="neon-tile space-y-3 rounded-[0.1rem] border border-dashed border-primary/30 px-3 py-3 text-sm text-slate-200">
+              <div className="neon-tile space-y-3 rounded-[0.1rem] border border-dashed border-primary/30 px-3 py-3 text-sm text-muted">
                 <p>
                   No matching action. Try route names like <span className="text-white">contributions</span> or <span className="text-white">settings</span>.
                 </p>

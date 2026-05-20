@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Contrast + semantics cleanup pass on settings and report surfaces:
+  - normalized remaining low-contrast helper copy in PR report, XP breakdown, sync-state guide, settings display controls, and contribution fallback blocks to shared readable text tokens.
+  - converted dashboard quick-actions result groups, keyboard-shortcuts dialog rows, and settings privacy-toggle rows to semantic list markup (`ul/li`) for cleaner assistive traversal.
+  - kept all route behavior and data flow unchanged while tightening dark-theme readability consistency.
 - Contributions/badges/quests consistency pass:
   - normalized low-opacity lane copy in contributions, badges, and quests surfaces to shared readable text tokens.
   - converted repeated repository, locked-badge, and quest evidence card groups to semantic list structures.
