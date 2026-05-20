@@ -137,7 +137,6 @@ export function DashboardTopBarContainer() {
     <DashboardTopBar
       user={data.user}
       autoSyncNote={autoSyncNote}
-      showQuickActions
     />
   );
 }
