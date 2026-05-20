@@ -41,7 +41,7 @@ export function DashboardSidebar() {
           <p
             role="status"
             aria-live="polite"
-            className="inline-flex items-center gap-2 border border-primary/22 bg-primary/10 px-2.5 py-1.5 text-xs text-cyan-100/90"
+            className="inline-flex items-center gap-2 border border-primary/22 bg-primary/10 px-2.5 py-1.5 text-xs text-cyan-100"
           >
             {ActiveLaneIcon ? <ActiveLaneIcon className="h-3.5 w-3.5 text-primary" /> : null}
             {activeItem ? `Current lane: ${activeItem.label}` : "Dashboard navigation"}
@@ -106,7 +106,7 @@ export function DashboardSidebar() {
           <p className="cyber-copy mt-1.5 text-sm text-foreground">
             Meaningful contribution quality over raw activity volume.
           </p>
-          <p className="mt-2 text-xs text-cyan-100/88">
+          <p className="mt-2 text-xs text-cyan-100">
             Quick actions: Ctrl/Cmd+K
           </p>
         </div>

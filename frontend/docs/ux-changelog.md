@@ -2,6 +2,11 @@
 
 ## 2026-05-19
 
+- Dashboard navigation readability pass:
+  - increased lane-status text contrast in desktop sidebar and mobile nav headers.
+  - strengthened mobile lane label typography (`0.8rem`) for clearer five-lane scanning without changing route structure.
+  - updated mobile `Display controls` shortcut text to use shared readable foreground tokens for consistency with active lane copy.
+  - preserves existing navigation behavior while improving quick orientation legibility on smaller screens.
 - Settings semantic-list consistency pass:
   - converted settings display theme/text option maps to explicit semantic list markup (`ul/li`) while preserving existing preview and active-state behavior.
   - converted sync-log status filter options and repository visibility filter options to semantic list structures for clearer assistive traversal.

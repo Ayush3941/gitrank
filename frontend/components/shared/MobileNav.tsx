@@ -20,13 +20,13 @@ export function MobileNav() {
         {activeItem ? `Current lane: ${activeItem.label}` : "Dashboard navigation"}
       </p>
       <div className="flex items-center justify-between gap-2 border-b border-primary/16 px-3 pb-1.5 pt-2">
-        <p className="min-w-0 text-sm text-cyan-100/92">
+        <p className="min-w-0 text-sm text-foreground">
           {activeItem ? `Current lane: ${activeItem.label}` : "Dashboard navigation"}
         </p>
         <Link
           href="/dashboard/settings#settings-display"
           prefetch={false}
-          className="focus-ring inline-flex min-h-8 items-center justify-center border border-primary/20 bg-primary/8 px-2.5 text-xs font-semibold text-cyan-100 hover:border-primary/30 hover:text-white"
+          className="focus-ring inline-flex min-h-8 items-center justify-center border border-primary/20 bg-primary/8 px-2.5 text-xs font-semibold text-foreground hover:border-primary/30 hover:text-white"
         >
           Display controls
         </Link>
@@ -44,7 +44,7 @@ export function MobileNav() {
                 aria-label={item.label}
                 title={item.label}
                 className={cn(
-                  "focus-ring relative flex min-h-16 flex-col items-center justify-center gap-1 border px-1.5 py-1.5 text-xs leading-tight font-semibold",
+                  "focus-ring relative flex min-h-16 flex-col items-center justify-center gap-1 border px-1.5 py-1.5 text-[0.8rem] leading-tight font-semibold",
                   active
                     ? "border-primary/42 bg-primary/14 text-white"
                     : "border-transparent text-foreground hover:border-primary/22 hover:bg-primary/8 hover:text-white",
@@ -57,7 +57,7 @@ export function MobileNav() {
                   )}
                 />
                 <Icon className={cn("h-4 w-4", active ? "text-primary" : "text-muted")} />
-                <span className="max-w-[5.4rem] break-anywhere text-center text-xs leading-4">{item.mobileLabel}</span>
+                <span className="max-w-[5.4rem] break-anywhere text-center text-[0.8rem] leading-4">{item.mobileLabel}</span>
                 <span className="sr-only">{item.hint}</span>
               </Link>
             </li>
