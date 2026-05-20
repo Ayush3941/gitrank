@@ -33,6 +33,7 @@ export function ContributionFilters({
   onClearCategory,
   onClearSearch,
   onClearSort,
+  resultsRegionId,
 }: {
   value: string;
   onValueChange: (value: string) => void;
@@ -47,6 +48,7 @@ export function ContributionFilters({
   onClearCategory?: () => void;
   onClearSearch?: () => void;
   onClearSort?: () => void;
+  resultsRegionId?: string;
 }) {
   const statusId = "contribution-filter-status";
   const activeChips: Array<{
@@ -95,37 +97,43 @@ export function ContributionFilters({
             variant="ghost"
             onClick={onReset}
             disabled={!canReset || isFiltering}
+            aria-controls={resultsRegionId}
           >
             Reset filters
           </Button>
         ) : null}
       </div>
       {activeChips.length ? (
-        <div className="flex flex-wrap gap-2 text-xs">
+        <ul role="list" className="flex flex-wrap gap-2 text-xs">
           {activeChips.map((chip) => (
-            <span key={chip.key} className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold">
-              {chip.label}
-              {chip.onRemove ? (
-                <button
-                  type="button"
-                  onClick={chip.onRemove}
-                  disabled={isFiltering}
-                  className="focus-ring inline-flex min-h-6 min-w-6 items-center justify-center rounded-full border border-primary/30 px-1 text-xs leading-none text-cyan-100 hover:bg-primary/14 disabled:opacity-60"
-                  aria-label={`Remove ${chip.key} filter`}
-                  title={`Remove ${chip.key} filter`}
-                >
-                  ×
-                </button>
-              ) : null}
-            </span>
+            <li key={chip.key} className="list-none">
+              <span className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold">
+                {chip.label}
+                {chip.onRemove ? (
+                  <button
+                    type="button"
+                    onClick={chip.onRemove}
+                    disabled={isFiltering}
+                    className="focus-ring inline-flex min-h-6 min-w-6 items-center justify-center rounded-full border border-primary/30 px-1 text-xs leading-none text-cyan-100 hover:bg-primary/14 disabled:opacity-60"
+                    aria-label={`Remove ${chip.key} filter`}
+                    aria-controls={resultsRegionId}
+                    title={`Remove ${chip.key} filter`}
+                  >
+                    ×
+                  </button>
+                ) : null}
+              </span>
+            </li>
           ))}
-        </div>
+        </ul>
       ) : (
-        <div className="flex flex-wrap gap-2 text-xs">
-          <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-            No active filters
-          </span>
-        </div>
+        <ul role="list" className="flex flex-wrap gap-2 text-xs">
+          <li className="list-none">
+            <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+              No active filters
+            </span>
+          </li>
+        </ul>
       )}
       <Tabs value={value} onValueChange={onValueChange}>
         <TabsList className="scrollbar-thin w-full overflow-x-auto whitespace-nowrap" aria-label="Contribution category filters">
@@ -160,6 +168,7 @@ export function ContributionFilters({
               disabled={isFiltering}
               className="focus-ring absolute top-1/2 right-3 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-cyan-100 hover:text-white disabled:opacity-60"
               aria-label="Clear contribution search"
+              aria-controls={resultsRegionId}
               title="Clear search"
             >
               <X className="h-4 w-4" />

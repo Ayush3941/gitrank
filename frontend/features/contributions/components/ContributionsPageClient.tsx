@@ -373,6 +373,7 @@ export function ContributionsPageClient() {
           onSearchChange={handleSearchChange}
           sort={sort}
           onSortChange={handleSortChange}
+          resultsRegionId={CONTRIBUTION_CARDS_REGION_ID}
           resultCount={filteredRows.length}
           isFiltering={isFiltering}
           canReset={canReset}

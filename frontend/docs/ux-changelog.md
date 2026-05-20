@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Contributions filter-control semantics pass:
+  - converted active-filter chip rendering to semantic list markup and kept clear actions attached to each chip.
+  - wired filter reset/clear actions with `aria-controls` targeting the contribution cards region for clearer assistive context.
+  - connected contributions filter panel to the cards region ID to tighten filter-to-results relationship without API changes.
 - Client env-safety hardening pass:
   - removed non-public `process.env.NODE_ENV` usage from the client-side query provider.
   - switched React Query devtools gating to a runtime local-host detector backed by `useSyncExternalStore`, keeping hydration-safe defaults.
