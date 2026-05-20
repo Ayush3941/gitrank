@@ -254,6 +254,7 @@ export function LeaderboardPageClient() {
                 key={item}
                 value={item}
                 aria-label={`${TAB_LABELS[item].full} leaderboard lane`}
+                aria-controls={LEADERBOARD_ROWS_REGION_ID}
                 title={TAB_LABELS[item].full}
               >
                 <span className="sm:hidden">{TAB_LABELS[item].short}</span>
@@ -276,6 +277,7 @@ export function LeaderboardPageClient() {
                 variant="ghost"
                 onClick={() => handleTabChange("Global")}
                 disabled={isBusy}
+                aria-controls={LEADERBOARD_ROWS_REGION_ID}
                 title="Return to Global lane"
               >
                 Reset to Global
