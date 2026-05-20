@@ -107,6 +107,17 @@ const THEME_OPTIONS: Array<{
     previewChipClassName: "bg-indigo-300/16 text-indigo-100",
   },
   {
+    value: "terminal",
+    label: "Terminal pulse",
+    description: "Sharper terminal-style contrast with contained neon accents.",
+    swatchClassName: "from-emerald-200 via-teal-200 to-fuchsia-300",
+    previewShellClassName:
+      "from-[rgb(5_10_20_/_0.96)] via-[rgb(8_16_25_/_0.94)] to-[rgb(16_12_24_/_0.9)] border-emerald-300/40",
+    previewAccentClassName: "bg-gradient-to-r from-emerald-200 to-fuchsia-200",
+    previewTextClassName: "text-emerald-50",
+    previewChipClassName: "bg-emerald-300/16 text-emerald-100",
+  },
+  {
     value: "aurora",
     label: "Aurora clarity",
     description: "Softer glow with stronger body-copy contrast for long reading.",

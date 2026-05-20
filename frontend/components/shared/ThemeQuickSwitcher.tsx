@@ -8,6 +8,7 @@ import { type ThemePreference, useThemePreference } from "@/hooks/use-theme-pref
 const THEME_OPTIONS: Record<ThemePreference, { shortLabel: string; longLabel: string }> = {
   neon: { shortLabel: "Neon", longLabel: "Neon grid" },
   midnight: { shortLabel: "Midnight", longLabel: "Midnight contrast" },
+  terminal: { shortLabel: "Terminal", longLabel: "Terminal pulse" },
   aurora: { shortLabel: "Aurora", longLabel: "Aurora clarity" },
   "high-contrast": { shortLabel: "Contrast", longLabel: "High contrast" },
 };
@@ -15,11 +16,12 @@ const THEME_OPTIONS: Record<ThemePreference, { shortLabel: string; longLabel: st
 const THEME_SWATCHES: Record<ThemePreference, readonly [string, string, string]> = {
   neon: ["rgb(76,131,255)", "rgb(255,20,147)", "rgb(216,250,60)"],
   midnight: ["rgb(124,167,255)", "rgb(236,90,196)", "rgb(211,255,120)"],
+  terminal: ["rgb(92,214,192)", "rgb(255,96,176)", "rgb(168,246,184)"],
   aurora: ["rgb(95,205,255)", "rgb(255,112,188)", "rgb(194,255,146)"],
   "high-contrast": ["rgb(104,181,255)", "rgb(255,120,206)", "rgb(254,230,90)"],
 };
 
-const THEME_ORDER: ThemePreference[] = ["neon", "midnight", "aurora", "high-contrast"];
+const THEME_ORDER: ThemePreference[] = ["neon", "midnight", "terminal", "aurora", "high-contrast"];
 
 export function ThemeQuickSwitcher({
   compact = false,

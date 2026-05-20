@@ -6,7 +6,7 @@ const STORAGE_KEY = "gitrank:theme";
 const CHANGE_EVENT = "gitrank:theme-preference";
 const HIGH_CONTRAST_QUERY = "(prefers-contrast: more)";
 
-const SUPPORTED_THEMES = ["neon", "midnight", "aurora", "high-contrast"] as const;
+const SUPPORTED_THEMES = ["neon", "midnight", "terminal", "aurora", "high-contrast"] as const;
 
 export type ThemePreference = (typeof SUPPORTED_THEMES)[number];
 export type ThemePreferenceSource = "stored" | "system";

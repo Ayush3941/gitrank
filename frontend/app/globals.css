@@ -69,6 +69,34 @@ html[data-theme="midnight"] {
   --surface-blur-strong: 3px;
 }
 
+html[data-theme="terminal"] {
+  --background: 0 2 8;
+  --foreground: 242 252 247;
+  --muted: 201 228 220;
+  --card: 6 10 20;
+  --card-2: 8 14 27;
+  --border: 92 214 192;
+  --line: 74 135 125;
+  --primary: 92 214 192;
+  --primary-2: 255 96 176;
+  --success: 127 228 134;
+  --warning: 243 210 88;
+  --danger: 255 127 150;
+  --neon-accent: 168 246 184;
+  --neon-hot: 255 138 62;
+  --cyber-grid: 92 214 192;
+  --cyber-grid-alt: 255 96 176;
+  --text-strong: 246 254 250;
+  --text-body: 236 247 243;
+  --text-soft: 219 238 232;
+  --page-overlay-top-alpha: 0.01;
+  --page-overlay-bottom-alpha: 0.042;
+  --page-grid-opacity: 0.006;
+  --page-glow-opacity: 0.06;
+  --surface-blur: 2px;
+  --surface-blur-strong: 3px;
+}
+
 html[data-theme="aurora"] {
   --background: 2 7 17;
   --foreground: 248 252 255;

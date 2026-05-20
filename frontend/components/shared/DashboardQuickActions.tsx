@@ -30,7 +30,7 @@ import {
   type QuickActionItem,
 } from "@/lib/quick-actions";
 
-const THEME_ORDER: ThemePreference[] = ["neon", "midnight", "aurora", "high-contrast"];
+const THEME_ORDER: ThemePreference[] = ["neon", "midnight", "terminal", "aurora", "high-contrast"];
 const RECENT_ACTION_IDS_STORAGE_KEY = "gitrank:quick-actions-recent-ids";
 const MAX_RECENT_ACTIONS = 5;
 
@@ -88,8 +88,8 @@ export function DashboardQuickActions({
       id: "theme:cycle",
       group: "Display",
       label: `Switch theme (${themeLabel(theme)})`,
-      description: "Cycle among Neon, Midnight, Aurora, and High Contrast modes",
-      keywords: ["theme", "contrast", "neon", "midnight", "aurora"],
+      description: "Cycle among Neon, Midnight, Terminal, Aurora, and High Contrast modes",
+      keywords: ["theme", "contrast", "neon", "midnight", "terminal", "aurora"],
       icon: ShieldCheck,
       shortcut: "Alt+Shift+T",
       execute: () => {
@@ -491,6 +491,9 @@ function nextTheme(current: ThemePreference): ThemePreference {
 function themeLabel(theme: ThemePreference): string {
   if (theme === "neon") {
     return "Neon";
+  }
+  if (theme === "terminal") {
+    return "Terminal";
   }
   if (theme === "aurora") {
     return "Aurora";
