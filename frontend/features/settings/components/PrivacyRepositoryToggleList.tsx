@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { Search, X } from "lucide-react";
-import { startTransition, useMemo, useState } from "react";
+import { startTransition, useDeferredValue, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import type { RepositoryVisibility } from "@/types/gitrank";
 
 export function PrivacyRepositoryToggleList({
@@ -17,9 +18,12 @@ export function PrivacyRepositoryToggleList({
   onToggle?: (repository: RepositoryVisibility, checked: boolean) => void;
   pendingRepository?: string | null;
 }) {
+  const SEARCH_DEBOUNCE_MS = 220;
   const [items, setItems] = useState(repositories);
   const [search, setSearch] = useState("");
   const [visibilityFilter, setVisibilityFilter] = useState<"All" | "Public" | "Hidden">("All");
+  const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS);
+  const deferredSearch = useDeferredValue(debouncedSearch);
   const controlled = typeof onToggle === "function";
   const visibleItems = controlled ? repositories : items;
   const canReset = search.trim().length > 0 || visibilityFilter !== "All";
@@ -37,7 +41,7 @@ export function PrivacyRepositoryToggleList({
     };
   }, [visibleItems]);
   const filteredItems = useMemo(() => {
-    const term = search.trim().toLowerCase();
+    const term = deferredSearch.trim().toLowerCase();
 
     return visibleItems.filter((repo) => {
       const visibilityMatch =
@@ -48,7 +52,7 @@ export function PrivacyRepositoryToggleList({
         repo.reason.toLowerCase().includes(term);
       return visibilityMatch && searchMatch;
     });
-  }, [search, visibilityFilter, visibleItems]);
+  }, [deferredSearch, visibilityFilter, visibleItems]);
 
   function handleReset() {
     startTransition(() => {

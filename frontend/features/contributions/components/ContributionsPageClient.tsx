@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { startTransition, useDeferredValue, useEffect, useMemo, useState } from "react";
+import { startTransition, useDeferredValue, useMemo, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -12,6 +12,7 @@ import { ContributionList } from "@/features/contributions/components/Contributi
 import { useContributions } from "@/hooks/use-contributions";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
 import {
   shouldRequestAbraInsights,
@@ -470,19 +471,4 @@ function deduplicateContributionRowsByPR(rows: Contribution[]): Contribution[] {
   }
 
   return Array.from(bestByPR.values());
-}
-
-function useDebouncedValue<T>(value: T, delayMs: number): T {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-
-  useEffect(() => {
-    const handle = window.setTimeout(() => {
-      setDebouncedValue(value);
-    }, Math.max(0, delayMs));
-    return () => {
-      window.clearTimeout(handle);
-    };
-  }, [delayMs, value]);
-
-  return debouncedValue;
 }

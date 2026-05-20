@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, Search, X, XCircle } from "lucide-react";
-import { startTransition, useMemo, useRef, useState } from "react";
+import { startTransition, useDeferredValue, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { formatDateTime, formatRelativeDays } from "@/lib/formatters";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
@@ -27,8 +28,11 @@ export function SyncRunActivityPanel({
   errorMessage?: string;
   onRefresh: () => void;
 }) {
+  const SEARCH_DEBOUNCE_MS = 220;
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"All" | "Completed" | "Running" | "Failed">("All");
+  const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS);
+  const deferredSearch = useDeferredValue(debouncedSearch);
   const viewportAnchorY = useRef<number | null>(null);
   const canReset = search.trim().length > 0 || statusFilter !== "All";
   const compactSearch =
@@ -55,7 +59,7 @@ export function SyncRunActivityPanel({
     return next;
   }, [runs]);
   const filteredRuns = useMemo(() => {
-    const term = search.trim().toLowerCase();
+    const term = deferredSearch.trim().toLowerCase();
     return runs.filter((run) => {
       const normalizedStatus = syncRunStatusLabel(run.status);
       const statusMatch =
@@ -73,7 +77,7 @@ export function SyncRunActivityPanel({
         (run.last_error ?? "").toLowerCase().includes(term)
       );
     });
-  }, [search, statusFilter, runs]);
+  }, [deferredSearch, statusFilter, runs]);
   const resultsRegionClassName =
     "min-h-[20rem] max-h-[26rem] overflow-y-auto pr-1 [scrollbar-gutter:stable] [overflow-anchor:none]";
 
