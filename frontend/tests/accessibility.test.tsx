@@ -2,12 +2,13 @@ import React, { type ReactNode } from "react";
 import { render } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { axe } from "vitest-axe";
-import { DashboardSidebar } from "@/components/shared/DashboardSidebar";
+import { DashboardRouteNav } from "@/components/shared/DashboardRouteNav";
+import { DashboardTopBar } from "@/components/shared/DashboardTopBar";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
-import { MobileNav } from "@/components/shared/MobileNav";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
+import type { UserProfile } from "@/types/gitrank";
 
 vi.mock("next/link", () => ({
   default: ({ href, children }: { href: string; children: ReactNode }) => (
@@ -20,6 +21,21 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("frontend accessibility guardrails", () => {
+  const userFixture = {
+    username: "octocat",
+    displayName: "Octo Cat",
+    title: "Systems Builder",
+    weeklyXp: 120,
+    syncStatus: {
+      state: "synced",
+      lastSyncedAt: "2026-05-17T17:30:00.000Z",
+      partialProfileAvailable: false,
+    },
+    level: {
+      rankTier: "Bronze I",
+    },
+  } as const;
+
   it("keeps shared empty/error/stale patterns accessible", async () => {
     const rendered = render(
       <div>
@@ -59,8 +75,8 @@ describe("frontend accessibility guardrails", () => {
   it("keeps dashboard navigation components accessible", async () => {
     const rendered = render(
       <div>
-        <DashboardSidebar />
-        <MobileNav />
+        <DashboardTopBar user={userFixture as unknown as UserProfile} />
+        <DashboardRouteNav />
       </div>,
     );
     const result = await axe(rendered.container, {
