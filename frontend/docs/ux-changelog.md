@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Settings filter-to-results linkage pass:
+  - connected sync-run filter actions (status/search/reset) to a stable sync-runs results region via `aria-controls`.
+  - connected repository-visibility filter actions (search/state/reset) to a stable repository-results region via `aria-controls`.
+  - keeps existing settings behavior while improving assistive mapping between filter controls and updated result sets.
 - Leaderboard filter-to-results linkage pass:
   - added `aria-controls` from leaderboard lane tabs and `Reset to Global` action to the existing ranked-rows region container.
   - keeps lane behavior unchanged while tightening assistive mapping between filter controls and updated rank rows.

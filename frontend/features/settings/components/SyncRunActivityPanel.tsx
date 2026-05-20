@@ -36,6 +36,7 @@ export function SyncRunActivityPanel({
   const compactSearch =
     search.trim().length > 32 ? `${search.trim().slice(0, 32)}…` : search.trim();
   const filterStatusId = "settings-sync-filter-status";
+  const syncRunsRegionId = "settings-sync-runs-region";
   const statusCounts = useMemo(() => {
     const next = {
       all: runs.length,
@@ -147,6 +148,7 @@ export function SyncRunActivityPanel({
               variant="ghost"
               onClick={handleResetFilters}
               disabled={!canReset || isFiltering}
+              aria-controls={syncRunsRegionId}
             >
               Reset
             </Button>
@@ -162,6 +164,7 @@ export function SyncRunActivityPanel({
                   onClick={handleClearSearch}
                   className="focus-ring inline-flex h-6 w-6 items-center justify-center rounded-full text-cyan-100 hover:text-white"
                   aria-label="Clear sync run search query"
+                  aria-controls={syncRunsRegionId}
                   title="Clear search"
                 >
                   <X className="h-3.5 w-3.5" />
@@ -176,6 +179,7 @@ export function SyncRunActivityPanel({
                   onClick={handleClearStatusFilter}
                   className="focus-ring inline-flex h-6 w-6 items-center justify-center rounded-full text-cyan-100 hover:text-white"
                   aria-label="Clear sync run status filter"
+                  aria-controls={syncRunsRegionId}
                   title="Clear status filter"
                 >
                   <X className="h-3.5 w-3.5" />
@@ -218,6 +222,7 @@ export function SyncRunActivityPanel({
                 onClick={handleClearSearch}
                 className="focus-ring absolute top-1/2 right-3 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-cyan-100 hover:text-white"
                 aria-label="Clear sync run search"
+                aria-controls={syncRunsRegionId}
                 title="Clear search"
               >
                 <X className="h-4 w-4" />
@@ -239,6 +244,7 @@ export function SyncRunActivityPanel({
                   disabled={isFiltering}
                   aria-describedby={filterStatusId}
                   aria-pressed={statusFilter === item}
+                  aria-controls={syncRunsRegionId}
                 >
                   {item}
                 </Button>
@@ -263,11 +269,11 @@ export function SyncRunActivityPanel({
       ) : null}
 
       {isLoading ? (
-        <div className="neon-surface grid gap-2 px-4 py-4 text-sm text-muted">
+        <div id={syncRunsRegionId} className="neon-surface grid gap-2 px-4 py-4 text-sm text-muted">
           <p>Loading recent sync activity…</p>
         </div>
       ) : runs.length === 0 ? (
-        <div className="neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted">
+        <div id={syncRunsRegionId} className="neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted">
           <p>No sync runs recorded for this account yet. Open dashboard lanes and GitRank will enqueue background sync automatically.</p>
           <div className="flex flex-wrap gap-2">
             <Button asChild size="sm" variant="secondary">
@@ -279,7 +285,7 @@ export function SyncRunActivityPanel({
           </div>
         </div>
       ) : filteredRuns.length === 0 ? (
-        <div className="neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted">
+        <div id={syncRunsRegionId} className="neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted">
           <p>No sync runs match the current search or status filter.</p>
           <div className="flex flex-wrap gap-2">
             <Button
@@ -297,7 +303,7 @@ export function SyncRunActivityPanel({
           </div>
         </div>
       ) : (
-        <ol role="list" className="grid gap-2">
+        <ol id={syncRunsRegionId} role="list" className="grid gap-2">
           {filteredRuns.map((run) => {
             const safeLastError = sanitizeSyncRunErrorMessage(run.last_error);
             return (

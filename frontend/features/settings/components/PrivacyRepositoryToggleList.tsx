@@ -30,6 +30,7 @@ export function PrivacyRepositoryToggleList({
     search.trim().length > 32 ? `${search.trim().slice(0, 32)}…` : search.trim();
   const statusId = "settings-repositories-filter-status";
   const visibilityGroupId = "settings-repositories-visibility-group";
+  const repositoriesRegionId = "settings-repositories-visibility-region";
   const counts = useMemo(() => {
     const publicCount = visibleItems.filter((repo) => repo.visibility === "Public").length;
     return {
@@ -89,6 +90,7 @@ export function PrivacyRepositoryToggleList({
               variant="ghost"
               onClick={handleReset}
               disabled={!canReset || isFiltering}
+              aria-controls={repositoriesRegionId}
             >
               Reset
             </Button>
@@ -104,6 +106,7 @@ export function PrivacyRepositoryToggleList({
                   onClick={handleClearSearch}
                   className="focus-ring inline-flex min-h-6 min-w-6 items-center justify-center rounded-full border border-primary/30 px-1 text-xs leading-none text-cyan-100 hover:bg-primary/14"
                   aria-label="Clear repository search query"
+                  aria-controls={repositoriesRegionId}
                   title="Clear search"
                 >
                   <X className="h-3.5 w-3.5" />
@@ -118,6 +121,7 @@ export function PrivacyRepositoryToggleList({
                   onClick={handleClearVisibilityFilter}
                   className="focus-ring inline-flex min-h-6 min-w-6 items-center justify-center rounded-full border border-primary/30 px-1 text-xs leading-none text-cyan-100 hover:bg-primary/14"
                   aria-label="Clear repository visibility filter"
+                  aria-controls={repositoriesRegionId}
                   title="Clear visibility filter"
                 >
                   <X className="h-3.5 w-3.5" />
@@ -146,6 +150,7 @@ export function PrivacyRepositoryToggleList({
                 onClick={handleClearSearch}
                 className="focus-ring absolute top-1/2 right-3 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-cyan-100 hover:text-white"
                 aria-label="Clear repository search"
+                aria-controls={repositoriesRegionId}
                 title="Clear search"
               >
                 <X className="h-4 w-4" />
@@ -166,6 +171,7 @@ export function PrivacyRepositoryToggleList({
                   disabled={isFiltering}
                   aria-describedby={statusId}
                   aria-pressed={visibilityFilter === item}
+                  aria-controls={repositoriesRegionId}
                 >
                   {item}
                 </Button>
@@ -175,7 +181,7 @@ export function PrivacyRepositoryToggleList({
         </div>
       </div>
       {filteredItems.length > 0 ? (
-        <ul role="list" className="grid gap-3">
+        <ul id={repositoriesRegionId} role="list" className="grid gap-3">
           {filteredItems.map((repo) => (
             <li key={repo.name} className="list-none">
               <div className="render-opt-card neon-surface flex flex-col gap-3 rounded-[1.75rem] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -218,7 +224,7 @@ export function PrivacyRepositoryToggleList({
           ))}
         </ul>
       ) : (
-        <div className="neon-surface space-y-3 rounded-[1.75rem] border-dashed px-4 py-4 text-sm text-muted">
+        <div id={repositoriesRegionId} className="neon-surface space-y-3 rounded-[1.75rem] border-dashed px-4 py-4 text-sm text-muted">
           {counts.total === 0 ? (
             <p>
               Repository visibility records are not available in this profile snapshot yet.
@@ -238,6 +244,7 @@ export function PrivacyRepositoryToggleList({
                 variant="secondary"
                 onClick={handleReset}
                 disabled={isFiltering}
+                aria-controls={repositoriesRegionId}
               >
                 Reset filters
               </Button>
