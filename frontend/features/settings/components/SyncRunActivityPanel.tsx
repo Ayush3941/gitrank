@@ -299,7 +299,9 @@ export function SyncRunActivityPanel({
       {isLoading ? (
         <div
           id={syncRunsRegionId}
-          ref={resultsRegionRef}
+          ref={(node) => {
+            resultsRegionRef.current = node;
+          }}
           className={`neon-surface grid gap-2 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}
         >
           <p>Loading recent sync activity…</p>
@@ -307,7 +309,9 @@ export function SyncRunActivityPanel({
       ) : runs.length === 0 ? (
         <div
           id={syncRunsRegionId}
-          ref={resultsRegionRef}
+          ref={(node) => {
+            resultsRegionRef.current = node;
+          }}
           className={`neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}
         >
           <p>No sync runs recorded for this account yet. Open dashboard lanes and GitRank will enqueue background sync automatically.</p>
@@ -323,7 +327,9 @@ export function SyncRunActivityPanel({
       ) : filteredRuns.length === 0 ? (
         <div
           id={syncRunsRegionId}
-          ref={resultsRegionRef}
+          ref={(node) => {
+            resultsRegionRef.current = node;
+          }}
           className={`neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}
         >
           <p>No sync runs match the current search or status filter.</p>
