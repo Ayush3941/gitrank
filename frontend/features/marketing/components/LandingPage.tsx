@@ -1,10 +1,8 @@
 import Link from "next/link";
-import { ArrowRight, ChartNoAxesCombined, GitPullRequestArrow, ShieldCheck, Sparkles, Swords, Trophy } from "lucide-react";
+import { ArrowRight, ChartNoAxesCombined, GitPullRequestArrow, ShieldCheck, Swords, Trophy } from "lucide-react";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { SectionHeader } from "@/components/shared/SectionHeader";
-import { TextScaleQuickSwitcher } from "@/components/shared/TextScaleQuickSwitcher";
-import { ThemeQuickSwitcher } from "@/components/shared/ThemeQuickSwitcher";
 import { Button } from "@/components/ui/button";
 
 const loop = [
@@ -22,16 +20,6 @@ export function LandingPage() {
       <section className="glass-panel-strong overflow-hidden px-6 py-10 sm:px-10 sm:py-14">
         <div className="grid gap-10 lg:grid-cols-[1.2fr,0.8fr] lg:items-center">
           <div className="space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
-                <Sparkles className="h-3.5 w-3.5" />
-                Open-source battle pass
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <ThemeQuickSwitcher compact />
-                <TextScaleQuickSwitcher compact />
-              </div>
-            </div>
             <div className="space-y-4">
               <h1 className="neon-title cyber-title max-w-3xl text-4xl font-semibold tracking-tight sm:text-6xl">
                 Turn open-source work into a reputation system.
