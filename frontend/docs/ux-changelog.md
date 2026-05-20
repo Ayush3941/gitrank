@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Dashboard navigation + background legibility pass:
+  - reformatted mobile dashboard nav into horizontally scrollable lane cards with larger touch targets and stronger active-state contrast.
+  - added desktop sidebar lane indexing chips to improve scanability of the five primary lanes without changing route semantics.
+  - reduced app-shell vignette and global background glow/overlay intensity so the locked background image remains visible while body text contrast stays stable.
 - Onboarding reveal heading-structure pass:
   - normalized repeated badge and fallback card titles in `RevealPanel` from `h2` to `h3` within list-rendered cards.
   - added explicit `list-none` classes on reveal badge/fallback list items for consistent semantic card-list styling.

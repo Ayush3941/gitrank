@@ -19,24 +19,24 @@ export function MobileNav() {
       <p role="status" aria-live="polite" className="sr-only">
         {activeItem ? `Current lane: ${activeItem.label}` : "Dashboard navigation"}
       </p>
-      <div className="flex items-center justify-between gap-2 border-b border-primary/16 px-3 pb-1.5 pt-2">
-        <p className="min-w-0 text-sm text-foreground">
+      <div className="flex items-center justify-between gap-2 border-b border-primary/16 px-3 pb-2 pt-2.5">
+        <p className="min-w-0 text-sm font-medium text-foreground">
           {activeItem ? `Current lane: ${activeItem.label}` : "Dashboard navigation"}
         </p>
         <Link
           href="/dashboard/settings#settings-display"
           prefetch={false}
-          className="focus-ring inline-flex min-h-8 items-center justify-center border border-primary/20 bg-primary/8 px-2.5 text-xs font-semibold text-foreground hover:border-primary/30 hover:text-white"
+          className="focus-ring inline-flex min-h-9 items-center justify-center border border-primary/22 bg-primary/9 px-2.5 text-xs font-semibold text-foreground hover:border-primary/32 hover:text-white"
         >
           Display controls
         </Link>
       </div>
-      <ul role="list" className="grid grid-cols-5 gap-1 p-1.5">
+      <ul role="list" className="scrollbar-thin flex snap-x gap-1.5 overflow-x-auto px-2 pb-2 pt-1.5">
         {dashboardNavItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href, item.exact);
           return (
-            <li key={item.href}>
+            <li key={item.href} className="min-w-[6.4rem] flex-1 snap-start">
               <Link
                 href={item.href}
                 prefetch={false}
@@ -44,20 +44,20 @@ export function MobileNav() {
                 aria-label={item.label}
                 title={item.label}
                 className={cn(
-                  "focus-ring relative flex min-h-16 flex-col items-center justify-center gap-1 border px-1.5 py-1.5 text-[0.8rem] leading-tight font-semibold",
+                  "focus-ring relative flex min-h-[4.25rem] flex-col items-center justify-center gap-1.5 border px-2 py-2 text-[0.84rem] leading-tight font-semibold",
                   active
-                    ? "border-primary/42 bg-primary/14 text-white"
-                    : "border-transparent text-foreground hover:border-primary/22 hover:bg-primary/8 hover:text-white",
+                    ? "border-primary/42 bg-primary/15 text-white shadow-[0_0_14px_rgb(34_226_255_/_0.12)]"
+                    : "border-primary/14 text-foreground hover:border-primary/24 hover:bg-primary/9 hover:text-white",
                 )}
               >
                 <span
                   className={cn(
-                    "absolute bottom-0 left-1/2 h-[2px] w-7 -translate-x-1/2 bg-transparent",
+                    "absolute bottom-0 left-1/2 h-[2px] w-8 -translate-x-1/2 bg-transparent",
                     active && "bg-primary",
                   )}
                 />
                 <Icon className={cn("h-4 w-4", active ? "text-primary" : "text-muted")} />
-                <span className="max-w-[5.4rem] break-anywhere text-center text-[0.8rem] leading-4">{item.mobileLabel}</span>
+                <span className="max-w-[6rem] break-anywhere text-center text-[0.84rem] leading-4">{item.mobileLabel}</span>
                 <span className="sr-only">{item.hint}</span>
               </Link>
             </li>
