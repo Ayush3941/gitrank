@@ -27,13 +27,6 @@ export function DashboardTopBar({
       item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`),
     ) ?? dashboardNavItems[0];
   const ActiveLaneIcon = activeLane.icon;
-  const breadcrumbItems =
-    activeLane.href === "/dashboard"
-      ? [{ label: "Dashboard", href: "/dashboard" }]
-      : [
-          { label: "Dashboard", href: "/dashboard" },
-          { label: activeLane.label, href: activeLane.href },
-        ];
   const autoSyncToneClass =
     autoSyncNote?.tone === "success"
       ? "neon-chip neon-chip-success border-emerald-300/30 text-emerald-100"
@@ -51,35 +44,7 @@ export function DashboardTopBar({
     <div className="glass-panel cyber-card cyber-frame mb-6 px-5 py-4">
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
         <div className="flex flex-col gap-2">
-          <nav aria-label="Breadcrumb" className="min-w-0">
-            <ol className="flex min-w-0 items-center gap-1.5 text-xs text-cyan-100">
-              {breadcrumbItems.map((item, index) => {
-                const isCurrent = index === breadcrumbItems.length - 1;
-                return (
-                  <li key={item.href} className="inline-flex min-w-0 items-center gap-1.5">
-                    {isCurrent ? (
-                      <span aria-current="page" className="break-anywhere font-semibold text-white">
-                        {item.label}
-                      </span>
-                    ) : (
-                      <Link
-                        href={item.href}
-                        prefetch={false}
-                        className="focus-ring text-cyan-100 hover:text-white"
-                      >
-                        {item.label}
-                      </Link>
-                    )}
-                    {!isCurrent ? (
-                      <span aria-hidden="true" className="text-cyan-100/70">
-                        /
-                      </span>
-                    ) : null}
-                  </li>
-                );
-              })}
-            </ol>
-          </nav>
+          <p className="text-sm font-semibold text-white">{activeLane.label}</p>
           <div className="hud-pill inline-flex max-w-full items-center gap-2 rounded-full px-3 py-1.5 text-xs text-cyan-100">
             <ActiveLaneIcon className="h-3.5 w-3.5 text-primary" />
             <span className="break-anywhere leading-5">{activeLane.hint}</span>
@@ -147,9 +112,9 @@ export function DashboardTopBarSkeleton() {
   return (
     <div className="glass-panel cyber-card cyber-frame mb-6 px-5 py-4">
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
-        <div className="space-y-2">
-          <div className="neon-skeleton h-5 w-44 rounded-full" />
-          <div className="neon-skeleton h-8 w-[min(34rem,100%)] rounded-full" />
+        <div className="space-y-2.5">
+          <div className="neon-skeleton h-5 w-40 rounded-[0.1rem]" />
+          <div className="neon-skeleton h-8 w-[min(34rem,100%)] rounded-[0.1rem]" />
         </div>
         <div className="flex flex-col items-start gap-3 xl:items-end">
           <div className="flex flex-wrap items-center gap-3">
