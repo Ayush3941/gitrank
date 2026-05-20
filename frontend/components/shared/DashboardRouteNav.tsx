@@ -13,7 +13,7 @@ export function DashboardRouteNav() {
   return (
     <nav
       aria-label="Dashboard navigation"
-      className="glass-panel sticky sticky-safe-top-4 z-20"
+      className="glass-panel"
     >
       <ul role="list" className="scrollbar-thin flex gap-2 overflow-x-auto p-2">
         {dashboardNavItems.map((item) => {

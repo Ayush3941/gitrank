@@ -32,7 +32,7 @@ export function SectionJumpNav<SectionID extends string>({
   stickyClassName?: string;
 }) {
   const itemRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
-  const stickyClasses = stickyClassName ?? "xl:sticky xl:z-20 sticky-safe-top-20";
+  const stickyClasses = stickyClassName ?? "";
 
   useEffect(() => {
     const activeItem = itemRefs.current[activeSection];
