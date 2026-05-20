@@ -35,6 +35,8 @@ export function SyncRunActivityPanel({
   const deferredSearch = useDeferredValue(debouncedSearch);
   const isFiltering = search !== debouncedSearch || deferredSearch !== debouncedSearch;
   const viewportAnchorY = useRef<number | null>(null);
+  const resultsRegionScrollTop = useRef<number | null>(null);
+  const resultsRegionRef = useRef<HTMLElement | null>(null);
   const canReset = search.trim().length > 0 || statusFilter !== "All";
   const compactSearch =
     search.trim().length > 32 ? `${search.trim().slice(0, 32)}…` : search.trim();
@@ -86,12 +88,19 @@ export function SyncRunActivityPanel({
     if (typeof window !== "undefined") {
       viewportAnchorY.current = window.scrollY;
     }
+    const currentResultsRegion = resultsRegionRef.current;
+    resultsRegionScrollTop.current = currentResultsRegion ? currentResultsRegion.scrollTop : null;
     startTransition(update);
     if (typeof window !== "undefined") {
       requestAnimationFrame(() => {
         const y = viewportAnchorY.current;
         if (typeof y === "number") {
           window.scrollTo({ top: y, left: 0, behavior: "auto" });
+        }
+        const nextResultsRegion = resultsRegionRef.current;
+        const scrollTop = resultsRegionScrollTop.current;
+        if (nextResultsRegion && typeof scrollTop === "number") {
+          nextResultsRegion.scrollTop = scrollTop;
         }
       });
     }
@@ -288,11 +297,19 @@ export function SyncRunActivityPanel({
       ) : null}
 
       {isLoading ? (
-        <div id={syncRunsRegionId} className={`neon-surface grid gap-2 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}>
+        <div
+          id={syncRunsRegionId}
+          ref={resultsRegionRef}
+          className={`neon-surface grid gap-2 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}
+        >
           <p>Loading recent sync activity…</p>
         </div>
       ) : runs.length === 0 ? (
-        <div id={syncRunsRegionId} className={`neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}>
+        <div
+          id={syncRunsRegionId}
+          ref={resultsRegionRef}
+          className={`neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}
+        >
           <p>No sync runs recorded for this account yet. Open dashboard lanes and GitRank will enqueue background sync automatically.</p>
           <div className="flex flex-wrap gap-2">
             <Button asChild size="sm" variant="secondary">
@@ -304,7 +321,11 @@ export function SyncRunActivityPanel({
           </div>
         </div>
       ) : filteredRuns.length === 0 ? (
-        <div id={syncRunsRegionId} className={`neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}>
+        <div
+          id={syncRunsRegionId}
+          ref={resultsRegionRef}
+          className={`neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}
+        >
           <p>No sync runs match the current search or status filter.</p>
           <div className="flex flex-wrap gap-2">
             <Button
@@ -324,6 +345,9 @@ export function SyncRunActivityPanel({
       ) : (
         <ol
           id={syncRunsRegionId}
+          ref={(node) => {
+            resultsRegionRef.current = node;
+          }}
           role="list"
           aria-busy={isFiltering || undefined}
           className={`grid gap-2 ${resultsRegionClassName}`}

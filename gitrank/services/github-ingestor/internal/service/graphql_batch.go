@@ -239,7 +239,9 @@ func (e *Executor) executorForActor(ctx context.Context, actor SyncRequestActor,
 	}
 	client, ok, err := e.restClientForActor(ctx, actor, now)
 	if err != nil {
-		return nil, err
+		// Token-source failures (for example stale/decrypt-mismatched local OAuth keys)
+		// should not hard-fail sync execution; fallback to the baseline shared client.
+		return e, nil
 	}
 	if !ok || client == nil {
 		return e, nil

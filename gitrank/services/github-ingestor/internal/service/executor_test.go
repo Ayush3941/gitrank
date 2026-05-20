@@ -297,6 +297,52 @@ func TestDecodeOptionalOAuthTokenKeysIncludesPreviousKeys(t *testing.T) {
 	}
 }
 
+func TestExecutorForActorFallsBackOnTokenSourceError(t *testing.T) {
+	t.Parallel()
+
+	baseClient := &githubapi.RESTClient{}
+	executor := &Executor{
+		client: baseClient,
+		graphqlTokenSource: func(context.Context, SyncRequestActor, time.Time) (githubapi.TokenSource, bool, error) {
+			return nil, false, errors.New("secret could not be decrypted")
+		},
+		restClientFactory: func(githubapi.TokenSource) (*githubapi.RESTClient, error) {
+			return &githubapi.RESTClient{}, nil
+		},
+	}
+
+	runtime, err := executor.executorForActor(context.Background(), SyncRequestActor{GitHubLogin: "octocat"}, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("executorForActor() error = %v", err)
+	}
+	if runtime != executor {
+		t.Fatalf("executorForActor() runtime = %p, want fallback executor %p", runtime, executor)
+	}
+}
+
+func TestExecutorForActorFallsBackOnRestClientFactoryError(t *testing.T) {
+	t.Parallel()
+
+	baseClient := &githubapi.RESTClient{}
+	executor := &Executor{
+		client: baseClient,
+		graphqlTokenSource: func(context.Context, SyncRequestActor, time.Time) (githubapi.TokenSource, bool, error) {
+			return githubapi.StaticTokenSource("ghu_test_token"), true, nil
+		},
+		restClientFactory: func(githubapi.TokenSource) (*githubapi.RESTClient, error) {
+			return nil, errors.New("rest client factory failed")
+		},
+	}
+
+	runtime, err := executor.executorForActor(context.Background(), SyncRequestActor{GitHubLogin: "octocat"}, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("executorForActor() error = %v", err)
+	}
+	if runtime != executor {
+		t.Fatalf("executorForActor() runtime = %p, want fallback executor %p", runtime, executor)
+	}
+}
+
 func TestExecutorFetchPullRequestFilesUsesBoundedRESTEndpoint(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/repos/octo/repo/pulls/7/files" {
