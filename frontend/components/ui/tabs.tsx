@@ -34,16 +34,13 @@ export function TabsList({
       if (itemAlreadyVisible) {
         return;
       }
-      const prefersReducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
       const centeredLeft = Math.max(
         0,
         itemStart - (listNode.clientWidth - activeTab.offsetWidth) / 2,
       );
       listNode.scrollTo({
         left: centeredLeft,
-        behavior: prefersReducedMotion ? "auto" : "smooth",
+        behavior: "auto",
       });
     };
 

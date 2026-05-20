@@ -10,11 +10,7 @@ import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
-import { TextScaleQuickSwitcher } from "@/components/shared/TextScaleQuickSwitcher";
-import { ThemeQuickSwitcher } from "@/components/shared/ThemeQuickSwitcher";
-import { ConstrainedNetworkPill } from "@/components/shared/ConstrainedNetworkPill";
 import { Button } from "@/components/ui/button";
 import { EvidenceSignalsCard } from "@/features/pr-report/components/EvidenceSignalsCard";
 import { ScoreMatrixCard } from "@/features/pr-report/components/ScoreMatrixCard";
@@ -56,8 +52,6 @@ export function PRBattleReportPageClient({
   const activeSectionLabel =
     PR_REPORT_SECTION_ITEMS.find((section) => section.id === activeSection)?.label ??
     "Overview";
-  const activeSectionLink =
-    `/pr/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${number}#${activeSection}`;
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -162,19 +156,8 @@ export function PRBattleReportPageClient({
         eyebrow="PR Report"
         title="PR battle report"
         description="Explainable contribution scoring, not a mysterious number."
-        meta={(
-          <>
-            <SnapshotFreshnessPill
-              refreshedAt={data.sourceUpdatedAt}
-              label="Report snapshot"
-            />
-            <ConstrainedNetworkPill />
-          </>
-        )}
         actions={(
           <div className="flex flex-wrap gap-2">
-            <ThemeQuickSwitcher compact />
-            <TextScaleQuickSwitcher compact />
             <Button asChild variant="secondary">
               <Link href="/dashboard/contributions">Back to contributions</Link>
             </Button>
@@ -205,9 +188,6 @@ export function PRBattleReportPageClient({
         items={PR_REPORT_SECTION_ITEMS}
         activeSection={activeSection}
         onSectionSelect={setActiveSection}
-        copyHref={activeSectionLink}
-        copyAnalyticsTarget="pr-report/copy-section-link"
-        stickyClassName="lg:sticky lg:z-20 sticky-safe-top-4"
       />
       <section id="pr-report-overview" className="scroll-mt-24">
         <GlowCard strong className="space-y-5">

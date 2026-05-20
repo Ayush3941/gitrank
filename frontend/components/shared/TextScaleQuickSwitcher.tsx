@@ -53,9 +53,15 @@ export function TextScaleQuickSwitcher({
       >
         <Type className="h-4 w-4 text-primary" />
         <span className="text-sm">
-          Text:
-          {" "}
-          <span className="font-semibold">{currentLabel}</span>
+          {compact ? (
+            <span className="font-semibold">{currentLabel}</span>
+          ) : (
+            <>
+              Text:
+              {" "}
+              <span className="font-semibold">{currentLabel}</span>
+            </>
+          )}
         </span>
       </Button>
       <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">

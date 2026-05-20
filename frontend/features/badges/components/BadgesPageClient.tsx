@@ -4,7 +4,6 @@ import Link from "next/link";
 import { Crown, ShieldCheck, Sparkles, Trophy, X } from "lucide-react";
 import { startTransition, type ReactNode, useEffect, useRef, useState } from "react";
 import { ExpandableText } from "@/components/shared/ExpandableText";
-import { ConstrainedNetworkPill } from "@/components/shared/ConstrainedNetworkPill";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -12,7 +11,6 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
-import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { StaleState } from "@/components/shared/StaleState";
 import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { Progress } from "@/components/ui/progress";
@@ -76,7 +74,6 @@ export function BadgesPageClient() {
   const completionPercent = totalCount > 0 ? Math.round((unlockedCount / totalCount) * 100) : 0;
   const activeSectionLabel =
     BADGE_SECTION_ITEMS.find((section) => section.id === activeSection)?.label ?? "Forge";
-  const activeSectionLink = `/dashboard/badges#${activeSection}`;
   const streak = summarizeContributionStreak(profile?.user.contributions ?? []);
   const nextUnlockTarget = lockedBadgesSorted[0] ?? null;
 
@@ -242,15 +239,6 @@ export function BadgesPageClient() {
         eyebrow="Badges"
         title="Badge shelf"
         description="Turn each unlocked badge into a story, track locked paths, and frame progression as a visible contributor journey."
-        meta={
-          <>
-            <SnapshotFreshnessPill
-              refreshedAt={profile?.refreshedAt}
-              label="Badge snapshot"
-            />
-            <ConstrainedNetworkPill />
-          </>
-        }
         actions={(
           <Button asChild variant="secondary">
             <Link href="/dashboard/quests">Open quests</Link>
@@ -270,8 +258,6 @@ export function BadgesPageClient() {
         items={BADGE_SECTION_ITEMS}
         activeSection={activeSection}
         onSectionSelect={setActiveSection}
-        copyHref={activeSectionLink}
-        copyAnalyticsTarget="badges/copy-section-link"
       />
       <section id="badges-forge" className="render-opt-section scroll-mt-24 space-y-4">
         {profile?.user.syncStatus.state === "stale" ? (

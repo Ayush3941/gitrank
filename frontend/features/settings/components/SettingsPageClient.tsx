@@ -4,13 +4,11 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Download, FolderGit2, LogOut, Palette, RefreshCw, Sparkles, Trash2 } from "lucide-react";
 import { ErrorState } from "@/components/shared/ErrorState";
-import { ConstrainedNetworkPill } from "@/components/shared/ConstrainedNetworkPill";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
-import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { SyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
@@ -180,7 +178,6 @@ export function SettingsPageClient() {
   const activeSectionLabel =
     SETTINGS_SECTION_ITEMS.find((section) => section.id === activeSection)?.label ??
     "Account";
-  const activeSectionLink = `/dashboard/settings#${activeSection}`;
   const currentSettings = data?.user.privacy ?? null;
   const activeThemeOption =
     THEME_OPTIONS.find((option) => option.value === theme) ??
@@ -377,15 +374,6 @@ export function SettingsPageClient() {
         eyebrow="Settings"
         title="Settings and privacy"
         description="Choose what becomes public, which repositories stay visible, and how much of your GitRank profile is shared."
-        meta={
-          <>
-            <SnapshotFreshnessPill
-              refreshedAt={data?.refreshedAt}
-              label="Settings snapshot"
-            />
-            <ConstrainedNetworkPill />
-          </>
-        }
         actions={(
           <div className="flex flex-wrap gap-2">
             <Button asChild variant="secondary">
@@ -409,8 +397,6 @@ export function SettingsPageClient() {
         items={SETTINGS_SECTION_ITEMS}
         activeSection={activeSection}
         onSectionSelect={setActiveSection}
-        copyHref={activeSectionLink}
-        copyAnalyticsTarget="settings/copy-section-link"
       />
       <section id="settings-account" className="scroll-mt-24">
         <GlowCard className="space-y-4">

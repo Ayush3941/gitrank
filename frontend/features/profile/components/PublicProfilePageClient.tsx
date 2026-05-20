@@ -12,12 +12,10 @@ import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
 import { SkillRadarChart } from "@/components/shared/SkillRadarChart";
-import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { TimelineChart } from "@/components/shared/TimelineChart";
 import { RarityBadge } from "@/components/shared/RarityBadge";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
-import { ConstrainedNetworkPill } from "@/components/shared/ConstrainedNetworkPill";
 import { Button } from "@/components/ui/button";
 import { BestPRsPanel } from "@/features/profile/components/BestPRsPanel";
 import { PublicProfileHero } from "@/features/profile/components/PublicProfileHero";
@@ -60,7 +58,6 @@ export function PublicProfilePageClient({
   const activeSectionLabel =
     PUBLIC_PROFILE_SECTION_ITEMS.find((section) => section.id === activeSection)?.label ??
     "Overview";
-  const activeSectionLink = `/u/${encodeURIComponent(username)}#${activeSection}`;
   const streak = summarizeContributionStreak(data?.user.contributions ?? []);
   const abraPayload = useMemo(() => {
     if (!data) {
@@ -222,15 +219,6 @@ export function PublicProfilePageClient({
         eyebrow="Public profile"
         title={`${data.user.displayName} on GitRank`}
         description="Share-ready contributor identity with evidence-backed score context, progression signals, and verifiable contribution highlights."
-        meta={(
-          <>
-            <SnapshotFreshnessPill
-              refreshedAt={data.refreshedAt}
-              label="Public snapshot"
-            />
-            <ConstrainedNetworkPill />
-          </>
-        )}
         actions={(
           <Button asChild variant="secondary">
             <Link href="/dashboard">Open dashboard</Link>
@@ -257,9 +245,6 @@ export function PublicProfilePageClient({
         items={PUBLIC_PROFILE_SECTION_ITEMS}
         activeSection={activeSection}
         onSectionSelect={setActiveSection}
-        copyHref={activeSectionLink}
-        copyAnalyticsTarget="public-profile/copy-section-link"
-        stickyClassName="lg:sticky lg:z-20 sticky-safe-top-4"
       />
       <section id="public-profile-overview" className="scroll-mt-24 space-y-6">
         <PublicProfileHero

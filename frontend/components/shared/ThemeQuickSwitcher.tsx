@@ -73,9 +73,15 @@ export function ThemeQuickSwitcher({
       >
         <Palette className="h-4 w-4 text-primary" />
         <span className="text-sm">
-          Theme:
-          {" "}
-          <span className="font-semibold">{current.shortLabel}</span>
+          {compact ? (
+            <span className="font-semibold">{current.shortLabel}</span>
+          ) : (
+            <>
+              Theme:
+              {" "}
+              <span className="font-semibold">{current.shortLabel}</span>
+            </>
+          )}
         </span>
         <span className="inline-flex items-center gap-1" aria-hidden="true">
           {swatches.map((color, index) => (

@@ -5,7 +5,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowUpRight, Target, Trophy } from "lucide-react";
 import { startTransition, useDeferredValue, useEffect, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { ConstrainedNetworkPill } from "@/components/shared/ConstrainedNetworkPill";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -13,7 +12,6 @@ import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { CopyLinkButton } from "@/components/shared/CopyLinkButton";
 import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
-import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { StaleState } from "@/components/shared/StaleState";
 import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { Button } from "@/components/ui/button";
@@ -115,8 +113,6 @@ export function LeaderboardPageClient() {
   const activeSectionLabel =
     LEADERBOARD_SECTION_ITEMS.find((section) => section.id === activeSection)?.label ??
     "Tabs";
-  const activeSectionLink =
-    `/dashboard/leaderboard?lane=${tabToLaneParam(tab)}#${activeSection}`;
 
   useEffect(() => {
     const lane = tabToLaneParam(tab);
@@ -196,15 +192,6 @@ export function LeaderboardPageClient() {
         eyebrow="Leaderboard"
         title="Leaderboard arena"
         description="A time-windowed ranking snapshot weighted by meaningful merged work, review depth, tests, and project context."
-        meta={
-          <>
-            <SnapshotFreshnessPill
-              refreshedAt={myProfile?.refreshedAt}
-              label="Leaderboard context"
-            />
-            <ConstrainedNetworkPill />
-          </>
-        }
         actions={(
           <Button asChild variant="secondary">
             <Link href="/dashboard/contributions">Open contributions</Link>
@@ -240,8 +227,6 @@ export function LeaderboardPageClient() {
         items={LEADERBOARD_SECTION_ITEMS}
         activeSection={activeSection}
         onSectionSelect={setActiveSection}
-        copyHref={activeSectionLink}
-        copyAnalyticsTarget="leaderboard/copy-section-link"
       />
       <section id="leaderboard-filters" className="scroll-mt-24 space-y-3">
         <Tabs value={tab} onValueChange={handleTabChange}>

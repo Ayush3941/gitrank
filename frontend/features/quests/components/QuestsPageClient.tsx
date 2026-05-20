@@ -4,7 +4,6 @@ import Link from "next/link";
 import { ArrowRight, CalendarClock, Flame, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { ConstrainedNetworkPill } from "@/components/shared/ConstrainedNetworkPill";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -12,7 +11,6 @@ import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
 import { SectionHeader } from "@/components/shared/SectionHeader";
-import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { StaleState } from "@/components/shared/StaleState";
 import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { Button } from "@/components/ui/button";
@@ -57,7 +55,6 @@ export function QuestsPageClient() {
   const weeklyQuest = selectQuestSpotlight(questMap.Weekly);
   const longTermQuest = selectQuestSpotlight(questMap["Long-term"]);
   const activeQuestSectionId = QUEST_SECTION_IDS[activeGroup];
-  const activeCadenceLink = `/dashboard/quests#${activeQuestSectionId}`;
   const questSectionItems = groups.map((group) => ({
     id: QUEST_SECTION_IDS[group],
     label: labelForGroup(group),
@@ -138,15 +135,6 @@ export function QuestsPageClient() {
         eyebrow="Quests"
         title="Quest board"
         description="Daily, weekly, and long-term missions from the backend quest engine with evidence-aware completion states."
-        meta={
-          <>
-            <SnapshotFreshnessPill
-              refreshedAt={data?.staleness?.refreshedAt ?? profile?.refreshedAt}
-              label="Quest snapshot"
-            />
-            <ConstrainedNetworkPill />
-          </>
-        }
         actions={(
           <Button asChild variant="secondary">
             <Link href="/dashboard/contributions">Open contributions</Link>
@@ -257,8 +245,6 @@ export function QuestsPageClient() {
             }
             setActiveGroup(matchGroup);
           }}
-          copyHref={activeCadenceLink}
-          copyAnalyticsTarget="quests/copy-cadence-link"
         />
       ) : null}
       {isLoading ? <LoadingState message="Building your skill tree..." /> : null}

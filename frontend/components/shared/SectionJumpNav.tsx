@@ -46,14 +46,13 @@ export function SectionJumpNav<SectionID extends string>({
     if (itemAlreadyVisible) {
       return;
     }
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const centeredLeft = Math.max(
       0,
       itemStart - (railNode.clientWidth - activeItem.offsetWidth) / 2,
     );
     railNode.scrollTo({
       left: centeredLeft,
-      behavior: prefersReducedMotion ? "auto" : "smooth",
+      behavior: "auto",
     });
   }, [activeSection]);
 
@@ -66,10 +65,9 @@ export function SectionJumpNav<SectionID extends string>({
     if (!node || typeof node.scrollIntoView !== "function") {
       return;
     }
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     node.scrollIntoView({
       block: "start",
-      behavior: prefersReducedMotion ? "auto" : "smooth",
+      behavior: "auto",
     });
   }
 
