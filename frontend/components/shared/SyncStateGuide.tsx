@@ -17,40 +17,40 @@ export type SyncStateGuideCopy = {
 
 const SYNC_STATE_COPY: Record<SyncState, SyncStateGuideCopy> = {
   never_synced: {
-    title: "No evidence synced yet",
-    detail: "Contribution history has not been imported yet.",
-    actionLabel: "Open account settings",
+    title: "No sync data yet",
+    detail: "Connect and run first sync.",
+    actionLabel: "Open settings",
     actionHref: "/dashboard/settings",
     toneClassName: "border-primary/28",
     icon: Clock3,
   },
   syncing: {
-    title: "Background sync in progress",
-    detail: "Evidence import is running and profile cards will update automatically.",
-    actionLabel: "Watch contribution window",
+    title: "Sync in progress",
+    detail: "Profile updates will apply automatically.",
+    actionLabel: "Open contributions",
     actionHref: "/dashboard/contributions",
     toneClassName: "border-cyan-300/35",
     icon: RefreshCw,
   },
   partially_synced: {
-    title: "Partial evidence available",
-    detail: "Some repository or PR metadata is still pending.",
+    title: "Partial sync data",
+    detail: "Some repository or PR metadata is pending.",
     actionLabel: "Open contributions",
     actionHref: "/dashboard/contributions",
     toneClassName: "border-amber-300/35",
     icon: AlertTriangle,
   },
   synced: {
-    title: "Evidence is up to date",
-    detail: "Dashboard data is using the latest verified sync snapshot.",
+    title: "Synced",
+    detail: "Latest verified snapshot loaded.",
     actionLabel: "Open contribution cards",
     actionHref: "/dashboard/contributions",
     toneClassName: "border-emerald-300/34",
     icon: CheckCircle2,
   },
   stale: {
-    title: "Snapshot is stale",
-    detail: "Score and timeline can lag behind recent GitHub activity.",
+    title: "Snapshot stale",
+    detail: "Score and timeline may lag.",
     actionLabel: "Review sync health",
     actionHref: "/dashboard/settings",
     toneClassName: "border-amber-300/35",
@@ -58,16 +58,16 @@ const SYNC_STATE_COPY: Record<SyncState, SyncStateGuideCopy> = {
   },
   failed: {
     title: "Sync failed",
-    detail: "GitHub sync returned an error and needs recovery from settings.",
-    actionLabel: "Recover account link",
+    detail: "GitHub sync needs recovery.",
+    actionLabel: "Recover link",
     actionHref: "/dashboard/settings",
     toneClassName: "border-rose-300/40",
     icon: ShieldAlert,
   },
   rate_limited: {
-    title: "GitHub rate limit reached",
-    detail: "GitRank is temporarily throttled by GitHub and will retry automatically.",
-    actionLabel: "View current contribution scope",
+    title: "Rate limited",
+    detail: "GitRank will retry automatically.",
+    actionLabel: "Open contributions",
     actionHref: "/dashboard/contributions",
     toneClassName: "border-violet-300/35",
     icon: WifiOff,
@@ -103,15 +103,15 @@ export function SyncStateGuide({
   const boundedProgress = Number.isFinite(status.progress)
     ? Math.max(0, Math.min(100, Math.round(status.progress)))
     : null;
-  const contextParts: string[] = [`Last synced ${formatRelativeDays(status.lastSyncedAt)}.`];
+  const contextParts: string[] = [`Synced ${formatRelativeDays(status.lastSyncedAt)}.`];
   if (status.currentStep) {
-    contextParts.push(`Current step: ${status.currentStep}.`);
+    contextParts.push(`Step: ${status.currentStep}.`);
   }
   if (boundedProgress !== null && status.state === "syncing") {
-    contextParts.push(`Progress ${boundedProgress}%.`);
+    contextParts.push(`${boundedProgress}% complete.`);
   }
   if (status.partialProfileAvailable && guideState !== "partially_synced") {
-    contextParts.push("Partial profile data is still available.");
+    contextParts.push("Partial data available.");
   }
 
   return (
@@ -129,12 +129,15 @@ export function SyncStateGuide({
           <Icon className="h-4 w-4 text-primary" />
         </div>
         <div className="space-y-1">
-          <h3 className="cyber-title text-sm font-semibold text-white">{copy.title}</h3>
-          <p className="text-sm leading-6 text-muted">{copy.detail}</p>
+          <h3 className="cyber-title text-sm font-semibold text-white">
+            {copy.title}
+            {boundedProgress !== null && status.state === "syncing" ? ` · ${boundedProgress}%` : ""}
+          </h3>
+          <p className="text-sm text-muted">{copy.detail}</p>
         </div>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-xs leading-5 text-muted">{contextParts.join(" ")}</p>
+        <p className="text-xs text-muted">{contextParts.join(" ")}</p>
         <Button asChild size="sm" variant="secondary">
           <Link href={copy.actionHref} prefetch={false}>
             {copy.actionLabel}
