@@ -40,7 +40,7 @@ export function DashboardTopBar({
         : Info;
 
   return (
-    <div className="glass-panel cyber-card cyber-frame mb-6 px-5 py-4 [overflow-anchor:none]">
+    <div className="glass-panel cyber-card cyber-frame mb-4 px-5 py-4 [overflow-anchor:none]">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="inline-flex min-w-0 items-center gap-2">
           <span className="hud-pill inline-flex h-8 w-8 items-center justify-center rounded-full text-primary">
@@ -53,7 +53,7 @@ export function DashboardTopBar({
           <RankBadge rank={user.level.rankTier} />
           <div className="hud-pill inline-flex items-center gap-2 px-3 py-1.5 text-xs text-foreground">
             <Zap className="h-3.5 w-3.5 text-primary" />
-            <span className="numeric-readout">{user.weeklyXp.toLocaleString("en-US")}</span> weekly XP
+            <span className="numeric-readout">{user.weeklyXp.toLocaleString("en-US")}</span> XP
           </div>
           <Link
             href={`/u/${user.username}`}
@@ -71,8 +71,8 @@ export function DashboardTopBar({
         aria-atomic="true"
         className={
           autoSyncNote
-            ? `mt-3 inline-flex min-h-6 items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium ${autoSyncToneClass}`
-            : "mt-3 min-h-6 text-xs opacity-0 pointer-events-none select-none"
+            ? `mt-3 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium ${autoSyncToneClass}`
+            : "sr-only"
         }
       >
         {autoSyncNote ? (
@@ -81,7 +81,7 @@ export function DashboardTopBar({
             <span className="break-anywhere">{autoSyncNote.message}</span>
           </>
         ) : (
-          "Background sync status"
+          "No active background sync notice."
         )}
       </p>
     </div>

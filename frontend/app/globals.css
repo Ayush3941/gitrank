@@ -237,6 +237,7 @@ html {
   scroll-behavior: auto;
   scroll-padding-top: max(6.5rem, env(safe-area-inset-top));
   scroll-padding-bottom: max(7rem, env(safe-area-inset-bottom));
+  scrollbar-gutter: stable both-edges;
 }
 
 body {
@@ -548,6 +549,14 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 
 :where(strong, b, th, h1, h2, h3, h4, h5, h6) {
   color: rgb(var(--text-strong));
+}
+
+:where(h1, h2, h3) {
+  text-wrap: balance;
+}
+
+:where(p, li) {
+  text-wrap: pretty;
 }
 
 [class*="tracking-[0.24em]"] {
