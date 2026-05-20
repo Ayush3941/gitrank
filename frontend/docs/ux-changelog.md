@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- Quick-actions ARIA grouping refinement:
+  - aligned dashboard quick-actions listbox with grouped-option semantics (`role="group"` containers with direct `role="option"` children).
+  - added option positional metadata (`aria-posinset`, `aria-setsize`) for clearer assistive context while preserving existing keyboard flow and visual grouping.
 - Semantic card-grid pass on high-traffic lanes:
   - converted remaining repeated card/chip grids in badges, contributions timeline highlights, dashboard badge shelf, dashboard battle reports, dashboard signal chips, and marketing solution cards to semantic `ul/li` structures.
   - preserved existing visual layout and interactions while improving assistive-tech list traversal and item-count context.

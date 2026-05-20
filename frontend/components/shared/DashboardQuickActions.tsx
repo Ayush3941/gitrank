@@ -410,22 +410,24 @@ export function DashboardQuickActions({
           >
             {groupedActions.length > 0 ? (
               groupedActions.map((group) => (
-                <section key={group.title} className="space-y-2">
+                <div key={group.title} role="group" aria-label={group.title} className="space-y-2">
                   <p className="px-1 text-xs font-medium text-cyan-200">
                     {group.title}
                   </p>
-                  <ul className="space-y-2">
+                  <div className="space-y-2">
                     {group.items.map((action) => {
                       const Icon = action.icon;
                       const index = actionIndexMap.get(action.id) ?? -1;
                       const highlighted = index === clampedHighlightedIndex;
                       return (
-                        <li key={action.id} className="list-none">
                         <button
+                          key={action.id}
                           id={optionIdForAction(action.id)}
                           type="button"
                           role="option"
                           aria-selected={highlighted}
+                          aria-posinset={index >= 0 ? index + 1 : undefined}
+                          aria-setsize={visibleActions.length > 0 ? visibleActions.length : undefined}
                           onMouseEnter={() => {
                             if (index >= 0) {
                               setHighlightedIndex(index);
@@ -451,11 +453,10 @@ export function DashboardQuickActions({
                           </div>
                           <p className="mt-1 text-xs text-muted">{action.description}</p>
                         </button>
-                        </li>
                       );
                     })}
-                  </ul>
-                </section>
+                  </div>
+                </div>
               ))
             ) : (
               <div className="neon-tile space-y-3 rounded-[0.1rem] border border-dashed border-primary/30 px-3 py-3 text-sm text-muted">
