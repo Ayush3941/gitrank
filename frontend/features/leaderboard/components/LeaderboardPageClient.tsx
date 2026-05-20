@@ -176,31 +176,24 @@ export function LeaderboardPageClient() {
               ? `Refreshing ${tab}...`
               : `Viewing ${tab}`}
           </p>
-          <div className="flex flex-wrap items-center gap-2">
-            {tab !== "Global" ? (
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                onClick={() => handleTabChange("Global")}
-                disabled={isBusy}
-                aria-controls={LEADERBOARD_ROWS_REGION_ID}
-                title="Return to Global lane"
-              >
-                Reset to Global
-              </Button>
-            ) : null}
-          </div>
+          {tab !== "Global" ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => handleTabChange("Global")}
+              disabled={isBusy}
+              aria-controls={LEADERBOARD_ROWS_REGION_ID}
+              title="Return to Global lane"
+            >
+              Reset to Global
+            </Button>
+          ) : null}
         </div>
         {snapshot ? (
-          <div className="flex flex-wrap gap-2 text-xs">
-            <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-              {rows.length} active rows
-            </span>
-            <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-              Formula {snapshot.season.scoringVersion}
-            </span>
-          </div>
+          <p className="text-xs text-muted">
+            {rows.length} ranked rows · formula {snapshot.season.scoringVersion}
+          </p>
         ) : null}
       </section>
       {isLoading ? <LoadingState message="Updating the arena ladder..." /> : null}
@@ -346,24 +339,15 @@ export function LeaderboardPageClient() {
               This lane has {rows.length} active public profiles right now. Ranking is live, but bracket density is still low.
             </p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <ClimbTip
-              title="Your current slot"
-              body={
-                snapshot.currentUser
-                  ? `#${snapshot.currentUser.rank} in ${tab}`
-                  : "Unranked in this lane"
-              }
-            />
-            <ClimbTip
-              title="Promotion target"
-              body={snapshot.currentUser ? `${snapshot.currentUser.xpToNextRank} XP to next band` : "Sync more evidence to enter rank bands"}
-            />
-            <ClimbTip
-              title="Fastest climb lane"
-              body="Prioritize merged PR depth, review quality, and weekly consistency over raw volume."
-            />
-          </div>
+          <p className="text-sm text-amber-100">
+            {snapshot.currentUser
+              ? `Current slot: #${snapshot.currentUser.rank} in ${tab}.`
+              : "Current slot: unranked in this lane."}{" "}
+            Promotion target:{" "}
+            {snapshot.currentUser
+              ? `${snapshot.currentUser.xpToNextRank} XP to next band.`
+              : "sync more evidence to enter rank bands."}
+          </p>
           <div className="flex flex-wrap gap-2">
             <Button asChild variant="secondary" size="sm">
               <Link href="/dashboard/contributions">Improve contribution signal</Link>

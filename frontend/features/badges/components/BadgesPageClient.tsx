@@ -298,7 +298,6 @@ export function BadgesPageClient() {
       </section>
       <section id="badges-earned" className="render-opt-section scroll-mt-24 space-y-4">
         <div className="space-y-2">
-          <p className="text-sm font-medium text-fuchsia-100">Filter controls</p>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p id={badgesFilterStatusId} role="status" aria-live="polite" className="text-sm text-fuchsia-100">
               Showing {filtered.length} of {totalCount} badges
@@ -335,13 +334,6 @@ export function BadgesPageClient() {
                     >
                       <X className="h-3.5 w-3.5" />
                     </button>
-                  </span>
-                </li>
-              ) : null}
-              {!canResetFilters ? (
-                <li className="list-none">
-                  <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-                    No active filters
                   </span>
                 </li>
               ) : null}
