@@ -114,10 +114,10 @@ export function ContributionList({
               ) : (
                 <div className="neon-surface rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
                   This live profile row comes from persisted score-history evidence. Formula version:{" "}
-                  {item.formulaVersion || "not recorded"}.{" "}
+                  {formatFormulaVersion(item.formulaVersion)}.{" "}
                   {item.evidenceMissing?.length
                     ? `Missing evidence links: ${item.evidenceMissing.join(", ")}.`
-                    : "Score event, PR, and analysis links are present."}
+                    : "Score event, PR, and report links are present."}
                 </div>
               )}
               <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted">
@@ -286,6 +286,11 @@ function formatContributionTimeline(item: Contribution): string {
     return `Open contribution snapshot as of ${formatContributionDate(item.mergedAt)}.`;
   }
   return `Closed contribution snapshot as of ${formatContributionDate(item.mergedAt)}.`;
+}
+
+function formatFormulaVersion(formulaVersion?: string): string {
+  const value = (formulaVersion ?? "").trim();
+  return value.length > 0 ? value : "pending";
 }
 
 function AIPanel({

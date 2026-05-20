@@ -72,7 +72,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
                   textClassName="break-anywhere text-sm leading-6 text-muted"
                 />
                 <p className="mt-2 text-xs text-muted">
-                  Score formula {report.scoreVersion || "not recorded"} · analysis {report.analysisVersion || "not recorded"}
+                  Score formula {formatScoreVersion(report.scoreVersion)} · insight {formatAnalysisVersion(report.analysisVersion)}
                 </p>
               </div>
               <div className="text-right">
@@ -147,4 +147,20 @@ function confidenceLabel(report: PullRequestAnalysis): string {
   }
   const confidence = Math.max(0, Math.min(100, Math.round(report.aiConfidence * 100)));
   return `Confidence ${confidence}%`;
+}
+
+function formatScoreVersion(version?: string): string {
+  const value = (version ?? "").trim();
+  return value.length > 0 ? value : "pending";
+}
+
+function formatAnalysisVersion(version?: string): string {
+  const value = (version ?? "").trim();
+  if (value.length === 0) {
+    return "pending";
+  }
+  if (value.toLowerCase() === "unknown") {
+    return "deterministic";
+  }
+  return value;
 }

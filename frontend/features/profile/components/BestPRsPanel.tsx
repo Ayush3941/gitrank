@@ -49,7 +49,7 @@ export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
                     textClassName="break-anywhere text-sm text-muted"
                   />
                   <p className="neon-chip neon-chip-muted mt-3 inline-flex rounded-full px-3 py-1 text-xs">
-                    Evidence {report.evidenceState || "partial"} / Formula {report.formulaVersion || "not recorded"}
+                    Evidence {report.evidenceState || "partial"} / Formula {formatFormulaVersion(report.formulaVersion)}
                   </p>
                 </div>
                 <div className="text-right">
@@ -96,4 +96,9 @@ function deduplicateFeaturedContributionsByPR(
   }
 
   return Array.from(bestByPR.values());
+}
+
+function formatFormulaVersion(formulaVersion?: string): string {
+  const value = (formulaVersion ?? "").trim();
+  return value.length > 0 ? value : "pending";
 }

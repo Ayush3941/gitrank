@@ -47,7 +47,7 @@ export function PRBattleReportPageClient({
       <EmptyState
         eyebrow="PR evidence"
         title="Battle report not found"
-        description="This PR either has not been synced, is private, or has not produced a persisted analysis and score report yet."
+        description="This PR either has not been synced, is private, or has not produced a scored report yet."
         actionLabel="Open contributions"
         actionHref="/dashboard/contributions"
         secondaryActionLabel="Open settings"
@@ -337,7 +337,7 @@ function formatAnalysisSource(source?: string): string {
     return "deterministic";
   }
   if (normalized.length === 0 || normalized === "unknown") {
-    return "unknown";
+    return "pending";
   }
   return normalized;
 }

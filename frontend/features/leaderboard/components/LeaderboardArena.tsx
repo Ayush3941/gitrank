@@ -197,7 +197,7 @@ export function LeaderboardArena({
                         textClassName="break-anywhere text-sm leading-6 text-muted"
                       />
                       <p className="mt-2 max-w-2xl text-xs text-muted">
-                        Snapshot {row.profileSnapshotVersion || "unknown"} / Score {row.scoreFormulaVersion}
+                        Snapshot {formatSnapshotVersion(row.profileSnapshotVersion)} / Score {formatScoreFormulaVersion(row.scoreFormulaVersion)}
                         {row.sourceWatermark ? ` / Watermark ${new Date(row.sourceWatermark).toLocaleDateString()}` : ""}
                       </p>
                       <div className="mt-2">
@@ -304,4 +304,14 @@ function recommendedActionForRow(row: LeaderboardSnapshot["rows"][number]): stri
     return `${row.xpToNextRank.toLocaleString("en-US")} XP to next band`;
   }
   return "maintain signal quality and cadence";
+}
+
+function formatSnapshotVersion(version?: string): string {
+  const value = (version ?? "").trim();
+  return value.length > 0 ? value : "pending";
+}
+
+function formatScoreFormulaVersion(version?: string): string {
+  const value = (version ?? "").trim();
+  return value.length > 0 ? value : "pending";
 }
