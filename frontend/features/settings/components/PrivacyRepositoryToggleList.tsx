@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Search, X } from "lucide-react";
-import { startTransition, useDeferredValue, useMemo, useState } from "react";
+import { startTransition, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -20,11 +20,8 @@ export function PrivacyRepositoryToggleList({
   const [items, setItems] = useState(repositories);
   const [search, setSearch] = useState("");
   const [visibilityFilter, setVisibilityFilter] = useState<"All" | "Public" | "Hidden">("All");
-  const deferredSearch = useDeferredValue(search);
-  const deferredFilter = useDeferredValue(visibilityFilter);
   const controlled = typeof onToggle === "function";
   const visibleItems = controlled ? repositories : items;
-  const isFiltering = deferredSearch !== search || deferredFilter !== visibilityFilter;
   const canReset = search.trim().length > 0 || visibilityFilter !== "All";
   const compactSearch =
     search.trim().length > 32 ? `${search.trim().slice(0, 32)}…` : search.trim();
@@ -40,18 +37,18 @@ export function PrivacyRepositoryToggleList({
     };
   }, [visibleItems]);
   const filteredItems = useMemo(() => {
-    const term = deferredSearch.trim().toLowerCase();
+    const term = search.trim().toLowerCase();
 
     return visibleItems.filter((repo) => {
       const visibilityMatch =
-        deferredFilter === "All" || repo.visibility === deferredFilter;
+        visibilityFilter === "All" || repo.visibility === visibilityFilter;
       const searchMatch =
         term.length === 0 ||
         repo.name.toLowerCase().includes(term) ||
         repo.reason.toLowerCase().includes(term);
       return visibilityMatch && searchMatch;
     });
-  }, [deferredFilter, deferredSearch, visibleItems]);
+  }, [search, visibilityFilter, visibleItems]);
 
   function handleReset() {
     startTransition(() => {
@@ -77,9 +74,7 @@ export function PrivacyRepositoryToggleList({
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p id={statusId} role="status" aria-live="polite" className="text-xs font-medium text-cyan-200">
-            {isFiltering
-              ? "Updating repository list..."
-              : `${filteredItems.length} of ${counts.total} repositories`}
+            {filteredItems.length} of {counts.total} repositories
           </p>
           <div className="flex flex-wrap gap-2">
             <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">Public {counts.public}</span>
@@ -89,7 +84,7 @@ export function PrivacyRepositoryToggleList({
               size="sm"
               variant="ghost"
               onClick={handleReset}
-              disabled={!canReset || isFiltering}
+              disabled={!canReset}
               aria-controls={repositoriesRegionId}
             >
               Reset
@@ -168,7 +163,6 @@ export function PrivacyRepositoryToggleList({
                   size="sm"
                   variant={visibilityFilter === item ? "default" : "secondary"}
                   onClick={() => startTransition(() => setVisibilityFilter(item))}
-                  disabled={isFiltering}
                   aria-describedby={statusId}
                   aria-pressed={visibilityFilter === item}
                   aria-controls={repositoriesRegionId}
@@ -243,7 +237,6 @@ export function PrivacyRepositoryToggleList({
                 size="sm"
                 variant="secondary"
                 onClick={handleReset}
-                disabled={isFiltering}
                 aria-controls={repositoriesRegionId}
               >
                 Reset filters
