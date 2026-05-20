@@ -26,6 +26,12 @@ export function BadgeGrid({
               tabIndex={0}
               className="focus-ring cursor-pointer text-left"
               aria-label={`Open ${badge.name} details`}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  event.currentTarget.click();
+                }
+              }}
             >
               <GlowCard className="render-opt-card cyber-hero-shell h-full space-y-4">
                 <div className="flex items-start justify-between gap-3">

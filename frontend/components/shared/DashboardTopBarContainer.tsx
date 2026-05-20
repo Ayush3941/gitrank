@@ -85,7 +85,7 @@ export function DashboardTopBarContainer() {
         autoSyncAttempts.current = 0;
         setAutoSyncOutcome({
           tone: "success",
-          message: "Background sync finished and profile evidence is up to date.",
+          message: "Profile sync completed.",
         });
         void emitAnalyticsEvent({
           eventName: "sync.succeeded",

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Award, CalendarClock, CheckCircle2, GitPullRequest, ShieldCheck, Stars } from "lucide-react";
+import { Award, CheckCircle2, GitPullRequest, ShieldCheck, Stars } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { ExpandableText } from "@/components/shared/ExpandableText";
@@ -254,40 +254,22 @@ export function PublicProfilePageClient({
           identitySummary={abraInsights.data?.identitySummary ?? fallbackIdentitySummary}
           aiMode={abraInsights.data?.generatedBy ?? "deterministic"}
         />
-        <GlowCard className="space-y-4 border border-primary/22 bg-gradient-to-br from-slate-950/90 to-cyan-950/18">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="text-xs font-medium text-primary">Profile proof strip</p>
-              <h2 className="mt-2 text-2xl font-semibold text-white">Share-ready evidence context</h2>
-              <p className="mt-2 text-sm text-muted">
-                Public profile claims are snapshot-based and explainable. Use these fields to communicate freshness, scope, and confidence when sharing this card.
-              </p>
-            </div>
-            <span className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold">
-              <CalendarClock className="h-3.5 w-3.5" />
-              Refreshed {formatRelativeDays(data.refreshedAt)}
-            </span>
-          </div>
-          <div className="grid gap-3 md:grid-cols-3">
-            <ProofStripItem
-              label="Snapshot state"
-              value={data.isStale ? "Stale snapshot" : "Fresh snapshot"}
-              detail={data.partialProfileAvailable ? "Partial evidence mode" : "Complete evidence mode"}
-            />
-            <ProofStripItem
-              label="Evidence scope"
-              value={`${data.user.contributions.length} contribution events`}
-              detail={`${data.user.mergedPrCount} merged PRs included in this public read model`}
-            />
-            <ProofStripItem
-              label="Trend window"
-              value={data.trendWindowLabel}
-              detail="Timeline and consistency signals are bounded to this configured window"
-            />
-          </div>
-        </GlowCard>
-        <div className="neon-callout rounded-[1.75rem] px-4 py-3 text-sm text-muted">
-          Public profiles summarize recent contribution evidence. Skill areas and repository rankings are snapshot-based signals, not absolute claims of expertise.
+        <div className="flex flex-wrap gap-2 text-xs">
+          <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+            Refreshed {formatRelativeDays(data.refreshedAt)}
+          </span>
+          <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+            {data.isStale ? "Stale snapshot" : "Fresh snapshot"}
+          </span>
+          <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+            {data.partialProfileAvailable ? "Partial evidence" : "Complete evidence"}
+          </span>
+          <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+            {data.user.contributions.length} events
+          </span>
+          <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+            {data.trendWindowLabel}
+          </span>
         </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <StatCard label="Total XP" value={data.user.gitRankScore} detail="The explainable score ledger currently served on this profile." icon={<Stars className="h-5 w-5 text-primary" />} />
@@ -412,23 +394,5 @@ function PublicProfileSectionPlaceholder({ title }: { title: string }) {
         <div className="neon-skeleton h-24 rounded-[0.1rem]" />
       </div>
     </GlowCard>
-  );
-}
-
-function ProofStripItem({
-  label,
-  value,
-  detail,
-}: {
-  label: string;
-  value: string;
-  detail: string;
-}) {
-  return (
-    <div className="neon-surface space-y-2 px-4 py-4">
-      <p className="text-xs font-medium text-primary">{label}</p>
-      <p className="text-lg font-semibold text-white">{value}</p>
-      <p className="text-xs text-muted">{detail}</p>
-    </div>
   );
 }

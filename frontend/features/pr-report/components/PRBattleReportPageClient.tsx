@@ -143,12 +143,7 @@ export function PRBattleReportPageClient({
         ? "Medium signal"
         : "Early signal";
   const signalDetail = `${data.contribution.category} • ${data.contribution.changedFilesCount} files changed`;
-  const evidenceDetail = evidenceAnchored
-    ? "Score is anchored by complete or deterministic evidence."
-    : "Score is directional while missing evidence resolves.";
   const nextMoveTitle = suggestedQuest?.title || "Open contribution lane";
-  const nextMoveDetail = suggestedQuest?.whyRecommended
-    || "Use this report to target stronger review depth, tests, and impact signals in the next PR.";
 
   return (
     <div className="space-y-6">
@@ -164,23 +159,20 @@ export function PRBattleReportPageClient({
           </div>
         )}
       />
-      <GlowCard className="grid gap-3 md:grid-cols-3">
-        <VerdictTile
-          title="Signal tier"
-          value={signalTier}
-          detail={signalDetail}
-        />
-        <VerdictTile
-          title="Evidence confidence"
-          value={evidenceAnchored ? "Anchored" : "Partial"}
-          detail={evidenceDetail}
-        />
-        <VerdictTile
-          title="Best next move"
-          value={nextMoveTitle}
-          detail={nextMoveDetail}
-        />
-      </GlowCard>
+      <div className="flex flex-wrap gap-2 text-xs">
+        <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+          Signal {signalTier}
+        </span>
+        <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+          {signalDetail}
+        </span>
+        <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+          {evidenceAnchored ? "Anchored evidence" : "Partial evidence"}
+        </span>
+        <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+          Next: {nextMoveTitle}
+        </span>
+      </div>
       <SectionJumpNav
         navLabelID="pr-report-jump-nav-label"
         landmarkLabel="PR report section navigation"
@@ -382,29 +374,6 @@ function PRReportSectionPlaceholder({ title }: { title: string }) {
         <div className="neon-skeleton h-24 rounded-[0.1rem]" />
       </div>
     </GlowCard>
-  );
-}
-
-function VerdictTile({
-  title,
-  value,
-  detail,
-}: {
-  title: string;
-  value: string;
-  detail: string;
-}) {
-  return (
-    <div className="neon-surface space-y-2 px-4 py-3">
-      <p className="text-xs font-medium text-primary">{title}</p>
-      <p className="break-anywhere text-lg font-semibold text-white">{value}</p>
-      <ExpandableText
-        text={detail}
-        lines={3}
-        minLengthForToggle={130}
-        textClassName="break-anywhere text-xs leading-6 text-muted"
-      />
-    </div>
   );
 }
 

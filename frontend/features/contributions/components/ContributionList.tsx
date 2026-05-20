@@ -34,7 +34,7 @@ export function ContributionList({
           : null;
         return (
           <li
-            key={item.id}
+            key={`${item.owner}/${item.repo}#${item.number}-${item.id}-${index}`}
             className="list-none"
             aria-posinset={isPartialSet ? position : undefined}
             aria-setsize={isPartialSet ? fullSetCount : undefined}

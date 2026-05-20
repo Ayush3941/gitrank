@@ -1,14 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Download, FolderGit2, LogOut, Palette, RefreshCw, Sparkles, Trash2 } from "lucide-react";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { SyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
@@ -42,7 +41,6 @@ import {
 } from "@/hooks/use-text-scale-preference";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import { type ThemePreference, useThemePreference } from "@/hooks/use-theme-preference";
-import { initialSectionFromHash } from "@/lib/section-nav";
 
 type BackedPrivacyKey =
   | "publicProfileEnabled"
@@ -50,27 +48,6 @@ type BackedPrivacyKey =
   | "showAiSummaries"
   | "showLeaderboardParticipation"
   | "reducedGamification";
-
-type SettingsSectionID =
-  | "settings-account"
-  | "settings-sync-activity"
-  | "settings-public-profile"
-  | "settings-display"
-  | "settings-repositories"
-  | "settings-data-controls";
-
-const SETTINGS_SECTION_ITEMS: Array<{ id: SettingsSectionID; label: string }> = [
-  { id: "settings-account", label: "Account" },
-  { id: "settings-sync-activity", label: "Sync log" },
-  { id: "settings-public-profile", label: "Privacy" },
-  { id: "settings-display", label: "Display" },
-  { id: "settings-repositories", label: "Repositories" },
-  { id: "settings-data-controls", label: "Data" },
-];
-const SETTINGS_SECTION_IDS = SETTINGS_SECTION_ITEMS.map(
-  (section) => section.id,
-) as SettingsSectionID[];
-const SETTINGS_DEFAULT_SECTION: SettingsSectionID = "settings-account";
 
 const THEME_OPTIONS: Array<{
   value: ThemePreference;
@@ -173,63 +150,11 @@ export function SettingsPageClient() {
   useAccountGamificationPreference(data);
   const [actionNotice, setActionNotice] = useState("");
   const [displayNotice, setDisplayNotice] = useState("");
-  const [activeSection, setActiveSection] =
-    useState<SettingsSectionID>(SETTINGS_DEFAULT_SECTION);
-  const activeSectionLabel =
-    SETTINGS_SECTION_ITEMS.find((section) => section.id === activeSection)?.label ??
-    "Account";
   const currentSettings = data?.user.privacy ?? null;
   const activeThemeOption =
     THEME_OPTIONS.find((option) => option.value === theme) ??
     THEME_OPTIONS.find((option) => option.value === "high-contrast") ??
     THEME_OPTIONS[0];
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const syncFromHash = () => {
-      const nextSection = initialSectionFromHash(
-        SETTINGS_SECTION_IDS,
-        SETTINGS_DEFAULT_SECTION,
-        window.location.hash,
-      );
-      setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
-    };
-    syncFromHash();
-    window.addEventListener("hashchange", syncFromHash);
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((left, right) => right.intersectionRatio - left.intersectionRatio)[0];
-        if (!visible) {
-          return;
-        }
-        const nextSection = initialSectionFromHash(
-          SETTINGS_SECTION_IDS,
-          SETTINGS_DEFAULT_SECTION,
-          `#${visible.target.id}`,
-        );
-        setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
-      },
-      { rootMargin: "-22% 0px -55% 0px", threshold: [0.2, 0.45, 0.7] },
-    );
-
-    SETTINGS_SECTION_ITEMS.forEach(({ id }) => {
-      const node = document.getElementById(id);
-      if (node) {
-        observer.observe(node);
-      }
-    });
-
-    return () => {
-      window.removeEventListener("hashchange", syncFromHash);
-      observer.disconnect();
-    };
-  }, []);
 
   function handleResetDisplayPreferences() {
     clearThemePreference();
@@ -389,14 +314,6 @@ export function SettingsPageClient() {
             />
           </div>
         )}
-      />
-      <SectionJumpNav
-        navLabelID="settings-jump-nav-label"
-        landmarkLabel="Settings section navigation"
-        activeSectionLabel={activeSectionLabel}
-        items={SETTINGS_SECTION_ITEMS}
-        activeSection={activeSection}
-        onSectionSelect={setActiveSection}
       />
       <section id="settings-account" className="scroll-mt-24">
         <GlowCard className="space-y-4">

@@ -392,8 +392,11 @@ export function ContributionsPageClient() {
                 <h3 className="cyber-title text-sm font-medium text-cyan-200">Top highlights</h3>
                 {topHighlights.length ? (
                   <ul role="list" className="space-y-3">
-                    {topHighlights.map((row) => (
-                      <li key={row.id} className="list-none render-opt-card neon-surface space-y-2 rounded-2xl px-3 py-3">
+                    {topHighlights.map((row, index) => (
+                      <li
+                        key={`${row.owner}/${row.repo}#${row.number}-${row.id}-${index}`}
+                        className="list-none render-opt-card neon-surface space-y-2 rounded-2xl px-3 py-3"
+                      >
                         <p className="break-anywhere text-sm font-medium text-white">{row.title}</p>
                         <p className="mt-1 break-anywhere text-xs text-muted">{row.owner}/{row.repo} #{row.number}</p>
                         <p className="mt-2 text-sm text-cyan-200">+{row.xpEarned} XP</p>
