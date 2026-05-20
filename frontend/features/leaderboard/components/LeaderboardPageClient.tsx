@@ -245,7 +245,10 @@ export function LeaderboardPageClient() {
       />
       <section id="leaderboard-filters" className="scroll-mt-24 space-y-3">
         <Tabs value={tab} onValueChange={handleTabChange}>
-          <TabsList className="scrollbar-thin w-full overflow-x-auto whitespace-nowrap">
+          <TabsList
+            className="scrollbar-thin w-full overflow-x-auto whitespace-nowrap"
+            aria-label="Leaderboard lane filters"
+          >
             {tabs.map((item) => (
               <TabsTrigger
                 key={item}

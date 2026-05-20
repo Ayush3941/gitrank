@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- Leaderboard lane-tab labeling pass:
+  - added explicit `aria-label` on leaderboard `TabsList` so the lane selector is announced consistently as a filter control in assistive navigation.
+  - preserves existing tab behavior and route semantics.
 - Dashboard navigation readability pass:
   - increased lane-status text contrast in desktop sidebar and mobile nav headers.
   - strengthened mobile lane label typography (`0.8rem`) for clearer five-lane scanning without changing route structure.
