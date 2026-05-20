@@ -349,7 +349,7 @@ export function SettingsPageClient() {
           </Button>
         </div>
         <p className="text-sm text-muted">
-          Automatic GitHub sync runs in the background when you open authenticated dashboard routes. Export excludes token secrets and secret hashes.
+          GitHub sync runs automatically when authenticated dashboard pages load. Exports never include token secrets or secret hashes.
         </p>
         <SyncStateGuide status={data.user.syncStatus} />
         <div className="min-h-6">
@@ -404,9 +404,8 @@ export function SettingsPageClient() {
               <p className="mt-4 text-xs font-medium text-primary">Display preference</p>
               <h2 className="mt-2 text-2xl font-semibold text-white">Reduced gamification</h2>
               <p className="mt-2 text-sm leading-6 text-muted">
-                Lowers animated XP ticks, badge shimmer, glow intensity, and rank effects for this account. Scores,
-                badges, leaderboard placement, and privacy visibility do not change. If no explicit preference is
-                saved, GitRank follows your system reduced-motion and reduced-data preferences.
+                Reduces XP animation, shimmer, and glow effects for this account. Scoring and privacy do not change.
+                If no preference is saved, GitRank follows your system reduced-motion and reduced-data settings.
               </p>
             </div>
             <Switch
@@ -423,8 +422,7 @@ export function SettingsPageClient() {
               <p className="text-xs font-medium text-primary">Keyboard controls</p>
               <h3 className="mt-2 text-xl font-semibold text-white">Display shortcuts</h3>
               <p className="mt-2 text-sm leading-6 text-muted">
-                Enables global display shortcuts when focus is not in an editable field. Navigation shortcuts
-                like <kbd>Ctrl/Cmd + K</kbd> and dashboard shortcut help <kbd>?</kbd> remain available.
+                Enables global display shortcuts when focus is outside editable fields.
               </p>
             </div>
             <Switch
@@ -443,8 +441,8 @@ export function SettingsPageClient() {
               <p className="mt-4 text-xs font-medium text-primary">Visual theme</p>
               <h2 className="mt-2 text-2xl font-semibold text-white">Readable style mode</h2>
               <p className="mt-2 text-sm leading-6 text-muted">
-                Theme choice only changes visual treatment. Ranking, scoring, privacy, and sync behavior stay identical.
-                If no explicit theme is stored, GitRank follows your system high-contrast preference.
+                Theme changes visuals only. Ranking, scoring, privacy, and sync behavior stay the same.
+                If no theme is saved, GitRank follows your system high-contrast preference.
               </p>
               <p className="mt-2 text-xs text-muted">
                 Theme source:
@@ -525,13 +523,12 @@ export function SettingsPageClient() {
               <p className="text-xs font-medium text-primary">Text scale</p>
               <h3 className="mt-2 text-xl font-semibold text-white">Readable text size</h3>
               <p className="mt-2 text-sm leading-6 text-muted">
-                Choose a denser or larger text rendering mode. This affects frontend reading size only.
+                Choose default or large text size for frontend readability.
               </p>
               <p className="mt-2 text-xs leading-6 text-muted">
-                Keyboard shortcuts: <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> toggles theme, and <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd> toggles text size.
-                {" "}
-                <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd> toggles visual effects between full and reduced modes.
-                {" "}Use <kbd>?</kbd> on dashboard pages for the full shortcut reference.
+                Shortcuts: <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> (theme),{" "}
+                <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd> (text),{" "}
+                <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd> (effects).
               </p>
             </div>
             <div className="grid w-full gap-2 sm:w-auto sm:min-w-[18rem]">
@@ -580,7 +577,7 @@ export function SettingsPageClient() {
           <div className="neon-surface-strong space-y-3 px-4 py-4">
             <p className="text-xs font-medium text-primary">Live readability preview</p>
             <h3 className="text-lg font-semibold text-white">
-              GitRank highlights meaningful contribution quality clearly before style.
+              Verify readability before style.
             </h3>
             <p className="text-sm leading-7 text-muted">
               Current theme:
@@ -592,7 +589,7 @@ export function SettingsPageClient() {
               {activeThemeOption.description}
             </p>
             <p className="text-sm leading-7 text-muted">
-              Use this preview to confirm headings, supporting copy, and small labels stay easy to read on your screen.
+              Use this preview to confirm headings and labels stay clear on your screen.
             </p>
           </div>
           </GlowCard>
