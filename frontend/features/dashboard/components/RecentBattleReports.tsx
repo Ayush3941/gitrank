@@ -16,19 +16,17 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
       <div>
         <p className="text-xs font-medium text-primary">Recent battle reports</p>
         <h2 className="mt-2 text-2xl font-semibold text-white">High-signal PRs from the last cycle</h2>
-        <p className="mt-2 text-sm text-muted">
-          Showing {sortedReports.length} distinct PR reports ordered by XP impact.
-        </p>
+        <p className="mt-2 text-sm text-muted">{sortedReports.length} report rows sorted by XP impact.</p>
       </div>
       <ul role="list" className="grid gap-3">
-        {reports.length === 0 ? (
+        {sortedReports.length === 0 ? (
           <li className="list-none neon-surface space-y-3 rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
             <p>
-              No persisted PR battle reports are attached to this profile snapshot yet. Direct report URLs will appear here after scoring writes score events with public PR evidence.
+              No PR report cards yet. They appear after sync, analysis, and score persistence complete.
             </p>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" variant="secondary">
-                <Link href="/dashboard/settings" prefetch={false}>Refresh sync settings</Link>
+                <Link href="/dashboard/settings" prefetch={false}>Open settings</Link>
               </Button>
               <Button asChild size="sm" variant="secondary">
                 <Link href="/dashboard/contributions" prefetch={false}>Inspect contributions</Link>
@@ -66,7 +64,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
                   className="mt-3 max-w-3xl"
                   textClassName="break-anywhere text-sm leading-6 text-muted"
                 />
-                <p className="mt-2 text-xs text-muted">Formula {formatScoreVersion(report.scoreVersion)} · Analysis {formatAnalysisVersion(report.analysisVersion)}</p>
+                <p className="mt-2 text-xs text-muted">Analysis {formatAnalysisVersion(report.analysisVersion)}</p>
               </div>
               <div className="text-right">
                 <p className="text-xs font-medium text-primary">XP earned</p>
@@ -134,11 +132,6 @@ function confidenceLabel(report: PullRequestAnalysis): string {
   }
   const confidence = Math.max(0, Math.min(100, Math.round(report.aiConfidence * 100)));
   return `Confidence ${confidence}%`;
-}
-
-function formatScoreVersion(version?: string): string {
-  const value = (version ?? "").trim();
-  return value.length > 0 ? value : "pending";
 }
 
 function formatAnalysisVersion(version?: string): string {

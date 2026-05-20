@@ -2,12 +2,14 @@ import type { ReactNode } from "react";
 import { CalendarClock, TrendingDown, TrendingUp, Trophy } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Progress } from "@/components/ui/progress";
+import { uniqueDisplayValues } from "@/lib/display-values";
 import { formatDate, formatTimeUntil } from "@/lib/formatters";
 import type { UserProfile } from "@/types/gitrank";
 
 export function CurrentLeagueCard({ user }: { user: UserProfile }) {
   const positive = user.movement >= 0;
   const MovementIcon = positive ? TrendingUp : TrendingDown;
+  const evidenceSignals = uniqueDisplayValues(user.rankProgress.evidenceSignals, 3);
 
   return (
     <GlowCard className="season-arena-card space-y-5 overflow-hidden">
@@ -55,16 +57,13 @@ export function CurrentLeagueCard({ user }: { user: UserProfile }) {
             ),
           )}
         />
-        <div className="mt-3 grid gap-2 sm:grid-cols-2">
-          <p className="text-xs leading-5 text-muted">{user.rankProgress.season.promotionRule}</p>
-          <p className="text-xs leading-5 text-muted">{user.rankProgress.season.resetRule}</p>
-        </div>
+        <p className="mt-3 text-xs text-muted">{user.rankProgress.season.promotionRule}</p>
         <p className="mt-3 text-xs text-muted">
           Season end: {formatDate(user.rankProgress.season.endsAt)} • {formatTimeUntil(user.rankProgress.season.endsAt)}
         </p>
       </div>
       <ul role="list" className="flex flex-wrap gap-2">
-        {user.rankProgress.evidenceSignals.map((signal, index) => (
+        {evidenceSignals.map((signal, index) => (
           <li key={`${signal}-${index}`}>
             <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
               {signal}
