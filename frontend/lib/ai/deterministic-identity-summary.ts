@@ -1,3 +1,5 @@
+import { uniqueDisplayValues } from "@/lib/display-values";
+
 export function shouldRequestAbraInsights({
   showAiSummaries,
   mergedPrCount,
@@ -11,7 +13,7 @@ export function shouldRequestAbraInsights({
 }
 
 export function deriveDeterministicArchetype(strongestSignals: string[]): string {
-  const topSignal = strongestSignals[0]?.toLowerCase() ?? "";
+  const topSignal = uniqueDisplayValues(strongestSignals, 1)[0]?.toLowerCase() ?? "";
   if (topSignal.includes("security")) {
     return "Guardian Engineer";
   }
@@ -56,9 +58,10 @@ export function buildDeterministicIdentitySummary({
   isStale: boolean;
   trendWindowLabel: string;
 }) {
+  const uniqueSignals = uniqueDisplayValues(strongestSignals, 2);
   const signalSummary =
-    strongestSignals.length > 0
-      ? strongestSignals.slice(0, 2).join(" and ")
+    uniqueSignals.length > 0
+      ? uniqueSignals.join(" and ")
       : "early contribution patterns";
   const staleNote = isStale
     ? " This snapshot is currently marked stale and will sharpen after refresh."

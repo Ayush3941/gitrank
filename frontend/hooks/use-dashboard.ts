@@ -45,7 +45,10 @@ export function useDashboard() {
       return {
         user,
         recentReports: profile.recentReports,
+        trendWindowLabel: profile.trendWindowLabel,
         refreshedAt: profile.refreshedAt,
+        isStale: profile.isStale,
+        partialProfileAvailable: profile.partialProfileAvailable,
       };
     },
   });

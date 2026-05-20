@@ -13,6 +13,8 @@ export function SkillBreakdownCard({
   skillInsights?: Record<string, SkillInsight>;
   aiMode?: "gemini" | "deterministic";
 }) {
+  const skillTree = deduplicateSkillTree(user.skillTree);
+
   return (
     <GlowCard className="space-y-5">
       <div className="flex items-center justify-between">
@@ -29,9 +31,9 @@ export function SkillBreakdownCard({
           <BarChart3 className="h-5 w-5" />
         </div>
       </div>
-      <SkillRadarChart skills={user.skillTree} />
+      <SkillRadarChart skills={skillTree} />
       <div className="grid gap-3 md:grid-cols-2">
-        {user.skillTree.map((skill, index) => {
+        {skillTree.map((skill, index) => {
           const insight = skillInsights?.[normalizeKey(skill.category)];
           const confidence = insight?.confidence ?? "emerging";
           return (
@@ -60,4 +62,28 @@ function normalizeKey(value: string): string {
   const normalized = value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
   if (normalized === "devops") return "infrastructure";
   return normalized;
+}
+
+function deduplicateSkillTree(skills: UserProfile["skillTree"]): UserProfile["skillTree"] {
+  const ordered: UserProfile["skillTree"] = [];
+  const indexByCategory = new Map<string, number>();
+
+  for (const skill of skills) {
+    const key = normalizeKey(skill.category);
+    const existingIndex = indexByCategory.get(key);
+    if (existingIndex === undefined) {
+      indexByCategory.set(key, ordered.length);
+      ordered.push(skill);
+      continue;
+    }
+    const existing = ordered[existingIndex];
+    if (skill.score > existing.score) {
+      ordered[existingIndex] = {
+        ...existing,
+        ...skill,
+      };
+    }
+  }
+
+  return ordered;
 }

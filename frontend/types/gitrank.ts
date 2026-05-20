@@ -374,4 +374,8 @@ export interface ProfileViewData {
 export interface DashboardData {
   user: UserProfile;
   recentReports: PullRequestAnalysis[];
+  trendWindowLabel: string;
+  refreshedAt: string;
+  isStale: boolean;
+  partialProfileAvailable: boolean;
 }

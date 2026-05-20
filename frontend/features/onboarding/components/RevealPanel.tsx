@@ -6,6 +6,7 @@ import { RarityBadge } from "@/components/shared/RarityBadge";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { Button } from "@/components/ui/button";
 import { OnboardingStepper } from "@/features/onboarding/components/OnboardingStepper";
+import { uniqueDisplayValues } from "@/lib/display-values";
 import { formatRelativeDays } from "@/lib/formatters";
 import type { UserProfile } from "@/types/gitrank";
 
@@ -20,8 +21,9 @@ export function RevealPanel({
   identitySummary?: string;
   aiMode?: "gemini" | "deterministic";
 }) {
-  const strongestSignals =
-    user.strongestSignals.length > 0 ? user.strongestSignals.join(", ") : "recent contribution";
+  const strongestSignals = uniqueDisplayValues(user.strongestSignals, 4);
+  const strongestSignalSummary =
+    strongestSignals.length > 0 ? strongestSignals.join(", ") : "recent contribution";
   const unlockedBadges = user.badges.filter((badge) => badge.unlocked).slice(0, 3);
   const evidenceRows = user.contributions.length;
   const needsSyncRecovery =
@@ -64,7 +66,7 @@ export function RevealPanel({
             {archetype ? ` Archetype: ${archetype}.` : ""}
           </p>
           <p className="mx-auto max-w-2xl text-base text-muted">
-            This first snapshot shows recurring signals in {strongestSignals} work. Meaningful merged contributions currently place you in {user.level.rankTier}.
+            This first snapshot shows recurring signals in {strongestSignalSummary} work. Meaningful merged contributions currently place you in {user.level.rankTier}.
           </p>
           <div className="mx-auto grid w-full max-w-4xl gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <RevealMetric label="Merged PRs" value={user.mergedPrCount.toLocaleString("en-US")} />

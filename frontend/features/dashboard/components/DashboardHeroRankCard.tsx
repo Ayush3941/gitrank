@@ -8,6 +8,7 @@ import { RankBadge } from "@/components/shared/RankBadge";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { XPProgress } from "@/components/shared/XPProgress";
 import { Button } from "@/components/ui/button";
+import { uniqueDisplayValues } from "@/lib/display-values";
 import type { UserProfile } from "@/types/gitrank";
 
 export function DashboardHeroRankCard({
@@ -21,6 +22,8 @@ export function DashboardHeroRankCard({
   identitySummary?: string;
   aiMode?: "gemini" | "deterministic";
 }) {
+  const strongestSignals = uniqueDisplayValues(user.strongestSignals, 6);
+
   return (
     <GlowCard strong className="player-card-shell cyber-hero-shell space-y-6 overflow-hidden">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
@@ -117,7 +120,7 @@ export function DashboardHeroRankCard({
       <div className="space-y-3">
         <p className="text-xs font-medium text-primary">Top observed signals in this snapshot</p>
         <ul role="list" className="flex flex-wrap gap-2">
-          {user.strongestSignals.map((signal, index) => (
+          {strongestSignals.map((signal, index) => (
             <li key={`${signal}-${index}`} className="list-none">
               <span className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm">
                 <Star className="h-3.5 w-3.5 text-primary" />

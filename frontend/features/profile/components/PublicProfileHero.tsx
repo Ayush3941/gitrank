@@ -10,6 +10,7 @@ import { ExpandableText } from "@/components/shared/ExpandableText";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { XPProgress } from "@/components/shared/XPProgress";
+import { uniqueDisplayValues } from "@/lib/display-values";
 import type { UserProfile } from "@/types/gitrank";
 
 export function PublicProfileHero({
@@ -25,6 +26,8 @@ export function PublicProfileHero({
   identitySummary?: string;
   aiMode?: "gemini" | "deterministic";
 }) {
+  const topSkills = uniqueDisplayValues(user.topSkills, 6);
+
   return (
     <div className="player-card-shell glass-panel-strong overflow-hidden rounded-[2rem] p-6 sm:p-8">
       <div className="grid gap-6 xl:grid-cols-[1.08fr,0.92fr]">
@@ -75,7 +78,7 @@ export function PublicProfileHero({
             </div>
           ) : null}
           <ul role="list" className="flex flex-wrap gap-2">
-            {user.topSkills.map((skill, index) => (
+            {topSkills.map((skill, index) => (
               <li key={`${skill}-${index}`}>
                 <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 text-sm text-muted">
                   {skill}
