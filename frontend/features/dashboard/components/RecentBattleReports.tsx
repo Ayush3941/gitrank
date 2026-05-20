@@ -64,7 +64,11 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
                   className="mt-3 max-w-3xl"
                   textClassName="break-anywhere text-sm leading-6 text-muted"
                 />
-                <p className="mt-2 text-xs text-muted">Analysis {formatAnalysisVersion(report.analysisVersion)}</p>
+                {shouldShowAnalysisVersion(report.analysisVersion) ? (
+                  <p className="mt-2 text-xs text-muted">
+                    Analysis {formatAnalysisVersion(report.analysisVersion)}
+                  </p>
+                ) : null}
               </div>
               <div className="text-right">
                 <p className="text-xs font-medium text-primary">XP earned</p>
@@ -143,4 +147,9 @@ function formatAnalysisVersion(version?: string): string {
     return "deterministic";
   }
   return value;
+}
+
+function shouldShowAnalysisVersion(version?: string): boolean {
+  const normalized = formatAnalysisVersion(version);
+  return normalized !== "pending" && normalized !== "deterministic";
 }

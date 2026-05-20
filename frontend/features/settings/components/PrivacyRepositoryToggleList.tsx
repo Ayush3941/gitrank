@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Search, X } from "lucide-react";
-import { startTransition, useDeferredValue, useMemo, useState } from "react";
+import { startTransition, useDeferredValue, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -25,6 +25,9 @@ export function PrivacyRepositoryToggleList({
   const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS);
   const deferredSearch = useDeferredValue(debouncedSearch);
   const isFiltering = search !== debouncedSearch || deferredSearch !== debouncedSearch;
+  const viewportAnchorY = useRef<number | null>(null);
+  const resultsRegionScrollTop = useRef<number | null>(null);
+  const resultsRegionRef = useRef<HTMLElement | null>(null);
   const controlled = typeof onToggle === "function";
   const visibleItems = controlled ? repositories : items;
   const canReset = search.trim().length > 0 || visibilityFilter !== "All";
@@ -55,21 +58,43 @@ export function PrivacyRepositoryToggleList({
     });
   }, [deferredSearch, visibilityFilter, visibleItems]);
 
+  function preserveViewportDuring(update: () => void) {
+    if (typeof window !== "undefined") {
+      viewportAnchorY.current = window.scrollY;
+    }
+    const currentResultsRegion = resultsRegionRef.current;
+    resultsRegionScrollTop.current = currentResultsRegion ? currentResultsRegion.scrollTop : null;
+    startTransition(update);
+    if (typeof window !== "undefined") {
+      requestAnimationFrame(() => {
+        const y = viewportAnchorY.current;
+        if (typeof y === "number") {
+          window.scrollTo({ top: y, left: 0, behavior: "auto" });
+        }
+        const nextResultsRegion = resultsRegionRef.current;
+        const scrollTop = resultsRegionScrollTop.current;
+        if (nextResultsRegion && typeof scrollTop === "number") {
+          nextResultsRegion.scrollTop = scrollTop;
+        }
+      });
+    }
+  }
+
   function handleReset() {
-    startTransition(() => {
+    preserveViewportDuring(() => {
       setSearch("");
       setVisibilityFilter("All");
     });
   }
 
   function handleClearSearch() {
-    startTransition(() => {
+    preserveViewportDuring(() => {
       setSearch("");
     });
   }
 
   function handleClearVisibilityFilter() {
-    startTransition(() => {
+    preserveViewportDuring(() => {
       setVisibilityFilter("All");
     });
   }
@@ -169,7 +194,7 @@ export function PrivacyRepositoryToggleList({
                   type="button"
                   size="sm"
                   variant={visibilityFilter === item ? "default" : "secondary"}
-                  onClick={() => startTransition(() => setVisibilityFilter(item))}
+                  onClick={() => preserveViewportDuring(() => setVisibilityFilter(item))}
                   aria-describedby={statusId}
                   aria-pressed={visibilityFilter === item}
                   aria-controls={repositoriesRegionId}
@@ -184,9 +209,12 @@ export function PrivacyRepositoryToggleList({
       {filteredItems.length > 0 ? (
         <ul
           id={repositoriesRegionId}
+          ref={(node) => {
+            resultsRegionRef.current = node;
+          }}
           role="list"
           aria-busy={isFiltering || undefined}
-          className="grid gap-3"
+          className="grid gap-3 max-h-[26rem] overflow-y-auto pr-1 [scrollbar-gutter:stable] [overflow-anchor:none]"
         >
           {filteredItems.map((repo, index) => (
             <li key={`${repo.name}-${index}`} className="list-none">
@@ -230,7 +258,13 @@ export function PrivacyRepositoryToggleList({
           ))}
         </ul>
       ) : (
-        <div id={repositoriesRegionId} className="neon-surface space-y-3 rounded-[1.75rem] border-dashed px-4 py-4 text-sm text-muted">
+        <div
+          id={repositoriesRegionId}
+          ref={(node) => {
+            resultsRegionRef.current = node;
+          }}
+          className="neon-surface space-y-3 rounded-[1.75rem] border-dashed px-4 py-4 text-sm text-muted max-h-[26rem] overflow-y-auto pr-1 [scrollbar-gutter:stable] [overflow-anchor:none]"
+        >
           {counts.total === 0 ? (
             <p>
               Repository visibility records are not available in this profile snapshot yet.

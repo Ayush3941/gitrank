@@ -392,7 +392,7 @@ function skillNote(skill: ApiSkillArea): string {
     skill.summary || `${humanizeKey(skill.key)} contributes ${skill.total_xp} XP.`;
   const source = skill.evidence_source
     ? skill.evidence_source.replace("_", " ")
-    : "unknown source";
+    : "deterministic snapshot";
   const confidence =
     typeof skill.confidence === "number" && skill.confidence > 0
       ? `, confidence ${Math.round(skill.confidence * 100)}%`
