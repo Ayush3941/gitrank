@@ -148,6 +148,11 @@ func TestIsRecoverableUserSyncSelectionError(t *testing.T) {
 			want: true,
 		},
 		{
+			name: "server errors are recoverable for user selection",
+			err:  errors.New("GitHub API GET https://api.github.com/search/issues failed with status 502"),
+			want: true,
+		},
+		{
 			name: "non-github errors are not recoverable",
 			err:  errors.New("database is unavailable"),
 			want: false,

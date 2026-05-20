@@ -1438,7 +1438,10 @@ func isRecoverableUserSyncSelectionError(err error) bool {
 		return false
 	}
 
-	return statusCode == http.StatusTooManyRequests
+	if statusCode == http.StatusTooManyRequests {
+		return true
+	}
+	return statusCode >= http.StatusInternalServerError
 }
 
 func isSkippableGitHubTimeoutError(err error) bool {
