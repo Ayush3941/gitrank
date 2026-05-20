@@ -116,14 +116,16 @@ export function DashboardHeroRankCard({
       ) : null}
       <div className="space-y-3">
         <p className="text-xs font-medium text-primary">Top observed signals in this snapshot</p>
-        <div className="flex flex-wrap gap-2">
+        <ul role="list" className="flex flex-wrap gap-2">
           {user.strongestSignals.map((signal) => (
-            <div key={signal} className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm">
-              <Star className="h-3.5 w-3.5 text-primary" />
-              {signal}
-            </div>
+            <li key={signal} className="list-none">
+              <span className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm">
+                <Star className="h-3.5 w-3.5 text-primary" />
+                {signal}
+              </span>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
     </GlowCard>
   );

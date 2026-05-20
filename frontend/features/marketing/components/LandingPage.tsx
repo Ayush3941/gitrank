@@ -150,17 +150,17 @@ export function LandingPage() {
             title="Reputation from evidence-backed contribution scoring"
             description="Merged PRs, changed files, review depth, tests, maintainers, and AI summaries feed into explainable score movement and inspectable profile snapshots."
           />
-          <div className="grid gap-3">
+          <ul role="list" className="grid gap-3">
             {[
               "Classifies documentation, tests, bug fixes, backend, infra, performance, and architecture work.",
               "Turns verified work into XP, badge unlocks, league position, and public proof.",
               "Explains score changes so maintainers and recruiters can inspect the evidence instead of trusting a black box.",
             ].map((line) => (
-              <div key={line} className="neon-surface rounded-3xl px-4 py-3 text-sm text-muted">
+              <li key={line} className="list-none neon-surface rounded-3xl px-4 py-3 text-sm text-muted">
                 {line}
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
         </GlowCard>
 
         <GlowCard strong className="space-y-5">

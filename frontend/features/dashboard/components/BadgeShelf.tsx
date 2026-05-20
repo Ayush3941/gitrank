@@ -25,9 +25,9 @@ export function BadgeShelf({ user }: { user: UserProfile }) {
           <Progress value={completion} />
         </div>
       </div>
-      <div className="grid gap-3 md:grid-cols-2">
+      <ul role="list" className="grid gap-3 md:grid-cols-2">
         {user.badges.length === 0 ? (
-          <div className="neon-surface space-y-3 rounded-[1.75rem] border-dashed p-4 text-sm text-muted md:col-span-2">
+          <li className="list-none neon-surface space-y-3 rounded-[1.75rem] border-dashed p-4 text-sm text-muted md:col-span-2">
             <p>
               No badge records are available for this profile snapshot yet. Badge progress appears after contribution scoring evidence is persisted.
             </p>
@@ -39,10 +39,10 @@ export function BadgeShelf({ user }: { user: UserProfile }) {
                 <Link href="/dashboard/badges">Open badge forge</Link>
               </Button>
             </div>
-          </div>
+          </li>
         ) : null}
         {user.badges.slice(0, 6).map((badge) => (
-          <div key={badge.id} className="render-opt-card neon-surface rounded-[1.75rem] p-4">
+          <li key={badge.id} className="list-none render-opt-card neon-surface rounded-[1.75rem] p-4">
             <div className="flex items-center justify-between gap-3">
               <RarityBadge rarity={badge.rarity} />
               {!badge.unlocked ? (
@@ -60,9 +60,9 @@ export function BadgeShelf({ user }: { user: UserProfile }) {
                 <p className="text-sm text-primary">{badge.progress}% progress</p>
               </div>
             ) : null}
-          </div>
+          </li>
         ))}
-      </div>
+      </ul>
     </GlowCard>
   );
 }

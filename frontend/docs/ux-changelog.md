@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Semantic card-grid pass on high-traffic lanes:
+  - converted remaining repeated card/chip grids in badges, contributions timeline highlights, dashboard badge shelf, dashboard battle reports, dashboard signal chips, and marketing solution cards to semantic `ul/li` structures.
+  - preserved existing visual layout and interactions while improving assistive-tech list traversal and item-count context.
+  - no API/data-flow changes; strictly frontend structure/readability consistency work.
 - Readability regression guardrail:
   - added `frontend/scripts/check-readable-text-tokens.mjs` to block legacy low-contrast `text-slate-*` helper classes from re-entering product routes.
   - wired guard into `frontend/package.json` as `check:readable-text` and into `.github/workflows/frontend-ci.yml`.

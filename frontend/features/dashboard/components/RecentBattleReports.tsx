@@ -24,9 +24,9 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
           </span>
         </div>
       </div>
-      <div className="grid gap-3">
+      <ul role="list" className="grid gap-3">
         {reports.length === 0 ? (
-          <div className="neon-surface space-y-3 rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
+          <li className="list-none neon-surface space-y-3 rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
             <p>
               No persisted PR battle reports are attached to this profile snapshot yet. Direct report URLs will appear here after scoring writes score events with public PR evidence.
             </p>
@@ -38,10 +38,10 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
                 <Link href="/dashboard/contributions">Inspect contributions</Link>
               </Button>
             </div>
-          </div>
+          </li>
         ) : null}
         {sortedReports.map((report) => (
-          <div key={report.contribution.id} className="render-opt-card neon-surface rounded-[1.75rem] p-4">
+          <li key={report.contribution.id} className="list-none render-opt-card neon-surface rounded-[1.75rem] p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="break-anywhere text-sm text-muted">{report.contribution.owner}/{report.contribution.repo} #{report.contribution.number}</p>
@@ -90,9 +90,9 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
                 </Link>
               </Button>
             </div>
-          </div>
+          </li>
         ))}
-      </div>
+      </ul>
       {sortedReports.length > 0 ? (
         <p className="inline-flex items-center gap-2 text-xs text-cyan-100/88">
           <Sparkles className="h-3.5 w-3.5 text-cyan-200" />

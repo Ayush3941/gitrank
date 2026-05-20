@@ -500,20 +500,22 @@ export function ContributionsPageClient() {
                     <p className="text-xs text-muted">
                       Showing latest {monthlyWindow.length} months to keep scan and render cost predictable.
                     </p>
-                    {monthlyWindow.map((point) => (
-                      <div key={point.month} className="space-y-1">
-                        <div className="flex items-center justify-between text-xs text-muted">
-                          <span>{point.month}</span>
-                          <span>{point.xp} XP</span>
-                        </div>
-                        <div className="neon-track h-2 rounded-full">
-                          <div
-                            className="h-full rounded-full bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300"
-                            style={{ width: `${Math.max(8, Math.round((point.xp / maxMonthlyXp) * 100))}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
+                    <ul role="list" className="space-y-3">
+                      {monthlyWindow.map((point) => (
+                        <li key={point.month} className="list-none space-y-1">
+                          <div className="flex items-center justify-between text-xs text-muted">
+                            <span>{point.month}</span>
+                            <span>{point.xp} XP</span>
+                          </div>
+                          <div className="neon-track h-2 rounded-full">
+                            <div
+                              className="h-full rounded-full bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300"
+                              style={{ width: `${Math.max(8, Math.round((point.xp / maxMonthlyXp) * 100))}%` }}
+                            />
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 ) : (
                   <SubsectionEmptyState
@@ -526,9 +528,9 @@ export function ContributionsPageClient() {
               <GlowCard className="space-y-4 border border-cyan-300/20 bg-gradient-to-br from-slate-950/88 to-cyan-950/25">
                 <h3 className="cyber-title text-sm font-medium text-cyan-200">Top highlights</h3>
                 {topHighlights.length ? (
-                  <div className="space-y-3">
+                  <ul role="list" className="space-y-3">
                     {topHighlights.map((row) => (
-                      <div key={row.id} className="render-opt-card neon-surface space-y-2 rounded-2xl px-3 py-3">
+                      <li key={row.id} className="list-none render-opt-card neon-surface space-y-2 rounded-2xl px-3 py-3">
                         <p className="break-anywhere text-sm font-medium text-white">{row.title}</p>
                         <p className="mt-1 break-anywhere text-xs text-muted">{row.owner}/{row.repo} #{row.number}</p>
                         <p className="mt-2 text-sm text-cyan-200">+{row.xpEarned} XP</p>
@@ -539,9 +541,9 @@ export function ContributionsPageClient() {
                             </Link>
                           </Button>
                         </div>
-                      </div>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 ) : (
                   <SubsectionEmptyState
                     message="No high-signal highlights are available yet in this snapshot."
