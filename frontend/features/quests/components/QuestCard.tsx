@@ -26,7 +26,7 @@ export function QuestCard({ quest }: { quest: Quest }) {
             <Flag className="h-3.5 w-3.5 text-primary" />
             {quest.cadence}
           </div>
-          <h2 className="break-anywhere text-xl font-semibold text-white">{quest.title}</h2>
+          <h3 className="break-anywhere text-xl font-semibold text-white">{quest.title}</h3>
           <ExpandableText
             text={quest.description}
             lines={3}

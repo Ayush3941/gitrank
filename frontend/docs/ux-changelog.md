@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Quests semantic structure pass:
+  - converted mission spotlight cards from plain grid children to semantic `ul/li` entries.
+  - converted cadence quest-card grids to semantic `ul/li` rendering for clearer assistive list traversal.
+  - corrected quest card heading hierarchy (`h2` to `h3`) so repeated cards no longer over-promote heading level.
 - Navigation/readability polish pass:
   - added a safe `scrollIntoView` capability guard to shared `SectionJumpNav` active-chip auto-scroll behavior.
   - normalized remaining low-opacity helper/callout copy in jump-nav mobile label, badge locked-lane next-move text, dashboard report hint text, and PR anti-spam explanation text.

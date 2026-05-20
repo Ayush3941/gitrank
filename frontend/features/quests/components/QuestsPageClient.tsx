@@ -217,7 +217,7 @@ export function QuestsPageClient() {
                 </p>
               </div>
             </div>
-            <div className="grid gap-3 md:grid-cols-3">
+            <ul role="list" className="grid gap-3 md:grid-cols-3">
               <MissionSpotlightCard
                 title="Today's Quest"
                 quest={todayQuest}
@@ -239,7 +239,7 @@ export function QuestsPageClient() {
                 href="/dashboard/contributions"
                 cta="Keep building"
               />
-            </div>
+            </ul>
           </GlowCard>
         </DeferUntilVisible>
       ) : null}
@@ -299,11 +299,13 @@ export function QuestsPageClient() {
               />
               <DeferUntilVisible fallback={<QuestSectionPlaceholder title={`Loading ${labelForGroup(group)}`} />}>
                 {grouped.length > 0 ? (
-                  <div className="grid gap-4 xl:grid-cols-2">
+                  <ul role="list" className="grid gap-4 xl:grid-cols-2">
                     {grouped.map((quest) => (
-                      <QuestCard key={quest.id} quest={quest} />
+                      <li key={quest.id} className="list-none">
+                        <QuestCard quest={quest} />
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 ) : (
                   <GlowCard className="neon-surface rounded-[1.5rem] border-dashed border-cyan-300/24 p-4 text-sm text-muted">
                     <p>
@@ -427,46 +429,50 @@ function MissionSpotlightCard({
 }) {
   if (!quest) {
     return (
-      <div className="neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4">
-        <p className="text-xs font-medium text-primary">{title}</p>
-        <p className="text-sm text-muted">{emptyCopy}</p>
-        <Button asChild variant="secondary" size="sm">
-          <Link href={href}>
-            {cta}
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </Button>
-      </div>
+      <li className="list-none">
+        <div className="neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4">
+          <p className="text-xs font-medium text-primary">{title}</p>
+          <p className="text-sm text-muted">{emptyCopy}</p>
+          <Button asChild variant="secondary" size="sm">
+            <Link href={href}>
+              {cta}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      </li>
     );
   }
 
   const progress = safeQuestProgress(quest);
 
   return (
-    <div className="neon-surface space-y-3 px-4 py-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-medium text-primary">{title}</p>
-          <p className="mt-2 text-base font-semibold text-white">{quest.title}</p>
+    <li className="list-none">
+      <div className="neon-surface space-y-3 px-4 py-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-medium text-primary">{title}</p>
+            <p className="mt-2 text-base font-semibold text-white">{quest.title}</p>
+          </div>
+          <span className="neon-chip neon-chip-info rounded-full px-2.5 py-1 text-xs font-semibold">
+            +{quest.rewardXp} XP
+          </span>
         </div>
-        <span className="neon-chip neon-chip-info rounded-full px-2.5 py-1 text-xs font-semibold">
-          +{quest.rewardXp} XP
-        </span>
-      </div>
-      <p className="text-sm text-muted">{quest.description}</p>
-      <div className="space-y-1">
-        <Progress value={progress} />
-        <div className="flex items-center justify-between text-xs text-muted">
-          <span>{quest.progress} / {quest.goal}</span>
-          <span>{progress}%</span>
+        <p className="text-sm text-muted">{quest.description}</p>
+        <div className="space-y-1">
+          <Progress value={progress} />
+          <div className="flex items-center justify-between text-xs text-muted">
+            <span>{quest.progress} / {quest.goal}</span>
+            <span>{progress}%</span>
+          </div>
         </div>
+        <Button asChild variant="secondary" size="sm">
+          <Link href={recoveryHrefForGroup(quest.cadence)}>
+            {recoveryLabelForGroup(quest.cadence)}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </Button>
       </div>
-      <Button asChild variant="secondary" size="sm">
-        <Link href={recoveryHrefForGroup(quest.cadence)}>
-          {recoveryLabelForGroup(quest.cadence)}
-          <ArrowRight className="h-4 w-4" />
-        </Link>
-      </Button>
-    </div>
+    </li>
   );
 }
