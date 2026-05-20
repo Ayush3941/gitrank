@@ -10,8 +10,6 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { CopyLinkButton } from "@/components/shared/CopyLinkButton";
-import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
 import { StaleState } from "@/components/shared/StaleState";
 import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { Button } from "@/components/ui/button";
@@ -24,7 +22,6 @@ import { useNetworkConstraintPreference } from "@/hooks/use-gamification-prefere
 import { useMyProfile } from "@/hooks/use-profile";
 import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
 import { formatRelativeDays } from "@/lib/formatters";
-import { initialSectionFromHash } from "@/lib/section-nav";
 
 const tabs: LeaderboardTab[] = [
   "Global",
@@ -44,20 +41,6 @@ const TAB_LABELS: Record<LeaderboardTab, { full: string; short: string }> = {
   "Rising Contributors": { full: "Rising Contributors", short: "Rising" },
 };
 
-type LeaderboardSectionID =
-  | "leaderboard-filters"
-  | "leaderboard-arena"
-  | "leaderboard-climb";
-
-const LEADERBOARD_SECTION_ITEMS: Array<{ id: LeaderboardSectionID; label: string }> = [
-  { id: "leaderboard-filters", label: "Tabs" },
-  { id: "leaderboard-arena", label: "Arena" },
-  { id: "leaderboard-climb", label: "Climb" },
-];
-const LEADERBOARD_SECTION_IDS = LEADERBOARD_SECTION_ITEMS.map(
-  (section) => section.id,
-) as LeaderboardSectionID[];
-const LEADERBOARD_DEFAULT_SECTION: LeaderboardSectionID = "leaderboard-filters";
 const LEADERBOARD_ROW_PAGE_SIZE_DEFAULT = 24;
 const LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED = 12;
 const LEADERBOARD_ROWS_REGION_ID = "leaderboard-rows-region";
@@ -73,8 +56,6 @@ export function LeaderboardPageClient() {
   const [visibleRowCount, setVisibleRowCount] = useState(rowPageSize);
   const tabFromURL = laneParamToTab(searchParams.get("lane"));
   const tab = tabFromURL ?? "Global";
-  const [activeSection, setActiveSection] =
-    useState<LeaderboardSectionID>(LEADERBOARD_DEFAULT_SECTION);
   const deferredTab = useDeferredValue(tab);
   const { data, isLoading, isError, isFetching, refetch } = useLeaderboard(deferredTab);
   const {
@@ -106,13 +87,9 @@ export function LeaderboardPageClient() {
     snapshot?.currentUser && laneLeader
       ? Math.max(0, laneLeader.seasonXp - snapshot.currentUser.seasonXp)
       : 0;
-  const laneSharePath = `/dashboard/leaderboard?lane=${tabToLaneParam(tab)}`;
   const currentUserProgressToNextBand = snapshot?.currentUser
     ? progressToNextBand(snapshot.currentUser.seasonXp, snapshot.currentUser.xpToNextRank)
     : 0;
-  const activeSectionLabel =
-    LEADERBOARD_SECTION_ITEMS.find((section) => section.id === activeSection)?.label ??
-    "Tabs";
 
   useEffect(() => {
     const lane = tabToLaneParam(tab);
@@ -124,53 +101,6 @@ export function LeaderboardPageClient() {
     const query = nextParams.toString();
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
   }, [pathname, router, searchParams, tab]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const syncFromHash = () => {
-      const nextSection = initialSectionFromHash(
-        LEADERBOARD_SECTION_IDS,
-        LEADERBOARD_DEFAULT_SECTION,
-        window.location.hash,
-      );
-      setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
-    };
-    syncFromHash();
-    window.addEventListener("hashchange", syncFromHash);
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((left, right) => right.intersectionRatio - left.intersectionRatio)[0];
-        if (!visible) {
-          return;
-        }
-        const nextSection = initialSectionFromHash(
-          LEADERBOARD_SECTION_IDS,
-          LEADERBOARD_DEFAULT_SECTION,
-          `#${visible.target.id}`,
-        );
-        setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
-      },
-      { rootMargin: "-22% 0px -55% 0px", threshold: [0.2, 0.45, 0.7] },
-    );
-
-    LEADERBOARD_SECTION_ITEMS.forEach(({ id }) => {
-      const node = document.getElementById(id);
-      if (node) {
-        observer.observe(node);
-      }
-    });
-
-    return () => {
-      window.removeEventListener("hashchange", syncFromHash);
-      observer.disconnect();
-    };
-  }, []);
 
   function handleTabChange(value: string) {
     const nextTab = value as LeaderboardTab;
@@ -220,14 +150,6 @@ export function LeaderboardPageClient() {
           analyticsTarget="leaderboard:stale"
         />
       ) : null}
-      <SectionJumpNav
-        navLabelID="leaderboard-jump-nav-label"
-        landmarkLabel="Leaderboard section navigation"
-        activeSectionLabel={activeSectionLabel}
-        items={LEADERBOARD_SECTION_ITEMS}
-        activeSection={activeSection}
-        onSectionSelect={setActiveSection}
-      />
       <section id="leaderboard-filters" className="scroll-mt-24 space-y-3">
         <Tabs value={tab} onValueChange={handleTabChange}>
           <TabsList
@@ -268,12 +190,6 @@ export function LeaderboardPageClient() {
                 Reset to Global
               </Button>
             ) : null}
-            <CopyLinkButton
-              href={laneSharePath}
-              label="Copy lane link"
-              copiedLabel="Lane link copied"
-              analyticsTarget="leaderboard/copy-lane-link"
-            />
           </div>
         </div>
         {snapshot ? (

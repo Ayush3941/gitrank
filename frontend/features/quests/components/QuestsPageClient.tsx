@@ -2,14 +2,12 @@
 
 import Link from "next/link";
 import { ArrowRight, CalendarClock, Flame, ShieldCheck } from "lucide-react";
-import { useEffect, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { StaleState } from "@/components/shared/StaleState";
 import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
@@ -19,7 +17,6 @@ import { QuestCard } from "@/features/quests/components/QuestCard";
 import { useQuests } from "@/hooks/use-quests";
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
-import { initialSectionFromHash } from "@/lib/section-nav";
 import type { Quest } from "@/types/gitrank";
 
 const groups: Array<Quest["cadence"]> = ["Daily", "Weekly", "Long-term", "Skill-based"];
@@ -29,10 +26,6 @@ const QUEST_SECTION_IDS: Record<Quest["cadence"], string> = {
   "Long-term": "quests-long-term",
   "Skill-based": "quests-skill-based",
 };
-type QuestSectionID = (typeof QUEST_SECTION_IDS)[Quest["cadence"]];
-const QUEST_SECTION_ID_LIST = Object.values(QUEST_SECTION_IDS) as QuestSectionID[];
-const QUEST_DEFAULT_GROUP: Quest["cadence"] = "Daily";
-const QUEST_DEFAULT_SECTION: QuestSectionID = QUEST_SECTION_IDS[QUEST_DEFAULT_GROUP];
 
 export function QuestsPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useQuests();
@@ -42,7 +35,6 @@ export function QuestsPageClient() {
   const streak = summarizeContributionStreak(contributionRows);
   const dayOfYear = dayOfYearUTC(new Date());
   const dayProgress = Math.round((dayOfYear / 365) * 100);
-  const [activeGroup, setActiveGroup] = useState<Quest["cadence"]>(QUEST_DEFAULT_GROUP);
   const questMap = {
     Daily: quests.filter((quest) => quest.cadence === "Daily"),
     Weekly: quests.filter((quest) => quest.cadence === "Weekly"),
@@ -54,80 +46,6 @@ export function QuestsPageClient() {
   );
   const weeklyQuest = selectQuestSpotlight(questMap.Weekly);
   const longTermQuest = selectQuestSpotlight(questMap["Long-term"]);
-  const activeQuestSectionId = QUEST_SECTION_IDS[activeGroup];
-  const questSectionItems = groups.map((group) => ({
-    id: QUEST_SECTION_IDS[group],
-    label: labelForGroup(group),
-  }));
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const syncFromHash = () => {
-      const nextSection = initialSectionFromHash(
-        QUEST_SECTION_ID_LIST,
-        QUEST_DEFAULT_SECTION,
-        window.location.hash,
-      );
-      const nextGroup =
-        groups.find((group) => QUEST_SECTION_IDS[group] === nextSection) ?? QUEST_DEFAULT_GROUP;
-      setActiveGroup((current) => (current === nextGroup ? current : nextGroup));
-    };
-    syncFromHash();
-    window.addEventListener("hashchange", syncFromHash);
-
-    const sectionNodes = groups
-      .map((group) => {
-        const id = QUEST_SECTION_IDS[group] as QuestSectionID;
-        const node = document.getElementById(id);
-        return node ? ({ id, group, node }) : null;
-      })
-      .filter(Boolean) as Array<{ id: QuestSectionID; group: Quest["cadence"]; node: HTMLElement }>;
-
-    if (!sectionNodes.length) {
-      window.removeEventListener("hashchange", syncFromHash);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((left, right) => {
-            if (right.intersectionRatio !== left.intersectionRatio) {
-              return right.intersectionRatio - left.intersectionRatio;
-            }
-            return left.boundingClientRect.top - right.boundingClientRect.top;
-          });
-
-        const nextId = visible[0]?.target?.id;
-        if (!nextId) {
-          return;
-        }
-        const match = sectionNodes.find((section) => section.id === nextId);
-        if (!match) {
-          return;
-        }
-        setActiveGroup((current) => (current === match.group ? current : match.group));
-      },
-      {
-        root: null,
-        rootMargin: "-24% 0px -56% 0px",
-        threshold: [0, 0.2, 0.45, 0.7, 1],
-      },
-    );
-
-    for (const section of sectionNodes) {
-      observer.observe(section.node);
-    }
-
-    return () => {
-      window.removeEventListener("hashchange", syncFromHash);
-      observer.disconnect();
-    };
-  }, []);
 
   return (
     <div className="space-y-6">
@@ -227,22 +145,6 @@ export function QuestsPageClient() {
             </ul>
           </GlowCard>
         </DeferUntilVisible>
-      ) : null}
-      {!isLoading && !isError && quests.length > 0 ? (
-        <SectionJumpNav
-          navLabelID="quests-jump-nav-label"
-          landmarkLabel="Quests cadence navigation"
-          activeSectionLabel={labelForGroup(activeGroup)}
-          items={questSectionItems}
-          activeSection={activeQuestSectionId}
-          onSectionSelect={(sectionID) => {
-            const matchGroup = groups.find((group) => QUEST_SECTION_IDS[group] === sectionID);
-            if (!matchGroup) {
-              return;
-            }
-            setActiveGroup(matchGroup);
-          }}
-        />
       ) : null}
       {isLoading ? <LoadingState message="Building your skill tree..." /> : null}
       {isError ? (

@@ -10,7 +10,6 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
 import { StaleState } from "@/components/shared/StaleState";
 import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { Progress } from "@/components/ui/progress";
@@ -26,25 +25,13 @@ import {
 } from "@/lib/ai/deterministic-identity-summary";
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
-import { initialSectionFromHash } from "@/lib/section-nav";
 import type { BadgeRarity } from "@/types/gitrank";
-
-type BadgeSectionId = "badges-forge" | "badges-earned" | "badges-locked";
-
-const BADGE_SECTION_ITEMS: Array<{ id: BadgeSectionId; label: string }> = [
-  { id: "badges-forge", label: "Forge" },
-  { id: "badges-earned", label: "Earned" },
-  { id: "badges-locked", label: "Locked" },
-];
-const BADGE_SECTION_IDS = BADGE_SECTION_ITEMS.map((section) => section.id) as BadgeSectionId[];
-const BADGE_DEFAULT_SECTION: BadgeSectionId = "badges-forge";
 const BADGES_EARNED_REGION_ID = "badges-earned-region";
 
 export function BadgesPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useBadges();
   const badgeViewedEventSent = useRef(false);
   const previousUnlockedCountRef = useRef<number | null>(null);
-  const [activeSection, setActiveSection] = useState<BadgeSectionId>(BADGE_DEFAULT_SECTION);
   const [rarity, setRarity] = useState<BadgeRarity | "All">("All");
   const [visibility, setVisibility] = useState<"All" | "Unlocked" | "Locked">("All");
   const [unlockNotice, setUnlockNotice] = useState("");
@@ -72,8 +59,6 @@ export function BadgesPageClient() {
   const unlockedCount = data?.badges.filter((badge) => badge.unlocked).length ?? 0;
   const totalCount = data?.badges.length ?? 0;
   const completionPercent = totalCount > 0 ? Math.round((unlockedCount / totalCount) * 100) : 0;
-  const activeSectionLabel =
-    BADGE_SECTION_ITEMS.find((section) => section.id === activeSection)?.label ?? "Forge";
   const streak = summarizeContributionStreak(profile?.user.contributions ?? []);
   const nextUnlockTarget = lockedBadgesSorted[0] ?? null;
 
@@ -159,53 +144,6 @@ export function BadgesPageClient() {
     );
   }, [data, isError, isLoading, unlockedCount]);
 
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const syncFromHash = () => {
-      const nextSection = initialSectionFromHash(
-        BADGE_SECTION_IDS,
-        BADGE_DEFAULT_SECTION,
-        window.location.hash,
-      );
-      setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
-    };
-    syncFromHash();
-    window.addEventListener("hashchange", syncFromHash);
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (!visible) {
-          return;
-        }
-        const nextSection = initialSectionFromHash(
-          BADGE_SECTION_IDS,
-          BADGE_DEFAULT_SECTION,
-          `#${visible.target.id}`,
-        );
-        setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
-      },
-      { rootMargin: "-25% 0px -55% 0px", threshold: [0.25, 0.45, 0.7] },
-    );
-
-    BADGE_SECTION_ITEMS.forEach(({ id }) => {
-      const node = document.getElementById(id);
-      if (node) {
-        observer.observe(node);
-      }
-    });
-
-    return () => {
-      window.removeEventListener("hashchange", syncFromHash);
-      observer.disconnect();
-    };
-  }, []);
-
   function handleRarityChange(value: BadgeRarity | "All") {
     startTransition(() => setRarity(value));
   }
@@ -251,14 +189,6 @@ export function BadgesPageClient() {
           className="render-opt-section border-primary/24 bg-primary/8"
         />
       ) : null}
-      <SectionJumpNav
-        navLabelID="badges-jump-nav-label"
-        landmarkLabel="Badges section navigation"
-        activeSectionLabel={activeSectionLabel}
-        items={BADGE_SECTION_ITEMS}
-        activeSection={activeSection}
-        onSectionSelect={setActiveSection}
-      />
       <section id="badges-forge" className="render-opt-section scroll-mt-24 space-y-4">
         {profile?.user.syncStatus.state === "stale" ? (
           <StaleState

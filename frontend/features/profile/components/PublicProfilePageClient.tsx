@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Award, CheckCircle2, GitPullRequest, ShieldCheck, Stars } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -10,7 +10,6 @@ import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
 import { SkillRadarChart } from "@/components/shared/SkillRadarChart";
 import { TimelineChart } from "@/components/shared/TimelineChart";
 import { RarityBadge } from "@/components/shared/RarityBadge";
@@ -28,24 +27,6 @@ import {
 } from "@/lib/ai/deterministic-identity-summary";
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
-import { initialSectionFromHash } from "@/lib/section-nav";
-
-type PublicProfileSectionID =
-  | "public-profile-overview"
-  | "public-profile-badges-skills"
-  | "public-profile-best-prs"
-  | "public-profile-timeline-repos";
-
-const PUBLIC_PROFILE_SECTION_ITEMS: Array<{ id: PublicProfileSectionID; label: string }> = [
-  { id: "public-profile-overview", label: "Overview" },
-  { id: "public-profile-badges-skills", label: "Badges & Skills" },
-  { id: "public-profile-best-prs", label: "Best PRs" },
-  { id: "public-profile-timeline-repos", label: "Timeline & Repos" },
-];
-const PUBLIC_PROFILE_SECTION_IDS = PUBLIC_PROFILE_SECTION_ITEMS.map(
-  (section) => section.id,
-) as PublicProfileSectionID[];
-const PUBLIC_PROFILE_DEFAULT_SECTION: PublicProfileSectionID = "public-profile-overview";
 
 export function PublicProfilePageClient({
   username,
@@ -53,11 +34,6 @@ export function PublicProfilePageClient({
   username: string;
 }) {
   const { data, isLoading, isError, isFetching, refetch } = useProfile(username);
-  const [activeSection, setActiveSection] =
-    useState<PublicProfileSectionID>(PUBLIC_PROFILE_DEFAULT_SECTION);
-  const activeSectionLabel =
-    PUBLIC_PROFILE_SECTION_ITEMS.find((section) => section.id === activeSection)?.label ??
-    "Overview";
   const streak = summarizeContributionStreak(data?.user.contributions ?? []);
   const abraPayload = useMemo(() => {
     if (!data) {
@@ -135,53 +111,6 @@ export function PublicProfilePageClient({
     });
   }, [data, streak.currentStreakDays]);
 
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const syncFromHash = () => {
-      const nextSection = initialSectionFromHash(
-        PUBLIC_PROFILE_SECTION_IDS,
-        PUBLIC_PROFILE_DEFAULT_SECTION,
-        window.location.hash,
-      );
-      setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
-    };
-    syncFromHash();
-    window.addEventListener("hashchange", syncFromHash);
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((left, right) => right.intersectionRatio - left.intersectionRatio)[0];
-        if (!visible) {
-          return;
-        }
-        const nextSection = initialSectionFromHash(
-          PUBLIC_PROFILE_SECTION_IDS,
-          PUBLIC_PROFILE_DEFAULT_SECTION,
-          `#${visible.target.id}`,
-        );
-        setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
-      },
-      { rootMargin: "-22% 0px -55% 0px", threshold: [0.2, 0.45, 0.7] },
-    );
-
-    PUBLIC_PROFILE_SECTION_ITEMS.forEach(({ id }) => {
-      const node = document.getElementById(id);
-      if (node) {
-        observer.observe(node);
-      }
-    });
-
-    return () => {
-      window.removeEventListener("hashchange", syncFromHash);
-      observer.disconnect();
-    };
-  }, []);
-
   if (isLoading) {
     return <LoadingState message="Preparing public reputation card..." />;
   }
@@ -238,14 +167,6 @@ export function PublicProfilePageClient({
           analyticsTarget="public-profile:stale"
         />
       ) : null}
-      <SectionJumpNav
-        navLabelID="public-profile-jump-nav-label"
-        landmarkLabel="Public profile section navigation"
-        activeSectionLabel={activeSectionLabel}
-        items={PUBLIC_PROFILE_SECTION_ITEMS}
-        activeSection={activeSection}
-        onSectionSelect={setActiveSection}
-      />
       <section id="public-profile-overview" className="scroll-mt-24 space-y-6">
         <PublicProfileHero
           user={data.user}

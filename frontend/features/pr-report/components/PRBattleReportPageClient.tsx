@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { AlertTriangle, ArrowRight, Award, ShieldCheck, Swords } from "lucide-react";
-import { useEffect, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { ExpandableText } from "@/components/shared/ExpandableText";
@@ -10,32 +9,11 @@ import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { SectionJumpNav } from "@/components/shared/SectionJumpNav";
 import { Button } from "@/components/ui/button";
 import { EvidenceSignalsCard } from "@/features/pr-report/components/EvidenceSignalsCard";
 import { ScoreMatrixCard } from "@/features/pr-report/components/ScoreMatrixCard";
 import { XPBreakdownCard } from "@/features/pr-report/components/XPBreakdownCard";
 import { usePrReport } from "@/hooks/use-pr-report";
-import { initialSectionFromHash } from "@/lib/section-nav";
-
-type PRReportSectionID =
-  | "pr-report-overview"
-  | "pr-report-score"
-  | "pr-report-ai"
-  | "pr-report-evidence"
-  | "pr-report-rewards";
-
-const PR_REPORT_SECTION_ITEMS: Array<{ id: PRReportSectionID; label: string }> = [
-  { id: "pr-report-overview", label: "Overview" },
-  { id: "pr-report-score", label: "Score" },
-  { id: "pr-report-ai", label: "AI" },
-  { id: "pr-report-evidence", label: "Signals" },
-  { id: "pr-report-rewards", label: "Rewards" },
-];
-const PR_REPORT_SECTION_IDS = PR_REPORT_SECTION_ITEMS.map(
-  (section) => section.id,
-) as PRReportSectionID[];
-const PR_REPORT_DEFAULT_SECTION: PRReportSectionID = "pr-report-overview";
 
 export function PRBattleReportPageClient({
   owner,
@@ -47,58 +25,6 @@ export function PRBattleReportPageClient({
   number: number;
 }) {
   const { data, isLoading, isError } = usePrReport(owner, repo, number);
-  const [activeSection, setActiveSection] =
-    useState<PRReportSectionID>(PR_REPORT_DEFAULT_SECTION);
-  const activeSectionLabel =
-    PR_REPORT_SECTION_ITEMS.find((section) => section.id === activeSection)?.label ??
-    "Overview";
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const syncFromHash = () => {
-      const nextSection = initialSectionFromHash(
-        PR_REPORT_SECTION_IDS,
-        PR_REPORT_DEFAULT_SECTION,
-        window.location.hash,
-      );
-      setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
-    };
-    syncFromHash();
-    window.addEventListener("hashchange", syncFromHash);
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((left, right) => right.intersectionRatio - left.intersectionRatio)[0];
-        if (!visible) {
-          return;
-        }
-        const nextSection = initialSectionFromHash(
-          PR_REPORT_SECTION_IDS,
-          PR_REPORT_DEFAULT_SECTION,
-          `#${visible.target.id}`,
-        );
-        setActiveSection((previous) => (previous === nextSection ? previous : nextSection));
-      },
-      { rootMargin: "-22% 0px -55% 0px", threshold: [0.2, 0.45, 0.7] },
-    );
-
-    PR_REPORT_SECTION_ITEMS.forEach(({ id }) => {
-      const node = document.getElementById(id);
-      if (node) {
-        observer.observe(node);
-      }
-    });
-
-    return () => {
-      window.removeEventListener("hashchange", syncFromHash);
-      observer.disconnect();
-    };
-  }, []);
 
   if (isLoading) {
     return <LoadingState message="Calculating PR intensity..." />;
@@ -173,14 +99,6 @@ export function PRBattleReportPageClient({
           Next: {nextMoveTitle}
         </span>
       </div>
-      <SectionJumpNav
-        navLabelID="pr-report-jump-nav-label"
-        landmarkLabel="PR report section navigation"
-        activeSectionLabel={activeSectionLabel}
-        items={PR_REPORT_SECTION_ITEMS}
-        activeSection={activeSection}
-        onSectionSelect={setActiveSection}
-      />
       <section id="pr-report-overview" className="scroll-mt-24">
         <GlowCard strong className="space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
