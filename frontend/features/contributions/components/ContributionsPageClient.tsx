@@ -243,6 +243,8 @@ export function ContributionsPageClient() {
           resultsRegionId={CONTRIBUTION_CARDS_REGION_ID}
           resultCount={filteredRows.length}
           isFiltering={isFiltering}
+          canReset={canReset}
+          onReset={handleResetFilters}
           compact
           onClearCategory={handleClearCategoryFilter}
           onClearSearch={handleClearSearchFilter}
@@ -320,6 +322,59 @@ export function ContributionsPageClient() {
                 </div>
               </div>
             </GlowCard>
+          </DeferUntilVisible>
+        </section>
+      ) : null}
+      {!isLoading && !isError ? (
+        <section id="contributions-cards" className="render-opt-section scroll-mt-24 space-y-4">
+          <SectionHeader
+            eyebrow="Primary lane"
+            title="Achievement cards"
+            description="PR-by-PR impact evidence and narrative first."
+          />
+          <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading achievement card lane" />}>
+            {filteredRows.length ? (
+              <div className="space-y-4">
+                <div id={CONTRIBUTION_CARDS_REGION_ID}>
+                  <ContributionList
+                    items={visibleRows}
+                    narratives={abraInsights.data?.contributionNarratives}
+                    isBusy={isFiltering}
+                    totalCount={filteredRows.length}
+                    startPosition={1}
+                  />
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p role="status" aria-live="polite" aria-atomic="true" className="text-sm text-muted">
+                    Showing {visibleRows.length} of {filteredRows.length} cards.
+                  </p>
+                  {hasMoreRows ? (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      aria-controls={CONTRIBUTION_CARDS_REGION_ID}
+                      aria-label={`Show ${Math.min(cardPageSize, remainingRows)} more contribution cards. ${remainingRows} remaining.`}
+                      onClick={() => {
+                        startTransition(() => {
+                          setVisibleCardCount((current) =>
+                            Math.min(filteredRows.length, current + cardPageSize),
+                          );
+                        });
+                      }}
+                    >
+                      Show more cards ({remainingRows} left)
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+            ) : (
+              <SubsectionEmptyState
+                message="No contribution cards match this filter set yet. Reset filters or widen the PR evidence window."
+                actionLabel="Open sync settings"
+                actionHref="/dashboard/settings"
+                onResetFilters={handleResetFilters}
+              />
+            )}
           </DeferUntilVisible>
         </section>
       ) : null}
@@ -420,59 +475,6 @@ export function ContributionsPageClient() {
                 )}
               </GlowCard>
             </div>
-          </DeferUntilVisible>
-        </section>
-      ) : null}
-      {!isLoading && !isError ? (
-        <section id="contributions-cards" className="render-opt-section scroll-mt-24 space-y-4">
-          <SectionHeader
-            eyebrow="PR cards"
-            title="Achievement cards"
-            description="Per-PR score signal and impact narrative."
-          />
-          <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading achievement card lane" />}>
-            {filteredRows.length ? (
-              <div className="space-y-4">
-                <div id={CONTRIBUTION_CARDS_REGION_ID}>
-                  <ContributionList
-                    items={visibleRows}
-                    narratives={abraInsights.data?.contributionNarratives}
-                    isBusy={isFiltering}
-                    totalCount={filteredRows.length}
-                    startPosition={1}
-                  />
-                </div>
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p role="status" aria-live="polite" aria-atomic="true" className="text-sm text-muted">
-                    Showing {visibleRows.length} of {filteredRows.length} cards.
-                  </p>
-                  {hasMoreRows ? (
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      aria-controls={CONTRIBUTION_CARDS_REGION_ID}
-                      aria-label={`Show ${Math.min(cardPageSize, remainingRows)} more contribution cards. ${remainingRows} remaining.`}
-                      onClick={() => {
-                        startTransition(() => {
-                          setVisibleCardCount((current) =>
-                            Math.min(filteredRows.length, current + cardPageSize),
-                          );
-                        });
-                      }}
-                    >
-                      Show more cards ({remainingRows} left)
-                    </Button>
-                  ) : null}
-                </div>
-              </div>
-            ) : (
-              <SubsectionEmptyState
-                message="No contribution cards match this filter set yet. Reset filters or widen the PR evidence window."
-                actionLabel="Open sync settings"
-                actionHref="/dashboard/settings"
-                onResetFilters={handleResetFilters}
-              />
-            )}
           </DeferUntilVisible>
         </section>
       ) : null}

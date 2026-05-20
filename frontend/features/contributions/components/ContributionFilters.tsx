@@ -144,11 +144,51 @@ export function ContributionFilters({
           )}
         </>
       ) : (
-        <p id={statusId} role="status" aria-live="polite" className="sr-only">
-          {isFiltering
-            ? "Updating contribution list..."
-            : `Showing ${resultCount ?? 0} contribution cards`}
-        </p>
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p id={statusId} role="status" aria-live="polite" className="text-xs text-cyan-100">
+              {isFiltering
+                ? "Updating cards..."
+                : `Showing ${resultCount ?? 0} cards`}
+            </p>
+            {onReset ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={onReset}
+                disabled={!canReset || isFiltering}
+                aria-controls={resultsRegionId}
+              >
+                Reset
+              </Button>
+            ) : null}
+          </div>
+          {activeChips.length ? (
+            <ul role="list" className="flex flex-wrap gap-2 text-xs">
+              {activeChips.map((chip) => (
+                <li key={chip.key} className="list-none">
+                  <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-semibold">
+                    {chip.label}
+                    {chip.onRemove ? (
+                      <button
+                        type="button"
+                        onClick={chip.onRemove}
+                        disabled={isFiltering}
+                        className="focus-ring inline-flex min-h-6 min-w-6 items-center justify-center rounded-full border border-primary/30 px-1 text-xs leading-none text-cyan-100 hover:bg-primary/14 disabled:opacity-60"
+                        aria-label={`Remove ${chip.key} filter`}
+                        aria-controls={resultsRegionId}
+                        title={`Remove ${chip.key} filter`}
+                      >
+                        ×
+                      </button>
+                    ) : null}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
       )}
       <Tabs value={value} onValueChange={onValueChange}>
         <TabsList className="scrollbar-thin w-full overflow-x-auto whitespace-nowrap" aria-label="Contribution category filters">
