@@ -101,20 +101,20 @@ export function RevealPanel({
         <ul role="list" className="grid gap-4 sm:grid-cols-3">
           {unlockedBadges.length > 0 ? (
             unlockedBadges.map((badge) => (
-            <li key={badge.id} className="rounded-[1.75rem] border border-cyan-300/16 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/22 p-5 text-left">
-              <div className="flex items-center justify-between">
-                <Award className="h-5 w-5 text-primary" />
-                <RarityBadge rarity={badge.rarity} />
-              </div>
-              <h2 className="mt-4 text-xl font-semibold text-white">{badge.name}</h2>
-              <p className="mt-2 text-sm text-muted">{badge.description}</p>
-            </li>
+              <li key={badge.id} className="list-none rounded-[1.75rem] border border-cyan-300/16 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/22 p-5 text-left">
+                <div className="flex items-center justify-between">
+                  <Award className="h-5 w-5 text-primary" />
+                  <RarityBadge rarity={badge.rarity} />
+                </div>
+                <h3 className="mt-4 text-xl font-semibold text-white">{badge.name}</h3>
+                <p className="mt-2 text-sm text-muted">{badge.description}</p>
+              </li>
             ))
           ) : (
             <>
-              <li><RevealFallbackCard title="First merge unlock" body="Merge one meaningful PR to activate the first badge lane." /></li>
-              <li><RevealFallbackCard title="Review depth unlock" body="Maintainer-reviewed work speeds up trust and progression." /></li>
-              <li><RevealFallbackCard title="Consistency unlock" body="Sustained weekly contribution evidence unlocks rarer badge tiers." /></li>
+              <li className="list-none"><RevealFallbackCard title="First merge unlock" body="Merge one meaningful PR to activate the first badge lane." /></li>
+              <li className="list-none"><RevealFallbackCard title="Review depth unlock" body="Maintainer-reviewed work speeds up trust and progression." /></li>
+              <li className="list-none"><RevealFallbackCard title="Consistency unlock" body="Sustained weekly contribution evidence unlocks rarer badge tiers." /></li>
             </>
           )}
         </ul>
@@ -188,7 +188,7 @@ function RevealFallbackCard({
 }) {
   return (
     <div className="rounded-[1.75rem] border border-dashed border-cyan-300/20 bg-gradient-to-br from-slate-950/82 to-cyan-950/20 p-5 text-left">
-      <h2 className="text-lg font-semibold text-white">{title}</h2>
+      <h3 className="text-lg font-semibold text-white">{title}</h3>
       <p className="mt-2 text-sm text-muted">{body}</p>
     </div>
   );

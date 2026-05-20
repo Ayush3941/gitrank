@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Onboarding reveal heading-structure pass:
+  - normalized repeated badge and fallback card titles in `RevealPanel` from `h2` to `h3` within list-rendered cards.
+  - added explicit `list-none` classes on reveal badge/fallback list items for consistent semantic card-list styling.
+  - preserves reveal visuals while improving heading hierarchy consistency in onboarding cards.
 - Dashboard quest-card heading pass:
   - promoted quest titles in dashboard `QuestPanel` list cards from paragraph text to `h3` headings.
   - normalized quest list-item semantics (`list-none`) for consistent card-list structure.
