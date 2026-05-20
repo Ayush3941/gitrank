@@ -140,6 +140,8 @@ export function PRBattleReportPageClient({
   const suggestedQuest = data.suggestedQuest;
   const evidenceState = data.evidenceState;
   const evidenceAnchored = evidenceState.status === "complete" || evidenceState.status === "deterministic_only";
+  const fallbackReason = extractFallbackReason(data.contribution.evidenceSignals);
+  const fallbackDetail = fallbackReason ? formatFallbackReason(fallbackReason) : null;
   const signalTier =
     data.contribution.xpEarned >= 250
       ? "High signal"
@@ -239,7 +241,7 @@ export function PRBattleReportPageClient({
           <ul role="list" className="mt-3 flex flex-wrap gap-2">
             <li className="list-none">
               <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
-                analysis: {evidenceState.analysisSource ?? "unknown"}
+                analysis: {formatAnalysisSource(evidenceState.analysisSource)}
               </span>
             </li>
             {typeof evidenceState.analysisConfidence === "number" ? (
@@ -256,6 +258,13 @@ export function PRBattleReportPageClient({
                 </span>
               </li>
             ))}
+            {fallbackDetail ? (
+              <li className="list-none">
+                <span className="rounded-full border border-amber-400/22 bg-amber-400/12 px-3 py-1 text-xs text-amber-100">
+                  fallback: {fallbackDetail}
+                </span>
+              </li>
+            ) : null}
           </ul>
           {evidenceState.reasons.length ? (
             <ExpandableText
@@ -281,6 +290,11 @@ export function PRBattleReportPageClient({
         <DeferUntilVisible fallback={<PRReportSectionPlaceholder title="Loading AI summary lane" />}>
           <GlowCard className="space-y-4">
             <p className="text-xs font-medium text-primary">AI summary</p>
+            {fallbackDetail ? (
+              <p className="rounded-full border border-amber-400/24 bg-amber-400/10 px-3 py-1.5 text-xs text-amber-100">
+                Gemini enrichment unavailable: {fallbackDetail}. Showing deterministic summary.
+              </p>
+            ) : null}
             <ExpandableText
               text={data.contribution.aiSummary}
               lines={5}
@@ -412,4 +426,51 @@ function VerdictTile({
       />
     </div>
   );
+}
+
+function extractFallbackReason(signals: string[]): string | null {
+  for (const signal of signals) {
+    if (!signal.startsWith("fallback_reason=")) {
+      continue;
+    }
+    const value = signal.slice("fallback_reason=".length).trim();
+    return value.length > 0 ? value : null;
+  }
+  return null;
+}
+
+function formatFallbackReason(reason: string): string {
+  const normalized = reason.trim().toLowerCase();
+  const map: Record<string, string> = {
+    ai_rate_limited: "rate limited",
+    ai_quota_exceeded: "quota exceeded",
+    ai_auth_failed: "auth failed",
+    ai_invalid_request: "invalid request",
+    ai_provider_error: "provider error",
+    ai_transport_error: "network issue",
+    ai_empty_response: "empty response",
+    ai_empty_summary: "empty summary",
+    ai_invalid_response: "invalid response",
+    ai_guardrail_rejected: "guardrail rejected",
+    ai_validation_failed: "validation failed",
+    ai_request_failed: "request failed",
+  };
+  return map[normalized] ?? normalized.replaceAll("_", " ");
+}
+
+function formatAnalysisSource(source?: string): string {
+  const normalized = (source ?? "").trim().toLowerCase();
+  if (normalized === "hybrid") {
+    return "gemini + deterministic";
+  }
+  if (normalized === "ai_assisted") {
+    return "gemini";
+  }
+  if (normalized === "deterministic") {
+    return "deterministic";
+  }
+  if (normalized.length === 0 || normalized === "unknown") {
+    return "unknown";
+  }
+  return normalized;
 }
