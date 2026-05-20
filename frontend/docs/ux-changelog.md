@@ -2,6 +2,11 @@
 
 ## 2026-05-19
 
+- Settings semantic-list consistency pass:
+  - converted settings display theme/text option maps to explicit semantic list markup (`ul/li`) while preserving existing preview and active-state behavior.
+  - converted sync-log status filter options and repository visibility filter options to semantic list structures for clearer assistive traversal.
+  - converted repository visibility card rendering to a semantic list container so repeated repository rows expose consistent list semantics.
+  - no backend/API contract changes; frontend structure-only accessibility consistency refinement.
 - PR report semantic-lane pass:
   - converted PR evidence-signal cards, stored-evidence chips, XP breakdown rows, penalty rows, unlocked-badge cards, and suggested-quest evidence chips to semantic list structures (`ul/li`).
   - preserves scoring/report behavior while improving assistive navigation and count context in the report’s densest sections.

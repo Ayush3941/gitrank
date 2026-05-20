@@ -152,63 +152,70 @@ export function PrivacyRepositoryToggleList({
               </button>
             ) : null}
           </div>
-          <div aria-labelledby={visibilityGroupId} className="grid grid-cols-3 gap-2">
-            <span id={visibilityGroupId} className="sr-only">
-              Repository visibility filter
-            </span>
+          <span id={visibilityGroupId} className="sr-only">
+            Repository visibility filter
+          </span>
+          <ul role="list" aria-labelledby={visibilityGroupId} className="grid grid-cols-3 gap-2">
             {(["All", "Public", "Hidden"] as const).map((item) => (
-              <Button
-                key={item}
-                type="button"
-                size="sm"
-                variant={visibilityFilter === item ? "default" : "secondary"}
-                onClick={() => startTransition(() => setVisibilityFilter(item))}
-                disabled={isFiltering}
-                aria-describedby={statusId}
-              >
-                {item}
-              </Button>
+              <li key={item} className="list-none">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={visibilityFilter === item ? "default" : "secondary"}
+                  onClick={() => startTransition(() => setVisibilityFilter(item))}
+                  disabled={isFiltering}
+                  aria-describedby={statusId}
+                >
+                  {item}
+                </Button>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       </div>
       {filteredItems.length > 0 ? (
-        filteredItems.map((repo) => (
-          <div key={repo.name} className="render-opt-card neon-surface flex flex-col gap-3 rounded-[1.75rem] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="font-medium text-white">{repo.name}</p>
-              <p className="text-sm text-muted">{repo.reason}</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">{repo.visibility}</span>
-                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
-                  {repo.tracked ? "Tracked" : "Untracked"}
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-muted">{repo.visibility}</span>
-              <Switch
-                checked={repo.visibility === "Public"}
-                disabled={pendingRepository === repo.name}
-                onCheckedChange={(checked) => {
-                  if (controlled) {
-                    onToggle(repo, checked);
-                    return;
-                  }
+        <ul role="list" className="grid gap-3">
+          {filteredItems.map((repo) => (
+            <li key={repo.name} className="list-none">
+              <div className="render-opt-card neon-surface flex flex-col gap-3 rounded-[1.75rem] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="font-medium text-white">{repo.name}</p>
+                  <p className="text-sm text-muted">{repo.reason}</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
+                      {repo.visibility}
+                    </span>
+                    <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
+                      {repo.tracked ? "Tracked" : "Untracked"}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-muted">{repo.visibility}</span>
+                  <Switch
+                    checked={repo.visibility === "Public"}
+                    disabled={pendingRepository === repo.name}
+                    onCheckedChange={(checked) => {
+                      if (controlled) {
+                        onToggle(repo, checked);
+                        return;
+                      }
 
-                  setItems((current) =>
-                    current.map((item) =>
-                      item.name === repo.name
-                        ? { ...item, visibility: checked ? "Public" : "Hidden" }
-                        : item,
-                    ),
-                  );
-                }}
-                aria-label={`Toggle ${repo.name} visibility`}
-              />
-            </div>
-          </div>
-        ))
+                      setItems((current) =>
+                        current.map((item) =>
+                          item.name === repo.name
+                            ? { ...item, visibility: checked ? "Public" : "Hidden" }
+                            : item,
+                        ),
+                      );
+                    }}
+                    aria-label={`Toggle ${repo.name} visibility`}
+                  />
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
       ) : (
         <div className="neon-surface space-y-3 rounded-[1.75rem] border-dashed px-4 py-4 text-sm text-muted">
           {counts.total === 0 ? (

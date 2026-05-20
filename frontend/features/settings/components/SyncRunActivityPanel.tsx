@@ -224,21 +224,26 @@ export function SyncRunActivityPanel({
               </button>
             ) : null}
           </div>
-          <div className="grid grid-cols-4 gap-2">
+          <ul
+            role="list"
+            aria-label="Sync status filter options"
+            className="grid grid-cols-4 gap-2"
+          >
             {(["All", "Completed", "Running", "Failed"] as const).map((item) => (
-              <Button
-                key={item}
-                type="button"
-                size="sm"
-                variant={statusFilter === item ? "default" : "secondary"}
-                onClick={() => startTransition(() => setStatusFilter(item))}
-                disabled={isFiltering}
-                aria-describedby={filterStatusId}
-              >
-                {item}
-              </Button>
+              <li key={item} className="list-none">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={statusFilter === item ? "default" : "secondary"}
+                  onClick={() => startTransition(() => setStatusFilter(item))}
+                  disabled={isFiltering}
+                  aria-describedby={filterStatusId}
+                >
+                  {item}
+                </Button>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       </div>
 
@@ -297,31 +302,33 @@ export function SyncRunActivityPanel({
             return (
               <li key={run.id}>
                 <article className="render-opt-card neon-surface space-y-2 px-4 py-3">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="break-anywhere text-sm font-semibold text-white">
-                      {runLabel(run)}
-                    </p>
-                    <p className="mt-1 break-anywhere text-xs text-muted">
-                      {run.subject || "No subject"} • {run.run_type}
-                    </p>
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="break-anywhere text-sm font-semibold text-white">
+                        {runLabel(run)}
+                      </p>
+                      <p className="mt-1 break-anywhere text-xs text-muted">
+                        {run.subject || "No subject"} • {run.run_type}
+                      </p>
+                    </div>
+                    <StatusChip status={run.status} />
                   </div>
-                  <StatusChip status={run.status} />
-                </div>
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
-                  <span>
-                    Started {toFriendlyTimestamp(run.started_at)}
-                  </span>
-                  {run.finished_at ? <span>Duration {runDuration(run.started_at, run.finished_at)}</span> : null}
-                  {run.correlation_id ? (
-                    <span className="break-anywhere">Correlation {run.correlation_id}</span>
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
+                    <span>
+                      Started {toFriendlyTimestamp(run.started_at)}
+                    </span>
+                    {run.finished_at ? (
+                      <span>Duration {runDuration(run.started_at, run.finished_at)}</span>
+                    ) : null}
+                    {run.correlation_id ? (
+                      <span className="break-anywhere">Correlation {run.correlation_id}</span>
+                    ) : null}
+                  </div>
+                  {safeLastError ? (
+                    <p className="break-anywhere text-xs text-rose-100">
+                      Last error: {safeLastError}
+                    </p>
                   ) : null}
-                </div>
-                {safeLastError ? (
-                  <p className="break-anywhere text-xs text-rose-100">
-                    Last error: {safeLastError}
-                  </p>
-                ) : null}
                 </article>
               </li>
             );
