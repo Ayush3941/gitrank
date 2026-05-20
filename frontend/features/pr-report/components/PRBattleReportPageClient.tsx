@@ -62,6 +62,7 @@ export function PRBattleReportPageClient({
   const evidenceAnchored = evidenceState.status === "complete" || evidenceState.status === "deterministic_only";
   const fallbackReason = extractFallbackReason(data.contribution.evidenceSignals);
   const fallbackDetail = fallbackReason ? formatFallbackReason(fallbackReason) : null;
+  const deterministicOnlyWithoutFallback = evidenceState.deterministicOnly && !fallbackDetail;
   const evidenceReasonSummary = summarizeEvidenceReasons(evidenceState.reasons);
   const signalTier =
     data.contribution.xpEarned >= 250
@@ -184,6 +185,11 @@ export function PRBattleReportPageClient({
             {fallbackDetail ? (
               <p className="rounded-full border border-amber-400/24 bg-amber-400/10 px-3 py-1.5 text-xs text-amber-100">
                 Gemini enrichment unavailable: {fallbackDetail}. Showing deterministic summary.
+              </p>
+            ) : null}
+            {deterministicOnlyWithoutFallback ? (
+              <p className="rounded-full border border-cyan-300/24 bg-cyan-400/10 px-3 py-1.5 text-xs text-cyan-100">
+                This report snapshot currently includes deterministic analysis only. Gemini enrichment can appear after later re-analysis.
               </p>
             ) : null}
             <ExpandableText
