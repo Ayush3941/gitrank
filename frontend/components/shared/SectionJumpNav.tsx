@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { CopyLinkButton } from "@/components/shared/CopyLinkButton";
 
 type SectionJumpNavItem<SectionID extends string = string> = {
   id: SectionID;
@@ -15,8 +14,6 @@ export function SectionJumpNav<SectionID extends string>({
   items,
   activeSection,
   onSectionSelect,
-  copyHref,
-  copyAnalyticsTarget,
   className,
   stickyClassName,
 }: {
@@ -32,22 +29,30 @@ export function SectionJumpNav<SectionID extends string>({
   stickyClassName?: string;
 }) {
   const itemRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const railRef = useRef<HTMLUListElement | null>(null);
   const stickyClasses = stickyClassName ?? "";
 
   useEffect(() => {
     const activeItem = itemRefs.current[activeSection];
-    if (!activeItem) {
+    const railNode = railRef.current;
+    if (!activeItem || !railNode || typeof window === "undefined") {
       return;
     }
-    if (typeof activeItem.scrollIntoView !== "function") {
+    const itemStart = activeItem.offsetLeft;
+    const itemEnd = itemStart + activeItem.offsetWidth;
+    const viewStart = railNode.scrollLeft;
+    const viewEnd = viewStart + railNode.clientWidth;
+    const itemAlreadyVisible = itemStart >= viewStart && itemEnd <= viewEnd;
+    if (itemAlreadyVisible) {
       return;
     }
-    const prefersReducedMotion =
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    activeItem.scrollIntoView({
-      block: "nearest",
-      inline: "center",
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const centeredLeft = Math.max(
+      0,
+      itemStart - (railNode.clientWidth - activeItem.offsetWidth) / 2,
+    );
+    railNode.scrollTo({
+      left: centeredLeft,
       behavior: prefersReducedMotion ? "auto" : "smooth",
     });
   }, [activeSection]);
@@ -97,7 +102,7 @@ export function SectionJumpNav<SectionID extends string>({
         </select>
       </div>
       <div className="scrollbar-thin hidden min-w-0 flex-1 overflow-x-auto sm:block">
-        <ul role="list" className="flex w-max min-w-full flex-nowrap gap-2">
+        <ul ref={railRef} role="list" className="flex w-max min-w-full flex-nowrap gap-2 overflow-x-auto">
           {items.map((section) => (
             <li key={section.id}>
               <button
@@ -121,16 +126,6 @@ export function SectionJumpNav<SectionID extends string>({
           ))}
         </ul>
       </div>
-      {copyHref && copyAnalyticsTarget ? (
-        <div className="shrink-0">
-          <CopyLinkButton
-            href={copyHref}
-            label="Copy section link"
-            copiedLabel="Section link copied"
-            analyticsTarget={copyAnalyticsTarget}
-          />
-        </div>
-      ) : null}
     </nav>
   );
 }

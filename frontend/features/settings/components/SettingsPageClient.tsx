@@ -502,10 +502,8 @@ export function SettingsPageClient() {
               <h2 className="mt-2 text-2xl font-semibold text-white">Reduced gamification</h2>
               <p className="mt-2 text-sm leading-6 text-muted">
                 Lowers animated XP ticks, badge shimmer, glow intensity, and rank effects for this account. Scores,
-                badges, leaderboard placement, and privacy visibility do not change. It also disables heavy glass blur
-                layers and background overlays for better performance on constrained devices. If no explicit preference is saved,
-                GitRank follows your system reduced-motion/reduced-data preference plus adaptive low-memory and low-CPU
-                device detection.
+                badges, leaderboard placement, and privacy visibility do not change. If no explicit preference is
+                saved, GitRank follows your system reduced-motion and reduced-data preferences.
               </p>
             </div>
             <Switch
@@ -797,7 +795,7 @@ function SettingSection({
         {rows.map(([label, checked, onCheckedChange], index) => {
           const controlID = `${toControlID(title)}-${toControlID(label)}-${index}`;
           return (
-          <li key={label} className="list-none neon-surface flex items-center justify-between gap-4 rounded-[1.75rem] px-4 py-4">
+          <li key={`${label}-${index}`} className="list-none neon-surface flex items-center justify-between gap-4 rounded-[1.75rem] px-4 py-4">
             <label className="text-sm text-muted" htmlFor={controlID}>
               {label}
             </label>

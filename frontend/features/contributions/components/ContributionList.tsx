@@ -185,8 +185,8 @@ function SignalProfile({ item }: { item: Contribution }) {
           </div>
         </div>
         <div className="space-y-2">
-          {rows.map((row) => (
-            <SignalRow key={row.label} label={row.label} value={row.value} />
+          {rows.map((row, index) => (
+            <SignalRow key={`${row.label}-${index}`} label={row.label} value={row.value} />
           ))}
         </div>
       </div>

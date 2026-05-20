@@ -26,15 +26,23 @@ export function TabsList({
       if (!activeTab) {
         return;
       }
-      if (typeof activeTab.scrollIntoView !== "function") {
+      const itemStart = activeTab.offsetLeft;
+      const itemEnd = itemStart + activeTab.offsetWidth;
+      const viewStart = listNode.scrollLeft;
+      const viewEnd = viewStart + listNode.clientWidth;
+      const itemAlreadyVisible = itemStart >= viewStart && itemEnd <= viewEnd;
+      if (itemAlreadyVisible) {
         return;
       }
       const prefersReducedMotion = window.matchMedia(
         "(prefers-reduced-motion: reduce)",
       ).matches;
-      activeTab.scrollIntoView({
-        block: "nearest",
-        inline: "center",
+      const centeredLeft = Math.max(
+        0,
+        itemStart - (listNode.clientWidth - activeTab.offsetWidth) / 2,
+      );
+      listNode.scrollTo({
+        left: centeredLeft,
         behavior: prefersReducedMotion ? "auto" : "smooth",
       });
     };

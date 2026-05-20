@@ -20,10 +20,10 @@ export function EvidenceSignalsCard({ report }: { report: PullRequestAnalysis })
         <h2 className="mt-2 text-2xl font-semibold text-white">Why this PR earned what it earned</h2>
       </div>
       <ul role="list" className="grid gap-3 md:grid-cols-2">
-        {signals.map((signal) => {
+        {signals.map((signal, index) => {
           const Icon = signal.icon;
           return (
-            <li key={signal.label} className="list-none neon-surface flex items-center gap-3 rounded-[1.75rem] px-4 py-4">
+            <li key={`${signal.label}-${index}`} className="list-none neon-surface flex items-center gap-3 rounded-[1.75rem] px-4 py-4">
               <div
                 className={`rounded-2xl p-2 ${
                   signal.active ? "bg-emerald-400/12 text-emerald-200" : "neon-tile text-muted"

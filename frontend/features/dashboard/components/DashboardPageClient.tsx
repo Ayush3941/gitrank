@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef } from "react";
-import { Activity, ArrowRight, CheckCircle2, Circle, Flame, ListChecks, Medal, ShieldCheck, Sparkles, Swords } from "lucide-react";
+import { Activity, ArrowRight, CheckCircle2, Circle, Flame, ListChecks, Medal, ShieldCheck, Swords } from "lucide-react";
 import { DashboardHeroRankCard } from "@/features/dashboard/components/DashboardHeroRankCard";
 import { ContributionTimelineCard } from "@/features/dashboard/components/ContributionTimelineCard";
 import { CurrentLeagueCard } from "@/features/dashboard/components/CurrentLeagueCard";
@@ -90,41 +90,6 @@ export function DashboardPageClient() {
   const showFirstRunChecklist =
     (user?.mergedPrCount ?? 0) <= 0 && contributionWindowCount === 0;
   const firstRunNextAction = firstRunSteps.find((step) => !step.done) ?? null;
-  const nextAction = useMemo(() => {
-    if (!user) {
-      return {
-        href: "/dashboard/settings",
-        label: "Open sync and privacy settings",
-        detail: "Reconnect GitHub or refresh your profile data to continue.",
-      };
-    }
-    if (user.syncStatus.state === "failed" || user.syncStatus.state === "rate_limited") {
-      return {
-        href: "/dashboard/settings",
-        label: "Recover sync pipeline",
-        detail: "GitHub evidence is blocked. Retry sync and inspect account connection settings.",
-      };
-    }
-    if (user.mergedPrCount <= 0) {
-      return {
-        href: "/dashboard/settings",
-        label: "Run first GitHub sync",
-        detail: "Bring your merged PR history into GitRank so score, skills, and quests can activate.",
-      };
-    }
-    if (user.quests.some((quest) => quest.status === "Active")) {
-      return {
-        href: "/dashboard/quests",
-        label: "Continue active quest",
-        detail: "Your fastest rank-up path is currently in the quest lane with verified weak-skill targets.",
-      };
-    }
-    return {
-      href: "/dashboard/contributions",
-      label: "Review highest-impact PR cards",
-      detail: "Inspect battle reports and impact narratives to optimize your next contribution cycle.",
-    };
-  }, [user]);
   const abraPayload = useMemo(() => {
     if (!user) {
       return null;
@@ -255,34 +220,16 @@ export function DashboardPageClient() {
           aiMode={abraInsights.data?.generatedBy ?? "deterministic"}
         />
       </section>
-      <section id="dashboard-snapshot" className="scroll-mt-24 grid gap-4 xl:grid-cols-[1.25fr,1fr]">
-        <div className="glass-panel cyber-card cyber-frame space-y-4 p-5 sm:p-6">
-          <p className="text-xs font-medium text-primary">Immediate next move</p>
-          <h2 className="text-2xl font-semibold text-white">{nextAction.label}</h2>
-          <p className="readable-measure text-sm leading-7 text-muted">{nextAction.detail}</p>
-          <div className="flex flex-wrap gap-2 pt-1">
-            <Button asChild size="sm">
-              <Link href={nextAction.href}>
-                Open lane
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-            <Button asChild variant="secondary" size="sm">
-              <Link href="/dashboard/contributions">Inspect contribution cards</Link>
-            </Button>
-          </div>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <StatCard label="GitRank score" value={user.gitRankScore} detail="Weighted by impact, reviews, tests, and repository context." icon={<Medal className="h-5 w-5 text-primary" />} />
-          <StatCard label="Merged PRs" value={user.mergedPrCount} detail="Only verified merged work receives full progression value." icon={<ShieldCheck className="h-5 w-5 text-primary" />} />
-          <StatCard
-            label="PR evidence window"
-            value={`${contributionWindowCount}/${contributionWindowCap}`}
-            detail={`Current profile includes ${contributionWindowFillRate}% of the capped recent PR history window.`}
-            icon={<Activity className="h-5 w-5 text-primary" />}
-          />
-          <StatCard label="Reviewed PRs" value={user.reviewedPrCount} detail="Review participation increases trust and unlocks deeper quests." icon={<Activity className="h-5 w-5 text-primary" />} />
-        </div>
+      <section id="dashboard-snapshot" className="scroll-mt-24 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard label="GitRank score" value={user.gitRankScore} detail="Weighted by impact, reviews, tests, and repository context." icon={<Medal className="h-5 w-5 text-primary" />} />
+        <StatCard label="Merged PRs" value={user.mergedPrCount} detail="Only verified merged work receives full progression value." icon={<ShieldCheck className="h-5 w-5 text-primary" />} />
+        <StatCard
+          label="PR evidence window"
+          value={`${contributionWindowCount}/${contributionWindowCap}`}
+          detail={`${contributionWindowFillRate}% of the capped recent PR history window.`}
+          icon={<Activity className="h-5 w-5 text-primary" />}
+        />
+        <StatCard label="Reviewed PRs" value={user.reviewedPrCount} detail="Review participation increases trust and unlocks deeper quests." icon={<Activity className="h-5 w-5 text-primary" />} />
       </section>
       {showFirstRunChecklist ? (
         <FirstRunChecklistCard
@@ -293,35 +240,6 @@ export function DashboardPageClient() {
           nextAction={firstRunNextAction}
         />
       ) : null}
-      <GlowCard className="space-y-4 border border-primary/22 bg-gradient-to-br from-slate-950/90 to-cyan-950/18">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="text-xs font-medium text-primary">Evidence context</p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">Snapshot freshness</h2>
-          </div>
-          <span className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold">
-            <Sparkles className="h-3.5 w-3.5" />
-            Refreshed {formatRelativeDays(data.refreshedAt)}
-          </span>
-        </div>
-        <div className="grid gap-3 md:grid-cols-3">
-          <EvidenceContextItem
-            label="Sync state"
-            value={formatSyncState(user.syncStatus.state)}
-            detail={user.syncStatus.partialProfileAvailable ? "Partial profile mode active" : "Full profile evidence mode"}
-          />
-          <EvidenceContextItem
-            label="Evidence scope"
-            value={`${contributionWindowCount}/${contributionWindowCap} PR rows`}
-            detail={`${contributionWindowFillRate}% of the capped recent PR history window`}
-          />
-          <EvidenceContextItem
-            label="Current step"
-            value={user.syncStatus.currentStep || "Idle"}
-            detail="Last known pipeline stage reported by the authenticated sync state"
-          />
-        </div>
-      </GlowCard>
       <div className="grid gap-6 xl:grid-cols-[0.92fr,1.08fr]">
         <div className="space-y-6">
           <section id="dashboard-league" className="render-opt-section scroll-mt-24">
@@ -483,24 +401,6 @@ function FirstRunChecklistCard({
   );
 }
 
-function EvidenceContextItem({
-  label,
-  value,
-  detail,
-}: {
-  label: string;
-  value: string;
-  detail: string;
-}) {
-  return (
-    <div className="neon-surface space-y-2 px-4 py-4">
-      <p className="text-xs font-medium text-primary">{label}</p>
-      <p className="text-lg font-semibold text-white">{value}</p>
-      <p className="text-xs text-muted">{detail}</p>
-    </div>
-  );
-}
-
 function SectionDeferredPlaceholder({ title }: { title: string }) {
   return (
     <div
@@ -512,8 +412,4 @@ function SectionDeferredPlaceholder({ title }: { title: string }) {
       <p className="text-sm text-muted">{title}</p>
     </div>
   );
-}
-
-function formatSyncState(state: string): string {
-  return state.replaceAll("_", " ");
 }
