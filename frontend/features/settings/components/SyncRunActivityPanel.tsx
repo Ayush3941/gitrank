@@ -92,7 +92,7 @@ export function SyncRunActivityPanel({
     resultsRegionScrollTop.current = currentResultsRegion ? currentResultsRegion.scrollTop : null;
     startTransition(update);
     if (typeof window !== "undefined") {
-      requestAnimationFrame(() => {
+      window.setTimeout(() => {
         const y = viewportAnchorY.current;
         if (typeof y === "number") {
           window.scrollTo({ top: y, left: 0, behavior: "auto" });
@@ -102,7 +102,7 @@ export function SyncRunActivityPanel({
         if (nextResultsRegion && typeof scrollTop === "number") {
           nextResultsRegion.scrollTop = scrollTop;
         }
-      });
+      }, 0);
     }
   }
 

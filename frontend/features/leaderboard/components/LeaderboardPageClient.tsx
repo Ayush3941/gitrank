@@ -116,12 +116,12 @@ export function LeaderboardPageClient() {
       router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
     });
     if (typeof window !== "undefined") {
-      requestAnimationFrame(() => {
+      window.setTimeout(() => {
         const y = viewportAnchorY.current;
         if (typeof y === "number") {
           window.scrollTo({ top: y, left: 0, behavior: "auto" });
         }
-      });
+      }, 0);
     }
   }
 
