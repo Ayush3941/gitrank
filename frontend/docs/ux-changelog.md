@@ -2,6 +2,10 @@
 
 ## 2026-05-19
 
+- Tabs compatibility guard pass:
+  - added a safe `scrollIntoView` capability check before auto-centering active tabs in shared `TabsList`.
+  - preserves route behavior in browsers while preventing test/runtime crashes in environments where `scrollIntoView` is unavailable.
+  - validated with `vitest tests/accessibility-controls.test.tsx`.
 - Filter control-to-results mapping pass:
   - added `aria-controls` on contributions category tab triggers and sort selector trigger, targeting the contribution cards region.
   - added `aria-controls` on badges rarity/state selector triggers, targeting the earned-badges region.

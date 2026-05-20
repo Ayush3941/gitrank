@@ -26,6 +26,9 @@ export function TabsList({
       if (!activeTab) {
         return;
       }
+      if (typeof activeTab.scrollIntoView !== "function") {
+        return;
+      }
       const prefersReducedMotion = window.matchMedia(
         "(prefers-reduced-motion: reduce)",
       ).matches;
