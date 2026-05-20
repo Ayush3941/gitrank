@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { startTransition, useDeferredValue, useMemo, useState } from "react";
+import { startTransition, useDeferredValue, useEffect, useMemo, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -42,13 +42,15 @@ const CONTRIBUTION_TIMELINE_MONTH_WINDOW_DEFAULT = 12;
 const CONTRIBUTION_TIMELINE_MONTH_WINDOW_CONSTRAINED = 8;
 const ABRA_CONTRIBUTION_SAMPLE_LIMIT = 24;
 const CONTRIBUTION_CARDS_REGION_ID = "contributions-cards-region";
+const CONTRIBUTION_SEARCH_DEBOUNCE_MS = 220;
 
 export function ContributionsPageClient() {
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact">("Newest");
+  const debouncedSearch = useDebouncedValue(search, CONTRIBUTION_SEARCH_DEBOUNCE_MS);
   const deferredFilter = useDeferredValue(filter);
-  const deferredSearch = useDeferredValue(search);
+  const deferredSearch = useDeferredValue(debouncedSearch);
   const deferredSort = useDeferredValue(sort);
   const constrainedNetwork = useNetworkConstraintPreference();
   const cardPageSize = constrainedNetwork
@@ -72,7 +74,10 @@ export function ContributionsPageClient() {
   const hasMoreRows = filteredRows.length > visibleRows.length;
   const remainingRows = Math.max(0, filteredRows.length - visibleRows.length);
   const isFiltering =
-    deferredFilter !== filter || deferredSearch !== search || deferredSort !== sort;
+    deferredFilter !== filter ||
+    deferredSearch !== debouncedSearch ||
+    debouncedSearch !== search ||
+    deferredSort !== sort;
   const canReset = filter !== "All" || search.trim().length > 0 || sort !== "Newest";
   const totalContributionEvidence = profile?.user.contributions.length ?? 0;
   const isFilteredNoResults =
@@ -465,4 +470,19 @@ function deduplicateContributionRowsByPR(rows: Contribution[]): Contribution[] {
   }
 
   return Array.from(bestByPR.values());
+}
+
+function useDebouncedValue<T>(value: T, delayMs: number): T {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handle = window.setTimeout(() => {
+      setDebouncedValue(value);
+    }, Math.max(0, delayMs));
+    return () => {
+      window.clearTimeout(handle);
+    };
+  }, [delayMs, value]);
+
+  return debouncedValue;
 }
