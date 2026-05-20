@@ -76,6 +76,8 @@ export function SyncRunActivityPanel({
       );
     });
   }, [deferredSearch, deferredStatusFilter, runs]);
+  const resultsRegionClassName =
+    "min-h-[20rem] max-h-[26rem] overflow-y-auto pr-1 [scrollbar-gutter:stable] [overflow-anchor:none]";
 
   function handleResetFilters() {
     startTransition(() => {
@@ -269,11 +271,11 @@ export function SyncRunActivityPanel({
       ) : null}
 
       {isLoading ? (
-        <div id={syncRunsRegionId} className="neon-surface grid gap-2 px-4 py-4 text-sm text-muted">
+        <div id={syncRunsRegionId} className={`neon-surface grid gap-2 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}>
           <p>Loading recent sync activity…</p>
         </div>
       ) : runs.length === 0 ? (
-        <div id={syncRunsRegionId} className="neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted">
+        <div id={syncRunsRegionId} className={`neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}>
           <p>No sync runs recorded for this account yet. Open dashboard lanes and GitRank will enqueue background sync automatically.</p>
           <div className="flex flex-wrap gap-2">
             <Button asChild size="sm" variant="secondary">
@@ -285,7 +287,7 @@ export function SyncRunActivityPanel({
           </div>
         </div>
       ) : filteredRuns.length === 0 ? (
-        <div id={syncRunsRegionId} className="neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted">
+        <div id={syncRunsRegionId} className={`neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}>
           <p>No sync runs match the current search or status filter.</p>
           <div className="flex flex-wrap gap-2">
             <Button
@@ -303,7 +305,7 @@ export function SyncRunActivityPanel({
           </div>
         </div>
       ) : (
-        <ol id={syncRunsRegionId} role="list" className="grid gap-2">
+        <ol id={syncRunsRegionId} role="list" className={`grid gap-2 ${resultsRegionClassName}`}>
           {filteredRuns.map((run) => {
             const safeLastError = sanitizeSyncRunErrorMessage(run.last_error);
             return (
