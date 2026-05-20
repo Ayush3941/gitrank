@@ -35,7 +35,7 @@ const SYNC_STATE_COPY: Record<SyncState, SyncStateGuideCopy> = {
   partially_synced: {
     title: "Partial evidence available",
     detail: "Some repository or PR metadata is still pending.",
-    actionLabel: "Inspect contribution evidence",
+    actionLabel: "Open contributions",
     actionHref: "/dashboard/contributions",
     toneClassName: "border-amber-300/35",
     icon: AlertTriangle,

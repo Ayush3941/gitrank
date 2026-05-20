@@ -90,12 +90,12 @@ export function ContributionFilters({
         <>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p id="contribution-filter-controls-label" className="text-sm font-medium text-cyan-100">
-              Filter controls
+              Filters
             </p>
             <p id={statusId} role="status" aria-live="polite" className="text-sm text-cyan-100">
               {isFiltering
-                ? "Updating contribution list..."
-                : `Showing ${resultCount ?? 0} contribution cards`}
+                ? "Updating..."
+                : `${resultCount ?? 0} cards`}
             </p>
             {onReset ? (
               <Button
@@ -106,7 +106,7 @@ export function ContributionFilters({
                 disabled={!canReset || isFiltering}
                 aria-controls={resultsRegionId}
               >
-                Reset filters
+                Clear
               </Button>
             ) : null}
           </div>

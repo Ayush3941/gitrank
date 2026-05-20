@@ -968,13 +968,19 @@ func reportEvidenceSignals(record pullRequestReportRecord) []string {
 }
 
 func reportEvidenceState(record pullRequestReportRecord) contracts.PRReportEvidenceState {
+	analysisSource := inferReportAnalysisSource(record)
+	deterministicOnly := analysisSource == "deterministic"
+	analysisPersisted := strings.TrimSpace(record.AnalysisID) != ""
+	scoreEventPersisted := strings.TrimSpace(record.ScoreEventID) != ""
+	analysisMissing := !analysisPersisted && !deterministicOnly
+
 	missing := make([]string, 0, 3)
 	reasons := make([]string, 0, 5)
-	if strings.TrimSpace(record.AnalysisID) == "" {
+	if analysisMissing {
 		missing = append(missing, "analysis")
 		reasons = append(reasons, "analysis has not been persisted")
 	}
-	if strings.TrimSpace(record.ScoreEventID) == "" {
+	if !scoreEventPersisted {
 		missing = append(missing, "score_event")
 		reasons = append(reasons, "score event has not been persisted")
 	}
@@ -983,12 +989,10 @@ func reportEvidenceState(record pullRequestReportRecord) contracts.PRReportEvide
 		reasons = append(reasons, "changed-file evidence has not been persisted")
 	}
 
-	analysisSource := inferReportAnalysisSource(record)
-	deterministicOnly := analysisSource == "deterministic"
 	aiFallback := stringFromMap(record.ScoreMetadata, "fallback_reason") != "" || reportHasSignal(record, "ai fallback", "deterministic fallback", "fallback_reason")
 	rateLimited := boolFromMap(record.ScoreMetadata, "rate_limited") || reportHasSignal(record, "rate limited", "rate_limit", "github rate")
-	stale := strings.TrimSpace(record.AnalysisID) == "" || strings.TrimSpace(record.ScoreEventID) == ""
-	if strings.TrimSpace(record.AnalysisID) == "" && strings.TrimSpace(record.ScoreEventID) != "" && deterministicOnly {
+	stale := !scoreEventPersisted || analysisMissing
+	if !analysisPersisted && scoreEventPersisted && deterministicOnly {
 		reasons = append(reasons, "deterministic scoring evidence is available while analysis snapshot persistence is pending")
 	}
 
@@ -1028,8 +1032,8 @@ func inferReportAnalysisSource(record pullRequestReportRecord) string {
 	if analysisSource != "unknown" {
 		return analysisSource
 	}
-	if strings.TrimSpace(record.ScoreEventID) == "" {
-		return analysisSource
+	if strings.TrimSpace(record.ScoreEventID) != "" {
+		return "deterministic"
 	}
 	if hasDeterministicScoreMetadata(record.ScoreMetadata) {
 		return "deterministic"
