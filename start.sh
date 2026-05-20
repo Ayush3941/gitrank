@@ -115,6 +115,17 @@ wait_for_http() {
   return 1
 }
 
+prewarm_http() {
+  url="$1"
+  timeout_seconds="$2"
+  if curl -fsS --max-time "$timeout_seconds" "$url" >/dev/null 2>&1; then
+    log "prewarmed route: $url"
+    return 0
+  fi
+  log "skipped prewarm (timeout): $url"
+  return 0
+}
+
 need_cmd docker
 need_cmd go
 need_cmd npm
@@ -238,6 +249,11 @@ log "starting frontend dev server"
 
 wait_for_http "http://localhost:3000" 120
 wait_for_http "http://localhost:8080/healthz" 30
+
+# Next.js dev mode compiles routes on first hit. Prewarm auth-critical routes so
+# the first manual browser navigation does not look like a hung frontend.
+prewarm_http "http://localhost:3000/login" 90
+prewarm_http "http://localhost:3000/onboarding/connect-github" 90
 
 log "startup complete"
 log "frontend: http://localhost:3000"
