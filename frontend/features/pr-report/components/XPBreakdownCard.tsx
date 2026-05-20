@@ -63,20 +63,20 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
             : "Transparent formula"}
         </h2>
       </div>
-      <div className="space-y-3">
+      <ul role="list" className="space-y-3">
         {rows.map((row) => (
-          <div
+          <li
             key={row.label}
-            className="neon-surface rounded-[1.75rem] px-4 py-4"
+            className="list-none neon-surface rounded-[1.75rem] px-4 py-4"
           >
             <div className="flex items-center justify-between gap-4">
               <p className="text-sm text-muted">{row.label}</p>
               <p className="text-sm font-semibold text-white">{row.value}</p>
             </div>
             <p className="mt-2 text-xs leading-5 text-muted">{row.detail}</p>
-          </div>
+          </li>
         ))}
-        <div className="rounded-[1.75rem] border border-amber-400/18 bg-amber-400/8 px-4 py-4">
+        <li className="list-none rounded-[1.75rem] border border-amber-400/18 bg-amber-400/8 px-4 py-4">
           <div className="flex items-center justify-between gap-4">
             <p className="text-sm text-amber-50">Anti-spam multiplier</p>
             <p className="text-sm font-semibold text-amber-100">
@@ -87,18 +87,18 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
             Repeated, shallow, or unreviewed work is capped so XP stays tied to
             meaningful evidence.
           </p>
-        </div>
-        <div className="rounded-[1.75rem] border border-emerald-400/18 bg-emerald-400/8 px-4 py-4">
+        </li>
+        <li className="list-none rounded-[1.75rem] border border-emerald-400/18 bg-emerald-400/8 px-4 py-4">
           <p className="text-sm font-semibold text-white">Evidence lock</p>
           <p className="mt-2 text-xs leading-5 text-emerald-100/76">
             This report links XP to PR facts: changed files, review depth, CI
             state, issue linkage, and category signals.
           </p>
-        </div>
+        </li>
         {report.penalties.map((penalty) => (
-          <div
+          <li
             key={penalty.label}
-            className="rounded-[1.75rem] border border-rose-400/18 bg-rose-400/8 px-4 py-4"
+            className="list-none rounded-[1.75rem] border border-rose-400/18 bg-rose-400/8 px-4 py-4"
           >
             <div className="flex items-center justify-between gap-4">
               <p className="text-sm text-rose-50">{penalty.label}</p>
@@ -109,9 +109,9 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
             <p className="mt-2 text-xs leading-5 text-rose-100/72">
               {penalty.reason}
             </p>
-          </div>
+          </li>
         ))}
-      </div>
+      </ul>
     </GlowCard>
   );
 }

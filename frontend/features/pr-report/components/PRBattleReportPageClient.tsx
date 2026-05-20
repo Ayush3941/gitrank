@@ -241,23 +241,29 @@ export function PRBattleReportPageClient({
             </div>
           </div>
         </div>
-        <div className="neon-tile rounded-[1.5rem] p-4">
-          <p className="text-xs font-medium text-muted">Evidence state</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
-              analysis: {evidenceState.analysisSource ?? "unknown"}
-            </span>
-            {typeof evidenceState.analysisConfidence === "number" ? (
+          <div className="neon-tile rounded-[1.5rem] p-4">
+            <p className="text-xs font-medium text-muted">Evidence state</p>
+          <ul role="list" className="mt-3 flex flex-wrap gap-2">
+            <li className="list-none">
               <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
-                confidence {Math.round(evidenceState.analysisConfidence * 100)}%
+                analysis: {evidenceState.analysisSource ?? "unknown"}
               </span>
+            </li>
+            {typeof evidenceState.analysisConfidence === "number" ? (
+              <li className="list-none">
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
+                  confidence {Math.round(evidenceState.analysisConfidence * 100)}%
+                </span>
+              </li>
             ) : null}
             {evidenceState.missingEvidence.map((missing) => (
-              <span key={missing} className="rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-xs text-amber-100">
-                missing {missing.replace("_", " ")}
-              </span>
+              <li key={missing} className="list-none">
+                <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-xs text-amber-100">
+                  missing {missing.replace("_", " ")}
+                </span>
+              </li>
             ))}
-          </div>
+          </ul>
           {evidenceState.reasons.length ? (
             <ExpandableText
               text={evidenceState.reasons.slice(0, 2).join(" · ")}
@@ -304,26 +310,28 @@ export function PRBattleReportPageClient({
               <Award className="h-3.5 w-3.5" />
               Badge unlocks
             </div>
-            <div className="grid gap-3 md:grid-cols-2">
+            <ul role="list" className="grid gap-3 md:grid-cols-2">
               {data.badgeUnlocks.map((badge) => (
-                <div key={badge.key} className="render-opt-card neon-surface rounded-[1.75rem] p-4">
+                <li key={badge.key} className="list-none render-opt-card neon-surface rounded-[1.75rem] p-4">
                   <p className="text-lg font-semibold text-white">{badge.name}</p>
                   {badge.description ? <p className="mt-2 text-sm text-muted">{badge.description}</p> : null}
                   <p className="mt-3 text-xs text-emerald-100">
                     Rule {badge.ruleVersion ?? badge.rule ?? "persisted badge evidence"}
                   </p>
                   {badge.evidenceSignals.length ? (
-                    <div className="mt-3 flex flex-wrap gap-2">
+                    <ul role="list" className="mt-3 flex flex-wrap gap-2">
                       {badge.evidenceSignals.slice(0, 3).map((signal) => (
-                        <span key={signal} className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
-                          {signal}
-                        </span>
+                        <li key={signal} className="list-none">
+                          <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
+                            {signal}
+                          </span>
+                        </li>
                       ))}
-                    </div>
+                    </ul>
                   ) : null}
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
             </GlowCard>
           </DeferUntilVisible>
         </section>
@@ -348,13 +356,15 @@ export function PRBattleReportPageClient({
                   `Suggested quest key: ${data.suggestedQuestId}. The quest board resolves this against the latest profile evidence.`}
               </p>
               {suggestedQuest?.evidenceSignals.length ? (
-                <div className="mt-3 flex flex-wrap gap-2">
+                <ul role="list" className="mt-3 flex flex-wrap gap-2">
                   {suggestedQuest.evidenceSignals.slice(0, 3).map((signal) => (
-                    <span key={signal} className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
-                      {signal}
-                    </span>
+                    <li key={signal} className="list-none">
+                      <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
+                        {signal}
+                      </span>
+                    </li>
                   ))}
-                </div>
+                </ul>
               ) : null}
             </div>
             <Button asChild variant="secondary">

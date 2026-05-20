@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- PR report semantic-lane pass:
+  - converted PR evidence-signal cards, stored-evidence chips, XP breakdown rows, penalty rows, unlocked-badge cards, and suggested-quest evidence chips to semantic list structures (`ul/li`).
+  - preserves scoring/report behavior while improving assistive navigation and count context in the report’s densest sections.
 - Quick-actions ARIA grouping refinement:
   - aligned dashboard quick-actions listbox with grouped-option semantics (`role="group"` containers with direct `role="option"` children).
   - added option positional metadata (`aria-posinset`, `aria-setsize`) for clearer assistive context while preserving existing keyboard flow and visual grouping.

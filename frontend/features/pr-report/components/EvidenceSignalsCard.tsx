@@ -19,31 +19,37 @@ export function EvidenceSignalsCard({ report }: { report: PullRequestAnalysis })
         <p className="text-xs font-medium text-primary">Evidence signals</p>
         <h2 className="mt-2 text-2xl font-semibold text-white">Why this PR earned what it earned</h2>
       </div>
-      <div className="grid gap-3 md:grid-cols-2">
+      <ul role="list" className="grid gap-3 md:grid-cols-2">
         {signals.map((signal) => {
           const Icon = signal.icon;
           return (
-            <div key={signal.label} className="neon-surface flex items-center gap-3 rounded-[1.75rem] px-4 py-4">
-              <div className={`rounded-2xl p-2 ${signal.active ? "bg-emerald-400/12 text-emerald-200" : "neon-tile text-muted"}`}>
+            <li key={signal.label} className="list-none neon-surface flex items-center gap-3 rounded-[1.75rem] px-4 py-4">
+              <div
+                className={`rounded-2xl p-2 ${
+                  signal.active ? "bg-emerald-400/12 text-emerald-200" : "neon-tile text-muted"
+                }`}
+              >
                 <Icon className="h-4 w-4" />
               </div>
               <div>
                 <p className="font-medium text-white">{signal.label}</p>
                 <p className="text-sm text-muted">{signal.active ? "Verified" : "Not detected"}</p>
               </div>
-            </div>
+            </li>
           );
         })}
-      </div>
+      </ul>
       <div className="neon-surface rounded-[1.75rem] p-4">
         <p className="text-xs font-medium text-primary">Stored evidence labels</p>
-        <div className="mt-3 flex flex-wrap gap-2">
+        <ul role="list" className="mt-3 flex flex-wrap gap-2">
           {contribution.evidenceSignals.map((signal) => (
-            <span key={signal} className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
-              {signal}
-            </span>
+            <li key={signal} className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
+                {signal}
+              </span>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
     </GlowCard>
   );
