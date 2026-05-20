@@ -10,7 +10,7 @@ import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 export function EmptyState({
   title,
   description,
-  eyebrow = "No live data yet",
+  eyebrow = "No data yet",
   actionLabel,
   actionHref,
   onAction,

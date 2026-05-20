@@ -10,8 +10,8 @@ import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 export function ErrorState({
   title,
   description,
-  retryLabel = "Retry sync",
-  fallbackLabel = "Use partial data",
+  retryLabel = "Retry",
+  fallbackLabel = "Open dashboard",
   onRetry,
   onFallback,
   fallbackHref = "/dashboard",
