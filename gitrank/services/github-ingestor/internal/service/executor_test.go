@@ -655,8 +655,8 @@ func TestExecutorFetchPullRequestsUsesGraphQLBatchWhenTokenAvailable(t *testing.
 		if r.URL.Path != "/repos/octo/repo/pulls" {
 			t.Fatalf("unexpected REST path %q; GraphQL batch should avoid per-PR REST hydration", r.URL.Path)
 		}
-		if r.URL.Query().Get("per_page") != "20" {
-			t.Fatalf("per_page = %q, want GraphQL-bounded page size 20", r.URL.Query().Get("per_page"))
+		if r.URL.Query().Get("per_page") != "10" {
+			t.Fatalf("per_page = %q, want GraphQL-bounded page size 10", r.URL.Query().Get("per_page"))
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode([]map[string]any{
@@ -701,8 +701,8 @@ func TestExecutorFetchPullRequestsUsesGraphQLBatchWhenTokenAvailable(t *testing.
 		if variables["owner"] != "octo" || variables["name"] != "repo" {
 			t.Fatalf("variables owner/name = %v/%v, want octo/repo", variables["owner"], variables["name"])
 		}
-		if variables["first"] != float64(1) || variables["reviewsFirst"] != float64(20) {
-			t.Fatalf("variables first/reviewsFirst = %v/%v, want 1/20", variables["first"], variables["reviewsFirst"])
+		if variables["first"] != float64(1) || variables["reviewsFirst"] != float64(10) {
+			t.Fatalf("variables first/reviewsFirst = %v/%v, want 1/10", variables["first"], variables["reviewsFirst"])
 		}
 
 		w.Header().Set("Content-Type", "application/json")

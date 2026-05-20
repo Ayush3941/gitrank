@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	defaultRepositorySyncPageSize    = 20
+	defaultRepositorySyncPageSize    = 10
 	defaultPullRequestReviewPageSize = 10
 	defaultCommitSyncPageSize        = 50
 	defaultUserRepositoryLimit       = 100
