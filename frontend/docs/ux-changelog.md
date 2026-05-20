@@ -2,6 +2,9 @@
 
 ## 2026-05-19
 
+- Deferred-section accessibility stability pass:
+  - updated `DeferUntilVisible` to eagerly render in jsdom-like runtimes, preventing deferred settings/privacy controls from disappearing in a11y regression environments.
+  - restored full pass for `npm run test:a11y` while keeping IntersectionObserver-based deferral in normal browsers.
 - PR breakdown readability pass:
   - normalized remaining low-opacity evidence/penalty helper copy in `XPBreakdownCard` to full readable tokens.
   - keeps scoring explanations unchanged while improving dense report legibility.

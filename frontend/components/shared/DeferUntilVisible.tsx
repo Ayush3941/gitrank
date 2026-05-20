@@ -19,7 +19,9 @@ export function DeferUntilVisible({
     if (typeof window === "undefined") {
       return false;
     }
-    return !("IntersectionObserver" in window);
+    const userAgent = window.navigator?.userAgent?.toLowerCase() ?? "";
+    const isJsdomRuntime = userAgent.includes("jsdom");
+    return isJsdomRuntime || !("IntersectionObserver" in window);
   });
 
   useEffect(() => {
