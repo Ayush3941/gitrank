@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { AlertTriangle, ArrowRight, Award, ShieldCheck, Swords } from "lucide-react";
+import { useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { ExpandableText } from "@/components/shared/ExpandableText";
@@ -25,6 +26,7 @@ export function PRBattleReportPageClient({
   number: number;
 }) {
   const { data, isLoading, isError } = usePrReport(owner, repo, number);
+  const [showTechnicalBreakdown, setShowTechnicalBreakdown] = useState(false);
 
   if (isLoading) {
     return <LoadingState message="Calculating PR intensity..." />;
@@ -175,13 +177,33 @@ export function PRBattleReportPageClient({
         </div>
         </GlowCard>
       </section>
-      <section id="pr-report-score" className="render-opt-section scroll-mt-24">
-        <DeferUntilVisible fallback={<PRReportSectionPlaceholder title="Loading score matrix" />}>
-          <div className="grid gap-6 xl:grid-cols-[1.02fr,0.98fr]">
-            <ScoreMatrixCard report={data} />
-            <XPBreakdownCard report={data} />
+      <section className="render-opt-section space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-white">Technical breakdown</p>
+            <p className="text-xs text-muted">Score matrix, evidence signals, and reward derivation details.</p>
           </div>
-        </DeferUntilVisible>
+          <Button
+            type="button"
+            variant={showTechnicalBreakdown ? "secondary" : "default"}
+            size="sm"
+            aria-expanded={showTechnicalBreakdown}
+            aria-controls="pr-report-technical-panels"
+            onClick={() => {
+              setShowTechnicalBreakdown((current) => !current);
+            }}
+          >
+            {showTechnicalBreakdown ? "Hide technical breakdown" : "Show technical breakdown"}
+          </Button>
+        </div>
+        {!showTechnicalBreakdown ? (
+          <div
+            id="pr-report-technical-panels"
+            className="neon-surface rounded-[1.35rem] border-dashed border-primary/24 px-4 py-4 text-sm text-muted"
+          >
+            Deep scoring and evidence panels are hidden by default for faster scanning.
+          </div>
+        ) : null}
       </section>
       <section id="pr-report-ai" className="render-opt-section scroll-mt-24">
         <DeferUntilVisible fallback={<PRReportSectionPlaceholder title="Loading AI summary" />}>
@@ -206,52 +228,64 @@ export function PRBattleReportPageClient({
           </GlowCard>
         </DeferUntilVisible>
       </section>
-      <section id="pr-report-evidence" className="render-opt-section scroll-mt-24">
-        <DeferUntilVisible fallback={<PRReportSectionPlaceholder title="Loading evidence signals" />}>
-          <div className="space-y-4">
-            <h2 className="text-sm font-semibold text-white">Evidence signals</h2>
-            <EvidenceSignalsCard report={data} />
-          </div>
-        </DeferUntilVisible>
-      </section>
-      {uniqueBadgeUnlocks.length ? (
-        <section id="pr-report-rewards" className="render-opt-section scroll-mt-24">
-          <DeferUntilVisible fallback={<PRReportSectionPlaceholder title="Loading reward unlocks" />}>
-            <div className="space-y-4">
-              <h2 className="text-sm font-semibold text-white">
-                Badge rewards ({uniqueBadgeUnlocks.length})
-              </h2>
-              <GlowCard className="space-y-4">
-                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-100">
-                  <Award className="h-3.5 w-3.5" />
-                  Rewards unlocked
+      {showTechnicalBreakdown ? (
+        <div id="pr-report-technical-panels" className="space-y-6">
+          <section id="pr-report-score" className="render-opt-section scroll-mt-24">
+            <DeferUntilVisible fallback={<PRReportSectionPlaceholder title="Loading score matrix" />}>
+              <div className="grid gap-6 xl:grid-cols-[1.02fr,0.98fr]">
+                <ScoreMatrixCard report={data} />
+                <XPBreakdownCard report={data} />
+              </div>
+            </DeferUntilVisible>
+          </section>
+          <section id="pr-report-evidence" className="render-opt-section scroll-mt-24">
+            <DeferUntilVisible fallback={<PRReportSectionPlaceholder title="Loading evidence signals" />}>
+              <div className="space-y-4">
+                <h2 className="text-sm font-semibold text-white">Evidence signals</h2>
+                <EvidenceSignalsCard report={data} />
+              </div>
+            </DeferUntilVisible>
+          </section>
+          {uniqueBadgeUnlocks.length ? (
+            <section id="pr-report-rewards" className="render-opt-section scroll-mt-24">
+              <DeferUntilVisible fallback={<PRReportSectionPlaceholder title="Loading reward unlocks" />}>
+                <div className="space-y-4">
+                  <h2 className="text-sm font-semibold text-white">
+                    Badge rewards ({uniqueBadgeUnlocks.length})
+                  </h2>
+                  <GlowCard className="space-y-4">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-100">
+                      <Award className="h-3.5 w-3.5" />
+                      Rewards unlocked
+                    </div>
+                    <ul role="list" className="grid gap-3 md:grid-cols-2">
+                      {uniqueBadgeUnlocks.map((badge, index) => (
+                        <li key={`${badge.key}-${index}`} className="list-none render-opt-card neon-surface rounded-[1.75rem] p-4">
+                          <p className="text-lg font-semibold text-white">{badge.name}</p>
+                          {badge.description ? <p className="mt-2 text-sm text-muted">{badge.description}</p> : null}
+                          <p className="mt-3 text-xs text-emerald-100">
+                            Rule {badge.ruleVersion ?? badge.rule ?? "persisted badge evidence"}
+                          </p>
+                          {badge.evidenceSignals.length ? (
+                            <ul role="list" className="mt-3 flex flex-wrap gap-2">
+                              {badge.evidenceSignals.slice(0, 3).map((signal, signalIndex) => (
+                                <li key={`${badge.key}-${signal}-${signalIndex}`} className="list-none">
+                                  <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
+                                    {signal}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                  </GlowCard>
                 </div>
-                <ul role="list" className="grid gap-3 md:grid-cols-2">
-                  {uniqueBadgeUnlocks.map((badge, index) => (
-                    <li key={`${badge.key}-${index}`} className="list-none render-opt-card neon-surface rounded-[1.75rem] p-4">
-                      <p className="text-lg font-semibold text-white">{badge.name}</p>
-                      {badge.description ? <p className="mt-2 text-sm text-muted">{badge.description}</p> : null}
-                      <p className="mt-3 text-xs text-emerald-100">
-                        Rule {badge.ruleVersion ?? badge.rule ?? "persisted badge evidence"}
-                      </p>
-                      {badge.evidenceSignals.length ? (
-                        <ul role="list" className="mt-3 flex flex-wrap gap-2">
-                          {badge.evidenceSignals.slice(0, 3).map((signal, signalIndex) => (
-                            <li key={`${badge.key}-${signal}-${signalIndex}`} className="list-none">
-                              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
-                                {signal}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-              </GlowCard>
-            </div>
-          </DeferUntilVisible>
-        </section>
+              </DeferUntilVisible>
+            </section>
+          ) : null}
+        </div>
       ) : null}
       {data.suggestedQuestId ? (
         <section

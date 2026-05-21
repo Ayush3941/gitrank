@@ -1585,6 +1585,9 @@
 - Improved contributions sync visibility:
   - added sync-state guide and stale-state banner at the top of `Contributions`
   - makes partial/stale snapshot conditions explicit before filters and cards, reducing confusion when evidence is missing or delayed.
+- Added progressive disclosure to PR battle reports:
+  - introduced `Show technical breakdown` toggle for score matrix, evidence signals, and reward derivation panels
+  - keeps the default PR report view concise (`overview` + `AI summary` + `next quest`) while preserving deep diagnostics on demand.
 
 ## 2026-05-16
 
