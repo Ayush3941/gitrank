@@ -207,33 +207,28 @@ export function DashboardPageClient() {
         </div>
       </div>
       <section id="dashboard-advanced" className="render-opt-section scroll-mt-24">
-        <details className="space-y-4">
-          <summary className="focus-ring disclosure-summary">
-            Advanced evidence panels
-          </summary>
-          <div className="grid gap-6 xl:grid-cols-[1.04fr,0.96fr]">
-            <section className="space-y-6">
-              <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading score explanation" />}>
-                <ScoreExplanationCard user={user} />
-              </DeferUntilVisible>
-              <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading badge shelf" />}>
-                <BadgeShelf user={user} />
-              </DeferUntilVisible>
-            </section>
-            <section className="space-y-6">
-              <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading skill breakdown" />}>
-                <SkillBreakdownCard
-                  user={user}
-                  skillInsights={abraInsights.data?.skillInsights}
-                  aiMode={abraInsights.data?.generatedBy}
-                />
-              </DeferUntilVisible>
-              <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading contribution timeline" />}>
-                <ContributionTimelineCard user={user} />
-              </DeferUntilVisible>
-            </section>
-          </div>
-        </details>
+        <div className="grid gap-6 xl:grid-cols-[1.04fr,0.96fr]">
+          <section className="space-y-6">
+            <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading score explanation" />}>
+              <ScoreExplanationCard user={user} />
+            </DeferUntilVisible>
+            <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading badge shelf" />}>
+              <BadgeShelf user={user} />
+            </DeferUntilVisible>
+          </section>
+          <section className="space-y-6">
+            <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading skill breakdown" />}>
+              <SkillBreakdownCard
+                user={user}
+                skillInsights={abraInsights.data?.skillInsights}
+                aiMode={abraInsights.data?.generatedBy}
+              />
+            </DeferUntilVisible>
+            <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading contribution timeline" />}>
+              <ContributionTimelineCard user={user} />
+            </DeferUntilVisible>
+          </section>
+        </div>
       </section>
     </div>
   );

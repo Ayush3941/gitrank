@@ -80,10 +80,6 @@ export function ContributionsPageClient() {
     debouncedSearch !== search ||
     deferredSort !== sort;
   const canReset = filter !== "All" || search.trim().length > 0 || sort !== "Newest";
-  const activeFilterCount =
-    (filter !== "All" ? 1 : 0) +
-    (search.trim().length > 0 ? 1 : 0) +
-    (sort !== "Newest" ? 1 : 0);
   const totalContributionEvidence = profile?.user.contributions.length ?? 0;
   const isFilteredNoResults =
     canReset && totalContributionEvidence > 0 && filteredRows.length === 0;
@@ -172,47 +168,29 @@ export function ContributionsPageClient() {
   const abraInsights = useAbraInsights(abraPayload);
   const maxMonthlyXp = Math.max(1, ...monthlyWindow.map((point) => point.xp));
 
-  function preserveViewportDuring(update: () => void) {
-    const restoreViewportAfterUpdate =
-      typeof window !== "undefined"
-        ? (initialY: number) => {
-            window.requestAnimationFrame(() => {
-              if (Math.abs(window.scrollY - initialY) > 1) {
-                window.scrollTo(0, initialY);
-              }
-            });
-          }
-        : null;
-    const initialY = typeof window !== "undefined" ? window.scrollY : 0;
-    startTransition(() => {
-      update();
-      restoreViewportAfterUpdate?.(initialY);
-    });
-  }
-
   function handleFilterChange(next: string) {
-    preserveViewportDuring(() => {
+    startTransition(() => {
       setFilter(next);
       setVisibleCardCount(cardPageSize);
     });
   }
 
   function handleSearchChange(next: string) {
-    preserveViewportDuring(() => {
+    startTransition(() => {
       setSearch(next);
       setVisibleCardCount(cardPageSize);
     });
   }
 
   function handleSortChange(next: "Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact") {
-    preserveViewportDuring(() => {
+    startTransition(() => {
       setSort(next);
       setVisibleCardCount(cardPageSize);
     });
   }
 
   function handleResetFilters() {
-    preserveViewportDuring(() => {
+    startTransition(() => {
       setFilter("All");
       setSearch("");
       setSort("Newest");
@@ -221,21 +199,21 @@ export function ContributionsPageClient() {
   }
 
   function handleClearCategoryFilter() {
-    preserveViewportDuring(() => {
+    startTransition(() => {
       setFilter("All");
       setVisibleCardCount(cardPageSize);
     });
   }
 
   function handleClearSearchFilter() {
-    preserveViewportDuring(() => {
+    startTransition(() => {
       setSearch("");
       setVisibleCardCount(cardPageSize);
     });
   }
 
   function handleClearSortFilter() {
-    preserveViewportDuring(() => {
+    startTransition(() => {
       setSort("Newest");
       setVisibleCardCount(cardPageSize);
     });
@@ -244,28 +222,23 @@ export function ContributionsPageClient() {
   return (
     <div className="space-y-6 [overflow-anchor:none]">
       <section id="contributions-filters" className="scroll-mt-24">
-        <details className="space-y-3" open={activeFilterCount > 0}>
-          <summary className="focus-ring disclosure-summary">
-            Filter contribution cards ({filteredRows.length} results{activeFilterCount > 0 ? ` · ${activeFilterCount} active` : ""})
-          </summary>
-          <ContributionFilters
-            value={filter}
-            onValueChange={handleFilterChange}
-            search={search}
-            onSearchChange={handleSearchChange}
-            sort={sort}
-            onSortChange={handleSortChange}
-            resultsRegionId={CONTRIBUTION_CARDS_REGION_ID}
-            resultCount={filteredRows.length}
-            isFiltering={isFiltering}
-            canReset={canReset}
-            onReset={handleResetFilters}
-            compact
-            onClearCategory={handleClearCategoryFilter}
-            onClearSearch={handleClearSearchFilter}
-            onClearSort={handleClearSortFilter}
-          />
-        </details>
+        <ContributionFilters
+          value={filter}
+          onValueChange={handleFilterChange}
+          search={search}
+          onSearchChange={handleSearchChange}
+          sort={sort}
+          onSortChange={handleSortChange}
+          resultsRegionId={CONTRIBUTION_CARDS_REGION_ID}
+          resultCount={filteredRows.length}
+          isFiltering={isFiltering}
+          canReset={canReset}
+          onReset={handleResetFilters}
+          compact
+          onClearCategory={handleClearCategoryFilter}
+          onClearSearch={handleClearSearchFilter}
+          onClearSort={handleClearSortFilter}
+        />
       </section>
       {isLoading ? <LoadingState message="Checking review depth and PR intensity..." /> : null}
       {isError ? (
@@ -348,102 +321,92 @@ export function ContributionsPageClient() {
       ) : null}
       {!isLoading && !isError ? (
         <section id="contributions-repositories" className="render-opt-section scroll-mt-24">
-          <details className="space-y-3">
-            <summary className="focus-ring disclosure-summary">
-              Repositories touched ({repositories.length})
-            </summary>
-            <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading repository impact lanes" />}>
-              {repositories.length ? (
-                <ul role="list" className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                  {repositories.map((repository) => (
-                    <li key={repository.fullName} className="render-opt-card neon-surface rounded-[1.4rem] border-cyan-300/28 px-4 py-3">
-                      <p className="break-anywhere text-sm font-medium text-white">{repository.fullName}</p>
-                      <p className="mt-1 text-xs text-muted"><span className="numeric-readout">{repository.contributions.toLocaleString("en-US")}</span> contributions</p>
-                      <p className="numeric-readout mt-3 text-lg font-semibold text-cyan-200">{repository.totalXp.toLocaleString("en-US")} XP</p>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <SubsectionEmptyState
-                  message="No repository contribution summary is available in this snapshot yet."
-                  actionLabel="Open sync settings"
-                  actionHref="/dashboard/settings"
-                />
-              )}
-            </DeferUntilVisible>
-          </details>
+          <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading repository impact lanes" />}>
+            {repositories.length ? (
+              <ul role="list" className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {repositories.map((repository) => (
+                  <li key={repository.fullName} className="render-opt-card neon-surface rounded-[1.4rem] border-cyan-300/28 px-4 py-3">
+                    <p className="break-anywhere text-sm font-medium text-white">{repository.fullName}</p>
+                    <p className="mt-1 text-xs text-muted"><span className="numeric-readout">{repository.contributions.toLocaleString("en-US")}</span> contributions</p>
+                    <p className="numeric-readout mt-3 text-lg font-semibold text-cyan-200">{repository.totalXp.toLocaleString("en-US")} XP</p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <SubsectionEmptyState
+                message="No repository contribution summary is available in this snapshot yet."
+                actionLabel="Open sync settings"
+                actionHref="/dashboard/settings"
+              />
+            )}
+          </DeferUntilVisible>
         </section>
       ) : null}
       {!isLoading && !isError ? (
         <section id="contributions-timeline" className="render-opt-section scroll-mt-24">
-          <details className="space-y-4">
-            <summary className="focus-ring disclosure-summary">
-              Timeline and highlights ({monthlyWindow.length} months, {topHighlights.length} top PRs)
-            </summary>
-            <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading timeline and highlights" />}>
-              <div className="grid gap-4 xl:grid-cols-[1.2fr,0.8fr]">
-                <GlowCard className="space-y-4 border border-fuchsia-400/20 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/30">
-                  <h3 className="cyber-title text-sm font-medium text-fuchsia-200">Contribution timeline</h3>
-                  {monthlyWindow.length ? (
-                    <div className="space-y-3">
-                      <ul role="list" className="space-y-3">
-                        {monthlyWindow.map((point, index) => (
-                          <li key={`${point.month}-${index}`} className="list-none space-y-1">
-                            <div className="flex items-center justify-between text-xs text-muted">
-                              <span>{point.month}</span>
-                              <span className="numeric-readout">{point.xp.toLocaleString("en-US")} XP</span>
-                            </div>
-                            <div className="neon-track h-2 rounded-full">
-                              <div
-                                className="h-full rounded-full bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300"
-                                style={{ width: `${Math.max(8, Math.round((point.xp / maxMonthlyXp) * 100))}%` }}
-                              />
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : (
-                    <SubsectionEmptyState
-                      message="Timeline points are not available yet for this filtered evidence window."
-                      actionLabel="Open sync settings"
-                      actionHref="/dashboard/settings"
-                    />
-                  )}
-                </GlowCard>
-                <GlowCard className="space-y-4 border border-cyan-300/20 bg-gradient-to-br from-slate-950/88 to-cyan-950/25">
-                  <h3 className="cyber-title text-sm font-medium text-cyan-200">Top highlights</h3>
-                  {topHighlights.length ? (
+          <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading timeline and highlights" />}>
+            <div className="grid gap-4 xl:grid-cols-[1.2fr,0.8fr]">
+              <GlowCard className="space-y-4 border border-fuchsia-400/20 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/30">
+                <h3 className="cyber-title text-sm font-medium text-fuchsia-200">Contribution timeline</h3>
+                {monthlyWindow.length ? (
+                  <div className="space-y-3">
                     <ul role="list" className="space-y-3">
-                      {topHighlights.map((row, index) => (
-                        <li
-                          key={`${row.owner}/${row.repo}#${row.number}-${row.id}-${index}`}
-                          className="list-none render-opt-card neon-surface space-y-2 rounded-2xl px-3 py-3"
-                        >
-                          <p className="break-anywhere text-sm font-medium text-white">{row.title}</p>
-                          <p className="mt-1 break-anywhere text-xs text-muted">{row.owner}/{row.repo} #{row.number}</p>
-                          <p className="numeric-readout mt-2 text-sm text-cyan-200">+{row.xpEarned.toLocaleString("en-US")} XP</p>
-                          <div className="pt-1">
-                            <Button asChild size="sm" variant="secondary">
-                              <Link href={`/pr/${row.owner}/${row.repo}/${row.number}`} prefetch={false}>
-                                View report
-                              </Link>
-                            </Button>
+                      {monthlyWindow.map((point, index) => (
+                        <li key={`${point.month}-${index}`} className="list-none space-y-1">
+                          <div className="flex items-center justify-between text-xs text-muted">
+                            <span>{point.month}</span>
+                            <span className="numeric-readout">{point.xp.toLocaleString("en-US")} XP</span>
+                          </div>
+                          <div className="neon-track h-2 rounded-full">
+                            <div
+                              className="h-full rounded-full bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300"
+                              style={{ width: `${Math.max(8, Math.round((point.xp / maxMonthlyXp) * 100))}%` }}
+                            />
                           </div>
                         </li>
                       ))}
                     </ul>
-                  ) : (
-                    <SubsectionEmptyState
-                      message="No high-signal highlights are available yet in this snapshot."
-                      actionLabel="Open quest lane"
-                      actionHref="/dashboard/quests"
-                    />
-                  )}
-                </GlowCard>
-              </div>
-            </DeferUntilVisible>
-          </details>
+                  </div>
+                ) : (
+                  <SubsectionEmptyState
+                    message="Timeline points are not available yet for this filtered evidence window."
+                    actionLabel="Open sync settings"
+                    actionHref="/dashboard/settings"
+                  />
+                )}
+              </GlowCard>
+              <GlowCard className="space-y-4 border border-cyan-300/20 bg-gradient-to-br from-slate-950/88 to-cyan-950/25">
+                <h3 className="cyber-title text-sm font-medium text-cyan-200">Top highlights</h3>
+                {topHighlights.length ? (
+                  <ul role="list" className="space-y-3">
+                    {topHighlights.map((row, index) => (
+                      <li
+                        key={`${row.owner}/${row.repo}#${row.number}-${row.id}-${index}`}
+                        className="list-none render-opt-card neon-surface space-y-2 rounded-2xl px-3 py-3"
+                      >
+                        <p className="break-anywhere text-sm font-medium text-white">{row.title}</p>
+                        <p className="mt-1 break-anywhere text-xs text-muted">{row.owner}/{row.repo} #{row.number}</p>
+                        <p className="numeric-readout mt-2 text-sm text-cyan-200">+{row.xpEarned.toLocaleString("en-US")} XP</p>
+                        <div className="pt-1">
+                          <Button asChild size="sm" variant="secondary">
+                            <Link href={`/pr/${row.owner}/${row.repo}/${row.number}`} prefetch={false}>
+                              View report
+                            </Link>
+                          </Button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <SubsectionEmptyState
+                    message="No high-signal highlights are available yet in this snapshot."
+                    actionLabel="Open quest lane"
+                    actionHref="/dashboard/quests"
+                  />
+                )}
+              </GlowCard>
+            </div>
+          </DeferUntilVisible>
         </section>
       ) : null}
     </div>

@@ -81,39 +81,21 @@ export function SyncRunActivityPanel({
   const resultsRegionClassName =
     "min-h-[20rem] max-h-[26rem] overflow-y-auto pr-1 [scrollbar-gutter:stable] [overflow-anchor:none]";
 
-  function preserveViewportDuring(update: () => void) {
-    const restoreViewportAfterUpdate =
-      typeof window !== "undefined"
-        ? (initialY: number) => {
-            window.requestAnimationFrame(() => {
-              if (Math.abs(window.scrollY - initialY) > 1) {
-                window.scrollTo(0, initialY);
-              }
-            });
-          }
-        : null;
-    const initialY = typeof window !== "undefined" ? window.scrollY : 0;
-    startTransition(() => {
-      update();
-      restoreViewportAfterUpdate?.(initialY);
-    });
-  }
-
   function handleResetFilters() {
-    preserveViewportDuring(() => {
+    startTransition(() => {
       setSearch("");
       setStatusFilter("All");
     });
   }
 
   function handleClearSearch() {
-    preserveViewportDuring(() => {
+    startTransition(() => {
       setSearch("");
     });
   }
 
   function handleClearStatusFilter() {
-    preserveViewportDuring(() => {
+    startTransition(() => {
       setStatusFilter("All");
     });
   }
@@ -262,7 +244,11 @@ export function SyncRunActivityPanel({
                   type="button"
                   size="sm"
                   variant={statusFilter === item ? "default" : "secondary"}
-                  onClick={() => preserveViewportDuring(() => setStatusFilter(item))}
+                  onClick={() => {
+                    startTransition(() => {
+                      setStatusFilter(item);
+                    });
+                  }}
                   aria-describedby={filterStatusId}
                   aria-pressed={statusFilter === item}
                   aria-controls={syncRunsRegionId}

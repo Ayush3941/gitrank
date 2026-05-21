@@ -55,39 +55,21 @@ export function PrivacyRepositoryToggleList({
     });
   }, [deferredSearch, visibilityFilter, visibleItems]);
 
-  function preserveViewportDuring(update: () => void) {
-    const restoreViewportAfterUpdate =
-      typeof window !== "undefined"
-        ? (initialY: number) => {
-            window.requestAnimationFrame(() => {
-              if (Math.abs(window.scrollY - initialY) > 1) {
-                window.scrollTo(0, initialY);
-              }
-            });
-          }
-        : null;
-    const initialY = typeof window !== "undefined" ? window.scrollY : 0;
-    startTransition(() => {
-      update();
-      restoreViewportAfterUpdate?.(initialY);
-    });
-  }
-
   function handleReset() {
-    preserveViewportDuring(() => {
+    startTransition(() => {
       setSearch("");
       setVisibilityFilter("All");
     });
   }
 
   function handleClearSearch() {
-    preserveViewportDuring(() => {
+    startTransition(() => {
       setSearch("");
     });
   }
 
   function handleClearVisibilityFilter() {
-    preserveViewportDuring(() => {
+    startTransition(() => {
       setVisibilityFilter("All");
     });
   }
@@ -187,7 +169,11 @@ export function PrivacyRepositoryToggleList({
                   type="button"
                   size="sm"
                   variant={visibilityFilter === item ? "default" : "secondary"}
-                  onClick={() => preserveViewportDuring(() => setVisibilityFilter(item))}
+                  onClick={() => {
+                    startTransition(() => {
+                      setVisibilityFilter(item);
+                    });
+                  }}
                   aria-describedby={statusId}
                   aria-pressed={visibilityFilter === item}
                   aria-controls={repositoriesRegionId}

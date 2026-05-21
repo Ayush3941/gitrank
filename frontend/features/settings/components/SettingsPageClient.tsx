@@ -644,29 +644,20 @@ function SettingsSyncActivitySection() {
     "settings-sync-runs",
   );
   const runs = syncRunsQuery.data?.runs ?? [];
-  const shouldExpandLog = syncRunsQuery.isError || runs.some((run) => {
-    const status = String(run.status ?? "").toLowerCase();
-    return status.includes("running") || status.includes("failed") || status.includes("error");
-  });
 
   return (
     <GlowCard className="space-y-4">
-      <details className="space-y-4" open={shouldExpandLog}>
-        <summary className="focus-ring disclosure-summary">
-          Sync activity log
-        </summary>
-        <SyncRunActivityPanel
-          runs={runs}
-          lastUpdatedAt={syncRunsQuery.data?.last_updated_at}
-          isLoading={syncRunsQuery.isLoading}
-          isRefreshing={syncRunsQuery.isFetching}
-          isError={syncRunsQuery.isError}
-          errorMessage={syncRunsError}
-          onRefresh={() => {
-            void syncRunsQuery.refetch();
-          }}
-        />
-      </details>
+      <SyncRunActivityPanel
+        runs={runs}
+        lastUpdatedAt={syncRunsQuery.data?.last_updated_at}
+        isLoading={syncRunsQuery.isLoading}
+        isRefreshing={syncRunsQuery.isFetching}
+        isError={syncRunsQuery.isError}
+        errorMessage={syncRunsError}
+        onRefresh={() => {
+          void syncRunsQuery.refetch();
+        }}
+      />
     </GlowCard>
   );
 }
