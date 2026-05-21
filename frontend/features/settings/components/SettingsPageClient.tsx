@@ -147,7 +147,6 @@ export function SettingsPageClient() {
   useAccountGamificationPreference(data);
   const [actionNotice, setActionNotice] = useState("");
   const [displayNotice, setDisplayNotice] = useState("");
-  const [showAdvancedDisplayControls, setShowAdvancedDisplayControls] = useState(false);
   const currentSettings = data?.user.privacy ?? null;
   const activeThemeOption =
     THEME_OPTIONS.find((option) => option.value === theme) ??
@@ -398,24 +397,11 @@ export function SettingsPageClient() {
             />
           </div>
           <div className="cyber-divider" />
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-medium text-primary">Advanced display options</p>
-              <p className="mt-1 text-sm text-muted">
-                Expand to configure theme, text size, keyboard shortcuts, and live preview.
-              </p>
-            </div>
-            <Button
-              type="button"
-              size="sm"
-              variant="secondary"
-              onClick={() => setShowAdvancedDisplayControls((value) => !value)}
-            >
-              {showAdvancedDisplayControls ? "Hide advanced options" : "Show advanced options"}
-            </Button>
-          </div>
-          {showAdvancedDisplayControls ? (
-            <>
+          <details className="space-y-4">
+            <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-primary/24 px-4 py-3 text-sm font-semibold text-white marker:content-none">
+              Display customization and shortcuts
+            </summary>
+            <div className="space-y-4">
               <div className="cyber-divider" />
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="max-w-2xl">
@@ -592,8 +578,8 @@ export function SettingsPageClient() {
                   Use this preview to confirm headings and labels stay clear on your screen.
                 </p>
               </div>
-            </>
-          ) : null}
+            </div>
+          </details>
           </GlowCard>
         </DeferUntilVisible>
       </section>
@@ -651,20 +637,30 @@ function SettingsSyncActivitySection() {
     (syncRunsQuery.error as Error | null)?.message || "",
     "settings-sync-runs",
   );
+  const runs = syncRunsQuery.data?.runs ?? [];
+  const shouldExpandLog = syncRunsQuery.isError || runs.some((run) => {
+    const status = String(run.status ?? "").toLowerCase();
+    return status.includes("running") || status.includes("failed") || status.includes("error");
+  });
 
   return (
     <GlowCard className="space-y-4">
-      <SyncRunActivityPanel
-        runs={syncRunsQuery.data?.runs ?? []}
-        lastUpdatedAt={syncRunsQuery.data?.last_updated_at}
-        isLoading={syncRunsQuery.isLoading}
-        isRefreshing={syncRunsQuery.isFetching}
-        isError={syncRunsQuery.isError}
-        errorMessage={syncRunsError}
-        onRefresh={() => {
-          void syncRunsQuery.refetch();
-        }}
-      />
+      <details className="space-y-4" open={shouldExpandLog}>
+        <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-primary/24 px-4 py-3 text-sm font-semibold text-white marker:content-none">
+          Sync activity log
+        </summary>
+        <SyncRunActivityPanel
+          runs={runs}
+          lastUpdatedAt={syncRunsQuery.data?.last_updated_at}
+          isLoading={syncRunsQuery.isLoading}
+          isRefreshing={syncRunsQuery.isFetching}
+          isError={syncRunsQuery.isError}
+          errorMessage={syncRunsError}
+          onRefresh={() => {
+            void syncRunsQuery.refetch();
+          }}
+        />
+      </details>
     </GlowCard>
   );
 }
