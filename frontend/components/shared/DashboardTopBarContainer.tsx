@@ -16,6 +16,8 @@ const AUTO_SYNC_RETRY_INTERVAL_MS = 90_000;
 const AUTO_SYNC_STALE_AGE_MS = 6 * 60 * 60 * 1000;
 const AUTO_SYNC_MAX_ATTEMPTS_PER_MOUNT = 3;
 const AUTO_SYNC_ATTEMPT_RECOVERY_COOLDOWN_MS = 10 * 60 * 1000;
+const AUTO_SYNC_SESSION_COOLDOWN_MS = 20 * 60 * 1000;
+const AUTO_SYNC_SESSION_KEY_PREFIX = "gitrank:auto-sync:last-at:";
 
 export function DashboardTopBarContainer() {
   const { data, isError, isLoading } = useMyProfile();
@@ -60,6 +62,14 @@ export function DashboardTopBarContainer() {
     }
     if (now - autoSyncLastAttempt.current < AUTO_SYNC_RETRY_INTERVAL_MS) {
       return;
+    }
+    if (typeof window !== "undefined") {
+      const sessionKey = `${AUTO_SYNC_SESSION_KEY_PREFIX}${data.user.username.toLowerCase()}`;
+      const lastSessionAttempt = Number(window.sessionStorage.getItem(sessionKey) ?? "");
+      if (Number.isFinite(lastSessionAttempt) && now-lastSessionAttempt < AUTO_SYNC_SESSION_COOLDOWN_MS) {
+        return;
+      }
+      window.sessionStorage.setItem(sessionKey, String(now));
     }
     autoSyncLastAttempt.current = now;
     autoSyncAttempts.current += 1;
