@@ -60,16 +60,21 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
           <p className="text-sm text-muted">
             GitRank does not ask only how much you contributed. It asks how meaningful your contribution was.
           </p>
-          <ul role="list" className="grid gap-3">
-            {[
-              "Merged work outranks raw streaks.",
-              "Review depth matters.",
-              "Tests and repo context change XP.",
-              "Spam PR floods get reduced multipliers.",
-            ].map((line) => (
-              <li key={line} className="neon-surface rounded-3xl px-4 py-3 text-sm text-muted">{line}</li>
-            ))}
-          </ul>
+          <details className="space-y-3">
+            <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-primary/24 px-4 py-3 text-sm font-semibold text-white marker:content-none">
+              How scoring works
+            </summary>
+            <ul role="list" className="grid gap-3">
+              {[
+                "Merged work outranks raw streaks.",
+                "Review depth matters.",
+                "Tests and repo context change XP.",
+                "Spam PR floods get reduced multipliers.",
+              ].map((line) => (
+                <li key={line} className="neon-surface rounded-3xl px-4 py-3 text-sm text-muted">{line}</li>
+              ))}
+            </ul>
+          </details>
         </GlowCard>
       </GlowCard>
     </main>
