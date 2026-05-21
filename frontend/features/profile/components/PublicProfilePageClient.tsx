@@ -224,9 +224,14 @@ export function PublicProfilePageClient({
         </details>
       </section>
       <section id="public-profile-best-prs" className="render-opt-section scroll-mt-24">
-        <DeferUntilVisible fallback={<PublicProfileSectionPlaceholder title="Loading best PR battle reports" />}>
-          <BestPRsPanel reports={data.featuredContributions} />
-        </DeferUntilVisible>
+        <details className="space-y-4">
+          <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-primary/24 px-4 py-3 text-sm font-semibold text-white marker:content-none">
+            Best PR battle reports ({data.featuredContributions.length})
+          </summary>
+          <DeferUntilVisible fallback={<PublicProfileSectionPlaceholder title="Loading best PR battle reports" />}>
+            <BestPRsPanel reports={data.featuredContributions} />
+          </DeferUntilVisible>
+        </details>
       </section>
       <section id="public-profile-timeline-repos" className="render-opt-section scroll-mt-24">
         <details className="space-y-4">
