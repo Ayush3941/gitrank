@@ -110,7 +110,7 @@ export function ContributionList({
                 narrative={narratives?.[item.id]}
               />
               {detailedMetricsAvailable ? (
-                <SignalProfileDisclosure item={item} />
+                <SignalProfile item={item} />
               ) : (
                 <div className="neon-surface rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
                   Detailed score components are still being prepared for this report.
@@ -139,17 +139,6 @@ export function ContributionList({
         );
       })}
     </ol>
-  );
-}
-
-function SignalProfileDisclosure({ item }: { item: Contribution }) {
-  return (
-    <details className="space-y-3">
-      <summary className="focus-ring disclosure-summary font-medium">
-        View score factors
-      </summary>
-      <SignalProfile item={item} />
-    </details>
   );
 }
 
