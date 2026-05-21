@@ -431,7 +431,7 @@ export function BadgesPageClient() {
                             Next move: {unlockRecoveryLabel(badge.unlockCondition)}
                           </p>
                           <Button asChild variant="ghost" size="sm">
-                            <Link href={unlockRecoveryHref(badge.unlockCondition)} prefetch={false}>Open lane</Link>
+                            <Link href={unlockRecoveryHref(badge.unlockCondition)} prefetch={false}>Open path</Link>
                           </Button>
                         </div>
                       </li>
@@ -499,9 +499,9 @@ function unlockRecoveryLabel(condition: string): string {
     || text.includes("daily")
     || text.includes("quest")
   ) {
-    return "Open quest lane";
+    return "Open quests";
   }
-  return "Open contribution lane";
+  return "Open contributions";
 }
 
 function BadgeMetric({

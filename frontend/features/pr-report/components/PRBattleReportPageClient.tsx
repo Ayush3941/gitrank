@@ -184,7 +184,7 @@ export function PRBattleReportPageClient({
         </DeferUntilVisible>
       </section>
       <section id="pr-report-ai" className="render-opt-section scroll-mt-24">
-        <DeferUntilVisible fallback={<PRReportSectionPlaceholder title="Loading AI summary lane" />}>
+        <DeferUntilVisible fallback={<PRReportSectionPlaceholder title="Loading AI summary" />}>
           <GlowCard className="space-y-4">
             <p className="text-xs font-medium text-primary">AI summary</p>
             {fallbackDetail ? (

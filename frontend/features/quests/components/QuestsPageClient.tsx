@@ -233,7 +233,7 @@ function recoveryLabelForGroup(group: Quest["cadence"]): string {
   if (group === "Skill-based") {
     return "Inspect contribution skills";
   }
-  return "Open contribution lane";
+  return "Open contributions";
 }
 
 function selectQuestSpotlight(source: Quest[]): Quest | null {

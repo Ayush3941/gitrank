@@ -219,7 +219,7 @@ export function SyncRunActivityPanel({
           id={syncRunsRegionId}
           className={`neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}
         >
-          <p>No sync runs recorded for this account yet. Open dashboard lanes and GitRank will enqueue background sync automatically.</p>
+          <p>No sync runs recorded for this account yet. Open dashboard and GitRank will enqueue background sync automatically.</p>
           <div className="flex flex-wrap gap-2">
             <Button asChild size="sm" variant="secondary">
               <Link href="/dashboard">Open dashboard</Link>

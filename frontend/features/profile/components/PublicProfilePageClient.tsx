@@ -171,7 +171,7 @@ export function PublicProfilePageClient({
         </div>
       </section>
       <section id="public-profile-badges-skills" className="render-opt-section scroll-mt-24">
-        <DeferUntilVisible fallback={<PublicProfileSectionPlaceholder title="Loading badge and skill lanes" />}>
+        <DeferUntilVisible fallback={<PublicProfileSectionPlaceholder title="Loading badges and skills" />}>
           <div className="grid gap-6 xl:grid-cols-[1fr,1fr]">
             <GlowCard className="space-y-5">
               <div>
@@ -212,7 +212,7 @@ export function PublicProfilePageClient({
         </DeferUntilVisible>
       </section>
       <section id="public-profile-timeline-repos" className="render-opt-section scroll-mt-24">
-        <DeferUntilVisible fallback={<PublicProfileSectionPlaceholder title="Loading timeline and repository lanes" />}>
+        <DeferUntilVisible fallback={<PublicProfileSectionPlaceholder title="Loading timeline and repositories" />}>
           <div className="grid gap-6 xl:grid-cols-[1.08fr,0.92fr]">
             <GlowCard className="space-y-5">
               <div>
@@ -235,7 +235,7 @@ export function PublicProfilePageClient({
                     <p>Repository-level signal is not available on this snapshot yet.</p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <Button asChild variant="secondary" size="sm">
-                        <Link href="/dashboard/contributions" prefetch={false}>Open contribution lane</Link>
+                        <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
                       </Button>
                       <Button asChild variant="ghost" size="sm">
                         <Link href="/dashboard/settings" prefetch={false}>Open sync settings</Link>

@@ -231,7 +231,7 @@ export function ContributionsPageClient() {
       ) : null}
       {!isLoading && !isError ? (
         <section id="contributions-cards" className="render-opt-section scroll-mt-24 space-y-4">
-          <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading achievement card lane" />}>
+          <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading contribution cards" />}>
             {filteredRows.length ? (
               <div className="space-y-4">
                 <div id={CONTRIBUTION_CARDS_REGION_ID}>
