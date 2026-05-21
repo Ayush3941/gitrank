@@ -36,116 +36,108 @@ export function LeaderboardArena({
     currentUser && nextAboveRow
       ? Math.max(0, nextAboveRow.seasonXp - currentUser.seasonXp)
       : 0;
-  const contextSummary = currentUser
-    ? `Leaderboard context · #${currentUser.rank} · ${currentUser.division}`
-    : "Leaderboard context and season rules";
 
   return (
     <div className="grid gap-4">
-      <details className="space-y-4">
-        <summary className="focus-ring disclosure-summary">
-          {contextSummary}
-        </summary>
-        <GlowCard strong className="season-arena-card cyber-hero-shell overflow-hidden">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-3xl">
-              <div className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold text-primary">
-                <CalendarClock className="h-3.5 w-3.5" />
-                {snapshot.season.status} season
-              </div>
-              <h2 className="mt-4 break-anywhere text-3xl font-semibold text-white">{snapshot.season.name}</h2>
-              <ExpandableText
-                text={snapshot.season.explanation}
-                lines={4}
-                minLengthForToggle={220}
-                className="mt-2"
-                textClassName="break-anywhere text-sm leading-7 text-muted"
-              />
+      <GlowCard strong className="season-arena-card cyber-hero-shell overflow-hidden">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-3xl">
+            <div className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold text-primary">
+              <CalendarClock className="h-3.5 w-3.5" />
+              {snapshot.season.status} season
             </div>
-            <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[32rem]">
-              <Metric label="Window" value={snapshot.season.windowLabel} />
-              <Metric label="Formula" value={snapshot.season.scoringVersion} />
-              <Metric label="Current rank" value={snapshot.currentUser ? `#${snapshot.currentUser.rank}` : "Unranked"} />
+            <h2 className="mt-4 break-anywhere text-3xl font-semibold text-white">{snapshot.season.name}</h2>
+            <ExpandableText
+              text={snapshot.season.explanation}
+              lines={4}
+              minLengthForToggle={220}
+              className="mt-2"
+              textClassName="break-anywhere text-sm leading-7 text-muted"
+            />
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[32rem]">
+            <Metric label="Window" value={snapshot.season.windowLabel} />
+            <Metric label="Formula" value={snapshot.season.scoringVersion} />
+            <Metric label="Current rank" value={snapshot.currentUser ? `#${snapshot.currentUser.rank}` : "Unranked"} />
+          </div>
+        </div>
+        <div className="mt-5 grid gap-3 md:grid-cols-2">
+          <Rule icon={<Flame className="h-4 w-4" />} label="Promotion" value={snapshot.season.promotionRule} />
+          <Rule icon={<ShieldCheck className="h-4 w-4" />} label="Reset" value={snapshot.season.resetRule} />
+        </div>
+        <ul role="list" className="mt-3 flex flex-wrap gap-2">
+          <li>
+            <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs font-semibold">
+              Season ends {formatDate(snapshot.season.endsAt)}
+            </span>
+          </li>
+          <li>
+            <span className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
+              {formatTimeUntil(snapshot.season.endsAt)}
+            </span>
+          </li>
+        </ul>
+      </GlowCard>
+      {currentUser && localBracketRows.length > 0 ? (
+        <GlowCard className="space-y-4 border border-primary/22 bg-gradient-to-br from-slate-950/90 to-cyan-950/18">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-medium text-primary">Local bracket</p>
+              <h3 className="mt-2 text-xl font-semibold text-white">Closest rank neighbors</h3>
+              <p className="mt-2 text-sm text-muted">
+                Track nearby competitors to keep movement goals tangible each week.
+              </p>
+            </div>
+            <div className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
+              {nextAboveRow
+                ? `${nextAboveGap.toLocaleString("en-US")} XP to pass #${nextAboveRow.rank}`
+                : "You are leading this lane"}
             </div>
           </div>
-          <div className="mt-5 grid gap-3 md:grid-cols-2">
-            <Rule icon={<Flame className="h-4 w-4" />} label="Promotion" value={snapshot.season.promotionRule} />
-            <Rule icon={<ShieldCheck className="h-4 w-4" />} label="Reset" value={snapshot.season.resetRule} />
-          </div>
-          <ul role="list" className="mt-3 flex flex-wrap gap-2">
-            <li>
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs font-semibold">
-                Season ends {formatDate(snapshot.season.endsAt)}
-              </span>
-            </li>
-            <li>
-              <span className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
-                {formatTimeUntil(snapshot.season.endsAt)}
-              </span>
-            </li>
-          </ul>
+          <ol className="grid gap-2">
+            {localBracketRows.map((row) => {
+              const gapToCurrent = row.seasonXp - currentUser.seasonXp;
+              const movementLabel = `${row.movement >= 0 ? "+" : ""}${row.movement}`;
+              return (
+                <li
+                  key={`local-${row.rank}-${row.username}`}
+                  value={row.rank}
+                  aria-posinset={row.rank}
+                  aria-setsize={rows.length}
+                  className={`list-none neon-surface flex flex-wrap items-center justify-between gap-3 px-4 py-3 ${
+                    row.isCurrentUser ? "border-primary/42 bg-primary/10" : ""
+                  }`}
+                >
+                  <div className="min-w-0">
+                    <p className="break-anywhere text-sm font-semibold text-white">
+                      #{row.rank} {row.displayName}
+                      {row.isCurrentUser ? " (You)" : ""}
+                    </p>
+                    <p className="mt-1 break-anywhere text-xs text-muted">
+                      @{row.username} • {row.title}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+                      {row.seasonXp.toLocaleString("en-US")} XP
+                    </span>
+                    <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+                      Move {movementLabel}
+                    </span>
+                    {!row.isCurrentUser ? (
+                      <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+                        {gapToCurrent > 0
+                          ? `+${gapToCurrent.toLocaleString("en-US")} vs you`
+                          : `${Math.abs(gapToCurrent).toLocaleString("en-US")} behind you`}
+                      </span>
+                    ) : null}
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
         </GlowCard>
-        {currentUser && localBracketRows.length > 0 ? (
-          <GlowCard className="space-y-4 border border-primary/22 bg-gradient-to-br from-slate-950/90 to-cyan-950/18">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p className="text-xs font-medium text-primary">Local bracket</p>
-                <h3 className="mt-2 text-xl font-semibold text-white">Closest rank neighbors</h3>
-                <p className="mt-2 text-sm text-muted">
-                  Track nearby competitors to keep movement goals tangible each week.
-                </p>
-              </div>
-              <div className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
-                {nextAboveRow
-                  ? `${nextAboveGap.toLocaleString("en-US")} XP to pass #${nextAboveRow.rank}`
-                  : "You are leading this lane"}
-              </div>
-            </div>
-            <ol className="grid gap-2">
-              {localBracketRows.map((row) => {
-                const gapToCurrent = row.seasonXp - currentUser.seasonXp;
-                const movementLabel = `${row.movement >= 0 ? "+" : ""}${row.movement}`;
-                return (
-                  <li
-                    key={`local-${row.rank}-${row.username}`}
-                    value={row.rank}
-                    aria-posinset={row.rank}
-                    aria-setsize={rows.length}
-                    className={`list-none neon-surface flex flex-wrap items-center justify-between gap-3 px-4 py-3 ${
-                      row.isCurrentUser ? "border-primary/42 bg-primary/10" : ""
-                    }`}
-                  >
-                    <div className="min-w-0">
-                      <p className="break-anywhere text-sm font-semibold text-white">
-                        #{row.rank} {row.displayName}
-                        {row.isCurrentUser ? " (You)" : ""}
-                      </p>
-                      <p className="mt-1 break-anywhere text-xs text-muted">
-                        @{row.username} • {row.title}
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2 text-xs">
-                      <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-                        {row.seasonXp.toLocaleString("en-US")} XP
-                      </span>
-                      <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-                        Move {movementLabel}
-                      </span>
-                      {!row.isCurrentUser ? (
-                        <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-                          {gapToCurrent > 0
-                            ? `+${gapToCurrent.toLocaleString("en-US")} vs you`
-                            : `${Math.abs(gapToCurrent).toLocaleString("en-US")} behind you`}
-                        </span>
-                      ) : null}
-                    </div>
-                  </li>
-                );
-              })}
-            </ol>
-          </GlowCard>
-        ) : null}
-      </details>
+      ) : null}
       <ol className="grid gap-4">
         {visibleRows.map((row) => {
           const positive = row.movement >= 0;
