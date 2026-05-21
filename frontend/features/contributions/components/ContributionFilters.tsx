@@ -133,7 +133,8 @@ export function ContributionFilters({
                 aria-controls={resultsRegionId}
                 className="w-full justify-center text-center"
               >
-                <span>{filter.value}</span>
+                <span className="lg:hidden">{filter.short}</span>
+                <span className="hidden lg:inline">{filter.value}</span>
               </TabsTrigger>
             ))}
           </TabsList>
