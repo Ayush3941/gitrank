@@ -133,7 +133,7 @@ export function PRBattleReportPageClient({
           <ul role="list" className="mt-3 flex flex-wrap gap-2">
             <li className="list-none">
               <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
-                analysis: {formatAnalysisSource(evidenceState.analysisSource)}
+                mode: {formatAnalysisSource(evidenceState.analysisSource, evidenceState.deterministicOnly, fallbackDetail)}
               </span>
             </li>
             {typeof evidenceState.analysisConfidence === "number" ? (
@@ -332,7 +332,11 @@ function formatFallbackReason(reason: string): string {
   return map[normalized] ?? normalized.replaceAll("_", " ");
 }
 
-function formatAnalysisSource(source?: string): string {
+function formatAnalysisSource(
+  source?: string,
+  deterministicOnly = false,
+  fallbackDetail?: string | null,
+): string {
   const normalized = (source ?? "").trim().toLowerCase();
   if (normalized === "hybrid") {
     return "gemini + deterministic";
@@ -344,7 +348,13 @@ function formatAnalysisSource(source?: string): string {
     return "deterministic";
   }
   if (normalized.length === 0 || normalized === "unknown") {
-    return "pending";
+    if (fallbackDetail) {
+      return `deterministic fallback (${fallbackDetail})`;
+    }
+    if (deterministicOnly) {
+      return "deterministic";
+    }
+    return "processing";
   }
   return normalized;
 }
