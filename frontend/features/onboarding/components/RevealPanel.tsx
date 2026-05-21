@@ -101,7 +101,7 @@ export function RevealPanel({
           </div>
         </div>
         <details className="space-y-4" open={unlockedBadges.length === 0}>
-          <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-primary/24 px-4 py-3 text-sm font-semibold text-white marker:content-none">
+          <summary className="focus-ring disclosure-summary">
             Unlock preview ({unlockedBadges.length > 0 ? `${unlockedBadges.length} earned` : "next badge lanes"})
           </summary>
           <ul role="list" className="grid gap-4 sm:grid-cols-3">
@@ -126,7 +126,7 @@ export function RevealPanel({
           </ul>
         </details>
         <details className="space-y-4" open={needsSyncRecovery}>
-          <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-primary/24 px-4 py-3 text-sm font-semibold text-white marker:content-none">
+          <summary className="focus-ring disclosure-summary">
             What to do next ({nextActions.length} steps)
           </summary>
           <div className="neon-surface rounded-[1.75rem] px-5 py-4 text-left">

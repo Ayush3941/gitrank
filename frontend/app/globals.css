@@ -499,6 +499,24 @@ details > summary {
   padding-right: 2.2rem;
 }
 
+.disclosure-summary {
+  cursor: pointer;
+  list-style: none;
+  border: 1px solid rgb(var(--primary) / 0.24);
+  background:
+    linear-gradient(155deg, rgb(var(--primary) / 0.14), rgb(var(--primary-2) / 0.1)),
+    rgb(var(--card) / 0.68);
+  color: rgb(var(--text-strong));
+  font-size: 0.94rem;
+  font-weight: 600;
+  line-height: 1.45;
+  padding: 0.75rem 1rem;
+}
+
+.disclosure-summary:hover {
+  border-color: rgb(var(--primary) / 0.38);
+}
+
 details > summary::after {
   content: "›";
   position: absolute;

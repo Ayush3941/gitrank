@@ -104,7 +104,7 @@ export function QuestsPageClient() {
       {!isLoading && !isError ? (
         <DeferUntilVisible fallback={<QuestSectionPlaceholder title="Loading mission spotlight" />}>
           <details className="space-y-3" open={quests.length === 0}>
-            <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-primary/24 px-4 py-3 text-sm font-semibold text-cyan-100 marker:content-none">
+            <summary className="focus-ring disclosure-summary text-cyan-100">
               Mission spotlight
             </summary>
             <GlowCard className="space-y-4 border border-primary/18 bg-gradient-to-br from-slate-950/86 to-cyan-950/18">
@@ -173,7 +173,7 @@ export function QuestsPageClient() {
               className="render-opt-section scroll-mt-24"
             >
               <details className="space-y-4" open={group === defaultExpandedGroup}>
-                <summary className="focus-ring neon-surface cursor-pointer list-none px-4 py-3 text-sm font-semibold text-white marker:content-none">
+                <summary className="focus-ring disclosure-summary">
                   {labelForGroup(group)} ({grouped.length})
                 </summary>
                 <p className="px-1 text-sm text-muted">{descriptionForGroup(group)}</p>

@@ -231,7 +231,7 @@ export function ContributionsPageClient() {
     <div className="space-y-6 [overflow-anchor:none]">
       <section id="contributions-filters" className="scroll-mt-24">
         <details className="space-y-3" open={activeFilterCount > 0}>
-          <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-primary/24 px-4 py-3 text-sm font-semibold text-white marker:content-none">
+          <summary className="focus-ring disclosure-summary">
             Filter contribution cards ({filteredRows.length} results{activeFilterCount > 0 ? ` · ${activeFilterCount} active` : ""})
           </summary>
           <ContributionFilters
@@ -335,7 +335,7 @@ export function ContributionsPageClient() {
       {!isLoading && !isError ? (
         <section id="contributions-repositories" className="render-opt-section scroll-mt-24">
           <details className="space-y-3">
-            <summary className="focus-ring neon-surface cursor-pointer list-none px-4 py-3 text-sm font-semibold text-white marker:content-none">
+            <summary className="focus-ring disclosure-summary">
               Repositories touched ({repositories.length})
             </summary>
             <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading repository impact lanes" />}>
@@ -363,7 +363,7 @@ export function ContributionsPageClient() {
       {!isLoading && !isError ? (
         <section id="contributions-timeline" className="render-opt-section scroll-mt-24">
           <details className="space-y-4">
-            <summary className="focus-ring neon-surface cursor-pointer list-none px-4 py-3 text-sm font-semibold text-white marker:content-none">
+            <summary className="focus-ring disclosure-summary">
               Timeline and highlights ({monthlyWindow.length} months, {topHighlights.length} top PRs)
             </summary>
             <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading timeline and highlights" />}>

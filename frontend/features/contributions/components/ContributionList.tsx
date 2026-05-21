@@ -145,7 +145,7 @@ export function ContributionList({
 function SignalProfileDisclosure({ item }: { item: Contribution }) {
   return (
     <details className="space-y-3">
-      <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-primary/24 px-4 py-3 text-sm font-medium text-white marker:content-none">
+      <summary className="focus-ring disclosure-summary font-medium">
         View score factors
       </summary>
       <SignalProfile item={item} />

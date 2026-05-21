@@ -43,7 +43,7 @@ export function LeaderboardArena({
   return (
     <div className="grid gap-4">
       <details className="space-y-4">
-        <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-primary/24 px-4 py-3 text-sm font-semibold text-white marker:content-none">
+        <summary className="focus-ring disclosure-summary">
           {contextSummary}
         </summary>
         <GlowCard strong className="season-arena-card cyber-hero-shell overflow-hidden">

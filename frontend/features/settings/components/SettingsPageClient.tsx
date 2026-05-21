@@ -399,7 +399,7 @@ export function SettingsPageClient() {
           </div>
           <div className="cyber-divider" />
           <details className="space-y-4">
-            <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-primary/24 px-4 py-3 text-sm font-semibold text-white marker:content-none">
+            <summary className="focus-ring disclosure-summary">
               Display customization and shortcuts
             </summary>
             <div className="space-y-4">
@@ -593,7 +593,7 @@ export function SettingsPageClient() {
               <h2 className="mt-2 text-2xl font-semibold text-white">Choose what stays on your public card</h2>
             </div>
             <details className="space-y-3" open={hiddenRepositoryCount > 0 && data.user.repositories.length <= 8}>
-              <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-primary/24 px-4 py-3 text-sm font-semibold text-white marker:content-none">
+              <summary className="focus-ring disclosure-summary">
                 Repository visibility controls ({data.user.repositories.length} total{hiddenRepositoryCount > 0 ? ` · ${hiddenRepositoryCount} hidden` : ""})
               </summary>
               <PrivacyRepositoryToggleList
@@ -652,7 +652,7 @@ function SettingsSyncActivitySection() {
   return (
     <GlowCard className="space-y-4">
       <details className="space-y-4" open={shouldExpandLog}>
-        <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-primary/24 px-4 py-3 text-sm font-semibold text-white marker:content-none">
+        <summary className="focus-ring disclosure-summary">
           Sync activity log
         </summary>
         <SyncRunActivityPanel

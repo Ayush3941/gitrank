@@ -230,7 +230,7 @@ export function LeaderboardPageClient() {
           <DeferUntilVisible fallback={<LeaderboardSectionPlaceholder title="Loading leaderboard arena" />}>
             {snapshot.currentUser ? (
               <details className="space-y-3">
-                <summary className="focus-ring neon-surface cursor-pointer list-none px-4 py-3 text-sm font-semibold text-white marker:content-none">
+                <summary className="focus-ring disclosure-summary">
                   Your arena mission: #{snapshot.currentUser.rank} in {tab} · {snapshot.currentUser.division}
                 </summary>
                 <GlowCard className="space-y-4 border border-cyan-300/22 bg-gradient-to-br from-slate-950/88 to-cyan-950/24">
@@ -322,7 +322,7 @@ export function LeaderboardPageClient() {
       ) : null}
       {sparseArena && snapshot ? (
         <details className="space-y-3">
-          <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-amber-400/24 bg-amber-400/8 px-4 py-3 text-sm font-semibold text-amber-100 marker:content-none">
+          <summary className="focus-ring disclosure-summary border-amber-400/24 bg-amber-400/8 text-amber-100">
             Arena preview mode ({rows.length} active public profiles)
           </summary>
           <GlowCard className="space-y-4 border border-amber-400/24 bg-amber-400/8">

@@ -184,7 +184,7 @@ export function PublicProfilePageClient({
       </section>
       <section id="public-profile-badges-skills" className="render-opt-section scroll-mt-24">
         <details className="space-y-4">
-          <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-primary/24 px-4 py-3 text-sm font-semibold text-white marker:content-none">
+          <summary className="focus-ring disclosure-summary">
             Badges and skill evidence
           </summary>
           <DeferUntilVisible fallback={<PublicProfileSectionPlaceholder title="Loading badge and skill lanes" />}>
@@ -225,7 +225,7 @@ export function PublicProfilePageClient({
       </section>
       <section id="public-profile-best-prs" className="render-opt-section scroll-mt-24">
         <details className="space-y-4">
-          <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-primary/24 px-4 py-3 text-sm font-semibold text-white marker:content-none">
+          <summary className="focus-ring disclosure-summary">
             Best PR battle reports ({data.featuredContributions.length})
           </summary>
           <DeferUntilVisible fallback={<PublicProfileSectionPlaceholder title="Loading best PR battle reports" />}>
@@ -235,7 +235,7 @@ export function PublicProfilePageClient({
       </section>
       <section id="public-profile-timeline-repos" className="render-opt-section scroll-mt-24">
         <details className="space-y-4">
-          <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-primary/24 px-4 py-3 text-sm font-semibold text-white marker:content-none">
+          <summary className="focus-ring disclosure-summary">
             Timeline and repository evidence
           </summary>
           <DeferUntilVisible fallback={<PublicProfileSectionPlaceholder title="Loading timeline and repository lanes" />}>

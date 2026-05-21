@@ -291,7 +291,7 @@ export function BadgesPageClient() {
             Showing {filtered.length} of {totalCount} badges
           </p>
           <details className="space-y-3" open={canResetFilters}>
-            <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-primary/24 px-4 py-3 text-sm font-semibold text-white marker:content-none">
+            <summary className="focus-ring disclosure-summary">
               Filter badge shelf
             </summary>
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -428,7 +428,7 @@ export function BadgesPageClient() {
           <DeferUntilVisible fallback={<BadgeSectionPlaceholder title="Loading locked badge lanes" />}>
             {lockedBadges.length > 0 ? (
               <details className="neon-surface rounded-[1.4rem] border border-fuchsia-300/24 p-3">
-                <summary className="focus-ring cursor-pointer list-none text-sm font-medium text-cyan-100">
+                <summary className="focus-ring disclosure-summary text-cyan-100">
                   {visibleLockedBadges.length} of {lockedBadges.length} locked badge paths
                 </summary>
                 <ul role="list" className="mt-3 grid gap-3 md:grid-cols-3">
