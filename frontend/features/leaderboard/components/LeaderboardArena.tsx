@@ -79,10 +79,10 @@ export function LeaderboardArena({
         </ul>
       </GlowCard>
       {currentUser && localBracketRows.length > 0 ? (
-        <details className="space-y-3">
-          <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
+        <div className="space-y-3">
+          <h2 className="text-sm font-semibold text-white">
             Local bracket: closest rank neighbors
-          </summary>
+          </h2>
           <GlowCard className="space-y-4 border border-primary/22 bg-gradient-to-br from-slate-950/90 to-cyan-950/18">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
@@ -134,7 +134,7 @@ export function LeaderboardArena({
               })}
             </ol>
           </GlowCard>
-        </details>
+        </div>
       ) : null}
       <ol className="grid gap-4">
         {visibleRows.map((row) => {

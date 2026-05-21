@@ -67,10 +67,8 @@ export function LandingPage() {
 
       <DeferUntilVisible fallback={<LandingSectionPlaceholder title="Loading reputation context lanes" />}>
       <section className="render-opt-section">
-        <details className="space-y-3">
-          <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
-            Why GitRank exists
-          </summary>
+        <div className="space-y-3">
+          <h2 className="text-sm font-semibold text-white">Why GitRank exists</h2>
           <div className="grid gap-6 lg:grid-cols-3">
           {[
           {
@@ -96,16 +94,14 @@ export function LandingPage() {
           </GlowCard>
         ))}
           </div>
-        </details>
+        </div>
       </section>
       </DeferUntilVisible>
 
       <DeferUntilVisible fallback={<LandingSectionPlaceholder title="Loading journey flows" />}>
       <section className="render-opt-section">
-        <details className="space-y-3">
-          <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
-            Core user journeys
-          </summary>
+        <div className="space-y-3">
+          <h2 className="text-sm font-semibold text-white">Core user journeys</h2>
           <ul role="list" className="grid gap-6 lg:grid-cols-3">
             {[
           {
@@ -133,7 +129,7 @@ export function LandingPage() {
           </li>
           ))}
           </ul>
-        </details>
+        </div>
       </section>
       </DeferUntilVisible>
 
@@ -195,31 +191,26 @@ export function LandingPage() {
           </div>
         </GlowCard>
 
-        <details className="space-y-3">
-          <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
-            Badge shelf preview
-          </summary>
-          <GlowCard className="space-y-5">
-            <SectionHeader
-              eyebrow="Badge shelf"
-              title="Visible milestones, not vanity clutter"
-              description="Badges unlock from sustained evidence."
-            />
-            <ul role="list" className="grid gap-3 sm:grid-cols-2">
-              {[
-                "Merged contribution cadence",
-                "Review depth consistency",
-                "Testing and reliability signal",
-                "Cross-repository impact",
-              ].map((lane, index) => (
-                <li key={`badge-lane-${index}`} className="neon-surface rounded-[1.75rem] p-4">
-                  <p className="text-xs font-medium text-primary">Badge lane</p>
-                  <h3 className="mt-3 text-lg font-semibold text-white">{lane}</h3>
-                </li>
-              ))}
-            </ul>
-          </GlowCard>
-        </details>
+        <GlowCard className="space-y-5">
+          <SectionHeader
+            eyebrow="Badge shelf"
+            title="Visible milestones, not vanity clutter"
+            description="Badges unlock from sustained evidence."
+          />
+          <ul role="list" className="grid gap-3 sm:grid-cols-2">
+            {[
+              "Merged contribution cadence",
+              "Review depth consistency",
+              "Testing and reliability signal",
+              "Cross-repository impact",
+            ].map((lane, index) => (
+              <li key={`badge-lane-${index}`} className="neon-surface rounded-[1.75rem] p-4">
+                <p className="text-xs font-medium text-primary">Badge lane</p>
+                <h3 className="mt-3 text-lg font-semibold text-white">{lane}</h3>
+              </li>
+            ))}
+          </ul>
+        </GlowCard>
       </section>
       </DeferUntilVisible>
 

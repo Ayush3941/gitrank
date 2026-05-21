@@ -160,7 +160,7 @@ export function LeaderboardPageClient() {
         <div className="hidden sm:block">
           <Tabs value={tab} onValueChange={handleTabChange}>
             <TabsList
-              className="scrollbar-thin w-full overflow-x-auto whitespace-nowrap"
+              className="grid w-full grid-cols-3 gap-1.5 lg:grid-cols-6"
               aria-label="Leaderboard lane filters"
             >
               {tabs.map((item, index) => (
@@ -223,10 +223,10 @@ export function LeaderboardPageClient() {
         <section id="leaderboard-arena" className="render-opt-section scroll-mt-24 space-y-4">
           <DeferUntilVisible fallback={<LeaderboardSectionPlaceholder title="Loading leaderboard arena" />}>
             {snapshot.currentUser ? (
-              <details className="space-y-3">
-                <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
+              <div className="space-y-3">
+                <h2 className="text-sm font-semibold text-white">
                   Your arena mission: #{snapshot.currentUser.rank} in {tab} · {snapshot.currentUser.division}
-                </summary>
+                </h2>
                 <GlowCard className="space-y-4 border border-cyan-300/22 bg-gradient-to-br from-slate-950/88 to-cyan-950/24">
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -281,7 +281,7 @@ export function LeaderboardPageClient() {
                     </Button>
                   </div>
                 </GlowCard>
-              </details>
+              </div>
             ) : null}
             <div id={LEADERBOARD_ROWS_REGION_ID}>
               <LeaderboardArena snapshot={snapshot} rowLimit={safeVisibleRowCount} />
