@@ -49,10 +49,8 @@ export function EvidenceSignalsCard({ report }: { report: PullRequestAnalysis })
           );
         })}
       </ul>
-      <details className="neon-surface rounded-[1.75rem] p-4">
-        <summary className="focus-ring cursor-pointer list-none text-xs font-medium text-primary marker:content-none">
-          Stored evidence labels
-        </summary>
+      <div className="neon-surface rounded-[1.75rem] p-4">
+        <h3 className="text-xs font-medium text-primary">Stored evidence labels</h3>
         <ul role="list" className="mt-3 flex flex-wrap gap-2">
           {visibleSignals.map((signal, index) => (
             <li key={`${signal}-${index}`} className="list-none">
@@ -69,7 +67,7 @@ export function EvidenceSignalsCard({ report }: { report: PullRequestAnalysis })
             </li>
           ) : null}
         </ul>
-      </details>
+      </div>
     </GlowCard>
   );
 }

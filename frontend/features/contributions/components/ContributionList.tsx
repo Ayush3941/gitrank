@@ -189,12 +189,10 @@ function AIPanel({
         />
       </div>
       {narrative ? (
-        <details className="mt-3 space-y-2">
-          <summary className="focus-ring cursor-pointer list-none text-xs font-semibold text-cyan-100 marker:content-none">
-            Why it matters
-          </summary>
+        <div className="mt-3 space-y-2">
+          <h4 className="text-xs font-semibold text-cyan-100">Why it matters</h4>
           <p className="break-anywhere text-sm text-muted">{narrative.why}</p>
-        </details>
+        </div>
       ) : null}
     </div>
   );
