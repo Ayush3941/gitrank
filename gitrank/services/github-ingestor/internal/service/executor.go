@@ -23,7 +23,7 @@ const (
 	defaultPullRequestReviewPageSize = 10
 	defaultCommitSyncPageSize        = 50
 	defaultUserRepositoryLimit       = 100
-	defaultAuthoredPRSearchLimit     = 100
+	defaultAuthoredPRSearchLimit     = 10
 	defaultAuthoredPRSyncLimit       = 10
 	defaultUserPRSyncTimeout         = 45 * time.Second
 )
