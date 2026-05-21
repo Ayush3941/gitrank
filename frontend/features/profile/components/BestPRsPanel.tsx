@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import type { FeaturedContribution } from "@/types/gitrank";
@@ -60,12 +59,6 @@ export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
                 </div>
               </div>
               <div className="mt-4 flex flex-wrap justify-end gap-2">
-                <CopyTextButton
-                  text={report.summary}
-                  label="Copy summary"
-                  copiedLabel="Summary copied"
-                  analyticsTarget="public-profile/copy-pr-summary"
-                />
                 <Button asChild variant="secondary" size="sm">
                   <Link href={`/pr/${report.owner}/${report.repo}/${report.number}`} prefetch={false}>
                     View report

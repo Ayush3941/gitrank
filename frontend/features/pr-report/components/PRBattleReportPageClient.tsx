@@ -71,7 +71,6 @@ export function PRBattleReportPageClient({
         ? "Medium signal"
         : "Early signal";
   const signalDetail = `${data.contribution.category} • ${data.contribution.changedFilesCount} files changed`;
-  const nextMoveTitle = suggestedQuest?.title || "Open contribution lane";
 
   return (
     <div className="space-y-6">
@@ -96,9 +95,6 @@ export function PRBattleReportPageClient({
         </span>
         <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
           {evidenceAnchored ? "Anchored evidence" : "Partial evidence"}
-        </span>
-        <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-          Next: {nextMoveTitle}
         </span>
       </div>
       <section id="pr-report-overview" className="scroll-mt-24">
