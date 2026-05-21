@@ -17,7 +17,6 @@ export function DashboardRouteNav() {
     >
       <ul role="list" className="dashboard-nav-track scrollbar-thin flex gap-1.5 overflow-x-auto p-0.5">
         {dashboardNavItems.map((item) => {
-          const Icon = item.icon;
           const active = isActive(item.href, item.exact);
           return (
             <li key={item.href} className="dashboard-nav-snap list-none">
@@ -29,9 +28,7 @@ export function DashboardRouteNav() {
                   "focus-ring dashboard-nav-item inline-flex min-h-10 items-center gap-2 px-3 py-2 text-sm font-medium whitespace-nowrap",
                 )}
                 data-active={active ? "true" : "false"}
-                title={item.hint}
               >
-                <Icon className={cn("h-4 w-4", active ? "text-primary" : "text-muted")} />
                 <span className="sm:hidden">{item.mobileLabel}</span>
                 <span className="hidden sm:inline">{item.label}</span>
               </Link>

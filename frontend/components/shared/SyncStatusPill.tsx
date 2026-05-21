@@ -43,11 +43,6 @@ export function SyncStatusPill({
       <time className="text-current" dateTime={machineDateTime ?? undefined}>
         {relative}
       </time>
-      {showExact ? (
-        <time className="hidden text-current/90 md:inline" dateTime={machineDateTime}>
-          ({exact})
-        </time>
-      ) : null}
     </div>
   );
 }
