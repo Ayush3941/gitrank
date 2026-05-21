@@ -229,67 +229,62 @@ export function LeaderboardPageClient() {
         <section id="leaderboard-arena" className="render-opt-section scroll-mt-24 space-y-4">
           <DeferUntilVisible fallback={<LeaderboardSectionPlaceholder title="Loading leaderboard arena" />}>
             {snapshot.currentUser ? (
-              <details className="space-y-3">
-                <summary className="focus-ring disclosure-summary">
-                  Your arena mission: #{snapshot.currentUser.rank} in {tab} · {snapshot.currentUser.division}
-                </summary>
-                <GlowCard className="space-y-4 border border-cyan-300/22 bg-gradient-to-br from-slate-950/88 to-cyan-950/24">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-medium text-cyan-200">Your arena mission</p>
-                      <h2 className="mt-2 text-2xl font-semibold text-white">
-                        #{snapshot.currentUser.rank} in {tab}
-                      </h2>
-                      <p className="mt-2 text-sm text-muted">
-                        Focus lane: {snapshot.currentUser.focus}. Keep quality-weighted merged evidence flowing to move bands safely.
-                      </p>
-                    </div>
-                    <span className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold">
-                      <Target className="h-3.5 w-3.5" />
-                      {snapshot.currentUser.division}
-                    </span>
+              <GlowCard className="space-y-4 border border-cyan-300/22 bg-gradient-to-br from-slate-950/88 to-cyan-950/24">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-medium text-cyan-200">Your arena mission</p>
+                    <h2 className="mt-2 text-2xl font-semibold text-white">
+                      #{snapshot.currentUser.rank} in {tab}
+                    </h2>
+                    <p className="mt-2 text-sm text-muted">
+                      Focus lane: {snapshot.currentUser.focus}. Keep quality-weighted merged evidence flowing to move bands safely.
+                    </p>
                   </div>
-                  <div className="grid gap-3 md:grid-cols-3">
-                    <ClimbTip
-                      title="To next band"
-                      body={
-                        snapshot.currentUser.xpToNextRank > 0
-                          ? `${snapshot.currentUser.xpToNextRank} XP required`
-                          : "You are currently leading this lane"
-                      }
-                    />
-                    <ClimbTip
-                      title="Gap to lane leader"
-                      body={laneGapToLeader > 0 ? `${laneGapToLeader} season XP` : "You currently hold lane lead"}
-                    />
-                    <ClimbTip
-                      title="Current movement"
-                      body={`${snapshot.currentUser.movement >= 0 ? "+" : ""}${snapshot.currentUser.movement} this cycle`}
-                    />
+                  <span className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold">
+                    <Target className="h-3.5 w-3.5" />
+                    {snapshot.currentUser.division}
+                  </span>
+                </div>
+                <div className="grid gap-3 md:grid-cols-3">
+                  <ClimbTip
+                    title="To next band"
+                    body={
+                      snapshot.currentUser.xpToNextRank > 0
+                        ? `${snapshot.currentUser.xpToNextRank} XP required`
+                        : "You are currently leading this lane"
+                    }
+                  />
+                  <ClimbTip
+                    title="Gap to lane leader"
+                    body={laneGapToLeader > 0 ? `${laneGapToLeader} season XP` : "You currently hold lane lead"}
+                  />
+                  <ClimbTip
+                    title="Current movement"
+                    body={`${snapshot.currentUser.movement >= 0 ? "+" : ""}${snapshot.currentUser.movement} this cycle`}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs text-muted">
+                    <span>Band progress</span>
+                    <span>{currentUserProgressToNextBand}%</span>
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-xs text-muted">
-                      <span>Band progress</span>
-                      <span>{currentUserProgressToNextBand}%</span>
-                    </div>
-                    <Progress value={currentUserProgressToNextBand} />
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Button asChild size="sm" variant="secondary">
-                      <Link href="/dashboard/contributions" prefetch={false}>
-                        Improve contribution signal
-                        <ArrowUpRight className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                    <Button asChild size="sm" variant="ghost">
-                      <Link href="/dashboard/quests" prefetch={false}>
-                        Open tactical quests
-                        <Trophy className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </div>
-                </GlowCard>
-              </details>
+                  <Progress value={currentUserProgressToNextBand} />
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button asChild size="sm" variant="secondary">
+                    <Link href="/dashboard/contributions" prefetch={false}>
+                      Improve contribution signal
+                      <ArrowUpRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <Button asChild size="sm" variant="ghost">
+                    <Link href="/dashboard/quests" prefetch={false}>
+                      Open tactical quests
+                      <Trophy className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              </GlowCard>
             ) : null}
             <div id={LEADERBOARD_ROWS_REGION_ID}>
               <LeaderboardArena snapshot={snapshot} rowLimit={safeVisibleRowCount} />
@@ -321,36 +316,32 @@ export function LeaderboardPageClient() {
         </section>
       ) : null}
       {sparseArena && snapshot ? (
-        <details className="space-y-3">
-          <summary className="focus-ring disclosure-summary border-amber-400/24 bg-amber-400/8 text-amber-100">
-            Arena preview mode ({rows.length} active public profiles)
-          </summary>
-          <GlowCard className="space-y-4 border border-amber-400/24 bg-amber-400/8">
-            <div>
-              <h2 className="text-2xl font-semibold text-white">Live competition is still warming up</h2>
-              <p className="mt-2 readable-measure text-sm leading-7 text-amber-50">
-                This lane has {rows.length} active public profiles right now. Ranking is live, but bracket density is still low.
-              </p>
-            </div>
-            <p className="text-sm text-amber-100">
-              {snapshot.currentUser
-                ? `Current slot: #${snapshot.currentUser.rank} in ${tab}.`
-                : "Current slot: unranked in this lane."}{" "}
-              Promotion target:{" "}
-              {snapshot.currentUser
-                ? `${snapshot.currentUser.xpToNextRank} XP to next band.`
-                : "sync more evidence to enter rank bands."}
+        <GlowCard className="space-y-4 border border-amber-400/24 bg-amber-400/8">
+          <div>
+            <p className="text-xs font-medium text-amber-100">Arena preview mode ({rows.length} active public profiles)</p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">Live competition is still warming up</h2>
+            <p className="mt-2 readable-measure text-sm leading-7 text-amber-50">
+              This lane has {rows.length} active public profiles right now. Ranking is live, but bracket density is still low.
             </p>
-            <div className="flex flex-wrap gap-2">
-              <Button asChild variant="secondary" size="sm">
-                <Link href="/dashboard/contributions" prefetch={false}>Improve contribution signal</Link>
-              </Button>
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/dashboard/quests" prefetch={false}>Open quest lane</Link>
-              </Button>
-            </div>
-          </GlowCard>
-        </details>
+          </div>
+          <p className="text-sm text-amber-100">
+            {snapshot.currentUser
+              ? `Current slot: #${snapshot.currentUser.rank} in ${tab}.`
+              : "Current slot: unranked in this lane."}{" "}
+            Promotion target:{" "}
+            {snapshot.currentUser
+              ? `${snapshot.currentUser.xpToNextRank} XP to next band.`
+              : "sync more evidence to enter rank bands."}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="secondary" size="sm">
+              <Link href="/dashboard/contributions" prefetch={false}>Improve contribution signal</Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/dashboard/quests" prefetch={false}>Open quest lane</Link>
+            </Button>
+          </div>
+        </GlowCard>
       ) : null}
     </div>
   );

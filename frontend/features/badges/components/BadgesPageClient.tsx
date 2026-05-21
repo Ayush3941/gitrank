@@ -290,10 +290,7 @@ export function BadgesPageClient() {
           <p id={badgesFilterStatusId} role="status" aria-live="polite" className="text-sm text-fuchsia-100">
             Showing {filtered.length} of {totalCount} badges
           </p>
-          <details className="space-y-3" open={canResetFilters}>
-            <summary className="focus-ring disclosure-summary">
-              Filter badge shelf
-            </summary>
+          <div className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
                 {rarity !== "All" ? (
@@ -376,7 +373,7 @@ export function BadgesPageClient() {
                 </SelectContent>
               </Select>
             </div>
-          </details>
+          </div>
         </div>
         <div id={BADGES_EARNED_REGION_ID}>
           {isLoading ? <LoadingState message="Polishing your badge shelf..." /> : null}
@@ -424,14 +421,16 @@ export function BadgesPageClient() {
       </section>
       {!isLoading && !isError ? (
         <section id="badges-locked" className="render-opt-section scroll-mt-24 space-y-3">
-          <p className="text-xs font-medium text-fuchsia-200">Locked / upcoming badges</p>
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-fuchsia-200">Locked / upcoming badges</p>
+            <p className="text-sm text-muted">
+              {visibleLockedBadges.length} of {lockedBadges.length} locked badge paths
+            </p>
+          </div>
           <DeferUntilVisible fallback={<BadgeSectionPlaceholder title="Loading locked badge lanes" />}>
             {lockedBadges.length > 0 ? (
-              <details className="neon-surface rounded-[1.4rem] border border-fuchsia-300/24 p-3">
-                <summary className="focus-ring disclosure-summary text-cyan-100">
-                  {visibleLockedBadges.length} of {lockedBadges.length} locked badge paths
-                </summary>
-                <ul role="list" className="mt-3 grid gap-3 md:grid-cols-3">
+              <div className="neon-surface rounded-[1.4rem] border border-fuchsia-300/24 p-3">
+                <ul role="list" className="grid gap-3 md:grid-cols-3">
                   {visibleLockedBadges.map((badge) => (
                     <li key={badge.id} className="render-opt-card neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4">
                       <div className="flex flex-wrap items-center gap-2">
@@ -486,7 +485,7 @@ export function BadgesPageClient() {
                     </Button>
                   </div>
                 ) : null}
-              </details>
+              </div>
             ) : (
               <div className="neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4 text-sm text-muted">
                 No locked badge definitions are currently returned by the backend profile snapshot.
