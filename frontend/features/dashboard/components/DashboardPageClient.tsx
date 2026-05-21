@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
-import { Activity, Flame, Medal, ShieldCheck } from "lucide-react";
+import { Activity, Medal, ShieldCheck } from "lucide-react";
 import { DashboardHeroRankCard } from "@/features/dashboard/components/DashboardHeroRankCard";
 import { ContributionTimelineCard } from "@/features/dashboard/components/ContributionTimelineCard";
 import { CurrentLeagueCard } from "@/features/dashboard/components/CurrentLeagueCard";
@@ -231,14 +231,6 @@ export function DashboardPageClient() {
             <ContributionTimelineCard user={user} />
           </DeferUntilVisible>
         </section>
-      </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        <StatCard
-          label="Current streak"
-          value={`${streak.currentStreakDays}d`}
-          detail={`Best streak ${streak.bestStreakDays} days • active days this year ${streak.activeDaysThisYear}.`}
-          icon={<Flame className="h-5 w-5 text-primary" />}
-        />
       </div>
     </div>
   );

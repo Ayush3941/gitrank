@@ -5,7 +5,6 @@ import { AnimatedNumber } from "@/components/shared/AnimatedNumber";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { RankBadge } from "@/components/shared/RankBadge";
-import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { XPProgress } from "@/components/shared/XPProgress";
 import { Button } from "@/components/ui/button";
 import { uniqueDisplayValues } from "@/lib/display-values";
@@ -58,14 +57,6 @@ export function DashboardHeroRankCard({
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
-          <ShareProfileButton
-            variant="ghost"
-            size="sm"
-            username={user.username}
-            displayName={user.displayName}
-            shareHeadline={`${user.displayName} is ${user.title} on GitRank.`}
-            analyticsTargetPrefix="dashboard-profile"
-          />
         </div>
       </div>
       <div className="grid gap-4 md:grid-cols-3">
