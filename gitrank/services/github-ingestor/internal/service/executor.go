@@ -257,13 +257,11 @@ func (e *Executor) SyncUser(
 
 	authoredPullRequests, authoredSearchIncomplete, err := runtime.fetchAuthoredPullRequestTargets(ctx, user)
 	if err != nil {
-		if isRecoverableUserSyncSelectionError(err) {
-			response.Fetched["authored_pull_request_search_failed"] = 1
-			authoredPullRequests = nil
-			authoredSearchIncomplete = true
-		} else {
-			_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, PersistResult{})
-			return response, err
+		response.Fetched["authored_pull_request_search_failed"] = 1
+		authoredPullRequests = nil
+		authoredSearchIncomplete = true
+		if !isRecoverableUserSyncSelectionError(err) {
+			response.Fetched["authored_pull_request_search_unclassified"] = 1
 		}
 	}
 	if len(authoredPullRequests) > defaultAuthoredPRSyncLimit {
