@@ -1020,13 +1020,7 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 }
 
 .dashboard-nav-track {
-  scroll-snap-type: x proximity;
-  scroll-padding-inline: 0.5rem;
-  -webkit-overflow-scrolling: touch;
-}
-
-.dashboard-nav-snap {
-  scroll-snap-align: start;
+  width: 100%;
 }
 
 .dashboard-nav-item {
