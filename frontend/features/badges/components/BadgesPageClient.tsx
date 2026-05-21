@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Crown, ShieldCheck, Sparkles, Trophy } from "lucide-react";
+import { Crown, ShieldCheck, Sparkles, Trophy, X } from "lucide-react";
 import { startTransition, type ReactNode, useEffect, useRef, useState } from "react";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
@@ -176,6 +176,20 @@ export function BadgesPageClient() {
     });
   }
 
+  function handleClearRarityFilter() {
+    startTransition(() => {
+      setRarity("All");
+      setVisibleLockedCount(lockedBadgePageSize);
+    });
+  }
+
+  function handleClearVisibilityFilter() {
+    startTransition(() => {
+      setVisibility("All");
+      setVisibleLockedCount(lockedBadgePageSize);
+    });
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -292,16 +306,32 @@ export function BadgesPageClient() {
               <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
                 {rarity !== "All" ? (
                   <li className="list-none">
-                    <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold">
+                    <button
+                      type="button"
+                      className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
+                      onClick={handleClearRarityFilter}
+                      aria-label={`Remove rarity filter ${rarity}`}
+                      aria-controls={BADGES_EARNED_REGION_ID}
+                      title="Clear rarity filter"
+                    >
                       Rarity: {rarity}
-                    </span>
+                      <X className="h-3.5 w-3.5" />
+                    </button>
                   </li>
                 ) : null}
                 {visibility !== "All" ? (
                   <li className="list-none">
-                    <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold">
+                    <button
+                      type="button"
+                      className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
+                      onClick={handleClearVisibilityFilter}
+                      aria-label={`Remove state filter ${visibility}`}
+                      aria-controls={BADGES_EARNED_REGION_ID}
+                      title="Clear state filter"
+                    >
                       State: {visibility}
-                    </span>
+                      <X className="h-3.5 w-3.5" />
+                    </button>
                   </li>
                 ) : null}
                 <li className="list-none">

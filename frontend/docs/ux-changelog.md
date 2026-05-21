@@ -1603,6 +1603,9 @@
 - Upgraded contribution card scoring visuals:
   - each contribution card now shows a deterministic signal band (`High`, `Rising`, `Early`) plus a static progress meter
   - preserves numeric signal transparency while making card scanning more game-like and presentation-friendly.
+- Added one-tap chip clearing for badge filters:
+  - active `Rarity` and `State` chips in badges now act as direct clear controls
+  - keeps filter reset granular and avoids full-reset churn during badge browsing.
 
 ## 2026-05-16
 
