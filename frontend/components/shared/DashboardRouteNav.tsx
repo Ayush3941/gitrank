@@ -18,6 +18,7 @@ export function DashboardRouteNav() {
       <ul role="list" className="dashboard-nav-track grid grid-cols-2 gap-1.5 p-0.5 sm:grid-cols-5">
         {dashboardNavItems.map((item) => {
           const active = isActive(item.href, item.exact);
+          const Icon = item.icon;
           return (
             <li key={item.href} className="list-none">
               <Link
@@ -30,6 +31,7 @@ export function DashboardRouteNav() {
                 )}
                 data-active={active ? "true" : "false"}
               >
+                <Icon className="h-3.5 w-3.5 shrink-0 text-current/90" aria-hidden="true" />
                 <span className="sm:hidden">{item.mobileLabel}</span>
                 <span className="hidden sm:inline">{item.label}</span>
               </Link>
