@@ -15,6 +15,10 @@
   - removed `Lite skill signal view` label from constrained/rduced skill radar rendering.
   - simplified leaderboard mission subcopy from `Focus lane` to `Primary signal`.
   - removed redundant leaderboard row-count sentence under arena rows to keep action hierarchy tighter.
+- Mobile filter compactness pass:
+  - replaced mobile-only contributions category tab rail with a compact `Select` filter, while keeping desktop tab semantics unchanged.
+  - replaced mobile-only leaderboard lane tab rail with a compact `Select` filter, while preserving desktop lane tabs and query-parameter behavior.
+  - reduced horizontal-scroll pressure on smaller screens without changing backend contracts or filter logic.
 
 ## 2026-05-19
 
