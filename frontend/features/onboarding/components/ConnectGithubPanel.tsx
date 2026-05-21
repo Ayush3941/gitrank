@@ -111,10 +111,8 @@ export function ConnectGithubPanel() {
             <p className="text-sm text-muted">You control what becomes public later.</p>
           </div>
         </div>
-        <details className="space-y-3">
-          <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
-            Privacy controls
-          </summary>
+        <div className="space-y-3">
+          <h2 className="text-sm font-semibold text-white">Privacy controls</h2>
           <ul role="list" className="space-y-3">
             {[
               "Public profile can be disabled at any time.",
@@ -124,7 +122,7 @@ export function ConnectGithubPanel() {
               <li key={`${item}-${index}`} className="neon-surface rounded-3xl px-4 py-3 text-sm text-muted">{item}</li>
             ))}
           </ul>
-        </details>
+        </div>
         <div className="neon-surface rounded-[1.75rem] border-primary/22 px-4 py-4">
           <p className="text-xs font-medium text-primary">Where this goes next</p>
           <p className="mt-2 text-sm text-foreground">

@@ -57,10 +57,8 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
             <Sparkles className="h-5 w-5" />
           </div>
           <h2 className="text-2xl font-semibold text-white">Meaning-first scoring</h2>
-          <details className="space-y-3">
-            <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
-              How scoring works
-            </summary>
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-white">How scoring works</h3>
             <ul role="list" className="grid gap-3">
               {[
                 "Merged work outranks raw streaks.",
@@ -71,7 +69,7 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
                 <li key={`score-rule-${index}-${line}`} className="neon-surface rounded-3xl px-4 py-3 text-sm text-muted">{line}</li>
               ))}
             </ul>
-          </details>
+          </div>
         </GlowCard>
       </GlowCard>
     </main>

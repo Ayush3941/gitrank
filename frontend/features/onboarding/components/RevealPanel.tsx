@@ -101,10 +101,10 @@ export function RevealPanel({
           </div>
         </div>
         <div className="space-y-4">
-          <details className="space-y-3">
-            <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-left text-sm font-semibold text-white marker:content-none">
+          <div className="space-y-3">
+            <h2 className="text-sm font-semibold text-white text-left">
               Unlock preview ({unlockedBadges.length > 0 ? `${unlockedBadges.length} earned` : "next badge lanes"})
-            </summary>
+            </h2>
             <ul role="list" className="grid gap-4 sm:grid-cols-3">
               {unlockedBadges.length > 0 ? (
                 unlockedBadges.map((badge) => (
@@ -125,13 +125,13 @@ export function RevealPanel({
                 </>
               )}
             </ul>
-          </details>
+          </div>
         </div>
         <div className="space-y-4">
-          <details className="space-y-3" open>
-            <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-left text-sm font-semibold text-white marker:content-none">
+          <div className="space-y-3">
+            <h2 className="text-sm font-semibold text-white text-left">
               What to do next ({nextActions.length} steps)
-            </summary>
+            </h2>
             <div className="neon-surface rounded-[1.75rem] px-5 py-4 text-left">
               <ol className="mt-1 grid gap-3 sm:grid-cols-3">
                 {nextActions.map((item, index) => (
@@ -142,7 +142,7 @@ export function RevealPanel({
                 ))}
               </ol>
             </div>
-          </details>
+          </div>
         </div>
         <div className="flex flex-wrap justify-center gap-3">
           {needsSyncRecovery ? (
