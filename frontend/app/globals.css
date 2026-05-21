@@ -982,15 +982,15 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 }
 
 .render-opt-card {
-  content-visibility: visible;
-  contain-intrinsic-size: auto;
-  contain: none;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 320px;
+  contain: layout style paint;
 }
 
 .render-opt-section {
-  content-visibility: visible;
-  contain-intrinsic-size: auto;
-  contain: none;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 720px;
+  contain: layout style paint;
 }
 
 .cyber-link {

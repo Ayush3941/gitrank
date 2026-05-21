@@ -3,9 +3,12 @@
 ## 2026-05-21
 
 - Sync-run filter stability pass:
-  - replaced the four-button status-toggle row in settings sync activity with a single status `Select` control.
+  - replaced the status `Select` in settings sync activity with a direct four-button status row (`All`, `Completed`, `Running`, `Failed`) to avoid dropdown scroll-lock jitter and keep filtering in-flow.
   - removed deferred/debounced sync-run filter churn so result updates are immediate and less jitter-prone.
   - simplified active-filter chips in sync activity by removing per-chip inline clear buttons and keeping one explicit `Reset` action.
+- Render-performance and copy-density pass:
+  - enabled real offscreen deferral for heavy dashboard/profile sections by switching `.render-opt-card` and `.render-opt-section` to `content-visibility: auto` with intrinsic-size hints.
+  - tightened dashboard hero/snapshot wording to reduce repeated explanatory prose while preserving all scoring and sync semantics.
 - Deterministic summary normalization pass:
   - added shared formatter `frontend/lib/presentation/report-summary.ts` to clean raw deterministic strings (`summary=[...]`, `score version ...`, trailing `final XP ...`) into readable copy.
   - wired the formatter into contributions cards, dashboard recent battle reports, and public-profile best-PR cards for consistent report language.

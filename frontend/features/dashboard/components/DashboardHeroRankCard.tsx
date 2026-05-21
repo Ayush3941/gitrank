@@ -77,7 +77,7 @@ export function DashboardHeroRankCard({
           <p className="mt-3 text-lg font-medium text-white">
             Reach <span className="numeric-readout">{user.level.nextLevelXp.toLocaleString("en-US")}</span> XP
           </p>
-          <p className="mt-2 text-sm text-muted">Unlock stronger rank movement, harder quests, and rarer badge lanes.</p>
+          <p className="mt-2 text-sm text-muted">Unlock the next rank lane.</p>
         </div>
       </div>
       <XPProgress current={user.level.currentXp} next={user.level.nextLevelXp} />
@@ -88,7 +88,7 @@ export function DashboardHeroRankCard({
             <p className="text-sm font-semibold text-white">Rank-up preview</p>
             <p className="mt-1 text-sm leading-6 text-muted">
               {user.rankProgress.nextTier
-                ? `This season needs ${user.rankProgress.xpToNextTier.toLocaleString("en-US")} more evidence-backed XP before ${user.rankProgress.nextTier} review.`
+                ? `${user.rankProgress.xpToNextTier.toLocaleString("en-US")} XP to ${user.rankProgress.nextTier}.`
                 : "The current profile is already at the highest configured rank tier."}
             </p>
           </div>
@@ -109,7 +109,7 @@ export function DashboardHeroRankCard({
         </div>
       ) : null}
       <div className="space-y-3">
-        <p className="text-xs font-medium text-primary">Top observed signals in this snapshot</p>
+        <p className="text-xs font-medium text-primary">Top signals</p>
         <ul role="list" className="flex flex-wrap gap-2">
           {strongestSignals.map((signal, index) => (
             <li key={`${signal}-${index}`} className="list-none">
