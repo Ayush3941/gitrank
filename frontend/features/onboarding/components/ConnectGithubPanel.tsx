@@ -67,27 +67,23 @@ export function ConnectGithubPanel() {
           <Timer className="h-4 w-4 text-cyan-200" />
           Typical first snapshot path: about 60-90 seconds after OAuth success.
         </div>
-        <div className="space-y-3">
-          <details className="neon-surface rounded-3xl px-4 py-3">
-            <summary className="focus-ring disclosure-summary">
-              What data is read in v1
-            </summary>
+        <div className="grid gap-3 md:grid-cols-2">
+          <div className="neon-surface rounded-3xl px-4 py-3">
+            <p className="text-xs font-medium text-primary">What data is read in v1</p>
             <ul className="mt-3 space-y-2 text-sm leading-6 text-muted">
               <li>Public profile basics and contribution activity.</li>
               <li>Merged PR metadata, review activity, and changed-file context.</li>
               <li>Repository visibility and recency signals used for scoring explanation.</li>
             </ul>
-          </details>
-          <details className="neon-surface rounded-3xl px-4 py-3">
-            <summary className="focus-ring disclosure-summary">
-              What is not read by default
-            </summary>
+          </div>
+          <div className="neon-surface rounded-3xl px-4 py-3">
+            <p className="text-xs font-medium text-primary">What is not read by default</p>
             <ul className="mt-3 space-y-2 text-sm leading-6 text-muted">
               <li>Private repository code content in v1 baseline.</li>
               <li>Any hidden secrets from your local environment.</li>
               <li>Manual score overrides or admin-only edits.</li>
             </ul>
-          </details>
+          </div>
         </div>
         <div className="flex flex-wrap gap-3">
           <Button asChild size="lg">

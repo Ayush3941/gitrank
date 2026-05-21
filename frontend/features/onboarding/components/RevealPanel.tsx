@@ -59,7 +59,7 @@ export function RevealPanel({
             Analysis complete
           </div>
           <h1 className="text-5xl font-semibold tracking-tight text-white sm:text-6xl">
-            Level {user.level.currentLevel} <span className="text-gradient">{user.title}</span>
+            Level {user.level.currentLevel} {user.title}
           </h1>
           <p className="mx-auto max-w-2xl text-sm text-cyan-100">
             GitRank has analyzed your open-source identity.
@@ -100,10 +100,12 @@ export function RevealPanel({
             {user.level.currentXp} / {user.level.nextLevelXp} XP
           </div>
         </div>
-        <details className="space-y-4" open={unlockedBadges.length === 0}>
-          <summary className="focus-ring disclosure-summary">
-            Unlock preview ({unlockedBadges.length > 0 ? `${unlockedBadges.length} earned` : "next badge lanes"})
-          </summary>
+        <div className="space-y-4">
+          <div className="space-y-1 text-left">
+            <p className="text-xs font-medium text-primary">
+              Unlock preview ({unlockedBadges.length > 0 ? `${unlockedBadges.length} earned` : "next badge lanes"})
+            </p>
+          </div>
           <ul role="list" className="grid gap-4 sm:grid-cols-3">
             {unlockedBadges.length > 0 ? (
               unlockedBadges.map((badge) => (
@@ -124,11 +126,13 @@ export function RevealPanel({
               </>
             )}
           </ul>
-        </details>
-        <details className="space-y-4" open={needsSyncRecovery}>
-          <summary className="focus-ring disclosure-summary">
-            What to do next ({nextActions.length} steps)
-          </summary>
+        </div>
+        <div className="space-y-4">
+          <div className="space-y-1 text-left">
+            <p className="text-xs font-medium text-primary">
+              What to do next ({nextActions.length} steps)
+            </p>
+          </div>
           <div className="neon-surface rounded-[1.75rem] px-5 py-4 text-left">
             <ol className="mt-1 grid gap-3 sm:grid-cols-3">
               {nextActions.map((item, index) => (
@@ -139,7 +143,7 @@ export function RevealPanel({
               ))}
             </ol>
           </div>
-        </details>
+        </div>
         <div className="flex flex-wrap justify-center gap-3">
           {needsSyncRecovery ? (
             <Button asChild size="lg">
