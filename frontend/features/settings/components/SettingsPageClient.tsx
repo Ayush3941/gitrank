@@ -330,7 +330,7 @@ export function SettingsPageClient() {
           </Button>
         </div>
         <p className="text-sm text-muted">
-          GitHub sync runs automatically when authenticated dashboard pages load. Exports never include token secrets or secret hashes.
+          GitHub sync runs automatically while you use dashboard pages. Exports never include token secrets or secret hashes.
         </p>
         <SyncStateGuide status={data.user.syncStatus} />
         <div className="min-h-6">
@@ -385,8 +385,7 @@ export function SettingsPageClient() {
               <p className="mt-4 text-xs font-medium text-primary">Display preference</p>
               <h2 className="mt-2 text-2xl font-semibold text-white">Reduced gamification</h2>
               <p className="mt-2 text-sm leading-6 text-muted">
-                Reduces XP animation, shimmer, and glow effects for this account. Scoring and privacy do not change.
-                If no preference is saved, GitRank follows your system reduced-motion and reduced-data settings.
+                Reduces XP animation, shimmer, and glow effects for this account. Scoring and privacy are unchanged.
               </p>
             </div>
             <Switch
@@ -405,7 +404,7 @@ export function SettingsPageClient() {
                 <p className="text-xs font-medium text-primary">Keyboard controls</p>
                 <h3 className="mt-2 text-xl font-semibold text-white">Display shortcuts</h3>
                 <p className="mt-2 text-sm leading-6 text-muted">
-                  Enables global display shortcuts when focus is outside editable fields.
+                  Enables theme, text-size, and effects shortcuts when focus is outside editable fields.
                 </p>
               </div>
               <Switch
@@ -425,7 +424,6 @@ export function SettingsPageClient() {
                 <h2 className="mt-2 text-2xl font-semibold text-white">Readable style mode</h2>
                 <p className="mt-2 text-sm leading-6 text-muted">
                   Theme changes visuals only. Ranking, scoring, privacy, and sync behavior stay the same.
-                  If no theme is saved, GitRank follows your system high-contrast preference.
                 </p>
                 <p className="mt-2 text-xs text-muted">
                   Theme source:
@@ -509,9 +507,9 @@ export function SettingsPageClient() {
                   Choose default or large text size for frontend readability.
                 </p>
                 <p className="mt-2 text-xs leading-6 text-muted">
-                  Shortcuts: <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> (theme),{" "}
-                  <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd> (text),{" "}
-                  <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd> (effects).
+                  Shortcuts: <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> theme,{" "}
+                  <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd> text,{" "}
+                  <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd> effects.
                 </p>
               </div>
               <div className="grid w-full gap-2 sm:w-auto sm:min-w-[18rem]">
@@ -557,22 +555,14 @@ export function SettingsPageClient() {
                 {displayNotice}
               </p>
             ) : null}
-            <div className="neon-surface-strong space-y-3 px-4 py-4">
-              <p className="text-xs font-medium text-primary">Live readability preview</p>
-              <h3 className="text-lg font-semibold text-white">
-                Verify readability before style.
-              </h3>
+            <div className="neon-surface-strong space-y-2 px-4 py-4">
+              <p className="text-xs font-medium text-primary">Current readability mode</p>
               <p className="text-sm leading-7 text-muted">
-                Current theme:
-                {" "}
                 <span className="font-semibold text-foreground">{activeThemeOption.label}</span>
                 {" "}
                 ·
                 {" "}
                 {activeThemeOption.description}
-              </p>
-              <p className="text-sm leading-7 text-muted">
-                Use this preview to confirm headings and labels stay clear on your screen.
               </p>
             </div>
           </div>
