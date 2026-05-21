@@ -19,6 +19,9 @@
   - replaced mobile-only contributions category tab rail with a compact `Select` filter, while keeping desktop tab semantics unchanged.
   - replaced mobile-only leaderboard lane tab rail with a compact `Select` filter, while preserving desktop lane tabs and query-parameter behavior.
   - reduced horizontal-scroll pressure on smaller screens without changing backend contracts or filter logic.
+- Background paint simplification pass:
+  - removed the global repeating-grid background stripe layer from `body::before` to reduce fixed-overlay paint complexity.
+  - retuned fixed radial glow stops on `body::before` and `body::after` for longer/finer falloff, producing a smoother neon atmosphere with less visual harshness.
 
 ## 2026-05-19
 
