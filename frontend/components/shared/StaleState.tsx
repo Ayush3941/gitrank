@@ -11,9 +11,9 @@ import { formatDateTime } from "@/lib/formatters";
 export function StaleState({
   message,
   updatedAt,
-  actionLabel = "Open settings",
+  actionLabel = "Open sync settings",
   actionHref = "/dashboard/settings",
-  refreshLabel = "Refresh snapshot",
+  refreshLabel = "Refresh",
   onRefresh,
   isRefreshing = false,
   analyticsTarget,
@@ -50,13 +50,11 @@ export function StaleState({
       <div className="flex items-start gap-3">
         <div className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-amber-300/35 bg-amber-400/14 px-2.5 py-1 text-sm font-semibold text-amber-100">
           <Clock3 className="h-4 w-4" />
-          Stale snapshot
+          Data is stale
         </div>
         <div className="space-y-1">
           <p className="font-medium text-amber-100">{message}</p>
-          <p className="text-sm text-amber-100">
-            The latest verified snapshot is still visible while a newer sync path is pending.
-          </p>
+          <p className="text-sm text-amber-100">Latest verified data stays visible while sync refreshes.</p>
           {verifiedDateTime ? (
             <p className="text-xs text-amber-100">
               Last verified at{" "}

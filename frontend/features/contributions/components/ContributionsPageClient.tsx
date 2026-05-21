@@ -204,8 +204,8 @@ export function ContributionsPageClient() {
       {isError ? (
         <ErrorState
           title="Contribution sync failed"
-          description="GitHub data could not be refreshed. Retry or open settings."
-          fallbackLabel="Open settings"
+          description="GitHub data could not be refreshed. Retry or open sync settings."
+          fallbackLabel="Open sync settings"
           fallbackHref="/dashboard/settings"
           analyticsTarget="contributions:error"
         />

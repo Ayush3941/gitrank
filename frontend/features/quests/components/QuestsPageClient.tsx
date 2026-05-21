@@ -63,7 +63,7 @@ export function QuestsPageClient() {
             void refetch();
           }}
           isRefreshing={isFetching}
-          actionLabel="Open settings"
+          actionLabel="Open sync settings"
           actionHref="/dashboard/settings"
           analyticsTarget="quests:stale"
         />
@@ -117,7 +117,7 @@ export function QuestsPageClient() {
                   quest={weeklyQuest}
                   emptyCopy="No weekly challenge yet. Refresh from settings to backfill scoring evidence."
                   href="/dashboard/settings"
-                  cta="Open settings"
+                  cta="Open sync settings"
                 />
                 <MissionSpotlightCard
                   title="Long-Term Journey"
@@ -136,7 +136,7 @@ export function QuestsPageClient() {
         <ErrorState
           title="Quest engine unavailable"
           description="The recommendation system could not finish. Retry or fall back to your last synced quest board."
-          fallbackLabel="Open settings"
+          fallbackLabel="Open sync settings"
           fallbackHref="/dashboard/settings"
           analyticsTarget="quests:error"
         />

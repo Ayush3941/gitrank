@@ -194,7 +194,7 @@ export function BadgesPageClient() {
               void refetch();
             }}
             isRefreshing={isFetching}
-            actionLabel="Open settings"
+            actionLabel="Open sync settings"
             actionHref="/dashboard/settings"
             analyticsTarget="badges:stale"
           />
@@ -354,7 +354,7 @@ export function BadgesPageClient() {
             <ErrorState
               title="Badge sync failed"
               description="Badge evidence could not be refreshed. Retry or use your latest snapshot."
-              fallbackLabel="Open settings"
+              fallbackLabel="Open sync settings"
               fallbackHref="/dashboard/settings"
               analyticsTarget="badges:error"
             />

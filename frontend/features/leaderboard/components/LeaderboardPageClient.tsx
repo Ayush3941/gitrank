@@ -122,7 +122,7 @@ export function LeaderboardPageClient() {
             void refetch();
           }}
           isRefreshing={isFetching || isFetchingMyProfile}
-          actionLabel="Open settings"
+          actionLabel="Open sync settings"
           actionHref="/dashboard/settings"
           analyticsTarget="leaderboard:stale"
         />

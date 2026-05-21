@@ -141,8 +141,8 @@ export function DashboardPageClient() {
     return (
       <ErrorState
         title="Dashboard sync failed"
-        description="The dashboard could not refresh. Retry or open settings."
-        fallbackLabel="Open settings"
+        description="The dashboard could not refresh. Retry or open sync settings."
+        fallbackLabel="Open sync settings"
         fallbackHref="/dashboard/settings"
         analyticsTarget="dashboard:error"
       />
@@ -161,7 +161,7 @@ export function DashboardPageClient() {
             void refetch();
           }}
           isRefreshing={isFetching}
-          actionLabel="Open settings"
+          actionLabel="Open sync settings"
           actionHref="/dashboard/settings"
           analyticsTarget="dashboard:stale"
         />

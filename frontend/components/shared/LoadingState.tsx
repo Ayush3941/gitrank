@@ -14,7 +14,7 @@ export function LoadingState({ message }: { message: string }) {
         </span>
       </div>
       <p className="text-base text-white">{message}</p>
-      <p className="text-sm text-muted">Syncing the latest evidence.</p>
+      <p className="text-sm text-muted">Checking latest evidence.</p>
       <div className="space-y-2">
         <div className="neon-skeleton h-2 w-full rounded-full" />
         <div className="neon-skeleton h-2 w-2/3 rounded-full" />

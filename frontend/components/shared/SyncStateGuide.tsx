@@ -18,8 +18,8 @@ export type SyncStateGuideCopy = {
 const SYNC_STATE_COPY: Record<SyncState, SyncStateGuideCopy> = {
   never_synced: {
     title: "No sync data yet",
-    detail: "Connect and run first sync.",
-    actionLabel: "Open settings",
+    detail: "Connect GitHub and run first sync.",
+    actionLabel: "Open sync settings",
     actionHref: "/dashboard/settings",
     toneClassName: "border-primary/28",
     icon: Clock3,
@@ -33,7 +33,7 @@ const SYNC_STATE_COPY: Record<SyncState, SyncStateGuideCopy> = {
     icon: RefreshCw,
   },
   partially_synced: {
-    title: "Partial sync data",
+    title: "Partial sync",
     detail: "Some repository or PR metadata is pending.",
     actionLabel: "Open contributions",
     actionHref: "/dashboard/contributions",
@@ -43,15 +43,15 @@ const SYNC_STATE_COPY: Record<SyncState, SyncStateGuideCopy> = {
   synced: {
     title: "Synced",
     detail: "Latest verified snapshot loaded.",
-    actionLabel: "Open contribution cards",
+    actionLabel: "Open contributions",
     actionHref: "/dashboard/contributions",
     toneClassName: "border-emerald-300/34",
     icon: CheckCircle2,
   },
   stale: {
-    title: "Snapshot stale",
+    title: "Data stale",
     detail: "Score and timeline may lag.",
-    actionLabel: "Review sync health",
+    actionLabel: "Open sync settings",
     actionHref: "/dashboard/settings",
     toneClassName: "border-amber-300/35",
     icon: Clock3,
@@ -59,7 +59,7 @@ const SYNC_STATE_COPY: Record<SyncState, SyncStateGuideCopy> = {
   failed: {
     title: "Sync failed",
     detail: "GitHub sync needs recovery.",
-    actionLabel: "Recover link",
+    actionLabel: "Reconnect GitHub",
     actionHref: "/dashboard/settings",
     toneClassName: "border-rose-300/40",
     icon: ShieldAlert,
