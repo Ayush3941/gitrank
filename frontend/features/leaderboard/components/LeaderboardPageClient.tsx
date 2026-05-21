@@ -54,6 +54,7 @@ export function LeaderboardPageClient() {
     ? LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED
     : LEADERBOARD_ROW_PAGE_SIZE_DEFAULT;
   const [visibleRowCount, setVisibleRowCount] = useState(rowPageSize);
+  const [showMissionPlan, setShowMissionPlan] = useState(false);
   const tabFromURL = laneParamToTab(searchParams.get("lane"));
   const tab = tabFromURL ?? "Global";
   const deferredTab = useDeferredValue(tab);
@@ -223,7 +224,7 @@ export function LeaderboardPageClient() {
                   Your arena mission: #{snapshot.currentUser.rank} in {tab} · {snapshot.currentUser.division}
                 </h2>
                 <GlowCard className="space-y-4 border border-cyan-300/22 bg-gradient-to-br from-slate-950/88 to-cyan-950/24">
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <p className="text-xs font-medium text-cyan-200">Your arena mission</p>
                       <h2 className="mt-2 text-xl font-semibold text-white">
@@ -236,31 +237,58 @@ export function LeaderboardPageClient() {
                       {snapshot.currentUser.division}
                     </span>
                   </div>
-                  <div className="grid gap-3 md:grid-cols-3">
-                    <ClimbTip
-                      title="To next band"
-                      body={
-                        snapshot.currentUser.xpToNextRank > 0
-                          ? `${snapshot.currentUser.xpToNextRank} XP required`
-                          : "You are currently leading this lane"
-                      }
-                    />
-                    <ClimbTip
-                      title="Gap to lane leader"
-                      body={laneGapToLeader > 0 ? `${laneGapToLeader} season XP` : "You currently hold lane lead"}
-                    />
-                    <ClimbTip
-                      title="Current movement"
-                      body={`${snapshot.currentUser.movement >= 0 ? "+" : ""}${snapshot.currentUser.movement} this cycle`}
-                    />
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-xs text-muted">
+                      {snapshot.currentUser.xpToNextRank > 0
+                        ? `${snapshot.currentUser.xpToNextRank} XP to next band`
+                        : "You currently lead this lane"}
+                    </p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={showMissionPlan ? "secondary" : "default"}
+                      onClick={() => {
+                        setShowMissionPlan((current) => !current);
+                      }}
+                      aria-expanded={showMissionPlan}
+                      aria-controls="leaderboard-mission-plan"
+                    >
+                      {showMissionPlan ? "Hide mission plan" : "Show mission plan"}
+                    </Button>
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-xs text-muted">
-                      <span>Band progress</span>
-                      <span>{currentUserProgressToNextBand}%</span>
+                  {showMissionPlan ? (
+                    <div id="leaderboard-mission-plan" className="space-y-4">
+                      <div className="grid gap-3 md:grid-cols-3">
+                        <ClimbTip
+                          title="To next band"
+                          body={
+                            snapshot.currentUser.xpToNextRank > 0
+                              ? `${snapshot.currentUser.xpToNextRank} XP required`
+                              : "You are currently leading this lane"
+                          }
+                        />
+                        <ClimbTip
+                          title="Gap to lane leader"
+                          body={laneGapToLeader > 0 ? `${laneGapToLeader} season XP` : "You currently hold lane lead"}
+                        />
+                        <ClimbTip
+                          title="Current movement"
+                          body={`${snapshot.currentUser.movement >= 0 ? "+" : ""}${snapshot.currentUser.movement} this cycle`}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-xs text-muted">
+                          <span>Band progress</span>
+                          <span>{currentUserProgressToNextBand}%</span>
+                        </div>
+                        <Progress value={currentUserProgressToNextBand} />
+                      </div>
                     </div>
-                    <Progress value={currentUserProgressToNextBand} />
-                  </div>
+                  ) : (
+                    <div id="leaderboard-mission-plan" className="neon-surface rounded-[1.1rem] border-dashed border-primary/24 px-4 py-3 text-xs text-muted">
+                      Mission details are hidden by default for faster lane scanning.
+                    </div>
+                  )}
                   <div className="flex flex-wrap gap-2">
                     <Button asChild size="sm" variant="secondary">
                       <Link href="/dashboard/contributions" prefetch={false}>

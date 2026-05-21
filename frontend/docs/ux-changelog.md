@@ -1606,6 +1606,9 @@
 - Added one-tap chip clearing for badge filters:
   - active `Rarity` and `State` chips in badges now act as direct clear controls
   - keeps filter reset granular and avoids full-reset churn during badge browsing.
+- Added progressive disclosure for leaderboard mission detail:
+  - `Your arena mission` now defaults to a compact summary with a `Show mission plan` action
+  - detailed climb metrics and progress bar remain available on demand, reducing first-view clutter.
 
 ## 2026-05-16
 
