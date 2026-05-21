@@ -63,6 +63,7 @@ export function PRBattleReportPageClient({
   const deterministicOnlyWithoutFallback = evidenceState.deterministicOnly && !fallbackDetail;
   const hasPersistedScoreEvidence =
     !evidenceState.missingEvidence.includes("score_event") || data.contribution.xpEarned > 0;
+  const uniqueBadgeUnlocks = deduplicateBadgeUnlocks(data.badgeUnlocks);
   const evidenceReasonSummary = summarizeEvidenceReasons(
     evidenceState.reasons,
     evidenceAnchored || hasPersistedScoreEvidence,
@@ -215,12 +216,12 @@ export function PRBattleReportPageClient({
           </details>
         </DeferUntilVisible>
       </section>
-      {data.badgeUnlocks.length ? (
+      {uniqueBadgeUnlocks.length ? (
         <section id="pr-report-rewards" className="render-opt-section scroll-mt-24">
           <DeferUntilVisible fallback={<PRReportSectionPlaceholder title="Loading reward unlocks" />}>
             <details className="space-y-4">
               <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
-                Badge unlocks ({data.badgeUnlocks.length})
+                Badge unlocks ({uniqueBadgeUnlocks.length})
               </summary>
               <GlowCard className="space-y-4">
                 <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-100">
@@ -228,7 +229,7 @@ export function PRBattleReportPageClient({
                   Badge unlocks
                 </div>
                 <ul role="list" className="grid gap-3 md:grid-cols-2">
-                  {data.badgeUnlocks.map((badge, index) => (
+                  {uniqueBadgeUnlocks.map((badge, index) => (
                     <li key={`${badge.key}-${index}`} className="list-none render-opt-card neon-surface rounded-[1.75rem] p-4">
                       <p className="text-lg font-semibold text-white">{badge.name}</p>
                       {badge.description ? <p className="mt-2 text-sm text-muted">{badge.description}</p> : null}
@@ -256,8 +257,8 @@ export function PRBattleReportPageClient({
       ) : null}
       {data.suggestedQuestId ? (
         <section
-          id={!data.badgeUnlocks.length ? "pr-report-rewards" : undefined}
-          className={!data.badgeUnlocks.length ? "render-opt-section scroll-mt-24" : "render-opt-section"}
+          id={!uniqueBadgeUnlocks.length ? "pr-report-rewards" : undefined}
+          className={!uniqueBadgeUnlocks.length ? "render-opt-section scroll-mt-24" : "render-opt-section"}
         >
           <DeferUntilVisible fallback={<PRReportSectionPlaceholder title="Loading next quest recommendation" />}>
             <details className="space-y-4">
@@ -416,4 +417,64 @@ function normalizeEvidenceReason(reason: string, evidenceAnchored: boolean): str
     return null;
   }
   return reason;
+}
+
+function deduplicateBadgeUnlocks(
+  badges: {
+    key: string;
+    name: string;
+    description?: string;
+    rule?: string;
+    ruleVersion?: string;
+    evidenceSignals: string[];
+  }[],
+) {
+  const byName = new Map<
+    string,
+    {
+      key: string;
+      name: string;
+      description?: string;
+      rule?: string;
+      ruleVersion?: string;
+      evidenceSignals: string[];
+    }
+  >();
+
+  for (const badge of badges) {
+    const normalizedName = badge.name.trim().toLowerCase();
+    const existing = byName.get(normalizedName);
+    if (!existing) {
+      byName.set(normalizedName, {
+        ...badge,
+        evidenceSignals: uniqueStrings(badge.evidenceSignals),
+      });
+      continue;
+    }
+    byName.set(normalizedName, {
+      ...existing,
+      key: existing.key || badge.key,
+      name: existing.name || badge.name,
+      description: existing.description || badge.description,
+      rule: existing.rule || badge.rule,
+      ruleVersion: existing.ruleVersion || badge.ruleVersion,
+      evidenceSignals: uniqueStrings([...existing.evidenceSignals, ...badge.evidenceSignals]),
+    });
+  }
+
+  return Array.from(byName.values());
+}
+
+function uniqueStrings(values: string[]): string[] {
+  const seen = new Set<string>();
+  const output: string[] = [];
+  for (const value of values) {
+    const normalized = value.trim().toLowerCase();
+    if (!normalized || seen.has(normalized)) {
+      continue;
+    }
+    seen.add(normalized);
+    output.push(value);
+  }
+  return output;
 }

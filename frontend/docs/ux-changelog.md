@@ -17,6 +17,9 @@
   - replaced badge rarity/state selects with native `<select>` controls for lighter interaction cost and more predictable scrolling on constrained devices.
   - replaced leaderboard mobile lane select and settings mobile repository-visibility select with native `<select>` controls for consistent no-portal behavior across dashboard routes.
   - removed unused shared Radix select primitive (`components/ui/select.tsx`) after migration to native route-level controls.
+- PR report badge clarity pass:
+  - deduplicated repeated badge unlock entries by badge name in PR battle reports and merged their evidence signals into a single card.
+  - keeps underlying evidence while removing repeated badge titles that made report rewards noisy.
 - Deterministic summary normalization pass:
   - added shared formatter `frontend/lib/presentation/report-summary.ts` to clean raw deterministic strings (`summary=[...]`, `score version ...`, trailing `final XP ...`) into readable copy.
   - wired the formatter into contributions cards, dashboard recent battle reports, and public-profile best-PR cards for consistent report language.
