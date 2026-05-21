@@ -1,7 +1,7 @@
 # V2 Live Closeout Status
 
 - Generated at (UTC): `2026-05-15T20:11:56Z`
-- Repository: `Ayush3941/gitrank`
+- Repository: `YOUR_GITHUB_OWNER/gitrank`
 - Workdir: `/home/kali/Desktop/gitrank/gitrank`
 
 ## Branch Divergence
@@ -145,7 +145,7 @@ bootstrap hint: cp /home/kali/Desktop/gitrank/gitrank/.env.v2-live-gates.example
 1246 | - [ ] Deploy and verify production observability against real traffic, including sync, analysis, scoring, profile, quest, PR report, leaderboard, queue, GitHub, and AI dashboards. `make verify-live-observability` now automates Prometheus target/rule/metric checks plus Grafana dashboard presence, and `.github/workflows/verify-live-v2-gates.yml` can run it in GitHub Actions, but live endpoint credentials and traffic are still required. | run make verify-live-observability with live endpoints, or verify live-gates workflow evidence and generate a record with make generate-observability-evidence-from-workflow-run
 1247 | - [ ] Apply and verify live GitHub repository controls before V2 release branches are cut. `.github/workflows/verify-live-v2-gates.yml` can run auto-apply plus verification (`apply_github_controls=true`) with `GITRANK_REPO_ADMIN_TOKEN`. | run make verify-origin-push-access + make verify-live-github-access (token/App preflight) and make verify-github-repository-controls-public (precheck), then apply/verify via make apply-github-repository-controls-auto + make verify-github-repository-controls (admin token or GitHub App creds), or verify successful live-gates workflow evidence via make verify-live-v2-workflow-run
 public probe snapshot
-repository: Ayush3941/gitrank
+repository: YOUR_GITHUB_OWNER/gitrank
 repo metadata http: 200
 default branch: main
 branch metadata http: 200
@@ -155,13 +155,13 @@ branch rules count: 0
 live-gates workflow runs http: 200
 live-gates workflow run count: 0
 live-gates workflow badge status: no status
-live-gates workflow badge url: https://github.com/Ayush3941/gitrank/actions/workflows/verify-live-v2-gates.yml/badge.svg?event=workflow_dispatch&branch=main
+live-gates workflow badge url: https://github.com/YOUR_GITHUB_OWNER/gitrank/actions/workflows/verify-live-v2-gates.yml/badge.svg?event=workflow_dispatch&branch=main
 remote workflow sync probe: fail
-remote workflow sync summary: verify remote live-v2 workflow sync failed: remote workflow content drift detected via raw fallback for .github/workflows/verify-live-v2-gates.yml on Ayush3941/gitrank@main (remote_url=https://raw.githubusercontent.com/Ayush3941/gitrank/main/.github/workflows/verify-live-v2-gates.yml; local_commit=59850392a08efc810397a6c81082d65d58d5d9c7 local_dirty=no; sync by pushing the local branch to origin (for example: git push origin main) or run make sync-remote-live-v2-workflow with token/App credentials)
+remote workflow sync summary: verify remote live-v2 workflow sync failed: remote workflow content drift detected via raw fallback for .github/workflows/verify-live-v2-gates.yml on YOUR_GITHUB_OWNER/gitrank@main (remote_url=https://raw.githubusercontent.com/YOUR_GITHUB_OWNER/gitrank/main/.github/workflows/verify-live-v2-gates.yml; local_commit=59850392a08efc810397a6c81082d65d58d5d9c7 local_dirty=no; sync by pushing the local branch to origin (for example: git push origin main) or run make sync-remote-live-v2-workflow with token/App credentials)
 origin push access probe: fail
 origin push access summary: origin push access verification failed: missing HTTPS git credentials for remote 'origin'; configure a credential helper or PAT-backed remote and retry
 public workflow health probe: pass
-public workflow health summary: public workflow health verification passed for Ayush3941/gitrank (push/main)
+public workflow health summary: public workflow health verification passed for YOUR_GITHUB_OWNER/gitrank (push/main)
 controls public probe: fail
 controls public probe summary: github repository controls public verification failed: default branch is neither protected nor covered by branch rulesets; dependency graph appears disabled in public repository UI (verification_mode=public-partial dependabot_status=requires-token dependency_graph_status=public-ui-disabled)
 env derived readiness
@@ -212,7 +212,7 @@ Contributing file: /home/kali/Desktop/gitrank/CONTRIBUTING.md
   remediation: run make verify-origin-push-access + make verify-live-github-access (token/App preflight) and make verify-github-repository-controls-public (precheck), then apply/verify via make apply-github-repository-controls-auto + make verify-github-repository-controls (admin token or GitHub App creds), or verify successful live-gates workflow evidence via make verify-live-v2-workflow-run
 
 ## Public Probe Snapshot
-- repository: Ayush3941/gitrank
+- repository: YOUR_GITHUB_OWNER/gitrank
 - repo metadata http: 200
 - default branch: main
 - branch metadata http: 200
@@ -222,13 +222,13 @@ Contributing file: /home/kali/Desktop/gitrank/CONTRIBUTING.md
 - live-gates workflow runs http: 200
 - live-gates workflow run count: 0
 - live-gates workflow badge status: no status
-- live-gates workflow badge url: https://github.com/Ayush3941/gitrank/actions/workflows/verify-live-v2-gates.yml/badge.svg?event=workflow_dispatch&branch=main
+- live-gates workflow badge url: https://github.com/YOUR_GITHUB_OWNER/gitrank/actions/workflows/verify-live-v2-gates.yml/badge.svg?event=workflow_dispatch&branch=main
 - remote workflow sync probe: fail
-- remote workflow sync summary: verify remote live-v2 workflow sync failed: remote workflow content drift detected via raw fallback for .github/workflows/verify-live-v2-gates.yml on Ayush3941/gitrank@main (remote_url=https://raw.githubusercontent.com/Ayush3941/gitrank/main/.github/workflows/verify-live-v2-gates.yml; local_commit=59850392a08efc810397a6c81082d65d58d5d9c7 local_dirty=no; sync by pushing the local branch to origin (for example: git push origin main) or run make sync-remote-live-v2-workflow with token/App credentials)
+- remote workflow sync summary: verify remote live-v2 workflow sync failed: remote workflow content drift detected via raw fallback for .github/workflows/verify-live-v2-gates.yml on YOUR_GITHUB_OWNER/gitrank@main (remote_url=https://raw.githubusercontent.com/YOUR_GITHUB_OWNER/gitrank/main/.github/workflows/verify-live-v2-gates.yml; local_commit=59850392a08efc810397a6c81082d65d58d5d9c7 local_dirty=no; sync by pushing the local branch to origin (for example: git push origin main) or run make sync-remote-live-v2-workflow with token/App credentials)
 - origin push access probe: fail
 - origin push access summary: origin push access verification failed: missing HTTPS git credentials for remote 'origin'; configure a credential helper or PAT-backed remote and retry
 - public workflow health probe: pass
-- public workflow health summary: public workflow health verification passed for Ayush3941/gitrank (push/main)
+- public workflow health summary: public workflow health verification passed for YOUR_GITHUB_OWNER/gitrank (push/main)
 - controls public probe: fail
 - controls public probe summary: github repository controls public verification failed: default branch is neither protected nor covered by branch rulesets; dependency graph appears disabled in public repository UI (verification_mode=public-partial dependabot_status=requires-token dependency_graph_status=public-ui-disabled)
 
@@ -245,7 +245,7 @@ Contributing file: /home/kali/Desktop/gitrank/CONTRIBUTING.md
 - Exit code: `0`
 
 ```text
-GITHUB_REPOSITORY=set(inferred:Ayush3941/gitrank)
+GITHUB_REPOSITORY=set(inferred:YOUR_GITHUB_OWNER/gitrank)
 GITRANK_REPO_ADMIN_TOKEN=unset
 GITHUB_TOKEN=unset
 GH_TOKEN=unset
@@ -299,7 +299,7 @@ workflow ok: Frontend CI (run_id=25874612460 created_at=2026-05-14T17:21:51Z)
 workflow ok: Secret Scan (run_id=25874612443 created_at=2026-05-14T17:21:51Z)
 workflow ok: CodeQL (run_id=25874612393 created_at=2026-05-14T17:21:51Z)
 workflow ok: Trivy Scan (run_id=25874612414 created_at=2026-05-14T17:21:51Z)
-public workflow health verification passed for Ayush3941/gitrank (push/main)
+public workflow health verification passed for YOUR_GITHUB_OWNER/gitrank (push/main)
 make[1]: Leaving directory '/home/kali/Desktop/gitrank/gitrank'
 ```
 
@@ -310,7 +310,7 @@ make[1]: Leaving directory '/home/kali/Desktop/gitrank/gitrank'
 ```text
 make[1]: Entering directory '/home/kali/Desktop/gitrank/gitrank'
 TMPDIR="/home/kali/Desktop/gitrank/gitrank/.tmp" ./scripts/verify_remote_live_v2_workflow_sync.sh
-verify remote live-v2 workflow sync failed: remote workflow content drift detected via raw fallback for .github/workflows/verify-live-v2-gates.yml on Ayush3941/gitrank@main (remote_url=https://raw.githubusercontent.com/Ayush3941/gitrank/main/.github/workflows/verify-live-v2-gates.yml; local_commit=59850392a08efc810397a6c81082d65d58d5d9c7 local_dirty=no; sync by pushing the local branch to origin (for example: git push origin main) or run make sync-remote-live-v2-workflow with token/App credentials)
+verify remote live-v2 workflow sync failed: remote workflow content drift detected via raw fallback for .github/workflows/verify-live-v2-gates.yml on YOUR_GITHUB_OWNER/gitrank@main (remote_url=https://raw.githubusercontent.com/YOUR_GITHUB_OWNER/gitrank/main/.github/workflows/verify-live-v2-gates.yml; local_commit=59850392a08efc810397a6c81082d65d58d5d9c7 local_dirty=no; sync by pushing the local branch to origin (for example: git push origin main) or run make sync-remote-live-v2-workflow with token/App credentials)
 make[1]: *** [Makefile:127: verify-remote-live-v2-workflow-sync] Error 1
 make[1]: Leaving directory '/home/kali/Desktop/gitrank/gitrank'
 ```
@@ -362,14 +362,14 @@ For auth-required commands, use either `GITRANK_REPO_ADMIN_TOKEN` (or `GITHUB_TO
 
 ```bash
 cd gitrank
-GITHUB_REPOSITORY=Ayush3941/gitrank make verify-public-workflow-health
+GITHUB_REPOSITORY=YOUR_GITHUB_OWNER/gitrank make verify-public-workflow-health
 ```
 
 3. If Trivy workflow-health fails because remote policy files drift, sync them.
 
 ```bash
 cd gitrank
-GITHUB_REPOSITORY=Ayush3941/gitrank \
+GITHUB_REPOSITORY=YOUR_GITHUB_OWNER/gitrank \
 GITRANK_REPO_ADMIN_TOKEN=... \
 make sync-remote-trivy-policy
 ```
@@ -378,7 +378,7 @@ make sync-remote-trivy-policy
 
 ```bash
 cd gitrank
-GITHUB_REPOSITORY=Ayush3941/gitrank \
+GITHUB_REPOSITORY=YOUR_GITHUB_OWNER/gitrank \
 GITRANK_REPO_ADMIN_TOKEN=... \
 make verify-live-github-access
 ```
@@ -387,21 +387,21 @@ make verify-live-github-access
 
 ```bash
 cd gitrank
-GITHUB_REPOSITORY=Ayush3941/gitrank make verify-github-repository-controls-public
+GITHUB_REPOSITORY=YOUR_GITHUB_OWNER/gitrank make verify-github-repository-controls-public
 ```
 
 6. Verify the remote live-gates workflow file is present and in sync.
 
 ```bash
 cd gitrank
-GITHUB_REPOSITORY=Ayush3941/gitrank make verify-remote-live-v2-workflow-sync
+GITHUB_REPOSITORY=YOUR_GITHUB_OWNER/gitrank make verify-remote-live-v2-workflow-sync
 ```
 
 7. Sync the live-gates workflow file to remote default branch if sync verification or dispatch/evidence probes report it missing or stale.
 
 ```bash
 cd gitrank
-GITHUB_REPOSITORY=Ayush3941/gitrank \
+GITHUB_REPOSITORY=YOUR_GITHUB_OWNER/gitrank \
 GITRANK_REPO_ADMIN_TOKEN=... \
 make sync-remote-live-v2-workflow
 ```
@@ -411,7 +411,7 @@ make sync-remote-live-v2-workflow
 ```bash
 cd gitrank
 CONFIRM_RUN_LIVE_V2_PIPELINE=yes \
-GITHUB_REPOSITORY=Ayush3941/gitrank \
+GITHUB_REPOSITORY=YOUR_GITHUB_OWNER/gitrank \
 GITRANK_REPO_ADMIN_TOKEN=... \
 TARGET_ENVIRONMENT=staging \
 RUN_GITHUB_CONTROLS=true \
@@ -431,14 +431,14 @@ git add .github/workflows/verify-live-v2-gates.yml
 git commit -s -m "ci(v2): trigger scoped live gates run"
 git push origin main
 cd gitrank
-GITHUB_REPOSITORY=Ayush3941/gitrank WORKFLOW_EVENT=any make verify-live-v2-workflow-run
+GITHUB_REPOSITORY=YOUR_GITHUB_OWNER/gitrank WORKFLOW_EVENT=any make verify-live-v2-workflow-run
 ```
 
 If workflow evidence verification reports no successful `workflow_dispatch` run, retry the verifier across all events:
 
 ```bash
 cd gitrank
-GITHUB_REPOSITORY=Ayush3941/gitrank \
+GITHUB_REPOSITORY=YOUR_GITHUB_OWNER/gitrank \
 WORKFLOW_EVENT=any \
 make verify-live-v2-workflow-run
 ```
@@ -450,7 +450,7 @@ cd gitrank
 OUTPUT_FILE=docs/evidence/rollback-drill-YYYY-MM-DD.txt \
 ENVIRONMENT=staging CLUSTER=your-cluster NAMESPACE=gitrank OPERATOR=your-name \
 STARTING_COMMIT=<sha> CANDIDATE_COMMIT=<sha> ROLLBACK_TARGET_REVISION=<revision> \
-DATABASE_BACKUP_MARKER=<backup-id> WORKFLOW_RUN_URL=https://github.com/Ayush3941/gitrank/actions/runs/<id> \
+DATABASE_BACKUP_MARKER=<backup-id> WORKFLOW_RUN_URL=https://github.com/YOUR_GITHUB_OWNER/gitrank/actions/runs/<id> \
 ROLLOUT_HISTORY_CAPTURED=yes ROLLBACK_MODE=workflow ROLLOUT_STATUS_RESULTS=healthy \
 CRITICAL_PRODUCT_CHECKS=pass make generate-rollback-drill-evidence
 

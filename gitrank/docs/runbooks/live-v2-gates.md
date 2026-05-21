@@ -51,19 +51,19 @@ Optional observability tuning variables:
 
 Use this when local gates pass but V2 still fails on live-only checklist items.
 
-1. Ensure you have one valid write path for `Ayush3941/gitrank`:
+1. Ensure you have one valid write path for `YOUR_GITHUB_OWNER/gitrank`:
 - Preferred: fine-grained PAT with repository administration + contents/workflows write.
-- Alternative: GitHub App installed on `Ayush3941/gitrank` with:
+- Alternative: GitHub App installed on `YOUR_GITHUB_OWNER/gitrank` with:
   `administration:write`, `contents:write`, `workflows:write`,
-  `metadata:read`, and repository scope including `Ayush3941/gitrank`.
+  `metadata:read`, and repository scope including `YOUR_GITHUB_OWNER/gitrank`.
 
 2. If using GitHub App, verify installation scope:
 - App installations: `https://github.com/settings/installations`
-- Repo install target: `https://github.com/Ayush3941/gitrank`
+- Repo install target: `https://github.com/YOUR_GITHUB_OWNER/gitrank`
 
 3. Configure live gate secrets/vars in the selected Actions environment:
 - Environment settings:
-  `https://github.com/Ayush3941/gitrank/settings/environments`
+  `https://github.com/YOUR_GITHUB_OWNER/gitrank/settings/environments`
 - Required secrets:
   `GITRANK_REPO_ADMIN_TOKEN` (or GitHub App bootstrap secrets),
   `GRAFANA_API_TOKEN`
@@ -77,23 +77,23 @@ Use this when local gates pass but V2 still fails on live-only checklist items.
 
 ```bash
 cd gitrank
-GITHUB_REPOSITORY=Ayush3941/gitrank make verify-live-github-access
-GITHUB_REPOSITORY=Ayush3941/gitrank make verify-origin-push-access
-GITHUB_REPOSITORY=Ayush3941/gitrank make verify-remote-live-v2-workflow-sync
+GITHUB_REPOSITORY=YOUR_GITHUB_OWNER/gitrank make verify-live-github-access
+GITHUB_REPOSITORY=YOUR_GITHUB_OWNER/gitrank make verify-origin-push-access
+GITHUB_REPOSITORY=YOUR_GITHUB_OWNER/gitrank make verify-remote-live-v2-workflow-sync
 ```
 
 5. If workflow sync still drifts, sync remote workflow file first:
 
 ```bash
 cd gitrank
-GITHUB_REPOSITORY=Ayush3941/gitrank GITRANK_REPO_ADMIN_TOKEN=... make sync-remote-live-v2-workflow
+GITHUB_REPOSITORY=YOUR_GITHUB_OWNER/gitrank GITRANK_REPO_ADMIN_TOKEN=... make sync-remote-live-v2-workflow
 ```
 
 6. Run full live gates and capture workflow evidence:
 
 ```bash
 cd gitrank
-GITHUB_REPOSITORY=Ayush3941/gitrank \
+GITHUB_REPOSITORY=YOUR_GITHUB_OWNER/gitrank \
 TARGET_ENVIRONMENT=staging \
 RUN_OBSERVABILITY=true \
 RUN_GITHUB_CONTROLS=true \
@@ -107,7 +107,7 @@ make run-live-v2-gates-workflow
 
 ```bash
 cd gitrank
-GITHUB_REPOSITORY=Ayush3941/gitrank \
+GITHUB_REPOSITORY=YOUR_GITHUB_OWNER/gitrank \
 GITRANK_REPO_ADMIN_TOKEN=... \
 WORKFLOW_RUN_ID=latest \
 REQUIRE_GITHUB_CONTROLS=true \
