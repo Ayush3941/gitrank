@@ -80,7 +80,6 @@ export function LeaderboardPageClient() {
   const safeVisibleRowCount = Math.min(rows.length, visibleRowCount);
   const hasMoreRows = rows.length > safeVisibleRowCount;
   const remainingRows = Math.max(0, rows.length - safeVisibleRowCount);
-  const sparseArena = !isLoading && !isError && !!snapshot && rows.length > 0 && rows.length < 5;
   const laneLeader = rows[0];
   const laneGapToLeader =
     snapshot?.currentUser && laneLeader
@@ -192,99 +191,80 @@ export function LeaderboardPageClient() {
         />
       ) : null}
       {!isLoading && !isError && rows.length === 0 ? (
-        <div className="space-y-4">
-          <EmptyState
-            eyebrow="Leaderboard participation"
-            title="No public leaderboard rows yet"
-            description="Rows appear only after real contributors complete OAuth, sync, and public visibility."
-            actionLabel="Open contributions"
-            actionHref="/dashboard/contributions"
-            analyticsTarget="leaderboard:no-live-rows"
-          />
-          <GlowCard className="space-y-4 border border-primary/20 bg-gradient-to-br from-slate-950/90 to-cyan-950/20">
-            <div>
-              <p className="text-xs font-medium text-primary">Arena preview state</p>
-              <h2 className="mt-2 text-xl font-semibold text-white">How ranking unlocks</h2>
-              <p className="mt-2 text-sm text-muted">
-                Once participants are present, GitRank places profiles into weekly bands using quality-weighted score evidence.
-              </p>
-            </div>
-            <div className="grid gap-3 md:grid-cols-3">
-              <ClimbTip title="Band 1" body="Bronze I to Silver II: establish verified merged contribution cadence." />
-              <ClimbTip title="Band 2" body="Gold III: maintain review depth and stronger weekly impact signals." />
-              <ClimbTip title="Band 3" body="Platinum and above: sustain high-signal quality while avoiding spam caps." />
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Button asChild size="sm" variant="secondary">
-                <Link href="/dashboard/settings" prefetch={false}>Sync and enable profile visibility</Link>
-              </Button>
-              <Button asChild size="sm" variant="ghost">
-                <Link href="/dashboard/quests" prefetch={false}>Open quest lane</Link>
-              </Button>
-            </div>
-          </GlowCard>
-        </div>
+        <EmptyState
+          eyebrow="Leaderboard participation"
+          title="No public leaderboard rows yet"
+          description="Rows appear after contributors complete OAuth, sync, and visibility."
+          actionLabel="Open contributions"
+          actionHref="/dashboard/contributions"
+          analyticsTarget="leaderboard:no-live-rows"
+        />
       ) : null}
       {!isLoading && !isError && snapshot && rows.length ? (
         <section id="leaderboard-arena" className="render-opt-section scroll-mt-24 space-y-4">
           <DeferUntilVisible fallback={<LeaderboardSectionPlaceholder title="Loading leaderboard arena" />}>
             {snapshot.currentUser ? (
-              <GlowCard className="space-y-4 border border-cyan-300/22 bg-gradient-to-br from-slate-950/88 to-cyan-950/24">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-medium text-cyan-200">Your arena mission</p>
-                    <h2 className="mt-2 text-xl font-semibold text-white">
-                      #{snapshot.currentUser.rank} in {tab}
-                    </h2>
-                    <p className="mt-2 text-sm text-muted">
-                      Focus lane: {snapshot.currentUser.focus}. Keep high-quality merged evidence flowing to climb safely.
-                    </p>
+              <details className="space-y-3">
+                <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
+                  Your arena mission: #{snapshot.currentUser.rank} in {tab} · {snapshot.currentUser.division}
+                </summary>
+                <GlowCard className="space-y-4 border border-cyan-300/22 bg-gradient-to-br from-slate-950/88 to-cyan-950/24">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-medium text-cyan-200">Your arena mission</p>
+                      <h2 className="mt-2 text-xl font-semibold text-white">
+                        #{snapshot.currentUser.rank} in {tab}
+                      </h2>
+                      <p className="mt-2 text-sm text-muted">
+                        Focus lane: {snapshot.currentUser.focus}
+                      </p>
+                    </div>
+                    <span className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold">
+                      <Target className="h-3.5 w-3.5" />
+                      {snapshot.currentUser.division}
+                    </span>
                   </div>
-                  <span className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold">
-                    <Target className="h-3.5 w-3.5" />
-                    {snapshot.currentUser.division}
-                  </span>
-                </div>
-                <div className="grid gap-3 md:grid-cols-3">
-                  <ClimbTip
-                    title="To next band"
-                    body={
-                      snapshot.currentUser.xpToNextRank > 0
-                        ? `${snapshot.currentUser.xpToNextRank} XP required`
-                        : "You are currently leading this lane"
-                    }
-                  />
-                  <ClimbTip
-                    title="Gap to lane leader"
-                    body={laneGapToLeader > 0 ? `${laneGapToLeader} season XP` : "You currently hold lane lead"}
-                  />
-                  <ClimbTip
-                    title="Current movement"
-                    body={`${snapshot.currentUser.movement >= 0 ? "+" : ""}${snapshot.currentUser.movement} this cycle`}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs text-muted">
-                    <span>Band progress</span>
-                    <span>{currentUserProgressToNextBand}%</span>
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <ClimbTip
+                      title="To next band"
+                      body={
+                        snapshot.currentUser.xpToNextRank > 0
+                          ? `${snapshot.currentUser.xpToNextRank} XP required`
+                          : "You are currently leading this lane"
+                      }
+                    />
+                    <ClimbTip
+                      title="Gap to lane leader"
+                      body={laneGapToLeader > 0 ? `${laneGapToLeader} season XP` : "You currently hold lane lead"}
+                    />
+                    <ClimbTip
+                      title="Current movement"
+                      body={`${snapshot.currentUser.movement >= 0 ? "+" : ""}${snapshot.currentUser.movement} this cycle`}
+                    />
                   </div>
-                  <Progress value={currentUserProgressToNextBand} />
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button asChild size="sm" variant="secondary">
-                    <Link href="/dashboard/contributions" prefetch={false}>
-                      Improve contribution signal
-                      <ArrowUpRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                  <Button asChild size="sm" variant="ghost">
-                    <Link href="/dashboard/quests" prefetch={false}>
-                      Open tactical quests
-                      <Trophy className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              </GlowCard>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs text-muted">
+                      <span>Band progress</span>
+                      <span>{currentUserProgressToNextBand}%</span>
+                    </div>
+                    <Progress value={currentUserProgressToNextBand} />
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button asChild size="sm" variant="secondary">
+                      <Link href="/dashboard/contributions" prefetch={false}>
+                        Improve contribution signal
+                        <ArrowUpRight className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                    <Button asChild size="sm" variant="ghost">
+                      <Link href="/dashboard/quests" prefetch={false}>
+                        Open tactical quests
+                        <Trophy className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </div>
+                </GlowCard>
+              </details>
             ) : null}
             <div id={LEADERBOARD_ROWS_REGION_ID}>
               <LeaderboardArena snapshot={snapshot} rowLimit={safeVisibleRowCount} />
@@ -314,34 +294,6 @@ export function LeaderboardPageClient() {
             </div>
           </DeferUntilVisible>
         </section>
-      ) : null}
-      {sparseArena && snapshot ? (
-        <GlowCard className="space-y-4 border border-amber-400/24 bg-amber-400/8">
-          <div>
-            <p className="text-xs font-medium text-amber-100">Arena preview mode ({rows.length} active public profiles)</p>
-            <h2 className="mt-2 text-xl font-semibold text-white">Competition is warming up</h2>
-            <p className="mt-2 readable-measure text-sm leading-7 text-amber-50">
-              This lane has {rows.length} active public profiles. Ranking is live, but bracket density is still low.
-            </p>
-          </div>
-          <p className="text-sm text-amber-100">
-            {snapshot.currentUser
-              ? `Current slot: #${snapshot.currentUser.rank} in ${tab}.`
-              : "Current slot: unranked in this lane."}{" "}
-            Promotion target:{" "}
-            {snapshot.currentUser
-              ? `${snapshot.currentUser.xpToNextRank} XP to next band.`
-              : "sync more evidence to enter rank bands."}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <Button asChild variant="secondary" size="sm">
-              <Link href="/dashboard/contributions" prefetch={false}>Improve contribution signal</Link>
-            </Button>
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/dashboard/quests" prefetch={false}>Open quest lane</Link>
-            </Button>
-          </div>
-        </GlowCard>
       ) : null}
     </div>
   );
