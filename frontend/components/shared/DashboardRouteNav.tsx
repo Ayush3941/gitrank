@@ -15,12 +15,12 @@ export function DashboardRouteNav() {
       aria-label="Dashboard navigation"
       className="dashboard-nav-shell p-1.5 [overflow-anchor:none]"
     >
-      <ul role="list" className="scrollbar-thin flex gap-1.5 overflow-x-auto p-0.5">
+      <ul role="list" className="dashboard-nav-track scrollbar-thin flex gap-1.5 overflow-x-auto p-0.5">
         {dashboardNavItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href, item.exact);
           return (
-            <li key={item.href} className="list-none">
+            <li key={item.href} className="dashboard-nav-snap list-none">
               <Link
                 href={item.href}
                 prefetch={false}
