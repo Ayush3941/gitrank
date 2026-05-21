@@ -50,10 +50,8 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
         )}
         <p className="sr-only">Contribution quality timeline showing cumulative XP growth over time.</p>
       </div>
-      <details className="neon-surface px-4 py-3">
-        <summary className="focus-ring disclosure-summary text-primary">
-          Timeline summary
-        </summary>
+      <div className="neon-surface px-4 py-3">
+        <p className="text-xs font-medium text-primary">Timeline summary</p>
         <p id={summaryId} className="mt-2 text-sm text-muted">
           Start {firstPoint.label}: {firstPoint.xp} XP. Latest {lastPoint.label}: {lastPoint.xp} XP.
           {" "}Net change: {growth >= 0 ? "+" : ""}{growth} XP.
@@ -69,7 +67,7 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
             </li>
           ))}
         </ul>
-      </details>
+      </div>
     </div>
   );
 }

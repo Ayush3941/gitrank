@@ -57,10 +57,8 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
           Skill radar chart showing the most evident contribution signals across documentation, testing, backend, and architecture.
         </p>
       </div>
-      <details className="neon-surface px-4 py-3">
-        <summary className="focus-ring disclosure-summary text-primary">
-          Skill signal summary
-        </summary>
+      <div className="neon-surface px-4 py-3">
+        <p className="text-xs font-medium text-primary">Skill signal summary</p>
         <p id={summaryId} className="mt-2 text-sm text-muted">
           Strongest current lane: {strongest.category} ({strongest.score}).
           {" "}Lowest lane: {weakest.category} ({weakest.score}).
@@ -73,7 +71,7 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
             </li>
           ))}
         </ul>
-      </details>
+      </div>
     </div>
   );
 }
