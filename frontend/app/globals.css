@@ -1131,33 +1131,35 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   pointer-events: none;
   z-index: -1;
   border-radius: 999px;
-  opacity: 0.24;
+  opacity: 0.2;
 }
 
 .page-shell::before {
   top: 6rem;
-  left: -18rem;
-  width: 52rem;
-  height: 52rem;
+  left: -20rem;
+  width: 60rem;
+  height: 60rem;
   background: radial-gradient(
     circle,
-      rgb(var(--primary) / 0.1) 0%,
-      rgb(var(--primary) / 0.058) 58%,
-      rgb(var(--primary) / 0.022) 78%,
+      rgb(var(--primary) / 0.078) 0%,
+      rgb(var(--primary) / 0.064) 38%,
+      rgb(var(--primary) / 0.046) 64%,
+      rgb(var(--primary) / 0.024) 82%,
       rgb(var(--primary) / 0) 96%
     );
 }
 
 .page-shell::after {
-  right: -20rem;
+  right: -22rem;
   bottom: -2rem;
-  width: 54rem;
-  height: 54rem;
+  width: 62rem;
+  height: 62rem;
   background: radial-gradient(
     circle,
-      rgb(var(--primary-2) / 0.1) 0%,
-      rgb(var(--primary-2) / 0.058) 58%,
-      rgb(var(--primary-2) / 0.022) 78%,
+      rgb(var(--primary-2) / 0.078) 0%,
+      rgb(var(--primary-2) / 0.064) 38%,
+      rgb(var(--primary-2) / 0.046) 64%,
+      rgb(var(--primary-2) / 0.024) 82%,
       rgb(var(--primary-2) / 0) 96%
     );
 }
