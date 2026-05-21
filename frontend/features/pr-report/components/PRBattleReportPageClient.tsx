@@ -133,7 +133,7 @@ export function PRBattleReportPageClient({
           <ul role="list" className="mt-3 flex flex-wrap gap-2">
             <li className="list-none">
               <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
-                mode: {formatAnalysisSource(
+                {formatAnalysisSource(
                   evidenceState.analysisSource,
                   evidenceState.deterministicOnly,
                   hasPersistedScoreEvidence,
@@ -148,17 +148,17 @@ export function PRBattleReportPageClient({
                 </span>
               </li>
             ) : null}
-            {evidenceState.missingEvidence.map((missing, index) => (
-              <li key={`${missing}-${index}`} className="list-none">
+            {evidenceState.missingEvidence.length ? (
+              <li className="list-none">
                 <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-xs text-amber-100">
-                  missing {missing.replace("_", " ")}
+                  partial evidence
                 </span>
               </li>
-            ))}
+            ) : null}
             {fallbackDetail ? (
               <li className="list-none">
                 <span className="rounded-full border border-amber-400/22 bg-amber-400/12 px-3 py-1 text-xs text-amber-100">
-                  fallback: {fallbackDetail}
+                  fallback {fallbackDetail}
                 </span>
               </li>
             ) : null}
