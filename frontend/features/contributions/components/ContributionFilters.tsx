@@ -133,15 +133,7 @@ export function ContributionFilters({
                 </li>
               ))}
             </ul>
-          ) : (
-            <ul role="list" className="flex flex-wrap gap-2 text-xs">
-              <li className="list-none">
-                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-                  No active filters
-                </span>
-              </li>
-            </ul>
-          )}
+          ) : null}
         </>
       ) : null}
       <Tabs value={value} onValueChange={onValueChange}>
