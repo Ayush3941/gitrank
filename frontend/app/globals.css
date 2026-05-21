@@ -1725,7 +1725,7 @@ html[data-theme="high-contrast"] .neon-title {
     background-position: center center;
     background-size: cover;
     background-repeat: no-repeat;
-    background-attachment: fixed;
+    background-attachment: scroll;
   }
 
   .neon-vignette,
@@ -1812,7 +1812,7 @@ html[data-theme="high-contrast"] .neon-title {
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
-  background-attachment: fixed;
+  background-attachment: scroll;
 }
 
 :where(html[data-network="constrained"]) .neon-vignette,
@@ -1864,7 +1864,7 @@ html[data-theme="high-contrast"] .neon-title {
 
 @media (update: slow) {
   body {
-    background-attachment: fixed;
+    background-attachment: scroll;
   }
 
   .neon-vignette,
@@ -1952,7 +1952,7 @@ html[data-theme="high-contrast"] .neon-title {
 
 @media (any-pointer: coarse) {
   body {
-    background-attachment: fixed;
+    background-attachment: scroll;
     background-position: center center;
   }
 
