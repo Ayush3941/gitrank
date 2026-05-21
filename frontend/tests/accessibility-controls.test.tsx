@@ -87,13 +87,13 @@ describe("accessibility control naming", () => {
     );
 
     const reset = rendered.getByRole("button", { name: "Reset" });
-    const syncAction = rendered.getByRole("link", { name: "Run sync in account section" });
+    const syncAction = rendered.getByRole("link", { name: "Open dashboard sync lane" });
     const search = rendered.getByRole("textbox", { name: "Search repositories" });
 
     expect(reset).toBeTruthy();
     expect(reset.hasAttribute("disabled")).toBe(true);
     expect(syncAction).toBeTruthy();
-    expect(syncAction.getAttribute("href")).toBe("/dashboard/settings");
+    expect(syncAction.getAttribute("href")).toBe("/dashboard");
     expect(search.getAttribute("aria-describedby")).toBe("settings-repositories-filter-status");
   });
 });

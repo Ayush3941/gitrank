@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Search, X } from "lucide-react";
 import { startTransition, useDeferredValue, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -260,6 +261,9 @@ export function PrivacyRepositoryToggleList({
                 Reset filters
               </Button>
             ) : null}
+            <Button asChild size="sm" variant="secondary">
+              <Link href="/dashboard" prefetch={false}>Open dashboard sync lane</Link>
+            </Button>
           </div>
         </div>
       )}
