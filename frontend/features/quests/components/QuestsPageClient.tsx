@@ -103,37 +103,41 @@ export function QuestsPageClient() {
       ) : null}
       {!isLoading && !isError ? (
         <DeferUntilVisible fallback={<QuestSectionPlaceholder title="Loading mission spotlight" />}>
-          <GlowCard className="space-y-4 border border-primary/18 bg-gradient-to-br from-slate-950/86 to-cyan-950/18">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-medium text-cyan-200">Mission spotlight</p>
-                <h2 className="mt-2 text-2xl font-semibold text-white">Clear next moves</h2>
+          <details className="space-y-3" open={quests.length === 0}>
+            <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-primary/24 px-4 py-3 text-sm font-semibold text-cyan-100 marker:content-none">
+              Mission spotlight
+            </summary>
+            <GlowCard className="space-y-4 border border-primary/18 bg-gradient-to-br from-slate-950/86 to-cyan-950/18">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-2xl font-semibold text-white">Clear next moves</h2>
+                </div>
               </div>
-            </div>
-            <ul role="list" className="grid gap-3 md:grid-cols-3">
-              <MissionSpotlightCard
-                title="Today's Quest"
-                quest={todayQuest}
-                emptyCopy="No daily mission is available yet. Open contributions to generate fresh daily evidence."
-                href="/dashboard/contributions"
-                cta="Open contributions"
-              />
-              <MissionSpotlightCard
-                title="Weekly Challenge"
-                quest={weeklyQuest}
-                emptyCopy="No weekly challenge has been generated yet. Refresh from settings to backfill weekly scoring evidence."
-                href="/dashboard/settings"
-                cta="Open settings"
-              />
-              <MissionSpotlightCard
-                title="Long-Term Journey"
-                quest={longTermQuest}
-                emptyCopy="No long-term objective is attached yet. Continue merged, reviewed work to unlock deeper journey tracks."
-                href="/dashboard/contributions"
-                cta="Keep building"
-              />
-            </ul>
-          </GlowCard>
+              <ul role="list" className="grid gap-3 md:grid-cols-3">
+                <MissionSpotlightCard
+                  title="Today's Quest"
+                  quest={todayQuest}
+                  emptyCopy="No daily mission is available yet. Open contributions to generate fresh daily evidence."
+                  href="/dashboard/contributions"
+                  cta="Open contributions"
+                />
+                <MissionSpotlightCard
+                  title="Weekly Challenge"
+                  quest={weeklyQuest}
+                  emptyCopy="No weekly challenge has been generated yet. Refresh from settings to backfill weekly scoring evidence."
+                  href="/dashboard/settings"
+                  cta="Open settings"
+                />
+                <MissionSpotlightCard
+                  title="Long-Term Journey"
+                  quest={longTermQuest}
+                  emptyCopy="No long-term objective is attached yet. Continue merged, reviewed work to unlock deeper journey tracks."
+                  href="/dashboard/contributions"
+                  cta="Keep building"
+                />
+              </ul>
+            </GlowCard>
+          </details>
         </DeferUntilVisible>
       ) : null}
       {isLoading ? <LoadingState message="Building your skill tree..." /> : null}
