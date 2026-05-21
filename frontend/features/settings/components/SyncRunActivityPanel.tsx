@@ -82,7 +82,21 @@ export function SyncRunActivityPanel({
     "min-h-[20rem] max-h-[26rem] overflow-y-auto pr-1 [scrollbar-gutter:stable] [overflow-anchor:none]";
 
   function preserveViewportDuring(update: () => void) {
-    startTransition(update);
+    const restoreViewportAfterUpdate =
+      typeof window !== "undefined"
+        ? (initialY: number) => {
+            window.requestAnimationFrame(() => {
+              if (Math.abs(window.scrollY - initialY) > 1) {
+                window.scrollTo(0, initialY);
+              }
+            });
+          }
+        : null;
+    const initialY = typeof window !== "undefined" ? window.scrollY : 0;
+    startTransition(() => {
+      update();
+      restoreViewportAfterUpdate?.(initialY);
+    });
   }
 
   function handleResetFilters() {

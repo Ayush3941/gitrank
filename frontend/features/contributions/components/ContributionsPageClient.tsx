@@ -173,7 +173,21 @@ export function ContributionsPageClient() {
   const maxMonthlyXp = Math.max(1, ...monthlyWindow.map((point) => point.xp));
 
   function preserveViewportDuring(update: () => void) {
-    startTransition(update);
+    const restoreViewportAfterUpdate =
+      typeof window !== "undefined"
+        ? (initialY: number) => {
+            window.requestAnimationFrame(() => {
+              if (Math.abs(window.scrollY - initialY) > 1) {
+                window.scrollTo(0, initialY);
+              }
+            });
+          }
+        : null;
+    const initialY = typeof window !== "undefined" ? window.scrollY : 0;
+    startTransition(() => {
+      update();
+      restoreViewportAfterUpdate?.(initialY);
+    });
   }
 
   function handleFilterChange(next: string) {

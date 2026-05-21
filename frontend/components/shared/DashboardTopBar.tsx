@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AlertTriangle, ArrowUpRight, CheckCircle2, Info, Zap } from "lucide-react";
@@ -40,13 +41,29 @@ export function DashboardTopBar({
         : Info;
 
   return (
-    <div className="glass-panel cyber-card cyber-frame mb-4 px-5 py-4 [overflow-anchor:none]">
+    <div className="glass-panel cyber-card cyber-frame mb-4 px-4 py-3 [overflow-anchor:none] sm:px-5">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="inline-flex min-w-0 items-center gap-2">
-          <span className="hud-pill inline-flex h-8 w-8 items-center justify-center rounded-full text-primary">
-            <ActiveLaneIcon className="h-4 w-4" />
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="cyber-avatar relative h-11 w-11 shrink-0 overflow-hidden rounded-full">
+            <Image
+              src={user.avatarUrl}
+              alt={`${user.displayName} avatar`}
+              fill
+              sizes="44px"
+              className="object-cover"
+              priority={false}
+            />
+          </div>
+          <div className="min-w-0 space-y-0.5">
+            <p className="truncate text-sm font-semibold text-white sm:text-base">{user.displayName}</p>
+            <p className="truncate text-xs text-muted">
+              @{user.username} · {activeLane.label}
+            </p>
+          </div>
+          <span className="neon-chip neon-chip-muted hidden items-center gap-1.5 rounded-full px-2.5 py-1 text-xs lg:inline-flex">
+            <ActiveLaneIcon className="h-3.5 w-3.5 text-primary" />
+            Active lane
           </span>
-          <h1 className="truncate text-base font-semibold text-white">{activeLane.label}</h1>
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
           <SyncStatusPill status={user.syncStatus} />
@@ -60,7 +77,7 @@ export function DashboardTopBar({
             prefetch={false}
             className="focus-ring cyber-link inline-flex items-center gap-2 text-sm font-medium"
           >
-            View public profile
+            Profile
             <ArrowUpRight className="h-4 w-4" />
           </Link>
         </div>
@@ -71,7 +88,7 @@ export function DashboardTopBar({
         aria-atomic="true"
         className={
           autoSyncNote
-            ? `mt-3 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium ${autoSyncToneClass}`
+            ? `mt-2 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium ${autoSyncToneClass}`
             : "sr-only"
         }
       >
@@ -90,21 +107,23 @@ export function DashboardTopBar({
 
 export function DashboardTopBarSkeleton() {
   return (
-    <div className="glass-panel cyber-card cyber-frame mb-6 px-5 py-4">
+    <div className="glass-panel cyber-card cyber-frame mb-6 px-4 py-3 sm:px-5">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <div className="neon-skeleton h-8 w-8 rounded-[0.1rem]" />
-          <div className="neon-skeleton h-5 w-40 rounded-[0.1rem]" />
+        <div className="flex items-center gap-3">
+          <div className="neon-skeleton h-11 w-11 rounded-full" />
+          <div className="space-y-2">
+            <div className="neon-skeleton h-4 w-36 rounded-[0.1rem]" />
+            <div className="neon-skeleton h-3 w-28 rounded-[0.1rem]" />
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <div className="neon-skeleton h-8 w-32 rounded-full" />
           <div className="neon-skeleton h-8 w-24 rounded-full" />
           <div className="neon-skeleton h-8 w-28 rounded-full" />
-          <div className="neon-skeleton h-8 w-28 rounded-full" />
-          <div className="neon-skeleton h-8 w-32 rounded-full" />
+          <div className="neon-skeleton h-8 w-24 rounded-full" />
         </div>
       </div>
-      <div className="neon-skeleton mt-3 h-4 w-3/4 rounded-full" />
+      <div className="neon-skeleton mt-2 h-4 w-2/3 rounded-full" />
     </div>
   );
 }

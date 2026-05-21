@@ -81,8 +81,7 @@ export function DashboardTopBarContainer() {
         if (queuedFallback) {
           setAutoSyncOutcome({
             tone: "info",
-            message:
-              "Sync execution was queued because live GitHub sync is slow right now. Dashboard data will refresh as background jobs complete.",
+            message: "Sync queued. Evidence will refresh in the background.",
           });
           void emitAnalyticsEvent({
             eventName: "sync.queued",
@@ -110,8 +109,8 @@ export function DashboardTopBarContainer() {
           tone: "warning",
           message:
             attemptsRemaining > 0
-              ? `Background sync hit a temporary issue. GitRank will retry automatically (${attemptsRemaining} retries left).`
-              : "Background sync failed repeatedly for this page. Reconnect in Settings or reload to retry.",
+              ? `Sync retry scheduled (${attemptsRemaining} retries left).`
+              : "Sync keeps failing. Reconnect GitHub in Settings.",
         });
         void emitAnalyticsEvent({
           eventName: "sync.failed",
@@ -134,12 +133,12 @@ export function DashboardTopBarContainer() {
   const autoSyncNote: AutoSyncNote | null = isUserSyncPending
     ? {
       tone: "info",
-      message: "Background sync is running. Keep exploring while GitRank refreshes evidence.",
+      message: "Background sync running.",
     }
     : data.user.syncStatus.state === "syncing"
       ? {
         tone: "info",
-        message: "Profile sync is already running. Dashboard data will refresh automatically.",
+        message: "Profile sync already in progress.",
       }
       : autoSyncOutcome;
 

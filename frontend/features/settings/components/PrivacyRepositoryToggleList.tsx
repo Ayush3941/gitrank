@@ -56,7 +56,21 @@ export function PrivacyRepositoryToggleList({
   }, [deferredSearch, visibilityFilter, visibleItems]);
 
   function preserveViewportDuring(update: () => void) {
-    startTransition(update);
+    const restoreViewportAfterUpdate =
+      typeof window !== "undefined"
+        ? (initialY: number) => {
+            window.requestAnimationFrame(() => {
+              if (Math.abs(window.scrollY - initialY) > 1) {
+                window.scrollTo(0, initialY);
+              }
+            });
+          }
+        : null;
+    const initialY = typeof window !== "undefined" ? window.scrollY : 0;
+    startTransition(() => {
+      update();
+      restoreViewportAfterUpdate?.(initialY);
+    });
   }
 
   function handleReset() {
