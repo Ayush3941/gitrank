@@ -5,11 +5,13 @@ import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, Search, X, XCircle } fr
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { formatDateTime, formatRelativeDays } from "@/lib/formatters";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import { syncRunStatusLabel } from "@/features/settings/lib/sync-run-status";
+
+const SYNC_RUN_STATUS_FILTERS = ["All", "Completed", "Running", "Failed"] as const;
+type SyncRunStatusFilter = (typeof SYNC_RUN_STATUS_FILTERS)[number];
 
 export function SyncRunActivityPanel({
   runs,
@@ -29,7 +31,7 @@ export function SyncRunActivityPanel({
   onRefresh: () => void;
 }) {
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"All" | "Completed" | "Running" | "Failed">("All");
+  const [statusFilter, setStatusFilter] = useState<SyncRunStatusFilter>("All");
   const canReset = search.trim().length > 0 || statusFilter !== "All";
   const compactSearch =
     search.trim().length > 32 ? `${search.trim().slice(0, 32)}…` : search.trim();
@@ -185,24 +187,37 @@ export function SyncRunActivityPanel({
               </button>
             ) : null}
           </div>
-          <Select
-            value={statusFilter}
-            onValueChange={(value) => setStatusFilter(value as "All" | "Completed" | "Running" | "Failed")}
+          <div
+            role="group"
+            aria-label="Filter sync runs by status"
+            aria-describedby={filterStatusId}
+            className="neon-surface flex flex-wrap items-center gap-2 rounded-[1rem] px-2 py-2"
           >
-            <SelectTrigger
-              aria-label="Filter sync runs by status"
-              aria-describedby={filterStatusId}
-              aria-controls={syncRunsRegionId}
-            >
-              <SelectValue placeholder="Status filter" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">All ({statusCounts.all})</SelectItem>
-              <SelectItem value="Completed">Completed ({statusCounts.completed})</SelectItem>
-              <SelectItem value="Running">Running ({statusCounts.running})</SelectItem>
-              <SelectItem value="Failed">Failed ({statusCounts.failed})</SelectItem>
-            </SelectContent>
-          </Select>
+            {SYNC_RUN_STATUS_FILTERS.map((status) => {
+              const count =
+                status === "All"
+                  ? statusCounts.all
+                  : status === "Completed"
+                    ? statusCounts.completed
+                    : status === "Running"
+                      ? statusCounts.running
+                      : statusCounts.failed;
+              const active = statusFilter === status;
+              return (
+                <Button
+                  key={status}
+                  type="button"
+                  size="sm"
+                  variant={active ? "default" : "ghost"}
+                  aria-pressed={active}
+                  aria-controls={syncRunsRegionId}
+                  onClick={() => setStatusFilter(status)}
+                >
+                  {status} ({count})
+                </Button>
+              );
+            })}
+          </div>
         </div>
       </div>
 

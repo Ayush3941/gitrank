@@ -61,7 +61,12 @@ export function PRBattleReportPageClient({
   const fallbackReason = extractFallbackReason(data.contribution.evidenceSignals);
   const fallbackDetail = fallbackReason ? formatFallbackReason(fallbackReason) : null;
   const deterministicOnlyWithoutFallback = evidenceState.deterministicOnly && !fallbackDetail;
-  const evidenceReasonSummary = summarizeEvidenceReasons(evidenceState.reasons);
+  const hasPersistedScoreEvidence =
+    !evidenceState.missingEvidence.includes("score_event") || data.contribution.xpEarned > 0;
+  const evidenceReasonSummary = summarizeEvidenceReasons(
+    evidenceState.reasons,
+    evidenceAnchored || hasPersistedScoreEvidence,
+  );
   const signalTier =
     data.contribution.xpEarned >= 250
       ? "High signal"
@@ -127,7 +132,12 @@ export function PRBattleReportPageClient({
           <ul role="list" className="mt-3 flex flex-wrap gap-2">
             <li className="list-none">
               <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
-                mode: {formatAnalysisSource(evidenceState.analysisSource, evidenceState.deterministicOnly, fallbackDetail)}
+                mode: {formatAnalysisSource(
+                  evidenceState.analysisSource,
+                  evidenceState.deterministicOnly,
+                  hasPersistedScoreEvidence,
+                  fallbackDetail,
+                )}
               </span>
             </li>
             {typeof evidenceState.analysisConfidence === "number" ? (
@@ -344,6 +354,7 @@ function formatFallbackReason(reason: string): string {
 function formatAnalysisSource(
   source?: string,
   deterministicOnly = false,
+  hasPersistedScoreEvidence = false,
   fallbackDetail?: string | null,
 ): string {
   const normalized = (source ?? "").trim().toLowerCase();
@@ -360,7 +371,7 @@ function formatAnalysisSource(
     if (fallbackDetail) {
       return `deterministic fallback (${fallbackDetail})`;
     }
-    if (deterministicOnly) {
+    if (deterministicOnly || hasPersistedScoreEvidence) {
       return "deterministic";
     }
     return "processing";
@@ -368,12 +379,12 @@ function formatAnalysisSource(
   return normalized;
 }
 
-function summarizeEvidenceReasons(reasons: string[]): string | null {
+function summarizeEvidenceReasons(reasons: string[], evidenceAnchored: boolean): string | null {
   if (!reasons.length) {
     return null;
   }
   const normalized = reasons
-    .map((reason) => normalizeEvidenceReason(reason))
+    .map((reason) => normalizeEvidenceReason(reason, evidenceAnchored))
     .filter((reason): reason is string => Boolean(reason));
   if (!normalized.length) {
     return null;
@@ -381,7 +392,7 @@ function summarizeEvidenceReasons(reasons: string[]): string | null {
   return normalized.slice(0, 2).join(" · ");
 }
 
-function normalizeEvidenceReason(reason: string): string | null {
+function normalizeEvidenceReason(reason: string, evidenceAnchored: boolean): string | null {
   const normalized = reason.trim().toLowerCase();
   if (!normalized) {
     return null;
@@ -390,9 +401,15 @@ function normalizeEvidenceReason(reason: string): string | null {
     return "Deterministic report is available now; Gemini enrichment can appear after re-analysis.";
   }
   if (normalized.includes("analysis has not been persisted")) {
+    if (evidenceAnchored) {
+      return null;
+    }
     return "Gemini analysis is still processing for this PR.";
   }
   if (normalized.includes("report is stale until analysis and scoring both complete")) {
+    if (evidenceAnchored) {
+      return null;
+    }
     return "Report refresh is pending the next scoring replay.";
   }
   if (normalized.includes("fallback reason")) {
