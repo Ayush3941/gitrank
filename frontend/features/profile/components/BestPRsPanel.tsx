@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import type { FeaturedContribution } from "@/types/gitrank";
 
 export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
@@ -38,7 +39,7 @@ export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
                   </p>
                   <h3 className="mt-2 break-anywhere text-lg font-medium text-white">{report.title}</h3>
                   <ExpandableText
-                    text={sanitizeSummaryText(report.summary)}
+                    text={sanitizeReportSummary(report.summary)}
                     lines={2}
                     minLengthForToggle={180}
                     className="mt-2"
@@ -83,25 +84,4 @@ function deduplicateFeaturedContributionsByPR(
   }
 
   return Array.from(bestByPR.values());
-}
-
-function sanitizeSummaryText(input: string): string {
-  let value = input.trim();
-  if (!value) {
-    return "Deterministic contribution summary is pending.";
-  }
-  if (value.toLowerCase().startsWith("summary=[")) {
-    const closing = value.lastIndexOf("]");
-    value = closing > 8 ? value.slice(8, closing) : value.slice(8);
-  }
-  value = value
-    .replace(/\bscore version\s+[a-z0-9._-]+\b/gi, "Deterministic scoring replay")
-    .replace(/\bfinal xp\s+\d+\b/gi, "")
-    .replace(/\s+/g, " ")
-    .trim();
-  if (!value) {
-    return "Deterministic scoring replay metadata is available for this PR.";
-  }
-  const sentence = value.charAt(0).toUpperCase() + value.slice(1);
-  return /[.!?]$/.test(sentence) ? sentence : `${sentence}.`;
 }

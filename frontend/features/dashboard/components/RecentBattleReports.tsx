@@ -3,6 +3,7 @@ import { ArrowRight, ShieldCheck } from "lucide-react";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Button } from "@/components/ui/button";
+import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import type { PullRequestAnalysis } from "@/types/gitrank";
 
 export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[] }) {
@@ -56,7 +57,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
                   </span>
                 </div>
                 <ExpandableText
-                  text={sanitizeSummaryText(report.contribution.aiSummary)}
+                  text={sanitizeReportSummary(report.contribution.aiSummary)}
                   lines={2}
                   minLengthForToggle={160}
                   className="mt-3 max-w-3xl"
@@ -115,25 +116,4 @@ function confidenceLabel(report: PullRequestAnalysis): string {
   }
   const confidence = Math.max(0, Math.min(100, Math.round(report.aiConfidence * 100)));
   return `Confidence ${confidence}%`;
-}
-
-function sanitizeSummaryText(input: string): string {
-  let value = input.trim();
-  if (!value) {
-    return "Deterministic contribution summary is pending.";
-  }
-  if (value.toLowerCase().startsWith("summary=[")) {
-    const closing = value.lastIndexOf("]");
-    value = closing > 8 ? value.slice(8, closing) : value.slice(8);
-  }
-  value = value
-    .replace(/\bscore version\s+[a-z0-9._-]+\b/gi, "Deterministic scoring replay")
-    .replace(/\bfinal xp\s+\d+\b/gi, "")
-    .replace(/\s+/g, " ")
-    .trim();
-  if (!value) {
-    return "Deterministic scoring replay metadata is available for this PR.";
-  }
-  const sentence = value.charAt(0).toUpperCase() + value.slice(1);
-  return /[.!?]$/.test(sentence) ? sentence : `${sentence}.`;
 }

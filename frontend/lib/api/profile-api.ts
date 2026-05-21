@@ -390,9 +390,7 @@ function toSkillTree(skills: ApiSkillArea[]): SkillNode[] {
 function skillNote(skill: ApiSkillArea): string {
   const base =
     skill.summary || `${humanizeKey(skill.key)} contributes ${skill.total_xp} XP.`;
-  const source = skill.evidence_source
-    ? skill.evidence_source.replace("_", " ")
-    : "deterministic snapshot";
+  const source = readableEvidenceSource(skill.evidence_source);
   const confidence =
     typeof skill.confidence === "number" && skill.confidence > 0
       ? `, confidence ${Math.round(skill.confidence * 100)}%`
@@ -402,6 +400,14 @@ function skillNote(skill: ApiSkillArea): string {
       ? `, ${skill.evidence_state} evidence`
       : "";
   return `${base} Evidence source: ${source}${confidence}${state}.`;
+}
+
+function readableEvidenceSource(value?: string): string {
+  const normalized = (value ?? "").trim().toLowerCase();
+  if (!normalized || normalized === "unknown") {
+    return "deterministic snapshot";
+  }
+  return normalized.replace(/_/g, " ");
 }
 
 function toFeaturedContributions(
