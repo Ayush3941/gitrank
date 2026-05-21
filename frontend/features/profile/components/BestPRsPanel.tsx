@@ -12,7 +12,7 @@ export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
     <GlowCard className="space-y-5">
       <div>
         <p className="text-xs font-medium text-primary">Best PRs</p>
-        <h2 className="mt-2 text-2xl font-semibold text-white">Highest-signal contributions</h2>
+        <h2 className="mt-2 text-xl font-semibold text-white">Highest-signal contributions</h2>
       </div>
       <div className="space-y-3">
         {reports.length === 0 ? (
@@ -42,14 +42,11 @@ export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
                   <h3 className="mt-2 break-anywhere text-lg font-medium text-white">{report.title}</h3>
                   <ExpandableText
                     text={report.summary}
-                    lines={3}
+                    lines={2}
                     minLengthForToggle={180}
                     className="mt-2"
                     textClassName="break-anywhere text-sm text-muted"
                   />
-                  <p className="neon-chip neon-chip-muted mt-3 inline-flex rounded-full px-3 py-1 text-xs">
-                    Evidence {report.evidenceState || "partial"} / Formula {formatFormulaVersion(report.formulaVersion)}
-                  </p>
                 </div>
                 <div className="text-right">
                   <p className="text-xs font-medium text-primary">XP</p>
@@ -89,9 +86,4 @@ function deduplicateFeaturedContributionsByPR(
   }
 
   return Array.from(bestByPR.values());
-}
-
-function formatFormulaVersion(formulaVersion?: string): string {
-  const value = (formulaVersion ?? "").trim();
-  return value.length > 0 ? value : "pending";
 }
