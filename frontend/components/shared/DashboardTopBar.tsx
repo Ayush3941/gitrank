@@ -26,7 +26,6 @@ export function DashboardTopBar({
     dashboardNavItems.find((item) =>
       item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`),
     ) ?? dashboardNavItems[0];
-  const ActiveLaneIcon = activeLane.icon;
   const autoSyncToneClass =
     autoSyncNote?.tone === "success"
       ? "neon-chip neon-chip-success border-emerald-300/30 text-emerald-100"
@@ -60,10 +59,6 @@ export function DashboardTopBar({
               @{user.username} · {activeLane.label}
             </p>
           </div>
-          <span className="neon-chip neon-chip-muted hidden items-center gap-1.5 rounded-full px-2.5 py-1 text-xs lg:inline-flex">
-            <ActiveLaneIcon className="h-3.5 w-3.5 text-primary" />
-            Active lane
-          </span>
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
           <SyncStatusPill status={user.syncStatus} />
@@ -72,14 +67,6 @@ export function DashboardTopBar({
             <Zap className="h-3.5 w-3.5 text-primary" />
             <span className="numeric-readout">{user.weeklyXp.toLocaleString("en-US")}</span> XP
           </div>
-          <Link
-            href={`/u/${user.username}`}
-            prefetch={false}
-            className="focus-ring cyber-link inline-flex items-center gap-2 text-sm font-medium"
-          >
-            Profile
-            <ArrowUpRight className="h-4 w-4" />
-          </Link>
         </div>
       </div>
       <p

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { FileJson2, ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
-import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
@@ -94,13 +93,6 @@ export function PublicProfileHero({
               shareHeadline={shareHeadline}
               analyticsTargetPrefix="public-profile"
             />
-            <CopyTextButton
-              variant="ghost"
-              label="Copy headline"
-              copiedLabel="Headline copied"
-              text={shareHeadline}
-              analyticsTarget="public-profile/copy-headline"
-            />
             <Button asChild variant="ghost">
               <Link
                 href={`/api/profile/public/${encodeURIComponent(user.username)}/card`}
@@ -129,7 +121,7 @@ export function PublicProfileHero({
             <MiniMetric icon={<ShieldCheck className="h-4 w-4" />} label="Formula" value={user.rankProgress.season.scoringVersion} />
           </div>
           <p className="cyber-readout mt-4 text-xs leading-5 text-muted">
-            {shareHeadline}. Public claims are backed by score events, badges, and PR evidence where visibility allows.
+            Evidence-backed public snapshot built from score events, badges, and PR visibility controls.
           </p>
         </div>
       </div>

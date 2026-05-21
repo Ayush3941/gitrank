@@ -27,6 +27,14 @@ export function CopyTextButton({
 }) {
   const [state, setState] = useState<"idle" | "copied" | "manual" | "error">("idle");
   const timerRef = useRef<number | undefined>(undefined);
+  const liveAnnouncement =
+    state === "idle"
+      ? ""
+      : state === "copied"
+        ? copiedLabel
+        : state === "manual"
+          ? manualLabel
+          : errorLabel;
 
   useEffect(() => {
     return () => {
@@ -104,7 +112,7 @@ export function CopyTextButton({
         {currentLabel}
       </Button>
       <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
-        {currentLabel}
+        {liveAnnouncement}
       </span>
     </div>
   );

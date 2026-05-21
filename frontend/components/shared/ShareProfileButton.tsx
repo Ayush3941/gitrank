@@ -34,6 +34,16 @@ export function ShareProfileButton({
 }) {
   const [state, setState] = useState<"idle" | "copied" | "shared" | "manual" | "error">("idle");
   const resetTimerRef = useRef<number | undefined>(undefined);
+  const liveAnnouncement =
+    state === "idle"
+      ? ""
+      : state === "copied"
+        ? copiedLabel
+        : state === "shared"
+          ? sharedLabel
+          : state === "manual"
+            ? manualLabel
+            : errorLabel;
 
   useEffect(() => {
     return () => {
@@ -133,7 +143,7 @@ export function ShareProfileButton({
         {currentLabel}
       </Button>
       <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
-        {currentLabel}
+        {liveAnnouncement}
       </span>
     </div>
   );

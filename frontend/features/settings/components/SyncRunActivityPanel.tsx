@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, Search, X, XCircle } from "lucide-react";
-import { startTransition, useDeferredValue, useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
@@ -81,33 +81,23 @@ export function SyncRunActivityPanel({
   const resultsRegionClassName = "min-h-[12rem]";
 
   function handleResetFilters() {
-    startTransition(() => {
-      setSearch("");
-      setStatusFilter("All");
-    });
+    setSearch("");
+    setStatusFilter("All");
   }
 
   function handleClearSearch() {
-    startTransition(() => {
-      setSearch("");
-    });
+    setSearch("");
   }
 
   function handleClearStatusFilter() {
-    startTransition(() => {
-      setStatusFilter("All");
-    });
+    setStatusFilter("All");
   }
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-medium text-primary">Sync activity</p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">Recent sync runs</h2>
-          <p className="mt-2 text-sm text-muted">
-            Reverse-chronological execution history for your authenticated sync requests.
-          </p>
+          <h2 className="text-xl font-semibold text-white">Sync runs</h2>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {lastUpdatedAt ? (
@@ -211,8 +201,7 @@ export function SyncRunActivityPanel({
             <Input
               value={search}
               onChange={(event) => {
-                const value = event.target.value;
-                startTransition(() => setSearch(value));
+                setSearch(event.target.value);
               }}
               className="pl-11 pr-11"
               placeholder="Search run subject, mode, or error"
@@ -243,11 +232,7 @@ export function SyncRunActivityPanel({
                   type="button"
                   size="sm"
                   variant={statusFilter === item ? "default" : "secondary"}
-                  onClick={() => {
-                    startTransition(() => {
-                      setStatusFilter(item);
-                    });
-                  }}
+                  onClick={() => setStatusFilter(item)}
                   aria-describedby={filterStatusId}
                   aria-pressed={statusFilter === item}
                   aria-controls={syncRunsRegionId}
