@@ -33,7 +33,7 @@ export function DashboardTopBar({
         : Info;
 
   return (
-    <div className="glass-panel cyber-card cyber-frame mb-4 px-4 py-3 sm:px-5">
+    <div className="glass-panel cyber-card cyber-frame mb-5 px-4 py-3 sm:px-5">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
           <div className="cyber-avatar relative h-11 w-11 shrink-0 overflow-hidden rounded-full">
@@ -62,32 +62,30 @@ export function DashboardTopBar({
           </div>
         </div>
       </div>
-      <p
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        className={
-          autoSyncNote
-            ? `mt-2 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium ${autoSyncToneClass}`
-            : "sr-only"
-        }
-      >
+      <div className="mt-2 min-h-6">
         {autoSyncNote ? (
-          <>
+          <p
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium ${autoSyncToneClass}`}
+          >
             {AutoSyncIcon ? <AutoSyncIcon className="h-3.5 w-3.5 shrink-0" /> : null}
             <span className="break-anywhere">{autoSyncNote.message}</span>
-          </>
+          </p>
         ) : (
-          "No active background sync notice."
+          <p aria-hidden="true" className="text-xs opacity-0 select-none">
+            Background sync status
+          </p>
         )}
-      </p>
+      </div>
     </div>
   );
 }
 
 export function DashboardTopBarSkeleton() {
   return (
-    <div className="glass-panel cyber-card cyber-frame mb-6 px-4 py-3 sm:px-5">
+    <div className="glass-panel cyber-card cyber-frame mb-5 px-4 py-3 sm:px-5">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="neon-skeleton h-11 w-11 rounded-full" />
@@ -110,7 +108,7 @@ export function DashboardTopBarSkeleton() {
 
 export function DashboardTopBarUnavailable() {
   return (
-    <div className="glass-panel cyber-card cyber-frame mb-6 border border-amber-400/24 px-5 py-4">
+    <div className="glass-panel cyber-card cyber-frame mb-5 border border-amber-400/24 px-5 py-4">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="inline-flex items-center gap-2 text-sm text-amber-100">
           <AlertTriangle className="h-4 w-4" />

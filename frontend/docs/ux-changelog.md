@@ -27,6 +27,9 @@
   - switched repository visibility filtering to mobile `Select` + desktop segmented buttons for cleaner small-screen control density.
   - simplified badges active-filter chips by removing per-chip clear actions and keeping the existing explicit reset control.
   - simplified contributions active-filter chips by removing per-chip clear actions and standardizing on a single reset flow.
+- Dashboard top-bar stability pass:
+  - added a fixed-height sync-status slot in `DashboardTopBar` so auto-sync notices no longer collapse/expand the header block height.
+  - normalized vertical margin spacing across `DashboardTopBar`, skeleton, and unavailable variants to reduce route-to-route header shift.
 
 ## 2026-05-19
 
