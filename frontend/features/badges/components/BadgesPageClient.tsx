@@ -427,76 +427,75 @@ export function BadgesPageClient() {
       </section>
       {!isLoading && !isError ? (
         <section id="badges-locked" className="render-opt-section scroll-mt-24 space-y-3">
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-fuchsia-200">Locked / upcoming badges</p>
-            <p className="text-sm text-muted">
-              {visibleLockedBadges.length} of {lockedBadges.length} locked badge paths
-            </p>
-          </div>
           <DeferUntilVisible fallback={<BadgeSectionPlaceholder title="Loading locked badge lanes" />}>
-            {lockedBadges.length > 0 ? (
-              <div className="neon-surface rounded-[1.4rem] border border-fuchsia-300/24 p-3">
-                <ul role="list" className="grid gap-3 md:grid-cols-3">
-                  {visibleLockedBadges.map((badge) => (
-                    <li key={badge.id} className="render-opt-card neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-xs font-medium text-fuchsia-200">{badge.rarity}</p>
-                        <span className="neon-chip neon-chip-info rounded-full px-2.5 py-1 text-xs font-semibold">
-                          {badge.progress ?? 0}% complete
-                        </span>
-                      </div>
-                      <h3 className="mt-2 text-base font-semibold text-white">{badge.name}</h3>
-                      <ExpandableText
-                        text={badge.unlockCondition}
-                        lines={3}
-                        minLengthForToggle={120}
-                        className="mt-2"
-                        textClassName="text-sm text-muted"
-                        showMoreLabel="Expand condition"
-                        showLessLabel="Collapse condition"
-                      />
-                      <div className="mt-3 space-y-1">
-                        <Progress value={badge.progress ?? 0} />
-                        <p className="text-xs text-muted">
-                          {badge.progress ?? 0}% verified progress • {Math.max(0, 100 - (badge.progress ?? 0))}% remaining
-                        </p>
-                      </div>
-                      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                        <p className="text-xs text-cyan-100">
-                          Next move: {unlockRecoveryLabel(badge.unlockCondition)}
-                        </p>
-                        <Button asChild variant="ghost" size="sm">
-                          <Link href={unlockRecoveryHref(badge.unlockCondition)} prefetch={false}>Open lane</Link>
-                        </Button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-                {hasMoreLockedBadges ? (
-                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-xs text-muted">{remainingLockedBadges} locked paths remaining</p>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => {
-                        startTransition(() => {
-                          setVisibleLockedCount((current) =>
-                            Math.min(lockedBadgesSorted.length, current + lockedBadgePageSize),
-                          );
-                        });
-                      }}
-                    >
-                      Show more locked paths
-                    </Button>
-                  </div>
-                ) : null}
-              </div>
-            ) : (
-              <div className="neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4 text-sm text-muted">
-                No locked badge definitions are returned by this snapshot.
-              </div>
-            )}
+            <details className="space-y-3">
+              <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
+                Locked / upcoming badges ({lockedBadges.length})
+              </summary>
+              {lockedBadges.length > 0 ? (
+                <div className="neon-surface rounded-[1.4rem] border border-fuchsia-300/24 p-3">
+                  <ul role="list" className="grid gap-3 md:grid-cols-3">
+                    {visibleLockedBadges.map((badge) => (
+                      <li key={badge.id} className="render-opt-card neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-xs font-medium text-fuchsia-200">{badge.rarity}</p>
+                          <span className="neon-chip neon-chip-info rounded-full px-2.5 py-1 text-xs font-semibold">
+                            {badge.progress ?? 0}% complete
+                          </span>
+                        </div>
+                        <h3 className="mt-2 text-base font-semibold text-white">{badge.name}</h3>
+                        <ExpandableText
+                          text={badge.unlockCondition}
+                          lines={3}
+                          minLengthForToggle={120}
+                          className="mt-2"
+                          textClassName="text-sm text-muted"
+                          showMoreLabel="Expand condition"
+                          showLessLabel="Collapse condition"
+                        />
+                        <div className="mt-3 space-y-1">
+                          <Progress value={badge.progress ?? 0} />
+                          <p className="text-xs text-muted">
+                            {badge.progress ?? 0}% verified progress • {Math.max(0, 100 - (badge.progress ?? 0))}% remaining
+                          </p>
+                        </div>
+                        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                          <p className="text-xs text-cyan-100">
+                            Next move: {unlockRecoveryLabel(badge.unlockCondition)}
+                          </p>
+                          <Button asChild variant="ghost" size="sm">
+                            <Link href={unlockRecoveryHref(badge.unlockCondition)} prefetch={false}>Open lane</Link>
+                          </Button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                  {hasMoreLockedBadges ? (
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-xs text-muted">{remainingLockedBadges} locked paths remaining</p>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => {
+                          startTransition(() => {
+                            setVisibleLockedCount((current) =>
+                              Math.min(lockedBadgesSorted.length, current + lockedBadgePageSize),
+                            );
+                          });
+                        }}
+                      >
+                        Show more locked paths
+                      </Button>
+                    </div>
+                  ) : null}
+                </div>
+              ) : (
+                <div className="neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4 text-sm text-muted">
+                  No locked badge definitions are returned by this snapshot.
+                </div>
+              )}
+            </details>
           </DeferUntilVisible>
         </section>
       ) : null}

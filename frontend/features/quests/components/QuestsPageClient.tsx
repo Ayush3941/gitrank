@@ -101,38 +101,36 @@ export function QuestsPageClient() {
       ) : null}
       {!isLoading && !isError ? (
         <DeferUntilVisible fallback={<QuestSectionPlaceholder title="Loading mission spotlight" />}>
-          <GlowCard className="space-y-4 border border-primary/18 bg-gradient-to-br from-slate-950/86 to-cyan-950/18">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-medium text-primary">Mission spotlight</p>
-                <h2 className="mt-2 text-2xl font-semibold text-white">Clear next moves</h2>
-                <p className="mt-2 text-sm text-muted">Daily, weekly, and long-term targets from current evidence.</p>
-              </div>
-            </div>
-            <ul role="list" className="grid gap-3 md:grid-cols-3">
-              <MissionSpotlightCard
-                title="Today's Quest"
-                quest={todayQuest}
-                emptyCopy="No daily mission is available yet. Open contributions to generate fresh daily evidence."
-                href="/dashboard/contributions"
-                cta="Open contributions"
-              />
-              <MissionSpotlightCard
-                title="Weekly Challenge"
-                quest={weeklyQuest}
-                emptyCopy="No weekly challenge has been generated yet. Refresh from settings to backfill weekly scoring evidence."
-                href="/dashboard/settings"
-                cta="Open settings"
-              />
-              <MissionSpotlightCard
-                title="Long-Term Journey"
-                quest={longTermQuest}
-                emptyCopy="No long-term objective is attached yet. Continue merged, reviewed work to unlock deeper journey tracks."
-                href="/dashboard/contributions"
-                cta="Keep building"
-              />
-            </ul>
-          </GlowCard>
+          <details className="space-y-3">
+            <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
+              Mission spotlight
+            </summary>
+            <GlowCard className="space-y-4 border border-primary/18 bg-gradient-to-br from-slate-950/86 to-cyan-950/18">
+              <ul role="list" className="grid gap-3 md:grid-cols-3">
+                <MissionSpotlightCard
+                  title="Today's Quest"
+                  quest={todayQuest}
+                  emptyCopy="No daily mission is available yet. Open contributions to generate fresh daily evidence."
+                  href="/dashboard/contributions"
+                  cta="Open contributions"
+                />
+                <MissionSpotlightCard
+                  title="Weekly Challenge"
+                  quest={weeklyQuest}
+                  emptyCopy="No weekly challenge has been generated yet. Refresh from settings to backfill weekly scoring evidence."
+                  href="/dashboard/settings"
+                  cta="Open settings"
+                />
+                <MissionSpotlightCard
+                  title="Long-Term Journey"
+                  quest={longTermQuest}
+                  emptyCopy="No long-term objective is attached yet. Continue merged, reviewed work to unlock deeper journey tracks."
+                  href="/dashboard/contributions"
+                  cta="Keep building"
+                />
+              </ul>
+            </GlowCard>
+          </details>
         </DeferUntilVisible>
       ) : null}
       {isLoading ? <LoadingState message="Building your skill tree..." /> : null}
@@ -160,6 +158,7 @@ export function QuestsPageClient() {
       {!isLoading && !isError && data ? (
         groups.map((group) => {
           const grouped = questMap[group];
+          const defaultOpen = group === "Daily";
 
           return (
             <section
@@ -167,34 +166,33 @@ export function QuestsPageClient() {
               id={QUEST_SECTION_IDS[group]}
               className="render-opt-section scroll-mt-24 space-y-4"
             >
-              <div className="space-y-1 px-1">
-                <h2 className="text-lg font-semibold text-white">
+              <details className="space-y-3" open={defaultOpen}>
+                <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
                   {labelForGroup(group)} ({grouped.length})
-                </h2>
-                <p className="text-sm text-muted">{descriptionForGroup(group)}</p>
-              </div>
-              <DeferUntilVisible fallback={<QuestSectionPlaceholder title={`Loading ${labelForGroup(group)}`} />}>
-                {grouped.length > 0 ? (
-                  <ul role="list" className="grid gap-4 xl:grid-cols-2">
-                    {grouped.map((quest) => (
-                      <li key={quest.id} className="list-none">
-                        <QuestCard quest={quest} />
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <GlowCard className="neon-surface rounded-[1.5rem] border-dashed border-cyan-300/24 p-4 text-sm text-muted">
-                    <p>
-                      No {labelForGroup(group).toLowerCase()} has been generated by the backend for this profile snapshot yet.
-                    </p>
-                    <div className="mt-3">
-                      <Button asChild variant="secondary" size="sm">
-                        <Link href={recoveryHrefForGroup(group)} prefetch={false}>{recoveryLabelForGroup(group)}</Link>
-                      </Button>
-                    </div>
-                  </GlowCard>
-                )}
-              </DeferUntilVisible>
+                </summary>
+                <DeferUntilVisible fallback={<QuestSectionPlaceholder title={`Loading ${labelForGroup(group)}`} />}>
+                  {grouped.length > 0 ? (
+                    <ul role="list" className="grid gap-4 xl:grid-cols-2">
+                      {grouped.map((quest) => (
+                        <li key={quest.id} className="list-none">
+                          <QuestCard quest={quest} />
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <GlowCard className="neon-surface rounded-[1.5rem] border-dashed border-cyan-300/24 p-4 text-sm text-muted">
+                      <p>
+                        No {labelForGroup(group).toLowerCase()} is available in this snapshot yet.
+                      </p>
+                      <div className="mt-3">
+                        <Button asChild variant="secondary" size="sm">
+                          <Link href={recoveryHrefForGroup(group)} prefetch={false}>{recoveryLabelForGroup(group)}</Link>
+                        </Button>
+                      </div>
+                    </GlowCard>
+                  )}
+                </DeferUntilVisible>
+              </details>
             </section>
           );
         })
@@ -222,13 +220,6 @@ function labelForGroup(group: Quest["cadence"]): string {
   if (group === "Weekly") return "Weekly Challenge";
   if (group === "Long-term") return "Long-Term Contributor Journey";
   return "Skill-based Missions";
-}
-
-function descriptionForGroup(group: Quest["cadence"]): string {
-  if (group === "Daily") return "Short-horizon mission.";
-  if (group === "Weekly") return "Higher-impact weekly challenge.";
-  if (group === "Long-term") return "Long-arc objective.";
-  return "Target weak skill lanes.";
 }
 
 function recoveryHrefForGroup(group: Quest["cadence"]): string {
