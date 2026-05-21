@@ -286,92 +286,97 @@ export function BadgesPageClient() {
         ) : null}
       </section>
       <section id="badges-earned" className="render-opt-section scroll-mt-24 space-y-4">
-        <div className="space-y-2">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p id={badgesFilterStatusId} role="status" aria-live="polite" className="text-sm text-fuchsia-100">
-              Showing {filtered.length} of {totalCount} badges
-            </p>
-            <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
-              {rarity !== "All" ? (
+        <div className="space-y-3">
+          <p id={badgesFilterStatusId} role="status" aria-live="polite" className="text-sm text-fuchsia-100">
+            Showing {filtered.length} of {totalCount} badges
+          </p>
+          <details className="space-y-3" open={canResetFilters}>
+            <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-primary/24 px-4 py-3 text-sm font-semibold text-white marker:content-none">
+              Filter badge shelf
+            </summary>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
+                {rarity !== "All" ? (
+                  <li className="list-none">
+                    <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold">
+                      Rarity: {rarity}
+                      <button
+                        type="button"
+                        onClick={handleClearRarityFilter}
+                        className="focus-ring inline-flex min-h-6 min-w-6 items-center justify-center rounded-full border border-primary/30 px-1 text-xs leading-none text-cyan-100 hover:bg-primary/14"
+                        aria-label="Clear badge rarity filter"
+                        aria-controls={BADGES_EARNED_REGION_ID}
+                        title="Clear rarity filter"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </span>
+                  </li>
+                ) : null}
+                {visibility !== "All" ? (
+                  <li className="list-none">
+                    <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold">
+                      State: {visibility}
+                      <button
+                        type="button"
+                        onClick={handleClearVisibilityFilter}
+                        className="focus-ring inline-flex min-h-6 min-w-6 items-center justify-center rounded-full border border-primary/30 px-1 text-xs leading-none text-cyan-100 hover:bg-primary/14"
+                        aria-label="Clear badge visibility filter"
+                        aria-controls={BADGES_EARNED_REGION_ID}
+                        title="Clear visibility filter"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </span>
+                  </li>
+                ) : null}
                 <li className="list-none">
-                  <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold">
-                    Rarity: {rarity}
-                    <button
-                      type="button"
-                      onClick={handleClearRarityFilter}
-                      className="focus-ring inline-flex min-h-6 min-w-6 items-center justify-center rounded-full border border-primary/30 px-1 text-xs leading-none text-cyan-100 hover:bg-primary/14"
-                      aria-label="Clear badge rarity filter"
-                      aria-controls={BADGES_EARNED_REGION_ID}
-                      title="Clear rarity filter"
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </span>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={handleResetFilters}
+                    disabled={!canResetFilters}
+                    aria-controls={BADGES_EARNED_REGION_ID}
+                    title={canResetFilters ? "Reset active filters" : "No filters to reset"}
+                  >
+                    Reset filters
+                  </Button>
                 </li>
-              ) : null}
-              {visibility !== "All" ? (
-                <li className="list-none">
-                  <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold">
-                    State: {visibility}
-                    <button
-                      type="button"
-                      onClick={handleClearVisibilityFilter}
-                      className="focus-ring inline-flex min-h-6 min-w-6 items-center justify-center rounded-full border border-primary/30 px-1 text-xs leading-none text-cyan-100 hover:bg-primary/14"
-                      aria-label="Clear badge visibility filter"
-                      aria-controls={BADGES_EARNED_REGION_ID}
-                      title="Clear visibility filter"
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </span>
-                </li>
-              ) : null}
-              <li className="list-none">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleResetFilters}
-                  disabled={!canResetFilters}
+              </ul>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              <Select value={rarity} onValueChange={(value) => handleRarityChange(value as BadgeRarity | "All")}>
+                <SelectTrigger
+                  aria-label="Filter by rarity"
+                  aria-describedby={badgesFilterStatusId}
                   aria-controls={BADGES_EARNED_REGION_ID}
-                  title={canResetFilters ? "Reset active filters" : "No filters to reset"}
                 >
-                  Reset filters
-                </Button>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div className="grid gap-3 md:grid-cols-2">
-          <Select value={rarity} onValueChange={(value) => handleRarityChange(value as BadgeRarity | "All")}>
-            <SelectTrigger
-              aria-label="Filter by rarity"
-              aria-describedby={badgesFilterStatusId}
-              aria-controls={BADGES_EARNED_REGION_ID}
-            >
-              <SelectValue placeholder="Filter by rarity" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">All rarities</SelectItem>
-              {["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic"].map((item) => (
-                <SelectItem key={item} value={item}>{item}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={visibility} onValueChange={(value) => handleVisibilityChange(value as typeof visibility)}>
-            <SelectTrigger
-              aria-label="Filter by unlock state"
-              aria-describedby={badgesFilterStatusId}
-              aria-controls={BADGES_EARNED_REGION_ID}
-            >
-              <SelectValue placeholder="Filter by state" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">All badges</SelectItem>
-              <SelectItem value="Unlocked">Unlocked</SelectItem>
-              <SelectItem value="Locked">Locked</SelectItem>
-            </SelectContent>
-          </Select>
+                  <SelectValue placeholder="Filter by rarity" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All">All rarities</SelectItem>
+                  {["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic"].map((item) => (
+                    <SelectItem key={item} value={item}>{item}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={visibility} onValueChange={(value) => handleVisibilityChange(value as typeof visibility)}>
+                <SelectTrigger
+                  aria-label="Filter by unlock state"
+                  aria-describedby={badgesFilterStatusId}
+                  aria-controls={BADGES_EARNED_REGION_ID}
+                >
+                  <SelectValue placeholder="Filter by state" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All">All badges</SelectItem>
+                  <SelectItem value="Unlocked">Unlocked</SelectItem>
+                  <SelectItem value="Locked">Locked</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </details>
         </div>
         <div id={BADGES_EARNED_REGION_ID}>
           {isLoading ? <LoadingState message="Polishing your badge shelf..." /> : null}
