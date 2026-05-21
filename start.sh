@@ -233,6 +233,11 @@ if [[ ! -d "$FRONTEND_DIR/node_modules" ]]; then
   )
 fi
 
+if [[ "${START_CLEAN_FRONTEND_CACHE:-1}" == "1" ]]; then
+  log "clearing frontend build cache (.next) to prevent stale UI artifacts"
+  rm -rf "$FRONTEND_DIR/.next"
+fi
+
 log "starting frontend dev server"
 (
   cd "$FRONTEND_DIR"
