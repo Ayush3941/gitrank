@@ -267,9 +267,6 @@ export function SyncRunActivityPanel({
             <Button asChild size="sm" variant="secondary">
               <Link href="/dashboard">Open dashboard</Link>
             </Button>
-            <Button asChild size="sm" variant="ghost">
-              <Link href="/dashboard/settings">Open settings</Link>
-            </Button>
           </div>
         </div>
       ) : filteredRuns.length === 0 ? (
