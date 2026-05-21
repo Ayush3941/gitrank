@@ -996,20 +996,6 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   contain: none;
 }
 
-@media (min-width: 1280px) and (prefers-reduced-motion: no-preference) {
-  .render-opt-card {
-    content-visibility: auto;
-    contain-intrinsic-size: 280px;
-    contain: layout paint style;
-  }
-
-  .render-opt-section {
-    content-visibility: auto;
-    contain-intrinsic-size: 680px;
-    contain: layout paint style;
-  }
-}
-
 .cyber-link {
   color: rgb(var(--text-soft));
   transition: color 180ms ease;

@@ -246,9 +246,6 @@ export function SyncRunActivityPanel({
             <Button type="button" size="sm" variant="secondary" onClick={onRefresh} disabled={isRefreshing}>
               {isRefreshing ? "Refreshing..." : "Retry log fetch"}
             </Button>
-            <Button asChild type="button" size="sm" variant="ghost">
-              <Link href="/dashboard/settings">Open settings</Link>
-            </Button>
           </div>
         </div>
       ) : null}
@@ -290,9 +287,6 @@ export function SyncRunActivityPanel({
               disabled={!canReset}
             >
               Reset filters
-            </Button>
-            <Button asChild size="sm" variant="ghost">
-              <Link href="/dashboard/settings">Open settings</Link>
             </Button>
           </div>
         </div>
