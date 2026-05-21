@@ -13,7 +13,6 @@ import { StaleState } from "@/components/shared/StaleState";
 import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LeaderboardArena } from "@/features/leaderboard/components/LeaderboardArena";
 import { laneParamToTab, tabToLaneParam } from "@/features/leaderboard/lib/lane-param";
@@ -141,21 +140,22 @@ export function LeaderboardPageClient() {
       ) : null}
       <section id="leaderboard-filters" className="scroll-mt-24 space-y-3">
         <div className="sm:hidden">
-          <Select value={tab} onValueChange={handleTabChange}>
-            <SelectTrigger
+          <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
+            <span className="sr-only">Leaderboard lane filter</span>
+            <select
+              value={tab}
+              onChange={(event) => handleTabChange(event.target.value)}
               aria-label="Leaderboard lane filter"
               aria-controls={LEADERBOARD_ROWS_REGION_ID}
+              className="focus-ring h-full w-full bg-transparent text-sm text-foreground outline-none"
             >
-              <SelectValue placeholder="Select lane" />
-            </SelectTrigger>
-            <SelectContent>
               {tabs.map((item) => (
-                <SelectItem key={`leaderboard-select-${item}`} value={item}>
+                <option key={`leaderboard-lane-option-${item}`} value={item} className="bg-card text-foreground">
                   {TAB_LABELS[item].full}
-                </SelectItem>
+                </option>
               ))}
-            </SelectContent>
-          </Select>
+            </select>
+          </label>
         </div>
         <div className="hidden sm:block">
           <Tabs value={tab} onValueChange={handleTabChange}>

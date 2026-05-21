@@ -5,7 +5,6 @@ import { Search, X } from "lucide-react";
 import { startTransition, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import type { RepositoryVisibility } from "@/types/gitrank";
 
@@ -128,27 +127,25 @@ export function PrivacyRepositoryToggleList({
             ) : null}
           </div>
           <div className="sm:hidden">
-            <Select
-              value={visibilityFilter}
-              onValueChange={(value) => {
-                startTransition(() => {
-                  setVisibilityFilter(value as "All" | "Public" | "Hidden");
-                });
-              }}
-            >
-              <SelectTrigger
+            <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
+              <span className="sr-only">Repository visibility filter</span>
+              <select
+                value={visibilityFilter}
+                onChange={(event) => {
+                  startTransition(() => {
+                    setVisibilityFilter(event.target.value as "All" | "Public" | "Hidden");
+                  });
+                }}
                 aria-label="Repository visibility filter"
                 aria-describedby={statusId}
                 aria-controls={repositoriesRegionId}
+                className="focus-ring h-full w-full bg-transparent text-sm text-foreground outline-none"
               >
-                <SelectValue placeholder="Visibility" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All</SelectItem>
-                <SelectItem value="Public">Public</SelectItem>
-                <SelectItem value="Hidden">Hidden</SelectItem>
-              </SelectContent>
-            </Select>
+                <option value="All" className="bg-card text-foreground">All</option>
+                <option value="Public" className="bg-card text-foreground">Public</option>
+                <option value="Hidden" className="bg-card text-foreground">Hidden</option>
+              </select>
+            </label>
           </div>
           <div className="hidden sm:block">
             <span id={visibilityGroupId} className="sr-only">
