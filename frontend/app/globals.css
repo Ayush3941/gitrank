@@ -212,7 +212,6 @@ html[data-theme="high-contrast"] {
     input:not([type="radio"]):not([type="checkbox"]),
     select,
     textarea,
-    summary,
     [role="button"],
     [role="tab"],
     [role="switch"],
@@ -363,7 +362,6 @@ select {
     input:not([type="hidden"]),
     select,
     textarea,
-    summary,
     [role="button"],
     [tabindex]:not([tabindex="-1"])
   ):focus-visible {
@@ -1397,7 +1395,6 @@ html[data-theme="high-contrast"] .neon-title {
       input:not([type="hidden"]),
       select,
       textarea,
-      summary,
       [role="button"],
       [tabindex]:not([tabindex="-1"])
     ):focus-visible {
@@ -1610,7 +1607,6 @@ html[data-theme="high-contrast"] .neon-title {
       input:not([type="hidden"]),
       select,
       textarea,
-      summary,
       [role="button"],
       [tabindex]:not([tabindex="-1"])
     ):focus-visible {
@@ -1642,7 +1638,6 @@ html[data-theme="high-contrast"] .neon-title {
       input:not([type="hidden"]),
       select,
       textarea,
-      summary,
       [role="button"],
       [tabindex]:not([tabindex="-1"])
     ):focus-visible {
