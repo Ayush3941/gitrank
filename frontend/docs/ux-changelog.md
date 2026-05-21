@@ -1579,6 +1579,9 @@
   - dashboard, contributions, badges, quests, settings, and leaderboard now start with the same compact `PageHeader` structure (eyebrow, title, one-line purpose) for faster orientation.
 - Normalized dashboard route navigation scroll behavior:
   - removed `scroll={false}` from primary dashboard route links so route changes follow default browser/Next navigation behavior more predictably.
+- Added progressive disclosure for dashboard depth:
+  - moved score-factor/skill/timeline deep panels behind an explicit `Show advanced analytics` toggle
+  - keeps initial dashboard view lighter and reduces first-screen cognitive load on repeated visits.
 
 ## 2026-05-16
 
