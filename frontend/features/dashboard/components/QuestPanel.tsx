@@ -43,12 +43,11 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <h3 className="text-lg font-medium text-white">{quest.title}</h3>
-                      <p className="text-sm text-muted">{quest.description}</p>
                       <ExpandableText
-                        text={quest.whyRecommended}
+                        text={quest.description}
                         lines={2}
                         minLengthForToggle={140}
-                        className="mt-2"
+                        className="mt-1"
                         textClassName="text-sm leading-6 text-muted"
                       />
                     </div>

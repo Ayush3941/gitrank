@@ -49,25 +49,14 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
                   <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs font-semibold">
                     Difficulty {report.contribution.difficultyScore}
                   </span>
-                  <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs font-semibold">
-                    {formatContributionStatus(report.contribution.status)}
-                  </span>
-                  <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs font-semibold">
-                    Evidence {formatEvidenceState(report.evidenceState.status)}
-                  </span>
                 </div>
                 <ExpandableText
                   text={report.contribution.aiSummary}
-                  lines={3}
+                  lines={2}
                   minLengthForToggle={160}
                   className="mt-3 max-w-3xl"
                   textClassName="break-anywhere text-sm leading-6 text-muted"
                 />
-                {shouldShowAnalysisVersion(report.analysisVersion) ? (
-                  <p className="mt-2 text-xs text-muted">
-                    Analysis {formatAnalysisVersion(report.analysisVersion)}
-                  </p>
-                ) : null}
               </div>
               <div className="text-right">
                 <p className="text-xs font-medium text-primary">XP earned</p>
@@ -109,20 +98,6 @@ function deduplicateReportsByPR(reports: PullRequestAnalysis[]): PullRequestAnal
   return Array.from(bestByPR.values());
 }
 
-function formatContributionStatus(status: PullRequestAnalysis["contribution"]["status"]): string {
-  if (status === "merged") {
-    return "Merged";
-  }
-  if (status === "open") {
-    return "Open";
-  }
-  return "Closed";
-}
-
-function formatEvidenceState(status: PullRequestAnalysis["evidenceState"]["status"]): string {
-  return status.replaceAll("_", " ");
-}
-
 function confidenceLabel(report: PullRequestAnalysis): string {
   if (report.evidenceState.deterministicOnly) {
     return "Deterministic scoring mode";
@@ -135,20 +110,4 @@ function confidenceLabel(report: PullRequestAnalysis): string {
   }
   const confidence = Math.max(0, Math.min(100, Math.round(report.aiConfidence * 100)));
   return `Confidence ${confidence}%`;
-}
-
-function formatAnalysisVersion(version?: string): string {
-  const value = (version ?? "").trim();
-  if (value.length === 0) {
-    return "pending";
-  }
-  if (value.toLowerCase() === "unknown") {
-    return "deterministic";
-  }
-  return value;
-}
-
-function shouldShowAnalysisVersion(version?: string): boolean {
-  const normalized = formatAnalysisVersion(version);
-  return normalized !== "pending" && normalized !== "deterministic";
 }
