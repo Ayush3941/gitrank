@@ -1591,6 +1591,9 @@
 - Reduced mobile filter clutter in contributions:
   - compact contribution filters now include a `Show filters` / `Hide filters` mobile disclosure control
   - keeps result count and active chips visible while deferring heavy search/sort controls until requested.
+- Added one-tap active-filter chip removal in contributions:
+  - active `Category`, `Search`, and `Sort` chips now clear their specific filter directly from the chip itself
+  - reduces reset churn when comparing adjacent filter combinations.
 
 ## 2026-05-16
 

@@ -185,6 +185,20 @@ export function ContributionsPageClient() {
     });
   }
 
+  function handleClearCategoryFilter() {
+    startTransition(() => {
+      setFilter("All");
+      setVisibleCardCount(cardPageSize);
+    });
+  }
+
+  function handleClearSortFilter() {
+    startTransition(() => {
+      setSort("Newest");
+      setVisibleCardCount(cardPageSize);
+    });
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -224,6 +238,8 @@ export function ContributionsPageClient() {
           onReset={handleResetFilters}
           compact
           onClearSearch={handleClearSearchFilter}
+          onClearCategory={handleClearCategoryFilter}
+          onClearSort={handleClearSortFilter}
         />
       </section>
       {isLoading ? <LoadingState message="Checking review depth and PR intensity..." /> : null}

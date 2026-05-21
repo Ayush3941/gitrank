@@ -26,6 +26,8 @@ export function ContributionFilters({
   onSearchChange,
   sort,
   onSortChange,
+  onClearCategory,
+  onClearSort,
   resultCount,
   isFiltering,
   canReset,
@@ -40,6 +42,8 @@ export function ContributionFilters({
   onSearchChange: (value: string) => void;
   sort: string;
   onSortChange: (value: "Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact") => void;
+  onClearCategory?: () => void;
+  onClearSort?: () => void;
   resultCount?: number;
   isFiltering?: boolean;
   canReset?: boolean;
@@ -110,13 +114,35 @@ export function ContributionFilters({
       </div>
       {activeChips.length ? (
         <ul role="list" className="flex flex-wrap gap-2 text-xs">
-          {activeChips.map((chip) => (
-            <li key={chip.key} className="list-none">
-              <span className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold">
-                {chip.label}
-              </span>
-            </li>
-          ))}
+          {activeChips.map((chip) => {
+            const handleRemove =
+              chip.key === "category"
+                ? onClearCategory
+                : chip.key === "search"
+                  ? onClearSearch
+                  : onClearSort;
+            return (
+              <li key={chip.key} className="list-none">
+                {handleRemove ? (
+                  <button
+                    type="button"
+                    className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold"
+                    onClick={handleRemove}
+                    disabled={isFiltering}
+                    aria-label={`Remove ${chip.label} filter`}
+                    aria-controls={resultsRegionId}
+                  >
+                    {chip.label}
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                ) : (
+                  <span className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold">
+                    {chip.label}
+                  </span>
+                )}
+              </li>
+            );
+          })}
         </ul>
       ) : null}
       <div id="contribution-mobile-controls" className={compact && !showMobileControls ? "hidden sm:block" : undefined}>
@@ -124,84 +150,84 @@ export function ContributionFilters({
           <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
             <span className="sr-only">Contribution category filter</span>
             <select
-            value={value}
-            onChange={(event) => onValueChange(event.target.value)}
-            aria-label="Contribution category filter"
-            aria-describedby={statusId}
-            aria-controls={resultsRegionId}
-            className="focus-ring h-full w-full bg-transparent text-sm text-foreground outline-none"
-          >
-            {filters.map((filter) => (
-              <option key={filter.value} value={filter.value} className="bg-card text-foreground">
-                {filter.value}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <div className="hidden sm:block">
-        <Tabs value={value} onValueChange={onValueChange}>
-          <TabsList className="grid w-full grid-cols-3 gap-1.5 lg:grid-cols-5" aria-label="Contribution category filters">
-            {filters.map((filter) => (
-              <TabsTrigger
-                key={filter.value}
-                value={filter.value}
-                title={filter.value}
-                aria-label={`${filter.value} contributions`}
-                aria-controls={resultsRegionId}
-                className="w-full justify-center text-center"
-              >
-                <span className="lg:hidden">{filter.short}</span>
-                <span className="hidden lg:inline">{filter.value}</span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-      </div>
-      <div className="grid gap-3 lg:grid-cols-[1fr,16rem]">
-        <div className="relative">
-          <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted" />
-          <Input
-            value={search}
-            onChange={(event) => onSearchChange(event.target.value)}
-            className="pl-11 pr-11"
-            placeholder="Search repo, PR title, or owner"
-            aria-label="Search contributions"
-            aria-describedby={statusId}
-          />
-          {search.trim().length > 0 ? (
-            <button
-              type="button"
-              onClick={onClearSearch}
-              disabled={isFiltering}
-              className="focus-ring absolute top-1/2 right-3 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-cyan-100 hover:text-white disabled:opacity-60"
-              aria-label="Clear contribution search"
+              value={value}
+              onChange={(event) => onValueChange(event.target.value)}
+              aria-label="Contribution category filter"
+              aria-describedby={statusId}
               aria-controls={resultsRegionId}
-              title="Clear search"
+              className="focus-ring h-full w-full bg-transparent text-sm text-foreground outline-none"
             >
-              <X className="h-4 w-4" />
-            </button>
-          ) : null}
+              {filters.map((filter) => (
+                <option key={filter.value} value={filter.value} className="bg-card text-foreground">
+                  {filter.value}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
-        <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
-          <span className="sr-only">Sort contributions</span>
-          <select
-            value={sort}
-            onChange={(event) =>
-              onSortChange(event.target.value as "Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact")
-            }
-            aria-label="Sort contributions"
-            aria-describedby={statusId}
-            aria-controls={resultsRegionId}
-            className="focus-ring h-full w-full bg-transparent text-sm text-foreground outline-none"
-          >
-            <option value="Newest" className="bg-card text-foreground">Newest</option>
-            <option value="Highest XP" className="bg-card text-foreground">Highest XP</option>
-            <option value="Highest Difficulty" className="bg-card text-foreground">Highest Difficulty</option>
-            <option value="Highest Impact" className="bg-card text-foreground">Highest Impact</option>
-          </select>
-        </label>
-      </div>
+        <div className="hidden sm:block">
+          <Tabs value={value} onValueChange={onValueChange}>
+            <TabsList className="grid w-full grid-cols-3 gap-1.5 lg:grid-cols-5" aria-label="Contribution category filters">
+              {filters.map((filter) => (
+                <TabsTrigger
+                  key={filter.value}
+                  value={filter.value}
+                  title={filter.value}
+                  aria-label={`${filter.value} contributions`}
+                  aria-controls={resultsRegionId}
+                  className="w-full justify-center text-center"
+                >
+                  <span className="lg:hidden">{filter.short}</span>
+                  <span className="hidden lg:inline">{filter.value}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
+        <div className="grid gap-3 lg:grid-cols-[1fr,16rem]">
+          <div className="relative">
+            <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted" />
+            <Input
+              value={search}
+              onChange={(event) => onSearchChange(event.target.value)}
+              className="pl-11 pr-11"
+              placeholder="Search repo, PR title, or owner"
+              aria-label="Search contributions"
+              aria-describedby={statusId}
+            />
+            {search.trim().length > 0 ? (
+              <button
+                type="button"
+                onClick={onClearSearch}
+                disabled={isFiltering}
+                className="focus-ring absolute top-1/2 right-3 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-cyan-100 hover:text-white disabled:opacity-60"
+                aria-label="Clear contribution search"
+                aria-controls={resultsRegionId}
+                title="Clear search"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            ) : null}
+          </div>
+          <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
+            <span className="sr-only">Sort contributions</span>
+            <select
+              value={sort}
+              onChange={(event) =>
+                onSortChange(event.target.value as "Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact")
+              }
+              aria-label="Sort contributions"
+              aria-describedby={statusId}
+              aria-controls={resultsRegionId}
+              className="focus-ring h-full w-full bg-transparent text-sm text-foreground outline-none"
+            >
+              <option value="Newest" className="bg-card text-foreground">Newest</option>
+              <option value="Highest XP" className="bg-card text-foreground">Highest XP</option>
+              <option value="Highest Difficulty" className="bg-card text-foreground">Highest Difficulty</option>
+              <option value="Highest Impact" className="bg-card text-foreground">Highest Impact</option>
+            </select>
+          </label>
+        </div>
       </div>
     </section>
   );
