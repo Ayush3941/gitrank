@@ -12,6 +12,9 @@
 - Empty-state recovery pass:
   - added direct `Open sync settings` recovery actions to dashboard `Recent battle reports`, `Active quests`, and `Badge shelf` empty cards.
   - keeps primary lane actions (`Open contributions`, `Open badge forge`) while removing dead-end panel states.
+- Filter-control stability pass:
+  - replaced contribution filter selects (mobile category + sort) with native `<select>` controls to avoid portal scroll-lock behavior in long dashboard pages.
+  - replaced badge rarity/state selects with native `<select>` controls for lighter interaction cost and more predictable scrolling on constrained devices.
 - Deterministic summary normalization pass:
   - added shared formatter `frontend/lib/presentation/report-summary.ts` to clean raw deterministic strings (`summary=[...]`, `score version ...`, trailing `final XP ...`) into readable copy.
   - wired the formatter into contributions cards, dashboard recent battle reports, and public-profile best-PR cards for consistent report language.

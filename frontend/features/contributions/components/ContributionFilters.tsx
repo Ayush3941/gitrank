@@ -4,7 +4,6 @@ import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const filters = [
   { value: "All", short: "All" },
@@ -104,22 +103,23 @@ export function ContributionFilters({
         </>
       ) : null}
       <div className="sm:hidden">
-        <Select value={value} onValueChange={onValueChange}>
-          <SelectTrigger
+        <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
+          <span className="sr-only">Contribution category filter</span>
+          <select
+            value={value}
+            onChange={(event) => onValueChange(event.target.value)}
             aria-label="Contribution category filter"
             aria-describedby={statusId}
             aria-controls={resultsRegionId}
+            className="focus-ring h-full w-full bg-transparent text-sm text-foreground outline-none"
           >
-            <SelectValue placeholder="Select category" />
-          </SelectTrigger>
-          <SelectContent>
             {filters.map((filter) => (
-              <SelectItem key={filter.value} value={filter.value}>
+              <option key={filter.value} value={filter.value} className="bg-card text-foreground">
                 {filter.value}
-              </SelectItem>
+              </option>
             ))}
-          </SelectContent>
-        </Select>
+          </select>
+        </label>
       </div>
       <div className="hidden sm:block">
         <Tabs value={value} onValueChange={onValueChange}>
@@ -163,21 +163,24 @@ export function ContributionFilters({
             </button>
           ) : null}
         </div>
-        <Select value={sort} onValueChange={onSortChange}>
-          <SelectTrigger
+        <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
+          <span className="sr-only">Sort contributions</span>
+          <select
+            value={sort}
+            onChange={(event) =>
+              onSortChange(event.target.value as "Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact")
+            }
             aria-label="Sort contributions"
             aria-describedby={statusId}
             aria-controls={resultsRegionId}
+            className="focus-ring h-full w-full bg-transparent text-sm text-foreground outline-none"
           >
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Newest">Newest</SelectItem>
-            <SelectItem value="Highest XP">Highest XP</SelectItem>
-            <SelectItem value="Highest Difficulty">Highest Difficulty</SelectItem>
-            <SelectItem value="Highest Impact">Highest Impact</SelectItem>
-          </SelectContent>
-        </Select>
+            <option value="Newest" className="bg-card text-foreground">Newest</option>
+            <option value="Highest XP" className="bg-card text-foreground">Highest XP</option>
+            <option value="Highest Difficulty" className="bg-card text-foreground">Highest Difficulty</option>
+            <option value="Highest Impact" className="bg-card text-foreground">Highest Impact</option>
+          </select>
+        </label>
       </div>
     </section>
   );

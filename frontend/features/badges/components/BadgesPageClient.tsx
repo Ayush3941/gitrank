@@ -13,7 +13,6 @@ import { StaleState } from "@/components/shared/StaleState";
 import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BadgeGrid } from "@/features/badges/components/BadgeGrid";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useBadges } from "@/hooks/use-badges";
@@ -315,35 +314,37 @@ export function BadgesPageClient() {
               </ul>
             </div>
             <div className="grid gap-3 md:grid-cols-2">
-              <Select value={rarity} onValueChange={(value) => handleRarityChange(value as BadgeRarity | "All")}>
-                <SelectTrigger
+              <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
+                <span className="sr-only">Filter by rarity</span>
+                <select
+                  value={rarity}
+                  onChange={(event) => handleRarityChange(event.target.value as BadgeRarity | "All")}
                   aria-label="Filter by rarity"
                   aria-describedby={badgesFilterStatusId}
                   aria-controls={BADGES_EARNED_REGION_ID}
+                  className="focus-ring h-full w-full bg-transparent text-sm text-foreground outline-none"
                 >
-                  <SelectValue placeholder="Filter by rarity" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="All">All rarities</SelectItem>
-                  {["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic"].map((item, index) => (
-                    <SelectItem key={`rarity-${index}-${item}`} value={item}>{item}</SelectItem>
+                  <option value="All" className="bg-card text-foreground">All rarities</option>
+                  {["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic"].map((item) => (
+                    <option key={`rarity-option-${item}`} value={item} className="bg-card text-foreground">{item}</option>
                   ))}
-                </SelectContent>
-              </Select>
-              <Select value={visibility} onValueChange={(value) => handleVisibilityChange(value as typeof visibility)}>
-                <SelectTrigger
+                </select>
+              </label>
+              <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
+                <span className="sr-only">Filter by unlock state</span>
+                <select
+                  value={visibility}
+                  onChange={(event) => handleVisibilityChange(event.target.value as typeof visibility)}
                   aria-label="Filter by unlock state"
                   aria-describedby={badgesFilterStatusId}
                   aria-controls={BADGES_EARNED_REGION_ID}
+                  className="focus-ring h-full w-full bg-transparent text-sm text-foreground outline-none"
                 >
-                  <SelectValue placeholder="Filter by state" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="All">All badges</SelectItem>
-                  <SelectItem value="Unlocked">Unlocked</SelectItem>
-                  <SelectItem value="Locked">Locked</SelectItem>
-                </SelectContent>
-              </Select>
+                  <option value="All" className="bg-card text-foreground">All badges</option>
+                  <option value="Unlocked" className="bg-card text-foreground">Unlocked</option>
+                  <option value="Locked" className="bg-card text-foreground">Locked</option>
+                </select>
+              </label>
             </div>
           </div>
         </div>
