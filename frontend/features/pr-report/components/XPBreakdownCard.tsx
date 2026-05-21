@@ -36,21 +36,15 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
       value: report.repoBonus,
       detail: `Repository context multiplier ${contribution.repoWeight.toFixed(2)}x.`,
     },
-    {
-      label: "AI confidence estimate",
-      value: `${Math.round(report.aiConfidence * 100)}%`,
-      detail:
-        "AI assists classification only; deterministic scoring owns final XP.",
-    },
   ];
   const rows = report.scoreComponents.length
     ? report.scoreComponents.map((component) => ({
         label: component.label,
         value: component.displayValue,
-        detail: `${component.reason} Source: ${component.source}.`,
+        detail: component.reason,
       }))
     : fallbackRows;
-  const visibleRows = rows.slice(0, 4);
+  const visibleRows = rows.slice(0, 3);
   const remainingRows = Math.max(0, rows.length - visibleRows.length);
 
   return (
@@ -80,7 +74,7 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
         ))}
         {remainingRows > 0 ? (
           <li className="list-none neon-surface rounded-[1.75rem] border-dashed px-4 py-3 text-xs text-muted">
-            +{remainingRows} additional scorer components are available in persisted metadata.
+            +{remainingRows} more components available.
           </li>
         ) : null}
         <li className="list-none rounded-[1.75rem] border border-amber-400/18 bg-amber-400/8 px-4 py-4">

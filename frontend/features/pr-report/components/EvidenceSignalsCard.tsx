@@ -19,7 +19,7 @@ export function EvidenceSignalsCard({ report }: { report: PullRequestAnalysis })
     <GlowCard className="space-y-5">
       <div>
         <p className="text-xs font-medium text-primary">Evidence signals</p>
-        <h2 className="mt-2 text-xl font-semibold text-white">Why this PR earned what it earned</h2>
+        <h2 className="mt-2 text-xl font-semibold text-white">Proof checks</h2>
       </div>
       <ul role="list" className="grid gap-3 md:grid-cols-2">
         {signals.map((signal, index) => {
@@ -35,14 +35,18 @@ export function EvidenceSignalsCard({ report }: { report: PullRequestAnalysis })
               </div>
               <div>
                 <p className="font-medium text-white">{signal.label}</p>
-                <p className="text-sm text-muted">{signal.active ? "Verified" : "Not detected"}</p>
               </div>
+              <span className={`ml-auto rounded-full px-2.5 py-1 text-xs font-semibold ${signal.active ? "bg-emerald-400/14 text-emerald-200" : "bg-slate-400/12 text-slate-200"}`}>
+                {signal.active ? "Yes" : "No"}
+              </span>
             </li>
           );
         })}
       </ul>
-      <div className="neon-surface rounded-[1.75rem] p-4">
-        <p className="text-xs font-medium text-primary">Stored evidence labels</p>
+      <details className="neon-surface rounded-[1.75rem] p-4">
+        <summary className="focus-ring cursor-pointer list-none text-xs font-medium text-primary marker:content-none">
+          Stored evidence labels
+        </summary>
         <ul role="list" className="mt-3 flex flex-wrap gap-2">
           {visibleSignals.map((signal, index) => (
             <li key={`${signal}-${index}`} className="list-none">
@@ -59,7 +63,7 @@ export function EvidenceSignalsCard({ report }: { report: PullRequestAnalysis })
             </li>
           ) : null}
         </ul>
-      </div>
+      </details>
     </GlowCard>
   );
 }
