@@ -29,11 +29,12 @@ export function useContributions(params: ContributionParams) {
 }
 
 function filterContributions(rows: Contribution[], params: ContributionParams) {
+  const deduplicatedRows = deduplicateContributions(rows);
   const normalizedFilter = (params.filter ?? "All").toLowerCase();
   const term = (params.search ?? "").trim().toLowerCase();
   const sort = params.sort ?? "Newest";
 
-  const filtered = rows.filter((item) => {
+  const filtered = deduplicatedRows.filter((item) => {
     const categoryMatch =
       normalizedFilter === "all" ||
       normalizedFilter === "high xp" ||
@@ -59,4 +60,63 @@ function filterContributions(rows: Contribution[], params: ContributionParams) {
   };
 
   return [...filtered].sort(sorters[sort]);
+}
+
+function deduplicateContributions(rows: Contribution[]): Contribution[] {
+  const byPullRequest = new Map<string, Contribution>();
+  for (const row of rows) {
+    const key = `${row.owner}/${row.repo}#${row.number}`;
+    const current = byPullRequest.get(key);
+    if (!current) {
+      byPullRequest.set(key, {
+        ...row,
+        evidenceSignals: uniqueEvidenceSignals(row.evidenceSignals),
+      });
+      continue;
+    }
+
+    const shouldReplace =
+      row.xpEarned > current.xpEarned ||
+      (row.xpEarned === current.xpEarned &&
+        new Date(row.mergedAt).getTime() > new Date(current.mergedAt).getTime());
+
+    if (!shouldReplace) {
+      byPullRequest.set(key, {
+        ...current,
+        evidenceSignals: uniqueEvidenceSignals([
+          ...current.evidenceSignals,
+          ...row.evidenceSignals,
+        ]),
+      });
+      continue;
+    }
+
+    byPullRequest.set(key, {
+      ...row,
+      aiSummary: row.aiSummary.trim() ? row.aiSummary : current.aiSummary,
+      evidenceSignals: uniqueEvidenceSignals([
+        ...current.evidenceSignals,
+        ...row.evidenceSignals,
+      ]),
+    });
+  }
+  return Array.from(byPullRequest.values());
+}
+
+function uniqueEvidenceSignals(values: string[]): string[] {
+  const seen = new Set<string>();
+  const next: string[] = [];
+  for (const value of values) {
+    const normalized = value.trim();
+    if (!normalized) {
+      continue;
+    }
+    const key = normalized.toLowerCase();
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    next.push(normalized);
+  }
+  return next;
 }
