@@ -408,7 +408,7 @@ function toFeaturedContributions(
   entries: ApiScoreHistoryEntry[],
   showAiSummaries: boolean,
 ): FeaturedContribution[] {
-  return entries
+  return collapseScoreHistoryByPullRequest(entries)
     .filter((entry) => entry.delta_xp > 0 && entry.pull_request)
     .slice(0, 5)
     .map((entry) => {
@@ -441,7 +441,7 @@ function toContributions(
   entries: ApiScoreHistoryEntry[],
   showAiSummaries: boolean,
 ): Contribution[] {
-  return entries
+  return collapseScoreHistoryByPullRequest(entries)
     .filter((entry) => entry.pull_request)
     .map((entry) => {
       const [owner, repo] = splitRepositoryName(entry.pull_request?.repository || "");
@@ -552,6 +552,105 @@ function redactReportSummaries(
 
 const REDACTED_AI_SUMMARY =
   "AI summaries are hidden by your current privacy setting.";
+
+function collapseScoreHistoryByPullRequest(
+  entries: ApiScoreHistoryEntry[],
+): ApiScoreHistoryEntry[] {
+  const collapsedOrder: string[] = [];
+  const collapsedByKey = new Map<string, ApiScoreHistoryEntry>();
+
+  for (const entry of entries) {
+    if (!entry.pull_request) {
+      continue;
+    }
+    const [owner, repo] = splitRepositoryName(entry.pull_request.repository || "");
+    const key = contributionKey(owner, repo, entry.pull_request.number);
+    const existing = collapsedByKey.get(key);
+
+    if (!existing) {
+      collapsedByKey.set(key, {
+        ...entry,
+        explanation: entry.explanation ? [...entry.explanation] : [],
+        evidence_missing: entry.evidence_missing ? [...entry.evidence_missing] : [],
+      });
+      collapsedOrder.push(key);
+      continue;
+    }
+
+    existing.delta_xp += entry.delta_xp;
+    existing.explanation = mergeUniqueStrings(existing.explanation, entry.explanation);
+    existing.evidence_missing = mergeUniqueStrings(existing.evidence_missing, entry.evidence_missing);
+    existing.evidence_state = strongestEvidenceState(existing.evidence_state, entry.evidence_state);
+
+    if (isNewerTimestamp(entry.created_at, existing.created_at)) {
+      existing.event_id = entry.event_id;
+      existing.event_type = entry.event_type;
+      existing.created_at = entry.created_at;
+      existing.score_version = entry.score_version || existing.score_version;
+      existing.formula_version = entry.formula_version || existing.formula_version;
+      existing.pull_request_id = entry.pull_request_id || existing.pull_request_id;
+      existing.analysis_id = entry.analysis_id || existing.analysis_id;
+      existing.pull_request = entry.pull_request || existing.pull_request;
+      continue;
+    }
+
+    if (!existing.score_version && entry.score_version) {
+      existing.score_version = entry.score_version;
+    }
+    if (!existing.formula_version && entry.formula_version) {
+      existing.formula_version = entry.formula_version;
+    }
+    if (!existing.pull_request_id && entry.pull_request_id) {
+      existing.pull_request_id = entry.pull_request_id;
+    }
+    if (!existing.analysis_id && entry.analysis_id) {
+      existing.analysis_id = entry.analysis_id;
+    }
+  }
+
+  return collapsedOrder
+    .map((key) => collapsedByKey.get(key))
+    .filter((entry): entry is ApiScoreHistoryEntry => Boolean(entry));
+}
+
+function mergeUniqueStrings(base?: string[], next?: string[]): string[] {
+  const merged = new Set<string>();
+  for (const value of base ?? []) {
+    const normalized = value.trim();
+    if (normalized.length > 0) {
+      merged.add(normalized);
+    }
+  }
+  for (const value of next ?? []) {
+    const normalized = value.trim();
+    if (normalized.length > 0) {
+      merged.add(normalized);
+    }
+  }
+  return Array.from(merged);
+}
+
+function strongestEvidenceState(
+  left?: ApiScoreHistoryEntry["evidence_state"],
+  right?: ApiScoreHistoryEntry["evidence_state"],
+): ApiScoreHistoryEntry["evidence_state"] {
+  if (left === "complete" || right === "complete") {
+    return "complete";
+  }
+  if (left === "partial" || right === "partial") {
+    return "partial";
+  }
+  return left ?? right;
+}
+
+function isNewerTimestamp(candidate: string, baseline: string): boolean {
+  const candidateMillis = Date.parse(candidate);
+  const baselineMillis = Date.parse(baseline);
+  if (!Number.isNaN(candidateMillis) && !Number.isNaN(baselineMillis)) {
+    return candidateMillis > baselineMillis;
+  }
+  return candidate > baseline;
+}
 
 function contributionKey(owner: string, repo: string, number: number): string {
   return `${owner.toLowerCase()}/${repo.toLowerCase()}#${number}`;
