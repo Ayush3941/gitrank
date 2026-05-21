@@ -15,19 +15,22 @@ export function DashboardRouteNav() {
       aria-label="Dashboard navigation"
       className="dashboard-nav-shell p-1.5"
     >
-      <ul role="list" className="dashboard-nav-track grid grid-cols-2 gap-1.5 p-0.5 sm:grid-cols-5">
+      <ul
+        role="list"
+        className="dashboard-nav-track flex gap-1.5 overflow-x-auto p-0.5 pb-1 sm:grid sm:grid-cols-5 sm:overflow-visible sm:pb-0"
+      >
         {dashboardNavItems.map((item) => {
           const active = isActive(item.href, item.exact);
           const Icon = item.icon;
           return (
-            <li key={item.href} className="list-none">
+            <li key={item.href} className="list-none shrink-0 min-w-[8.75rem] sm:min-w-0">
               <Link
                 href={item.href}
                 prefetch={false}
                 scroll={false}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "focus-ring dashboard-nav-item inline-flex min-h-10 w-full items-center justify-center gap-2 px-3 py-2 text-center text-sm font-medium",
+                  "focus-ring dashboard-nav-item inline-flex min-h-10 w-full items-center justify-start gap-2 px-3 py-2 text-left text-sm font-medium sm:justify-center sm:text-center",
                 )}
                 data-active={active ? "true" : "false"}
               >
