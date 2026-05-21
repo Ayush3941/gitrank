@@ -200,6 +200,7 @@ export function SettingsPageClient() {
     exportAccount.isPending ||
     accountLinkStart.isPending;
   const pendingRepository = updateRepositoryVisibility.variables?.fullName ?? null;
+  const hiddenRepositoryCount = data.user.repositories.filter((repository) => repository.visibility !== "Public").length;
   const accountActionNoticeId = "settings-account-action-notice";
   const accountActionErrorId = "settings-account-action-error";
 
@@ -591,18 +592,23 @@ export function SettingsPageClient() {
               <p className="text-xs font-medium text-primary">Repository privacy</p>
               <h2 className="mt-2 text-2xl font-semibold text-white">Choose what stays on your public card</h2>
             </div>
-            <PrivacyRepositoryToggleList
-              repositories={data.user.repositories}
-              pendingRepository={pendingRepository}
-              onToggle={
-                (repository, checked) =>
-                  updateRepositoryVisibility.mutate({
-                    fullName: repository.name,
-                    visibility: checked ? "Public" : "Hidden",
-                    reason: repository.reason,
-                  })
-              }
-            />
+            <details className="space-y-3" open={hiddenRepositoryCount > 0 && data.user.repositories.length <= 8}>
+              <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-primary/24 px-4 py-3 text-sm font-semibold text-white marker:content-none">
+                Repository visibility controls ({data.user.repositories.length} total{hiddenRepositoryCount > 0 ? ` · ${hiddenRepositoryCount} hidden` : ""})
+              </summary>
+              <PrivacyRepositoryToggleList
+                repositories={data.user.repositories}
+                pendingRepository={pendingRepository}
+                onToggle={
+                  (repository, checked) =>
+                    updateRepositoryVisibility.mutate({
+                      fullName: repository.name,
+                      visibility: checked ? "Public" : "Hidden",
+                      reason: repository.reason,
+                    })
+                }
+              />
+            </details>
           </GlowCard>
         </DeferUntilVisible>
       </section>
