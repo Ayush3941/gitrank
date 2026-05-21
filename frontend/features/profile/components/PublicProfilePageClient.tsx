@@ -112,7 +112,7 @@ export function PublicProfilePageClient({
   }, [data, streak.currentStreakDays]);
 
   if (isLoading) {
-    return <LoadingState message="Preparing public reputation card..." />;
+    return <LoadingState message="Loading public profile..." />;
   }
 
   if (isError) {
@@ -147,7 +147,7 @@ export function PublicProfilePageClient({
       <PageHeader
         eyebrow="Public profile"
         title={`${data.user.displayName} on GitRank`}
-        description="Share-ready contributor identity with evidence-backed score context, progression signals, and verifiable contribution highlights."
+        description="Share-ready contributor identity with evidence-backed score and contribution highlights."
         actions={(
           <Button asChild variant="secondary">
             <Link href="/dashboard" prefetch={false}>Open dashboard</Link>
@@ -188,7 +188,7 @@ export function PublicProfilePageClient({
             <GlowCard className="space-y-5">
               <div>
                 <p className="text-xs font-medium text-primary">Badge showcase</p>
-                <h2 className="mt-2 text-2xl font-semibold text-white">Top unlocked badges</h2>
+                <h2 className="mt-2 text-xl font-semibold text-white">Top unlocked badges</h2>
               </div>
               <ul role="list" className="grid gap-3 sm:grid-cols-2">
                 {data.user.badges.filter((badge) => badge.unlocked).slice(0, 4).map((badge) => (
@@ -211,7 +211,7 @@ export function PublicProfilePageClient({
             <GlowCard className="space-y-5">
               <div>
                 <p className="text-xs font-medium text-primary">Skill radar</p>
-                <h2 className="mt-2 text-2xl font-semibold text-white">Strength map</h2>
+                <h2 className="mt-2 text-xl font-semibold text-white">Strength map</h2>
               </div>
               <SkillRadarChart skills={data.user.skillTree} />
             </GlowCard>
@@ -223,7 +223,6 @@ export function PublicProfilePageClient({
           <h2 className="text-lg font-semibold text-white">
             Best PR battle reports ({data.featuredContributions.length})
           </h2>
-          <p className="text-sm text-muted">Top-impact contribution reports from the current profile snapshot.</p>
         </div>
         <DeferUntilVisible fallback={<PublicProfileSectionPlaceholder title="Loading best PR battle reports" />}>
           <BestPRsPanel reports={data.featuredContributions} />
@@ -235,7 +234,7 @@ export function PublicProfilePageClient({
             <GlowCard className="space-y-5">
               <div>
                 <p className="text-xs font-medium text-primary">Contribution quality timeline</p>
-                <h2 className="mt-2 text-2xl font-semibold text-white">{data.trendWindowLabel}</h2>
+                <h2 className="mt-2 text-xl font-semibold text-white">{data.trendWindowLabel}</h2>
               </div>
               <TimelineChart data={data.user.xpTimeline} />
             </GlowCard>
@@ -245,7 +244,7 @@ export function PublicProfilePageClient({
               </div>
               <div>
                 <p className="text-xs font-medium text-primary">Top repositories</p>
-                <h2 className="mt-2 text-2xl font-semibold text-white">Where recent contribution signal is strongest</h2>
+                <h2 className="mt-2 text-xl font-semibold text-white">Strongest recent repositories</h2>
               </div>
               <div className="space-y-3">
                 {data.topRepositories.length === 0 ? (

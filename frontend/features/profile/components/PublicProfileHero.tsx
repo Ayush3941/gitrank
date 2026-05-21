@@ -45,7 +45,7 @@ export function PublicProfileHero({
             </div>
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-3">
-                <h2 className="break-anywhere text-3xl font-semibold text-white">{user.displayName}</h2>
+                <h2 className="break-anywhere text-2xl font-semibold text-white">{user.displayName}</h2>
                 <RankBadge rank={user.level.rankTier} />
               </div>
               <p className="text-sm text-muted">@{user.username}</p>
@@ -65,7 +65,7 @@ export function PublicProfileHero({
           {identitySummary ? (
             <div className="neon-callout rounded-2xl px-4 py-3 text-sm text-muted">
               <p className="cyber-readout text-xs font-medium text-cyan-200">
-                Open Source Identity ({aiMode === "gemini" ? "Gemini" : "Deterministic"})
+                Identity summary ({aiMode === "gemini" ? "Gemini" : "Deterministic"})
               </p>
               <ExpandableText
                 text={identitySummary}
@@ -121,7 +121,7 @@ export function PublicProfileHero({
             <MiniMetric icon={<ShieldCheck className="h-4 w-4" />} label="Formula" value={user.rankProgress.season.scoringVersion} />
           </div>
           <p className="cyber-readout mt-4 text-xs leading-5 text-muted">
-            Evidence-backed public snapshot built from score events, badges, and PR visibility controls.
+            Evidence-backed public snapshot from score events, badges, and PR visibility controls.
           </p>
         </div>
       </div>
