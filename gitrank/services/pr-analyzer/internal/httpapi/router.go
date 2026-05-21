@@ -40,7 +40,7 @@ func NewRouterWithStore(cfg config.App, analysisStore *analyzer.Store, log *slog
 		},
 		Dependencies: []contracts.DependencySpec{
 			{Name: "PostgreSQL", Kind: "database", Purpose: "Persisted contribution analysis artifacts", Critical: true, Status: dependencyStatus(analysisStore != nil)},
-			{Name: "OpenAI Responses API", Kind: "external_http", BaseURL: cfg.AI.BaseURL, Purpose: "Future AI enrichment layer", Auth: "API key", Critical: false, Status: "configured"},
+			{Name: "Gemini API (OpenAI-compatible)", Kind: "external_http", BaseURL: cfg.AI.BaseURL, Purpose: "AI summary enrichment for persisted PR analysis", Auth: "API key", Critical: false, Status: "configured"},
 		},
 	}
 

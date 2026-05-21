@@ -28,6 +28,9 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.GitHub.UserAgent != "GitRank/dev" {
 		t.Fatalf("GitHub.UserAgent = %q, want GitRank/dev", cfg.GitHub.UserAgent)
 	}
+	if cfg.GitHub.RequestTimeout != 20*time.Second {
+		t.Fatalf("GitHub.RequestTimeout = %v, want 20s", cfg.GitHub.RequestTimeout)
+	}
 	if cfg.Scheduler.WorkerConcurrency != 4 {
 		t.Fatalf("Scheduler.WorkerConcurrency = %d, want 4", cfg.Scheduler.WorkerConcurrency)
 	}

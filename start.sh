@@ -164,6 +164,20 @@ if [[ -z "${REDIS_URL:-}" ]]; then
   export REDIS_URL
 fi
 
+# Guard against fragile local sync behavior from very low GitHub API timeouts.
+# Large repositories can exceed 10s on some endpoints even when healthy.
+if [[ -z "${GITHUB_REQUEST_TIMEOUT:-}" ]]; then
+  GITHUB_REQUEST_TIMEOUT="20s"
+  export GITHUB_REQUEST_TIMEOUT
+  persist_env_value "$BACKEND_ENV_FILE" "GITHUB_REQUEST_TIMEOUT" "$GITHUB_REQUEST_TIMEOUT"
+  log "set default GITHUB_REQUEST_TIMEOUT=$GITHUB_REQUEST_TIMEOUT"
+elif [[ "${GITHUB_REQUEST_TIMEOUT}" =~ ^([0-9]+)s$ ]] && (( BASH_REMATCH[1] < 20 )); then
+  GITHUB_REQUEST_TIMEOUT="20s"
+  export GITHUB_REQUEST_TIMEOUT
+  persist_env_value "$BACKEND_ENV_FILE" "GITHUB_REQUEST_TIMEOUT" "$GITHUB_REQUEST_TIMEOUT"
+  log "raised GITHUB_REQUEST_TIMEOUT to $GITHUB_REQUEST_TIMEOUT for stable local sync"
+fi
+
 # Keep local boot smooth when placeholders remain in .env.
 if [[ -z "${GITRANK_SESSION_SECRET:-}" || "${GITRANK_SESSION_SECRET}" == replace-* ]]; then
   GITRANK_SESSION_SECRET="$(openssl rand -hex 32)"

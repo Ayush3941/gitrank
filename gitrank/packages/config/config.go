@@ -222,7 +222,7 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			APIVersion:                     getEnv("GITHUB_API_VERSION", "2026-03-10"),
 			UserAgent:                      getEnv("GITHUB_USER_AGENT", "GitRank/dev"),
 			OAuthScopes:                    getCSVWithDefault("GITHUB_OAUTH_SCOPES", []string{"read:user", "user:email"}),
-			RequestTimeout:                 getDuration("GITHUB_REQUEST_TIMEOUT", 10*time.Second),
+			RequestTimeout:                 getDuration("GITHUB_REQUEST_TIMEOUT", 20*time.Second),
 			MaxPageSize:                    getInt("GITHUB_MAX_PAGE_SIZE", 100),
 			GraphQLPageSize:                getInt("GITHUB_GRAPHQL_PAGE_SIZE", 100),
 			MaxBodyBytes:                   getInt("GITHUB_WEBHOOK_MAX_BODY_BYTES", 1<<20),
