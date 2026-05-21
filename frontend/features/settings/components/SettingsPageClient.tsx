@@ -289,9 +289,6 @@ export function SettingsPageClient() {
 
   return (
     <div className="space-y-6">
-      <header className="space-y-1">
-        <h2 className="text-xl font-semibold text-white sm:text-2xl">Settings and privacy</h2>
-      </header>
       <section id="settings-account" className="scroll-mt-24">
         <GlowCard className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">

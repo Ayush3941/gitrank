@@ -6,12 +6,12 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
   const fallbackRows = [
     {
       label: "Base PR value",
-      value: report.baseValue,
+      value: formatXpValue(report.baseValue),
       detail: `${contribution.difficultyScore}/100 difficulty and ${contribution.impactScore}/100 impact.`,
     },
     {
       label: "Merged bonus",
-      value: report.mergedBonus,
+      value: formatXpValue(report.mergedBonus),
       detail:
         contribution.status === "merged"
           ? "Merged work receives full verification weight."
@@ -19,21 +19,21 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
     },
     {
       label: "Review depth bonus",
-      value: report.reviewBonus,
+      value: formatXpValue(report.reviewBonus),
       detail: contribution.maintainerReviewed
         ? "Maintainer review was detected."
         : "No maintainer review detected yet.",
     },
     {
       label: "Test impact bonus",
-      value: report.testBonus,
+      value: formatXpValue(report.testBonus),
       detail: contribution.ciPassed
         ? "CI passed and test signal contributed."
         : "CI proof was missing or incomplete.",
     },
     {
       label: "Repo weight bonus",
-      value: report.repoBonus,
+      value: formatXpValue(report.repoBonus),
       detail: `Repository context multiplier ${contribution.repoWeight.toFixed(2)}x.`,
     },
   ];
@@ -109,6 +109,17 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
       </ul>
     </GlowCard>
   );
+}
+
+function formatXpValue(value: number): string {
+  if (!Number.isFinite(value)) {
+    return "0 XP";
+  }
+  const rounded = Math.round(value);
+  if (rounded > 0) {
+    return `+${rounded} XP`;
+  }
+  return `${rounded} XP`;
 }
 
 function prioritizeFinalXpRow(

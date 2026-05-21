@@ -166,7 +166,7 @@ export function QuestsPageClient() {
               id={QUEST_SECTION_IDS[group]}
               className="render-opt-section scroll-mt-24 space-y-4"
             >
-              <details className="space-y-3" defaultOpen={defaultOpen}>
+              <details className="space-y-3" open={defaultOpen}>
                 <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
                   {labelForGroup(group)} ({grouped.length})
                 </summary>

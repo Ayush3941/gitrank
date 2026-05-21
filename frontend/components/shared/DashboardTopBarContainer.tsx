@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import {
-  type AutoSyncNote,
   DashboardTopBar,
   DashboardTopBarSkeleton,
   DashboardTopBarUnavailable,
 } from "@/components/shared/DashboardTopBar";
-import { useRunUserSync } from "@/hooks/use-account-actions";
+import { useRequestProfileSync } from "@/hooks/use-account-actions";
 import { useAccountGamificationPreference } from "@/hooks/use-gamification-preference";
 import { useMyProfile } from "@/hooks/use-profile";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
@@ -23,11 +22,10 @@ const AUTO_SYNC_SESSION_KEY_PREFIX = "gitrank:auto-sync:last-at:";
 export function DashboardTopBarContainer() {
   const pathname = usePathname() ?? "/dashboard";
   const { data, isError, isLoading } = useMyProfile();
-  const { mutate: runUserSync, isPending: isUserSyncPending } = useRunUserSync();
+  const { mutate: requestProfileSync, isPending: isUserSyncPending } = useRequestProfileSync();
   const autoSyncLastAttempt = useRef(0);
   const autoSyncAttempts = useRef(0);
   const lastObservedSyncState = useRef<string | null>(null);
-  const [autoSyncOutcome, setAutoSyncOutcome] = useState<AutoSyncNote | null>(null);
   useAccountGamificationPreference(data);
 
   useEffect(() => {
@@ -72,38 +70,19 @@ export function DashboardTopBarContainer() {
     if (typeof window !== "undefined") {
       const sessionKey = `${AUTO_SYNC_SESSION_KEY_PREFIX}${data.user.username.toLowerCase()}`;
       const lastSessionAttempt = Number(window.sessionStorage.getItem(sessionKey) ?? "");
-      if (Number.isFinite(lastSessionAttempt) && now-lastSessionAttempt < AUTO_SYNC_SESSION_COOLDOWN_MS) {
+      if (Number.isFinite(lastSessionAttempt) && now - lastSessionAttempt < AUTO_SYNC_SESSION_COOLDOWN_MS) {
         return;
       }
       window.sessionStorage.setItem(sessionKey, String(now));
     }
     autoSyncLastAttempt.current = now;
     autoSyncAttempts.current += 1;
-    runUserSync(data.user.username, {
-      onSuccess: (result) => {
-        const queuedFallback =
-          result.status === "queued" || result.fetched?.fallback_queued === 1;
+    requestProfileSync(undefined, {
+      onSuccess: () => {
         autoSyncLastAttempt.current = Date.now();
-        if (queuedFallback) {
-          setAutoSyncOutcome({
-            tone: "info",
-            message: "Sync queued.",
-          });
-          void emitAnalyticsEvent({
-            eventName: "sync.queued",
-            source: "frontend",
-            target: "dashboard",
-            status: "success",
-          });
-          return;
-        }
         autoSyncAttempts.current = 0;
-        setAutoSyncOutcome({
-          tone: "success",
-          message: "Profile synced.",
-        });
         void emitAnalyticsEvent({
-          eventName: "sync.succeeded",
+          eventName: "sync.queued",
           source: "frontend",
           target: "dashboard",
           status: "success",
@@ -111,22 +90,19 @@ export function DashboardTopBarContainer() {
       },
       onError: () => {
         const attemptsRemaining = AUTO_SYNC_MAX_ATTEMPTS_PER_MOUNT - autoSyncAttempts.current;
-        setAutoSyncOutcome({
-          tone: "warning",
-          message:
-            attemptsRemaining > 0
-              ? `Sync retrying (${attemptsRemaining} left).`
-              : "Sync failed. Reconnect GitHub.",
-        });
         void emitAnalyticsEvent({
           eventName: "sync.failed",
           source: "frontend",
           target: "dashboard",
           status: "failure",
         });
+        if (attemptsRemaining <= 0 && typeof window !== "undefined") {
+          const sessionKey = `${AUTO_SYNC_SESSION_KEY_PREFIX}${data.user.username.toLowerCase()}`;
+          window.sessionStorage.setItem(sessionKey, String(Date.now()));
+        }
       },
     });
-  }, [data, isError, isLoading, isUserSyncPending, pathname, runUserSync]);
+  }, [data, isError, isLoading, isUserSyncPending, pathname, requestProfileSync]);
 
   if (isLoading) {
     return <DashboardTopBarSkeleton />;
@@ -136,22 +112,5 @@ export function DashboardTopBarContainer() {
     return <DashboardTopBarUnavailable />;
   }
 
-  const autoSyncNote: AutoSyncNote | null = isUserSyncPending
-    ? {
-      tone: "info",
-      message: "Syncing...",
-    }
-    : data.user.syncStatus.state === "syncing"
-      ? {
-        tone: "info",
-        message: "Sync already running.",
-      }
-      : autoSyncOutcome;
-
-  return (
-    <DashboardTopBar
-      user={data.user}
-      autoSyncNote={autoSyncNote}
-    />
-  );
+  return <DashboardTopBar user={data.user} />;
 }

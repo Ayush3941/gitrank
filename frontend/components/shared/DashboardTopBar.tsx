@@ -2,36 +2,16 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { AlertTriangle, ArrowUpRight, CheckCircle2, Info, Zap } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, Zap } from "lucide-react";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
 import type { UserProfile } from "@/types/gitrank";
 
-export type AutoSyncNote = {
-  tone: "info" | "success" | "warning";
-  message: string;
-};
-
 export function DashboardTopBar({
   user,
-  autoSyncNote,
 }: {
   user: UserProfile;
-  autoSyncNote?: AutoSyncNote | null;
 }) {
-  const autoSyncToneClass =
-    autoSyncNote?.tone === "success"
-      ? "neon-chip neon-chip-success border-emerald-300/30 text-emerald-100"
-      : autoSyncNote?.tone === "warning"
-        ? "neon-chip neon-chip-warning border-amber-300/34 text-amber-100"
-        : "neon-chip neon-chip-info border-primary/28 text-foreground";
-  const AutoSyncIcon =
-    autoSyncNote?.tone === "success"
-      ? CheckCircle2
-      : autoSyncNote?.tone === "warning"
-        ? AlertTriangle
-        : Info;
-
   return (
     <div className="glass-panel cyber-card cyber-frame mb-5 px-4 py-3 sm:px-5">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -61,23 +41,6 @@ export function DashboardTopBar({
             <span className="numeric-readout">{user.weeklyXp.toLocaleString("en-US")}</span> XP
           </div>
         </div>
-      </div>
-      <div className="mt-2 min-h-6">
-        {autoSyncNote ? (
-          <p
-            role="status"
-            aria-live="polite"
-            aria-atomic="true"
-            className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium ${autoSyncToneClass}`}
-          >
-            {AutoSyncIcon ? <AutoSyncIcon className="h-3.5 w-3.5 shrink-0" /> : null}
-            <span className="break-anywhere">{autoSyncNote.message}</span>
-          </p>
-        ) : (
-          <p aria-hidden="true" className="text-xs opacity-0 select-none">
-            Background sync status
-          </p>
-        )}
       </div>
     </div>
   );
