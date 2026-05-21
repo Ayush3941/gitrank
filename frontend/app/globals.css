@@ -945,6 +945,30 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   font-variant-numeric: tabular-nums;
 }
 
+.page-shell :is(
+    .glass-panel,
+    .glass-panel-strong,
+    .cyber-card,
+    .cyber-frame,
+    .cyber-header,
+    .cyber-terminal,
+    .neon-surface,
+    .neon-surface-strong,
+    .neon-metric,
+    .neon-tile,
+    .neon-track,
+    .neon-chip,
+    .hud-pill,
+    .dashboard-nav-shell,
+    .dashboard-nav-item,
+    button,
+    input,
+    select,
+    textarea
+  ) {
+  border-radius: var(--radius-universal) !important;
+}
+
 .render-opt-card {
   content-visibility: visible;
   contain-intrinsic-size: auto;
