@@ -208,21 +208,19 @@ export function PRBattleReportPageClient({
       </section>
       <section id="pr-report-evidence" className="render-opt-section scroll-mt-24">
         <DeferUntilVisible fallback={<PRReportSectionPlaceholder title="Loading evidence signals" />}>
-          <details className="space-y-4">
-            <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
-              Evidence signals
-            </summary>
+          <div className="space-y-4">
+            <h2 className="text-sm font-semibold text-white">Evidence signals</h2>
             <EvidenceSignalsCard report={data} />
-          </details>
+          </div>
         </DeferUntilVisible>
       </section>
       {uniqueBadgeUnlocks.length ? (
         <section id="pr-report-rewards" className="render-opt-section scroll-mt-24">
           <DeferUntilVisible fallback={<PRReportSectionPlaceholder title="Loading reward unlocks" />}>
-            <details className="space-y-4">
-              <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
+            <div className="space-y-4">
+              <h2 className="text-sm font-semibold text-white">
                 Badge unlocks ({uniqueBadgeUnlocks.length})
-              </summary>
+              </h2>
               <GlowCard className="space-y-4">
                 <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-100">
                   <Award className="h-3.5 w-3.5" />
@@ -251,7 +249,7 @@ export function PRBattleReportPageClient({
                   ))}
                 </ul>
               </GlowCard>
-            </details>
+            </div>
           </DeferUntilVisible>
         </section>
       ) : null}
@@ -261,10 +259,8 @@ export function PRBattleReportPageClient({
           className={!uniqueBadgeUnlocks.length ? "render-opt-section scroll-mt-24" : "render-opt-section"}
         >
           <DeferUntilVisible fallback={<PRReportSectionPlaceholder title="Loading next quest recommendation" />}>
-            <details className="space-y-4">
-              <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
-                Suggested next quest
-              </summary>
+            <div className="space-y-4">
+              <h2 className="text-sm font-semibold text-white">Suggested next quest</h2>
               <GlowCard className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
@@ -297,7 +293,7 @@ export function PRBattleReportPageClient({
                   </Link>
                 </Button>
               </GlowCard>
-            </details>
+            </div>
           </DeferUntilVisible>
         </section>
       ) : null}

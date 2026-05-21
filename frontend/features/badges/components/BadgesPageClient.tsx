@@ -395,10 +395,10 @@ export function BadgesPageClient() {
       {!isLoading && !isError ? (
         <section id="badges-locked" className="render-opt-section scroll-mt-24 space-y-3">
           <DeferUntilVisible fallback={<BadgeSectionPlaceholder title="Loading locked badge lanes" />}>
-            <details className="space-y-3">
-              <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
+            <div className="space-y-3">
+              <h2 className="text-sm font-semibold text-white">
                 Locked / upcoming badges ({lockedBadges.length})
-              </summary>
+              </h2>
               {lockedBadges.length > 0 ? (
                 <div className="neon-surface rounded-[1.4rem] border border-fuchsia-300/24 p-3">
                   <ul role="list" className="grid gap-3 md:grid-cols-3">
@@ -462,7 +462,7 @@ export function BadgesPageClient() {
                   No locked badge definitions are returned by this snapshot.
                 </div>
               )}
-            </details>
+            </div>
           </DeferUntilVisible>
         </section>
       ) : null}

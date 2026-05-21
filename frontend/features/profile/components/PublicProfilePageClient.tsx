@@ -183,10 +183,8 @@ export function PublicProfilePageClient({
       </section>
       <section id="public-profile-badges-skills" className="render-opt-section scroll-mt-24">
         <DeferUntilVisible fallback={<PublicProfileSectionPlaceholder title="Loading badge and skill lanes" />}>
-          <details className="space-y-3">
-            <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
-              Badges and skills
-            </summary>
+          <div className="space-y-3">
+            <h2 className="text-sm font-semibold text-white">Badges and skills</h2>
             <div className="grid gap-6 xl:grid-cols-[1fr,1fr]">
               <GlowCard className="space-y-5">
                 <div>
@@ -219,25 +217,23 @@ export function PublicProfilePageClient({
                 <SkillRadarChart skills={data.user.skillTree} />
               </GlowCard>
             </div>
-          </details>
+          </div>
         </DeferUntilVisible>
       </section>
       <section id="public-profile-best-prs" className="render-opt-section scroll-mt-24">
         <DeferUntilVisible fallback={<PublicProfileSectionPlaceholder title="Loading best PR battle reports" />}>
-          <details className="space-y-3">
-            <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
+          <div className="space-y-3">
+            <h2 className="text-sm font-semibold text-white">
               Best PR battle reports ({data.featuredContributions.length})
-            </summary>
+            </h2>
             <BestPRsPanel reports={data.featuredContributions} />
-          </details>
+          </div>
         </DeferUntilVisible>
       </section>
       <section id="public-profile-timeline-repos" className="render-opt-section scroll-mt-24">
         <DeferUntilVisible fallback={<PublicProfileSectionPlaceholder title="Loading timeline and repository lanes" />}>
-          <details className="space-y-5">
-            <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
-              Timeline and repositories
-            </summary>
+          <div className="space-y-5">
+            <h2 className="text-sm font-semibold text-white">Timeline and repositories</h2>
             <div className="grid gap-6 xl:grid-cols-[1.08fr,0.92fr]">
               <GlowCard className="space-y-5">
                 <div>
@@ -291,7 +287,7 @@ export function PublicProfilePageClient({
                 </div>
               </GlowCard>
             </div>
-          </details>
+          </div>
         </DeferUntilVisible>
       </section>
     </div>
