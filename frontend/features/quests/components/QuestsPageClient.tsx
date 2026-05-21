@@ -39,6 +39,8 @@ export function QuestsPageClient() {
     "Long-term": quests.filter((quest) => quest.cadence === "Long-term"),
     "Skill-based": quests.filter((quest) => quest.cadence === "Skill-based"),
   } as const;
+  const defaultExpandedGroup =
+    groups.find((group) => questMap[group].some((quest) => quest.status === "Active")) ?? "Daily";
   const todayQuest = selectQuestSpotlight(
     questMap.Daily.length > 0 ? questMap.Daily : quests,
   );
@@ -166,7 +168,7 @@ export function QuestsPageClient() {
               id={QUEST_SECTION_IDS[group]}
               className="render-opt-section scroll-mt-24"
             >
-              <details className="space-y-4" open={group === "Daily"}>
+              <details className="space-y-4" open={group === defaultExpandedGroup}>
                 <summary className="focus-ring neon-surface cursor-pointer list-none px-4 py-3 text-sm font-semibold text-white marker:content-none">
                   {labelForGroup(group)} ({grouped.length})
                 </summary>
