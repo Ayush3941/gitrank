@@ -24,9 +24,9 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
             <LockKeyhole className="h-3.5 w-3.5" />
             Sign in
           </div>
-          <h1 className="text-4xl font-semibold tracking-tight text-white">Enter GitRank and unlock a serious contribution profile.</h1>
+          <h1 className="text-4xl font-semibold tracking-tight text-white">Sign in and unlock your GitRank profile.</h1>
           <p className="text-base leading-8 text-muted">
-            GitRank feels like a battle pass, but the scoring model is built for maintainers, recruiters, and people who care whether the work mattered.
+            Evidence-first scoring focused on meaningful merged work.
           </p>
           <ol className="grid gap-3 sm:grid-cols-3">
             {[
@@ -57,11 +57,10 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
             <Sparkles className="h-5 w-5" />
           </div>
           <h2 className="text-2xl font-semibold text-white">Meaning-first scoring</h2>
-          <p className="text-sm text-muted">
-            GitRank does not ask only how much you contributed. It asks how meaningful your contribution was.
-          </p>
-          <div className="space-y-3">
-            <p className="text-xs font-medium text-primary">How scoring works</p>
+          <details className="space-y-3">
+            <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
+              How scoring works
+            </summary>
             <ul role="list" className="grid gap-3">
               {[
                 "Merged work outranks raw streaks.",
@@ -72,7 +71,7 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
                 <li key={`score-rule-${index}-${line}`} className="neon-surface rounded-3xl px-4 py-3 text-sm text-muted">{line}</li>
               ))}
             </ul>
-          </div>
+          </details>
         </GlowCard>
       </GlowCard>
     </main>

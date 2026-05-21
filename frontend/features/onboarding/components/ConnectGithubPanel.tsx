@@ -33,9 +33,9 @@ export function ConnectGithubPanel() {
           GitHub OAuth
         </div>
         <div className="space-y-3">
-          <h1 className="text-4xl font-semibold tracking-tight text-white">Connect GitHub and let the scoring engine read your contribution history.</h1>
+          <h1 className="text-4xl font-semibold tracking-tight text-white">Connect GitHub and sync contribution evidence.</h1>
           <p className="max-w-2xl text-base leading-8 text-muted">
-            We analyze public contribution evidence by default. Private code is not inspected unless you later choose to opt in.
+            Public contribution evidence is analyzed by default. Private code is not inspected in v1 baseline.
           </p>
         </div>
         <ol className="grid gap-3 sm:grid-cols-3">
@@ -111,22 +111,24 @@ export function ConnectGithubPanel() {
             <p className="text-sm text-muted">You control what becomes public later.</p>
           </div>
         </div>
-        <ul role="list" className="space-y-3">
-          {[
-            "Public profile can be disabled at any time.",
-            "Exact PRs, AI summaries, and leaderboard participation are individually controllable.",
-            "Repository-level visibility can be hidden without deleting the account.",
-          ].map((item, index) => (
-            <li key={`${item}-${index}`} className="neon-surface rounded-3xl px-4 py-3 text-sm text-muted">{item}</li>
-          ))}
-        </ul>
+        <details className="space-y-3">
+          <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
+            Privacy controls
+          </summary>
+          <ul role="list" className="space-y-3">
+            {[
+              "Public profile can be disabled at any time.",
+              "Exact PRs, AI summaries, and leaderboard participation are individually controllable.",
+              "Repository-level visibility can be hidden without deleting the account.",
+            ].map((item, index) => (
+              <li key={`${item}-${index}`} className="neon-surface rounded-3xl px-4 py-3 text-sm text-muted">{item}</li>
+            ))}
+          </ul>
+        </details>
         <div className="neon-surface rounded-[1.75rem] border-primary/22 px-4 py-4">
           <p className="text-xs font-medium text-primary">Where this goes next</p>
           <p className="mt-2 text-sm text-foreground">
-            After OAuth, GitRank redirects to <span className="font-semibold text-white">Analyzing</span> and starts live sync. You will not see fabricated leaderboard identities during this flow.
-          </p>
-          <p className="mt-2 text-xs text-muted">
-            If GitHub was already connected in this browser, you can skip OAuth and continue directly to Analyzing.
+            After OAuth, GitRank redirects to <span className="font-semibold text-white">Analyzing</span> and starts live sync.
           </p>
         </div>
         <div className="rounded-[1.75rem] border border-primary/18 bg-primary/8 p-4 text-sm text-muted">
