@@ -13,6 +13,7 @@ import { StaleState } from "@/components/shared/StaleState";
 import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LeaderboardArena } from "@/features/leaderboard/components/LeaderboardArena";
 import { laneParamToTab, tabToLaneParam } from "@/features/leaderboard/lib/lane-param";
@@ -139,25 +140,43 @@ export function LeaderboardPageClient() {
         />
       ) : null}
       <section id="leaderboard-filters" className="scroll-mt-24 space-y-3">
-        <Tabs value={tab} onValueChange={handleTabChange}>
-          <TabsList
-            className="scrollbar-thin w-full overflow-x-auto whitespace-nowrap"
-            aria-label="Leaderboard lane filters"
-          >
-            {tabs.map((item, index) => (
-              <TabsTrigger
-                key={`leaderboard-tab-${index}-${item}`}
-                value={item}
-                aria-label={`${TAB_LABELS[item].full} leaderboard lane`}
-                aria-controls={LEADERBOARD_ROWS_REGION_ID}
-                title={TAB_LABELS[item].full}
-              >
-                <span className="sm:hidden">{TAB_LABELS[item].short}</span>
-                <span className="hidden sm:inline">{TAB_LABELS[item].full}</span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+        <div className="sm:hidden">
+          <Select value={tab} onValueChange={handleTabChange}>
+            <SelectTrigger
+              aria-label="Leaderboard lane filter"
+              aria-controls={LEADERBOARD_ROWS_REGION_ID}
+            >
+              <SelectValue placeholder="Select lane" />
+            </SelectTrigger>
+            <SelectContent>
+              {tabs.map((item) => (
+                <SelectItem key={`leaderboard-select-${item}`} value={item}>
+                  {TAB_LABELS[item].full}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="hidden sm:block">
+          <Tabs value={tab} onValueChange={handleTabChange}>
+            <TabsList
+              className="scrollbar-thin w-full overflow-x-auto whitespace-nowrap"
+              aria-label="Leaderboard lane filters"
+            >
+              {tabs.map((item, index) => (
+                <TabsTrigger
+                  key={`leaderboard-tab-${index}-${item}`}
+                  value={item}
+                  aria-label={`${TAB_LABELS[item].full} leaderboard lane`}
+                  aria-controls={LEADERBOARD_ROWS_REGION_ID}
+                  title={TAB_LABELS[item].full}
+                >
+                  <span>{TAB_LABELS[item].full}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        </div>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p role="status" aria-live="polite" className="text-sm font-medium text-cyan-100">
             {isBusy

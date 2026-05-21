@@ -136,22 +136,41 @@ export function ContributionFilters({
           ) : null}
         </>
       ) : null}
-      <Tabs value={value} onValueChange={onValueChange}>
-        <TabsList className="scrollbar-thin w-full overflow-x-auto whitespace-nowrap" aria-label="Contribution category filters">
-          {filters.map((filter) => (
-            <TabsTrigger
-              key={filter.value}
-              value={filter.value}
-              title={filter.value}
-              aria-label={`${filter.value} contributions`}
-              aria-controls={resultsRegionId}
-            >
-              <span className="sm:hidden">{filter.short}</span>
-              <span className="hidden sm:inline">{filter.value}</span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+      <div className="sm:hidden">
+        <Select value={value} onValueChange={onValueChange}>
+          <SelectTrigger
+            aria-label="Contribution category filter"
+            aria-describedby={statusId}
+            aria-controls={resultsRegionId}
+          >
+            <SelectValue placeholder="Select category" />
+          </SelectTrigger>
+          <SelectContent>
+            {filters.map((filter) => (
+              <SelectItem key={filter.value} value={filter.value}>
+                {filter.value}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="hidden sm:block">
+        <Tabs value={value} onValueChange={onValueChange}>
+          <TabsList className="scrollbar-thin w-full overflow-x-auto whitespace-nowrap" aria-label="Contribution category filters">
+            {filters.map((filter) => (
+              <TabsTrigger
+                key={filter.value}
+                value={filter.value}
+                title={filter.value}
+                aria-label={`${filter.value} contributions`}
+                aria-controls={resultsRegionId}
+              >
+                <span>{filter.value}</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      </div>
       <div className="grid gap-3 lg:grid-cols-[1fr,16rem]">
         <div className="relative">
           <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted" />
