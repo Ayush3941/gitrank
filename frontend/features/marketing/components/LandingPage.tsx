@@ -30,7 +30,7 @@ export function LandingPage() {
                 <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">For hiring teams</span>
               </div>
               <p className="cyber-copy readable-measure max-w-[72ch] text-base leading-8 sm:text-lg">
-                GitRank analyzes meaningful PR difficulty, review depth, tests, and project context, then turns that evidence into XP, levels, badges, and shareable profile snapshots.
+                GitRank analyzes PR difficulty, review depth, tests, and project context, then turns that evidence into XP, levels, badges, and shareable profile snapshots.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -44,9 +44,6 @@ export function LandingPage() {
                 <Link href="/onboarding/connect-github">See onboarding flow</Link>
               </Button>
             </div>
-            <p className="readable-measure max-w-[72ch] text-sm leading-7 text-muted">
-              GitRank does not ask only how much you contributed. It asks what recent contribution evidence suggests about the work.
-            </p>
           </div>
           <GlowCard strong className="space-y-5">
             <div className="flex items-center justify-between">
@@ -63,16 +60,19 @@ export function LandingPage() {
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="neon-surface rounded-3xl px-4 py-3 text-sm cyber-copy">Live contributor snapshot</div>
               <div className="neon-surface rounded-3xl px-4 py-3 text-sm cyber-copy">Evidence-backed score movement</div>
-              <div className="neon-surface rounded-3xl px-4 py-3 text-sm cyber-copy">Quest and badge progression</div>
-              <div className="neon-surface rounded-3xl px-4 py-3 text-sm cyber-copy">AI explanation with deterministic fallback</div>
             </div>
           </GlowCard>
         </div>
       </section>
 
       <DeferUntilVisible fallback={<LandingSectionPlaceholder title="Loading reputation context lanes" />}>
-      <section className="render-opt-section grid gap-6 lg:grid-cols-3">
-        {[
+      <section className="render-opt-section">
+        <details className="space-y-3">
+          <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
+            Why GitRank exists
+          </summary>
+          <div className="grid gap-6 lg:grid-cols-3">
+          {[
           {
             icon: <ChartNoAxesCombined className="h-5 w-5 text-primary" />,
             title: "GitHub graphs show activity, not skill.",
@@ -95,13 +95,19 @@ export function LandingPage() {
             <p className="text-sm text-muted">{item.text}</p>
           </GlowCard>
         ))}
+          </div>
+        </details>
       </section>
       </DeferUntilVisible>
 
       <DeferUntilVisible fallback={<LandingSectionPlaceholder title="Loading journey flows" />}>
       <section className="render-opt-section">
-        <ul role="list" className="grid gap-6 lg:grid-cols-3">
-          {[
+        <details className="space-y-3">
+          <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
+            Core user journeys
+          </summary>
+          <ul role="list" className="grid gap-6 lg:grid-cols-3">
+            {[
           {
             lane: "New contributor",
             mission: "Connect GitHub and unlock first score snapshot.",
@@ -126,7 +132,8 @@ export function LandingPage() {
             </GlowCard>
           </li>
           ))}
-        </ul>
+          </ul>
+        </details>
       </section>
       </DeferUntilVisible>
 
@@ -185,35 +192,34 @@ export function LandingPage() {
               <Metric label="Impact" value="Live" />
               <Metric label="Review depth" value="Live" />
             </div>
-            <p className="mt-5 text-sm text-muted">
-              Once connected, this section shows real PR score components, evidence state, and AI explanation with deterministic fallback.
-            </p>
           </div>
         </GlowCard>
 
-        <GlowCard className="space-y-5">
-          <SectionHeader
-            eyebrow="Badge shelf"
-            title="Visible milestones, not vanity clutter"
-            description="Badges are unlocked by sustained evidence. Legendary badges stay locked until the work deserves them."
-          />
-          <ul role="list" className="grid gap-3 sm:grid-cols-2">
-            {[
-              "Merged contribution cadence",
-              "Review depth consistency",
-              "Testing and reliability signal",
-              "Cross-repository impact",
-            ].map((lane, index) => (
-              <li key={`badge-lane-${index}`} className="neon-surface rounded-[1.75rem] p-4">
-                <p className="text-xs font-medium text-primary">Badge lane</p>
-                <h3 className="mt-3 text-lg font-semibold text-white">{lane}</h3>
-                <p className="mt-2 text-sm text-muted">
-                  This lane remains locked until real evidence is ingested from your GitHub history.
-                </p>
-              </li>
-            ))}
-          </ul>
-        </GlowCard>
+        <details className="space-y-3">
+          <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
+            Badge shelf preview
+          </summary>
+          <GlowCard className="space-y-5">
+            <SectionHeader
+              eyebrow="Badge shelf"
+              title="Visible milestones, not vanity clutter"
+              description="Badges unlock from sustained evidence."
+            />
+            <ul role="list" className="grid gap-3 sm:grid-cols-2">
+              {[
+                "Merged contribution cadence",
+                "Review depth consistency",
+                "Testing and reliability signal",
+                "Cross-repository impact",
+              ].map((lane, index) => (
+                <li key={`badge-lane-${index}`} className="neon-surface rounded-[1.75rem] p-4">
+                  <p className="text-xs font-medium text-primary">Badge lane</p>
+                  <h3 className="mt-3 text-lg font-semibold text-white">{lane}</h3>
+                </li>
+              ))}
+            </ul>
+          </GlowCard>
+        </details>
       </section>
       </DeferUntilVisible>
 
@@ -226,7 +232,7 @@ export function LandingPage() {
           </div>
           <h2 className="text-2xl font-semibold text-amber-50">Spam PRs do not make you powerful here.</h2>
           <p className="readable-measure max-w-[68ch] text-sm leading-7 text-amber-50">
-            Low-context noise, unreviewed changes, and thin contribution floods are scored down. Transparent scoring is the product, not a hidden trick.
+            Low-context noise, unreviewed changes, and thin contribution floods are scored down.
           </p>
         </GlowCard>
 
@@ -237,7 +243,6 @@ export function LandingPage() {
               Ready to rank your work?
             </div>
             <h2 className="text-3xl font-semibold text-white">Build a profile that recruiters and maintainers can actually trust.</h2>
-            <p className="readable-measure max-w-[68ch] text-sm leading-7 text-muted">The goal is a legible contribution snapshot, not an absolute ranking of developer worth.</p>
           </div>
           <Button asChild size="lg">
             <Link href="/oauth/github/start?return_to=/dashboard" prefetch={false}>Start the reveal</Link>
