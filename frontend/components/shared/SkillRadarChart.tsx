@@ -58,7 +58,7 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
         </p>
       </div>
       <details className="neon-surface px-4 py-3">
-        <summary className="focus-ring inline-flex cursor-pointer items-center gap-2 text-xs font-semibold text-primary">
+        <summary className="focus-ring disclosure-summary text-primary">
           Skill signal summary
         </summary>
         <p id={summaryId} className="mt-2 text-sm text-muted">
