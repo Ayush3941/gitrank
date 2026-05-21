@@ -197,22 +197,8 @@ export function DashboardPageClient() {
               <QuestPanel quests={user.quests} />
             </DeferUntilVisible>
           </section>
-          <section className="render-opt-section">
-            <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading score explanation" />}>
-              <ScoreExplanationCard user={user} />
-            </DeferUntilVisible>
-          </section>
         </div>
         <div className="space-y-6">
-          <section id="dashboard-skills" className="render-opt-section scroll-mt-24">
-            <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading skill breakdown" />}>
-              <SkillBreakdownCard
-                user={user}
-                skillInsights={abraInsights.data?.skillInsights}
-                aiMode={abraInsights.data?.generatedBy}
-              />
-            </DeferUntilVisible>
-          </section>
           <section id="dashboard-reports" className="render-opt-section scroll-mt-24">
             <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading battle reports" />}>
               <RecentBattleReports reports={recentReports} />
@@ -220,18 +206,35 @@ export function DashboardPageClient() {
           </section>
         </div>
       </div>
-      <div className="grid gap-6 xl:grid-cols-[1.04fr,0.96fr]">
-        <section id="dashboard-badges" className="render-opt-section scroll-mt-24">
-          <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading badge shelf" />}>
-            <BadgeShelf user={user} />
-          </DeferUntilVisible>
-        </section>
-        <section id="dashboard-timeline" className="render-opt-section scroll-mt-24">
-          <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading contribution timeline" />}>
-            <ContributionTimelineCard user={user} />
-          </DeferUntilVisible>
-        </section>
-      </div>
+      <section id="dashboard-advanced" className="render-opt-section scroll-mt-24">
+        <details className="space-y-4">
+          <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-primary/24 px-4 py-3 text-sm font-semibold text-white marker:content-none">
+            Advanced evidence panels
+          </summary>
+          <div className="grid gap-6 xl:grid-cols-[1.04fr,0.96fr]">
+            <section className="space-y-6">
+              <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading score explanation" />}>
+                <ScoreExplanationCard user={user} />
+              </DeferUntilVisible>
+              <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading badge shelf" />}>
+                <BadgeShelf user={user} />
+              </DeferUntilVisible>
+            </section>
+            <section className="space-y-6">
+              <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading skill breakdown" />}>
+                <SkillBreakdownCard
+                  user={user}
+                  skillInsights={abraInsights.data?.skillInsights}
+                  aiMode={abraInsights.data?.generatedBy}
+                />
+              </DeferUntilVisible>
+              <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading contribution timeline" />}>
+                <ContributionTimelineCard user={user} />
+              </DeferUntilVisible>
+            </section>
+          </div>
+        </details>
+      </section>
     </div>
   );
 }
