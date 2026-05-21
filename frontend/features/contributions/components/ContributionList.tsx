@@ -53,9 +53,6 @@ export function ContributionList({
                     </span>
                   </div>
                   <h3 className="mt-2 break-anywhere text-xl font-semibold text-white">{item.title}</h3>
-                  <p className="text-sm text-muted">
-                    {formatContributionTimeline(item)}
-                  </p>
                   <ul role="list" className="mt-3 flex flex-wrap gap-2 text-xs cyber-copy">
                     <li className="list-none">
                       <span className={`neon-chip rounded-full px-3 py-1.5 font-semibold ${tier.className}`}>{tier.label}</span>
@@ -77,26 +74,12 @@ export function ContributionList({
                         <span className="neon-chip neon-chip-success rounded-full px-3 py-1.5 font-semibold">Maintainer reviewed</span>
                       </li>
                     ) : null}
-                    {item.ciPassed ? (
-                      <li className="list-none">
-                        <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 font-semibold">CI passed</span>
-                      </li>
-                    ) : null}
-                    {item.evidenceState ? (
-                      <li className="list-none">
-                        <span className="neon-chip rounded-full px-3 py-1.5 font-semibold">
-                          Evidence {item.evidenceState}
-                        </span>
-                      </li>
-                    ) : null}
                   </ul>
                 </div>
                 <div className="neon-surface rounded-[1.25rem] border-primary/28 px-4 py-3 text-right">
                   <p className="text-xs font-medium text-primary">Earned</p>
                   <p className="numeric-readout mt-2 text-3xl font-semibold text-white">{item.xpEarned} XP</p>
-                  <p className="mt-2 text-xs text-muted">
-                    Signal index {signalIndex}
-                  </p>
+                  <p className="mt-2 text-xs text-muted">Signal {signalIndex}</p>
                 </div>
               </div>
               <AIPanel
@@ -104,15 +87,11 @@ export function ContributionList({
                 narrative={narratives?.[item.id]}
               />
               <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted">
-                <div className="flex flex-wrap gap-4">
-                  <span className="inline-flex items-center gap-2">
-                    <GitMerge className="h-4 w-4 text-primary" />
-                    Repo {item.repoWeight.toFixed(2)}
-                  </span>
-                  <span className="inline-flex items-center gap-2">
-                    <ShieldCheck className="h-4 w-4 text-primary" />
-                    Anti-spam {item.antiSpamMultiplier.toFixed(2)}x
-                  </span>
+                <div className="inline-flex items-center gap-2">
+                  <GitMerge className="h-4 w-4 text-primary" />
+                  Repo {item.repoWeight.toFixed(2)} ·
+                  <ShieldCheck className="h-4 w-4 text-primary" />
+                  Anti-spam {item.antiSpamMultiplier.toFixed(2)}x
                 </div>
                 <Button asChild variant="secondary" size="sm">
                   <Link href={`/pr/${item.owner}/${item.repo}/${item.number}`} prefetch={false}>
@@ -183,16 +162,6 @@ function formatContributionDate(value: string): string {
     day: "numeric",
     year: "numeric",
   });
-}
-
-function formatContributionTimeline(item: Contribution): string {
-  if (item.status === "merged") {
-    return `Merged contribution on ${formatContributionDate(item.mergedAt)}.`;
-  }
-  if (item.status === "open") {
-    return `Open contribution snapshot as of ${formatContributionDate(item.mergedAt)}.`;
-  }
-  return `Closed contribution snapshot as of ${formatContributionDate(item.mergedAt)}.`;
 }
 
 function AIPanel({

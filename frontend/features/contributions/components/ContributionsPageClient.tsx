@@ -18,11 +18,9 @@ import {
   shouldRequestAbraInsights,
 } from "@/lib/ai/deterministic-identity-summary";
 import {
-  monthTimeline,
   summarizeContributionStreak,
   summarizeRepositories,
 } from "@/lib/metrics/contribution-metrics";
-import type { Contribution } from "@/types/gitrank";
 
 const filterMap: Record<string, string> = {
   All: "All",
@@ -39,8 +37,6 @@ const filterMap: Record<string, string> = {
 
 const CONTRIBUTION_CARD_PAGE_SIZE_DEFAULT = 24;
 const CONTRIBUTION_CARD_PAGE_SIZE_CONSTRAINED = 12;
-const CONTRIBUTION_TIMELINE_MONTH_WINDOW_DEFAULT = 12;
-const CONTRIBUTION_TIMELINE_MONTH_WINDOW_CONSTRAINED = 8;
 const ABRA_CONTRIBUTION_SAMPLE_LIMIT = 24;
 const CONTRIBUTION_CARDS_REGION_ID = "contributions-cards-region";
 const CONTRIBUTION_SEARCH_DEBOUNCE_MS = 220;
@@ -57,9 +53,6 @@ export function ContributionsPageClient() {
   const cardPageSize = constrainedNetwork
     ? CONTRIBUTION_CARD_PAGE_SIZE_CONSTRAINED
     : CONTRIBUTION_CARD_PAGE_SIZE_DEFAULT;
-  const timelineMonthWindow = constrainedNetwork
-    ? CONTRIBUTION_TIMELINE_MONTH_WINDOW_CONSTRAINED
-    : CONTRIBUTION_TIMELINE_MONTH_WINDOW_DEFAULT;
   const [visibleCardCount, setVisibleCardCount] = useState(cardPageSize);
   const { data, isLoading, isError } = useContributions({
     filter: filterMap[deferredFilter],
@@ -90,21 +83,6 @@ export function ContributionsPageClient() {
   );
   const streak = useMemo(
     () => summarizeContributionStreak(profile?.user.contributions ?? []),
-    [profile?.user.contributions],
-  );
-  const monthly = useMemo(
-    () => monthTimeline(profile?.user.contributions ?? []),
-    [profile?.user.contributions],
-  );
-  const monthlyWindow = useMemo(
-    () => monthly.slice(-timelineMonthWindow),
-    [monthly, timelineMonthWindow],
-  );
-  const topHighlights = useMemo(
-    () =>
-      [...deduplicateContributionRowsByPR(profile?.user.contributions ?? [])]
-        .sort((left, right) => right.xpEarned - left.xpEarned)
-        .slice(0, 3),
     [profile?.user.contributions],
   );
   const abraContributionSample = useMemo(
@@ -166,8 +144,6 @@ export function ContributionsPageClient() {
   }, [abraContributionSample, profile, repositories.length, streak.currentStreakDays]);
 
   const abraInsights = useAbraInsights(abraPayload);
-  const maxMonthlyXp = Math.max(1, ...monthlyWindow.map((point) => point.xp));
-
   function handleFilterChange(next: string) {
     startTransition(() => {
       setFilter(next);
@@ -310,102 +286,12 @@ export function ContributionsPageClient() {
               </div>
             ) : (
               <SubsectionEmptyState
-                message="No contribution cards match this filter set yet. Reset filters or widen the PR evidence window."
+                message="No PR cards match these filters. Reset filters or sync again."
                 actionLabel="Open sync settings"
                 actionHref="/dashboard/settings"
                 onResetFilters={handleResetFilters}
               />
             )}
-          </DeferUntilVisible>
-        </section>
-      ) : null}
-      {!isLoading && !isError ? (
-        <section id="contributions-repositories" className="render-opt-section scroll-mt-24">
-          <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading repository impact lanes" />}>
-            {repositories.length ? (
-              <ul role="list" className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {repositories.map((repository) => (
-                  <li key={repository.fullName} className="render-opt-card neon-surface rounded-[1.4rem] border-cyan-300/28 px-4 py-3">
-                    <p className="break-anywhere text-sm font-medium text-white">{repository.fullName}</p>
-                    <p className="mt-1 text-xs text-muted"><span className="numeric-readout">{repository.contributions.toLocaleString("en-US")}</span> contributions</p>
-                    <p className="numeric-readout mt-3 text-lg font-semibold text-cyan-200">{repository.totalXp.toLocaleString("en-US")} XP</p>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <SubsectionEmptyState
-                message="No repository contribution summary is available in this snapshot yet."
-                actionLabel="Open sync settings"
-                actionHref="/dashboard/settings"
-              />
-            )}
-          </DeferUntilVisible>
-        </section>
-      ) : null}
-      {!isLoading && !isError ? (
-        <section id="contributions-timeline" className="render-opt-section scroll-mt-24">
-          <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading timeline and highlights" />}>
-            <div className="grid gap-4 xl:grid-cols-[1.2fr,0.8fr]">
-              <GlowCard className="space-y-4 border border-fuchsia-400/20 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/30">
-                <h3 className="cyber-title text-sm font-medium text-fuchsia-200">Contribution timeline</h3>
-                {monthlyWindow.length ? (
-                  <div className="space-y-3">
-                    <ul role="list" className="space-y-3">
-                      {monthlyWindow.map((point, index) => (
-                        <li key={`${point.month}-${index}`} className="list-none space-y-1">
-                          <div className="flex items-center justify-between text-xs text-muted">
-                            <span>{point.month}</span>
-                            <span className="numeric-readout">{point.xp.toLocaleString("en-US")} XP</span>
-                          </div>
-                          <div className="neon-track h-2 rounded-full">
-                            <div
-                              className="h-full rounded-full bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300"
-                              style={{ width: `${Math.max(8, Math.round((point.xp / maxMonthlyXp) * 100))}%` }}
-                            />
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : (
-                  <SubsectionEmptyState
-                    message="Timeline points are not available yet for this filtered evidence window."
-                    actionLabel="Open sync settings"
-                    actionHref="/dashboard/settings"
-                  />
-                )}
-              </GlowCard>
-              <GlowCard className="space-y-4 border border-cyan-300/20 bg-gradient-to-br from-slate-950/88 to-cyan-950/25">
-                <h3 className="cyber-title text-sm font-medium text-cyan-200">Top highlights</h3>
-                {topHighlights.length ? (
-                  <ul role="list" className="space-y-3">
-                    {topHighlights.map((row, index) => (
-                      <li
-                        key={`${row.owner}/${row.repo}#${row.number}-${row.id}-${index}`}
-                        className="list-none render-opt-card neon-surface space-y-2 rounded-2xl px-3 py-3"
-                      >
-                        <p className="break-anywhere text-sm font-medium text-white">{row.title}</p>
-                        <p className="mt-1 break-anywhere text-xs text-muted">{row.owner}/{row.repo} #{row.number}</p>
-                        <p className="numeric-readout mt-2 text-sm text-cyan-200">+{row.xpEarned.toLocaleString("en-US")} XP</p>
-                        <div className="pt-1">
-                          <Button asChild size="sm" variant="secondary">
-                            <Link href={`/pr/${row.owner}/${row.repo}/${row.number}`} prefetch={false}>
-                              View report
-                            </Link>
-                          </Button>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <SubsectionEmptyState
-                    message="No high-signal highlights are available yet in this snapshot."
-                    actionLabel="Open quest lane"
-                    actionHref="/dashboard/quests"
-                  />
-                )}
-              </GlowCard>
-            </div>
           </DeferUntilVisible>
         </section>
       ) : null}
@@ -447,18 +333,4 @@ function SubsectionEmptyState({
       </div>
     </GlowCard>
   );
-}
-
-function deduplicateContributionRowsByPR(rows: Contribution[]): Contribution[] {
-  const bestByPR = new Map<string, Contribution>();
-
-  for (const row of rows) {
-    const key = `${row.owner}/${row.repo}#${row.number}`;
-    const existing = bestByPR.get(key);
-    if (!existing || row.xpEarned > existing.xpEarned) {
-      bestByPR.set(key, row);
-    }
-  }
-
-  return Array.from(bestByPR.values());
 }
