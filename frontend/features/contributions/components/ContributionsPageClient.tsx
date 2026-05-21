@@ -220,7 +220,7 @@ export function ContributionsPageClient() {
   }
 
   return (
-    <div className="space-y-6 [overflow-anchor:none]">
+    <div className="space-y-6">
       <section id="contributions-filters" className="scroll-mt-24">
         <ContributionFilters
           value={filter}

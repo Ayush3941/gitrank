@@ -119,7 +119,7 @@ export function SyncStateGuide({
       role="status"
       aria-live="polite"
       className={cn(
-        "neon-surface space-y-3 border px-4 py-3 [overflow-anchor:none]",
+        "neon-surface space-y-3 border px-4 py-3",
         copy.toneClassName,
         className,
       )}

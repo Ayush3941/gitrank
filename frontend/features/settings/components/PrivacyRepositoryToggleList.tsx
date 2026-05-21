@@ -190,7 +190,7 @@ export function PrivacyRepositoryToggleList({
           id={repositoriesRegionId}
           role="list"
           aria-busy={isFiltering || undefined}
-          className="grid gap-3 max-h-[26rem] overflow-y-auto pr-1 [scrollbar-gutter:stable] [overflow-anchor:none]"
+          className="grid gap-3 max-h-[26rem] overflow-y-auto pr-1 [scrollbar-gutter:stable]"
         >
           {filteredItems.map((repo, index) => (
             <li key={`${repo.name}-${index}`} className="list-none">
@@ -236,7 +236,7 @@ export function PrivacyRepositoryToggleList({
       ) : (
         <div
           id={repositoriesRegionId}
-          className="neon-surface space-y-3 rounded-[1.75rem] border-dashed px-4 py-4 text-sm text-muted max-h-[26rem] overflow-y-auto pr-1 [scrollbar-gutter:stable] [overflow-anchor:none]"
+          className="neon-surface space-y-3 rounded-[1.75rem] border-dashed px-4 py-4 text-sm text-muted max-h-[26rem] overflow-y-auto pr-1 [scrollbar-gutter:stable]"
         >
           {counts.total === 0 ? (
             <p>

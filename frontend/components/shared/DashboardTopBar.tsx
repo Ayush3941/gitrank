@@ -41,7 +41,7 @@ export function DashboardTopBar({
         : Info;
 
   return (
-    <div className="glass-panel cyber-card cyber-frame mb-4 px-4 py-3 [overflow-anchor:none] sm:px-5">
+    <div className="glass-panel cyber-card cyber-frame mb-4 px-4 py-3 sm:px-5">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
           <div className="cyber-avatar relative h-11 w-11 shrink-0 overflow-hidden rounded-full">

@@ -79,7 +79,7 @@ export function SyncRunActivityPanel({
     });
   }, [deferredSearch, statusFilter, runs]);
   const resultsRegionClassName =
-    "min-h-[20rem] max-h-[26rem] overflow-y-auto pr-1 [scrollbar-gutter:stable] [overflow-anchor:none]";
+    "min-h-[20rem] max-h-[26rem] overflow-y-auto pr-1 [scrollbar-gutter:stable]";
 
   function handleResetFilters() {
     startTransition(() => {
@@ -101,7 +101,7 @@ export function SyncRunActivityPanel({
   }
 
   return (
-    <div className="space-y-4 [overflow-anchor:none]">
+    <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-medium text-primary">Sync activity</p>
