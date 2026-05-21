@@ -79,6 +79,12 @@ export function SyncRunActivityPanel({
     });
   }, [deferredSearch, statusFilter, runs]);
   const resultsRegionClassName = "min-h-[12rem]";
+  const syncNotice =
+    statusCounts.running > 0
+      ? "Active sync runs detected."
+      : statusCounts.failed > 0
+        ? "Recent sync failures detected. Reconnect GitHub if failures persist."
+        : null;
 
   function handleResetFilters() {
     setSearch("");
@@ -131,21 +137,16 @@ export function SyncRunActivityPanel({
               ? "Filtering sync runs..."
               : `${filteredRuns.length} of ${statusCounts.all} runs`}
           </p>
-          <div className="flex flex-wrap gap-2">
-            <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">Completed {statusCounts.completed}</span>
-            <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">Running {statusCounts.running}</span>
-            <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">Failed {statusCounts.failed}</span>
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={handleResetFilters}
-              disabled={!canReset}
-              aria-controls={syncRunsRegionId}
-            >
-              Reset
-            </Button>
-          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={handleResetFilters}
+            disabled={!canReset}
+            aria-controls={syncRunsRegionId}
+          >
+            Reset
+          </Button>
         </div>
         {canReset ? (
           <div className="flex flex-wrap items-center gap-2">
@@ -181,20 +182,13 @@ export function SyncRunActivityPanel({
             ) : null}
           </div>
         ) : null}
-        {statusCounts.running > 0 ? (
-          <p className="text-xs text-cyan-100">
-            Active sync runs detected. This panel auto-refreshes more frequently until active jobs settle.
-          </p>
-        ) : null}
-        {statusCounts.running === 0 && statusCounts.failed > 0 ? (
-          <p className="text-xs text-rose-100">
-            Recent sync failures detected. Reconnect GitHub in{" "}
-            <Link href="/dashboard/settings" className="underline decoration-rose-300/70 underline-offset-2">
-              account settings
-            </Link>
-            {" "}if failures persist.
-          </p>
-        ) : null}
+        <div className="min-h-5">
+          {syncNotice ? (
+            <p className={statusCounts.failed > 0 ? "text-xs text-rose-100" : "text-xs text-cyan-100"}>
+              {syncNotice}
+            </p>
+          ) : null}
+        </div>
         <div className="grid gap-3 md:grid-cols-[1fr,22rem]">
           <div className="relative">
             <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted" />

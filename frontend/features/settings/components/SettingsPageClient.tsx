@@ -148,10 +148,6 @@ export function SettingsPageClient() {
   const [actionNotice, setActionNotice] = useState("");
   const [displayNotice, setDisplayNotice] = useState("");
   const currentSettings = data?.user.privacy ?? null;
-  const activeThemeOption =
-    THEME_OPTIONS.find((option) => option.value === theme) ??
-    THEME_OPTIONS.find((option) => option.value === "high-contrast") ??
-    THEME_OPTIONS[0];
 
   function handleResetDisplayPreferences() {
     clearThemePreference();
@@ -330,7 +326,7 @@ export function SettingsPageClient() {
           </Button>
         </div>
         <p className="text-sm text-muted">
-          GitHub sync runs automatically while you use dashboard pages. Exports never include token secrets or secret hashes.
+          GitHub sync runs automatically while you use dashboard pages.
         </p>
         <SyncStateGuide status={data.user.syncStatus} />
         <div className="min-h-6">
@@ -398,13 +394,12 @@ export function SettingsPageClient() {
           </div>
           <div className="cyber-divider" />
           <div className="space-y-4">
-            <div className="cyber-divider" />
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="max-w-2xl">
                 <p className="text-xs font-medium text-primary">Keyboard controls</p>
                 <h3 className="mt-2 text-xl font-semibold text-white">Display shortcuts</h3>
                 <p className="mt-2 text-sm leading-6 text-muted">
-                  Enables theme, text-size, and effects shortcuts when focus is outside editable fields.
+                  Enables theme and text-size shortcuts outside editable fields.
                 </p>
               </div>
               <Switch
@@ -423,14 +418,7 @@ export function SettingsPageClient() {
                 <p className="mt-4 text-xs font-medium text-primary">Visual theme</p>
                 <h2 className="mt-2 text-2xl font-semibold text-white">Readable style mode</h2>
                 <p className="mt-2 text-sm leading-6 text-muted">
-                  Theme changes visuals only. Ranking, scoring, privacy, and sync behavior stay the same.
-                </p>
-                <p className="mt-2 text-xs text-muted">
-                  Theme source:
-                  {" "}
-                  <span className="font-semibold text-foreground">
-                    {themeSource === "stored" ? "Manual override" : "System preference"}
-                  </span>
+                  Theme changes visuals only. Scoring and sync behavior stay the same.
                 </p>
               </div>
               <div className="grid w-full gap-2 sm:w-auto sm:min-w-[22rem]">
@@ -506,11 +494,6 @@ export function SettingsPageClient() {
                 <p className="mt-2 text-sm leading-6 text-muted">
                   Choose default or large text size for frontend readability.
                 </p>
-                <p className="mt-2 text-xs leading-6 text-muted">
-                  Shortcuts: <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> theme,{" "}
-                  <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd> text,{" "}
-                  <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd> effects.
-                </p>
               </div>
               <div className="grid w-full gap-2 sm:w-auto sm:min-w-[18rem]">
                 <ul role="list" className="grid gap-2">
@@ -555,16 +538,6 @@ export function SettingsPageClient() {
                 {displayNotice}
               </p>
             ) : null}
-            <div className="neon-surface-strong space-y-2 px-4 py-4">
-              <p className="text-xs font-medium text-primary">Current readability mode</p>
-              <p className="text-sm leading-7 text-muted">
-                <span className="font-semibold text-foreground">{activeThemeOption.label}</span>
-                {" "}
-                ·
-                {" "}
-                {activeThemeOption.description}
-              </p>
-            </div>
           </div>
           </GlowCard>
         </DeferUntilVisible>
