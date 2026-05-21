@@ -1600,6 +1600,9 @@
 - Added progressive disclosure to display customization in settings:
   - theme and text-scale controls now live behind a `Show tuning` toggle
   - keeps core privacy/sync controls scannable while preserving full customization when needed.
+- Upgraded contribution card scoring visuals:
+  - each contribution card now shows a deterministic signal band (`High`, `Rising`, `Early`) plus a static progress meter
+  - preserves numeric signal transparency while making card scanning more game-like and presentation-friendly.
 
 ## 2026-05-16
 

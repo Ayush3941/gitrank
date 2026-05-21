@@ -29,6 +29,7 @@ export function ContributionList({
         const tier = contributionTier(item);
         const position = startPosition + index;
         const signalIndex = contributionSignalIndex(item);
+        const signalBand = contributionSignalBand(signalIndex);
         return (
           <li
             key={`${item.owner}/${item.repo}#${item.number}-${item.id}-${index}`}
@@ -80,7 +81,13 @@ export function ContributionList({
                 <div className="neon-surface rounded-[1.25rem] border-primary/28 px-4 py-3 text-right">
                   <p className="text-xs font-medium text-primary">Earned</p>
                   <p className="numeric-readout mt-2 text-3xl font-semibold text-white">{item.xpEarned} XP</p>
-                  <p className="mt-2 text-xs text-muted">Signal {signalIndex}</p>
+                  <p className="mt-2 text-xs text-muted">Signal {signalIndex} · {signalBand.label}</p>
+                  <div className="mt-2 h-1.5 w-28 overflow-hidden rounded-full border border-primary/24 bg-card/80">
+                    <div
+                      className={`h-full rounded-full ${signalBand.barClassName}`}
+                      style={{ width: `${signalIndex}%` }}
+                    />
+                  </div>
                 </div>
               </div>
               <AIPanel
@@ -129,6 +136,11 @@ type ContributionTier = {
   className: string;
 };
 
+type ContributionSignalBand = {
+  label: string;
+  barClassName: string;
+};
+
 function contributionTier(item: Contribution): ContributionTier {
   const weightedScore = item.xpEarned + item.impactScore + item.difficultyScore;
   if (weightedScore >= 420) {
@@ -141,6 +153,16 @@ function contributionTier(item: Contribution): ContributionTier {
     return { label: "Rare run", className: "neon-chip-success" };
   }
   return { label: "Solid run", className: "neon-chip-muted" };
+}
+
+function contributionSignalBand(signalIndex: number): ContributionSignalBand {
+  if (signalIndex >= 75) {
+    return { label: "High", barClassName: "bg-gradient-to-r from-emerald-300 to-cyan-300" };
+  }
+  if (signalIndex >= 45) {
+    return { label: "Rising", barClassName: "bg-gradient-to-r from-cyan-300 to-blue-300" };
+  }
+  return { label: "Early", barClassName: "bg-gradient-to-r from-amber-300 to-fuchsia-300" };
 }
 
 function formatContributionStatus(status: Contribution["status"]): string {
