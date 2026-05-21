@@ -173,13 +173,12 @@ export function PublicProfilePageClient({
           shareHeadline={data.shareHeadline}
           archetype={abraInsights.data?.archetype ?? fallbackArchetype}
           identitySummary={abraInsights.data?.identitySummary ?? fallbackIdentitySummary}
-          aiMode={abraInsights.data?.generatedBy ?? "deterministic"}
         />
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <StatCard label="GitRank score" value={data.user.gitRankScore} detail="Explainable score currently served on this profile." icon={<Stars className="h-5 w-5 text-primary" />} />
-          <StatCard label="Merged PRs" value={data.user.mergedPrCount} detail="Merged work is the core reputation primitive." icon={<GitPullRequest className="h-5 w-5 text-primary" />} />
-          <StatCard label="Badges earned" value={data.user.badges.filter((badge) => badge.unlocked).length} detail="Verified contribution milestones, not vanity counters." icon={<ShieldCheck className="h-5 w-5 text-primary" />} />
-          <StatCard label="Consistency" value={`${data.user.consistencyScore}%`} detail={`Trend window: ${data.trendWindowLabel}`} icon={<CheckCircle2 className="h-5 w-5 text-primary" />} />
+          <StatCard label="GitRank score" value={data.user.gitRankScore} icon={<Stars className="h-5 w-5 text-primary" />} />
+          <StatCard label="Merged PRs" value={data.user.mergedPrCount} icon={<GitPullRequest className="h-5 w-5 text-primary" />} />
+          <StatCard label="Badges earned" value={data.user.badges.filter((badge) => badge.unlocked).length} icon={<ShieldCheck className="h-5 w-5 text-primary" />} />
+          <StatCard label="Consistency" value={`${data.user.consistencyScore}%`} detail={data.trendWindowLabel} icon={<CheckCircle2 className="h-5 w-5 text-primary" />} />
         </div>
       </section>
       <section id="public-profile-badges-skills" className="render-opt-section scroll-mt-24">

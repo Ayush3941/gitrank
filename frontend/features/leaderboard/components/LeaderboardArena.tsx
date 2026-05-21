@@ -49,7 +49,7 @@ export function LeaderboardArena({
             <h2 className="mt-4 break-anywhere text-2xl font-semibold text-white">{snapshot.season.name}</h2>
             <ExpandableText
               text={snapshot.season.explanation}
-              lines={2}
+              lines={1}
               minLengthForToggle={220}
               className="mt-2"
               textClassName="break-anywhere text-sm leading-7 text-muted"
@@ -62,8 +62,8 @@ export function LeaderboardArena({
           </div>
         </div>
         <div className="mt-5 grid gap-3 md:grid-cols-2">
-          <Rule icon={<Flame className="h-4 w-4" />} label="Promotion" value={snapshot.season.promotionRule} />
-          <Rule icon={<ShieldCheck className="h-4 w-4" />} label="Reset" value={snapshot.season.resetRule} />
+          <CompactRule icon={<Flame className="h-4 w-4" />} label="Promotion" value={snapshot.season.promotionRule} />
+          <CompactRule icon={<ShieldCheck className="h-4 w-4" />} label="Reset" value={snapshot.season.resetRule} />
         </div>
         <ul role="list" className="mt-3 flex flex-wrap gap-2">
           <li>
@@ -85,10 +85,6 @@ export function LeaderboardArena({
           </summary>
           <GlowCard className="space-y-4 border border-primary/22 bg-gradient-to-br from-slate-950/90 to-cyan-950/18">
             <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p className="text-xs font-medium text-primary">Local bracket</p>
-                <h3 className="mt-2 text-xl font-semibold text-white">Closest rank neighbors</h3>
-              </div>
               <div className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
                 {nextAboveRow
                   ? `${nextAboveGap.toLocaleString("en-US")} XP to pass #${nextAboveRow.rank}`
@@ -220,7 +216,7 @@ export function LeaderboardArena({
   );
 }
 
-function Rule({
+function CompactRule({
   icon,
   label,
   value,
@@ -235,13 +231,7 @@ function Rule({
         {icon}
         {label}
       </div>
-      <ExpandableText
-        text={value}
-        lines={3}
-        minLengthForToggle={160}
-        className="mt-2"
-        textClassName="break-anywhere text-sm leading-6 text-muted"
-      />
+      <p className="mt-2 text-sm leading-6 text-muted">{value}</p>
     </div>
   );
 }

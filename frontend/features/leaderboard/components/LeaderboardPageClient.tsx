@@ -126,7 +126,7 @@ export function LeaderboardPageClient() {
         <StaleState
           message={`Leaderboard context refreshed ${formatRelativeDays(
             myProfile.refreshedAt,
-          )}. Rank movement can lag until the next profile sync completes.`}
+          )}. Rank updates may lag until the next sync.`}
           updatedAt={myProfile.refreshedAt}
           onRefresh={() => {
             void refetchMyProfile();
@@ -234,9 +234,7 @@ export function LeaderboardPageClient() {
                       <h2 className="mt-2 text-xl font-semibold text-white">
                         #{snapshot.currentUser.rank} in {tab}
                       </h2>
-                      <p className="mt-2 text-sm text-muted">
-                        Primary signal: {snapshot.currentUser.focus}
-                      </p>
+                      <p className="mt-2 text-sm text-muted">Primary signal: {snapshot.currentUser.focus}</p>
                     </div>
                     <span className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold">
                       <Target className="h-3.5 w-3.5" />

@@ -1,8 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import { FileJson2, ShieldCheck, Sparkles, Trophy } from "lucide-react";
+import { ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { ExpandableText } from "@/components/shared/ExpandableText";
@@ -17,13 +16,11 @@ export function PublicProfileHero({
   shareHeadline,
   archetype,
   identitySummary,
-  aiMode,
 }: {
   user: UserProfile;
   shareHeadline: string;
   archetype?: string;
   identitySummary?: string;
-  aiMode?: "gemini" | "deterministic";
 }) {
   const topSkills = uniqueDisplayValues(user.topSkills, 6);
 
@@ -64,9 +61,7 @@ export function PublicProfileHero({
           />
           {identitySummary ? (
             <div className="neon-callout rounded-2xl px-4 py-3 text-sm text-muted">
-              <p className="cyber-readout text-xs font-medium text-cyan-200">
-                Identity summary ({aiMode === "gemini" ? "Gemini" : "Deterministic"})
-              </p>
+              <p className="cyber-readout text-xs font-medium text-cyan-200">Identity summary</p>
               <ExpandableText
                 text={identitySummary}
                 lines={4}
@@ -93,16 +88,6 @@ export function PublicProfileHero({
               shareHeadline={shareHeadline}
               analyticsTargetPrefix="public-profile"
             />
-            <Button asChild variant="ghost">
-              <Link
-                href={`/api/profile/public/${encodeURIComponent(user.username)}/card`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <FileJson2 className="h-4 w-4" />
-                View card JSON
-              </Link>
-            </Button>
           </div>
         </div>
         <div className="neon-surface rounded-[1.85rem] p-5">
@@ -120,9 +105,7 @@ export function PublicProfileHero({
             <MiniMetric icon={<Sparkles className="h-4 w-4" />} label="Season XP" value={user.rankProgress.seasonXp.toLocaleString("en-US")} />
             <MiniMetric icon={<ShieldCheck className="h-4 w-4" />} label="Formula" value={user.rankProgress.season.scoringVersion} />
           </div>
-          <p className="cyber-readout mt-4 text-xs leading-5 text-muted">
-            Evidence-backed public snapshot from score events, badges, and PR visibility controls.
-          </p>
+          <p className="cyber-readout mt-4 text-xs leading-5 text-muted">Evidence-backed public snapshot.</p>
         </div>
       </div>
     </div>
