@@ -1575,6 +1575,10 @@
 - Tightened badge filter control-bar grouping:
   - aligned active filter chips and reset action into one control cluster
   - added explicit `No active filters` state chip for immediate context when filters are clear.
+- Added a consistent route-header pattern across dashboard surfaces:
+  - dashboard, contributions, badges, quests, settings, and leaderboard now start with the same compact `PageHeader` structure (eyebrow, title, one-line purpose) for faster orientation.
+- Normalized dashboard route navigation scroll behavior:
+  - removed `scroll={false}` from primary dashboard route links so route changes follow default browser/Next navigation behavior more predictably.
 
 ## 2026-05-16
 

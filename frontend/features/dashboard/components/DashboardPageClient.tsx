@@ -15,6 +15,7 @@ import { useDashboard } from "@/hooks/use-dashboard";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { LoadingState } from "@/components/shared/LoadingState";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
 import {
@@ -151,6 +152,11 @@ export function DashboardPageClient() {
 
   return (
     <div className="space-y-6">
+      <PageHeader
+        eyebrow="Dashboard"
+        title="Identity snapshot"
+        description="Rank, XP, and contribution signals in one evidence-backed view."
+      />
       {user.syncStatus.state === "stale" ? (
         <StaleState
           message={`Your GitRank profile was refreshed ${formatRelativeDays(

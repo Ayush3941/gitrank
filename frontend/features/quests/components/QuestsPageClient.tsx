@@ -7,6 +7,7 @@ import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
 import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,11 @@ export function QuestsPageClient() {
 
   return (
     <div className="space-y-6">
+      <PageHeader
+        eyebrow="Quests"
+        title="Contributor missions"
+        description="Daily, weekly, and long-term quests generated from synced contribution evidence."
+      />
       {profile && shouldShowSyncStateGuide(profile.user.syncStatus) ? (
         <SyncStateGuide
           status={profile.user.syncStatus}

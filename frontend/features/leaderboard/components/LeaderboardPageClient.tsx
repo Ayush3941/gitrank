@@ -9,6 +9,7 @@ import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
 import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { Button } from "@/components/ui/button";
@@ -105,6 +106,11 @@ export function LeaderboardPageClient() {
 
   return (
     <div className="space-y-6" aria-busy={isBusy || undefined}>
+      <PageHeader
+        eyebrow="Leaderboard"
+        title="Rank arena"
+        description="Compare rank lanes, season movement, and promotion progress from live evidence."
+      />
       {myProfile && shouldShowSyncStateGuide(myProfile.user.syncStatus) ? (
         <SyncStateGuide
           status={myProfile.user.syncStatus}

@@ -7,6 +7,7 @@ import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
 import { ContributionList } from "@/features/contributions/components/ContributionList";
 import { useContributions } from "@/hooks/use-contributions";
@@ -183,6 +184,11 @@ export function ContributionsPageClient() {
 
   return (
     <div className="space-y-6">
+      <PageHeader
+        eyebrow="Contributions"
+        title="PR impact lane"
+        description="Browse scored pull requests, impact summaries, and battle report links."
+      />
       <section id="contributions-filters" className="scroll-mt-24">
         <ContributionFilters
           value={filter}

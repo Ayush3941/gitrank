@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
 import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { Progress } from "@/components/ui/progress";
@@ -177,6 +178,11 @@ export function BadgesPageClient() {
 
   return (
     <div className="space-y-6">
+      <PageHeader
+        eyebrow="Badges"
+        title="Achievement shelf"
+        description="Track unlocked badges, progression lanes, and upcoming milestones."
+      />
       {profile && shouldShowSyncStateGuide(profile.user.syncStatus) ? (
         <SyncStateGuide
           status={profile.user.syncStatus}

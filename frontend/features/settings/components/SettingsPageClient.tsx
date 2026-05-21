@@ -6,6 +6,7 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { SyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
 import { Button } from "@/components/ui/button";
@@ -289,6 +290,11 @@ export function SettingsPageClient() {
 
   return (
     <div className="space-y-6">
+      <PageHeader
+        eyebrow="Settings"
+        title="Account and privacy"
+        description="Manage GitHub connection, sync visibility, repository privacy, and display preferences."
+      />
       <section id="settings-account" className="scroll-mt-24">
         <GlowCard className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
