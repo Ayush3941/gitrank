@@ -30,9 +30,7 @@ export function ContributionFilters({
   isFiltering,
   canReset,
   onReset,
-  onClearCategory,
   onClearSearch,
-  onClearSort,
   resultsRegionId,
   compact = false,
 }: {
@@ -46,39 +44,21 @@ export function ContributionFilters({
   isFiltering?: boolean;
   canReset?: boolean;
   onReset?: () => void;
-  onClearCategory?: () => void;
   onClearSearch?: () => void;
-  onClearSort?: () => void;
   resultsRegionId?: string;
   compact?: boolean;
 }) {
   const statusId = "contribution-filter-status";
-  const activeChips: Array<{
-    key: "category" | "search" | "sort";
-    label: string;
-    onRemove?: () => void;
-  }> = [];
+  const activeChips: Array<{ key: "category" | "search" | "sort"; label: string }> = [];
   if (value !== "All") {
-    activeChips.push({
-      key: "category",
-      label: `Category: ${value}`,
-      onRemove: onClearCategory,
-    });
+    activeChips.push({ key: "category", label: `Category: ${value}` });
   }
   if (search.trim().length > 0) {
     const compactSearch = search.trim().length > 28 ? `${search.trim().slice(0, 28)}…` : search.trim();
-    activeChips.push({
-      key: "search",
-      label: `Search: ${compactSearch}`,
-      onRemove: onClearSearch,
-    });
+    activeChips.push({ key: "search", label: `Search: ${compactSearch}` });
   }
   if (sort !== "Newest") {
-    activeChips.push({
-      key: "sort",
-      label: `Sort: ${sort}`,
-      onRemove: onClearSort,
-    });
+    activeChips.push({ key: "sort", label: `Sort: ${sort}` });
   }
 
   return (
@@ -116,19 +96,6 @@ export function ContributionFilters({
                 <li key={chip.key} className="list-none">
                   <span className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold">
                     {chip.label}
-                    {chip.onRemove ? (
-                      <button
-                        type="button"
-                        onClick={chip.onRemove}
-                        disabled={isFiltering}
-                        className="focus-ring inline-flex min-h-6 min-w-6 items-center justify-center rounded-full border border-primary/30 px-1 text-xs leading-none text-cyan-100 hover:bg-primary/14 disabled:opacity-60"
-                        aria-label={`Remove ${chip.key} filter`}
-                        aria-controls={resultsRegionId}
-                        title={`Remove ${chip.key} filter`}
-                      >
-                        ×
-                      </button>
-                    ) : null}
                   </span>
                 </li>
               ))}

@@ -174,23 +174,9 @@ export function ContributionsPageClient() {
     });
   }
 
-  function handleClearCategoryFilter() {
-    startTransition(() => {
-      setFilter("All");
-      setVisibleCardCount(cardPageSize);
-    });
-  }
-
   function handleClearSearchFilter() {
     startTransition(() => {
       setSearch("");
-      setVisibleCardCount(cardPageSize);
-    });
-  }
-
-  function handleClearSortFilter() {
-    startTransition(() => {
-      setSort("Newest");
       setVisibleCardCount(cardPageSize);
     });
   }
@@ -211,9 +197,7 @@ export function ContributionsPageClient() {
           canReset={canReset}
           onReset={handleResetFilters}
           compact
-          onClearCategory={handleClearCategoryFilter}
           onClearSearch={handleClearSearchFilter}
-          onClearSort={handleClearSortFilter}
         />
       </section>
       {isLoading ? <LoadingState message="Checking review depth and PR intensity..." /> : null}

@@ -26,6 +26,7 @@
   - simplified repository-visibility filter chips in settings by removing per-chip inline clear buttons and keeping one explicit reset path.
   - switched repository visibility filtering to mobile `Select` + desktop segmented buttons for cleaner small-screen control density.
   - simplified badges active-filter chips by removing per-chip clear actions and keeping the existing explicit reset control.
+  - simplified contributions active-filter chips by removing per-chip clear actions and standardizing on a single reset flow.
 
 ## 2026-05-19
 
