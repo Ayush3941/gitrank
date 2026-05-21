@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import type { ReactNode } from "react";
-import { Button } from "@/components/ui/button";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";

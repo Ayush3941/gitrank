@@ -982,11 +982,11 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 }
 
 .render-opt-card {
-  contain: layout style;
+  contain: none;
 }
 
 .render-opt-section {
-  contain: layout style;
+  contain: none;
 }
 
 .cyber-link {
