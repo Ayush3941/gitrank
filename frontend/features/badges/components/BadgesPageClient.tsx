@@ -427,9 +427,9 @@ export function BadgesPageClient() {
           <p className="text-xs font-medium text-fuchsia-200">Locked / upcoming badges</p>
           <DeferUntilVisible fallback={<BadgeSectionPlaceholder title="Loading locked badge lanes" />}>
             {lockedBadges.length > 0 ? (
-              <details className="neon-surface rounded-[1.4rem] border border-fuchsia-300/24 p-3" open={lockedBadges.length <= 3}>
+              <details className="neon-surface rounded-[1.4rem] border border-fuchsia-300/24 p-3">
                 <summary className="focus-ring cursor-pointer list-none text-sm font-medium text-cyan-100">
-                  {visibleLockedBadges.length} of {lockedBadges.length} locked badge paths ({lockedBadges.length <= 3 ? "expanded" : "collapsed"})
+                  {visibleLockedBadges.length} of {lockedBadges.length} locked badge paths
                 </summary>
                 <ul role="list" className="mt-3 grid gap-3 md:grid-cols-3">
                   {visibleLockedBadges.map((badge) => (
