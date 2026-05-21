@@ -21,7 +21,7 @@ export function LandingPage() {
         <div className="grid gap-10 lg:grid-cols-[1.2fr,0.8fr] lg:items-center">
           <div className="space-y-6">
             <div className="space-y-4">
-              <h1 className="neon-title cyber-title max-w-3xl text-4xl font-semibold tracking-tight sm:text-6xl">
+              <h1 className="cyber-title max-w-3xl text-4xl font-semibold tracking-tight text-white sm:text-6xl">
                 Turn open-source work into a reputation system.
               </h1>
               <div className="flex flex-wrap gap-2">
