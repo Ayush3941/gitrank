@@ -13,7 +13,7 @@ export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
     <GlowCard className="space-y-5">
       <div>
         <p className="text-xs font-medium text-primary">Best PRs</p>
-        <h2 className="mt-2 text-xl font-semibold text-white">Highest-signal contributions</h2>
+        <h2 className="mt-2 text-xl font-semibold text-white">Top contributions</h2>
       </div>
       <div className="space-y-3">
         {reports.length === 0 ? (

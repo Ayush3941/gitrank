@@ -20,11 +20,11 @@ export function SkillBreakdownCard({
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs font-medium text-primary">Skill breakdown</p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">Signal by discipline</h2>
+          <h2 className="mt-2 text-2xl font-semibold text-white">Signal by lane</h2>
           <p className="mt-2 text-sm text-muted">
             {aiMode === "gemini"
-              ? "Gemini interpretations are based on synced PR evidence."
-              : "Deterministic interpretation is shown until Gemini insight is available."}
+              ? "Gemini interpretation is based on synced PR evidence."
+              : "Deterministic interpretation is shown until Gemini is available."}
           </p>
         </div>
         <div className="neon-tile cyber-sheen rounded-3xl p-3 text-primary">

@@ -16,7 +16,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
     <GlowCard className="space-y-5">
       <div>
         <p className="text-xs font-medium text-primary">Recent battle reports</p>
-        <h2 className="mt-2 text-xl font-semibold text-white">High-signal PRs</h2>
+        <h2 className="mt-2 text-xl font-semibold text-white">Top PR reports</h2>
         <div className="mt-3">
           <Button asChild size="sm" variant="secondary">
             <Link href="/dashboard/contributions" prefetch={false}>
@@ -30,7 +30,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
         {sortedReports.length === 0 ? (
           <li className="list-none neon-surface space-y-3 rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
             <p>
-              No PR reports yet. They appear after sync and scoring finish.
+              No PR reports yet. They appear after sync and scoring complete.
             </p>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" variant="secondary">
