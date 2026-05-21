@@ -26,7 +26,7 @@ export function ScoreExplanationCard({ user }: { user: UserProfile }) {
                     {change.deltaXp} XP
                   </p>
                 </div>
-                <p className="mt-2 text-sm text-muted">{change.reason}</p>
+                <p className="mt-2 text-sm text-muted">{formatScoreChangeReason(change.reason)}</p>
               </div>
             </div>
           );
@@ -34,4 +34,30 @@ export function ScoreExplanationCard({ user }: { user: UserProfile }) {
       </div>
     </GlowCard>
   );
+}
+
+function formatScoreChangeReason(reason: string): string {
+  let value = reason.trim();
+  if (!value) {
+    return "Score replay metadata is available for this entry.";
+  }
+  const lower = value.toLowerCase();
+  if (lower.startsWith("summary=[")) {
+    const endBracket = value.lastIndexOf("]");
+    if (endBracket > "summary=[".length) {
+      value = value.slice("summary=[".length, endBracket);
+    } else {
+      value = value.slice("summary=[".length);
+    }
+  }
+  value = value
+    .replace(/\bscore version\s+[a-z0-9._-]+/gi, "Deterministic scoring replay")
+    .replace(/\bfinal xp\s+\d+\b/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!value) {
+    return "Deterministic scoring replay metadata was recorded for this contribution.";
+  }
+  const sentence = value.charAt(0).toUpperCase() + value.slice(1);
+  return /[.!?]$/.test(sentence) ? sentence : `${sentence}.`;
 }

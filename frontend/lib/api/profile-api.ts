@@ -428,7 +428,7 @@ function toFeaturedContributions(
         title: entry.pull_request?.title || "Contribution",
         summary:
           showAiSummaries
-            ? entry.explanation?.find((line) => line.trim().length > 0) ||
+            ? bestExplanationLine(entry.explanation) ||
               "Exact contribution details are limited to verified score evidence."
             : REDACTED_AI_SUMMARY,
         xpEarned: entry.delta_xp,
@@ -475,7 +475,7 @@ function toContributions(
         linkedIssue: false,
         ciPassed: false,
         aiSummary: showAiSummaries
-          ? entry.explanation?.find((line) => line.trim().length > 0) ||
+          ? bestExplanationLine(entry.explanation) ||
             "Profile snapshot evidence does not include detailed PR analysis metrics yet."
           : REDACTED_AI_SUMMARY,
         evidenceSignals: entry.explanation ?? [],
@@ -628,6 +628,40 @@ function mergeUniqueStrings(base?: string[], next?: string[]): string[] {
     }
   }
   return Array.from(merged);
+}
+
+function bestExplanationLine(lines?: string[]): string {
+  const candidate = lines?.find((line) => line.trim().length > 0) ?? "";
+  return sanitizeExplanationLine(candidate);
+}
+
+function sanitizeExplanationLine(line: string): string {
+  let value = line.trim();
+  if (!value) {
+    return "";
+  }
+  const lower = value.toLowerCase();
+  if (lower.startsWith("fallback_reason=")) {
+    return "Deterministic summary is shown while AI enrichment is unavailable.";
+  }
+  if (lower.startsWith("summary=[")) {
+    const endBracket = value.lastIndexOf("]");
+    if (endBracket > "summary=[".length) {
+      value = value.slice("summary=[".length, endBracket);
+    } else {
+      value = value.slice("summary=[".length);
+    }
+  }
+  value = value
+    .replace(/\bscore version\s+[a-z0-9._-]+/gi, "Deterministic scoring replay")
+    .replace(/\bfinal xp\s+\d+\b/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!value) {
+    return "";
+  }
+  const sentence = value.charAt(0).toUpperCase() + value.slice(1);
+  return /[.!?]$/.test(sentence) ? sentence : `${sentence}.`;
 }
 
 function strongestEvidenceState(

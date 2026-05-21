@@ -377,6 +377,9 @@ function normalizeEvidenceReason(reason: string): string | null {
   if (!normalized) {
     return null;
   }
+  if (normalized.includes("analysis is deterministic-only; no ai enrichment is attached")) {
+    return "Deterministic report is available now; Gemini enrichment can appear after re-analysis.";
+  }
   if (normalized.includes("analysis has not been persisted")) {
     return "Gemini analysis is still processing for this PR.";
   }
