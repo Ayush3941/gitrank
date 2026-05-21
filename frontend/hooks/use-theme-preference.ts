@@ -17,7 +17,7 @@ type ThemeSnapshot = {
 };
 
 export function useThemePreference() {
-  const theme = useSyncExternalStore<ThemePreference>(subscribe, getThemeSnapshot, () => "neon");
+  const theme = useSyncExternalStore<ThemePreference>(subscribe, getThemeSnapshot, () => "midnight");
   const themeSource = useSyncExternalStore<ThemePreferenceSource>(
     subscribe,
     getThemeSourceSnapshot,
@@ -97,7 +97,7 @@ function isThemePreference(value: string): value is ThemePreference {
 
 function getThemeSnapshotWithSource(): ThemeSnapshot {
   if (typeof window === "undefined") {
-    return { theme: "neon", source: "system" };
+    return { theme: "midnight", source: "system" };
   }
   const stored = window.localStorage.getItem(STORAGE_KEY);
   if (stored && isThemePreference(stored)) {
@@ -106,7 +106,7 @@ function getThemeSnapshotWithSource(): ThemeSnapshot {
   if (window.matchMedia(HIGH_CONTRAST_QUERY).matches) {
     return { theme: "high-contrast", source: "system" };
   }
-  return { theme: "neon", source: "system" };
+  return { theme: "midnight", source: "system" };
 }
 
 function applyThemePreference(theme: ThemePreference) {
