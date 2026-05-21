@@ -18,11 +18,6 @@ class TestIntersectionObserver {
   readonly rootMargin = "0px";
   readonly thresholds = [0];
 
-  constructor(
-    _callback: IntersectionObserverCallback,
-    _options?: IntersectionObserverInit,
-  ) {}
-
   observe() {}
   unobserve() {}
   disconnect() {}
