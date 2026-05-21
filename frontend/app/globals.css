@@ -494,6 +494,30 @@ select {
   min-height: 24px;
 }
 
+details > summary {
+  position: relative;
+  padding-right: 2.2rem;
+}
+
+details > summary::after {
+  content: "›";
+  position: absolute;
+  right: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%) rotate(0deg);
+  color: rgb(var(--primary) / 0.9);
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1;
+  transition: transform 130ms cubic-bezier(0.2, 0, 0, 1), color 110ms cubic-bezier(0.2, 0, 0, 1);
+  pointer-events: none;
+}
+
+details[open] > summary::after {
+  transform: translateY(-50%) rotate(90deg);
+  color: rgb(var(--text-strong));
+}
+
 :where(input, textarea)::placeholder {
   color: rgb(var(--text-soft));
   opacity: 0.96;
@@ -1906,6 +1930,7 @@ html[data-theme="high-contrast"] .neon-title {
   .cyber-sheen::after,
   .cyber-card::after,
   .neon-skeleton,
+  details > summary::after,
   body::before {
     animation: none !important;
   }
