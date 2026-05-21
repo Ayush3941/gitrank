@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, Search, X, XCircle } from "lucide-react";
-import { useDeferredValue, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { formatDateTime, formatRelativeDays } from "@/lib/formatters";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
@@ -29,12 +28,8 @@ export function SyncRunActivityPanel({
   errorMessage?: string;
   onRefresh: () => void;
 }) {
-  const SEARCH_DEBOUNCE_MS = 220;
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"All" | "Completed" | "Running" | "Failed">("All");
-  const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS);
-  const deferredSearch = useDeferredValue(debouncedSearch);
-  const isFiltering = search !== debouncedSearch || deferredSearch !== debouncedSearch;
   const canReset = search.trim().length > 0 || statusFilter !== "All";
   const compactSearch =
     search.trim().length > 32 ? `${search.trim().slice(0, 32)}…` : search.trim();
@@ -60,7 +55,7 @@ export function SyncRunActivityPanel({
     return next;
   }, [runs]);
   const filteredRuns = useMemo(() => {
-    const term = deferredSearch.trim().toLowerCase();
+    const term = search.trim().toLowerCase();
     return runs.filter((run) => {
       const normalizedStatus = syncRunStatusLabel(run.status);
       const statusMatch =
@@ -78,7 +73,7 @@ export function SyncRunActivityPanel({
         (run.last_error ?? "").toLowerCase().includes(term)
       );
     });
-  }, [deferredSearch, statusFilter, runs]);
+  }, [search, statusFilter, runs]);
   const resultsRegionClassName = "min-h-[12rem]";
   const syncNotice =
     statusCounts.running > 0
@@ -130,9 +125,7 @@ export function SyncRunActivityPanel({
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p id={filterStatusId} role="status" aria-live="polite" className="text-xs font-medium text-cyan-200">
-            {isFiltering
-              ? "Filtering sync runs..."
-              : `${filteredRuns.length} of ${statusCounts.all} runs`}
+            {`${filteredRuns.length} of ${statusCounts.all} runs`}
           </p>
           <Button
             type="button"
@@ -265,7 +258,6 @@ export function SyncRunActivityPanel({
         <ol
           id={syncRunsRegionId}
           role="list"
-          aria-busy={isFiltering || undefined}
           className={`grid gap-2 ${resultsRegionClassName}`}
         >
           {filteredRuns.map((run) => {
