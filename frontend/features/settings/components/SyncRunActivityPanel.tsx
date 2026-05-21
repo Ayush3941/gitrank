@@ -5,6 +5,7 @@ import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, Search, X, XCircle } fr
 import { useDeferredValue, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { formatDateTime, formatRelativeDays } from "@/lib/formatters";
@@ -95,10 +96,6 @@ export function SyncRunActivityPanel({
     setSearch("");
   }
 
-  function handleClearStatusFilter() {
-    setStatusFilter("All");
-  }
-
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -153,31 +150,11 @@ export function SyncRunActivityPanel({
             {search.trim().length > 0 ? (
               <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs">
                 Query: {compactSearch}
-                <button
-                  type="button"
-                  onClick={handleClearSearch}
-                  className="focus-ring inline-flex h-6 w-6 items-center justify-center rounded-full text-cyan-100 hover:text-white"
-                  aria-label="Clear sync run search query"
-                  aria-controls={syncRunsRegionId}
-                  title="Clear search"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
               </span>
             ) : null}
             {statusFilter !== "All" ? (
               <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs">
                 Status: {statusFilter}
-                <button
-                  type="button"
-                  onClick={handleClearStatusFilter}
-                  className="focus-ring inline-flex h-6 w-6 items-center justify-center rounded-full text-cyan-100 hover:text-white"
-                  aria-label="Clear sync run status filter"
-                  aria-controls={syncRunsRegionId}
-                  title="Clear status filter"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
               </span>
             ) : null}
           </div>
@@ -215,27 +192,24 @@ export function SyncRunActivityPanel({
               </button>
             ) : null}
           </div>
-          <ul
-            role="list"
-            aria-label="Sync status filter options"
-            className="grid grid-cols-4 gap-2"
+          <Select
+            value={statusFilter}
+            onValueChange={(value) => setStatusFilter(value as "All" | "Completed" | "Running" | "Failed")}
           >
-            {(["All", "Completed", "Running", "Failed"] as const).map((item, index) => (
-              <li key={`sync-status-filter-${index}-${item}`} className="list-none">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={statusFilter === item ? "default" : "secondary"}
-                  onClick={() => setStatusFilter(item)}
-                  aria-describedby={filterStatusId}
-                  aria-pressed={statusFilter === item}
-                  aria-controls={syncRunsRegionId}
-                >
-                  {item}
-                </Button>
-              </li>
-            ))}
-          </ul>
+            <SelectTrigger
+              aria-label="Filter sync runs by status"
+              aria-describedby={filterStatusId}
+              aria-controls={syncRunsRegionId}
+            >
+              <SelectValue placeholder="Status filter" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All">All ({statusCounts.all})</SelectItem>
+              <SelectItem value="Completed">Completed ({statusCounts.completed})</SelectItem>
+              <SelectItem value="Running">Running ({statusCounts.running})</SelectItem>
+              <SelectItem value="Failed">Failed ({statusCounts.failed})</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

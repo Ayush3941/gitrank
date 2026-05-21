@@ -259,10 +259,7 @@ export function ContributionsPageClient() {
                     startPosition={1}
                   />
                 </div>
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p role="status" aria-live="polite" aria-atomic="true" className="text-sm text-muted">
-                    Showing {visibleRows.length} of {filteredRows.length} cards.
-                  </p>
+                <div className="flex flex-wrap items-center justify-end gap-3">
                   {hasMoreRows ? (
                     <Button
                       type="button"
