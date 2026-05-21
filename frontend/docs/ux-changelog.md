@@ -1612,6 +1612,9 @@
 - Added per-cadence quest section collapse controls:
   - `Daily`, `Weekly`, `Long-term`, and `Skill-based` quest sections now support `Show section` / `Hide section`
   - improves scan speed on long quest boards while keeping full detail available on demand.
+- Tightened leaderboard lane tab readability on medium widths:
+  - lane tabs now use short labels on tighter breakpoints and full labels on large screens
+  - preserves lane meaning while reducing horizontal crowding.
 
 ## 2026-05-16
 

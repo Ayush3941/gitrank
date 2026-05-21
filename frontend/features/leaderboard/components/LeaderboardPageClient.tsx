@@ -167,7 +167,8 @@ export function LeaderboardPageClient() {
                   aria-controls={LEADERBOARD_ROWS_REGION_ID}
                   title={TAB_LABELS[item].full}
                 >
-                  <span>{TAB_LABELS[item].full}</span>
+                  <span className="lg:hidden">{TAB_LABELS[item].short}</span>
+                  <span className="hidden lg:inline">{TAB_LABELS[item].full}</span>
                 </TabsTrigger>
               ))}
             </TabsList>
