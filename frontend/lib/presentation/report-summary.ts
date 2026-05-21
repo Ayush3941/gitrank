@@ -15,6 +15,15 @@ export function sanitizeReportSummary(input: string): string {
 
   value = value
     .replace(/\bscore version\s+[a-z0-9._-]+\b/gi, "Deterministic scoring replay")
+    .replace(/\banalysis not recorded\b/gi, "analysis pending")
+    .replace(/\bmissing analysis\b/gi, "analysis pending")
+    .replace(/\bunknown source\b/gi, "deterministic snapshot")
+    .replace(/\breport snapshot is stale\b/gi, "report snapshot is pending refresh")
+    .replace(/\banalysis has not been persisted\b/gi, "analysis is pending")
+    .replace(
+      /\breport is stale until analysis and scoring both complete\b/gi,
+      "report will refresh after analysis and scoring complete",
+    )
     .replace(/\bfinal xp\s+\d+\b/gi, "")
     .replace(/\s+/g, " ")
     .trim();
