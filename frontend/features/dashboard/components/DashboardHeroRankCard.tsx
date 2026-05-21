@@ -77,7 +77,7 @@ export function DashboardHeroRankCard({
           <p className="mt-3 text-lg font-medium text-white">
             Reach <span className="numeric-readout">{user.level.nextLevelXp.toLocaleString("en-US")}</span> XP
           </p>
-          <p className="mt-2 text-sm text-muted">Unlock the next rank lane.</p>
+          <p className="mt-2 text-sm text-muted">Unlock next rank lane.</p>
         </div>
       </div>
       <XPProgress current={user.level.currentXp} next={user.level.nextLevelXp} />
@@ -97,7 +97,7 @@ export function DashboardHeroRankCard({
       {identitySummary ? (
         <div className="rounded-[1.75rem] border border-cyan-300/20 bg-cyan-400/8 p-4">
           <p className="text-xs font-medium text-cyan-200">
-            Open-source identity summary ({aiMode === "gemini" ? "Gemini" : "Deterministic"})
+            Identity summary ({aiMode === "gemini" ? "Gemini" : "Deterministic"})
           </p>
           <ExpandableText
             text={identitySummary}
@@ -109,7 +109,7 @@ export function DashboardHeroRankCard({
         </div>
       ) : null}
       <div className="space-y-3">
-        <p className="text-xs font-medium text-primary">Top signals</p>
+        <p className="text-xs font-medium text-primary">Strongest signals</p>
         <ul role="list" className="flex flex-wrap gap-2">
           {strongestSignals.map((signal, index) => (
             <li key={`${signal}-${index}`} className="list-none">

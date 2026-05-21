@@ -215,7 +215,7 @@ export function BadgesPageClient() {
                     <ExpandableText
                       text={
                         abraInsights.data?.identitySummary ||
-                        "Badge narratives are running in deterministic fallback mode."
+                        "Badge narratives are in deterministic fallback mode."
                       }
                       lines={2}
                       minLengthForToggle={180}

@@ -175,11 +175,11 @@ function AIPanel({
   const summary = sanitizeReportSummary(narrative?.pitch || fallbackSummary);
 
   return (
-    <div className="neon-surface rounded-[1.35rem] border-fuchsia-300/28 px-4 py-4">
-      <p className="inline-flex items-center gap-2 text-xs font-medium text-fuchsia-100">
-        <Sparkles className="h-3.5 w-3.5" />
-        Contribution impact summary
-      </p>
+      <div className="neon-surface rounded-[1.35rem] border-fuchsia-300/28 px-4 py-4">
+        <p className="inline-flex items-center gap-2 text-xs font-medium text-fuchsia-100">
+          <Sparkles className="h-3.5 w-3.5" />
+        Impact summary
+        </p>
       <div className="mt-3 text-sm text-muted">
         <ExpandableText
           text={summary}
