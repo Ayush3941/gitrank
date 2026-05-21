@@ -36,7 +36,13 @@ export function EvidenceSignalsCard({ report }: { report: PullRequestAnalysis })
               <div>
                 <p className="font-medium text-white">{signal.label}</p>
               </div>
-              <span className={`ml-auto rounded-full px-2.5 py-1 text-xs font-semibold ${signal.active ? "bg-emerald-400/14 text-emerald-200" : "bg-slate-400/12 text-slate-200"}`}>
+              <span
+                className={`ml-auto rounded-full px-2.5 py-1 text-xs font-semibold ${
+                  signal.active
+                    ? "neon-chip neon-chip-success text-emerald-100"
+                    : "neon-chip neon-chip-muted text-muted"
+                }`}
+              >
                 {signal.active ? "Yes" : "No"}
               </span>
             </li>

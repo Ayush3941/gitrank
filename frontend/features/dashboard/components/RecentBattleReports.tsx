@@ -16,6 +16,14 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
       <div>
         <p className="text-xs font-medium text-primary">Recent battle reports</p>
         <h2 className="mt-2 text-xl font-semibold text-white">High-signal PRs</h2>
+        <div className="mt-3">
+          <Button asChild size="sm" variant="secondary">
+            <Link href="/dashboard/contributions" prefetch={false}>
+              View all reports
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
       </div>
       <ul role="list" className="grid gap-3">
         {sortedReports.length === 0 ? (

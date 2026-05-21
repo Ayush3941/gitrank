@@ -393,9 +393,16 @@ select {
 .skip-link {
   position: fixed;
   left: 0.75rem;
-  top: calc(-1 * max(5rem, env(safe-area-inset-top, 0px) + 3rem));
+  top: 0.75rem;
   z-index: 100;
-  transform: translateY(0);
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  white-space: nowrap;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  transform: translateY(-200%);
   opacity: 0;
   pointer-events: none;
   border: 1px solid rgb(var(--primary) / 0.4);
@@ -414,6 +421,14 @@ select {
 
 .skip-link:focus-visible {
   top: max(0.75rem, env(safe-area-inset-top, 0px));
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  white-space: normal;
+  clip: auto;
+  clip-path: none;
+  transform: translateY(0);
   opacity: 1;
   pointer-events: auto;
 }

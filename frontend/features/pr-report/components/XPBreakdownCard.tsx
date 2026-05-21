@@ -44,8 +44,9 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
         detail: component.reason,
       }))
     : fallbackRows;
-  const visibleRows = rows.slice(0, 3);
-  const remainingRows = Math.max(0, rows.length - visibleRows.length);
+  const prioritizedRows = prioritizeFinalXpRow(rows);
+  const visibleRows = prioritizedRows.slice(0, 3);
+  const remainingRows = Math.max(0, prioritizedRows.length - visibleRows.length);
 
   return (
     <GlowCard className="space-y-5">
@@ -108,4 +109,22 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
       </ul>
     </GlowCard>
   );
+}
+
+function prioritizeFinalXpRow(
+  rows: Array<{ label: string; value: string; detail: string }>,
+): Array<{ label: string; value: string; detail: string }> {
+  if (rows.length <= 3) {
+    return rows;
+  }
+  const finalXpIndex = rows.findIndex((row) => {
+    const label = row.label.toLowerCase();
+    const detail = row.detail.toLowerCase();
+    return label.includes("final xp") || detail.includes("final deterministic xp");
+  });
+  if (finalXpIndex <= 0) {
+    return rows;
+  }
+  const finalXpRow = rows[finalXpIndex];
+  return [finalXpRow, ...rows.slice(0, finalXpIndex), ...rows.slice(finalXpIndex + 1)];
 }

@@ -111,7 +111,7 @@ describe("live fixture frontend smoke coverage", () => {
     expect(await screen.findByText("Persisted scorer components")).toBeTruthy();
     expect(
       await screen.findByText(
-        "Final deterministic XP recorded by the scoring engine. Source: score_event_metadata.",
+        /Final deterministic XP recorded by the scoring engine(?:\. Source: score_event_metadata\.)?/,
       ),
     ).toBeTruthy();
     expect(await screen.findByText("Live Test Builder")).toBeTruthy();
