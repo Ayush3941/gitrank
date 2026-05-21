@@ -325,7 +325,7 @@ export function ContributionsPageClient() {
       ) : null}
       {!isLoading && !isError ? (
         <section id="contributions-repositories" className="render-opt-section scroll-mt-24">
-          <details className="space-y-3" open={repositories.length > 0 && repositories.length <= 3}>
+          <details className="space-y-3">
             <summary className="focus-ring neon-surface cursor-pointer list-none px-4 py-3 text-sm font-semibold text-white marker:content-none">
               Repositories touched ({repositories.length})
             </summary>
