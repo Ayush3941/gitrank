@@ -2,11 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { AlertTriangle, ArrowUpRight, CheckCircle2, Info, Zap } from "lucide-react";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
-import { dashboardNavItems } from "@/components/shared/dashboard-nav";
 import type { UserProfile } from "@/types/gitrank";
 
 export type AutoSyncNote = {
@@ -21,11 +19,6 @@ export function DashboardTopBar({
   user: UserProfile;
   autoSyncNote?: AutoSyncNote | null;
 }) {
-  const pathname = usePathname() ?? "/dashboard";
-  const activeLane =
-    dashboardNavItems.find((item) =>
-      item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`),
-    ) ?? dashboardNavItems[0];
   const autoSyncToneClass =
     autoSyncNote?.tone === "success"
       ? "neon-chip neon-chip-success border-emerald-300/30 text-emerald-100"
@@ -56,7 +49,7 @@ export function DashboardTopBar({
           <div className="min-w-0 space-y-0.5">
             <p className="truncate text-sm font-semibold text-white sm:text-base">{user.displayName}</p>
             <p className="truncate text-xs text-muted">
-              @{user.username} · {activeLane.label}
+              @{user.username}
             </p>
           </div>
         </div>
