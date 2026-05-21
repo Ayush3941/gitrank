@@ -358,8 +358,8 @@ export function ContributionsPageClient() {
                   {repositories.map((repository) => (
                     <li key={repository.fullName} className="render-opt-card neon-surface rounded-[1.4rem] border-cyan-300/28 px-4 py-3">
                       <p className="break-anywhere text-sm font-medium text-white">{repository.fullName}</p>
-                      <p className="mt-1 text-xs text-muted">{repository.contributions} contributions</p>
-                      <p className="mt-3 text-lg font-semibold text-cyan-200">{repository.totalXp} XP</p>
+                      <p className="mt-1 text-xs text-muted"><span className="numeric-readout">{repository.contributions.toLocaleString("en-US")}</span> contributions</p>
+                      <p className="numeric-readout mt-3 text-lg font-semibold text-cyan-200">{repository.totalXp.toLocaleString("en-US")} XP</p>
                     </li>
                   ))}
                 </ul>
@@ -391,7 +391,7 @@ export function ContributionsPageClient() {
                           <li key={point.month} className="list-none space-y-1">
                             <div className="flex items-center justify-between text-xs text-muted">
                               <span>{point.month}</span>
-                              <span>{point.xp} XP</span>
+                              <span className="numeric-readout">{point.xp.toLocaleString("en-US")} XP</span>
                             </div>
                             <div className="neon-track h-2 rounded-full">
                               <div
@@ -422,7 +422,7 @@ export function ContributionsPageClient() {
                         >
                           <p className="break-anywhere text-sm font-medium text-white">{row.title}</p>
                           <p className="mt-1 break-anywhere text-xs text-muted">{row.owner}/{row.repo} #{row.number}</p>
-                          <p className="mt-2 text-sm text-cyan-200">+{row.xpEarned} XP</p>
+                          <p className="numeric-readout mt-2 text-sm text-cyan-200">+{row.xpEarned.toLocaleString("en-US")} XP</p>
                           <div className="pt-1">
                             <Button asChild size="sm" variant="secondary">
                               <Link href={`/pr/${row.owner}/${row.repo}/${row.number}`} prefetch={false}>

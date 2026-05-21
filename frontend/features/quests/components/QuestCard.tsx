@@ -41,12 +41,12 @@ export function QuestCard({ quest }: { quest: Quest }) {
           />
         </div>
         <div className="neon-chip neon-chip-info rounded-3xl px-3 py-2 text-sm font-medium">
-          +{quest.rewardXp} XP
+          <span className="numeric-readout">+{quest.rewardXp.toLocaleString("en-US")} XP</span>
         </div>
       </div>
       <Progress value={progress} />
       <div className="flex items-center justify-between text-sm text-muted">
-        <span>{quest.progress} / {quest.goal}</span>
+        <span className="numeric-readout">{quest.progress.toLocaleString("en-US")} / {quest.goal.toLocaleString("en-US")}</span>
         <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusTone}`}>{quest.status}</span>
       </div>
       <ul role="list" className="flex flex-wrap gap-2">
@@ -60,7 +60,7 @@ export function QuestCard({ quest }: { quest: Quest }) {
         <li>
           <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs">
             <Link2 className="h-3 w-3" />
-            {quest.linkedContributionIds.length} evidence PRs
+            <span className="numeric-readout">{quest.linkedContributionIds.length.toLocaleString("en-US")} evidence PRs</span>
           </span>
         </li>
       </ul>

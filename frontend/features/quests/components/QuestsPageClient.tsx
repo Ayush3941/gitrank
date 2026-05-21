@@ -86,14 +86,14 @@ export function QuestsPageClient() {
                   </p>
                 </div>
                 <div className="grid gap-2 rounded-2xl border border-fuchsia-300/28 bg-fuchsia-400/10 px-4 py-3 text-sm text-fuchsia-100">
-                  <span className="inline-flex items-center gap-2"><Flame className="h-4 w-4" /> Current streak: {streak.currentStreakDays}d</span>
-                  <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Best streak: {streak.bestStreakDays}d</span>
+                  <span className="inline-flex items-center gap-2"><Flame className="h-4 w-4" /> Current streak: <span className="numeric-readout">{streak.currentStreakDays.toLocaleString("en-US")}d</span></span>
+                  <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Best streak: <span className="numeric-readout">{streak.bestStreakDays.toLocaleString("en-US")}d</span></span>
                 </div>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs text-muted">
                   <span>Annual progression</span>
-                  <span>{dayProgress}%</span>
+                  <span className="numeric-readout">{dayProgress}%</span>
                 </div>
                 <Progress value={dayProgress} />
               </div>
@@ -340,15 +340,15 @@ function MissionSpotlightCard({
             </span>
           </div>
           <span className="neon-chip neon-chip-info rounded-full px-2.5 py-1 text-xs font-semibold">
-            +{quest.rewardXp} XP
+            <span className="numeric-readout">+{quest.rewardXp.toLocaleString("en-US")} XP</span>
           </span>
         </div>
         <p className="text-sm text-muted">{quest.description}</p>
         <div className="space-y-1">
           <Progress value={progress} />
           <div className="flex items-center justify-between text-xs text-muted">
-            <span>{quest.progress} / {quest.goal}</span>
-            <span>{progress}%</span>
+            <span className="numeric-readout">{quest.progress.toLocaleString("en-US")} / {quest.goal.toLocaleString("en-US")}</span>
+            <span className="numeric-readout">{progress}%</span>
           </div>
         </div>
         <p className="text-xs text-cyan-100">
