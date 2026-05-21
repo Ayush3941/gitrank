@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { ArrowRight, CalendarClock, Flame, ShieldCheck } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
@@ -26,6 +27,12 @@ const QUEST_SECTION_IDS: Record<Quest["cadence"], string> = {
 };
 
 export function QuestsPageClient() {
+  const [questGroupOpenState, setQuestGroupOpenState] = useState<Record<Quest["cadence"], boolean>>({
+    Daily: true,
+    Weekly: false,
+    "Long-term": false,
+    "Skill-based": false,
+  });
   const { data, isLoading, isError, isFetching, refetch } = useQuests();
   const quests = data?.quests ?? [];
   const profile = data?.profile;
@@ -158,7 +165,7 @@ export function QuestsPageClient() {
       {!isLoading && !isError && data ? (
         groups.map((group) => {
           const grouped = questMap[group];
-          const defaultOpen = group === "Daily";
+          const isOpen = questGroupOpenState[group];
 
           return (
             <section
@@ -166,7 +173,19 @@ export function QuestsPageClient() {
               id={QUEST_SECTION_IDS[group]}
               className="render-opt-section scroll-mt-24 space-y-4"
             >
-              <details className="space-y-3" open={defaultOpen}>
+              <details
+                className="space-y-3"
+                open={isOpen}
+                onToggle={(event) => {
+                  const nextOpen = event.currentTarget.open;
+                  setQuestGroupOpenState((current) => {
+                    if (current[group] === nextOpen) {
+                      return current;
+                    }
+                    return { ...current, [group]: nextOpen };
+                  });
+                }}
+              >
                 <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
                   {labelForGroup(group)} ({grouped.length})
                 </summary>
