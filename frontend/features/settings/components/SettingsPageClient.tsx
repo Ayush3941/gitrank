@@ -148,6 +148,7 @@ export function SettingsPageClient() {
   useAccountGamificationPreference(data);
   const [actionNotice, setActionNotice] = useState("");
   const [displayNotice, setDisplayNotice] = useState("");
+  const [showDisplayTuning, setShowDisplayTuning] = useState(false);
   const currentSettings = data?.user.privacy ?? null;
 
   function handleResetDisplayPreferences() {
@@ -395,11 +396,11 @@ export function SettingsPageClient() {
               onCheckedChange={(checked) => handlePrivacyToggle("reducedGamification", checked)}
             />
           </div>
-          <div className="cyber-divider" />
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="max-w-2xl">
-                <p className="text-xs font-medium text-primary">Keyboard controls</p>
+            <div className="cyber-divider" />
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="max-w-2xl">
+                  <p className="text-xs font-medium text-primary">Keyboard controls</p>
                 <h3 className="mt-2 text-xl font-semibold text-white">Display shortcuts</h3>
                 <p className="mt-2 text-sm leading-6 text-muted">
                   Enables theme and text-size shortcuts outside editable fields.
@@ -414,88 +415,104 @@ export function SettingsPageClient() {
             </div>
             <div className="cyber-divider" />
             <div className="space-y-3">
-              <div className="max-w-2xl">
-                <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
-                  <Palette className="h-5 w-5" />
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="inline-flex items-center gap-2">
+                  <Palette className="h-4 w-4 text-primary" />
+                  <p className="text-sm font-semibold text-white">Theme and text tuning</p>
                 </div>
-                <p className="mt-4 text-xs font-medium text-primary">Visual theme</p>
-                <h2 className="mt-2 text-2xl font-semibold text-white">Readable style mode</h2>
-                <p className="mt-2 text-sm leading-6 text-muted">
-                  Theme changes visuals only. Scoring and sync behavior stay the same.
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={showDisplayTuning ? "secondary" : "default"}
+                  onClick={() => {
+                    setShowDisplayTuning((current) => !current);
+                  }}
+                  aria-expanded={showDisplayTuning}
+                  aria-controls="display-tuning-controls"
+                >
+                  {showDisplayTuning ? "Hide tuning" : "Show tuning"}
+                </Button>
+              </div>
+              {showDisplayTuning ? (
+                <div id="display-tuning-controls" className="space-y-4">
+                  <div className="space-y-3">
+                    <p className="text-xs font-medium text-primary">Visual theme</p>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {THEME_OPTIONS.map((option) => (
+                        <Button
+                          key={option.value}
+                          type="button"
+                          size="sm"
+                          variant={theme === option.value ? "default" : "secondary"}
+                          className="h-auto justify-between px-4 py-3 text-left"
+                          onClick={() => setTheme(option.value)}
+                          aria-pressed={theme === option.value}
+                        >
+                          <span className="flex flex-col items-start">
+                            <span>{option.label}</span>
+                            <span className="text-xs text-muted">{option.description}</span>
+                          </span>
+                          {theme === option.value ? (
+                            <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-xs font-semibold text-emerald-50">
+                              Active
+                            </span>
+                          ) : null}
+                        </Button>
+                      ))}
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="justify-start"
+                      onClick={clearThemePreference}
+                      disabled={themeSource === "system"}
+                    >
+                      {themeSource === "system" ? "Following system theme" : "Follow system theme"}
+                    </Button>
+                  </div>
+                  <div className="cyber-divider" />
+                  <div className="space-y-3">
+                    <p className="text-xs font-medium text-primary">Text scale</p>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {TEXT_SCALE_OPTIONS.map((option) => (
+                        <Button
+                          key={option.value}
+                          type="button"
+                          size="sm"
+                          variant={textScale === option.value ? "default" : "secondary"}
+                          className="h-auto justify-between px-4 py-3 text-left"
+                          onClick={() => setTextScale(option.value)}
+                          aria-pressed={textScale === option.value}
+                        >
+                          <span className="flex flex-col items-start">
+                            <span>{option.label}</span>
+                            <span className="text-xs text-muted">{option.description}</span>
+                          </span>
+                          {textScale === option.value ? (
+                            <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-xs font-semibold text-emerald-50">
+                              Active
+                            </span>
+                          ) : null}
+                        </Button>
+                      ))}
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="justify-start"
+                      onClick={handleResetDisplayPreferences}
+                    >
+                      Reset display preferences
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <p id="display-tuning-controls" className="text-sm text-muted">
+                  Keep the default readable preset, or open tuning to adjust theme and text scale.
                 </p>
-              </div>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {THEME_OPTIONS.map((option) => (
-                  <Button
-                    key={option.value}
-                    type="button"
-                    size="sm"
-                    variant={theme === option.value ? "default" : "secondary"}
-                    className="h-auto justify-between px-4 py-3 text-left"
-                    onClick={() => setTheme(option.value)}
-                    aria-pressed={theme === option.value}
-                  >
-                    <span className="flex flex-col items-start">
-                      <span>{option.label}</span>
-                      <span className="text-xs text-muted">{option.description}</span>
-                    </span>
-                    {theme === option.value ? (
-                      <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-xs font-semibold text-emerald-50">
-                        Active
-                      </span>
-                    ) : null}
-                  </Button>
-                ))}
-              </div>
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                className="justify-start"
-                onClick={clearThemePreference}
-                disabled={themeSource === "system"}
-              >
-                {themeSource === "system" ? "Following system theme" : "Follow system theme"}
-              </Button>
-            </div>
-            <div className="cyber-divider" />
-            <div className="space-y-3">
-              <div className="max-w-2xl">
-                <p className="text-xs font-medium text-primary">Text scale</p>
-                <h3 className="mt-2 text-xl font-semibold text-white">Readable text size</h3>
-              </div>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {TEXT_SCALE_OPTIONS.map((option) => (
-                  <Button
-                    key={option.value}
-                    type="button"
-                    size="sm"
-                    variant={textScale === option.value ? "default" : "secondary"}
-                    className="h-auto justify-between px-4 py-3 text-left"
-                    onClick={() => setTextScale(option.value)}
-                    aria-pressed={textScale === option.value}
-                  >
-                    <span className="flex flex-col items-start">
-                      <span>{option.label}</span>
-                      <span className="text-xs text-muted">{option.description}</span>
-                    </span>
-                    {textScale === option.value ? (
-                      <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-xs font-semibold text-emerald-50">
-                        Active
-                      </span>
-                    ) : null}
-                  </Button>
-                ))}
-              </div>
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                className="justify-start"
-                onClick={handleResetDisplayPreferences}
-              >
-                Reset display preferences
-              </Button>
+              )}
             </div>
             {displayNotice ? (
               <p role="status" aria-live="polite" className="text-sm text-cyan-100">

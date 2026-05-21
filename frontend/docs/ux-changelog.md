@@ -1597,6 +1597,9 @@
 - Unified dashboard chrome for stronger hierarchy:
   - merged top identity strip and route navigation into a single shared shell (`dashboard-chrome`) across all dashboard routes
   - removes stacked duplicate shells and makes primary navigation visually consistent while staying non-sticky.
+- Added progressive disclosure to display customization in settings:
+  - theme and text-scale controls now live behind a `Show tuning` toggle
+  - keeps core privacy/sync controls scannable while preserving full customization when needed.
 
 ## 2026-05-16
 
