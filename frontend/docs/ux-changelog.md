@@ -2,6 +2,9 @@
 
 ## 2026-05-21
 
+- Global fetch-indicator smoothing pass:
+  - added a delayed-show (`120ms`) and minimum-visible (`260ms`) policy for the top network activity bar.
+  - removes flash/flicker during tiny request bursts while preserving visible feedback on meaningful loading states.
 - Sync-run filter stability pass:
   - replaced the status button-row in settings sync activity with a native `<select>` status filter (`All`, `Completed`, `Running`, `Failed`) to avoid interaction jitter and keep filtering stable on constrained devices.
   - removed deferred/debounced sync-run filter churn so result updates are immediate and less jitter-prone.
