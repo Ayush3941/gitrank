@@ -1609,6 +1609,9 @@
 - Added progressive disclosure for leaderboard mission detail:
   - `Your arena mission` now defaults to a compact summary with a `Show mission plan` action
   - detailed climb metrics and progress bar remain available on demand, reducing first-view clutter.
+- Added per-cadence quest section collapse controls:
+  - `Daily`, `Weekly`, `Long-term`, and `Skill-based` quest sections now support `Show section` / `Hide section`
+  - improves scan speed on long quest boards while keeping full detail available on demand.
 
 ## 2026-05-16
 

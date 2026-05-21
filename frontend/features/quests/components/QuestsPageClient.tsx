@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight, CalendarClock, Flame, ShieldCheck } from "lucide-react";
+import { useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -45,6 +46,19 @@ export function QuestsPageClient() {
   );
   const weeklyQuest = selectQuestSpotlight(questMap.Weekly);
   const longTermQuest = selectQuestSpotlight(questMap["Long-term"]);
+  const [expandedGroups, setExpandedGroups] = useState<Record<Quest["cadence"], boolean>>({
+    Daily: true,
+    Weekly: true,
+    "Long-term": false,
+    "Skill-based": false,
+  });
+
+  function toggleGroup(cadence: Quest["cadence"]) {
+    setExpandedGroups((current) => ({
+      ...current,
+      [cadence]: !current[cadence],
+    }));
+  }
 
   return (
     <div className="space-y-6">
@@ -170,31 +184,56 @@ export function QuestsPageClient() {
               className="render-opt-section scroll-mt-24 space-y-4"
             >
               <div className="space-y-3">
-                <h2 className="text-sm font-semibold text-white">
-                  {labelForGroup(group)} ({grouped.length})
-                </h2>
-                <DeferUntilVisible fallback={<QuestSectionPlaceholder title={`Loading ${labelForGroup(group)}`} />}>
-                  {grouped.length > 0 ? (
-                    <ul role="list" className="grid gap-4 xl:grid-cols-2">
-                      {grouped.map((quest) => (
-                        <li key={quest.id} className="list-none">
-                          <QuestCard quest={quest} />
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <GlowCard className="neon-surface rounded-[1.5rem] border-dashed border-cyan-300/24 p-4 text-sm text-muted">
-                      <p>
-                        No {labelForGroup(group).toLowerCase()} is available in this snapshot yet.
-                      </p>
-                      <div className="mt-3">
-                        <Button asChild variant="secondary" size="sm">
-                          <Link href={recoveryHrefForGroup(group)} prefetch={false}>{recoveryLabelForGroup(group)}</Link>
-                        </Button>
-                      </div>
-                    </GlowCard>
-                  )}
-                </DeferUntilVisible>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h2 className="text-sm font-semibold text-white">
+                    {labelForGroup(group)} ({grouped.length})
+                  </h2>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={expandedGroups[group] ? "secondary" : "default"}
+                    onClick={() => {
+                      toggleGroup(group);
+                    }}
+                    aria-expanded={expandedGroups[group]}
+                    aria-controls={`quests-group-${group}`}
+                  >
+                    {expandedGroups[group] ? "Hide section" : "Show section"}
+                  </Button>
+                </div>
+                {expandedGroups[group] ? (
+                  <DeferUntilVisible fallback={<QuestSectionPlaceholder title={`Loading ${labelForGroup(group)}`} />}>
+                    <div id={`quests-group-${group}`}>
+                      {grouped.length > 0 ? (
+                        <ul role="list" className="grid gap-4 xl:grid-cols-2">
+                          {grouped.map((quest) => (
+                            <li key={quest.id} className="list-none">
+                              <QuestCard quest={quest} />
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <GlowCard className="neon-surface rounded-[1.5rem] border-dashed border-cyan-300/24 p-4 text-sm text-muted">
+                          <p>
+                            No {labelForGroup(group).toLowerCase()} is available in this snapshot yet.
+                          </p>
+                          <div className="mt-3">
+                            <Button asChild variant="secondary" size="sm">
+                              <Link href={recoveryHrefForGroup(group)} prefetch={false}>{recoveryLabelForGroup(group)}</Link>
+                            </Button>
+                          </div>
+                        </GlowCard>
+                      )}
+                    </div>
+                  </DeferUntilVisible>
+                ) : (
+                  <GlowCard
+                    id={`quests-group-${group}`}
+                    className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 p-4 text-sm text-muted"
+                  >
+                    Section hidden for faster scanning. Open when you want quest-level details.
+                  </GlowCard>
+                )}
               </div>
             </section>
           );
