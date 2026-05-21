@@ -13,8 +13,8 @@ export function GlowCard({
         ? "glass-panel-strong"
         : "glass-panel"
       : strong
-        ? "glass-panel-strong cyber-card cyber-frame cyber-sheen neon-outline"
-        : "glass-panel cyber-card cyber-frame cyber-sheen";
+        ? "glass-panel-strong cyber-card cyber-frame neon-outline"
+        : "glass-panel cyber-frame";
   return (
     <div
       className={cn(
