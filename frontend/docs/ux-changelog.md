@@ -1594,6 +1594,9 @@
 - Added one-tap active-filter chip removal in contributions:
   - active `Category`, `Search`, and `Sort` chips now clear their specific filter directly from the chip itself
   - reduces reset churn when comparing adjacent filter combinations.
+- Unified dashboard chrome for stronger hierarchy:
+  - merged top identity strip and route navigation into a single shared shell (`dashboard-chrome`) across all dashboard routes
+  - removes stacked duplicate shells and makes primary navigation visually consistent while staying non-sticky.
 
 ## 2026-05-16
 

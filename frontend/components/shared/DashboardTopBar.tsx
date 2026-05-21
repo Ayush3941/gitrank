@@ -5,15 +5,18 @@ import Link from "next/link";
 import { AlertTriangle, ArrowUpRight, Zap } from "lucide-react";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
+import { cn } from "@/lib/cn";
 import type { UserProfile } from "@/types/gitrank";
 
 export function DashboardTopBar({
   user,
+  embedded = false,
 }: {
   user: UserProfile;
+  embedded?: boolean;
 }) {
   return (
-    <div className="dashboard-nav-shell px-4 py-2.5 sm:px-5">
+    <div className={cn(embedded ? "px-2.5 py-1 sm:px-3 sm:py-1.5" : "dashboard-nav-shell px-4 py-2.5 sm:px-5")}>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
           <div className="cyber-avatar relative h-10 w-10 shrink-0 overflow-hidden rounded-full">
@@ -44,9 +47,9 @@ export function DashboardTopBar({
   );
 }
 
-export function DashboardTopBarSkeleton() {
+export function DashboardTopBarSkeleton({ embedded = false }: { embedded?: boolean }) {
   return (
-    <div className="dashboard-nav-shell px-4 py-2.5 sm:px-5">
+    <div className={cn(embedded ? "px-2.5 py-1 sm:px-3 sm:py-1.5" : "dashboard-nav-shell px-4 py-2.5 sm:px-5")}>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="neon-skeleton h-10 w-10 rounded-full" />
@@ -65,7 +68,26 @@ export function DashboardTopBarSkeleton() {
   );
 }
 
-export function DashboardTopBarUnavailable() {
+export function DashboardTopBarUnavailable({ embedded = false }: { embedded?: boolean }) {
+  if (embedded) {
+    return (
+      <div className="flex flex-col gap-3 px-2.5 py-1.5 sm:px-3">
+        <div className="inline-flex items-center gap-2 text-sm text-amber-100">
+          <AlertTriangle className="h-4 w-4" />
+          Authenticated profile unavailable
+        </div>
+        <Link
+          href="/login?return_to=/dashboard"
+          prefetch={false}
+          className="focus-ring cyber-link inline-flex w-fit items-center gap-2 text-sm font-medium"
+        >
+          Reconnect GitHub
+          <ArrowUpRight className="h-4 w-4" />
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="glass-panel cyber-card cyber-frame mb-5 border border-amber-400/24 px-5 py-4">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">

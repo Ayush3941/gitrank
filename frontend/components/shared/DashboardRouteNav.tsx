@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { dashboardNavItems } from "@/components/shared/dashboard-nav";
 import { cn } from "@/lib/cn";
 
-export function DashboardRouteNav() {
+export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) {
   const pathname = usePathname();
   const isActive = (href: string, exact = false) =>
     exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
@@ -13,11 +13,14 @@ export function DashboardRouteNav() {
   return (
     <nav
       aria-label="Dashboard navigation"
-      className="dashboard-nav-shell p-1.5"
+      className={cn(embedded ? "p-0.5" : "dashboard-nav-shell p-1.5")}
     >
       <ul
         role="list"
-        className="dashboard-nav-track flex gap-1.5 overflow-x-auto p-0.5 pb-1 sm:grid sm:grid-cols-5 sm:overflow-visible sm:pb-0"
+        className={cn(
+          "dashboard-nav-track flex gap-1.5 overflow-x-auto p-0.5 pb-1 sm:grid sm:grid-cols-5 sm:overflow-visible sm:pb-0",
+          embedded ? "sm:p-0" : "",
+        )}
       >
         {dashboardNavItems.map((item) => {
           const active = isActive(item.href, item.exact);

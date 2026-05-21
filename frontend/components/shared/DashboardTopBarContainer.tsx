@@ -19,7 +19,7 @@ const AUTO_SYNC_ATTEMPT_RECOVERY_COOLDOWN_MS = 10 * 60 * 1000;
 const AUTO_SYNC_SESSION_COOLDOWN_MS = 20 * 60 * 1000;
 const AUTO_SYNC_SESSION_KEY_PREFIX = "gitrank:auto-sync:last-at:";
 
-export function DashboardTopBarContainer() {
+export function DashboardTopBarContainer({ embedded = false }: { embedded?: boolean }) {
   const pathname = usePathname() ?? "/dashboard";
   const { data, isError, isLoading } = useMyProfile();
   const { mutate: requestProfileSync, isPending: isUserSyncPending } = useRequestProfileSync();
@@ -105,12 +105,12 @@ export function DashboardTopBarContainer() {
   }, [data, isError, isLoading, isUserSyncPending, pathname, requestProfileSync]);
 
   if (isLoading) {
-    return <DashboardTopBarSkeleton />;
+    return <DashboardTopBarSkeleton embedded={embedded} />;
   }
 
   if (isError || !data) {
-    return <DashboardTopBarUnavailable />;
+    return <DashboardTopBarUnavailable embedded={embedded} />;
   }
 
-  return <DashboardTopBar user={data.user} />;
+  return <DashboardTopBar user={data.user} embedded={embedded} />;
 }
