@@ -16,7 +16,6 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
       <div>
         <p className="text-xs font-medium text-primary">Recent battle reports</p>
         <h2 className="mt-2 text-2xl font-semibold text-white">High-signal PRs from the last cycle</h2>
-        <p className="mt-2 text-sm text-muted">{sortedReports.length} report rows sorted by XP impact.</p>
       </div>
       <ul role="list" className="grid gap-3">
         {sortedReports.length === 0 ? (

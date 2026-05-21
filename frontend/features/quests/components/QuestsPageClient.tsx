@@ -80,7 +80,7 @@ export function QuestsPageClient() {
                   </p>
                   <h2 className="mt-3 text-2xl font-semibold text-white">Day {dayOfYear} of 365</h2>
                   <p className="mt-2 text-sm text-muted">
-                    Keep streak momentum and compound high-signal contributions over the full year.
+                    Keep streak momentum and compound high-signal contributions over the year.
                   </p>
                 </div>
                 <div className="grid gap-2 rounded-2xl border border-fuchsia-300/28 bg-fuchsia-400/10 px-4 py-3 text-sm text-fuchsia-100">
@@ -106,7 +106,7 @@ export function QuestsPageClient() {
               <div>
                 <p className="text-xs font-medium text-primary">Mission spotlight</p>
                 <h2 className="mt-2 text-2xl font-semibold text-white">Clear next moves</h2>
-                <p className="mt-2 text-sm text-muted">Daily, weekly, and long-term targets generated from current evidence.</p>
+                <p className="mt-2 text-sm text-muted">Daily, weekly, and long-term targets from current evidence.</p>
               </div>
             </div>
             <ul role="list" className="grid gap-3 md:grid-cols-3">

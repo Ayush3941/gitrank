@@ -196,7 +196,7 @@ export function LeaderboardPageClient() {
           <EmptyState
             eyebrow="Leaderboard participation"
             title="No public leaderboard rows yet"
-            description="GitRank does not fabricate leaderboard identities. Rows appear only after contributors complete OAuth, sync, and enable public participation."
+            description="Rows appear only after real contributors complete OAuth, sync, and public visibility."
             actionLabel="Open contributions"
             actionHref="/dashboard/contributions"
             analyticsTarget="leaderboard:no-live-rows"
@@ -206,7 +206,7 @@ export function LeaderboardPageClient() {
               <p className="text-xs font-medium text-primary">Arena preview state</p>
               <h2 className="mt-2 text-2xl font-semibold text-white">How ranking unlocks</h2>
               <p className="mt-2 text-sm text-muted">
-                When public participants are present, GitRank places profiles into weekly rank bands using score evidence quality, consistency, and merged impact.
+                Once participants are present, GitRank places profiles into weekly bands using quality-weighted score evidence.
               </p>
             </div>
             <div className="grid gap-3 md:grid-cols-3">
@@ -237,7 +237,7 @@ export function LeaderboardPageClient() {
                       #{snapshot.currentUser.rank} in {tab}
                     </h2>
                     <p className="mt-2 text-sm text-muted">
-                      Focus lane: {snapshot.currentUser.focus}. Keep quality-weighted merged evidence flowing to move bands safely.
+                      Focus lane: {snapshot.currentUser.focus}. Keep high-quality merged evidence flowing to climb safely.
                     </p>
                   </div>
                   <span className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold">
@@ -319,9 +319,9 @@ export function LeaderboardPageClient() {
         <GlowCard className="space-y-4 border border-amber-400/24 bg-amber-400/8">
           <div>
             <p className="text-xs font-medium text-amber-100">Arena preview mode ({rows.length} active public profiles)</p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">Live competition is still warming up</h2>
+            <h2 className="mt-2 text-2xl font-semibold text-white">Competition is warming up</h2>
             <p className="mt-2 readable-measure text-sm leading-7 text-amber-50">
-              This lane has {rows.length} active public profiles right now. Ranking is live, but bracket density is still low.
+              This lane has {rows.length} active public profiles. Ranking is live, but bracket density is still low.
             </p>
           </div>
           <p className="text-sm text-amber-100">
