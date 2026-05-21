@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowUpRight, Target, Trophy } from "lucide-react";
-import { startTransition, useDeferredValue, useEffect, useState } from "react";
+import { startTransition, useDeferredValue, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -88,17 +88,6 @@ export function LeaderboardPageClient() {
   const currentUserProgressToNextBand = snapshot?.currentUser
     ? progressToNextBand(snapshot.currentUser.seasonXp, snapshot.currentUser.xpToNextRank)
     : 0;
-
-  useEffect(() => {
-    const lane = tabToLaneParam(tab);
-    const nextParams = new URLSearchParams(searchParams.toString());
-    if (nextParams.get("lane") === lane) {
-      return;
-    }
-    nextParams.set("lane", lane);
-    const query = nextParams.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
-  }, [pathname, router, searchParams, tab]);
 
   function handleTabChange(value: string) {
     const nextTab = value as LeaderboardTab;

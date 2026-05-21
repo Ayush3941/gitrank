@@ -33,8 +33,6 @@ export function SyncRunActivityPanel({
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<SyncRunStatusFilter>("All");
   const canReset = search.trim().length > 0 || statusFilter !== "All";
-  const compactSearch =
-    search.trim().length > 32 ? `${search.trim().slice(0, 32)}…` : search.trim();
   const filterStatusId = "settings-sync-filter-status";
   const syncRunsRegionId = "settings-sync-runs-region";
   const statusCounts = useMemo(() => {
@@ -77,12 +75,6 @@ export function SyncRunActivityPanel({
     });
   }, [search, statusFilter, runs]);
   const resultsRegionClassName = "min-h-[12rem]";
-  const syncNotice =
-    statusCounts.running > 0
-      ? "Active sync runs detected."
-      : statusCounts.failed > 0
-        ? "Recent sync failures detected. Reconnect GitHub if failures persist."
-        : null;
 
   function handleResetFilters() {
     setSearch("");
@@ -97,7 +89,7 @@ export function SyncRunActivityPanel({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold text-white">Sync runs</h2>
+          <h2 className="text-xl font-semibold text-white">Sync activity</h2>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {lastUpdatedAt ? (
@@ -139,27 +131,6 @@ export function SyncRunActivityPanel({
           >
             Reset
           </Button>
-        </div>
-        {canReset ? (
-          <div className="flex flex-wrap items-center gap-2">
-            {search.trim().length > 0 ? (
-              <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs">
-                Query: {compactSearch}
-              </span>
-            ) : null}
-            {statusFilter !== "All" ? (
-              <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs">
-                Status: {statusFilter}
-              </span>
-            ) : null}
-          </div>
-        ) : null}
-        <div className="min-h-5">
-          {syncNotice ? (
-            <p className={statusCounts.failed > 0 ? "text-xs text-rose-100" : "text-xs text-cyan-100"}>
-              {syncNotice}
-            </p>
-          ) : null}
         </div>
         <div className="grid gap-3 md:grid-cols-[1fr,22rem]">
           <div className="relative">

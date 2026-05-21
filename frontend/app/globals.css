@@ -22,10 +22,10 @@
   --text-strong: 252 253 255;
   --text-body: 246 249 255;
   --text-soft: 244 248 255;
-  --page-overlay-top-alpha: 0.07;
-  --page-overlay-bottom-alpha: 0.14;
-  --page-grid-opacity: 0.48;
-  --page-glow-opacity: 0.028;
+  --page-overlay-top-alpha: 0.045;
+  --page-overlay-bottom-alpha: 0.1;
+  --page-grid-opacity: 0.34;
+  --page-glow-opacity: 0.022;
   --surface-blur: 0px;
   --surface-blur-strong: 1px;
   --shadow-depth-soft: 0 6px 16px rgb(1 5 20 / 0.24);
@@ -61,10 +61,10 @@ html[data-theme="midnight"] {
   --text-strong: 252 254 255;
   --text-body: 246 250 255;
   --text-soft: 244 248 255;
-  --page-overlay-top-alpha: 0.08;
-  --page-overlay-bottom-alpha: 0.16;
-  --page-grid-opacity: 0.5;
-  --page-glow-opacity: 0.03;
+  --page-overlay-top-alpha: 0.05;
+  --page-overlay-bottom-alpha: 0.11;
+  --page-grid-opacity: 0.36;
+  --page-glow-opacity: 0.022;
   --surface-blur: 0px;
   --surface-blur-strong: 1px;
 }
@@ -89,10 +89,10 @@ html[data-theme="terminal"] {
   --text-strong: 246 254 250;
   --text-body: 236 247 243;
   --text-soft: 230 244 239;
-  --page-overlay-top-alpha: 0.07;
-  --page-overlay-bottom-alpha: 0.14;
-  --page-grid-opacity: 0.5;
-  --page-glow-opacity: 0.026;
+  --page-overlay-top-alpha: 0.045;
+  --page-overlay-bottom-alpha: 0.1;
+  --page-grid-opacity: 0.35;
+  --page-glow-opacity: 0.02;
   --surface-blur: 0px;
   --surface-blur-strong: 1px;
 }
@@ -117,10 +117,10 @@ html[data-theme="aurora"] {
   --text-strong: 251 254 255;
   --text-body: 246 251 255;
   --text-soft: 245 250 255;
-  --page-overlay-top-alpha: 0.07;
-  --page-overlay-bottom-alpha: 0.14;
-  --page-grid-opacity: 0.5;
-  --page-glow-opacity: 0.028;
+  --page-overlay-top-alpha: 0.05;
+  --page-overlay-bottom-alpha: 0.1;
+  --page-grid-opacity: 0.36;
+  --page-glow-opacity: 0.022;
   --surface-blur: 0px;
   --surface-blur-strong: 1px;
 }
@@ -145,10 +145,10 @@ html[data-theme="high-contrast"] {
   --text-strong: 254 255 255;
   --text-body: 247 251 255;
   --text-soft: 239 246 255;
-  --page-overlay-top-alpha: 0.14;
-  --page-overlay-bottom-alpha: 0.26;
-  --page-grid-opacity: 0.64;
-  --page-glow-opacity: 0.032;
+  --page-overlay-top-alpha: 0.08;
+  --page-overlay-bottom-alpha: 0.16;
+  --page-grid-opacity: 0.44;
+  --page-glow-opacity: 0.024;
   --surface-blur: 0px;
   --surface-blur-strong: 1px;
   --shadow-depth-soft: 0 8px 24px rgb(1 4 18 / 0.4);
@@ -166,10 +166,10 @@ html[data-theme="high-contrast"] {
     --text-body: 248 252 255;
     --text-soft: 242 248 255;
     --line: 108 138 220;
-    --page-overlay-top-alpha: 0.2;
-    --page-overlay-bottom-alpha: 0.42;
-    --page-grid-opacity: 0.88;
-    --page-glow-opacity: 0.038;
+    --page-overlay-top-alpha: 0.12;
+    --page-overlay-bottom-alpha: 0.24;
+    --page-grid-opacity: 0.6;
+    --page-glow-opacity: 0.03;
     --surface-blur: 1px;
     --surface-blur-strong: 2px;
   }
@@ -281,11 +281,11 @@ body::before {
       rgb(2 7 18 / var(--page-overlay-bottom-alpha))
     ),
     radial-gradient(
-      circle at 50% -6%,
-      rgb(var(--primary) / 0.05) 0%,
-      rgb(var(--primary-2) / 0.03) 44%,
-      rgb(var(--primary-2) / 0.015) 72%,
-      rgb(var(--primary-2) / 0.006) 88%,
+      circle at 50% -8%,
+      rgb(var(--primary) / 0.04) 0%,
+      rgb(var(--primary-2) / 0.024) 48%,
+      rgb(var(--primary-2) / 0.011) 74%,
+      rgb(var(--primary-2) / 0.004) 90%,
       transparent 100%
     );
   background-size:
@@ -303,18 +303,18 @@ body::after {
   background:
     radial-gradient(
       circle at 16% 18%,
-      rgb(var(--primary) / 0.07) 0%,
-      rgb(var(--primary) / 0.036) 42%,
-      rgb(var(--primary) / 0.016) 70%,
-      rgb(var(--primary) / 0.006) 86%,
+      rgb(var(--primary) / 0.055) 0%,
+      rgb(var(--primary) / 0.028) 48%,
+      rgb(var(--primary) / 0.012) 74%,
+      rgb(var(--primary) / 0.004) 90%,
       transparent 100%
     ),
     radial-gradient(
       circle at 84% 82%,
-      rgb(var(--primary-2) / 0.07) 0%,
-      rgb(var(--primary-2) / 0.036) 40%,
-      rgb(var(--primary-2) / 0.016) 68%,
-      rgb(var(--primary-2) / 0.006) 84%,
+      rgb(var(--primary-2) / 0.055) 0%,
+      rgb(var(--primary-2) / 0.028) 46%,
+      rgb(var(--primary-2) / 0.012) 72%,
+      rgb(var(--primary-2) / 0.004) 90%,
       transparent 100%
     );
   opacity: var(--page-glow-opacity);
@@ -322,7 +322,7 @@ body::after {
 
 @media (max-width: 1024px) {
   body {
-    background-attachment: scroll;
+    background-attachment: fixed;
   }
 }
 
@@ -1012,11 +1012,11 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   position: relative;
   border: 1px solid rgb(var(--primary) / 0.24);
   background:
-    linear-gradient(155deg, rgb(var(--primary) / 0.06), rgb(var(--primary-2) / 0.04)),
-    rgb(var(--card) / 0.9);
+    linear-gradient(155deg, rgb(var(--primary) / 0.045), rgb(var(--primary-2) / 0.03)),
+    rgb(var(--card) / 0.88);
   box-shadow:
-    0 6px 14px rgb(1 5 20 / 0.16),
-    inset 0 1px 0 rgb(255 255 255 / 0.07);
+    0 5px 12px rgb(1 5 20 / 0.12),
+    inset 0 1px 0 rgb(255 255 255 / 0.06);
 }
 
 .dashboard-nav-track {
@@ -1026,8 +1026,8 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 .dashboard-nav-item {
   border: 1px solid rgb(var(--primary) / 0.18);
   background:
-    linear-gradient(150deg, rgb(var(--primary) / 0.04), rgb(var(--primary-2) / 0.03)),
-    rgb(var(--card) / 0.84);
+    linear-gradient(150deg, rgb(var(--primary) / 0.03), rgb(var(--primary-2) / 0.022)),
+    rgb(var(--card) / 0.82);
   color: rgb(var(--text-soft));
 }
 
@@ -1040,12 +1040,12 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 .dashboard-nav-item[data-active="true"] {
   border-color: rgb(var(--primary) / 0.52);
   background:
-    linear-gradient(148deg, rgb(var(--primary) / 0.18), rgb(var(--primary-2) / 0.12)),
-    rgb(var(--card-2) / 0.9);
+    linear-gradient(148deg, rgb(var(--primary) / 0.14), rgb(var(--primary-2) / 0.1)),
+    rgb(var(--card-2) / 0.88);
   color: rgb(var(--text-strong));
   box-shadow:
-    0 0 0 1px rgb(var(--primary) / 0.18),
-    0 6px 12px rgb(1 6 22 / 0.16);
+    0 0 0 1px rgb(var(--primary) / 0.14),
+    0 4px 10px rgb(1 6 22 / 0.12);
 }
 
 .cyber-divider {
@@ -1688,7 +1688,7 @@ html[data-theme="high-contrast"] .cyber-card {
     background-position: center center;
     background-size: cover;
     background-repeat: no-repeat;
-    background-attachment: scroll;
+    background-attachment: fixed;
   }
 
   .neon-vignette,
@@ -1799,7 +1799,7 @@ html[data-theme="high-contrast"] .cyber-card {
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
-  background-attachment: scroll;
+  background-attachment: fixed;
 }
 
 :where(html[data-network="constrained"]) .neon-vignette,
@@ -1851,7 +1851,7 @@ html[data-theme="high-contrast"] .cyber-card {
 
 @media (update: slow) {
   body {
-    background-attachment: scroll;
+    background-attachment: fixed;
   }
 
   .neon-vignette,
@@ -1898,7 +1898,7 @@ html[data-theme="high-contrast"] .cyber-card {
 
 @media (any-pointer: coarse) {
   body {
-    background-attachment: scroll;
+    background-attachment: fixed;
     background-position: center center;
   }
 
