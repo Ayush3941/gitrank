@@ -78,8 +78,7 @@ export function SyncRunActivityPanel({
       );
     });
   }, [deferredSearch, statusFilter, runs]);
-  const resultsRegionClassName =
-    "min-h-[20rem] max-h-[26rem] overflow-y-auto pr-1 [scrollbar-gutter:stable]";
+  const resultsRegionClassName = "min-h-[12rem]";
 
   function handleResetFilters() {
     startTransition(() => {
