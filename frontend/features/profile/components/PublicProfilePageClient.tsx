@@ -184,43 +184,53 @@ export function PublicProfilePageClient({
       </section>
       <section id="public-profile-badges-skills" className="render-opt-section scroll-mt-24">
         <DeferUntilVisible fallback={<PublicProfileSectionPlaceholder title="Loading badge and skill lanes" />}>
-          <div className="grid gap-6 xl:grid-cols-[1fr,1fr]">
-            <GlowCard className="space-y-5">
-              <div>
-                <p className="text-xs font-medium text-primary">Badge showcase</p>
-                <h2 className="mt-2 text-xl font-semibold text-white">Top unlocked badges</h2>
-              </div>
-              <ul role="list" className="grid gap-3 sm:grid-cols-2">
-                {data.user.badges.filter((badge) => badge.unlocked).slice(0, 4).map((badge) => (
-                  <li key={badge.id} className="render-opt-card neon-surface rounded-[1.75rem] p-4">
-                    <RarityBadge rarity={badge.rarity} />
-                    <h3 className="mt-3 text-lg font-medium text-white">{badge.name}</h3>
-                    <ExpandableText
-                      text={badge.description}
-                      lines={3}
-                      minLengthForToggle={120}
-                      className="mt-2"
-                      textClassName="text-sm text-muted"
-                      showMoreLabel="More"
-                      showLessLabel="Less"
-                    />
-                  </li>
-                ))}
-              </ul>
-            </GlowCard>
-            <GlowCard className="space-y-5">
-              <div>
-                <p className="text-xs font-medium text-primary">Skill radar</p>
-                <h2 className="mt-2 text-xl font-semibold text-white">Strength map</h2>
-              </div>
-              <SkillRadarChart skills={data.user.skillTree} />
-            </GlowCard>
-          </div>
+          <details className="space-y-3">
+            <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
+              Badges and skills
+            </summary>
+            <div className="grid gap-6 xl:grid-cols-[1fr,1fr]">
+              <GlowCard className="space-y-5">
+                <div>
+                  <p className="text-xs font-medium text-primary">Badge showcase</p>
+                  <h2 className="mt-2 text-xl font-semibold text-white">Top unlocked badges</h2>
+                </div>
+                <ul role="list" className="grid gap-3 sm:grid-cols-2">
+                  {data.user.badges.filter((badge) => badge.unlocked).slice(0, 4).map((badge) => (
+                    <li key={badge.id} className="render-opt-card neon-surface rounded-[1.75rem] p-4">
+                      <RarityBadge rarity={badge.rarity} />
+                      <h3 className="mt-3 text-lg font-medium text-white">{badge.name}</h3>
+                      <ExpandableText
+                        text={badge.description}
+                        lines={3}
+                        minLengthForToggle={120}
+                        className="mt-2"
+                        textClassName="text-sm text-muted"
+                        showMoreLabel="More"
+                        showLessLabel="Less"
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </GlowCard>
+              <GlowCard className="space-y-5">
+                <div>
+                  <p className="text-xs font-medium text-primary">Skill radar</p>
+                  <h2 className="mt-2 text-xl font-semibold text-white">Strength map</h2>
+                </div>
+                <SkillRadarChart skills={data.user.skillTree} />
+              </GlowCard>
+            </div>
+          </details>
         </DeferUntilVisible>
       </section>
       <section id="public-profile-best-prs" className="render-opt-section scroll-mt-24">
         <DeferUntilVisible fallback={<PublicProfileSectionPlaceholder title="Loading best PR battle reports" />}>
-          <BestPRsPanel reports={data.featuredContributions} />
+          <details className="space-y-3">
+            <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.4rem] px-4 py-3 text-sm font-semibold text-white marker:content-none">
+              Best PR battle reports ({data.featuredContributions.length})
+            </summary>
+            <BestPRsPanel reports={data.featuredContributions} />
+          </details>
         </DeferUntilVisible>
       </section>
       <section id="public-profile-timeline-repos" className="render-opt-section scroll-mt-24">
