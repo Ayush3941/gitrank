@@ -204,7 +204,7 @@ export function LandingPage() {
               "Testing and reliability signal",
               "Cross-repository impact",
             ].map((track, index) => (
-              <li key={`badge-lane-${index}`} className="neon-surface rounded-[1.75rem] p-4">
+              <li key={`badge-track-${index}`} className="neon-surface rounded-[1.75rem] p-4">
                 <p className="text-xs font-medium text-primary">Badge track</p>
                 <h3 className="mt-3 text-lg font-semibold text-white">{track}</h3>
               </li>

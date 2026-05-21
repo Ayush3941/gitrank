@@ -60,8 +60,8 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
       <div className="neon-surface px-4 py-3">
         <p className="text-xs font-medium text-primary">Skill signal summary</p>
         <p id={summaryId} className="mt-2 text-sm text-muted">
-          Strongest current lane: {strongest.category} ({strongest.score}).
-          {" "}Lowest lane: {weakest.category} ({weakest.score}).
+          Strongest signal: {strongest.category} ({strongest.score}).
+          {" "}Lowest signal: {weakest.category} ({weakest.score}).
         </p>
         <ul role="list" className="mt-3 space-y-1 text-xs text-muted">
           {sortedSkills.map((skill, index) => (

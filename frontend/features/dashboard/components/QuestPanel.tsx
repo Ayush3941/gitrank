@@ -12,7 +12,7 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs font-medium text-primary">Active quests</p>
-          <h2 className="mt-2 text-xl font-semibold text-white">Next XP lane</h2>
+          <h2 className="mt-2 text-xl font-semibold text-white">Next XP targets</h2>
         </div>
         <div className="neon-surface rounded-3xl p-3 text-primary">
           <Target className="h-5 w-5" />

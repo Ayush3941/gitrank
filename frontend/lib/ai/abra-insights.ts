@@ -399,7 +399,7 @@ function normalizeGeminiResponse(input: GeminiInsightsShape): AbraInsightsRespon
       badgeStories[id] = {
         story: nonEmptyString(row.story) || "Badge reflects verified contribution evidence.",
         trigger: nonEmptyString(row.trigger) || "Unlocked through repeated validated activity.",
-        nextFocus: nonEmptyString(row.next_focus) || "Continue building the same contribution lane.",
+        nextFocus: nonEmptyString(row.next_focus) || "Continue building the same contribution profile.",
       };
     }
   }
@@ -416,7 +416,7 @@ function normalizeGeminiResponse(input: GeminiInsightsShape): AbraInsightsRespon
         discipline: discipline || titleCaseDiscipline(key),
         summary:
           nonEmptyString(row.summary) ||
-          "Scored PR evidence indicates repeated contribution quality in this lane.",
+          "Scored PR evidence indicates repeated contribution quality in this area.",
         evidence:
           nonEmptyString(row.evidence) ||
           "Evidence signals were derived from scored PR metadata and explanations.",

@@ -237,7 +237,7 @@ export function BadgesPageClient() {
                   <BadgeMetric label="Current streak" value={`${streak.currentStreakDays}d`} icon={<Sparkles className="h-4 w-4 text-emerald-200" />} />
                 </div>
                 <div className="space-y-2">
-                  <p className="text-xs font-medium text-cyan-200">Badge lane progress</p>
+                  <p className="text-xs font-medium text-cyan-200">Badge progress</p>
                   <Progress value={completionPercent} />
                 </div>
                 {unlockNotice ? (
@@ -369,7 +369,7 @@ export function BadgesPageClient() {
               }
               description={
                 canResetFilters && totalCount > 0
-                  ? "Reset filters to view all earned and locked lanes, or choose a wider rarity/state range."
+                  ? "Reset filters to view all earned and locked badges, or choose a wider rarity/state range."
                   : "Complete your first meaningful merged PR to start unlocking visible reputation proof."
               }
               actionLabel={canResetFilters && totalCount > 0 ? "Reset filters" : "Open quests"}
@@ -394,7 +394,7 @@ export function BadgesPageClient() {
       </section>
       {!isLoading && !isError ? (
         <section id="badges-locked" className="render-opt-section scroll-mt-24 space-y-3">
-          <DeferUntilVisible fallback={<BadgeSectionPlaceholder title="Loading locked badge lanes" />}>
+          <DeferUntilVisible fallback={<BadgeSectionPlaceholder title="Loading locked badges" />}>
             <div className="space-y-3">
               <h2 className="text-sm font-semibold text-white">
                 Locked / upcoming badges ({lockedBadges.length})

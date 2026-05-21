@@ -192,7 +192,7 @@ export function SyncPipeline() {
           </p>
           {data ? (
             <p className="text-sm text-muted">
-              Snapshot status: {formatSyncState(data.user.syncStatus.state)} • last refresh{" "}
+              Profile status: {formatSyncState(data.user.syncStatus.state)} • last refresh{" "}
               {formatRelativeDays(data.refreshedAt)}
             </p>
           ) : null}

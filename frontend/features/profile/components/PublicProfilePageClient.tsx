@@ -227,7 +227,7 @@ export function PublicProfilePageClient({
               </div>
               <div>
                 <p className="text-xs font-medium text-primary">Top repositories</p>
-                <h2 className="mt-2 text-xl font-semibold text-white">Recent strongest lanes</h2>
+                <h2 className="mt-2 text-xl font-semibold text-white">Top repositories right now</h2>
               </div>
               <div className="space-y-3">
                 {data.topRepositories.length === 0 ? (

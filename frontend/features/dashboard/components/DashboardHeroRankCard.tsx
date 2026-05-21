@@ -77,7 +77,7 @@ export function DashboardHeroRankCard({
           <p className="mt-3 text-lg font-medium text-white">
             Reach <span className="numeric-readout">{user.level.nextLevelXp.toLocaleString("en-US")}</span> XP
           </p>
-          <p className="mt-2 text-sm text-muted">Unlock next rank lane.</p>
+          <p className="mt-2 text-sm text-muted">Unlock the next rank tier.</p>
         </div>
       </div>
       <XPProgress current={user.level.currentXp} next={user.level.nextLevelXp} />

@@ -41,7 +41,7 @@ export function RevealPanel({
       ? [
           "Merge your first meaningful PR so score movement can activate.",
           "Run a full sync to attach fresh GitHub evidence to this profile.",
-          "Open quests to target your first high-signal contribution lane.",
+          "Open quests to target your first high-signal contribution type.",
         ]
       : [
           "Open dashboard to inspect score movement and weekly XP.",
@@ -103,7 +103,7 @@ export function RevealPanel({
         <div className="space-y-4">
           <div className="space-y-3">
             <h2 className="text-sm font-semibold text-white text-left">
-              Unlock preview ({unlockedBadges.length > 0 ? `${unlockedBadges.length} earned` : "next badge lanes"})
+              Unlock preview ({unlockedBadges.length > 0 ? `${unlockedBadges.length} earned` : "next badge targets"})
             </h2>
             <ul role="list" className="grid gap-4 sm:grid-cols-3">
               {unlockedBadges.length > 0 ? (
@@ -119,7 +119,7 @@ export function RevealPanel({
                 ))
               ) : (
                 <>
-                  <li className="list-none"><RevealFallbackCard title="First merge unlock" body="Merge one meaningful PR to activate the first badge lane." /></li>
+                  <li className="list-none"><RevealFallbackCard title="First merge unlock" body="Merge one meaningful PR to activate the first badge." /></li>
                   <li className="list-none"><RevealFallbackCard title="Review depth unlock" body="Maintainer-reviewed work speeds up trust and progression." /></li>
                   <li className="list-none"><RevealFallbackCard title="Consistency unlock" body="Sustained weekly contribution evidence unlocks rarer badge tiers." /></li>
                 </>
