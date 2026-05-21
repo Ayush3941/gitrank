@@ -1588,6 +1588,9 @@
 - Added progressive disclosure to PR battle reports:
   - introduced `Show technical breakdown` toggle for score matrix, evidence signals, and reward derivation panels
   - keeps the default PR report view concise (`overview` + `AI summary` + `next quest`) while preserving deep diagnostics on demand.
+- Reduced mobile filter clutter in contributions:
+  - compact contribution filters now include a `Show filters` / `Hide filters` mobile disclosure control
+  - keeps result count and active chips visible while deferring heavy search/sort controls until requested.
 
 ## 2026-05-16
 

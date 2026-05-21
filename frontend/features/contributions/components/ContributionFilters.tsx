@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -47,6 +48,7 @@ export function ContributionFilters({
   resultsRegionId?: string;
   compact?: boolean;
 }) {
+  const [showMobileControls, setShowMobileControls] = useState(!compact);
   const statusId = "contribution-filter-status";
   const activeChips: Array<{ key: "category" | "search" | "sort"; label: string }> = [];
   if (value !== "All") {
@@ -65,47 +67,63 @@ export function ContributionFilters({
       aria-labelledby={compact ? undefined : "contribution-filter-controls-label"}
       className="space-y-4"
     >
-      {!compact ? (
-        <>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p id="contribution-filter-controls-label" className="text-sm font-medium text-cyan-100">
-              Filters
-            </p>
-            <p id={statusId} role="status" aria-live="polite" className="text-sm text-cyan-100">
-              {isFiltering
-                ? "Updating..."
-                : `${resultCount ?? 0} cards`}
-            </p>
-            {onReset ? (
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                onClick={onReset}
-                disabled={!canReset || isFiltering}
-                aria-controls={resultsRegionId}
-              >
-                Clear
-              </Button>
-            ) : null}
-          </div>
-          {activeChips.length ? (
-            <ul role="list" className="flex flex-wrap gap-2 text-xs">
-              {activeChips.map((chip) => (
-                <li key={chip.key} className="list-none">
-                  <span className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold">
-                    {chip.label}
-                  </span>
-                </li>
-              ))}
-            </ul>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        {!compact ? (
+          <p id="contribution-filter-controls-label" className="text-sm font-medium text-cyan-100">
+            Filters
+          </p>
+        ) : null}
+        <p id={statusId} role="status" aria-live="polite" className="text-sm text-cyan-100">
+          {isFiltering
+            ? "Updating..."
+            : `${resultCount ?? 0} cards`}
+        </p>
+        <div className="flex items-center gap-2">
+          {compact ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              className="sm:hidden"
+              aria-expanded={showMobileControls}
+              aria-controls="contribution-mobile-controls"
+              onClick={() => {
+                setShowMobileControls((current) => !current);
+              }}
+            >
+              {showMobileControls ? "Hide filters" : "Show filters"}
+            </Button>
           ) : null}
-        </>
+          {onReset ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={onReset}
+              disabled={!canReset || isFiltering}
+              aria-controls={resultsRegionId}
+            >
+              Clear
+            </Button>
+          ) : null}
+        </div>
+      </div>
+      {activeChips.length ? (
+        <ul role="list" className="flex flex-wrap gap-2 text-xs">
+          {activeChips.map((chip) => (
+            <li key={chip.key} className="list-none">
+              <span className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold">
+                {chip.label}
+              </span>
+            </li>
+          ))}
+        </ul>
       ) : null}
-      <div className="sm:hidden">
-        <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
-          <span className="sr-only">Contribution category filter</span>
-          <select
+      <div id="contribution-mobile-controls" className={compact && !showMobileControls ? "hidden sm:block" : undefined}>
+        <div className="sm:hidden">
+          <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
+            <span className="sr-only">Contribution category filter</span>
+            <select
             value={value}
             onChange={(event) => onValueChange(event.target.value)}
             aria-label="Contribution category filter"
@@ -183,6 +201,7 @@ export function ContributionFilters({
             <option value="Highest Impact" className="bg-card text-foreground">Highest Impact</option>
           </select>
         </label>
+      </div>
       </div>
     </section>
   );
