@@ -9,6 +9,9 @@
 - Render-performance and copy-density pass:
   - enabled real offscreen deferral for heavy dashboard/profile sections by switching `.render-opt-card` and `.render-opt-section` to `content-visibility: auto` with intrinsic-size hints.
   - tightened dashboard hero/snapshot wording to reduce repeated explanatory prose while preserving all scoring and sync semantics.
+- Empty-state recovery pass:
+  - added direct `Open sync settings` recovery actions to dashboard `Recent battle reports`, `Active quests`, and `Badge shelf` empty cards.
+  - keeps primary lane actions (`Open contributions`, `Open badge forge`) while removing dead-end panel states.
 - Deterministic summary normalization pass:
   - added shared formatter `frontend/lib/presentation/report-summary.ts` to clean raw deterministic strings (`summary=[...]`, `score version ...`, trailing `final XP ...`) into readable copy.
   - wired the formatter into contributions cards, dashboard recent battle reports, and public-profile best-PR cards for consistent report language.
