@@ -78,9 +78,10 @@ All interactive primitives should expose and visually distinguish:
 Current primitives implementing this baseline:
 
 - `components/ui/button.tsx`
-- `components/ui/select.tsx`
 - `components/ui/switch.tsx`
 - `components/ui/tabs.tsx`
+- Native `<select>` controls in feature-level filters (contributions, badges,
+  leaderboard mobile lane filter, settings repository filter)
 
 ## 30 / 60 / 90 Day Plan
 
