@@ -321,32 +321,36 @@ export function LeaderboardPageClient() {
         </section>
       ) : null}
       {sparseArena && snapshot ? (
-        <GlowCard className="space-y-4 border border-amber-400/24 bg-amber-400/8">
-          <div>
-            <p className="text-xs font-medium text-amber-100">Arena preview mode</p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">Live competition is still warming up</h2>
-            <p className="mt-2 readable-measure text-sm leading-7 text-amber-50">
-              This lane has {rows.length} active public profiles right now. Ranking is live, but bracket density is still low.
+        <details className="space-y-3">
+          <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-amber-400/24 bg-amber-400/8 px-4 py-3 text-sm font-semibold text-amber-100 marker:content-none">
+            Arena preview mode ({rows.length} active public profiles)
+          </summary>
+          <GlowCard className="space-y-4 border border-amber-400/24 bg-amber-400/8">
+            <div>
+              <h2 className="text-2xl font-semibold text-white">Live competition is still warming up</h2>
+              <p className="mt-2 readable-measure text-sm leading-7 text-amber-50">
+                This lane has {rows.length} active public profiles right now. Ranking is live, but bracket density is still low.
+              </p>
+            </div>
+            <p className="text-sm text-amber-100">
+              {snapshot.currentUser
+                ? `Current slot: #${snapshot.currentUser.rank} in ${tab}.`
+                : "Current slot: unranked in this lane."}{" "}
+              Promotion target:{" "}
+              {snapshot.currentUser
+                ? `${snapshot.currentUser.xpToNextRank} XP to next band.`
+                : "sync more evidence to enter rank bands."}
             </p>
-          </div>
-          <p className="text-sm text-amber-100">
-            {snapshot.currentUser
-              ? `Current slot: #${snapshot.currentUser.rank} in ${tab}.`
-              : "Current slot: unranked in this lane."}{" "}
-            Promotion target:{" "}
-            {snapshot.currentUser
-              ? `${snapshot.currentUser.xpToNextRank} XP to next band.`
-              : "sync more evidence to enter rank bands."}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <Button asChild variant="secondary" size="sm">
-              <Link href="/dashboard/contributions" prefetch={false}>Improve contribution signal</Link>
-            </Button>
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/dashboard/quests" prefetch={false}>Open quest lane</Link>
-            </Button>
-          </div>
-        </GlowCard>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild variant="secondary" size="sm">
+                <Link href="/dashboard/contributions" prefetch={false}>Improve contribution signal</Link>
+              </Button>
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/dashboard/quests" prefetch={false}>Open quest lane</Link>
+              </Button>
+            </div>
+          </GlowCard>
+        </details>
       ) : null}
     </div>
   );
