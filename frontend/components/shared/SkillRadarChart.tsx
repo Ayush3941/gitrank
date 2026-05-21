@@ -89,7 +89,6 @@ function SkillRadarLite({ skills }: { skills: SkillNode[] }) {
   const maxScore = Math.max(1, ...skills.map((skill) => skill.score));
   return (
     <div className="neon-surface h-full space-y-3 px-4 py-4">
-      <p className="text-xs font-semibold text-primary">Lite skill signal view</p>
       <div className="space-y-2">
         {skills.map((skill, index) => {
           const fill = Math.max(0, Math.min(100, Math.round((skill.score / maxScore) * 100)));

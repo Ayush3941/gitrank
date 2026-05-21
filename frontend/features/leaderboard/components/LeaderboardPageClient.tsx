@@ -216,7 +216,7 @@ export function LeaderboardPageClient() {
                         #{snapshot.currentUser.rank} in {tab}
                       </h2>
                       <p className="mt-2 text-sm text-muted">
-                        Focus lane: {snapshot.currentUser.focus}
+                        Primary signal: {snapshot.currentUser.focus}
                       </p>
                     </div>
                     <span className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold">
@@ -269,10 +269,7 @@ export function LeaderboardPageClient() {
             <div id={LEADERBOARD_ROWS_REGION_ID}>
               <LeaderboardArena snapshot={snapshot} rowLimit={safeVisibleRowCount} />
             </div>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p role="status" aria-live="polite" aria-atomic="true" className="text-sm text-muted">
-                Showing {safeVisibleRowCount} of {rows.length} ranked rows.
-              </p>
+            <div className="flex flex-wrap items-center justify-end gap-3">
               {hasMoreRows ? (
                 <Button
                   type="button"
