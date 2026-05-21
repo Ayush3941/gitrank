@@ -179,7 +179,7 @@ export function LandingPage() {
           />
           <div className="neon-tile rounded-[1.75rem] p-5">
             <p className="text-sm text-cyan-200">Live report cards unlock after OAuth and sync.</p>
-            <h3 className="mt-2 text-xl font-semibold text-white">No synthetic PR data is shown on this screen.</h3>
+            <h3 className="mt-2 text-xl font-semibold text-white">Report details appear once your profile sync completes.</h3>
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
               <Metric label="Difficulty" value="Live" />
               <Metric label="Impact" value="Live" />
