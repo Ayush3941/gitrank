@@ -179,31 +179,22 @@ function AIPanel({
         <Sparkles className="h-3.5 w-3.5" />
         Contribution impact summary
       </p>
+      <div className="mt-3 text-sm text-muted">
+        <ExpandableText
+          text={summary}
+          lines={2}
+          minLengthForToggle={160}
+          textClassName="break-anywhere text-muted"
+        />
+      </div>
       {narrative ? (
-        <div className="cyber-copy mt-3 grid gap-2 text-sm">
-          <ExpandableText
-            text={summary}
-            lines={3}
-            minLengthForToggle={180}
-            textClassName="break-anywhere text-muted"
-          />
-          <ExpandableText
-            text={`Why it matters: ${narrative.why}`}
-            lines={2}
-            minLengthForToggle={120}
-            textClassName="break-anywhere text-muted"
-          />
-        </div>
-      ) : (
-        <div className="mt-3 text-sm text-muted">
-          <ExpandableText
-            text={summary}
-            lines={3}
-            minLengthForToggle={180}
-            textClassName="break-anywhere text-muted"
-          />
-        </div>
-      )}
+        <details className="mt-3 space-y-2">
+          <summary className="focus-ring cursor-pointer list-none text-xs font-semibold text-cyan-100 marker:content-none">
+            Why it matters
+          </summary>
+          <p className="break-anywhere text-sm text-muted">{narrative.why}</p>
+        </details>
+      ) : null}
     </div>
   );
 }
