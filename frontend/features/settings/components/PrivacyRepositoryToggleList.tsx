@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { Search, X } from "lucide-react";
-import { startTransition, useDeferredValue, useMemo, useState } from "react";
+import { startTransition, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import type { RepositoryVisibility } from "@/types/gitrank";
 
 export function PrivacyRepositoryToggleList({
@@ -18,13 +18,9 @@ export function PrivacyRepositoryToggleList({
   onToggle?: (repository: RepositoryVisibility, checked: boolean) => void;
   pendingRepository?: string | null;
 }) {
-  const SEARCH_DEBOUNCE_MS = 220;
   const [items, setItems] = useState(repositories);
   const [search, setSearch] = useState("");
   const [visibilityFilter, setVisibilityFilter] = useState<"All" | "Public" | "Hidden">("All");
-  const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS);
-  const deferredSearch = useDeferredValue(debouncedSearch);
-  const isFiltering = search !== debouncedSearch || deferredSearch !== debouncedSearch;
   const controlled = typeof onToggle === "function";
   const visibleItems = controlled ? repositories : items;
   const canReset = search.trim().length > 0 || visibilityFilter !== "All";
@@ -42,7 +38,7 @@ export function PrivacyRepositoryToggleList({
     };
   }, [visibleItems]);
   const filteredItems = useMemo(() => {
-    const term = deferredSearch.trim().toLowerCase();
+    const term = search.trim().toLowerCase();
 
     return visibleItems.filter((repo) => {
       const visibilityMatch =
@@ -53,7 +49,7 @@ export function PrivacyRepositoryToggleList({
         repo.reason.toLowerCase().includes(term);
       return visibilityMatch && searchMatch;
     });
-  }, [deferredSearch, visibilityFilter, visibleItems]);
+  }, [search, visibilityFilter, visibleItems]);
 
   function handleReset() {
     startTransition(() => {
@@ -68,20 +64,12 @@ export function PrivacyRepositoryToggleList({
     });
   }
 
-  function handleClearVisibilityFilter() {
-    startTransition(() => {
-      setVisibilityFilter("All");
-    });
-  }
-
   return (
     <div className="space-y-3">
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p id={statusId} role="status" aria-live="polite" className="text-xs font-medium text-cyan-200">
-            {isFiltering
-              ? "Filtering repositories..."
-              : `${filteredItems.length} of ${counts.total} repositories`}
+            {`${filteredItems.length} of ${counts.total} repositories`}
           </p>
           <div className="flex flex-wrap gap-2">
             <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">Public {counts.public}</span>
@@ -103,31 +91,11 @@ export function PrivacyRepositoryToggleList({
             {search.trim().length > 0 ? (
               <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs">
                 Query: {compactSearch}
-                <button
-                  type="button"
-                  onClick={handleClearSearch}
-                  className="focus-ring inline-flex min-h-6 min-w-6 items-center justify-center rounded-full border border-primary/30 px-1 text-xs leading-none text-cyan-100 hover:bg-primary/14"
-                  aria-label="Clear repository search query"
-                  aria-controls={repositoriesRegionId}
-                  title="Clear search"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
               </span>
             ) : null}
             {visibilityFilter !== "All" ? (
               <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs">
                 State: {visibilityFilter}
-                <button
-                  type="button"
-                  onClick={handleClearVisibilityFilter}
-                  className="focus-ring inline-flex min-h-6 min-w-6 items-center justify-center rounded-full border border-primary/30 px-1 text-xs leading-none text-cyan-100 hover:bg-primary/14"
-                  aria-label="Clear repository visibility filter"
-                  aria-controls={repositoriesRegionId}
-                  title="Clear visibility filter"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
               </span>
             ) : null}
           </div>
@@ -159,37 +127,61 @@ export function PrivacyRepositoryToggleList({
               </button>
             ) : null}
           </div>
-          <span id={visibilityGroupId} className="sr-only">
-            Repository visibility filter
-          </span>
-          <ul role="list" aria-labelledby={visibilityGroupId} className="grid grid-cols-3 gap-2">
-            {(["All", "Public", "Hidden"] as const).map((item, index) => (
-              <li key={`repo-visibility-filter-${index}-${item}`} className="list-none">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={visibilityFilter === item ? "default" : "secondary"}
-                  onClick={() => {
-                    startTransition(() => {
-                      setVisibilityFilter(item);
-                    });
-                  }}
-                  aria-describedby={statusId}
-                  aria-pressed={visibilityFilter === item}
-                  aria-controls={repositoriesRegionId}
-                >
-                  {item}
-                </Button>
-              </li>
-            ))}
-          </ul>
+          <div className="sm:hidden">
+            <Select
+              value={visibilityFilter}
+              onValueChange={(value) => {
+                startTransition(() => {
+                  setVisibilityFilter(value as "All" | "Public" | "Hidden");
+                });
+              }}
+            >
+              <SelectTrigger
+                aria-label="Repository visibility filter"
+                aria-describedby={statusId}
+                aria-controls={repositoriesRegionId}
+              >
+                <SelectValue placeholder="Visibility" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">All</SelectItem>
+                <SelectItem value="Public">Public</SelectItem>
+                <SelectItem value="Hidden">Hidden</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="hidden sm:block">
+            <span id={visibilityGroupId} className="sr-only">
+              Repository visibility filter
+            </span>
+            <ul role="list" aria-labelledby={visibilityGroupId} className="grid grid-cols-3 gap-2">
+              {(["All", "Public", "Hidden"] as const).map((item, index) => (
+                <li key={`repo-visibility-filter-${index}-${item}`} className="list-none">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={visibilityFilter === item ? "default" : "secondary"}
+                    onClick={() => {
+                      startTransition(() => {
+                        setVisibilityFilter(item);
+                      });
+                    }}
+                    aria-describedby={statusId}
+                    aria-pressed={visibilityFilter === item}
+                    aria-controls={repositoriesRegionId}
+                  >
+                    {item}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
       {filteredItems.length > 0 ? (
         <ul
           id={repositoriesRegionId}
           role="list"
-          aria-busy={isFiltering || undefined}
           className="grid gap-3"
         >
           {filteredItems.map((repo, index) => (

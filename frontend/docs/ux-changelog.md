@@ -22,6 +22,10 @@
 - Background paint simplification pass:
   - removed the global repeating-grid background stripe layer from `body::before` to reduce fixed-overlay paint complexity.
   - retuned fixed radial glow stops on `body::before` and `body::after` for longer/finer falloff, producing a smoother neon atmosphere with less visual harshness.
+- Settings/badges filter declutter pass:
+  - simplified repository-visibility filter chips in settings by removing per-chip inline clear buttons and keeping one explicit reset path.
+  - switched repository visibility filtering to mobile `Select` + desktop segmented buttons for cleaner small-screen control density.
+  - simplified badges active-filter chips by removing per-chip clear actions and keeping the existing explicit reset control.
 
 ## 2026-05-19
 
