@@ -87,7 +87,7 @@ export function DashboardTopBarContainer() {
         if (queuedFallback) {
           setAutoSyncOutcome({
             tone: "info",
-            message: "Sync queued. Evidence will refresh in the background.",
+            message: "Sync queued.",
           });
           void emitAnalyticsEvent({
             eventName: "sync.queued",
@@ -100,7 +100,7 @@ export function DashboardTopBarContainer() {
         autoSyncAttempts.current = 0;
         setAutoSyncOutcome({
           tone: "success",
-          message: "Profile sync completed.",
+          message: "Profile synced.",
         });
         void emitAnalyticsEvent({
           eventName: "sync.succeeded",
@@ -115,8 +115,8 @@ export function DashboardTopBarContainer() {
           tone: "warning",
           message:
             attemptsRemaining > 0
-              ? `Sync retry scheduled (${attemptsRemaining} retries left).`
-              : "Sync keeps failing. Reconnect GitHub in Settings.",
+              ? `Sync retrying (${attemptsRemaining} left).`
+              : "Sync failed. Reconnect GitHub.",
         });
         void emitAnalyticsEvent({
           eventName: "sync.failed",
@@ -139,12 +139,12 @@ export function DashboardTopBarContainer() {
   const autoSyncNote: AutoSyncNote | null = isUserSyncPending
     ? {
       tone: "info",
-      message: "Background sync running.",
+      message: "Syncing...",
     }
     : data.user.syncStatus.state === "syncing"
       ? {
         tone: "info",
-        message: "Profile sync already in progress.",
+        message: "Sync already running.",
       }
       : autoSyncOutcome;
 
