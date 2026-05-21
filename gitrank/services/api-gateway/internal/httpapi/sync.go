@@ -404,7 +404,7 @@ func postInternalJSON(ctx context.Context, client *http.Client, baseURL, path st
 		body = bytes.NewReader(encoded)
 	}
 
-	callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	callCtx, cancel := context.WithTimeout(ctx, internalPostTimeout(path))
 	defer cancel()
 
 	request, err := http.NewRequestWithContext(callCtx, http.MethodPost, target, body)
@@ -437,4 +437,17 @@ func postInternalJSON(ctx context.Context, client *http.Client, baseURL, path st
 		return fmt.Errorf("status %d", response.StatusCode)
 	}
 	return fmt.Errorf("status %d: %s", response.StatusCode, trimmedPayload)
+}
+
+func internalPostTimeout(path string) time.Duration {
+	switch {
+	case strings.Contains(path, "/pr-reports/backfill"):
+		return 2 * time.Minute
+	case strings.Contains(path, "/profile/users/") && strings.Contains(path, "/refresh"):
+		return 60 * time.Second
+	case strings.Contains(path, "/quests/backfill"):
+		return 60 * time.Second
+	default:
+		return 30 * time.Second
+	}
 }
