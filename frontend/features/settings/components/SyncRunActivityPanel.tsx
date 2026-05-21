@@ -256,8 +256,8 @@ export function SyncRunActivityPanel({
             aria-label="Sync status filter options"
             className="grid grid-cols-4 gap-2"
           >
-            {(["All", "Completed", "Running", "Failed"] as const).map((item) => (
-              <li key={item} className="list-none">
+            {(["All", "Completed", "Running", "Failed"] as const).map((item, index) => (
+              <li key={`sync-status-filter-${index}-${item}`} className="list-none">
                 <Button
                   type="button"
                   size="sm"

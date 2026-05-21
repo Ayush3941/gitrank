@@ -92,9 +92,9 @@ export default async function ProfileOpenGraphImage({
           </div>
         </div>
         <div style={{ display: "flex", gap: "14px", position: "relative" }}>
-          {["PR Impact", "XP Movement", "Badge Story", "Rank Progression"].map((chip) => (
+          {["PR Impact", "XP Movement", "Badge Story", "Rank Progression"].map((chip, index) => (
             <div
-              key={chip}
+              key={`profile-og-chip-${index}-${chip}`}
               style={{
                 display: "flex",
                 alignItems: "center",

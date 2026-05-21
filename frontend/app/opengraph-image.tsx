@@ -85,9 +85,9 @@ export default function OpenGraphImage() {
           </div>
         </div>
         <div style={{ display: "flex", gap: "14px", position: "relative" }}>
-          {["PR Impact", "XP + Levels", "Badges + Quests", "Public Profile"].map((chip) => (
+          {["PR Impact", "XP + Levels", "Badges + Quests", "Public Profile"].map((chip, index) => (
             <div
-              key={chip}
+              key={`home-og-chip-${index}-${chip}`}
               style={{
                 display: "flex",
                 alignItems: "center",

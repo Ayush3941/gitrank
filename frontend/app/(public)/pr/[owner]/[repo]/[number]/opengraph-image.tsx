@@ -91,9 +91,9 @@ export default async function PRReportOpenGraphImage({
           </div>
         </div>
         <div style={{ display: "flex", gap: "14px", position: "relative" }}>
-          {["Difficulty", "Impact", "Review Depth", "XP Drivers"].map((chip) => (
+          {["Difficulty", "Impact", "Review Depth", "XP Drivers"].map((chip, index) => (
             <div
-              key={chip}
+              key={`pr-og-chip-${index}-${chip}`}
               style={{
                 display: "flex",
                 alignItems: "center",

@@ -124,8 +124,8 @@ export function BadgeDetailDialog({
             <p className="text-xs font-medium text-primary">Evidence PRs</p>
             <div className="flex flex-wrap gap-2">
               {badge.evidencePrIds.length ? (
-                badge.evidencePrIds.map((prId) => (
-                  <span key={prId} className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 text-sm">
+                badge.evidencePrIds.map((prId, index) => (
+                  <span key={`${badge.id}-${prId}-${index}`} className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 text-sm">
                     {prId}
                   </span>
                 ))

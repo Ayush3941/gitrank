@@ -224,8 +224,8 @@ export function RevealPanelSkeleton() {
         <div className="neon-skeleton mx-auto h-16 w-full max-w-2xl rounded-3xl" />
         <div className="neon-skeleton mx-auto h-10 w-72 rounded-full" />
         <div className="grid gap-4 sm:grid-cols-3">
-          {[0, 1, 2].map((item) => (
-            <div key={item} className="neon-skeleton h-40 rounded-[1.75rem]" />
+          {[0, 1, 2].map((item, index) => (
+            <div key={`reveal-skeleton-${index}-${item}`} className="neon-skeleton h-40 rounded-[1.75rem]" />
           ))}
         </div>
       </GlowCard>

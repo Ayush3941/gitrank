@@ -181,8 +181,8 @@ export function PrivacyRepositoryToggleList({
             Repository visibility filter
           </span>
           <ul role="list" aria-labelledby={visibilityGroupId} className="grid grid-cols-3 gap-2">
-            {(["All", "Public", "Hidden"] as const).map((item) => (
-              <li key={item} className="list-none">
+            {(["All", "Public", "Hidden"] as const).map((item, index) => (
+              <li key={`repo-visibility-filter-${index}-${item}`} className="list-none">
                 <Button
                   type="button"
                   size="sm"

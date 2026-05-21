@@ -91,9 +91,9 @@ export default async function ProfileTwitterImage({
           </div>
         </div>
         <div style={{ display: "flex", gap: "14px", position: "relative" }}>
-          {["Contributions", "Badges", "Quests", "Leaderboard"].map((chip) => (
+          {["Contributions", "Badges", "Quests", "Leaderboard"].map((chip, index) => (
             <div
-              key={chip}
+              key={`profile-twitter-chip-${index}-${chip}`}
               style={{
                 display: "flex",
                 alignItems: "center",

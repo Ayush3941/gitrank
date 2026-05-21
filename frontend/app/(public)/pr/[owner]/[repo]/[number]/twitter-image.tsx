@@ -91,9 +91,9 @@ export default async function PRReportTwitterImage({
           </div>
         </div>
         <div style={{ display: "flex", gap: "14px", position: "relative" }}>
-          {["Score Matrix", "Evidence Signals", "XP Breakdown", "Recommendations"].map((chip) => (
+          {["Score Matrix", "Evidence Signals", "XP Breakdown", "Recommendations"].map((chip, index) => (
             <div
-              key={chip}
+              key={`pr-twitter-chip-${index}-${chip}`}
               style={{
                 display: "flex",
                 alignItems: "center",

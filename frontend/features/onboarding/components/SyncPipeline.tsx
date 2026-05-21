@@ -239,7 +239,7 @@ export function SyncPipeline() {
             const active = index === completedSteps && !isSynced;
             return (
               <li
-                key={step}
+                key={`sync-step-${index}-${step}`}
                 className="list-none neon-surface flex items-center gap-4 rounded-[1.75rem] px-4 py-4"
               >
                 <div className="neon-tile rounded-2xl p-2 text-primary">

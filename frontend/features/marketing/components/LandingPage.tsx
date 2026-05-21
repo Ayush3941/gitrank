@@ -88,8 +88,8 @@ export function LandingPage() {
             title: "Meaningful work needs better evidence.",
             text: "GitRank weights merged outcomes, review depth, tests, impact, and repo context to resist spam.",
           },
-        ].map((item) => (
-          <GlowCard key={item.title} className="space-y-3">
+        ].map((item, index) => (
+          <GlowCard key={`problem-card-${index}-${item.title}`} className="space-y-3">
             <div className="neon-tile inline-flex rounded-2xl p-3">{item.icon}</div>
             <h3 className="text-xl font-semibold text-white">{item.title}</h3>
             <p className="text-sm text-muted">{item.text}</p>
@@ -117,8 +117,8 @@ export function LandingPage() {
             mission: "Turn contribution history into a public credibility card.",
             success: "Success moment: shareable profile headline and card data exported.",
           },
-          ].map((journey) => (
-          <li key={journey.lane}>
+          ].map((journey, index) => (
+          <li key={`journey-${index}-${journey.lane}`}>
             <GlowCard className="space-y-3">
             <p className="text-xs font-medium text-primary">{journey.lane}</p>
             <h3 className="text-xl font-semibold text-white">{journey.mission}</h3>
@@ -143,8 +143,8 @@ export function LandingPage() {
               "Classifies documentation, tests, bug fixes, backend, infra, performance, and architecture work.",
               "Turns verified work into XP, badge unlocks, league position, and public proof.",
               "Explains score changes so maintainers and recruiters can inspect the evidence instead of trusting a black box.",
-            ].map((line) => (
-              <li key={line} className="list-none neon-surface rounded-3xl px-4 py-3 text-sm text-muted">
+            ].map((line, index) => (
+              <li key={`solution-line-${index}`} className="list-none neon-surface rounded-3xl px-4 py-3 text-sm text-muted">
                 {line}
               </li>
             ))}
@@ -159,7 +159,7 @@ export function LandingPage() {
           />
           <ol className="grid gap-3 sm:grid-cols-2">
             {loop.map((step, index) => (
-              <li key={step} className="neon-surface rounded-3xl p-4">
+              <li key={`loop-step-${index}`} className="neon-surface rounded-3xl p-4">
                 <p className="text-xs font-medium text-primary">Step {index + 1}</p>
                 <p className="mt-2 text-lg font-medium text-white">{step}</p>
               </li>
@@ -203,8 +203,8 @@ export function LandingPage() {
               "Review depth consistency",
               "Testing and reliability signal",
               "Cross-repository impact",
-            ].map((lane) => (
-              <li key={lane} className="neon-surface rounded-[1.75rem] p-4">
+            ].map((lane, index) => (
+              <li key={`badge-lane-${index}`} className="neon-surface rounded-[1.75rem] p-4">
                 <p className="text-xs font-medium text-primary">Badge lane</p>
                 <h3 className="mt-3 text-lg font-semibold text-white">{lane}</h3>
                 <p className="mt-2 text-sm text-muted">

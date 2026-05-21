@@ -145,9 +145,9 @@ export function LeaderboardPageClient() {
             className="scrollbar-thin w-full overflow-x-auto whitespace-nowrap"
             aria-label="Leaderboard lane filters"
           >
-            {tabs.map((item) => (
+            {tabs.map((item, index) => (
               <TabsTrigger
-                key={item}
+                key={`leaderboard-tab-${index}-${item}`}
                 value={item}
                 aria-label={`${TAB_LABELS[item].full} leaderboard lane`}
                 aria-controls={LEADERBOARD_ROWS_REGION_ID}

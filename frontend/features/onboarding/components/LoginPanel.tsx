@@ -70,8 +70,8 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
                 "Review depth matters.",
                 "Tests and repo context change XP.",
                 "Spam PR floods get reduced multipliers.",
-              ].map((line) => (
-                <li key={line} className="neon-surface rounded-3xl px-4 py-3 text-sm text-muted">{line}</li>
+              ].map((line, index) => (
+                <li key={`score-rule-${index}-${line}`} className="neon-surface rounded-3xl px-4 py-3 text-sm text-muted">{line}</li>
               ))}
             </ul>
           </details>

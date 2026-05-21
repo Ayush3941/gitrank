@@ -356,8 +356,8 @@ export function BadgesPageClient() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="All">All rarities</SelectItem>
-                  {["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic"].map((item) => (
-                    <SelectItem key={item} value={item}>{item}</SelectItem>
+                  {["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic"].map((item, index) => (
+                    <SelectItem key={`rarity-${index}-${item}`} value={item}>{item}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

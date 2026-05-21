@@ -85,9 +85,9 @@ export default function TwitterImage() {
           </div>
         </div>
         <div style={{ display: "flex", gap: "14px", position: "relative" }}>
-          {["Sync GitHub", "Analyze PRs", "Earn XP", "Climb Leaderboard"].map((chip) => (
+          {["Sync GitHub", "Analyze PRs", "Earn XP", "Climb Leaderboard"].map((chip, index) => (
             <div
-              key={chip}
+              key={`home-twitter-chip-${index}-${chip}`}
               style={{
                 display: "flex",
                 alignItems: "center",

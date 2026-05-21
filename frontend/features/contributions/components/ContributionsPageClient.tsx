@@ -387,8 +387,8 @@ export function ContributionsPageClient() {
                   {monthlyWindow.length ? (
                     <div className="space-y-3">
                       <ul role="list" className="space-y-3">
-                        {monthlyWindow.map((point) => (
-                          <li key={point.month} className="list-none space-y-1">
+                        {monthlyWindow.map((point, index) => (
+                          <li key={`${point.month}-${index}`} className="list-none space-y-1">
                             <div className="flex items-center justify-between text-xs text-muted">
                               <span>{point.month}</span>
                               <span className="numeric-readout">{point.xp.toLocaleString("en-US")} XP</span>
