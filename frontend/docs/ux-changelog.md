@@ -1,5 +1,21 @@
 # Frontend UX Changelog
 
+## 2026-05-21
+
+- Sync-run filter stability pass:
+  - replaced the four-button status-toggle row in settings sync activity with a single status `Select` control.
+  - removed deferred/debounced sync-run filter churn so result updates are immediate and less jitter-prone.
+  - simplified active-filter chips in sync activity by removing per-chip inline clear buttons and keeping one explicit `Reset` action.
+- Deterministic summary normalization pass:
+  - added shared formatter `frontend/lib/presentation/report-summary.ts` to clean raw deterministic strings (`summary=[...]`, `score version ...`, trailing `final XP ...`) into readable copy.
+  - wired the formatter into contributions cards, dashboard recent battle reports, and public-profile best-PR cards for consistent report language.
+- Skill evidence-source wording pass:
+  - normalized profile skill-note evidence-source labels so empty/unknown values now render as `deterministic snapshot` instead of `unknown source`.
+- Noise-reduction copy pass:
+  - removed `Lite skill signal view` label from constrained/rduced skill radar rendering.
+  - simplified leaderboard mission subcopy from `Focus lane` to `Primary signal`.
+  - removed redundant leaderboard row-count sentence under arena rows to keep action hierarchy tighter.
+
 ## 2026-05-19
 
 - Viewport-locked background framing pass:
