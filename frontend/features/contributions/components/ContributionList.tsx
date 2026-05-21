@@ -171,7 +171,7 @@ function AIPanel({
   narrative?: ContributionNarrative;
   fallbackSummary: string;
 }) {
-  const summary = narrative?.pitch || fallbackSummary;
+  const summary = sanitizeSummaryText(narrative?.pitch || fallbackSummary);
 
   return (
     <div className="neon-surface rounded-[1.35rem] border-fuchsia-300/28 px-4 py-4">
@@ -197,4 +197,25 @@ function AIPanel({
       ) : null}
     </div>
   );
+}
+
+function sanitizeSummaryText(input: string): string {
+  let value = input.trim();
+  if (!value) {
+    return "Deterministic contribution summary is pending.";
+  }
+  if (value.toLowerCase().startsWith("summary=[")) {
+    const closing = value.lastIndexOf("]");
+    value = closing > 8 ? value.slice(8, closing) : value.slice(8);
+  }
+  value = value
+    .replace(/\bscore version\s+[a-z0-9._-]+\b/gi, "Deterministic scoring replay")
+    .replace(/\bfinal xp\s+\d+\b/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!value) {
+    return "Deterministic scoring replay metadata is available for this PR.";
+  }
+  const sentence = value.charAt(0).toUpperCase() + value.slice(1);
+  return /[.!?]$/.test(sentence) ? sentence : `${sentence}.`;
 }
