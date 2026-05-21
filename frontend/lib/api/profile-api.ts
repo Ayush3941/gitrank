@@ -270,7 +270,7 @@ function toProfileViewData(
     "privacy" in response ? response.privacy : undefined,
   );
   const showAiSummaries = privacy.showAiSummaries;
-  const topSkills = (response.top_skill_areas ?? []).map((skill) => normalizeSkillCategory(skill.key));
+  const topSkills = uniqueSkillCategories((response.top_skill_areas ?? []).map((skill) => normalizeSkillCategory(skill.key)));
   const skillTree = toSkillTree(response.top_skill_areas ?? []);
   const featuredContributions = toFeaturedContributions(
     response.score_history ?? [],
@@ -376,15 +376,44 @@ function toProfileViewData(
 }
 
 function toSkillTree(skills: ApiSkillArea[]): SkillNode[] {
-  return skills.map((skill) => ({
-    category: normalizeSkillCategory(skill.key),
-    score: Math.max(1, Math.round(skill.percentage)),
-    delta: 0,
-    note: skillNote(skill),
-    evidenceSource: skill.evidence_source,
-    confidence: skill.confidence,
-    evidenceState: skill.evidence_state,
-  }));
+  const grouped = new Map<SkillCategory, { node: SkillNode; count: number }>();
+  for (const skill of skills) {
+    const category = normalizeSkillCategory(skill.key);
+    const score = Math.max(1, Math.round(skill.percentage));
+    const existing = grouped.get(category);
+    if (!existing) {
+      grouped.set(category, {
+        count: 1,
+        node: {
+          category,
+          score,
+          delta: 0,
+          note: skillNote(skill),
+          evidenceSource: skill.evidence_source,
+          confidence: skill.confidence,
+          evidenceState: skill.evidence_state,
+        },
+      });
+      continue;
+    }
+    existing.count += 1;
+    existing.node.score = Math.min(100, existing.node.score + score);
+    existing.node.confidence = maxConfidence(existing.node.confidence, skill.confidence);
+    existing.node.evidenceSource = mergedEvidenceSource(existing.node.evidenceSource, skill.evidence_source);
+    existing.node.evidenceState = mergedEvidenceState(existing.node.evidenceState, skill.evidence_state);
+    if (typeof skill.confidence === "number" && Number.isFinite(skill.confidence)) {
+      existing.node.note = skillNote(skill);
+    }
+  }
+  return Array.from(grouped.values())
+    .map((entry) => ({
+      ...entry.node,
+      note:
+        entry.count > 1
+          ? `${entry.node.note} Aggregated from ${entry.count} contribution signals.`
+          : entry.node.note,
+    }))
+    .sort((left, right) => right.score - left.score);
 }
 
 function skillNote(skill: ApiSkillArea): string {
@@ -859,25 +888,130 @@ function badgeIconForKey(key: string): BadgeIcon {
 }
 
 function normalizeSkillCategory(value: string): SkillCategory {
-  const normalized = value.trim().toLowerCase();
+  const normalized = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
   const mapped: Record<string, SkillCategory> = {
     architecture: "Architecture",
+    arch: "Architecture",
     backend: "Backend",
+    back_end: "Backend",
+    service: "Backend",
+    services: "Backend",
+    api: "Backend",
+    server: "Backend",
     bugfix: "Backend",
     bug_fix: "Backend",
     devops: "DevOps",
+    dev_ops: "DevOps",
+    infra: "DevOps",
     docs: "Documentation",
+    doc: "Documentation",
     documentation: "Documentation",
     frontend: "Frontend",
+    front_end: "Frontend",
+    ui: "Frontend",
+    ux: "Frontend",
     infrastructure: "DevOps",
     performance: "Performance",
+    perf: "Performance",
+    optimization: "Performance",
     review: "Review",
     reviews: "Review",
+    code_review: "Review",
     security: "Security",
+    secure: "Security",
+    hardening: "Security",
     testing: "Testing",
+    test: "Testing",
+    qa: "Testing",
     tests: "Testing",
   };
-  return mapped[normalized] ?? "Backend";
+  const direct = mapped[normalized];
+  if (direct) {
+    return direct;
+  }
+  if (normalized.includes("front") || normalized.includes("ui") || normalized.includes("ux")) {
+    return "Frontend";
+  }
+  if (normalized.includes("doc")) {
+    return "Documentation";
+  }
+  if (normalized.includes("test") || normalized.includes("qa")) {
+    return "Testing";
+  }
+  if (normalized.includes("sec") || normalized.includes("auth")) {
+    return "Security";
+  }
+  if (
+    normalized.includes("infra") ||
+    normalized.includes("ops") ||
+    normalized.includes("deploy") ||
+    normalized.includes("ci") ||
+    normalized.includes("cd")
+  ) {
+    return "DevOps";
+  }
+  if (normalized.includes("perf") || normalized.includes("optimiz")) {
+    return "Performance";
+  }
+  if (normalized.includes("review")) {
+    return "Review";
+  }
+  if (
+    normalized.includes("api") ||
+    normalized.includes("service") ||
+    normalized.includes("backend") ||
+    normalized.includes("server") ||
+    normalized.includes("bug")
+  ) {
+    return "Backend";
+  }
+  return "Architecture";
+}
+
+function uniqueSkillCategories(skills: SkillCategory[]): SkillCategory[] {
+  const seen = new Set<SkillCategory>();
+  const output: SkillCategory[] = [];
+  for (const skill of skills) {
+    if (seen.has(skill)) {
+      continue;
+    }
+    seen.add(skill);
+    output.push(skill);
+  }
+  return output;
+}
+
+function maxConfidence(current?: number, next?: number): number | undefined {
+  const left = typeof current === "number" && Number.isFinite(current) ? current : undefined;
+  const right = typeof next === "number" && Number.isFinite(next) ? next : undefined;
+  if (left === undefined) return right;
+  if (right === undefined) return left;
+  return Math.max(left, right);
+}
+
+function mergedEvidenceSource(
+  left?: "deterministic" | "ai_assisted" | "mixed" | "unknown",
+  right?: "deterministic" | "ai_assisted" | "mixed" | "unknown",
+): "deterministic" | "ai_assisted" | "mixed" | "unknown" {
+  if (!left) return right ?? "unknown";
+  if (!right) return left;
+  if (left === right) return left;
+  return "mixed";
+}
+
+function mergedEvidenceState(
+  left?: "fresh" | "stale" | "partial",
+  right?: "fresh" | "stale" | "partial",
+): "fresh" | "stale" | "partial" {
+  if (!left) return right ?? "partial";
+  if (!right) return left;
+  if (left === "stale" || right === "stale") return "stale";
+  if (left === "partial" || right === "partial") return "partial";
+  return "fresh";
 }
 
 function normalizeVisibility(value: string): RepositoryVisibility["visibility"] {
