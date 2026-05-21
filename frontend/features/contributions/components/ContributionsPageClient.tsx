@@ -242,8 +242,6 @@ export function ContributionsPageClient() {
           actionLabel={isFilteredNoResults ? "Reset filters" : "Review quest queue"}
           actionHref={isFilteredNoResults ? undefined : "/dashboard/quests"}
           onAction={isFilteredNoResults ? handleResetFilters : undefined}
-          secondaryActionLabel="Open settings"
-          secondaryActionHref="/dashboard/settings"
           analyticsTarget={isFilteredNoResults ? "contributions:empty-filtered" : "contributions:empty"}
         />
       ) : null}

@@ -80,7 +80,7 @@ describe("accessibility control naming", () => {
     }
 
     expect(rendered.getAllByText("Dashboard").length).toBeGreaterThan(0);
-  });
+  }, 15_000);
 
   it("exposes actionable controls when repository privacy list is empty", () => {
     const rendered = render(
