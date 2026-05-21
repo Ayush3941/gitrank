@@ -15,7 +15,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
     <GlowCard className="space-y-5">
       <div>
         <p className="text-xs font-medium text-primary">Recent battle reports</p>
-        <h2 className="mt-2 text-2xl font-semibold text-white">High-signal PRs from the last cycle</h2>
+        <h2 className="mt-2 text-xl font-semibold text-white">High-signal PRs</h2>
       </div>
       <ul role="list" className="grid gap-3">
         {sortedReports.length === 0 ? (

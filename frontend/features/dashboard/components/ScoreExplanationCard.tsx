@@ -7,7 +7,7 @@ export function ScoreExplanationCard({ user }: { user: UserProfile }) {
     <GlowCard className="space-y-5">
       <div>
         <p className="text-xs font-medium text-primary">Why your score changed this week</p>
-        <h2 className="mt-2 text-2xl font-semibold text-white">Transparent XP sources and penalties</h2>
+        <h2 className="mt-2 text-xl font-semibold text-white">XP sources and penalties</h2>
       </div>
       <div className="space-y-3">
         {user.scoreChanges.map((change, index) => {

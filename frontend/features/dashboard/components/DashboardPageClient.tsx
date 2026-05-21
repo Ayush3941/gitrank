@@ -134,7 +134,7 @@ export function DashboardPageClient() {
   }, [data, isError, isLoading]);
 
   if (isLoading) {
-    return <LoadingState message="Building your RPG dashboard..." />;
+    return <LoadingState message="Loading dashboard snapshot..." />;
   }
 
   if (isError || !data || !user) {

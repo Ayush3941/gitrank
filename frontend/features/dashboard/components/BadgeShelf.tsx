@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Lock } from "lucide-react";
+import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { RarityBadge } from "@/components/shared/RarityBadge";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,7 @@ export function BadgeShelf({ user }: { user: UserProfile }) {
     <GlowCard className="space-y-5">
       <div>
         <p className="text-xs font-medium text-primary">Badge shelf</p>
-        <h2 className="mt-2 text-2xl font-semibold text-white">Unlocked proof and visible next targets</h2>
+        <h2 className="mt-2 text-xl font-semibold text-white">Unlocked proof</h2>
         <div className="mt-3 space-y-2">
           <div className="flex items-center justify-between text-xs text-muted">
             <span>{unlockedCount} / {totalCount} unlocked</span>
@@ -29,7 +30,7 @@ export function BadgeShelf({ user }: { user: UserProfile }) {
         {user.badges.length === 0 ? (
           <li className="list-none neon-surface space-y-3 rounded-[1.75rem] border-dashed p-4 text-sm text-muted md:col-span-2">
             <p>
-              No badge records are available for this profile snapshot yet. Badge progress appears after contribution scoring evidence is persisted.
+              No badge records in this profile snapshot yet. Badge progress appears after contribution scoring is persisted.
             </p>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" variant="secondary">
@@ -53,7 +54,13 @@ export function BadgeShelf({ user }: { user: UserProfile }) {
               ) : null}
             </div>
             <h3 className="mt-3 text-lg font-medium text-white">{badge.name}</h3>
-            <p className="mt-2 text-sm text-muted">{badge.unlockCondition}</p>
+            <ExpandableText
+              text={badge.unlockCondition}
+              lines={2}
+              minLengthForToggle={120}
+              className="mt-2"
+              textClassName="text-sm text-muted"
+            />
             {!badge.unlocked && typeof badge.progress === "number" ? (
               <div className="mt-3 space-y-1">
                 <Progress value={badge.progress} />

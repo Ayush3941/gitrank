@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Link2, Target } from "lucide-react";
+import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,7 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs font-medium text-primary">Active quests</p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">Your next XP lane</h2>
+          <h2 className="mt-2 text-xl font-semibold text-white">Next XP lane</h2>
         </div>
         <div className="neon-surface rounded-3xl p-3 text-primary">
           <Target className="h-5 w-5" />
@@ -21,7 +22,7 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
         {quests.length === 0 ? (
           <div className="neon-surface space-y-3 rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
             <p>
-              No quests yet for this snapshot. Sync once and GitRank will generate mission cards from scored PR evidence.
+              No quests in this snapshot yet. Sync once to generate mission cards from scored PR evidence.
             </p>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" variant="secondary">
@@ -43,7 +44,13 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
                     <div>
                       <h3 className="text-lg font-medium text-white">{quest.title}</h3>
                       <p className="text-sm text-muted">{quest.description}</p>
-                      <p className="mt-2 text-sm leading-6 text-muted">{quest.whyRecommended}</p>
+                      <ExpandableText
+                        text={quest.whyRecommended}
+                        lines={2}
+                        minLengthForToggle={140}
+                        className="mt-2"
+                        textClassName="text-sm leading-6 text-muted"
+                      />
                     </div>
                     <div className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-sm text-primary">
                       +{quest.rewardXp} XP
