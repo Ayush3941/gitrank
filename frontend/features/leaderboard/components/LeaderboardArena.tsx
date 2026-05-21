@@ -153,7 +153,7 @@ export function LeaderboardArena({
                   : "";
           const rowTone = [
             "cyber-sheen",
-            row.isCurrentUser ? "ring-glow border border-primary/22 bg-primary/8" : "",
+            row.isCurrentUser ? "border border-primary/22 bg-primary/8" : "",
             podiumTone,
           ]
             .filter(Boolean)

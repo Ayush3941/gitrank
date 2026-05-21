@@ -22,6 +22,7 @@ describe("accessibility control naming", () => {
   const userFixture = {
     username: "octocat",
     displayName: "Octo Cat",
+    avatarUrl: "https://example.com/avatar.png",
     title: "Systems Builder",
     weeklyXp: 120,
     syncStatus: {
