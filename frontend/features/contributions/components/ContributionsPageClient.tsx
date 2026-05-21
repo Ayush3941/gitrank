@@ -80,6 +80,10 @@ export function ContributionsPageClient() {
     debouncedSearch !== search ||
     deferredSort !== sort;
   const canReset = filter !== "All" || search.trim().length > 0 || sort !== "Newest";
+  const activeFilterCount =
+    (filter !== "All" ? 1 : 0) +
+    (search.trim().length > 0 ? 1 : 0) +
+    (sort !== "Newest" ? 1 : 0);
   const totalContributionEvidence = profile?.user.contributions.length ?? 0;
   const isFilteredNoResults =
     canReset && totalContributionEvidence > 0 && filteredRows.length === 0;
@@ -226,23 +230,28 @@ export function ContributionsPageClient() {
   return (
     <div className="space-y-6 [overflow-anchor:none]">
       <section id="contributions-filters" className="scroll-mt-24">
-        <ContributionFilters
-          value={filter}
-          onValueChange={handleFilterChange}
-          search={search}
-          onSearchChange={handleSearchChange}
-          sort={sort}
-          onSortChange={handleSortChange}
-          resultsRegionId={CONTRIBUTION_CARDS_REGION_ID}
-          resultCount={filteredRows.length}
-          isFiltering={isFiltering}
-          canReset={canReset}
-          onReset={handleResetFilters}
-          compact
-          onClearCategory={handleClearCategoryFilter}
-          onClearSearch={handleClearSearchFilter}
-          onClearSort={handleClearSortFilter}
-        />
+        <details className="space-y-3" open={activeFilterCount > 0}>
+          <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-primary/24 px-4 py-3 text-sm font-semibold text-white marker:content-none">
+            Filter contribution cards ({filteredRows.length} results{activeFilterCount > 0 ? ` · ${activeFilterCount} active` : ""})
+          </summary>
+          <ContributionFilters
+            value={filter}
+            onValueChange={handleFilterChange}
+            search={search}
+            onSearchChange={handleSearchChange}
+            sort={sort}
+            onSortChange={handleSortChange}
+            resultsRegionId={CONTRIBUTION_CARDS_REGION_ID}
+            resultCount={filteredRows.length}
+            isFiltering={isFiltering}
+            canReset={canReset}
+            onReset={handleResetFilters}
+            compact
+            onClearCategory={handleClearCategoryFilter}
+            onClearSearch={handleClearSearchFilter}
+            onClearSort={handleClearSortFilter}
+          />
+        </details>
       </section>
       {isLoading ? <LoadingState message="Checking review depth and PR intensity..." /> : null}
       {isError ? (
