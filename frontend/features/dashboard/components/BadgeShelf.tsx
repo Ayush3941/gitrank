@@ -17,7 +17,7 @@ export function BadgeShelf({ user }: { user: UserProfile }) {
     <GlowCard className="space-y-5">
       <div>
         <p className="text-xs font-medium text-primary">Badge shelf</p>
-        <h2 className="mt-2 text-xl font-semibold text-white">Unlocked proof</h2>
+        <h2 className="mt-2 text-xl font-semibold text-white">Unlocked badges</h2>
         <div className="mt-3 space-y-2">
           <div className="flex items-center justify-between text-xs text-muted">
             <span>{unlockedCount} / {totalCount} unlocked</span>
@@ -30,7 +30,7 @@ export function BadgeShelf({ user }: { user: UserProfile }) {
         {user.badges.length === 0 ? (
           <li className="list-none neon-surface space-y-3 rounded-[1.75rem] border-dashed p-4 text-sm text-muted md:col-span-2">
             <p>
-              No badge records in this profile snapshot yet. Badge progress appears after contribution scoring is persisted.
+              No badges in this snapshot yet.
             </p>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" variant="secondary">

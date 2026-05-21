@@ -30,7 +30,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
         {sortedReports.length === 0 ? (
           <li className="list-none neon-surface space-y-3 rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
             <p>
-              No PR report cards yet. They appear after sync, analysis, and score persistence complete.
+              No PR reports yet. They appear after sync and scoring finish.
             </p>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" variant="secondary">

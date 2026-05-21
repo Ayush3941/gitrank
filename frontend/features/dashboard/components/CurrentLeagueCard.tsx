@@ -57,9 +57,8 @@ export function CurrentLeagueCard({ user }: { user: UserProfile }) {
             ),
           )}
         />
-        <p className="mt-3 text-xs text-muted">{user.rankProgress.season.promotionRule}</p>
         <p className="mt-3 text-xs text-muted">
-          Season end: {formatDate(user.rankProgress.season.endsAt)} • {formatTimeUntil(user.rankProgress.season.endsAt)}
+          Season end {formatDate(user.rankProgress.season.endsAt)} • {formatTimeUntil(user.rankProgress.season.endsAt)}
         </p>
       </div>
       <ul role="list" className="flex flex-wrap gap-2">

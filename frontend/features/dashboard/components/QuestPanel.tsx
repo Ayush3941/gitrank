@@ -22,12 +22,9 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
         {quests.length === 0 ? (
           <div className="neon-surface space-y-3 rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
             <p>
-              No quests in this snapshot yet. Sync once to generate mission cards from scored PR evidence.
+              No quests yet. Run sync to generate missions from scored PR evidence.
             </p>
             <div className="flex flex-wrap gap-2">
-              <Button asChild size="sm" variant="secondary">
-                <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
-              </Button>
               <Button asChild size="sm" variant="ghost">
                 <Link href="/dashboard/settings" prefetch={false}>Open sync settings</Link>
               </Button>

@@ -175,15 +175,15 @@ export function DashboardPageClient() {
         />
       </section>
       <section id="dashboard-snapshot" className="scroll-mt-24 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="GitRank score" value={user.gitRankScore} detail="Weighted contribution score." icon={<Medal className="h-5 w-5 text-primary" />} />
-        <StatCard label="Merged PRs" value={user.mergedPrCount} detail="Verified merged work only." icon={<ShieldCheck className="h-5 w-5 text-primary" />} />
+        <StatCard label="GitRank score" value={user.gitRankScore} icon={<Medal className="h-5 w-5 text-primary" />} />
+        <StatCard label="Merged PRs" value={user.mergedPrCount} icon={<ShieldCheck className="h-5 w-5 text-primary" />} />
         <StatCard
           label="PR evidence window"
           value={`${contributionWindowCount}/${contributionWindowCap}`}
-          detail={`${contributionWindowFillRate}% of recent capped history.`}
+          detail={`${contributionWindowFillRate}% filled`}
           icon={<Activity className="h-5 w-5 text-primary" />}
         />
-        <StatCard label="Reviewed PRs" value={user.reviewedPrCount} detail="Review evidence in this snapshot." icon={<Activity className="h-5 w-5 text-primary" />} />
+        <StatCard label="Reviewed PRs" value={user.reviewedPrCount} icon={<Activity className="h-5 w-5 text-primary" />} />
       </section>
       <div className="grid gap-6 xl:grid-cols-[0.92fr,1.08fr]">
         <div className="space-y-6">
