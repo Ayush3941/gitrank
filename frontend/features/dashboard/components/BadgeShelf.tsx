@@ -34,9 +34,6 @@ export function BadgeShelf({ user }: { user: UserProfile }) {
             </p>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" variant="secondary">
-                <Link href="/dashboard/settings" prefetch={false}>Sync profile evidence</Link>
-              </Button>
-              <Button asChild size="sm" variant="secondary">
                 <Link href="/dashboard/badges" prefetch={false}>Open badge forge</Link>
               </Button>
             </div>
