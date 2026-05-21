@@ -181,7 +181,7 @@ export function LeaderboardPageClient() {
         </div>
         {snapshot ? <p className="text-xs text-muted">{rows.length} ranked rows</p> : null}
       </section>
-      {isLoading ? <LoadingState message="Updating the arena ladder..." /> : null}
+      {isLoading ? <LoadingState message="Loading leaderboard..." /> : null}
       {isError ? (
         <ErrorState
           title="Leaderboard unavailable"
@@ -204,7 +204,7 @@ export function LeaderboardPageClient() {
           <GlowCard className="space-y-4 border border-primary/20 bg-gradient-to-br from-slate-950/90 to-cyan-950/20">
             <div>
               <p className="text-xs font-medium text-primary">Arena preview state</p>
-              <h2 className="mt-2 text-2xl font-semibold text-white">How ranking unlocks</h2>
+              <h2 className="mt-2 text-xl font-semibold text-white">How ranking unlocks</h2>
               <p className="mt-2 text-sm text-muted">
                 Once participants are present, GitRank places profiles into weekly bands using quality-weighted score evidence.
               </p>
@@ -233,7 +233,7 @@ export function LeaderboardPageClient() {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-xs font-medium text-cyan-200">Your arena mission</p>
-                    <h2 className="mt-2 text-2xl font-semibold text-white">
+                    <h2 className="mt-2 text-xl font-semibold text-white">
                       #{snapshot.currentUser.rank} in {tab}
                     </h2>
                     <p className="mt-2 text-sm text-muted">
@@ -319,7 +319,7 @@ export function LeaderboardPageClient() {
         <GlowCard className="space-y-4 border border-amber-400/24 bg-amber-400/8">
           <div>
             <p className="text-xs font-medium text-amber-100">Arena preview mode ({rows.length} active public profiles)</p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">Competition is warming up</h2>
+            <h2 className="mt-2 text-xl font-semibold text-white">Competition is warming up</h2>
             <p className="mt-2 readable-measure text-sm leading-7 text-amber-50">
               This lane has {rows.length} active public profiles. Ranking is live, but bracket density is still low.
             </p>

@@ -46,10 +46,10 @@ export function LeaderboardArena({
               <CalendarClock className="h-3.5 w-3.5" />
               {snapshot.season.status} season
             </div>
-            <h2 className="mt-4 break-anywhere text-3xl font-semibold text-white">{snapshot.season.name}</h2>
+            <h2 className="mt-4 break-anywhere text-2xl font-semibold text-white">{snapshot.season.name}</h2>
             <ExpandableText
               text={snapshot.season.explanation}
-              lines={4}
+              lines={2}
               minLengthForToggle={220}
               className="mt-2"
               textClassName="break-anywhere text-sm leading-7 text-muted"
@@ -117,11 +117,11 @@ export function LeaderboardArena({
                       @{row.username} • {row.title}
                     </p>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2 text-xs">
-                    <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-                      {row.seasonXp.toLocaleString("en-US")} XP
-                    </span>
-                    <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+              {row.seasonXp.toLocaleString("en-US")} XP
+            </span>
+            <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
                       Move {movementLabel}
                     </span>
                     {!row.isCurrentUser ? (
@@ -191,20 +191,11 @@ export function LeaderboardArena({
                       </div>
                       <ExpandableText
                         text={row.evidenceSummary}
-                        lines={3}
+                        lines={2}
                         minLengthForToggle={190}
                         className="mt-3 max-w-2xl"
                         textClassName="break-anywhere text-sm leading-6 text-muted"
                       />
-                      <p className="mt-2 max-w-2xl text-xs text-muted">
-                        Snapshot {formatSnapshotVersion(row.profileSnapshotVersion)} / Score {formatScoreFormulaVersion(row.scoreFormulaVersion)}
-                        {row.sourceWatermark ? ` / Watermark ${new Date(row.sourceWatermark).toLocaleDateString()}` : ""}
-                      </p>
-                      <div className="mt-2">
-                        <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
-                          Next action: {recommendedActionForRow(row)}
-                        </span>
-                      </div>
                     </div>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -291,27 +282,4 @@ function Metric({
       </div>
     </div>
   );
-}
-
-function recommendedActionForRow(row: LeaderboardSnapshot["rows"][number]): string {
-  if (row.promotionZone) {
-    return "protect rank by sustaining merged reviewed work";
-  }
-  if (row.demotionRisk) {
-    return "recover with one high-quality reviewed merge";
-  }
-  if (row.xpToNextRank > 0) {
-    return `${row.xpToNextRank.toLocaleString("en-US")} XP to next band`;
-  }
-  return "maintain signal quality and cadence";
-}
-
-function formatSnapshotVersion(version?: string): string {
-  const value = (version ?? "").trim();
-  return value.length > 0 ? value : "pending";
-}
-
-function formatScoreFormulaVersion(version?: string): string {
-  const value = (version ?? "").trim();
-  return value.length > 0 ? value : "pending";
 }

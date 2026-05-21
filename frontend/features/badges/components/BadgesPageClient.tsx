@@ -224,13 +224,19 @@ export function BadgesPageClient() {
                       <Trophy className="h-3.5 w-3.5" />
                       Achievement Forge
                     </p>
-                    <h2 className="mt-3 text-2xl font-semibold text-white">
+                    <h2 className="mt-3 text-xl font-semibold text-white">
                       {abraInsights.data?.archetype ?? fallbackArchetype} progression
                     </h2>
-                    <p className="mt-2 max-w-3xl text-sm text-muted">
-                      {abraInsights.data?.identitySummary ||
-                        "Badge narratives are running in deterministic fallback mode."}
-                    </p>
+                    <ExpandableText
+                      text={
+                        abraInsights.data?.identitySummary ||
+                        "Badge narratives are running in deterministic fallback mode."
+                      }
+                      lines={2}
+                      minLengthForToggle={180}
+                      className="mt-2 max-w-3xl"
+                      textClassName="text-sm text-muted"
+                    />
                   </div>
                   <div className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-xs">
                     <Sparkles className="h-3.5 w-3.5" />
@@ -376,11 +382,11 @@ export function BadgesPageClient() {
           </div>
         </div>
         <div id={BADGES_EARNED_REGION_ID}>
-          {isLoading ? <LoadingState message="Polishing your badge shelf..." /> : null}
+          {isLoading ? <LoadingState message="Loading badge shelf..." /> : null}
           {isError ? (
             <ErrorState
               title="Badge sync failed"
-              description="Some badge evidence could not be verified from GitHub. Retry sync or use partial profile data."
+              description="Badge evidence could not be refreshed. Retry or use your latest snapshot."
               fallbackLabel="Open settings"
               fallbackHref="/dashboard/settings"
               analyticsTarget="badges:error"
@@ -488,7 +494,7 @@ export function BadgesPageClient() {
               </div>
             ) : (
               <div className="neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4 text-sm text-muted">
-                No locked badge definitions are currently returned by the backend profile snapshot.
+                No locked badge definitions are returned by this snapshot.
               </div>
             )}
           </DeferUntilVisible>
