@@ -123,7 +123,7 @@ export function ContributionFilters({
       </div>
       <div className="hidden sm:block">
         <Tabs value={value} onValueChange={onValueChange}>
-          <TabsList className="scrollbar-thin w-full overflow-x-auto whitespace-nowrap" aria-label="Contribution category filters">
+          <TabsList className="grid w-full grid-cols-3 gap-1.5 lg:grid-cols-5" aria-label="Contribution category filters">
             {filters.map((filter) => (
               <TabsTrigger
                 key={filter.value}
@@ -131,6 +131,7 @@ export function ContributionFilters({
                 title={filter.value}
                 aria-label={`${filter.value} contributions`}
                 aria-controls={resultsRegionId}
+                className="w-full justify-center text-center"
               >
                 <span>{filter.value}</span>
               </TabsTrigger>
