@@ -4,6 +4,8 @@ import type { PullRequestAnalysis } from "@/types/gitrank";
 
 export function EvidenceSignalsCard({ report }: { report: PullRequestAnalysis }) {
   const contribution = report.contribution;
+  const visibleSignals = contribution.evidenceSignals.slice(0, 8);
+  const remainingSignals = Math.max(0, contribution.evidenceSignals.length - visibleSignals.length);
   const signals = [
     { label: "Maintainer reviewed", active: contribution.maintainerReviewed, icon: ShieldCheck },
     { label: "Linked issue", active: contribution.linkedIssue, icon: Link2 },
@@ -17,7 +19,7 @@ export function EvidenceSignalsCard({ report }: { report: PullRequestAnalysis })
     <GlowCard className="space-y-5">
       <div>
         <p className="text-xs font-medium text-primary">Evidence signals</p>
-        <h2 className="mt-2 text-2xl font-semibold text-white">Why this PR earned what it earned</h2>
+        <h2 className="mt-2 text-xl font-semibold text-white">Why this PR earned what it earned</h2>
       </div>
       <ul role="list" className="grid gap-3 md:grid-cols-2">
         {signals.map((signal, index) => {
@@ -42,13 +44,20 @@ export function EvidenceSignalsCard({ report }: { report: PullRequestAnalysis })
       <div className="neon-surface rounded-[1.75rem] p-4">
         <p className="text-xs font-medium text-primary">Stored evidence labels</p>
         <ul role="list" className="mt-3 flex flex-wrap gap-2">
-          {contribution.evidenceSignals.map((signal, index) => (
+          {visibleSignals.map((signal, index) => (
             <li key={`${signal}-${index}`} className="list-none">
               <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
                 {signal}
               </span>
             </li>
           ))}
+          {remainingSignals > 0 ? (
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
+                +{remainingSignals} more
+              </span>
+            </li>
+          ) : null}
         </ul>
       </div>
     </GlowCard>
