@@ -35,6 +35,11 @@ type authoredPullRequestTarget struct {
 	Number     int
 }
 
+type pullRequestSyncOptions struct {
+	skipReviews        bool
+	skipReviewComments bool
+}
+
 type Executor struct {
 	cfg                  config.App
 	store                *Store
@@ -284,11 +289,14 @@ func (e *Executor) SyncUser(
 			continue
 		}
 		childCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), boundedUserPRSyncTimeout(e.cfg))
-		child, err := runtime.SyncPullRequest(childCtx, contracts.SyncRequest{
+		child, err := runtime.syncPullRequestSurface(childCtx, contracts.SyncRequest{
 			Mode:       "pull_request",
 			Repository: target.Repository,
 			Number:     target.Number,
-		}, actor, fmt.Sprintf("%s:authored-pr:%d", baseCorrelationID, index+1), time.Now().UTC())
+		}, actor, fmt.Sprintf("%s:authored-pr:%d", baseCorrelationID, index+1), time.Now().UTC(), "pull_request", pullRequestSyncOptions{
+			skipReviews:        true,
+			skipReviewComments: true,
+		})
 		cancel()
 		if err != nil {
 			response.Fetched["authored_pull_requests_skipped"]++
@@ -448,7 +456,7 @@ func (e *Executor) SyncPullRequest(
 	correlationID string,
 	now time.Time,
 ) (contracts.GitHubSyncExecutionResponse, error) {
-	return e.syncPullRequestSurface(ctx, req, actor, correlationID, now, "pull_request")
+	return e.syncPullRequestSurface(ctx, req, actor, correlationID, now, "pull_request", pullRequestSyncOptions{})
 }
 
 func (e *Executor) SyncReview(
@@ -458,7 +466,7 @@ func (e *Executor) SyncReview(
 	correlationID string,
 	now time.Time,
 ) (contracts.GitHubSyncExecutionResponse, error) {
-	return e.syncPullRequestSurface(ctx, req, actor, correlationID, now, "review")
+	return e.syncPullRequestSurface(ctx, req, actor, correlationID, now, "review", pullRequestSyncOptions{})
 }
 
 func (e *Executor) syncPullRequestSurface(
@@ -468,6 +476,7 @@ func (e *Executor) syncPullRequestSurface(
 	correlationID string,
 	now time.Time,
 	mode string,
+	options pullRequestSyncOptions,
 ) (contracts.GitHubSyncExecutionResponse, error) {
 	startedAt := now.UTC()
 	response := contracts.GitHubSyncExecutionResponse{
@@ -505,28 +514,32 @@ func (e *Executor) syncPullRequestSurface(
 	}
 
 	var reviews []map[string]any
-	reviews, err = e.fetchPullRequestReviews(ctx, owner, name, req.Number)
-	reviewsSkipped := false
-	if err != nil {
-		if isSkippableGitHubSyncError(err) {
-			reviewsSkipped = true
-			reviews = nil
-		} else {
-			_ = e.recordFailedPullRequestSurfaceSyncRun(ctx, req, actor, correlationID, startedAt, mode, err)
-			return response, err
+	reviewsSkipped := options.skipReviews
+	if !options.skipReviews {
+		reviews, err = e.fetchPullRequestReviews(ctx, owner, name, req.Number)
+		if err != nil {
+			if isSkippableGitHubSyncError(err) {
+				reviewsSkipped = true
+				reviews = nil
+			} else {
+				_ = e.recordFailedPullRequestSurfaceSyncRun(ctx, req, actor, correlationID, startedAt, mode, err)
+				return response, err
+			}
 		}
 	}
 
 	var reviewComments []map[string]any
-	reviewComments, err = e.fetchPullRequestReviewComments(ctx, owner, name, req.Number)
-	reviewCommentsSkipped := false
-	if err != nil {
-		if isSkippableGitHubSyncError(err) {
-			reviewCommentsSkipped = true
-			reviewComments = nil
-		} else {
-			_ = e.recordFailedPullRequestSurfaceSyncRun(ctx, req, actor, correlationID, startedAt, mode, err)
-			return response, err
+	reviewCommentsSkipped := options.skipReviewComments
+	if !options.skipReviewComments {
+		reviewComments, err = e.fetchPullRequestReviewComments(ctx, owner, name, req.Number)
+		if err != nil {
+			if isSkippableGitHubSyncError(err) {
+				reviewCommentsSkipped = true
+				reviewComments = nil
+			} else {
+				_ = e.recordFailedPullRequestSurfaceSyncRun(ctx, req, actor, correlationID, startedAt, mode, err)
+				return response, err
+			}
 		}
 	}
 
@@ -641,9 +654,15 @@ func (e *Executor) syncPullRequestSurface(
 	}
 	if reviewsSkipped {
 		response.Fetched["reviews_skipped"] = 1
+		if options.skipReviews {
+			response.Fetched["reviews_skipped_policy"] = 1
+		}
 	}
 	if reviewCommentsSkipped {
 		response.Fetched["review_comments_skipped"] = 1
+		if options.skipReviewComments {
+			response.Fetched["review_comments_skipped_policy"] = 1
+		}
 	}
 	if filesSkipped {
 		response.Fetched["pull_request_files_skipped"] = 1

@@ -3,7 +3,7 @@
 ## 2026-05-21
 
 - Sync-run filter stability pass:
-  - replaced the status `Select` in settings sync activity with a direct four-button status row (`All`, `Completed`, `Running`, `Failed`) to avoid dropdown scroll-lock jitter and keep filtering in-flow.
+  - replaced the status button-row in settings sync activity with a native `<select>` status filter (`All`, `Completed`, `Running`, `Failed`) to avoid interaction jitter and keep filtering stable on constrained devices.
   - removed deferred/debounced sync-run filter churn so result updates are immediate and less jitter-prone.
   - simplified active-filter chips in sync activity by removing per-chip inline clear buttons and keeping one explicit `Reset` action.
 - Render-performance and copy-density pass:
@@ -20,6 +20,8 @@
 - PR report badge clarity pass:
   - deduplicated repeated badge unlock entries by badge name in PR battle reports and merged their evidence signals into a single card.
   - keeps underlying evidence while removing repeated badge titles that made report rewards noisy.
+- PR report evidence copy pass:
+  - converted raw stale-analysis wording into user-facing progress copy so deterministic report states stay readable while Gemini enrichment catches up.
 - Deterministic summary normalization pass:
   - added shared formatter `frontend/lib/presentation/report-summary.ts` to clean raw deterministic strings (`summary=[...]`, `score version ...`, trailing `final XP ...`) into readable copy.
   - wired the formatter into contributions cards, dashboard recent battle reports, and public-profile best-PR cards for consistent report language.

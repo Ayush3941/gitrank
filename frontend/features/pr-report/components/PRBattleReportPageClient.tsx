@@ -402,16 +402,14 @@ function normalizeEvidenceReason(reason: string, evidenceAnchored: boolean): str
     return "Deterministic report is available now; Gemini enrichment can appear after re-analysis.";
   }
   if (normalized.includes("analysis has not been persisted")) {
-    if (evidenceAnchored) {
-      return null;
-    }
-    return "Gemini analysis is still processing for this PR.";
+    return evidenceAnchored
+      ? "Deterministic evidence is available now while Gemini enrichment catches up."
+      : "Gemini analysis is still processing for this PR.";
   }
   if (normalized.includes("report is stale until analysis and scoring both complete")) {
-    if (evidenceAnchored) {
-      return null;
-    }
-    return "Report refresh is pending the next scoring replay.";
+    return evidenceAnchored
+      ? "Report metadata is refreshing in the background."
+      : "Report refresh is pending the next scoring replay.";
   }
   if (normalized.includes("fallback reason")) {
     return null;

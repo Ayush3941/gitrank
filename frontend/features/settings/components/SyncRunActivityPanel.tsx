@@ -188,35 +188,39 @@ export function SyncRunActivityPanel({
             ) : null}
           </div>
           <div
-            role="group"
-            aria-label="Filter sync runs by status"
             aria-describedby={filterStatusId}
-            className="neon-surface flex flex-wrap items-center gap-2 rounded-[1rem] px-2 py-2"
+            className="neon-surface flex flex-col gap-2 rounded-[1rem] px-3 py-2"
           >
-            {SYNC_RUN_STATUS_FILTERS.map((status) => {
-              const count =
-                status === "All"
-                  ? statusCounts.all
-                  : status === "Completed"
-                    ? statusCounts.completed
-                    : status === "Running"
-                      ? statusCounts.running
-                      : statusCounts.failed;
-              const active = statusFilter === status;
-              return (
-                <Button
-                  key={status}
-                  type="button"
-                  size="sm"
-                  variant={active ? "default" : "ghost"}
-                  aria-pressed={active}
-                  aria-controls={syncRunsRegionId}
-                  onClick={() => setStatusFilter(status)}
-                >
-                  {status} ({count})
-                </Button>
-              );
-            })}
+            <label
+              htmlFor="sync-run-status-filter"
+              className="text-xs font-medium text-primary"
+            >
+              Status filter
+            </label>
+            <select
+              id="sync-run-status-filter"
+              value={statusFilter}
+              className="focus-ring h-10 w-full rounded-[0.1rem] border border-primary/24 bg-card px-3 text-sm text-foreground"
+              onChange={(event) => {
+                setStatusFilter(event.target.value as SyncRunStatusFilter);
+              }}
+            >
+              {SYNC_RUN_STATUS_FILTERS.map((status) => {
+                const count =
+                  status === "All"
+                    ? statusCounts.all
+                    : status === "Completed"
+                      ? statusCounts.completed
+                      : status === "Running"
+                        ? statusCounts.running
+                        : statusCounts.failed;
+                return (
+                  <option key={status} value={status} className="bg-card text-foreground">
+                    {status} ({count})
+                  </option>
+                );
+              })}
+            </select>
           </div>
         </div>
       </div>
