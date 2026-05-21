@@ -8,6 +8,8 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { StaleState } from "@/components/shared/StaleState";
+import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
 import { ContributionList } from "@/features/contributions/components/ContributionList";
 import { useContributions } from "@/hooks/use-contributions";
@@ -22,6 +24,7 @@ import {
   summarizeContributionStreak,
   summarizeRepositories,
 } from "@/lib/metrics/contribution-metrics";
+import { formatRelativeDays } from "@/lib/formatters";
 
 const filterMap: Record<string, string> = {
   All: "All",
@@ -189,6 +192,23 @@ export function ContributionsPageClient() {
         title="PR impact lane"
         description="Browse scored pull requests, impact summaries, and battle report links."
       />
+      {profile && shouldShowSyncStateGuide(profile.user.syncStatus) ? (
+        <SyncStateGuide
+          status={profile.user.syncStatus}
+          className="render-opt-section border-primary/24 bg-primary/8"
+        />
+      ) : null}
+      {profile?.user.syncStatus.state === "stale" ? (
+        <StaleState
+          message={`Contribution evidence refreshed ${formatRelativeDays(
+            profile.refreshedAt,
+          )}. New PR rows can appear after the next sync.`}
+          updatedAt={profile.refreshedAt}
+          actionLabel="Open sync settings"
+          actionHref="/dashboard/settings"
+          analyticsTarget="contributions:stale"
+        />
+      ) : null}
       <section id="contributions-filters" className="scroll-mt-24">
         <ContributionFilters
           value={filter}

@@ -1582,6 +1582,9 @@
 - Added progressive disclosure for dashboard depth:
   - moved score-factor/skill/timeline deep panels behind an explicit `Show advanced analytics` toggle
   - keeps initial dashboard view lighter and reduces first-screen cognitive load on repeated visits.
+- Improved contributions sync visibility:
+  - added sync-state guide and stale-state banner at the top of `Contributions`
+  - makes partial/stale snapshot conditions explicit before filters and cards, reducing confusion when evidence is missing or delayed.
 
 ## 2026-05-16
 
