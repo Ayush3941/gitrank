@@ -65,7 +65,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      <DeferUntilVisible fallback={<LandingSectionPlaceholder title="Loading reputation context lanes" />}>
+      <DeferUntilVisible fallback={<LandingSectionPlaceholder title="Loading reputation context" />}>
       <section className="render-opt-section">
         <div className="space-y-3">
           <h2 className="text-sm font-semibold text-white">Why GitRank exists</h2>
@@ -105,24 +105,24 @@ export function LandingPage() {
           <ul role="list" className="grid gap-6 lg:grid-cols-3">
             {[
           {
-            lane: "New contributor",
+            persona: "New contributor",
             mission: "Connect GitHub and unlock first score snapshot.",
             success: "Success moment: first synced PR appears with XP and evidence status.",
           },
           {
-            lane: "Returning contributor",
+            persona: "Returning contributor",
             mission: "Track weekly movement, quests, and impact quality.",
             success: "Success moment: rank movement updates after a merged high-signal PR.",
           },
           {
-            lane: "Profile sharer",
+            persona: "Profile sharer",
             mission: "Turn contribution history into a public credibility card.",
             success: "Success moment: shareable profile headline and card data exported.",
           },
           ].map((journey, index) => (
-          <li key={`journey-${index}-${journey.lane}`}>
+          <li key={`journey-${index}-${journey.persona}`}>
             <GlowCard className="space-y-3">
-            <p className="text-xs font-medium text-primary">{journey.lane}</p>
+            <p className="text-xs font-medium text-primary">{journey.persona}</p>
             <h3 className="text-xl font-semibold text-white">{journey.mission}</h3>
             <p className="text-sm text-muted">{journey.success}</p>
             </GlowCard>
@@ -203,10 +203,10 @@ export function LandingPage() {
               "Review depth consistency",
               "Testing and reliability signal",
               "Cross-repository impact",
-            ].map((lane, index) => (
+            ].map((track, index) => (
               <li key={`badge-lane-${index}`} className="neon-surface rounded-[1.75rem] p-4">
-                <p className="text-xs font-medium text-primary">Badge lane</p>
-                <h3 className="mt-3 text-lg font-semibold text-white">{lane}</h3>
+                <p className="text-xs font-medium text-primary">Badge track</p>
+                <h3 className="mt-3 text-lg font-semibold text-white">{track}</h3>
               </li>
             ))}
           </ul>
@@ -214,7 +214,7 @@ export function LandingPage() {
       </section>
       </DeferUntilVisible>
 
-      <DeferUntilVisible fallback={<LandingSectionPlaceholder title="Loading anti-spam and CTA lanes" />}>
+      <DeferUntilVisible fallback={<LandingSectionPlaceholder title="Loading anti-spam and CTA" />}>
       <section className="render-opt-section grid gap-6 lg:grid-cols-[0.9fr,1.1fr]">
         <GlowCard className="space-y-4 border border-amber-400/18 bg-amber-400/6">
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/25 bg-amber-400/12 px-3 py-1.5 text-xs font-semibold text-amber-100">
