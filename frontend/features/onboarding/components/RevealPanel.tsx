@@ -100,37 +100,46 @@ export function RevealPanel({
             {user.level.currentXp} / {user.level.nextLevelXp} XP
           </div>
         </div>
-        <ul role="list" className="grid gap-4 sm:grid-cols-3">
-          {unlockedBadges.length > 0 ? (
-            unlockedBadges.map((badge) => (
-              <li key={badge.id} className="list-none rounded-[1.75rem] border border-cyan-300/16 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/22 p-5 text-left">
-                <div className="flex items-center justify-between">
-                  <Award className="h-5 w-5 text-primary" />
-                  <RarityBadge rarity={badge.rarity} />
-                </div>
-                <h3 className="mt-4 text-xl font-semibold text-white">{badge.name}</h3>
-                <p className="mt-2 text-sm text-muted">{badge.description}</p>
-              </li>
-            ))
-          ) : (
-            <>
-              <li className="list-none"><RevealFallbackCard title="First merge unlock" body="Merge one meaningful PR to activate the first badge lane." /></li>
-              <li className="list-none"><RevealFallbackCard title="Review depth unlock" body="Maintainer-reviewed work speeds up trust and progression." /></li>
-              <li className="list-none"><RevealFallbackCard title="Consistency unlock" body="Sustained weekly contribution evidence unlocks rarer badge tiers." /></li>
-            </>
-          )}
-        </ul>
-        <div className="neon-surface rounded-[1.75rem] px-5 py-4 text-left">
-          <p className="text-xs font-medium text-primary">What to do next</p>
-          <ol className="mt-3 grid gap-3 sm:grid-cols-3">
-            {nextActions.map((item, index) => (
-              <li key={`${item}-${index}`} className="neon-metric rounded-[1.25rem] px-3 py-3">
-                <p className="text-xs font-medium text-cyan-100">Step {index + 1}</p>
-                <p className="mt-2 text-sm leading-6 text-muted">{item}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
+        <details className="space-y-4" open={unlockedBadges.length === 0}>
+          <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-primary/24 px-4 py-3 text-sm font-semibold text-white marker:content-none">
+            Unlock preview ({unlockedBadges.length > 0 ? `${unlockedBadges.length} earned` : "next badge lanes"})
+          </summary>
+          <ul role="list" className="grid gap-4 sm:grid-cols-3">
+            {unlockedBadges.length > 0 ? (
+              unlockedBadges.map((badge) => (
+                <li key={badge.id} className="list-none rounded-[1.75rem] border border-cyan-300/16 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/22 p-5 text-left">
+                  <div className="flex items-center justify-between">
+                    <Award className="h-5 w-5 text-primary" />
+                    <RarityBadge rarity={badge.rarity} />
+                  </div>
+                  <h3 className="mt-4 text-xl font-semibold text-white">{badge.name}</h3>
+                  <p className="mt-2 text-sm text-muted">{badge.description}</p>
+                </li>
+              ))
+            ) : (
+              <>
+                <li className="list-none"><RevealFallbackCard title="First merge unlock" body="Merge one meaningful PR to activate the first badge lane." /></li>
+                <li className="list-none"><RevealFallbackCard title="Review depth unlock" body="Maintainer-reviewed work speeds up trust and progression." /></li>
+                <li className="list-none"><RevealFallbackCard title="Consistency unlock" body="Sustained weekly contribution evidence unlocks rarer badge tiers." /></li>
+              </>
+            )}
+          </ul>
+        </details>
+        <details className="space-y-4" open={needsSyncRecovery}>
+          <summary className="focus-ring neon-surface cursor-pointer list-none rounded-[1.2rem] border-primary/24 px-4 py-3 text-sm font-semibold text-white marker:content-none">
+            What to do next ({nextActions.length} steps)
+          </summary>
+          <div className="neon-surface rounded-[1.75rem] px-5 py-4 text-left">
+            <ol className="mt-1 grid gap-3 sm:grid-cols-3">
+              {nextActions.map((item, index) => (
+                <li key={`${item}-${index}`} className="neon-metric rounded-[1.25rem] px-3 py-3">
+                  <p className="text-xs font-medium text-cyan-100">Step {index + 1}</p>
+                  <p className="mt-2 text-sm leading-6 text-muted">{item}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </details>
         <div className="flex flex-wrap justify-center gap-3">
           {needsSyncRecovery ? (
             <Button asChild size="lg">
