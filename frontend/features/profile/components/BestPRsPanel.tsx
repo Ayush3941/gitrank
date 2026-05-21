@@ -22,9 +22,6 @@ export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
               <Button asChild variant="secondary" size="sm">
                 <Link href="/dashboard/contributions" prefetch={false}>Open contributions lane</Link>
               </Button>
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/dashboard/settings" prefetch={false}>Open visibility settings</Link>
-              </Button>
             </div>
           </div>
         ) : (
