@@ -187,6 +187,9 @@ export function SettingsPageClient() {
       <ErrorState
         title="Settings unavailable"
         description="Profile settings could not be loaded. Keep using the last verified profile and retry shortly."
+        onRetry={() => {
+          void refetch();
+        }}
         fallbackLabel="Back to dashboard"
         fallbackHref="/dashboard"
         analyticsTarget="settings:error"

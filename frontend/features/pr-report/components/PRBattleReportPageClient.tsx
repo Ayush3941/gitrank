@@ -52,7 +52,7 @@ export function PRBattleReportPageClient({
   repo: string;
   number: number;
 }) {
-  const { data, isLoading, isError } = usePrReport(owner, repo, number);
+  const { data, isLoading, isError, refetch } = usePrReport(owner, repo, number);
   const [showTechnicalBreakdown, setShowTechnicalBreakdown] = useState(false);
 
   if (isLoading) {
@@ -64,6 +64,9 @@ export function PRBattleReportPageClient({
       <ErrorState
         title="Battle report failed"
         description="The score breakdown could not be computed. Retry or return to the contribution drill-down."
+        onRetry={() => {
+          void refetch();
+        }}
         fallbackLabel="Open contributions"
         fallbackHref="/dashboard/contributions"
         analyticsTarget="pr-report:error"

@@ -178,6 +178,9 @@ export function PublicProfilePageClient({
       <ErrorState
         title="Profile unavailable"
         description="The public profile could not be loaded. Retry or return to the dashboard snapshot."
+        onRetry={() => {
+          void refetch();
+        }}
         fallbackLabel="Open dashboard"
         fallbackHref="/dashboard"
         analyticsTarget="public-profile:error"

@@ -396,6 +396,9 @@ export function BadgesPageClient() {
             <ErrorState
               title="Badge sync failed"
               description="Badge evidence could not be refreshed. Retry or use your latest snapshot."
+              onRetry={() => {
+                void refetch();
+              }}
               fallbackLabel="Open sync settings"
               fallbackHref="/dashboard/settings"
               analyticsTarget="badges:error"

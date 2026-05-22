@@ -2,6 +2,9 @@
 
 ## 2026-05-21
 
+- Error-state recovery pass:
+  - added in-place `Retry` actions on all major dashboard route error states (`dashboard`, `contributions`, `badges`, `quests`, `leaderboard`, `settings`, `public profile`, `PR report`).
+  - each retry now triggers the page query `refetch` directly, reducing forced navigation during transient sync/API failures.
 - Settings module lazy-load pass:
   - switched `SyncRunActivityPanel` and `PrivacyRepositoryToggleList` to `next/dynamic` with bounded placeholders.
   - keeps settings behavior intact while reducing eager module loading for dense sync/repository panels.

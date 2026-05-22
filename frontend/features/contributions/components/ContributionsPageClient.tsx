@@ -67,7 +67,7 @@ export function ContributionsPageClient() {
     ? CONTRIBUTION_CARD_PAGE_SIZE_CONSTRAINED
     : CONTRIBUTION_CARD_PAGE_SIZE_DEFAULT;
   const [visibleCardCount, setVisibleCardCount] = useState(cardPageSize);
-  const { data, isLoading, isError } = useContributions({
+  const { data, isLoading, isError, refetch } = useContributions({
     filter: filterMap[deferredFilter],
     search: deferredSearch,
     sort: deferredSort,
@@ -279,6 +279,9 @@ export function ContributionsPageClient() {
         <ErrorState
           title="Contribution sync failed"
           description="GitHub data could not be refreshed. Retry or open sync settings."
+          onRetry={() => {
+            void refetch();
+          }}
           fallbackLabel="Open sync settings"
           fallbackHref="/dashboard/settings"
           analyticsTarget="contributions:error"

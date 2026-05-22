@@ -209,6 +209,9 @@ export function LeaderboardPageClient() {
         <ErrorState
           title="Leaderboard unavailable"
           description="The ranking snapshot could not be refreshed. Retry or keep browsing your existing public profile."
+          onRetry={() => {
+            void refetch();
+          }}
           fallbackLabel="Open dashboard"
           fallbackHref="/dashboard"
           analyticsTarget="leaderboard:error"

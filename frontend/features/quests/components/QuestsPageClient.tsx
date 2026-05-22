@@ -162,6 +162,9 @@ export function QuestsPageClient() {
         <ErrorState
           title="Quest engine unavailable"
           description="The recommendation system could not finish. Retry or fall back to your last synced quest board."
+          onRetry={() => {
+            void refetch();
+          }}
           fallbackLabel="Open sync settings"
           fallbackHref="/dashboard/settings"
           analyticsTarget="quests:error"
