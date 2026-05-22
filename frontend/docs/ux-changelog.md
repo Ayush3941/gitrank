@@ -2,6 +2,8 @@
 
 ## 2026-05-21
 
+- Header redundancy suppression pass:
+  - shared `PageHeader` and `SectionHeader` now hide the eyebrow when it duplicates the title label (case/spacing-insensitive), removing repeated header text without touching route-level copy.
 - Dashboard momentum heat-strip pass:
   - added a compact 21-day contribution heat strip to dashboard (`frontend/components/shared/StreakHeatStrip.tsx`) to make streak/momentum scan faster without heavy animation.
   - each day tile now includes tooltip and ARIA labels with contribution count + XP so momentum state is not color-only.
