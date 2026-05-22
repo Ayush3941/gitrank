@@ -6,6 +6,9 @@
   - introduced a dedicated `html[data-theme="cyberpunk"]` token palette in `app/globals.css` using high-contrast deep-pink, amber, and lime accents over low-noise dark surfaces.
   - wired the new theme through shared theme infrastructure: `use-theme-preference`, dashboard quick switcher, keyboard display shortcuts (`Alt+Shift+T` cycle), and settings theme controls.
   - keeps current architecture and fallback behavior intact while expanding visual variety for demo/presentation paths.
+- Upgraded color-contrast verification to theme-wide enforcement:
+  - `scripts/check-contrast-tokens.mjs` now validates contrast thresholds per theme (`neon`, `cyberpunk`, `midnight`, `terminal`, `aurora`, `high-contrast`) instead of checking only one flattened token map.
+  - prevents regressions where a non-default theme could slip below readability thresholds while default tokens still pass.
 - Applied progressive disclosure on high-density report/profile routes:
   - PR battle report now keeps deep score/evidence/reward mechanics behind an explicit `Show technical breakdown` toggle with proper `aria-expanded` / `aria-controls`.
   - public profile now supports section-level `Show section` / `Hide section` controls for `Badges and skills`, `Best PR battle reports`, and `Timeline and repositories`.

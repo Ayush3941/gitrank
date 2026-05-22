@@ -4,7 +4,9 @@ import path from "node:path";
 const cssPath = path.join(process.cwd(), "app", "globals.css");
 const source = readFileSync(cssPath, "utf8");
 
-const tokens = parseTokens(source);
+const rootTokens = parseRootTokens(source);
+const themeOverrides = parseThemeTokenOverrides(source);
+const themes = ["neon", "cyberpunk", "midnight", "terminal", "aurora", "high-contrast"];
 const checks = [
   { name: "foreground on background", fg: "foreground", bg: "background", min: 4.5 },
   { name: "foreground on card", fg: "foreground", bg: "card", min: 4.5 },
@@ -17,19 +19,27 @@ const checks = [
 
 const violations = [];
 
-for (const check of checks) {
-  const fg = tokens.get(check.fg);
-  const bg = tokens.get(check.bg);
-  if (!fg || !bg) {
-    violations.push(`${check.name}: missing token(s)`);
+for (const theme of themes) {
+  const mergedTokens = mergeThemeTokens(rootTokens, themeOverrides.get(theme));
+  if (theme !== "neon" && !themeOverrides.has(theme)) {
+    violations.push(`[${theme}] missing theme override block in globals.css`);
     continue;
   }
-  const ratio = contrastRatio(fg, bg);
-  console.log(`${check.name}: ${ratio.toFixed(2)}:1`);
-  if (ratio < check.min) {
-    violations.push(
-      `${check.name}: ${ratio.toFixed(2)}:1 is below required ${check.min.toFixed(1)}:1`,
-    );
+
+  for (const check of checks) {
+    const fg = mergedTokens.get(check.fg);
+    const bg = mergedTokens.get(check.bg);
+    if (!fg || !bg) {
+      violations.push(`[${theme}] ${check.name}: missing token(s)`);
+      continue;
+    }
+    const ratio = contrastRatio(fg, bg);
+    console.log(`[${theme}] ${check.name}: ${ratio.toFixed(2)}:1`);
+    if (ratio < check.min) {
+      violations.push(
+        `[${theme}] ${check.name}: ${ratio.toFixed(2)}:1 is below required ${check.min.toFixed(1)}:1`,
+      );
+    }
   }
 }
 
@@ -41,11 +51,40 @@ if (violations.length > 0) {
   process.exit(1);
 }
 
-function parseTokens(css) {
+function parseRootTokens(css) {
+  const rootMatch = css.match(/:root\s*\{([^}]*)\}/);
+  if (!rootMatch) {
+    throw new Error("Could not find :root token block in app/globals.css");
+  }
+  return parseTokens(rootMatch[1]);
+}
+
+function parseThemeTokenOverrides(css) {
+  const map = new Map();
+  const themeRegex = /html\[data-theme="([a-z0-9-]+)"\]\s*\{([^}]*)\}/g;
+  let match;
+  while ((match = themeRegex.exec(css)) !== null) {
+    map.set(match[1], parseTokens(match[2]));
+  }
+  return map;
+}
+
+function mergeThemeTokens(baseTokens, overrideTokens) {
+  const merged = new Map(baseTokens);
+  if (!overrideTokens) {
+    return merged;
+  }
+  for (const [key, value] of overrideTokens.entries()) {
+    merged.set(key, value);
+  }
+  return merged;
+}
+
+function parseTokens(cssBlock) {
   const map = new Map();
   const tokenRegex = /--([a-z0-9-]+)\s*:\s*([0-9]+)\s+([0-9]+)\s+([0-9]+)\s*;/gi;
   let match;
-  while ((match = tokenRegex.exec(css)) !== null) {
+  while ((match = tokenRegex.exec(cssBlock)) !== null) {
     map.set(match[1], [Number(match[2]), Number(match[3]), Number(match[4])]);
   }
   return map;
