@@ -281,11 +281,11 @@ body::before {
       rgb(2 7 18 / var(--page-overlay-bottom-alpha))
     ),
     radial-gradient(
-      circle at 50% -8%,
-      rgb(var(--primary) / 0.026) 0%,
-      rgb(var(--primary-2) / 0.016) 58%,
-      rgb(var(--primary-2) / 0.008) 82%,
-      rgb(var(--primary-2) / 0.003) 96%,
+      circle at 50% -14%,
+      rgb(var(--primary) / 0.024) 0%,
+      rgb(var(--primary-2) / 0.014) 66%,
+      rgb(var(--primary-2) / 0.007) 88%,
+      rgb(var(--primary-2) / 0.002) 97%,
       transparent 100%
     );
   background-size:
@@ -302,19 +302,19 @@ body::after {
   z-index: -1;
   background:
     radial-gradient(
-      circle at 16% 18%,
-      rgb(var(--primary) / 0.035) 0%,
-      rgb(var(--primary) / 0.018) 52%,
-      rgb(var(--primary) / 0.008) 80%,
-      rgb(var(--primary) / 0.003) 96%,
+      circle at 14% 16%,
+      rgb(var(--primary) / 0.03) 0%,
+      rgb(var(--primary) / 0.016) 62%,
+      rgb(var(--primary) / 0.007) 86%,
+      rgb(var(--primary) / 0.002) 97%,
       transparent 100%
     ),
     radial-gradient(
-      circle at 84% 82%,
-      rgb(var(--primary-2) / 0.035) 0%,
-      rgb(var(--primary-2) / 0.018) 50%,
-      rgb(var(--primary-2) / 0.008) 78%,
-      rgb(var(--primary-2) / 0.003) 96%,
+      circle at 86% 84%,
+      rgb(var(--primary-2) / 0.03) 0%,
+      rgb(var(--primary-2) / 0.016) 60%,
+      rgb(var(--primary-2) / 0.007) 84%,
+      rgb(var(--primary-2) / 0.002) 97%,
       transparent 100%
     );
   opacity: var(--page-glow-opacity);
@@ -958,12 +958,21 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   border-radius: var(--radius-universal) !important;
 }
 
-.render-opt-card {
+.render-opt-card,
+.render-opt-section {
   contain: none;
 }
 
-.render-opt-section {
-  contain: none;
+@supports (content-visibility: auto) {
+  .render-opt-card {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 380px;
+  }
+
+  .render-opt-section {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 920px;
+  }
 }
 
 .cyber-link {
