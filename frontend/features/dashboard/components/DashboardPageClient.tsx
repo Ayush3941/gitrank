@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Activity, Medal, ShieldCheck } from "lucide-react";
 import { DashboardHeroRankCard } from "@/features/dashboard/components/DashboardHeroRankCard";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
@@ -61,7 +61,6 @@ const ContributionTimelineCard = dynamic(
 export function DashboardPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useDashboard();
   const scoreExplanationEventSent = useRef(false);
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const user = data?.user;
   const recentReports = data?.recentReports ?? [];
   const streak = useMemo(
@@ -276,48 +275,32 @@ export function DashboardPageClient() {
         </div>
       </div>
       <section id="dashboard-advanced" className="render-opt-section scroll-mt-24 space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-sm font-semibold text-white">Advanced analytics</p>
-            <p className="text-xs text-muted">Deep score factors and lane details.</p>
-          </div>
-          <Button
-            type="button"
-            variant={showAdvanced ? "secondary" : "default"}
-            size="sm"
-            onClick={() => {
-              setShowAdvanced((current) => !current);
-            }}
-            aria-expanded={showAdvanced}
-            aria-controls="dashboard-advanced-grid"
-          >
-            {showAdvanced ? "Hide advanced analytics" : "Show advanced analytics"}
-          </Button>
+        <div>
+          <p className="text-sm font-semibold text-white">Score and skill lanes</p>
+          <p className="text-xs text-muted">Deterministic score factors and profile evidence context.</p>
         </div>
-        {showAdvanced ? (
-          <div id="dashboard-advanced-grid" className="grid gap-6 xl:grid-cols-[1.04fr,0.96fr]">
-            <section className="space-y-6">
-              <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading score explanation" />}>
-                <ScoreExplanationCard user={user} />
-              </DeferUntilVisible>
-              <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading badge shelf" />}>
-                <BadgeShelf user={user} />
-              </DeferUntilVisible>
-            </section>
-            <section className="space-y-6">
-              <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading skill breakdown" />}>
-                <SkillBreakdownCard
-                  user={user}
-                  skillInsights={abraInsights.data?.skillInsights}
-                  aiMode={abraInsights.data?.generatedBy}
-                />
-              </DeferUntilVisible>
-              <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading contribution timeline" />}>
-                <ContributionTimelineCard user={user} />
-              </DeferUntilVisible>
-            </section>
-          </div>
-        ) : null}
+        <div id="dashboard-advanced-grid" className="grid gap-6 xl:grid-cols-[1.04fr,0.96fr]">
+          <section className="space-y-6">
+            <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading score explanation" />}>
+              <ScoreExplanationCard user={user} />
+            </DeferUntilVisible>
+            <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading badge shelf" />}>
+              <BadgeShelf user={user} />
+            </DeferUntilVisible>
+          </section>
+          <section className="space-y-6">
+            <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading skill breakdown" />}>
+              <SkillBreakdownCard
+                user={user}
+                skillInsights={abraInsights.data?.skillInsights}
+                aiMode={abraInsights.data?.generatedBy}
+              />
+            </DeferUntilVisible>
+            <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading contribution timeline" />}>
+              <ContributionTimelineCard user={user} />
+            </DeferUntilVisible>
+          </section>
+        </div>
       </section>
     </div>
   );

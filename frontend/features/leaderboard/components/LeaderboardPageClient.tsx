@@ -62,7 +62,6 @@ export function LeaderboardPageClient() {
     ? LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED
     : LEADERBOARD_ROW_PAGE_SIZE_DEFAULT;
   const [visibleRowCount, setVisibleRowCount] = useState(rowPageSize);
-  const [showMissionPlan, setShowMissionPlan] = useState(false);
   const tabFromURL = laneParamToTab(searchParams.get("lane"));
   const tab = tabFromURL ?? "Global";
   const deferredTab = useDeferredValue(tab);
@@ -255,52 +254,34 @@ export function LeaderboardPageClient() {
                         ? `${snapshot.currentUser.xpToNextRank} XP to next band`
                         : "You currently lead this lane"}
                     </p>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={showMissionPlan ? "secondary" : "default"}
-                      onClick={() => {
-                        setShowMissionPlan((current) => !current);
-                      }}
-                      aria-expanded={showMissionPlan}
-                      aria-controls="leaderboard-mission-plan"
-                    >
-                      {showMissionPlan ? "Hide mission plan" : "Show mission plan"}
-                    </Button>
                   </div>
-                  {showMissionPlan ? (
-                    <div id="leaderboard-mission-plan" className="space-y-4">
-                      <div className="grid gap-3 md:grid-cols-3">
-                        <ClimbTip
-                          title="To next band"
-                          body={
-                            snapshot.currentUser.xpToNextRank > 0
-                              ? `${snapshot.currentUser.xpToNextRank} XP required`
-                              : "You are currently leading this lane"
-                          }
-                        />
-                        <ClimbTip
-                          title="Gap to lane leader"
-                          body={laneGapToLeader > 0 ? `${laneGapToLeader} season XP` : "You currently hold lane lead"}
-                        />
-                        <ClimbTip
-                          title="Current movement"
-                          body={`${snapshot.currentUser.movement >= 0 ? "+" : ""}${snapshot.currentUser.movement} this cycle`}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-xs text-muted">
-                          <span>Band progress</span>
-                          <span>{currentUserProgressToNextBand}%</span>
-                        </div>
-                        <Progress value={currentUserProgressToNextBand} />
-                      </div>
+                  <div id="leaderboard-mission-plan" className="space-y-4">
+                    <div className="grid gap-3 md:grid-cols-3">
+                      <ClimbTip
+                        title="To next band"
+                        body={
+                          snapshot.currentUser.xpToNextRank > 0
+                            ? `${snapshot.currentUser.xpToNextRank} XP required`
+                            : "You are currently leading this lane"
+                        }
+                      />
+                      <ClimbTip
+                        title="Gap to lane leader"
+                        body={laneGapToLeader > 0 ? `${laneGapToLeader} season XP` : "You currently hold lane lead"}
+                      />
+                      <ClimbTip
+                        title="Current movement"
+                        body={`${snapshot.currentUser.movement >= 0 ? "+" : ""}${snapshot.currentUser.movement} this cycle`}
+                      />
                     </div>
-                  ) : (
-                    <div id="leaderboard-mission-plan" className="neon-surface rounded-[1.1rem] border-dashed border-primary/24 px-4 py-3 text-xs text-muted">
-                      Mission details hidden.
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-xs text-muted">
+                        <span>Band progress</span>
+                        <span>{currentUserProgressToNextBand}%</span>
+                      </div>
+                      <Progress value={currentUserProgressToNextBand} />
                     </div>
-                  )}
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     <Button asChild size="sm" variant="secondary">
                       <Link href="/dashboard/contributions" prefetch={false}>

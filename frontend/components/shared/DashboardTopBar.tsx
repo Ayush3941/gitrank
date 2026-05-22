@@ -5,8 +5,6 @@ import Link from "next/link";
 import { AlertTriangle, ArrowUpRight, Zap } from "lucide-react";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
-import { ThemeQuickSwitcher } from "@/components/shared/ThemeQuickSwitcher";
-import { TextScaleQuickSwitcher } from "@/components/shared/TextScaleQuickSwitcher";
 import { cn } from "@/lib/cn";
 import type { UserProfile } from "@/types/gitrank";
 
@@ -37,10 +35,6 @@ export function DashboardTopBar({
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="hidden items-center gap-2 lg:flex">
-            <ThemeQuickSwitcher compact className="h-8 px-2.5" />
-            <TextScaleQuickSwitcher compact className="h-8 px-2.5" />
-          </div>
           <SyncStatusPill status={user.syncStatus} />
           <RankBadge rank={user.level.rankTier} />
           <div className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs text-foreground">

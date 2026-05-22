@@ -1416,18 +1416,6 @@ html[data-theme="high-contrast"] .cyber-card {
   html {
     scroll-padding-bottom: 2rem;
   }
-
-  :where(
-      a[href],
-      button,
-      input:not([type="hidden"]),
-      select,
-      textarea,
-      [role="button"],
-      [tabindex]:not([tabindex="-1"])
-    ):focus-visible {
-    scroll-margin-bottom: 2rem;
-  }
 }
 
 @media (hover: none) {
