@@ -5,7 +5,6 @@ import dynamic from "next/dynamic";
 import { useState } from "react";
 import { Download, FolderGit2, LogOut, Palette, RefreshCw, Sparkles, Trash2 } from "lucide-react";
 import { ErrorState } from "@/components/shared/ErrorState";
-import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -380,34 +379,29 @@ export function SettingsPageClient() {
       <section id="settings-sync-activity" className="render-opt-section scroll-mt-24">
         <div className="space-y-3">
           <h2 className="text-sm font-semibold text-white">Sync activity</h2>
-          <DeferUntilVisible fallback={<SettingsSectionPlaceholder title="Loading sync activity" />}>
-            <div id="settings-sync-activity-panel">
-              <SettingsSyncActivitySection />
-            </div>
-          </DeferUntilVisible>
+          <div id="settings-sync-activity-panel">
+            <SettingsSyncActivitySection />
+          </div>
         </div>
       </section>
 
       <section id="settings-public-profile" className="render-opt-section scroll-mt-24">
-        <DeferUntilVisible fallback={<SettingsSectionPlaceholder title="Loading profile privacy controls" />}>
-          <SettingSection
-            title="Public profile"
-            saving={isSaving}
-            disabled={isSaving}
-            errorMessage={mutationError}
-            rows={[
-              ["Enable public profile", currentSettings.publicProfileEnabled, (checked) => handlePrivacyToggle("publicProfileEnabled", checked)],
-              ["Show exact PRs", currentSettings.showExactPRs, (checked) => handlePrivacyToggle("showExactPRs", checked)],
-              ["Show AI summaries", currentSettings.showAiSummaries, (checked) => handlePrivacyToggle("showAiSummaries", checked)],
-              ["Show leaderboard participation", currentSettings.showLeaderboardParticipation, (checked) => handlePrivacyToggle("showLeaderboardParticipation", checked)],
-            ]}
-          />
-        </DeferUntilVisible>
+        <SettingSection
+          title="Public profile"
+          saving={isSaving}
+          disabled={isSaving}
+          errorMessage={mutationError}
+          rows={[
+            ["Enable public profile", currentSettings.publicProfileEnabled, (checked) => handlePrivacyToggle("publicProfileEnabled", checked)],
+            ["Show exact PRs", currentSettings.showExactPRs, (checked) => handlePrivacyToggle("showExactPRs", checked)],
+            ["Show AI summaries", currentSettings.showAiSummaries, (checked) => handlePrivacyToggle("showAiSummaries", checked)],
+            ["Show leaderboard participation", currentSettings.showLeaderboardParticipation, (checked) => handlePrivacyToggle("showLeaderboardParticipation", checked)],
+          ]}
+        />
       </section>
 
       <section id="settings-display" className="render-opt-section scroll-mt-24">
-        <DeferUntilVisible fallback={<SettingsSectionPlaceholder title="Loading display controls" />}>
-          <GlowCard className="space-y-4">
+        <GlowCard className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="max-w-2xl">
               <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
@@ -531,55 +525,50 @@ export function SettingsPageClient() {
               </p>
             ) : null}
           </div>
-          </GlowCard>
-        </DeferUntilVisible>
+        </GlowCard>
       </section>
 
       <section id="settings-repositories" className="render-opt-section scroll-mt-24">
-        <DeferUntilVisible fallback={<SettingsSectionPlaceholder title="Loading repository controls" />}>
-          <GlowCard className="space-y-4">
-            <div>
-              <p className="text-xs font-medium text-primary">Repository privacy</p>
-              <h2 className="mt-2 text-2xl font-semibold text-white">Choose what stays on your public card</h2>
-            </div>
-            <p className="text-sm text-muted">
-              Repository visibility controls ({data.user.repositories.length} total{hiddenRepositoryCount > 0 ? ` · ${hiddenRepositoryCount} hidden` : ""})
-            </p>
-            <PrivacyRepositoryToggleList
-              repositories={data.user.repositories}
-              pendingRepository={pendingRepository}
-              onToggle={
-                (repository, checked) =>
-                  updateRepositoryVisibility.mutate({
-                    fullName: repository.name,
-                    visibility: checked ? "Public" : "Hidden",
-                    reason: repository.reason,
-                  })
-              }
-            />
-          </GlowCard>
-        </DeferUntilVisible>
+        <GlowCard className="space-y-4">
+          <div>
+            <p className="text-xs font-medium text-primary">Repository privacy</p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">Choose what stays on your public card</h2>
+          </div>
+          <p className="text-sm text-muted">
+            Repository visibility controls ({data.user.repositories.length} total{hiddenRepositoryCount > 0 ? ` · ${hiddenRepositoryCount} hidden` : ""})
+          </p>
+          <PrivacyRepositoryToggleList
+            repositories={data.user.repositories}
+            pendingRepository={pendingRepository}
+            onToggle={
+              (repository, checked) =>
+                updateRepositoryVisibility.mutate({
+                  fullName: repository.name,
+                  visibility: checked ? "Public" : "Hidden",
+                  reason: repository.reason,
+                })
+            }
+          />
+        </GlowCard>
       </section>
 
       <section id="settings-data-controls" className="render-opt-section scroll-mt-24">
-        <DeferUntilVisible fallback={<SettingsSectionPlaceholder title="Loading data controls" />}>
-          <GlowCard className="space-y-4">
-            <div>
-              <p className="text-xs font-medium text-primary">Data controls</p>
-              <h2 className="mt-2 text-2xl font-semibold text-white">Export or remove account data</h2>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Button variant="secondary" disabled={isActing} onClick={handleExportAccountData}>
-                <Download className="h-4 w-4" />
-                {exportAccount.isPending ? "Exporting..." : "Export data"}
-              </Button>
-              <Button variant="danger" disabled={isActing} onClick={handleDeleteAccount}>
-                <Trash2 className="h-4 w-4" />
-                {deleteAccount.isPending ? "Deleting account..." : "Delete account"}
-              </Button>
-            </div>
-          </GlowCard>
-        </DeferUntilVisible>
+        <GlowCard className="space-y-4">
+          <div>
+            <p className="text-xs font-medium text-primary">Data controls</p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">Export or remove account data</h2>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Button variant="secondary" disabled={isActing} onClick={handleExportAccountData}>
+              <Download className="h-4 w-4" />
+              {exportAccount.isPending ? "Exporting..." : "Export data"}
+            </Button>
+            <Button variant="danger" disabled={isActing} onClick={handleDeleteAccount}>
+              <Trash2 className="h-4 w-4" />
+              {deleteAccount.isPending ? "Deleting account..." : "Delete account"}
+            </Button>
+          </div>
+        </GlowCard>
       </section>
     </div>
   );
