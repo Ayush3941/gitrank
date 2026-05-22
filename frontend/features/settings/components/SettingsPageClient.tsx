@@ -382,8 +382,18 @@ export function SettingsPageClient() {
               </div>
             </DeferUntilVisible>
           ) : (
-            <GlowCard id="settings-sync-activity-panel" className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 p-4 text-sm text-muted">
-              Sync run history is hidden by default. Open it when you need execution-level diagnostics.
+            <GlowCard id="settings-sync-activity-panel" className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 p-4">
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
+                  State {data.user.syncStatus.state}
+                </span>
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
+                  Last sync {data.user.syncStatus.lastSyncedAt ? "available" : "none"}
+                </span>
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
+                  Step {data.user.syncStatus.currentStep || "Not reported"}
+                </span>
+              </div>
             </GlowCard>
           )}
         </div>

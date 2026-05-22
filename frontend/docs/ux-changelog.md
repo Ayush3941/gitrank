@@ -5,6 +5,9 @@
 - Public profile collapsed-state summary pass:
   - replaced dead-text collapsed blocks in public-profile sections with compact summary chips (unlocked badges, top skill, report count/top XP, timeline latest XP, top-repo count).
   - keeps progressive disclosure while preserving useful signal in collapsed mode.
+- Settings sync-collapsed summary pass:
+  - replaced the collapsed sync-log helper sentence with compact sync-state chips (state, last-sync availability, current step).
+  - keeps diagnostics discoverable while preserving useful context in collapsed mode.
 - Public profile lazy-load pass:
   - switched heavy public-profile modules to `next/dynamic` (`PublicProfileHero`, `BestPRsPanel`, `SkillRadarChart`, `TimelineChart`) with bounded skeleton fallbacks.
   - improves first-render responsiveness on profile routes with large contribution history.
