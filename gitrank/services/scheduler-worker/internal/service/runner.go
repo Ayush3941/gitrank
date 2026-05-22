@@ -105,6 +105,8 @@ type executionCounters struct {
 	byOutcome map[string]int
 }
 
+const minBoundedSyncExecutionTimeout = 10 * time.Minute
+
 func newBoundedSyncExecutor(cfg config.App) boundedSyncExecutor {
 	baseURL := strings.TrimRight(strings.TrimSpace(cfg.Services.GitHubIngestorBaseURL), "/")
 	if baseURL == "" {
@@ -113,9 +115,19 @@ func newBoundedSyncExecutor(cfg config.App) boundedSyncExecutor {
 	return &httpBoundedSyncExecutor{
 		baseURL: baseURL,
 		client: &http.Client{
-			Timeout: cfg.Services.RequestTimeout,
+			Timeout: boundedSyncExecutionTimeout(cfg.Services.RequestTimeout),
 		},
 	}
+}
+
+func boundedSyncExecutionTimeout(timeout time.Duration) time.Duration {
+	if timeout <= 0 {
+		return minBoundedSyncExecutionTimeout
+	}
+	if timeout < minBoundedSyncExecutionTimeout {
+		return minBoundedSyncExecutionTimeout
+	}
+	return timeout
 }
 
 func newScoreReplayExecutor(cfg config.App) scoreReplayExecutor {

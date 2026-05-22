@@ -991,18 +991,6 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   contain: none;
 }
 
-@supports (content-visibility: auto) {
-  .render-opt-card {
-    content-visibility: auto;
-    contain-intrinsic-size: auto 380px;
-  }
-
-  .render-opt-section {
-    content-visibility: auto;
-    contain-intrinsic-size: auto 920px;
-  }
-}
-
 .cyber-link {
   color: rgb(var(--text-soft));
 }
