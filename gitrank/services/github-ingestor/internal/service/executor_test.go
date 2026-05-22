@@ -184,18 +184,25 @@ func TestBoundedUserPRSyncTimeout(t *testing.T) {
 			want: defaultUserPRSyncTimeout,
 		},
 		{
-			name: "uses fallback floor when timeout is too short",
+			name: "uses minimum bound when timeout is too short",
 			cfg: config.App{
-				GitHub: config.GitHub{RequestTimeout: 12 * time.Second},
+				GitHub: config.GitHub{RequestTimeout: 5 * time.Second},
 			},
-			want: defaultUserPRSyncTimeout,
+			want: minUserPRSyncTimeout,
 		},
 		{
-			name: "uses configured timeout when above floor",
+			name: "uses configured timeout when within bounds",
+			cfg: config.App{
+				GitHub: config.GitHub{RequestTimeout: 25 * time.Second},
+			},
+			want: 25 * time.Second,
+		},
+		{
+			name: "uses maximum bound when timeout is too high",
 			cfg: config.App{
 				GitHub: config.GitHub{RequestTimeout: 90 * time.Second},
 			},
-			want: 90 * time.Second,
+			want: maxUserPRSyncTimeout,
 		},
 	}
 

@@ -23,9 +23,11 @@ const (
 	defaultPullRequestReviewPageSize = 10
 	defaultCommitSyncPageSize        = 50
 	defaultUserRepositoryLimit       = 100
-	defaultAuthoredPRSearchLimit     = 10
-	defaultAuthoredPRSyncLimit       = 10
-	defaultUserPRSyncTimeout         = 45 * time.Second
+	defaultAuthoredPRSearchLimit     = 100
+	defaultAuthoredPRSyncLimit       = 100
+	defaultUserPRSyncTimeout         = 20 * time.Second
+	minUserPRSyncTimeout             = 10 * time.Second
+	maxUserPRSyncTimeout             = 60 * time.Second
 )
 
 var gitHubStatusCodePattern = regexp.MustCompile(`status (\d{3})`)
@@ -1522,8 +1524,11 @@ func boundedUserPRSyncTimeout(cfg config.App) time.Duration {
 	if timeout <= 0 {
 		return defaultUserPRSyncTimeout
 	}
-	if timeout < defaultUserPRSyncTimeout {
-		return defaultUserPRSyncTimeout
+	if timeout < minUserPRSyncTimeout {
+		return minUserPRSyncTimeout
+	}
+	if timeout > maxUserPRSyncTimeout {
+		return maxUserPRSyncTimeout
 	}
 	return timeout
 }
