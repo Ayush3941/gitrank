@@ -1627,6 +1627,9 @@
 - Added progressive disclosure for settings sync diagnostics:
   - `Sync activity` now defaults to a compact state with explicit `Show sync log` / `Hide sync log`
   - keeps settings focused on core privacy/display controls while preserving deep sync debugging on demand.
+- Added copy-ready impact actions on contribution cards:
+  - each impact summary panel now includes `Copy impact` with feedback states
+  - makes PR narratives immediately reusable in public profile updates and presentation material.
 
 ## 2026-05-16
 

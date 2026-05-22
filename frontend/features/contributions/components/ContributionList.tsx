@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, CalendarDays, GitMerge, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import type { ContributionNarrative } from "@/lib/ai/abra-insights-types";
@@ -198,10 +199,22 @@ function AIPanel({
 
   return (
       <div className="neon-surface rounded-[1.35rem] border-fuchsia-300/28 px-4 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="inline-flex items-center gap-2 text-xs font-medium text-fuchsia-100">
           <Sparkles className="h-3.5 w-3.5" />
-        Impact summary
+          Impact summary
         </p>
+        <CopyTextButton
+          text={summary}
+          label="Copy impact"
+          copiedLabel="Impact copied"
+          manualLabel="Copy manually"
+          errorLabel="Copy failed"
+          analyticsTarget="contributions/impact-summary"
+          size="sm"
+          variant="ghost"
+        />
+      </div>
       <div className="mt-3 text-sm text-muted">
         <ExpandableText
           text={summary}
