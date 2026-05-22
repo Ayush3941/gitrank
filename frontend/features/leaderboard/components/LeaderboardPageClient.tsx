@@ -11,7 +11,6 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
-import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -110,14 +109,8 @@ export function LeaderboardPageClient() {
       <PageHeader
         eyebrow="Leaderboard"
         title="Rank arena"
-        description="Compare rank lanes, season movement, and promotion progress from live evidence."
+        description="Compare rank lanes and promotion progress."
       />
-      {myProfile && shouldShowSyncStateGuide(myProfile.user.syncStatus) ? (
-        <SyncStateGuide
-          status={myProfile.user.syncStatus}
-          className="render-opt-section border-primary/24 bg-primary/8"
-        />
-      ) : null}
       {myProfile?.user.syncStatus.state === "stale" ? (
         <StaleState
           message={`Leaderboard context refreshed ${formatRelativeDays(
@@ -194,7 +187,6 @@ export function LeaderboardPageClient() {
             </Button>
           ) : null}
         </div>
-        {snapshot ? <p className="text-xs text-muted">{rows.length} ranked rows</p> : null}
       </section>
       {isLoading ? <LoadingState message="Loading leaderboard..." /> : null}
       {isError ? (
@@ -287,7 +279,7 @@ export function LeaderboardPageClient() {
                     </div>
                   ) : (
                     <div id="leaderboard-mission-plan" className="neon-surface rounded-[1.1rem] border-dashed border-primary/24 px-4 py-3 text-xs text-muted">
-                      Mission details are hidden by default for faster lane scanning.
+                      Mission details hidden.
                     </div>
                   )}
                   <div className="flex flex-wrap gap-2">

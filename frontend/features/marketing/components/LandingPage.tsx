@@ -106,18 +106,24 @@ export function LandingPage() {
             {[
           {
             persona: "New contributor",
-            mission: "Connect GitHub and unlock first score snapshot.",
-            success: "Success moment: first synced PR appears with XP and evidence status.",
+            mission: "Connect GitHub and unlock your first score snapshot.",
+            success: "Success: first synced PR appears with XP and evidence status.",
+            href: "/onboarding/connect-github",
+            cta: "Start onboarding",
           },
           {
             persona: "Returning contributor",
             mission: "Track weekly movement, quests, and impact quality.",
-            success: "Success moment: rank movement updates after a merged high-signal PR.",
+            success: "Success: rank movement updates after a merged high-signal PR.",
+            href: "/dashboard/contributions",
+            cta: "Open contributions",
           },
           {
             persona: "Profile sharer",
             mission: "Turn contribution history into a public credibility card.",
-            success: "Success moment: shareable profile headline and card data exported.",
+            success: "Success: public headline and share-ready profile card update.",
+            href: "/dashboard",
+            cta: "Open dashboard",
           },
           ].map((journey, index) => (
           <li key={`journey-${index}-${journey.persona}`}>
@@ -125,6 +131,9 @@ export function LandingPage() {
             <p className="text-xs font-medium text-primary">{journey.persona}</p>
             <h3 className="text-xl font-semibold text-white">{journey.mission}</h3>
             <p className="text-sm text-muted">{journey.success}</p>
+            <Button asChild variant="secondary" size="sm">
+              <Link href={journey.href} prefetch={false}>{journey.cta}</Link>
+            </Button>
             </GlowCard>
           </li>
           ))}

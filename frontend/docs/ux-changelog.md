@@ -2,6 +2,12 @@
 
 ## 2026-05-21
 
+- Dashboard route consistency pass:
+  - removed top-level sync-guide banners from badges, quests, and leaderboard to reduce repeated route noise and keep each page header compact.
+  - tightened route descriptions and collapsed helper copy in hidden sections for faster scanning.
+- Landing journey action pass:
+  - added explicit CTA actions to each core user-journey card (`Start onboarding`, `Open contributions`, `Open dashboard`) so every journey has a direct next step.
+  - tightened journey success copy for clearer outcome framing.
 - Dashboard stability and signal-density pass:
   - deduplicated contribution cards by PR identity (`owner/repo#number`) so each PR maps to one consistent battle-report entry in the contributions lane.
   - reduced dashboard/settings/contributions header verbosity to keep navigation and top-of-page content scan-friendly.

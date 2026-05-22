@@ -10,7 +10,6 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
-import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { QuestCard } from "@/features/quests/components/QuestCard";
@@ -65,14 +64,8 @@ export function QuestsPageClient() {
       <PageHeader
         eyebrow="Quests"
         title="Contributor missions"
-        description="Daily, weekly, and long-term quests generated from synced contribution evidence."
+        description="Daily, weekly, and long-term missions from synced evidence."
       />
-      {profile && shouldShowSyncStateGuide(profile.user.syncStatus) ? (
-        <SyncStateGuide
-          status={profile.user.syncStatus}
-          className="render-opt-section border-primary/24 bg-primary/8"
-        />
-      ) : null}
       {data?.staleness?.isStale ? (
         <StaleState
           message={`Quest snapshot refreshed ${formatRelativeDays(
@@ -231,7 +224,7 @@ export function QuestsPageClient() {
                     id={`quests-group-${group}`}
                     className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 p-4 text-sm text-muted"
                   >
-                    Section hidden for faster scanning. Open when you want quest-level details.
+                    Section hidden.
                   </GlowCard>
                 )}
               </div>

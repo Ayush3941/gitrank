@@ -11,7 +11,6 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
-import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { BadgeGrid } from "@/features/badges/components/BadgeGrid";
@@ -195,14 +194,8 @@ export function BadgesPageClient() {
       <PageHeader
         eyebrow="Badges"
         title="Achievement shelf"
-        description="Track unlocked badges, progression lanes, and upcoming milestones."
+        description="Unlocked badges and upcoming milestones."
       />
-      {profile && shouldShowSyncStateGuide(profile.user.syncStatus) ? (
-        <SyncStateGuide
-          status={profile.user.syncStatus}
-          className="render-opt-section border-primary/24 bg-primary/8"
-        />
-      ) : null}
       <section id="badges-forge" className="render-opt-section scroll-mt-24 space-y-4">
         {profile?.user.syncStatus.state === "stale" ? (
           <StaleState
