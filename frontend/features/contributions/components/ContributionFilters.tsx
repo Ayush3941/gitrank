@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -52,7 +51,6 @@ export function ContributionFilters({
   resultsRegionId?: string;
   compact?: boolean;
 }) {
-  const [showMobileControls, setShowMobileControls] = useState(!compact);
   const statusId = "contribution-filter-status";
   const activeChips: Array<{ key: "category" | "search" | "sort"; label: string }> = [];
   if (value !== "All") {
@@ -83,21 +81,6 @@ export function ContributionFilters({
             : `${resultCount ?? 0} cards`}
         </p>
         <div className="flex items-center gap-2">
-          {compact ? (
-            <Button
-              type="button"
-              size="sm"
-              variant="secondary"
-              className="sm:hidden"
-              aria-expanded={showMobileControls}
-              aria-controls="contribution-mobile-controls"
-              onClick={() => {
-                setShowMobileControls((current) => !current);
-              }}
-            >
-              {showMobileControls ? "Hide filters" : "Show filters"}
-            </Button>
-          ) : null}
           {onReset ? (
             <Button
               type="button"
@@ -145,7 +128,7 @@ export function ContributionFilters({
           })}
         </ul>
       ) : null}
-      <div id="contribution-mobile-controls" className={compact && !showMobileControls ? "hidden sm:block" : undefined}>
+      <div id="contribution-mobile-controls">
         <div className="sm:hidden">
           <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
             <span className="sr-only">Contribution category filter</span>
