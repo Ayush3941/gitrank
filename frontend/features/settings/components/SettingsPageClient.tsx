@@ -7,7 +7,6 @@ import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { SyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -294,8 +293,8 @@ export function SettingsPageClient() {
     <div className="space-y-6">
       <PageHeader
         eyebrow="Settings"
-        title="Account and privacy"
-        description="Manage GitHub connection, sync visibility, repository privacy, and display preferences."
+        title="Settings"
+        description="Account, privacy, and display controls."
       />
       <section id="settings-account" className="scroll-mt-24">
         <GlowCard className="space-y-4">
@@ -333,7 +332,6 @@ export function SettingsPageClient() {
         <p className="text-sm text-muted">
           GitHub sync runs automatically while you use dashboard pages.
         </p>
-        <SyncStateGuide status={data.user.syncStatus} />
         <div className="min-h-6">
           {actionError ? (
             <p id={accountActionErrorId} role="alert" className="text-sm text-rose-200">

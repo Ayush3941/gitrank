@@ -2,6 +2,13 @@
 
 ## 2026-05-21
 
+- Dashboard stability and signal-density pass:
+  - deduplicated contribution cards by PR identity (`owner/repo#number`) so each PR maps to one consistent battle-report entry in the contributions lane.
+  - reduced dashboard/settings/contributions header verbosity to keep navigation and top-of-page content scan-friendly.
+  - removed `SyncStateGuide` from settings and contributions top blocks to cut repeated sync prose noise.
+- Scroll-jitter mitigation pass:
+  - removed `content-visibility: auto` deferral for `.render-opt-section` and `.render-opt-card` to avoid viewport jumps on long dynamic dashboard pages.
+  - kept non-deferring `contain: none` behavior for stable scrolling during filters, sync activity, and panel toggles.
 - Global fetch-indicator smoothing pass:
   - added a delayed-show (`120ms`) and minimum-visible (`260ms`) policy for the top network activity bar.
   - removes flash/flicker during tiny request bursts while preserving visible feedback on meaningful loading states.

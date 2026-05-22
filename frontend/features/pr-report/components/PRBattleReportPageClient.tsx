@@ -84,7 +84,7 @@ export function PRBattleReportPageClient({
       <PageHeader
         eyebrow="PR Report"
         title="PR battle report"
-        description="Explainable score with evidence context."
+        description="Explainable score and evidence context."
         actions={(
           <div className="flex flex-wrap gap-2">
             <Button asChild variant="secondary">
@@ -200,9 +200,9 @@ export function PRBattleReportPageClient({
         {!showTechnicalBreakdown ? (
           <div
             id="pr-report-technical-panels"
-            className="neon-surface rounded-[1.35rem] border-dashed border-primary/24 px-4 py-4 text-sm text-muted"
+            className="neon-surface rounded-[1.35rem] border-dashed border-primary/24 px-4 py-3 text-xs text-muted"
           >
-            Deep scoring and evidence panels are hidden by default for faster scanning.
+            Technical panels hidden.
           </div>
         ) : null}
       </section>

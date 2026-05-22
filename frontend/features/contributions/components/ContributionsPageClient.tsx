@@ -9,7 +9,6 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
-import { SyncStateGuide, shouldShowSyncStateGuide } from "@/components/shared/SyncStateGuide";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
 import { ContributionList } from "@/features/contributions/components/ContributionList";
 import { useContributions } from "@/hooks/use-contributions";
@@ -25,6 +24,7 @@ import {
   summarizeRepositories,
 } from "@/lib/metrics/contribution-metrics";
 import { formatRelativeDays } from "@/lib/formatters";
+import type { Contribution } from "@/types/gitrank";
 
 const filterMap: Record<string, string> = {
   All: "All",
@@ -64,7 +64,10 @@ export function ContributionsPageClient() {
     sort: deferredSort,
   });
   const profile = data?.profile;
-  const filteredRows = useMemo(() => data?.rows ?? [], [data?.rows]);
+  const filteredRows = useMemo(
+    () => deduplicateContributionsByPR(data?.rows ?? []),
+    [data?.rows],
+  );
   const visibleRows = useMemo(
     () => filteredRows.slice(0, visibleCardCount),
     [filteredRows, visibleCardCount],
@@ -203,15 +206,9 @@ export function ContributionsPageClient() {
     <div className="space-y-6">
       <PageHeader
         eyebrow="Contributions"
-        title="PR impact lane"
-        description="Browse scored pull requests, impact summaries, and battle report links."
+        title="Contributions"
+        description="Scored pull requests and battle reports."
       />
-      {profile && shouldShowSyncStateGuide(profile.user.syncStatus) ? (
-        <SyncStateGuide
-          status={profile.user.syncStatus}
-          className="render-opt-section border-primary/24 bg-primary/8"
-        />
-      ) : null}
       {profile?.user.syncStatus.state === "stale" ? (
         <StaleState
           message={`Contribution evidence refreshed ${formatRelativeDays(
@@ -354,4 +351,25 @@ function SubsectionEmptyState({
       </div>
     </GlowCard>
   );
+}
+
+function deduplicateContributionsByPR(rows: Contribution[]): Contribution[] {
+  const byPR = new Map<string, Contribution>();
+  for (const row of rows) {
+    const key = `${row.owner.toLowerCase()}/${row.repo.toLowerCase()}#${row.number}`;
+    const existing = byPR.get(key);
+    if (!existing) {
+      byPR.set(key, row);
+      continue;
+    }
+    const existingMergedAt = Date.parse(existing.mergedAt);
+    const nextMergedAt = Date.parse(row.mergedAt);
+    const preferRow =
+      row.xpEarned > existing.xpEarned ||
+      (row.xpEarned === existing.xpEarned && nextMergedAt > existingMergedAt);
+    if (preferRow) {
+      byPR.set(key, row);
+    }
+  }
+  return Array.from(byPR.values());
 }

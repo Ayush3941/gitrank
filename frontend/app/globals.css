@@ -989,22 +989,6 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   contain: none;
 }
 
-@supports (content-visibility: auto) {
-  .render-opt-section {
-    content-visibility: auto;
-    contain-intrinsic-size: 1px 840px;
-  }
-
-  .render-opt-card {
-    content-visibility: auto;
-    contain-intrinsic-size: 1px 300px;
-  }
-
-  :where(.render-opt-section:target, .render-opt-card:target) {
-    content-visibility: visible;
-  }
-}
-
 .cyber-link {
   color: rgb(var(--text-soft));
   transition: color 180ms ease;

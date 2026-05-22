@@ -156,8 +156,8 @@ export function DashboardPageClient() {
     <div className="space-y-6">
       <PageHeader
         eyebrow="Dashboard"
-        title="Identity snapshot"
-        description="Rank, XP, and contribution signals in one evidence-backed view."
+        title="Dashboard"
+        description="Rank, XP, and contribution signals."
       />
       {user.syncStatus.state === "stale" ? (
         <StaleState
@@ -218,7 +218,7 @@ export function DashboardPageClient() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold text-white">Advanced analytics</p>
-            <p className="text-xs text-muted">Deep score factors, skill lanes, and timeline details.</p>
+            <p className="text-xs text-muted">Deep score factors and lane details.</p>
           </div>
           <Button
             type="button"
@@ -256,11 +256,7 @@ export function DashboardPageClient() {
               </DeferUntilVisible>
             </section>
           </div>
-        ) : (
-          <div id="dashboard-advanced-grid" className="neon-surface rounded-[1.35rem] border-dashed border-primary/24 px-4 py-4 text-sm text-muted">
-            Advanced panels are hidden by default to keep the dashboard scan-friendly.
-          </div>
-        )}
+        ) : null}
       </section>
     </div>
   );
