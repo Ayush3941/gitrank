@@ -26,6 +26,7 @@ import {
   summarizeRepositories,
 } from "@/lib/metrics/contribution-metrics";
 import { formatRelativeDays } from "@/lib/formatters";
+import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import type { Contribution } from "@/types/gitrank";
 
 const filterMap: Record<string, string> = {
@@ -445,6 +446,7 @@ function deduplicateContributionsByPR(rows: Contribution[]): Contribution[] {
 
 function downloadContributionsCSV(rows: Contribution[]) {
   const header = [
+    "pr_url",
     "owner",
     "repo",
     "number",
@@ -458,15 +460,18 @@ function downloadContributionsCSV(rows: Contribution[]) {
     "test_signal_score",
     "changed_files",
     "merged_at",
+    "merged_date_local",
     "maintainer_reviewed",
     "linked_issue",
     "ci_passed",
+    "impact_summary",
   ];
 
   const lines = [
     header.join(","),
     ...rows.map((row) =>
       [
+        `https://github.com/${row.owner}/${row.repo}/pull/${row.number}`,
         row.owner,
         row.repo,
         row.number,
@@ -480,16 +485,18 @@ function downloadContributionsCSV(rows: Contribution[]) {
         row.testSignalScore,
         row.changedFilesCount,
         row.mergedAt,
+        formatCSVDate(row.mergedAt),
         row.maintainerReviewed,
         row.linkedIssue,
         row.ciPassed,
+        sanitizeReportSummary(row.aiSummary),
       ]
         .map(toCSVCell)
         .join(","),
     ),
   ];
 
-  const csv = lines.join("\n");
+  const csv = `\uFEFF${lines.join("\n")}`;
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = window.URL.createObjectURL(blob);
   const anchor = document.createElement("a");
@@ -505,4 +512,12 @@ function downloadContributionsCSV(rows: Contribution[]) {
 function toCSVCell(value: string | number | boolean): string {
   const text = String(value ?? "");
   return `"${text.replace(/"/g, "\"\"")}"`;
+}
+
+function formatCSVDate(value: string): string {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return "";
+  }
+  return parsed.toLocaleString();
 }

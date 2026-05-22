@@ -7,6 +7,8 @@
   - improves day-to-day readability/theme switching speed without forcing a settings-page round trip.
 - Contributions CSV export pass:
   - added a header-level `Export CSV` action on contributions that exports the currently filtered, deduplicated contribution rows.
+  - expanded export columns with direct PR URL, local-date rendering, and sanitized impact summary text for better share/report workflows.
+  - added UTF-8 BOM output for spreadsheet compatibility in common desktop tools.
   - keeps visual card UX intact while adding a lightweight table-friendly output path for presentation and accessibility workflows.
 - Momentum legend clarity pass:
   - added labeled intensity legend chips (`Idle`, `Warm`, `Active`, `Hot`, `Peak`) to the shared streak heat strip with per-band day counts.
