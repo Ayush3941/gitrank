@@ -2,6 +2,9 @@
 
 ## 2026-05-21
 
+- Marketing header navigation pass:
+  - added compact quick-route chips (`Dashboard`, `Contributions`, `Badges`, `Quests`) to the public marketing header for faster first-time wayfinding.
+  - introduced `marketing-nav-chip` styling with low-noise neon contrast that matches dashboard chrome without heavy effects.
 - Dashboard route consistency pass:
   - removed top-level sync-guide banners from badges, quests, and leaderboard to reduce repeated route noise and keep each page header compact.
   - tightened route descriptions and collapsed helper copy in hidden sections for faster scanning.

@@ -1071,6 +1071,28 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
     0 4px 10px rgb(1 6 22 / 0.12);
 }
 
+.marketing-nav-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  border: 1px solid rgb(var(--primary) / 0.24);
+  background:
+    linear-gradient(150deg, rgb(var(--primary) / 0.05), rgb(var(--primary-2) / 0.04)),
+    rgb(var(--card) / 0.8);
+  color: rgb(var(--text-soft));
+  padding: 0.25rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  transition: border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+}
+
+.marketing-nav-chip:hover {
+  border-color: rgb(var(--primary) / 0.48);
+  color: rgb(var(--text-strong));
+  box-shadow: 0 0 0 1px rgb(var(--primary) / 0.14);
+}
+
 .cyber-divider {
   height: 1px;
   border: none;
