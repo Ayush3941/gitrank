@@ -4,10 +4,20 @@ import { Button } from "@/components/ui/button";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
-import type { FeaturedContribution } from "@/types/gitrank";
+import type { FeaturedContribution, PullRequestAnalysis } from "@/types/gitrank";
 
-export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
+export function BestPRsPanel({
+  reports,
+  reportDetails = [],
+}: {
+  reports: FeaturedContribution[];
+  reportDetails?: PullRequestAnalysis[];
+}) {
   const uniqueReports = deduplicateFeaturedContributionsByPR(reports);
+  const detailByPR = new Map<string, PullRequestAnalysis>();
+  for (const detail of reportDetails) {
+    detailByPR.set(detailKey(detail.contribution.owner, detail.contribution.repo, detail.contribution.number), detail);
+  }
 
   return (
     <GlowCard className="space-y-5">
@@ -27,7 +37,11 @@ export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
           </div>
         ) : (
           <ol role="list" className="space-y-3">
-            {uniqueReports.slice(0, 5).map((report, index) => (
+            {uniqueReports.slice(0, 5).map((report, index) => {
+              const detail = detailByPR.get(detailKey(report.owner, report.repo, report.number));
+              const summary = sanitizeReportSummary(detail?.contribution.aiSummary ?? report.summary);
+              const evidencePill = bestPREvidencePill(report, detail);
+              return (
             <li
               key={`${report.owner}/${report.repo}#${report.number}-${report.id}-${index}`}
               className="render-opt-card neon-surface cyber-sheen rounded-[1.75rem] border-cyan-300/18 p-4"
@@ -38,8 +52,13 @@ export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
                     {report.owner}/{report.repo} #{report.number}
                   </p>
                   <h3 className="mt-2 break-anywhere text-lg font-medium text-white">{report.title}</h3>
+                  <div className="mt-2">
+                    <span className={`neon-chip rounded-full px-3 py-1 text-xs font-semibold ${evidencePill.className}`}>
+                      {evidencePill.label}
+                    </span>
+                  </div>
                   <ExpandableText
-                    text={sanitizeReportSummary(report.summary)}
+                    text={summary}
                     lines={2}
                     minLengthForToggle={180}
                     className="mt-2"
@@ -62,7 +81,8 @@ export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
                 </Button>
               </div>
             </li>
-            ))}
+            );
+            })}
           </ol>
         )}
       </div>
@@ -84,4 +104,45 @@ function deduplicateFeaturedContributionsByPR(
   }
 
   return Array.from(bestByPR.values());
+}
+
+function detailKey(owner: string, repo: string, number: number): string {
+  return `${owner.toLowerCase()}/${repo.toLowerCase()}#${number}`;
+}
+
+function bestPREvidencePill(
+  report: FeaturedContribution,
+  detail?: PullRequestAnalysis,
+): { label: string; className: string } {
+  if (detail) {
+    const state = detail.evidenceState;
+    if (state.status === "complete") {
+      const source = (state.analysisSource ?? "").toLowerCase();
+      if (source.includes("gemini") || source.includes("ai") || source.includes("hybrid")) {
+        return { label: "Gemini ready", className: "neon-chip-success" };
+      }
+      return { label: "Deterministic ready", className: "neon-chip-info" };
+    }
+    if (state.status === "deterministic_only") {
+      return { label: "Deterministic", className: "neon-chip-info" };
+    }
+    if (state.status === "ai_fallback") {
+      return { label: "AI fallback", className: "neon-chip-warning" };
+    }
+    if (state.status === "rate_limited") {
+      return { label: "Rate limited", className: "neon-chip-warning" };
+    }
+    if (state.status === "stale") {
+      return { label: "Pending refresh", className: "neon-chip-muted" };
+    }
+    return { label: "Evidence partial", className: "neon-chip-muted" };
+  }
+
+  if (report.evidenceState === "complete") {
+    if (report.analysisId) {
+      return { label: "Analysis ready", className: "neon-chip-success" };
+    }
+    return { label: "Deterministic ready", className: "neon-chip-info" };
+  }
+  return { label: "Evidence partial", className: "neon-chip-muted" };
 }

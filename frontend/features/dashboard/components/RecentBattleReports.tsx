@@ -41,52 +41,58 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
             </div>
           </li>
         ) : null}
-        {sortedReports.map((report, index) => (
-          <li
-            key={`${report.contribution.owner}/${report.contribution.repo}#${report.contribution.number}-${report.contribution.id}-${index}`}
-            className="list-none render-opt-card neon-surface rounded-[1.75rem] p-4"
-          >
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p className="break-anywhere text-sm text-muted">{report.contribution.owner}/{report.contribution.repo} #{report.contribution.number}</p>
-                <h3 className="mt-2 break-anywhere text-lg font-medium text-white">{report.contribution.title}</h3>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <span className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
-                    {report.contribution.category}
-                  </span>
-                  <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs font-semibold">
-                    Difficulty {report.contribution.difficultyScore}
-                  </span>
+        {sortedReports.map((report, index) => {
+          const evidencePill = reportEvidencePill(report);
+          return (
+            <li
+              key={`${report.contribution.owner}/${report.contribution.repo}#${report.contribution.number}-${report.contribution.id}-${index}`}
+              className="list-none render-opt-card neon-surface rounded-[1.75rem] p-4"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="break-anywhere text-sm text-muted">{report.contribution.owner}/{report.contribution.repo} #{report.contribution.number}</p>
+                  <h3 className="mt-2 break-anywhere text-lg font-medium text-white">{report.contribution.title}</h3>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <span className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
+                      {report.contribution.category}
+                    </span>
+                    <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs font-semibold">
+                      Difficulty {report.contribution.difficultyScore}
+                    </span>
+                    <span className={`neon-chip rounded-full px-3 py-1 text-xs font-semibold ${evidencePill.className}`}>
+                      {evidencePill.label}
+                    </span>
+                  </div>
+                  <ExpandableText
+                    text={sanitizeReportSummary(report.contribution.aiSummary)}
+                    lines={2}
+                    minLengthForToggle={160}
+                    className="mt-3 max-w-3xl"
+                    textClassName="break-anywhere text-sm leading-6 text-muted"
+                  />
                 </div>
-                <ExpandableText
-                  text={sanitizeReportSummary(report.contribution.aiSummary)}
-                  lines={2}
-                  minLengthForToggle={160}
-                  className="mt-3 max-w-3xl"
-                  textClassName="break-anywhere text-sm leading-6 text-muted"
-                />
+                <div className="text-right">
+                  <p className="text-xs font-medium text-primary">XP earned</p>
+                  <p className="numeric-readout mt-2 text-3xl font-semibold text-white">
+                    {report.contribution.xpEarned.toLocaleString("en-US")}
+                  </p>
+                  <p className="mt-2 inline-flex items-center gap-1 text-xs text-cyan-100">
+                    <ShieldCheck className="h-3.5 w-3.5 text-cyan-200" />
+                    {confidenceLabel(report)}
+                  </p>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="text-xs font-medium text-primary">XP earned</p>
-                <p className="numeric-readout mt-2 text-3xl font-semibold text-white">
-                  {report.contribution.xpEarned.toLocaleString("en-US")}
-                </p>
-                <p className="mt-2 inline-flex items-center gap-1 text-xs text-cyan-100">
-                  <ShieldCheck className="h-3.5 w-3.5 text-cyan-200" />
-                  {confidenceLabel(report)}
-                </p>
+              <div className="mt-4 flex justify-end">
+                <Button asChild variant="secondary" size="sm">
+                  <Link href={`/pr/${report.contribution.owner}/${report.contribution.repo}/${report.contribution.number}`} prefetch={false}>
+                    View report
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
               </div>
-            </div>
-            <div className="mt-4 flex justify-end">
-              <Button asChild variant="secondary" size="sm">
-                <Link href={`/pr/${report.contribution.owner}/${report.contribution.repo}/${report.contribution.number}`} prefetch={false}>
-                  View report
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
-          </li>
-        ))}
+            </li>
+          );
+        })}
       </ul>
     </GlowCard>
   );
@@ -118,4 +124,28 @@ function confidenceLabel(report: PullRequestAnalysis): string {
   }
   const confidence = Math.max(0, Math.min(100, Math.round(report.aiConfidence * 100)));
   return `Confidence ${confidence}%`;
+}
+
+function reportEvidencePill(report: PullRequestAnalysis): { label: string; className: string } {
+  const state = report.evidenceState;
+  if (state.status === "complete") {
+    const source = (state.analysisSource ?? "").toLowerCase();
+    if (source.includes("gemini") || source.includes("ai") || source.includes("hybrid")) {
+      return { label: "Gemini ready", className: "neon-chip-success" };
+    }
+    return { label: "Deterministic ready", className: "neon-chip-info" };
+  }
+  if (state.status === "deterministic_only") {
+    return { label: "Deterministic", className: "neon-chip-info" };
+  }
+  if (state.status === "ai_fallback") {
+    return { label: "AI fallback", className: "neon-chip-warning" };
+  }
+  if (state.status === "rate_limited") {
+    return { label: "Rate limited", className: "neon-chip-warning" };
+  }
+  if (state.status === "stale") {
+    return { label: "Pending refresh", className: "neon-chip-muted" };
+  }
+  return { label: "Evidence partial", className: "neon-chip-muted" };
 }

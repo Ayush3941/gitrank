@@ -217,7 +217,7 @@ export function PublicProfilePageClient({
       </section>
       <section className="render-opt-section space-y-3">
         <h2 className="text-sm font-semibold text-white">Top PR battle reports</h2>
-        <BestPRsPanel reports={data.featuredContributions} />
+        <BestPRsPanel reports={data.featuredContributions} reportDetails={data.recentReports} />
       </section>
       <section className="render-opt-section space-y-3">
         <h2 className="text-sm font-semibold text-white">Timeline and repositories</h2>
