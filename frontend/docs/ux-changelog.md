@@ -11,6 +11,9 @@
     `Leaderboard` → `Open quests`,
     `Settings` → `View public profile`.
   - improves route-level wayfinding so each screen has an immediate next step.
+- Marketing anchor navigation pass:
+  - switched marketing-header quick-route chips to in-page anchors (`Why GitRank`, `Journeys`, `Reports`, `Start`) instead of redirect-oriented dashboard aliases.
+  - added stable section anchors on the landing page so first-time visitors can jump directly to the relevant product narrative block.
 - Marketing header navigation pass:
   - added compact quick-route chips (`Dashboard`, `Contributions`, `Badges`, `Quests`) to the public marketing header for faster first-time wayfinding.
   - introduced `marketing-nav-chip` styling with low-noise neon contrast that matches dashboard chrome without heavy effects.

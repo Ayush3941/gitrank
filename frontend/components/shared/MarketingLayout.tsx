@@ -23,10 +23,10 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
               <nav aria-label="Marketing routes">
                 <ul role="list" className="flex flex-wrap items-center gap-2">
                   {[
-                    { href: "/dashboard", label: "Dashboard" },
-                    { href: "/contributions", label: "Contributions" },
-                    { href: "/badges", label: "Badges" },
-                    { href: "/quests", label: "Quests" },
+                    { href: "/#why-gitrank", label: "Why GitRank" },
+                    { href: "/#core-journeys", label: "Journeys" },
+                    { href: "/#battle-reports", label: "Reports" },
+                    { href: "/#start-reveal", label: "Start" },
                   ].map((item) => (
                     <li key={item.href} className="list-none">
                       <Link href={item.href} prefetch={false} className="focus-ring marketing-nav-chip">

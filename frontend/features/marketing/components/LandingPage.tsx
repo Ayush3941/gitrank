@@ -66,7 +66,7 @@ export function LandingPage() {
       </section>
 
       <DeferUntilVisible fallback={<LandingSectionPlaceholder title="Loading reputation context" />}>
-      <section className="render-opt-section">
+      <section id="why-gitrank" className="render-opt-section scroll-mt-24">
         <div className="space-y-3">
           <h2 className="text-sm font-semibold text-white">Why GitRank exists</h2>
           <div className="grid gap-6 lg:grid-cols-3">
@@ -99,7 +99,7 @@ export function LandingPage() {
       </DeferUntilVisible>
 
       <DeferUntilVisible fallback={<LandingSectionPlaceholder title="Loading journey flows" />}>
-      <section className="render-opt-section">
+      <section id="core-journeys" className="render-opt-section scroll-mt-24">
         <div className="space-y-3">
           <h2 className="text-sm font-semibold text-white">Core user journeys</h2>
           <ul role="list" className="grid gap-6 lg:grid-cols-3">
@@ -182,7 +182,7 @@ export function LandingPage() {
       </DeferUntilVisible>
 
       <DeferUntilVisible fallback={<LandingSectionPlaceholder title="Loading battle report preview" />}>
-      <section className="render-opt-section grid gap-6 lg:grid-cols-[1.08fr,0.92fr]">
+      <section id="battle-reports" className="render-opt-section scroll-mt-24 grid gap-6 lg:grid-cols-[1.08fr,0.92fr]">
         <GlowCard className="space-y-5">
           <SectionHeader
             eyebrow="Battle report"
@@ -224,7 +224,7 @@ export function LandingPage() {
       </DeferUntilVisible>
 
       <DeferUntilVisible fallback={<LandingSectionPlaceholder title="Loading anti-spam and CTA" />}>
-      <section className="render-opt-section grid gap-6 lg:grid-cols-[0.9fr,1.1fr]">
+      <section id="start-reveal" className="render-opt-section scroll-mt-24 grid gap-6 lg:grid-cols-[0.9fr,1.1fr]">
         <GlowCard className="space-y-4 border border-amber-400/18 bg-amber-400/6">
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/25 bg-amber-400/12 px-3 py-1.5 text-xs font-semibold text-amber-100">
             <Swords className="h-3.5 w-3.5" />
