@@ -3,6 +3,7 @@
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { startTransition, useDeferredValue, useMemo, useState } from "react";
+import { Download } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -59,6 +60,7 @@ export function ContributionsPageClient() {
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact">("Newest");
+  const [exportNotice, setExportNotice] = useState("");
   const debouncedSearch = useDebouncedValue(search, CONTRIBUTION_SEARCH_DEBOUNCE_MS);
   const deferredFilter = useDeferredValue(filter);
   const deferredSearch = useDeferredValue(debouncedSearch);
@@ -219,13 +221,36 @@ export function ContributionsPageClient() {
         title="Contributions"
         description="Scored pull requests and battle reports."
         actions={(
-          <Button asChild variant="secondary" size="sm">
-            <Link href="/dashboard/settings" prefetch={false}>
-              Open sync settings
-            </Link>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                if (!filteredRows.length) {
+                  setExportNotice("No contribution rows are available to export.");
+                  return;
+                }
+                downloadContributionsCSV(filteredRows);
+                setExportNotice(`Exported ${filteredRows.length} contribution rows as CSV.`);
+              }}
+            >
+              <Download className="h-4 w-4" />
+              Export CSV
+            </Button>
+            <Button asChild variant="secondary" size="sm">
+              <Link href="/dashboard/settings" prefetch={false}>
+                Open sync settings
+              </Link>
+            </Button>
+          </div>
         )}
       />
+      {exportNotice ? (
+        <p role="status" aria-live="polite" className="text-xs text-cyan-100">
+          {exportNotice}
+        </p>
+      ) : null}
       {!isLoading && !isError && profile ? (
         <section className="grid gap-3 sm:grid-cols-3">
           <GlowCard className="neon-metric space-y-1.5">
@@ -416,4 +441,68 @@ function deduplicateContributionsByPR(rows: Contribution[]): Contribution[] {
     }
   }
   return Array.from(byPR.values());
+}
+
+function downloadContributionsCSV(rows: Contribution[]) {
+  const header = [
+    "owner",
+    "repo",
+    "number",
+    "title",
+    "status",
+    "category",
+    "xp_earned",
+    "difficulty_score",
+    "impact_score",
+    "review_depth_score",
+    "test_signal_score",
+    "changed_files",
+    "merged_at",
+    "maintainer_reviewed",
+    "linked_issue",
+    "ci_passed",
+  ];
+
+  const lines = [
+    header.join(","),
+    ...rows.map((row) =>
+      [
+        row.owner,
+        row.repo,
+        row.number,
+        row.title,
+        row.status,
+        row.category,
+        row.xpEarned,
+        row.difficultyScore,
+        row.impactScore,
+        row.reviewDepthScore,
+        row.testSignalScore,
+        row.changedFilesCount,
+        row.mergedAt,
+        row.maintainerReviewed,
+        row.linkedIssue,
+        row.ciPassed,
+      ]
+        .map(toCSVCell)
+        .join(","),
+    ),
+  ];
+
+  const csv = lines.join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = window.URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  const stamp = new Date().toISOString().slice(0, 10);
+  anchor.href = url;
+  anchor.download = `gitrank-contributions-${stamp}.csv`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.URL.revokeObjectURL(url);
+}
+
+function toCSVCell(value: string | number | boolean): string {
+  const text = String(value ?? "");
+  return `"${text.replace(/"/g, "\"\"")}"`;
 }
