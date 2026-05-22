@@ -1,9 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef } from "react";
 import { Activity, Medal, ShieldCheck } from "lucide-react";
+import { CurrentLeagueCard } from "@/features/dashboard/components/CurrentLeagueCard";
+import { QuestPanel } from "@/features/dashboard/components/QuestPanel";
+import { RecentBattleReports } from "@/features/dashboard/components/RecentBattleReports";
+import { ScoreExplanationCard } from "@/features/dashboard/components/ScoreExplanationCard";
+import { BadgeShelf } from "@/features/dashboard/components/BadgeShelf";
+import { SkillBreakdownCard } from "@/features/dashboard/components/SkillBreakdownCard";
+import { ContributionTimelineCard } from "@/features/dashboard/components/ContributionTimelineCard";
 import { DashboardHeroRankCard } from "@/features/dashboard/components/DashboardHeroRankCard";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useDashboard } from "@/hooks/use-dashboard";
@@ -22,61 +28,6 @@ import { formatRelativeDays } from "@/lib/formatters";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { Button } from "@/components/ui/button";
-
-const CurrentLeagueCard = dynamic(
-  () => import("@/features/dashboard/components/CurrentLeagueCard").then((mod) => mod.CurrentLeagueCard),
-  {
-    loading: () => <SectionDeferredPlaceholder title="Loading league snapshot" />,
-  },
-);
-const QuestPanel = dynamic(
-  () => import("@/features/dashboard/components/QuestPanel").then((mod) => mod.QuestPanel),
-  {
-    loading: () => <SectionDeferredPlaceholder title="Loading quest board" />,
-  },
-);
-const RecentBattleReports = dynamic(
-  () =>
-    import("@/features/dashboard/components/RecentBattleReports").then(
-      (mod) => mod.RecentBattleReports,
-    ),
-  {
-    loading: () => <SectionDeferredPlaceholder title="Loading battle reports" />,
-  },
-);
-const ScoreExplanationCard = dynamic(
-  () =>
-    import("@/features/dashboard/components/ScoreExplanationCard").then(
-      (mod) => mod.ScoreExplanationCard,
-    ),
-  {
-    loading: () => <SectionDeferredPlaceholder title="Loading score explanation" />,
-  },
-);
-const BadgeShelf = dynamic(
-  () => import("@/features/dashboard/components/BadgeShelf").then((mod) => mod.BadgeShelf),
-  {
-    loading: () => <SectionDeferredPlaceholder title="Loading badge shelf" />,
-  },
-);
-const SkillBreakdownCard = dynamic(
-  () =>
-    import("@/features/dashboard/components/SkillBreakdownCard").then(
-      (mod) => mod.SkillBreakdownCard,
-    ),
-  {
-    loading: () => <SectionDeferredPlaceholder title="Loading skill breakdown" />,
-  },
-);
-const ContributionTimelineCard = dynamic(
-  () =>
-    import("@/features/dashboard/components/ContributionTimelineCard").then(
-      (mod) => mod.ContributionTimelineCard,
-    ),
-  {
-    loading: () => <SectionDeferredPlaceholder title="Loading contribution timeline" />,
-  },
-);
 
 export function DashboardPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useDashboard();
@@ -308,19 +259,6 @@ export function DashboardPageClient() {
           </section>
         </div>
       </section>
-    </div>
-  );
-}
-
-function SectionDeferredPlaceholder({ title }: { title: string }) {
-  return (
-    <div
-      className="glass-panel cyber-card cyber-frame flex min-h-[12rem] items-center justify-center p-5"
-      role="status"
-      aria-live="polite"
-      aria-busy="true"
-    >
-      <p className="text-sm text-muted">{title}</p>
     </div>
   );
 }
