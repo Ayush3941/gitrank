@@ -28,6 +28,9 @@
 - Fixed-background fallback hardening pass:
   - replaced remaining `background-attachment: fixed` overrides inside fallback/perf branches (`max-width`, coarse-pointer, reduced-gamification, reduced-data, constrained-network, and slow-update modes) with `scroll` attachment.
   - keeps desktop visual style unchanged while removing mobile/low-power repaint pressure in the exact contexts meant to be lightweight.
+- Coarse-pointer hit-target pass:
+  - enforced a 44px minimum height for coarse-pointer interactive controls (`button`, non-toggle text inputs, `select`, `textarea`, and role-based button/tab/switch controls).
+  - keeps desktop density unchanged while improving touch accuracy and WCAG-friendly target spacing on mobile devices.
 - Autosync noise reduction pass:
   - dashboard auto-sync no longer treats `partialProfileAvailable` by itself as a re-sync trigger.
   - stale-state and zero-evidence recovery still auto-sync, but already-synced partial snapshots avoid repeated background sync churn.

@@ -1968,4 +1968,16 @@ html[data-theme="high-contrast"] .cyber-card {
     min-width: 44px;
     min-height: 44px;
   }
+
+  :where(
+      button,
+      input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]),
+      select,
+      textarea,
+      [role="button"],
+      [role="tab"],
+      [role="switch"]
+    ) {
+    min-height: 44px;
+  }
 }
