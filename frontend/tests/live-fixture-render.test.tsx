@@ -108,6 +108,7 @@ describe("live fixture frontend smoke coverage", () => {
     expect(
       (await screen.findAllByText("Backed by live PR report evidence.")).length,
     ).toBeTruthy();
+    fireEvent.click(await screen.findByRole("button", { name: "Show technical breakdown" }));
     expect(await screen.findByText("Persisted scorer components")).toBeTruthy();
     expect(
       await screen.findByText(
@@ -150,7 +151,7 @@ describe("live fixture frontend smoke coverage", () => {
   it("renders settings from the authenticated profile fixture", async () => {
     renderWithClient(<SettingsPageClient />);
 
-    expect(await screen.findByText("Settings and privacy")).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "Settings" })).toBeTruthy();
     expect(await screen.findByText("@live-maintainer")).toBeTruthy();
     expect(await screen.findByText("octo/gitrank")).toBeTruthy();
     await waitFor(() =>
@@ -192,7 +193,7 @@ describe("live fixture frontend smoke coverage", () => {
     vi.stubGlobal("fetch", vi.fn(staleProfileFixtureFetch));
     renderWithClient(<SettingsPageClient />);
 
-    expect(await screen.findByText("Settings and privacy")).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "Settings" })).toBeTruthy();
     expect(await screen.findByText("Stale")).toBeTruthy();
   }, 15_000);
 });
