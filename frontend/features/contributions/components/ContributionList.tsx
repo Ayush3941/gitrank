@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, CalendarDays, GitMerge, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, CalendarDays, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { ExpandableText } from "@/components/shared/ExpandableText";
@@ -31,6 +31,7 @@ export function ContributionList({
         const position = startPosition + index;
         const signalIndex = contributionSignalIndex(item);
         const signalBand = contributionSignalBand(signalIndex);
+        const showStatusChip = item.status !== "merged";
         return (
           <li
             key={`${item.owner}/${item.repo}#${item.number}-${item.id}-${index}`}
@@ -38,10 +39,7 @@ export function ContributionList({
             aria-posinset={isPartialSet ? position : undefined}
             aria-setsize={isPartialSet ? fullSetCount : undefined}
           >
-            <GlowCard
-              className="render-opt-card relative space-y-4"
-            >
-              <div className="h-px w-28 bg-gradient-to-r from-primary/62 via-primary-2/42 to-transparent" />
+            <GlowCard className="render-opt-card space-y-4">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0 space-y-3">
                   <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -51,9 +49,11 @@ export function ContributionList({
                     <span className="neon-chip neon-chip-info rounded-full px-3 py-1 font-semibold">
                       PR #{item.number}
                     </span>
-                    <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-                      {formatContributionStatus(item.status)}
-                    </span>
+                    {showStatusChip ? (
+                      <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+                        {formatContributionStatus(item.status)}
+                      </span>
+                    ) : null}
                   </div>
                   <h3 className="mt-2 break-anywhere text-xl font-semibold text-white">{item.title}</h3>
                   <ul role="list" className="mt-3 flex flex-wrap gap-2 text-xs cyber-copy">
@@ -62,9 +62,6 @@ export function ContributionList({
                     </li>
                     <li className="list-none">
                       <span className="neon-chip neon-chip-info rounded-full px-3 py-1.5 font-semibold">{item.category}</span>
-                    </li>
-                    <li className="list-none">
-                      <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 font-semibold">{item.changedFilesCount} files changed</span>
                     </li>
                     <li className="list-none">
                       <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-3 py-1.5 font-semibold">
@@ -82,7 +79,7 @@ export function ContributionList({
                 <div className="neon-surface rounded-[1.25rem] border-primary/28 px-4 py-3 text-right">
                   <p className="text-xs font-medium text-primary">Earned</p>
                   <p className="numeric-readout mt-2 text-3xl font-semibold text-white">{item.xpEarned} XP</p>
-                  <p className="mt-2 text-xs text-muted">Signal {signalIndex} · {signalBand.label}</p>
+                  <p className="mt-2 text-xs text-muted">Signal {signalBand.label}</p>
                   <div className="mt-2 h-1.5 w-28 overflow-hidden rounded-full border border-primary/24 bg-card/80">
                     <div
                       className={`h-full rounded-full ${signalBand.barClassName}`}
@@ -95,16 +92,10 @@ export function ContributionList({
                 fallbackSummary={item.aiSummary}
                 narrative={narratives?.[item.id]}
               />
-              <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted">
-                <div className="inline-flex items-center gap-2">
-                  <GitMerge className="h-4 w-4 text-primary" />
-                  Repo {item.repoWeight.toFixed(2)} ·
-                  <ShieldCheck className="h-4 w-4 text-primary" />
-                  Anti-spam {item.antiSpamMultiplier.toFixed(2)}x
-                </div>
+              <div className="flex justify-end">
                 <Button asChild variant="secondary" size="sm">
                   <Link href={`/pr/${item.owner}/${item.repo}/${item.number}`} prefetch={false}>
-                    View battle report
+                    View report
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>

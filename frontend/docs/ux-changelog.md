@@ -1772,6 +1772,10 @@
 - Tightened leaderboard mission copy:
   - replaced repeated "Your arena mission" labels with shorter lane-status phrasing.
   - preserves rank context while reducing duplicate headline text in the leaderboard hero card.
+- Simplified contributions achievement cards:
+  - removed redundant decorative/technical chrome from each PR card.
+  - trimmed duplicate status/file chips and condensed signal labels for faster scan.
+  - kept the impact summary and report drill-down while reducing visual clutter.
 
 ## 2026-05-16
 
