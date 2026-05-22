@@ -44,7 +44,7 @@ export function DashboardTopBarContainer({ embedded = false }: { embedded?: bool
     const now = Date.now();
     const lastSyncedAt = Date.parse(syncState.lastSyncedAt ?? "");
     const syncAgeMs = Number.isNaN(lastSyncedAt) ? Number.POSITIVE_INFINITY : now - lastSyncedAt;
-    const staleSnapshot = syncState.state !== "synced" || syncState.partialProfileAvailable;
+    const staleSnapshot = syncState.state !== "synced";
     const staleByAge = syncAgeMs >= AUTO_SYNC_STALE_AGE_MS;
     const emptyEvidence = data.user.mergedPrCount === 0;
     const shouldAutoSync = staleSnapshot || staleByAge || emptyEvidence;
