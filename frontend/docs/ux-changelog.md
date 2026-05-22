@@ -2,6 +2,9 @@
 
 ## 2026-05-21
 
+- Public profile lazy-load pass:
+  - switched heavy public-profile modules to `next/dynamic` (`PublicProfileHero`, `BestPRsPanel`, `SkillRadarChart`, `TimelineChart`) with bounded skeleton fallbacks.
+  - improves first-render responsiveness on profile routes with large contribution history.
 - Dashboard code-splitting pass:
   - switched heavy dashboard lane modules (`CurrentLeagueCard`, `QuestPanel`, `RecentBattleReports`, `ScoreExplanationCard`, `BadgeShelf`, `SkillBreakdownCard`, `ContributionTimelineCard`) to `next/dynamic`.
   - keeps route behavior intact while reducing eager dashboard module loading.

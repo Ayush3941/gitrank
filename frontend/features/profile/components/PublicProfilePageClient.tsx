@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import { Award, CheckCircle2, GitPullRequest, ShieldCheck, Stars } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -9,14 +10,10 @@ import { ExpandableText } from "@/components/shared/ExpandableText";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
-import { SkillRadarChart } from "@/components/shared/SkillRadarChart";
-import { TimelineChart } from "@/components/shared/TimelineChart";
 import { RarityBadge } from "@/components/shared/RarityBadge";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
 import { Button } from "@/components/ui/button";
-import { BestPRsPanel } from "@/features/profile/components/BestPRsPanel";
-import { PublicProfileHero } from "@/features/profile/components/PublicProfileHero";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useProfile } from "@/hooks/use-profile";
 import {
@@ -26,6 +23,34 @@ import {
 } from "@/lib/ai/deterministic-identity-summary";
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
+
+const PublicProfileHero = dynamic(
+  () =>
+    import("@/features/profile/components/PublicProfileHero").then(
+      (mod) => mod.PublicProfileHero,
+    ),
+  {
+    loading: () => <ProfileSectionSkeleton className="h-[26rem]" />,
+  },
+);
+const BestPRsPanel = dynamic(
+  () => import("@/features/profile/components/BestPRsPanel").then((mod) => mod.BestPRsPanel),
+  {
+    loading: () => <ProfileSectionSkeleton className="h-[20rem]" />,
+  },
+);
+const SkillRadarChart = dynamic(
+  () => import("@/components/shared/SkillRadarChart").then((mod) => mod.SkillRadarChart),
+  {
+    loading: () => <ProfileSectionSkeleton className="h-[24rem]" />,
+  },
+);
+const TimelineChart = dynamic(
+  () => import("@/components/shared/TimelineChart").then((mod) => mod.TimelineChart),
+  {
+    loading: () => <ProfileSectionSkeleton className="h-[20rem]" />,
+  },
+);
 
 export function PublicProfilePageClient({
   username,
@@ -368,6 +393,14 @@ function PublicProfileSectionPlaceholder({ title }: { title: string }) {
         <div className="neon-skeleton h-24 rounded-[0.1rem]" />
         <div className="neon-skeleton h-24 rounded-[0.1rem]" />
       </div>
+    </GlowCard>
+  );
+}
+
+function ProfileSectionSkeleton({ className }: { className: string }) {
+  return (
+    <GlowCard className={className}>
+      <div className="neon-skeleton h-full w-full" />
     </GlowCard>
   );
 }
