@@ -221,12 +221,12 @@ export function LeaderboardPageClient() {
           {snapshot.currentUser ? (
             <div className="space-y-3">
               <h2 className="text-sm font-semibold text-white">
-                Your arena mission: #{snapshot.currentUser.rank} in {tab} · {snapshot.currentUser.division}
+                Arena focus: #{snapshot.currentUser.rank} in {tab} · {snapshot.currentUser.division}
               </h2>
               <GlowCard className="space-y-4 border border-cyan-300/22 bg-gradient-to-br from-slate-950/88 to-cyan-950/24">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-medium text-cyan-200">Your arena mission</p>
+                    <p className="text-xs font-medium text-cyan-200">Current lane status</p>
                     <h2 className="mt-2 text-xl font-semibold text-white">
                       #{snapshot.currentUser.rank} in {tab}
                     </h2>

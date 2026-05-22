@@ -1769,6 +1769,9 @@
 - Simplified the dashboard top bar:
   - removed the verbose signed-in sentence and switched to compact handle + sync/rank pills.
   - keeps quick identity context while reducing repeated text in the dashboard chrome.
+- Tightened leaderboard mission copy:
+  - replaced repeated "Your arena mission" labels with shorter lane-status phrasing.
+  - preserves rank context while reducing duplicate headline text in the leaderboard hero card.
 
 ## 2026-05-16
 
