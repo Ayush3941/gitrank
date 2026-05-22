@@ -166,8 +166,6 @@ export function SettingsPageClient() {
   useAccountGamificationPreference(data);
   const [actionNotice, setActionNotice] = useState("");
   const [displayNotice, setDisplayNotice] = useState("");
-  const [showDisplayTuning, setShowDisplayTuning] = useState(false);
-  const [showSyncActivity, setShowSyncActivity] = useState(false);
   const currentSettings = data?.user.privacy ?? null;
 
   function handleResetDisplayPreferences() {
@@ -381,42 +379,12 @@ export function SettingsPageClient() {
 
       <section id="settings-sync-activity" className="render-opt-section scroll-mt-24">
         <div className="space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-sm font-semibold text-white">Sync activity</h2>
-            <Button
-              type="button"
-              size="sm"
-              variant={showSyncActivity ? "secondary" : "default"}
-              onClick={() => {
-                setShowSyncActivity((current) => !current);
-              }}
-              aria-expanded={showSyncActivity}
-              aria-controls="settings-sync-activity-panel"
-            >
-              {showSyncActivity ? "Hide sync log" : "Show sync log"}
-            </Button>
-          </div>
-          {showSyncActivity ? (
-            <DeferUntilVisible fallback={<SettingsSectionPlaceholder title="Loading sync activity" />}>
-              <div id="settings-sync-activity-panel">
-                <SettingsSyncActivitySection />
-              </div>
-            </DeferUntilVisible>
-          ) : (
-            <GlowCard id="settings-sync-activity-panel" className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 p-4">
-              <div className="flex flex-wrap items-center gap-2 text-xs">
-                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
-                  State {data.user.syncStatus.state}
-                </span>
-                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
-                  Last sync {data.user.syncStatus.lastSyncedAt ? "available" : "none"}
-                </span>
-                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
-                  Step {data.user.syncStatus.currentStep || "Not reported"}
-                </span>
-              </div>
-            </GlowCard>
-          )}
+          <h2 className="text-sm font-semibold text-white">Sync activity</h2>
+          <DeferUntilVisible fallback={<SettingsSectionPlaceholder title="Loading sync activity" />}>
+            <div id="settings-sync-activity-panel">
+              <SettingsSyncActivitySection />
+            </div>
+          </DeferUntilVisible>
         </div>
       </section>
 
@@ -478,104 +446,84 @@ export function SettingsPageClient() {
             </div>
             <div className="cyber-divider" />
             <div className="space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="inline-flex items-center gap-2">
-                  <Palette className="h-4 w-4 text-primary" />
-                  <p className="text-sm font-semibold text-white">Theme and text tuning</p>
-                </div>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={showDisplayTuning ? "secondary" : "default"}
-                  onClick={() => {
-                    setShowDisplayTuning((current) => !current);
-                  }}
-                  aria-expanded={showDisplayTuning}
-                  aria-controls="display-tuning-controls"
-                >
-                  {showDisplayTuning ? "Hide tuning" : "Show tuning"}
-                </Button>
+              <div className="inline-flex items-center gap-2">
+                <Palette className="h-4 w-4 text-primary" />
+                <p className="text-sm font-semibold text-white">Theme and text tuning</p>
               </div>
-              {showDisplayTuning ? (
-                <div id="display-tuning-controls" className="space-y-4">
-                  <div className="space-y-3">
-                    <p className="text-xs font-medium text-primary">Visual theme</p>
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      {THEME_OPTIONS.map((option) => (
-                        <Button
-                          key={option.value}
-                          type="button"
-                          size="sm"
-                          variant={theme === option.value ? "default" : "secondary"}
-                          className="h-auto justify-between px-4 py-3 text-left"
-                          onClick={() => setTheme(option.value)}
-                          aria-pressed={theme === option.value}
-                        >
-                          <span className="flex flex-col items-start">
-                            <span>{option.label}</span>
-                            <span className="text-xs text-muted">{option.description}</span>
+              <div id="display-tuning-controls" className="space-y-4">
+                <div className="space-y-3">
+                  <p className="text-xs font-medium text-primary">Visual theme</p>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {THEME_OPTIONS.map((option) => (
+                      <Button
+                        key={option.value}
+                        type="button"
+                        size="sm"
+                        variant={theme === option.value ? "default" : "secondary"}
+                        className="h-auto justify-between px-4 py-3 text-left"
+                        onClick={() => setTheme(option.value)}
+                        aria-pressed={theme === option.value}
+                      >
+                        <span className="flex flex-col items-start">
+                          <span>{option.label}</span>
+                          <span className="text-xs text-muted">{option.description}</span>
+                        </span>
+                        {theme === option.value ? (
+                          <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-xs font-semibold text-emerald-50">
+                            Active
                           </span>
-                          {theme === option.value ? (
-                            <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-xs font-semibold text-emerald-50">
-                              Active
-                            </span>
-                          ) : null}
-                        </Button>
-                      ))}
-                    </div>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      className="justify-start"
-                      onClick={clearThemePreference}
-                      disabled={themeSource === "system"}
-                    >
-                      {themeSource === "system" ? "Following system theme" : "Follow system theme"}
-                    </Button>
+                        ) : null}
+                      </Button>
+                    ))}
                   </div>
-                  <div className="cyber-divider" />
-                  <div className="space-y-3">
-                    <p className="text-xs font-medium text-primary">Text scale</p>
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      {TEXT_SCALE_OPTIONS.map((option) => (
-                        <Button
-                          key={option.value}
-                          type="button"
-                          size="sm"
-                          variant={textScale === option.value ? "default" : "secondary"}
-                          className="h-auto justify-between px-4 py-3 text-left"
-                          onClick={() => setTextScale(option.value)}
-                          aria-pressed={textScale === option.value}
-                        >
-                          <span className="flex flex-col items-start">
-                            <span>{option.label}</span>
-                            <span className="text-xs text-muted">{option.description}</span>
-                          </span>
-                          {textScale === option.value ? (
-                            <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-xs font-semibold text-emerald-50">
-                              Active
-                            </span>
-                          ) : null}
-                        </Button>
-                      ))}
-                    </div>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      className="justify-start"
-                      onClick={handleResetDisplayPreferences}
-                    >
-                      Reset display preferences
-                    </Button>
-                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="justify-start"
+                    onClick={clearThemePreference}
+                    disabled={themeSource === "system"}
+                  >
+                    {themeSource === "system" ? "Following system theme" : "Follow system theme"}
+                  </Button>
                 </div>
-              ) : (
-                <p id="display-tuning-controls" className="text-sm text-muted">
-                  Keep the default readable preset, or open tuning to adjust theme and text scale.
-                </p>
-              )}
+                <div className="cyber-divider" />
+                <div className="space-y-3">
+                  <p className="text-xs font-medium text-primary">Text scale</p>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {TEXT_SCALE_OPTIONS.map((option) => (
+                      <Button
+                        key={option.value}
+                        type="button"
+                        size="sm"
+                        variant={textScale === option.value ? "default" : "secondary"}
+                        className="h-auto justify-between px-4 py-3 text-left"
+                        onClick={() => setTextScale(option.value)}
+                        aria-pressed={textScale === option.value}
+                      >
+                        <span className="flex flex-col items-start">
+                          <span>{option.label}</span>
+                          <span className="text-xs text-muted">{option.description}</span>
+                        </span>
+                        {textScale === option.value ? (
+                          <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-xs font-semibold text-emerald-50">
+                            Active
+                          </span>
+                        ) : null}
+                      </Button>
+                    ))}
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="justify-start"
+                    onClick={handleResetDisplayPreferences}
+                  >
+                    Reset display preferences
+                  </Button>
+                </div>
+              </div>
             </div>
             {displayNotice ? (
               <p role="status" aria-live="polite" className="text-sm text-cyan-100">
