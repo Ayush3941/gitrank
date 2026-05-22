@@ -41,6 +41,34 @@
   --eyebrow-tracking-tight: 0.08em;
 }
 
+html[data-theme="cyberpunk"] {
+  --background: 1 2 6;
+  --foreground: 245 248 255;
+  --muted: 225 233 247;
+  --card: 7 9 20;
+  --card-2: 10 12 26;
+  --border: 255 95 175;
+  --line: 76 104 172;
+  --primary: 255 95 175;
+  --primary-2: 255 160 44;
+  --success: 120 214 74;
+  --warning: 251 222 45;
+  --danger: 255 125 152;
+  --neon-accent: 216 250 60;
+  --neon-hot: 255 120 0;
+  --cyber-grid: 76 131 255;
+  --cyber-grid-alt: 255 95 175;
+  --text-strong: 251 253 255;
+  --text-body: 244 248 255;
+  --text-soft: 236 243 255;
+  --page-overlay-top-alpha: 0.018;
+  --page-overlay-bottom-alpha: 0.04;
+  --page-grid-opacity: 0.13;
+  --page-glow-opacity: 0.011;
+  --surface-blur: 0px;
+  --surface-blur-strong: 1px;
+}
+
 html[data-theme="midnight"] {
   --background: 1 4 11;
   --foreground: 251 253 255;

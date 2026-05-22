@@ -5,7 +5,7 @@ import { useGamificationPreference } from "@/hooks/use-gamification-preference";
 import { useTextScalePreference } from "@/hooks/use-text-scale-preference";
 import { useThemePreference, type ThemePreference } from "@/hooks/use-theme-preference";
 
-const THEME_ORDER: ThemePreference[] = ["neon", "midnight", "terminal", "aurora", "high-contrast"];
+const THEME_ORDER: ThemePreference[] = ["neon", "cyberpunk", "midnight", "terminal", "aurora", "high-contrast"];
 
 export function useDisplayShortcutsStatus(enabled: boolean) {
   const { theme, setTheme } = useThemePreference();
@@ -98,6 +98,9 @@ function getNextTheme(current: ThemePreference): ThemePreference {
 function labelForTheme(theme: ThemePreference): string {
   if (theme === "neon") {
     return "Neon grid";
+  }
+  if (theme === "cyberpunk") {
+    return "Cyberpunk matrix";
   }
   if (theme === "terminal") {
     return "Terminal pulse";

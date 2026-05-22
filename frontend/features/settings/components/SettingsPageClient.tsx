@@ -68,6 +68,17 @@ const THEME_OPTIONS: Array<{
     previewChipClassName: "bg-fuchsia-300/16 text-fuchsia-100",
   },
   {
+    value: "cyberpunk",
+    label: "Cyberpunk matrix",
+    description: "Deep-pink highlights, amber rails, and low-noise dark steel surfaces.",
+    swatchClassName: "from-pink-300 via-orange-300 to-lime-300",
+    previewShellClassName:
+      "from-[rgb(4_5_11_/_0.96)] via-[rgb(10_11_22_/_0.94)] to-[rgb(15_10_20_/_0.9)] border-pink-300/44",
+    previewAccentClassName: "bg-gradient-to-r from-pink-200 to-orange-200",
+    previewTextClassName: "text-pink-50",
+    previewChipClassName: "bg-orange-300/16 text-orange-100",
+  },
+  {
     value: "midnight",
     label: "Midnight contrast",
     description: "Balanced readability with cleaner dark surfaces.",

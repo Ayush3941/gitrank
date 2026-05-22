@@ -2,6 +2,10 @@
 
 ## 2026-05-22
 
+- Added a new `Cyberpunk matrix` display theme preset:
+  - introduced a dedicated `html[data-theme="cyberpunk"]` token palette in `app/globals.css` using high-contrast deep-pink, amber, and lime accents over low-noise dark surfaces.
+  - wired the new theme through shared theme infrastructure: `use-theme-preference`, dashboard quick switcher, keyboard display shortcuts (`Alt+Shift+T` cycle), and settings theme controls.
+  - keeps current architecture and fallback behavior intact while expanding visual variety for demo/presentation paths.
 - Applied progressive disclosure on high-density report/profile routes:
   - PR battle report now keeps deep score/evidence/reward mechanics behind an explicit `Show technical breakdown` toggle with proper `aria-expanded` / `aria-controls`.
   - public profile now supports section-level `Show section` / `Hide section` controls for `Badges and skills`, `Best PR battle reports`, and `Timeline and repositories`.
