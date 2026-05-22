@@ -1380,7 +1380,7 @@ html[data-theme="high-contrast"] .cyber-card {
 
 @media (max-width: 1100px) {
   body {
-    background-attachment: fixed;
+    background-attachment: scroll;
   }
 
   .glass-panel,
@@ -1406,7 +1406,7 @@ html[data-theme="high-contrast"] .cyber-card {
 
 @media (pointer: coarse) {
   body {
-    background-attachment: fixed;
+    background-attachment: scroll;
   }
 }
 
@@ -1530,7 +1530,7 @@ html[data-theme="high-contrast"] .cyber-card {
 }
 
 :where(html:not([data-gamification]), html[data-gamification="reduced"]) body {
-  background-attachment: fixed;
+  background-attachment: scroll;
   background-position: center center;
 }
 
@@ -1721,7 +1721,7 @@ html[data-theme="high-contrast"] .cyber-card {
     background-position: center center;
     background-size: cover;
     background-repeat: no-repeat;
-    background-attachment: fixed;
+    background-attachment: scroll;
   }
 
   .neon-vignette,
@@ -1832,7 +1832,7 @@ html[data-theme="high-contrast"] .cyber-card {
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
-  background-attachment: fixed;
+  background-attachment: scroll;
 }
 
 :where(html[data-network="constrained"]) .neon-vignette,
@@ -1884,7 +1884,7 @@ html[data-theme="high-contrast"] .cyber-card {
 
 @media (update: slow) {
   body {
-    background-attachment: fixed;
+    background-attachment: scroll;
   }
 
   .neon-vignette,
@@ -1931,7 +1931,7 @@ html[data-theme="high-contrast"] .cyber-card {
 
 @media (any-pointer: coarse) {
   body {
-    background-attachment: fixed;
+    background-attachment: scroll;
     background-position: center center;
   }
 

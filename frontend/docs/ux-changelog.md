@@ -25,6 +25,9 @@
   - switched global background behavior to desktop-fixed only; constrained/mobile/reduced-data/slow-update contexts now use scroll attachment to avoid repaint-heavy jank and inconsistent fixed-background behavior.
   - lowered global overlay/grid opacity defaults so `assets/background.jpg` remains visibly present behind dashboard surfaces.
   - set dashboard route-nav links to `scroll={false}` to reduce unwanted top-jumps when switching dashboard lanes.
+- Fixed-background fallback hardening pass:
+  - replaced remaining `background-attachment: fixed` overrides inside fallback/perf branches (`max-width`, coarse-pointer, reduced-gamification, reduced-data, constrained-network, and slow-update modes) with `scroll` attachment.
+  - keeps desktop visual style unchanged while removing mobile/low-power repaint pressure in the exact contexts meant to be lightweight.
 - Autosync noise reduction pass:
   - dashboard auto-sync no longer treats `partialProfileAvailable` by itself as a re-sync trigger.
   - stale-state and zero-evidence recovery still auto-sync, but already-synced partial snapshots avoid repeated background sync churn.
