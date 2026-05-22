@@ -309,7 +309,7 @@ export function SettingsPageClient() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs font-medium text-primary">GitHub account</p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">@{data.user.username}</h2>
+            <h2 className="mt-2 text-xl font-semibold text-white">@{data.user.username}</h2>
           </div>
           <SyncStatusPill status={data.user.syncStatus} />
         </div>
@@ -390,7 +390,7 @@ export function SettingsPageClient() {
                 <Sparkles className="h-5 w-5" />
               </div>
               <p className="mt-4 text-xs font-medium text-primary">Display preference</p>
-              <h2 className="mt-2 text-2xl font-semibold text-white">Reduced gamification</h2>
+              <h2 className="mt-2 text-xl font-semibold text-white">Reduced gamification</h2>
               <p className="mt-2 text-sm leading-6 text-muted">
                 Reduces heavy visual effects. Scores and privacy stay unchanged.
               </p>
@@ -408,7 +408,7 @@ export function SettingsPageClient() {
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="max-w-2xl">
                   <p className="text-xs font-medium text-primary">Keyboard controls</p>
-                <h3 className="mt-2 text-xl font-semibold text-white">Display shortcuts</h3>
+                <h3 className="mt-2 text-lg font-semibold text-white">Display shortcuts</h3>
                 <p className="mt-2 text-sm leading-6 text-muted">
                   Enables theme and text-size shortcuts outside input fields.
                 </p>
@@ -424,7 +424,7 @@ export function SettingsPageClient() {
             <div className="space-y-3">
               <div className="inline-flex items-center gap-2">
                 <Palette className="h-4 w-4 text-primary" />
-                <p className="text-sm font-semibold text-white">Theme and text tuning</p>
+                <p className="text-sm font-semibold text-white">Theme + text tuning</p>
               </div>
               <div id="display-tuning-controls" className="space-y-4">
                 <div className="space-y-3">
@@ -514,7 +514,7 @@ export function SettingsPageClient() {
         <GlowCard className="space-y-4">
           <div>
             <p className="text-xs font-medium text-primary">Repository privacy</p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">Choose what stays on your public card</h2>
+            <h2 className="mt-2 text-xl font-semibold text-white">Repository visibility</h2>
           </div>
           <p className="text-sm text-muted">
             Repository visibility controls ({data.user.repositories.length} total{hiddenRepositoryCount > 0 ? ` · ${hiddenRepositoryCount} hidden` : ""})
@@ -538,7 +538,7 @@ export function SettingsPageClient() {
         <GlowCard className="space-y-4">
           <div>
             <p className="text-xs font-medium text-primary">Data controls</p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">Export or remove account data</h2>
+            <h2 className="mt-2 text-xl font-semibold text-white">Export or remove data</h2>
           </div>
           <div className="flex flex-wrap gap-3">
             <Button variant="secondary" disabled={isActing} onClick={handleExportAccountData}>
@@ -597,7 +597,7 @@ function SettingSection({
   return (
     <GlowCard className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-2xl font-semibold text-white">{title}</h2>
+        <h2 className="text-xl font-semibold text-white">{title}</h2>
         {saving ? <p className="text-sm text-primary">Saving…</p> : null}
       </div>
       {errorMessage ? (
