@@ -8,6 +8,9 @@
 - Leaderboard arena lazy-load pass:
   - switched `LeaderboardArena` to `next/dynamic` with a bounded loading placeholder so lane controls and mission summary can render before heavier arena rows.
   - keeps leaderboard behavior intact while reducing eager route module loading.
+- Contributions list lazy-load pass:
+  - switched `ContributionList` to `next/dynamic` so filter controls and route chrome render before card-lane module hydration.
+  - keeps contribution behavior intact while reducing eager route module loading.
 - Dashboard code-splitting pass:
   - switched heavy dashboard lane modules (`CurrentLeagueCard`, `QuestPanel`, `RecentBattleReports`, `ScoreExplanationCard`, `BadgeShelf`, `SkillBreakdownCard`, `ContributionTimelineCard`) to `next/dynamic`.
   - keeps route behavior intact while reducing eager dashboard module loading.

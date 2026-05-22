@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { startTransition, useDeferredValue, useMemo, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
@@ -10,7 +11,6 @@ import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
-import { ContributionList } from "@/features/contributions/components/ContributionList";
 import { useContributions } from "@/hooks/use-contributions";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
@@ -44,6 +44,15 @@ const CONTRIBUTION_CARD_PAGE_SIZE_CONSTRAINED = 12;
 const ABRA_CONTRIBUTION_SAMPLE_LIMIT = 24;
 const CONTRIBUTION_CARDS_REGION_ID = "contributions-cards-region";
 const CONTRIBUTION_SEARCH_DEBOUNCE_MS = 220;
+const ContributionList = dynamic(
+  () =>
+    import("@/features/contributions/components/ContributionList").then(
+      (mod) => mod.ContributionList,
+    ),
+  {
+    loading: () => <ContributionSectionPlaceholder title="Loading contribution cards" />,
+  },
+);
 
 export function ContributionsPageClient() {
   const [filter, setFilter] = useState("All");
