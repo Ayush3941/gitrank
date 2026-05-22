@@ -240,10 +240,6 @@ export function DashboardPageClient() {
         </div>
       </div>
       <section id="dashboard-advanced" className="render-opt-section scroll-mt-24 space-y-4">
-        <div>
-          <p className="text-sm font-semibold text-white">Score and skill lanes</p>
-          <p className="text-xs text-muted">Deterministic score factors and profile evidence context.</p>
-        </div>
         <div id="dashboard-advanced-grid" className="grid gap-6 xl:grid-cols-[1.04fr,0.96fr]">
           <section className="space-y-6">
             <ScoreExplanationCard user={user} />
