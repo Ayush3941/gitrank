@@ -1,16 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Activity, Medal, ShieldCheck } from "lucide-react";
 import { DashboardHeroRankCard } from "@/features/dashboard/components/DashboardHeroRankCard";
-import { ContributionTimelineCard } from "@/features/dashboard/components/ContributionTimelineCard";
-import { CurrentLeagueCard } from "@/features/dashboard/components/CurrentLeagueCard";
-import { QuestPanel } from "@/features/dashboard/components/QuestPanel";
-import { RecentBattleReports } from "@/features/dashboard/components/RecentBattleReports";
-import { ScoreExplanationCard } from "@/features/dashboard/components/ScoreExplanationCard";
-import { SkillBreakdownCard } from "@/features/dashboard/components/SkillBreakdownCard";
-import { BadgeShelf } from "@/features/dashboard/components/BadgeShelf";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -28,6 +22,40 @@ import { formatRelativeDays } from "@/lib/formatters";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { Button } from "@/components/ui/button";
+
+const CurrentLeagueCard = dynamic(
+  () => import("@/features/dashboard/components/CurrentLeagueCard").then((mod) => mod.CurrentLeagueCard),
+);
+const QuestPanel = dynamic(
+  () => import("@/features/dashboard/components/QuestPanel").then((mod) => mod.QuestPanel),
+);
+const RecentBattleReports = dynamic(
+  () =>
+    import("@/features/dashboard/components/RecentBattleReports").then(
+      (mod) => mod.RecentBattleReports,
+    ),
+);
+const ScoreExplanationCard = dynamic(
+  () =>
+    import("@/features/dashboard/components/ScoreExplanationCard").then(
+      (mod) => mod.ScoreExplanationCard,
+    ),
+);
+const BadgeShelf = dynamic(
+  () => import("@/features/dashboard/components/BadgeShelf").then((mod) => mod.BadgeShelf),
+);
+const SkillBreakdownCard = dynamic(
+  () =>
+    import("@/features/dashboard/components/SkillBreakdownCard").then(
+      (mod) => mod.SkillBreakdownCard,
+    ),
+);
+const ContributionTimelineCard = dynamic(
+  () =>
+    import("@/features/dashboard/components/ContributionTimelineCard").then(
+      (mod) => mod.ContributionTimelineCard,
+    ),
+);
 
 export function DashboardPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useDashboard();

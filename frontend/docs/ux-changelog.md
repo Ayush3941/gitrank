@@ -2,6 +2,9 @@
 
 ## 2026-05-21
 
+- Dashboard code-splitting pass:
+  - switched heavy dashboard lane modules (`CurrentLeagueCard`, `QuestPanel`, `RecentBattleReports`, `ScoreExplanationCard`, `BadgeShelf`, `SkillBreakdownCard`, `ContributionTimelineCard`) to `next/dynamic`.
+  - keeps route behavior intact while reducing eager dashboard module loading.
 - KPI hierarchy pass:
   - upgraded dashboard snapshot layout to a weighted 12-column grid where `GitRank score` is the primary wide metric and supporting metrics are compact side cards.
   - extended shared `StatCard` with layout/value-class hooks for route-level hierarchy control.
