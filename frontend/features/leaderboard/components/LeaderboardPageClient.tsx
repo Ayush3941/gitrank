@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowUpRight, Target, Trophy } from "lucide-react";
 import { startTransition, useDeferredValue, useState } from "react";
@@ -14,6 +13,7 @@ import { StaleState } from "@/components/shared/StaleState";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LeaderboardArena } from "@/features/leaderboard/components/LeaderboardArena";
 import { laneParamToTab, tabToLaneParam } from "@/features/leaderboard/lib/lane-param";
 import { useLeaderboard } from "@/hooks/use-leaderboard";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
@@ -42,15 +42,6 @@ const TAB_LABELS: Record<LeaderboardTab, { full: string; short: string }> = {
 const LEADERBOARD_ROW_PAGE_SIZE_DEFAULT = 24;
 const LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED = 12;
 const LEADERBOARD_ROWS_REGION_ID = "leaderboard-rows-region";
-const LeaderboardArena = dynamic(
-  () =>
-    import("@/features/leaderboard/components/LeaderboardArena").then(
-      (mod) => mod.LeaderboardArena,
-    ),
-  {
-    loading: () => <LeaderboardSectionPlaceholder title="Loading leaderboard rows" />,
-  },
-);
 
 export function LeaderboardPageClient() {
   const router = useRouter();
@@ -323,14 +314,6 @@ export function LeaderboardPageClient() {
         </section>
       ) : null}
     </div>
-  );
-}
-
-function LeaderboardSectionPlaceholder({ title }: { title: string }) {
-  return (
-    <GlowCard className="glass-panel cyber-card cyber-frame flex min-h-[11rem] items-center justify-center p-4">
-      <p className="text-sm text-muted">{title}</p>
-    </GlowCard>
   );
 }
 

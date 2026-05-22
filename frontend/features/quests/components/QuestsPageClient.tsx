@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { ArrowRight, CalendarClock, Flame, ShieldCheck } from "lucide-react";
-import dynamic from "next/dynamic";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -11,6 +10,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { QuestCard } from "@/features/quests/components/QuestCard";
 import { useQuests } from "@/hooks/use-quests";
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
@@ -23,12 +23,6 @@ const QUEST_SECTION_IDS: Record<Quest["cadence"], string> = {
   "Long-term": "quests-long-term",
   "Skill-based": "quests-skill-based",
 };
-const QuestCard = dynamic(
-  () => import("@/features/quests/components/QuestCard").then((mod) => mod.QuestCard),
-  {
-    loading: () => <QuestSectionPlaceholder title="Loading quest cards" />,
-  },
-);
 
 export function QuestsPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useQuests();
@@ -207,14 +201,6 @@ export function QuestsPageClient() {
         })
       ) : null}
     </div>
-  );
-}
-
-function QuestSectionPlaceholder({ title }: { title: string }) {
-  return (
-    <GlowCard className="glass-panel cyber-card cyber-frame flex min-h-[11rem] items-center justify-center p-4">
-      <p className="text-sm text-muted">{title}</p>
-    </GlowCard>
   );
 }
 
