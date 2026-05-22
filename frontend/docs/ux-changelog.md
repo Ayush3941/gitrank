@@ -1621,6 +1621,9 @@
 - Added CSS render optimization for long dashboards:
   - `render-opt-section` and `render-opt-card` now use `content-visibility: auto` with intrinsic-size fallback where supported
   - lowers off-screen layout/paint pressure for large pages while preserving visible behavior.
+- Added progressive disclosure to onboarding reveal detail blocks:
+  - `Unlock preview` and `What to do next` now support `Show section` / `Hide section`
+  - keeps the reveal screen dramatic but less overwhelming on first load.
 
 ## 2026-05-16
 
