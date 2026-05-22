@@ -14,6 +14,9 @@
 - Badges grid lazy-load pass:
   - switched `BadgeGrid` to `next/dynamic` with a bounded placeholder so badge filters and progression summary render before grid hydration.
   - keeps badge behavior intact while reducing eager route module loading.
+- Quests lane lazy-load pass:
+  - switched `QuestCard` to `next/dynamic` with bounded fallback placeholders so mission frame and spotlight render before dense quest-card hydration.
+  - keeps quest behavior intact while reducing eager route module loading.
 - Dashboard code-splitting pass:
   - switched heavy dashboard lane modules (`CurrentLeagueCard`, `QuestPanel`, `RecentBattleReports`, `ScoreExplanationCard`, `BadgeShelf`, `SkillBreakdownCard`, `ContributionTimelineCard`) to `next/dynamic`.
   - keeps route behavior intact while reducing eager dashboard module loading.
