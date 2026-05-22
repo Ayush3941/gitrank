@@ -39,6 +39,7 @@ export function SyncPipeline() {
   const userSync = useRunUserSync();
   const [syncStartedAt, setSyncStartedAt] = useState<string | null>(null);
   const [syncNotice, setSyncNotice] = useState("");
+  const [showPhaseBreakdown, setShowPhaseBreakdown] = useState(false);
   const [pollIntervalMs, setPollIntervalMs] = useState<number>(POLL_INTERVAL_STEPS_MS[0]);
   const autoRequestedRef = useRef(false);
   const syncStartedEventSent = useRef(false);
@@ -145,6 +146,8 @@ export function SyncPipeline() {
   const completedSteps =
     isSynced ? steps.length : syncStartedAt || userSync.isPending ? 3 : 1;
   const pipelineProgress = Math.round((completedSteps / steps.length) * 100);
+  const currentPhaseLabel =
+    completedSteps < steps.length ? steps[completedSteps] : "Pipeline complete";
 
   const actionError = sanitizeUserFacingError(
     (userSync.error as Error | null)?.message ||
@@ -224,45 +227,75 @@ export function SyncPipeline() {
           ) : null}
         </div>
         <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs font-medium text-primary">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-medium text-primary">
             <span>Pipeline progress</span>
-            <span className="numeric-readout">{pipelineProgress}%</span>
+            <div className="flex items-center gap-2">
+              <span className="numeric-readout">{pipelineProgress}%</span>
+              <Button
+                type="button"
+                size="sm"
+                variant={showPhaseBreakdown ? "secondary" : "default"}
+                onClick={() => {
+                  setShowPhaseBreakdown((current) => !current);
+                }}
+                aria-expanded={showPhaseBreakdown}
+                aria-controls="onboarding-sync-phases"
+              >
+                {showPhaseBreakdown ? "Hide phases" : "Show phases"}
+              </Button>
+            </div>
           </div>
           <Progress value={pipelineProgress} />
           <p className="text-sm text-muted">
             {completedSteps} of {steps.length} sync phases completed.
           </p>
         </div>
-        <ol className="space-y-3">
-          {steps.map((step, index) => {
-            const done = index < completedSteps;
-            const active = index === completedSteps && !isSynced;
-            return (
-              <li
-                key={`sync-step-${index}-${step}`}
-                className="list-none neon-surface flex items-center gap-4 rounded-[1.75rem] px-4 py-4"
-              >
-                <div className="neon-tile rounded-2xl p-2 text-primary">
-                  {done ? (
-                    <CheckCircle2 className="h-5 w-5 text-emerald-300" />
-                  ) : (
-                    <LoaderCircle className={active ? "h-5 w-5 text-primary" : "h-5 w-5 text-muted"} />
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium text-white">{step}</p>
-                  <p className="text-sm text-muted">
-                    {done
-                      ? "Verified from live sync evidence."
-                      : active
-                        ? "In progress against live backend data."
-                        : "Pending previous stage completion."}
+        {showPhaseBreakdown ? (
+          <ol id="onboarding-sync-phases" className="space-y-3">
+            {steps.map((step, index) => {
+              const done = index < completedSteps;
+              const active = index === completedSteps && !isSynced;
+              return (
+                <li
+                  key={`sync-step-${index}-${step}`}
+                  className="list-none neon-surface flex items-center gap-4 rounded-[1.75rem] px-4 py-4"
+                >
+                  <div className="neon-tile rounded-2xl p-2 text-primary">
+                    {done ? (
+                      <CheckCircle2 className="h-5 w-5 text-emerald-300" />
+                    ) : (
+                      <LoaderCircle className={active ? "h-5 w-5 text-primary" : "h-5 w-5 text-muted"} />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-white">{step}</p>
+                    <p className="text-sm text-muted">
+                      {done
+                        ? "Verified from live sync evidence."
+                        : active
+                          ? "In progress against live backend data."
+                          : "Pending previous stage completion."}
                     </p>
-                </div>
-              </li>
-            );
-          })}
-        </ol>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        ) : (
+          <div id="onboarding-sync-phases" className="neon-surface rounded-[1.35rem] border-dashed border-primary/24 px-4 py-3">
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
+                Sync state {formatSyncState(syncState)}
+              </span>
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
+                Current phase {currentPhaseLabel}
+              </span>
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
+                Poll cadence ~{Math.max(5, Math.round(pollIntervalMs / 1000))}s
+              </span>
+            </div>
+          </div>
+        )}
         <div className="flex flex-wrap gap-3">
           {canRetrySync ? (
             <Button

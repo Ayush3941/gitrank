@@ -17,6 +17,9 @@
 - Quests collapsed-lane summary pass:
   - replaced generic collapsed quest-section placeholder text with compact lane-summary chips (quest count, active count, total reward XP).
   - keeps quest progressive disclosure while preserving useful signal in collapsed mode.
+- Onboarding sync progressive-disclosure pass:
+  - added a `Show phases / Hide phases` toggle to the analyzing pipeline.
+  - phase list is now collapsed by default into compact status chips (sync state, current phase, poll cadence), reducing cognitive load while preserving full phase detail on demand.
 - Public profile lazy-load pass:
   - switched heavy public-profile modules to `next/dynamic` (`PublicProfileHero`, `BestPRsPanel`, `SkillRadarChart`, `TimelineChart`) with bounded skeleton fallbacks.
   - improves first-render responsiveness on profile routes with large contribution history.
