@@ -10,6 +10,7 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
+import { StreakHeatStrip } from "@/components/shared/StreakHeatStrip";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
 import { useContributions } from "@/hooks/use-contributions";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
@@ -242,6 +243,11 @@ export function ContributionsPageClient() {
             <p className="numeric-readout text-2xl font-semibold text-white">{streak.currentStreakDays}d</p>
             <p className="text-xs text-muted">Best streak {streak.bestStreakDays}d</p>
           </GlowCard>
+        </section>
+      ) : null}
+      {!isLoading && !isError && profile ? (
+        <section id="contributions-momentum" className="scroll-mt-24">
+          <StreakHeatStrip contributions={profile.user.contributions} />
         </section>
       ) : null}
       {profile?.user.syncStatus.state === "stale" ? (
