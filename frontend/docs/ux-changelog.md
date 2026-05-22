@@ -2,6 +2,9 @@
 
 ## 2026-05-21
 
+- Settings module lazy-load pass:
+  - switched `SyncRunActivityPanel` and `PrivacyRepositoryToggleList` to `next/dynamic` with bounded placeholders.
+  - keeps settings behavior intact while reducing eager module loading for dense sync/repository panels.
 - Public profile collapsed-state summary pass:
   - replaced dead-text collapsed blocks in public-profile sections with compact summary chips (unlocked badges, top skill, report count/top XP, timeline latest XP, top-repo count).
   - keeps progressive disclosure while preserving useful signal in collapsed mode.

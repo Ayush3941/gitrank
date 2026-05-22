@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useState } from "react";
 import { Download, FolderGit2, LogOut, Palette, RefreshCw, Sparkles, Trash2 } from "lucide-react";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -11,8 +12,6 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { PrivacyRepositoryToggleList } from "@/features/settings/components/PrivacyRepositoryToggleList";
-import { SyncRunActivityPanel } from "@/features/settings/components/SyncRunActivityPanel";
 import {
   useDeleteMyAccount,
   useExportMyAccountData,
@@ -39,6 +38,25 @@ import {
 } from "@/hooks/use-text-scale-preference";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import { type ThemePreference, useThemePreference } from "@/hooks/use-theme-preference";
+
+const PrivacyRepositoryToggleList = dynamic(
+  () =>
+    import("@/features/settings/components/PrivacyRepositoryToggleList").then(
+      (mod) => mod.PrivacyRepositoryToggleList,
+    ),
+  {
+    loading: () => <SettingsSectionPlaceholder title="Loading repository controls" />,
+  },
+);
+const SyncRunActivityPanel = dynamic(
+  () =>
+    import("@/features/settings/components/SyncRunActivityPanel").then(
+      (mod) => mod.SyncRunActivityPanel,
+    ),
+  {
+    loading: () => <SettingsSectionPlaceholder title="Loading sync activity" />,
+  },
+);
 
 type BackedPrivacyKey =
   | "publicProfileEnabled"
