@@ -2,6 +2,10 @@
 
 ## 2026-05-22
 
+- Applied progressive disclosure on high-density report/profile routes:
+  - PR battle report now keeps deep score/evidence/reward mechanics behind an explicit `Show technical breakdown` toggle with proper `aria-expanded` / `aria-controls`.
+  - public profile now supports section-level `Show section` / `Hide section` controls for `Badges and skills`, `Best PR battle reports`, and `Timeline and repositories`.
+  - collapsed states now render concise signal summaries instead of empty placeholders, preserving share-readability while reducing initial cognitive load.
 - Removed route-level deferred/dynamic section wrappers across dashboard-critical routes:
   - switched dashboard, contributions, badges, quests, leaderboard, settings, public profile, and PR report pages to direct section rendering.
   - removed section-placeholder mount shells that were causing visible phase shifts and occasional scroll-position jitter during route interaction.

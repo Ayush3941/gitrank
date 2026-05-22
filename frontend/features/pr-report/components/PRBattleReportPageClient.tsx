@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { AlertTriangle, ArrowRight, Award, ShieldCheck, Swords } from "lucide-react";
+import { useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { ExpandableText } from "@/components/shared/ExpandableText";
@@ -25,6 +26,7 @@ export function PRBattleReportPageClient({
   number: number;
 }) {
   const { data, isLoading, isError, refetch } = usePrReport(owner, repo, number);
+  const [showTechnicalBreakdown, setShowTechnicalBreakdown] = useState(false);
 
   if (isLoading) {
     return <LoadingState message="Calculating PR intensity..." />;
@@ -209,57 +211,85 @@ export function PRBattleReportPageClient({
           />
         </GlowCard>
       </section>
-      <div id="pr-report-technical-panels" className="space-y-6">
-        <section id="pr-report-score" className="render-opt-section scroll-mt-24">
-          <div className="grid gap-6 xl:grid-cols-[1.02fr,0.98fr]">
-            <ScoreMatrixCard report={data} />
-            <XPBreakdownCard report={data} />
-          </div>
-        </section>
-        <section id="pr-report-evidence" className="render-opt-section scroll-mt-24">
-          <div className="space-y-4">
-            <h2 className="text-sm font-semibold text-white">Evidence signals</h2>
-            <EvidenceSignalsCard report={data} />
-          </div>
-        </section>
-        {uniqueBadgeUnlocks.length ? (
-          <section id="pr-report-rewards" className="render-opt-section scroll-mt-24">
-            <div className="space-y-4">
-              <h2 className="text-sm font-semibold text-white">
-                Badge rewards ({uniqueBadgeUnlocks.length})
-              </h2>
-              <GlowCard className="space-y-4">
-                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-100">
-                  <Award className="h-3.5 w-3.5" />
-                  Rewards unlocked
+      <section id="pr-report-technical" className="render-opt-section scroll-mt-24 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-sm font-semibold text-white">Technical breakdown</h2>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              setShowTechnicalBreakdown((current) => !current);
+            }}
+            aria-expanded={showTechnicalBreakdown}
+            aria-controls="pr-report-technical-panels"
+          >
+            {showTechnicalBreakdown ? "Hide technical breakdown" : "Show technical breakdown"}
+          </Button>
+        </div>
+        {showTechnicalBreakdown ? (
+          <div id="pr-report-technical-panels" className="space-y-6">
+            <section id="pr-report-score" className="render-opt-section scroll-mt-24">
+              <div className="grid gap-6 xl:grid-cols-[1.02fr,0.98fr]">
+                <ScoreMatrixCard report={data} />
+                <XPBreakdownCard report={data} />
+              </div>
+            </section>
+            <section id="pr-report-evidence" className="render-opt-section scroll-mt-24">
+              <div className="space-y-4">
+                <h2 className="text-sm font-semibold text-white">Evidence signals</h2>
+                <EvidenceSignalsCard report={data} />
+              </div>
+            </section>
+            {uniqueBadgeUnlocks.length ? (
+              <section id="pr-report-rewards" className="render-opt-section scroll-mt-24">
+                <div className="space-y-4">
+                  <h2 className="text-sm font-semibold text-white">
+                    Badge rewards ({uniqueBadgeUnlocks.length})
+                  </h2>
+                  <GlowCard className="space-y-4">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-100">
+                      <Award className="h-3.5 w-3.5" />
+                      Rewards unlocked
+                    </div>
+                    <ul role="list" className="grid gap-3 md:grid-cols-2">
+                      {uniqueBadgeUnlocks.map((badge, index) => (
+                        <li key={`${badge.key}-${index}`} className="list-none render-opt-card neon-surface rounded-[1.75rem] p-4">
+                          <p className="text-lg font-semibold text-white">{badge.name}</p>
+                          {badge.description ? <p className="mt-2 text-sm text-muted">{badge.description}</p> : null}
+                          <p className="mt-3 text-xs text-emerald-100">
+                            Rule {badge.ruleVersion ?? badge.rule ?? "persisted badge evidence"}
+                          </p>
+                          {badge.evidenceSignals.length ? (
+                            <ul role="list" className="mt-3 flex flex-wrap gap-2">
+                              {badge.evidenceSignals.slice(0, 3).map((signal, signalIndex) => (
+                                <li key={`${badge.key}-${signal}-${signalIndex}`} className="list-none">
+                                  <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
+                                    {signal}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                  </GlowCard>
                 </div>
-                <ul role="list" className="grid gap-3 md:grid-cols-2">
-                  {uniqueBadgeUnlocks.map((badge, index) => (
-                    <li key={`${badge.key}-${index}`} className="list-none render-opt-card neon-surface rounded-[1.75rem] p-4">
-                      <p className="text-lg font-semibold text-white">{badge.name}</p>
-                      {badge.description ? <p className="mt-2 text-sm text-muted">{badge.description}</p> : null}
-                      <p className="mt-3 text-xs text-emerald-100">
-                        Rule {badge.ruleVersion ?? badge.rule ?? "persisted badge evidence"}
-                      </p>
-                      {badge.evidenceSignals.length ? (
-                        <ul role="list" className="mt-3 flex flex-wrap gap-2">
-                          {badge.evidenceSignals.slice(0, 3).map((signal, signalIndex) => (
-                            <li key={`${badge.key}-${signal}-${signalIndex}`} className="list-none">
-                              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
-                                {signal}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-              </GlowCard>
-            </div>
-          </section>
-        ) : null}
-      </div>
+              </section>
+            ) : null}
+          </div>
+        ) : (
+          <GlowCard className="space-y-2">
+            <p className="text-sm text-muted">
+              Technical details include score matrix factors, deterministic XP components, evidence signals, and reward derivation.
+            </p>
+            <p className="text-xs text-muted">
+              Expand only when you need deep audit context for this PR.
+            </p>
+          </GlowCard>
+        )}
+      </section>
       {data.suggestedQuestId ? (
         <section
           id={!uniqueBadgeUnlocks.length ? "pr-report-rewards" : undefined}
