@@ -1618,6 +1618,9 @@
 - Added progressive disclosure to public profile heavy sections:
   - `Badges and skills`, `Best PR battle reports`, and `Timeline and repositories` now support `Show section` / `Hide section`
   - keeps the share-ready profile concise on first load while preserving full detail on demand.
+- Added CSS render optimization for long dashboards:
+  - `render-opt-section` and `render-opt-card` now use `content-visibility: auto` with intrinsic-size fallback where supported
+  - lowers off-screen layout/paint pressure for large pages while preserving visible behavior.
 
 ## 2026-05-16
 
