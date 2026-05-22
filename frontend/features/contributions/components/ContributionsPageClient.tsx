@@ -45,6 +45,7 @@ const CONTRIBUTION_CARD_PAGE_SIZE_CONSTRAINED = 12;
 const ABRA_CONTRIBUTION_SAMPLE_LIMIT = 24;
 const CONTRIBUTION_CARDS_REGION_ID = "contributions-cards-region";
 const CONTRIBUTION_SEARCH_DEBOUNCE_MS = 220;
+const CONTRIBUTION_RENDER_HARD_CAP = 100;
 
 export function ContributionsPageClient() {
   const [filter, setFilter] = useState("All");
@@ -67,7 +68,11 @@ export function ContributionsPageClient() {
   });
   const profile = data?.profile;
   const filteredRows = useMemo(
-    () => deduplicateContributionsByPR(data?.rows ?? []),
+    () =>
+      deduplicateContributionsByPR(data?.rows ?? []).slice(
+        0,
+        CONTRIBUTION_RENDER_HARD_CAP,
+      ),
     [data?.rows],
   );
   const visibleRows = useMemo(
