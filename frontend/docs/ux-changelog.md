@@ -14,6 +14,13 @@
   - reduced dashboard chrome/nav glow intensity and gradient weight in `globals.css` to keep hierarchy clear without muddy contrast.
 - Reduced redundant dashboard copy in deep panels:
   - removed extra “Score and skill lanes” preamble block above advanced cards so the route reads faster and keeps focus on evidence cards.
+- Background rendering and scroll-jump stability pass:
+  - switched global background behavior to desktop-fixed only; constrained/mobile/reduced-data/slow-update contexts now use scroll attachment to avoid repaint-heavy jank and inconsistent fixed-background behavior.
+  - lowered global overlay/grid opacity defaults so `assets/background.jpg` remains visibly present behind dashboard surfaces.
+  - set dashboard route-nav links to `scroll={false}` to reduce unwanted top-jumps when switching dashboard lanes.
+- Autosync noise reduction pass:
+  - dashboard auto-sync no longer treats `partialProfileAvailable` by itself as a re-sync trigger.
+  - stale-state and zero-evidence recovery still auto-sync, but already-synced partial snapshots avoid repeated background sync churn.
 - Validation pass:
   - `npm run build` succeeded after changes.
   - frontend quality checks passed: `check:contrast`, `check:readable-text`, `check:media-stability`, `check:main-thread`, `check:cache-strategy`, `check:server-boundaries`, `check:client-env-safety`, `check:no-production-mocks`.
