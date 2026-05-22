@@ -22,6 +22,16 @@ export function StreakHeatStrip({
   const activeDays = cells.filter((cell) => cell.count > 0).length;
   const bestXp = cells.reduce((best, cell) => Math.max(best, cell.xp), 0);
   const averageXp = activeDays > 0 ? Math.round(cells.reduce((sum, cell) => sum + cell.xp, 0) / activeDays) : 0;
+  const legend = [
+    { label: "Idle", intensity: 0 as const },
+    { label: "Warm", intensity: 1 as const },
+    { label: "Active", intensity: 2 as const },
+    { label: "Hot", intensity: 3 as const },
+    { label: "Peak", intensity: 4 as const },
+  ].map((entry) => ({
+    ...entry,
+    count: cells.filter((cell) => cell.intensity === entry.intensity).length,
+  }));
 
   return (
     <GlowCard className="space-y-4">
@@ -48,6 +58,18 @@ export function StreakHeatStrip({
               aria-label={`${cell.label}: ${cell.count} contributions, ${cell.xp} XP`}
               title={`${cell.label}: ${cell.count} contributions • ${cell.xp} XP`}
             />
+          </li>
+        ))}
+      </ul>
+
+      <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
+        {legend.map((entry) => (
+          <li key={entry.label} className="list-none">
+            <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-muted">
+              <span className={heatSwatchClassName(entry.intensity)} />
+              <span>{entry.label}</span>
+              <span className="text-foreground">{entry.count}</span>
+            </span>
           </li>
         ))}
       </ul>
@@ -136,4 +158,8 @@ function heatCellClassName(intensity: HeatCell["intensity"]): string {
     default:
       return "h-4 w-full rounded-[0.1rem] border border-primary/16 bg-card/58";
   }
+}
+
+function heatSwatchClassName(intensity: HeatCell["intensity"]): string {
+  return heatCellClassName(intensity).replace("w-full", "w-3.5");
 }
