@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ArrowRight, ChartNoAxesCombined, GitPullRequestArrow, ShieldCheck, Swords, Trophy } from "lucide-react";
-import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { Button } from "@/components/ui/button";
@@ -30,7 +29,7 @@ export function LandingPage() {
                 <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">For hiring teams</span>
               </div>
               <p className="cyber-copy readable-measure max-w-[72ch] text-base leading-8 sm:text-lg">
-                GitRank analyzes PR difficulty, review depth, tests, and project context, then turns that evidence into XP, levels, badges, and shareable profile snapshots.
+                GitRank analyzes PR difficulty, review depth, tests, and project context, then turns verifiable evidence into XP, levels, badges, and shareable profile snapshots.
               </p>
               <ul role="list" className="grid max-w-3xl gap-2 sm:grid-cols-3">
                 <li className="list-none neon-surface px-3 py-2 text-xs text-muted">
@@ -60,7 +59,7 @@ export function LandingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-medium text-primary">Live rank arena</p>
-                <h2 className="cyber-title mt-2 text-2xl font-semibold text-white">Live contributor card</h2>
+                <h2 className="cyber-title mt-2 text-2xl font-semibold text-white">Your card after sync</h2>
               </div>
             </div>
             <div className="neon-surface rounded-3xl p-4">
@@ -76,7 +75,6 @@ export function LandingPage() {
         </div>
       </section>
 
-      <DeferUntilVisible fallback={<LandingSectionPlaceholder title="Loading reputation context" />}>
       <section id="why-gitrank" className="render-opt-section scroll-mt-24">
         <div className="space-y-3">
           <h2 className="text-sm font-semibold text-white">Why GitRank exists</h2>
@@ -107,9 +105,7 @@ export function LandingPage() {
           </div>
         </div>
       </section>
-      </DeferUntilVisible>
 
-      <DeferUntilVisible fallback={<LandingSectionPlaceholder title="Loading journey flows" />}>
       <section id="core-journeys" className="render-opt-section scroll-mt-24">
         <div className="space-y-3">
           <h2 className="text-sm font-semibold text-white">Core user journeys</h2>
@@ -151,9 +147,7 @@ export function LandingPage() {
           </ul>
         </div>
       </section>
-      </DeferUntilVisible>
 
-      <DeferUntilVisible fallback={<LandingSectionPlaceholder title="Loading solution and loop cards" />}>
       <section className="render-opt-section grid gap-6 lg:grid-cols-[0.95fr,1.05fr]">
         <GlowCard className="space-y-5">
           <SectionHeader
@@ -187,12 +181,10 @@ export function LandingPage() {
                 <p className="mt-2 text-lg font-medium text-white">{step}</p>
               </li>
             ))}
-          </ol>
+            </ol>
         </GlowCard>
       </section>
-      </DeferUntilVisible>
 
-      <DeferUntilVisible fallback={<LandingSectionPlaceholder title="Loading battle report preview" />}>
       <section id="battle-reports" className="render-opt-section scroll-mt-24 grid gap-6 lg:grid-cols-[1.08fr,0.92fr]">
         <GlowCard className="space-y-5">
           <SectionHeader
@@ -204,9 +196,9 @@ export function LandingPage() {
             <p className="text-sm text-cyan-200">Live report cards unlock after OAuth and sync.</p>
             <h3 className="mt-2 text-xl font-semibold text-white">Report details appear once your profile sync completes.</h3>
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
-              <Metric label="Difficulty" value="Live" />
-              <Metric label="Impact" value="Live" />
-              <Metric label="Review depth" value="Live" />
+              <Metric label="Difficulty" value="Scored" />
+              <Metric label="Impact" value="Explained" />
+              <Metric label="Review depth" value="Verified" />
             </div>
           </div>
         </GlowCard>
@@ -232,9 +224,7 @@ export function LandingPage() {
           </ul>
         </GlowCard>
       </section>
-      </DeferUntilVisible>
 
-      <DeferUntilVisible fallback={<LandingSectionPlaceholder title="Loading anti-spam and CTA" />}>
       <section id="start-reveal" className="render-opt-section scroll-mt-24 grid gap-6 lg:grid-cols-[0.9fr,1.1fr]">
         <GlowCard className="space-y-4 border border-amber-400/18 bg-amber-400/6">
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/25 bg-amber-400/12 px-3 py-1.5 text-xs font-semibold text-amber-100">
@@ -260,26 +250,7 @@ export function LandingPage() {
           </Button>
         </GlowCard>
       </section>
-      </DeferUntilVisible>
     </main>
-  );
-}
-
-function LandingSectionPlaceholder({ title }: { title: string }) {
-  return (
-    <GlowCard className="space-y-4">
-      <p className="text-xs font-medium text-primary">{title}</p>
-      <div className="neon-skeleton h-8 w-2/3 rounded-[0.1rem]" />
-      <div className="space-y-2">
-        <div className="neon-skeleton h-4 w-full rounded-[0.1rem]" />
-        <div className="neon-skeleton h-4 w-11/12 rounded-[0.1rem]" />
-      </div>
-      <div className="grid gap-2 sm:grid-cols-3">
-        <div className="neon-skeleton h-16 rounded-[0.1rem]" />
-        <div className="neon-skeleton h-16 rounded-[0.1rem]" />
-        <div className="neon-skeleton h-16 rounded-[0.1rem]" />
-      </div>
-    </GlowCard>
   );
 }
 
