@@ -18,7 +18,7 @@ export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
       <div className="space-y-3">
         {reports.length === 0 ? (
           <div className="neon-surface rounded-[1.75rem] border-dashed border-primary/24 p-4 text-sm text-muted">
-            <p>Exact pull request evidence is hidden on this profile or there are no scored contributions yet.</p>
+            <p>No public PR reports yet for this profile snapshot.</p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Button asChild variant="secondary" size="sm">
                 <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>

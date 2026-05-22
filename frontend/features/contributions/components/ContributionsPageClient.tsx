@@ -214,7 +214,7 @@ export function ContributionsPageClient() {
       <PageHeader
         eyebrow="Contributions"
         title="Contributions"
-        description="Scored pull requests and battle reports."
+        description="PR cards and battle reports."
         actions={(
           <div className="flex flex-wrap gap-2">
             <Button
@@ -235,7 +235,7 @@ export function ContributionsPageClient() {
             </Button>
             <Button asChild variant="secondary" size="sm">
               <Link href="/dashboard/settings" prefetch={false}>
-                Open sync settings
+                Sync settings
               </Link>
             </Button>
           </div>
@@ -299,8 +299,8 @@ export function ContributionsPageClient() {
           }
           description={
             isFilteredNoResults
-              ? "Try resetting filters or widening your search to recover cards from this scored evidence window."
-              : "Start with a small real contribution: docs, tests, or a bug fix. Meaningful work unlocks the shelf."
+              ? "Reset filters or widen search."
+              : "Sync and merge a real PR to populate reports."
           }
           actionLabel={isFilteredNoResults ? "Reset filters" : "Review quest queue"}
           actionHref={isFilteredNoResults ? undefined : "/dashboard/quests"}

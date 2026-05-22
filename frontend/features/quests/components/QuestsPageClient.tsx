@@ -42,8 +42,8 @@ export function QuestsPageClient() {
     <div className="space-y-6">
       <PageHeader
         eyebrow="Quests"
-        title="Contributor missions"
-        description="Daily, weekly, and long-term missions from synced evidence."
+        title="Quests"
+        description="Daily, weekly, and long-term mission tracks."
         actions={(
           <Button asChild variant="secondary" size="sm">
             <Link href="/dashboard/contributions" prefetch={false}>
@@ -78,7 +78,7 @@ export function QuestsPageClient() {
                 </p>
                 <h2 className="mt-3 text-2xl font-semibold text-white">Day {dayOfYear} of 365</h2>
                 <p className="mt-2 text-sm text-muted">
-                  Build streak momentum with consistent high-signal contributions.
+                  Keep contribution momentum steady.
                 </p>
               </div>
               <div className="grid gap-2 rounded-2xl border border-fuchsia-300/28 bg-fuchsia-400/10 px-4 py-3 text-sm text-fuchsia-100">
@@ -104,21 +104,21 @@ export function QuestsPageClient() {
               <MissionSpotlightCard
                 title="Today's Quest"
                 quest={todayQuest}
-                emptyCopy="No daily mission yet. Open contributions to generate fresh evidence."
+                emptyCopy="No daily mission yet."
                 href="/dashboard/contributions"
                 cta="Open contributions"
               />
               <MissionSpotlightCard
                 title="Weekly Challenge"
                 quest={weeklyQuest}
-                emptyCopy="No weekly challenge yet. Refresh from settings to backfill scoring evidence."
+                emptyCopy="No weekly challenge yet."
                 href="/dashboard/settings"
                 cta="Open sync settings"
               />
               <MissionSpotlightCard
                 title="Long-Term Journey"
                 quest={longTermQuest}
-                emptyCopy="No long-term objective yet. Keep merged, reviewed work flowing to unlock deeper tracks."
+                emptyCopy="No long-term objective yet."
                 href="/dashboard/contributions"
                 cta="Keep building"
               />
@@ -143,7 +143,7 @@ export function QuestsPageClient() {
         <EmptyState
           eyebrow="Quest generation"
           title="No quests ready yet."
-          description="Quests sharpen after the first verified score and enough meaningful contribution evidence."
+          description="Sync and complete scored contributions to unlock quests."
           actionLabel="Sync profile"
           actionHref="/dashboard/settings"
           secondaryActionLabel="Open contributions"
@@ -178,7 +178,7 @@ export function QuestsPageClient() {
                   ) : (
                     <GlowCard className="neon-surface rounded-[1.5rem] border-dashed border-cyan-300/24 p-4 text-sm text-muted">
                       <p>
-                        No {labelForGroup(group).toLowerCase()} is available in this snapshot yet.
+                        No {labelForGroup(group).toLowerCase()} in this snapshot.
                       </p>
                       <div className="mt-3">
                         <Button asChild variant="secondary" size="sm">

@@ -4,7 +4,6 @@ import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/cn";
 
 const filters = [
   { value: "All", short: "All" },
@@ -67,30 +66,53 @@ export function ContributionFilters({
 
   return (
     <section
-      aria-labelledby={compact ? undefined : "contribution-filter-controls-label"}
+      aria-label="Contribution filters"
+      data-compact={compact ? "true" : "false"}
       className="space-y-4"
     >
       <p
         id={statusId}
         role="status"
         aria-live="polite"
-        className={cn(compact ? "sr-only" : "text-sm text-cyan-100")}
+        className="sr-only"
       >
         {isFiltering
           ? "Updating..."
           : `${resultCount ?? 0} cards`}
       </p>
-      {!compact ? (
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p id="contribution-filter-controls-label" className="text-sm font-medium text-cyan-100">
-            Filters
-          </p>
-          <p className="text-sm text-cyan-100" aria-hidden="true">
-          {isFiltering
-            ? "Updating..."
-            : `${resultCount ?? 0} cards`}
-          </p>
-          <div className="flex items-center gap-2">
+      {activeChips.length ? (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <ul role="list" className="flex flex-wrap gap-2 text-xs">
+            {activeChips.map((chip) => {
+              const handleRemove =
+                chip.key === "category"
+                  ? onClearCategory
+                  : chip.key === "search"
+                    ? onClearSearch
+                    : onClearSort;
+              return (
+                <li key={chip.key} className="list-none">
+                  {handleRemove ? (
+                    <button
+                      type="button"
+                      className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold"
+                      onClick={handleRemove}
+                      disabled={isFiltering}
+                      aria-label={`Remove ${chip.label} filter`}
+                      aria-controls={resultsRegionId}
+                    >
+                      {chip.label}
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  ) : (
+                    <span className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold">
+                      {chip.label}
+                    </span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
           {onReset ? (
             <Button
               type="button"
@@ -100,44 +122,10 @@ export function ContributionFilters({
               disabled={!canReset || isFiltering}
               aria-controls={resultsRegionId}
             >
-              Clear
+              Reset
             </Button>
           ) : null}
-          </div>
         </div>
-      ) : null}
-      {activeChips.length ? (
-        <ul role="list" className="flex flex-wrap gap-2 text-xs">
-          {activeChips.map((chip) => {
-            const handleRemove =
-              chip.key === "category"
-                ? onClearCategory
-                : chip.key === "search"
-                  ? onClearSearch
-                  : onClearSort;
-            return (
-              <li key={chip.key} className="list-none">
-                {handleRemove ? (
-                  <button
-                    type="button"
-                    className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold"
-                    onClick={handleRemove}
-                    disabled={isFiltering}
-                    aria-label={`Remove ${chip.label} filter`}
-                    aria-controls={resultsRegionId}
-                  >
-                    {chip.label}
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                ) : (
-                  <span className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold">
-                    {chip.label}
-                  </span>
-                )}
-              </li>
-            );
-          })}
-        </ul>
       ) : null}
       <div id="contribution-mobile-controls">
         <div className="sm:hidden">

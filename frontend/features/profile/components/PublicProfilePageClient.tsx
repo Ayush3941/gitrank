@@ -176,7 +176,7 @@ export function PublicProfilePageClient({
         </div>
       </section>
       <section className="render-opt-section space-y-3">
-        <h2 className="text-sm font-semibold text-white">Badges and skills</h2>
+        <h2 className="text-sm font-semibold text-white">Badges + skills</h2>
         <div className="grid gap-6 xl:grid-cols-[1fr,1fr]">
           <GlowCard className="space-y-5">
             <div>
@@ -211,7 +211,7 @@ export function PublicProfilePageClient({
         </div>
       </section>
       <section className="render-opt-section space-y-3">
-        <h2 className="text-sm font-semibold text-white">Best PR battle reports</h2>
+        <h2 className="text-sm font-semibold text-white">Best PR reports</h2>
         <BestPRsPanel reports={data.featuredContributions} />
       </section>
       <section className="render-opt-section space-y-3">
@@ -230,7 +230,7 @@ export function PublicProfilePageClient({
             </div>
             <div>
               <p className="text-xs font-medium text-primary">Top repositories</p>
-              <h2 className="mt-2 text-xl font-semibold text-white">Top repositories right now</h2>
+              <h2 className="mt-2 text-xl font-semibold text-white">Top repositories</h2>
             </div>
             <div className="space-y-3">
               {data.topRepositories.length === 0 ? (

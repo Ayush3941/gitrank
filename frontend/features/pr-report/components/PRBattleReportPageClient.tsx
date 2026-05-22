@@ -395,6 +395,9 @@ function normalizeEvidenceReason(reason: string, evidenceAnchored: boolean): str
   if (!normalized) {
     return null;
   }
+  if (normalized.includes("analysis: unknown") || normalized.includes("missing analysis")) {
+    return evidenceAnchored ? null : "Gemini analysis is still processing.";
+  }
   if (normalized.includes("analysis is deterministic-only; no ai enrichment is attached")) {
     return "Deterministic report is available now.";
   }
@@ -402,6 +405,9 @@ function normalizeEvidenceReason(reason: string, evidenceAnchored: boolean): str
     return evidenceAnchored ? "Deterministic evidence is available now." : "Gemini analysis is still processing.";
   }
   if (normalized.includes("report is stale until analysis and scoring both complete")) {
+    return evidenceAnchored ? null : "Report refresh is pending the next scoring replay.";
+  }
+  if (normalized.includes("report snapshot is stale")) {
     return evidenceAnchored ? null : "Report refresh is pending the next scoring replay.";
   }
   if (normalized.includes("fallback reason")) {

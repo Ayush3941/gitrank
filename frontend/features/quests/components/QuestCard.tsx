@@ -19,7 +19,6 @@ export function QuestCard({ quest }: { quest: Quest }) {
 
   return (
     <GlowCard className="render-opt-card cyber-hero-shell relative space-y-4 overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 opacity-[0.1] [background:repeating-linear-gradient(170deg,rgba(255,255,255,0.13)_0px,rgba(255,255,255,0.13)_1px,transparent_1px,transparent_11px)]" />
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-2">
           <div className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs">
@@ -33,12 +32,9 @@ export function QuestCard({ quest }: { quest: Quest }) {
             minLengthForToggle={150}
             textClassName="break-anywhere text-sm text-muted"
           />
-          <ExpandableText
-            text={quest.whyRecommended}
-            lines={3}
-            minLengthForToggle={170}
-            textClassName="break-anywhere text-sm leading-6 text-muted"
-          />
+          {quest.whyRecommended.trim().length > 0 ? (
+            <p className="text-xs text-cyan-100">{quest.whyRecommended}</p>
+          ) : null}
         </div>
         <div className="neon-chip neon-chip-info rounded-3xl px-3 py-2 text-sm font-medium">
           <span className="numeric-readout">+{quest.rewardXp.toLocaleString("en-US")} XP</span>

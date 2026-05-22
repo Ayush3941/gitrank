@@ -22,10 +22,10 @@
   --text-strong: 252 253 255;
   --text-body: 246 249 255;
   --text-soft: 244 248 255;
-  --page-overlay-top-alpha: 0.024;
-  --page-overlay-bottom-alpha: 0.056;
-  --page-grid-opacity: 0.19;
-  --page-glow-opacity: 0.015;
+  --page-overlay-top-alpha: 0.015;
+  --page-overlay-bottom-alpha: 0.032;
+  --page-grid-opacity: 0.11;
+  --page-glow-opacity: 0.01;
   --surface-blur: 0px;
   --surface-blur-strong: 1px;
   --shadow-depth-soft: 0 6px 16px rgb(1 5 20 / 0.24);
@@ -61,10 +61,10 @@ html[data-theme="midnight"] {
   --text-strong: 252 254 255;
   --text-body: 246 250 255;
   --text-soft: 244 248 255;
-  --page-overlay-top-alpha: 0.028;
-  --page-overlay-bottom-alpha: 0.06;
-  --page-grid-opacity: 0.2;
-  --page-glow-opacity: 0.015;
+  --page-overlay-top-alpha: 0.016;
+  --page-overlay-bottom-alpha: 0.036;
+  --page-grid-opacity: 0.12;
+  --page-glow-opacity: 0.01;
   --surface-blur: 0px;
   --surface-blur-strong: 1px;
 }
@@ -89,10 +89,10 @@ html[data-theme="terminal"] {
   --text-strong: 246 254 250;
   --text-body: 236 247 243;
   --text-soft: 230 244 239;
-  --page-overlay-top-alpha: 0.026;
-  --page-overlay-bottom-alpha: 0.058;
-  --page-grid-opacity: 0.19;
-  --page-glow-opacity: 0.014;
+  --page-overlay-top-alpha: 0.015;
+  --page-overlay-bottom-alpha: 0.034;
+  --page-grid-opacity: 0.11;
+  --page-glow-opacity: 0.01;
   --surface-blur: 0px;
   --surface-blur-strong: 1px;
 }
@@ -117,10 +117,10 @@ html[data-theme="aurora"] {
   --text-strong: 251 254 255;
   --text-body: 246 251 255;
   --text-soft: 245 250 255;
-  --page-overlay-top-alpha: 0.028;
-  --page-overlay-bottom-alpha: 0.06;
-  --page-grid-opacity: 0.2;
-  --page-glow-opacity: 0.015;
+  --page-overlay-top-alpha: 0.016;
+  --page-overlay-bottom-alpha: 0.036;
+  --page-grid-opacity: 0.12;
+  --page-glow-opacity: 0.01;
   --surface-blur: 0px;
   --surface-blur-strong: 1px;
 }
@@ -145,10 +145,10 @@ html[data-theme="high-contrast"] {
   --text-strong: 254 255 255;
   --text-body: 247 251 255;
   --text-soft: 239 246 255;
-  --page-overlay-top-alpha: 0.07;
-  --page-overlay-bottom-alpha: 0.13;
-  --page-grid-opacity: 0.38;
-  --page-glow-opacity: 0.02;
+  --page-overlay-top-alpha: 0.026;
+  --page-overlay-bottom-alpha: 0.05;
+  --page-grid-opacity: 0.16;
+  --page-glow-opacity: 0.012;
   --surface-blur: 0px;
   --surface-blur-strong: 1px;
   --shadow-depth-soft: 0 8px 24px rgb(1 4 18 / 0.4);
@@ -252,7 +252,7 @@ body {
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
-  background-attachment: scroll;
+  background-attachment: fixed;
   color: rgb(var(--text-body));
   font-family: var(--font-space-grotesk), sans-serif;
   text-rendering: optimizeLegibility;
@@ -318,18 +318,6 @@ body::after {
       transparent 100%
     );
   opacity: var(--page-glow-opacity);
-}
-
-@media (min-width: 1101px) and (hover: hover) and (pointer: fine) {
-  body {
-    background-attachment: fixed;
-  }
-}
-
-@media (max-width: 1024px) {
-  body {
-    background-attachment: scroll;
-  }
 }
 
 ::selection {
@@ -1367,7 +1355,7 @@ html[data-theme="high-contrast"] .cyber-card {
 
 @media (max-width: 1100px) {
   body {
-    background-attachment: scroll;
+    background-attachment: fixed;
   }
 
   .glass-panel,
@@ -1393,7 +1381,7 @@ html[data-theme="high-contrast"] .cyber-card {
 
 @media (pointer: coarse) {
   body {
-    background-attachment: scroll;
+    background-attachment: fixed;
   }
 }
 
@@ -1517,7 +1505,7 @@ html[data-theme="high-contrast"] .cyber-card {
 }
 
 :where(html:not([data-gamification]), html[data-gamification="reduced"]) body {
-  background-attachment: scroll;
+  background-attachment: fixed;
   background-position: center center;
 }
 
@@ -1708,7 +1696,7 @@ html[data-theme="high-contrast"] .cyber-card {
     background-position: center center;
     background-size: cover;
     background-repeat: no-repeat;
-    background-attachment: scroll;
+    background-attachment: fixed;
   }
 
   .neon-vignette,
@@ -1819,7 +1807,7 @@ html[data-theme="high-contrast"] .cyber-card {
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
-  background-attachment: scroll;
+  background-attachment: fixed;
 }
 
 :where(html[data-network="constrained"]) .neon-vignette,
@@ -1871,7 +1859,7 @@ html[data-theme="high-contrast"] .cyber-card {
 
 @media (update: slow) {
   body {
-    background-attachment: scroll;
+    background-attachment: fixed;
   }
 
   .neon-vignette,
@@ -1918,7 +1906,7 @@ html[data-theme="high-contrast"] .cyber-card {
 
 @media (any-pointer: coarse) {
   body {
-    background-attachment: scroll;
+    background-attachment: fixed;
     background-position: center center;
   }
 
