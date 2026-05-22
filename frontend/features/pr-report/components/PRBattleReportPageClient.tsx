@@ -279,16 +279,7 @@ export function PRBattleReportPageClient({
               </section>
             ) : null}
           </div>
-        ) : (
-          <GlowCard className="space-y-2">
-            <p className="text-sm text-muted">
-              Technical details include score matrix factors, deterministic XP components, evidence signals, and reward derivation.
-            </p>
-            <p className="text-xs text-muted">
-              Expand only when you need deep audit context for this PR.
-            </p>
-          </GlowCard>
-        )}
+        ) : null}
       </section>
       {data.suggestedQuestId ? (
         <section className="render-opt-section">

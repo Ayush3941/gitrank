@@ -113,22 +113,45 @@ func (e *Executor) SyncRepository(
 		return response, err
 	}
 
-	pullRequests, reviewsByNumber, err := runtime.fetchPullRequests(ctx, owner, name, actor)
+	pullRequests := []map[string]any{}
+	reviewsByNumber := map[int][]map[string]any{}
+	pullRequestsSkipped := false
+	pullRequests, reviewsByNumber, err = runtime.fetchPullRequests(ctx, owner, name, actor)
 	if err != nil {
-		_ = e.recordFailedSyncRun(ctx, req.Repository, req, actor, correlationID, startedAt, err)
-		return response, err
+		if isSkippableGitHubSyncError(err) {
+			pullRequestsSkipped = true
+			pullRequests = []map[string]any{}
+			reviewsByNumber = map[int][]map[string]any{}
+		} else {
+			_ = e.recordFailedSyncRun(ctx, req.Repository, req, actor, correlationID, startedAt, err)
+			return response, err
+		}
 	}
 
-	issues, err := runtime.fetchIssues(ctx, owner, name)
+	issues := []map[string]any{}
+	issuesSkipped := false
+	issues, err = runtime.fetchIssues(ctx, owner, name)
 	if err != nil {
-		_ = e.recordFailedSyncRun(ctx, req.Repository, req, actor, correlationID, startedAt, err)
-		return response, err
+		if isSkippableGitHubSyncError(err) {
+			issuesSkipped = true
+			issues = []map[string]any{}
+		} else {
+			_ = e.recordFailedSyncRun(ctx, req.Repository, req, actor, correlationID, startedAt, err)
+			return response, err
+		}
 	}
 
-	commits, err := runtime.fetchCommits(ctx, owner, name)
+	commits := []map[string]any{}
+	commitsSkipped := false
+	commits, err = runtime.fetchCommits(ctx, owner, name)
 	if err != nil {
-		_ = e.recordFailedSyncRun(ctx, req.Repository, req, actor, correlationID, startedAt, err)
-		return response, err
+		if isSkippableGitHubSyncError(err) {
+			commitsSkipped = true
+			commits = []map[string]any{}
+		} else {
+			_ = e.recordFailedSyncRun(ctx, req.Repository, req, actor, correlationID, startedAt, err)
+			return response, err
+		}
 	}
 
 	finishedAt := time.Now().UTC()
@@ -221,6 +244,15 @@ func (e *Executor) SyncRepository(
 		"reviews":       countReviewMaps(reviewsByNumber),
 		"issues":        len(issues),
 		"commits":       len(commits),
+	}
+	if pullRequestsSkipped {
+		response.Fetched["pull_requests_skipped"] = 1
+	}
+	if issuesSkipped {
+		response.Fetched["issues_skipped"] = 1
+	}
+	if commitsSkipped {
+		response.Fetched["commits_skipped"] = 1
 	}
 	return response, nil
 }

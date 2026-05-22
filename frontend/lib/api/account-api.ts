@@ -107,7 +107,21 @@ export type AccountDataExport = {
 };
 
 export async function requestProfileSync(): Promise<ApiSyncResponse> {
-  return queueSyncRequest({ mode: "user" });
+  try {
+    return await queueSyncRequest({ mode: "user" });
+  } catch (queueError) {
+    try {
+      const execution = await runUserSync();
+      const acceptedAt = execution.finished_at || execution.started_at || new Date().toISOString();
+      return {
+        status: execution.status || "queued",
+        correlation_id: execution.correlation_id,
+        accepted_at: acceptedAt,
+      };
+    } catch {
+      throw queueError;
+    }
+  }
 }
 
 export async function queueSyncRequest(input: QueueSyncInput): Promise<ApiSyncResponse> {
