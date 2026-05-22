@@ -4,6 +4,7 @@ import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/cn";
 
 const filters = [
   { value: "All", short: "All" },
@@ -69,18 +70,27 @@ export function ContributionFilters({
       aria-labelledby={compact ? undefined : "contribution-filter-controls-label"}
       className="space-y-4"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        {!compact ? (
+      <p
+        id={statusId}
+        role="status"
+        aria-live="polite"
+        className={cn(compact ? "sr-only" : "text-sm text-cyan-100")}
+      >
+        {isFiltering
+          ? "Updating..."
+          : `${resultCount ?? 0} cards`}
+      </p>
+      {!compact ? (
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <p id="contribution-filter-controls-label" className="text-sm font-medium text-cyan-100">
             Filters
           </p>
-        ) : null}
-        <p id={statusId} role="status" aria-live="polite" className="text-sm text-cyan-100">
+          <p className="text-sm text-cyan-100" aria-hidden="true">
           {isFiltering
             ? "Updating..."
             : `${resultCount ?? 0} cards`}
-        </p>
-        <div className="flex items-center gap-2">
+          </p>
+          <div className="flex items-center gap-2">
           {onReset ? (
             <Button
               type="button"
@@ -93,8 +103,9 @@ export function ContributionFilters({
               Clear
             </Button>
           ) : null}
+          </div>
         </div>
-      </div>
+      ) : null}
       {activeChips.length ? (
         <ul role="list" className="flex flex-wrap gap-2 text-xs">
           {activeChips.map((chip) => {

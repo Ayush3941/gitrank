@@ -1753,6 +1753,10 @@
 - Added copy actions for core narrative summaries:
   - dashboard identity summary, public profile identity summary, and PR report AI summary now expose `Copy summary`
   - speeds up reuse of polished contribution language for resumes, social profiles, and presentations.
+- Applied dashboard declutter and filter chrome reductions:
+  - merged streak telemetry into one card (`Current streak`) by folding yearly activity into the same panel.
+  - compact contribution filters now hide the top status/reset chrome while retaining full category/search/sort behavior.
+  - smoothed long-tail background glow falloff so neon overlays start and fade more gradually with less visual noise.
 
 ## 2026-05-16
 

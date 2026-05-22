@@ -206,32 +206,22 @@ export function DashboardPageClient() {
           className="xl:col-span-2"
           label="PR evidence window"
           value={`${contributionWindowCount}/${contributionWindowCap}`}
-          detail={`${contributionWindowFillRate}% filled`}
+          detail={`${contributionWindowFillRate}% loaded`}
           icon={<Activity className="h-5 w-5 text-primary" />}
         />
         <StatCard
-          className="xl:col-span-2"
+          className="xl:col-span-2 sm:col-span-2"
           label="Reviewed PRs"
           value={user.reviewedPrCount}
           icon={<Activity className="h-5 w-5 text-primary" />}
         />
       </section>
-      <section className="grid gap-4 md:grid-cols-2">
+      <section className="grid gap-4">
         <StatCard
           label="Current streak"
           value={`${streak.currentStreakDays}d`}
-          detail={`Best streak ${streak.bestStreakDays} days`}
+          detail={`Best ${streak.bestStreakDays} days · ${streak.activeDaysThisYear} active days this year`}
           icon={<Flame className="h-5 w-5 text-primary" />}
-        />
-        <StatCard
-          label="Active days this year"
-          value={streak.activeDaysThisYear}
-          detail={
-            streak.lastActiveDate
-              ? `Last active ${streak.lastActiveDate}`
-              : "No contribution activity yet."
-          }
-          icon={<Activity className="h-5 w-5 text-primary" />}
         />
       </section>
       <div className="grid gap-6 xl:grid-cols-[0.86fr,1.14fr]">
