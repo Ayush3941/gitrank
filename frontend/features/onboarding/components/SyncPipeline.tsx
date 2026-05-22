@@ -7,7 +7,7 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { OnboardingStepper } from "@/features/onboarding/components/OnboardingStepper";
-import { useRunUserSync } from "@/hooks/use-account-actions";
+import { useRequestProfileSync } from "@/hooks/use-account-actions";
 import { useMyProfile } from "@/hooks/use-profile";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { formatRelativeDays } from "@/lib/formatters";
@@ -36,7 +36,7 @@ function syncPollIntervalMs(attempt: number): number {
 
 export function SyncPipeline() {
   const { data, isLoading, isError, refetch } = useMyProfile();
-  const userSync = useRunUserSync();
+  const userSync = useRequestProfileSync();
   const [syncStartedAt, setSyncStartedAt] = useState<string | null>(null);
   const [syncNotice, setSyncNotice] = useState("");
   const [pollIntervalMs, setPollIntervalMs] = useState<number>(POLL_INTERVAL_STEPS_MS[0]);
@@ -63,12 +63,12 @@ export function SyncPipeline() {
     if (data.user.syncStatus.state === "syncing") {
       return;
     }
-    userSync.mutate(data.user.username, {
+    userSync.mutate(undefined, {
       onSuccess: (result) => {
         syncPollingAttemptRef.current = 0;
         setPollIntervalMs(POLL_INTERVAL_STEPS_MS[0]);
-        setSyncStartedAt(result.started_at);
-        if (result.status === "queued" || result.fetched?.fallback_queued === 1) {
+        setSyncStartedAt(result.accepted_at);
+        if (result.status === "queued") {
           setSyncNotice(
             "Initial sync execution was queued because live GitHub fetch is saturated. GitRank will keep polling for refreshed profile evidence.",
           );
@@ -168,12 +168,12 @@ export function SyncPipeline() {
       return;
     }
     setSyncNotice("");
-    userSync.mutate(data.user.username, {
+    userSync.mutate(undefined, {
       onSuccess: (result) => {
         syncPollingAttemptRef.current = 0;
         setPollIntervalMs(POLL_INTERVAL_STEPS_MS[0]);
-        setSyncStartedAt(result.started_at);
-        if (result.status === "queued" || result.fetched?.fallback_queued === 1) {
+        setSyncStartedAt(result.accepted_at);
+        if (result.status === "queued") {
           setSyncNotice(
             "Retry was queued because live GitHub fetch is saturated. GitRank will keep polling for refreshed profile evidence.",
           );

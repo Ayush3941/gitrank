@@ -367,5 +367,14 @@ function sanitizeSyncRunErrorMessage(value?: string): string | null {
   if (!value || !value.trim()) {
     return null;
   }
+  const normalized = value.toLowerCase();
+  if (
+    normalized.includes("context deadline exceeded") ||
+    normalized.includes("client.timeout exceeded") ||
+    normalized.includes("timeout while awaiting headers") ||
+    normalized.includes("timeout awaiting response headers")
+  ) {
+    return "GitHub timed out while fetching some metadata. Existing evidence was kept and a background retry can fill remaining gaps.";
+  }
   return sanitizeUserFacingError(value, "settings-sync-runs");
 }

@@ -118,8 +118,14 @@ export async function requestProfileSync(): Promise<ApiSyncResponse> {
         correlation_id: execution.correlation_id,
         accepted_at: acceptedAt,
       };
-    } catch {
-      throw queueError;
+    } catch (executionError) {
+      if (executionError instanceof Error) {
+        throw executionError;
+      }
+      if (queueError instanceof Error) {
+        throw queueError;
+      }
+      throw new Error("User sync request failed.");
     }
   }
 }
