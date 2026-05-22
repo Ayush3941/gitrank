@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ArrowRight, Award, Sparkles } from "lucide-react";
-import { useState } from "react";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { RarityBadge } from "@/components/shared/RarityBadge";
@@ -49,8 +48,6 @@ export function RevealPanel({
           "Review contribution drill-down for high-impact PR evidence cards.",
           "Share your public profile once privacy toggles are set.",
         ];
-  const [showUnlockPreview, setShowUnlockPreview] = useState(true);
-  const [showNextActions, setShowNextActions] = useState(true);
 
   return (
     <main className="mx-auto max-w-5xl">
@@ -109,55 +106,27 @@ export function RevealPanel({
               <h2 className="text-sm font-semibold text-white text-left">
                 Unlock preview ({unlockedBadges.length > 0 ? `${unlockedBadges.length} earned` : "next badge targets"})
               </h2>
-              <Button
-                type="button"
-                size="sm"
-                variant={showUnlockPreview ? "secondary" : "default"}
-                onClick={() => {
-                  setShowUnlockPreview((current) => !current);
-                }}
-                aria-expanded={showUnlockPreview}
-                aria-controls="reveal-unlock-preview"
-              >
-                {showUnlockPreview ? "Hide section" : "Show section"}
-              </Button>
             </div>
-            {showUnlockPreview ? (
-              <ul id="reveal-unlock-preview" role="list" className="grid gap-4 sm:grid-cols-3">
-                {unlockedBadges.length > 0 ? (
-                  unlockedBadges.map((badge) => (
-                    <li key={badge.id} className="list-none rounded-[1.75rem] border border-cyan-300/16 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/22 p-5 text-left">
-                      <div className="flex items-center justify-between">
-                        <Award className="h-5 w-5 text-primary" />
-                        <RarityBadge rarity={badge.rarity} />
-                      </div>
-                      <h3 className="mt-4 text-xl font-semibold text-white">{badge.name}</h3>
-                      <p className="mt-2 text-sm text-muted">{badge.description}</p>
-                    </li>
-                  ))
-                ) : (
-                  <>
-                    <li className="list-none"><RevealFallbackCard title="First merge unlock" body="Merge one meaningful PR to activate the first badge." /></li>
-                    <li className="list-none"><RevealFallbackCard title="Review depth unlock" body="Maintainer-reviewed work speeds up trust and progression." /></li>
-                    <li className="list-none"><RevealFallbackCard title="Consistency unlock" body="Sustained weekly contribution evidence unlocks rarer badge tiers." /></li>
-                  </>
-                )}
-              </ul>
-            ) : (
-              <div id="reveal-unlock-preview" className="neon-surface rounded-[1.35rem] border-dashed border-primary/24 px-4 py-3">
-                <div className="flex flex-wrap items-center gap-2 text-xs">
-                  <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
-                    Unlocked badges {unlockedBadges.length}
-                  </span>
-                  <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
-                    Signals {strongestSignals.length > 0 ? strongestSignals.join(", ") : "Pending"}
-                  </span>
-                  <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
-                    Evidence rows {evidenceRows}
-                  </span>
-                </div>
-              </div>
-            )}
+            <ul id="reveal-unlock-preview" role="list" className="grid gap-4 sm:grid-cols-3">
+              {unlockedBadges.length > 0 ? (
+                unlockedBadges.map((badge) => (
+                  <li key={badge.id} className="list-none rounded-[1.75rem] border border-cyan-300/16 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/22 p-5 text-left">
+                    <div className="flex items-center justify-between">
+                      <Award className="h-5 w-5 text-primary" />
+                      <RarityBadge rarity={badge.rarity} />
+                    </div>
+                    <h3 className="mt-4 text-xl font-semibold text-white">{badge.name}</h3>
+                    <p className="mt-2 text-sm text-muted">{badge.description}</p>
+                  </li>
+                ))
+              ) : (
+                <>
+                  <li className="list-none"><RevealFallbackCard title="First merge unlock" body="Merge one meaningful PR to activate the first badge." /></li>
+                  <li className="list-none"><RevealFallbackCard title="Review depth unlock" body="Maintainer-reviewed work speeds up trust and progression." /></li>
+                  <li className="list-none"><RevealFallbackCard title="Consistency unlock" body="Sustained weekly contribution evidence unlocks rarer badge tiers." /></li>
+                </>
+              )}
+            </ul>
           </div>
         </div>
         <div className="space-y-4">
@@ -166,42 +135,17 @@ export function RevealPanel({
               <h2 className="text-sm font-semibold text-white text-left">
                 What to do next ({nextActions.length} steps)
               </h2>
-              <Button
-                type="button"
-                size="sm"
-                variant={showNextActions ? "secondary" : "default"}
-                onClick={() => {
-                  setShowNextActions((current) => !current);
-                }}
-                aria-expanded={showNextActions}
-                aria-controls="reveal-next-actions"
-              >
-                {showNextActions ? "Hide section" : "Show section"}
-              </Button>
             </div>
-            {showNextActions ? (
-              <div id="reveal-next-actions" className="neon-surface rounded-[1.75rem] px-5 py-4 text-left">
-                <ol className="mt-1 grid gap-3 sm:grid-cols-3">
-                  {nextActions.map((item, index) => (
-                    <li key={`${item}-${index}`} className="neon-metric rounded-[1.25rem] px-3 py-3">
-                      <p className="text-xs font-medium text-cyan-100">Step {index + 1}</p>
-                      <p className="mt-2 text-sm leading-6 text-muted">{item}</p>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            ) : (
-              <div id="reveal-next-actions" className="neon-surface rounded-[1.35rem] border-dashed border-primary/24 px-4 py-3">
-                <div className="flex flex-wrap items-center gap-2 text-xs">
-                  <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
-                    Steps {nextActions.length}
-                  </span>
-                  <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
-                    First action {nextActions[0] ?? "Pending"}
-                  </span>
-                </div>
-              </div>
-            )}
+            <div id="reveal-next-actions" className="neon-surface rounded-[1.75rem] px-5 py-4 text-left">
+              <ol className="mt-1 grid gap-3 sm:grid-cols-3">
+                {nextActions.map((item, index) => (
+                  <li key={`${item}-${index}`} className="neon-metric rounded-[1.25rem] px-3 py-3">
+                    <p className="text-xs font-medium text-cyan-100">Step {index + 1}</p>
+                    <p className="mt-2 text-sm leading-6 text-muted">{item}</p>
+                  </li>
+                ))}
+              </ol>
+            </div>
           </div>
         </div>
         <div className="flex flex-wrap justify-center gap-3">

@@ -39,7 +39,6 @@ export function SyncPipeline() {
   const userSync = useRunUserSync();
   const [syncStartedAt, setSyncStartedAt] = useState<string | null>(null);
   const [syncNotice, setSyncNotice] = useState("");
-  const [showPhaseBreakdown, setShowPhaseBreakdown] = useState(false);
   const [pollIntervalMs, setPollIntervalMs] = useState<number>(POLL_INTERVAL_STEPS_MS[0]);
   const autoRequestedRef = useRef(false);
   const syncStartedEventSent = useRef(false);
@@ -229,29 +228,28 @@ export function SyncPipeline() {
         <div className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-medium text-primary">
             <span>Pipeline progress</span>
-            <div className="flex items-center gap-2">
-              <span className="numeric-readout">{pipelineProgress}%</span>
-              <Button
-                type="button"
-                size="sm"
-                variant={showPhaseBreakdown ? "secondary" : "default"}
-                onClick={() => {
-                  setShowPhaseBreakdown((current) => !current);
-                }}
-                aria-expanded={showPhaseBreakdown}
-                aria-controls="onboarding-sync-phases"
-              >
-                {showPhaseBreakdown ? "Hide phases" : "Show phases"}
-              </Button>
-            </div>
+            <span className="numeric-readout">{pipelineProgress}%</span>
           </div>
           <Progress value={pipelineProgress} />
           <p className="text-sm text-muted">
             {completedSteps} of {steps.length} sync phases completed.
           </p>
         </div>
-        {showPhaseBreakdown ? (
-          <ol id="onboarding-sync-phases" className="space-y-3">
+        <div id="onboarding-sync-phases" className="space-y-3">
+          <div className="neon-surface rounded-[1.35rem] border-dashed border-primary/24 px-4 py-3">
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
+                Sync state {formatSyncState(syncState)}
+              </span>
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
+                Current phase {currentPhaseLabel}
+              </span>
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
+                Poll cadence ~{Math.max(5, Math.round(pollIntervalMs / 1000))}s
+              </span>
+            </div>
+          </div>
+          <ol className="space-y-3">
             {steps.map((step, index) => {
               const done = index < completedSteps;
               const active = index === completedSteps && !isSynced;
@@ -281,21 +279,7 @@ export function SyncPipeline() {
               );
             })}
           </ol>
-        ) : (
-          <div id="onboarding-sync-phases" className="neon-surface rounded-[1.35rem] border-dashed border-primary/24 px-4 py-3">
-            <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
-                Sync state {formatSyncState(syncState)}
-              </span>
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
-                Current phase {currentPhaseLabel}
-              </span>
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
-                Poll cadence ~{Math.max(5, Math.round(pollIntervalMs / 1000))}s
-              </span>
-            </div>
-          </div>
-        )}
+        </div>
         <div className="flex flex-wrap gap-3">
           {canRetrySync ? (
             <Button
