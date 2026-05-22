@@ -132,7 +132,7 @@ export function LeaderboardPageClient() {
           analyticsTarget="leaderboard:stale"
         />
       ) : null}
-      <section id="leaderboard-filters" className="scroll-mt-24 space-y-3">
+      <section className="space-y-3">
         <div className="sm:hidden">
           <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
             <span className="sr-only">Leaderboard lane filter</span>
@@ -217,7 +217,7 @@ export function LeaderboardPageClient() {
         />
       ) : null}
       {!isLoading && !isError && snapshot && rows.length ? (
-        <section id="leaderboard-arena" className="render-opt-section scroll-mt-24 space-y-4">
+        <section className="render-opt-section space-y-4">
           {snapshot.currentUser ? (
             <div className="space-y-3">
               <h2 className="text-sm font-semibold text-white">

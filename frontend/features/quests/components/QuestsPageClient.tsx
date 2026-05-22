@@ -17,12 +17,6 @@ import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics"
 import type { Quest } from "@/types/gitrank";
 
 const groups: Array<Quest["cadence"]> = ["Daily", "Weekly", "Long-term", "Skill-based"];
-const QUEST_SECTION_IDS: Record<Quest["cadence"], string> = {
-  Daily: "quests-daily",
-  Weekly: "quests-weekly",
-  "Long-term": "quests-long-term",
-  "Skill-based": "quests-skill-based",
-};
 
 export function QuestsPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useQuests();
@@ -164,8 +158,7 @@ export function QuestsPageClient() {
           return (
             <section
               key={group}
-              id={QUEST_SECTION_IDS[group]}
-              className="render-opt-section scroll-mt-24 space-y-4"
+              className="render-opt-section space-y-4"
             >
               <div className="space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-3">
@@ -173,7 +166,7 @@ export function QuestsPageClient() {
                     {labelForGroup(group)} ({grouped.length})
                   </h2>
                 </div>
-                <div id={`quests-group-${group}`}>
+                <div>
                   {grouped.length > 0 ? (
                     <ul role="list" className="grid gap-4 xl:grid-cols-2">
                       {grouped.map((quest) => (

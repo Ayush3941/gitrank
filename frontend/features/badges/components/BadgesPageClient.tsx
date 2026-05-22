@@ -202,7 +202,7 @@ export function BadgesPageClient() {
           </Button>
         )}
       />
-      <section id="badges-forge" className="render-opt-section scroll-mt-24 space-y-4">
+      <section className="render-opt-section space-y-4">
         {profile?.user.syncStatus.state === "stale" ? (
           <StaleState
             message={`Badge snapshot refreshed ${formatRelativeDays(
@@ -293,7 +293,7 @@ export function BadgesPageClient() {
           </GlowCard>
         ) : null}
       </section>
-      <section id="badges-earned" className="render-opt-section scroll-mt-24 space-y-4">
+      <section className="render-opt-section space-y-4">
         <div className="space-y-3">
           <p id={badgesFilterStatusId} role="status" aria-live="polite" className="text-sm text-fuchsia-100">
             Showing {filtered.length} of {totalCount} badges
@@ -427,7 +427,7 @@ export function BadgesPageClient() {
         </div>
       </section>
       {!isLoading && !isError ? (
-        <section id="badges-locked" className="render-opt-section scroll-mt-24 space-y-3">
+        <section className="render-opt-section space-y-3">
           <div className="space-y-3">
             <h2 className="text-sm font-semibold text-white">
               Locked / upcoming badges ({lockedBadges.length})
