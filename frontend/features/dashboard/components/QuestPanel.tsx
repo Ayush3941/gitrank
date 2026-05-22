@@ -11,8 +11,7 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
     <GlowCard className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs font-medium text-primary">Active quests</p>
-          <h2 className="mt-2 text-xl font-semibold text-white">Next XP targets</h2>
+          <h2 className="text-xl font-semibold text-white">Active quests</h2>
         </div>
         <div className="neon-surface rounded-3xl p-3 text-primary">
           <Target className="h-5 w-5" />
@@ -22,7 +21,7 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
         {quests.length === 0 ? (
           <div className="neon-surface space-y-3 rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
             <p>
-              No quests yet. Run sync to generate missions from scored PR evidence.
+              No quests yet. Sync profile evidence to generate missions.
             </p>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" variant="ghost">

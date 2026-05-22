@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef } from "react";
-import { Activity, Flame, Medal, ShieldCheck } from "lucide-react";
+import { Activity, Flame, Medal } from "lucide-react";
 import { CurrentLeagueCard } from "@/features/dashboard/components/CurrentLeagueCard";
 import { QuestPanel } from "@/features/dashboard/components/QuestPanel";
 import { RecentBattleReports } from "@/features/dashboard/components/RecentBattleReports";
 import { DashboardHeroRankCard } from "@/features/dashboard/components/DashboardHeroRankCard";
+import { GlowCard } from "@/components/shared/GlowCard";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -196,33 +197,45 @@ export function DashboardPageClient() {
           detail="Impact-weighted score from merged contribution evidence."
           icon={<Medal className="h-5 w-5 text-primary" />}
         />
-        <StatCard
-          className="xl:col-span-2"
-          label="Merged PRs"
-          value={user.mergedPrCount}
-          icon={<ShieldCheck className="h-5 w-5 text-primary" />}
-        />
-        <StatCard
-          className="xl:col-span-2"
-          label="PR evidence window"
-          value={`${contributionWindowCount}/${contributionWindowCap}`}
-          detail={`${contributionWindowFillRate}% loaded`}
-          icon={<Activity className="h-5 w-5 text-primary" />}
-        />
-        <StatCard
-          className="xl:col-span-2 sm:col-span-2"
-          label="Reviewed PRs"
-          value={user.reviewedPrCount}
-          icon={<Activity className="h-5 w-5 text-primary" />}
-        />
-      </section>
-      <section className="grid gap-4">
-        <StatCard
-          label="Current streak"
-          value={`${streak.currentStreakDays}d`}
-          detail={`Best ${streak.bestStreakDays} days · ${streak.activeDaysThisYear} active days this year`}
-          icon={<Flame className="h-5 w-5 text-primary" />}
-        />
+        <GlowCard className="xl:col-span-3 space-y-4">
+          <div className="flex items-center justify-between text-muted">
+            <span className="text-sm">Current streak</span>
+            <span className="hud-pill rounded-2xl p-2">
+              <Flame className="h-5 w-5 text-primary" />
+            </span>
+          </div>
+          <div className="numeric-readout text-3xl font-semibold tracking-tight">
+            {streak.currentStreakDays}d
+          </div>
+          <p className="text-sm leading-6 text-muted">
+            Best {streak.bestStreakDays}d • {streak.activeDaysThisYear} active days this year
+          </p>
+        </GlowCard>
+        <GlowCard className="xl:col-span-3 space-y-4">
+          <div className="flex items-center justify-between text-muted">
+            <span className="text-sm">Evidence window</span>
+            <span className="hud-pill rounded-2xl p-2">
+              <Activity className="h-5 w-5 text-primary" />
+            </span>
+          </div>
+          <div className="numeric-readout text-3xl font-semibold tracking-tight">
+            {contributionWindowCount}/{contributionWindowCap}
+          </div>
+          <ul role="list" className="space-y-2 text-sm text-muted">
+            <li className="flex items-center justify-between gap-3">
+              <span>Merged PRs</span>
+              <span className="text-white">{user.mergedPrCount}</span>
+            </li>
+            <li className="flex items-center justify-between gap-3">
+              <span>Reviewed PRs</span>
+              <span className="text-white">{user.reviewedPrCount}</span>
+            </li>
+            <li className="flex items-center justify-between gap-3">
+              <span>Loaded</span>
+              <span className="text-white">{contributionWindowFillRate}%</span>
+            </li>
+          </ul>
+        </GlowCard>
       </section>
       <div className="grid gap-6 xl:grid-cols-[0.86fr,1.14fr]">
         <div className="space-y-6">

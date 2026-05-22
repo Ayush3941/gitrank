@@ -18,6 +18,7 @@ import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useProfile } from "@/hooks/use-profile";
 import { BestPRsPanel } from "@/features/profile/components/BestPRsPanel";
 import { PublicProfileHero } from "@/features/profile/components/PublicProfileHero";
+import type { SkillCategory, SkillNode } from "@/types/gitrank";
 import {
   buildDeterministicIdentitySummary,
   deriveDeterministicArchetype,
@@ -94,6 +95,10 @@ export function PublicProfilePageClient({
   const unlockedBadges = useMemo(
     () => data?.user.badges.filter((badge) => badge.unlocked) ?? [],
     [data],
+  );
+  const skillTree = useMemo(
+    () => deduplicateSkillTree(data?.user.skillTree ?? []),
+    [data?.user.skillTree],
   );
   const fallbackIdentitySummary = useMemo(() => {
     if (!data) {
@@ -206,7 +211,7 @@ export function PublicProfilePageClient({
               <p className="text-xs font-medium text-primary">Skills</p>
               <h2 className="mt-2 text-xl font-semibold text-white">Strength map</h2>
             </div>
-            <SkillRadarChart skills={data.user.skillTree} />
+            <SkillRadarChart skills={skillTree} />
           </GlowCard>
         </div>
       </section>
@@ -272,4 +277,34 @@ export function PublicProfilePageClient({
       </section>
     </div>
   );
+}
+
+function deduplicateSkillTree(skills: SkillNode[]): SkillNode[] {
+  const ordered: SkillNode[] = [];
+  const indexByCategory = new Map<string, number>();
+
+  for (const skill of skills) {
+    const key = normalizeSkillKey(skill.category);
+    const existingIndex = indexByCategory.get(key);
+    if (existingIndex === undefined) {
+      indexByCategory.set(key, ordered.length);
+      ordered.push(skill);
+      continue;
+    }
+    const existing = ordered[existingIndex];
+    if (skill.score > existing.score) {
+      ordered[existingIndex] = {
+        ...existing,
+        ...skill,
+      };
+    }
+  }
+
+  return ordered;
+}
+
+function normalizeSkillKey(value: SkillCategory): string {
+  const normalized = value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  if (normalized === "devops") return "infrastructure";
+  return normalized;
 }

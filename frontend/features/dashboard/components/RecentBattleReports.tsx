@@ -15,8 +15,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
   return (
     <GlowCard className="space-y-5">
       <div>
-        <p className="text-xs font-medium text-primary">Recent battle reports</p>
-        <h2 className="mt-2 text-xl font-semibold text-white">Top PR reports</h2>
+        <h2 className="text-xl font-semibold text-white">PR reports</h2>
         <div className="mt-3">
           <Button asChild size="sm" variant="secondary">
             <Link href="/dashboard/contributions" prefetch={false}>
