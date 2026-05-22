@@ -55,6 +55,9 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.GitHub.CircuitBreakerHalfOpenMax != 1 {
 		t.Fatalf("GitHub.CircuitBreakerHalfOpenMax = %d, want 1", cfg.GitHub.CircuitBreakerHalfOpenMax)
 	}
+	if cfg.GitHub.AuthoredPRSyncLimit != 10 {
+		t.Fatalf("GitHub.AuthoredPRSyncLimit = %d, want 10", cfg.GitHub.AuthoredPRSyncLimit)
+	}
 	if cfg.GitHub.RepositoryCacheTTL != 10*time.Minute {
 		t.Fatalf("GitHub.RepositoryCacheTTL = %v, want 10m", cfg.GitHub.RepositoryCacheTTL)
 	}
@@ -97,6 +100,7 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	t.Setenv("GITHUB_CIRCUIT_BREAKER_OPEN_INTERVAL", "45s")
 	t.Setenv("GITHUB_CIRCUIT_BREAKER_HALF_OPEN_MAX_REQUESTS", "2")
 	t.Setenv("GITHUB_REPOSITORY_CACHE_TTL", "30m")
+	t.Setenv("GITHUB_AUTHORED_PR_SYNC_LIMIT", "12")
 	t.Setenv("GITHUB_INSTALLATION_REFRESH_SKEW", "7m")
 	t.Setenv("AI_PROVIDER", "gemini")
 	t.Setenv("GEMINI_API_KEY", "test-key")
@@ -170,6 +174,9 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	}
 	if cfg.GitHub.RepositoryCacheTTL != 30*time.Minute {
 		t.Fatalf("GitHub.RepositoryCacheTTL = %v, want 30m", cfg.GitHub.RepositoryCacheTTL)
+	}
+	if cfg.GitHub.AuthoredPRSyncLimit != 12 {
+		t.Fatalf("GitHub.AuthoredPRSyncLimit = %d, want 12", cfg.GitHub.AuthoredPRSyncLimit)
 	}
 	if cfg.AI.PRMaxChangedFiles != 24 || cfg.AI.PRMaxFileRecords != 30 {
 		t.Fatalf("AI file limits = changed %d files %d, want 24/30", cfg.AI.PRMaxChangedFiles, cfg.AI.PRMaxFileRecords)

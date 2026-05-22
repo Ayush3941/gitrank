@@ -104,6 +104,7 @@ type GitHub struct {
 	RequestTimeout                 time.Duration
 	MaxPageSize                    int
 	GraphQLPageSize                int
+	AuthoredPRSyncLimit            int
 	MaxBodyBytes                   int
 	DedupeTTL                      time.Duration
 	FailedLookback                 time.Duration
@@ -225,6 +226,7 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			RequestTimeout:                 getDuration("GITHUB_REQUEST_TIMEOUT", 20*time.Second),
 			MaxPageSize:                    getInt("GITHUB_MAX_PAGE_SIZE", 100),
 			GraphQLPageSize:                getInt("GITHUB_GRAPHQL_PAGE_SIZE", 100),
+			AuthoredPRSyncLimit:            getInt("GITHUB_AUTHORED_PR_SYNC_LIMIT", 10),
 			MaxBodyBytes:                   getInt("GITHUB_WEBHOOK_MAX_BODY_BYTES", 1<<20),
 			DedupeTTL:                      getDuration("GITHUB_WEBHOOK_DEDUPE_TTL", 7*24*time.Hour),
 			FailedLookback:                 getDuration("GITHUB_FAILED_DELIVERY_LOOKBACK", 72*time.Hour),
@@ -359,6 +361,9 @@ func (a App) ValidateBase() error {
 	}
 	if a.GitHub.GraphQLPageSize <= 0 || a.GitHub.GraphQLPageSize > 100 {
 		problems = append(problems, "GITHUB_GRAPHQL_PAGE_SIZE must be between 1 and 100")
+	}
+	if a.GitHub.AuthoredPRSyncLimit <= 0 || a.GitHub.AuthoredPRSyncLimit > 100 {
+		problems = append(problems, "GITHUB_AUTHORED_PR_SYNC_LIMIT must be between 1 and 100")
 	}
 	if strings.TrimSpace(a.GitHub.APIVersion) == "" {
 		problems = append(problems, "GITHUB_API_VERSION is required")

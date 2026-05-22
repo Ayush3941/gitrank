@@ -483,7 +483,7 @@ func TestExecutorFetchAuthoredPullRequestTargetsUsesGitHubSearch(t *testing.T) {
 		},
 	}, nil, client)
 
-	targets, incomplete, err := executor.fetchAuthoredPullRequestTargets(context.Background(), "alice")
+	targets, incomplete, err := executor.fetchAuthoredPullRequestTargets(context.Background(), "alice", 10)
 	if err != nil {
 		t.Fatalf("fetchAuthoredPullRequestTargets() error = %v", err)
 	}

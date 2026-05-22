@@ -24,7 +24,7 @@ const (
 	defaultCommitSyncPageSize        = 50
 	defaultUserRepositoryLimit       = 100
 	defaultAuthoredPRSearchLimit     = 100
-	defaultAuthoredPRSyncLimit       = 100
+	defaultAuthoredPRSyncLimit       = 10
 	defaultUserPRSyncTimeout         = 20 * time.Second
 	minUserPRSyncTimeout             = 10 * time.Second
 	maxUserPRSyncTimeout             = 60 * time.Second
@@ -294,7 +294,8 @@ func (e *Executor) SyncUser(
 		return response, err
 	}
 
-	authoredPullRequests, authoredSearchIncomplete, err := runtime.fetchAuthoredPullRequestTargets(ctx, user)
+	authoredPRSyncLimit := boundedAuthoredPRSyncLimit(e.cfg.GitHub.AuthoredPRSyncLimit)
+	authoredPullRequests, authoredSearchIncomplete, err := runtime.fetchAuthoredPullRequestTargets(ctx, user, authoredPRSyncLimit)
 	if err != nil {
 		response.Fetched["authored_pull_request_search_failed"] = 1
 		authoredPullRequests = nil
@@ -303,8 +304,8 @@ func (e *Executor) SyncUser(
 			response.Fetched["authored_pull_request_search_unclassified"] = 1
 		}
 	}
-	if len(authoredPullRequests) > defaultAuthoredPRSyncLimit {
-		authoredPullRequests = authoredPullRequests[:defaultAuthoredPRSyncLimit]
+	if len(authoredPullRequests) > authoredPRSyncLimit {
+		authoredPullRequests = authoredPullRequests[:authoredPRSyncLimit]
 		response.Fetched["authored_pull_requests_capped"] = 1
 	}
 	aggregatePersisted := PersistResult{}
@@ -1131,8 +1132,11 @@ func (e *Executor) fetchUserRepositories(ctx context.Context, user string) ([]ma
 	return filtered, nil
 }
 
-func (e *Executor) fetchAuthoredPullRequestTargets(ctx context.Context, user string) ([]authoredPullRequestTarget, bool, error) {
-	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, defaultAuthoredPRSearchLimit)
+func (e *Executor) fetchAuthoredPullRequestTargets(ctx context.Context, user string, limit int) ([]authoredPullRequestTarget, bool, error) {
+	perPage := min(
+		boundedPageSize(e.cfg.GitHub.MaxPageSize, defaultAuthoredPRSearchLimit),
+		boundedAuthoredPRSyncLimit(limit),
+	)
 	result, _, err := githubapi.SearchIssuesAndPullRequests(ctx, e.client, githubapi.IssueSearchRequest{
 		Query:   fmt.Sprintf("author:%s type:pr archived:false", user),
 		Sort:    "updated",
@@ -1531,6 +1535,13 @@ func boundedUserPRSyncTimeout(cfg config.App) time.Duration {
 		return maxUserPRSyncTimeout
 	}
 	return timeout
+}
+
+func boundedAuthoredPRSyncLimit(limit int) int {
+	if limit <= 0 {
+		return defaultAuthoredPRSyncLimit
+	}
+	return min(limit, defaultAuthoredPRSearchLimit)
 }
 
 func gitHubStatusCodeFromError(err error) (int, bool) {
