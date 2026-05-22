@@ -11,6 +11,9 @@
 - Settings sync-collapsed summary pass:
   - replaced the collapsed sync-log helper sentence with compact sync-state chips (state, last-sync availability, current step).
   - keeps diagnostics discoverable while preserving useful context in collapsed mode.
+- Onboarding reveal collapsed-summary pass:
+  - replaced collapsed unlock/next-action helper sentences with compact summary chips (unlocked badge count, strongest signals, evidence rows, step count, first action).
+  - keeps reveal progressive disclosure while preserving useful signal in collapsed mode.
 - Public profile lazy-load pass:
   - switched heavy public-profile modules to `next/dynamic` (`PublicProfileHero`, `BestPRsPanel`, `SkillRadarChart`, `TimelineChart`) with bounded skeleton fallbacks.
   - improves first-render responsiveness on profile routes with large contribution history.

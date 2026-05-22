@@ -144,8 +144,18 @@ export function RevealPanel({
                 )}
               </ul>
             ) : (
-              <div id="reveal-unlock-preview" className="neon-surface rounded-[1.35rem] border-dashed border-primary/24 px-4 py-3 text-left text-sm text-muted">
-                Unlock preview is hidden. Expand when you want badge-target detail.
+              <div id="reveal-unlock-preview" className="neon-surface rounded-[1.35rem] border-dashed border-primary/24 px-4 py-3">
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
+                    Unlocked badges {unlockedBadges.length}
+                  </span>
+                  <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
+                    Signals {strongestSignals.length > 0 ? strongestSignals.join(", ") : "Pending"}
+                  </span>
+                  <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
+                    Evidence rows {evidenceRows}
+                  </span>
+                </div>
               </div>
             )}
           </div>
@@ -181,8 +191,15 @@ export function RevealPanel({
                 </ol>
               </div>
             ) : (
-              <div id="reveal-next-actions" className="neon-surface rounded-[1.35rem] border-dashed border-primary/24 px-4 py-3 text-left text-sm text-muted">
-                Next-step detail is hidden. Expand when you want the full action list.
+              <div id="reveal-next-actions" className="neon-surface rounded-[1.35rem] border-dashed border-primary/24 px-4 py-3">
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
+                    Steps {nextActions.length}
+                  </span>
+                  <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
+                    First action {nextActions[0] ?? "Pending"}
+                  </span>
+                </div>
               </div>
             )}
           </div>
