@@ -6,6 +6,7 @@ import { useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { ExpandableText } from "@/components/shared/ExpandableText";
+import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -208,7 +209,17 @@ export function PRBattleReportPageClient({
       <section id="pr-report-ai" className="render-opt-section scroll-mt-24">
         <DeferUntilVisible fallback={<PRReportSectionPlaceholder title="Loading AI summary" />}>
           <GlowCard className="space-y-4">
-            <p className="text-xs font-medium text-primary">AI summary</p>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs font-medium text-primary">AI summary</p>
+              <CopyTextButton
+                text={data.contribution.aiSummary}
+                label="Copy summary"
+                copiedLabel="Summary copied"
+                analyticsTarget="pr-report/ai-summary"
+                size="sm"
+                variant="ghost"
+              />
+            </div>
             {fallbackDetail ? (
               <p className="rounded-full border border-amber-400/24 bg-amber-400/10 px-3 py-1.5 text-xs text-amber-100">
                 Gemini enrichment unavailable: {fallbackDetail}. Showing deterministic summary.

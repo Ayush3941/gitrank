@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Sparkles, Star } from "lucide-react";
 import { AnimatedNumber } from "@/components/shared/AnimatedNumber";
+import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { RankBadge } from "@/components/shared/RankBadge";
@@ -96,9 +97,19 @@ export function DashboardHeroRankCard({
       </div>
       {identitySummary ? (
         <div className="rounded-[1.75rem] border border-cyan-300/20 bg-cyan-400/8 p-4">
-          <p className="text-xs font-medium text-cyan-200">
-            Identity summary ({aiMode === "gemini" ? "Gemini" : "Deterministic"})
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-medium text-cyan-200">
+              Identity summary ({aiMode === "gemini" ? "Gemini" : "Deterministic"})
+            </p>
+            <CopyTextButton
+              text={identitySummary}
+              label="Copy summary"
+              copiedLabel="Summary copied"
+              analyticsTarget="dashboard/identity-summary"
+              size="sm"
+              variant="ghost"
+            />
+          </div>
           <ExpandableText
             text={identitySummary}
             lines={4}

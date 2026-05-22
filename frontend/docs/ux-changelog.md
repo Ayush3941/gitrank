@@ -1630,6 +1630,9 @@
 - Added copy-ready impact actions on contribution cards:
   - each impact summary panel now includes `Copy impact` with feedback states
   - makes PR narratives immediately reusable in public profile updates and presentation material.
+- Added copy actions for core narrative summaries:
+  - dashboard identity summary, public profile identity summary, and PR report AI summary now expose `Copy summary`
+  - speeds up reuse of polished contribution language for resumes, social profiles, and presentations.
 
 ## 2026-05-16
 

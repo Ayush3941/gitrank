@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import type { ReactNode } from "react";
+import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
@@ -60,7 +61,17 @@ export function PublicProfileHero({
           />
           {identitySummary ? (
             <div className="neon-callout rounded-2xl px-4 py-3 text-sm text-muted">
-              <p className="cyber-readout text-xs font-medium text-cyan-200">Identity summary</p>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="cyber-readout text-xs font-medium text-cyan-200">Identity summary</p>
+                <CopyTextButton
+                  text={identitySummary}
+                  label="Copy summary"
+                  copiedLabel="Summary copied"
+                  analyticsTarget="public-profile/identity-summary"
+                  size="sm"
+                  variant="ghost"
+                />
+              </div>
               <ExpandableText
                 text={identitySummary}
                 lines={4}
