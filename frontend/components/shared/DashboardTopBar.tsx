@@ -16,10 +16,10 @@ export function DashboardTopBar({
 }) {
   return (
     <div className={cn(embedded ? "px-2 py-1 sm:px-3 sm:py-1.5" : "dashboard-nav-shell px-4 py-2.5 sm:px-5")}>
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="min-w-0">
-          <p className="truncate text-xs font-medium text-muted">Signed in as @{user.username}</p>
-        </div>
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium text-muted">
+          @{user.username}
+        </span>
         <div className="flex flex-wrap items-center gap-2">
           <SyncStatusPill status={user.syncStatus} />
           <RankBadge rank={user.level.rankTier} />
@@ -32,12 +32,10 @@ export function DashboardTopBar({
 export function DashboardTopBarSkeleton({ embedded = false }: { embedded?: boolean }) {
   return (
     <div className={cn(embedded ? "px-2 py-1 sm:px-3 sm:py-1.5" : "dashboard-nav-shell px-4 py-2.5 sm:px-5")}>
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="neon-skeleton h-4 w-44 rounded-[0.1rem]" />
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="neon-skeleton h-8 w-32 rounded-full" />
-          <div className="neon-skeleton h-8 w-24 rounded-full" />
-        </div>
+      <div className="flex flex-wrap items-center justify-end gap-3">
+        <div className="neon-skeleton h-8 w-24 rounded-full" />
+        <div className="neon-skeleton h-8 w-32 rounded-full" />
+        <div className="neon-skeleton h-8 w-24 rounded-full" />
       </div>
     </div>
   );

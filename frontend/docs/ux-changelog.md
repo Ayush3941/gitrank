@@ -1766,6 +1766,9 @@
 - Softened dashboard route chrome for readability:
   - reduced border/glow intensity on dashboard shell and route-nav cards.
   - keeps cyberpunk styling while reducing visual noise and scan fatigue on dense pages.
+- Simplified the dashboard top bar:
+  - removed the verbose signed-in sentence and switched to compact handle + sync/rank pills.
+  - keeps quick identity context while reducing repeated text in the dashboard chrome.
 
 ## 2026-05-16
 
