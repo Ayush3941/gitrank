@@ -88,9 +88,7 @@ export function SyncRunActivityPanel({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-xl font-semibold text-white">Sync activity</h2>
-        </div>
+        <p className="text-sm font-semibold text-white">Recent sync runs</p>
         <div className="flex flex-wrap items-center gap-2">
           {lastUpdatedAt ? (
             <p className="text-xs font-medium text-cyan-200">

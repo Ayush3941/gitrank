@@ -11,7 +11,6 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
-import { StreakHeatStrip } from "@/components/shared/StreakHeatStrip";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
 import { useContributions } from "@/hooks/use-contributions";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
@@ -251,30 +250,6 @@ export function ContributionsPageClient() {
         <p role="status" aria-live="polite" className="text-xs text-cyan-100">
           {exportNotice}
         </p>
-      ) : null}
-      {!isLoading && !isError && profile ? (
-        <section className="grid gap-3 sm:grid-cols-3">
-          <GlowCard className="neon-metric space-y-1.5">
-            <p className="text-xs font-medium text-primary">Cards in current filter</p>
-            <p className="numeric-readout text-2xl font-semibold text-white">{filteredRows.length}</p>
-            <p className="text-xs text-muted">From {totalContributionEvidence} total scored rows</p>
-          </GlowCard>
-          <GlowCard className="neon-metric space-y-1.5">
-            <p className="text-xs font-medium text-primary">Repositories touched</p>
-            <p className="numeric-readout text-2xl font-semibold text-white">{repositories.length}</p>
-            <p className="text-xs text-muted">Across the current evidence window</p>
-          </GlowCard>
-          <GlowCard className="neon-metric space-y-1.5">
-            <p className="text-xs font-medium text-primary">Current streak</p>
-            <p className="numeric-readout text-2xl font-semibold text-white">{streak.currentStreakDays}d</p>
-            <p className="text-xs text-muted">Best streak {streak.bestStreakDays}d</p>
-          </GlowCard>
-        </section>
-      ) : null}
-      {!isLoading && !isError && profile ? (
-        <section id="contributions-momentum" className="scroll-mt-24">
-          <StreakHeatStrip contributions={profile.user.contributions} />
-        </section>
       ) : null}
       {profile?.user.syncStatus.state === "stale" ? (
         <StaleState
