@@ -4,7 +4,6 @@ import Link from "next/link";
 import { ArrowRight, CalendarClock, Flame, ShieldCheck } from "lucide-react";
 import dynamic from "next/dynamic";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -81,67 +80,63 @@ export function QuestsPageClient() {
         />
       ) : null}
       {!isLoading && !isError && profile ? (
-        <DeferUntilVisible fallback={<QuestSectionPlaceholder title="Loading contributor journey frame" />}>
-          <GlowCard strong className="cyber-hero-shell relative overflow-hidden">
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-cyan-100">
-                    <CalendarClock className="h-3.5 w-3.5" />
-                    365-day contributor journey
-                  </p>
-                  <h2 className="mt-3 text-2xl font-semibold text-white">Day {dayOfYear} of 365</h2>
-                  <p className="mt-2 text-sm text-muted">
-                    Build streak momentum with consistent high-signal contributions.
-                  </p>
-                </div>
-                <div className="grid gap-2 rounded-2xl border border-fuchsia-300/28 bg-fuchsia-400/10 px-4 py-3 text-sm text-fuchsia-100">
-                  <span className="inline-flex items-center gap-2"><Flame className="h-4 w-4" /> Current streak: <span className="numeric-readout">{streak.currentStreakDays.toLocaleString("en-US")}d</span></span>
-                  <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Best streak: <span className="numeric-readout">{streak.bestStreakDays.toLocaleString("en-US")}d</span></span>
-                </div>
+        <GlowCard strong className="cyber-hero-shell relative overflow-hidden">
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-cyan-100">
+                  <CalendarClock className="h-3.5 w-3.5" />
+                  365-day contributor journey
+                </p>
+                <h2 className="mt-3 text-2xl font-semibold text-white">Day {dayOfYear} of 365</h2>
+                <p className="mt-2 text-sm text-muted">
+                  Build streak momentum with consistent high-signal contributions.
+                </p>
               </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs text-muted">
-                  <span>Annual progression</span>
-                  <span className="numeric-readout">{dayProgress}%</span>
-                </div>
-                <Progress value={dayProgress} />
+              <div className="grid gap-2 rounded-2xl border border-fuchsia-300/28 bg-fuchsia-400/10 px-4 py-3 text-sm text-fuchsia-100">
+                <span className="inline-flex items-center gap-2"><Flame className="h-4 w-4" /> Current streak: <span className="numeric-readout">{streak.currentStreakDays.toLocaleString("en-US")}d</span></span>
+                <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Best streak: <span className="numeric-readout">{streak.bestStreakDays.toLocaleString("en-US")}d</span></span>
               </div>
             </div>
-          </GlowCard>
-        </DeferUntilVisible>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs text-muted">
+                <span>Annual progression</span>
+                <span className="numeric-readout">{dayProgress}%</span>
+              </div>
+              <Progress value={dayProgress} />
+            </div>
+          </div>
+        </GlowCard>
       ) : null}
       {!isLoading && !isError ? (
-        <DeferUntilVisible fallback={<QuestSectionPlaceholder title="Loading mission spotlight" />}>
-          <div className="space-y-3">
-            <h2 className="text-sm font-semibold text-white">Mission spotlight</h2>
-            <GlowCard className="space-y-4 border border-primary/18 bg-gradient-to-br from-slate-950/86 to-cyan-950/18">
-              <ul role="list" className="grid gap-3 md:grid-cols-3">
-                <MissionSpotlightCard
-                  title="Today's Quest"
-                  quest={todayQuest}
-                  emptyCopy="No daily mission yet. Open contributions to generate fresh evidence."
-                  href="/dashboard/contributions"
-                  cta="Open contributions"
-                />
-                <MissionSpotlightCard
-                  title="Weekly Challenge"
-                  quest={weeklyQuest}
-                  emptyCopy="No weekly challenge yet. Refresh from settings to backfill scoring evidence."
-                  href="/dashboard/settings"
-                  cta="Open sync settings"
-                />
-                <MissionSpotlightCard
-                  title="Long-Term Journey"
-                  quest={longTermQuest}
-                  emptyCopy="No long-term objective yet. Keep merged, reviewed work flowing to unlock deeper tracks."
-                  href="/dashboard/contributions"
-                  cta="Keep building"
-                />
-              </ul>
-            </GlowCard>
-          </div>
-        </DeferUntilVisible>
+        <div className="space-y-3">
+          <h2 className="text-sm font-semibold text-white">Mission spotlight</h2>
+          <GlowCard className="space-y-4 border border-primary/18 bg-gradient-to-br from-slate-950/86 to-cyan-950/18">
+            <ul role="list" className="grid gap-3 md:grid-cols-3">
+              <MissionSpotlightCard
+                title="Today's Quest"
+                quest={todayQuest}
+                emptyCopy="No daily mission yet. Open contributions to generate fresh evidence."
+                href="/dashboard/contributions"
+                cta="Open contributions"
+              />
+              <MissionSpotlightCard
+                title="Weekly Challenge"
+                quest={weeklyQuest}
+                emptyCopy="No weekly challenge yet. Refresh from settings to backfill scoring evidence."
+                href="/dashboard/settings"
+                cta="Open sync settings"
+              />
+              <MissionSpotlightCard
+                title="Long-Term Journey"
+                quest={longTermQuest}
+                emptyCopy="No long-term objective yet. Keep merged, reviewed work flowing to unlock deeper tracks."
+                href="/dashboard/contributions"
+                cta="Keep building"
+              />
+            </ul>
+          </GlowCard>
+        </div>
       ) : null}
       {isLoading ? <LoadingState message="Building your skill tree..." /> : null}
       {isError ? (
@@ -184,30 +179,28 @@ export function QuestsPageClient() {
                     {labelForGroup(group)} ({grouped.length})
                   </h2>
                 </div>
-                <DeferUntilVisible fallback={<QuestSectionPlaceholder title={`Loading ${labelForGroup(group)}`} />}>
-                  <div id={`quests-group-${group}`}>
-                    {grouped.length > 0 ? (
-                      <ul role="list" className="grid gap-4 xl:grid-cols-2">
-                        {grouped.map((quest) => (
-                          <li key={quest.id} className="list-none">
-                            <QuestCard quest={quest} />
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <GlowCard className="neon-surface rounded-[1.5rem] border-dashed border-cyan-300/24 p-4 text-sm text-muted">
-                        <p>
-                          No {labelForGroup(group).toLowerCase()} is available in this snapshot yet.
-                        </p>
-                        <div className="mt-3">
-                          <Button asChild variant="secondary" size="sm">
-                            <Link href={recoveryHrefForGroup(group)} prefetch={false}>{recoveryLabelForGroup(group)}</Link>
-                          </Button>
-                        </div>
-                      </GlowCard>
-                    )}
-                  </div>
-                </DeferUntilVisible>
+                <div id={`quests-group-${group}`}>
+                  {grouped.length > 0 ? (
+                    <ul role="list" className="grid gap-4 xl:grid-cols-2">
+                      {grouped.map((quest) => (
+                        <li key={quest.id} className="list-none">
+                          <QuestCard quest={quest} />
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <GlowCard className="neon-surface rounded-[1.5rem] border-dashed border-cyan-300/24 p-4 text-sm text-muted">
+                      <p>
+                        No {labelForGroup(group).toLowerCase()} is available in this snapshot yet.
+                      </p>
+                      <div className="mt-3">
+                        <Button asChild variant="secondary" size="sm">
+                          <Link href={recoveryHrefForGroup(group)} prefetch={false}>{recoveryLabelForGroup(group)}</Link>
+                        </Button>
+                      </div>
+                    </GlowCard>
+                  )}
+                </div>
               </div>
             </section>
           );

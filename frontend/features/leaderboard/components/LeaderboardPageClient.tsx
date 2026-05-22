@@ -6,7 +6,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowUpRight, Target, Trophy } from "lucide-react";
 import { startTransition, useDeferredValue, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -228,101 +227,99 @@ export function LeaderboardPageClient() {
       ) : null}
       {!isLoading && !isError && snapshot && rows.length ? (
         <section id="leaderboard-arena" className="render-opt-section scroll-mt-24 space-y-4">
-          <DeferUntilVisible fallback={<LeaderboardSectionPlaceholder title="Loading leaderboard arena" />}>
-            {snapshot.currentUser ? (
-              <div className="space-y-3">
-                <h2 className="text-sm font-semibold text-white">
-                  Your arena mission: #{snapshot.currentUser.rank} in {tab} · {snapshot.currentUser.division}
-                </h2>
-                <GlowCard className="space-y-4 border border-cyan-300/22 bg-gradient-to-br from-slate-950/88 to-cyan-950/24">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-medium text-cyan-200">Your arena mission</p>
-                      <h2 className="mt-2 text-xl font-semibold text-white">
-                        #{snapshot.currentUser.rank} in {tab}
-                      </h2>
-                      <p className="mt-2 text-sm text-muted">Primary signal: {snapshot.currentUser.focus}</p>
+          {snapshot.currentUser ? (
+            <div className="space-y-3">
+              <h2 className="text-sm font-semibold text-white">
+                Your arena mission: #{snapshot.currentUser.rank} in {tab} · {snapshot.currentUser.division}
+              </h2>
+              <GlowCard className="space-y-4 border border-cyan-300/22 bg-gradient-to-br from-slate-950/88 to-cyan-950/24">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-medium text-cyan-200">Your arena mission</p>
+                    <h2 className="mt-2 text-xl font-semibold text-white">
+                      #{snapshot.currentUser.rank} in {tab}
+                    </h2>
+                    <p className="mt-2 text-sm text-muted">Primary signal: {snapshot.currentUser.focus}</p>
+                  </div>
+                  <span className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold">
+                    <Target className="h-3.5 w-3.5" />
+                    {snapshot.currentUser.division}
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-xs text-muted">
+                    {snapshot.currentUser.xpToNextRank > 0
+                      ? `${snapshot.currentUser.xpToNextRank} XP to next band`
+                      : "You currently lead this lane"}
+                  </p>
+                </div>
+                <div id="leaderboard-mission-plan" className="space-y-4">
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <ClimbTip
+                      title="To next band"
+                      body={
+                        snapshot.currentUser.xpToNextRank > 0
+                          ? `${snapshot.currentUser.xpToNextRank} XP required`
+                          : "You are currently leading this lane"
+                      }
+                    />
+                    <ClimbTip
+                      title="Gap to lane leader"
+                      body={laneGapToLeader > 0 ? `${laneGapToLeader} season XP` : "You currently hold lane lead"}
+                    />
+                    <ClimbTip
+                      title="Current movement"
+                      body={`${snapshot.currentUser.movement >= 0 ? "+" : ""}${snapshot.currentUser.movement} this cycle`}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs text-muted">
+                      <span>Band progress</span>
+                      <span>{currentUserProgressToNextBand}%</span>
                     </div>
-                    <span className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold">
-                      <Target className="h-3.5 w-3.5" />
-                      {snapshot.currentUser.division}
-                    </span>
+                    <Progress value={currentUserProgressToNextBand} />
                   </div>
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-xs text-muted">
-                      {snapshot.currentUser.xpToNextRank > 0
-                        ? `${snapshot.currentUser.xpToNextRank} XP to next band`
-                        : "You currently lead this lane"}
-                    </p>
-                  </div>
-                  <div id="leaderboard-mission-plan" className="space-y-4">
-                    <div className="grid gap-3 md:grid-cols-3">
-                      <ClimbTip
-                        title="To next band"
-                        body={
-                          snapshot.currentUser.xpToNextRank > 0
-                            ? `${snapshot.currentUser.xpToNextRank} XP required`
-                            : "You are currently leading this lane"
-                        }
-                      />
-                      <ClimbTip
-                        title="Gap to lane leader"
-                        body={laneGapToLeader > 0 ? `${laneGapToLeader} season XP` : "You currently hold lane lead"}
-                      />
-                      <ClimbTip
-                        title="Current movement"
-                        body={`${snapshot.currentUser.movement >= 0 ? "+" : ""}${snapshot.currentUser.movement} this cycle`}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-xs text-muted">
-                        <span>Band progress</span>
-                        <span>{currentUserProgressToNextBand}%</span>
-                      </div>
-                      <Progress value={currentUserProgressToNextBand} />
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Button asChild size="sm" variant="secondary">
-                      <Link href="/dashboard/contributions" prefetch={false}>
-                        Improve contribution signal
-                        <ArrowUpRight className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                    <Button asChild size="sm" variant="ghost">
-                      <Link href="/dashboard/quests" prefetch={false}>
-                        Open tactical quests
-                        <Trophy className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </div>
-                </GlowCard>
-              </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button asChild size="sm" variant="secondary">
+                    <Link href="/dashboard/contributions" prefetch={false}>
+                      Improve contribution signal
+                      <ArrowUpRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <Button asChild size="sm" variant="ghost">
+                    <Link href="/dashboard/quests" prefetch={false}>
+                      Open tactical quests
+                      <Trophy className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              </GlowCard>
+            </div>
+          ) : null}
+          <div id={LEADERBOARD_ROWS_REGION_ID}>
+            <LeaderboardArena snapshot={snapshot} rowLimit={safeVisibleRowCount} />
+          </div>
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            {hasMoreRows ? (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                aria-controls={LEADERBOARD_ROWS_REGION_ID}
+                aria-label={`Show ${Math.min(rowPageSize, remainingRows)} more ranked rows. ${remainingRows} remaining.`}
+                onClick={() => {
+                  startTransition(() => {
+                    setVisibleRowCount((current) =>
+                      Math.min(rows.length, current + rowPageSize),
+                    );
+                  });
+                }}
+              >
+                Show more rows ({remainingRows} left)
+              </Button>
             ) : null}
-            <div id={LEADERBOARD_ROWS_REGION_ID}>
-              <LeaderboardArena snapshot={snapshot} rowLimit={safeVisibleRowCount} />
-            </div>
-            <div className="flex flex-wrap items-center justify-end gap-3">
-              {hasMoreRows ? (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  aria-controls={LEADERBOARD_ROWS_REGION_ID}
-                  aria-label={`Show ${Math.min(rowPageSize, remainingRows)} more ranked rows. ${remainingRows} remaining.`}
-                  onClick={() => {
-                    startTransition(() => {
-                      setVisibleRowCount((current) =>
-                        Math.min(rows.length, current + rowPageSize),
-                      );
-                    });
-                  }}
-                >
-                  Show more rows ({remainingRows} left)
-                </Button>
-              ) : null}
-            </div>
-          </DeferUntilVisible>
+          </div>
         </section>
       ) : null}
     </div>
