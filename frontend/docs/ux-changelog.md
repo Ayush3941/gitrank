@@ -26,6 +26,9 @@
 - Quests lane lazy-load pass:
   - switched `QuestCard` to `next/dynamic` with bounded fallback placeholders so mission frame and spotlight render before dense quest-card hydration.
   - keeps quest behavior intact while reducing eager route module loading.
+- PR report module lazy-load pass:
+  - switched `ScoreMatrixCard`, `XPBreakdownCard`, and `EvidenceSignalsCard` to `next/dynamic` with bounded placeholders.
+  - keeps report behavior intact while reducing eager route module loading.
 - Dashboard code-splitting pass:
   - switched heavy dashboard lane modules (`CurrentLeagueCard`, `QuestPanel`, `RecentBattleReports`, `ScoreExplanationCard`, `BadgeShelf`, `SkillBreakdownCard`, `ContributionTimelineCard`) to `next/dynamic`.
   - keeps route behavior intact while reducing eager dashboard module loading.
