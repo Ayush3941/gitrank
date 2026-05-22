@@ -241,12 +241,6 @@ export function BadgesPageClient() {
                     textClassName="text-sm text-muted"
                   />
                 </div>
-                <div className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-xs">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  {abraInsights.data?.generatedBy === "gemini"
-                    ? "Gemini achievement stories"
-                    : "Deterministic achievement stories"}
-                </div>
               </div>
               <div className="grid gap-3 md:grid-cols-4">
                 <BadgeMetric label="Unlocked" value={unlockedCount} icon={<ShieldCheck className="h-4 w-4 text-cyan-200" />} />
@@ -295,7 +289,7 @@ export function BadgesPageClient() {
       </section>
       <section className="render-opt-section space-y-4">
         <div className="space-y-3">
-          <p id={badgesFilterStatusId} role="status" aria-live="polite" className="text-sm text-fuchsia-100">
+          <p id={badgesFilterStatusId} role="status" aria-live="polite" className="sr-only">
             Showing {filtered.length} of {totalCount} badges
           </p>
           <div className="space-y-3">
@@ -331,19 +325,6 @@ export function BadgesPageClient() {
                     </button>
                   </li>
                 ) : null}
-                <li className="list-none">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    onClick={handleResetFilters}
-                    disabled={!canResetFilters}
-                    aria-controls={BADGES_EARNED_REGION_ID}
-                    title={canResetFilters ? "Reset active filters" : "No filters to reset"}
-                  >
-                    Reset filters
-                  </Button>
-                </li>
               </ul>
             </div>
             <div className="grid gap-3 md:grid-cols-2">

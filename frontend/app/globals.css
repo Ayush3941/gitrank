@@ -998,24 +998,24 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 
 .dashboard-nav-shell {
   position: relative;
-  border: 1px solid rgb(var(--primary) / 0.18);
+  border: 1px solid rgb(var(--primary) / 0.14);
   background:
-    linear-gradient(155deg, rgb(var(--primary) / 0.03), rgb(var(--primary-2) / 0.02)),
-    rgb(var(--card) / 0.9);
+    linear-gradient(155deg, rgb(var(--primary) / 0.02), rgb(var(--primary-2) / 0.015)),
+    rgb(var(--card) / 0.92);
   box-shadow:
-    0 4px 10px rgb(1 5 20 / 0.1),
-    inset 0 1px 0 rgb(255 255 255 / 0.06);
+    0 3px 8px rgb(1 5 20 / 0.08),
+    inset 0 1px 0 rgb(255 255 255 / 0.05);
 }
 
 .dashboard-chrome {
   position: relative;
-  border: 1px solid rgb(var(--primary) / 0.2);
+  border: 1px solid rgb(var(--primary) / 0.16);
   background:
-    linear-gradient(152deg, rgb(var(--primary) / 0.04), rgb(var(--primary-2) / 0.03)),
-    rgb(var(--card) / 0.92);
+    linear-gradient(152deg, rgb(var(--primary) / 0.03), rgb(var(--primary-2) / 0.02)),
+    rgb(var(--card) / 0.94);
   box-shadow:
-    0 6px 14px rgb(1 5 20 / 0.14),
-    inset 0 1px 0 rgb(255 255 255 / 0.08);
+    0 4px 10px rgb(1 5 20 / 0.1),
+    inset 0 1px 0 rgb(255 255 255 / 0.06);
 }
 
 .dashboard-chrome-divider {
@@ -1035,28 +1035,28 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 }
 
 .dashboard-nav-item {
-  border: 1px solid rgb(var(--primary) / 0.14);
+  border: 1px solid rgb(var(--primary) / 0.1);
   background:
-    linear-gradient(150deg, rgb(var(--primary) / 0.02), rgb(var(--primary-2) / 0.015)),
-    rgb(var(--card) / 0.85);
+    linear-gradient(150deg, rgb(var(--primary) / 0.015), rgb(var(--primary-2) / 0.012)),
+    rgb(var(--card) / 0.88);
   color: rgb(var(--text-soft));
 }
 
 .dashboard-nav-item:hover {
-  border-color: rgb(var(--primary) / 0.38);
+  border-color: rgb(var(--primary) / 0.32);
   color: rgb(var(--text-strong));
-  box-shadow: 0 0 0 1px rgb(var(--primary) / 0.12);
+  box-shadow: 0 0 0 1px rgb(var(--primary) / 0.08);
 }
 
 .dashboard-nav-item[data-active="true"] {
-  border-color: rgb(var(--primary) / 0.45);
+  border-color: rgb(var(--primary) / 0.38);
   background:
-    linear-gradient(148deg, rgb(var(--primary) / 0.11), rgb(var(--primary-2) / 0.08)),
-    rgb(var(--card-2) / 0.9);
+    linear-gradient(148deg, rgb(var(--primary) / 0.09), rgb(var(--primary-2) / 0.07)),
+    rgb(var(--card-2) / 0.92);
   color: rgb(var(--text-strong));
   box-shadow:
-    0 0 0 1px rgb(var(--primary) / 0.12),
-    0 3px 8px rgb(1 6 22 / 0.1);
+    0 0 0 1px rgb(var(--primary) / 0.08),
+    0 2px 6px rgb(1 6 22 / 0.08);
 }
 
 .marketing-nav-chip {

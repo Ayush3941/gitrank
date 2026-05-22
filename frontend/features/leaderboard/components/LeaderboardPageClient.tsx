@@ -173,7 +173,7 @@ export function LeaderboardPageClient() {
           </Tabs>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p role="status" aria-live="polite" className="text-sm font-medium text-cyan-100">
+          <p role="status" aria-live="polite" className="sr-only">
             {isBusy
               ? `Refreshing ${tab}...`
               : `Viewing ${tab}`}

@@ -1760,6 +1760,12 @@
 - Simplified settings sync activity controls:
   - removed the redundant visible `X of Y runs` + top reset strip from sync activity filters.
   - kept the live filter status in an `sr-only` region so assistive tech still receives count updates.
+- Reduced cognitive-load chrome on badge and leaderboard filters:
+  - moved `showing X of Y` live counts to `sr-only` status text in badges and leaderboard lane controls.
+  - removed the extra badge filter reset button row and kept direct per-chip filter clears.
+- Softened dashboard route chrome for readability:
+  - reduced border/glow intensity on dashboard shell and route-nav cards.
+  - keeps cyberpunk styling while reducing visual noise and scan fatigue on dense pages.
 
 ## 2026-05-16
 
