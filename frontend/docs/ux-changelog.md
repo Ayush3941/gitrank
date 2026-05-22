@@ -6,6 +6,9 @@
   - upgraded dashboard snapshot layout to a weighted 12-column grid where `GitRank score` is the primary wide metric and supporting metrics are compact side cards.
   - extended shared `StatCard` with layout/value-class hooks for route-level hierarchy control.
   - tightened stat-card detail line-height for denser, cleaner scanability.
+- Contributions snapshot strip pass:
+  - added a compact pre-card metrics strip on the contributions route: filtered-card count, repositories touched, and streak summary.
+  - improves quick orientation before entering detailed PR card scanning.
 - Landing hero clarity pass:
   - added a compact three-point proof strip under the hero statement (`evidence-backed score movement`, `real PR battle reports`, `share-ready contributor profile`) to front-load value clarity.
 - Header action clarity pass:

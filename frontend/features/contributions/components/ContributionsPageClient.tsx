@@ -216,6 +216,25 @@ export function ContributionsPageClient() {
           </Button>
         )}
       />
+      {!isLoading && !isError && profile ? (
+        <section className="grid gap-3 sm:grid-cols-3">
+          <GlowCard className="neon-metric space-y-1.5">
+            <p className="text-xs font-medium text-primary">Cards in current filter</p>
+            <p className="numeric-readout text-2xl font-semibold text-white">{filteredRows.length}</p>
+            <p className="text-xs text-muted">From {totalContributionEvidence} total scored rows</p>
+          </GlowCard>
+          <GlowCard className="neon-metric space-y-1.5">
+            <p className="text-xs font-medium text-primary">Repositories touched</p>
+            <p className="numeric-readout text-2xl font-semibold text-white">{repositories.length}</p>
+            <p className="text-xs text-muted">Across the current evidence window</p>
+          </GlowCard>
+          <GlowCard className="neon-metric space-y-1.5">
+            <p className="text-xs font-medium text-primary">Current streak</p>
+            <p className="numeric-readout text-2xl font-semibold text-white">{streak.currentStreakDays}d</p>
+            <p className="text-xs text-muted">Best streak {streak.bestStreakDays}d</p>
+          </GlowCard>
+        </section>
+      ) : null}
       {profile?.user.syncStatus.state === "stale" ? (
         <StaleState
           message={`Contribution evidence refreshed ${formatRelativeDays(
