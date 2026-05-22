@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Crown, ShieldCheck, Sparkles, Trophy, X } from "lucide-react";
+import dynamic from "next/dynamic";
 import { startTransition, type ReactNode, useEffect, useRef, useState } from "react";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
@@ -13,7 +14,6 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { BadgeGrid } from "@/features/badges/components/BadgeGrid";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useBadges } from "@/hooks/use-badges";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
@@ -28,6 +28,12 @@ import type { BadgeRarity } from "@/types/gitrank";
 const BADGES_EARNED_REGION_ID = "badges-earned-region";
 const LOCKED_BADGE_PAGE_SIZE_DEFAULT = 12;
 const LOCKED_BADGE_PAGE_SIZE_CONSTRAINED = 6;
+const BadgeGrid = dynamic(
+  () => import("@/features/badges/components/BadgeGrid").then((mod) => mod.BadgeGrid),
+  {
+    loading: () => <BadgeSectionPlaceholder title="Loading badge cards" />,
+  },
+);
 
 export function BadgesPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useBadges();
