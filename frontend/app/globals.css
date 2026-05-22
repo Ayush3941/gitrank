@@ -339,21 +339,6 @@ select {
 }
 
 :where(
-    a,
-    button,
-    input,
-    select,
-    textarea,
-    [role="button"],
-    [role="tab"],
-    [role="switch"]
-  ) {
-  transition-property: color, background-color, border-color, opacity;
-  transition-duration: 140ms;
-  transition-timing-function: cubic-bezier(0.22, 0.8, 0.24, 1);
-}
-
-:where(
     a[href],
     button,
     input:not([type="hidden"]),
@@ -989,7 +974,6 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 
 .cyber-link {
   color: rgb(var(--text-soft));
-  transition: color 180ms ease;
 }
 
 .cyber-link:hover {
@@ -1082,7 +1066,6 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   font-size: 0.75rem;
   font-weight: 600;
   line-height: 1;
-  transition: border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
 }
 
 .marketing-nav-chip:hover {
