@@ -2,6 +2,15 @@
 
 ## 2026-05-21
 
+- Header action clarity pass:
+  - added a clear primary header action on each major dashboard route:
+    `Dashboard` → `Open contributions`,
+    `Contributions` → `Open sync settings`,
+    `Badges` → `Open contributions`,
+    `Quests` → `Open contributions`,
+    `Leaderboard` → `Open quests`,
+    `Settings` → `View public profile`.
+  - improves route-level wayfinding so each screen has an immediate next step.
 - Marketing header navigation pass:
   - added compact quick-route chips (`Dashboard`, `Contributions`, `Badges`, `Quests`) to the public marketing header for faster first-time wayfinding.
   - introduced `marketing-nav-chip` styling with low-noise neon contrast that matches dashboard chrome without heavy effects.

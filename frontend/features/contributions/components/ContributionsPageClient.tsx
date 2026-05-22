@@ -208,6 +208,13 @@ export function ContributionsPageClient() {
         eyebrow="Contributions"
         title="Contributions"
         description="Scored pull requests and battle reports."
+        actions={(
+          <Button asChild variant="secondary" size="sm">
+            <Link href="/dashboard/settings" prefetch={false}>
+              Open sync settings
+            </Link>
+          </Button>
+        )}
       />
       {profile?.user.syncStatus.state === "stale" ? (
         <StaleState

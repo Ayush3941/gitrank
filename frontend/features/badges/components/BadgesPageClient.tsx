@@ -195,6 +195,13 @@ export function BadgesPageClient() {
         eyebrow="Badges"
         title="Achievement shelf"
         description="Unlocked badges and upcoming milestones."
+        actions={(
+          <Button asChild variant="secondary" size="sm">
+            <Link href="/dashboard/contributions" prefetch={false}>
+              Open contributions
+            </Link>
+          </Button>
+        )}
       />
       <section id="badges-forge" className="render-opt-section scroll-mt-24 space-y-4">
         {profile?.user.syncStatus.state === "stale" ? (

@@ -65,6 +65,13 @@ export function QuestsPageClient() {
         eyebrow="Quests"
         title="Contributor missions"
         description="Daily, weekly, and long-term missions from synced evidence."
+        actions={(
+          <Button asChild variant="secondary" size="sm">
+            <Link href="/dashboard/contributions" prefetch={false}>
+              Open contributions
+            </Link>
+          </Button>
+        )}
       />
       {data?.staleness?.isStale ? (
         <StaleState

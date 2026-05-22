@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Activity, Medal, ShieldCheck } from "lucide-react";
 import { DashboardHeroRankCard } from "@/features/dashboard/components/DashboardHeroRankCard";
@@ -158,6 +159,13 @@ export function DashboardPageClient() {
         eyebrow="Dashboard"
         title="Dashboard"
         description="Rank, XP, and contribution signals."
+        actions={(
+          <Button asChild variant="secondary" size="sm">
+            <Link href="/dashboard/contributions" prefetch={false}>
+              Open contributions
+            </Link>
+          </Button>
+        )}
       />
       {user.syncStatus.state === "stale" ? (
         <StaleState

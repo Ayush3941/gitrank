@@ -110,6 +110,13 @@ export function LeaderboardPageClient() {
         eyebrow="Leaderboard"
         title="Rank arena"
         description="Compare rank lanes and promotion progress."
+        actions={(
+          <Button asChild variant="secondary" size="sm">
+            <Link href="/dashboard/quests" prefetch={false}>
+              Open quests
+            </Link>
+          </Button>
+        )}
       />
       {myProfile?.user.syncStatus.state === "stale" ? (
         <StaleState

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Download, FolderGit2, LogOut, Palette, RefreshCw, Sparkles, Trash2 } from "lucide-react";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -295,6 +296,13 @@ export function SettingsPageClient() {
         eyebrow="Settings"
         title="Settings"
         description="Account, privacy, and display controls."
+        actions={(
+          <Button asChild variant="secondary" size="sm">
+            <Link href={`/u/${data.user.username}`} prefetch={false}>
+              View public profile
+            </Link>
+          </Button>
+        )}
       />
       <section id="settings-account" className="scroll-mt-24">
         <GlowCard className="space-y-4">
