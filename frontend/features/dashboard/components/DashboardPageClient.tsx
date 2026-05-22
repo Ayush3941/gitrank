@@ -9,7 +9,6 @@ import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { StreakHeatStrip } from "@/components/shared/StreakHeatStrip";
-import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
@@ -26,36 +25,57 @@ import { Button } from "@/components/ui/button";
 
 const CurrentLeagueCard = dynamic(
   () => import("@/features/dashboard/components/CurrentLeagueCard").then((mod) => mod.CurrentLeagueCard),
+  {
+    loading: () => <SectionDeferredPlaceholder title="Loading league snapshot" />,
+  },
 );
 const QuestPanel = dynamic(
   () => import("@/features/dashboard/components/QuestPanel").then((mod) => mod.QuestPanel),
+  {
+    loading: () => <SectionDeferredPlaceholder title="Loading quest board" />,
+  },
 );
 const RecentBattleReports = dynamic(
   () =>
     import("@/features/dashboard/components/RecentBattleReports").then(
       (mod) => mod.RecentBattleReports,
     ),
+  {
+    loading: () => <SectionDeferredPlaceholder title="Loading battle reports" />,
+  },
 );
 const ScoreExplanationCard = dynamic(
   () =>
     import("@/features/dashboard/components/ScoreExplanationCard").then(
       (mod) => mod.ScoreExplanationCard,
     ),
+  {
+    loading: () => <SectionDeferredPlaceholder title="Loading score explanation" />,
+  },
 );
 const BadgeShelf = dynamic(
   () => import("@/features/dashboard/components/BadgeShelf").then((mod) => mod.BadgeShelf),
+  {
+    loading: () => <SectionDeferredPlaceholder title="Loading badge shelf" />,
+  },
 );
 const SkillBreakdownCard = dynamic(
   () =>
     import("@/features/dashboard/components/SkillBreakdownCard").then(
       (mod) => mod.SkillBreakdownCard,
     ),
+  {
+    loading: () => <SectionDeferredPlaceholder title="Loading skill breakdown" />,
+  },
 );
 const ContributionTimelineCard = dynamic(
   () =>
     import("@/features/dashboard/components/ContributionTimelineCard").then(
       (mod) => mod.ContributionTimelineCard,
     ),
+  {
+    loading: () => <SectionDeferredPlaceholder title="Loading contribution timeline" />,
+  },
 );
 
 export function DashboardPageClient() {
@@ -256,21 +276,15 @@ export function DashboardPageClient() {
       <div className="grid gap-6 xl:grid-cols-[0.92fr,1.08fr]">
         <div className="space-y-6">
           <section id="dashboard-league" className="render-opt-section scroll-mt-24">
-            <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading league snapshot" />}>
-              <CurrentLeagueCard user={user} />
-            </DeferUntilVisible>
+            <CurrentLeagueCard user={user} />
           </section>
           <section className="render-opt-section">
-            <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading quest board" />}>
-              <QuestPanel quests={user.quests} />
-            </DeferUntilVisible>
+            <QuestPanel quests={user.quests} />
           </section>
         </div>
         <div className="space-y-6">
           <section id="dashboard-reports" className="render-opt-section scroll-mt-24">
-            <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading battle reports" />}>
-              <RecentBattleReports reports={recentReports} />
-            </DeferUntilVisible>
+            <RecentBattleReports reports={recentReports} />
           </section>
         </div>
       </div>
@@ -281,24 +295,16 @@ export function DashboardPageClient() {
         </div>
         <div id="dashboard-advanced-grid" className="grid gap-6 xl:grid-cols-[1.04fr,0.96fr]">
           <section className="space-y-6">
-            <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading score explanation" />}>
-              <ScoreExplanationCard user={user} />
-            </DeferUntilVisible>
-            <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading badge shelf" />}>
-              <BadgeShelf user={user} />
-            </DeferUntilVisible>
+            <ScoreExplanationCard user={user} />
+            <BadgeShelf user={user} />
           </section>
           <section className="space-y-6">
-            <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading skill breakdown" />}>
-              <SkillBreakdownCard
-                user={user}
-                skillInsights={abraInsights.data?.skillInsights}
-                aiMode={abraInsights.data?.generatedBy}
-              />
-            </DeferUntilVisible>
-            <DeferUntilVisible fallback={<SectionDeferredPlaceholder title="Loading contribution timeline" />}>
-              <ContributionTimelineCard user={user} />
-            </DeferUntilVisible>
+            <SkillBreakdownCard
+              user={user}
+              skillInsights={abraInsights.data?.skillInsights}
+              aiMode={abraInsights.data?.generatedBy}
+            />
+            <ContributionTimelineCard user={user} />
           </section>
         </div>
       </section>

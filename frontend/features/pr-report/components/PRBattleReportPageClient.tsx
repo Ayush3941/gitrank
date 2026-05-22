@@ -7,7 +7,6 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { CopyTextButton } from "@/components/shared/CopyTextButton";
-import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -206,92 +205,84 @@ export function PRBattleReportPageClient({
         </GlowCard>
       </section>
       <section id="pr-report-ai" className="render-opt-section scroll-mt-24">
-        <DeferUntilVisible fallback={<PRReportSectionPlaceholder title="Loading AI summary" />}>
-          <GlowCard className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-xs font-medium text-primary">AI summary</p>
-              <CopyTextButton
-                text={data.contribution.aiSummary}
-                label="Copy summary"
-                copiedLabel="Summary copied"
-                analyticsTarget="pr-report/ai-summary"
-                size="sm"
-                variant="ghost"
-              />
-            </div>
-            {fallbackDetail ? (
-              <p className="rounded-full border border-amber-400/24 bg-amber-400/10 px-3 py-1.5 text-xs text-amber-100">
-                Gemini enrichment unavailable: {fallbackDetail}. Showing deterministic summary.
-              </p>
-            ) : null}
-            {deterministicOnlyWithoutFallback ? (
-              <p className="rounded-full border border-cyan-300/24 bg-cyan-400/10 px-3 py-1.5 text-xs text-cyan-100">
-                Deterministic analysis only in this snapshot.
-              </p>
-            ) : null}
-            <ExpandableText
+        <GlowCard className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-medium text-primary">AI summary</p>
+            <CopyTextButton
               text={data.contribution.aiSummary}
-              lines={5}
-              minLengthForToggle={260}
-              textClassName="break-anywhere text-base leading-8 text-muted"
+              label="Copy summary"
+              copiedLabel="Summary copied"
+              analyticsTarget="pr-report/ai-summary"
+              size="sm"
+              variant="ghost"
             />
-          </GlowCard>
-        </DeferUntilVisible>
+          </div>
+          {fallbackDetail ? (
+            <p className="rounded-full border border-amber-400/24 bg-amber-400/10 px-3 py-1.5 text-xs text-amber-100">
+              Gemini enrichment unavailable: {fallbackDetail}. Showing deterministic summary.
+            </p>
+          ) : null}
+          {deterministicOnlyWithoutFallback ? (
+            <p className="rounded-full border border-cyan-300/24 bg-cyan-400/10 px-3 py-1.5 text-xs text-cyan-100">
+              Deterministic analysis only in this snapshot.
+            </p>
+          ) : null}
+          <ExpandableText
+            text={data.contribution.aiSummary}
+            lines={5}
+            minLengthForToggle={260}
+            textClassName="break-anywhere text-base leading-8 text-muted"
+          />
+        </GlowCard>
       </section>
       <div id="pr-report-technical-panels" className="space-y-6">
         <section id="pr-report-score" className="render-opt-section scroll-mt-24">
-          <DeferUntilVisible fallback={<PRReportSectionPlaceholder title="Loading score matrix" />}>
-            <div className="grid gap-6 xl:grid-cols-[1.02fr,0.98fr]">
-              <ScoreMatrixCard report={data} />
-              <XPBreakdownCard report={data} />
-            </div>
-          </DeferUntilVisible>
+          <div className="grid gap-6 xl:grid-cols-[1.02fr,0.98fr]">
+            <ScoreMatrixCard report={data} />
+            <XPBreakdownCard report={data} />
+          </div>
         </section>
         <section id="pr-report-evidence" className="render-opt-section scroll-mt-24">
-          <DeferUntilVisible fallback={<PRReportSectionPlaceholder title="Loading evidence signals" />}>
-            <div className="space-y-4">
-              <h2 className="text-sm font-semibold text-white">Evidence signals</h2>
-              <EvidenceSignalsCard report={data} />
-            </div>
-          </DeferUntilVisible>
+          <div className="space-y-4">
+            <h2 className="text-sm font-semibold text-white">Evidence signals</h2>
+            <EvidenceSignalsCard report={data} />
+          </div>
         </section>
         {uniqueBadgeUnlocks.length ? (
           <section id="pr-report-rewards" className="render-opt-section scroll-mt-24">
-            <DeferUntilVisible fallback={<PRReportSectionPlaceholder title="Loading reward unlocks" />}>
-              <div className="space-y-4">
-                <h2 className="text-sm font-semibold text-white">
-                  Badge rewards ({uniqueBadgeUnlocks.length})
-                </h2>
-                <GlowCard className="space-y-4">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-100">
-                    <Award className="h-3.5 w-3.5" />
-                    Rewards unlocked
-                  </div>
-                  <ul role="list" className="grid gap-3 md:grid-cols-2">
-                    {uniqueBadgeUnlocks.map((badge, index) => (
-                      <li key={`${badge.key}-${index}`} className="list-none render-opt-card neon-surface rounded-[1.75rem] p-4">
-                        <p className="text-lg font-semibold text-white">{badge.name}</p>
-                        {badge.description ? <p className="mt-2 text-sm text-muted">{badge.description}</p> : null}
-                        <p className="mt-3 text-xs text-emerald-100">
-                          Rule {badge.ruleVersion ?? badge.rule ?? "persisted badge evidence"}
-                        </p>
-                        {badge.evidenceSignals.length ? (
-                          <ul role="list" className="mt-3 flex flex-wrap gap-2">
-                            {badge.evidenceSignals.slice(0, 3).map((signal, signalIndex) => (
-                              <li key={`${badge.key}-${signal}-${signalIndex}`} className="list-none">
-                                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
-                                  {signal}
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
-                        ) : null}
-                      </li>
-                    ))}
-                  </ul>
-                </GlowCard>
-              </div>
-            </DeferUntilVisible>
+            <div className="space-y-4">
+              <h2 className="text-sm font-semibold text-white">
+                Badge rewards ({uniqueBadgeUnlocks.length})
+              </h2>
+              <GlowCard className="space-y-4">
+                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-100">
+                  <Award className="h-3.5 w-3.5" />
+                  Rewards unlocked
+                </div>
+                <ul role="list" className="grid gap-3 md:grid-cols-2">
+                  {uniqueBadgeUnlocks.map((badge, index) => (
+                    <li key={`${badge.key}-${index}`} className="list-none render-opt-card neon-surface rounded-[1.75rem] p-4">
+                      <p className="text-lg font-semibold text-white">{badge.name}</p>
+                      {badge.description ? <p className="mt-2 text-sm text-muted">{badge.description}</p> : null}
+                      <p className="mt-3 text-xs text-emerald-100">
+                        Rule {badge.ruleVersion ?? badge.rule ?? "persisted badge evidence"}
+                      </p>
+                      {badge.evidenceSignals.length ? (
+                        <ul role="list" className="mt-3 flex flex-wrap gap-2">
+                          {badge.evidenceSignals.slice(0, 3).map((signal, signalIndex) => (
+                            <li key={`${badge.key}-${signal}-${signalIndex}`} className="list-none">
+                              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
+                                {signal}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              </GlowCard>
+            </div>
           </section>
         ) : null}
       </div>
@@ -300,43 +291,41 @@ export function PRBattleReportPageClient({
           id={!uniqueBadgeUnlocks.length ? "pr-report-rewards" : undefined}
           className={!uniqueBadgeUnlocks.length ? "render-opt-section scroll-mt-24" : "render-opt-section"}
         >
-          <DeferUntilVisible fallback={<PRReportSectionPlaceholder title="Loading next quest recommendation" />}>
-            <div className="space-y-4">
-              <h2 className="text-sm font-semibold text-white">Suggested next quest</h2>
-              <GlowCard className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
-                    <Swords className="h-3.5 w-3.5" />
-                    Suggested next quest
-                  </div>
-                  <h2 className="mt-3 text-2xl font-semibold text-white">
-                    {suggestedQuest?.title ?? "Open the live quest board"}
-                  </h2>
-                  <p className="mt-2 text-sm text-muted">
-                    {suggestedQuest?.whyRecommended ??
-                      `Suggested quest key: ${data.suggestedQuestId}. The quest board resolves this against the latest profile evidence.`}
-                  </p>
-                  {suggestedQuest?.evidenceSignals.length ? (
-                    <ul role="list" className="mt-3 flex flex-wrap gap-2">
-                      {suggestedQuest.evidenceSignals.slice(0, 3).map((signal, index) => (
-                        <li key={`${data.suggestedQuestId ?? "suggested-quest"}-${signal}-${index}`} className="list-none">
-                          <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
-                            {signal}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
+          <div className="space-y-4">
+            <h2 className="text-sm font-semibold text-white">Suggested next quest</h2>
+            <GlowCard className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
+                  <Swords className="h-3.5 w-3.5" />
+                  Suggested next quest
                 </div>
-                <Button asChild variant="secondary">
-                  <Link href="/dashboard/quests">
-                    Open quest board
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-              </GlowCard>
-            </div>
-          </DeferUntilVisible>
+                <h2 className="mt-3 text-2xl font-semibold text-white">
+                  {suggestedQuest?.title ?? "Open the live quest board"}
+                </h2>
+                <p className="mt-2 text-sm text-muted">
+                  {suggestedQuest?.whyRecommended ??
+                    `Suggested quest key: ${data.suggestedQuestId}. The quest board resolves this against the latest profile evidence.`}
+                </p>
+                {suggestedQuest?.evidenceSignals.length ? (
+                  <ul role="list" className="mt-3 flex flex-wrap gap-2">
+                    {suggestedQuest.evidenceSignals.slice(0, 3).map((signal, index) => (
+                      <li key={`${data.suggestedQuestId ?? "suggested-quest"}-${signal}-${index}`} className="list-none">
+                        <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
+                          {signal}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+              <Button asChild variant="secondary">
+                <Link href="/dashboard/quests">
+                  Open quest board
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </GlowCard>
+          </div>
         </section>
       ) : null}
     </div>
