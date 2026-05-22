@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { useMemo } from "react";
 import { Award, CheckCircle2, GitPullRequest, ShieldCheck, Stars } from "lucide-react";
+import { SkillRadarChart } from "@/components/shared/SkillRadarChart";
+import { TimelineChart } from "@/components/shared/TimelineChart";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { ExpandableText } from "@/components/shared/ExpandableText";
@@ -15,6 +16,8 @@ import { StatCard } from "@/components/shared/StatCard";
 import { Button } from "@/components/ui/button";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useProfile } from "@/hooks/use-profile";
+import { BestPRsPanel } from "@/features/profile/components/BestPRsPanel";
+import { PublicProfileHero } from "@/features/profile/components/PublicProfileHero";
 import {
   buildDeterministicIdentitySummary,
   deriveDeterministicArchetype,
@@ -22,34 +25,6 @@ import {
 } from "@/lib/ai/deterministic-identity-summary";
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
-
-const PublicProfileHero = dynamic(
-  () =>
-    import("@/features/profile/components/PublicProfileHero").then(
-      (mod) => mod.PublicProfileHero,
-    ),
-  {
-    loading: () => <ProfileSectionSkeleton className="h-[26rem]" />,
-  },
-);
-const BestPRsPanel = dynamic(
-  () => import("@/features/profile/components/BestPRsPanel").then((mod) => mod.BestPRsPanel),
-  {
-    loading: () => <ProfileSectionSkeleton className="h-[20rem]" />,
-  },
-);
-const SkillRadarChart = dynamic(
-  () => import("@/components/shared/SkillRadarChart").then((mod) => mod.SkillRadarChart),
-  {
-    loading: () => <ProfileSectionSkeleton className="h-[24rem]" />,
-  },
-);
-const TimelineChart = dynamic(
-  () => import("@/components/shared/TimelineChart").then((mod) => mod.TimelineChart),
-  {
-    loading: () => <ProfileSectionSkeleton className="h-[20rem]" />,
-  },
-);
 
 export function PublicProfilePageClient({
   username,
@@ -304,13 +279,5 @@ export function PublicProfilePageClient({
         </div>
       </section>
     </div>
-  );
-}
-
-function ProfileSectionSkeleton({ className }: { className: string }) {
-  return (
-    <GlowCard className={className}>
-      <div className="neon-skeleton h-full w-full" />
-    </GlowCard>
   );
 }

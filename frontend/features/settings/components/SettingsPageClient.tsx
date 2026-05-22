@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { useState } from "react";
 import { Download, FolderGit2, LogOut, Palette, RefreshCw, Sparkles, Trash2 } from "lucide-react";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { PrivacyRepositoryToggleList } from "@/features/settings/components/PrivacyRepositoryToggleList";
+import { SyncRunActivityPanel } from "@/features/settings/components/SyncRunActivityPanel";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -37,25 +38,6 @@ import {
 } from "@/hooks/use-text-scale-preference";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import { type ThemePreference, useThemePreference } from "@/hooks/use-theme-preference";
-
-const PrivacyRepositoryToggleList = dynamic(
-  () =>
-    import("@/features/settings/components/PrivacyRepositoryToggleList").then(
-      (mod) => mod.PrivacyRepositoryToggleList,
-    ),
-  {
-    loading: () => <SettingsSectionPlaceholder title="Loading repository controls" />,
-  },
-);
-const SyncRunActivityPanel = dynamic(
-  () =>
-    import("@/features/settings/components/SyncRunActivityPanel").then(
-      (mod) => mod.SyncRunActivityPanel,
-    ),
-  {
-    loading: () => <SettingsSectionPlaceholder title="Loading sync activity" />,
-  },
-);
 
 type BackedPrivacyKey =
   | "publicProfileEnabled"
@@ -643,23 +625,6 @@ function SettingSection({
           );
         })}
       </ul>
-    </GlowCard>
-  );
-}
-
-function SettingsSectionPlaceholder({ title }: { title: string }) {
-  return (
-    <GlowCard className="space-y-4">
-      <p className="text-xs font-medium text-primary">{title}</p>
-      <div className="neon-skeleton h-8 w-2/3 rounded-[0.1rem]" />
-      <div className="space-y-2">
-        <div className="neon-skeleton h-4 w-full rounded-[0.1rem]" />
-        <div className="neon-skeleton h-4 w-11/12 rounded-[0.1rem]" />
-      </div>
-      <div className="grid gap-2 sm:grid-cols-2">
-        <div className="neon-skeleton h-12 rounded-[0.1rem]" />
-        <div className="neon-skeleton h-12 rounded-[0.1rem]" />
-      </div>
     </GlowCard>
   );
 }

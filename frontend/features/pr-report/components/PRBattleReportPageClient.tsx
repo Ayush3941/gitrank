@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { AlertTriangle, ArrowRight, Award, ShieldCheck, Swords } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -11,35 +10,10 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
+import { EvidenceSignalsCard } from "@/features/pr-report/components/EvidenceSignalsCard";
+import { ScoreMatrixCard } from "@/features/pr-report/components/ScoreMatrixCard";
+import { XPBreakdownCard } from "@/features/pr-report/components/XPBreakdownCard";
 import { usePrReport } from "@/hooks/use-pr-report";
-
-const ScoreMatrixCard = dynamic(
-  () =>
-    import("@/features/pr-report/components/ScoreMatrixCard").then(
-      (mod) => mod.ScoreMatrixCard,
-    ),
-  {
-    loading: () => <PRReportSectionPlaceholder title="Loading score matrix" />,
-  },
-);
-const XPBreakdownCard = dynamic(
-  () =>
-    import("@/features/pr-report/components/XPBreakdownCard").then(
-      (mod) => mod.XPBreakdownCard,
-    ),
-  {
-    loading: () => <PRReportSectionPlaceholder title="Loading XP breakdown" />,
-  },
-);
-const EvidenceSignalsCard = dynamic(
-  () =>
-    import("@/features/pr-report/components/EvidenceSignalsCard").then(
-      (mod) => mod.EvidenceSignalsCard,
-    ),
-  {
-    loading: () => <PRReportSectionPlaceholder title="Loading evidence signals" />,
-  },
-);
 
 export function PRBattleReportPageClient({
   owner,
@@ -329,23 +303,6 @@ export function PRBattleReportPageClient({
         </section>
       ) : null}
     </div>
-  );
-}
-
-function PRReportSectionPlaceholder({ title }: { title: string }) {
-  return (
-    <GlowCard className="space-y-4">
-      <p className="text-xs font-medium text-primary">{title}</p>
-      <div className="neon-skeleton h-8 w-2/3 rounded-[0.1rem]" />
-      <div className="space-y-2">
-        <div className="neon-skeleton h-4 w-full rounded-[0.1rem]" />
-        <div className="neon-skeleton h-4 w-11/12 rounded-[0.1rem]" />
-      </div>
-      <div className="grid gap-2 sm:grid-cols-2">
-        <div className="neon-skeleton h-24 rounded-[0.1rem]" />
-        <div className="neon-skeleton h-24 rounded-[0.1rem]" />
-      </div>
-    </GlowCard>
   );
 }
 
