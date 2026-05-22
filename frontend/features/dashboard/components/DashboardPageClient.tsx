@@ -190,16 +190,34 @@ export function DashboardPageClient() {
           aiMode={abraInsights.data?.generatedBy ?? "deterministic"}
         />
       </section>
-      <section id="dashboard-snapshot" className="scroll-mt-24 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="GitRank score" value={user.gitRankScore} icon={<Medal className="h-5 w-5 text-primary" />} />
-        <StatCard label="Merged PRs" value={user.mergedPrCount} icon={<ShieldCheck className="h-5 w-5 text-primary" />} />
+      <section id="dashboard-snapshot" className="scroll-mt-24 grid gap-4 sm:grid-cols-2 xl:grid-cols-12">
         <StatCard
+          className="xl:col-span-6"
+          valueClassName="text-4xl"
+          label="GitRank score"
+          value={user.gitRankScore}
+          detail="Impact-weighted score from merged contribution evidence."
+          icon={<Medal className="h-5 w-5 text-primary" />}
+        />
+        <StatCard
+          className="xl:col-span-2"
+          label="Merged PRs"
+          value={user.mergedPrCount}
+          icon={<ShieldCheck className="h-5 w-5 text-primary" />}
+        />
+        <StatCard
+          className="xl:col-span-2"
           label="PR evidence window"
           value={`${contributionWindowCount}/${contributionWindowCap}`}
           detail={`${contributionWindowFillRate}% filled`}
           icon={<Activity className="h-5 w-5 text-primary" />}
         />
-        <StatCard label="Reviewed PRs" value={user.reviewedPrCount} icon={<Activity className="h-5 w-5 text-primary" />} />
+        <StatCard
+          className="xl:col-span-2"
+          label="Reviewed PRs"
+          value={user.reviewedPrCount}
+          icon={<Activity className="h-5 w-5 text-primary" />}
+        />
       </section>
       <div className="grid gap-6 xl:grid-cols-[0.92fr,1.08fr]">
         <div className="space-y-6">

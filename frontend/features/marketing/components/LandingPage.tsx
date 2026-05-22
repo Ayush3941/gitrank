@@ -32,6 +32,17 @@ export function LandingPage() {
               <p className="cyber-copy readable-measure max-w-[72ch] text-base leading-8 sm:text-lg">
                 GitRank analyzes PR difficulty, review depth, tests, and project context, then turns that evidence into XP, levels, badges, and shareable profile snapshots.
               </p>
+              <ul role="list" className="grid max-w-3xl gap-2 sm:grid-cols-3">
+                <li className="list-none neon-surface px-3 py-2 text-xs text-muted">
+                  Evidence-backed score movement
+                </li>
+                <li className="list-none neon-surface px-3 py-2 text-xs text-muted">
+                  Real PR battle reports
+                </li>
+                <li className="list-none neon-surface px-3 py-2 text-xs text-muted">
+                  Share-ready contributor profile
+                </li>
+              </ul>
             </div>
             <div className="flex flex-wrap gap-3">
               <Button asChild size="lg">
