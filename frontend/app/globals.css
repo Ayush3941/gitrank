@@ -362,8 +362,6 @@ select {
     [role="button"],
     [tabindex]:not([tabindex="-1"])
   ):focus-visible {
-  scroll-margin-top: max(6.5rem, env(safe-area-inset-top));
-  scroll-margin-bottom: max(7rem, env(safe-area-inset-bottom));
   outline: 3px solid rgb(var(--primary) / 0.88);
   outline-offset: 2px;
 }

@@ -5,7 +5,6 @@ import dynamic from "next/dynamic";
 import { startTransition, useDeferredValue, useMemo, useState } from "react";
 import { Download } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -315,58 +314,48 @@ export function ContributionsPageClient() {
       ) : null}
       {!isLoading && !isError ? (
         <section id="contributions-cards" className="render-opt-section scroll-mt-24 space-y-4">
-          <DeferUntilVisible fallback={<ContributionSectionPlaceholder title="Loading contribution cards" />}>
-            {filteredRows.length ? (
-              <div className="space-y-4">
-                <div id={CONTRIBUTION_CARDS_REGION_ID}>
-                  <ContributionList
-                    items={visibleRows}
-                    narratives={abraInsights.data?.contributionNarratives}
-                    isBusy={isFiltering}
-                    totalCount={filteredRows.length}
-                    startPosition={1}
-                  />
-                </div>
-                <div className="flex flex-wrap items-center justify-end gap-3">
-                  {hasMoreRows ? (
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      aria-controls={CONTRIBUTION_CARDS_REGION_ID}
-                      aria-label={`Show ${Math.min(cardPageSize, remainingRows)} more contribution cards. ${remainingRows} remaining.`}
-                      onClick={() => {
-                        startTransition(() => {
-                          setVisibleCardCount((current) =>
-                            Math.min(filteredRows.length, current + cardPageSize),
-                          );
-                        });
-                      }}
-                    >
-                      Show more cards ({remainingRows} left)
-                    </Button>
-                  ) : null}
-                </div>
+          {filteredRows.length ? (
+            <div className="space-y-4">
+              <div id={CONTRIBUTION_CARDS_REGION_ID}>
+                <ContributionList
+                  items={visibleRows}
+                  narratives={abraInsights.data?.contributionNarratives}
+                  isBusy={isFiltering}
+                  totalCount={filteredRows.length}
+                  startPosition={1}
+                />
               </div>
-            ) : (
-              <SubsectionEmptyState
-                message="No PR cards match these filters. Reset filters or sync again."
-                actionLabel="Open sync settings"
-                actionHref="/dashboard/settings"
-                onResetFilters={handleResetFilters}
-              />
-            )}
-          </DeferUntilVisible>
+              <div className="flex flex-wrap items-center justify-end gap-3">
+                {hasMoreRows ? (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    aria-controls={CONTRIBUTION_CARDS_REGION_ID}
+                    aria-label={`Show ${Math.min(cardPageSize, remainingRows)} more contribution cards. ${remainingRows} remaining.`}
+                    onClick={() => {
+                      startTransition(() => {
+                        setVisibleCardCount((current) =>
+                          Math.min(filteredRows.length, current + cardPageSize),
+                        );
+                      });
+                    }}
+                  >
+                    Show more cards ({remainingRows} left)
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+          ) : (
+            <SubsectionEmptyState
+              message="No PR cards match these filters. Reset filters or sync again."
+              actionLabel="Open sync settings"
+              actionHref="/dashboard/settings"
+              onResetFilters={handleResetFilters}
+            />
+          )}
         </section>
       ) : null}
     </div>
-  );
-}
-
-function ContributionSectionPlaceholder({ title }: { title: string }) {
-  return (
-    <GlowCard className="glass-panel cyber-card cyber-frame flex min-h-[11rem] items-center justify-center p-4">
-      <p className="text-sm text-muted">{title}</p>
-    </GlowCard>
   );
 }
 
@@ -394,6 +383,14 @@ function SubsectionEmptyState({
           <Link href={actionHref} prefetch={false}>{actionLabel}</Link>
         </Button>
       </div>
+    </GlowCard>
+  );
+}
+
+function ContributionSectionPlaceholder({ title }: { title: string }) {
+  return (
+    <GlowCard className="glass-panel cyber-card cyber-frame flex min-h-[11rem] items-center justify-center p-4">
+      <p className="text-sm text-muted">{title}</p>
     </GlowCard>
   );
 }
