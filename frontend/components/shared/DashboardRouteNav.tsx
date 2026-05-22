@@ -30,6 +30,7 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
               <Link
                 href={item.href}
                 prefetch={false}
+                scroll={false}
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "focus-ring dashboard-nav-item inline-flex min-h-10 w-full items-center justify-start gap-2 px-3 py-2 text-left text-sm font-medium sm:justify-center sm:text-center",
