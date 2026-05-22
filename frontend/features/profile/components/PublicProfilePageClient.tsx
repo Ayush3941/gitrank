@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Award, CheckCircle2, GitPullRequest, ShieldCheck, Stars } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -109,6 +109,18 @@ export function PublicProfilePageClient({
       trendWindowLabel: data.trendWindowLabel,
     });
   }, [data, streak.currentStreakDays]);
+  const [expandedSections, setExpandedSections] = useState({
+    badgesSkills: true,
+    bestPrs: false,
+    timelineRepos: false,
+  });
+
+  function toggleSection(section: keyof typeof expandedSections) {
+    setExpandedSections((current) => ({
+      ...current,
+      [section]: !current[section],
+    }));
+  }
 
   if (isLoading) {
     return <LoadingState message="Loading public profile..." />;
@@ -171,102 +183,173 @@ export function PublicProfilePageClient({
         </div>
       </section>
       <section id="public-profile-badges-skills" className="render-opt-section scroll-mt-24">
-        <DeferUntilVisible fallback={<PublicProfileSectionPlaceholder title="Loading badges and skills" />}>
-          <div className="grid gap-6 xl:grid-cols-[1fr,1fr]">
-            <GlowCard className="space-y-5">
-              <div>
-                <p className="text-xs font-medium text-primary">Badges</p>
-                <h2 className="mt-2 text-xl font-semibold text-white">Top unlocked</h2>
-              </div>
-              <ul role="list" className="grid gap-3 sm:grid-cols-2">
-                {data.user.badges.filter((badge) => badge.unlocked).slice(0, 4).map((badge) => (
-                  <li key={badge.id} className="render-opt-card neon-surface rounded-[1.75rem] p-4">
-                    <RarityBadge rarity={badge.rarity} />
-                    <h3 className="mt-3 text-lg font-medium text-white">{badge.name}</h3>
-                    <ExpandableText
-                      text={badge.description}
-                      lines={3}
-                      minLengthForToggle={120}
-                      className="mt-2"
-                      textClassName="text-sm text-muted"
-                      showMoreLabel="More"
-                      showLessLabel="Less"
-                    />
-                  </li>
-                ))}
-              </ul>
-            </GlowCard>
-            <GlowCard className="space-y-5">
-              <div>
-                <p className="text-xs font-medium text-primary">Skills</p>
-                <h2 className="mt-2 text-xl font-semibold text-white">Strength map</h2>
-              </div>
-              <SkillRadarChart skills={data.user.skillTree} />
-            </GlowCard>
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-sm font-semibold text-white">Badges and skills</h2>
+            <Button
+              type="button"
+              size="sm"
+              variant={expandedSections.badgesSkills ? "secondary" : "default"}
+              onClick={() => {
+                toggleSection("badgesSkills");
+              }}
+              aria-expanded={expandedSections.badgesSkills}
+              aria-controls="public-profile-badges-skills-content"
+            >
+              {expandedSections.badgesSkills ? "Hide section" : "Show section"}
+            </Button>
           </div>
-        </DeferUntilVisible>
-      </section>
-      <section id="public-profile-best-prs" className="render-opt-section scroll-mt-24">
-        <DeferUntilVisible fallback={<PublicProfileSectionPlaceholder title="Loading best PR battle reports" />}>
-          <BestPRsPanel reports={data.featuredContributions} />
-        </DeferUntilVisible>
-      </section>
-      <section id="public-profile-timeline-repos" className="render-opt-section scroll-mt-24">
-        <DeferUntilVisible fallback={<PublicProfileSectionPlaceholder title="Loading timeline and repositories" />}>
-          <div className="grid gap-6 xl:grid-cols-[1.08fr,0.92fr]">
-            <GlowCard className="space-y-5">
-              <div>
-                <p className="text-xs font-medium text-primary">Timeline</p>
-                <h2 className="mt-2 text-xl font-semibold text-white">{data.trendWindowLabel}</h2>
-              </div>
-              <TimelineChart data={data.user.xpTimeline} />
-            </GlowCard>
-            <GlowCard className="space-y-5">
-              <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
-                <Award className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-xs font-medium text-primary">Top repositories</p>
-                <h2 className="mt-2 text-xl font-semibold text-white">Top repositories right now</h2>
-              </div>
-              <div className="space-y-3">
-                {data.topRepositories.length === 0 ? (
-                  <div className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
-                    <p>Repository-level signal is not available on this snapshot yet.</p>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <Button asChild variant="secondary" size="sm">
-                        <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
-                      </Button>
-                      <Button asChild variant="ghost" size="sm">
-                        <Link href="/dashboard/settings" prefetch={false}>Open sync settings</Link>
-                      </Button>
-                    </div>
+          {expandedSections.badgesSkills ? (
+            <DeferUntilVisible fallback={<PublicProfileSectionPlaceholder title="Loading badges and skills" />}>
+              <div id="public-profile-badges-skills-content" className="grid gap-6 xl:grid-cols-[1fr,1fr]">
+                <GlowCard className="space-y-5">
+                  <div>
+                    <p className="text-xs font-medium text-primary">Badges</p>
+                    <h2 className="mt-2 text-xl font-semibold text-white">Top unlocked</h2>
                   </div>
-                ) : (
-                  <ul role="list" className="space-y-3">
-                    {data.topRepositories.slice(0, 4).map((repository, index) => (
-                      <li key={`${repository.name}-${index}`} className="render-opt-card neon-surface rounded-[1.5rem] px-4 py-3">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="break-anywhere font-medium text-white">{repository.name}</p>
-                            <p className="break-anywhere text-sm text-muted">
-                              {repository.contributionCount} scored contributions
-                              {repository.primarySkill ? ` • ${repository.primarySkill}` : ""}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-xs font-medium text-primary">XP</p>
-                            <p className="mt-1 text-lg font-semibold text-white">{repository.totalXp}</p>
-                          </div>
-                        </div>
+                  <ul role="list" className="grid gap-3 sm:grid-cols-2">
+                    {data.user.badges.filter((badge) => badge.unlocked).slice(0, 4).map((badge) => (
+                      <li key={badge.id} className="render-opt-card neon-surface rounded-[1.75rem] p-4">
+                        <RarityBadge rarity={badge.rarity} />
+                        <h3 className="mt-3 text-lg font-medium text-white">{badge.name}</h3>
+                        <ExpandableText
+                          text={badge.description}
+                          lines={3}
+                          minLengthForToggle={120}
+                          className="mt-2"
+                          textClassName="text-sm text-muted"
+                          showMoreLabel="More"
+                          showLessLabel="Less"
+                        />
                       </li>
                     ))}
                   </ul>
-                )}
+                </GlowCard>
+                <GlowCard className="space-y-5">
+                  <div>
+                    <p className="text-xs font-medium text-primary">Skills</p>
+                    <h2 className="mt-2 text-xl font-semibold text-white">Strength map</h2>
+                  </div>
+                  <SkillRadarChart skills={data.user.skillTree} />
+                </GlowCard>
               </div>
+            </DeferUntilVisible>
+          ) : (
+            <GlowCard id="public-profile-badges-skills-content" className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 p-4 text-sm text-muted">
+              Badges and skill details are hidden for faster profile scanning.
             </GlowCard>
+          )}
+        </div>
+      </section>
+      <section id="public-profile-best-prs" className="render-opt-section scroll-mt-24">
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-sm font-semibold text-white">Best PR battle reports</h2>
+            <Button
+              type="button"
+              size="sm"
+              variant={expandedSections.bestPrs ? "secondary" : "default"}
+              onClick={() => {
+                toggleSection("bestPrs");
+              }}
+              aria-expanded={expandedSections.bestPrs}
+              aria-controls="public-profile-best-prs-content"
+            >
+              {expandedSections.bestPrs ? "Hide section" : "Show section"}
+            </Button>
           </div>
-        </DeferUntilVisible>
+          {expandedSections.bestPrs ? (
+            <DeferUntilVisible fallback={<PublicProfileSectionPlaceholder title="Loading best PR battle reports" />}>
+              <div id="public-profile-best-prs-content">
+                <BestPRsPanel reports={data.featuredContributions} />
+              </div>
+            </DeferUntilVisible>
+          ) : (
+            <GlowCard id="public-profile-best-prs-content" className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 p-4 text-sm text-muted">
+              Best-PR details are hidden for faster profile scanning.
+            </GlowCard>
+          )}
+        </div>
+      </section>
+      <section id="public-profile-timeline-repos" className="render-opt-section scroll-mt-24">
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-sm font-semibold text-white">Timeline and repositories</h2>
+            <Button
+              type="button"
+              size="sm"
+              variant={expandedSections.timelineRepos ? "secondary" : "default"}
+              onClick={() => {
+                toggleSection("timelineRepos");
+              }}
+              aria-expanded={expandedSections.timelineRepos}
+              aria-controls="public-profile-timeline-repos-content"
+            >
+              {expandedSections.timelineRepos ? "Hide section" : "Show section"}
+            </Button>
+          </div>
+          {expandedSections.timelineRepos ? (
+            <DeferUntilVisible fallback={<PublicProfileSectionPlaceholder title="Loading timeline and repositories" />}>
+              <div id="public-profile-timeline-repos-content" className="grid gap-6 xl:grid-cols-[1.08fr,0.92fr]">
+                <GlowCard className="space-y-5">
+                  <div>
+                    <p className="text-xs font-medium text-primary">Timeline</p>
+                    <h2 className="mt-2 text-xl font-semibold text-white">{data.trendWindowLabel}</h2>
+                  </div>
+                  <TimelineChart data={data.user.xpTimeline} />
+                </GlowCard>
+                <GlowCard className="space-y-5">
+                  <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
+                    <Award className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-primary">Top repositories</p>
+                    <h2 className="mt-2 text-xl font-semibold text-white">Top repositories right now</h2>
+                  </div>
+                  <div className="space-y-3">
+                    {data.topRepositories.length === 0 ? (
+                      <div className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
+                        <p>Repository-level signal is not available on this snapshot yet.</p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <Button asChild variant="secondary" size="sm">
+                            <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
+                          </Button>
+                          <Button asChild variant="ghost" size="sm">
+                            <Link href="/dashboard/settings" prefetch={false}>Open sync settings</Link>
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <ul role="list" className="space-y-3">
+                        {data.topRepositories.slice(0, 4).map((repository, index) => (
+                          <li key={`${repository.name}-${index}`} className="render-opt-card neon-surface rounded-[1.5rem] px-4 py-3">
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <p className="break-anywhere font-medium text-white">{repository.name}</p>
+                                <p className="break-anywhere text-sm text-muted">
+                                  {repository.contributionCount} scored contributions
+                                  {repository.primarySkill ? ` • ${repository.primarySkill}` : ""}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-xs font-medium text-primary">XP</p>
+                                <p className="mt-1 text-lg font-semibold text-white">{repository.totalXp}</p>
+                              </div>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </GlowCard>
+              </div>
+            </DeferUntilVisible>
+          ) : (
+            <GlowCard id="public-profile-timeline-repos-content" className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 p-4 text-sm text-muted">
+              Timeline and repository sections are hidden for faster profile scanning.
+            </GlowCard>
+          )}
+        </div>
       </section>
     </div>
   );

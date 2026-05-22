@@ -1615,6 +1615,9 @@
 - Tightened leaderboard lane tab readability on medium widths:
   - lane tabs now use short labels on tighter breakpoints and full labels on large screens
   - preserves lane meaning while reducing horizontal crowding.
+- Added progressive disclosure to public profile heavy sections:
+  - `Badges and skills`, `Best PR battle reports`, and `Timeline and repositories` now support `Show section` / `Hide section`
+  - keeps the share-ready profile concise on first load while preserving full detail on demand.
 
 ## 2026-05-16
 
