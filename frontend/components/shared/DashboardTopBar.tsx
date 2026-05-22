@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { AlertTriangle, ArrowUpRight } from "lucide-react";
 import { RankBadge } from "@/components/shared/RankBadge";
@@ -16,23 +15,10 @@ export function DashboardTopBar({
   embedded?: boolean;
 }) {
   return (
-    <div className={cn(embedded ? "px-2.5 py-1 sm:px-3 sm:py-1.5" : "dashboard-nav-shell px-4 py-2.5 sm:px-5")}>
+    <div className={cn(embedded ? "px-2 py-1 sm:px-3 sm:py-1.5" : "dashboard-nav-shell px-4 py-2.5 sm:px-5")}>
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="cyber-avatar relative h-10 w-10 shrink-0 overflow-hidden rounded-full">
-            <Image
-              src={user.avatarUrl}
-              alt={`${user.displayName} avatar`}
-              fill
-              sizes="40px"
-              className="object-cover"
-              priority={false}
-            />
-          </div>
-          <div className="min-w-0 space-y-0.5">
-            <p className="truncate text-sm font-semibold text-white">{user.displayName}</p>
-            <p className="truncate text-xs text-muted">@{user.username}</p>
-          </div>
+        <div className="min-w-0">
+          <p className="truncate text-xs font-medium text-muted">Signed in as @{user.username}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <SyncStatusPill status={user.syncStatus} />
@@ -45,15 +31,9 @@ export function DashboardTopBar({
 
 export function DashboardTopBarSkeleton({ embedded = false }: { embedded?: boolean }) {
   return (
-    <div className={cn(embedded ? "px-2.5 py-1 sm:px-3 sm:py-1.5" : "dashboard-nav-shell px-4 py-2.5 sm:px-5")}>
+    <div className={cn(embedded ? "px-2 py-1 sm:px-3 sm:py-1.5" : "dashboard-nav-shell px-4 py-2.5 sm:px-5")}>
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="neon-skeleton h-10 w-10 rounded-full" />
-          <div className="space-y-2">
-            <div className="neon-skeleton h-4 w-36 rounded-[0.1rem]" />
-            <div className="neon-skeleton h-3 w-28 rounded-[0.1rem]" />
-          </div>
-        </div>
+        <div className="neon-skeleton h-4 w-44 rounded-[0.1rem]" />
         <div className="flex flex-wrap items-center gap-3">
           <div className="neon-skeleton h-8 w-32 rounded-full" />
           <div className="neon-skeleton h-8 w-24 rounded-full" />
