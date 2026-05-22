@@ -117,6 +117,28 @@ export function PublicProfilePageClient({
     () => (data ? deriveDeterministicArchetype(data.user.strongestSignals) : "Systems Builder"),
     [data],
   );
+  const unlockedBadges = useMemo(
+    () => data?.user.badges.filter((badge) => badge.unlocked) ?? [],
+    [data],
+  );
+  const topSkill = useMemo(() => {
+    if (!data || data.user.skillTree.length === 0) {
+      return null;
+    }
+    return [...data.user.skillTree].sort((left, right) => right.score - left.score)[0] ?? null;
+  }, [data]);
+  const topFeaturedContribution = useMemo(() => {
+    if (!data || data.featuredContributions.length === 0) {
+      return null;
+    }
+    return [...data.featuredContributions].sort((left, right) => right.xpEarned - left.xpEarned)[0] ?? null;
+  }, [data]);
+  const latestTimelinePoint = useMemo(() => {
+    if (!data || data.user.xpTimeline.length === 0) {
+      return null;
+    }
+    return data.user.xpTimeline[data.user.xpTimeline.length - 1] ?? null;
+  }, [data]);
   const fallbackIdentitySummary = useMemo(() => {
     if (!data) {
       return undefined;
@@ -203,7 +225,7 @@ export function PublicProfilePageClient({
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <StatCard label="GitRank score" value={data.user.gitRankScore} icon={<Stars className="h-5 w-5 text-primary" />} />
           <StatCard label="Merged PRs" value={data.user.mergedPrCount} icon={<GitPullRequest className="h-5 w-5 text-primary" />} />
-          <StatCard label="Badges earned" value={data.user.badges.filter((badge) => badge.unlocked).length} icon={<ShieldCheck className="h-5 w-5 text-primary" />} />
+          <StatCard label="Badges earned" value={unlockedBadges.length} icon={<ShieldCheck className="h-5 w-5 text-primary" />} />
           <StatCard label="Consistency" value={`${data.user.consistencyScore}%`} detail={data.trendWindowLabel} icon={<CheckCircle2 className="h-5 w-5 text-primary" />} />
         </div>
       </section>
@@ -260,8 +282,15 @@ export function PublicProfilePageClient({
               </div>
             </DeferUntilVisible>
           ) : (
-            <GlowCard id="public-profile-badges-skills-content" className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 p-4 text-sm text-muted">
-              Badges and skill details are hidden for faster profile scanning.
+            <GlowCard id="public-profile-badges-skills-content" className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 p-4">
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
+                  Unlocked badges {unlockedBadges.length}
+                </span>
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
+                  Top skill {topSkill ? `${topSkill.category} (${topSkill.score})` : "Not available"}
+                </span>
+              </div>
             </GlowCard>
           )}
         </div>
@@ -290,8 +319,15 @@ export function PublicProfilePageClient({
               </div>
             </DeferUntilVisible>
           ) : (
-            <GlowCard id="public-profile-best-prs-content" className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 p-4 text-sm text-muted">
-              Best-PR details are hidden for faster profile scanning.
+            <GlowCard id="public-profile-best-prs-content" className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 p-4">
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
+                  Reports {data.featuredContributions.length}
+                </span>
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
+                  Top XP {topFeaturedContribution ? `+${topFeaturedContribution.xpEarned}` : "Not available"}
+                </span>
+              </div>
             </GlowCard>
           )}
         </div>
@@ -370,8 +406,18 @@ export function PublicProfilePageClient({
               </div>
             </DeferUntilVisible>
           ) : (
-            <GlowCard id="public-profile-timeline-repos-content" className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 p-4 text-sm text-muted">
-              Timeline and repository sections are hidden for faster profile scanning.
+            <GlowCard id="public-profile-timeline-repos-content" className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 p-4">
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
+                  {data.trendWindowLabel}
+                </span>
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
+                  Latest XP {latestTimelinePoint ? `${latestTimelinePoint.label}: ${latestTimelinePoint.xp}` : "Not available"}
+                </span>
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
+                  Top repos {data.topRepositories.length}
+                </span>
+              </div>
             </GlowCard>
           )}
         </div>
