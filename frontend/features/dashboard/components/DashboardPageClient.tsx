@@ -2,19 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef } from "react";
-import { Activity, Medal, ShieldCheck } from "lucide-react";
+import { Activity, Flame, Medal, ShieldCheck } from "lucide-react";
 import { CurrentLeagueCard } from "@/features/dashboard/components/CurrentLeagueCard";
 import { QuestPanel } from "@/features/dashboard/components/QuestPanel";
 import { RecentBattleReports } from "@/features/dashboard/components/RecentBattleReports";
-import { ScoreExplanationCard } from "@/features/dashboard/components/ScoreExplanationCard";
-import { BadgeShelf } from "@/features/dashboard/components/BadgeShelf";
-import { SkillBreakdownCard } from "@/features/dashboard/components/SkillBreakdownCard";
-import { ContributionTimelineCard } from "@/features/dashboard/components/ContributionTimelineCard";
 import { DashboardHeroRankCard } from "@/features/dashboard/components/DashboardHeroRankCard";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { ErrorState } from "@/components/shared/ErrorState";
-import { StreakHeatStrip } from "@/components/shared/StreakHeatStrip";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
@@ -184,7 +179,7 @@ export function DashboardPageClient() {
           analyticsTarget="dashboard:stale"
         />
       ) : null}
-      <section id="dashboard-hero" className="scroll-mt-24">
+      <section>
         <DashboardHeroRankCard
           user={user}
           archetype={abraInsights.data?.archetype ?? fallbackArchetype}
@@ -192,7 +187,7 @@ export function DashboardPageClient() {
           aiMode={abraInsights.data?.generatedBy ?? "deterministic"}
         />
       </section>
-      <section id="dashboard-snapshot" className="scroll-mt-24 grid gap-4 sm:grid-cols-2 xl:grid-cols-12">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-12">
         <StatCard
           className="xl:col-span-6"
           valueClassName="text-4xl"
@@ -221,12 +216,27 @@ export function DashboardPageClient() {
           icon={<Activity className="h-5 w-5 text-primary" />}
         />
       </section>
-      <section id="dashboard-momentum" className="scroll-mt-24">
-        <StreakHeatStrip contributions={user.contributions} />
+      <section className="grid gap-4 md:grid-cols-2">
+        <StatCard
+          label="Current streak"
+          value={`${streak.currentStreakDays}d`}
+          detail={`Best streak ${streak.bestStreakDays} days`}
+          icon={<Flame className="h-5 w-5 text-primary" />}
+        />
+        <StatCard
+          label="Active days this year"
+          value={streak.activeDaysThisYear}
+          detail={
+            streak.lastActiveDate
+              ? `Last active ${streak.lastActiveDate}`
+              : "No contribution activity yet."
+          }
+          icon={<Activity className="h-5 w-5 text-primary" />}
+        />
       </section>
-      <div className="grid gap-6 xl:grid-cols-[0.92fr,1.08fr]">
+      <div className="grid gap-6 xl:grid-cols-[0.86fr,1.14fr]">
         <div className="space-y-6">
-          <section id="dashboard-league" className="render-opt-section scroll-mt-24">
+          <section className="render-opt-section">
             <CurrentLeagueCard user={user} />
           </section>
           <section className="render-opt-section">
@@ -234,27 +244,11 @@ export function DashboardPageClient() {
           </section>
         </div>
         <div className="space-y-6">
-          <section id="dashboard-reports" className="render-opt-section scroll-mt-24">
+          <section className="render-opt-section">
             <RecentBattleReports reports={recentReports} />
           </section>
         </div>
       </div>
-      <section id="dashboard-advanced" className="render-opt-section scroll-mt-24 space-y-4">
-        <div id="dashboard-advanced-grid" className="grid gap-6 xl:grid-cols-[1.04fr,0.96fr]">
-          <section className="space-y-6">
-            <ScoreExplanationCard user={user} />
-            <BadgeShelf user={user} />
-          </section>
-          <section className="space-y-6">
-            <SkillBreakdownCard
-              user={user}
-              skillInsights={abraInsights.data?.skillInsights}
-              aiMode={abraInsights.data?.generatedBy}
-            />
-            <ContributionTimelineCard user={user} />
-          </section>
-        </div>
-      </section>
     </div>
   );
 }

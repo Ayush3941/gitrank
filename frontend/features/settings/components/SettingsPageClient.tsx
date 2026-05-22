@@ -304,7 +304,7 @@ export function SettingsPageClient() {
           </Button>
         )}
       />
-      <section id="settings-account" className="scroll-mt-24">
+      <section>
         <GlowCard className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -358,7 +358,7 @@ export function SettingsPageClient() {
         </GlowCard>
       </section>
 
-      <section id="settings-sync-activity" className="render-opt-section scroll-mt-24">
+      <section className="render-opt-section">
         <div className="space-y-3">
           <h2 className="text-sm font-semibold text-white">Sync activity</h2>
           <div id="settings-sync-activity-panel">
@@ -367,7 +367,7 @@ export function SettingsPageClient() {
         </div>
       </section>
 
-      <section id="settings-public-profile" className="render-opt-section scroll-mt-24">
+      <section className="render-opt-section">
         <SettingSection
           title="Public profile"
           saving={isSaving}
@@ -382,7 +382,7 @@ export function SettingsPageClient() {
         />
       </section>
 
-      <section id="settings-display" className="render-opt-section scroll-mt-24">
+      <section className="render-opt-section">
         <GlowCard className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="max-w-2xl">
@@ -510,7 +510,7 @@ export function SettingsPageClient() {
         </GlowCard>
       </section>
 
-      <section id="settings-repositories" className="render-opt-section scroll-mt-24">
+      <section className="render-opt-section">
         <GlowCard className="space-y-4">
           <div>
             <p className="text-xs font-medium text-primary">Repository privacy</p>
@@ -534,7 +534,7 @@ export function SettingsPageClient() {
         </GlowCard>
       </section>
 
-      <section id="settings-data-controls" className="render-opt-section scroll-mt-24">
+      <section className="render-opt-section">
         <GlowCard className="space-y-4">
           <div>
             <p className="text-xs font-medium text-primary">Data controls</p>

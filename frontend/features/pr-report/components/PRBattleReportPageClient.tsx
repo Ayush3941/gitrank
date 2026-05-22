@@ -106,7 +106,7 @@ export function PRBattleReportPageClient({
           {evidenceAnchored ? "Anchored evidence" : "Partial evidence"}
         </span>
       </div>
-      <section id="pr-report-overview" className="scroll-mt-24">
+      <section>
         <GlowCard strong className="space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
@@ -180,7 +180,7 @@ export function PRBattleReportPageClient({
         </div>
         </GlowCard>
       </section>
-      <section id="pr-report-ai" className="render-opt-section scroll-mt-24">
+      <section className="render-opt-section">
         <GlowCard className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs font-medium text-primary">AI summary</p>
@@ -211,7 +211,7 @@ export function PRBattleReportPageClient({
           />
         </GlowCard>
       </section>
-      <section id="pr-report-technical" className="render-opt-section scroll-mt-24 space-y-4">
+      <section className="render-opt-section space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-sm font-semibold text-white">Technical breakdown</h2>
           <Button
@@ -229,20 +229,20 @@ export function PRBattleReportPageClient({
         </div>
         {showTechnicalBreakdown ? (
           <div id="pr-report-technical-panels" className="space-y-6">
-            <section id="pr-report-score" className="render-opt-section scroll-mt-24">
+            <section className="render-opt-section">
               <div className="grid gap-6 xl:grid-cols-[1.02fr,0.98fr]">
                 <ScoreMatrixCard report={data} />
                 <XPBreakdownCard report={data} />
               </div>
             </section>
-            <section id="pr-report-evidence" className="render-opt-section scroll-mt-24">
+            <section className="render-opt-section">
               <div className="space-y-4">
                 <h2 className="text-sm font-semibold text-white">Evidence signals</h2>
                 <EvidenceSignalsCard report={data} />
               </div>
             </section>
             {uniqueBadgeUnlocks.length ? (
-              <section id="pr-report-rewards" className="render-opt-section scroll-mt-24">
+              <section className="render-opt-section">
                 <div className="space-y-4">
                   <h2 className="text-sm font-semibold text-white">
                     Badge rewards ({uniqueBadgeUnlocks.length})
@@ -291,10 +291,7 @@ export function PRBattleReportPageClient({
         )}
       </section>
       {data.suggestedQuestId ? (
-        <section
-          id={!uniqueBadgeUnlocks.length ? "pr-report-rewards" : undefined}
-          className={!uniqueBadgeUnlocks.length ? "render-opt-section scroll-mt-24" : "render-opt-section"}
-        >
+        <section className="render-opt-section">
           <div className="space-y-4">
             <h2 className="text-sm font-semibold text-white">Suggested next quest</h2>
             <GlowCard className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

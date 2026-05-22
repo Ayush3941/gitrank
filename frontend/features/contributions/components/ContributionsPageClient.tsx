@@ -252,7 +252,7 @@ export function ContributionsPageClient() {
           analyticsTarget="contributions:stale"
         />
       ) : null}
-      <section id="contributions-filters" className="scroll-mt-24">
+      <section>
         <ContributionFilters
           value={filter}
           onValueChange={handleFilterChange}
@@ -304,7 +304,7 @@ export function ContributionsPageClient() {
         />
       ) : null}
       {!isLoading && !isError ? (
-        <section id="contributions-cards" className="render-opt-section scroll-mt-24 space-y-4">
+        <section className="render-opt-section space-y-4">
           {filteredRows.length ? (
             <div className="space-y-4">
               <div id={CONTRIBUTION_CARDS_REGION_ID}>
