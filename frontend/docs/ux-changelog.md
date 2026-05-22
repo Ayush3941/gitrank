@@ -14,6 +14,9 @@
 - Onboarding reveal collapsed-summary pass:
   - replaced collapsed unlock/next-action helper sentences with compact summary chips (unlocked badge count, strongest signals, evidence rows, step count, first action).
   - keeps reveal progressive disclosure while preserving useful signal in collapsed mode.
+- Quests collapsed-lane summary pass:
+  - replaced generic collapsed quest-section placeholder text with compact lane-summary chips (quest count, active count, total reward XP).
+  - keeps quest progressive disclosure while preserving useful signal in collapsed mode.
 - Public profile lazy-load pass:
   - switched heavy public-profile modules to `next/dynamic` (`PublicProfileHero`, `BestPRsPanel`, `SkillRadarChart`, `TimelineChart`) with bounded skeleton fallbacks.
   - improves first-render responsiveness on profile routes with large contribution history.

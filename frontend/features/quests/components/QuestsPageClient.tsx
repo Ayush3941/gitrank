@@ -182,6 +182,8 @@ export function QuestsPageClient() {
       {!isLoading && !isError && data ? (
         groups.map((group) => {
           const grouped = questMap[group];
+          const activeCount = grouped.filter((quest) => quest.status === "Active").length;
+          const totalRewardXp = grouped.reduce((total, quest) => total + quest.rewardXp, 0);
 
           return (
             <section
@@ -235,9 +237,19 @@ export function QuestsPageClient() {
                 ) : (
                   <GlowCard
                     id={`quests-group-${group}`}
-                    className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 p-4 text-sm text-muted"
+                    className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 p-4"
                   >
-                    Section hidden.
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                      <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
+                        Quests {grouped.length}
+                      </span>
+                      <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
+                        Active {activeCount}
+                      </span>
+                      <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
+                        Reward XP {totalRewardXp.toLocaleString("en-US")}
+                      </span>
+                    </div>
                   </GlowCard>
                 )}
               </div>
