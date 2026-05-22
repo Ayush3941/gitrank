@@ -139,6 +139,9 @@ export interface Contribution {
   analysisId?: string;
   evidenceState?: "complete" | "partial";
   evidenceMissing?: string[];
+  reportEvidenceStatus?: PREvidenceState["status"];
+  reportAnalysisSource?: string;
+  reportStale?: boolean;
   owner: string;
   repo: string;
   number: number;

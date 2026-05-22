@@ -32,6 +32,7 @@ export function ContributionList({
         const signalIndex = contributionSignalIndex(item);
         const signalBand = contributionSignalBand(signalIndex);
         const showStatusChip = item.status !== "merged";
+        const reportState = contributionReportState(item);
         return (
           <li
             key={`${item.owner}/${item.repo}#${item.number}-${item.id}-${index}`}
@@ -52,6 +53,11 @@ export function ContributionList({
                     {showStatusChip ? (
                       <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
                         {formatContributionStatus(item.status)}
+                      </span>
+                    ) : null}
+                    {reportState ? (
+                      <span className={`neon-chip rounded-full px-3 py-1 font-semibold ${reportState.className}`}>
+                        {reportState.label}
                       </span>
                     ) : null}
                   </div>
@@ -114,6 +120,35 @@ function contributionSignalIndex(item: Contribution): number {
   const difficulty = clampScore(item.difficultyScore);
   const testSignal = clampScore(item.testSignalScore);
   return Math.round(impact * 0.35 + review * 0.25 + difficulty * 0.2 + testSignal * 0.2);
+}
+
+function contributionReportState(
+  item: Contribution,
+): { label: string; className: string } | null {
+  const status = item.reportEvidenceStatus;
+  if (status === "complete") {
+    const analysisSource = (item.reportAnalysisSource ?? "").toLowerCase();
+    if (analysisSource.includes("ai") || analysisSource.includes("gemini") || analysisSource.includes("hybrid")) {
+      return { label: "Gemini ready", className: "neon-chip-success" };
+    }
+    return { label: "Deterministic ready", className: "neon-chip-info" };
+  }
+  if (status === "deterministic_only") {
+    return { label: "Deterministic", className: "neon-chip-info" };
+  }
+  if (status === "ai_fallback") {
+    return { label: "AI fallback", className: "neon-chip-warning" };
+  }
+  if (status === "rate_limited") {
+    return { label: "Rate limited", className: "neon-chip-warning" };
+  }
+  if (status === "stale") {
+    return { label: "Pending refresh", className: "neon-chip-muted" };
+  }
+  if (status === "incomplete" || item.evidenceState === "partial") {
+    return { label: "Evidence partial", className: "neon-chip-muted" };
+  }
+  return null;
 }
 
 function clampScore(value: number): number {

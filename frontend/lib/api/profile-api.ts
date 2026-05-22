@@ -550,6 +550,12 @@ function mergeContributionDetails(
       ...row,
       status: live.status,
       category: live.category,
+      analysisId: live.analysisId || row.analysisId,
+      evidenceState:
+        report.evidenceState.status === "complete" ? "complete" : "partial",
+      reportEvidenceStatus: report.evidenceState.status,
+      reportAnalysisSource: report.evidenceState.analysisSource,
+      reportStale: report.evidenceState.stale,
       difficultyScore: live.difficultyScore,
       impactScore: live.impactScore,
       reviewDepthScore: live.reviewDepthScore,
