@@ -2,6 +2,9 @@
 
 ## 2026-05-21
 
+- Dashboard momentum heat-strip pass:
+  - added a compact 21-day contribution heat strip to dashboard (`frontend/components/shared/StreakHeatStrip.tsx`) to make streak/momentum scan faster without heavy animation.
+  - each day tile now includes tooltip and ARIA labels with contribution count + XP so momentum state is not color-only.
 - Error-state recovery pass:
   - added in-place `Retry` actions on all major dashboard route error states (`dashboard`, `contributions`, `badges`, `quests`, `leaderboard`, `settings`, `public profile`, `PR report`).
   - each retry now triggers the page query `refetch` directly, reducing forced navigation during transient sync/API failures.

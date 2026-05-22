@@ -8,6 +8,7 @@ import { DashboardHeroRankCard } from "@/features/dashboard/components/Dashboard
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { StreakHeatStrip } from "@/components/shared/StreakHeatStrip";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -249,6 +250,9 @@ export function DashboardPageClient() {
           value={user.reviewedPrCount}
           icon={<Activity className="h-5 w-5 text-primary" />}
         />
+      </section>
+      <section id="dashboard-momentum" className="scroll-mt-24">
+        <StreakHeatStrip contributions={user.contributions} />
       </section>
       <div className="grid gap-6 xl:grid-cols-[0.92fr,1.08fr]">
         <div className="space-y-6">
