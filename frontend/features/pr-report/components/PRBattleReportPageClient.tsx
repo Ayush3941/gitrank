@@ -36,7 +36,7 @@ export function PRBattleReportPageClient({
     return (
       <ErrorState
         title="Battle report failed"
-        description="The score breakdown could not be computed. Retry or return to the contribution drill-down."
+        description="The score breakdown could not be loaded. Retry or return to contributions."
         onRetry={() => {
           void refetch();
         }}
@@ -86,7 +86,7 @@ export function PRBattleReportPageClient({
       <PageHeader
         eyebrow="PR Report"
         title="PR battle report"
-        description="Explainable score and evidence context."
+        description="Explainable score and evidence."
         actions={(
           <div className="flex flex-wrap gap-2">
             <Button asChild variant="secondary">
@@ -150,13 +150,6 @@ export function PRBattleReportPageClient({
               <li className="list-none">
                 <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
                   confidence {Math.round(evidenceState.analysisConfidence * 100)}%
-                </span>
-              </li>
-            ) : null}
-            {evidenceState.missingEvidence.length ? (
-              <li className="list-none">
-                <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-xs text-amber-100">
-                  partial evidence
                 </span>
               </li>
             ) : null}

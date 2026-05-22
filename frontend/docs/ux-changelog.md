@@ -1776,6 +1776,9 @@
   - removed redundant decorative/technical chrome from each PR card.
   - trimmed duplicate status/file chips and condensed signal labels for faster scan.
   - kept the impact summary and report drill-down while reducing visual clutter.
+- Tightened PR battle report copy and evidence labels:
+  - shortened header/error wording and removed duplicate partial-evidence chip noise.
+  - keeps source/confidence/fallback diagnostics while reducing repeated status text.
 
 ## 2026-05-16
 
