@@ -586,7 +586,7 @@ export function SettingsPageClient() {
 }
 
 function SettingsSyncActivitySection() {
-  const syncRunsQuery = useSyncRuns(8);
+  const syncRunsQuery = useSyncRuns(25);
   const syncRunsError = sanitizeUserFacingError(
     (syncRunsQuery.error as Error | null)?.message || "",
     "settings-sync-runs",
