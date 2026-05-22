@@ -392,7 +392,7 @@ export function SettingsPageClient() {
               <p className="mt-4 text-xs font-medium text-primary">Display preference</p>
               <h2 className="mt-2 text-2xl font-semibold text-white">Reduced gamification</h2>
               <p className="mt-2 text-sm leading-6 text-muted">
-                Reduces XP animation, shimmer, and glow effects for this account. Scoring and privacy are unchanged.
+                Reduces heavy visual effects. Scores and privacy stay unchanged.
               </p>
             </div>
             <Switch
@@ -410,7 +410,7 @@ export function SettingsPageClient() {
                   <p className="text-xs font-medium text-primary">Keyboard controls</p>
                 <h3 className="mt-2 text-xl font-semibold text-white">Display shortcuts</h3>
                 <p className="mt-2 text-sm leading-6 text-muted">
-                  Enables theme and text-size shortcuts outside editable fields.
+                  Enables theme and text-size shortcuts outside input fields.
                 </p>
               </div>
               <Switch

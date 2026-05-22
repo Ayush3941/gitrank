@@ -1757,6 +1757,9 @@
   - merged streak telemetry into one card (`Current streak`) by folding yearly activity into the same panel.
   - compact contribution filters now hide the top status/reset chrome while retaining full category/search/sort behavior.
   - smoothed long-tail background glow falloff so neon overlays start and fade more gradually with less visual noise.
+- Simplified settings sync activity controls:
+  - removed the redundant visible `X of Y runs` + top reset strip from sync activity filters.
+  - kept the live filter status in an `sr-only` region so assistive tech still receives count updates.
 
 ## 2026-05-16
 

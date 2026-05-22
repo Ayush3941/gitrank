@@ -115,21 +115,9 @@ export function SyncRunActivityPanel({
         </div>
       </div>
       <div className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p id={filterStatusId} role="status" aria-live="polite" className="text-xs font-medium text-cyan-200">
-            {`${filteredRuns.length} of ${statusCounts.all} runs`}
-          </p>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            onClick={handleResetFilters}
-            disabled={!canReset}
-            aria-controls={syncRunsRegionId}
-          >
-            Reset
-          </Button>
-        </div>
+        <p id={filterStatusId} role="status" aria-live="polite" className="sr-only">
+          {`${filteredRuns.length} of ${statusCounts.all} runs`}
+        </p>
         <div className="grid gap-3 md:grid-cols-[1fr,22rem]">
           <div className="relative">
             <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted" />
