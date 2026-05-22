@@ -31,6 +31,9 @@
 - Coarse-pointer hit-target pass:
   - enforced a 44px minimum height for coarse-pointer interactive controls (`button`, non-toggle text inputs, `select`, `textarea`, and role-based button/tab/switch controls).
   - keeps desktop density unchanged while improving touch accuracy and WCAG-friendly target spacing on mobile devices.
+- Dashboard chrome structure pass:
+  - inserted an explicit `dashboard-chrome-divider` between the account-state strip and lane navigation tabs in `DashboardLayout`.
+  - improves visual grouping so the dashboard nav reads as one consistent chrome block without adding extra copy or motion.
 - Autosync noise reduction pass:
   - dashboard auto-sync no longer treats `partialProfileAvailable` by itself as a re-sync trigger.
   - stale-state and zero-evidence recovery still auto-sync, but already-synced partial snapshots avoid repeated background sync churn.
