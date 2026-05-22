@@ -149,6 +149,7 @@ export function SettingsPageClient() {
   const [actionNotice, setActionNotice] = useState("");
   const [displayNotice, setDisplayNotice] = useState("");
   const [showDisplayTuning, setShowDisplayTuning] = useState(false);
+  const [showSyncActivity, setShowSyncActivity] = useState(false);
   const currentSettings = data?.user.privacy ?? null;
 
   function handleResetDisplayPreferences() {
@@ -352,9 +353,34 @@ export function SettingsPageClient() {
       </section>
 
       <section id="settings-sync-activity" className="render-opt-section scroll-mt-24">
-        <DeferUntilVisible fallback={<SettingsSectionPlaceholder title="Loading sync activity" />}>
-          <SettingsSyncActivitySection />
-        </DeferUntilVisible>
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-sm font-semibold text-white">Sync activity</h2>
+            <Button
+              type="button"
+              size="sm"
+              variant={showSyncActivity ? "secondary" : "default"}
+              onClick={() => {
+                setShowSyncActivity((current) => !current);
+              }}
+              aria-expanded={showSyncActivity}
+              aria-controls="settings-sync-activity-panel"
+            >
+              {showSyncActivity ? "Hide sync log" : "Show sync log"}
+            </Button>
+          </div>
+          {showSyncActivity ? (
+            <DeferUntilVisible fallback={<SettingsSectionPlaceholder title="Loading sync activity" />}>
+              <div id="settings-sync-activity-panel">
+                <SettingsSyncActivitySection />
+              </div>
+            </DeferUntilVisible>
+          ) : (
+            <GlowCard id="settings-sync-activity-panel" className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 p-4 text-sm text-muted">
+              Sync run history is hidden by default. Open it when you need execution-level diagnostics.
+            </GlowCard>
+          )}
+        </div>
       </section>
 
       <section id="settings-public-profile" className="render-opt-section scroll-mt-24">

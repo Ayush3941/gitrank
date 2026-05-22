@@ -1624,6 +1624,9 @@
 - Added progressive disclosure to onboarding reveal detail blocks:
   - `Unlock preview` and `What to do next` now support `Show section` / `Hide section`
   - keeps the reveal screen dramatic but less overwhelming on first load.
+- Added progressive disclosure for settings sync diagnostics:
+  - `Sync activity` now defaults to a compact state with explicit `Show sync log` / `Hide sync log`
+  - keeps settings focused on core privacy/display controls while preserving deep sync debugging on demand.
 
 ## 2026-05-16
 
