@@ -1,5 +1,19 @@
 # Frontend UX Changelog
 
+## 2026-05-22
+
+- Removed route-level deferred/dynamic section wrappers across dashboard-critical routes:
+  - switched dashboard, contributions, badges, quests, leaderboard, settings, public profile, and PR report pages to direct section rendering.
+  - removed section-placeholder mount shells that were causing visible phase shifts and occasional scroll-position jitter during route interaction.
+- Simplified dashboard chrome and reduced repeated surface noise:
+  - trimmed top bar chips to core account state (`sync` + `rank`) and removed duplicate weekly-XP badge from the nav strip.
+  - reduced dashboard chrome/nav glow intensity and gradient weight in `globals.css` to keep hierarchy clear without muddy contrast.
+- Reduced redundant dashboard copy in deep panels:
+  - removed extra “Score and skill lanes” preamble block above advanced cards so the route reads faster and keeps focus on evidence cards.
+- Validation pass:
+  - `npm run build` succeeded after changes.
+  - frontend quality checks passed: `check:contrast`, `check:readable-text`, `check:media-stability`, `check:main-thread`, `check:cache-strategy`, `check:server-boundaries`, `check:client-env-safety`, `check:no-production-mocks`.
+
 ## 2026-05-21
 
 - Dashboard top-bar display controls pass:
