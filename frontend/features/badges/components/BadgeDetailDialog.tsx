@@ -136,10 +136,10 @@ export function BadgeDetailDialog({
                   </span>
                   <div className="flex flex-wrap gap-2">
                     <Button asChild variant="secondary" size="sm">
-                      <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
+                      <Link href="/dashboard/contributions">Open contributions</Link>
                     </Button>
                     <Button asChild variant="ghost" size="sm">
-                      <Link href="/dashboard/quests" prefetch={false}>Open quests</Link>
+                      <Link href="/dashboard/quests">Open quests</Link>
                     </Button>
                   </div>
                 </div>

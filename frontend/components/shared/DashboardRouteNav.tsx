@@ -29,7 +29,6 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
             <li key={item.href} className="list-none">
               <Link
                 href={item.href}
-                prefetch={false}
                 scroll={false}
                 aria-current={active ? "page" : undefined}
                 className={cn(

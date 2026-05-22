@@ -139,7 +139,7 @@ export function SyncStateGuide({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-xs text-muted">{contextParts.join(" ")}</p>
         <Button asChild size="sm" variant="secondary">
-          <Link href={copy.actionHref} prefetch={false}>
+          <Link href={copy.actionHref}>
             {copy.actionLabel}
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>

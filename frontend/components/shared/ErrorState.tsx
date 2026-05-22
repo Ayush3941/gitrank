@@ -73,7 +73,7 @@ export function ErrorState({
         </Button>
         {fallbackHref ? (
           <Button asChild variant="secondary">
-            <Link href={fallbackHref} prefetch={false}>{fallbackLabel}</Link>
+            <Link href={fallbackHref}>{fallbackLabel}</Link>
           </Button>
         ) : onFallback ? (
           <Button type="button" variant="secondary" onClick={handleFallback}>

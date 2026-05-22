@@ -159,7 +159,7 @@ export function DashboardPageClient() {
         description="Rank, XP, and contribution signals."
         actions={(
           <Button asChild variant="secondary" size="sm">
-            <Link href="/dashboard/contributions" prefetch={false}>
+            <Link href="/dashboard/contributions">
               Open contributions
             </Link>
           </Button>

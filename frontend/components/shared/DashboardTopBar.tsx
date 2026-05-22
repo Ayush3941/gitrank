@@ -51,7 +51,6 @@ export function DashboardTopBarUnavailable({ embedded = false }: { embedded?: bo
         </div>
         <Link
           href="/login?return_to=/dashboard"
-          prefetch={false}
           className="focus-ring cyber-link inline-flex w-fit items-center gap-2 text-sm font-medium"
         >
           Reconnect GitHub
@@ -70,7 +69,6 @@ export function DashboardTopBarUnavailable({ embedded = false }: { embedded?: bo
         </div>
         <Link
           href="/login?return_to=/dashboard"
-          prefetch={false}
           className="focus-ring cyber-link inline-flex items-center gap-2 text-sm font-medium"
         >
           Reconnect GitHub

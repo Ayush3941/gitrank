@@ -41,7 +41,7 @@ export function RouteFallbackCard({
       <div className={cn("flex flex-wrap gap-3", centered ? "items-center justify-center" : "")}>
         {actions.map((action) => (
           <Button key={action.href} asChild variant={action.variant ?? "secondary"}>
-            <Link href={action.href} prefetch={false}>{action.label}</Link>
+            <Link href={action.href}>{action.label}</Link>
           </Button>
         ))}
       </div>

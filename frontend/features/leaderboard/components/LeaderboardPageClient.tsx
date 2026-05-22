@@ -110,7 +110,7 @@ export function LeaderboardPageClient() {
         description="Compare rank lanes and promotion progress."
         actions={(
           <Button asChild variant="secondary" size="sm">
-            <Link href="/dashboard/quests" prefetch={false}>
+            <Link href="/dashboard/quests">
               Open quests
             </Link>
           </Button>
@@ -273,13 +273,13 @@ export function LeaderboardPageClient() {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Button asChild size="sm" variant="secondary">
-                    <Link href="/dashboard/contributions" prefetch={false}>
+                    <Link href="/dashboard/contributions">
                       Improve contribution signal
                       <ArrowUpRight className="h-4 w-4" />
                     </Link>
                   </Button>
                   <Button asChild size="sm" variant="ghost">
-                    <Link href="/dashboard/quests" prefetch={false}>
+                    <Link href="/dashboard/quests">
                       Open tactical quests
                       <Trophy className="h-4 w-4" />
                     </Link>

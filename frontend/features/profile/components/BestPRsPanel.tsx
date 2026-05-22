@@ -21,7 +21,7 @@ export function BestPRsPanel({ reports }: { reports: FeaturedContribution[] }) {
             <p>No public PR reports yet for this profile snapshot.</p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Button asChild variant="secondary" size="sm">
-                <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
+                <Link href="/dashboard/contributions">Open contributions</Link>
               </Button>
             </div>
           </div>
