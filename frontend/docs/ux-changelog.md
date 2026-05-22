@@ -2,6 +2,9 @@
 
 ## 2026-05-21
 
+- Dashboard top-bar display controls pass:
+  - surfaced compact `ThemeQuickSwitcher` and `TextScaleQuickSwitcher` controls directly in the dashboard top bar on larger screens.
+  - improves day-to-day readability/theme switching speed without forcing a settings-page round trip.
 - Contributions CSV export pass:
   - added a header-level `Export CSV` action on contributions that exports the currently filtered, deduplicated contribution rows.
   - keeps visual card UX intact while adding a lightweight table-friendly output path for presentation and accessibility workflows.
