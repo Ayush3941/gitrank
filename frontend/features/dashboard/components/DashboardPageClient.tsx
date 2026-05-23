@@ -184,7 +184,7 @@ export function DashboardPageClient() {
       <PageHeader
         eyebrow="Dashboard"
         title="Dashboard"
-        description="Rank, XP, and contribution signals."
+        description="Rank, XP, and contribution quality."
         actions={(
           <Button asChild variant="secondary" size="sm">
             <Link href="/dashboard/contributions" prefetch={false}>
@@ -222,7 +222,7 @@ export function DashboardPageClient() {
           valueClassName="text-4xl"
           label="GitRank score"
           value={user.gitRankScore}
-          detail="Impact-weighted score from merged contribution evidence."
+          detail="Impact-weighted score from merged evidence."
           icon={<Medal className="h-5 w-5 text-primary" />}
         />
         <GlowCard className="xl:col-span-3 space-y-4">

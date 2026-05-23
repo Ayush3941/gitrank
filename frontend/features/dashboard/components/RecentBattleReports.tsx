@@ -14,21 +14,19 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
 
   return (
     <GlowCard className="space-y-5">
-      <div>
-        <h2 className="text-xl font-semibold text-white">PR reports</h2>
-        <div className="mt-3">
-          <Button asChild size="sm" variant="secondary">
-            <Link href="/dashboard/contributions" prefetch={false}>
-              View all reports
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-xl font-semibold text-white">Battle reports</h2>
+        <Button asChild size="sm" variant="secondary">
+          <Link href="/dashboard/contributions" prefetch={false}>
+            View all
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </Button>
       </div>
       <ul role="list" className="grid gap-3">
         {sortedReports.length === 0 ? (
           <li className="list-none neon-surface space-y-3 rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
-            <p>No PR reports yet. They appear after sync and scoring.</p>
+            <p>No reports yet. They appear after sync + scoring.</p>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" variant="secondary">
                 <Link href="/dashboard/contributions" prefetch={false}>Inspect contributions</Link>
@@ -109,13 +107,13 @@ function deduplicateReportsByPR(reports: PullRequestAnalysis[]): PullRequestAnal
 
 function confidenceLabel(report: PullRequestAnalysis): string {
   if (report.evidenceState.deterministicOnly) {
-    return "Deterministic scoring mode";
+    return "Deterministic mode";
   }
   if (report.evidenceState.aiFallback) {
     return "AI fallback mode";
   }
   if (report.evidenceState.rateLimited) {
-    return "Rate-limited evidence mode";
+    return "Rate-limited mode";
   }
   const confidence = Math.max(0, Math.min(100, Math.round(report.aiConfidence * 100)));
   return `Confidence ${confidence}%`;

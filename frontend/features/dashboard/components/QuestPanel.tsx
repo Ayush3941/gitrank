@@ -12,7 +12,7 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
     <GlowCard className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-white">Active quests</h2>
+          <h2 className="text-xl font-semibold text-white">Quests</h2>
         </div>
         <div className="neon-surface rounded-3xl p-3 text-primary">
           <Target className="h-5 w-5" />
@@ -21,7 +21,7 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
       <div className="space-y-3">
         {quests.length === 0 ? (
           <div className="neon-surface space-y-3 rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
-            <p>No quests yet. Run sync to generate missions.</p>
+            <p>No quests yet. Sync evidence to generate missions.</p>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" variant="secondary">
                 <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
