@@ -351,13 +351,8 @@ export function SettingsPageClient() {
         </GlowCard>
       </section>
 
-      <section className="render-opt-section">
-        <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-white">Sync activity</h2>
-          <div id="settings-sync-activity-panel">
-            <SettingsSyncActivitySection />
-          </div>
-        </div>
+      <section className="render-opt-section" id="settings-sync-activity-panel">
+        <SettingsSyncActivitySection />
       </section>
 
       <section className="render-opt-section">
@@ -565,11 +560,6 @@ function SettingsSyncActivitySection() {
 
   return (
     <GlowCard className="space-y-4">
-      <div className="neon-surface flex flex-wrap items-center justify-between gap-3 rounded-[1rem] px-4 py-3">
-        <p className="text-sm font-semibold text-white">
-          Sync run log ({runs.length})
-        </p>
-      </div>
       <SyncRunActivityPanel
         runs={runs}
         lastUpdatedAt={syncRunsQuery.data?.last_updated_at}
