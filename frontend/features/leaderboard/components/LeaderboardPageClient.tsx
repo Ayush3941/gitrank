@@ -241,12 +241,11 @@ export function LeaderboardPageClient() {
           {snapshot.currentUser ? (
             <div className="space-y-3">
               <h2 className="text-sm font-semibold text-white">
-                Arena focus: #{snapshot.currentUser.rank} in {tab} · {snapshot.currentUser.division}
+                Your lane position: #{snapshot.currentUser.rank} in {tab}
               </h2>
               <GlowCard className="space-y-4 border border-cyan-300/22 bg-gradient-to-br from-slate-950/88 to-cyan-950/24">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-medium text-cyan-200">Lane snapshot</p>
                     <h2 className="mt-2 text-xl font-semibold text-white">
                       #{snapshot.currentUser.rank} · {snapshot.currentUser.division}
                     </h2>
@@ -267,12 +266,9 @@ export function LeaderboardPageClient() {
                   </p>
                 </div>
                 <div id="leaderboard-mission-plan" className="space-y-3">
-                  <p className="neon-surface rounded-[1rem] px-4 py-2 text-sm font-semibold text-white">
-                    Mission plan
-                  </p>
                   <div className="grid gap-3 md:grid-cols-3">
                     <ClimbTip
-                      title="Promotion gap"
+                      title="To next band"
                       body={
                         snapshot.currentUser.xpToNextRank > 0
                           ? `${snapshot.currentUser.xpToNextRank} XP required`
@@ -280,7 +276,7 @@ export function LeaderboardPageClient() {
                       }
                     />
                     <ClimbTip
-                      title="Leader gap"
+                      title="Gap to leader"
                       body={laneGapToLeader > 0 ? `${laneGapToLeader} season XP` : "You currently hold lane lead"}
                     />
                     <ClimbTip
