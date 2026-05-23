@@ -36,9 +36,6 @@ export function BadgeShelf({ user }: { user: UserProfile }) {
               <Button asChild size="sm" variant="secondary">
                 <Link href="/dashboard/badges" prefetch={false} scroll={false}>Open badge forge</Link>
               </Button>
-              <Button asChild size="sm" variant="ghost">
-                <Link href="/dashboard/settings" prefetch={false} scroll={false}>Open sync settings</Link>
-              </Button>
             </div>
           </li>
         ) : null}

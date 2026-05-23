@@ -33,9 +33,6 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
               <Button asChild size="sm" variant="secondary">
                 <Link href="/dashboard/contributions" prefetch={false} scroll={false}>Inspect contributions</Link>
               </Button>
-              <Button asChild size="sm" variant="ghost">
-                <Link href="/dashboard/settings" prefetch={false} scroll={false}>Open sync settings</Link>
-              </Button>
             </div>
           </li>
         ) : null}
