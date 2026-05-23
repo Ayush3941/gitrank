@@ -1,6 +1,6 @@
 # Contributing to GitRank
 
-Last reviewed: May 17, 2026
+Last reviewed: May 23, 2026
 
 This document is intentionally detailed.
 
@@ -81,6 +81,12 @@ Research memory lock (do not regress this interpretation):
   - hierarchy output: 8 discrete general-to-specific levels
 - Product implication: do not over-claim "research-proven developer ranking" in UI or docs.
   Keep wording constrained to evidence-backed PR scoring in this repo’s own deterministic model.
+
+Contributor memory checkpoint:
+
+- Before changing ranking language, scoring explanation copy, or claim wording,
+  re-check this section first and keep product claims bounded to persisted
+  evidence in this codebase.
 
 ## Current Repository Status
 
