@@ -205,8 +205,7 @@ export function PublicProfilePageClient({
           <StatCard label="Consistency" value={`${data.user.consistencyScore}%`} detail={data.trendWindowLabel} icon={<CheckCircle2 className="h-5 w-5 text-primary" />} />
         </div>
       </section>
-      <section className="render-opt-section space-y-3">
-        <h2 className="text-sm font-semibold text-white">Badge and skill lanes</h2>
+      <section className="render-opt-section space-y-4" aria-label="Badge and skill lanes">
         <div className="grid gap-6 xl:grid-cols-[1fr,1fr]">
           <GlowCard className="space-y-5">
             <div>
@@ -248,14 +247,12 @@ export function PublicProfilePageClient({
           </GlowCard>
         </div>
       </section>
-      <section className="render-opt-section space-y-3">
-        <h2 className="text-sm font-semibold text-white">Top PR battle reports</h2>
+      <section className="render-opt-section space-y-4" aria-label="Top PR battle reports">
         <DeferUntilVisible fallback={<PublicLanePlaceholder label="Loading battle reports" />}>
           <BestPRsPanel reports={data.featuredContributions} reportDetails={data.recentReports} />
         </DeferUntilVisible>
       </section>
-      <section className="render-opt-section space-y-3">
-        <h2 className="text-sm font-semibold text-white">Timeline and repositories</h2>
+      <section className="render-opt-section space-y-4" aria-label="Timeline and repositories">
         <div className="grid gap-6 xl:grid-cols-[1.08fr,0.92fr]">
           <GlowCard className="space-y-5">
             <div>
