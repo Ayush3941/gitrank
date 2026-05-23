@@ -991,8 +991,8 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 
 .render-opt-section {
   contain: none;
-  content-visibility: auto;
-  contain-intrinsic-size: 1px 680px;
+  content-visibility: visible;
+  contain-intrinsic-size: none;
 }
 
 @supports not (content-visibility: auto) {
