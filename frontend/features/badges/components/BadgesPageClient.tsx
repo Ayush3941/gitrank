@@ -18,6 +18,7 @@ import { ExpandableText } from "@/components/shared/ExpandableText";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { InlineNotice } from "@/components/shared/InlineNotice";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
@@ -313,17 +314,12 @@ export function BadgesPageClient() {
                 <p className="text-xs font-medium text-cyan-200">Badge progress</p>
                 <Progress value={completionPercent} />
               </div>
-              <div className="min-h-6">
-                {unlockNotice ? (
-                  <p role="status" aria-live="polite" className="text-sm text-emerald-200">
-                    {unlockNotice}
-                  </p>
-                ) : (
-                  <p aria-hidden="true" className="text-sm opacity-0 select-none">
-                    Badge update
-                  </p>
-                )}
-              </div>
+              <InlineNotice
+                message={unlockNotice}
+                placeholder="Badge update"
+                variant="success"
+                minHeightClassName="min-h-7"
+              />
               {nextUnlockTarget ? (
                 <div className="neon-surface space-y-3 border border-primary/22 px-4 py-4">
                   <p className="text-xs font-medium text-primary">Closest next unlock</p>

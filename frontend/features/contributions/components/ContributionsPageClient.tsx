@@ -6,6 +6,7 @@ import { Download, LayoutList, Rows3 } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { InlineNotice } from "@/components/shared/InlineNotice";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
@@ -298,17 +299,12 @@ export function ContributionsPageClient() {
           </div>
         )}
       />
-      <div className="min-h-5">
-        {exportNotice ? (
-          <p role="status" aria-live="polite" className="text-xs text-cyan-100">
-            {exportNotice}
-          </p>
-        ) : (
-          <p aria-hidden="true" className="text-xs opacity-0 select-none">
-            Export status
-          </p>
-        )}
-      </div>
+      <InlineNotice
+        message={exportNotice}
+        placeholder="Export status"
+        variant="info"
+        minHeightClassName="min-h-7"
+      />
       {profile?.user.syncStatus.state === "stale" ? (
         <StaleState
           message={`Contribution evidence refreshed ${formatRelativeDays(
