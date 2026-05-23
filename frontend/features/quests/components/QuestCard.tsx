@@ -30,12 +30,19 @@ export function QuestCard({ quest }: { quest: Quest }) {
           <h3 className="break-anywhere text-xl font-semibold text-white">{quest.title}</h3>
           <ExpandableText
             text={quest.description}
-            lines={3}
+            lines={2}
             minLengthForToggle={150}
             textClassName="break-anywhere text-sm text-muted"
           />
           {quest.whyRecommended.trim().length > 0 ? (
-            <p className="text-xs text-cyan-100">{quest.whyRecommended}</p>
+            <ExpandableText
+              text={quest.whyRecommended}
+              lines={1}
+              minLengthForToggle={120}
+              textClassName="text-xs text-cyan-100"
+              showMoreLabel="Why"
+              showLessLabel="Hide"
+            />
           ) : null}
         </div>
         <div className="neon-chip neon-chip-info rounded-3xl px-3 py-2 text-sm font-medium">

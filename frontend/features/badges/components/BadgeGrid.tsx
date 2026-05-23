@@ -48,24 +48,12 @@ export function BadgeGrid({
               <h3 className="text-xl font-semibold text-white">{badge.name}</h3>
               <ExpandableText
                 text={badge.description}
-                lines={3}
+                lines={2}
                 minLengthForToggle={120}
                 className="mt-2"
                 textClassName="text-sm text-muted"
                 showMoreLabel="Read why"
                 showLessLabel="Hide why"
-              />
-              <p className="mt-2 text-xs font-medium text-primary">
-                {badge.unlocked ? "Unlock pattern" : "How to unlock"}
-              </p>
-              <ExpandableText
-                text={badge.unlockCondition}
-                lines={2}
-                minLengthForToggle={120}
-                className="mt-1"
-                textClassName="text-xs text-muted"
-                showMoreLabel="Read trigger"
-                showLessLabel="Hide trigger"
               />
             </div>
             <div className="flex items-center justify-between text-sm">
@@ -91,9 +79,9 @@ export function BadgeGrid({
               <div className="neon-surface rounded-xl border-fuchsia-300/24 px-3 py-2 text-xs text-muted">
                 <ExpandableText
                   text={stories[badge.id].story}
-                  lines={4}
+                  lines={2}
                   minLengthForToggle={180}
-                  className="mt-2"
+                  className="mt-1"
                   textClassName="text-muted"
                   showMoreLabel="Read story"
                   showLessLabel="Hide story"
