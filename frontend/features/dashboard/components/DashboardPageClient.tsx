@@ -23,6 +23,7 @@ import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 
 const CurrentLeagueCard = dynamic(
   () =>
@@ -251,20 +252,12 @@ export function DashboardPageClient() {
           <div className="numeric-readout text-3xl font-semibold tracking-tight">
             {contributionWindowCount}/{contributionWindowCap}
           </div>
-          <ul role="list" className="space-y-2 text-sm text-muted">
-            <li className="flex items-center justify-between gap-3">
-              <span>Merged PRs</span>
-              <span className="text-white">{user.mergedPrCount}</span>
-            </li>
-            <li className="flex items-center justify-between gap-3">
-              <span>Reviewed PRs</span>
-              <span className="text-white">{user.reviewedPrCount}</span>
-            </li>
-            <li className="flex items-center justify-between gap-3">
-              <span>Loaded</span>
-              <span className="text-white">{contributionWindowFillRate}%</span>
-            </li>
-          </ul>
+          <div className="space-y-2">
+            <Progress value={contributionWindowFillRate} />
+            <p className="text-sm leading-6 text-muted">
+              {contributionWindowFillRate}% of the capped recent PR evidence window is loaded.
+            </p>
+          </div>
         </GlowCard>
       </section>
       <div className="grid gap-6 xl:grid-cols-[0.86fr,1.14fr]">
