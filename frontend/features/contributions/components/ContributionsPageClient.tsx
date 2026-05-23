@@ -294,7 +294,7 @@ export function ContributionsPageClient() {
           onClearSort={handleClearSortFilter}
         />
       </section>
-      {isLoading ? <LoadingState message="Checking review depth and PR intensity..." /> : null}
+      {isLoading ? <LoadingState message="Loading contributions..." /> : null}
       {isError ? (
         <ErrorState
           title="Contribution sync failed"

@@ -154,7 +154,7 @@ export function SettingsPageClient() {
   }
 
   if (isLoading) {
-    return <LoadingState message="Checking privacy controls..." />;
+    return <LoadingState message="Loading settings..." />;
   }
 
   if (isError || !data || !currentSettings) {

@@ -134,11 +134,11 @@ export function QuestsPageClient() {
           </ul>
         </div>
       ) : null}
-      {isLoading ? <LoadingState message="Building your skill tree..." /> : null}
+      {isLoading ? <LoadingState message="Loading quests..." /> : null}
       {isError ? (
         <ErrorState
           title="Quest engine unavailable"
-          description="The recommendation system could not finish. Retry or fall back to your last synced quest board."
+          description="Quest recommendations could not load. Retry or open sync settings."
           onRetry={() => {
             void refetch();
           }}

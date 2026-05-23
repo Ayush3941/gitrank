@@ -31,7 +31,7 @@ export function PRBattleReportPageClient({
   const [showTechnicalBreakdown, setShowTechnicalBreakdown] = useState(false);
 
   if (isLoading) {
-    return <LoadingState message="Calculating PR intensity..." />;
+    return <LoadingState message="Loading report..." />;
   }
 
   if (isError) {
