@@ -164,7 +164,7 @@ export function LeaderboardPageClient() {
         <div className="hidden sm:block">
           <Tabs value={tab} onValueChange={handleTabChange}>
             <TabsList
-              className="grid w-full grid-cols-3 gap-1.5 lg:grid-cols-6"
+              className="scrollbar-thin flex w-full flex-nowrap gap-1.5 overflow-x-auto"
               aria-label="Leaderboard lane filters"
             >
               {tabs.map((item, index) => (
@@ -174,6 +174,7 @@ export function LeaderboardPageClient() {
                   aria-label={`${TAB_LABELS[item].full} leaderboard lane`}
                   aria-controls={LEADERBOARD_ROWS_REGION_ID}
                   title={TAB_LABELS[item].full}
+                  className="min-w-[8rem] shrink-0 justify-center text-center lg:min-w-[9rem]"
                 >
                   <span className="lg:hidden">{TAB_LABELS[item].short}</span>
                   <span className="hidden lg:inline">{TAB_LABELS[item].full}</span>
