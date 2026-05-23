@@ -163,11 +163,10 @@ export function ContributionFilters({
                     aria-label={`${filter.value} contributions`}
                     aria-controls={resultsRegionId}
                     aria-pressed={active}
+                    data-active={active ? "true" : "false"}
                     className={cn(
-                      "focus-ring w-full border px-3 py-2 text-center text-sm font-semibold",
-                      active
-                        ? "border-primary/38 bg-gradient-to-r from-primary/16 to-primary-2/12 text-white"
-                        : "border-primary/14 bg-card/80 text-muted hover:border-primary/32 hover:text-foreground",
+                      "focus-ring dashboard-nav-item w-full px-3 py-2 text-center text-sm font-semibold",
+                      active ? "text-white" : "text-muted",
                     )}
                     onClick={() => {
                       onValueChange(filter.value);
