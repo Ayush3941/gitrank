@@ -994,13 +994,11 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 }
 
 .sync-runs-results-viewport {
-  overflow-anchor: none;
-  scrollbar-gutter: stable;
+  overflow-anchor: auto;
 }
 
 .repository-visibility-results-viewport {
-  overflow-anchor: none;
-  scrollbar-gutter: stable;
+  overflow-anchor: auto;
 }
 
 @supports not (content-visibility: auto) {
