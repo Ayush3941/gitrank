@@ -216,23 +216,29 @@ export function PublicProfilePageClient({
               <p className="text-xs font-medium text-primary">Badges</p>
               <h2 className="mt-2 text-xl font-semibold text-white">Top unlocked</h2>
             </div>
-            <ul role="list" className="grid gap-3 sm:grid-cols-2">
-              {data.user.badges.filter((badge) => badge.unlocked).slice(0, 4).map((badge) => (
-                <li key={badge.id} className="render-opt-card neon-surface rounded-[1.75rem] p-4">
-                  <RarityBadge rarity={badge.rarity} />
-                  <h3 className="mt-3 text-lg font-medium text-white">{badge.name}</h3>
-                  <ExpandableText
-                    text={badge.description}
-                    lines={3}
-                    minLengthForToggle={120}
-                    className="mt-2"
-                    textClassName="text-sm text-muted"
-                    showMoreLabel="More"
-                    showLessLabel="Less"
-                  />
-                </li>
-              ))}
-            </ul>
+            {unlockedBadges.length > 0 ? (
+              <ul role="list" className="grid gap-3 sm:grid-cols-2">
+                {unlockedBadges.slice(0, 4).map((badge) => (
+                  <li key={badge.id} className="render-opt-card neon-surface rounded-[1.75rem] p-4">
+                    <RarityBadge rarity={badge.rarity} />
+                    <h3 className="mt-3 text-lg font-medium text-white">{badge.name}</h3>
+                    <ExpandableText
+                      text={badge.description}
+                      lines={3}
+                      minLengthForToggle={120}
+                      className="mt-2"
+                      textClassName="text-sm text-muted"
+                      showMoreLabel="More"
+                      showLessLabel="Less"
+                    />
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
+                <p>No unlocked badges on this public snapshot yet.</p>
+              </div>
+            )}
           </GlowCard>
           <GlowCard className="space-y-5">
             <div>
