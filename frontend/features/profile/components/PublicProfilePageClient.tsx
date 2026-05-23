@@ -169,7 +169,7 @@ export function PublicProfilePageClient({
         eyebrow="Public profile visibility"
         title="Profile unavailable"
         description="This profile is hidden, missing, or has not earned a public GitRank score yet."
-        actionLabel="Open homepage"
+        actionLabel="Go home"
         actionHref="/"
         analyticsTarget="public-profile:empty"
       />

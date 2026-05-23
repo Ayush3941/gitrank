@@ -397,8 +397,8 @@ export function BadgesPageClient() {
               }
               description={
                 canResetFilters && totalCount > 0
-                  ? "Reset filters to view all earned and locked badges, or choose a wider rarity/state range."
-                  : "Complete your first meaningful merged PR to start unlocking visible reputation proof."
+                  ? "Reset filters to view earned and locked badges."
+                  : "Complete a meaningful merged PR to unlock badges."
               }
               actionLabel={canResetFilters && totalCount > 0 ? "Reset filters" : "Open quests"}
               actionHref={canResetFilters && totalCount > 0 ? undefined : "/dashboard/quests"}

@@ -319,9 +319,9 @@ export function ContributionsPageClient() {
           description={
             isFilteredNoResults
               ? "Reset filters or widen search."
-              : "Sync and merge a real PR to populate reports."
+              : "Run sync and merge PRs to populate reports."
           }
-          actionLabel={isFilteredNoResults ? "Reset filters" : "Review quest queue"}
+          actionLabel={isFilteredNoResults ? "Reset filters" : "Open quests"}
           actionHref={isFilteredNoResults ? undefined : "/dashboard/quests"}
           onAction={isFilteredNoResults ? handleResetFilters : undefined}
           analyticsTarget={isFilteredNoResults ? "contributions:empty-filtered" : "contributions:empty"}

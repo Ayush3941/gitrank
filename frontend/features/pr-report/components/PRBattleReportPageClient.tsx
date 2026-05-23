@@ -55,7 +55,7 @@ export function PRBattleReportPageClient({
         eyebrow="PR evidence"
         title="Battle report not found"
         description="This PR either has not been synced, is private, or has not produced a scored report yet."
-        actionLabel="Open homepage"
+        actionLabel="Go home"
         actionHref="/"
         analyticsTarget="pr-report:empty"
       />
