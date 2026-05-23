@@ -646,7 +646,7 @@ function toControlID(value: string): string {
 
 function SettingsPanelPlaceholder({ label }: { label: string }) {
   return (
-    <div className="space-y-3">
+    <div className="min-h-[15rem] space-y-3">
       <p className="text-xs font-medium text-primary">{label}</p>
       <div className="neon-skeleton h-9 w-1/2" />
       <div className="neon-skeleton h-24 w-full" />

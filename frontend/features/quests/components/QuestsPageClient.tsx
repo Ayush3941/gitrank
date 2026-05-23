@@ -543,7 +543,7 @@ function questStatusMeta(status: Quest["status"]): { label: string; className: s
 
 function QuestPanelPlaceholder() {
   return (
-    <GlowCard className="space-y-3">
+    <GlowCard className="min-h-[15rem] space-y-3">
       <p className="text-xs font-medium text-primary">Loading quest card</p>
       <div className="neon-skeleton h-9 w-2/5" />
       <div className="neon-skeleton h-24 w-full" />

@@ -288,7 +288,7 @@ export function DashboardPageClient() {
 
 function LazyLanePlaceholder({ label }: { label: string }) {
   return (
-    <GlowCard className="space-y-3">
+    <GlowCard className="min-h-[15rem] space-y-3">
       <p className="text-xs font-medium text-primary">{label}</p>
       <div className="neon-skeleton h-10 w-3/5" />
       <div className="neon-skeleton h-24 w-full" />

@@ -494,7 +494,7 @@ function formatCSVDate(value: string): string {
 
 function ContributionListPlaceholder() {
   return (
-    <GlowCard className="space-y-3">
+    <GlowCard className="min-h-[18rem] space-y-3">
       <p className="text-xs font-medium text-primary">Loading contribution cards</p>
       <div className="neon-skeleton h-9 w-1/2" />
       <div className="neon-skeleton h-24 w-full" />

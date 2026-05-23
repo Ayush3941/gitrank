@@ -343,7 +343,7 @@ function normalizeSkillKey(value: SkillCategory): string {
 
 function PublicLanePlaceholder({ label }: { label: string }) {
   return (
-    <GlowCard className="space-y-3">
+    <GlowCard className="min-h-[16rem] space-y-3">
       <p className="text-xs font-medium text-primary">{label}</p>
       <div className="neon-skeleton h-10 w-2/5" />
       <div className="neon-skeleton h-24 w-full" />
