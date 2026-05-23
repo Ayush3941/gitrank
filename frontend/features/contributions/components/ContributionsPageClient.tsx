@@ -13,7 +13,10 @@ import { StaleState } from "@/components/shared/StaleState";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
 import { useContributions } from "@/hooks/use-contributions";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
-import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
+import {
+  useNetworkConstraintPreference,
+  useReducedGamification,
+} from "@/hooks/use-gamification-preference";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
 import {
@@ -67,7 +70,9 @@ export function ContributionsPageClient() {
   const deferredSearch = useDeferredValue(debouncedSearch);
   const deferredSort = useDeferredValue(sort);
   const constrainedNetwork = useNetworkConstraintPreference();
-  const cardPageSize = constrainedNetwork
+  const reducedGamification = useReducedGamification();
+  const useLiteCards = constrainedNetwork || reducedGamification;
+  const cardPageSize = useLiteCards
     ? CONTRIBUTION_CARD_PAGE_SIZE_CONSTRAINED
     : CONTRIBUTION_CARD_PAGE_SIZE_DEFAULT;
   const [visibleCardCount, setVisibleCardCount] = useState(cardPageSize);
@@ -329,6 +334,7 @@ export function ContributionsPageClient() {
                   isBusy={isFiltering}
                   totalCount={filteredRows.length}
                   startPosition={1}
+                  useLiteCards={useLiteCards}
                 />
               </div>
               <div className="flex flex-wrap items-center justify-end gap-3">

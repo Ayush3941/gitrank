@@ -14,12 +14,14 @@ export function ContributionList({
   isBusy,
   totalCount,
   startPosition = 1,
+  useLiteCards = false,
 }: {
   items: Contribution[];
   narratives?: Record<string, ContributionNarrative>;
   isBusy?: boolean;
   totalCount?: number;
   startPosition?: number;
+  useLiteCards?: boolean;
 }) {
   const fullSetCount = Math.max(items.length, totalCount ?? items.length);
   const isPartialSet = fullSetCount > items.length;
@@ -40,7 +42,7 @@ export function ContributionList({
             aria-posinset={isPartialSet ? position : undefined}
             aria-setsize={isPartialSet ? fullSetCount : undefined}
           >
-            <GlowCard className="render-opt-card space-y-4">
+            <GlowCard className={`render-opt-card ${useLiteCards ? "space-y-3" : "space-y-4"}`}>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0 space-y-3">
                   <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -69,12 +71,14 @@ export function ContributionList({
                     <li className="list-none">
                       <span className="neon-chip neon-chip-info rounded-full px-3 py-1.5 font-semibold">{item.category}</span>
                     </li>
-                    <li className="list-none">
-                      <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-3 py-1.5 font-semibold">
-                        <CalendarDays className="h-3 w-3" />
-                        {formatContributionDate(item.mergedAt)}
-                      </span>
-                    </li>
+                    {!useLiteCards ? (
+                      <li className="list-none">
+                        <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-3 py-1.5 font-semibold">
+                          <CalendarDays className="h-3 w-3" />
+                          {formatContributionDate(item.mergedAt)}
+                        </span>
+                      </li>
+                    ) : null}
                     {item.maintainerReviewed ? (
                       <li className="list-none">
                         <span className="neon-chip neon-chip-success rounded-full px-3 py-1.5 font-semibold">Maintainer reviewed</span>
@@ -82,21 +86,26 @@ export function ContributionList({
                     ) : null}
                   </ul>
                 </div>
-                <div className="neon-surface rounded-[1.25rem] border-primary/28 px-4 py-3 text-right">
+                <div className={`neon-surface border-primary/28 text-right ${useLiteCards ? "rounded-[1rem] px-3 py-2.5" : "rounded-[1.25rem] px-4 py-3"}`}>
                   <p className="text-xs font-medium text-primary">Earned</p>
                   <p className="numeric-readout mt-2 text-3xl font-semibold text-white">{item.xpEarned} XP</p>
-                  <p className="mt-2 text-xs text-muted">Signal {signalBand.label}</p>
-                  <div className="mt-2 h-1.5 w-28 overflow-hidden rounded-full border border-primary/24 bg-card/80">
-                    <div
-                      className={`h-full rounded-full ${signalBand.barClassName}`}
-                      style={{ width: `${signalIndex}%` }}
-                    />
-                  </div>
+                  {!useLiteCards ? (
+                    <>
+                      <p className="mt-2 text-xs text-muted">Signal {signalBand.label}</p>
+                      <div className="mt-2 h-1.5 w-28 overflow-hidden rounded-full border border-primary/24 bg-card/80">
+                        <div
+                          className={`h-full rounded-full ${signalBand.barClassName}`}
+                          style={{ width: `${signalIndex}%` }}
+                        />
+                      </div>
+                    </>
+                  ) : null}
                 </div>
               </div>
               <AIPanel
                 fallbackSummary={item.aiSummary}
                 narrative={narratives?.[item.id]}
+                lite={useLiteCards}
               />
               <div className="flex justify-end">
                 <Button asChild variant="secondary" size="sm">
@@ -217,34 +226,38 @@ function formatContributionDate(value: string): string {
 function AIPanel({
   narrative,
   fallbackSummary,
+  lite = false,
 }: {
   narrative?: ContributionNarrative;
   fallbackSummary: string;
+  lite?: boolean;
 }) {
   const summary = sanitizeReportSummary(narrative?.pitch || fallbackSummary);
 
   return (
-      <div className="neon-surface rounded-[1.35rem] border-fuchsia-300/28 px-4 py-4">
+      <div className={`neon-surface border-fuchsia-300/28 ${lite ? "rounded-[1rem] px-3 py-3" : "rounded-[1.35rem] px-4 py-4"}`}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="inline-flex items-center gap-2 text-xs font-medium text-fuchsia-100">
           <Sparkles className="h-3.5 w-3.5" />
           Impact summary
         </p>
-        <CopyTextButton
-          text={summary}
-          label="Copy impact"
-          copiedLabel="Impact copied"
-          manualLabel="Copy manually"
-          errorLabel="Copy failed"
-          analyticsTarget="contributions/impact-summary"
-          size="sm"
-          variant="ghost"
-        />
+        {!lite ? (
+          <CopyTextButton
+            text={summary}
+            label="Copy impact"
+            copiedLabel="Impact copied"
+            manualLabel="Copy manually"
+            errorLabel="Copy failed"
+            analyticsTarget="contributions/impact-summary"
+            size="sm"
+            variant="ghost"
+          />
+        ) : null}
       </div>
       <div className="mt-3 text-sm text-muted">
-        <ClampedText text={summary} lines={2} className="text-muted" />
+        <ClampedText text={summary} lines={lite ? 1 : 2} className="text-muted" />
       </div>
-      {narrative ? (
+      {narrative && !lite ? (
         <div className="mt-3 space-y-1.5">
           <p className="text-xs font-semibold text-cyan-100">Why it matters</p>
           <ClampedText text={narrative.why} lines={2} className="text-sm text-muted" />
