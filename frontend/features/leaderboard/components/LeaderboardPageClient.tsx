@@ -77,6 +77,7 @@ export function LeaderboardPageClient() {
     ? LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED
     : LEADERBOARD_ROW_PAGE_SIZE_DEFAULT;
   const [visibleRowCount, setVisibleRowCount] = useState(rowPageSize);
+  const [showLaneDetails, setShowLaneDetails] = useState(!constrainedNetwork);
   const tabFromURL = laneParamToTab(searchParams.get("lane"));
   const tab = tabFromURL ?? "Global";
   const deferredTab = useDeferredValue(tab);
@@ -212,19 +213,34 @@ export function LeaderboardPageClient() {
               ? `Refreshing ${tab}...`
               : `Viewing ${tab}`}
           </p>
-          {tab !== "Global" ? (
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               type="button"
               size="sm"
               variant="ghost"
-              onClick={() => handleTabChange("Global")}
-              disabled={isBusy}
+              onClick={() => {
+                setShowLaneDetails((current) => !current);
+              }}
               aria-controls={LEADERBOARD_ROWS_REGION_ID}
-              title="Return to Global lane"
+              aria-pressed={showLaneDetails}
+              title="Toggle additional lane details"
             >
-              Reset to Global
+              {showLaneDetails ? "Hide details" : "Show details"}
             </Button>
-          ) : null}
+            {tab !== "Global" ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => handleTabChange("Global")}
+                disabled={isBusy}
+                aria-controls={LEADERBOARD_ROWS_REGION_ID}
+                title="Return to Global lane"
+              >
+                Reset to Global
+              </Button>
+            ) : null}
+          </div>
         </div>
       </section>
       {isLoading ? <LoadingState message="Loading leaderboard..." /> : null}
@@ -265,7 +281,11 @@ export function LeaderboardPageClient() {
             </div>
           ) : null}
           <div id={LEADERBOARD_ROWS_REGION_ID}>
-            <LeaderboardArena snapshot={snapshot} rowLimit={safeVisibleRowCount} />
+            <LeaderboardArena
+              snapshot={snapshot}
+              rowLimit={safeVisibleRowCount}
+              showDetails={showLaneDetails}
+            />
           </div>
           <div className="flex flex-wrap items-center justify-end gap-3">
             {hasMoreRows ? (

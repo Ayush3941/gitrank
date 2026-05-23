@@ -9,9 +9,11 @@ import type { LeaderboardSnapshot } from "@/types/gitrank";
 export function LeaderboardArena({
   snapshot,
   rowLimit,
+  showDetails = true,
 }: {
   snapshot: LeaderboardSnapshot;
   rowLimit?: number;
+  showDetails?: boolean;
 }) {
   const rows = snapshot.rows;
   const visibleRows =
@@ -119,7 +121,7 @@ export function LeaderboardArena({
                       <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
                         Move {movementLabel}
                       </span>
-                      {!row.isCurrentUser ? (
+                      {!row.isCurrentUser && showDetails ? (
                         <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
                           {gapToCurrent > 0
                             ? `+${gapToCurrent.toLocaleString("en-US")} vs you`
@@ -183,21 +185,23 @@ export function LeaderboardArena({
                         <Pill>{row.division}</Pill>
                         {row.promotionZone ? <Pill tone="success">Promotion zone</Pill> : null}
                         {row.demotionRisk ? <Pill tone="warning">Safety watch</Pill> : null}
-                        {row.rankEvidenceState ? <Pill tone="warning">Evidence {row.rankEvidenceState}</Pill> : null}
+                        {showDetails && row.rankEvidenceState ? <Pill tone="warning">Evidence {row.rankEvidenceState}</Pill> : null}
                       </div>
-                      <div className="mt-3 max-w-2xl">
-                        <ClampedText
-                          text={row.evidenceSummary}
-                          lines={2}
-                          className="text-sm leading-6 text-muted"
-                        />
-                      </div>
+                      {showDetails ? (
+                        <div className="mt-3 max-w-2xl">
+                          <ClampedText
+                            text={row.evidenceSummary}
+                            lines={2}
+                            className="text-sm leading-6 text-muted"
+                          />
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                     <Metric label="Season XP" value={row.seasonXp} />
                     <Metric label="To next rank" value={row.xpToNextRank ? `${row.xpToNextRank} XP` : "Lead"} />
-                    <Metric label="Total XP" value={row.totalXp} />
+                    {showDetails ? <Metric label="Total XP" value={row.totalXp} /> : null}
                     <Metric
                       label="Movement"
                       value={`${positive ? "+" : ""}${row.movement}`}
