@@ -54,37 +54,37 @@ const THEME_OPTIONS: Array<{
   {
     value: "neon",
     label: "Neon grid",
-    description: "Bold cyberpunk glow and vivid HUD accents.",
+    description: "Bold glow and vivid HUD accents.",
     swatchClassName: "from-cyan-300 via-fuchsia-300 to-emerald-300",
   },
   {
     value: "cyberpunk",
     label: "Cyberpunk matrix",
-    description: "Deep-pink highlights, amber rails, and low-noise dark steel surfaces.",
+    description: "Pink highlights, amber rails, dark steel surfaces.",
     swatchClassName: "from-pink-300 via-orange-300 to-lime-300",
   },
   {
     value: "midnight",
     label: "Midnight contrast",
-    description: "Balanced readability with cleaner dark surfaces.",
+    description: "Balanced readability on dark surfaces.",
     swatchClassName: "from-sky-300 via-indigo-300 to-violet-300",
   },
   {
     value: "terminal",
     label: "Terminal pulse",
-    description: "Sharper terminal-style contrast with contained neon accents.",
+    description: "Sharper terminal-style contrast.",
     swatchClassName: "from-emerald-200 via-teal-200 to-fuchsia-300",
   },
   {
     value: "aurora",
     label: "Aurora clarity",
-    description: "Softer glow with stronger body-copy contrast for long reading.",
+    description: "Softer glow with stronger text contrast.",
     swatchClassName: "from-teal-200 via-cyan-200 to-blue-300",
   },
   {
     value: "high-contrast",
     label: "High contrast",
-    description: "Maximum text clarity and reduced background noise.",
+    description: "Maximum text clarity with low visual noise.",
     swatchClassName: "from-slate-100 via-cyan-200 to-slate-100",
   },
 ];
@@ -97,12 +97,12 @@ const TEXT_SCALE_OPTIONS: Array<{
   {
     value: "default",
     label: "Default text",
-    description: "Balanced density with the standard UI scale.",
+    description: "Balanced density at standard UI scale.",
   },
   {
     value: "large",
     label: "Large text",
-    description: "Increases body and UI copy size for easier reading.",
+    description: "Larger body and UI text.",
   },
 ];
 
@@ -161,7 +161,7 @@ export function SettingsPageClient() {
     return (
       <ErrorState
         title="Settings unavailable"
-        description="Profile settings could not be loaded. Keep using the last verified profile and retry shortly."
+        description="Could not load settings. Retry in a moment."
         onRetry={() => {
           void refetch();
         }}
@@ -291,7 +291,7 @@ export function SettingsPageClient() {
       <PageHeader
         eyebrow="Settings"
         title="Settings"
-        description="Account, privacy, and display controls."
+        description="Account, privacy, and display."
         actions={(
           <Button asChild variant="secondary" size="sm">
             <Link href={`/u/${data.user.username}`} prefetch={false}>
@@ -380,7 +380,7 @@ export function SettingsPageClient() {
               <p className="mt-4 text-xs font-medium text-primary">Display preference</p>
               <h2 className="mt-2 text-xl font-semibold text-white">Reduced gamification</h2>
               <p className="mt-2 text-sm leading-6 text-muted">
-                Reduces heavy visual effects. Scores and privacy stay unchanged.
+                Reduce heavy effects. Scores and privacy remain unchanged.
               </p>
             </div>
             <Switch
@@ -398,7 +398,7 @@ export function SettingsPageClient() {
                   <p className="text-xs font-medium text-primary">Keyboard controls</p>
                 <h3 className="mt-2 text-lg font-semibold text-white">Display shortcuts</h3>
                 <p className="mt-2 text-sm leading-6 text-muted">
-                  Enables theme and text-size shortcuts outside input fields.
+                  Enable theme and text-size shortcuts outside input fields.
                 </p>
               </div>
               <Switch
@@ -511,7 +511,7 @@ export function SettingsPageClient() {
             <h2 className="mt-2 text-xl font-semibold text-white">Repository visibility</h2>
           </div>
           <p className="text-sm text-muted">
-            Repository visibility controls ({data.user.repositories.length} total{hiddenRepositoryCount > 0 ? ` · ${hiddenRepositoryCount} hidden` : ""})
+            {data.user.repositories.length} repositories{hiddenRepositoryCount > 0 ? ` · ${hiddenRepositoryCount} hidden` : ""}
           </p>
           <PrivacyRepositoryToggleList
             repositories={data.user.repositories}
@@ -532,7 +532,7 @@ export function SettingsPageClient() {
         <GlowCard className="space-y-4">
           <div>
             <p className="text-xs font-medium text-primary">Data controls</p>
-            <h2 className="mt-2 text-xl font-semibold text-white">Export or remove data</h2>
+            <h2 className="mt-2 text-xl font-semibold text-white">Data export and deletion</h2>
           </div>
           <div className="flex flex-wrap gap-3">
             <Button variant="secondary" disabled={isActing} onClick={handleExportAccountData}>
