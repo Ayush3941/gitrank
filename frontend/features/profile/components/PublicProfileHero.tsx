@@ -103,7 +103,7 @@ export function PublicProfileHero({
         <div className="neon-surface rounded-[1.85rem] p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-medium text-primary">Player card</p>
+              <p className="text-xs font-medium text-primary">Profile card</p>
               <p className="mt-2 text-4xl font-semibold text-white">Lv. {user.level.currentLevel}</p>
             </div>
             <div className="hud-pill rounded-3xl p-3 text-primary">
@@ -115,7 +115,7 @@ export function PublicProfileHero({
             <MiniMetric icon={<Sparkles className="h-4 w-4" />} label="Season XP" value={user.rankProgress.seasonXp.toLocaleString("en-US")} />
             <MiniMetric icon={<ShieldCheck className="h-4 w-4" />} label="Formula" value={user.rankProgress.season.scoringVersion} />
           </div>
-          <p className="cyber-readout mt-4 text-xs leading-5 text-muted">Evidence-backed public snapshot.</p>
+          <p className="cyber-readout mt-4 text-xs leading-5 text-muted">Evidence-backed snapshot.</p>
         </div>
       </div>
     </div>

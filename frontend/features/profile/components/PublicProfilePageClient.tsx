@@ -152,12 +152,12 @@ export function PublicProfilePageClient({
     return (
       <ErrorState
         title="Profile unavailable"
-        description="The public profile could not be loaded. Retry or return to the homepage."
+        description="The public profile could not be loaded. Retry or open dashboard."
         onRetry={() => {
           void refetch();
         }}
-        fallbackLabel="Open homepage"
-        fallbackHref="/"
+        fallbackLabel="Open dashboard"
+        fallbackHref="/dashboard"
         analyticsTarget="public-profile:error"
       />
     );
@@ -169,8 +169,8 @@ export function PublicProfilePageClient({
         eyebrow="Public profile visibility"
         title="Profile unavailable"
         description="This profile is hidden, missing, or has not earned a public GitRank score yet."
-        actionLabel="Go home"
-        actionHref="/"
+        actionLabel="Open dashboard"
+        actionHref="/dashboard"
         analyticsTarget="public-profile:empty"
       />
     );
@@ -186,8 +186,8 @@ export function PublicProfilePageClient({
             void refetch();
           }}
           isRefreshing={isFetching}
-          actionLabel="Open homepage"
-          actionHref="/"
+          actionLabel="Open dashboard"
+          actionHref="/dashboard"
           analyticsTarget="public-profile:stale"
         />
       ) : null}
@@ -210,7 +210,7 @@ export function PublicProfilePageClient({
           <GlowCard className="space-y-5">
             <div>
               <p className="text-xs font-medium text-primary">Badges</p>
-              <h2 className="mt-2 text-xl font-semibold text-white">Top unlocked</h2>
+              <h2 className="mt-2 text-xl font-semibold text-white">Top badges</h2>
             </div>
             {unlockedBadges.length > 0 ? (
               <ul role="list" className="grid gap-3 sm:grid-cols-2">
@@ -232,14 +232,14 @@ export function PublicProfilePageClient({
               </ul>
             ) : (
               <div className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
-                <p>No unlocked badges on this public snapshot yet.</p>
+                <p>No unlocked badges in this snapshot yet.</p>
               </div>
             )}
           </GlowCard>
           <GlowCard className="space-y-5">
             <div>
               <p className="text-xs font-medium text-primary">Skills</p>
-              <h2 className="mt-2 text-xl font-semibold text-white">Strength map</h2>
+              <h2 className="mt-2 text-xl font-semibold text-white">Skill map</h2>
             </div>
             <DeferUntilVisible fallback={<PublicLanePlaceholder label="Loading skill map" />}>
               <SkillRadarChart skills={skillTree} />
@@ -257,7 +257,8 @@ export function PublicProfilePageClient({
           <GlowCard className="space-y-5">
             <div>
               <p className="text-xs font-medium text-primary">Timeline</p>
-              <h2 className="mt-2 text-xl font-semibold text-white">{data.trendWindowLabel}</h2>
+              <h2 className="mt-2 text-xl font-semibold text-white">XP timeline</h2>
+              <p className="mt-1 text-sm text-muted">{data.trendWindowLabel}</p>
             </div>
             <DeferUntilVisible fallback={<PublicLanePlaceholder label="Loading timeline" />}>
               <TimelineChart data={data.user.xpTimeline} />
@@ -269,12 +270,12 @@ export function PublicProfilePageClient({
             </div>
             <div>
               <p className="text-xs font-medium text-primary">Repositories</p>
-              <h2 className="mt-2 text-xl font-semibold text-white">Where your XP lands</h2>
+              <h2 className="mt-2 text-xl font-semibold text-white">Top repositories</h2>
             </div>
             <div className="space-y-3">
               {data.topRepositories.length === 0 ? (
                 <div className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
-                  <p>Repository-level signal is not available on this snapshot yet.</p>
+                  <p>Repository signal is not available in this snapshot yet.</p>
                 </div>
               ) : (
                 <ul role="list" className="space-y-3">
