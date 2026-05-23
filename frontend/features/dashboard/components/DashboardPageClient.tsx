@@ -1,11 +1,9 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useMemo, useRef } from "react";
 import { Activity, Flame, Medal } from "lucide-react";
-import { CurrentLeagueCard } from "@/features/dashboard/components/CurrentLeagueCard";
-import { QuestPanel } from "@/features/dashboard/components/QuestPanel";
-import { RecentBattleReports } from "@/features/dashboard/components/RecentBattleReports";
 import { DashboardHeroRankCard } from "@/features/dashboard/components/DashboardHeroRankCard";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
@@ -24,6 +22,36 @@ import { formatRelativeDays } from "@/lib/formatters";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { Button } from "@/components/ui/button";
+
+const CurrentLeagueCard = dynamic(
+  () =>
+    import("@/features/dashboard/components/CurrentLeagueCard").then(
+      (mod) => mod.CurrentLeagueCard,
+    ),
+  {
+    loading: () => <LazyLanePlaceholder label="Loading league" />,
+  },
+);
+
+const QuestPanel = dynamic(
+  () =>
+    import("@/features/dashboard/components/QuestPanel").then(
+      (mod) => mod.QuestPanel,
+    ),
+  {
+    loading: () => <LazyLanePlaceholder label="Loading quests" />,
+  },
+);
+
+const RecentBattleReports = dynamic(
+  () =>
+    import("@/features/dashboard/components/RecentBattleReports").then(
+      (mod) => mod.RecentBattleReports,
+    ),
+  {
+    loading: () => <LazyLanePlaceholder label="Loading reports" />,
+  },
+);
 
 export function DashboardPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useDashboard();
@@ -253,5 +281,15 @@ export function DashboardPageClient() {
         </div>
       </div>
     </div>
+  );
+}
+
+function LazyLanePlaceholder({ label }: { label: string }) {
+  return (
+    <GlowCard className="space-y-3">
+      <p className="text-xs font-medium text-primary">{label}</p>
+      <div className="neon-skeleton h-10 w-3/5" />
+      <div className="neon-skeleton h-24 w-full" />
+    </GlowCard>
   );
 }

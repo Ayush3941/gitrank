@@ -1,10 +1,9 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useMemo } from "react";
 import { Award, CheckCircle2, GitPullRequest, ShieldCheck, Stars } from "lucide-react";
-import { SkillRadarChart } from "@/components/shared/SkillRadarChart";
-import { TimelineChart } from "@/components/shared/TimelineChart";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { ExpandableText } from "@/components/shared/ExpandableText";
@@ -16,7 +15,6 @@ import { StatCard } from "@/components/shared/StatCard";
 import { Button } from "@/components/ui/button";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useProfile } from "@/hooks/use-profile";
-import { BestPRsPanel } from "@/features/profile/components/BestPRsPanel";
 import { PublicProfileHero } from "@/features/profile/components/PublicProfileHero";
 import type { SkillCategory, SkillNode } from "@/types/gitrank";
 import {
@@ -26,6 +24,36 @@ import {
 } from "@/lib/ai/deterministic-identity-summary";
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
+
+const SkillRadarChart = dynamic(
+  () =>
+    import("@/components/shared/SkillRadarChart").then(
+      (mod) => mod.SkillRadarChart,
+    ),
+  {
+    loading: () => <PublicLanePlaceholder label="Loading skill map" />,
+  },
+);
+
+const TimelineChart = dynamic(
+  () =>
+    import("@/components/shared/TimelineChart").then(
+      (mod) => mod.TimelineChart,
+    ),
+  {
+    loading: () => <PublicLanePlaceholder label="Loading timeline" />,
+  },
+);
+
+const BestPRsPanel = dynamic(
+  () =>
+    import("@/features/profile/components/BestPRsPanel").then(
+      (mod) => mod.BestPRsPanel,
+    ),
+  {
+    loading: () => <PublicLanePlaceholder label="Loading battle reports" />,
+  },
+);
 
 export function PublicProfilePageClient({
   username,
@@ -307,4 +335,14 @@ function normalizeSkillKey(value: SkillCategory): string {
   const normalized = value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
   if (normalized === "devops") return "infrastructure";
   return normalized;
+}
+
+function PublicLanePlaceholder({ label }: { label: string }) {
+  return (
+    <GlowCard className="space-y-3">
+      <p className="text-xs font-medium text-primary">{label}</p>
+      <div className="neon-skeleton h-10 w-2/5" />
+      <div className="neon-skeleton h-24 w-full" />
+    </GlowCard>
+  );
 }
