@@ -117,9 +117,7 @@ export function PRBattleReportPageClient({
           <div className="min-w-0">
             <p className="break-anywhere text-sm text-muted">{data.contribution.owner}/{data.contribution.repo} #{data.contribution.number}</p>
             <h2 className="mt-2 break-anywhere text-3xl font-semibold text-white">{data.contribution.title}</h2>
-            <p className="mt-3 text-sm text-muted">
-              {data.contribution.status} • {data.contribution.category}
-            </p>
+            <p className="mt-3 text-sm text-muted">{data.contribution.status}</p>
           </div>
           <div className="text-right">
             <p className="text-xs font-medium text-primary">XP earned</p>
@@ -138,6 +136,24 @@ export function PRBattleReportPageClient({
             </div>
           </div>
         </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="neon-metric rounded-[1.4rem] px-4 py-3">
+              <p className="text-xs font-medium text-muted">Category</p>
+              <p className="mt-2 text-sm font-semibold text-white">{data.contribution.category}</p>
+            </div>
+            <div className="neon-metric rounded-[1.4rem] px-4 py-3">
+              <p className="text-xs font-medium text-muted">Files changed</p>
+              <p className="mt-2 text-sm font-semibold text-white">
+                {data.contribution.changedFilesCount.toLocaleString("en-US")}
+              </p>
+            </div>
+            <div className="neon-metric rounded-[1.4rem] px-4 py-3">
+              <p className="text-xs font-medium text-muted">Confidence</p>
+              <p className="mt-2 text-sm font-semibold text-white">
+                {formatConfidenceLabel(evidenceState)}
+              </p>
+            </div>
+          </div>
           <div className="neon-tile rounded-[1.5rem] p-4">
             <p className="text-xs font-medium text-muted">Evidence state</p>
           <ul role="list" className="mt-3 flex flex-wrap gap-2">
@@ -222,7 +238,7 @@ export function PRBattleReportPageClient({
             aria-expanded={showTechnicalBreakdown}
             aria-controls="pr-report-technical-panels"
           >
-            {showTechnicalBreakdown ? "Hide technical breakdown" : "Show technical breakdown"}
+            {showTechnicalBreakdown ? "Hide details" : "Show details"}
           </Button>
         </div>
         {showTechnicalBreakdown ? (
@@ -323,6 +339,25 @@ export function PRBattleReportPageClient({
       ) : null}
     </div>
   );
+}
+
+function formatConfidenceLabel(
+  evidenceState: {
+    deterministicOnly: boolean;
+    analysisConfidence?: number;
+    status: string;
+  },
+): string {
+  if (typeof evidenceState.analysisConfidence === "number") {
+    return `${Math.round(evidenceState.analysisConfidence * 100)}%`;
+  }
+  if (evidenceState.deterministicOnly) {
+    return "Deterministic";
+  }
+  if (evidenceState.status === "rate_limited") {
+    return "Rate limited";
+  }
+  return "Pending";
 }
 
 function extractFallbackReason(signals: string[]): string | null {

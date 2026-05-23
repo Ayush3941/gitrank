@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ShieldCheck, Sparkles, Trophy } from "lucide-react";
+import { GitPullRequest, ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import type { ReactNode } from "react";
 import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { ExpandableText } from "@/components/shared/ExpandableText";
@@ -60,6 +60,11 @@ export function PublicProfileHero({
             className="max-w-3xl"
             textClassName="break-anywhere text-sm leading-7 text-muted"
           />
+          <div className="grid gap-3 sm:grid-cols-3">
+            <MiniMetric icon={<GitPullRequest className="h-4 w-4" />} label="Merged PRs" value={user.mergedPrCount.toLocaleString("en-US")} />
+            <MiniMetric icon={<Sparkles className="h-4 w-4" />} label="GitRank score" value={user.gitRankScore.toLocaleString("en-US")} />
+            <MiniMetric icon={<ShieldCheck className="h-4 w-4" />} label="Consistency" value={`${user.consistencyScore}%`} />
+          </div>
           {identitySummary ? (
             <div className="neon-callout rounded-2xl px-4 py-3 text-sm text-muted">
               <div className="flex flex-wrap items-center justify-between gap-2">
@@ -82,6 +87,7 @@ export function PublicProfileHero({
               />
             </div>
           ) : null}
+          <p className="text-xs font-medium text-primary">Top signals</p>
           <ul role="list" className="flex flex-wrap gap-2">
             {topSkills.map((skill, index) => (
               <li key={`${skill}-${index}`}>

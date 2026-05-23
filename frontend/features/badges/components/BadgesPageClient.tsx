@@ -2,7 +2,17 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { Crown, ShieldCheck, Sparkles, Trophy, X } from "lucide-react";
+import {
+  Crown,
+  Gem,
+  Lock,
+  Medal,
+  ShieldCheck,
+  Sparkles,
+  Trophy,
+  Unlock,
+  X,
+} from "lucide-react";
 import { startTransition, type ReactNode, useEffect, useRef, useState } from "react";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -27,6 +37,20 @@ import type { BadgeRarity } from "@/types/gitrank";
 const BADGES_EARNED_REGION_ID = "badges-earned-region";
 const LOCKED_BADGE_PAGE_SIZE_DEFAULT = 12;
 const LOCKED_BADGE_PAGE_SIZE_CONSTRAINED = 6;
+const BADGE_RARITY_FILTERS: Array<BadgeRarity | "All"> = [
+  "All",
+  "Common",
+  "Uncommon",
+  "Rare",
+  "Epic",
+  "Legendary",
+  "Mythic",
+];
+const BADGE_VISIBILITY_FILTERS: Array<"All" | "Unlocked" | "Locked"> = [
+  "All",
+  "Unlocked",
+  "Locked",
+];
 
 const BadgeGrid = dynamic(
   () =>
@@ -335,7 +359,7 @@ export function BadgesPageClient() {
                 ) : null}
               </ul>
             </div>
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid gap-3 md:grid-cols-2 sm:hidden">
               <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
                 <span className="sr-only">Filter by rarity</span>
                 <select
@@ -347,7 +371,7 @@ export function BadgesPageClient() {
                   className="focus-ring h-full w-full bg-transparent text-sm text-foreground outline-none"
                 >
                   <option value="All" className="bg-card text-foreground">All rarities</option>
-                  {["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic"].map((item) => (
+                  {BADGE_RARITY_FILTERS.filter((item) => item !== "All").map((item) => (
                     <option key={`rarity-option-${item}`} value={item} className="bg-card text-foreground">{item}</option>
                   ))}
                 </select>
@@ -367,6 +391,71 @@ export function BadgesPageClient() {
                   <option value="Locked" className="bg-card text-foreground">Locked</option>
                 </select>
               </label>
+            </div>
+            <div className="hidden sm:grid gap-3">
+              <ul
+                role="tablist"
+                aria-label="Badge rarity filters"
+                aria-describedby={badgesFilterStatusId}
+                className="dashboard-nav-track lane-rail flex gap-1.5 overflow-x-auto p-0.5"
+              >
+                {BADGE_RARITY_FILTERS.map((item) => {
+                  const active = rarity === item;
+                  return (
+                    <li key={`rarity-tab-${item}`} role="presentation" className="list-none min-w-[8rem] shrink-0">
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={active}
+                        tabIndex={active ? 0 : -1}
+                        aria-controls={BADGES_EARNED_REGION_ID}
+                        data-active={active ? "true" : "false"}
+                        className="focus-ring dashboard-nav-item min-h-11 w-full px-3 py-2 text-center text-sm font-semibold"
+                        onClick={() => {
+                          handleRarityChange(item);
+                        }}
+                      >
+                        <span className="inline-flex items-center gap-2">
+                          <Gem className="dashboard-nav-icon h-4 w-4" aria-hidden="true" />
+                          <span className="truncate">{item}</span>
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+              <ul
+                role="tablist"
+                aria-label="Badge visibility filters"
+                aria-describedby={badgesFilterStatusId}
+                className="dashboard-nav-track lane-rail flex gap-1.5 overflow-x-auto p-0.5"
+              >
+                {BADGE_VISIBILITY_FILTERS.map((item) => {
+                  const active = visibility === item;
+                  const Icon = item === "Unlocked" ? Unlock : item === "Locked" ? Lock : Medal;
+                  return (
+                    <li key={`visibility-tab-${item}`} role="presentation" className="list-none min-w-[8rem] shrink-0">
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={active}
+                        tabIndex={active ? 0 : -1}
+                        aria-controls={BADGES_EARNED_REGION_ID}
+                        data-active={active ? "true" : "false"}
+                        className="focus-ring dashboard-nav-item min-h-11 w-full px-3 py-2 text-center text-sm font-semibold"
+                        onClick={() => {
+                          handleVisibilityChange(item);
+                        }}
+                      >
+                        <span className="inline-flex items-center gap-2">
+                          <Icon className="dashboard-nav-icon h-4 w-4" aria-hidden="true" />
+                          <span className="truncate">{item}</span>
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           </div>
         </div>
