@@ -149,20 +149,24 @@ export function ContributionFilters({
         </div>
         <div className="hidden sm:block">
           <ul
-            role="list"
+            role="tablist"
             aria-label="Contribution category filters"
             className="dashboard-nav-track lane-rail flex gap-1.5 overflow-x-auto p-0.5"
           >
             {filters.map((filter) => {
               const active = value === filter.value;
+              const tabID = `contribution-filter-tab-${filter.value.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
               return (
-                <li key={filter.value} className="list-none min-w-[8.5rem] shrink-0">
+                <li key={filter.value} role="presentation" className="list-none min-w-[8.5rem] shrink-0">
                   <button
                     type="button"
+                    id={tabID}
+                    role="tab"
                     title={filter.value}
                     aria-label={`${filter.value} contributions`}
                     aria-controls={resultsRegionId}
-                    aria-pressed={active}
+                    aria-selected={active}
+                    tabIndex={active ? 0 : -1}
                     data-active={active ? "true" : "false"}
                     className={cn(
                       "focus-ring dashboard-nav-item w-full px-3 py-2 text-center text-sm font-semibold",

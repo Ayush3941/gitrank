@@ -153,20 +153,24 @@ export function LeaderboardPageClient() {
         </div>
         <div className="hidden sm:block">
           <ul
-            role="list"
+            role="tablist"
             aria-label="Leaderboard lane filters"
             className="dashboard-nav-track lane-rail flex w-full gap-1.5 overflow-x-auto p-0.5"
           >
             {tabs.map((item) => {
               const active = tab === item;
+              const tabID = `leaderboard-lane-tab-${item.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
               return (
-                <li key={`leaderboard-tab-${item}`} className="list-none min-w-[9rem] shrink-0">
+                <li key={`leaderboard-tab-${item}`} role="presentation" className="list-none min-w-[9rem] shrink-0">
                   <button
                     type="button"
+                    id={tabID}
+                    role="tab"
                     title={TAB_LABELS[item]}
                     aria-label={`${TAB_LABELS[item]} leaderboard lane`}
                     aria-controls={LEADERBOARD_ROWS_REGION_ID}
-                    aria-pressed={active}
+                    aria-selected={active}
+                    tabIndex={active ? 0 : -1}
                     data-active={active ? "true" : "false"}
                     className={cn(
                       "focus-ring dashboard-nav-item w-full px-3 py-2 text-center text-sm font-semibold",
