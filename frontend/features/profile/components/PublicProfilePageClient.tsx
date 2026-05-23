@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { useMemo } from "react";
 import { Award, CheckCircle2, GitPullRequest, ShieldCheck, Stars } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -13,7 +12,6 @@ import { LoadingState } from "@/components/shared/LoadingState";
 import { RarityBadge } from "@/components/shared/RarityBadge";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
-import { Button } from "@/components/ui/button";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useProfile } from "@/hooks/use-profile";
 import { PublicProfileHero } from "@/features/profile/components/PublicProfileHero";
@@ -282,14 +280,6 @@ export function PublicProfilePageClient({
               {data.topRepositories.length === 0 ? (
                 <div className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
                   <p>Repository-level signal is not available on this snapshot yet.</p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <Button asChild variant="secondary" size="sm">
-                      <Link href="/dashboard/contributions" prefetch={false} scroll={false}>Open contributions</Link>
-                    </Button>
-                    <Button asChild variant="ghost" size="sm">
-                      <Link href="/dashboard/settings" prefetch={false} scroll={false}>Open sync settings</Link>
-                    </Button>
-                  </div>
                 </div>
               ) : (
                 <ul role="list" className="space-y-3">
