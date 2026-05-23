@@ -37,6 +37,8 @@ import type { BadgeRarity } from "@/types/gitrank";
 const BADGES_EARNED_REGION_ID = "badges-earned-region";
 const LOCKED_BADGE_PAGE_SIZE_DEFAULT = 12;
 const LOCKED_BADGE_PAGE_SIZE_CONSTRAINED = 6;
+const BADGE_SHELF_PAGE_SIZE_DEFAULT = 18;
+const BADGE_SHELF_PAGE_SIZE_CONSTRAINED = 9;
 const BADGE_RARITY_FILTERS: Array<BadgeRarity | "All"> = [
   "All",
   "Common",
@@ -68,12 +70,16 @@ export function BadgesPageClient() {
   const lockedBadgePageSize = constrainedNetwork
     ? LOCKED_BADGE_PAGE_SIZE_CONSTRAINED
     : LOCKED_BADGE_PAGE_SIZE_DEFAULT;
+  const badgeShelfPageSize = constrainedNetwork
+    ? BADGE_SHELF_PAGE_SIZE_CONSTRAINED
+    : BADGE_SHELF_PAGE_SIZE_DEFAULT;
   const badgeViewedEventSent = useRef(false);
   const previousUnlockedCountRef = useRef<number | null>(null);
   const [rarity, setRarity] = useState<BadgeRarity | "All">("All");
   const [visibility, setVisibility] = useState<"All" | "Unlocked" | "Locked">("All");
   const [unlockNotice, setUnlockNotice] = useState("");
   const [visibleLockedCount, setVisibleLockedCount] = useState(lockedBadgePageSize);
+  const [visibleBadgeCount, setVisibleBadgeCount] = useState(badgeShelfPageSize);
   const [showLockedBadges, setShowLockedBadges] = useState(false);
   const canResetFilters = rarity !== "All" || visibility !== "All";
   const badgesFilterStatusId = "badges-filter-status";
@@ -101,6 +107,9 @@ export function BadgesPageClient() {
   const visibleLockedBadges = lockedBadgesSorted.slice(0, visibleLockedCount);
   const hasMoreLockedBadges = lockedBadgesSorted.length > visibleLockedBadges.length;
   const remainingLockedBadges = Math.max(0, lockedBadgesSorted.length - visibleLockedBadges.length);
+  const visibleBadges = filtered.slice(0, visibleBadgeCount);
+  const hasMoreBadges = filtered.length > visibleBadges.length;
+  const remainingBadges = Math.max(0, filtered.length - visibleBadges.length);
   const completionPercent = totalCount > 0 ? Math.round((unlockedCount / totalCount) * 100) : 0;
   const streak = summarizeContributionStreak(profile?.user.contributions ?? []);
   const nextUnlockTarget = lockedBadgesSorted[0] ?? null;
@@ -191,6 +200,7 @@ export function BadgesPageClient() {
     startTransition(() => {
       setRarity(value);
       setVisibleLockedCount(lockedBadgePageSize);
+      setVisibleBadgeCount(badgeShelfPageSize);
     });
   }
 
@@ -198,6 +208,7 @@ export function BadgesPageClient() {
     startTransition(() => {
       setVisibility(value);
       setVisibleLockedCount(lockedBadgePageSize);
+      setVisibleBadgeCount(badgeShelfPageSize);
     });
   }
 
@@ -206,6 +217,7 @@ export function BadgesPageClient() {
       setRarity("All");
       setVisibility("All");
       setVisibleLockedCount(lockedBadgePageSize);
+      setVisibleBadgeCount(badgeShelfPageSize);
     });
   }
 
@@ -213,6 +225,7 @@ export function BadgesPageClient() {
     startTransition(() => {
       setRarity("All");
       setVisibleLockedCount(lockedBadgePageSize);
+      setVisibleBadgeCount(badgeShelfPageSize);
     });
   }
 
@@ -220,6 +233,7 @@ export function BadgesPageClient() {
     startTransition(() => {
       setVisibility("All");
       setVisibleLockedCount(lockedBadgePageSize);
+      setVisibleBadgeCount(badgeShelfPageSize);
     });
   }
 
@@ -495,10 +509,32 @@ export function BadgesPageClient() {
             />
           ) : null}
           {!isLoading && !isError && filtered.length ? (
-            <BadgeGrid
-              badges={filtered}
-              stories={abraInsights.data?.badgeStories}
-            />
+            <div className="space-y-3">
+              <BadgeGrid
+                badges={visibleBadges}
+                stories={abraInsights.data?.badgeStories}
+              />
+              {hasMoreBadges ? (
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-xs text-muted">{remainingBadges} badges remaining</p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    aria-controls={BADGES_EARNED_REGION_ID}
+                    onClick={() => {
+                      startTransition(() => {
+                        setVisibleBadgeCount((current) =>
+                          Math.min(filtered.length, current + badgeShelfPageSize),
+                        );
+                      });
+                    }}
+                  >
+                    Show more badges
+                  </Button>
+                </div>
+              ) : null}
+            </div>
           ) : null}
         </div>
       </section>
