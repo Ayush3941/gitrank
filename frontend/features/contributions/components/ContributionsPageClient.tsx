@@ -122,6 +122,9 @@ export function ContributionsPageClient() {
     if (!profile) {
       return null;
     }
+    if (useLiteCards) {
+      return null;
+    }
     if (
       !shouldRequestAbraInsights({
         showAiSummaries: profile.user.privacy.showAiSummaries !== false,
@@ -170,7 +173,13 @@ export function ContributionsPageClient() {
         evidencePrIds: badge.evidencePrIds,
       })),
     };
-  }, [abraContributionSample, profile, repositories.length, streak.currentStreakDays]);
+  }, [
+    abraContributionSample,
+    profile,
+    repositories.length,
+    streak.currentStreakDays,
+    useLiteCards,
+  ]);
 
   const abraInsights = useAbraInsights(abraPayload);
   function handleFilterChange(next: string) {

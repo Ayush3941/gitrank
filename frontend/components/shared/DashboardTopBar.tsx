@@ -1,11 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { AlertTriangle, ArrowUpRight } from "lucide-react";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
-import { dashboardNavItems } from "@/components/shared/dashboard-nav";
 import { cn } from "@/lib/cn";
 import type { UserProfile } from "@/types/gitrank";
 
@@ -16,19 +14,11 @@ export function DashboardTopBar({
   user: UserProfile;
   embedded?: boolean;
 }) {
-  const pathname = usePathname();
-  const currentLane = dashboardNavItems.find((item) =>
-    item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`),
-  );
-
   return (
     <div className={cn(embedded ? "px-2 py-1 sm:px-3 sm:py-1.5" : "dashboard-nav-shell px-4 py-2.5 sm:px-5")}>
       <div className="flex flex-wrap items-center gap-2">
         <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium text-muted">
           @{user.username}
-        </span>
-        <span className="neon-chip neon-chip-info inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium">
-          Lane: {currentLane?.label ?? "Dashboard"}
         </span>
         <SyncStatusPill status={user.syncStatus} />
         <RankBadge rank={user.level.rankTier} />
