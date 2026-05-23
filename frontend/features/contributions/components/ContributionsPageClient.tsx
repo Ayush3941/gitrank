@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { startTransition, useDeferredValue, useMemo, useState } from "react";
 import { Download } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -327,79 +326,42 @@ export function ContributionsPageClient() {
           analyticsTarget={isFilteredNoResults ? "contributions:empty-filtered" : "contributions:empty"}
         />
       ) : null}
-      {!isLoading && !isError ? (
+      {!isLoading && !isError && filteredRows.length ? (
         <section className="render-opt-section space-y-4">
-          {filteredRows.length ? (
-            <div className="space-y-4">
-              <div id={CONTRIBUTION_CARDS_REGION_ID}>
-                <ContributionList
-                  items={visibleRows}
-                  narratives={abraInsights.data?.contributionNarratives}
-                  isBusy={isFiltering}
-                  totalCount={filteredRows.length}
-                  startPosition={1}
-                  useLiteCards={useLiteCards}
-                />
-              </div>
-              <div className="flex flex-wrap items-center justify-end gap-3">
-                {hasMoreRows ? (
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    aria-controls={CONTRIBUTION_CARDS_REGION_ID}
-                    aria-label={`Show ${Math.min(cardPageSize, remainingRows)} more contribution cards. ${remainingRows} remaining.`}
-                    onClick={() => {
-                      startTransition(() => {
-                        setVisibleCardCount((current) =>
-                          Math.min(filteredRows.length, current + cardPageSize),
-                        );
-                      });
-                    }}
-                  >
-                    Show more cards ({remainingRows} left)
-                  </Button>
-                ) : null}
-              </div>
+          <div className="space-y-4">
+            <div id={CONTRIBUTION_CARDS_REGION_ID}>
+              <ContributionList
+                items={visibleRows}
+                narratives={abraInsights.data?.contributionNarratives}
+                isBusy={isFiltering}
+                totalCount={filteredRows.length}
+                startPosition={1}
+                useLiteCards={useLiteCards}
+              />
             </div>
-          ) : (
-            <SubsectionEmptyState
-              message="No PR cards match these filters. Reset filters or sync again."
-              actionLabel="Open sync settings"
-              actionHref="/dashboard/settings"
-              onResetFilters={handleResetFilters}
-            />
-          )}
+            <div className="flex flex-wrap items-center justify-end gap-3">
+              {hasMoreRows ? (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  aria-controls={CONTRIBUTION_CARDS_REGION_ID}
+                  aria-label={`Show ${Math.min(cardPageSize, remainingRows)} more contribution cards. ${remainingRows} remaining.`}
+                  onClick={() => {
+                    startTransition(() => {
+                      setVisibleCardCount((current) =>
+                        Math.min(filteredRows.length, current + cardPageSize),
+                      );
+                    });
+                  }}
+                >
+                  Show more cards ({remainingRows} left)
+                </Button>
+              ) : null}
+            </div>
+          </div>
         </section>
       ) : null}
     </div>
-  );
-}
-
-function SubsectionEmptyState({
-  message,
-  actionLabel,
-  actionHref,
-  onResetFilters,
-}: {
-  message: string;
-  actionLabel: string;
-  actionHref: string;
-  onResetFilters?: () => void;
-}) {
-  return (
-    <GlowCard className="neon-surface space-y-3 border-dashed border-primary/24 p-4 text-sm text-muted">
-      <p>{message}</p>
-      <div className="flex flex-wrap gap-2">
-        {onResetFilters ? (
-          <Button type="button" size="sm" variant="secondary" onClick={onResetFilters}>
-            Reset filters
-          </Button>
-        ) : null}
-        <Button asChild size="sm" variant="secondary">
-          <Link href={actionHref} prefetch={false}>{actionLabel}</Link>
-        </Button>
-      </div>
-    </GlowCard>
   );
 }
 
