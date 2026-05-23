@@ -24,15 +24,15 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
             <LockKeyhole className="h-3.5 w-3.5" />
             Sign in
           </div>
-          <h1 className="text-4xl font-semibold tracking-tight text-white">Sign in and unlock your GitRank profile.</h1>
+          <h1 className="text-4xl font-semibold tracking-tight text-white">Sign in to unlock your GitRank profile.</h1>
           <p className="text-base leading-8 text-muted">
-            Evidence-first scoring focused on meaningful merged work.
+            Evidence-first scoring for meaningful merged work.
           </p>
           <ol className="grid gap-3 sm:grid-cols-3">
             {[
               { step: "Step 1", text: "Sign in with GitHub OAuth." },
-              { step: "Step 2", text: "GitRank syncs recent contribution evidence." },
-              { step: "Step 3", text: "You land in dashboard snapshot + quests." },
+              { step: "Step 2", text: "GitRank syncs contribution evidence." },
+              { step: "Step 3", text: "Open your dashboard and quests." },
             ].map((item) => (
               <li key={item.step} className="neon-surface space-y-2 rounded-3xl px-4 py-3 text-sm text-muted">
                 <p className="text-xs font-medium text-primary">{item.step}</p>
@@ -56,15 +56,14 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
           <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
             <Sparkles className="h-5 w-5" />
           </div>
-          <h2 className="text-2xl font-semibold text-white">Meaning-first scoring</h2>
+          <h2 className="text-2xl font-semibold text-white">How scoring works</h2>
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-white">How scoring works</h3>
             <ul role="list" className="grid gap-3">
               {[
-                "Merged work outranks raw streaks.",
+                "Merged work outranks streak volume.",
                 "Review depth matters.",
-                "Tests and repo context change XP.",
-                "Spam PR floods get reduced multipliers.",
+                "Tests and repo context affect XP.",
+                "Spam-like PR floods get reduced multipliers.",
               ].map((line, index) => (
                 <li key={`score-rule-${index}-${line}`} className="neon-surface rounded-3xl px-4 py-3 text-sm text-muted">{line}</li>
               ))}

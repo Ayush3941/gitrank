@@ -70,7 +70,7 @@ export function SyncPipeline() {
         setSyncStartedAt(result.accepted_at);
         if (result.status === "queued") {
           setSyncNotice(
-            "Initial sync execution was queued because live GitHub fetch is saturated. GitRank will keep polling for refreshed profile evidence.",
+            "Initial sync was queued because GitHub fetch is saturated. GitRank will keep polling.",
           );
         }
       },
@@ -175,7 +175,7 @@ export function SyncPipeline() {
         setSyncStartedAt(result.accepted_at);
         if (result.status === "queued") {
           setSyncNotice(
-            "Retry was queued because live GitHub fetch is saturated. GitRank will keep polling for refreshed profile evidence.",
+            "Retry was queued because GitHub fetch is saturated. GitRank will keep polling.",
           );
         }
       },
@@ -188,13 +188,13 @@ export function SyncPipeline() {
         <OnboardingStepper currentStep="analyze" />
         <div className="space-y-3">
           <p className="text-xs font-semibold text-primary">Analyzing</p>
-          <h1 className="text-4xl font-semibold text-white">Reading your open-source history…</h1>
+          <h1 className="text-4xl font-semibold text-white">Reading your GitHub history...</h1>
           <p className="max-w-2xl text-base text-muted">
-            GitRank is processing your real GitHub data and waiting for a refreshed profile snapshot.
+            GitRank is processing your GitHub data and waiting for a refreshed profile snapshot.
           </p>
           {data ? (
             <p className="text-sm text-muted">
-              Profile status: {formatSyncState(data.user.syncStatus.state)} • last refresh{" "}
+              Status: {formatSyncState(data.user.syncStatus.state)} • last refresh{" "}
               {formatRelativeDays(data.refreshedAt)}
             </p>
           ) : null}
@@ -205,13 +205,13 @@ export function SyncPipeline() {
           ) : null}
           {syncStartedAt && !isSynced ? (
             <p className="text-sm text-muted">
-              Auto-refresh cadence slows from 5s up to 20s while sync remains pending to reduce local load.
+              Auto-refresh slows from 5s up to 20s while sync is pending.
               Current cadence: about {Math.max(5, Math.round(pollIntervalMs / 1000))}s.
             </p>
           ) : null}
           {syncState === "syncing" ? (
             <p className="text-sm text-cyan-100">
-              Sync is already running. GitRank is waiting for the refreshed profile snapshot.
+              Sync is running. GitRank is waiting for the refreshed snapshot.
             </p>
           ) : null}
           {actionError ? (
@@ -269,10 +269,10 @@ export function SyncPipeline() {
                     <p className="font-medium text-white">{step}</p>
                     <p className="text-sm text-muted">
                       {done
-                        ? "Verified from live sync evidence."
+                        ? "Completed from live sync evidence."
                         : active
-                          ? "In progress against live backend data."
-                          : "Pending previous stage completion."}
+                          ? "In progress."
+                          : "Pending previous stage."}
                     </p>
                   </div>
                 </li>

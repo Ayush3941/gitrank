@@ -66,7 +66,7 @@ export function RevealPanel({
             {archetype ? ` Archetype: ${archetype}.` : ""}
           </p>
           <p className="mx-auto max-w-2xl text-base text-muted">
-            This first snapshot highlights recurring signals in {strongestSignalSummary} work.
+            This snapshot highlights recurring signals in {strongestSignalSummary} work.
           </p>
           <div className="mx-auto grid w-full max-w-4xl gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <RevealMetric label="Merged PRs" value={user.mergedPrCount.toLocaleString("en-US")} />
@@ -74,22 +74,20 @@ export function RevealPanel({
             <RevealMetric label="Unlocked badges" value={unlockedBadges.length.toLocaleString("en-US")} />
             <RevealMetric label="Evidence rows" value={evidenceRows.toLocaleString("en-US")} />
           </div>
-          <div className="mx-auto max-w-3xl rounded-2xl border border-primary/24 bg-primary/10 px-4 py-3 text-left text-sm text-foreground">
-            <p className="text-xs font-medium text-primary">Snapshot state</p>
-            <p className="mt-2 leading-6">
-              Sync status is <span className="font-semibold text-white">{formatSyncState(user.syncStatus.state)}</span>.
-              {" "}
-              {user.syncStatus.lastSyncedAt ? `Last sync ${formatRelativeDays(user.syncStatus.lastSyncedAt)}.` : ""}
-              {evidenceRows > 0
-                ? ` This reveal currently includes ${evidenceRows} persisted contribution evidence row${evidenceRows === 1 ? "" : "s"}.`
-                : " No scored contribution evidence is attached yet; complete one merged contribution and re-sync to unlock deeper profile interpretation."}
-            </p>
-          </div>
+            <div className="mx-auto max-w-3xl rounded-2xl border border-primary/24 bg-primary/10 px-4 py-3 text-left text-sm text-foreground">
+              <p className="text-xs font-medium text-primary">Snapshot state</p>
+              <p className="mt-2 leading-6">
+                Sync status is <span className="font-semibold text-white">{formatSyncState(user.syncStatus.state)}</span>.
+                {" "}
+                {user.syncStatus.lastSyncedAt ? `Last sync ${formatRelativeDays(user.syncStatus.lastSyncedAt)}.` : ""}
+                {evidenceRows > 0
+                ? ` This reveal includes ${evidenceRows} persisted contribution evidence row${evidenceRows === 1 ? "" : "s"}.`
+                : " No scored contribution evidence is attached yet; merge one PR and re-sync to unlock deeper profile interpretation."}
+              </p>
+            </div>
           {identitySummary ? (
             <div className="mx-auto max-w-3xl rounded-2xl border border-fuchsia-300/25 bg-fuchsia-400/9 px-4 py-3 text-left text-sm text-foreground">
-              <p className="text-xs font-medium text-fuchsia-100">
-                Open source identity ({aiMode === "gemini" ? "Gemini" : "Deterministic"})
-              </p>
+              <p className="text-xs font-medium text-fuchsia-100">Identity summary ({aiMode === "gemini" ? "Gemini" : "Deterministic"})</p>
               <p className="mt-2 leading-6">{identitySummary}</p>
             </div>
           ) : null}
@@ -121,7 +119,7 @@ export function RevealPanel({
                 ))
               ) : (
                 <>
-                  <li className="list-none"><RevealFallbackCard title="First merge unlock" body="Merge one meaningful PR to activate the first badge." /></li>
+                  <li className="list-none"><RevealFallbackCard title="First merge unlock" body="Merge one PR to activate the first badge." /></li>
                   <li className="list-none"><RevealFallbackCard title="Review depth unlock" body="Maintainer-reviewed work speeds up trust and progression." /></li>
                   <li className="list-none"><RevealFallbackCard title="Consistency unlock" body="Sustained weekly contribution evidence unlocks rarer badge tiers." /></li>
                 </>
@@ -254,7 +252,7 @@ export function RevealPanelUnavailable() {
           Connect GitHub to reveal your first GitRank snapshot.
         </h1>
         <p className="text-sm text-muted">
-          The reveal page now reads the authenticated profile snapshot instead of a static sample. Start or refresh the GitHub connection to generate the live view.
+          Reveal now reads the authenticated profile snapshot instead of static sample data. Start or refresh GitHub connection to generate the live view.
         </p>
         <Button asChild size="lg">
           <Link href="/oauth/github/start?return_to=/dashboard" prefetch={false}>

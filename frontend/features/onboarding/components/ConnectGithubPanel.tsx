@@ -33,9 +33,9 @@ export function ConnectGithubPanel() {
           GitHub OAuth
         </div>
         <div className="space-y-3">
-          <h1 className="text-4xl font-semibold tracking-tight text-white">Connect GitHub and sync contribution evidence.</h1>
+          <h1 className="text-4xl font-semibold tracking-tight text-white">Connect GitHub and sync your contribution evidence.</h1>
           <p className="max-w-2xl text-base leading-8 text-muted">
-            Public contribution evidence is analyzed by default. Private code is not inspected in v1 baseline.
+            GitRank analyzes public contribution evidence by default. Private code is not inspected in v1.
           </p>
         </div>
         <ol className="grid gap-3 sm:grid-cols-3">
@@ -43,17 +43,17 @@ export function ConnectGithubPanel() {
             {
               step: "Step 1",
               title: "Authorize GitHub",
-              text: "Sign in and approve read-only access for your contribution metadata.",
+              text: "Sign in and approve read-only contribution metadata access.",
             },
             {
               step: "Step 2",
               title: "Sync evidence",
-              text: "GitRank pulls recent merged PR, review, and repository context data.",
+              text: "GitRank pulls recent merged PR, review, and repo context data.",
             },
             {
               step: "Step 3",
               title: "Reveal profile",
-              text: "You land in the analyzing flow and unlock your first score snapshot.",
+              text: "You enter analyzing and unlock your first score snapshot.",
             },
           ].map((item) => (
             <li key={item.step} className="neon-surface space-y-2 rounded-3xl px-4 py-3 text-sm text-muted">
@@ -65,23 +65,23 @@ export function ConnectGithubPanel() {
         </ol>
         <div className="neon-callout inline-flex items-center gap-2 px-3 py-2 text-xs text-cyan-100">
           <Timer className="h-4 w-4 text-cyan-200" />
-          Typical first snapshot path: about 60-90 seconds after OAuth success.
+          Typical first snapshot: about 60-90 seconds after OAuth success.
         </div>
         <div className="grid gap-3 md:grid-cols-2">
           <div className="neon-surface rounded-3xl px-4 py-3">
             <p className="text-xs font-medium text-primary">What data is read in v1</p>
             <ul className="mt-3 space-y-2 text-sm leading-6 text-muted">
               <li>Public profile basics and contribution activity.</li>
-              <li>Merged PR metadata, review activity, and changed-file context.</li>
-              <li>Repository visibility and recency signals used for scoring explanation.</li>
+              <li>Merged PR metadata, reviews, and changed-file context.</li>
+              <li>Repository visibility and recency scoring context.</li>
             </ul>
           </div>
           <div className="neon-surface rounded-3xl px-4 py-3">
             <p className="text-xs font-medium text-primary">What is not read by default</p>
             <ul className="mt-3 space-y-2 text-sm leading-6 text-muted">
-              <li>Private repository code content in v1 baseline.</li>
-              <li>Any hidden secrets from your local environment.</li>
-              <li>Manual score overrides or admin-only edits.</li>
+              <li>Private repository code content in v1.</li>
+              <li>Hidden local environment secrets.</li>
+              <li>Manual score overrides or admin edits.</li>
             </ul>
           </div>
         </div>
@@ -108,7 +108,7 @@ export function ConnectGithubPanel() {
           </div>
           <div>
             <h2 className="text-xl font-semibold text-white">Privacy baseline</h2>
-            <p className="text-sm text-muted">You control what becomes public later.</p>
+            <p className="text-sm text-muted">You control what becomes public.</p>
           </div>
         </div>
         <div className="space-y-3">
@@ -116,8 +116,8 @@ export function ConnectGithubPanel() {
           <ul role="list" className="space-y-3">
             {[
               "Public profile can be disabled at any time.",
-              "Exact PRs, AI summaries, and leaderboard participation are individually controllable.",
-              "Repository-level visibility can be hidden without deleting the account.",
+              "Exact PRs, AI summaries, and leaderboard participation are individually controlled.",
+              "Repository visibility can be hidden without deleting the account.",
             ].map((item, index) => (
               <li key={`${item}-${index}`} className="neon-surface rounded-3xl px-4 py-3 text-sm text-muted">{item}</li>
             ))}
@@ -126,7 +126,7 @@ export function ConnectGithubPanel() {
         <div className="neon-surface rounded-[1.75rem] border-primary/22 px-4 py-4">
           <p className="text-xs font-medium text-primary">Where this goes next</p>
           <p className="mt-2 text-sm text-foreground">
-            After OAuth, GitRank redirects to <span className="font-semibold text-white">Analyzing</span> and starts live sync.
+            After OAuth, GitRank redirects to <span className="font-semibold text-white">Analyzing</span> and starts sync.
           </p>
         </div>
         <div className="rounded-[1.75rem] border border-primary/18 bg-primary/8 p-4 text-sm text-muted">
@@ -135,7 +135,7 @@ export function ConnectGithubPanel() {
             Meaning-first scoring
           </div>
           <p className="mt-2">
-            GitRank does not ask only how much you contributed. It asks how meaningful your contribution was.
+            GitRank scores contribution quality, not only activity volume.
           </p>
         </div>
       </GlowCard>
