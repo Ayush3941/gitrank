@@ -11,6 +11,7 @@ import {
   Route,
   ShieldCheck,
   Sparkles,
+  X,
 } from "lucide-react";
 import { startTransition, useDeferredValue, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -86,6 +87,11 @@ export function QuestsPageClient() {
     deferredCadenceFilter === "All"
       ? groups.filter((group) => questMap[group].length > 0)
       : groups.filter((group) => group === deferredCadenceFilter && questMap[group].length > 0);
+  const visibleQuestCount =
+    deferredCadenceFilter === "All"
+      ? quests.length
+      : questMap[deferredCadenceFilter].length;
+  const canResetCadenceFilter = cadenceFilter !== "All";
   const isFiltering = deferredCadenceFilter !== cadenceFilter;
   const filterStatusId = "quests-filter-status";
 
@@ -115,9 +121,40 @@ export function QuestsPageClient() {
             {isFiltering
               ? "Updating missions…"
               : deferredCadenceFilter === "All"
-                ? `Showing all ${quests.length} missions`
-                : `Showing ${questMap[deferredCadenceFilter].length} ${deferredCadenceFilter.toLowerCase()} missions`}
+                ? `Showing all ${visibleQuestCount} missions`
+                : `Showing ${visibleQuestCount} ${deferredCadenceFilter.toLowerCase()} missions`}
           </p>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
+              {canResetCadenceFilter ? (
+                <li className="list-none">
+                  <button
+                    type="button"
+                    className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
+                    onClick={() => {
+                      handleCadenceFilterChange("All");
+                    }}
+                    title="Clear mission filter"
+                  >
+                    Cadence: {cadenceFilter}
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </li>
+              ) : null}
+            </ul>
+            {canResetCadenceFilter ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  handleCadenceFilterChange("All");
+                }}
+              >
+                Reset filters
+              </Button>
+            ) : null}
+          </div>
           <div className="sm:hidden">
             <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
               <span className="sr-only">Mission cadence filter</span>
