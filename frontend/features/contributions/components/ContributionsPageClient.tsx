@@ -237,7 +237,7 @@ export function ContributionsPageClient() {
       <PageHeader
         eyebrow="Contributions"
         title="Contributions"
-        description="PR cards and battle reports."
+        description="Filter, inspect, and export scored PR cards."
         actions={(
           <div className="flex flex-wrap gap-2">
             <Button

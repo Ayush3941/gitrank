@@ -2,6 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  Award,
+  LayoutDashboard,
+  Settings2,
+  Swords,
+  Waypoints,
+} from "lucide-react";
 import { dashboardNavItems } from "@/components/shared/dashboard-nav";
 import { cn } from "@/lib/cn";
 
@@ -9,6 +16,13 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
   const pathname = usePathname();
   const isActive = (href: string, exact = false) =>
     exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+  const iconByKey = {
+    dashboard: LayoutDashboard,
+    contributions: Waypoints,
+    badges: Award,
+    quests: Swords,
+    settings: Settings2,
+  } as const;
 
   return (
     <nav
@@ -24,6 +38,7 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
       >
         {dashboardNavItems.map((item) => {
           const active = isActive(item.href, item.exact);
+          const Icon = iconByKey[item.icon];
           return (
             <li key={item.href} className="list-none min-w-[8.5rem] shrink-0 sm:min-w-0 sm:shrink">
               <Link
@@ -35,7 +50,10 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
                 )}
                 data-active={active ? "true" : "false"}
               >
-                <span className="truncate">{item.label}</span>
+                <span className="inline-flex items-center gap-2 truncate">
+                  <Icon className="dashboard-nav-icon h-4 w-4" aria-hidden="true" />
+                  <span className="truncate">{item.label}</span>
+                </span>
               </Link>
             </li>
           );

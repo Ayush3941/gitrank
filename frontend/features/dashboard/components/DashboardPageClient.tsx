@@ -184,11 +184,11 @@ export function DashboardPageClient() {
       <PageHeader
         eyebrow="Dashboard"
         title="Dashboard"
-        description="Rank, XP, and contribution quality."
+        description="Live contributor snapshot from merged PR evidence."
         actions={(
           <Button asChild variant="secondary" size="sm">
             <Link href="/dashboard/contributions" prefetch={false}>
-              Open contributions
+              View PR cards
             </Link>
           </Button>
         )}
