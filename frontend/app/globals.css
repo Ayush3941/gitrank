@@ -1062,6 +1062,11 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 
 .dashboard-nav-track {
   width: 100%;
+  scrollbar-width: none;
+}
+
+.dashboard-nav-track::-webkit-scrollbar {
+  display: none;
 }
 
 .dashboard-nav-item {
