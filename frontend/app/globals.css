@@ -1681,9 +1681,13 @@ html[data-theme="high-contrast"] .cyber-card {
 
   .neon-vignette,
   .page-shell::before,
-  .page-shell::after,
-  body::after {
+  .page-shell::after {
     display: none !important;
+  }
+
+  body::after {
+    background: linear-gradient(180deg, rgb(1 4 12 / 0.36), rgb(2 6 16 / 0.62));
+    opacity: 1;
   }
 
   .glass-panel,
@@ -1790,9 +1794,13 @@ html[data-theme="high-contrast"] .cyber-card {
 
 :where(html[data-network="constrained"]) .neon-vignette,
 :where(html[data-network="constrained"]) .page-shell::before,
-:where(html[data-network="constrained"]) .page-shell::after,
-:where(html[data-network="constrained"]) body::after {
+:where(html[data-network="constrained"]) .page-shell::after {
   display: none !important;
+}
+
+:where(html[data-network="constrained"]) body::after {
+  background: linear-gradient(180deg, rgb(1 4 12 / 0.36), rgb(2 6 16 / 0.62));
+  opacity: 1;
 }
 
 :where(html[data-network="constrained"]) .glass-panel,
@@ -1838,12 +1846,16 @@ html[data-theme="high-contrast"] .cyber-card {
   .neon-vignette,
   .page-shell::before,
   .page-shell::after,
-  body::after,
   .cyber-card::after,
   .cyber-sheen::after,
   .rarity-badge::after,
   .rank-orbit::after {
     display: none !important;
+  }
+
+  body::after {
+    background: linear-gradient(180deg, rgb(1 4 12 / 0.34), rgb(2 6 16 / 0.6));
+    opacity: 1;
   }
 
   .glass-panel,
