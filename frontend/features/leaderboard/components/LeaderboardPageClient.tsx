@@ -106,7 +106,7 @@ export function LeaderboardPageClient() {
     <div className="space-y-6" aria-busy={isBusy || undefined}>
       <PageHeader
         eyebrow="Leaderboard"
-        title="Rank arena"
+        title="Leaderboard"
         description="Compare rank lanes and promotion progress."
         actions={(
           <Button asChild variant="secondary" size="sm">
@@ -120,7 +120,7 @@ export function LeaderboardPageClient() {
         <StaleState
           message={`Leaderboard context refreshed ${formatRelativeDays(
             myProfile.refreshedAt,
-          )}. Rank updates may lag until the next sync.`}
+          )}. Rank updates can lag until sync completes.`}
           updatedAt={myProfile.refreshedAt}
           onRefresh={() => {
             void refetchMyProfile();
@@ -206,7 +206,7 @@ export function LeaderboardPageClient() {
       {isError ? (
         <ErrorState
           title="Leaderboard unavailable"
-          description="The ranking snapshot could not be refreshed. Retry or keep browsing your existing public profile."
+          description="The ranking snapshot could not be refreshed. Retry or open dashboard."
           onRetry={() => {
             void refetch();
           }}
@@ -218,7 +218,7 @@ export function LeaderboardPageClient() {
       {!isLoading && !isError && rows.length === 0 ? (
         <EmptyState
           eyebrow="Leaderboard participation"
-          title="No public leaderboard rows yet"
+          title="No leaderboard rows yet."
           description="Rows appear after contributors complete OAuth, sync, and visibility."
           actionLabel="Open contributions"
           actionHref="/dashboard/contributions"
@@ -230,7 +230,7 @@ export function LeaderboardPageClient() {
           {snapshot.currentUser ? (
             <div className="neon-surface rounded-[1rem] px-4 py-3">
               <p className="text-sm font-semibold text-white">
-                You are #{snapshot.currentUser.rank} in {tab}.
+                Rank #{snapshot.currentUser.rank} in {tab}
               </p>
               <p className="mt-1 text-xs text-muted">
                 {snapshot.currentUser.xpToNextRank > 0

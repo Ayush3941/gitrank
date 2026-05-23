@@ -81,15 +81,13 @@ export function LeaderboardArena({
       {currentUser && localBracketRows.length > 0 ? (
         <div className="space-y-3">
           <h2 className="text-sm font-semibold text-white">
-            Closest rank neighbors
+            Neighbor ranks
           </h2>
-          <GlowCard className="space-y-4 border border-primary/22 bg-gradient-to-br from-slate-950/90 to-cyan-950/18">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
-                {nextAboveRow
-                  ? `${nextAboveGap.toLocaleString("en-US")} XP to pass #${nextAboveRow.rank}`
-                  : "You lead this lane"}
-              </div>
+          <GlowCard className="space-y-4 border border-primary/22">
+            <div className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
+              {nextAboveRow
+                ? `${nextAboveGap.toLocaleString("en-US")} XP to pass #${nextAboveRow.rank}`
+                : "You lead this lane"}
             </div>
             <ol className="grid gap-2">
               {localBracketRows.map((row) => {
