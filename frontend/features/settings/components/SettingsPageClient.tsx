@@ -31,7 +31,6 @@ import {
 import {
   useDisplayShortcutsEnabled,
 } from "@/hooks/use-display-shortcuts-enabled";
-import { syncRunStatusLabel } from "@/features/settings/lib/sync-run-status";
 import {
   type TextScalePreference,
   useTextScalePreference,
@@ -563,8 +562,6 @@ function SettingsSyncActivitySection() {
     "settings-sync-runs",
   );
   const runs = syncRunsQuery.data?.runs ?? [];
-  const runningCount = runs.filter((run) => syncRunStatusLabel(run.status) === "Running").length;
-  const failedCount = runs.filter((run) => syncRunStatusLabel(run.status) === "Failed").length;
 
   return (
     <GlowCard className="space-y-4">
@@ -572,10 +569,6 @@ function SettingsSyncActivitySection() {
         <p className="text-sm font-semibold text-white">
           Sync run log ({runs.length})
         </p>
-        <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
-          <span>Running {runningCount}</span>
-          <span>Failed {failedCount}</span>
-        </div>
       </div>
       <SyncRunActivityPanel
         runs={runs}

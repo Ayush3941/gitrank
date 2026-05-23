@@ -73,7 +73,8 @@ export function PRBattleReportPageClient({
   const suggestedQuestSignals = suggestedQuest ? buildEvidenceSignalChips(suggestedQuest.evidenceSignals, 3) : [];
   const evidenceReasonSummary = summarizeEvidenceReasons(
     evidenceState.reasons,
-    evidenceAnchored || hasPersistedScoreEvidence,
+    evidenceAnchored,
+    hasPersistedScoreEvidence,
   );
   const signalTier =
     data.contribution.xpEarned >= 250
@@ -382,12 +383,18 @@ function formatAnalysisSource(
   return normalized;
 }
 
-function summarizeEvidenceReasons(reasons: string[], evidenceAnchored: boolean): string | null {
+function summarizeEvidenceReasons(
+  reasons: string[],
+  evidenceAnchored: boolean,
+  hasPersistedScoreEvidence: boolean,
+): string | null {
   if (!reasons.length) {
     return null;
   }
   const normalized = reasons
-    .map((reason) => normalizeEvidenceReason(reason, evidenceAnchored))
+    .map((reason) =>
+      normalizeEvidenceReason(reason, evidenceAnchored, hasPersistedScoreEvidence),
+    )
     .filter((reason): reason is string => Boolean(reason));
   if (!normalized.length) {
     return null;
@@ -395,25 +402,34 @@ function summarizeEvidenceReasons(reasons: string[], evidenceAnchored: boolean):
   return normalized.slice(0, 2).join(" · ");
 }
 
-function normalizeEvidenceReason(reason: string, evidenceAnchored: boolean): string | null {
+function normalizeEvidenceReason(
+  reason: string,
+  evidenceAnchored: boolean,
+  hasPersistedScoreEvidence: boolean,
+): string | null {
   const normalized = reason.trim().toLowerCase();
+  const evidenceReady = evidenceAnchored || hasPersistedScoreEvidence;
   if (!normalized) {
     return null;
   }
   if (normalized.includes("analysis: unknown") || normalized.includes("missing analysis")) {
-    return evidenceAnchored ? null : "Gemini analysis is still processing.";
+    return evidenceReady
+      ? "Deterministic evidence is available now."
+      : "Gemini analysis is still processing.";
   }
   if (normalized.includes("analysis is deterministic-only; no ai enrichment is attached")) {
     return "Deterministic report is available now.";
   }
   if (normalized.includes("analysis has not been persisted")) {
-    return evidenceAnchored ? "Deterministic evidence is available now." : "Gemini analysis is still processing.";
+    return evidenceReady
+      ? "Deterministic evidence is available now."
+      : "Gemini analysis is still processing.";
   }
   if (normalized.includes("report is stale until analysis and scoring both complete")) {
-    return evidenceAnchored ? null : "Report refresh is pending the next scoring replay.";
+    return evidenceReady ? null : "Report refresh is pending the next scoring replay.";
   }
   if (normalized.includes("report snapshot is stale")) {
-    return evidenceAnchored ? null : "Report refresh is pending the next scoring replay.";
+    return evidenceReady ? null : "Report refresh is pending the next scoring replay.";
   }
   if (normalized.includes("fallback reason")) {
     return null;

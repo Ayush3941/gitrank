@@ -257,11 +257,6 @@ export function ContributionsPageClient() {
               <Download className="h-4 w-4" />
               Export CSV
             </Button>
-            <Button asChild variant="secondary" size="sm">
-              <Link href="/dashboard/settings" prefetch={false} scroll={false}>
-                Sync settings
-              </Link>
-            </Button>
           </div>
         )}
       />
