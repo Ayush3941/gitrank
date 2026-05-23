@@ -21,7 +21,7 @@ export function OnboardingStepper({
 
   return (
     <nav aria-label="Onboarding progress" className={cn("w-full", className)}>
-      <ol className="scrollbar-thin flex w-full items-center gap-2 overflow-x-auto pb-1 sm:gap-3">
+      <ol className="grid w-full grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
         {steps.map((step, index) => {
           const isCurrent = index === currentIndex;
           const isDone = index < currentIndex;
@@ -29,7 +29,7 @@ export function OnboardingStepper({
             <li key={step.key} aria-current={isCurrent ? "step" : undefined} className="min-w-0 flex-1">
               <div
                 className={cn(
-                  "flex min-w-[9rem] items-center gap-2 border px-3 py-2 text-sm font-medium",
+                  "flex items-center gap-2 border px-3 py-2 text-sm font-medium",
                   isDone
                     ? "neon-chip neon-chip-success border-emerald-300/40 text-emerald-50"
                     : isCurrent
