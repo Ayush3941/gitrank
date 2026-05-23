@@ -226,11 +226,13 @@ export function LeaderboardPageClient() {
               <GlowCard className="space-y-4 border border-cyan-300/22 bg-gradient-to-br from-slate-950/88 to-cyan-950/24">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-medium text-cyan-200">Current lane status</p>
+                    <p className="text-xs font-medium text-cyan-200">Lane snapshot</p>
                     <h2 className="mt-2 text-xl font-semibold text-white">
-                      #{snapshot.currentUser.rank} in {tab}
+                      #{snapshot.currentUser.rank} · {snapshot.currentUser.division}
                     </h2>
-                    <p className="mt-2 text-sm text-muted">Primary signal: {snapshot.currentUser.focus}</p>
+                    <p className="mt-2 text-sm text-muted">
+                      {tab} lane · primary signal {snapshot.currentUser.focus}
+                    </p>
                   </div>
                   <span className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold">
                     <Target className="h-3.5 w-3.5" />
@@ -247,7 +249,7 @@ export function LeaderboardPageClient() {
                 <div id="leaderboard-mission-plan" className="space-y-4">
                   <div className="grid gap-3 md:grid-cols-3">
                     <ClimbTip
-                      title="To next band"
+                      title="Promotion gap"
                       body={
                         snapshot.currentUser.xpToNextRank > 0
                           ? `${snapshot.currentUser.xpToNextRank} XP required`
@@ -255,11 +257,11 @@ export function LeaderboardPageClient() {
                       }
                     />
                     <ClimbTip
-                      title="Gap to lane leader"
+                      title="Leader gap"
                       body={laneGapToLeader > 0 ? `${laneGapToLeader} season XP` : "You currently hold lane lead"}
                     />
                     <ClimbTip
-                      title="Current movement"
+                      title="Movement"
                       body={`${snapshot.currentUser.movement >= 0 ? "+" : ""}${snapshot.currentUser.movement} this cycle`}
                     />
                   </div>
