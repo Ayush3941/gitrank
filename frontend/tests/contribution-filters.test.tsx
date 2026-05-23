@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
 
 describe("ContributionFilters", () => {
-  it("shows explicit no-active-filters state for default controls", () => {
+  it("shows no removable chips for default controls", () => {
     render(
       <ContributionFilters
         value="All"
@@ -16,7 +16,9 @@ describe("ContributionFilters", () => {
       />,
     );
 
-    expect(screen.getByText("No active filters")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /Remove .* filter/i })).toBeNull();
+    expect(screen.getByRole("combobox", { name: "Contribution category filter" })).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: "Sort contributions" })).toBeTruthy();
   });
 
   it("renders removable active chips and fires clear handlers", () => {
@@ -42,9 +44,9 @@ describe("ContributionFilters", () => {
     expect(screen.getByText("Search: very-specific-repo-name")).toBeTruthy();
     expect(screen.getByText("Sort: Highest XP")).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("button", { name: "Remove category filter" }));
-    fireEvent.click(screen.getByRole("button", { name: "Remove search filter" }));
-    fireEvent.click(screen.getByRole("button", { name: "Remove sort filter" }));
+    fireEvent.click(screen.getByRole("button", { name: /Remove Category: Docs filter/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Remove Search: very-specific-repo-name filter/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Remove Sort: Highest XP filter/i }));
 
     expect(clearCategory).toHaveBeenCalledTimes(1);
     expect(clearSearch).toHaveBeenCalledTimes(1);

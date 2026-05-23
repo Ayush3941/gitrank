@@ -38,13 +38,13 @@ const tabs: LeaderboardTab[] = [
   "Rising Contributors",
 ];
 
-const TAB_LABELS: Record<LeaderboardTab, { full: string; short: string }> = {
-  Global: { full: "Global", short: "Global" },
-  Backend: { full: "Backend", short: "Backend" },
-  Testing: { full: "Testing", short: "Testing" },
-  Documentation: { full: "Documentation", short: "Docs" },
-  "Weekly XP": { full: "Weekly XP", short: "Weekly" },
-  "Rising Contributors": { full: "Rising Contributors", short: "Rising" },
+const TAB_LABELS: Record<LeaderboardTab, string> = {
+  Global: "Global",
+  Backend: "Backend",
+  Testing: "Testing",
+  Documentation: "Documentation",
+  "Weekly XP": "Weekly XP",
+  "Rising Contributors": "Rising Contributors",
 };
 
 const LEADERBOARD_ROW_PAGE_SIZE_DEFAULT = 24;
@@ -145,7 +145,7 @@ export function LeaderboardPageClient() {
             >
               {tabs.map((item) => (
                 <option key={`leaderboard-lane-option-${item}`} value={item} className="bg-card text-foreground">
-                  {TAB_LABELS[item].full}
+                  {TAB_LABELS[item]}
                 </option>
               ))}
             </select>
@@ -163,8 +163,8 @@ export function LeaderboardPageClient() {
                 <li key={`leaderboard-tab-${item}`} className="list-none">
                   <button
                     type="button"
-                    title={TAB_LABELS[item].full}
-                    aria-label={`${TAB_LABELS[item].full} leaderboard lane`}
+                    title={TAB_LABELS[item]}
+                    aria-label={`${TAB_LABELS[item]} leaderboard lane`}
                     aria-controls={LEADERBOARD_ROWS_REGION_ID}
                     aria-pressed={active}
                     data-active={active ? "true" : "false"}
@@ -174,8 +174,7 @@ export function LeaderboardPageClient() {
                     )}
                     onClick={() => handleTabChange(item)}
                   >
-                    <span className="lg:hidden">{TAB_LABELS[item].short}</span>
-                    <span className="hidden lg:inline">{TAB_LABELS[item].full}</span>
+                    <span className="truncate">{TAB_LABELS[item]}</span>
                   </button>
                 </li>
               );

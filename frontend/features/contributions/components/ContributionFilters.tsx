@@ -6,16 +6,16 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
 
 const filters = [
-  { value: "All", short: "All" },
-  { value: "Merged", short: "Merged" },
-  { value: "Open", short: "Open" },
-  { value: "Docs", short: "Docs" },
-  { value: "Tests", short: "Tests" },
-  { value: "Bug Fixes", short: "Bugs" },
-  { value: "Infra", short: "Infra" },
-  { value: "Security", short: "Security" },
-  { value: "Performance", short: "Perf" },
-  { value: "High XP", short: "High XP" },
+  { value: "All" },
+  { value: "Merged" },
+  { value: "Open" },
+  { value: "Docs" },
+  { value: "Tests" },
+  { value: "Bug Fixes" },
+  { value: "Infra" },
+  { value: "Security" },
+  { value: "Performance" },
+  { value: "High XP" },
 ] as const;
 
 export function ContributionFilters({
@@ -172,8 +172,7 @@ export function ContributionFilters({
                       onValueChange(filter.value);
                     }}
                   >
-                    <span className="xl:hidden">{filter.short}</span>
-                    <span className="hidden xl:inline">{filter.value}</span>
+                    <span className="truncate">{filter.value}</span>
                   </button>
                 </li>
               );
