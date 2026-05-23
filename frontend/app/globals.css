@@ -1178,7 +1178,7 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 .page-shell::before,
 .page-shell::after {
   content: "";
-  position: fixed;
+  position: absolute;
   inset: auto;
   pointer-events: none;
   z-index: -1;
