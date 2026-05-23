@@ -6,11 +6,11 @@ export default function PublicProfileNotFound() {
       centered
       eyebrow="Public profile not found"
       title="This contributor profile is unavailable"
-      description="The requested profile path does not exist in the current GitRank snapshot. Try the dashboard profile view or return to the main landing route."
+      description="The requested profile path is unavailable. Open dashboard profile lanes or return to landing."
       actions={[
         { label: "Open dashboard", href: "/dashboard", variant: "secondary" },
         { label: "Browse contributions", href: "/dashboard/contributions", variant: "secondary" },
-        { label: "Go home", href: "/", variant: "default" },
+        { label: "Open landing", href: "/", variant: "default" },
       ]}
     />
   );

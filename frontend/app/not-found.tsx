@@ -8,10 +8,10 @@ export default function NotFound() {
         centered
         eyebrow="404"
         title="Route not found"
-        description="This route does not exist in the current GitRank build. Use dashboard navigation or return to the main landing page."
+        description="This route is unavailable. Open dashboard lanes or return to landing."
         actions={[
           { label: "Open dashboard", href: "/dashboard", variant: "secondary" },
-          { label: "Go home", href: "/", variant: "default" },
+          { label: "Open landing", href: "/", variant: "default" },
         ]}
       />
     </AppShell>
