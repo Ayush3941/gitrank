@@ -50,6 +50,7 @@ export function BadgesPageClient() {
   const [visibility, setVisibility] = useState<"All" | "Unlocked" | "Locked">("All");
   const [unlockNotice, setUnlockNotice] = useState("");
   const [visibleLockedCount, setVisibleLockedCount] = useState(lockedBadgePageSize);
+  const [showLockedBadges, setShowLockedBadges] = useState(false);
   const canResetFilters = rarity !== "All" || visibility !== "All";
   const badgesFilterStatusId = "badges-filter-status";
 
@@ -419,13 +420,32 @@ export function BadgesPageClient() {
       </section>
       {!isLoading && !isError ? (
         <section className="render-opt-section space-y-3">
-          <div className="neon-surface rounded-[1rem] px-4 py-3">
+          <div className="neon-surface flex flex-wrap items-center justify-between gap-3 rounded-[1rem] px-4 py-3">
             <h2 className="text-sm font-semibold text-white">
               Locked / upcoming badges ({lockedBadges.length})
             </h2>
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              aria-controls="badges-locked-lane"
+              aria-expanded={showLockedBadges}
+              onClick={() => {
+                setShowLockedBadges((current) => !current);
+              }}
+            >
+              {showLockedBadges ? "Hide locked paths" : "Show locked paths"}
+            </Button>
           </div>
-          {lockedBadges.length > 0 ? (
-            <div className="neon-surface rounded-[1.4rem] border border-fuchsia-300/24 p-3">
+          {!showLockedBadges ? (
+            <div
+              id="badges-locked-lane"
+              className="neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4 text-sm text-muted"
+            >
+              Locked badge paths stay hidden by default to keep this lane focused on earned progress.
+            </div>
+          ) : lockedBadges.length > 0 ? (
+            <div id="badges-locked-lane" className="neon-surface rounded-[1.4rem] border border-fuchsia-300/24 p-3">
               <ul role="list" className="grid gap-3 md:grid-cols-3">
                 {visibleLockedBadges.map((badge) => (
                   <li key={badge.id} className="render-opt-card neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4">
@@ -483,7 +503,7 @@ export function BadgesPageClient() {
               ) : null}
             </div>
           ) : (
-            <div className="neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4 text-sm text-muted">
+            <div id="badges-locked-lane" className="neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4 text-sm text-muted">
               No locked badge definitions are returned by this snapshot.
             </div>
           )}
