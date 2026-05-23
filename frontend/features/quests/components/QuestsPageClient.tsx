@@ -21,12 +21,15 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { useQuests } from "@/hooks/use-quests";
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import type { Quest } from "@/types/gitrank";
 
 const groups: Array<Quest["cadence"]> = ["Daily", "Weekly", "Long-term", "Skill-based"];
+const QUEST_GROUP_PAGE_SIZE_DEFAULT = 8;
+const QUEST_GROUP_PAGE_SIZE_CONSTRAINED = 4;
 const QUEST_FILTERS: Array<{ value: "All" | Quest["cadence"]; label: string }> = [
   { value: "All", label: "All missions" },
   { value: "Daily", label: "Daily" },
@@ -46,6 +49,18 @@ const QuestCard = dynamic(
 );
 
 export function QuestsPageClient() {
+  const constrainedNetwork = useNetworkConstraintPreference();
+  const questGroupPageSize = constrainedNetwork
+    ? QUEST_GROUP_PAGE_SIZE_CONSTRAINED
+    : QUEST_GROUP_PAGE_SIZE_DEFAULT;
+  const [visibleGroupCounts, setVisibleGroupCounts] = useState<
+    Record<Quest["cadence"], number>
+  >(() => ({
+    Daily: questGroupPageSize,
+    Weekly: questGroupPageSize,
+    "Long-term": questGroupPageSize,
+    "Skill-based": questGroupPageSize,
+  }));
   const [cadenceFilter, setCadenceFilter] = useState<"All" | Quest["cadence"]>("All");
   const deferredCadenceFilter = useDeferredValue(cadenceFilter);
   const { data, isLoading, isError, isFetching, refetch } = useQuests();
@@ -271,6 +286,10 @@ export function QuestsPageClient() {
       {!isLoading && !isError && data ? (
         visibleGroups.map((group) => {
           const grouped = questMap[group];
+          const visibleCount = visibleGroupCounts[group] ?? questGroupPageSize;
+          const visibleGroup = grouped.slice(0, visibleCount);
+          const hasMoreInGroup = grouped.length > visibleGroup.length;
+          const remainingInGroup = Math.max(0, grouped.length - visibleGroup.length);
 
           return (
             <section
@@ -282,12 +301,32 @@ export function QuestsPageClient() {
               </h3>
               <div>
                 <ul role="list" className="grid gap-4 xl:grid-cols-2">
-                  {grouped.map((quest) => (
+                  {visibleGroup.map((quest) => (
                     <li key={quest.id} className="list-none">
                       <QuestCard quest={quest} />
                     </li>
                   ))}
                 </ul>
+                {hasMoreInGroup ? (
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-xs text-muted">{remainingInGroup} missions remaining</p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => {
+                        startTransition(() => {
+                          setVisibleGroupCounts((current) => ({
+                            ...current,
+                            [group]: Math.min(grouped.length, (current[group] ?? questGroupPageSize) + questGroupPageSize),
+                          }));
+                        });
+                      }}
+                    >
+                      Show more missions
+                    </Button>
+                  </div>
+                ) : null}
               </div>
             </section>
           );
