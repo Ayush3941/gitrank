@@ -19,6 +19,7 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
+import { handleHorizontalTabKeyDown } from "@/components/shared/tablist-keyboard";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
@@ -172,6 +173,7 @@ export function QuestsPageClient() {
                       onClick={() => {
                         handleCadenceFilterChange(item.value);
                       }}
+                      onKeyDown={handleHorizontalTabKeyDown}
                     >
                       <span className="inline-flex items-center gap-2">
                         <Icon className="dashboard-nav-icon h-4 w-4" aria-hidden="true" />

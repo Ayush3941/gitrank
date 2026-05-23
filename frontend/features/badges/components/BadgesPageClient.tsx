@@ -21,6 +21,7 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
+import { handleHorizontalTabKeyDown } from "@/components/shared/tablist-keyboard";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
@@ -428,6 +429,7 @@ export function BadgesPageClient() {
                         onClick={() => {
                           handleRarityChange(item);
                         }}
+                        onKeyDown={handleHorizontalTabKeyDown}
                       >
                         <span className="inline-flex items-center gap-2">
                           <Gem className="dashboard-nav-icon h-4 w-4" aria-hidden="true" />
@@ -460,6 +462,7 @@ export function BadgesPageClient() {
                         onClick={() => {
                           handleVisibilityChange(item);
                         }}
+                        onKeyDown={handleHorizontalTabKeyDown}
                       >
                         <span className="inline-flex items-center gap-2">
                           <Icon className="dashboard-nav-icon h-4 w-4" aria-hidden="true" />

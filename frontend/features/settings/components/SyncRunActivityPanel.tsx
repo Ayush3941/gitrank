@@ -5,6 +5,7 @@ import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, Search, X, XCircle } fr
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { handleHorizontalTabKeyDown } from "@/components/shared/tablist-keyboard";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { formatDateTime, formatRelativeDays } from "@/lib/formatters";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
@@ -175,6 +176,7 @@ export function SyncRunActivityPanel({
                     onClick={() => {
                       setStatusFilter(status);
                     }}
+                    onKeyDown={handleHorizontalTabKeyDown}
                   >
                     <span className="inline-flex items-center gap-2">
                       <span>{status}</span>

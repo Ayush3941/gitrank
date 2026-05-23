@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { handleHorizontalTabKeyDown } from "@/components/shared/tablist-keyboard";
 import { cn } from "@/lib/cn";
 
 const filters = [
@@ -202,6 +203,7 @@ export function ContributionFilters({
                     onClick={() => {
                       onValueChange(filter.value);
                     }}
+                    onKeyDown={handleHorizontalTabKeyDown}
                   >
                     <span className="inline-flex items-center gap-2 truncate">
                       <Icon className="dashboard-nav-icon h-4 w-4" aria-hidden="true" />

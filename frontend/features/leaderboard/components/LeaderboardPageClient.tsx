@@ -18,6 +18,7 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
+import { handleHorizontalTabKeyDown } from "@/components/shared/tablist-keyboard";
 import { Button } from "@/components/ui/button";
 import { laneParamToTab, tabToLaneParam } from "@/features/leaderboard/lib/lane-param";
 import { useLeaderboard } from "@/hooks/use-leaderboard";
@@ -196,6 +197,7 @@ export function LeaderboardPageClient() {
                       active ? "text-white" : "text-muted",
                     )}
                     onClick={() => handleTabChange(item)}
+                    onKeyDown={handleHorizontalTabKeyDown}
                   >
                     <span className="inline-flex items-center gap-2 truncate">
                       <Icon className="dashboard-nav-icon h-4 w-4" aria-hidden="true" />
