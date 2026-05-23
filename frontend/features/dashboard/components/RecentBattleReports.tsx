@@ -36,6 +36,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
         ) : null}
         {sortedReports.map((report, index) => {
           const evidencePill = reportEvidencePill(report);
+          const nextMove = reportNextMove(report);
           return (
             <li
               key={`${report.contribution.owner}/${report.contribution.repo}#${report.contribution.number}-${report.contribution.id}-${index}`}
@@ -44,7 +45,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="break-anywhere text-sm text-muted">{report.contribution.owner}/{report.contribution.repo} #{report.contribution.number}</p>
-                  <h3 className="mt-2 break-anywhere text-lg font-medium text-white">{report.contribution.title}</h3>
+                  <h3 className="mt-2 break-anywhere text-lg font-medium text-foreground">{report.contribution.title}</h3>
                   <div className="mt-2 flex flex-wrap gap-2">
                     <span className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
                       {report.contribution.category}
@@ -63,10 +64,11 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
                       className="text-sm leading-6 text-muted"
                     />
                   </div>
+                  <p className="mt-3 text-xs text-cyan-100">{nextMove}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-xs font-medium text-primary">XP earned</p>
-                  <p className="numeric-readout mt-2 text-3xl font-semibold text-white">
+                  <p className="numeric-readout mt-2 text-3xl font-semibold text-foreground">
                     {report.contribution.xpEarned.toLocaleString("en-US")}
                   </p>
                   <p className="mt-2 inline-flex items-center gap-1 text-xs text-cyan-100">
@@ -89,6 +91,20 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
       </ul>
     </GlowCard>
   );
+}
+
+function reportNextMove(report: PullRequestAnalysis): string {
+  const state = report.evidenceState.status;
+  if (state === "stale" || state === "incomplete") {
+    return "Next move: refresh sync in Settings to update report evidence.";
+  }
+  if (state === "rate_limited") {
+    return "Next move: retry later after rate limits cool down, then reopen this report.";
+  }
+  if (state === "ai_fallback" || state === "deterministic_only") {
+    return "Next move: deterministic scoring is valid; Gemini summary will attach when available.";
+  }
+  return "Next move: inspect this PR report to keep high-signal contribution quality consistent.";
 }
 
 function deduplicateReportsByPR(reports: PullRequestAnalysis[]): PullRequestAnalysis[] {
