@@ -50,22 +50,25 @@ The paper this project name is inspired by is:
 Paper scope (what it actually does):
 
 - ranks GitHub topic terms by general-to-specific meaning (topic taxonomy), not developers
-- starts from 121K GitHub topics and builds a ranked set of 301 application-domain topics
-- uses active pairwise sampling + TrueSkill for ranking, and links terms to Wikidata to reduce ambiguity
-- finds that developers often use broad/high-level labels, reducing project discoverability
+- starts from ~121K scraped GitHub topics and filters/ranks into 301 application-domain topics
+- applies active pairwise sampling (ASAP) + TrueSkill ranking with Wikidata linking to reduce ambiguity
+- converges ranking with ~5,281 annotated pairs from 8 annotators (instead of exhaustive full-pair comparisons)
+- clusters ranked terms into 8 discrete levels
+- finds developers overuse broad/high-level labels, reducing project discoverability
 
-How this maps to this repository:
+What this means for GitRank product work in this repo:
 
-- this repo extends the idea into contributor intelligence (PR evidence, score events, profile read models)
-- scoring and profile claims must stay evidence-backed, explainable, and bounded
-- keep taxonomy/signal dimensions explicit (avoid mixing unrelated classes without clear contracts)
-- keep deterministic fallbacks and provenance visible whenever AI enrichment is missing
+- GitRank is an extension, not a copy: we score contributor evidence (PR/review/repo signals), not topic labels alone
+- keep skill/category signals explicit and bounded; never collapse unrelated dimensions into one opaque number
+- keep claims calibrated: profile language must communicate uncertainty and evidence scope
+- deterministic scoring and provenance remain the trust anchor; AI is enrichment, never score authority
 
-Decision memory from this research:
+Research-derived engineering guardrails (treat as policy memory):
 
-- no fake confidence claims from sparse signals
-- prefer conservative language for strengths and skill labels
-- preserve extensibility: new signals/categories should be addable with explicit validation rules
+- avoid fake certainty from sparse data (`low evidence` must stay visible in UI and report payloads)
+- preserve extensibility: new skill lanes/categories must be schema-versioned and validation-backed
+- keep classification explainable: each score change should map to inspectable evidence and rule version
+- treat ambiguity as first-class: normalize labels/signals before aggregation; do not silently merge near-duplicates
 
 ## Current Repository Status
 
