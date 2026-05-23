@@ -13,12 +13,12 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { laneParamToTab, tabToLaneParam } from "@/features/leaderboard/lib/lane-param";
 import { useLeaderboard } from "@/hooks/use-leaderboard";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { useMyProfile } from "@/hooks/use-profile";
 import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
+import { cn } from "@/lib/cn";
 import { formatRelativeDays } from "@/lib/formatters";
 
 const LeaderboardArena = dynamic(
@@ -162,26 +162,35 @@ export function LeaderboardPageClient() {
           </label>
         </div>
         <div className="hidden sm:block">
-          <Tabs value={tab} onValueChange={handleTabChange}>
-            <TabsList
-              className="grid w-full grid-cols-3 gap-1.5 lg:grid-cols-6"
-              aria-label="Leaderboard lane filters"
-            >
-              {tabs.map((item) => (
-                <TabsTrigger
-                  key={`leaderboard-tab-${item}`}
-                  value={item}
-                  aria-label={`${TAB_LABELS[item].full} leaderboard lane`}
-                  aria-controls={LEADERBOARD_ROWS_REGION_ID}
-                  title={TAB_LABELS[item].full}
-                  className="justify-center text-center"
-                >
-                  <span className="lg:hidden">{TAB_LABELS[item].short}</span>
-                  <span className="hidden lg:inline">{TAB_LABELS[item].full}</span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
+          <ul
+            role="list"
+            aria-label="Leaderboard lane filters"
+            className="grid w-full grid-cols-3 gap-1.5 lg:grid-cols-6"
+          >
+            {tabs.map((item) => {
+              const active = tab === item;
+              return (
+                <li key={`leaderboard-tab-${item}`} className="list-none">
+                  <button
+                    type="button"
+                    title={TAB_LABELS[item].full}
+                    aria-label={`${TAB_LABELS[item].full} leaderboard lane`}
+                    aria-controls={LEADERBOARD_ROWS_REGION_ID}
+                    aria-pressed={active}
+                    data-active={active ? "true" : "false"}
+                    className={cn(
+                      "focus-ring dashboard-nav-item w-full px-3 py-2 text-center text-sm font-semibold",
+                      active ? "text-white" : "text-muted",
+                    )}
+                    onClick={() => handleTabChange(item)}
+                  >
+                    <span className="lg:hidden">{TAB_LABELS[item].short}</span>
+                    <span className="hidden lg:inline">{TAB_LABELS[item].full}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p role="status" aria-live="polite" className="sr-only">
