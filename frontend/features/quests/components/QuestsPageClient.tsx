@@ -19,8 +19,8 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
 import { StaleState } from "@/components/shared/StaleState";
-import { handleHorizontalTabKeyDown } from "@/components/shared/tablist-keyboard";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
@@ -176,14 +176,8 @@ export function QuestsPageClient() {
             </label>
           </div>
           <div className="hidden sm:block">
-            <ul
-              role="tablist"
-              aria-label="Mission cadence filters"
-              aria-describedby={filterStatusId}
-              className="dashboard-nav-track lane-rail flex gap-1.5 overflow-x-auto p-0.5"
-            >
-              {QUEST_FILTERS.map((item) => {
-                const active = cadenceFilter === item.value;
+            <SegmentedTablist
+              options={QUEST_FILTERS.map((item) => {
                 const count =
                   item.value === "All"
                     ? quests.length
@@ -198,32 +192,20 @@ export function QuestsPageClient() {
                         : item.value === "Long-term"
                           ? Route
                           : Sparkles;
-                return (
-                  <li key={`quest-filter-tab-${item.value}`} role="presentation" className="list-none min-w-[8.5rem] shrink-0">
-                    <button
-                      type="button"
-                      role="tab"
-                      aria-selected={active}
-                      tabIndex={active ? 0 : -1}
-                      data-active={active ? "true" : "false"}
-                      className="focus-ring dashboard-nav-item min-h-11 w-full px-3 py-2 text-center text-sm font-semibold"
-                      onClick={() => {
-                        handleCadenceFilterChange(item.value);
-                      }}
-                      onKeyDown={handleHorizontalTabKeyDown}
-                    >
-                      <span className="inline-flex items-center gap-2">
-                        <Icon className="dashboard-nav-icon h-4 w-4" aria-hidden="true" />
-                        <span className="truncate">{item.label}</span>
-                        <span className="rounded-full border border-primary/22 bg-primary/10 px-1.5 py-0.5 text-[11px] leading-none text-primary">
-                          {count}
-                        </span>
-                      </span>
-                    </button>
-                  </li>
-                );
+                return {
+                  value: item.value,
+                  label: item.label,
+                  icon: <Icon className="h-4 w-4" />,
+                  count,
+                  minWidthClassName: "min-w-[8.5rem]",
+                };
               })}
-            </ul>
+              value={cadenceFilter}
+              onValueChange={handleCadenceFilterChange}
+              ariaLabel="Mission cadence filters"
+              ariaDescribedBy={filterStatusId}
+              tabIdPrefix="quest-filter-tab"
+            />
           </div>
         </section>
       ) : null}

@@ -17,15 +17,14 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
 import { StaleState } from "@/components/shared/StaleState";
-import { handleHorizontalTabKeyDown } from "@/components/shared/tablist-keyboard";
 import { Button } from "@/components/ui/button";
 import { laneParamToTab, tabToLaneParam } from "@/features/leaderboard/lib/lane-param";
 import { useLeaderboard } from "@/hooks/use-leaderboard";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { useMyProfile } from "@/hooks/use-profile";
 import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
-import { cn } from "@/lib/cn";
 import { formatRelativeDays } from "@/lib/formatters";
 
 const LeaderboardArena = dynamic(
@@ -171,43 +170,23 @@ export function LeaderboardPageClient() {
           </label>
         </div>
         <div className="hidden sm:block">
-          <ul
-            role="tablist"
-            aria-label="Leaderboard lane filters"
-            className="dashboard-nav-track lane-rail flex w-full gap-1.5 overflow-x-auto p-0.5"
-          >
-            {tabs.map((item) => {
-              const active = tab === item;
+          <SegmentedTablist
+            options={tabs.map((item) => {
               const Icon = TAB_ICONS[item];
-              const tabID = `leaderboard-lane-tab-${item.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
-              return (
-                <li key={`leaderboard-tab-${item}`} role="presentation" className="list-none min-w-[9rem] shrink-0">
-                  <button
-                    type="button"
-                    id={tabID}
-                    role="tab"
-                    title={TAB_LABELS[item]}
-                    aria-label={`${TAB_LABELS[item]} leaderboard lane`}
-                    aria-controls={LEADERBOARD_ROWS_REGION_ID}
-                    aria-selected={active}
-                    tabIndex={active ? 0 : -1}
-                    data-active={active ? "true" : "false"}
-                    className={cn(
-                      "focus-ring dashboard-nav-item min-h-11 w-full px-3 py-2 text-center text-sm font-semibold",
-                      active ? "text-white" : "text-muted",
-                    )}
-                    onClick={() => handleTabChange(item)}
-                    onKeyDown={handleHorizontalTabKeyDown}
-                  >
-                    <span className="inline-flex items-center gap-2 truncate">
-                      <Icon className="dashboard-nav-icon h-4 w-4" aria-hidden="true" />
-                      <span className="truncate">{TAB_LABELS[item]}</span>
-                    </span>
-                  </button>
-                </li>
-              );
+              return {
+                value: item,
+                label: TAB_LABELS[item],
+                icon: <Icon className="h-4 w-4" />,
+                minWidthClassName: "min-w-[9rem]",
+              };
             })}
-          </ul>
+            value={tab}
+            onValueChange={handleTabChange}
+            ariaLabel="Leaderboard lane filters"
+            ariaControls={LEADERBOARD_ROWS_REGION_ID}
+            className="w-full"
+            tabIdPrefix="leaderboard-lane-tab"
+          />
         </div>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p role="status" aria-live="polite" className="sr-only">

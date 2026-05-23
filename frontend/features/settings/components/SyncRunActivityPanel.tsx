@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, Search, X, XCircle } from "lucide-react";
 import { useMemo, useState } from "react";
+import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { handleHorizontalTabKeyDown } from "@/components/shared/tablist-keyboard";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { formatDateTime, formatRelativeDays } from "@/lib/formatters";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
@@ -145,14 +145,8 @@ export function SyncRunActivityPanel({
               </button>
             ) : null}
           </div>
-          <ul
-            role="tablist"
-            aria-label="Sync run status filters"
-            aria-describedby={filterStatusId}
-            className="dashboard-nav-track lane-rail flex gap-1.5 overflow-x-auto p-0.5"
-          >
-            {SYNC_RUN_STATUS_FILTERS.map((status) => {
-              const active = statusFilter === status;
+          <SegmentedTablist
+            options={SYNC_RUN_STATUS_FILTERS.map((status) => {
               const count =
                 status === "All"
                   ? statusCounts.all
@@ -169,35 +163,21 @@ export function SyncRunActivityPanel({
                     : status === "Running"
                       ? Clock3
                       : XCircle;
-              const id = `sync-run-status-tab-${status.toLowerCase()}`;
-              return (
-                <li key={status} role="presentation" className="list-none min-w-[8rem] shrink-0">
-                  <button
-                    type="button"
-                    id={id}
-                    role="tab"
-                    aria-selected={active}
-                    tabIndex={active ? 0 : -1}
-                    aria-controls={syncRunsRegionId}
-                    data-active={active ? "true" : "false"}
-                    className="focus-ring dashboard-nav-item min-h-11 w-full px-3 py-2 text-center text-sm font-semibold"
-                    onClick={() => {
-                      setStatusFilter(status);
-                    }}
-                    onKeyDown={handleHorizontalTabKeyDown}
-                  >
-                    <span className="inline-flex items-center gap-2">
-                      <Icon className="dashboard-nav-icon h-4 w-4" aria-hidden="true" />
-                      <span>{status}</span>
-                      <span className="rounded-full border border-primary/22 bg-primary/10 px-1.5 py-0.5 text-[11px] leading-none text-primary">
-                        {count}
-                      </span>
-                    </span>
-                  </button>
-                </li>
-              );
+              return {
+                value: status,
+                label: status,
+                icon: <Icon className="h-4 w-4" />,
+                count,
+                minWidthClassName: "min-w-[8rem]",
+              };
             })}
-          </ul>
+            value={statusFilter}
+            onValueChange={setStatusFilter}
+            ariaLabel="Sync run status filters"
+            ariaDescribedBy={filterStatusId}
+            ariaControls={syncRunsRegionId}
+            tabIdPrefix="sync-run-status-tab"
+          />
         </div>
       </div>
 

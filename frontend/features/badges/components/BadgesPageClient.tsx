@@ -20,8 +20,8 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
 import { StaleState } from "@/components/shared/StaleState";
-import { handleHorizontalTabKeyDown } from "@/components/shared/tablist-keyboard";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
@@ -408,71 +408,44 @@ export function BadgesPageClient() {
               </label>
             </div>
             <div className="hidden sm:grid gap-3">
-              <ul
-                role="tablist"
-                aria-label="Badge rarity filters"
-                aria-describedby={badgesFilterStatusId}
-                className="dashboard-nav-track lane-rail flex gap-1.5 overflow-x-auto p-0.5"
-              >
-                {BADGE_RARITY_FILTERS.map((item) => {
-                  const active = rarity === item;
-                  return (
-                    <li key={`rarity-tab-${item}`} role="presentation" className="list-none min-w-[8rem] shrink-0">
-                      <button
-                        type="button"
-                        role="tab"
-                        aria-selected={active}
-                        tabIndex={active ? 0 : -1}
-                        aria-controls={BADGES_EARNED_REGION_ID}
-                        data-active={active ? "true" : "false"}
-                        className="focus-ring dashboard-nav-item min-h-11 w-full px-3 py-2 text-center text-sm font-semibold"
-                        onClick={() => {
-                          handleRarityChange(item);
-                        }}
-                        onKeyDown={handleHorizontalTabKeyDown}
-                      >
-                        <span className="inline-flex items-center gap-2">
-                          <Gem className="dashboard-nav-icon h-4 w-4" aria-hidden="true" />
-                          <span className="truncate">{item}</span>
-                        </span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-              <ul
-                role="tablist"
-                aria-label="Badge visibility filters"
-                aria-describedby={badgesFilterStatusId}
-                className="dashboard-nav-track lane-rail flex gap-1.5 overflow-x-auto p-0.5"
-              >
-                {BADGE_VISIBILITY_FILTERS.map((item) => {
-                  const active = visibility === item;
+              <SegmentedTablist
+                options={BADGE_RARITY_FILTERS.map((item) => ({
+                  value: item,
+                  label: item,
+                  icon: <Gem className="h-4 w-4" />,
+                  minWidthClassName: "min-w-[8rem]",
+                }))}
+                value={rarity}
+                onValueChange={handleRarityChange}
+                ariaLabel="Badge rarity filters"
+                ariaDescribedBy={badgesFilterStatusId}
+                ariaControls={BADGES_EARNED_REGION_ID}
+                tabIdPrefix="badge-rarity-tab"
+              />
+              <SegmentedTablist
+                options={BADGE_VISIBILITY_FILTERS.map((item) => {
                   const Icon = item === "Unlocked" ? Unlock : item === "Locked" ? Lock : Medal;
-                  return (
-                    <li key={`visibility-tab-${item}`} role="presentation" className="list-none min-w-[8rem] shrink-0">
-                      <button
-                        type="button"
-                        role="tab"
-                        aria-selected={active}
-                        tabIndex={active ? 0 : -1}
-                        aria-controls={BADGES_EARNED_REGION_ID}
-                        data-active={active ? "true" : "false"}
-                        className="focus-ring dashboard-nav-item min-h-11 w-full px-3 py-2 text-center text-sm font-semibold"
-                        onClick={() => {
-                          handleVisibilityChange(item);
-                        }}
-                        onKeyDown={handleHorizontalTabKeyDown}
-                      >
-                        <span className="inline-flex items-center gap-2">
-                          <Icon className="dashboard-nav-icon h-4 w-4" aria-hidden="true" />
-                          <span className="truncate">{item}</span>
-                        </span>
-                      </button>
-                    </li>
-                  );
+                  const count =
+                    item === "All"
+                      ? totalCount
+                      : item === "Unlocked"
+                        ? unlockedCount
+                        : totalCount - unlockedCount;
+                  return {
+                    value: item,
+                    label: item,
+                    icon: <Icon className="h-4 w-4" />,
+                    count,
+                    minWidthClassName: "min-w-[8rem]",
+                  };
                 })}
-              </ul>
+                value={visibility}
+                onValueChange={handleVisibilityChange}
+                ariaLabel="Badge visibility filters"
+                ariaDescribedBy={badgesFilterStatusId}
+                ariaControls={BADGES_EARNED_REGION_ID}
+                tabIdPrefix="badge-visibility-tab"
+              />
             </div>
           </div>
         </div>
