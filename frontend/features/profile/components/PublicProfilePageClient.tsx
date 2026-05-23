@@ -23,6 +23,7 @@ import {
 } from "@/lib/ai/deterministic-identity-summary";
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
+import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 
 const SkillRadarChart = dynamic(
   () =>
@@ -60,6 +61,10 @@ export function PublicProfilePageClient({
   username: string;
 }) {
   const { data, isLoading, isError, isFetching, refetch } = useProfile(username);
+  const visibleBadges = useMemo(
+    () => deduplicateBadgesByName(data?.user.badges ?? []),
+    [data?.user.badges],
+  );
   const streak = summarizeContributionStreak(data?.user.contributions ?? []);
   const abraPayload = useMemo(() => {
     if (!data) {
@@ -85,7 +90,7 @@ export function PublicProfilePageClient({
         mergedPrCount: data.user.mergedPrCount,
         strongestSignals: data.user.strongestSignals,
         repositoriesTouched: data.topRepositories.length,
-        badgeCount: data.user.badges.filter((badge) => badge.unlocked).length,
+        badgeCount: visibleBadges.filter((badge) => badge.unlocked).length,
         streakDays: streak.currentStreakDays,
       },
       contributions: data.user.contributions.slice(0, 8).map((row) => ({
@@ -101,7 +106,7 @@ export function PublicProfilePageClient({
         summary: row.aiSummary,
         evidenceSignals: row.evidenceSignals,
       })),
-      badges: data.user.badges.slice(0, 8).map((badge) => ({
+      badges: visibleBadges.slice(0, 8).map((badge) => ({
         id: badge.id,
         name: badge.name,
         rarity: badge.rarity,
@@ -113,15 +118,15 @@ export function PublicProfilePageClient({
         evidencePrIds: badge.evidencePrIds,
       })),
     };
-  }, [data, streak.currentStreakDays]);
+  }, [data, streak.currentStreakDays, visibleBadges]);
   const abraInsights = useAbraInsights(abraPayload);
   const fallbackArchetype = useMemo(
     () => (data ? deriveDeterministicArchetype(data.user.strongestSignals) : "Systems Builder"),
     [data],
   );
   const unlockedBadges = useMemo(
-    () => data?.user.badges.filter((badge) => badge.unlocked) ?? [],
-    [data],
+    () => visibleBadges.filter((badge) => badge.unlocked),
+    [visibleBadges],
   );
   const skillTree = useMemo(
     () => deduplicateSkillTree(data?.user.skillTree ?? []),

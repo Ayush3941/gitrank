@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { OnboardingStepper } from "@/features/onboarding/components/OnboardingStepper";
 import { uniqueDisplayValues } from "@/lib/display-values";
 import { formatRelativeDays } from "@/lib/formatters";
+import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import type { UserProfile } from "@/types/gitrank";
 
 export function RevealPanel({
@@ -24,7 +25,9 @@ export function RevealPanel({
   const strongestSignals = uniqueDisplayValues(user.strongestSignals, 4);
   const strongestSignalSummary =
     strongestSignals.length > 0 ? strongestSignals.join(", ") : "recent contribution";
-  const unlockedBadges = user.badges.filter((badge) => badge.unlocked).slice(0, 3);
+  const unlockedBadges = deduplicateBadgesByName(user.badges)
+    .filter((badge) => badge.unlocked)
+    .slice(0, 3);
   const evidenceRows = user.contributions.length;
   const needsSyncRecovery =
     evidenceRows === 0 ||

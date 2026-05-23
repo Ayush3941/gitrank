@@ -27,6 +27,7 @@ import {
 } from "@/lib/metrics/contribution-metrics";
 import { formatRelativeDays } from "@/lib/formatters";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
+import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import type { Contribution } from "@/types/gitrank";
 
 const ContributionList = dynamic(
@@ -134,6 +135,7 @@ export function ContributionsPageClient() {
     ) {
       return null;
     }
+    const visibleBadges = deduplicateBadgesByName(profile.user.badges);
     return {
       profile: {
         username: profile.user.username,
@@ -145,7 +147,7 @@ export function ContributionsPageClient() {
         mergedPrCount: profile.user.mergedPrCount,
         strongestSignals: profile.user.strongestSignals,
         repositoriesTouched: repositories.length,
-        badgeCount: profile.user.badges.filter((badge) => badge.unlocked).length,
+        badgeCount: visibleBadges.filter((badge) => badge.unlocked).length,
         streakDays: streak.currentStreakDays,
       },
       contributions: abraContributionSample.map((row) => ({
@@ -161,7 +163,7 @@ export function ContributionsPageClient() {
         summary: row.aiSummary,
         evidenceSignals: row.evidenceSignals,
       })),
-      badges: profile.user.badges.slice(0, 8).map((badge) => ({
+      badges: visibleBadges.slice(0, 8).map((badge) => ({
         id: badge.id,
         name: badge.name,
         rarity: badge.rarity,

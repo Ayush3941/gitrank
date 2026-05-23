@@ -21,6 +21,7 @@ import {
 import { formatRelativeDays } from "@/lib/formatters";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
+import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { Button } from "@/components/ui/button";
 
 const CurrentLeagueCard = dynamic(
@@ -84,6 +85,7 @@ export function DashboardPageClient() {
     ) {
       return null;
     }
+    const visibleBadges = deduplicateBadgesByName(user.badges);
     return {
       profile: {
         username: user.username,
@@ -95,7 +97,7 @@ export function DashboardPageClient() {
         mergedPrCount: user.mergedPrCount,
         strongestSignals: user.strongestSignals,
         repositoriesTouched: user.repositories.length,
-        badgeCount: user.badges.filter((badge) => badge.unlocked).length,
+        badgeCount: visibleBadges.filter((badge) => badge.unlocked).length,
         streakDays: streak.currentStreakDays,
       },
       contributions: user.contributions.slice(0, 8).map((row) => ({
@@ -111,7 +113,7 @@ export function DashboardPageClient() {
         summary: row.aiSummary,
         evidenceSignals: row.evidenceSignals,
       })),
-      badges: user.badges.slice(0, 8).map((badge) => ({
+      badges: visibleBadges.slice(0, 8).map((badge) => ({
         id: badge.id,
         name: badge.name,
         rarity: badge.rarity,

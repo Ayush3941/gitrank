@@ -16,6 +16,7 @@ import {
   shouldRequestAbraInsights,
 } from "@/lib/ai/deterministic-identity-summary";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
+import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 
 export function RevealPanelContainer() {
   const { data, isError, isLoading } = useMyProfile();
@@ -38,6 +39,7 @@ export function RevealPanelContainer() {
     ) {
       return null;
     }
+    const visibleBadges = deduplicateBadgesByName(data.user.badges);
     return {
       profile: {
         username: data.user.username,
@@ -49,7 +51,7 @@ export function RevealPanelContainer() {
         mergedPrCount: data.user.mergedPrCount,
         strongestSignals: data.user.strongestSignals,
         repositoriesTouched: data.topRepositories.length,
-        badgeCount: data.user.badges.filter((badge) => badge.unlocked).length,
+        badgeCount: visibleBadges.filter((badge) => badge.unlocked).length,
         streakDays: streak.currentStreakDays,
       },
       contributions: data.user.contributions.slice(0, 8).map((row) => ({
@@ -65,7 +67,7 @@ export function RevealPanelContainer() {
         summary: row.aiSummary,
         evidenceSignals: row.evidenceSignals,
       })),
-      badges: data.user.badges.slice(0, 8).map((badge) => ({
+      badges: visibleBadges.slice(0, 8).map((badge) => ({
         id: badge.id,
         name: badge.name,
         rarity: badge.rarity,

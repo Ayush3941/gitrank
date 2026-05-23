@@ -13,7 +13,7 @@ import {
   Unlock,
   X,
 } from "lucide-react";
-import { startTransition, type ReactNode, useEffect, useRef, useState } from "react";
+import { startTransition, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -34,6 +34,7 @@ import {
 } from "@/lib/ai/deterministic-identity-summary";
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
+import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import type { BadgeRarity } from "@/types/gitrank";
 const BADGES_EARNED_REGION_ID = "badges-earned-region";
 const LOCKED_BADGE_PAGE_SIZE_DEFAULT = 12;
@@ -85,17 +86,18 @@ export function BadgesPageClient() {
   const canResetFilters = rarity !== "All" || visibility !== "All";
   const badgesFilterStatusId = "badges-filter-status";
 
+  const allBadges = useMemo(() => deduplicateBadgesByName(data?.badges ?? []), [data?.badges]);
   const filtered =
-    data?.badges.filter((badge) => {
+    allBadges.filter((badge) => {
       const rarityMatch = rarity === "All" || badge.rarity === rarity;
       const visibilityMatch =
         visibility === "All" ||
         (visibility === "Unlocked" && badge.unlocked) ||
         (visibility === "Locked" && !badge.unlocked);
       return rarityMatch && visibilityMatch;
-    }) ?? [];
+    });
   const profile = data?.profile;
-  const lockedBadges = data?.badges.filter((badge) => !badge.unlocked) ?? [];
+  const lockedBadges = allBadges.filter((badge) => !badge.unlocked);
   const lockedBadgesSorted = [...lockedBadges].sort((left, right) => {
     const progressDelta = (right.progress ?? 0) - (left.progress ?? 0);
     if (progressDelta !== 0) {
@@ -103,8 +105,8 @@ export function BadgesPageClient() {
     }
     return left.name.localeCompare(right.name);
   });
-  const unlockedCount = data?.badges.filter((badge) => badge.unlocked).length ?? 0;
-  const totalCount = data?.badges.length ?? 0;
+  const unlockedCount = allBadges.filter((badge) => badge.unlocked).length;
+  const totalCount = allBadges.length;
   const visibleLockedBadges = lockedBadgesSorted.slice(0, visibleLockedCount);
   const hasMoreLockedBadges = lockedBadgesSorted.length > visibleLockedBadges.length;
   const remainingLockedBadges = Math.max(0, lockedBadgesSorted.length - visibleLockedBadges.length);

@@ -5,11 +5,13 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { RarityBadge } from "@/components/shared/RarityBadge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import type { UserProfile } from "@/types/gitrank";
 
 export function BadgeShelf({ user }: { user: UserProfile }) {
-  const unlockedCount = user.badges.filter((badge) => badge.unlocked).length;
-  const totalCount = user.badges.length;
+  const visibleBadges = deduplicateBadgesByName(user.badges);
+  const unlockedCount = visibleBadges.filter((badge) => badge.unlocked).length;
+  const totalCount = visibleBadges.length;
   const completion =
     totalCount > 0 ? Math.round((unlockedCount / totalCount) * 100) : 0;
 
@@ -27,7 +29,7 @@ export function BadgeShelf({ user }: { user: UserProfile }) {
         </div>
       </div>
       <ul role="list" className="grid gap-3 md:grid-cols-2">
-        {user.badges.length === 0 ? (
+        {visibleBadges.length === 0 ? (
           <li className="list-none neon-surface space-y-3 rounded-[1.75rem] border-dashed p-4 text-sm text-muted md:col-span-2">
             <p>
               No badges in this snapshot yet.
@@ -39,7 +41,7 @@ export function BadgeShelf({ user }: { user: UserProfile }) {
             </div>
           </li>
         ) : null}
-        {user.badges.slice(0, 6).map((badge) => (
+        {visibleBadges.slice(0, 6).map((badge) => (
           <li key={badge.id} className="list-none render-opt-card neon-surface rounded-[1.75rem] p-4">
             <div className="flex items-center justify-between gap-3">
               <RarityBadge rarity={badge.rarity} />
