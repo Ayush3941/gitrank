@@ -23,6 +23,27 @@ export function DashboardHeroRankCard({
   aiMode?: "gemini" | "deterministic";
 }) {
   const strongestSignals = uniqueDisplayValues(user.strongestSignals, 6);
+  const nextAction =
+    user.syncStatus.state !== "synced" || user.mergedPrCount === 0
+      ? {
+          title: "Refresh contribution evidence",
+          description: "Run sync to update PR evidence before ranking progression.",
+          href: "/dashboard/settings",
+          cta: "Open sync settings",
+        }
+      : user.quests.length > 0
+        ? {
+            title: "Continue active quest",
+            description: "Quest completion is the fastest path to rank movement this cycle.",
+            href: "/dashboard/quests",
+            cta: "Open quests",
+          }
+        : {
+            title: "Inspect contribution cards",
+            description: "Review high-impact PR cards and keep evidence quality moving upward.",
+            href: "/dashboard/contributions",
+            cta: "Open contributions",
+          };
 
   return (
     <GlowCard strong className="player-card-shell cyber-hero-shell space-y-6 overflow-hidden">
@@ -95,6 +116,20 @@ export function DashboardHeroRankCard({
                 : "Already at top tier."}
             </p>
           </div>
+        </div>
+      </div>
+      <div className="rounded-[1.75rem] border border-primary/18 bg-primary/8 p-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="space-y-1">
+            <p className="text-sm font-semibold text-white">{nextAction.title}</p>
+            <p className="text-sm leading-6 text-muted">{nextAction.description}</p>
+          </div>
+          <Button asChild variant="secondary" size="sm">
+            <Link href={nextAction.href} prefetch={false}>
+              {nextAction.cta}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
         </div>
       </div>
       {identitySummary ? (
