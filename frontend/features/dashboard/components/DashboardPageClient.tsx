@@ -73,6 +73,7 @@ export function DashboardPageClient() {
     contributionWindowCap > 0
       ? Math.round((contributionWindowCount / contributionWindowCap) * 100)
       : 0;
+  const reportHealth = summarizeReportHealth(recentReports);
   const abraPayload = useMemo(() => {
     if (!user) {
       return null;
@@ -212,6 +213,39 @@ export function DashboardPageClient() {
         />
       ) : null}
       <section>
+        <GlowCard className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-medium text-primary">Signal health</p>
+            <p className="text-xs text-muted">Status updates for sync, evidence, and report mode.</p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="neon-surface rounded-[1rem] px-3 py-3">
+              <p className="text-xs font-medium text-primary">Sync state</p>
+              <p className="mt-1 text-sm font-semibold text-foreground">
+                {formatSyncStateLabel(user.syncStatus.state)}
+              </p>
+              <p className="mt-1 text-xs text-muted">
+                {user.syncStatus.lastSyncedAt
+                  ? `Last sync ${formatRelativeDays(user.syncStatus.lastSyncedAt)}.`
+                  : "No sync timestamp yet."}
+              </p>
+            </div>
+            <div className="neon-surface rounded-[1rem] px-3 py-3">
+              <p className="text-xs font-medium text-primary">Evidence coverage</p>
+              <p className="mt-1 text-sm font-semibold text-foreground">
+                {contributionWindowCount}/{contributionWindowCap} rows
+              </p>
+              <p className="mt-1 text-xs text-muted">{contributionWindowFillRate}% of the capped window loaded.</p>
+            </div>
+            <div className="neon-surface rounded-[1rem] px-3 py-3">
+              <p className="text-xs font-medium text-primary">Report mode</p>
+              <p className="mt-1 text-sm font-semibold text-foreground">{reportHealth.label}</p>
+              <p className="mt-1 text-xs text-muted">{reportHealth.hint}</p>
+            </div>
+          </div>
+        </GlowCard>
+      </section>
+      <section>
         <DashboardHeroRankCard
           user={user}
           archetype={abraInsights.data?.archetype ?? fallbackArchetype}
@@ -287,4 +321,50 @@ function LazyLanePlaceholder({ label }: { label: string }) {
       <div className="neon-skeleton h-24 w-full" />
     </GlowCard>
   );
+}
+
+function summarizeReportHealth(reports: Array<{ evidenceState: { status: string } }>): {
+  label: string;
+  hint: string;
+} {
+  if (reports.length === 0) {
+    return {
+      label: "No report evidence yet",
+      hint: "Run sync and open contributions to generate report cards.",
+    };
+  }
+
+  const statuses = reports.map((report) => report.evidenceState.status);
+  if (statuses.some((status) => status === "stale" || status === "incomplete")) {
+    return {
+      label: "Partial evidence",
+      hint: "Some reports are stale or incomplete. Refresh sync in Settings.",
+    };
+  }
+  if (statuses.some((status) => status === "rate_limited")) {
+    return {
+      label: "Rate-limited",
+      hint: "GitHub/AI limits are active. Retry after cooldown.",
+    };
+  }
+  if (statuses.some((status) => status === "deterministic_only" || status === "ai_fallback")) {
+    return {
+      label: "Deterministic mode",
+      hint: "Scoring is valid. Gemini enrichment will attach when available.",
+    };
+  }
+  return {
+    label: "Gemini-ready",
+    hint: "Reports include complete synced evidence and AI enrichment.",
+  };
+}
+
+function formatSyncStateLabel(state: string): string {
+  if (state === "synced") return "Synced";
+  if (state === "syncing") return "Syncing";
+  if (state === "stale") return "Stale";
+  if (state === "failed") return "Failed";
+  if (state === "rate_limited") return "Rate-limited";
+  if (state === "partially_synced") return "Partial sync";
+  return "Not synced yet";
 }
