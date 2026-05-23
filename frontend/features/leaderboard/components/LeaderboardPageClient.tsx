@@ -257,10 +257,10 @@ export function LeaderboardPageClient() {
                       : "You currently lead this lane"}
                   </p>
                 </div>
-                <details id="leaderboard-mission-plan" className="space-y-3">
-                  <summary className="focus-ring neon-surface cursor-pointer list-none px-4 py-2 text-sm font-semibold text-white marker:content-none">
+                <div id="leaderboard-mission-plan" className="space-y-3">
+                  <p className="neon-surface rounded-[1rem] px-4 py-2 text-sm font-semibold text-white">
                     Mission plan
-                  </summary>
+                  </p>
                   <div className="grid gap-3 md:grid-cols-3">
                     <ClimbTip
                       title="Promotion gap"
@@ -286,7 +286,7 @@ export function LeaderboardPageClient() {
                     </div>
                     <Progress value={currentUserProgressToNextBand} />
                   </div>
-                </details>
+                </div>
                 <div className="flex flex-wrap gap-2">
                   <Button asChild size="sm" variant="secondary">
                     <Link href="/dashboard/contributions" prefetch={false} scroll={false}>

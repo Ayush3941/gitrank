@@ -170,33 +170,33 @@ export function QuestsPageClient() {
               key={group}
               className="render-opt-section space-y-4"
             >
-              <details open={group === "Daily" || group === "Weekly"} className="space-y-3">
-                <summary className="focus-ring neon-surface cursor-pointer list-none px-4 py-3 text-sm font-semibold text-white marker:content-none">
+              <div className="neon-surface rounded-[1rem] px-4 py-3">
+                <h3 className="text-sm font-semibold text-white">
                   {labelForGroup(group)} ({grouped.length})
-                </summary>
-                <div>
-                  {grouped.length > 0 ? (
-                    <ul role="list" className="grid gap-4 xl:grid-cols-2">
-                      {grouped.map((quest) => (
-                        <li key={quest.id} className="list-none">
-                          <QuestCard quest={quest} />
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <GlowCard className="neon-surface rounded-[1.5rem] border-dashed border-cyan-300/24 p-4 text-sm text-muted">
-                      <p>
-                        No {labelForGroup(group).toLowerCase()} in this snapshot.
-                      </p>
-                      <div className="mt-3">
-                        <Button asChild variant="secondary" size="sm">
-                          <Link href={recoveryHrefForGroup(group)} prefetch={false} scroll={false}>{recoveryLabelForGroup(group)}</Link>
-                        </Button>
-                      </div>
-                    </GlowCard>
-                  )}
-                </div>
-              </details>
+                </h3>
+              </div>
+              <div>
+                {grouped.length > 0 ? (
+                  <ul role="list" className="grid gap-4 xl:grid-cols-2">
+                    {grouped.map((quest) => (
+                      <li key={quest.id} className="list-none">
+                        <QuestCard quest={quest} />
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <GlowCard className="neon-surface rounded-[1.5rem] border-dashed border-cyan-300/24 p-4 text-sm text-muted">
+                    <p>
+                      No {labelForGroup(group).toLowerCase()} in this snapshot.
+                    </p>
+                    <div className="mt-3">
+                      <Button asChild variant="secondary" size="sm">
+                        <Link href={recoveryHrefForGroup(group)} prefetch={false} scroll={false}>{recoveryLabelForGroup(group)}</Link>
+                      </Button>
+                    </div>
+                  </GlowCard>
+                )}
+              </div>
             </section>
           );
         })
