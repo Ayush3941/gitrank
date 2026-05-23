@@ -155,12 +155,12 @@ export function LeaderboardPageClient() {
           <ul
             role="list"
             aria-label="Leaderboard lane filters"
-            className="grid w-full grid-cols-3 gap-1.5 lg:grid-cols-6"
+            className="dashboard-nav-track flex w-full gap-1.5 overflow-x-auto p-0.5"
           >
             {tabs.map((item) => {
               const active = tab === item;
               return (
-                <li key={`leaderboard-tab-${item}`} className="list-none">
+                <li key={`leaderboard-tab-${item}`} className="list-none min-w-[9rem] shrink-0">
                   <button
                     type="button"
                     title={TAB_LABELS[item]}

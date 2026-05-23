@@ -151,12 +151,12 @@ export function ContributionFilters({
           <ul
             role="list"
             aria-label="Contribution category filters"
-            className="grid gap-1.5 sm:grid-cols-3 xl:grid-cols-5"
+            className="dashboard-nav-track flex gap-1.5 overflow-x-auto p-0.5"
           >
             {filters.map((filter) => {
               const active = value === filter.value;
               return (
-                <li key={filter.value} className="list-none">
+                <li key={filter.value} className="list-none min-w-[8.5rem] shrink-0">
                   <button
                     type="button"
                     title={filter.value}
