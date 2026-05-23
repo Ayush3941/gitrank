@@ -313,24 +313,24 @@ body::after {
   background:
     linear-gradient(
       180deg,
-      rgb(1 4 12 / 0.28),
-      rgb(2 6 16 / 0.52)
+      rgb(1 4 12 / 0.24),
+      rgb(2 6 16 / 0.46)
     ),
     radial-gradient(
       circle at 10% 10%,
-      rgb(var(--primary) / 0.17) 0%,
-      rgb(var(--primary) / 0.09) 38%,
-      rgb(var(--primary) / 0.03) 68%,
+      rgb(var(--primary) / 0.12) 0%,
+      rgb(var(--primary) / 0.08) 48%,
+      rgb(var(--primary) / 0.03) 78%,
       transparent 100%
     ),
     radial-gradient(
       circle at 90% 88%,
-      rgb(var(--primary-2) / 0.15) 0%,
-      rgb(var(--primary-2) / 0.08) 36%,
-      rgb(var(--primary-2) / 0.03) 64%,
+      rgb(var(--primary-2) / 0.11) 0%,
+      rgb(var(--primary-2) / 0.07) 46%,
+      rgb(var(--primary-2) / 0.03) 76%,
       transparent 100%
     );
-  opacity: 0.68;
+  opacity: 0.6;
 }
 
 ::selection {
@@ -1198,7 +1198,7 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   pointer-events: none;
   z-index: -1;
   border-radius: 999px;
-  opacity: 0.09;
+  opacity: 0.06;
 }
 
 .page-shell::before {
@@ -1208,10 +1208,10 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   height: 60rem;
   background: radial-gradient(
     circle,
-      rgb(var(--primary) / 0.06) 0%,
-      rgb(var(--primary) / 0.046) 38%,
-      rgb(var(--primary) / 0.032) 64%,
-      rgb(var(--primary) / 0.016) 82%,
+      rgb(var(--primary) / 0.048) 0%,
+      rgb(var(--primary) / 0.036) 46%,
+      rgb(var(--primary) / 0.022) 72%,
+      rgb(var(--primary) / 0.01) 86%,
       rgb(var(--primary) / 0) 96%
     );
 }
@@ -1223,10 +1223,10 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   height: 62rem;
   background: radial-gradient(
     circle,
-      rgb(var(--primary-2) / 0.06) 0%,
-      rgb(var(--primary-2) / 0.046) 38%,
-      rgb(var(--primary-2) / 0.032) 64%,
-      rgb(var(--primary-2) / 0.016) 82%,
+      rgb(var(--primary-2) / 0.048) 0%,
+      rgb(var(--primary-2) / 0.036) 46%,
+      rgb(var(--primary-2) / 0.022) 72%,
+      rgb(var(--primary-2) / 0.01) 86%,
       rgb(var(--primary-2) / 0) 96%
     );
 }
