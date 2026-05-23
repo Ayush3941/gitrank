@@ -194,6 +194,11 @@ npm run test:smoke
 If a PR touches rendering-heavy components, include a short before/after note in
 the PR description describing expected UX/performance impact.
 
+Recent no-slowdown refinement (May 22, 2026):
+
+- Dashboard top chrome was simplified to remove always-on display quick-switch controls from the primary nav surface.
+- Theme/text/effect toggles remain available in Settings and onboarding, reducing routine dashboard UI noise and interaction cost.
+
 ## Frontend Excellence Checklist (No-Slowdown Backlog)
 
 Use this as the master frontend refinement backlog. Keep improvements aligned
