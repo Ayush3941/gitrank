@@ -56,7 +56,7 @@ export function QuestsPageClient() {
         description="Daily, weekly, and long-term mission tracks."
         actions={(
           <Button asChild variant="secondary" size="sm">
-            <Link href="/dashboard/contributions">
+            <Link href="/dashboard/contributions" scroll={false}>
               Open contributions
             </Link>
           </Button>
@@ -190,7 +190,7 @@ export function QuestsPageClient() {
                       </p>
                       <div className="mt-3">
                         <Button asChild variant="secondary" size="sm">
-                          <Link href={recoveryHrefForGroup(group)}>{recoveryLabelForGroup(group)}</Link>
+                          <Link href={recoveryHrefForGroup(group)} scroll={false}>{recoveryLabelForGroup(group)}</Link>
                         </Button>
                       </div>
                     </GlowCard>
@@ -297,7 +297,7 @@ function MissionSpotlightCard({
           <p className="text-xs font-medium text-primary">{title}</p>
           <p className="text-sm text-muted">{emptyCopy}</p>
           <Button asChild variant="secondary" size="sm">
-            <Link href={href}>
+            <Link href={href} scroll={false}>
               {cta}
               <ArrowRight className="h-4 w-4" />
             </Link>
@@ -337,7 +337,7 @@ function MissionSpotlightCard({
           Next move: {recoveryLabelForGroup(quest.cadence)}
         </p>
         <Button asChild variant="secondary" size="sm">
-          <Link href={recoveryHrefForGroup(quest.cadence)}>
+          <Link href={recoveryHrefForGroup(quest.cadence)} scroll={false}>
             {recoveryLabelForGroup(quest.cadence)}
             <ArrowRight className="h-4 w-4" />
           </Link>

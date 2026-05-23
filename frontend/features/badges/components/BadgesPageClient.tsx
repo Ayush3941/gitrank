@@ -206,7 +206,7 @@ export function BadgesPageClient() {
         description="Unlocked badges and upcoming milestones."
         actions={(
           <Button asChild variant="secondary" size="sm">
-            <Link href="/dashboard/contributions">
+            <Link href="/dashboard/contributions" scroll={false}>
               Open contributions
             </Link>
           </Button>
@@ -278,7 +278,7 @@ export function BadgesPageClient() {
                       </p>
                     </div>
                     <Button asChild variant="secondary" size="sm">
-                      <Link href={unlockRecoveryHref(nextUnlockTarget.unlockCondition)} prefetch={false}>
+                      <Link href={unlockRecoveryHref(nextUnlockTarget.unlockCondition)} prefetch={false} scroll={false}>
                         {unlockRecoveryLabel(nextUnlockTarget.unlockCondition)}
                       </Link>
                     </Button>
@@ -455,7 +455,7 @@ export function BadgesPageClient() {
                           Next move: {unlockRecoveryLabel(badge.unlockCondition)}
                         </p>
                         <Button asChild variant="ghost" size="sm">
-                          <Link href={unlockRecoveryHref(badge.unlockCondition)} prefetch={false}>Open path</Link>
+                          <Link href={unlockRecoveryHref(badge.unlockCondition)} prefetch={false} scroll={false}>Open path</Link>
                         </Button>
                       </div>
                     </li>

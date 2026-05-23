@@ -208,7 +208,7 @@ export function SyncRunActivityPanel({
           <p>No sync runs recorded for this account yet. Open dashboard and GitRank will enqueue background sync automatically.</p>
           <div className="flex flex-wrap gap-2">
             <Button asChild size="sm" variant="secondary">
-              <Link href="/dashboard">Open dashboard</Link>
+              <Link href="/dashboard" scroll={false}>Open dashboard</Link>
             </Button>
           </div>
         </div>

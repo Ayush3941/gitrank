@@ -120,7 +120,7 @@ export function PRBattleReportPageClient({
         actions={(
           <div className="flex flex-wrap gap-2">
             <Button asChild variant="secondary">
-              <Link href="/dashboard/contributions">Back to contributions</Link>
+              <Link href="/dashboard/contributions" scroll={false}>Back to contributions</Link>
             </Button>
           </div>
         )}
@@ -337,7 +337,7 @@ export function PRBattleReportPageClient({
                 ) : null}
               </div>
               <Button asChild variant="secondary">
-                <Link href="/dashboard/quests">
+                <Link href="/dashboard/quests" scroll={false}>
                   Open quest board
                   <ArrowRight className="h-4 w-4" />
                 </Link>
