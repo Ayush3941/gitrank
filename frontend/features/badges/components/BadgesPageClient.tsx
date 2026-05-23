@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Crown, ShieldCheck, Sparkles, Trophy, X } from "lucide-react";
 import { startTransition, type ReactNode, useEffect, useRef, useState } from "react";
@@ -12,7 +13,6 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { BadgeGrid } from "@/features/badges/components/BadgeGrid";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useBadges } from "@/hooks/use-badges";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
@@ -27,6 +27,16 @@ import type { BadgeRarity } from "@/types/gitrank";
 const BADGES_EARNED_REGION_ID = "badges-earned-region";
 const LOCKED_BADGE_PAGE_SIZE_DEFAULT = 12;
 const LOCKED_BADGE_PAGE_SIZE_CONSTRAINED = 6;
+
+const BadgeGrid = dynamic(
+  () =>
+    import("@/features/badges/components/BadgeGrid").then(
+      (mod) => mod.BadgeGrid,
+    ),
+  {
+    loading: () => <BadgeShelfPlaceholder label="Loading badge shelf" />,
+  },
+);
 
 export function BadgesPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useBadges();
@@ -409,10 +419,10 @@ export function BadgesPageClient() {
       </section>
       {!isLoading && !isError ? (
         <section className="render-opt-section space-y-3">
-          <div className="space-y-3">
-            <h2 className="text-sm font-semibold text-white">
+          <details open={lockedBadges.length <= 6} className="space-y-3">
+            <summary className="focus-ring neon-surface cursor-pointer list-none px-4 py-3 text-sm font-semibold text-white marker:content-none">
               Locked / upcoming badges ({lockedBadges.length})
-            </h2>
+            </summary>
             {lockedBadges.length > 0 ? (
               <div className="neon-surface rounded-[1.4rem] border border-fuchsia-300/24 p-3">
                 <ul role="list" className="grid gap-3 md:grid-cols-3">
@@ -476,7 +486,7 @@ export function BadgesPageClient() {
                 No locked badge definitions are returned by this snapshot.
               </div>
             )}
-          </div>
+          </details>
         </section>
       ) : null}
     </div>
@@ -526,5 +536,16 @@ function BadgeMetric({
         {icon}
       </p>
     </div>
+  );
+}
+
+function BadgeShelfPlaceholder({ label }: { label: string }) {
+  return (
+    <GlowCard className="space-y-3">
+      <p className="text-xs font-medium text-primary">{label}</p>
+      <div className="neon-skeleton h-9 w-1/2" />
+      <div className="neon-skeleton h-24 w-full" />
+      <div className="neon-skeleton h-24 w-full" />
+    </GlowCard>
   );
 }

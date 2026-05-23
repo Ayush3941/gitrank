@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { ArrowRight, CalendarClock, Flame, ShieldCheck } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -10,13 +11,22 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { QuestCard } from "@/features/quests/components/QuestCard";
 import { useQuests } from "@/hooks/use-quests";
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import type { Quest } from "@/types/gitrank";
 
 const groups: Array<Quest["cadence"]> = ["Daily", "Weekly", "Long-term", "Skill-based"];
+
+const QuestCard = dynamic(
+  () =>
+    import("@/features/quests/components/QuestCard").then(
+      (mod) => mod.QuestCard,
+    ),
+  {
+    loading: () => <QuestPanelPlaceholder />,
+  },
+);
 
 export function QuestsPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useQuests();
@@ -160,12 +170,10 @@ export function QuestsPageClient() {
               key={group}
               className="render-opt-section space-y-4"
             >
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <h2 className="text-sm font-semibold text-white">
-                    {labelForGroup(group)} ({grouped.length})
-                  </h2>
-                </div>
+              <details open={group === "Daily" || group === "Weekly"} className="space-y-3">
+                <summary className="focus-ring neon-surface cursor-pointer list-none px-4 py-3 text-sm font-semibold text-white marker:content-none">
+                  {labelForGroup(group)} ({grouped.length})
+                </summary>
                 <div>
                   {grouped.length > 0 ? (
                     <ul role="list" className="grid gap-4 xl:grid-cols-2">
@@ -188,7 +196,7 @@ export function QuestsPageClient() {
                     </GlowCard>
                   )}
                 </div>
-              </div>
+              </details>
             </section>
           );
         })
@@ -356,4 +364,14 @@ function questStatusMeta(status: Quest["status"]): { label: string; className: s
     label: "Active",
     className: "mt-2 inline-flex neon-chip neon-chip-info rounded-full px-2.5 py-1 text-xs font-semibold",
   };
+}
+
+function QuestPanelPlaceholder() {
+  return (
+    <GlowCard className="space-y-3">
+      <p className="text-xs font-medium text-primary">Loading quest card</p>
+      <div className="neon-skeleton h-9 w-2/5" />
+      <div className="neon-skeleton h-24 w-full" />
+    </GlowCard>
+  );
 }
