@@ -174,7 +174,7 @@ export function SettingsPageClient() {
     clearThemePreference();
     setTextScale("default");
     setDisplayNotice(
-      "Display preferences reset. Theme now follows your system high-contrast setting and text scale is Default.",
+      "Display preferences reset. Theme now follows your system theme preference and text scale is Default.",
     );
   }
 
