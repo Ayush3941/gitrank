@@ -1,6 +1,19 @@
 "use client";
 
-import { Search, X } from "lucide-react";
+import {
+  BookText,
+  Bug,
+  CircleDot,
+  FlaskConical,
+  Gauge,
+  GitMerge,
+  LayoutGrid,
+  Search,
+  ServerCog,
+  ShieldCheck,
+  Trophy,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
@@ -17,6 +30,19 @@ const filters = [
   { value: "Performance" },
   { value: "High XP" },
 ] as const;
+
+const filterIconByValue = {
+  All: LayoutGrid,
+  Merged: GitMerge,
+  Open: CircleDot,
+  Docs: BookText,
+  Tests: FlaskConical,
+  "Bug Fixes": Bug,
+  Infra: ServerCog,
+  Security: ShieldCheck,
+  Performance: Gauge,
+  "High XP": Trophy,
+} as const;
 
 export function ContributionFilters({
   value,
@@ -155,6 +181,7 @@ export function ContributionFilters({
           >
             {filters.map((filter) => {
               const active = value === filter.value;
+              const Icon = filterIconByValue[filter.value];
               const tabID = `contribution-filter-tab-${filter.value.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
               return (
                 <li key={filter.value} role="presentation" className="list-none min-w-[8.5rem] shrink-0">
@@ -176,7 +203,10 @@ export function ContributionFilters({
                       onValueChange(filter.value);
                     }}
                   >
-                    <span className="truncate">{filter.value}</span>
+                    <span className="inline-flex items-center gap-2 truncate">
+                      <Icon className="dashboard-nav-icon h-4 w-4" aria-hidden="true" />
+                      <span className="truncate">{filter.value}</span>
+                    </span>
                   </button>
                 </li>
               );

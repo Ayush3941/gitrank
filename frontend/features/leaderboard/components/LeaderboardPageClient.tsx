@@ -4,6 +4,14 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { startTransition, useDeferredValue, useState } from "react";
+import {
+  BookText,
+  CalendarClock,
+  Cpu,
+  FlaskConical,
+  Globe2,
+  TrendingUp,
+} from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -45,6 +53,15 @@ const TAB_LABELS: Record<LeaderboardTab, string> = {
   Documentation: "Documentation",
   "Weekly XP": "Weekly XP",
   "Rising Contributors": "Rising Contributors",
+};
+
+const TAB_ICONS: Record<LeaderboardTab, typeof Globe2> = {
+  Global: Globe2,
+  Backend: Cpu,
+  Testing: FlaskConical,
+  Documentation: BookText,
+  "Weekly XP": CalendarClock,
+  "Rising Contributors": TrendingUp,
 };
 
 const LEADERBOARD_ROW_PAGE_SIZE_DEFAULT = 24;
@@ -159,6 +176,7 @@ export function LeaderboardPageClient() {
           >
             {tabs.map((item) => {
               const active = tab === item;
+              const Icon = TAB_ICONS[item];
               const tabID = `leaderboard-lane-tab-${item.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
               return (
                 <li key={`leaderboard-tab-${item}`} role="presentation" className="list-none min-w-[9rem] shrink-0">
@@ -173,12 +191,15 @@ export function LeaderboardPageClient() {
                     tabIndex={active ? 0 : -1}
                     data-active={active ? "true" : "false"}
                     className={cn(
-                      "focus-ring dashboard-nav-item w-full px-3 py-2 text-center text-sm font-semibold",
+                      "focus-ring dashboard-nav-item min-h-11 w-full px-3 py-2 text-center text-sm font-semibold",
                       active ? "text-white" : "text-muted",
                     )}
                     onClick={() => handleTabChange(item)}
                   >
-                    <span className="truncate">{TAB_LABELS[item]}</span>
+                    <span className="inline-flex items-center gap-2 truncate">
+                      <Icon className="dashboard-nav-icon h-4 w-4" aria-hidden="true" />
+                      <span className="truncate">{TAB_LABELS[item]}</span>
+                    </span>
                   </button>
                 </li>
               );
