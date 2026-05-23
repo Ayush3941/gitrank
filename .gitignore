@@ -23,9 +23,12 @@ tmp/
 .tmp/
 .cache/
 .gocache/
+.run/
+.logs/
 
 # OS and logs
 *.log
+gitrank_abstract.pdf
 
 # Generated V2 closeout status artifacts
 gitrank/docs/releases/v2-live-closeout-status-latest.md
