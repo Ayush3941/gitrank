@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useState } from "react";
 import { Download, FolderGit2, LogOut, Palette, RefreshCw, Sparkles, Trash2 } from "lucide-react";
@@ -7,8 +8,6 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { PrivacyRepositoryToggleList } from "@/features/settings/components/PrivacyRepositoryToggleList";
-import { SyncRunActivityPanel } from "@/features/settings/components/SyncRunActivityPanel";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -107,6 +106,26 @@ const TEXT_SCALE_OPTIONS: Array<{
     description: "Increases body and UI copy size for easier reading.",
   },
 ];
+
+const PrivacyRepositoryToggleList = dynamic(
+  () =>
+    import("@/features/settings/components/PrivacyRepositoryToggleList").then(
+      (mod) => mod.PrivacyRepositoryToggleList,
+    ),
+  {
+    loading: () => <SettingsPanelPlaceholder label="Loading repository visibility controls" />,
+  },
+);
+
+const SyncRunActivityPanel = dynamic(
+  () =>
+    import("@/features/settings/components/SyncRunActivityPanel").then(
+      (mod) => mod.SyncRunActivityPanel,
+    ),
+  {
+    loading: () => <SettingsPanelPlaceholder label="Loading sync activity" />,
+  },
+);
 
 export function SettingsPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useMyProfile();
@@ -638,4 +657,14 @@ function toControlID(value: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+function SettingsPanelPlaceholder({ label }: { label: string }) {
+  return (
+    <div className="space-y-3">
+      <p className="text-xs font-medium text-primary">{label}</p>
+      <div className="neon-skeleton h-9 w-1/2" />
+      <div className="neon-skeleton h-24 w-full" />
+    </div>
+  );
 }
