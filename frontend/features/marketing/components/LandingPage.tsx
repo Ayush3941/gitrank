@@ -72,6 +72,11 @@ export function LandingPage() {
               <Metric label="Review depth" value="Weighted" />
               <Metric label="Tests" value="Verified" />
             </div>
+            <div className="space-y-2">
+              <TrustPill text="No synthetic production users." />
+              <TrustPill text="Deterministic rules own score authority." />
+              <TrustPill text="Gemini enriches copy with deterministic fallback." />
+            </div>
           </GlowCard>
         </div>
       </section>
@@ -268,6 +273,14 @@ function Metric({ label, value }: { label: string; value: string | number }) {
     <div className="neon-metric rounded-3xl px-4 py-3">
       <p className="text-xs font-medium text-muted">{label}</p>
       <p className="mt-2 text-2xl font-semibold text-white">{value}</p>
+    </div>
+  );
+}
+
+function TrustPill({ text }: { text: string }) {
+  return (
+    <div className="neon-surface rounded-[1rem] px-3 py-2 text-xs text-muted">
+      {text}
     </div>
   );
 }
