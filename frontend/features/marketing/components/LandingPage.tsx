@@ -21,7 +21,7 @@ export function LandingPage() {
           <div className="space-y-6">
             <div className="space-y-4">
               <h1 className="cyber-title max-w-3xl text-4xl font-semibold tracking-tight text-white sm:text-6xl">
-                Turn open-source work into a reputation system.
+                Turn open-source work into trusted reputation signals.
               </h1>
               <div className="flex flex-wrap gap-2">
                 <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">For maintainers</span>
@@ -29,7 +29,7 @@ export function LandingPage() {
                 <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">For hiring teams</span>
               </div>
               <p className="cyber-copy readable-measure max-w-[72ch] text-base leading-8 sm:text-lg">
-                GitRank analyzes PR difficulty, review depth, tests, and project context, then turns verifiable evidence into XP, levels, badges, and shareable profile snapshots.
+                GitRank analyzes PR difficulty, review depth, tests, and project context, then converts verifiable evidence into XP, levels, badges, and shareable profile snapshots.
               </p>
               <ul role="list" className="grid max-w-3xl gap-2 sm:grid-cols-3">
                 <li className="list-none neon-surface px-3 py-2 text-xs text-muted">
@@ -59,7 +59,7 @@ export function LandingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-medium text-primary">Live rank arena</p>
-                <h2 className="cyber-title mt-2 text-2xl font-semibold text-white">Your card after sync</h2>
+                <h2 className="cyber-title mt-2 text-2xl font-semibold text-white">After your first sync</h2>
               </div>
             </div>
             <div className="neon-surface rounded-3xl p-4">
@@ -67,33 +67,38 @@ export function LandingPage() {
                 Connect GitHub to unlock your real rank, profile card, and progression signals.
               </p>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="neon-surface rounded-3xl px-4 py-3 text-sm cyber-copy">Live contributor snapshot</div>
-              <div className="neon-surface rounded-3xl px-4 py-3 text-sm cyber-copy">Evidence-backed score movement</div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Metric label="Difficulty" value="Scored" />
+              <Metric label="Review depth" value="Weighted" />
+              <Metric label="Tests" value="Verified" />
             </div>
           </GlowCard>
         </div>
       </section>
 
       <section id="why-gitrank" className="render-opt-section scroll-mt-24">
-        <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-white">Why GitRank exists</h2>
+        <div className="space-y-4">
+          <SectionHeader
+            eyebrow="Problem"
+            title="Why GitRank exists"
+            description="Activity counters alone do not communicate contribution quality. GitRank scores evidence-backed impact instead of raw volume."
+          />
           <div className="grid gap-6 lg:grid-cols-3">
           {[
           {
             icon: <ChartNoAxesCombined className="h-5 w-5 text-primary" />,
-            title: "GitHub graphs show activity, not skill.",
-            text: "Commits, stars, and streaks ignore how hard the work was or whether it mattered.",
+            title: "Activity is not skill.",
+            text: "Commits, stars, and streaks miss difficulty and real impact.",
           },
           {
             icon: <GitPullRequestArrow className="h-5 w-5 text-primary" />,
-            title: "PRs are not equal units of effort.",
-            text: "A typo fix, a runtime bug fix, and a test-heavy recovery patch should never earn the same score.",
+            title: "PRs are not equal work.",
+            text: "A typo fix and a deep runtime patch should not score the same.",
           },
           {
             icon: <ShieldCheck className="h-5 w-5 text-primary" />,
-            title: "Meaningful work needs better evidence.",
-            text: "GitRank weights merged outcomes, review depth, tests, impact, and repo context to resist spam.",
+            title: "Quality needs evidence.",
+            text: "GitRank weights merged outcomes, review depth, tests, and repo context.",
           },
         ].map((item, index) => (
           <GlowCard key={`problem-card-${index}-${item.title}`} className="space-y-3">
@@ -107,28 +112,32 @@ export function LandingPage() {
       </section>
 
       <section id="core-journeys" className="render-opt-section scroll-mt-24">
-        <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-white">Core user journeys</h2>
+        <div className="space-y-4">
+          <SectionHeader
+            eyebrow="Journeys"
+            title="Core user journeys"
+            description="Designed for onboarding, ongoing progression, and profile sharing."
+          />
           <ul role="list" className="grid gap-6 lg:grid-cols-3">
             {[
           {
             persona: "New contributor",
             mission: "Connect GitHub and unlock your first score snapshot.",
-            success: "Success: first synced PR appears with XP and evidence status.",
+            success: "First synced PR appears with XP and evidence status.",
             href: "/onboarding/connect-github",
             cta: "Start onboarding",
           },
           {
             persona: "Returning contributor",
             mission: "Track weekly movement, quests, and impact quality.",
-            success: "Success: rank movement updates after a merged high-signal PR.",
+            success: "Rank movement updates after a merged high-signal PR.",
             href: "/dashboard/contributions",
             cta: "Open contributions",
           },
           {
             persona: "Profile sharer",
             mission: "Turn contribution history into a public credibility card.",
-            success: "Success: public headline and share-ready profile card update.",
+            success: "Public headline and share-ready profile card update.",
             href: "/dashboard",
             cta: "Open dashboard",
           },
@@ -153,7 +162,7 @@ export function LandingPage() {
           <SectionHeader
             eyebrow="Solution"
             title="Reputation from evidence-backed contribution scoring"
-            description="Merged PRs, changed files, review depth, tests, maintainers, and AI summaries feed into explainable score movement and inspectable profile snapshots."
+            description="Merged PRs, changed files, review depth, tests, maintainers, and AI summaries feed explainable score movement and inspectable profile snapshots."
           />
           <ul role="list" className="grid gap-3">
             {[
@@ -172,7 +181,7 @@ export function LandingPage() {
           <SectionHeader
             eyebrow="Gamified loop"
             title="A serious progression loop"
-            description="Structured like an RPG profile and battle pass, but disciplined enough for maintainers and hiring teams."
+            description="Designed like an RPG progression loop but grounded in maintainers' evidence."
           />
           <ol className="grid gap-3 sm:grid-cols-2">
             {loop.map((step, index) => (
@@ -190,7 +199,7 @@ export function LandingPage() {
           <SectionHeader
             eyebrow="Battle report"
             title="Every high-signal PR gets a post-match report"
-            description="The scoring model stays visible. High XP only lands when the work had difficulty, context, review credibility, and clearly surfaced uncertainty."
+            description="The scoring model stays visible. High XP requires clear difficulty, context, review credibility, and uncertainty handling."
           />
           <div className="neon-tile rounded-[1.75rem] p-5">
             <p className="text-sm text-cyan-200">Live report cards unlock after OAuth and sync.</p>
@@ -207,7 +216,7 @@ export function LandingPage() {
           <SectionHeader
             eyebrow="Badge shelf"
             title="Visible milestones, not vanity clutter"
-            description="Badges unlock from sustained evidence."
+            description="Badges unlock from sustained evidence, not noisy activity."
           />
           <ul role="list" className="grid gap-3 sm:grid-cols-2">
             {[
@@ -243,7 +252,7 @@ export function LandingPage() {
               <Trophy className="h-3.5 w-3.5" />
               Ready to rank your work?
             </div>
-            <h2 className="text-3xl font-semibold text-white">Build a profile that recruiters and maintainers can actually trust.</h2>
+            <h2 className="text-3xl font-semibold text-white">Build a profile maintainers and hiring teams can trust.</h2>
           </div>
           <Button asChild size="lg">
             <Link href="/oauth/github/start?return_to=/dashboard" prefetch={false}>Start the reveal</Link>
