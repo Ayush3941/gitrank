@@ -151,7 +151,7 @@ export function ContributionFilters({
           <ul
             role="list"
             aria-label="Contribution category filters"
-            className="dashboard-nav-track flex gap-1.5 overflow-x-auto p-0.5"
+            className="dashboard-nav-track lane-rail flex gap-1.5 overflow-x-auto p-0.5"
           >
             {filters.map((filter) => {
               const active = value === filter.value;

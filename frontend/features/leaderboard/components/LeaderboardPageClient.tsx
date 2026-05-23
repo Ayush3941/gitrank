@@ -155,7 +155,7 @@ export function LeaderboardPageClient() {
           <ul
             role="list"
             aria-label="Leaderboard lane filters"
-            className="dashboard-nav-track flex w-full gap-1.5 overflow-x-auto p-0.5"
+            className="dashboard-nav-track lane-rail flex w-full gap-1.5 overflow-x-auto p-0.5"
           >
             {tabs.map((item) => {
               const active = tab === item;

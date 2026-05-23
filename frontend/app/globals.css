@@ -1069,6 +1069,15 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   display: none;
 }
 
+.lane-rail {
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+
+.lane-rail > * {
+  scroll-snap-align: start;
+}
+
 .dashboard-nav-item {
   border: 1px solid rgb(var(--primary) / 0.1);
   background:
@@ -1776,6 +1785,10 @@ html[data-theme="high-contrast"] .cyber-card {
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  .lane-rail {
+    scroll-snap-type: none;
   }
 
   *,

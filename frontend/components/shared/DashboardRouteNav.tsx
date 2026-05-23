@@ -18,7 +18,7 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
       <ul
         role="list"
         className={cn(
-          "dashboard-nav-track flex gap-1.5 overflow-x-auto p-0.5 sm:grid sm:grid-cols-5 sm:overflow-visible",
+          "dashboard-nav-track lane-rail flex gap-1.5 overflow-x-auto p-0.5 sm:grid sm:grid-cols-5 sm:overflow-visible",
           embedded ? "sm:p-0.5" : "",
         )}
       >
