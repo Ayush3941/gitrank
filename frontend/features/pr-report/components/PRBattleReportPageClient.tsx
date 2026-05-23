@@ -16,6 +16,7 @@ import { ScoreMatrixCard } from "@/features/pr-report/components/ScoreMatrixCard
 import { XPBreakdownCard } from "@/features/pr-report/components/XPBreakdownCard";
 import { usePrReport } from "@/hooks/use-pr-report";
 import { buildEvidenceSignalChips } from "@/lib/presentation/evidence-signal";
+import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 
 export function PRBattleReportPageClient({
   owner,
@@ -63,6 +64,7 @@ export function PRBattleReportPageClient({
 
   const suggestedQuest = data.suggestedQuest;
   const evidenceState = data.evidenceState;
+  const sanitizedReportSummary = sanitizeReportSummary(data.contribution.aiSummary);
   const evidenceAnchored = evidenceState.status === "complete" || evidenceState.status === "deterministic_only";
   const fallbackReason = extractFallbackReason(data.contribution.evidenceSignals);
   const fallbackDetail = fallbackReason ? formatFallbackReason(fallbackReason) : null;
@@ -181,7 +183,7 @@ export function PRBattleReportPageClient({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs font-medium text-primary">AI summary</p>
             <CopyTextButton
-              text={data.contribution.aiSummary}
+              text={sanitizedReportSummary}
               label="Copy summary"
               copiedLabel="Summary copied"
               analyticsTarget="pr-report/ai-summary"
@@ -200,7 +202,7 @@ export function PRBattleReportPageClient({
             </p>
           ) : null}
           <ExpandableText
-            text={data.contribution.aiSummary}
+            text={sanitizedReportSummary}
             lines={5}
             minLengthForToggle={260}
             textClassName="break-anywhere text-base leading-8 text-muted"

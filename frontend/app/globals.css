@@ -294,14 +294,17 @@ body::before {
   inset: 0;
   pointer-events: none;
   z-index: -2;
+  opacity: 1;
   background-image: url("/assets/background.jpg");
   background-image: image-set(
     url("/assets/background.webp") type("image/webp"),
     url("/assets/background.jpg") type("image/jpeg")
   );
+  background-attachment: fixed;
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
+  filter: saturate(1.08) contrast(1.03) brightness(1.02);
 }
 
 body::after {
@@ -330,7 +333,7 @@ body::after {
       rgb(var(--primary-2) / 0.03) 76%,
       transparent 100%
     );
-  opacity: 0.6;
+  opacity: 0.48;
 }
 
 ::selection {
@@ -1404,11 +1407,10 @@ html[data-theme="high-contrast"] .cyber-card {
       inset 0 1px 0 rgb(255 255 255 / 0.06);
   }
 
-  body::before,
   body::after,
   .page-shell::before,
   .page-shell::after {
-    opacity: 0.14;
+    opacity: 0.22;
   }
 }
 
