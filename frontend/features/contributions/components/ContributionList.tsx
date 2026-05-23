@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { ArrowRight, CalendarDays, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ClampedText } from "@/components/shared/ClampedText";
 import { CopyTextButton } from "@/components/shared/CopyTextButton";
-import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import type { ContributionNarrative } from "@/lib/ai/abra-insights-types";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
@@ -242,18 +242,15 @@ function AIPanel({
         />
       </div>
       <div className="mt-3 text-sm text-muted">
-        <ExpandableText
-          text={summary}
-          lines={2}
-          minLengthForToggle={160}
-          textClassName="break-anywhere text-muted"
-        />
+        <ClampedText text={summary} lines={2} className="text-muted" />
       </div>
       {narrative ? (
-        <div className="mt-3 space-y-2">
-          <h4 className="text-xs font-semibold text-cyan-100">Why it matters</h4>
-          <p className="break-anywhere text-sm text-muted">{narrative.why}</p>
-        </div>
+        <details className="mt-3 space-y-2">
+          <summary className="focus-ring cursor-pointer list-none text-xs font-semibold text-cyan-100 marker:content-none">
+            Why it matters
+          </summary>
+          <ClampedText text={narrative.why} lines={3} className="text-sm text-muted" />
+        </details>
       ) : null}
     </div>
   );

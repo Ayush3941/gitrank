@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, ShieldCheck } from "lucide-react";
-import { ExpandableText } from "@/components/shared/ExpandableText";
+import { ClampedText } from "@/components/shared/ClampedText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Button } from "@/components/ui/button";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
@@ -61,13 +61,13 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
                       {evidencePill.label}
                     </span>
                   </div>
-                  <ExpandableText
-                    text={sanitizeReportSummary(report.contribution.aiSummary)}
-                    lines={2}
-                    minLengthForToggle={160}
-                    className="mt-3 max-w-3xl"
-                    textClassName="break-anywhere text-sm leading-6 text-muted"
-                  />
+                  <div className="mt-3 max-w-3xl">
+                    <ClampedText
+                      text={sanitizeReportSummary(report.contribution.aiSummary)}
+                      lines={2}
+                      className="text-sm leading-6 text-muted"
+                    />
+                  </div>
                 </div>
                 <div className="text-right">
                   <p className="text-xs font-medium text-primary">XP earned</p>
