@@ -161,7 +161,7 @@ export function DashboardPageClient() {
   }, [data, isError, isLoading]);
 
   if (isLoading) {
-    return <LoadingState message="Loading dashboard snapshot..." />;
+    return <LoadingState message="Loading dashboard..." />;
   }
 
   if (isError || !data || !user) {

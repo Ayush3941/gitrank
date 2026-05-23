@@ -223,7 +223,7 @@ export function PRBattleReportPageClient({
           ) : null}
           {deterministicOnlyWithoutFallback ? (
             <p className="rounded-full border border-cyan-300/24 bg-cyan-400/10 px-3 py-1.5 text-xs text-cyan-100">
-              Deterministic analysis only in this snapshot.
+              Deterministic analysis only.
             </p>
           ) : null}
           <ExpandableText

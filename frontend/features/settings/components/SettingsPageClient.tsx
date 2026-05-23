@@ -334,7 +334,6 @@ export function SettingsPageClient() {
             {unlinkAccount.isPending ? "Disconnecting..." : "Disconnect"}
           </Button>
         </div>
-        <p className="text-sm text-muted">Background sync runs automatically while dashboard routes are open.</p>
         <div className="min-h-6">
           {actionError ? (
             <p id={accountActionErrorId} role="alert" className="text-sm text-rose-200">
