@@ -968,9 +968,20 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   border-radius: var(--radius-universal) !important;
 }
 
-.render-opt-card,
+.render-opt-card {
+  contain: none;
+}
+
 .render-opt-section {
   contain: none;
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 680px;
+}
+
+@supports not (content-visibility: auto) {
+  .render-opt-section {
+    contain: none;
+  }
 }
 
 .cyber-link {
