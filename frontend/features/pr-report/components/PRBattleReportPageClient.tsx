@@ -38,12 +38,12 @@ export function PRBattleReportPageClient({
     return (
       <ErrorState
         title="Battle report failed"
-        description="The score breakdown could not be loaded. Retry or return to the homepage."
+        description="The score breakdown could not be loaded. Retry or return to contributions."
         onRetry={() => {
           void refetch();
         }}
-        fallbackLabel="Open homepage"
-        fallbackHref="/"
+        fallbackLabel="Open contributions"
+        fallbackHref="/dashboard/contributions"
         analyticsTarget="pr-report:error"
       />
     );
@@ -55,8 +55,8 @@ export function PRBattleReportPageClient({
         eyebrow="PR evidence"
         title="Battle report not found"
         description="This PR either has not been synced, is private, or has not produced a scored report yet."
-        actionLabel="Go home"
-        actionHref="/"
+        actionLabel="Open contributions"
+        actionHref="/dashboard/contributions"
         analyticsTarget="pr-report:empty"
       />
     );
@@ -95,7 +95,7 @@ export function PRBattleReportPageClient({
         actions={(
           <div className="flex flex-wrap gap-2">
             <Button asChild variant="secondary">
-              <Link href="/" prefetch={false}>Back to homepage</Link>
+              <Link href="/dashboard/contributions" prefetch={false}>Back to contributions</Link>
             </Button>
           </div>
         )}
@@ -193,12 +193,12 @@ export function PRBattleReportPageClient({
           </div>
           {fallbackDetail ? (
             <p className="rounded-full border border-amber-400/24 bg-amber-400/10 px-3 py-1.5 text-xs text-amber-100">
-              Gemini enrichment unavailable: {fallbackDetail}. Showing deterministic summary.
+              Gemini unavailable ({fallbackDetail}); showing deterministic summary.
             </p>
           ) : null}
           {deterministicOnlyWithoutFallback ? (
             <p className="rounded-full border border-cyan-300/24 bg-cyan-400/10 px-3 py-1.5 text-xs text-cyan-100">
-              Deterministic analysis only.
+              Deterministic summary.
             </p>
           ) : null}
           <ExpandableText
@@ -312,8 +312,8 @@ export function PRBattleReportPageClient({
                 ) : null}
               </div>
               <Button asChild variant="secondary">
-                <Link href="/" prefetch={false}>
-                  Open homepage
+                <Link href="/dashboard/quests" prefetch={false}>
+                  Open quests
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>

@@ -31,7 +31,7 @@ export function BestPRsPanel({
             <p>No public PR reports yet for this profile snapshot.</p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Button asChild variant="secondary" size="sm">
-                <Link href="/" prefetch={false}>Open homepage</Link>
+                <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
               </Button>
             </div>
           </div>
@@ -127,7 +127,7 @@ function bestPREvidencePill(
       return { label: "Deterministic", className: "neon-chip-info" };
     }
     if (state.status === "ai_fallback") {
-      return { label: "AI fallback", className: "neon-chip-warning" };
+      return { label: "Deterministic fallback", className: "neon-chip-warning" };
     }
     if (state.status === "rate_limited") {
       return { label: "Rate limited", className: "neon-chip-warning" };
