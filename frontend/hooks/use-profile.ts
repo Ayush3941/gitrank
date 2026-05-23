@@ -96,7 +96,7 @@ export function useMyProfile() {
       : PROFILE_SYNC_STALE_TIME_MS,
     refetchOnMount: "always",
     refetchOnReconnect: true,
-    refetchOnWindowFocus: !constrainedNetwork,
+    refetchOnWindowFocus: false,
     refetchInterval: (query) =>
       shouldPollMyProfile(query.state.data)
         ? constrainedNetwork

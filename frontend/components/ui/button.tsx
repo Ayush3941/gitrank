@@ -44,7 +44,10 @@ export function Button({
   ...props
 }: ButtonProps) {
   const Comp = asChild ? Slot : "button";
+  const normalizedProps = !asChild && props.type == null
+    ? { ...props, type: "button" as const }
+    : props;
   return (
-    <Comp className={cn(buttonVariants({ variant, size }), className)} {...props} />
+    <Comp className={cn(buttonVariants({ variant, size }), className)} {...normalizedProps} />
   );
 }

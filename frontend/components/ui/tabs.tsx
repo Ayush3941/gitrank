@@ -28,13 +28,15 @@ export function TabsTrigger({
   className,
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.Trigger>) {
+  const normalizedProps =
+    props.type == null ? { ...props, type: "button" as const } : props;
   return (
     <TabsPrimitive.Trigger
       className={cn(
         "focus-ring rounded-full border border-transparent px-4 py-2 text-sm font-semibold text-muted hover:border-primary/22 hover:text-foreground data-[state=active]:border-primary/32 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary-2 data-[state=active]:text-background data-[state=active]:shadow-[0_0_8px_rgb(34_226_255_/_0.14)]",
         className,
       )}
-      {...props}
+      {...normalizedProps}
     />
   );
 }

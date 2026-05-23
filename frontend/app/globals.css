@@ -273,10 +273,10 @@ body {
   min-height: 100vh;
   background-color: rgb(var(--background));
   background-image:
-    linear-gradient(180deg, rgb(0 0 0 / 0.12), rgb(0 0 0 / 0.2)),
+    linear-gradient(180deg, rgb(0 0 0 / 0.06), rgb(0 0 0 / 0.12)),
     url("/assets/background.jpg");
   background-image:
-    linear-gradient(180deg, rgb(0 0 0 / 0.12), rgb(0 0 0 / 0.2)),
+    linear-gradient(180deg, rgb(0 0 0 / 0.06), rgb(0 0 0 / 0.12)),
     image-set(
       url("/assets/background.webp") type("image/webp"),
       url("/assets/background.jpg") type("image/jpeg")
@@ -314,10 +314,10 @@ body::before {
     ),
     radial-gradient(
       circle at 50% -14%,
-      rgb(var(--primary) / 0.024) 0%,
-      rgb(var(--primary-2) / 0.014) 66%,
-      rgb(var(--primary-2) / 0.007) 88%,
-      rgb(var(--primary-2) / 0.002) 97%,
+      rgb(var(--primary) / 0.018) 0%,
+      rgb(var(--primary-2) / 0.011) 74%,
+      rgb(var(--primary-2) / 0.005) 92%,
+      rgb(var(--primary-2) / 0.002) 99%,
       transparent 100%
     );
   background-size:
@@ -335,18 +335,18 @@ body::after {
   background:
     radial-gradient(
       circle at 14% 16%,
-      rgb(var(--primary) / 0.03) 0%,
-      rgb(var(--primary) / 0.016) 62%,
-      rgb(var(--primary) / 0.007) 86%,
-      rgb(var(--primary) / 0.002) 97%,
+      rgb(var(--primary) / 0.024) 0%,
+      rgb(var(--primary) / 0.014) 72%,
+      rgb(var(--primary) / 0.006) 90%,
+      rgb(var(--primary) / 0.002) 98%,
       transparent 100%
     ),
     radial-gradient(
       circle at 86% 84%,
-      rgb(var(--primary-2) / 0.03) 0%,
-      rgb(var(--primary-2) / 0.016) 60%,
-      rgb(var(--primary-2) / 0.007) 84%,
-      rgb(var(--primary-2) / 0.002) 97%,
+      rgb(var(--primary-2) / 0.024) 0%,
+      rgb(var(--primary-2) / 0.014) 70%,
+      rgb(var(--primary-2) / 0.006) 90%,
+      rgb(var(--primary-2) / 0.002) 98%,
       transparent 100%
     );
   opacity: var(--page-glow-opacity);
@@ -1190,7 +1190,7 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   pointer-events: none;
   z-index: -1;
   border-radius: 999px;
-  opacity: 0.14;
+  opacity: 0.09;
 }
 
 .page-shell::before {
