@@ -32,6 +32,14 @@ export function handleHorizontalTabKeyDown(event: KeyboardEvent<HTMLElement>) {
 
   event.preventDefault();
   const nextTab = tabs[nextIndex];
-  nextTab.focus();
+  focusWithoutScroll(nextTab);
   nextTab.click();
+}
+
+function focusWithoutScroll(element: HTMLElement) {
+  try {
+    element.focus({ preventScroll: true });
+  } catch {
+    element.focus();
+  }
 }

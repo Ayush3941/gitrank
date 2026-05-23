@@ -30,11 +30,11 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
           </div>
         ) : null}
         <ol role="list" className="space-y-3">
-          {quests.slice(0, 3).map((quest) => {
+          {quests.slice(0, 3).map((quest, questIndex) => {
             const progress = safeQuestProgress(quest.progress, quest.goal);
             const visibleSignals = buildEvidenceSignalChips(quest.evidenceSignals, 3);
             return (
-              <li key={quest.id} className="list-none">
+              <li key={`${quest.id}-${questIndex}`} className="list-none">
                 <article className="render-opt-card neon-surface rounded-[1.75rem] p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>

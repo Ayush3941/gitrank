@@ -41,8 +41,8 @@ export function BadgeShelf({ user }: { user: UserProfile }) {
             </div>
           </li>
         ) : null}
-        {visibleBadges.slice(0, 6).map((badge) => (
-          <li key={badge.id} className="list-none render-opt-card neon-surface rounded-[1.75rem] p-4">
+        {visibleBadges.slice(0, 6).map((badge, index) => (
+          <li key={`${badge.id}-${index}`} className="list-none render-opt-card neon-surface rounded-[1.75rem] p-4">
             <div className="flex items-center justify-between gap-3">
               <RarityBadge rarity={badge.rarity} />
               {!badge.unlocked ? (

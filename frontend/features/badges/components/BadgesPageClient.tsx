@@ -560,8 +560,8 @@ export function BadgesPageClient() {
           ) : lockedBadges.length > 0 ? (
             <div id="badges-locked-lane" className="neon-surface rounded-[1.4rem] border border-fuchsia-300/24 p-3">
               <ul role="list" className="grid gap-3 md:grid-cols-3">
-                {visibleLockedBadges.map((badge) => (
-                  <li key={badge.id} className="render-opt-card neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4">
+                {visibleLockedBadges.map((badge, index) => (
+                  <li key={`${badge.id}-${index}`} className="render-opt-card neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="text-xs font-medium text-fuchsia-200">{badge.rarity}</p>
                       <span className="neon-chip neon-chip-info rounded-full px-2.5 py-1 text-xs font-semibold">

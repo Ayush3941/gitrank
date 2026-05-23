@@ -19,8 +19,8 @@ export function BadgeGrid({
 }) {
   return (
     <ul role="list" className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      {badges.map((badge) => (
-        <li key={badge.id} className="list-none">
+      {badges.map((badge, index) => (
+        <li key={`${badge.id}-${index}`} className="list-none">
           <GlowCard className="render-opt-card cyber-hero-shell h-full space-y-4">
             <div className="flex items-start justify-between gap-3">
               <div className="rounded-3xl bg-primary/12 p-3 text-primary">

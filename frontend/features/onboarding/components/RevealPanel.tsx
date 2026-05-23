@@ -110,8 +110,8 @@ export function RevealPanel({
             </div>
             <ul id="reveal-unlock-preview" role="list" className="grid gap-4 sm:grid-cols-3">
               {unlockedBadges.length > 0 ? (
-                unlockedBadges.map((badge) => (
-                  <li key={badge.id} className="list-none rounded-[1.75rem] border border-cyan-300/16 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/22 p-5 text-left">
+                unlockedBadges.map((badge, index) => (
+                  <li key={`${badge.id}-${index}`} className="list-none rounded-[1.75rem] border border-cyan-300/16 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/22 p-5 text-left">
                     <div className="flex items-center justify-between">
                       <Award className="h-5 w-5 text-primary" />
                       <RarityBadge rarity={badge.rarity} />

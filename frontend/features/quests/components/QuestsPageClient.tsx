@@ -325,8 +325,8 @@ export function QuestsPageClient() {
               </h3>
               <div>
                 <ul role="list" className="grid gap-4 xl:grid-cols-2">
-                  {visibleGroup.map((quest) => (
-                    <li key={quest.id} className="list-none">
+                  {visibleGroup.map((quest, index) => (
+                    <li key={`${quest.id}-${index}`} className="list-none">
                       <QuestCard quest={quest} />
                     </li>
                   ))}

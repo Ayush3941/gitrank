@@ -226,10 +226,10 @@ export function SyncRunActivityPanel({
           </div>
         ) : (
           <ol role="list" className={`grid gap-2 ${resultsRegionClassName}`}>
-            {filteredRuns.map((run) => {
+            {filteredRuns.map((run, index) => {
               const safeLastError = sanitizeSyncRunErrorMessage(run.last_error);
               return (
-                <li key={run.id}>
+                <li key={`${run.id}-${index}`}>
                   <article className="render-opt-card neon-surface space-y-2 px-4 py-3">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-0">

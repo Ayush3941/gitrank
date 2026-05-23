@@ -219,8 +219,8 @@ export function PublicProfilePageClient({
             </div>
             {unlockedBadges.length > 0 ? (
               <ul role="list" className="grid gap-3 sm:grid-cols-2">
-                {unlockedBadges.slice(0, 4).map((badge) => (
-                  <li key={badge.id} className="render-opt-card neon-surface rounded-[1.75rem] p-4">
+                {unlockedBadges.slice(0, 4).map((badge, index) => (
+                  <li key={`${badge.id}-${index}`} className="render-opt-card neon-surface rounded-[1.75rem] p-4">
                     <RarityBadge rarity={badge.rarity} />
                     <h3 className="mt-3 text-lg font-medium text-white">{badge.name}</h3>
                     <ExpandableText
