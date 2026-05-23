@@ -203,8 +203,8 @@ export function BadgesPageClient() {
     <div className="space-y-6">
       <PageHeader
         eyebrow="Badges"
-        title="Achievement shelf"
-        description="Unlocked badges and upcoming milestones."
+        title="Badges"
+        description="Unlocked achievements and next milestones."
         actions={(
           <Button asChild variant="secondary" size="sm">
             <Link href="/dashboard/contributions" prefetch={false}>
@@ -234,20 +234,17 @@ export function BadgesPageClient() {
             <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-fuchsia-100">
-                    <Trophy className="h-3.5 w-3.5" />
-                    Achievement Forge
+                  <h2 className="text-xl font-semibold text-white">Progress overview</h2>
+                  <p className="mt-1 text-sm text-muted">
+                    {(abraInsights.data?.archetype ?? fallbackArchetype)} track
                   </p>
-                  <h2 className="mt-3 text-xl font-semibold text-white">
-                    {abraInsights.data?.archetype ?? fallbackArchetype} progression
-                  </h2>
                   <ExpandableText
                     text={
                       abraInsights.data?.identitySummary ||
-                      "Badge narratives are in deterministic fallback mode."
+                      "Using deterministic badge guidance right now."
                     }
                     lines={2}
-                    minLengthForToggle={180}
+                    minLengthForToggle={170}
                     className="mt-2 max-w-3xl"
                     textClassName="text-sm text-muted"
                   />
@@ -420,7 +417,7 @@ export function BadgesPageClient() {
         <section className="render-opt-section space-y-3">
           <div className="neon-surface flex flex-wrap items-center justify-between gap-3 rounded-[1rem] px-4 py-3">
             <h2 className="text-sm font-semibold text-white">
-              Locked / upcoming badges ({lockedBadges.length})
+              Locked paths ({lockedBadges.length})
             </h2>
             <Button
               type="button"
@@ -432,15 +429,12 @@ export function BadgesPageClient() {
                 setShowLockedBadges((current) => !current);
               }}
             >
-              {showLockedBadges ? "Hide locked paths" : "Show locked paths"}
+              {showLockedBadges ? "Hide" : "Show"}
             </Button>
           </div>
           {!showLockedBadges ? (
-            <div
-              id="badges-locked-lane"
-              className="neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4 text-sm text-muted"
-            >
-              Locked badge paths stay hidden by default to keep this lane focused on earned progress.
+            <div id="badges-locked-lane" className="sr-only" aria-hidden="true">
+              Locked badge paths hidden.
             </div>
           ) : lockedBadges.length > 0 ? (
             <div id="badges-locked-lane" className="neon-surface rounded-[1.4rem] border border-fuchsia-300/24 p-3">

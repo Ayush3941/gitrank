@@ -53,7 +53,7 @@ export function QuestsPageClient() {
       <PageHeader
         eyebrow="Quests"
         title="Quests"
-        description="Daily, weekly, and long-term mission tracks."
+        description="Daily, weekly, and long-term missions."
         actions={(
           <Button asChild variant="secondary" size="sm">
             <Link href="/dashboard/contributions" prefetch={false}>
@@ -109,31 +109,29 @@ export function QuestsPageClient() {
       {!isLoading && !isError ? (
         <div className="space-y-3">
           <h2 className="text-sm font-semibold text-white">Mission spotlight</h2>
-          <GlowCard className="space-y-4 border border-primary/18 bg-gradient-to-br from-slate-950/86 to-cyan-950/18">
-            <ul role="list" className="grid gap-3 md:grid-cols-3">
-              <MissionSpotlightCard
-                title="Today's Quest"
-                quest={todayQuest}
-                emptyCopy="No daily mission yet."
-                href="/dashboard/contributions"
-                cta="Open contributions"
-              />
-              <MissionSpotlightCard
-                title="Weekly Challenge"
-                quest={weeklyQuest}
-                emptyCopy="No weekly challenge yet."
-                href="/dashboard/settings"
-                cta="Open sync settings"
-              />
-              <MissionSpotlightCard
-                title="Long-Term Journey"
-                quest={longTermQuest}
-                emptyCopy="No long-term objective yet."
-                href="/dashboard/contributions"
-                cta="Keep building"
-              />
-            </ul>
-          </GlowCard>
+          <ul role="list" className="grid gap-3 md:grid-cols-3">
+            <MissionSpotlightCard
+              title="Today's Quest"
+              quest={todayQuest}
+              emptyCopy="No daily mission yet."
+              href="/dashboard/contributions"
+              cta="Open contributions"
+            />
+            <MissionSpotlightCard
+              title="Weekly Challenge"
+              quest={weeklyQuest}
+              emptyCopy="No weekly challenge yet."
+              href="/dashboard/settings"
+              cta="Open sync settings"
+            />
+            <MissionSpotlightCard
+              title="Long-Term Journey"
+              quest={longTermQuest}
+              emptyCopy="No long-term objective yet."
+              href="/dashboard/contributions"
+              cta="Keep building"
+            />
+          </ul>
         </div>
       ) : null}
       {isLoading ? <LoadingState message="Building your skill tree..." /> : null}
@@ -160,7 +158,7 @@ export function QuestsPageClient() {
         />
       ) : null}
       {!isLoading && !isError && data ? (
-        groups.map((group) => {
+        groups.filter((group) => questMap[group].length > 0).map((group) => {
           const grouped = questMap[group];
 
           return (
@@ -168,32 +166,17 @@ export function QuestsPageClient() {
               key={group}
               className="render-opt-section space-y-4"
             >
-              <div className="neon-surface rounded-[1rem] px-4 py-3">
-                <h3 className="text-sm font-semibold text-white">
-                  {labelForGroup(group)} ({grouped.length})
-                </h3>
-              </div>
+              <h3 className="text-sm font-semibold text-white">
+                {labelForGroup(group)} ({grouped.length})
+              </h3>
               <div>
-                {grouped.length > 0 ? (
-                  <ul role="list" className="grid gap-4 xl:grid-cols-2">
-                    {grouped.map((quest) => (
-                      <li key={quest.id} className="list-none">
-                        <QuestCard quest={quest} />
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <GlowCard className="neon-surface rounded-[1.5rem] border-dashed border-cyan-300/24 p-4 text-sm text-muted">
-                    <p>
-                      No {labelForGroup(group).toLowerCase()} in this snapshot.
-                    </p>
-                    <div className="mt-3">
-                      <Button asChild variant="secondary" size="sm">
-                        <Link href={recoveryHrefForGroup(group)} prefetch={false}>{recoveryLabelForGroup(group)}</Link>
-                      </Button>
-                    </div>
-                  </GlowCard>
-                )}
+                <ul role="list" className="grid gap-4 xl:grid-cols-2">
+                  {grouped.map((quest) => (
+                    <li key={quest.id} className="list-none">
+                      <QuestCard quest={quest} />
+                    </li>
+                  ))}
+                </ul>
               </div>
             </section>
           );
