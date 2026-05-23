@@ -46,7 +46,7 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
                 aria-current={active ? "page" : undefined}
                 aria-label={item.label}
                 className={cn(
-                  "focus-ring dashboard-nav-item inline-flex min-h-10 w-full items-center justify-center px-3 py-2 text-center text-sm font-medium",
+                  "focus-ring dashboard-nav-item inline-flex min-h-11 w-full items-center justify-center px-3 py-2 text-center text-sm font-medium",
                 )}
                 data-active={active ? "true" : "false"}
               >

@@ -169,7 +169,7 @@ export function ContributionFilters({
                     tabIndex={active ? 0 : -1}
                     data-active={active ? "true" : "false"}
                     className={cn(
-                      "focus-ring dashboard-nav-item w-full px-3 py-2 text-center text-sm font-semibold",
+                      "focus-ring dashboard-nav-item min-h-11 w-full px-3 py-2 text-center text-sm font-semibold",
                       active ? "text-white" : "text-muted",
                     )}
                     onClick={() => {
