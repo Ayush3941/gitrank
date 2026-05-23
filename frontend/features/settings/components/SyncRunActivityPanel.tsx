@@ -161,6 +161,14 @@ export function SyncRunActivityPanel({
                     : status === "Running"
                       ? statusCounts.running
                       : statusCounts.failed;
+              const Icon =
+                status === "All"
+                  ? Search
+                  : status === "Completed"
+                    ? CheckCircle2
+                    : status === "Running"
+                      ? Clock3
+                      : XCircle;
               const id = `sync-run-status-tab-${status.toLowerCase()}`;
               return (
                 <li key={status} role="presentation" className="list-none min-w-[8rem] shrink-0">
@@ -179,6 +187,7 @@ export function SyncRunActivityPanel({
                     onKeyDown={handleHorizontalTabKeyDown}
                   >
                     <span className="inline-flex items-center gap-2">
+                      <Icon className="dashboard-nav-icon h-4 w-4" aria-hidden="true" />
                       <span>{status}</span>
                       <span className="rounded-full border border-primary/22 bg-primary/10 px-1.5 py-0.5 text-[11px] leading-none text-primary">
                         {count}
