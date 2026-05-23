@@ -118,7 +118,7 @@ export function SyncRunActivityPanel({
         <p id={filterStatusId} role="status" aria-live="polite" className="sr-only">
           {`${filteredRuns.length} of ${statusCounts.all} runs`}
         </p>
-        <div className="grid gap-3 md:grid-cols-[1fr,22rem]">
+        <div className="space-y-3">
           <div className="relative">
             <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted" />
             <Input
@@ -144,41 +144,49 @@ export function SyncRunActivityPanel({
               </button>
             ) : null}
           </div>
-          <div
+          <ul
+            role="tablist"
+            aria-label="Sync run status filters"
             aria-describedby={filterStatusId}
-            className="neon-surface flex flex-col gap-2 rounded-[1rem] px-3 py-2"
+            className="dashboard-nav-track lane-rail flex gap-1.5 overflow-x-auto p-0.5"
           >
-            <label
-              htmlFor="sync-run-status-filter"
-              className="text-xs font-medium text-primary"
-            >
-              Status filter
-            </label>
-            <select
-              id="sync-run-status-filter"
-              value={statusFilter}
-              className="focus-ring h-10 w-full rounded-[0.1rem] border border-primary/24 bg-card px-3 text-sm text-foreground"
-              onChange={(event) => {
-                setStatusFilter(event.target.value as SyncRunStatusFilter);
-              }}
-            >
-              {SYNC_RUN_STATUS_FILTERS.map((status) => {
-                const count =
-                  status === "All"
-                    ? statusCounts.all
-                    : status === "Completed"
-                      ? statusCounts.completed
-                      : status === "Running"
-                        ? statusCounts.running
-                        : statusCounts.failed;
-                return (
-                  <option key={status} value={status} className="bg-card text-foreground">
-                    {status} ({count})
-                  </option>
-                );
-              })}
-            </select>
-          </div>
+            {SYNC_RUN_STATUS_FILTERS.map((status) => {
+              const active = statusFilter === status;
+              const count =
+                status === "All"
+                  ? statusCounts.all
+                  : status === "Completed"
+                    ? statusCounts.completed
+                    : status === "Running"
+                      ? statusCounts.running
+                      : statusCounts.failed;
+              const id = `sync-run-status-tab-${status.toLowerCase()}`;
+              return (
+                <li key={status} role="presentation" className="list-none min-w-[8rem] shrink-0">
+                  <button
+                    type="button"
+                    id={id}
+                    role="tab"
+                    aria-selected={active}
+                    tabIndex={active ? 0 : -1}
+                    aria-controls={syncRunsRegionId}
+                    data-active={active ? "true" : "false"}
+                    className="focus-ring dashboard-nav-item min-h-11 w-full px-3 py-2 text-center text-sm font-semibold"
+                    onClick={() => {
+                      setStatusFilter(status);
+                    }}
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <span>{status}</span>
+                      <span className="rounded-full border border-primary/22 bg-primary/10 px-1.5 py-0.5 text-[11px] leading-none text-primary">
+                        {count}
+                      </span>
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       </div>
 
