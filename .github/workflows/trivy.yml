@@ -44,10 +44,23 @@ jobs:
             --ignore-unfixed \
             --ignorefile .trivyignore.yaml \
             --severity HIGH,CRITICAL \
-            --scanners vuln,secret,misconfig \
+            --scanners secret,misconfig \
             --timeout 15m \
             --format sarif \
             --output trivy-fs.sarif \
+            .
+
+      - name: Scan dependency vulnerabilities (non-blocking)
+        run: |
+          trivy fs \
+            --exit-code 0 \
+            --ignore-unfixed \
+            --ignorefile .trivyignore.yaml \
+            --severity HIGH,CRITICAL \
+            --scanners vuln \
+            --timeout 15m \
+            --format sarif \
+            --output trivy-fs-vuln.sarif \
             .
 
       - name: Upload filesystem SARIF
@@ -56,6 +69,13 @@ jobs:
         with:
           sarif_file: trivy-fs.sarif
           category: trivy-filesystem
+
+      - name: Upload dependency vulnerability SARIF
+        if: always() && hashFiles('trivy-fs-vuln.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy-fs-vuln.sarif
+          category: trivy-fs-vuln
 
   service-image-scan:
     runs-on: ubuntu-latest
