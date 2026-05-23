@@ -18,7 +18,7 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
       <ul
         role="list"
         className={cn(
-          "dashboard-nav-track scrollbar-thin scroll-rail flex gap-1.5 overflow-x-auto p-0.5",
+          "dashboard-nav-track grid grid-cols-2 gap-1.5 p-0.5 sm:grid-cols-5",
           embedded ? "sm:p-0.5" : "",
         )}
       >
@@ -26,7 +26,7 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
           const active = isActive(item.href, item.exact);
           const Icon = item.icon;
           return (
-            <li key={item.href} className="list-none shrink-0 min-[440px]:min-w-[8.25rem] sm:min-w-0 sm:flex-1">
+            <li key={item.href} className="list-none min-w-0">
               <Link
                 href={item.href}
                 prefetch={false}

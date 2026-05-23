@@ -438,6 +438,21 @@ select {
     select,
     textarea,
     [role="button"],
+    [role="tab"],
+    [role="switch"],
+    [tabindex]:not([tabindex="-1"])
+  ) {
+  scroll-margin-top: max(7rem, calc(env(safe-area-inset-top, 0px) + 2rem));
+  scroll-margin-bottom: max(7rem, calc(env(safe-area-inset-bottom, 0px) + 2rem));
+}
+
+:where(
+    a[href],
+    button,
+    input:not([type="hidden"]),
+    select,
+    textarea,
+    [role="button"],
     [tabindex]:not([tabindex="-1"])
   ):focus-visible {
   outline: 3px solid rgb(var(--primary) / 0.88);
