@@ -2,8 +2,8 @@
 
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/cn";
 
 const filters = [
   { value: "All", short: "All" },
@@ -148,26 +148,38 @@ export function ContributionFilters({
           </label>
         </div>
         <div className="hidden sm:block">
-          <Tabs value={value} onValueChange={onValueChange}>
-            <TabsList
-              className="scrollbar-thin scroll-rail flex w-full flex-nowrap gap-1.5 overflow-x-auto"
-              aria-label="Contribution category filters"
-            >
-              {filters.map((filter) => (
-                <TabsTrigger
-                  key={filter.value}
-                  value={filter.value}
-                  title={filter.value}
-                  aria-label={`${filter.value} contributions`}
-                  aria-controls={resultsRegionId}
-                  className="min-w-[7.5rem] shrink-0 justify-center text-center lg:min-w-[8.75rem]"
-                >
-                  <span className="lg:hidden">{filter.short}</span>
-                  <span className="hidden lg:inline">{filter.value}</span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
+          <ul
+            role="list"
+            aria-label="Contribution category filters"
+            className="grid gap-1.5 sm:grid-cols-3 xl:grid-cols-5"
+          >
+            {filters.map((filter) => {
+              const active = value === filter.value;
+              return (
+                <li key={filter.value} className="list-none">
+                  <button
+                    type="button"
+                    title={filter.value}
+                    aria-label={`${filter.value} contributions`}
+                    aria-controls={resultsRegionId}
+                    aria-pressed={active}
+                    className={cn(
+                      "focus-ring w-full border px-3 py-2 text-center text-sm font-semibold",
+                      active
+                        ? "border-primary/38 bg-gradient-to-r from-primary/16 to-primary-2/12 text-white"
+                        : "border-primary/14 bg-card/80 text-muted hover:border-primary/32 hover:text-foreground",
+                    )}
+                    onClick={() => {
+                      onValueChange(filter.value);
+                    }}
+                  >
+                    <span className="xl:hidden">{filter.short}</span>
+                    <span className="hidden xl:inline">{filter.value}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
         </div>
         <div className="grid gap-3 lg:grid-cols-[1fr,16rem]">
           <div className="relative">
