@@ -64,7 +64,7 @@ export function StreakHeatStrip({
 
       <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
         {legend.map((entry) => (
-          <li key={entry.label} className="list-none">
+          <li key={`${entry.label}-${entry.intensity}`} className="list-none">
             <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-muted">
               <span className={heatSwatchClassName(entry.intensity)} />
               <span>{entry.label}</span>
