@@ -29,7 +29,6 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
             <li key={item.href} className="list-none min-w-0">
               <Link
                 href={item.href}
-                prefetch={false}
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "focus-ring dashboard-nav-item inline-flex min-h-10 w-full items-center justify-center gap-2 px-3 py-2 text-center text-sm font-medium",
