@@ -403,8 +403,6 @@ export function BadgesPageClient() {
               actionLabel={canResetFilters && totalCount > 0 ? "Reset filters" : "Open quests"}
               actionHref={canResetFilters && totalCount > 0 ? undefined : "/dashboard/quests"}
               onAction={canResetFilters && totalCount > 0 ? handleResetFilters : undefined}
-              secondaryActionLabel="Open contributions"
-              secondaryActionHref="/dashboard/contributions"
               analyticsTarget={
                 canResetFilters && totalCount > 0 ? "badges:empty-filtered" : "badges:empty"
               }
