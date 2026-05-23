@@ -2,10 +2,11 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Download, FolderGit2, LogOut, Palette, RefreshCw, Sparkles, Trash2 } from "lucide-react";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { InlineNotice } from "@/components/shared/InlineNotice";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
@@ -145,6 +146,30 @@ export function SettingsPageClient() {
   const [displayNotice, setDisplayNotice] = useState("");
   const currentSettings = data?.user.privacy ?? null;
 
+  useEffect(() => {
+    if (!actionNotice) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setActionNotice("");
+    }, 4200);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [actionNotice]);
+
+  useEffect(() => {
+    if (!displayNotice) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setDisplayNotice("");
+    }, 4200);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [displayNotice]);
+
   function handleResetDisplayPreferences() {
     clearThemePreference();
     setTextScale("default");
@@ -196,7 +221,6 @@ export function SettingsPageClient() {
     accountLinkStart.isPending;
   const pendingRepository = updateRepositoryVisibility.variables?.fullName ?? null;
   const hiddenRepositoryCount = data.user.repositories.filter((repository) => repository.visibility !== "Public").length;
-  const accountActionNoticeId = "settings-account-action-notice";
   const accountActionErrorId = "settings-account-action-error";
 
   function handlePrivacyToggle(key: BackedPrivacyKey, checked: boolean) {
@@ -333,21 +357,20 @@ export function SettingsPageClient() {
             {unlinkAccount.isPending ? "Disconnecting..." : "Disconnect"}
           </Button>
         </div>
-        <div className="min-h-6">
-          {actionError ? (
-            <p id={accountActionErrorId} role="alert" className="text-sm text-rose-200">
+        {actionError ? (
+          <div className="min-h-6">
+            <p id={accountActionErrorId} role="alert" className="inline-flex items-center rounded-[0.1rem] border border-rose-300/26 bg-rose-500/10 px-3 py-1.5 text-sm text-rose-100">
               {actionError}
             </p>
-          ) : actionNotice ? (
-            <p id={accountActionNoticeId} role="status" aria-live="polite" className="text-sm text-sky-100">
-              {actionNotice}
-            </p>
-          ) : (
-            <p aria-hidden="true" className="text-sm opacity-0 select-none">
-              Account action status
-            </p>
-          )}
-        </div>
+          </div>
+        ) : (
+          <InlineNotice
+            message={actionNotice}
+            placeholder="Account action status"
+            variant="info"
+            minHeightClassName="min-h-7"
+          />
+        )}
         </GlowCard>
       </section>
 
@@ -495,11 +518,12 @@ export function SettingsPageClient() {
                 </div>
               </div>
             </div>
-            {displayNotice ? (
-              <p role="status" aria-live="polite" className="text-sm text-cyan-100">
-                {displayNotice}
-              </p>
-            ) : null}
+            <InlineNotice
+              message={displayNotice}
+              placeholder="Display update"
+              variant="info"
+              minHeightClassName="min-h-7"
+            />
           </div>
         </GlowCard>
       </section>
