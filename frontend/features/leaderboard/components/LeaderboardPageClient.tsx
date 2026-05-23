@@ -3,7 +3,6 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ArrowUpRight, Target, Trophy } from "lucide-react";
 import { startTransition, useDeferredValue, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -12,7 +11,6 @@ import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { laneParamToTab, tabToLaneParam } from "@/features/leaderboard/lib/lane-param";
 import { useLeaderboard } from "@/hooks/use-leaderboard";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
@@ -89,14 +87,6 @@ export function LeaderboardPageClient() {
   const safeVisibleRowCount = Math.min(rows.length, visibleRowCount);
   const hasMoreRows = rows.length > safeVisibleRowCount;
   const remainingRows = Math.max(0, rows.length - safeVisibleRowCount);
-  const laneLeader = rows[0];
-  const laneGapToLeader =
-    snapshot?.currentUser && laneLeader
-      ? Math.max(0, laneLeader.seasonXp - snapshot.currentUser.seasonXp)
-      : 0;
-  const currentUserProgressToNextBand = snapshot?.currentUser
-    ? progressToNextBand(snapshot.currentUser.seasonXp, snapshot.currentUser.xpToNextRank)
-    : 0;
 
   function handleTabChange(value: string) {
     const nextTab = value as LeaderboardTab;
@@ -239,74 +229,15 @@ export function LeaderboardPageClient() {
       {!isLoading && !isError && snapshot && rows.length ? (
         <section className="render-opt-section space-y-4">
           {snapshot.currentUser ? (
-            <div className="space-y-3">
-              <h2 className="text-sm font-semibold text-white">
-                Your lane position: #{snapshot.currentUser.rank} in {tab}
-              </h2>
-              <GlowCard className="space-y-4 border border-cyan-300/22 bg-gradient-to-br from-slate-950/88 to-cyan-950/24">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <h2 className="mt-2 text-xl font-semibold text-white">
-                      #{snapshot.currentUser.rank} · {snapshot.currentUser.division}
-                    </h2>
-                    <p className="mt-2 text-sm text-muted">
-                      {tab} lane · primary signal {snapshot.currentUser.focus}
-                    </p>
-                  </div>
-                  <span className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold">
-                    <Target className="h-3.5 w-3.5" />
-                    {snapshot.currentUser.division}
-                  </span>
-                </div>
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p className="text-xs text-muted">
-                    {snapshot.currentUser.xpToNextRank > 0
-                      ? `${snapshot.currentUser.xpToNextRank} XP to next band`
-                      : "You currently lead this lane"}
-                  </p>
-                </div>
-                <div id="leaderboard-mission-plan" className="space-y-3">
-                  <div className="grid gap-3 md:grid-cols-3">
-                    <ClimbTip
-                      title="To next band"
-                      body={
-                        snapshot.currentUser.xpToNextRank > 0
-                          ? `${snapshot.currentUser.xpToNextRank} XP required`
-                          : "You are currently leading this lane"
-                      }
-                    />
-                    <ClimbTip
-                      title="Gap to leader"
-                      body={laneGapToLeader > 0 ? `${laneGapToLeader} season XP` : "You currently hold lane lead"}
-                    />
-                    <ClimbTip
-                      title="Movement"
-                      body={`${snapshot.currentUser.movement >= 0 ? "+" : ""}${snapshot.currentUser.movement} this cycle`}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-xs text-muted">
-                      <span>Band progress</span>
-                      <span>{currentUserProgressToNextBand}%</span>
-                    </div>
-                    <Progress value={currentUserProgressToNextBand} />
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button asChild size="sm" variant="secondary">
-                    <Link href="/dashboard/contributions" prefetch={false}>
-                      Improve contribution signal
-                      <ArrowUpRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                  <Button asChild size="sm" variant="ghost">
-                    <Link href="/dashboard/quests" prefetch={false}>
-                      Open tactical quests
-                      <Trophy className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              </GlowCard>
+            <div className="neon-surface rounded-[1rem] px-4 py-3">
+              <p className="text-sm font-semibold text-white">
+                You are #{snapshot.currentUser.rank} in {tab}.
+              </p>
+              <p className="mt-1 text-xs text-muted">
+                {snapshot.currentUser.xpToNextRank > 0
+                  ? `${snapshot.currentUser.xpToNextRank} XP to next band`
+                  : "You currently lead this lane"}
+              </p>
             </div>
           ) : null}
           <div id={LEADERBOARD_ROWS_REGION_ID}>
@@ -336,31 +267,6 @@ export function LeaderboardPageClient() {
       ) : null}
     </div>
   );
-}
-
-function ClimbTip({
-  title,
-  body,
-}: {
-  title: string;
-  body: string;
-}) {
-  return (
-    <div className="neon-metric rounded-[1.35rem] px-4 py-3">
-      <p className="text-sm font-semibold text-white">{title}</p>
-      <p className="mt-1 text-xs text-muted">{body}</p>
-    </div>
-  );
-}
-
-function progressToNextBand(seasonXp: number, xpToNextRank: number): number {
-  const gained = Math.max(0, seasonXp);
-  const remaining = Math.max(0, xpToNextRank);
-  const denominator = gained + remaining;
-  if (denominator <= 0) {
-    return 100;
-  }
-  return Math.max(0, Math.min(100, Math.round((gained / denominator) * 100)));
 }
 
 function LeaderboardPanelPlaceholder({ label }: { label: string }) {
