@@ -175,7 +175,7 @@ export function RevealPanel({
             analyticsTargetPrefix="onboarding-reveal"
           />
           <Button asChild variant="secondary" size="lg">
-            <Link href={`/u/${user.username}`}>View public profile</Link>
+            <Link href={`/u/${user.username}`} prefetch={false}>View public profile</Link>
           </Button>
         </div>
       </GlowCard>

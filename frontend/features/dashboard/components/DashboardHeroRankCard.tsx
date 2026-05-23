@@ -53,7 +53,7 @@ export function DashboardHeroRankCard({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button asChild variant="secondary">
-            <Link href={`/u/${user.username}`}>
+            <Link href={`/u/${user.username}`} prefetch={false}>
               Public profile
               <ArrowRight className="h-4 w-4" />
             </Link>

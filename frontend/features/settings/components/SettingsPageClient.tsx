@@ -295,7 +295,7 @@ export function SettingsPageClient() {
         description="Account, privacy, and display controls."
         actions={(
           <Button asChild variant="secondary" size="sm">
-            <Link href={`/u/${data.user.username}`}>
+            <Link href={`/u/${data.user.username}`} prefetch={false}>
               View public profile
             </Link>
           </Button>
