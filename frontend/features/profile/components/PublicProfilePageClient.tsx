@@ -7,6 +7,7 @@ import { Award, CheckCircle2, GitPullRequest, ShieldCheck, Stars } from "lucide-
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { ExpandableText } from "@/components/shared/ExpandableText";
+import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { RarityBadge } from "@/components/shared/RarityBadge";
@@ -245,13 +246,17 @@ export function PublicProfilePageClient({
               <p className="text-xs font-medium text-primary">Skills</p>
               <h2 className="mt-2 text-xl font-semibold text-white">Strength map</h2>
             </div>
-            <SkillRadarChart skills={skillTree} />
+            <DeferUntilVisible fallback={<PublicLanePlaceholder label="Loading skill map" />}>
+              <SkillRadarChart skills={skillTree} />
+            </DeferUntilVisible>
           </GlowCard>
         </div>
       </section>
       <section className="render-opt-section space-y-3">
         <h2 className="text-sm font-semibold text-white">Top PR battle reports</h2>
-        <BestPRsPanel reports={data.featuredContributions} reportDetails={data.recentReports} />
+        <DeferUntilVisible fallback={<PublicLanePlaceholder label="Loading battle reports" />}>
+          <BestPRsPanel reports={data.featuredContributions} reportDetails={data.recentReports} />
+        </DeferUntilVisible>
       </section>
       <section className="render-opt-section space-y-3">
         <h2 className="text-sm font-semibold text-white">Timeline and repositories</h2>
@@ -261,7 +266,9 @@ export function PublicProfilePageClient({
               <p className="text-xs font-medium text-primary">Timeline</p>
               <h2 className="mt-2 text-xl font-semibold text-white">{data.trendWindowLabel}</h2>
             </div>
-            <TimelineChart data={data.user.xpTimeline} />
+            <DeferUntilVisible fallback={<PublicLanePlaceholder label="Loading timeline" />}>
+              <TimelineChart data={data.user.xpTimeline} />
+            </DeferUntilVisible>
           </GlowCard>
           <GlowCard className="space-y-5">
             <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
