@@ -276,6 +276,7 @@ export function QuestsPageClient() {
           <h2 className="text-sm font-semibold text-white">Mission spotlight</h2>
           <ul role="list" className="grid gap-3 md:grid-cols-3">
             <MissionSpotlightCard
+              kind="daily"
               title="Today's Quest"
               quest={todayQuest}
               emptyCopy="No daily mission yet."
@@ -283,6 +284,7 @@ export function QuestsPageClient() {
               cta="Open contributions"
             />
             <MissionSpotlightCard
+              kind="weekly"
               title="Weekly Challenge"
               quest={weeklyQuest}
               emptyCopy="No weekly challenge yet."
@@ -290,6 +292,7 @@ export function QuestsPageClient() {
               cta="Open sync settings"
             />
             <MissionSpotlightCard
+              kind="long-term"
               title="Long-Term Journey"
               quest={longTermQuest}
               emptyCopy="No long-term objective yet."
@@ -448,23 +451,40 @@ function safeQuestProgress(quest: Quest): number {
 }
 
 function MissionSpotlightCard({
+  kind,
   title,
   quest,
   emptyCopy,
   href,
   cta,
 }: {
+  kind: "daily" | "weekly" | "long-term";
   title: string;
   quest: Quest | null;
   emptyCopy: string;
   href: string;
   cta: string;
 }) {
+  const iconTone =
+    kind === "daily"
+      ? "text-cyan-200"
+      : kind === "weekly"
+        ? "text-violet-200"
+        : "text-emerald-200";
+  const Icon =
+    kind === "daily"
+      ? CalendarClock
+      : kind === "weekly"
+        ? CalendarDays
+        : Route;
   if (!quest) {
     return (
       <li className="list-none">
         <div className="neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4">
-          <p className="text-xs font-medium text-primary">{title}</p>
+          <p className={`inline-flex items-center gap-2 text-xs font-medium ${iconTone}`}>
+            <Icon className="h-3.5 w-3.5" />
+            {title}
+          </p>
           <p className="text-sm text-muted">{emptyCopy}</p>
           <Button asChild variant="secondary" size="sm">
             <Link href={href} prefetch={false}>
@@ -485,7 +505,10 @@ function MissionSpotlightCard({
       <div className="neon-surface space-y-3 px-4 py-4">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-medium text-primary">{title}</p>
+            <p className={`inline-flex items-center gap-2 text-xs font-medium ${iconTone}`}>
+              <Icon className="h-3.5 w-3.5" />
+              {title}
+            </p>
             <p className="mt-2 text-base font-semibold text-white">{quest.title}</p>
             <span className={statusMeta.className}>
               {statusMeta.label}
