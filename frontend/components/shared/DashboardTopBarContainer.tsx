@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { usePathname } from "next/navigation";
 import {
   DashboardTopBar,
   DashboardTopBarSkeleton,
@@ -20,7 +19,6 @@ const AUTO_SYNC_SESSION_COOLDOWN_MS = 20 * 60 * 1000;
 const AUTO_SYNC_SESSION_KEY_PREFIX = "gitrank:auto-sync:last-at:";
 
 export function DashboardTopBarContainer({ embedded = false }: { embedded?: boolean }) {
-  const pathname = usePathname() ?? "/dashboard";
   const { data, isError, isLoading } = useMyProfile();
   const { mutate: requestProfileSync, isPending: isUserSyncPending } = useRequestProfileSync();
   const autoSyncLastAttempt = useRef(0);
@@ -33,10 +31,6 @@ export function DashboardTopBarContainer({ embedded = false }: { embedded?: bool
       return;
     }
     const syncState = data.user.syncStatus;
-    const isSettingsRoute = pathname === "/dashboard/settings" || pathname.startsWith("/dashboard/settings/");
-    if (isSettingsRoute) {
-      return;
-    }
     if (lastObservedSyncState.current !== syncState.state) {
       lastObservedSyncState.current = syncState.state;
       autoSyncAttempts.current = 0;
@@ -102,7 +96,7 @@ export function DashboardTopBarContainer({ embedded = false }: { embedded?: bool
         }
       },
     });
-  }, [data, isError, isLoading, isUserSyncPending, pathname, requestProfileSync]);
+  }, [data, isError, isLoading, isUserSyncPending, requestProfileSync]);
 
   if (isLoading) {
     return <DashboardTopBarSkeleton embedded={embedded} />;
