@@ -37,12 +37,12 @@ export function PRBattleReportPageClient({
     return (
       <ErrorState
         title="Battle report failed"
-        description="The score breakdown could not be loaded. Retry or return to contributions."
+        description="The score breakdown could not be loaded. Retry or return to the homepage."
         onRetry={() => {
           void refetch();
         }}
-        fallbackLabel="Open contributions"
-        fallbackHref="/dashboard/contributions"
+        fallbackLabel="Open homepage"
+        fallbackHref="/"
         analyticsTarget="pr-report:error"
       />
     );
@@ -54,8 +54,8 @@ export function PRBattleReportPageClient({
         eyebrow="PR evidence"
         title="Battle report not found"
         description="This PR either has not been synced, is private, or has not produced a scored report yet."
-        actionLabel="Open contributions"
-        actionHref="/dashboard/contributions"
+        actionLabel="Open homepage"
+        actionHref="/"
         analyticsTarget="pr-report:empty"
       />
     );
@@ -93,7 +93,7 @@ export function PRBattleReportPageClient({
         actions={(
           <div className="flex flex-wrap gap-2">
             <Button asChild variant="secondary">
-              <Link href="/dashboard/contributions" prefetch={false} scroll={false}>Back to contributions</Link>
+              <Link href="/" prefetch={false} scroll={false}>Back to homepage</Link>
             </Button>
           </div>
         )}
@@ -310,8 +310,8 @@ export function PRBattleReportPageClient({
                 ) : null}
               </div>
               <Button asChild variant="secondary">
-                <Link href="/dashboard/quests" prefetch={false} scroll={false}>
-                  Open quest board
+                <Link href="/" prefetch={false} scroll={false}>
+                  Open homepage
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
