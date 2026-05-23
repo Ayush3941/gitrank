@@ -4,6 +4,7 @@ import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { buildEvidenceSignalChips } from "@/lib/presentation/evidence-signal";
 import type { Quest } from "@/types/gitrank";
 
 export function QuestPanel({ quests }: { quests: Quest[] }) {
@@ -33,6 +34,7 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
         <ol role="list" className="space-y-3">
           {quests.slice(0, 3).map((quest) => {
             const progress = safeQuestProgress(quest.progress, quest.goal);
+            const visibleSignals = buildEvidenceSignalChips(quest.evidenceSignals, 3);
             return (
               <li key={quest.id} className="list-none">
                 <article className="render-opt-card neon-surface rounded-[1.75rem] p-4">
@@ -57,7 +59,7 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
                     <span>{quest.weakAreaTarget ? `Targets ${quest.weakAreaTarget}` : quest.cadence}</span>
                   </div>
                   <ul role="list" className="mt-3 flex flex-wrap gap-2">
-                    {quest.evidenceSignals.slice(0, 3).map((signal, index) => (
+                    {visibleSignals.map((signal, index) => (
                       <li key={`${quest.id}-${signal}-${index}`}>
                         <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
                           {signal}

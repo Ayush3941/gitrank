@@ -2,14 +2,14 @@ import type { ReactNode } from "react";
 import { CalendarClock, TrendingDown, TrendingUp, Trophy } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Progress } from "@/components/ui/progress";
-import { uniqueDisplayValues } from "@/lib/display-values";
 import { formatDate, formatTimeUntil } from "@/lib/formatters";
+import { buildEvidenceSignalChips } from "@/lib/presentation/evidence-signal";
 import type { UserProfile } from "@/types/gitrank";
 
 export function CurrentLeagueCard({ user }: { user: UserProfile }) {
   const positive = user.movement >= 0;
   const MovementIcon = positive ? TrendingUp : TrendingDown;
-  const evidenceSignals = uniqueDisplayValues(user.rankProgress.evidenceSignals, 3);
+  const evidenceSignals = buildEvidenceSignalChips(user.rankProgress.evidenceSignals, 3);
 
   return (
     <GlowCard className="season-arena-card space-y-5 overflow-hidden">

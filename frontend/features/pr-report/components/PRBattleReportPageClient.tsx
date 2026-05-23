@@ -15,6 +15,7 @@ import { EvidenceSignalsCard } from "@/features/pr-report/components/EvidenceSig
 import { ScoreMatrixCard } from "@/features/pr-report/components/ScoreMatrixCard";
 import { XPBreakdownCard } from "@/features/pr-report/components/XPBreakdownCard";
 import { usePrReport } from "@/hooks/use-pr-report";
+import { buildEvidenceSignalChips } from "@/lib/presentation/evidence-signal";
 
 export function PRBattleReportPageClient({
   owner,
@@ -69,6 +70,7 @@ export function PRBattleReportPageClient({
   const hasPersistedScoreEvidence =
     !evidenceState.missingEvidence.includes("score_event") || data.contribution.xpEarned > 0;
   const uniqueBadgeUnlocks = deduplicateBadgeUnlocks(data.badgeUnlocks);
+  const suggestedQuestSignals = suggestedQuest ? buildEvidenceSignalChips(suggestedQuest.evidenceSignals, 3) : [];
   const evidenceReasonSummary = summarizeEvidenceReasons(
     evidenceState.reasons,
     evidenceAnchored || hasPersistedScoreEvidence,
@@ -246,26 +248,29 @@ export function PRBattleReportPageClient({
                       Rewards unlocked
                     </div>
                     <ul role="list" className="grid gap-3 md:grid-cols-2">
-                      {uniqueBadgeUnlocks.map((badge, index) => (
-                        <li key={`${badge.key}-${index}`} className="list-none render-opt-card neon-surface rounded-[1.75rem] p-4">
-                          <p className="text-lg font-semibold text-white">{badge.name}</p>
-                          {badge.description ? <p className="mt-2 text-sm text-muted">{badge.description}</p> : null}
-                          <p className="mt-3 text-xs text-emerald-100">
-                            Rule {badge.ruleVersion ?? badge.rule ?? "persisted badge evidence"}
-                          </p>
-                          {badge.evidenceSignals.length ? (
-                            <ul role="list" className="mt-3 flex flex-wrap gap-2">
-                              {badge.evidenceSignals.slice(0, 3).map((signal, signalIndex) => (
-                                <li key={`${badge.key}-${signal}-${signalIndex}`} className="list-none">
-                                  <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
-                                    {signal}
-                                  </span>
-                                </li>
-                              ))}
-                            </ul>
-                          ) : null}
-                        </li>
-                      ))}
+                      {uniqueBadgeUnlocks.map((badge, index) => {
+                        const badgeSignals = buildEvidenceSignalChips(badge.evidenceSignals, 3);
+                        return (
+                          <li key={`${badge.key}-${index}`} className="list-none render-opt-card neon-surface rounded-[1.75rem] p-4">
+                            <p className="text-lg font-semibold text-white">{badge.name}</p>
+                            {badge.description ? <p className="mt-2 text-sm text-muted">{badge.description}</p> : null}
+                            <p className="mt-3 text-xs text-emerald-100">
+                              Rule {badge.ruleVersion ?? badge.rule ?? "persisted badge evidence"}
+                            </p>
+                            {badgeSignals.length ? (
+                              <ul role="list" className="mt-3 flex flex-wrap gap-2">
+                                {badgeSignals.map((signal, signalIndex) => (
+                                  <li key={`${badge.key}-${signal}-${signalIndex}`} className="list-none">
+                                    <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
+                                      {signal}
+                                    </span>
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : null}
+                          </li>
+                        );
+                      })}
                     </ul>
                   </GlowCard>
                 </div>
@@ -291,9 +296,9 @@ export function PRBattleReportPageClient({
                   {suggestedQuest?.whyRecommended ??
                     `Suggested quest key: ${data.suggestedQuestId}. The quest board resolves this against the latest profile evidence.`}
                 </p>
-                {suggestedQuest?.evidenceSignals.length ? (
+                {suggestedQuestSignals.length ? (
                   <ul role="list" className="mt-3 flex flex-wrap gap-2">
-                    {suggestedQuest.evidenceSignals.slice(0, 3).map((signal, index) => (
+                    {suggestedQuestSignals.map((signal, index) => (
                       <li key={`${data.suggestedQuestId ?? "suggested-quest"}-${signal}-${index}`} className="list-none">
                         <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
                           {signal}

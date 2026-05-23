@@ -1,11 +1,13 @@
 import { Check, GitMerge, Link2, ShieldCheck, TestTube2 } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { buildEvidenceSignalChips } from "@/lib/presentation/evidence-signal";
 import type { PullRequestAnalysis } from "@/types/gitrank";
 
 export function EvidenceSignalsCard({ report }: { report: PullRequestAnalysis }) {
   const contribution = report.contribution;
-  const visibleSignals = contribution.evidenceSignals.slice(0, 8);
-  const remainingSignals = Math.max(0, contribution.evidenceSignals.length - visibleSignals.length);
+  const allSignals = buildEvidenceSignalChips(contribution.evidenceSignals);
+  const visibleSignals = allSignals.slice(0, 8);
+  const remainingSignals = Math.max(0, allSignals.length - visibleSignals.length);
   const signals = [
     { label: "Maintainer reviewed", active: contribution.maintainerReviewed, icon: ShieldCheck },
     { label: "Linked issue", active: contribution.linkedIssue, icon: Link2 },

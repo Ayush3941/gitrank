@@ -2,6 +2,7 @@ import { Flag, Gift, Link2 } from "lucide-react";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Progress } from "@/components/ui/progress";
+import { buildEvidenceSignalChips } from "@/lib/presentation/evidence-signal";
 import type { Quest } from "@/types/gitrank";
 
 export function QuestCard({ quest }: { quest: Quest }) {
@@ -16,6 +17,7 @@ export function QuestCard({ quest }: { quest: Quest }) {
       : quest.status === "Locked"
         ? "neon-chip neon-chip-warning"
         : "neon-chip neon-chip-info";
+  const visibleSignals = buildEvidenceSignalChips(quest.evidenceSignals, 4);
 
   return (
     <GlowCard className="render-opt-card cyber-hero-shell relative space-y-4 overflow-hidden">
@@ -46,7 +48,7 @@ export function QuestCard({ quest }: { quest: Quest }) {
         <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusTone}`}>{quest.status}</span>
       </div>
       <ul role="list" className="flex flex-wrap gap-2">
-        {quest.evidenceSignals.map((signal, index) => (
+        {visibleSignals.map((signal, index) => (
           <li key={`${quest.id}-${signal}-${index}`}>
             <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
               {signal}
