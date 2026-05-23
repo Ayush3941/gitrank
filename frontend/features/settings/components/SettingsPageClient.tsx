@@ -32,6 +32,7 @@ import {
 import {
   useDisplayShortcutsEnabled,
 } from "@/hooks/use-display-shortcuts-enabled";
+import { syncRunStatusLabel } from "@/features/settings/lib/sync-run-status";
 import {
   type TextScalePreference,
   useTextScalePreference,
@@ -415,8 +416,14 @@ export function SettingsPageClient() {
                         onClick={() => setTheme(option.value)}
                         aria-pressed={theme === option.value}
                       >
-                        <span className="flex flex-col items-start">
-                          <span>{option.label}</span>
+                        <span className="flex flex-col items-start gap-1">
+                          <span className="inline-flex items-center gap-2">
+                            <span
+                              className={`h-2.5 w-5 rounded-full bg-gradient-to-r ${option.swatchClassName}`}
+                              aria-hidden="true"
+                            />
+                            <span>{option.label}</span>
+                          </span>
                           <span className="text-xs text-muted">{option.description}</span>
                         </span>
                         {theme === option.value ? (
@@ -538,20 +545,28 @@ function SettingsSyncActivitySection() {
     "settings-sync-runs",
   );
   const runs = syncRunsQuery.data?.runs ?? [];
+  const runningCount = runs.filter((run) => syncRunStatusLabel(run.status) === "Running").length;
+  const failedCount = runs.filter((run) => syncRunStatusLabel(run.status) === "Failed").length;
+  const defaultOpen = syncRunsQuery.isError || runningCount > 0 || failedCount > 0;
 
   return (
     <GlowCard className="space-y-4">
-      <SyncRunActivityPanel
-        runs={runs}
-        lastUpdatedAt={syncRunsQuery.data?.last_updated_at}
-        isLoading={syncRunsQuery.isLoading}
-        isRefreshing={syncRunsQuery.isFetching}
-        isError={syncRunsQuery.isError}
-        errorMessage={syncRunsError}
-        onRefresh={() => {
-          void syncRunsQuery.refetch();
-        }}
-      />
+      <details open={defaultOpen} className="space-y-3">
+        <summary className="focus-ring neon-surface cursor-pointer list-none px-4 py-3 text-sm font-semibold text-white marker:content-none">
+          Sync run log ({runs.length}) • Running {runningCount} • Failed {failedCount}
+        </summary>
+        <SyncRunActivityPanel
+          runs={runs}
+          lastUpdatedAt={syncRunsQuery.data?.last_updated_at}
+          isLoading={syncRunsQuery.isLoading}
+          isRefreshing={syncRunsQuery.isFetching}
+          isError={syncRunsQuery.isError}
+          errorMessage={syncRunsError}
+          onRefresh={() => {
+            void syncRunsQuery.refetch();
+          }}
+        />
+      </details>
     </GlowCard>
   );
 }
