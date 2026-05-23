@@ -550,45 +550,36 @@ func (e *Executor) syncPullRequestSurface(
 
 	var reviews []map[string]any
 	reviewsSkipped := options.skipReviews
+	reviewsFetchError := false
 	if !options.skipReviews {
 		reviews, err = e.fetchPullRequestReviews(ctx, owner, name, req.Number)
 		if err != nil {
-			if isSkippableGitHubSyncError(err) {
-				reviewsSkipped = true
-				reviews = nil
-			} else {
-				_ = e.recordFailedPullRequestSurfaceSyncRun(ctx, req, actor, correlationID, startedAt, mode, err)
-				return response, err
-			}
+			reviewsSkipped = true
+			reviewsFetchError = true
+			reviews = nil
 		}
 	}
 
 	var reviewComments []map[string]any
 	reviewCommentsSkipped := options.skipReviewComments
+	reviewCommentsFetchError := false
 	if !options.skipReviewComments {
 		reviewComments, err = e.fetchPullRequestReviewComments(ctx, owner, name, req.Number)
 		if err != nil {
-			if isSkippableGitHubSyncError(err) {
-				reviewCommentsSkipped = true
-				reviewComments = nil
-			} else {
-				_ = e.recordFailedPullRequestSurfaceSyncRun(ctx, req, actor, correlationID, startedAt, mode, err)
-				return response, err
-			}
+			reviewCommentsSkipped = true
+			reviewCommentsFetchError = true
+			reviewComments = nil
 		}
 	}
 
 	var files []map[string]any
 	files, err = e.fetchPullRequestFiles(ctx, owner, name, req.Number)
 	filesSkipped := false
+	filesFetchError := false
 	if err != nil {
-		if isSkippableGitHubSyncError(err) {
-			filesSkipped = true
-			files = nil
-		} else {
-			_ = e.recordFailedPullRequestSurfaceSyncRun(ctx, req, actor, correlationID, startedAt, mode, err)
-			return response, err
-		}
+		filesSkipped = true
+		filesFetchError = true
+		files = nil
 	}
 
 	finishedAt := time.Now().UTC()
@@ -701,6 +692,15 @@ func (e *Executor) syncPullRequestSurface(
 	}
 	if filesSkipped {
 		response.Fetched["pull_request_files_skipped"] = 1
+	}
+	if reviewsFetchError {
+		response.Fetched["reviews_fetch_errors"] = 1
+	}
+	if reviewCommentsFetchError {
+		response.Fetched["review_comments_fetch_errors"] = 1
+	}
+	if filesFetchError {
+		response.Fetched["pull_request_files_fetch_errors"] = 1
 	}
 	return response, nil
 }
@@ -1357,9 +1357,6 @@ func (e *Executor) fetchPullRequestsRESTDetails(ctx context.Context, owner, name
 			"per_page": []string{fmt.Sprintf("%d", reviewPerPage)},
 		}, githubapi.ConditionalRequest{}, &reviews)
 		if err != nil {
-			if !isSkippableGitHubSyncError(err) {
-				return nil, nil, err
-			}
 			reviewsByNumber[number] = nil
 			continue
 		}

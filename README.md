@@ -133,6 +133,7 @@ Open:
 Default sync safety cap:
 
 - `GITHUB_AUTHORED_PR_SYNC_LIMIT=10` keeps user sync bounded to the latest authored PRs for responsive local runs.
+- Review/comment/file fetches are treated as best-effort during sync so one unstable GitHub sub-endpoint does not fail the entire PR ingestion pass.
 
 ## AI Support (Gemini Only, For Now)
 
