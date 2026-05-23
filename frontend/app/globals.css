@@ -201,6 +201,92 @@ html[data-theme="high-contrast"] {
     --surface-blur: 0px;
     --surface-blur-strong: 0px;
   }
+
+  :where(
+      a[href],
+      button,
+      input:not([type="hidden"]),
+      select,
+      textarea,
+      [role="button"],
+      [tabindex]:not([tabindex="-1"])
+    ):focus-visible {
+    outline-color: rgb(var(--text-strong));
+    outline-width: 3px;
+    outline-offset: 2px;
+    box-shadow:
+      0 0 0 2px rgb(var(--background) / 0.96),
+      0 0 0 6px rgb(var(--primary) / 0.5);
+  }
+
+  .focus-ring:focus-visible {
+    outline-color: rgb(var(--text-strong));
+    box-shadow:
+      0 0 0 2px rgb(var(--background) / 0.98),
+      0 0 0 6px rgb(var(--primary) / 0.56);
+  }
+}
+
+@media (forced-colors: active) {
+  body::before,
+  body::after,
+  .neon-vignette,
+  .page-shell::before,
+  .page-shell::after {
+    display: none !important;
+  }
+
+  :where(
+      a[href],
+      button,
+      input:not([type="hidden"]),
+      select,
+      textarea,
+      [role="button"],
+      [tabindex]:not([tabindex="-1"])
+    ):focus-visible,
+  .focus-ring:focus-visible {
+    outline: 2px solid CanvasText !important;
+    outline-offset: 2px !important;
+    box-shadow: none !important;
+  }
+
+  :where(
+      .glass-panel,
+      .glass-panel-strong,
+      .cyber-card,
+      .cyber-header,
+      .neon-surface,
+      .neon-surface-strong,
+      .neon-tile,
+      .neon-tile-strong,
+      .neon-metric,
+      .neon-track,
+      .neon-chip,
+      .neon-chip-muted,
+      .dashboard-chrome,
+      .dashboard-nav-shell,
+      .dashboard-nav-item,
+      button,
+      input,
+      select,
+      textarea
+    ) {
+    background: Canvas !important;
+    color: CanvasText !important;
+    border-color: CanvasText !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  .neon-chip-info,
+  .neon-chip-success,
+  .neon-chip-warning,
+  .neon-chip-mythic {
+    background: Canvas !important;
+    color: LinkText !important;
+    border-color: LinkText !important;
+  }
 }
 
 @theme inline {
