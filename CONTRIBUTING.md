@@ -39,6 +39,34 @@ That means GitRank must be:
 - respectful of privacy
 - credible enough for contributors, maintainers, and recruiters to trust
 
+## Research Baseline (GitRanking Paper)
+
+Source reviewed: `gitrank_research .pdf` (local paper copy), reviewed on May 23, 2026.
+
+The paper this project name is inspired by is:
+
+- `GitRanking: A Ranking of GitHub Topics for Software Classification using Active Sampling`
+
+Paper scope (what it actually does):
+
+- ranks GitHub topic terms by general-to-specific meaning (topic taxonomy), not developers
+- starts from 121K GitHub topics and builds a ranked set of 301 application-domain topics
+- uses active pairwise sampling + TrueSkill for ranking, and links terms to Wikidata to reduce ambiguity
+- finds that developers often use broad/high-level labels, reducing project discoverability
+
+How this maps to this repository:
+
+- this repo extends the idea into contributor intelligence (PR evidence, score events, profile read models)
+- scoring and profile claims must stay evidence-backed, explainable, and bounded
+- keep taxonomy/signal dimensions explicit (avoid mixing unrelated classes without clear contracts)
+- keep deterministic fallbacks and provenance visible whenever AI enrichment is missing
+
+Decision memory from this research:
+
+- no fake confidence claims from sparse signals
+- prefer conservative language for strengths and skill labels
+- preserve extensibility: new signals/categories should be addable with explicit validation rules
+
 ## Current Repository Status
 
 The repository is past the pure scaffold stage, but it is not production-ready.
