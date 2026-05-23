@@ -152,12 +152,12 @@ export function PublicProfilePageClient({
     return (
       <ErrorState
         title="Profile unavailable"
-        description="The public profile could not be loaded. Retry or return to the dashboard snapshot."
+        description="The public profile could not be loaded. Retry or return to the homepage."
         onRetry={() => {
           void refetch();
         }}
-        fallbackLabel="Open dashboard"
-        fallbackHref="/dashboard"
+        fallbackLabel="Open homepage"
+        fallbackHref="/"
         analyticsTarget="public-profile:error"
       />
     );
@@ -169,10 +169,8 @@ export function PublicProfilePageClient({
         eyebrow="Public profile visibility"
         title="Profile unavailable"
         description="This profile is hidden, missing, or has not earned a public GitRank score yet."
-        actionLabel="Open dashboard"
-        actionHref="/dashboard"
-        secondaryActionLabel="Open homepage"
-        secondaryActionHref="/"
+        actionLabel="Open homepage"
+        actionHref="/"
         analyticsTarget="public-profile:empty"
       />
     );
@@ -188,8 +186,8 @@ export function PublicProfilePageClient({
             void refetch();
           }}
           isRefreshing={isFetching}
-          actionLabel="Open dashboard"
-          actionHref="/dashboard"
+          actionLabel="Open homepage"
+          actionHref="/"
           analyticsTarget="public-profile:stale"
         />
       ) : null}
