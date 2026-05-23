@@ -1696,6 +1696,7 @@ html[data-theme="high-contrast"] .cyber-card {
 
 @media (prefers-reduced-data: reduce) {
   body::before {
+    position: absolute;
     background-image: url("/assets/background.webp");
     background-image: image-set(
       url("/assets/background.webp") type("image/webp"),
@@ -1713,6 +1714,7 @@ html[data-theme="high-contrast"] .cyber-card {
   }
 
   body::after {
+    position: absolute;
     background: linear-gradient(180deg, rgb(1 4 12 / 0.36), rgb(2 6 16 / 0.62));
     opacity: 1;
   }
@@ -1809,6 +1811,7 @@ html[data-theme="high-contrast"] .cyber-card {
 }
 
 :where(html[data-network="constrained"]) body::before {
+  position: absolute;
   background-image: url("/assets/background.webp");
   background-image: image-set(
     url("/assets/background.webp") type("image/webp"),
@@ -1826,6 +1829,7 @@ html[data-theme="high-contrast"] .cyber-card {
 }
 
 :where(html[data-network="constrained"]) body::after {
+  position: absolute;
   background: linear-gradient(180deg, rgb(1 4 12 / 0.36), rgb(2 6 16 / 0.62));
   opacity: 1;
 }
@@ -1881,6 +1885,7 @@ html[data-theme="high-contrast"] .cyber-card {
   }
 
   body::after {
+    position: absolute;
     background: linear-gradient(180deg, rgb(1 4 12 / 0.34), rgb(2 6 16 / 0.6));
     opacity: 1;
   }
