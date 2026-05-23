@@ -23,8 +23,8 @@ export function SkillBreakdownCard({
           <h2 className="mt-2 text-2xl font-semibold text-white">Signal by skill</h2>
           <p className="mt-2 text-sm text-muted">
             {aiMode === "gemini"
-              ? "Gemini interpretation is based on synced PR evidence."
-              : "Deterministic interpretation is shown until Gemini is available."}
+              ? "Gemini summary from synced PR evidence."
+              : "Deterministic summary until Gemini is available."}
           </p>
         </div>
         <div className="neon-tile cyber-sheen rounded-3xl p-3 text-primary">

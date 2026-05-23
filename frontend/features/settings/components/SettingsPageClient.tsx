@@ -51,76 +51,42 @@ const THEME_OPTIONS: Array<{
   label: string;
   description: string;
   swatchClassName: string;
-  previewShellClassName: string;
-  previewAccentClassName: string;
-  previewTextClassName: string;
-  previewChipClassName: string;
 }> = [
   {
     value: "neon",
     label: "Neon grid",
     description: "Bold cyberpunk glow and vivid HUD accents.",
     swatchClassName: "from-cyan-300 via-fuchsia-300 to-emerald-300",
-    previewShellClassName:
-      "from-[rgb(6_10_24_/_0.95)] via-[rgb(14_19_44_/_0.93)] to-[rgb(23_16_37_/_0.91)] border-cyan-300/42",
-    previewAccentClassName: "bg-gradient-to-r from-cyan-200 to-fuchsia-200",
-    previewTextClassName: "text-cyan-50",
-    previewChipClassName: "bg-fuchsia-300/16 text-fuchsia-100",
   },
   {
     value: "cyberpunk",
     label: "Cyberpunk matrix",
     description: "Deep-pink highlights, amber rails, and low-noise dark steel surfaces.",
     swatchClassName: "from-pink-300 via-orange-300 to-lime-300",
-    previewShellClassName:
-      "from-[rgb(4_5_11_/_0.96)] via-[rgb(10_11_22_/_0.94)] to-[rgb(15_10_20_/_0.9)] border-pink-300/44",
-    previewAccentClassName: "bg-gradient-to-r from-pink-200 to-orange-200",
-    previewTextClassName: "text-pink-50",
-    previewChipClassName: "bg-orange-300/16 text-orange-100",
   },
   {
     value: "midnight",
     label: "Midnight contrast",
     description: "Balanced readability with cleaner dark surfaces.",
     swatchClassName: "from-sky-300 via-indigo-300 to-violet-300",
-    previewShellClassName:
-      "from-[rgb(8_11_26_/_0.95)] via-[rgb(13_17_36_/_0.93)] to-[rgb(18_24_42_/_0.91)] border-sky-300/36",
-    previewAccentClassName: "bg-gradient-to-r from-sky-200 to-indigo-200",
-    previewTextClassName: "text-sky-50",
-    previewChipClassName: "bg-indigo-300/16 text-indigo-100",
   },
   {
     value: "terminal",
     label: "Terminal pulse",
     description: "Sharper terminal-style contrast with contained neon accents.",
     swatchClassName: "from-emerald-200 via-teal-200 to-fuchsia-300",
-    previewShellClassName:
-      "from-[rgb(5_10_20_/_0.96)] via-[rgb(8_16_25_/_0.94)] to-[rgb(16_12_24_/_0.9)] border-emerald-300/40",
-    previewAccentClassName: "bg-gradient-to-r from-emerald-200 to-fuchsia-200",
-    previewTextClassName: "text-emerald-50",
-    previewChipClassName: "bg-emerald-300/16 text-emerald-100",
   },
   {
     value: "aurora",
     label: "Aurora clarity",
     description: "Softer glow with stronger body-copy contrast for long reading.",
     swatchClassName: "from-teal-200 via-cyan-200 to-blue-300",
-    previewShellClassName:
-      "from-[rgb(7_15_29_/_0.95)] via-[rgb(13_24_40_/_0.93)] to-[rgb(14_30_43_/_0.9)] border-teal-300/36",
-    previewAccentClassName: "bg-gradient-to-r from-teal-200 to-cyan-200",
-    previewTextClassName: "text-teal-50",
-    previewChipClassName: "bg-teal-300/14 text-teal-100",
   },
   {
     value: "high-contrast",
     label: "High contrast",
     description: "Maximum text clarity and reduced background noise.",
     swatchClassName: "from-slate-100 via-cyan-200 to-slate-100",
-    previewShellClassName:
-      "from-[rgb(12_14_28_/_0.98)] via-[rgb(16_19_33_/_0.96)] to-[rgb(18_22_36_/_0.95)] border-slate-100/45",
-    previewAccentClassName: "bg-gradient-to-r from-slate-100 to-cyan-100",
-    previewTextClassName: "text-slate-50",
-    previewChipClassName: "bg-slate-200/20 text-slate-100",
   },
 ];
 
