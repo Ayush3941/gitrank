@@ -24,7 +24,6 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
       >
         {dashboardNavItems.map((item) => {
           const active = isActive(item.href, item.exact);
-          const Icon = item.icon;
           return (
             <li key={item.href} className="list-none min-w-[8.5rem] shrink-0 sm:min-w-0 sm:shrink">
               <Link
@@ -32,11 +31,10 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
                 aria-current={active ? "page" : undefined}
                 aria-label={item.label}
                 className={cn(
-                  "focus-ring dashboard-nav-item inline-flex min-h-10 w-full items-center justify-center gap-2 px-3 py-2 text-center text-sm font-medium",
+                  "focus-ring dashboard-nav-item inline-flex min-h-10 w-full items-center justify-center px-3 py-2 text-center text-sm font-medium",
                 )}
                 data-active={active ? "true" : "false"}
               >
-                <Icon className="h-3.5 w-3.5 shrink-0 text-current/90" aria-hidden="true" />
                 <span className="truncate">{item.label}</span>
               </Link>
             </li>
