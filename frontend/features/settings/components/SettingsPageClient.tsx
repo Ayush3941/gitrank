@@ -566,26 +566,29 @@ function SettingsSyncActivitySection() {
   const runs = syncRunsQuery.data?.runs ?? [];
   const runningCount = runs.filter((run) => syncRunStatusLabel(run.status) === "Running").length;
   const failedCount = runs.filter((run) => syncRunStatusLabel(run.status) === "Failed").length;
-  const defaultOpen = syncRunsQuery.isError || runningCount > 0 || failedCount > 0;
 
   return (
     <GlowCard className="space-y-4">
-      <details open={defaultOpen} className="space-y-3">
-        <summary className="focus-ring neon-surface cursor-pointer list-none px-4 py-3 text-sm font-semibold text-white marker:content-none">
-          Sync run log ({runs.length}) • Running {runningCount} • Failed {failedCount}
-        </summary>
-        <SyncRunActivityPanel
-          runs={runs}
-          lastUpdatedAt={syncRunsQuery.data?.last_updated_at}
-          isLoading={syncRunsQuery.isLoading}
-          isRefreshing={syncRunsQuery.isFetching}
-          isError={syncRunsQuery.isError}
-          errorMessage={syncRunsError}
-          onRefresh={() => {
-            void syncRunsQuery.refetch();
-          }}
-        />
-      </details>
+      <div className="neon-surface flex flex-wrap items-center justify-between gap-3 rounded-[1rem] px-4 py-3">
+        <p className="text-sm font-semibold text-white">
+          Sync run log ({runs.length})
+        </p>
+        <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
+          <span>Running {runningCount}</span>
+          <span>Failed {failedCount}</span>
+        </div>
+      </div>
+      <SyncRunActivityPanel
+        runs={runs}
+        lastUpdatedAt={syncRunsQuery.data?.last_updated_at}
+        isLoading={syncRunsQuery.isLoading}
+        isRefreshing={syncRunsQuery.isFetching}
+        isError={syncRunsQuery.isError}
+        errorMessage={syncRunsError}
+        onRefresh={() => {
+          void syncRunsQuery.refetch();
+        }}
+      />
     </GlowCard>
   );
 }
