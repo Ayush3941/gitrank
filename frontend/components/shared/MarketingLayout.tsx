@@ -16,7 +16,7 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
                   <Sparkles className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="cyber-title text-lg font-semibold text-white">GitRank</p>
+                  <p className="cyber-title text-lg font-semibold text-foreground">GitRank</p>
                   <p className="hud-eyebrow text-xs font-semibold">Open-source reputation</p>
                 </div>
               </Link>
@@ -49,7 +49,9 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
         </header>
         {children}
         <footer className="cyber-terminal px-5 py-6 text-sm text-muted">
-          <p>GitRank rewards merged evidence, review depth, tests, and project impact. Spam PRs do not make you powerful here.</p>
+          <p className="text-foreground">
+            GitRank rewards merged evidence, review depth, tests, and project impact. Spam PRs do not make you powerful here.
+          </p>
         </footer>
       </div>
     </AppShell>

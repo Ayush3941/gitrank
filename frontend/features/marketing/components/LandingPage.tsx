@@ -20,7 +20,7 @@ export function LandingPage() {
         <div className="grid gap-10 lg:grid-cols-[1.2fr,0.8fr] lg:items-center">
           <div className="space-y-6">
             <div className="space-y-4">
-              <h1 className="cyber-title max-w-3xl text-4xl font-semibold tracking-tight text-white sm:text-6xl">
+              <h1 className="cyber-title max-w-3xl text-4xl font-semibold tracking-tight text-foreground sm:text-6xl">
                 Turn open-source work into trusted reputation signals.
               </h1>
               <div className="flex flex-wrap gap-2">
@@ -59,7 +59,7 @@ export function LandingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-medium text-primary">Live rank arena</p>
-                <h2 className="cyber-title mt-2 text-2xl font-semibold text-white">After your first sync</h2>
+                <h2 className="cyber-title mt-2 text-2xl font-semibold text-foreground">After your first sync</h2>
               </div>
             </div>
             <div className="neon-surface rounded-3xl p-4">
@@ -208,7 +208,7 @@ export function LandingPage() {
           />
           <div className="neon-tile rounded-[1.75rem] p-5">
             <p className="text-sm text-cyan-200">Live report cards unlock after OAuth and sync.</p>
-            <h3 className="mt-2 text-xl font-semibold text-white">Report details appear once your profile sync completes.</h3>
+            <h3 className="mt-2 text-xl font-semibold text-foreground">Report details appear once your profile sync completes.</h3>
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
               <Metric label="Difficulty" value="Scored" />
               <Metric label="Impact" value="Explained" />
@@ -245,7 +245,7 @@ export function LandingPage() {
             <Swords className="h-3.5 w-3.5" />
             Anti-spam promise
           </div>
-          <h2 className="text-2xl font-semibold text-amber-50">Spam PRs do not make you powerful here.</h2>
+            <h2 className="text-2xl font-semibold text-foreground">Spam PRs do not make you powerful here.</h2>
           <p className="readable-measure max-w-[68ch] text-sm leading-7 text-amber-50">
             Low-context noise, unreviewed changes, and thin contribution floods are scored down.
           </p>
@@ -257,7 +257,7 @@ export function LandingPage() {
               <Trophy className="h-3.5 w-3.5" />
               Ready to rank your work?
             </div>
-            <h2 className="text-3xl font-semibold text-white">Build a profile maintainers and hiring teams can trust.</h2>
+            <h2 className="text-3xl font-semibold text-foreground">Build a profile maintainers and hiring teams can trust.</h2>
           </div>
           <Button asChild size="lg">
             <Link href="/oauth/github/start?return_to=/dashboard" prefetch={false}>Start the reveal</Link>
@@ -272,7 +272,7 @@ function Metric({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="neon-metric rounded-3xl px-4 py-3">
       <p className="text-xs font-medium text-muted">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-white">{value}</p>
+      <p className="mt-2 text-2xl font-semibold text-foreground">{value}</p>
     </div>
   );
 }
