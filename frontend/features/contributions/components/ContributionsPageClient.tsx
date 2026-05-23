@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { startTransition, useDeferredValue, useMemo, useState } from "react";
 import { Download } from "lucide-react";
@@ -10,7 +11,6 @@ import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
-import { ContributionList } from "@/features/contributions/components/ContributionList";
 import { useContributions } from "@/hooks/use-contributions";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
@@ -26,6 +26,16 @@ import {
 import { formatRelativeDays } from "@/lib/formatters";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import type { Contribution } from "@/types/gitrank";
+
+const ContributionList = dynamic(
+  () =>
+    import("@/features/contributions/components/ContributionList").then(
+      (mod) => mod.ContributionList,
+    ),
+  {
+    loading: () => <ContributionListPlaceholder />,
+  },
+);
 
 const filterMap: Record<string, string> = {
   All: "All",
@@ -480,4 +490,15 @@ function formatCSVDate(value: string): string {
     return "";
   }
   return parsed.toLocaleString();
+}
+
+function ContributionListPlaceholder() {
+  return (
+    <GlowCard className="space-y-3">
+      <p className="text-xs font-medium text-primary">Loading contribution cards</p>
+      <div className="neon-skeleton h-9 w-1/2" />
+      <div className="neon-skeleton h-24 w-full" />
+      <div className="neon-skeleton h-24 w-full" />
+    </GlowCard>
+  );
 }

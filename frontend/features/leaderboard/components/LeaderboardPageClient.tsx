@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowUpRight, Target, Trophy } from "lucide-react";
@@ -13,13 +14,22 @@ import { StaleState } from "@/components/shared/StaleState";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LeaderboardArena } from "@/features/leaderboard/components/LeaderboardArena";
 import { laneParamToTab, tabToLaneParam } from "@/features/leaderboard/lib/lane-param";
 import { useLeaderboard } from "@/hooks/use-leaderboard";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { useMyProfile } from "@/hooks/use-profile";
 import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
 import { formatRelativeDays } from "@/lib/formatters";
+
+const LeaderboardArena = dynamic(
+  () =>
+    import("@/features/leaderboard/components/LeaderboardArena").then(
+      (mod) => mod.LeaderboardArena,
+    ),
+  {
+    loading: () => <LeaderboardPanelPlaceholder label="Loading leaderboard rows" />,
+  },
+);
 
 const tabs: LeaderboardTab[] = [
   "Global",
@@ -342,4 +352,15 @@ function progressToNextBand(seasonXp: number, xpToNextRank: number): number {
     return 100;
   }
   return Math.max(0, Math.min(100, Math.round((gained / denominator) * 100)));
+}
+
+function LeaderboardPanelPlaceholder({ label }: { label: string }) {
+  return (
+    <GlowCard className="space-y-3">
+      <p className="text-xs font-medium text-primary">{label}</p>
+      <div className="neon-skeleton h-9 w-1/2" />
+      <div className="neon-skeleton h-24 w-full" />
+      <div className="neon-skeleton h-24 w-full" />
+    </GlowCard>
+  );
 }
