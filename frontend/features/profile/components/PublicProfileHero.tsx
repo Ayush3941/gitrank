@@ -5,6 +5,7 @@ import { ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import type { ReactNode } from "react";
 import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { ExpandableText } from "@/components/shared/ExpandableText";
+import { GlowCard } from "@/components/shared/GlowCard";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { XPProgress } from "@/components/shared/XPProgress";
@@ -25,7 +26,7 @@ export function PublicProfileHero({
   const topSkills = uniqueDisplayValues(user.topSkills, 6);
 
   return (
-    <div className="player-card-shell glass-panel-strong overflow-hidden rounded-[2rem] p-6 sm:p-8">
+    <GlowCard strong className="player-card-shell cyber-hero-shell overflow-hidden p-6 sm:p-8">
       <div className="grid gap-6 xl:grid-cols-[1.08fr,0.92fr]">
         <div className="space-y-5">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
@@ -118,7 +119,7 @@ export function PublicProfileHero({
           <p className="cyber-readout mt-4 text-xs leading-5 text-muted">Evidence-backed snapshot.</p>
         </div>
       </div>
-    </div>
+    </GlowCard>
   );
 }
 
