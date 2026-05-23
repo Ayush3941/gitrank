@@ -192,87 +192,79 @@ export function SyncRunActivityPanel({
         </div>
       ) : null}
 
-      {isLoading ? (
-        <div
-          id={syncRunsRegionId}
-          className={`neon-surface grid gap-2 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}
-        >
-          <p>Loading recent sync activity…</p>
-        </div>
-      ) : runs.length === 0 ? (
-        <div
-          id={syncRunsRegionId}
-          className={`neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}
-        >
-          <p>No sync runs recorded for this account yet. Open dashboard and GitRank will enqueue background sync automatically.</p>
-          <div className="flex flex-wrap gap-2">
-            <Button asChild size="sm" variant="secondary">
-              <Link href="/dashboard" prefetch={false}>Open dashboard</Link>
-            </Button>
+      <div
+        id={syncRunsRegionId}
+        className="sync-runs-results-viewport max-h-[30rem] overflow-y-auto overscroll-y-contain"
+      >
+        {isLoading ? (
+          <div className={`neon-surface grid gap-2 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}>
+            <p>Loading recent sync activity…</p>
           </div>
-        </div>
-      ) : filteredRuns.length === 0 ? (
-        <div
-          id={syncRunsRegionId}
-          className={`neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}
-        >
-          <p>No sync runs match the current search or status filter.</p>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              size="sm"
-              variant="secondary"
-              onClick={handleResetFilters}
-              disabled={!canReset}
-            >
-              Reset filters
-            </Button>
+        ) : runs.length === 0 ? (
+          <div className={`neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}>
+            <p>No sync runs recorded for this account yet. Open dashboard and GitRank will enqueue background sync automatically.</p>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild size="sm" variant="secondary">
+                <Link href="/dashboard" prefetch={false}>Open dashboard</Link>
+              </Button>
+            </div>
           </div>
-        </div>
-      ) : (
-        <ol
-          id={syncRunsRegionId}
-          role="list"
-          className={`grid gap-2 ${resultsRegionClassName}`}
-        >
-          {filteredRuns.map((run) => {
-            const safeLastError = sanitizeSyncRunErrorMessage(run.last_error);
-            return (
-              <li key={run.id}>
-                <article className="render-opt-card neon-surface space-y-2 px-4 py-3">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="break-anywhere text-sm font-semibold text-white">
-                        {runLabel(run)}
-                      </p>
-                      <p className="mt-1 break-anywhere text-xs text-muted">
-                        {run.subject || "No subject"} • {run.run_type}
-                      </p>
+        ) : filteredRuns.length === 0 ? (
+          <div className={`neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}>
+            <p>No sync runs match the current search or status filter.</p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                onClick={handleResetFilters}
+                disabled={!canReset}
+              >
+                Reset filters
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <ol role="list" className={`grid gap-2 ${resultsRegionClassName}`}>
+            {filteredRuns.map((run) => {
+              const safeLastError = sanitizeSyncRunErrorMessage(run.last_error);
+              return (
+                <li key={run.id}>
+                  <article className="render-opt-card neon-surface space-y-2 px-4 py-3">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="break-anywhere text-sm font-semibold text-white">
+                          {runLabel(run)}
+                        </p>
+                        <p className="mt-1 break-anywhere text-xs text-muted">
+                          {run.subject || "No subject"} • {run.run_type}
+                        </p>
+                      </div>
+                      <StatusChip status={run.status} />
                     </div>
-                    <StatusChip status={run.status} />
-                  </div>
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
-                    <span>
-                      Started {toFriendlyTimestamp(run.started_at)}
-                    </span>
-                    {run.finished_at ? (
-                      <span>Duration {runDuration(run.started_at, run.finished_at)}</span>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
+                      <span>
+                        Started {toFriendlyTimestamp(run.started_at)}
+                      </span>
+                      {run.finished_at ? (
+                        <span>Duration {runDuration(run.started_at, run.finished_at)}</span>
+                      ) : null}
+                      {run.correlation_id ? (
+                        <span className="break-anywhere">Correlation {run.correlation_id}</span>
+                      ) : null}
+                    </div>
+                    {safeLastError ? (
+                      <p className="break-anywhere text-xs text-rose-100">
+                        Last error: {safeLastError}
+                      </p>
                     ) : null}
-                    {run.correlation_id ? (
-                      <span className="break-anywhere">Correlation {run.correlation_id}</span>
-                    ) : null}
-                  </div>
-                  {safeLastError ? (
-                    <p className="break-anywhere text-xs text-rose-100">
-                      Last error: {safeLastError}
-                    </p>
-                  ) : null}
-                </article>
-              </li>
-            );
-          })}
-        </ol>
-      )}
+                  </article>
+                </li>
+              );
+            })}
+          </ol>
+        )}
+      </div>
     </div>
   );
 }

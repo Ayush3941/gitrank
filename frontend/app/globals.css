@@ -993,6 +993,11 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   contain-intrinsic-size: none;
 }
 
+.sync-runs-results-viewport {
+  overflow-anchor: none;
+  scrollbar-gutter: stable;
+}
+
 @supports not (content-visibility: auto) {
   .render-opt-card {
     contain: none;
