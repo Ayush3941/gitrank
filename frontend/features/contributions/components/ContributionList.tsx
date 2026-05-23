@@ -15,6 +15,7 @@ export function ContributionList({
   totalCount,
   startPosition = 1,
   useLiteCards = false,
+  showDetails = true,
 }: {
   items: Contribution[];
   narratives?: Record<string, ContributionNarrative>;
@@ -22,6 +23,7 @@ export function ContributionList({
   totalCount?: number;
   startPosition?: number;
   useLiteCards?: boolean;
+  showDetails?: boolean;
 }) {
   const fullSetCount = Math.max(items.length, totalCount ?? items.length);
   const isPartialSet = fullSetCount > items.length;
@@ -42,7 +44,7 @@ export function ContributionList({
             aria-posinset={isPartialSet ? position : undefined}
             aria-setsize={isPartialSet ? fullSetCount : undefined}
           >
-            <GlowCard className={`render-opt-card ${useLiteCards ? "space-y-3" : "space-y-4"}`}>
+            <GlowCard className={`render-opt-card ${useLiteCards || !showDetails ? "space-y-3" : "space-y-4"}`}>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0 space-y-3">
                   <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -71,7 +73,7 @@ export function ContributionList({
                     <li className="list-none">
                       <span className="neon-chip neon-chip-info rounded-full px-3 py-1.5 font-semibold">{item.category}</span>
                     </li>
-                    {!useLiteCards ? (
+                    {!useLiteCards && showDetails ? (
                       <li className="list-none">
                         <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-3 py-1.5 font-semibold">
                           <CalendarDays className="h-3 w-3" />
@@ -79,7 +81,7 @@ export function ContributionList({
                         </span>
                       </li>
                     ) : null}
-                    {item.maintainerReviewed ? (
+                    {showDetails && item.maintainerReviewed ? (
                       <li className="list-none">
                         <span className="neon-chip neon-chip-success rounded-full px-3 py-1.5 font-semibold">Maintainer reviewed</span>
                       </li>
@@ -89,7 +91,7 @@ export function ContributionList({
                 <div className={`neon-surface border-primary/28 text-right ${useLiteCards ? "rounded-[1rem] px-3 py-2.5" : "rounded-[1.25rem] px-4 py-3"}`}>
                   <p className="text-xs font-medium text-primary">Earned</p>
                   <p className="numeric-readout mt-2 text-3xl font-semibold text-white">{item.xpEarned} XP</p>
-                  {!useLiteCards ? (
+                  {!useLiteCards && showDetails ? (
                     <>
                       <p className="mt-2 text-xs text-muted">Signal {signalBand.label}</p>
                       <div className="mt-2 h-1.5 w-28 overflow-hidden rounded-full border border-primary/24 bg-card/80">
@@ -102,11 +104,13 @@ export function ContributionList({
                   ) : null}
                 </div>
               </div>
-              <AIPanel
-                fallbackSummary={item.aiSummary}
-                narrative={narratives?.[item.id]}
-                lite={useLiteCards}
-              />
+              {showDetails ? (
+                <AIPanel
+                  fallbackSummary={item.aiSummary}
+                  narrative={narratives?.[item.id]}
+                  lite={useLiteCards}
+                />
+              ) : null}
               <div className="flex justify-end">
                 <Button asChild variant="secondary" size="sm">
                   <Link href={`/pr/${item.owner}/${item.repo}/${item.number}`} prefetch={false}>

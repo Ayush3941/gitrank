@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { startTransition, useDeferredValue, useMemo, useState } from "react";
-import { Download } from "lucide-react";
+import { Download, LayoutList, Rows3 } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -60,16 +60,17 @@ const CONTRIBUTION_SEARCH_DEBOUNCE_MS = 220;
 const CONTRIBUTION_RENDER_HARD_CAP = 100;
 
 export function ContributionsPageClient() {
+  const constrainedNetwork = useNetworkConstraintPreference();
+  const reducedGamification = useReducedGamification();
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact">("Newest");
   const [exportNotice, setExportNotice] = useState("");
+  const [showCardDetails, setShowCardDetails] = useState(!constrainedNetwork);
   const debouncedSearch = useDebouncedValue(search, CONTRIBUTION_SEARCH_DEBOUNCE_MS);
   const deferredFilter = useDeferredValue(filter);
   const deferredSearch = useDeferredValue(debouncedSearch);
   const deferredSort = useDeferredValue(sort);
-  const constrainedNetwork = useNetworkConstraintPreference();
-  const reducedGamification = useReducedGamification();
   const useLiteCards = constrainedNetwork || reducedGamification;
   const cardPageSize = useLiteCards
     ? CONTRIBUTION_CARD_PAGE_SIZE_CONSTRAINED
@@ -242,6 +243,30 @@ export function ContributionsPageClient() {
           <div className="flex flex-wrap gap-2">
             <Button
               type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                startTransition(() => {
+                  setShowCardDetails((current) => !current);
+                });
+              }}
+              aria-pressed={showCardDetails}
+              aria-controls={CONTRIBUTION_CARDS_REGION_ID}
+            >
+              {showCardDetails ? (
+                <>
+                  <Rows3 className="h-4 w-4" />
+                  Hide details
+                </>
+              ) : (
+                <>
+                  <LayoutList className="h-4 w-4" />
+                  Show details
+                </>
+              )}
+            </Button>
+            <Button
+              type="button"
               variant="secondary"
               size="sm"
               onClick={() => {
@@ -337,6 +362,7 @@ export function ContributionsPageClient() {
                 totalCount={filteredRows.length}
                 startPosition={1}
                 useLiteCards={useLiteCards}
+                showDetails={showCardDetails}
               />
             </div>
             <div className="flex flex-wrap items-center justify-end gap-3">
