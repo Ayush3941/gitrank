@@ -2,7 +2,17 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { ArrowRight, CalendarClock, Flame, ShieldCheck } from "lucide-react";
+import {
+  ArrowRight,
+  CalendarClock,
+  CalendarDays,
+  Flame,
+  LayoutGrid,
+  Route,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
+import { startTransition, useDeferredValue, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -17,6 +27,13 @@ import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics"
 import type { Quest } from "@/types/gitrank";
 
 const groups: Array<Quest["cadence"]> = ["Daily", "Weekly", "Long-term", "Skill-based"];
+const QUEST_FILTERS: Array<{ value: "All" | Quest["cadence"]; label: string }> = [
+  { value: "All", label: "All missions" },
+  { value: "Daily", label: "Daily" },
+  { value: "Weekly", label: "Weekly" },
+  { value: "Long-term", label: "Long-term" },
+  { value: "Skill-based", label: "Skill-based" },
+];
 
 const QuestCard = dynamic(
   () =>
@@ -29,6 +46,8 @@ const QuestCard = dynamic(
 );
 
 export function QuestsPageClient() {
+  const [cadenceFilter, setCadenceFilter] = useState<"All" | Quest["cadence"]>("All");
+  const deferredCadenceFilter = useDeferredValue(cadenceFilter);
   const { data, isLoading, isError, isFetching, refetch } = useQuests();
   const quests = data?.quests ?? [];
   const profile = data?.profile;
@@ -47,6 +66,18 @@ export function QuestsPageClient() {
   );
   const weeklyQuest = selectQuestSpotlight(questMap.Weekly);
   const longTermQuest = selectQuestSpotlight(questMap["Long-term"]);
+  const visibleGroups =
+    deferredCadenceFilter === "All"
+      ? groups.filter((group) => questMap[group].length > 0)
+      : groups.filter((group) => group === deferredCadenceFilter && questMap[group].length > 0);
+  const isFiltering = deferredCadenceFilter !== cadenceFilter;
+  const filterStatusId = "quests-filter-status";
+
+  function handleCadenceFilterChange(next: "All" | Quest["cadence"]) {
+    startTransition(() => {
+      setCadenceFilter(next);
+    });
+  }
 
   return (
     <div className="space-y-6">
@@ -62,6 +93,86 @@ export function QuestsPageClient() {
           </Button>
         )}
       />
+      {!isLoading && !isError ? (
+        <section className="space-y-3">
+          <p id={filterStatusId} role="status" aria-live="polite" className="sr-only">
+            {isFiltering
+              ? "Updating missions…"
+              : deferredCadenceFilter === "All"
+                ? `Showing all ${quests.length} missions`
+                : `Showing ${questMap[deferredCadenceFilter].length} ${deferredCadenceFilter.toLowerCase()} missions`}
+          </p>
+          <div className="sm:hidden">
+            <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
+              <span className="sr-only">Mission cadence filter</span>
+              <select
+                value={cadenceFilter}
+                onChange={(event) => {
+                  handleCadenceFilterChange(event.target.value as "All" | Quest["cadence"]);
+                }}
+                aria-label="Mission cadence filter"
+                aria-describedby={filterStatusId}
+                className="focus-ring h-full w-full bg-transparent text-sm text-foreground outline-none"
+              >
+                {QUEST_FILTERS.map((item) => (
+                  <option key={`quest-filter-option-${item.value}`} value={item.value} className="bg-card text-foreground">
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <div className="hidden sm:block">
+            <ul
+              role="tablist"
+              aria-label="Mission cadence filters"
+              aria-describedby={filterStatusId}
+              className="dashboard-nav-track lane-rail flex gap-1.5 overflow-x-auto p-0.5"
+            >
+              {QUEST_FILTERS.map((item) => {
+                const active = cadenceFilter === item.value;
+                const count =
+                  item.value === "All"
+                    ? quests.length
+                    : questMap[item.value].length;
+                const Icon =
+                  item.value === "All"
+                    ? LayoutGrid
+                    : item.value === "Daily"
+                      ? CalendarClock
+                      : item.value === "Weekly"
+                        ? CalendarDays
+                        : item.value === "Long-term"
+                          ? Route
+                          : Sparkles;
+                return (
+                  <li key={`quest-filter-tab-${item.value}`} role="presentation" className="list-none min-w-[8.5rem] shrink-0">
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={active}
+                      tabIndex={active ? 0 : -1}
+                      data-active={active ? "true" : "false"}
+                      className="focus-ring dashboard-nav-item min-h-11 w-full px-3 py-2 text-center text-sm font-semibold"
+                      onClick={() => {
+                        handleCadenceFilterChange(item.value);
+                      }}
+                    >
+                      <span className="inline-flex items-center gap-2">
+                        <Icon className="dashboard-nav-icon h-4 w-4" aria-hidden="true" />
+                        <span className="truncate">{item.label}</span>
+                        <span className="rounded-full border border-primary/22 bg-primary/10 px-1.5 py-0.5 text-[11px] leading-none text-primary">
+                          {count}
+                        </span>
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </section>
+      ) : null}
       {data?.staleness?.isStale ? (
         <StaleState
           message={`Quest snapshot refreshed ${formatRelativeDays(
@@ -158,7 +269,7 @@ export function QuestsPageClient() {
         />
       ) : null}
       {!isLoading && !isError && data ? (
-        groups.filter((group) => questMap[group].length > 0).map((group) => {
+        visibleGroups.map((group) => {
           const grouped = questMap[group];
 
           return (
