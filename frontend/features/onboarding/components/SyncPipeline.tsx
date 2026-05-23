@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, LoaderCircle, RefreshCcw } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { InlineNotice } from "@/components/shared/InlineNotice";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { OnboardingStepper } from "@/features/onboarding/components/OnboardingStepper";
@@ -142,6 +143,18 @@ export function SyncPipeline() {
     });
   }, [syncState]);
 
+  useEffect(() => {
+    if (!syncNotice) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setSyncNotice("");
+    }, 5200);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [syncNotice]);
+
   const completedSteps =
     isSynced ? steps.length : syncStartedAt || userSync.isPending ? 3 : 1;
   const pipelineProgress = Math.round((completedSteps / steps.length) * 100);
@@ -219,11 +232,16 @@ export function SyncPipeline() {
               {actionError}
             </p>
           ) : null}
-          {syncNotice ? (
-            <p role="status" aria-live="polite" className="text-sm text-emerald-200">
-              {syncNotice}
-            </p>
-          ) : null}
+          <InlineNotice
+            message={syncNotice}
+            placeholder="Sync status update"
+            variant="success"
+            minHeightClassName="min-h-7"
+            onDismiss={() => {
+              setSyncNotice("");
+            }}
+            dismissLabel="Dismiss sync status update"
+          />
         </div>
         <div className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-medium text-primary">
