@@ -369,6 +369,10 @@ export function SettingsPageClient() {
             placeholder="Account action status"
             variant="info"
             minHeightClassName="min-h-7"
+            onDismiss={() => {
+              setActionNotice("");
+            }}
+            dismissLabel="Dismiss account status"
           />
         )}
         </GlowCard>
@@ -523,6 +527,10 @@ export function SettingsPageClient() {
               placeholder="Display update"
               variant="info"
               minHeightClassName="min-h-7"
+              onDismiss={() => {
+                setDisplayNotice("");
+              }}
+              dismissLabel="Dismiss display update"
             />
           </div>
         </GlowCard>

@@ -304,6 +304,10 @@ export function ContributionsPageClient() {
         placeholder="Export status"
         variant="info"
         minHeightClassName="min-h-7"
+        onDismiss={() => {
+          setExportNotice("");
+        }}
+        dismissLabel="Dismiss export status"
       />
       {profile?.user.syncStatus.state === "stale" ? (
         <StaleState

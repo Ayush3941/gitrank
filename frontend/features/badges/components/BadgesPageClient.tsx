@@ -319,6 +319,10 @@ export function BadgesPageClient() {
                 placeholder="Badge update"
                 variant="success"
                 minHeightClassName="min-h-7"
+                onDismiss={() => {
+                  setUnlockNotice("");
+                }}
+                dismissLabel="Dismiss badge update"
               />
               {nextUnlockTarget ? (
                 <div className="neon-surface space-y-3 border border-primary/22 px-4 py-4">

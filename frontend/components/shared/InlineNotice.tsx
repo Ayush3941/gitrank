@@ -15,12 +15,16 @@ export function InlineNotice({
   variant = "info",
   className,
   minHeightClassName = "min-h-6",
+  onDismiss,
+  dismissLabel = "Dismiss status message",
 }: {
   message?: string;
   placeholder?: string;
   variant?: NoticeVariant;
   className?: string;
   minHeightClassName?: string;
+  onDismiss?: () => void;
+  dismissLabel?: string;
 }) {
   if (!message) {
     return (
@@ -41,8 +45,19 @@ export function InlineNotice({
           "inline-flex items-center rounded-[0.1rem] border px-3 py-1.5 text-sm",
           variantClassName[variant],
         )}
-      >
-        {message}
+        >
+        <span>{message}</span>
+        {onDismiss ? (
+          <button
+            type="button"
+            onClick={onDismiss}
+            className="focus-ring ml-3 inline-flex h-5 w-5 items-center justify-center rounded-full border border-current/35 text-xs leading-none hover:bg-black/15"
+            aria-label={dismissLabel}
+            title="Dismiss"
+          >
+            ×
+          </button>
+        ) : null}
       </p>
     </div>
   );
