@@ -70,6 +70,18 @@ Research-derived engineering guardrails (treat as policy memory):
 - keep classification explainable: each score change should map to inspectable evidence and rule version
 - treat ambiguity as first-class: normalize labels/signals before aggregation; do not silently merge near-duplicates
 
+Research memory lock (do not regress this interpretation):
+
+- GitRanking paper validates topic-taxonomy ranking quality, not contributor skill scoring quality.
+- Paper dataset/ranking constants to preserve in project memory:
+  - initial scrape: ~121K GitHub topics (paper figure references ~130K raw before filtering)
+  - frequent-topic seed: top 60% by frequency
+  - post-linking taxonomy size: 301 topics (after dedupe/reconciliation)
+  - annotation scale: 5,281 pairwise comparisons from 8 annotators
+  - hierarchy output: 8 discrete general-to-specific levels
+- Product implication: do not over-claim "research-proven developer ranking" in UI or docs.
+  Keep wording constrained to evidence-backed PR scoring in this repo’s own deterministic model.
+
 ## Current Repository Status
 
 The repository is past the pure scaffold stage, but it is not production-ready.

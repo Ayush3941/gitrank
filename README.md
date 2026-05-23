@@ -1,38 +1,46 @@
 # GitRank
 
 GitRank is an evidence-first contributor intelligence platform for GitHub activity.
-It converts real pull-request history into deterministic score signals, progression,
-and shareable contributor profiles without relying on fake leaderboard data.
+It turns real pull request history into explainable XP, rank, badges, reports, and
+public profile signals without fake production users or mock leaderboard identity data.
 
-## What GitRank Delivers
+## Status
 
-- GitHub OAuth login and linked account identity.
-- Automated PR evidence sync with bounded fetch limits for reliability.
-- Deterministic XP/rank/badge scoring that is explainable and replayable.
-- PR battle reports with score components, evidence tags, and confidence state.
-- Dashboard and public profile views with privacy and visibility controls.
-- Optional Gemini-generated narratives for impact summaries and profile storytelling.
+Current baseline is a working local MVP with live GitHub OAuth + sync, deterministic
+scoring, profile rendering, and optional Gemini narrative enrichment.
 
-## Core Principle: AI Does Not Decide Score
+This repo is optimized for:
 
-GitRank enforces a strict scoring boundary:
+- local end-to-end demo loops
+- deterministic scoring trust
+- production-hardening checklists and policy gates
 
-- Final XP and rank are computed by deterministic backend rules.
-- AI output is descriptive only (explanations, summaries, stories).
-- AI failure or quota limits never block deterministic scoring.
-- Reports must remain explainable through persisted evidence and metadata.
+## Product Contract
 
-## PR XP Award Strategy (Deterministic)
+### Deterministic score authority
 
-GitRank awards XP from persisted contribution evidence, including:
+- XP/rank/badge scoring is deterministic and rule-based.
+- Every score claim must be traceable to persisted evidence.
+- AI output never writes final score values.
+
+### AI role (Gemini)
+
+- Gemini provides explanation copy, impact narratives, and profile storytelling.
+- If Gemini is missing/rate-limited/fails, the product degrades to deterministic
+  fallback text and still remains usable.
+- Evidence state is shown instead of silently hiding degraded AI conditions.
+
+### PR XP award strategy (strict)
+
+PR XP is computed from persisted evidence components such as:
 
 - contribution category and technical depth
 - review strength and maintainer-signal indicators
 - test signal and repository context weight
-- anti-concentration and diminishing-returns modifiers
-- outcome/state weighting and consistency modifiers
+- anti-concentration/diminishing-returns modifiers
+- outcome weighting and consistency modifiers
 
-This keeps ranking reproducible and resistant to noise farming.
+This keeps ranking reproducible, auditable, and harder to game.
 
 ## Architecture
 
@@ -54,14 +62,14 @@ auth-service -> github-ingestor -> pr-analyzer -> scoring-engine
                       frontend (Next.js)
 ```
 
-## Monorepo Layout
+## Repository Layout
 
-- `gitrank/` Go backend services, migrations, deployment assets, runbooks.
-- `frontend/` Next.js app (dashboard, contributions, badges, quests, profile).
-- `start.sh` local one-command bootstrapping for infra + backend + frontend.
-- `CONTRIBUTING.md` implementation checklists, production decisions, acceptance gates.
+- `gitrank/` Go backend services, packages, migrations, deployments, runbooks.
+- `frontend/` Next.js app (dashboard, contributions, badges, quests, settings, profile).
+- `start.sh` local bootstrap for infra + backend + frontend.
+- `CONTRIBUTING.md` master implementation checklists, policy decisions, V2/ABRA tracking.
 
-## Local Setup
+## Local Run (Recommended)
 
 ### Prerequisites
 
@@ -70,63 +78,63 @@ auth-service -> github-ingestor -> pr-analyzer -> scoring-engine
 - Node.js + npm
 - `psql`, `openssl`, `curl`, `lsof`
 
-### 1) Configure Environment
-
-Backend env file:
+### 1) Seed env files
 
 ```bash
 cp -n gitrank/.env.example gitrank/.env
-```
-
-Frontend env file:
-
-```bash
 cp -n frontend/.env.example frontend/.env.local
 ```
 
-Set required values in `gitrank/.env`:
+### 2) Configure required secrets in `gitrank/.env`
 
 - `GITHUB_CLIENT_ID`
 - `GITHUB_CLIENT_SECRET`
-- `GITHUB_OAUTH_REDIRECT_URL` (must match GitHub OAuth app callback)
+- `GITHUB_OAUTH_REDIRECT_URL` (must match your GitHub OAuth app callback)
 - `GITRANK_SESSION_SECRET`
 - `GITRANK_JWT_SIGNING_KEY`
 - `GITHUB_TOKEN_ENCRYPTION_KEY`
 
-Optional AI (Gemini-only path in current baseline):
+Gemini path:
 
 - `AI_PROVIDER=gemini`
 - `GEMINI_API_KEY`
-- `GEMINI_MODEL` (default `gemini-2.5-flash`)
+- optional `GEMINI_MODEL` (default `gemini-2.5-flash`)
 
-### 2) Start Everything
+### 3) Start stack
 
 ```bash
 ./start.sh
 ```
 
-`start.sh` will:
+`start.sh` does the full local startup path:
 
-- create missing env files from examples
-- normalize local Postgres to `localhost:55432`
-- recreate local `gitrank-postgres` and `gitrank-redis`
-- run migrations
-- build and start all backend services
-- start frontend on `http://localhost:3000`
-- write logs to `.logs/` and PID files to `.run/`
+- removes old local Redis/Postgres containers if present
+- starts `gitrank-postgres` on `localhost:55432` and `gitrank-redis` on `localhost:6379`
+- runs DB migrations
+- starts all backend services
+- starts frontend on `http://localhost:3000`
+- writes logs to `.logs/` and pid files to `.run/`
 
-### 3) Open the App
+### 4) Open and verify
 
 - Frontend: `http://localhost:3000`
 - API health: `http://localhost:8080/healthz`
 
-## Sync and Evidence Notes
+## Current User Flow
 
-- `GITHUB_AUTHORED_PR_SYNC_LIMIT` controls authored PR fetch size (local default: `10`).
-- Profile and report views are evidence-backed snapshots.
-- Partial upstream failures are surfaced as partial/stale evidence states, not hidden.
+1. Sign in with GitHub OAuth.
+2. Backend auto-sync fetches bounded PR evidence.
+3. Deterministic scoring computes XP/rank/badges.
+4. Dashboard + Contributions + PR reports render evidence-backed results.
+5. Gemini enriches explanations when configured and available.
 
-## Developer Commands
+## Evidence and Sync Notes
+
+- `GITHUB_AUTHORED_PR_SYNC_LIMIT` controls authored PR fetch size (default `10`).
+- Profile/report pages are snapshot-backed and may show partial/stale states.
+- Upstream failures are surfaced as explicit sync/evidence states.
+
+## Verification Commands
 
 Backend (from `gitrank/`):
 
@@ -147,12 +155,12 @@ npm run build
 
 ## Troubleshooting
 
-- OAuth callback mismatch: verify GitHub app callback equals `GITHUB_OAUTH_REDIRECT_URL`.
-- Sync timeout on large repos: increase `GITHUB_REQUEST_TIMEOUT` (for example `20s` or higher).
-- Report shows deterministic-only: AI enrichment was unavailable, but deterministic scoring remains valid.
-- Frontend stale or route-hang behavior: rerun `./start.sh` (clears `.next` cache by default).
+- OAuth callback mismatch: ensure GitHub callback URL equals `GITHUB_OAUTH_REDIRECT_URL`.
+- Sync timeout on heavy repos: raise `GITHUB_REQUEST_TIMEOUT` (for example `20s`+).
+- Deterministic-only report: AI enrichment was unavailable; scoring still remains valid.
+- Frontend route/cache oddity: rerun `./start.sh` (it resets local startup path cleanly).
 
-## Key Docs
+## Key Documentation
 
 - [Backend Workspace README](./gitrank/README.md)
 - [Frontend README](./frontend/README.md)
