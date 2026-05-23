@@ -150,7 +150,7 @@ export function ContributionFilters({
         <div className="hidden sm:block">
           <Tabs value={value} onValueChange={onValueChange}>
             <TabsList
-              className="scrollbar-thin flex w-full flex-nowrap gap-1.5 overflow-x-auto"
+              className="scrollbar-thin scroll-rail flex w-full flex-nowrap gap-1.5 overflow-x-auto"
               aria-label="Contribution category filters"
             >
               {filters.map((filter) => (

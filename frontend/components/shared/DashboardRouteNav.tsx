@@ -18,7 +18,7 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
       <ul
         role="list"
         className={cn(
-          "dashboard-nav-track scrollbar-thin flex gap-1.5 overflow-x-auto p-0.5",
+          "dashboard-nav-track scrollbar-thin scroll-rail flex gap-1.5 overflow-x-auto p-0.5",
           embedded ? "sm:p-0.5" : "",
         )}
       >

@@ -164,7 +164,7 @@ export function LeaderboardPageClient() {
         <div className="hidden sm:block">
           <Tabs value={tab} onValueChange={handleTabChange}>
             <TabsList
-              className="scrollbar-thin flex w-full flex-nowrap gap-1.5 overflow-x-auto"
+              className="scrollbar-thin scroll-rail flex w-full flex-nowrap gap-1.5 overflow-x-auto"
               aria-label="Leaderboard lane filters"
             >
               {tabs.map((item, index) => (
