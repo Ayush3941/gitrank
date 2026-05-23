@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { startTransition, useDeferredValue, useMemo, useState } from "react";
+import { startTransition, useDeferredValue, useEffect, useMemo, useState } from "react";
 import { Download, LayoutList, Rows3 } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -184,6 +184,18 @@ export function ContributionsPageClient() {
   ]);
 
   const abraInsights = useAbraInsights(abraPayload);
+
+  useEffect(() => {
+    if (!exportNotice) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setExportNotice("");
+    }, 4200);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [exportNotice]);
   function handleFilterChange(next: string) {
     startTransition(() => {
       setFilter(next);
@@ -286,11 +298,17 @@ export function ContributionsPageClient() {
           </div>
         )}
       />
-      {exportNotice ? (
-        <p role="status" aria-live="polite" className="text-xs text-cyan-100">
-          {exportNotice}
-        </p>
-      ) : null}
+      <div className="min-h-5">
+        {exportNotice ? (
+          <p role="status" aria-live="polite" className="text-xs text-cyan-100">
+            {exportNotice}
+          </p>
+        ) : (
+          <p aria-hidden="true" className="text-xs opacity-0 select-none">
+            Export status
+          </p>
+        )}
+      </div>
       {profile?.user.syncStatus.state === "stale" ? (
         <StaleState
           message={`Contribution evidence refreshed ${formatRelativeDays(

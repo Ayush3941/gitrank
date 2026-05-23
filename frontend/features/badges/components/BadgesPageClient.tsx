@@ -199,6 +199,18 @@ export function BadgesPageClient() {
     );
   }, [data, isError, isLoading, unlockedCount]);
 
+  useEffect(() => {
+    if (!unlockNotice) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setUnlockNotice("");
+    }, 4200);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [unlockNotice]);
+
   function handleRarityChange(value: BadgeRarity | "All") {
     startTransition(() => {
       setRarity(value);
@@ -301,11 +313,17 @@ export function BadgesPageClient() {
                 <p className="text-xs font-medium text-cyan-200">Badge progress</p>
                 <Progress value={completionPercent} />
               </div>
-              {unlockNotice ? (
-                <p role="status" aria-live="polite" className="text-sm text-emerald-200">
-                  {unlockNotice}
-                </p>
-              ) : null}
+              <div className="min-h-6">
+                {unlockNotice ? (
+                  <p role="status" aria-live="polite" className="text-sm text-emerald-200">
+                    {unlockNotice}
+                  </p>
+                ) : (
+                  <p aria-hidden="true" className="text-sm opacity-0 select-none">
+                    Badge update
+                  </p>
+                )}
+              </div>
               {nextUnlockTarget ? (
                 <div className="neon-surface space-y-3 border border-primary/22 px-4 py-4">
                   <p className="text-xs font-medium text-primary">Closest next unlock</p>
