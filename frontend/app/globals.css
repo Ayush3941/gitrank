@@ -998,6 +998,11 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   scrollbar-gutter: stable;
 }
 
+.repository-visibility-results-viewport {
+  overflow-anchor: none;
+  scrollbar-gutter: stable;
+}
+
 @supports not (content-visibility: auto) {
   .render-opt-card {
     contain: none;

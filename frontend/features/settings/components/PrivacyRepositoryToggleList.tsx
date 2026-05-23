@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Search, X } from "lucide-react";
 import { startTransition, useMemo, useState } from "react";
+import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -151,111 +152,121 @@ export function PrivacyRepositoryToggleList({
             <span id={visibilityGroupId} className="sr-only">
               Repository visibility filter
             </span>
-            <ul role="list" aria-labelledby={visibilityGroupId} className="grid grid-cols-3 gap-2">
-              {(["All", "Public", "Hidden"] as const).map((item, index) => (
-                <li key={`repo-visibility-filter-${index}-${item}`} className="list-none">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant={visibilityFilter === item ? "default" : "secondary"}
-                    onClick={() => {
-                      startTransition(() => {
-                        setVisibilityFilter(item);
-                      });
-                    }}
-                    aria-describedby={statusId}
-                    aria-pressed={visibilityFilter === item}
-                    aria-controls={repositoriesRegionId}
-                  >
-                    {item}
-                  </Button>
-                </li>
-              ))}
-            </ul>
+            <SegmentedTablist
+              options={[
+                {
+                  value: "All",
+                  label: "All",
+                  count: counts.total,
+                  minWidthClassName: "min-w-[6.5rem]",
+                },
+                {
+                  value: "Public",
+                  label: "Public",
+                  count: counts.public,
+                  minWidthClassName: "min-w-[6.5rem]",
+                },
+                {
+                  value: "Hidden",
+                  label: "Hidden",
+                  count: counts.hidden,
+                  minWidthClassName: "min-w-[6.5rem]",
+                },
+              ]}
+              value={visibilityFilter}
+              onValueChange={(next) => {
+                startTransition(() => {
+                  setVisibilityFilter(next);
+                });
+              }}
+              ariaLabel="Repository visibility filter"
+              ariaDescribedBy={statusId}
+              ariaControls={repositoriesRegionId}
+              tabIdPrefix="repo-visibility-filter-tab"
+              className="grid grid-cols-3 gap-2"
+            />
           </div>
         </div>
       </div>
-      {filteredItems.length > 0 ? (
-        <ul
-          id={repositoriesRegionId}
-          role="list"
-          className="grid gap-3"
-        >
-          {filteredItems.map((repo, index) => (
-            <li key={`${repo.name}-${index}`} className="list-none">
-              <div className="render-opt-card neon-surface flex flex-col gap-3 rounded-[1.75rem] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="font-medium text-white">{repo.name}</p>
-                  <p className="text-sm text-muted">{repo.reason}</p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
-                      {repo.visibility}
-                    </span>
-                    <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
-                      {repo.tracked ? "Tracked" : "Untracked"}
-                    </span>
+      <div
+        id={repositoriesRegionId}
+        className="repository-visibility-results-viewport max-h-[30rem] overflow-y-auto overscroll-y-contain"
+      >
+        {filteredItems.length > 0 ? (
+          <ul role="list" className="grid gap-3">
+            {filteredItems.map((repo) => (
+              <li key={repo.name} className="list-none">
+                <div className="render-opt-card neon-surface flex flex-col gap-3 rounded-[1.75rem] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="font-medium text-white">{repo.name}</p>
+                    <p className="text-sm text-muted">{repo.reason}</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
+                        {repo.visibility}
+                      </span>
+                      <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
+                        {repo.tracked ? "Tracked" : "Untracked"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-muted">{repo.visibility}</span>
+                    <Switch
+                      checked={repo.visibility === "Public"}
+                      disabled={pendingRepository === repo.name}
+                      onCheckedChange={(checked) => {
+                        if (controlled) {
+                          onToggle(repo, checked);
+                          return;
+                        }
+
+                        setItems((current) =>
+                          current.map((item) =>
+                            item.name === repo.name
+                              ? { ...item, visibility: checked ? "Public" : "Hidden" }
+                              : item,
+                          ),
+                        );
+                      }}
+                      aria-label={`Toggle ${repo.name} visibility`}
+                    />
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-muted">{repo.visibility}</span>
-                  <Switch
-                    checked={repo.visibility === "Public"}
-                    disabled={pendingRepository === repo.name}
-                    onCheckedChange={(checked) => {
-                      if (controlled) {
-                        onToggle(repo, checked);
-                        return;
-                      }
-
-                      setItems((current) =>
-                        current.map((item) =>
-                          item.name === repo.name
-                            ? { ...item, visibility: checked ? "Public" : "Hidden" }
-                            : item,
-                        ),
-                      );
-                    }}
-                    aria-label={`Toggle ${repo.name} visibility`}
-                  />
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <div
-          id={repositoriesRegionId}
-          className="neon-surface space-y-3 rounded-[1.75rem] border-dashed px-4 py-4 text-sm text-muted"
-        >
-          {counts.total === 0 ? (
-            <p>
-              Repository visibility records are not available in this profile snapshot yet.
-              Run a sync to refresh repository privacy controls.
-            </p>
-          ) : (
-            <p>
-              No repositories match the current search and visibility filter.
-              Reset filters or widen the search scope.
-            </p>
-          )}
-          <div className="flex flex-wrap gap-2">
-            {canReset ? (
-              <Button
-                type="button"
-                size="sm"
-                variant="secondary"
-                onClick={handleReset}
-                aria-controls={repositoriesRegionId}
-              >
-                Reset filters
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="neon-surface space-y-3 rounded-[1.75rem] border-dashed px-4 py-4 text-sm text-muted">
+            {counts.total === 0 ? (
+              <p>
+                Repository visibility records are not available in this profile snapshot yet.
+                Run a sync to refresh repository privacy controls.
+              </p>
+            ) : (
+              <p>
+                No repositories match the current search and visibility filter.
+                Reset filters or widen the search scope.
+              </p>
+            )}
+            <div className="flex flex-wrap gap-2">
+              {canReset ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  onClick={handleReset}
+                  aria-controls={repositoriesRegionId}
+                >
+                  Reset filters
+                </Button>
+              ) : null}
+              <Button asChild size="sm" variant="secondary">
+                <Link href="/dashboard" prefetch={false}>Open dashboard</Link>
               </Button>
-            ) : null}
-            <Button asChild size="sm" variant="secondary">
-              <Link href="/dashboard" prefetch={false}>Open dashboard</Link>
-            </Button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
