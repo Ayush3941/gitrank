@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { ArrowDownRight, ArrowUpRight, CalendarClock, Flame, ShieldCheck } from "lucide-react";
-import { ExpandableText } from "@/components/shared/ExpandableText";
+import { ClampedText } from "@/components/shared/ClampedText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { formatDate, formatTimeUntil } from "@/lib/formatters";
@@ -47,13 +47,13 @@ export function LeaderboardArena({
               {snapshot.season.status} season
             </div>
             <h2 className="mt-4 break-anywhere text-2xl font-semibold text-white">{snapshot.season.name}</h2>
-            <ExpandableText
-              text={snapshot.season.explanation}
-              lines={1}
-              minLengthForToggle={220}
-              className="mt-2"
-              textClassName="break-anywhere text-sm leading-7 text-muted"
-            />
+            <div className="mt-2">
+              <ClampedText
+                text={snapshot.season.explanation}
+                lines={1}
+                className="text-sm leading-7 text-muted"
+              />
+            </div>
           </div>
           <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[32rem]">
             <Metric label="Window" value={snapshot.season.windowLabel} />
@@ -187,13 +187,13 @@ export function LeaderboardArena({
                         {row.demotionRisk ? <Pill tone="warning">Safety watch</Pill> : null}
                         {row.rankEvidenceState ? <Pill tone="warning">Evidence {row.rankEvidenceState}</Pill> : null}
                       </div>
-                      <ExpandableText
-                        text={row.evidenceSummary}
-                        lines={2}
-                        minLengthForToggle={190}
-                        className="mt-3 max-w-2xl"
-                        textClassName="break-anywhere text-sm leading-6 text-muted"
-                      />
+                      <div className="mt-3 max-w-2xl">
+                        <ClampedText
+                          text={row.evidenceSummary}
+                          lines={2}
+                          className="text-sm leading-6 text-muted"
+                        />
+                      </div>
                     </div>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

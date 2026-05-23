@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ExpandableText } from "@/components/shared/ExpandableText";
+import { ClampedText } from "@/components/shared/ClampedText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import type { FeaturedContribution, PullRequestAnalysis } from "@/types/gitrank";
@@ -57,13 +57,13 @@ export function BestPRsPanel({
                       {evidencePill.label}
                     </span>
                   </div>
-                  <ExpandableText
-                    text={summary}
-                    lines={2}
-                    minLengthForToggle={180}
-                    className="mt-2"
-                    textClassName="break-anywhere text-sm text-muted"
-                  />
+                  <div className="mt-2">
+                    <ClampedText
+                      text={summary}
+                      lines={2}
+                      className="text-sm text-muted"
+                    />
+                  </div>
                 </div>
                 <div className="text-right">
                   <p className="text-xs font-medium text-primary">XP</p>
