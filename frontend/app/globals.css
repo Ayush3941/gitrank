@@ -269,22 +269,10 @@ html {
 
 body {
   position: relative;
+  isolation: isolate;
   overflow-x: hidden;
   min-height: 100vh;
   background-color: rgb(var(--background));
-  background-image:
-    linear-gradient(180deg, rgb(0 0 0 / 0.06), rgb(0 0 0 / 0.12)),
-    url("/assets/background.jpg");
-  background-image:
-    linear-gradient(180deg, rgb(0 0 0 / 0.06), rgb(0 0 0 / 0.12)),
-    image-set(
-      url("/assets/background.webp") type("image/webp"),
-      url("/assets/background.jpg") type("image/jpeg")
-    );
-  background-position: center center;
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-attachment: fixed, fixed;
   color: rgb(var(--text-body));
   font-family: var(--font-space-grotesk), sans-serif;
   text-rendering: optimizeLegibility;
@@ -305,25 +293,16 @@ body::before {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: -1;
-  background:
-    linear-gradient(
-      180deg,
-      rgb(0 3 12 / var(--page-overlay-top-alpha)),
-      rgb(2 7 18 / var(--page-overlay-bottom-alpha))
-    ),
-    radial-gradient(
-      circle at 50% -14%,
-      rgb(var(--primary) / 0.018) 0%,
-      rgb(var(--primary-2) / 0.011) 74%,
-      rgb(var(--primary-2) / 0.005) 92%,
-      rgb(var(--primary-2) / 0.002) 99%,
-      transparent 100%
-    );
-  background-size:
-    100% 100%,
-    100% 100%;
-  opacity: var(--page-grid-opacity);
+  z-index: -2;
+  background-image: url("/assets/background.jpg");
+  background-image: image-set(
+    url("/assets/background.webp") type("image/webp"),
+    url("/assets/background.jpg") type("image/jpeg")
+  );
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  transform: translateZ(0);
 }
 
 body::after {
@@ -333,23 +312,26 @@ body::after {
   pointer-events: none;
   z-index: -1;
   background:
+    linear-gradient(
+      180deg,
+      rgb(1 4 12 / 0.28),
+      rgb(2 6 16 / 0.52)
+    ),
     radial-gradient(
-      circle at 14% 16%,
-      rgb(var(--primary) / 0.024) 0%,
-      rgb(var(--primary) / 0.014) 72%,
-      rgb(var(--primary) / 0.006) 90%,
-      rgb(var(--primary) / 0.002) 98%,
+      circle at 10% 10%,
+      rgb(var(--primary) / 0.17) 0%,
+      rgb(var(--primary) / 0.09) 38%,
+      rgb(var(--primary) / 0.03) 68%,
       transparent 100%
     ),
     radial-gradient(
-      circle at 86% 84%,
-      rgb(var(--primary-2) / 0.024) 0%,
-      rgb(var(--primary-2) / 0.014) 70%,
-      rgb(var(--primary-2) / 0.006) 90%,
-      rgb(var(--primary-2) / 0.002) 98%,
+      circle at 90% 88%,
+      rgb(var(--primary-2) / 0.15) 0%,
+      rgb(var(--primary-2) / 0.08) 36%,
+      rgb(var(--primary-2) / 0.03) 64%,
       transparent 100%
     );
-  opacity: var(--page-glow-opacity);
+  opacity: 0.68;
 }
 
 ::selection {
@@ -743,10 +725,7 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 
 .cyber-card:hover {
   border-color: rgb(var(--primary) / 0.4);
-  box-shadow:
-    var(--shadow-depth-medium),
-    var(--glow-medium),
-    inset 0 1px 0 rgb(255 255 255 / 0.1);
+  box-shadow: var(--shadow-depth-medium);
 }
 
 .neon-outline {
@@ -1062,7 +1041,6 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 .dashboard-nav-item:hover {
   border-color: rgb(var(--primary) / 0.32);
   color: rgb(var(--text-strong));
-  box-shadow: 0 0 0 1px rgb(var(--primary) / 0.08);
 }
 
 .dashboard-nav-item[data-active="true"] {
@@ -1094,7 +1072,6 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 .marketing-nav-chip:hover {
   border-color: rgb(var(--primary) / 0.48);
   color: rgb(var(--text-strong));
-  box-shadow: 0 0 0 1px rgb(var(--primary) / 0.14);
 }
 
 .cyber-divider {
@@ -1383,10 +1360,6 @@ html[data-theme="high-contrast"] .cyber-card {
 }
 
 @media (max-width: 1100px) {
-  body {
-    background-attachment: scroll;
-  }
-
   .glass-panel,
   .glass-panel-strong {
     backdrop-filter: none;
@@ -1405,12 +1378,6 @@ html[data-theme="high-contrast"] .cyber-card {
   .page-shell::before,
   .page-shell::after {
     opacity: 0.14;
-  }
-}
-
-@media (pointer: coarse) {
-  body {
-    background-attachment: scroll;
   }
 }
 
@@ -1465,33 +1432,20 @@ html[data-theme="high-contrast"] .cyber-card {
 
 .player-card-shell::before,
 .season-arena-card::before {
-  content: "";
-  position: absolute;
-  inset: -35%;
-  z-index: -1;
-  background:
-    conic-gradient(
-      from 180deg,
-      rgb(var(--primary) / 0),
-      rgb(var(--success) / 0.16),
-      rgb(var(--warning) / 0.14),
-      rgb(var(--primary) / 0.18),
-      rgb(var(--primary) / 0)
-    );
+  display: none;
 }
 
 .rank-orbit {
   position: relative;
   background:
-    conic-gradient(
-      from 90deg,
-      rgb(var(--primary)),
-      rgb(var(--success)),
-      rgb(var(--warning)),
-      rgb(var(--primary-2)),
-      rgb(var(--primary))
+    linear-gradient(
+      135deg,
+      rgb(var(--primary) / 0.92),
+      rgb(var(--success) / 0.88),
+      rgb(var(--warning) / 0.84),
+      rgb(var(--primary-2) / 0.88)
     );
-  box-shadow: 0 0 34px rgb(var(--primary) / 0.18);
+  box-shadow: 0 0 16px rgb(var(--primary) / 0.12);
 }
 
 .rank-orbit::after {
@@ -1534,8 +1488,7 @@ html[data-theme="high-contrast"] .cyber-card {
 }
 
 :where(html:not([data-gamification]), html[data-gamification="reduced"]) body {
-  background-attachment: scroll;
-  background-position: center center;
+  background-color: rgb(var(--background));
 }
 
 :where(html:not([data-gamification]), html[data-gamification="reduced"]) .glass-panel,
@@ -1716,7 +1669,7 @@ html[data-theme="high-contrast"] .cyber-card {
 }
 
 @media (prefers-reduced-data: reduce) {
-  body {
+  body::before {
     background-image: url("/assets/background.webp");
     background-image: image-set(
       url("/assets/background.webp") type("image/webp"),
@@ -1725,13 +1678,11 @@ html[data-theme="high-contrast"] .cyber-card {
     background-position: center center;
     background-size: cover;
     background-repeat: no-repeat;
-    background-attachment: scroll;
   }
 
   .neon-vignette,
   .page-shell::before,
   .page-shell::after,
-  body::before,
   body::after {
     display: none !important;
   }
@@ -1827,7 +1778,7 @@ html[data-theme="high-contrast"] .cyber-card {
   }
 }
 
-:where(html[data-network="constrained"]) body {
+:where(html[data-network="constrained"]) body::before {
   background-image: url("/assets/background.webp");
   background-image: image-set(
     url("/assets/background.webp") type("image/webp"),
@@ -1836,13 +1787,11 @@ html[data-theme="high-contrast"] .cyber-card {
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
-  background-attachment: scroll;
 }
 
 :where(html[data-network="constrained"]) .neon-vignette,
 :where(html[data-network="constrained"]) .page-shell::before,
 :where(html[data-network="constrained"]) .page-shell::after,
-:where(html[data-network="constrained"]) body::before,
 :where(html[data-network="constrained"]) body::after {
   display: none !important;
 }
@@ -1887,14 +1836,9 @@ html[data-theme="high-contrast"] .cyber-card {
 }
 
 @media (update: slow) {
-  body {
-    background-attachment: scroll;
-  }
-
   .neon-vignette,
   .page-shell::before,
   .page-shell::after,
-  body::before,
   body::after,
   .cyber-card::after,
   .cyber-sheen::after,
@@ -1934,8 +1878,7 @@ html[data-theme="high-contrast"] .cyber-card {
 }
 
 @media (any-pointer: coarse) {
-  body {
-    background-attachment: scroll;
+  body::before {
     background-position: center center;
   }
 

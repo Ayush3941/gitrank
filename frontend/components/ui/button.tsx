@@ -9,13 +9,13 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "neon-cta border-primary/32 bg-gradient-to-r from-primary via-primary-2 to-primary shadow-[0_0_10px_rgb(34_226_255_/_0.16)] hover:brightness-105 hover:shadow-[0_0_13px_rgb(34_226_255_/_0.18)]",
+          "neon-cta border-primary/32 bg-gradient-to-r from-primary via-primary-2 to-primary shadow-[0_0_10px_rgb(34_226_255_/_0.16)] hover:brightness-105",
         secondary:
-          "neon-tile border-primary/28 text-foreground hover:border-primary/40 hover:text-white hover:shadow-[0_0_10px_rgb(34_226_255_/_0.09)]",
+          "neon-tile border-primary/28 text-foreground hover:border-primary/40 hover:text-white",
         ghost:
-          "text-muted hover:border-primary/22 hover:bg-primary/10 hover:text-white hover:shadow-[0_0_8px_rgb(34_226_255_/_0.08)]",
+          "text-muted hover:border-primary/22 hover:bg-primary/10 hover:text-white",
         danger:
-          "neon-cta-danger border-danger/38 bg-danger/82 shadow-[0_0_10px_rgb(248_113_113_/_0.16)] hover:bg-danger",
+          "neon-cta-danger border-danger/38 bg-danger/82 shadow-[0_0_10px_rgb(248_113_113_/_0.16)] hover:bg-danger/90",
       },
       size: {
         sm: "h-10 px-4 text-sm",

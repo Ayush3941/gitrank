@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, ArrowUpRight, Settings2 } from "lucide-react";
+import { AlertTriangle, ArrowUpRight } from "lucide-react";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
 import { cn } from "@/lib/cn";
@@ -16,23 +16,12 @@ export function DashboardTopBar({
 }) {
   return (
     <div className={cn(embedded ? "px-2 py-1 sm:px-3 sm:py-1.5" : "dashboard-nav-shell px-4 py-2.5 sm:px-5")}>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium text-muted">
-            @{user.username}
-          </span>
-          <SyncStatusPill status={user.syncStatus} />
-          <RankBadge rank={user.level.rankTier} />
-        </div>
-        <div className="flex items-center gap-2">
-          <Link
-            href="/dashboard/settings"
-            className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium text-muted hover:text-white"
-          >
-            <Settings2 className="h-3.5 w-3.5" />
-            Display
-          </Link>
-        </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium text-muted">
+          @{user.username}
+        </span>
+        <SyncStatusPill status={user.syncStatus} />
+        <RankBadge rank={user.level.rankTier} />
       </div>
     </div>
   );
