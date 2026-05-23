@@ -245,12 +245,10 @@ function AIPanel({
         <ClampedText text={summary} lines={2} className="text-muted" />
       </div>
       {narrative ? (
-        <details className="mt-3 space-y-2">
-          <summary className="focus-ring cursor-pointer list-none text-xs font-semibold text-cyan-100 marker:content-none">
-            Why it matters
-          </summary>
-          <ClampedText text={narrative.why} lines={3} className="text-sm text-muted" />
-        </details>
+        <div className="mt-3 space-y-1.5">
+          <p className="text-xs font-semibold text-cyan-100">Why it matters</p>
+          <ClampedText text={narrative.why} lines={2} className="text-sm text-muted" />
+        </div>
       ) : null}
     </div>
   );
