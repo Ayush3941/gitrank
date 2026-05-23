@@ -95,7 +95,7 @@ export function PRBattleReportPageClient({
         actions={(
           <div className="flex flex-wrap gap-2">
             <Button asChild variant="secondary">
-              <Link href="/" prefetch={false} scroll={false}>Back to homepage</Link>
+              <Link href="/" prefetch={false}>Back to homepage</Link>
             </Button>
           </div>
         )}
@@ -312,7 +312,7 @@ export function PRBattleReportPageClient({
                 ) : null}
               </div>
               <Button asChild variant="secondary">
-                <Link href="/" prefetch={false} scroll={false}>
+                <Link href="/" prefetch={false}>
                   Open homepage
                   <ArrowRight className="h-4 w-4" />
                 </Link>

@@ -18,7 +18,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
         <h2 className="text-xl font-semibold text-white">PR reports</h2>
         <div className="mt-3">
           <Button asChild size="sm" variant="secondary">
-            <Link href="/dashboard/contributions" prefetch={false} scroll={false}>
+            <Link href="/dashboard/contributions" prefetch={false}>
               View all reports
               <ArrowRight className="h-4 w-4" />
             </Link>
@@ -31,7 +31,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
             <p>No PR reports yet. They appear after sync and scoring.</p>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" variant="secondary">
-                <Link href="/dashboard/contributions" prefetch={false} scroll={false}>Inspect contributions</Link>
+                <Link href="/dashboard/contributions" prefetch={false}>Inspect contributions</Link>
               </Button>
             </div>
           </li>
