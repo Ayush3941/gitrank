@@ -969,7 +969,9 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 }
 
 .render-opt-card {
-  contain: none;
+  contain: layout paint;
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 320px;
 }
 
 .render-opt-section {
@@ -979,6 +981,10 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 }
 
 @supports not (content-visibility: auto) {
+  .render-opt-card {
+    contain: none;
+  }
+
   .render-opt-section {
     contain: none;
   }
