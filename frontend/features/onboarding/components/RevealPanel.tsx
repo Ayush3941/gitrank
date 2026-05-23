@@ -158,13 +158,13 @@ export function RevealPanel({
             </Button>
           ) : null}
           <Button asChild size="lg" variant={needsSyncRecovery ? "secondary" : "default"}>
-            <Link href="/dashboard">
+            <Link href="/dashboard" prefetch={false}>
               Enter dashboard
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
           <Button asChild variant="secondary" size="lg">
-            <Link href="/dashboard/contributions">Open contributions</Link>
+            <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
           </Button>
           <ShareProfileButton
             variant="secondary"

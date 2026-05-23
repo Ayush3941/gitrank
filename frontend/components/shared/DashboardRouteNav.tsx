@@ -29,6 +29,7 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
             <li key={item.href} className="list-none shrink-0 min-[440px]:min-w-[8.25rem] sm:min-w-0 sm:flex-1">
               <Link
                 href={item.href}
+                prefetch={false}
                 scroll={false}
                 aria-current={active ? "page" : undefined}
                 className={cn(

@@ -24,7 +24,7 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
             <p>No quests yet. Run sync to generate missions.</p>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" variant="ghost">
-                <Link href="/dashboard/settings" scroll={false}>Open sync settings</Link>
+                <Link href="/dashboard/settings" prefetch={false} scroll={false}>Open sync settings</Link>
               </Button>
             </div>
           </div>

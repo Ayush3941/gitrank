@@ -251,7 +251,7 @@ export function PrivacyRepositoryToggleList({
               </Button>
             ) : null}
             <Button asChild size="sm" variant="secondary">
-              <Link href="/dashboard" scroll={false}>Open dashboard</Link>
+              <Link href="/dashboard" prefetch={false} scroll={false}>Open dashboard</Link>
             </Button>
           </div>
         </div>

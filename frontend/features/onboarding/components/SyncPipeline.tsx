@@ -305,7 +305,7 @@ export function SyncPipeline() {
                 <Link href="/onboarding/reveal">Continue to reveal</Link>
               </Button>
               <Button asChild variant="secondary">
-                <Link href="/dashboard">Open dashboard</Link>
+                <Link href="/dashboard" prefetch={false}>Open dashboard</Link>
               </Button>
             </>
           ) : null}

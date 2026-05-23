@@ -31,7 +31,7 @@ export function BestPRsPanel({
             <p>No public PR reports yet for this profile snapshot.</p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Button asChild variant="secondary" size="sm">
-                <Link href="/dashboard/contributions" scroll={false}>Open contributions</Link>
+                <Link href="/dashboard/contributions" prefetch={false} scroll={false}>Open contributions</Link>
               </Button>
             </div>
           </div>

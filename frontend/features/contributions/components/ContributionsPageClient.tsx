@@ -244,7 +244,7 @@ export function ContributionsPageClient() {
               Export CSV
             </Button>
             <Button asChild variant="secondary" size="sm">
-              <Link href="/dashboard/settings" scroll={false}>
+              <Link href="/dashboard/settings" prefetch={false} scroll={false}>
                 Sync settings
               </Link>
             </Button>
@@ -386,7 +386,7 @@ function SubsectionEmptyState({
           </Button>
         ) : null}
         <Button asChild size="sm" variant="secondary">
-          <Link href={actionHref} scroll={false}>{actionLabel}</Link>
+          <Link href={actionHref} prefetch={false} scroll={false}>{actionLabel}</Link>
         </Button>
       </div>
     </GlowCard>

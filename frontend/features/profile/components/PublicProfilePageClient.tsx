@@ -271,10 +271,10 @@ export function PublicProfilePageClient({
                   <p>Repository-level signal is not available on this snapshot yet.</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <Button asChild variant="secondary" size="sm">
-                      <Link href="/dashboard/contributions" scroll={false}>Open contributions</Link>
+                      <Link href="/dashboard/contributions" prefetch={false} scroll={false}>Open contributions</Link>
                     </Button>
                     <Button asChild variant="ghost" size="sm">
-                      <Link href="/dashboard/settings" scroll={false}>Open sync settings</Link>
+                      <Link href="/dashboard/settings" prefetch={false} scroll={false}>Open sync settings</Link>
                     </Button>
                   </div>
                 </div>

@@ -206,7 +206,7 @@ export function BadgesPageClient() {
         description="Unlocked badges and upcoming milestones."
         actions={(
           <Button asChild variant="secondary" size="sm">
-            <Link href="/dashboard/contributions" scroll={false}>
+            <Link href="/dashboard/contributions" prefetch={false} scroll={false}>
               Open contributions
             </Link>
           </Button>
