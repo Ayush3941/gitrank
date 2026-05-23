@@ -1,30 +1,35 @@
 # GitRank
 
-GitRank is an evidence-first contributor intelligence platform for open source.
-It ingests real GitHub contribution data, computes deterministic reputation
-signals, and presents them as a gamified profile with explainable PR battle
-reports.
+GitRank is an evidence-first contributor intelligence platform.
+It converts real GitHub contribution history into explainable score signals,
+progression metrics, and shareable contributor profiles.
 
-## What GitRank Does
+## Why GitRank
 
-- Uses GitHub OAuth for real account sign-in and linking.
-- Syncs contribution evidence from GitHub into local persistence.
-- Computes deterministic XP/score/rank progression from persisted evidence.
-- Produces PR battle reports with explainable scoring components.
-- Adds Gemini-generated narrative layers (when configured) without allowing AI
-  to alter score outcomes.
+- Uses real GitHub identity and contribution evidence.
+- Scores with deterministic backend rules, not opaque AI outputs.
+- Presents contribution quality through PR battle reports, skills, badges, and
+  progression.
+- Supports Gemini summaries for narrative context without changing score truth.
 
-## Deterministic Scoring Rule (Strict)
+## Core Product Capabilities
 
-GitRank enforces a hard boundary between scoring and AI:
+- GitHub OAuth sign-in and account linking.
+- Authenticated sync of authored PR evidence (bounded for reliability).
+- Deterministic XP, rank, badge, and progression calculation.
+- PR battle report view with score components and evidence metadata.
+- Public profile and dashboard views with privacy controls.
 
-- XP, rank, level, and badges are awarded by deterministic backend logic only.
-- Gemini consumes scored evidence in read-only mode for explanations.
-- AI output cannot write or override final score state.
-- If Gemini is unavailable, user-visible summaries fall back gracefully while
-  scoring continues normally.
+## Scoring and AI Boundary (Strict)
 
-## Architecture
+GitRank enforces a non-negotiable separation:
+
+- Score state is deterministic and persisted by backend scoring logic.
+- AI is read-only and optional; it can explain evidence, not grade it.
+- If AI is unavailable, the system falls back to deterministic summaries and
+  keeps scoring live.
+
+## High-Level Architecture
 
 ```text
 GitHub OAuth + GitHub API
@@ -44,82 +49,61 @@ auth-service -> github-ingestor -> pr-analyzer -> scoring-engine
                       frontend (Next.js)
 ```
 
-## Monorepo Layout
+## Repository Structure
 
-- `gitrank/` Go backend workspace (services, DB migrations, deploy, scripts)
-- `frontend/` Next.js app (dashboard, contributions, badges, quests, profile)
-- `start.sh` one-command local startup for infra + backend + frontend
-- `CONTRIBUTING.md` policy decisions, checklists, and roadmap waves
+- `gitrank/`: Go services, shared packages, migrations, deployment assets.
+- `frontend/`: Next.js dashboard, public profile, and UX surfaces.
+- `start.sh`: one-command local bootstrap for infra + backend + frontend.
+- `CONTRIBUTING.md`: implementation checklists, decisions, and standards.
 
-## Local Deployment
+## Local Quickstart
 
-### Fast Path (recommended)
+### 1. Start Everything
 
 ```bash
 cd /home/kali/Desktop/gitrank
 ./start.sh
 ```
 
-`start.sh` does all of the following:
+`start.sh` automatically:
 
-- ensures `.env` / `.env.local` exist from examples
-- normalizes local Postgres URL to `localhost:55432`
-- starts Postgres + Redis containers
-- runs migrations
-- builds/starts backend services
-- starts frontend dev server (webpack mode for stability)
-- writes logs to `.logs/` and pids to `.run/`
+- creates `gitrank/.env` and `frontend/.env.local` from examples when missing
+- ensures local DB URL is on `localhost:55432`
+- starts Postgres + Redis via Docker Compose
+- runs DB migrations
+- builds and boots backend services
+- starts frontend dev server on `http://localhost:3000`
+- writes logs to `.logs/` and PID files to `.run/`
 
-### Manual Path
+### 2. Open the App
 
-```bash
-cd /home/kali/Desktop/gitrank
-cp -n gitrank/.env.example gitrank/.env
-cp -n frontend/.env.example frontend/.env.local
-cd gitrank && ./scripts/migrate.sh
-```
+- Frontend: `http://localhost:3000`
+- API health: `http://localhost:8080/healthz`
 
-Then start backend services and frontend manually.
+## Environment Baseline
 
-## Required Environment Configuration
+Set these in `gitrank/.env` before serious local testing:
 
-At minimum in `gitrank/.env`:
+| Key | Required | Purpose |
+| --- | --- | --- |
+| `GITHUB_CLIENT_ID` | Yes | GitHub OAuth client ID |
+| `GITHUB_CLIENT_SECRET` | Yes | GitHub OAuth client secret |
+| `GITHUB_OAUTH_REDIRECT_URL` | Yes | Must match OAuth app callback |
+| `GITRANK_SESSION_SECRET` | Yes | Session signing secret |
+| `GITRANK_JWT_SIGNING_KEY` | Yes | JWT signing key |
+| `GITHUB_TOKEN_ENCRYPTION_KEY` | Yes | Encrypts stored GitHub tokens |
+| `AI_PROVIDER=gemini` | Yes (if AI on) | Current AI provider path |
+| `GEMINI_API_KEY` | Yes (if AI on) | Gemini API credential |
 
-- `GITHUB_CLIENT_ID`
-- `GITHUB_CLIENT_SECRET`
-- `GITRANK_SESSION_SECRET`
-- `GITRANK_JWT_SIGNING_KEY`
-- `GITHUB_TOKEN_ENCRYPTION_KEY` (32-byte base64 key)
+Frontend environment is read from `frontend/.env.local`.
 
-Gemini (current supported AI path):
+## Current Local Sync Behavior
 
-- `AI_PROVIDER=gemini`
-- `GEMINI_API_KEY=...`
-- `GEMINI_MODEL=gemini-2.5-flash`
-- `GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai`
+- `GITHUB_AUTHORED_PR_SYNC_LIMIT=10` by default for stable local performance.
+- Sync writes evidence-first records, then recomputed score/profile snapshots.
+- Partial upstream failures surface as partial evidence, not fabricated data.
 
-Optional frontend AI settings in `frontend/.env.local`:
-
-- `GEMINI_API_KEY=...`
-- `GEMINI_MODEL=gemini-2.5-flash`
-
-## Sync and Evidence Behavior
-
-- User sync is intentionally bounded (`GITHUB_AUTHORED_PR_SYNC_LIMIT=10` by
-  default) for predictable local performance.
-- Sync persists evidence-first records and recomputed aggregates.
-- Partial GitHub endpoint failures degrade to partial evidence rather than
-  fabricating values.
-- Battle reports and profile cards display deterministic fallback states when AI
-  enrichment is missing or rate-limited.
-
-## No Fake Data Policy
-
-GitRank UI paths are designed to avoid fake contributor identities in primary
-authenticated flows. Preview states must be explicitly labeled and must not be
-presented as real synced users.
-
-## Quality Commands
+## Development Commands
 
 Backend:
 
@@ -140,24 +124,24 @@ npm run build
 
 ## Troubleshooting
 
-- If OAuth fails: verify `GITHUB_OAUTH_REDIRECT_URL` exactly matches your GitHub
-  OAuth app callback URL.
-- If sync shows timeouts: increase `GITHUB_REQUEST_TIMEOUT` (e.g. `20s` or
-  higher) and retry.
-- If report says deterministic-only: Gemini key/quota/config is unavailable;
-  deterministic scoring still remains valid.
-- If frontend shows stale behavior: restart with `./start.sh` (it clears
-  frontend cache by default).
+- OAuth callback error: ensure `GITHUB_OAUTH_REDIRECT_URL` exactly matches your
+  GitHub OAuth app callback URL.
+- Sync timeout errors: raise `GITHUB_REQUEST_TIMEOUT` in `gitrank/.env` and
+  retry.
+- Deterministic-only PR report: AI enrichment is unavailable (key/quota/config)
+  but deterministic scoring is still valid.
+- Frontend serving stale output: rerun `./start.sh` (clears frontend cache by
+  default).
 
-## Additional Docs
+## Documentation
 
 - Backend overview: [`gitrank/README.md`](./gitrank/README.md)
 - Frontend overview: [`frontend/README.md`](./frontend/README.md)
-- K8s notes: [`gitrank/deployments/k8s/README.md`](./gitrank/deployments/k8s/README.md)
 - Architecture: [`gitrank/docs/architecture.md`](./gitrank/docs/architecture.md)
 - API architecture: [`gitrank/docs/api-architecture.md`](./gitrank/docs/api-architecture.md)
-- Release docs: [`gitrank/docs/releases`](./gitrank/docs/releases)
-- Governance and implementation checklists: [`CONTRIBUTING.md`](./CONTRIBUTING.md)
+- Production decision register: [`gitrank/docs/production-decision-register.md`](./gitrank/docs/production-decision-register.md)
+- Maintainer guide: [`gitrank/docs/MAINTAINER_GUIDE.md`](./gitrank/docs/MAINTAINER_GUIDE.md)
+- Contribution and delivery checklists: [`CONTRIBUTING.md`](./CONTRIBUTING.md)
 
 ## License
 
