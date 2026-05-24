@@ -303,7 +303,7 @@ body::before {
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
-  filter: saturate(1.05) contrast(1.02) brightness(1.01);
+  filter: saturate(1.08) contrast(1.02) brightness(1.04);
 }
 
 body::after {
@@ -313,7 +313,7 @@ body::after {
   pointer-events: none;
   z-index: -1;
   background:
-    linear-gradient(180deg, rgb(1 4 12 / 0.1), rgb(2 6 16 / 0.32)),
+    linear-gradient(180deg, rgb(1 4 12 / 0.08), rgb(2 6 16 / 0.28)),
     radial-gradient(
       circle at 10% 10%,
       rgb(var(--primary) / 0.12) 0%,
@@ -328,7 +328,7 @@ body::after {
       rgb(var(--primary-2) / 0.028) 82%,
       transparent 100%
     );
-  opacity: 0.35;
+  opacity: 0.27;
 }
 
 ::selection {
@@ -1260,7 +1260,7 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   pointer-events: none;
   z-index: -1;
   border-radius: 999px;
-  opacity: 0.06;
+  opacity: 0.045;
 }
 
 .page-shell::before {
