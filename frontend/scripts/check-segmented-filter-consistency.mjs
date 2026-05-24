@@ -27,6 +27,16 @@ for (const relativePath of filterFiles) {
       `${relativePath}: found <select>; use segmented controls for dashboard filter consistency`,
     );
   }
+
+  const segmentedInvocations = source.match(/<SegmentedTablist[\s\S]*?\n\s*\/>/g) ?? [];
+  for (const invocation of segmentedInvocations) {
+    if (!/\bwrap\b/.test(invocation)) {
+      violations.push(
+        `${relativePath}: SegmentedTablist filter controls must set 'wrap' to avoid horizontal overflow`,
+      );
+      break;
+    }
+  }
 }
 
 if (violations.length > 0) {
