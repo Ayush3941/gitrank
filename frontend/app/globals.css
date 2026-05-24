@@ -1064,11 +1064,37 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 
 .dashboard-nav-track {
   width: 100%;
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--primary) / 0.34) rgb(0 0 0 / 0);
+  padding-bottom: 0.12rem;
 }
 
 .dashboard-nav-track::-webkit-scrollbar {
-  display: none;
+  height: 0.34rem;
+  width: 0.34rem;
+}
+
+.dashboard-nav-track::-webkit-scrollbar-track {
+  background: rgb(0 0 0 / 0);
+}
+
+.dashboard-nav-track::-webkit-scrollbar-thumb {
+  background:
+    linear-gradient(
+      90deg,
+      rgb(var(--primary) / 0.5),
+      rgb(var(--primary-2) / 0.4)
+    );
+  border-radius: 999px;
+}
+
+.dashboard-nav-track::-webkit-scrollbar-thumb:hover {
+  background:
+    linear-gradient(
+      90deg,
+      rgb(var(--primary) / 0.65),
+      rgb(var(--primary-2) / 0.55)
+    );
 }
 
 .lane-rail {
