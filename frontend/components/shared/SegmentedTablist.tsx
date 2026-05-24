@@ -43,6 +43,14 @@ export function SegmentedTablist<T extends string>({
     onValueChange(nextValue);
   }
 
+  function focusWithoutScroll(element: HTMLButtonElement) {
+    try {
+      element.focus({ preventScroll: true });
+    } catch {
+      element.focus();
+    }
+  }
+
   return (
     <div
       role="tablist"
@@ -79,6 +87,12 @@ export function SegmentedTablist<T extends string>({
                 data-segmented-option="true"
                 data-segmented-value={item.value}
                 className="focus-ring dashboard-nav-item min-h-11 w-full px-3 py-2 text-center text-sm font-semibold"
+                onMouseDown={(event) => {
+                  if (event.button !== 0) {
+                    return;
+                  }
+                  focusWithoutScroll(event.currentTarget);
+                }}
                 onClick={() => {
                   handleSelect(item.value);
                 }}

@@ -2,6 +2,12 @@
 
 ## 2026-05-24
 
+- Global backdrop visibility smoothing pass:
+  - reduced heavy overlay opacity and softened radial/linear overlay falloff so `assets/background.jpg` remains visible without sacrificing text contrast.
+  - kept the background locked to viewport (`body::before` fixed layer) while slightly lowering saturation/contrast boost to avoid harsh banding on neon themes.
+- Segmented-filter focus no-scroll pass:
+  - pointer interactions on shared segmented filters now apply focus with `preventScroll` semantics before selection, reducing browser-driven jump-to-control behavior during filter changes.
+  - helps stabilize settings sync-status and similar segmented lanes where users reported abrupt viewport jumps.
 - JSX key-safety guard pass:
   - added `npm run check:jsx-keys` to detect risky direct list keys (for example single volatile label/signal keys) that can reintroduce duplicate-key render issues.
   - guard is scoped to direct key expressions to avoid false positives on safe compound/template keys.
