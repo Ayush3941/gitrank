@@ -1,13 +1,16 @@
 "use client";
 
+import { useId } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 export function TimelineChartInner({ data }: { data: Array<{ label: string; xp: number }> }) {
+  const gradientId = useId().replaceAll(":", "");
+
   return (
     <ResponsiveContainer width="100%" height="100%">
       <AreaChart data={data}>
         <defs>
-          <linearGradient id="xpGradient" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="rgb(var(--primary))" stopOpacity={0.46} />
             <stop offset="55%" stopColor="rgb(var(--primary-2))" stopOpacity={0.2} />
             <stop offset="100%" stopColor="rgb(var(--primary-2))" stopOpacity={0.03} />
@@ -43,7 +46,7 @@ export function TimelineChartInner({ data }: { data: Array<{ label: string; xp: 
           dataKey="xp"
           stroke="rgb(var(--primary))"
           strokeWidth={2.4}
-          fill="url(#xpGradient)"
+          fill={`url(#${gradientId})`}
           isAnimationActive={false}
         />
       </AreaChart>
