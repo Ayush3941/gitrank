@@ -5,6 +5,7 @@ import { ClampedText } from "@/components/shared/ClampedText";
 import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { GlowCard } from "@/components/shared/GlowCard";
 import type { ContributionNarrative } from "@/lib/ai/abra-insights-types";
+import { formatContributionStatusLabel } from "@/lib/presentation/contribution-status";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import type { Contribution } from "@/types/gitrank";
 
@@ -62,7 +63,7 @@ export function ContributionList({
                     ) : null}
                     {showStatusChip ? (
                       <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-                        {formatContributionStatus(item.status)}
+                        {formatContributionStatusLabel(item.status)}
                       </span>
                     ) : null}
                     {reportState ? (
@@ -211,16 +212,6 @@ function contributionSignalBand(signalIndex: number): ContributionSignalBand {
     return { label: "Rising", barClassName: "bg-gradient-to-r from-cyan-300 to-blue-300" };
   }
   return { label: "Early", barClassName: "bg-gradient-to-r from-amber-300 to-fuchsia-300" };
-}
-
-function formatContributionStatus(status: Contribution["status"]): string {
-  if (status === "merged") {
-    return "Merged";
-  }
-  if (status === "open") {
-    return "Open";
-  }
-  return "Closed";
 }
 
 function formatContributionDate(value: string): string {

@@ -25,6 +25,7 @@ import {
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
+import { formatContributionStatusLabel } from "@/lib/presentation/contribution-status";
 
 const SkillRadarChart = dynamic(
   () =>
@@ -448,7 +449,7 @@ function LiteBestPRSummary({
           >
             <p className="break-anywhere text-sm font-medium text-white">{report.title}</p>
             <p className="mt-1 break-anywhere text-xs text-muted">
-              {report.owner}/{report.repo} #{report.number} • {report.status}
+              {report.owner}/{report.repo} #{report.number} • {formatContributionStatusLabel(report.status)}
             </p>
             <p className="mt-2 text-xs font-semibold text-primary">+{report.xpEarned} XP</p>
           </li>

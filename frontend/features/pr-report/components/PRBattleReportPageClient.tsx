@@ -16,6 +16,10 @@ import { EvidenceSignalsCard } from "@/features/pr-report/components/EvidenceSig
 import { ScoreMatrixCard } from "@/features/pr-report/components/ScoreMatrixCard";
 import { XPBreakdownCard } from "@/features/pr-report/components/XPBreakdownCard";
 import { usePrReport } from "@/hooks/use-pr-report";
+import {
+  formatContributionStatusLabel,
+  toneForContributionStatus,
+} from "@/lib/presentation/contribution-status";
 import { buildEvidenceSignalChips } from "@/lib/presentation/evidence-signal";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import { formatEvidenceStatusLabel, toneForEvidenceStatus } from "@/lib/presentation/status-tone";
@@ -103,7 +107,7 @@ export function PRBattleReportPageClient({
               { label: `${data.contribution.owner}/${data.contribution.repo}` },
               { label: `PR #${data.contribution.number}` },
               {
-                label: formatContributionStatus(data.contribution.status),
+                label: formatContributionStatusLabel(data.contribution.status),
                 tone: toneForContributionStatus(data.contribution.status),
               },
               {
@@ -140,7 +144,7 @@ export function PRBattleReportPageClient({
               </li>
               <li className="list-none">
                 <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-                  {formatContributionStatus(data.contribution.status)}
+                  {formatContributionStatusLabel(data.contribution.status)}
                 </span>
               </li>
             </ul>
@@ -379,37 +383,6 @@ function formatConfidenceLabel(
     return "Rate limited";
   }
   return "Pending";
-}
-
-function formatContributionStatus(status: string): string {
-  const value = status.trim().toLowerCase();
-  if (!value) {
-    return "Status unknown";
-  }
-  if (value === "merged") {
-    return "Merged";
-  }
-  if (value === "open") {
-    return "Open";
-  }
-  if (value === "closed") {
-    return "Closed";
-  }
-  return value.charAt(0).toUpperCase() + value.slice(1);
-}
-
-function toneForContributionStatus(status: string): "muted" | "info" | "success" | "warning" {
-  const value = status.trim().toLowerCase();
-  if (value === "merged") {
-    return "success";
-  }
-  if (value === "open") {
-    return "info";
-  }
-  if (value === "closed") {
-    return "warning";
-  }
-  return "muted";
 }
 
 function extractFallbackReason(signals: string[]): string | null {
