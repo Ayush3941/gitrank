@@ -318,7 +318,7 @@ export function SettingsPageClient() {
       <PageHeader
         eyebrow="Settings"
         title="Settings"
-        description="Account, privacy, and display controls."
+        description="Privacy, sync, and display controls."
         actions={(
           <Button asChild variant="secondary" size="sm">
             <Link href={`/u/${data.user.username}`} prefetch={false}>
@@ -345,7 +345,7 @@ export function SettingsPageClient() {
             }}
           >
             <RefreshCw className="h-4 w-4" />
-            {isFetching ? "Refreshing view..." : "Refresh profile view"}
+            {isFetching ? "Refreshing..." : "Refresh snapshot"}
           </Button>
           <Button variant="secondary" disabled={isActing} onClick={handleAccountRelink}>
             <FolderGit2 className="h-4 w-4" />
@@ -357,7 +357,7 @@ export function SettingsPageClient() {
           </Button>
           <Button variant="secondary" disabled={isActing} onClick={handleUnlinkAccount}>
             <FolderGit2 className="h-4 w-4" />
-            {unlinkAccount.isPending ? "Disconnecting..." : "Disconnect"}
+            {unlinkAccount.isPending ? "Disconnecting..." : "Disconnect GitHub"}
           </Button>
         </div>
         {actionError ? (
@@ -410,7 +410,7 @@ export function SettingsPageClient() {
               <p className="mt-4 text-xs font-medium text-primary">Display preference</p>
               <h2 className="mt-2 text-xl font-semibold text-white">Reduced gamification</h2>
               <p className="mt-2 text-sm leading-6 text-muted">
-                Reduce heavy effects. Scores and privacy remain unchanged.
+                Reduce visual effects. Scores and privacy stay unchanged.
               </p>
             </div>
             <Switch
@@ -428,7 +428,7 @@ export function SettingsPageClient() {
                   <p className="text-xs font-medium text-primary">Keyboard controls</p>
                 <h3 className="mt-2 text-lg font-semibold text-white">Display shortcuts</h3>
                 <p className="mt-2 text-sm leading-6 text-muted">
-                  Enable theme and text-size shortcuts outside input fields.
+                  Enable theme and text-size shortcuts outside text inputs.
                 </p>
               </div>
               <Switch
@@ -447,7 +447,7 @@ export function SettingsPageClient() {
               <div className="neon-surface rounded-[1rem] px-4 py-3">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <p className="text-sm text-muted">
-                    {activeTheme.label} · {activeTextScale.label} · {themeSource === "system" ? "System theme" : "Manual theme"}
+                    {activeTheme.label} · {activeTextScale.label} · {themeSource === "system" ? "System" : "Manual"}
                   </p>
                   <Button
                     type="button"
@@ -461,12 +461,12 @@ export function SettingsPageClient() {
                   >
                     {showDisplayTuning ? (
                       <>
-                        Hide advanced
+                        Hide tuning
                         <ChevronUp className="h-4 w-4" />
                       </>
                     ) : (
                       <>
-                        Advanced tuning
+                        Display tuning
                         <ChevronDown className="h-4 w-4" />
                       </>
                     )}
