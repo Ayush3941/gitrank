@@ -50,6 +50,9 @@ jobs:
       - name: Check readable text token usage
         run: npm run check:readable-text
 
+      - name: Check segmented filter consistency
+        run: npm run check:segmented-filters
+
       - name: Check media layout stability
         run: npm run check:media-stability
 
