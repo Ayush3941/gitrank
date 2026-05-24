@@ -82,6 +82,9 @@ export function useProfile(username: string) {
   return useQuery({
     queryKey: ["profile", "public", username],
     queryFn: () => getPublicProfile(username),
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
   });
 }
 
