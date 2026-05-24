@@ -313,22 +313,22 @@ body::after {
   pointer-events: none;
   z-index: -1;
   background:
-    linear-gradient(180deg, rgb(1 4 12 / 0.12), rgb(2 6 16 / 0.34)),
+    linear-gradient(180deg, rgb(1 4 12 / 0.1), rgb(2 6 16 / 0.32)),
     radial-gradient(
       circle at 10% 10%,
       rgb(var(--primary) / 0.12) 0%,
-      rgb(var(--primary) / 0.08) 48%,
-      rgb(var(--primary) / 0.03) 78%,
+      rgb(var(--primary) / 0.085) 56%,
+      rgb(var(--primary) / 0.03) 84%,
       transparent 100%
     ),
     radial-gradient(
       circle at 90% 88%,
       rgb(var(--primary-2) / 0.11) 0%,
-      rgb(var(--primary-2) / 0.07) 46%,
-      rgb(var(--primary-2) / 0.03) 76%,
+      rgb(var(--primary-2) / 0.075) 54%,
+      rgb(var(--primary-2) / 0.028) 82%,
       transparent 100%
     );
-  opacity: 0.38;
+  opacity: 0.35;
 }
 
 ::selection {
