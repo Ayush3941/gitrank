@@ -170,23 +170,26 @@ export function ContributionFilters({
         </div>
       ) : null}
       <div id="contribution-mobile-controls">
-        <SegmentedTablist
-          options={filters.map((filter) => {
-            const Icon = filterIconByValue[filter.value];
-            return {
-              value: filter.value,
-              label: filter.value,
-              icon: <Icon className="h-4 w-4" />,
-              minWidthClassName: "min-w-[8.5rem]",
-            };
-          })}
-          value={value}
-          onValueChange={onValueChange}
-          ariaLabel="Contribution category filters"
-          ariaControls={resultsRegionId}
-          tabIdPrefix="contribution-filter-tab"
-          wrap
-        />
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-primary">Category</p>
+          <SegmentedTablist
+            options={filters.map((filter) => {
+              const Icon = filterIconByValue[filter.value];
+              return {
+                value: filter.value,
+                label: filter.value,
+                icon: <Icon className="h-4 w-4" />,
+                minWidthClassName: "min-w-[8.5rem]",
+              };
+            })}
+            value={value}
+            onValueChange={onValueChange}
+            ariaLabel="Contribution category filters"
+            ariaControls={resultsRegionId}
+            tabIdPrefix="contribution-filter-tab"
+            wrap
+          />
+        </div>
         <div className="grid gap-3">
           <div className="relative">
             <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted" />
@@ -212,26 +215,29 @@ export function ContributionFilters({
               </button>
             ) : null}
           </div>
-          <SegmentedTablist
-            options={sortOptions.map((item) => {
-              const Icon = sortIconByValue[item];
-              return {
-                value: item,
-                label: item,
-                icon: <Icon className="h-4 w-4" />,
-                minWidthClassName: "min-w-[9rem]",
-              };
-            })}
-            value={sort}
-            onValueChange={(next) =>
-              onSortChange(next as "Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact")
-            }
-          ariaLabel="Contribution sort options"
-          ariaDescribedBy={statusId}
-          ariaControls={resultsRegionId}
-          tabIdPrefix="contribution-sort-tab"
-          wrap
-        />
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-primary">Sort</p>
+            <SegmentedTablist
+              options={sortOptions.map((item) => {
+                const Icon = sortIconByValue[item];
+                return {
+                  value: item,
+                  label: item,
+                  icon: <Icon className="h-4 w-4" />,
+                  minWidthClassName: "min-w-[9rem]",
+                };
+              })}
+              value={sort}
+              onValueChange={(next) =>
+                onSortChange(next as "Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact")
+              }
+              ariaLabel="Contribution sort options"
+              ariaDescribedBy={statusId}
+              ariaControls={resultsRegionId}
+              tabIdPrefix="contribution-sort-tab"
+              wrap
+            />
+          </div>
         </div>
       </div>
     </section>

@@ -398,46 +398,52 @@ export function BadgesPageClient() {
               </ul>
             </div>
             <div className="grid gap-3">
-              <SegmentedTablist
-                options={BADGE_RARITY_FILTERS.map((item) => ({
-                  value: item,
-                  label: item,
-                  icon: <Gem className="h-4 w-4" />,
-                  minWidthClassName: "min-w-[8rem]",
-                }))}
-                value={rarity}
-                onValueChange={handleRarityChange}
-                ariaLabel="Badge rarity filters"
-                ariaDescribedBy={badgesFilterStatusId}
-                ariaControls={BADGES_EARNED_REGION_ID}
-                tabIdPrefix="badge-rarity-tab"
-                wrap
-              />
-              <SegmentedTablist
-                options={BADGE_VISIBILITY_FILTERS.map((item) => {
-                  const Icon = item === "Unlocked" ? Unlock : item === "Locked" ? Lock : Medal;
-                  const count =
-                    item === "All"
-                      ? totalCount
-                      : item === "Unlocked"
-                        ? unlockedCount
-                        : totalCount - unlockedCount;
-                  return {
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-primary">Rarity</p>
+                <SegmentedTablist
+                  options={BADGE_RARITY_FILTERS.map((item) => ({
                     value: item,
                     label: item,
-                    icon: <Icon className="h-4 w-4" />,
-                    count,
+                    icon: <Gem className="h-4 w-4" />,
                     minWidthClassName: "min-w-[8rem]",
-                  };
-                })}
-                value={visibility}
-                onValueChange={handleVisibilityChange}
-                ariaLabel="Badge visibility filters"
-                ariaDescribedBy={badgesFilterStatusId}
-                ariaControls={BADGES_EARNED_REGION_ID}
-                tabIdPrefix="badge-visibility-tab"
-                wrap
-              />
+                  }))}
+                  value={rarity}
+                  onValueChange={handleRarityChange}
+                  ariaLabel="Badge rarity filters"
+                  ariaDescribedBy={badgesFilterStatusId}
+                  ariaControls={BADGES_EARNED_REGION_ID}
+                  tabIdPrefix="badge-rarity-tab"
+                  wrap
+                />
+              </div>
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-primary">State</p>
+                <SegmentedTablist
+                  options={BADGE_VISIBILITY_FILTERS.map((item) => {
+                    const Icon = item === "Unlocked" ? Unlock : item === "Locked" ? Lock : Medal;
+                    const count =
+                      item === "All"
+                        ? totalCount
+                        : item === "Unlocked"
+                          ? unlockedCount
+                          : totalCount - unlockedCount;
+                    return {
+                      value: item,
+                      label: item,
+                      icon: <Icon className="h-4 w-4" />,
+                      count,
+                      minWidthClassName: "min-w-[8rem]",
+                    };
+                  })}
+                  value={visibility}
+                  onValueChange={handleVisibilityChange}
+                  ariaLabel="Badge visibility filters"
+                  ariaDescribedBy={badgesFilterStatusId}
+                  ariaControls={BADGES_EARNED_REGION_ID}
+                  tabIdPrefix="badge-visibility-tab"
+                  wrap
+                />
+              </div>
             </div>
           </div>
         </div>
