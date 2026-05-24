@@ -77,6 +77,10 @@ export function PRBattleReportPageClient({
     evidenceAnchored,
     hasPersistedScoreEvidence,
   );
+  const showEvidenceReasonSummary =
+    Boolean(evidenceReasonSummary) &&
+    (!evidenceAnchored ||
+      evidenceReasonSummary?.toLowerCase() !== "deterministic evidence is available now.");
   const signalTier =
     data.contribution.xpEarned >= 250
       ? "High signal"
@@ -99,24 +103,29 @@ export function PRBattleReportPageClient({
           </div>
         )}
       />
-      <div className="flex flex-wrap gap-2 text-xs">
-        <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-          Signal {signalTier}
-        </span>
-        <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-          {signalDetail}
-        </span>
-        <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-          {evidenceAnchored ? "Anchored evidence" : "Partial evidence"}
-        </span>
-      </div>
       <section>
         <GlowCard strong className="space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
             <p className="break-anywhere text-sm text-muted">{data.contribution.owner}/{data.contribution.repo} #{data.contribution.number}</p>
             <h2 className="mt-2 break-anywhere text-3xl font-semibold text-white">{data.contribution.title}</h2>
-            <p className="mt-3 text-sm text-muted">{data.contribution.status}</p>
+            <ul role="list" className="mt-3 flex flex-wrap gap-2 text-xs">
+              <li className="list-none">
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+                  Signal {signalTier}
+                </span>
+              </li>
+              <li className="list-none">
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+                  {signalDetail}
+                </span>
+              </li>
+              <li className="list-none">
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
+                  {formatContributionStatus(data.contribution.status)}
+                </span>
+              </li>
+            </ul>
           </div>
           <div className="text-right">
             <p className="text-xs font-medium text-primary">XP earned</p>
@@ -181,7 +190,7 @@ export function PRBattleReportPageClient({
               </li>
             ) : null}
           </ul>
-          {evidenceReasonSummary ? (
+          {showEvidenceReasonSummary && evidenceReasonSummary ? (
             <ExpandableText
               text={evidenceReasonSummary}
               lines={2}
@@ -352,6 +361,23 @@ function formatConfidenceLabel(
     return "Rate limited";
   }
   return "Pending";
+}
+
+function formatContributionStatus(status: string): string {
+  const value = status.trim().toLowerCase();
+  if (!value) {
+    return "Status unknown";
+  }
+  if (value === "merged") {
+    return "Merged";
+  }
+  if (value === "open") {
+    return "Open";
+  }
+  if (value === "closed") {
+    return "Closed";
+  }
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
 function extractFallbackReason(signals: string[]): string | null {
