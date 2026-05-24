@@ -145,39 +145,62 @@ export function SyncRunActivityPanel({
               </button>
             ) : null}
           </div>
-          <SegmentedTablist
-            options={SYNC_RUN_STATUS_FILTERS.map((status) => {
-              const count =
-                status === "All"
-                  ? statusCounts.all
-                  : status === "Completed"
-                    ? statusCounts.completed
-                    : status === "Running"
-                      ? statusCounts.running
-                      : statusCounts.failed;
-              const Icon =
-                status === "All"
-                  ? Search
-                  : status === "Completed"
-                    ? CheckCircle2
-                    : status === "Running"
-                      ? Clock3
-                      : XCircle;
-              return {
-                value: status,
-                label: status,
-                icon: <Icon className="h-4 w-4" />,
-                count,
-                minWidthClassName: "min-w-[8rem]",
-              };
-            })}
-            value={statusFilter}
-            onValueChange={setStatusFilter}
-            ariaLabel="Sync run status filters"
-            ariaDescribedBy={filterStatusId}
-            ariaControls={syncRunsRegionId}
-            tabIdPrefix="sync-run-status-tab"
-          />
+          <div className="lg:hidden">
+            <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
+              <span className="sr-only">Sync run status filter</span>
+              <select
+                value={statusFilter}
+                onChange={(event) => {
+                  setStatusFilter(event.target.value as SyncRunStatusFilter);
+                }}
+                aria-label="Sync run status filter"
+                aria-describedby={filterStatusId}
+                aria-controls={syncRunsRegionId}
+                className="focus-ring h-full w-full bg-transparent text-sm text-foreground outline-none"
+              >
+                {SYNC_RUN_STATUS_FILTERS.map((status) => (
+                  <option key={`sync-status-option-${status}`} value={status} className="bg-card text-foreground">
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <div className="hidden lg:block">
+            <SegmentedTablist
+              options={SYNC_RUN_STATUS_FILTERS.map((status) => {
+                const count =
+                  status === "All"
+                    ? statusCounts.all
+                    : status === "Completed"
+                      ? statusCounts.completed
+                      : status === "Running"
+                        ? statusCounts.running
+                        : statusCounts.failed;
+                const Icon =
+                  status === "All"
+                    ? Search
+                    : status === "Completed"
+                      ? CheckCircle2
+                      : status === "Running"
+                        ? Clock3
+                        : XCircle;
+                return {
+                  value: status,
+                  label: status,
+                  icon: <Icon className="h-4 w-4" />,
+                  count,
+                  minWidthClassName: "min-w-[8rem]",
+                };
+              })}
+              value={statusFilter}
+              onValueChange={setStatusFilter}
+              ariaLabel="Sync run status filters"
+              ariaDescribedBy={filterStatusId}
+              ariaControls={syncRunsRegionId}
+              tabIdPrefix="sync-run-status-tab"
+            />
+          </div>
         </div>
       </div>
 

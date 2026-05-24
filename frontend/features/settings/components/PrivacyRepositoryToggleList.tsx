@@ -127,7 +127,7 @@ export function PrivacyRepositoryToggleList({
               </button>
             ) : null}
           </div>
-          <div className="sm:hidden">
+          <div className="lg:hidden">
             <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
               <span className="sr-only">Repository visibility filter</span>
               <select
@@ -148,7 +148,7 @@ export function PrivacyRepositoryToggleList({
               </select>
             </label>
           </div>
-          <div className="hidden sm:block">
+          <div className="hidden lg:block">
             <span id={visibilityGroupId} className="sr-only">
               Repository visibility filter
             </span>
