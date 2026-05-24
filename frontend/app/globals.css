@@ -983,7 +983,7 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 }
 
 .readable-measure {
-  max-width: 68ch;
+  max-width: 62ch;
   text-wrap: pretty;
 }
 
