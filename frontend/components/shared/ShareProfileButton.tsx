@@ -101,7 +101,11 @@ export function ShareProfileButton({
         return;
       }
 
-      window.prompt("Copy this profile URL", url);
+      const promptResult = window.prompt("Copy this profile URL", url);
+      if (promptResult === null) {
+        setState("idle");
+        return;
+      }
       setState("manual");
       void emitAnalyticsEvent({
         eventName: "profile.shared",

@@ -92,4 +92,32 @@ describe("ShareProfileButton", () => {
     );
     expect(promptMock).not.toHaveBeenCalled();
   });
+
+  it("keeps idle state when manual prompt fallback is cancelled", async () => {
+    shareMock.mockRejectedValueOnce(new Error("share failed"));
+    writeTextMock.mockRejectedValueOnce(new Error("clipboard unavailable"));
+    promptMock.mockReturnValueOnce(null);
+    Object.defineProperty(window, "isSecureContext", {
+      configurable: true,
+      value: false,
+    });
+
+    render(
+      <ShareProfileButton
+        username="octocat"
+        displayName="Octo Cat"
+        shareHeadline="Share headline"
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Share profile" }));
+
+    await waitFor(() => {
+      expect(promptMock).toHaveBeenCalledTimes(1);
+    });
+    expect(
+      screen.getByRole("button", { name: "Share profile" }),
+    ).toBeTruthy();
+    expect(emitAnalyticsEventMock).not.toHaveBeenCalled();
+  });
 });

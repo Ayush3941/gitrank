@@ -59,7 +59,11 @@ export function CopyTextButton({
         return;
       }
 
-      window.prompt("Copy text", text);
+      const promptResult = window.prompt("Copy text", text);
+      if (promptResult === null) {
+        setState("idle");
+        return;
+      }
       setState("manual");
       void emitAnalyticsEvent({
         eventName: "copy_text.used",
