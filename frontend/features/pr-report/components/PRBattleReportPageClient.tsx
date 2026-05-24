@@ -81,6 +81,11 @@ export function PRBattleReportPageClient({
   const evidenceAnchored = evidenceState.status === "complete" || evidenceState.status === "deterministic_only";
   const fallbackReason = extractFallbackReason(data.contribution.evidenceSignals);
   const fallbackDetail = fallbackReason ? formatFallbackReason(fallbackReason) : null;
+  const summarySectionLabel = buildSummarySectionLabel({
+    status: evidenceState.status,
+    deterministicOnly: evidenceState.deterministicOnly,
+    fallbackDetail,
+  });
   const hasPersistedScoreEvidence =
     !evidenceState.missingEvidence.includes("score_event") || data.contribution.xpEarned > 0;
   const uniqueBadgeUnlocks = deduplicateBadgeUnlocks(data.badgeUnlocks);
@@ -266,10 +271,10 @@ export function PRBattleReportPageClient({
       <section className="render-opt-section">
         <GlowCard className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs font-medium text-primary">AI summary</p>
+            <p className="text-xs font-medium text-primary">{summarySectionLabel}</p>
             <CopyTextButton
               text={reportSummary}
-              label="Copy summary"
+              label="Copy impact summary"
               copiedLabel="Summary copied"
               analyticsTarget="pr-report/ai-summary"
               size="sm"
@@ -422,6 +427,24 @@ function formatConfidenceLabel(
     return "Rate limited";
   }
   return "Pending";
+}
+
+function buildSummarySectionLabel({
+  status,
+  deterministicOnly,
+  fallbackDetail,
+}: {
+  status: string;
+  deterministicOnly: boolean;
+  fallbackDetail: string | null;
+}): string {
+  if (fallbackDetail) {
+    return "Impact summary (deterministic fallback)";
+  }
+  if (deterministicOnly || status === "deterministic_only") {
+    return "Impact summary (deterministic)";
+  }
+  return "Impact summary (Gemini)";
 }
 
 function extractFallbackReason(signals: string[]): string | null {

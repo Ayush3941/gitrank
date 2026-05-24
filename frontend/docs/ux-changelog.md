@@ -11,6 +11,9 @@
 - Frontend CI integrity-enforcement pass:
   - wired UI integrity gates directly into `.github/workflows/frontend-ci.yml` for `check:no-hardcoded-identities`, `check:query-policy`, `check:jsx-keys`, `check:jsx-ids`, `check:nested-interactive`, and `check:scroll-jumps`.
   - makes these anti-regression rules merge-blocking in PRs instead of local-only checks.
+- PR report summary-clarity pass:
+  - replaced ambiguous `AI summary` heading with explicit mode-aware copy: `Impact summary (Gemini)`, `Impact summary (deterministic)`, or `Impact summary (deterministic fallback)`.
+  - keeps deterministic fallback visible while reducing confusion when Gemini enrichment is temporarily unavailable.
 - Segmented-filter focus no-scroll pass:
   - pointer interactions on shared segmented filters now apply focus with `preventScroll` semantics before selection, reducing browser-driven jump-to-control behavior during filter changes.
   - helps stabilize settings sync-status and similar segmented lanes where users reported abrupt viewport jumps.
