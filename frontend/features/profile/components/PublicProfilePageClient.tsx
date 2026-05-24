@@ -13,6 +13,7 @@ import { RarityBadge } from "@/components/shared/RarityBadge";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
+import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { useProfile } from "@/hooks/use-profile";
 import { PublicProfileHero } from "@/features/profile/components/PublicProfileHero";
 import type { SkillCategory, SkillNode } from "@/types/gitrank";
@@ -60,6 +61,7 @@ export function PublicProfilePageClient({
 }: {
   username: string;
 }) {
+  const constrainedNetwork = useNetworkConstraintPreference();
   const { data, isLoading, isError, isFetching, refetch } = useProfile(username);
   const visibleBadges = useMemo(
     () => deduplicateBadgesByName(data?.user.badges ?? []),
@@ -68,6 +70,9 @@ export function PublicProfilePageClient({
   const streak = summarizeContributionStreak(data?.user.contributions ?? []);
   const abraPayload = useMemo(() => {
     if (!data) {
+      return null;
+    }
+    if (constrainedNetwork) {
       return null;
     }
     if (
@@ -118,7 +123,7 @@ export function PublicProfilePageClient({
         evidencePrIds: badge.evidencePrIds,
       })),
     };
-  }, [data, streak.currentStreakDays, visibleBadges]);
+  }, [constrainedNetwork, data, streak.currentStreakDays, visibleBadges]);
   const abraInsights = useAbraInsights(abraPayload);
   const fallbackArchetype = useMemo(
     () => (data ? deriveDeterministicArchetype(data.user.strongestSignals) : "Systems Builder"),
