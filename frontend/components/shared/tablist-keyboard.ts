@@ -62,18 +62,7 @@ function focusWithoutScroll(element: HTMLElement) {
   try {
     element.focus({ preventScroll: true });
   } catch {
-    const canRestoreViewport =
-      typeof window !== "undefined" && typeof window.scrollTo === "function";
-    const beforeX = canRestoreViewport ? window.scrollX : 0;
-    const beforeY = canRestoreViewport ? window.scrollY : 0;
     element.focus();
-    if (canRestoreViewport) {
-      try {
-        window.scrollTo({ left: beforeX, top: beforeY, behavior: "auto" });
-      } catch {
-        window.scrollTo(beforeX, beforeY);
-      }
-    }
   }
 }
 

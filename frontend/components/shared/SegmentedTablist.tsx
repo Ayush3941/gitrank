@@ -24,7 +24,6 @@ export function SegmentedTablist<T extends string>({
   className,
   wrap = false,
   keyboardActivation = "manual",
-  preserveViewportOnSelect = true,
 }: {
   options: Array<SegmentedTabOption<T>>;
   value: T;
@@ -36,47 +35,12 @@ export function SegmentedTablist<T extends string>({
   className?: string;
   wrap?: boolean;
   keyboardActivation?: TablistKeyboardActivation;
-  preserveViewportOnSelect?: boolean;
 }) {
-  function withPreservedViewport(run: () => void) {
-    if (
-      !preserveViewportOnSelect ||
-      typeof window === "undefined" ||
-      typeof window.scrollTo !== "function"
-    ) {
-      run();
-      return;
-    }
-
-    const beforeX = window.scrollX;
-    const beforeY = window.scrollY;
-    const restore = () => {
-      try {
-        window.scrollTo({ left: beforeX, top: beforeY, behavior: "auto" });
-      } catch {
-        window.scrollTo(beforeX, beforeY);
-      }
-    };
-
-    run();
-    queueMicrotask(() => {
-      restore();
-    });
-    window.setTimeout(() => {
-      restore();
-    }, 24);
-    window.setTimeout(() => {
-      restore();
-    }, 90);
-  }
-
   function handleSelect(nextValue: T) {
     if (nextValue === value) {
       return;
     }
-    withPreservedViewport(() => {
-      onValueChange(nextValue);
-    });
+    onValueChange(nextValue);
   }
 
   return (
