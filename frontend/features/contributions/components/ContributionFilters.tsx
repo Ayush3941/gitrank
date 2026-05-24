@@ -185,6 +185,7 @@ export function ContributionFilters({
           ariaLabel="Contribution category filters"
           ariaControls={resultsRegionId}
           tabIdPrefix="contribution-filter-tab"
+          wrap
         />
         <div className="grid gap-3">
           <div className="relative">
@@ -225,11 +226,12 @@ export function ContributionFilters({
             onValueChange={(next) =>
               onSortChange(next as "Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact")
             }
-            ariaLabel="Contribution sort options"
-            ariaDescribedBy={statusId}
-            ariaControls={resultsRegionId}
-            tabIdPrefix="contribution-sort-tab"
-          />
+          ariaLabel="Contribution sort options"
+          ariaDescribedBy={statusId}
+          ariaControls={resultsRegionId}
+          tabIdPrefix="contribution-sort-tab"
+          wrap
+        />
         </div>
       </div>
     </section>

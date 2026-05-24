@@ -19,6 +19,7 @@ export function SegmentedTablist<T extends string>({
   ariaControls,
   tabIdPrefix = "segmented-tab",
   className,
+  wrap = false,
 }: {
   options: Array<SegmentedTabOption<T>>;
   value: T;
@@ -28,6 +29,7 @@ export function SegmentedTablist<T extends string>({
   ariaControls?: string;
   tabIdPrefix?: string;
   className?: string;
+  wrap?: boolean;
 }) {
   function focusWithoutScroll(element: HTMLButtonElement) {
     try {
@@ -44,7 +46,9 @@ export function SegmentedTablist<T extends string>({
       aria-describedby={ariaDescribedBy}
       data-segmented-tablist="true"
       className={cn(
-        "dashboard-nav-track lane-rail flex gap-1.5 overflow-x-auto p-0.5",
+        wrap
+          ? "dashboard-nav-track lane-rail flex flex-wrap gap-1.5 overflow-visible p-0.5"
+          : "dashboard-nav-track lane-rail flex gap-1.5 overflow-x-auto p-0.5",
         className,
       )}
     >

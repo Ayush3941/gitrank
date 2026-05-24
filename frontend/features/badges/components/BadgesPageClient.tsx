@@ -411,6 +411,7 @@ export function BadgesPageClient() {
                 ariaDescribedBy={badgesFilterStatusId}
                 ariaControls={BADGES_EARNED_REGION_ID}
                 tabIdPrefix="badge-rarity-tab"
+                wrap
               />
               <SegmentedTablist
                 options={BADGE_VISIBILITY_FILTERS.map((item) => {
@@ -435,6 +436,7 @@ export function BadgesPageClient() {
                 ariaDescribedBy={badgesFilterStatusId}
                 ariaControls={BADGES_EARNED_REGION_ID}
                 tabIdPrefix="badge-visibility-tab"
+                wrap
               />
             </div>
           </div>
