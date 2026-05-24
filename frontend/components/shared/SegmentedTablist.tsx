@@ -62,11 +62,9 @@ export function SegmentedTablist<T extends string>({
     queueMicrotask(() => {
       restore();
     });
-    if (typeof window.requestAnimationFrame === "function") {
-      window.requestAnimationFrame(() => {
-        restore();
-      });
-    }
+    window.setTimeout(() => {
+      restore();
+    }, 24);
     window.setTimeout(() => {
       restore();
     }, 90);
