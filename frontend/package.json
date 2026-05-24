@@ -18,6 +18,7 @@
     "check:nested-interactive": "node scripts/check-no-nested-buttons.mjs",
     "check:media-stability": "node scripts/check-media-layout-stability.mjs",
     "check:main-thread": "node scripts/check-main-thread-guards.mjs",
+    "check:query-policy": "node scripts/check-query-policy.mjs",
     "check:scroll-jumps": "node scripts/check-scroll-jump-apis.mjs",
     "check:jsx-ids": "node scripts/check-duplicate-jsx-ids.mjs",
     "check:perf-budgets": "node scripts/check-performance-budgets.mjs",
