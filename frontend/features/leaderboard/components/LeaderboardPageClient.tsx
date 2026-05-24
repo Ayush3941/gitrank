@@ -259,14 +259,50 @@ export function LeaderboardPageClient() {
         />
       ) : null}
       {!isLoading && !isError && rows.length === 0 ? (
-        <EmptyState
-          eyebrow="Leaderboard participation"
-          title="No leaderboard rows yet."
-          description="Rows appear after contributors complete OAuth, sync, and visibility."
-          actionLabel="Open contributions"
-          actionHref="/dashboard/contributions"
-          analyticsTarget="leaderboard:no-live-rows"
-        />
+        <section className="space-y-4">
+          <EmptyState
+            eyebrow="Leaderboard participation"
+            title="No leaderboard rows yet."
+            description="Rows appear after contributors complete OAuth, sync, and visibility."
+            actionLabel="Open contributions"
+            actionHref="/dashboard/contributions"
+            analyticsTarget="leaderboard:no-live-rows"
+          />
+          <GlowCard className="space-y-4">
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-primary">Arena preview</p>
+              <p className="text-sm text-muted">
+                Preview only. These bands explain progression rules and do not represent live user rows.
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="neon-surface px-4 py-3">
+                <p className="text-sm font-semibold text-white">Bronze ladder</p>
+                <p className="mt-1 text-xs text-muted">Build first merged evidence and maintain weekly activity.</p>
+              </div>
+              <div className="neon-surface px-4 py-3">
+                <p className="text-sm font-semibold text-white">Silver ladder</p>
+                <p className="mt-1 text-xs text-muted">Sustain review-backed PR quality across multiple weeks.</p>
+              </div>
+              <div className="neon-surface px-4 py-3">
+                <p className="text-sm font-semibold text-white">Gold+ ladder</p>
+                <p className="mt-1 text-xs text-muted">High-impact merged work with consistent depth and reliability.</p>
+              </div>
+            </div>
+            {myProfile?.user ? (
+              <div className="neon-surface border border-primary/24 px-4 py-3">
+                <p className="text-sm font-semibold text-white">
+                  Your current tier: {myProfile.user.level.rankTier}
+                </p>
+                <p className="mt-1 text-xs text-muted">
+                  {myProfile.user.rankProgress.nextTier
+                    ? `${myProfile.user.rankProgress.xpToNextTier.toLocaleString("en-US")} XP to ${myProfile.user.rankProgress.nextTier}.`
+                    : "You are at the current top tier band."}
+                </p>
+              </div>
+            ) : null}
+          </GlowCard>
+        </section>
       ) : null}
       {!isLoading && !isError && snapshot && rows.length ? (
         <section className="render-opt-section space-y-4">

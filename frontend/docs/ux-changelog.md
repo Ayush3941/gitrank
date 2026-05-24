@@ -23,6 +23,10 @@
   - upgraded shared timeline summaries with an explicit momentum chip (`Rising`, `Cooling`, `Flat`) and latest-step delta text.
   - limited tabular timeline detail to the latest 8 points for faster scanning on long histories while preserving chart context.
   - keeps deterministic evidence narration intact and avoids additional motion cost.
+- Leaderboard empty-state engagement pass:
+  - replaced the bare no-rows lane state with a structured arena preview explaining Bronze/Silver/Gold progression bands.
+  - added a clear preview-only label to avoid fake-live confusion and optionally shows the signed-in user's current tier plus XP-to-next-tier guidance.
+  - keeps no-fake-user policy intact while preventing a dead empty leaderboard experience.
 
 ## 2026-05-22
 
