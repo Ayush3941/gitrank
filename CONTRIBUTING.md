@@ -239,6 +239,7 @@ cd frontend
 npm run lint
 npm run build
 npm run check:no-production-mocks
+npm run check:jsx-ids
 npm run test:smoke
 ```
 
@@ -257,6 +258,7 @@ Recent no-slowdown refinement (May 24, 2026):
 - Header meta chips on small screens are now horizontal rails instead of multi-line wraps, reducing header bloat and preserving actionable content density.
 - Dashboard nav rails use thin visible scrollbars (instead of hidden scrollbars) to improve discoverability of horizontal navigation overflow.
 - Background image visibility was increased with softer dark overlays and lower shell-glow opacity to keep text readable while preserving the cyberpunk visual layer.
+- Added `npm run check:jsx-ids` and fixed duplicate region IDs in the badges locked-lane panel to prevent section-control and accessibility collisions.
 
 ## Frontend Excellence Checklist (No-Slowdown Backlog)
 
@@ -408,6 +410,7 @@ Verification snapshot (May 17, 2026):
 - `cd frontend && npm run test:a11y`
 - `cd frontend && npm run test:contracts`
 - `cd frontend && npm run check:no-production-mocks`
+- `cd frontend && npm run check:jsx-ids`
 - `cd frontend && npm run check:client-env-safety`
 - `cd frontend && npm run check:server-boundaries`
 - `cd frontend && npm run check:cache-strategy`

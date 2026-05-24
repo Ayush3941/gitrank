@@ -56,6 +56,7 @@ Font assets are bundled in `public/assets/fonts` so local and CI builds do not r
 ```bash
 npm run lint
 npm run check:no-production-mocks
+npm run check:jsx-ids
 npm run test:smoke
 npm run build
 ```
@@ -79,6 +80,7 @@ The public profile page, authenticated dashboard overview, onboarding reveal, ba
 - contribution rows surface score-history evidence state plus score/formula version linkage when the backend provides it
 - leaderboard rows surface season snapshot IDs, rank movement event IDs, profile-snapshot provenance, score version, source watermark, and missing rank-ledger evidence when the backend provides it
 - `npm run check:no-production-mocks` fails CI if production app, hook, feature, or API modules import mock datasets, preview adapters, or demo query plumbing
+- `npm run check:jsx-ids` fails CI if a TSX file reuses the same literal `id` more than once, preventing duplicate region IDs that break a11y and section controls
 - frontend CI also runs `../gitrank/scripts/verify_v2_no_mock_release_gate.sh` to verify critical OpenAPI entries, worker-flow coverage, and live fixture coverage stay wired
 - `npm run test:smoke` renders dashboard, quest, PR-report, profile, leaderboard, and settings flows from live-shaped BFF fixtures
 
