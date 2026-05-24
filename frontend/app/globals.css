@@ -203,6 +203,51 @@ html[data-theme="high-contrast"] {
   }
 }
 
+@media (forced-colors: active) {
+  :root {
+    --surface-blur: 0px;
+    --surface-blur-strong: 0px;
+  }
+
+  body {
+    background: Canvas !important;
+    color: CanvasText !important;
+  }
+
+  body::before,
+  body::after,
+  .page-shell::before,
+  .page-shell::after {
+    display: none !important;
+  }
+
+  :where(
+      .glass-panel,
+      .glass-panel-strong,
+      .cyber-card,
+      .cyber-frame,
+      .cyber-terminal,
+      .neon-surface,
+      .neon-surface-strong,
+      .neon-tile,
+      .neon-metric,
+      .neon-chip,
+      .dashboard-nav-item,
+      button,
+      a[href]
+    ) {
+    forced-color-adjust: auto;
+    background: Canvas !important;
+    color: CanvasText !important;
+    border-color: CanvasText !important;
+    box-shadow: none !important;
+  }
+
+  :where(a[href], button, [role="button"], [role="tab"], [role="switch"]):focus-visible {
+    outline-color: Highlight !important;
+  }
+}
+
 @theme inline {
   --color-background: rgb(var(--background));
   --color-foreground: rgb(var(--foreground));
