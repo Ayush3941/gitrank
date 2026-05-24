@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { BarChart3 } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { SkillRadarChart } from "@/components/shared/SkillRadarChart";
@@ -14,6 +15,9 @@ export function SkillBreakdownCard({
   aiMode?: "gemini" | "deterministic";
 }) {
   const skillTree = deduplicateSkillTree(user.skillTree);
+  const rankedSkills = [...skillTree].sort((left, right) => right.score - left.score);
+  const visibleSkills = rankedSkills.slice(0, 4);
+  const hiddenSkillCount = Math.max(0, rankedSkills.length - visibleSkills.length);
 
   return (
     <GlowCard className="space-y-5">
@@ -33,7 +37,7 @@ export function SkillBreakdownCard({
       </div>
       <SkillRadarChart skills={skillTree} />
       <div className="grid gap-3 md:grid-cols-2">
-        {skillTree.map((skill, index) => {
+        {visibleSkills.map((skill, index) => {
           const insight = skillInsights?.[normalizeKey(skill.category)];
           const confidence = insight?.confidence ?? "emerging";
           return (
@@ -52,6 +56,20 @@ export function SkillBreakdownCard({
           );
         })}
       </div>
+      {hiddenSkillCount > 0 ? (
+        <div className="neon-surface flex flex-wrap items-center justify-between gap-3 border border-primary/20 px-4 py-3">
+          <p className="text-sm text-muted">
+            {hiddenSkillCount} additional skill lanes are available.
+          </p>
+          <Link
+            href={`/u/${user.username}`}
+            prefetch={false}
+            className="focus-ring dashboard-nav-item inline-flex min-h-9 items-center justify-center px-3 py-1.5 text-xs font-medium"
+          >
+            Open full profile map
+          </Link>
+        </div>
+      ) : null}
     </GlowCard>
   );
 }

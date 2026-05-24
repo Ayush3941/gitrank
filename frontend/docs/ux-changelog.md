@@ -31,6 +31,10 @@
 - Scroll-jump regression guard pass:
   - added `scripts/check-scroll-jump-apis.mjs` and `npm run check:scroll-jumps` to block direct `window.scrollTo` / `scrollIntoView` APIs in product route code.
   - updated docs checklists so this guard runs alongside existing no-mock, nested-interactive, and main-thread checks.
+- Dashboard skill-lane progressive disclosure pass:
+  - dashboard skill breakdown now prioritizes the top 4 strongest skill lanes by score for first-pass readability.
+  - added a compact follow-up affordance linking to the full public profile skill map when additional lanes exist.
+  - reduces repeated low-signal cards in the dashboard command center without removing access to full skill detail.
 
 ## 2026-05-22
 
