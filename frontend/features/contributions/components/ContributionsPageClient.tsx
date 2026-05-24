@@ -381,10 +381,10 @@ export function ContributionsPageClient() {
           description={
             isFilteredNoResults
               ? "Reset filters or widen search."
-              : "Run sync and merge PRs to populate reports."
+              : "Run GitHub sync to populate scored PR cards."
           }
-          actionLabel={isFilteredNoResults ? "Reset filters" : "Open quests"}
-          actionHref={isFilteredNoResults ? undefined : "/dashboard/quests"}
+          actionLabel={isFilteredNoResults ? "Reset filters" : "Open sync settings"}
+          actionHref={isFilteredNoResults ? undefined : "/dashboard/settings"}
           onAction={isFilteredNoResults ? handleResetFilters : undefined}
           analyticsTarget={isFilteredNoResults ? "contributions:empty-filtered" : "contributions:empty"}
         />

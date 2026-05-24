@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { useState } from "react";
 import { describe, expect, it } from "vitest";
 import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
@@ -60,5 +60,31 @@ describe("SegmentedTablist", () => {
 
     fireEvent.keyDown(runningButton, { key: "Enter" });
     expect(updates.at(-1)).toBe("Running");
+  });
+
+  it("restores viewport position after selecting a tab", async () => {
+    Object.defineProperty(window, "scrollX", {
+      configurable: true,
+      value: 18,
+    });
+    Object.defineProperty(window, "scrollY", {
+      configurable: true,
+      value: 420,
+    });
+    const scrollSpy = vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+
+    const { getTab } = renderTablist();
+    fireEvent.click(getTab(/Running/i));
+
+    await waitFor(() =>
+      expect(scrollSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          left: 18,
+          top: 420,
+          behavior: "auto",
+        }),
+      ),
+    );
+    scrollSpy.mockRestore();
   });
 });

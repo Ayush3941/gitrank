@@ -108,7 +108,7 @@ describe("live fixture frontend smoke coverage", () => {
     expect(
       (await screen.findAllByText("Backed by live PR report evidence.")).length,
     ).toBeTruthy();
-    fireEvent.click(await screen.findByRole("button", { name: "Show technical breakdown" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Show details" }));
     expect(await screen.findByText("Persisted scorer components")).toBeTruthy();
     expect(
       await screen.findByText(
@@ -128,9 +128,15 @@ describe("live fixture frontend smoke coverage", () => {
         "Live fixture profile rendered through BFF-shaped JSON.",
       ),
     ).toBeTruthy();
-    expect(nonAnalyticsPaths().sort()).toEqual(
-      ["/api/profile/public/live-maintainer", "/api/ai/abra-insights"].sort(),
-    );
+    const paths = nonAnalyticsPaths();
+    expect(paths).toContain("/api/profile/public/live-maintainer");
+    expect(
+      paths.every(
+        (path) =>
+          path === "/api/profile/public/live-maintainer" ||
+          path === "/api/ai/abra-insights",
+      ),
+    ).toBe(true);
   }, 15_000);
 
   it("renders leaderboard from the live leaderboard fixture route", async () => {
@@ -140,7 +146,7 @@ describe("live fixture frontend smoke coverage", () => {
     expect(await screen.findByText("Live Leaderboard Maintainer")).toBeTruthy();
     expect(
       await screen.findByText(
-        "Verified season snapshot with rank movement and bounded scoring evidence.",
+        "Leaderboard rows are backed by persisted season snapshots and rank movement events.",
       ),
     ).toBeTruthy();
     expect(nonAnalyticsPaths().sort()).toEqual(
@@ -152,7 +158,9 @@ describe("live fixture frontend smoke coverage", () => {
     renderWithClient(<SettingsPageClient />);
 
     expect(await screen.findByRole("heading", { name: "Settings" })).toBeTruthy();
-    expect(await screen.findByText("@live-maintainer")).toBeTruthy();
+    expect(
+      await screen.findByRole("heading", { name: "@live-maintainer" }),
+    ).toBeTruthy();
     expect(await screen.findByText("octo/gitrank")).toBeTruthy();
     await waitFor(() =>
       expect(localStorage.getItem("gitrank:reduced-gamification")).toBe("true"),

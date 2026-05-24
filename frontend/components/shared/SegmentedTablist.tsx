@@ -50,14 +50,26 @@ export function SegmentedTablist<T extends string>({
 
     const beforeX = window.scrollX;
     const beforeY = window.scrollY;
-    run();
-    queueMicrotask(() => {
+    const restore = () => {
       try {
         window.scrollTo({ left: beforeX, top: beforeY, behavior: "auto" });
       } catch {
         window.scrollTo(beforeX, beforeY);
       }
+    };
+
+    run();
+    queueMicrotask(() => {
+      restore();
     });
+    if (typeof window.requestAnimationFrame === "function") {
+      window.requestAnimationFrame(() => {
+        restore();
+      });
+    }
+    window.setTimeout(() => {
+      restore();
+    }, 90);
   }
 
   function handleSelect(nextValue: T) {

@@ -344,15 +344,9 @@ select {
 }
 
 :where(
+    [id],
     a[href],
-    button,
-    input:not([type="hidden"]),
-    select,
-    textarea,
-    [role="button"],
-    [role="tab"],
-    [role="switch"],
-    [tabindex]:not([tabindex="-1"])
+    [data-scroll-target="true"]
   ) {
   scroll-margin-top: max(7rem, calc(env(safe-area-inset-top, 0px) + 2rem));
   scroll-margin-bottom: max(7rem, calc(env(safe-area-inset-bottom, 0px) + 2rem));
