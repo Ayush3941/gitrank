@@ -13,7 +13,7 @@ import {
   Unlock,
   X,
 } from "lucide-react";
-import { startTransition, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { startTransition, type ReactNode, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -80,6 +80,8 @@ export function BadgesPageClient() {
   const previousUnlockedCountRef = useRef<number | null>(null);
   const [rarity, setRarity] = useState<BadgeRarity | "All">("All");
   const [visibility, setVisibility] = useState<"All" | "Unlocked" | "Locked">("All");
+  const deferredRarity = useDeferredValue(rarity);
+  const deferredVisibility = useDeferredValue(visibility);
   const [unlockNotice, setUnlockNotice] = useState("");
   const [visibleLockedCount, setVisibleLockedCount] = useState(lockedBadgePageSize);
   const [visibleBadgeCount, setVisibleBadgeCount] = useState(badgeShelfPageSize);
@@ -90,11 +92,11 @@ export function BadgesPageClient() {
   const allBadges = useMemo(() => deduplicateBadgesByName(data?.badges ?? []), [data?.badges]);
   const filtered =
     allBadges.filter((badge) => {
-      const rarityMatch = rarity === "All" || badge.rarity === rarity;
+      const rarityMatch = deferredRarity === "All" || badge.rarity === deferredRarity;
       const visibilityMatch =
-        visibility === "All" ||
-        (visibility === "Unlocked" && badge.unlocked) ||
-        (visibility === "Locked" && !badge.unlocked);
+        deferredVisibility === "All" ||
+        (deferredVisibility === "Unlocked" && badge.unlocked) ||
+        (deferredVisibility === "Locked" && !badge.unlocked);
       return rarityMatch && visibilityMatch;
     });
   const profile = data?.profile;
