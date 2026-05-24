@@ -5,7 +5,7 @@ import path from "node:path";
 const root = process.cwd();
 const scanRoots = ["app", "components", "features"];
 const includeExt = new Set([".tsx"]);
-const idPattern = /\bid\s*=\s*"([A-Za-z0-9_-]+)"/g;
+const idPattern = /\bid\s*=\s*(?:\{\s*)?(["'])([A-Za-z0-9_-]+)\1(?:\s*\})?/g;
 
 const duplicates = [];
 
@@ -60,7 +60,7 @@ async function walk(dir) {
 
     let match = idPattern.exec(source);
     while (match) {
-      const id = match[1];
+      const id = match[2];
       counts.set(id, (counts.get(id) ?? 0) + 1);
       match = idPattern.exec(source);
     }
