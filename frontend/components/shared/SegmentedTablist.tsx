@@ -24,6 +24,7 @@ export function SegmentedTablist<T extends string>({
   className,
   wrap = false,
   keyboardActivation = "manual",
+  preserveViewportOnSelect = true,
 }: {
   options: Array<SegmentedTabOption<T>>;
   value: T;
@@ -35,7 +36,39 @@ export function SegmentedTablist<T extends string>({
   className?: string;
   wrap?: boolean;
   keyboardActivation?: TablistKeyboardActivation;
+  preserveViewportOnSelect?: boolean;
 }) {
+  function withPreservedViewport(run: () => void) {
+    if (
+      !preserveViewportOnSelect ||
+      typeof window === "undefined" ||
+      typeof window.scrollTo !== "function"
+    ) {
+      run();
+      return;
+    }
+
+    const beforeX = window.scrollX;
+    const beforeY = window.scrollY;
+    run();
+    window.requestAnimationFrame(() => {
+      try {
+        window.scrollTo({ left: beforeX, top: beforeY, behavior: "auto" });
+      } catch {
+        window.scrollTo(beforeX, beforeY);
+      }
+    });
+  }
+
+  function handleSelect(nextValue: T) {
+    if (nextValue === value) {
+      return;
+    }
+    withPreservedViewport(() => {
+      onValueChange(nextValue);
+    });
+  }
+
   return (
     <div
       role="tablist"
@@ -73,7 +106,7 @@ export function SegmentedTablist<T extends string>({
                 data-segmented-value={item.value}
                 className="focus-ring dashboard-nav-item min-h-11 w-full px-3 py-2 text-center text-sm font-semibold"
                 onClick={() => {
-                  onValueChange(item.value);
+                  handleSelect(item.value);
                 }}
                 onKeyDown={(event) => {
                   handleHorizontalTabKeyDown(event, {
@@ -83,7 +116,7 @@ export function SegmentedTablist<T extends string>({
                       if (!nextValue) {
                         return;
                       }
-                      onValueChange(nextValue as T);
+                      handleSelect(nextValue as T);
                     },
                   });
                 }}
