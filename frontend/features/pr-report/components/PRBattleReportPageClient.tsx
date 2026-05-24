@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, Award, ShieldCheck, Swords } from "lucide-react";
+import { AlertTriangle, ArrowRight, Award, ExternalLink, ShieldCheck, Swords } from "lucide-react";
 import { useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -93,7 +93,6 @@ export function PRBattleReportPageClient({
       : data.contribution.xpEarned >= 100
         ? "Medium signal"
         : "Early signal";
-  const signalDetail = `${data.contribution.category} • ${data.contribution.changedFilesCount} files changed`;
 
   return (
     <div className="space-y-6">
@@ -122,6 +121,17 @@ export function PRBattleReportPageClient({
             <Button asChild variant="secondary">
               <Link href="/dashboard/contributions" prefetch={false}>Back to contributions</Link>
             </Button>
+            <Button asChild variant="ghost">
+              <Link
+                href={`https://github.com/${data.contribution.owner}/${data.contribution.repo}/pull/${data.contribution.number}`}
+                prefetch={false}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View on GitHub
+                <ExternalLink className="h-4 w-4" />
+              </Link>
+            </Button>
           </div>
         )}
       />
@@ -135,16 +145,6 @@ export function PRBattleReportPageClient({
               <li className="list-none">
                 <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
                   Signal {signalTier}
-                </span>
-              </li>
-              <li className="list-none">
-                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-                  {signalDetail}
-                </span>
-              </li>
-              <li className="list-none">
-                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-                  {formatContributionStatusLabel(data.contribution.status)}
                 </span>
               </li>
             </ul>
