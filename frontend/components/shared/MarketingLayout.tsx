@@ -29,7 +29,11 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
                     { href: "/#start-reveal", label: "Start" },
                   ].map((item) => (
                     <li key={item.href} className="list-none">
-                      <Link href={item.href} prefetch={false} className="focus-ring marketing-nav-chip">
+                      <Link
+                        href={item.href}
+                        prefetch={false}
+                        className="focus-ring dashboard-nav-item inline-flex min-h-9 items-center justify-center px-3 py-1.5 text-xs font-medium"
+                      >
                         {item.label}
                       </Link>
                     </li>

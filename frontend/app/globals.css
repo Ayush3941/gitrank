@@ -1188,26 +1188,6 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   opacity: 1;
 }
 
-.marketing-nav-chip {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2rem;
-  border: 1px solid rgb(var(--primary) / 0.24);
-  background:
-    linear-gradient(150deg, rgb(var(--primary) / 0.05), rgb(var(--primary-2) / 0.04)),
-    rgb(var(--card) / 0.8);
-  color: rgb(var(--text-soft));
-  padding: 0.25rem 0.7rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  line-height: 1;
-}
-
-.marketing-nav-chip:hover {
-  border-color: rgb(var(--primary) / 0.48);
-  color: rgb(var(--text-strong));
-}
-
 .cyber-divider {
   height: 1px;
   border: none;

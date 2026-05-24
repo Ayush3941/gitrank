@@ -12,6 +12,9 @@
   - softened `cyber-card` hover deltas so cards keep visual hierarchy without expensive hover glow jumps.
   - simplified dashboard-route-nav interaction transitions to quick color/border updates and removed heavy hover shadow pulses.
   - keeps nav affordance intact while reducing perceived jitter on lower-power devices.
+- Navigation language consistency pass:
+  - unified marketing-header anchor chips with shared dashboard-nav visual tokens (`dashboard-nav-item`) for one consistent navigation treatment across public and authenticated surfaces.
+  - removed unused `marketing-nav-chip` CSS after migration to avoid style drift.
 
 ## 2026-05-22
 
