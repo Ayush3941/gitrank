@@ -5,6 +5,7 @@
 - Scroll-stability hardening pass:
   - disabled `content-visibility` card virtualization and intrinsic placeholder sizing on dashboard/public route cards.
   - switched sync/repository activity panels back to default `overflow-anchor` behavior for more predictable viewport anchoring during filter and data updates.
+  - capped settings sync/repository result lanes with internal scrolling (`max-h` + `overflow-y-auto`) so filter/status interactions stop reflowing the full page height.
   - reduces jumpy auto-scroll behavior reported on long settings/contributions sessions.
 - Public profile repository ranking clarity pass:
   - top repository rows now include explicit rank chips (`#1`, `#2`, `#3`) beside repository names.

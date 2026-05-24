@@ -167,7 +167,7 @@ export function PrivacyRepositoryToggleList({
       </div>
       <div
         id={repositoriesRegionId}
-        className="repository-visibility-results-viewport"
+        className="repository-visibility-results-viewport max-h-[36rem] overflow-y-auto pr-1"
       >
         {filteredItems.length > 0 ? (
           <ul role="list" className="grid gap-3">
