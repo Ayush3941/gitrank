@@ -68,7 +68,6 @@ export function PRBattleReportPageClient({
   const evidenceAnchored = evidenceState.status === "complete" || evidenceState.status === "deterministic_only";
   const fallbackReason = extractFallbackReason(data.contribution.evidenceSignals);
   const fallbackDetail = fallbackReason ? formatFallbackReason(fallbackReason) : null;
-  const deterministicOnlyWithoutFallback = evidenceState.deterministicOnly && !fallbackDetail;
   const hasPersistedScoreEvidence =
     !evidenceState.missingEvidence.includes("score_event") || data.contribution.xpEarned > 0;
   const uniqueBadgeUnlocks = deduplicateBadgeUnlocks(data.badgeUnlocks);
@@ -210,11 +209,6 @@ export function PRBattleReportPageClient({
           {fallbackDetail ? (
             <p className="rounded-full border border-amber-400/24 bg-amber-400/10 px-3 py-1.5 text-xs text-amber-100">
               Gemini unavailable ({fallbackDetail}); showing deterministic summary.
-            </p>
-          ) : null}
-          {deterministicOnlyWithoutFallback ? (
-            <p className="rounded-full border border-cyan-300/24 bg-cyan-400/10 px-3 py-1.5 text-xs text-cyan-100">
-              Deterministic summary.
             </p>
           ) : null}
           <ExpandableText
