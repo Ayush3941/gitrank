@@ -10,7 +10,6 @@ Dark-first Next.js frontend for GitRank, an evidence-backed open-source reputati
 - Local bundled fonts via `next/font/local` (Space Grotesk, Orbitron, IBM Plex Mono)
 - shadcn/ui-style primitives built in `components/ui`
 - TanStack Query
-- Motion for React
 - Recharts
 - Lucide React
 
