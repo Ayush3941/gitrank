@@ -25,8 +25,6 @@ export function PrivacyRepositoryToggleList({
   const controlled = typeof onToggle === "function";
   const visibleItems = controlled ? repositories : items;
   const canReset = search.trim().length > 0 || visibilityFilter !== "All";
-  const compactSearch =
-    search.trim().length > 32 ? `${search.trim().slice(0, 32)}…` : search.trim();
   const statusId = "settings-repositories-filter-status";
   const repositoriesRegionId = "settings-repositories-visibility-region";
   const counts = useMemo(() => {
@@ -68,38 +66,14 @@ export function PrivacyRepositoryToggleList({
     <div className="repository-visibility-panel-shell space-y-3">
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p id={statusId} role="status" aria-live="polite" className="text-xs font-medium text-cyan-200">
+          <p id={statusId} role="status" aria-live="polite" className="sr-only">
             {`${filteredItems.length} of ${counts.total} repositories`}
           </p>
           <div className="flex flex-wrap gap-2">
             <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">Public {counts.public}</span>
             <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">Hidden {counts.hidden}</span>
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={handleReset}
-              disabled={!canReset}
-              aria-controls={repositoriesRegionId}
-            >
-              Reset
-            </Button>
           </div>
         </div>
-        {canReset ? (
-          <div className="flex flex-wrap items-center gap-2">
-            {search.trim().length > 0 ? (
-              <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs">
-                Query: {compactSearch}
-              </span>
-            ) : null}
-            {visibilityFilter !== "All" ? (
-              <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs">
-                State: {visibilityFilter}
-              </span>
-            ) : null}
-          </div>
-        ) : null}
         <div className="grid gap-3 md:grid-cols-[1fr,15rem]">
           <div className="relative">
             <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted" />

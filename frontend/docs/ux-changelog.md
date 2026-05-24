@@ -13,6 +13,9 @@
 - PR report evidence-state clarity pass:
   - added a compact `Report processing state` callout when reports are deterministic-only, stale/incomplete, fallback, or rate-limited.
   - each non-complete state now includes an explicit action path (`Open settings` or `View contributions`) so users can recover without hunting through tabs.
+- Settings repository-filter declutter pass:
+  - moved `X of Y repositories` to an `sr-only` live status channel and removed the extra top reset/filter-summary strip.
+  - keeps counts and empty-state recovery intact while reducing repetitive control chrome in settings.
 - Segmented filter auto-scroll regression fix:
   - removed forced viewport restoration (`window.scrollTo`) from shared segmented-tab selection and keyboard fallback focus handling.
   - fixes jump-to-top behavior seen when switching filter tabs in dashboard routes (notably settings sync status tabs).
