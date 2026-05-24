@@ -72,7 +72,7 @@ export function DashboardPageClient() {
     contributionWindowCap > 0
       ? Math.round((contributionWindowCount / contributionWindowCap) * 100)
       : 0;
-  const reportHealth = summarizeReportHealth(recentReports);
+  const reportHealthLabel = summarizeReportHealthLabel(recentReports);
   const abraPayload = useMemo(() => {
     if (!user) {
       return null;
@@ -212,36 +212,32 @@ export function DashboardPageClient() {
         />
       ) : null}
       <section>
-        <GlowCard className="space-y-3">
+        <GlowCard className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs font-medium text-primary">Signal health</p>
-            <p className="text-xs text-muted">Status updates for sync, evidence, and report mode.</p>
+            <p className="text-xs text-muted">
+              {user.syncStatus.lastSyncedAt
+                ? `Last sync ${formatRelativeDays(user.syncStatus.lastSyncedAt)}`
+                : "No sync timestamp"}
+            </p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="neon-surface rounded-[1rem] px-3 py-3">
-              <p className="text-xs font-medium text-primary">Sync state</p>
-              <p className="mt-1 text-sm font-semibold text-foreground">
-                {formatSyncStateLabel(user.syncStatus.state)}
-              </p>
-              <p className="mt-1 text-xs text-muted">
-                {user.syncStatus.lastSyncedAt
-                  ? `Last sync ${formatRelativeDays(user.syncStatus.lastSyncedAt)}.`
-                  : "No sync timestamp yet."}
-              </p>
-            </div>
-            <div className="neon-surface rounded-[1rem] px-3 py-3">
-              <p className="text-xs font-medium text-primary">Evidence coverage</p>
-              <p className="mt-1 text-sm font-semibold text-foreground">
-                {contributionWindowCount}/{contributionWindowCap} rows
-              </p>
-              <p className="mt-1 text-xs text-muted">{contributionWindowFillRate}% of the capped window loaded.</p>
-            </div>
-            <div className="neon-surface rounded-[1rem] px-3 py-3">
-              <p className="text-xs font-medium text-primary">Report mode</p>
-              <p className="mt-1 text-sm font-semibold text-foreground">{reportHealth.label}</p>
-              <p className="mt-1 text-xs text-muted">{reportHealth.hint}</p>
-            </div>
-          </div>
+          <ul role="list" className="flex flex-wrap gap-2">
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs font-semibold">
+                Sync {formatSyncStateLabel(user.syncStatus.state)}
+              </span>
+            </li>
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs font-semibold">
+                Evidence {contributionWindowCount}/{contributionWindowCap} ({contributionWindowFillRate}%)
+              </span>
+            </li>
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs font-semibold">
+                Reports {reportHealthLabel}
+              </span>
+            </li>
+          </ul>
         </GlowCard>
       </section>
       <section>
@@ -312,40 +308,22 @@ function LazyLanePlaceholder({ label }: { label: string }) {
   );
 }
 
-function summarizeReportHealth(reports: Array<{ evidenceState: { status: string } }>): {
-  label: string;
-  hint: string;
-} {
+function summarizeReportHealthLabel(reports: Array<{ evidenceState: { status: string } }>): string {
   if (reports.length === 0) {
-    return {
-      label: "No report evidence yet",
-      hint: "Run sync and open contributions to generate report cards.",
-    };
+    return "No reports";
   }
 
   const statuses = reports.map((report) => report.evidenceState.status);
   if (statuses.some((status) => status === "stale" || status === "incomplete")) {
-    return {
-      label: "Partial evidence",
-      hint: "Some reports are stale or incomplete. Refresh sync in Settings.",
-    };
+    return "Partial evidence";
   }
   if (statuses.some((status) => status === "rate_limited")) {
-    return {
-      label: "Rate-limited",
-      hint: "GitHub/AI limits are active. Retry after cooldown.",
-    };
+    return "Rate-limited";
   }
   if (statuses.some((status) => status === "deterministic_only" || status === "ai_fallback")) {
-    return {
-      label: "Deterministic mode",
-      hint: "Scoring is valid. Gemini enrichment will attach when available.",
-    };
+    return "Deterministic";
   }
-  return {
-    label: "Gemini-ready",
-    hint: "Reports include complete synced evidence and AI enrichment.",
-  };
+  return "Gemini-ready";
 }
 
 function formatSyncStateLabel(state: string): string {
