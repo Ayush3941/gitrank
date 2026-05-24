@@ -2,6 +2,9 @@
 
 ## 2026-05-24
 
+- Leaderboard control declutter pass:
+  - removed redundant `Reset to Global` button from lane controls.
+  - global lane remains one click away via the segmented lane tabs, so functionality is unchanged with less control noise.
 - Quests filter declutter pass:
   - removed duplicate reset controls in mission cadence filtering.
   - active cadence now uses a single removable chip (clear action) instead of chip + separate reset button.

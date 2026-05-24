@@ -215,19 +215,6 @@ export function LeaderboardPageClient() {
             >
               {showLaneDetails ? "Hide details" : "Show details"}
             </Button>
-            {tab !== "Global" ? (
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                onClick={() => handleTabChange("Global")}
-                disabled={isBusy}
-                aria-controls={LEADERBOARD_ROWS_REGION_ID}
-                title="Return to Global lane"
-              >
-                Reset to Global
-              </Button>
-            ) : null}
             {supportsNearbyMode ? (
               <Button
                 type="button"
