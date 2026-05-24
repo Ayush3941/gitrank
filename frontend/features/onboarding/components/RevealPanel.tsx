@@ -9,6 +9,7 @@ import { OnboardingStepper } from "@/features/onboarding/components/OnboardingSt
 import { uniqueDisplayValues } from "@/lib/display-values";
 import { formatRelativeDays } from "@/lib/formatters";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
+import { formatSyncStateLabel } from "@/lib/presentation/status-tone";
 import type { UserProfile } from "@/types/gitrank";
 
 export function RevealPanel({
@@ -80,7 +81,7 @@ export function RevealPanel({
             <div className="mx-auto max-w-3xl rounded-2xl border border-primary/24 bg-primary/10 px-4 py-3 text-left text-sm text-foreground">
               <p className="text-xs font-medium text-primary">Snapshot state</p>
               <p className="mt-2 leading-6">
-                Sync status is <span className="font-semibold text-white">{formatSyncState(user.syncStatus.state)}</span>.
+                Sync status is <span className="font-semibold text-white">{formatSyncStateLabel(user.syncStatus.state)}</span>.
                 {" "}
                 {user.syncStatus.lastSyncedAt ? `Last sync ${formatRelativeDays(user.syncStatus.lastSyncedAt)}.` : ""}
                 {evidenceRows > 0
@@ -212,16 +213,6 @@ function RevealFallbackCard({
       <p className="mt-2 text-sm text-muted">{body}</p>
     </div>
   );
-}
-
-function formatSyncState(state: UserProfile["syncStatus"]["state"]): string {
-  if (state === "never_synced") return "Never synced";
-  if (state === "partially_synced") return "Partially synced";
-  if (state === "rate_limited") return "Rate limited";
-  if (state === "syncing") return "Syncing";
-  if (state === "stale") return "Stale";
-  if (state === "failed") return "Failed";
-  return "Synced";
 }
 
 export function RevealPanelSkeleton() {

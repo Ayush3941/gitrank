@@ -12,6 +12,7 @@ import { useRequestProfileSync } from "@/hooks/use-account-actions";
 import { useMyProfile } from "@/hooks/use-profile";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { formatRelativeDays } from "@/lib/formatters";
+import { formatSyncStateLabel } from "@/lib/presentation/status-tone";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 
 const steps = [
@@ -207,7 +208,7 @@ export function SyncPipeline() {
           </p>
           {data ? (
             <p className="text-sm text-muted">
-              Status: {formatSyncState(data.user.syncStatus.state)} • last refresh{" "}
+              Status: {formatSyncStateLabel(data.user.syncStatus.state)} • last refresh{" "}
               {formatRelativeDays(data.refreshedAt)}
             </p>
           ) : null}
@@ -257,7 +258,7 @@ export function SyncPipeline() {
           <div className="neon-surface rounded-[1.35rem] border-dashed border-primary/24 px-4 py-3">
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
-                Sync state {formatSyncState(syncState)}
+                Sync state {formatSyncStateLabel(syncState)}
               </span>
               <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
                 Current phase {currentPhaseLabel}
@@ -331,15 +332,4 @@ export function SyncPipeline() {
       </GlowCard>
     </main>
   );
-}
-
-function formatSyncState(state: string): string {
-  if (state === "never_synced") return "Never synced";
-  if (state === "partially_synced") return "Partially synced";
-  if (state === "rate_limited") return "Rate limited";
-  if (state === "syncing") return "Syncing";
-  if (state === "stale") return "Stale";
-  if (state === "failed") return "Failed";
-  if (state === "synced") return "Synced";
-  return state.replaceAll("_", " ");
 }

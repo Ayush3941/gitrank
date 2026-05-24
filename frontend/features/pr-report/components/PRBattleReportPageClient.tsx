@@ -18,7 +18,7 @@ import { XPBreakdownCard } from "@/features/pr-report/components/XPBreakdownCard
 import { usePrReport } from "@/hooks/use-pr-report";
 import { buildEvidenceSignalChips } from "@/lib/presentation/evidence-signal";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
-import { toneForEvidenceStatus } from "@/lib/presentation/status-tone";
+import { formatEvidenceStatusLabel, toneForEvidenceStatus } from "@/lib/presentation/status-tone";
 
 export function PRBattleReportPageClient({
   owner,
@@ -107,7 +107,7 @@ export function PRBattleReportPageClient({
                 tone: toneForContributionStatus(data.contribution.status),
               },
               {
-                label: `Evidence ${evidenceState.status.replace("_", " ")}`,
+                label: `Evidence ${formatEvidenceStatusLabel(evidenceState.status)}`,
                 tone: toneForEvidenceStatus(evidenceState.status),
               },
             ]}
@@ -158,7 +158,7 @@ export function PRBattleReportPageClient({
               }
             >
               {evidenceAnchored ? <ShieldCheck className="h-3.5 w-3.5" /> : <AlertTriangle className="h-3.5 w-3.5" />}
-              {evidenceState.status.replace("_", " ")}
+              {formatEvidenceStatusLabel(evidenceState.status)}
             </div>
           </div>
         </div>

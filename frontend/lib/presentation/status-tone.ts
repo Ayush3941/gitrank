@@ -21,6 +21,20 @@ export function toneForSyncState(state: SyncState | undefined): StatusTone {
   return "muted";
 }
 
+export function formatSyncStateLabel(state: SyncState | undefined): string {
+  if (!state) {
+    return "Unknown";
+  }
+  if (state === "never_synced") return "Never synced";
+  if (state === "partially_synced") return "Partially synced";
+  if (state === "rate_limited") return "Rate limited";
+  if (state === "syncing") return "Syncing";
+  if (state === "stale") return "Stale";
+  if (state === "failed") return "Failed";
+  if (state === "synced") return "Synced";
+  return state.replaceAll("_", " ");
+}
+
 export function toneForEvidenceStatus(
   status: PREvidenceState["status"] | undefined,
 ): StatusTone {
@@ -34,4 +48,22 @@ export function toneForEvidenceStatus(
     return "warning";
   }
   return "muted";
+}
+
+export function formatEvidenceStatusLabel(
+  status: PREvidenceState["status"] | undefined,
+): string {
+  if (!status) {
+    return "Unknown";
+  }
+  if (status === "deterministic_only") {
+    return "Deterministic only";
+  }
+  if (status === "rate_limited") {
+    return "Rate limited";
+  }
+  if (status === "ai_fallback") {
+    return "AI fallback";
+  }
+  return status.replaceAll("_", " ");
 }
