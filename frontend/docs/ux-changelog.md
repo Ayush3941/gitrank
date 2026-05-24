@@ -2,6 +2,9 @@
 
 ## 2026-05-24
 
+- JSX key-safety guard pass:
+  - added `npm run check:jsx-keys` to detect risky direct list keys (for example single volatile label/signal keys) that can reintroduce duplicate-key render issues.
+  - guard is scoped to direct key expressions to avoid false positives on safe compound/template keys.
 - Leaderboard control declutter pass:
   - removed redundant `Reset to Global` button from lane controls.
   - global lane remains one click away via the segmented lane tabs, so functionality is unchanged with less control noise.

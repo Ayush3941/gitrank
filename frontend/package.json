@@ -21,6 +21,7 @@
     "check:query-policy": "node scripts/check-query-policy.mjs",
     "check:scroll-jumps": "node scripts/check-scroll-jump-apis.mjs",
     "check:jsx-ids": "node scripts/check-duplicate-jsx-ids.mjs",
+    "check:jsx-keys": "node scripts/check-unstable-jsx-keys.mjs",
     "check:perf-budgets": "node scripts/check-performance-budgets.mjs",
     "analyze:bundle": "node scripts/analyze-bundle.mjs",
     "test:smoke": "vitest run tests/live-fixture-render.test.tsx",
