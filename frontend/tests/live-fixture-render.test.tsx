@@ -154,6 +154,26 @@ describe("live fixture frontend smoke coverage", () => {
     );
   }, 15_000);
 
+  it("renders leaderboard arena preview when no live rows are available", async () => {
+    requestedPaths.length = 0;
+    vi.stubGlobal("fetch", vi.fn(leaderboardEmptyFixtureFetch));
+    renderWithClient(<LeaderboardPageClient />);
+
+    expect(await screen.findByText("No leaderboard rows yet.")).toBeTruthy();
+    expect(await screen.findByText("Arena preview")).toBeTruthy();
+    expect(
+      await screen.findByText(
+        "Preview only. These bands explain progression rules and do not represent live user rows.",
+      ),
+    ).toBeTruthy();
+    expect(await screen.findByText("Bronze ladder")).toBeTruthy();
+    expect(await screen.findByText("Silver ladder")).toBeTruthy();
+    expect(await screen.findByText("Gold+ ladder")).toBeTruthy();
+    expect(
+      await screen.findByText(/Your current tier:/i),
+    ).toBeTruthy();
+  }, 15_000);
+
   it("renders settings from the authenticated profile fixture", async () => {
     renderWithClient(<SettingsPageClient />);
 
@@ -268,6 +288,23 @@ async function leaderboardErrorFixtureFetch(input: RequestInfo | URL): Promise<R
   }
   if (path === "/api/leaderboard") {
     return jsonResponse({ error: { message: "upstream timeout" } }, 503);
+  }
+  if (path === "/api/analytics/events") {
+    return jsonResponse({ status: "accepted" }, 202);
+  }
+  return liveFixtureFetch(input);
+}
+
+async function leaderboardEmptyFixtureFetch(input: RequestInfo | URL): Promise<Response> {
+  const path = requestPath(input);
+  if (path === "/api/profile/me") {
+    return jsonResponse(privateProfileFixture);
+  }
+  if (path === "/api/leaderboard") {
+    return jsonResponse({
+      ...leaderboardFixture,
+      entries: [],
+    });
   }
   if (path === "/api/analytics/events") {
     return jsonResponse({ status: "accepted" }, 202);
