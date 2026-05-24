@@ -381,7 +381,7 @@ export function ContributionsPageClient() {
           description={
             isFilteredNoResults
               ? "Reset filters or widen search."
-              : "Run GitHub sync to populate scored PR cards."
+              : "Open sync settings to refresh GitHub evidence for scored PR cards."
           }
           actionLabel={isFilteredNoResults ? "Reset filters" : "Open sync settings"}
           actionHref={isFilteredNoResults ? undefined : "/dashboard/settings"}

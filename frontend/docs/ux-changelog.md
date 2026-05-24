@@ -14,6 +14,9 @@
 - PR report summary-clarity pass:
   - replaced ambiguous `AI summary` heading with explicit mode-aware copy: `Impact summary (Gemini)`, `Impact summary (deterministic)`, or `Impact summary (deterministic fallback)`.
   - keeps deterministic fallback visible while reducing confusion when Gemini enrichment is temporarily unavailable.
+- Auto-sync copy consistency pass:
+  - replaced remaining `Run sync` language in contributions empty-state, onboarding reveal guidance, and repository-visibility empty-state with `Open sync settings` wording.
+  - aligns user guidance with the current background auto-sync model (no mandatory manual sync button flow).
 - Segmented-filter focus no-scroll pass:
   - pointer interactions on shared segmented filters now apply focus with `preventScroll` semantics before selection, reducing browser-driven jump-to-control behavior during filter changes.
   - helps stabilize settings sync-status and similar segmented lanes where users reported abrupt viewport jumps.

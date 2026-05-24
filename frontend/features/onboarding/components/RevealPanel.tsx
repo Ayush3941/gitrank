@@ -44,7 +44,7 @@ export function RevealPanel({
     user.mergedPrCount === 0
       ? [
           "Merge your first meaningful PR so score movement can activate.",
-          "Run a full sync to attach fresh GitHub evidence to this profile.",
+          "Open sync settings to refresh and attach fresh GitHub evidence to this profile.",
           "Open quests to target your first high-signal contribution type.",
         ]
       : [

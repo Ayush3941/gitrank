@@ -191,7 +191,7 @@ export function PrivacyRepositoryToggleList({
             {counts.total === 0 ? (
               <p>
                 Repository visibility records are not available in this profile snapshot yet.
-                Run a sync to refresh repository privacy controls.
+                Open sync settings to refresh repository privacy controls.
               </p>
             ) : (
               <p>
