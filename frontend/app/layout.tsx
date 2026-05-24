@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Mono, Orbitron, Space_Grotesk } from "next/font/google";
+import localFont from "next/font/local";
 import { GamificationPreferenceProvider } from "@/components/providers/gamification-preference-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { DisplayShortcutsProvider } from "@/components/providers/display-shortcuts-provider";
@@ -9,23 +9,44 @@ import { WebVitalsReporter } from "@/components/providers/web-vitals-reporter";
 import { publicBaseURL } from "@/lib/seo/public-url";
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({
+const spaceGrotesk = localFont({
+  src: [
+    {
+      path: "../public/assets/fonts/space-grotesk-latin-300-700.woff2",
+      weight: "300 700",
+      style: "normal",
+    },
+  ],
   variable: "--font-space-grotesk",
-  subsets: ["latin"],
   display: "optional",
 });
 
-const ibmPlexMono = IBM_Plex_Mono({
+const ibmPlexMono = localFont({
+  src: [
+    {
+      path: "../public/assets/fonts/ibm-plex-mono-latin-400.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../public/assets/fonts/ibm-plex-mono-latin-500-600.woff2",
+      weight: "500 600",
+      style: "normal",
+    },
+  ],
   variable: "--font-ibm-plex-mono",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
   display: "optional",
 });
 
-const orbitron = Orbitron({
+const orbitron = localFont({
+  src: [
+    {
+      path: "../public/assets/fonts/orbitron-latin-500-700.woff2",
+      weight: "500 700",
+      style: "normal",
+    },
+  ],
   variable: "--font-orbitron",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
   display: "optional",
 });
 

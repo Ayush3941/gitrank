@@ -14,6 +14,7 @@ This repo is optimized for:
 - local end-to-end demo loops
 - deterministic scoring trust
 - production-hardening checklists and policy gates
+- offline-safe frontend builds via locally bundled UI fonts (no runtime Google Fonts dependency)
 
 ## Product Contract
 

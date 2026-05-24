@@ -7,6 +7,7 @@ Dark-first Next.js frontend for GitRank, an evidence-backed open-source reputati
 - Next.js App Router
 - TypeScript
 - Tailwind CSS v4
+- Local bundled fonts via `next/font/local` (Space Grotesk, Orbitron, IBM Plex Mono)
 - shadcn/ui-style primitives built in `components/ui`
 - TanStack Query
 - Motion for React
@@ -48,6 +49,8 @@ cp -n .env.example .env.local
 npm install
 npm run dev
 ```
+
+Font assets are bundled in `public/assets/fonts` so local and CI builds do not require live Google Fonts fetches.
 
 ## Quality Checks
 
