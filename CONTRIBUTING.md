@@ -41,7 +41,7 @@ That means GitRank must be:
 
 ## Research Baseline (GitRanking Paper)
 
-Source reviewed: `gitrank_research .pdf` (local paper copy), reviewed on May 23, 2026.
+Source reviewed: `gitrank_research .pdf` (local paper copy), reviewed on May 24, 2026.
 
 The paper this project name is inspired by is:
 
@@ -55,6 +55,7 @@ Paper scope (what it actually does):
 - converges ranking with ~5,281 annotated pairs from 8 annotators (instead of exhaustive full-pair comparisons)
 - clusters ranked terms into 8 discrete levels
 - finds developers overuse broad/high-level labels, reducing project discoverability
+- targets project discoverability/label quality, not human contributor competency ranking
 
 What this means for GitRank product work in this repo:
 
