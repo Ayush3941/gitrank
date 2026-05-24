@@ -29,7 +29,7 @@ export function LandingPage() {
                 <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">For hiring teams</span>
               </div>
               <p className="cyber-copy readable-measure max-w-[72ch] text-base leading-8 sm:text-lg">
-                GitRank analyzes PR difficulty, review depth, tests, and project context, then converts verifiable evidence into XP, levels, badges, and shareable profile snapshots.
+                GitRank scores PR difficulty, review depth, tests, and project context, then converts verified evidence into XP, badges, and shareable profile signals.
               </p>
               <ul role="list" className="grid max-w-3xl gap-2 sm:grid-cols-3">
                 <li className="list-none neon-surface px-3 py-2 text-xs text-muted">
@@ -74,8 +74,8 @@ export function LandingPage() {
             </div>
             <div className="space-y-2">
               <TrustPill text="No synthetic production users." />
-              <TrustPill text="Deterministic rules own score authority." />
-              <TrustPill text="Gemini enriches copy with deterministic fallback." />
+              <TrustPill text="Deterministic scoring owns rank authority." />
+              <TrustPill text="Gemini only enriches explanations." />
             </div>
           </GlowCard>
         </div>
@@ -86,7 +86,7 @@ export function LandingPage() {
           <SectionHeader
             eyebrow="Problem"
             title="Why GitRank exists"
-            description="Activity counters alone do not communicate contribution quality. GitRank scores evidence-backed impact instead of raw volume."
+            description="Activity volume alone does not describe contribution quality."
           />
           <div className="grid gap-6 lg:grid-cols-3">
           {[
@@ -121,7 +121,7 @@ export function LandingPage() {
           <SectionHeader
             eyebrow="Journeys"
             title="Core user journeys"
-            description="Designed for onboarding, ongoing progression, and profile sharing."
+            description="Onboarding, progression, and profile sharing."
           />
           <ul role="list" className="grid gap-6 lg:grid-cols-3">
             {[
@@ -167,7 +167,7 @@ export function LandingPage() {
           <SectionHeader
             eyebrow="Solution"
             title="Reputation from evidence-backed contribution scoring"
-            description="Merged PRs, changed files, review depth, tests, maintainers, and AI summaries feed explainable score movement and inspectable profile snapshots."
+            description="Merged PR evidence flows into explainable score movement and inspectable profile snapshots."
           />
           <ul role="list" className="grid gap-3">
             {[
@@ -186,7 +186,7 @@ export function LandingPage() {
           <SectionHeader
             eyebrow="Gamified loop"
             title="A serious progression loop"
-            description="Designed like an RPG progression loop but grounded in maintainers' evidence."
+            description="RPG-style progression grounded in maintainers' evidence."
           />
           <ol className="grid gap-3 sm:grid-cols-2">
             {loop.map((step, index) => (
@@ -204,7 +204,7 @@ export function LandingPage() {
           <SectionHeader
             eyebrow="Battle report"
             title="Every high-signal PR gets a post-match report"
-            description="The scoring model stays visible. High XP requires clear difficulty, context, review credibility, and uncertainty handling."
+            description="Scoring stays explainable. High XP requires difficulty, context, and credible review signals."
           />
           <div className="neon-tile rounded-[1.75rem] p-5">
             <p className="text-sm text-cyan-200">Live report cards unlock after OAuth and sync.</p>
