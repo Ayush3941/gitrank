@@ -64,8 +64,8 @@ const TAB_ICONS: Record<LeaderboardTab, typeof Globe2> = {
   "Rising Contributors": TrendingUp,
 };
 
-const LEADERBOARD_ROW_PAGE_SIZE_DEFAULT = 24;
-const LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED = 12;
+const LEADERBOARD_ROW_PAGE_SIZE_DEFAULT = 18;
+const LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED = 8;
 const LEADERBOARD_ROWS_REGION_ID = "leaderboard-rows-region";
 
 export function LeaderboardPageClient() {
@@ -77,7 +77,7 @@ export function LeaderboardPageClient() {
     ? LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED
     : LEADERBOARD_ROW_PAGE_SIZE_DEFAULT;
   const [visibleRowCount, setVisibleRowCount] = useState(rowPageSize);
-  const [showLaneDetails, setShowLaneDetails] = useState(!constrainedNetwork);
+  const [showLaneDetails, setShowLaneDetails] = useState(false);
   const tabFromURL = laneParamToTab(searchParams.get("lane"));
   const tab = tabFromURL ?? "Global";
   const deferredTab = useDeferredValue(tab);
@@ -125,7 +125,7 @@ export function LeaderboardPageClient() {
       <PageHeader
         eyebrow="Leaderboard"
         title="Leaderboard"
-        description="Compare rank lanes and promotion progress."
+        description="Rank lanes and promotion progress."
         actions={(
           <Button asChild variant="secondary" size="sm">
             <Link href="/dashboard/quests" prefetch={false}>
@@ -151,7 +151,7 @@ export function LeaderboardPageClient() {
         />
       ) : null}
       <section className="space-y-3">
-        <div className="sm:hidden">
+        <div className="lg:hidden">
           <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
             <span className="sr-only">Leaderboard lane filter</span>
             <select
@@ -169,7 +169,7 @@ export function LeaderboardPageClient() {
             </select>
           </label>
         </div>
-        <div className="hidden sm:block">
+        <div className="hidden lg:block">
           <SegmentedTablist
             options={tabs.map((item) => {
               const Icon = TAB_ICONS[item];
