@@ -31,7 +31,7 @@ import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics"
 import type { Quest } from "@/types/gitrank";
 
 const groups: Array<Quest["cadence"]> = ["Daily", "Weekly", "Long-term", "Skill-based"];
-const QUEST_GROUP_PAGE_SIZE_DEFAULT = 6;
+const QUEST_GROUP_PAGE_SIZE_DEFAULT = 5;
 const QUEST_GROUP_PAGE_SIZE_CONSTRAINED = 3;
 const QUEST_MISSIONS_REGION_ID = "quests-missions-region";
 const QUEST_FILTERS: Array<{ value: "All" | Quest["cadence"]; label: string }> = [

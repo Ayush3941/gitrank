@@ -41,7 +41,7 @@ import type { BadgeRarity } from "@/types/gitrank";
 const BADGES_EARNED_REGION_ID = "badges-earned-region";
 const LOCKED_BADGE_PAGE_SIZE_DEFAULT = 8;
 const LOCKED_BADGE_PAGE_SIZE_CONSTRAINED = 4;
-const BADGE_SHELF_PAGE_SIZE_DEFAULT = 12;
+const BADGE_SHELF_PAGE_SIZE_DEFAULT = 10;
 const BADGE_SHELF_PAGE_SIZE_CONSTRAINED = 6;
 const BADGE_RARITY_FILTERS: Array<BadgeRarity | "All"> = [
   "All",

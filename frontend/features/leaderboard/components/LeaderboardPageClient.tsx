@@ -66,8 +66,8 @@ const TAB_ICONS: Record<LeaderboardTab, typeof Globe2> = {
   "Rising Contributors": TrendingUp,
 };
 
-const LEADERBOARD_ROW_PAGE_SIZE_DEFAULT = 18;
-const LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED = 8;
+const LEADERBOARD_ROW_PAGE_SIZE_DEFAULT = 12;
+const LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED = 6;
 const LEADERBOARD_ROWS_REGION_ID = "leaderboard-rows-region";
 
 export function LeaderboardPageClient() {
