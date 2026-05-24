@@ -23,7 +23,6 @@ import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 
 const CurrentLeagueCard = dynamic(
   () =>
@@ -276,23 +275,13 @@ export function DashboardPageClient() {
             Best {streak.bestStreakDays}d • {streak.activeDaysThisYear} active days this year
           </p>
         </GlowCard>
-        <GlowCard className="xl:col-span-3 space-y-4">
-          <div className="flex items-center justify-between text-muted">
-            <span className="text-sm">Evidence window</span>
-            <span className="hud-pill rounded-2xl p-2">
-              <Activity className="h-5 w-5 text-primary" />
-            </span>
-          </div>
-          <div className="numeric-readout text-3xl font-semibold tracking-tight">
-            {contributionWindowCount}/{contributionWindowCap}
-          </div>
-          <div className="space-y-2">
-            <Progress value={contributionWindowFillRate} />
-            <p className="text-sm leading-6 text-muted">
-              {contributionWindowFillRate}% of the capped recent PR evidence window is loaded.
-            </p>
-          </div>
-        </GlowCard>
+        <StatCard
+          className="xl:col-span-3"
+          label="Merged PRs"
+          value={user.mergedPrCount}
+          detail="Merged work is the primary ranking evidence."
+          icon={<Activity className="h-5 w-5 text-primary" />}
+        />
       </section>
       <div className="grid gap-6 xl:grid-cols-[0.86fr,1.14fr]">
         <div className="space-y-6">
