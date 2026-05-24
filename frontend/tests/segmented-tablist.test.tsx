@@ -31,7 +31,7 @@ function renderTablist() {
   render(<TablistHarness onUpdate={(value) => updates.push(value)} />);
   return {
     updates,
-    getButton: (name: RegExp) => screen.getByRole("tab", { name }),
+    getButton: (name: RegExp) => screen.getByRole("button", { name }),
   };
 }
 
@@ -47,7 +47,7 @@ describe("SegmentedTablist", () => {
     expect(updates.at(-1)).toBe("Running");
   });
 
-  it("supports arrow-key switching between tabs", () => {
+  it("supports arrow-key switching between segmented options", () => {
     const { updates, getButton } = renderTablist();
     const allButton = getButton(/All/i);
 

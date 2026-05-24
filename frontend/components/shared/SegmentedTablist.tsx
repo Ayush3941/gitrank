@@ -38,65 +38,66 @@ export function SegmentedTablist<T extends string>({
   }
 
   return (
-    <ul
-      role="tablist"
+    <div
+      role="group"
       aria-label={ariaLabel}
       aria-describedby={ariaDescribedBy}
+      data-segmented-tablist="true"
       className={cn(
         "dashboard-nav-track lane-rail flex gap-1.5 overflow-x-auto p-0.5",
         className,
       )}
     >
-      {options.map((item) => {
-        const active = value === item.value;
-        const tabID = `${tabIdPrefix}-${item.value.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
-        return (
-          <li
-            key={item.value}
-            role="presentation"
-            className={cn("list-none shrink-0", item.minWidthClassName ?? "min-w-[8rem]")}
-          >
-            <button
-              type="button"
-              id={tabID}
-              role="tab"
-              title={item.label}
-              aria-label={item.label}
-              aria-controls={ariaControls}
-              aria-selected={active}
-              tabIndex={active ? 0 : -1}
-              data-active={active ? "true" : "false"}
-              className="focus-ring dashboard-nav-item min-h-11 w-full px-3 py-2 text-center text-sm font-semibold"
-              onMouseDown={(event) => {
-                if (event.button !== 0) {
-                  return;
-                }
-                event.preventDefault();
-                focusWithoutScroll(event.currentTarget);
-              }}
-              onClick={(event) => {
-                focusWithoutScroll(event.currentTarget);
-                onValueChange(item.value);
-              }}
-              onKeyDown={handleHorizontalTabKeyDown}
+      <ul role="list" className="contents">
+        {options.map((item) => {
+          const active = value === item.value;
+          const optionID = `${tabIdPrefix}-${item.value.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+          return (
+            <li
+              key={item.value}
+              className={cn("list-none shrink-0", item.minWidthClassName ?? "min-w-[8rem]")}
             >
-              <span className="inline-flex items-center gap-2">
-                {item.icon ? (
-                  <span aria-hidden="true" className="dashboard-nav-icon h-4 w-4">
-                    {item.icon}
-                  </span>
-                ) : null}
-                <span className="truncate">{item.label}</span>
-                {typeof item.count === "number" ? (
-                  <span className="rounded-full border border-primary/22 bg-primary/10 px-1.5 py-0.5 text-[11px] leading-none text-primary">
-                    {item.count}
-                  </span>
-                ) : null}
-              </span>
-            </button>
-          </li>
-        );
-      })}
-    </ul>
+              <button
+                type="button"
+                id={optionID}
+                title={item.label}
+                aria-label={item.label}
+                aria-controls={ariaControls}
+                aria-pressed={active}
+                data-active={active ? "true" : "false"}
+                data-segmented-option="true"
+                className="focus-ring dashboard-nav-item min-h-11 w-full px-3 py-2 text-center text-sm font-semibold"
+                onMouseDown={(event) => {
+                  if (event.button !== 0) {
+                    return;
+                  }
+                  event.preventDefault();
+                  focusWithoutScroll(event.currentTarget);
+                }}
+                onClick={(event) => {
+                  focusWithoutScroll(event.currentTarget);
+                  onValueChange(item.value);
+                }}
+                onKeyDown={handleHorizontalTabKeyDown}
+              >
+                <span className="inline-flex items-center gap-2">
+                  {item.icon ? (
+                    <span aria-hidden="true" className="dashboard-nav-icon h-4 w-4">
+                      {item.icon}
+                    </span>
+                  ) : null}
+                  <span className="truncate">{item.label}</span>
+                  {typeof item.count === "number" ? (
+                    <span className="rounded-full border border-primary/22 bg-primary/10 px-1.5 py-0.5 text-[11px] leading-none text-primary">
+                      {item.count}
+                    </span>
+                  ) : null}
+                </span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }
