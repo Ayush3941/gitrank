@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, CalendarDays, Sparkles } from "lucide-react";
+import { ArrowRight, CalendarDays, ExternalLink, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ClampedText } from "@/components/shared/ClampedText";
 import { CopyTextButton } from "@/components/shared/CopyTextButton";
@@ -120,10 +120,21 @@ export function ContributionList({
                   lite={useLiteCards}
                 />
               ) : null}
-              <div className="flex justify-end">
+              <div className="flex flex-wrap justify-end gap-2">
+                <Button asChild variant="ghost" size="sm">
+                  <Link
+                    href={`https://github.com/${item.owner}/${item.repo}/pull/${item.number}`}
+                    prefetch={false}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    GitHub PR
+                    <ExternalLink className="h-4 w-4" />
+                  </Link>
+                </Button>
                 <Button asChild variant="secondary" size="sm">
                   <Link href={`/pr/${item.owner}/${item.repo}/${item.number}`} prefetch={false}>
-                    View report
+                    Battle report
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
