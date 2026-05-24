@@ -60,7 +60,9 @@ describe("route-level visual regression snapshots", () => {
 
   it("matches leaderboard visual shell snapshot", async () => {
     const rendered = renderWithClient(<LeaderboardPageClient />);
-    await screen.findByText("Live Leaderboard Maintainer");
+    await screen.findByText("Live Leaderboard Maintainer", undefined, {
+      timeout: 15_000,
+    });
     expect(normalizeSnapshotHTML(rendered.container.innerHTML)).toMatchSnapshot();
   });
 

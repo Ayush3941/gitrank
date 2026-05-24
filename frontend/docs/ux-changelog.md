@@ -22,6 +22,13 @@
 - Dashboard numeric-motion reduction pass:
   - removed animated level/XP number transitions in the hero rank card and switched to static tabular numeric rendering.
   - reduces non-essential motion and lowers CPU cost on frequent dashboard refreshes.
+- Global readability contrast pass:
+  - increased text-soft token contrast in default, cyberpunk, terminal, and high-contrast themes.
+  - reduced heavy page-overlay opacity and decorative cyber-card glow masks while increasing surface/card opacity for denser text backgrounds.
+  - keeps neon/cyberpunk identity intact with clearer body-copy legibility across dashboard tabs.
+- Leaderboard fixture-test stability pass:
+  - increased async wait windows in smoke/visual leaderboard fixture tests so dynamic lane rendering has enough time before assertion.
+  - reduces intermittent local failures caused by short default `findByText` timeouts on heavy dev machines.
 - Segmented filter auto-scroll regression fix:
   - removed forced viewport restoration (`window.scrollTo`) from shared segmented-tab selection and keyboard fallback focus handling.
   - fixes jump-to-top behavior seen when switching filter tabs in dashboard routes (notably settings sync status tabs).

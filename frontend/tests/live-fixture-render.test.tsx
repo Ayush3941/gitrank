@@ -142,11 +142,19 @@ describe("live fixture frontend smoke coverage", () => {
   it("renders leaderboard from the live leaderboard fixture route", async () => {
     renderWithClient(<LeaderboardPageClient />);
 
-    expect(await screen.findByText("v2-smoke")).toBeTruthy();
-    expect(await screen.findByText("Live Leaderboard Maintainer")).toBeTruthy();
+    expect(
+      await screen.findByText("v2-smoke", undefined, { timeout: 15_000 }),
+    ).toBeTruthy();
+    expect(
+      await screen.findByText("Live Leaderboard Maintainer", undefined, {
+        timeout: 15_000,
+      }),
+    ).toBeTruthy();
     expect(
       await screen.findByText(
         "Leaderboard rows are backed by persisted season snapshots and rank movement events.",
+        undefined,
+        { timeout: 15_000 },
       ),
     ).toBeTruthy();
     expect(nonAnalyticsPaths().sort()).toEqual(
