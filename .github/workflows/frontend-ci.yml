@@ -35,6 +35,9 @@ jobs:
       - name: Check production mock imports
         run: npm run check:no-production-mocks
 
+      - name: Check hardcoded identity literals
+        run: npm run check:no-hardcoded-identities
+
       - name: Check client env safety
         run: npm run check:client-env-safety
 
@@ -52,6 +55,21 @@ jobs:
 
       - name: Check segmented filter consistency
         run: npm run check:segmented-filters
+
+      - name: Check query policy
+        run: npm run check:query-policy
+
+      - name: Check unstable JSX keys
+        run: npm run check:jsx-keys
+
+      - name: Check duplicate JSX ids
+        run: npm run check:jsx-ids
+
+      - name: Check nested interactive controls
+        run: npm run check:nested-interactive
+
+      - name: Check scroll-jump APIs
+        run: npm run check:scroll-jumps
 
       - name: Check media layout stability
         run: npm run check:media-stability
