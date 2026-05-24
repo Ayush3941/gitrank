@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useMemo } from "react";
 import { Award, CheckCircle2, GitPullRequest, ShieldCheck, Stars } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -12,6 +13,7 @@ import { LoadingState } from "@/components/shared/LoadingState";
 import { RarityBadge } from "@/components/shared/RarityBadge";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
+import { Button } from "@/components/ui/button";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { useProfile } from "@/hooks/use-profile";
@@ -242,8 +244,13 @@ export function PublicProfilePageClient({
                 ))}
               </ul>
             ) : (
-              <div className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
+              <div className="neon-surface space-y-3 rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
                 <p>No unlocked badges in this snapshot yet.</p>
+                <div className="flex flex-wrap gap-2">
+                  <Button asChild size="sm" variant="secondary">
+                    <Link href="/dashboard/quests" prefetch={false}>Open quests</Link>
+                  </Button>
+                </div>
               </div>
             )}
           </GlowCard>
@@ -461,6 +468,11 @@ function LiteBestPRSummary({
     return (
       <GlowCard className="space-y-3">
         <p className="text-sm text-muted">No public battle reports are available in this snapshot yet.</p>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild size="sm" variant="secondary">
+            <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
+          </Button>
+        </div>
       </GlowCard>
     );
   }
