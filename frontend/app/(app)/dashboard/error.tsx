@@ -14,7 +14,7 @@ export default function DashboardError({
       centered
       eyebrow="Dashboard route error"
       title="Dashboard panel failed to render"
-      description="Retry this panel. If the issue persists, open settings and run sync again."
+      description="Retry this panel. If the issue persists, open settings and refresh sync evidence."
       retryLabel="Retry panel"
       actions={[{ label: "Open settings", href: "/dashboard/settings", variant: "default" }]}
       analyticsTarget="dashboard:route-error"

@@ -57,6 +57,7 @@ Font assets are bundled in `public/assets/fonts` so local and CI builds do not r
 npm run lint
 npm run check:no-production-mocks
 npm run check:no-hardcoded-identities
+npm run check:sync-copy-policy
 npm run check:jsx-ids
 npm run check:scroll-jumps
 npm run test:smoke
@@ -83,6 +84,7 @@ The public profile page, authenticated dashboard overview, onboarding reveal, ba
 - leaderboard rows surface season snapshot IDs, rank movement event IDs, profile-snapshot provenance, score version, source watermark, and missing rank-ledger evidence when the backend provides it
 - `npm run check:no-production-mocks` fails CI if production app, hook, feature, or API modules import mock datasets, preview adapters, or demo query plumbing
 - `npm run check:no-hardcoded-identities` fails CI if production frontend modules include banned personal/demo identity literals (`Ayush3941`, `Ayush Kumar Gaur`, `octocat`)
+- `npm run check:sync-copy-policy` fails CI if production frontend modules reintroduce manual-sync phrasing (`Run sync`, `Sync now`) instead of auto-sync guidance copy
 - `npm run check:jsx-ids` fails CI if a TSX file reuses the same literal `id` more than once, preventing duplicate region IDs that break a11y and section controls
 - `npm run check:scroll-jumps` fails CI if product routes reintroduce direct `window.scrollTo`/`scrollIntoView` style APIs that can cause viewport jumps
 - frontend CI enforces these UI integrity checks directly (`no-hardcoded-identities`, `query-policy`, `jsx-keys`, `jsx-ids`, `nested-interactive`, `scroll-jumps`) so regressions fail pull requests before merge

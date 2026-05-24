@@ -17,6 +17,9 @@
 - Auto-sync copy consistency pass:
   - replaced remaining `Run sync` language in contributions empty-state, onboarding reveal guidance, and repository-visibility empty-state with `Open sync settings` wording.
   - aligns user guidance with the current background auto-sync model (no mandatory manual sync button flow).
+- Sync copy policy guard pass:
+  - added `npm run check:sync-copy-policy` to block manual-sync phrases (`Run sync`, `Sync now`) in production frontend modules.
+  - wired this guard into frontend CI so auto-sync guidance remains consistent across future UI changes.
 - Segmented-filter focus no-scroll pass:
   - pointer interactions on shared segmented filters now apply focus with `preventScroll` semantics before selection, reducing browser-driven jump-to-control behavior during filter changes.
   - helps stabilize settings sync-status and similar segmented lanes where users reported abrupt viewport jumps.
