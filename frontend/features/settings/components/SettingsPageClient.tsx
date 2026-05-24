@@ -336,9 +336,10 @@ export function SettingsPageClient() {
           </div>
           <SyncStatusPill status={data.user.syncStatus} />
         </div>
-        <div className="flex flex-wrap gap-3">
+        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
           <Button
             variant="secondary"
+            className="w-full justify-center"
             disabled={isActing || isFetching}
             onClick={() => {
               void refetch();
@@ -347,15 +348,30 @@ export function SettingsPageClient() {
             <RefreshCw className="h-4 w-4" />
             {isFetching ? "Refreshing..." : "Refresh snapshot"}
           </Button>
-          <Button variant="secondary" disabled={isActing} onClick={handleAccountRelink}>
+          <Button
+            variant="secondary"
+            className="w-full justify-center"
+            disabled={isActing}
+            onClick={handleAccountRelink}
+          >
             <FolderGit2 className="h-4 w-4" />
             {accountLinkStart.isPending ? "Starting relink..." : "Reconnect GitHub"}
           </Button>
-          <Button variant="secondary" disabled={isActing} onClick={handleSessionLogout}>
+          <Button
+            variant="secondary"
+            className="w-full justify-center"
+            disabled={isActing}
+            onClick={handleSessionLogout}
+          >
             <LogOut className="h-4 w-4" />
             {logoutSession.isPending ? "Signing out..." : "Sign out"}
           </Button>
-          <Button variant="secondary" disabled={isActing} onClick={handleUnlinkAccount}>
+          <Button
+            variant="secondary"
+            className="w-full justify-center"
+            disabled={isActing}
+            onClick={handleUnlinkAccount}
+          >
             <FolderGit2 className="h-4 w-4" />
             {unlinkAccount.isPending ? "Disconnecting..." : "Disconnect GitHub"}
           </Button>
