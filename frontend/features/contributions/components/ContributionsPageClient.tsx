@@ -255,6 +255,25 @@ export function ContributionsPageClient() {
         eyebrow="Contributions"
         title="Contributions"
         description="Scored PR cards with fast filters."
+        meta={(
+          <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                Evidence rows {filteredRows.length}
+              </span>
+            </li>
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                Repos {repositories.length}
+              </span>
+            </li>
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                Streak {streak.currentStreakDays}d
+              </span>
+            </li>
+          </ul>
+        )}
         actions={(
           <div className="flex flex-wrap gap-2">
             <Button
