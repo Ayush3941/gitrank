@@ -120,6 +120,7 @@ export function BadgesPageClient() {
 
   const abraInsights = useAbraInsights(
     profile &&
+      !constrainedNetwork &&
       shouldRequestAbraInsights({
         showAiSummaries: profile.user.privacy.showAiSummaries !== false,
         mergedPrCount: profile.user.mergedPrCount,
