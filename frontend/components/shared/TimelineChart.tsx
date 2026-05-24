@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useId } from "react";
+import { useId, useState } from "react";
 import { useLazyInView } from "@/hooks/use-lazy-in-view";
 import {
   useNetworkConstraintPreference,
@@ -23,10 +23,12 @@ const TimelineChartInner = dynamic(
 
 export function TimelineChart({ data }: { data: Array<{ label: string; xp: number }> }) {
   const summaryId = useId();
+  const tableRegionId = useId();
   const { ref: viewportRef, inView } = useLazyInView();
   const constrainedNetwork = useNetworkConstraintPreference();
   const reducedGamification = useReducedGamification();
   const useLiteRenderer = constrainedNetwork || reducedGamification;
+  const [showDataTable, setShowDataTable] = useState(false);
   const safeData = data.length > 0 ? data : [{ label: "No data", xp: 0 }];
   const firstPoint = safeData[0];
   const lastPoint = safeData[safeData.length - 1];
@@ -62,10 +64,23 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
       </div>
       <div className="neon-surface px-4 py-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-xs font-medium text-primary">Timeline summary</p>
-          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${momentumToneClass}`}>
-            Momentum {momentumLabel}
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-xs font-medium text-primary">Timeline summary</p>
+            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${momentumToneClass}`}>
+              Momentum {momentumLabel}
+            </span>
+          </div>
+          <button
+            type="button"
+            className="focus-ring neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs font-semibold"
+            onClick={() => {
+              setShowDataTable((current) => !current);
+            }}
+            aria-expanded={showDataTable}
+            aria-controls={tableRegionId}
+          >
+            {showDataTable ? "Hide data table" : "View data table"}
+          </button>
         </div>
         <p id={summaryId} className="mt-2 text-sm text-muted">
           Start {firstPoint.label}: {firstPoint.xp} XP. Latest {lastPoint.label}: {lastPoint.xp} XP.
@@ -79,10 +94,37 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
           {recentWindow.map((point, index) => (
             <li key={`${point.label}-${index}`} className="flex items-center justify-between gap-3">
               <span>{point.label}</span>
-              <span>{point.xp} XP</span>
-            </li>
-          ))}
-        </ul>
+            <span>{point.xp} XP</span>
+          </li>
+        ))}
+      </ul>
+        {showDataTable ? (
+          <div id={tableRegionId} className="mt-3 overflow-x-auto">
+            <table className="w-full min-w-[22rem] text-left text-xs text-muted">
+              <caption className="sr-only">Timeline XP values by window label.</caption>
+              <thead>
+                <tr className="border-b border-primary/18 text-primary">
+                  <th scope="col" className="px-2 py-2 font-semibold">Window</th>
+                  <th scope="col" className="px-2 py-2 font-semibold">XP</th>
+                  <th scope="col" className="px-2 py-2 font-semibold">Step delta</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentWindow.map((point, index) => {
+                  const previous = index > 0 ? recentWindow[index - 1] : null;
+                  const delta = previous ? point.xp - previous.xp : 0;
+                  return (
+                    <tr key={`${point.label}-${point.xp}-${index}`} className="border-b border-white/6 last:border-b-0">
+                      <th scope="row" className="px-2 py-2 font-medium text-white">{point.label}</th>
+                      <td className="px-2 py-2">{point.xp}</td>
+                      <td className="px-2 py-2">{index === 0 ? "-" : `${delta > 0 ? "+" : ""}${delta}`}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : null}
       </div>
     </div>
   );

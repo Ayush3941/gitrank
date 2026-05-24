@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useId } from "react";
+import { useId, useState } from "react";
 import { useLazyInView } from "@/hooks/use-lazy-in-view";
 import {
   useNetworkConstraintPreference,
@@ -27,10 +27,12 @@ const SkillRadarChartInner = dynamic(
 
 export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
   const summaryId = useId();
+  const tableRegionId = useId();
   const { ref: viewportRef, inView } = useLazyInView();
   const constrainedNetwork = useNetworkConstraintPreference();
   const reducedGamification = useReducedGamification();
   const useLiteRenderer = constrainedNetwork || reducedGamification;
+  const [showDataTable, setShowDataTable] = useState(false);
   const safeSkills: SkillNode[] = skills.length > 0
     ? skills
     : [{ category: "Documentation", score: 0, delta: 0, note: "No skill evidence available yet." }];
@@ -58,7 +60,20 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
         </p>
       </div>
       <div className="neon-surface px-4 py-3">
-        <p className="text-xs font-medium text-primary">Skill signal summary</p>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs font-medium text-primary">Skill signal summary</p>
+          <button
+            type="button"
+            className="focus-ring neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs font-semibold"
+            onClick={() => {
+              setShowDataTable((current) => !current);
+            }}
+            aria-expanded={showDataTable}
+            aria-controls={tableRegionId}
+          >
+            {showDataTable ? "Hide data table" : "View data table"}
+          </button>
+        </div>
         <p id={summaryId} className="mt-2 text-sm text-muted">
           Strongest signal: {strongest.category} ({strongest.score}).
           {" "}Lowest signal: {weakest.category} ({weakest.score}).
@@ -71,6 +86,29 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
             </li>
           ))}
         </ul>
+        {showDataTable ? (
+          <div id={tableRegionId} className="mt-3 overflow-x-auto">
+            <table className="w-full min-w-[24rem] text-left text-xs text-muted">
+              <caption className="sr-only">Skill lane scores and delta values.</caption>
+              <thead>
+                <tr className="border-b border-primary/18 text-primary">
+                  <th scope="col" className="px-2 py-2 font-semibold">Skill lane</th>
+                  <th scope="col" className="px-2 py-2 font-semibold">Score</th>
+                  <th scope="col" className="px-2 py-2 font-semibold">Delta</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedSkills.map((skill, index) => (
+                  <tr key={`${skill.category}-${skill.score}-${index}`} className="border-b border-white/6 last:border-b-0">
+                    <th scope="row" className="px-2 py-2 font-medium text-white">{skill.category}</th>
+                    <td className="px-2 py-2">{skill.score}</td>
+                    <td className="px-2 py-2">{skill.delta >= 0 ? "+" : ""}{skill.delta}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : null}
       </div>
     </div>
   );
