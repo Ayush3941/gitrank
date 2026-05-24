@@ -5,6 +5,7 @@
 - Chart data-table disclosure pass:
   - skill radar and timeline cards now include `View data table` toggles for explicit numeric inspection.
   - each table exposes lane/window, score/XP, and delta values, improving shareability and non-visual interpretation without removing chart visuals.
+  - chart regions now expose explicit `aria-label` context in addition to descriptive summaries for faster screen-reader orientation.
   - follows accessibility guidance to pair visual charts with structured textual/tabular equivalents.
 - Deterministic impact-summary fallback upgrade:
   - contribution cards and PR battle reports now use structured deterministic summaries when Gemini text is missing, stale, or placeholder-only.

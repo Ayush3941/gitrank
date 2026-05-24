@@ -51,6 +51,7 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
         ref={viewportRef}
         className="neon-tile relative h-72 w-full overflow-hidden rounded-[1.75rem] p-3"
         role="img"
+        aria-label={`Contribution timeline chart across ${safeData.length} windows.`}
         aria-describedby={summaryId}
       >
         {useLiteRenderer ? (

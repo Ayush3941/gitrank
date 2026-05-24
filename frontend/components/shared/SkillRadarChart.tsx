@@ -46,6 +46,7 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
         ref={viewportRef}
         className="neon-tile relative h-80 w-full overflow-hidden rounded-[1.75rem] p-3"
         role="img"
+        aria-label={`Skill radar chart across ${sortedSkills.length} lanes.`}
         aria-describedby={summaryId}
       >
         {useLiteRenderer ? (
