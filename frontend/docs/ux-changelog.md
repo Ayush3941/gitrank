@@ -1,5 +1,14 @@
 # Frontend UX Changelog
 
+## 2026-05-24
+
+- Segmented filter auto-scroll regression fix:
+  - removed forced viewport restoration (`window.scrollTo`) from shared segmented-tab selection and keyboard fallback focus handling.
+  - fixes jump-to-top behavior seen when switching filter tabs in dashboard routes (notably settings sync status tabs).
+- Added regression coverage:
+  - updated `tests/segmented-tablist.test.tsx` to assert tab selection does not invoke viewport scroll restoration.
+  - keeps filter interactions stable while preserving manual keyboard activation behavior.
+
 ## 2026-05-22
 
 - Added a new `Cyberpunk matrix` display theme preset:
