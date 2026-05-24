@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Download, FolderGit2, LogOut, Palette, RefreshCw, Sparkles, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Download, FolderGit2, LogOut, Palette, RefreshCw, Sparkles, Trash2 } from "lucide-react";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { InlineNotice } from "@/components/shared/InlineNotice";
@@ -144,7 +144,10 @@ export function SettingsPageClient() {
   useAccountGamificationPreference(data);
   const [actionNotice, setActionNotice] = useState("");
   const [displayNotice, setDisplayNotice] = useState("");
+  const [showDisplayTuning, setShowDisplayTuning] = useState(false);
   const currentSettings = data?.user.privacy ?? null;
+  const activeTheme = THEME_OPTIONS.find((option) => option.value === theme) ?? THEME_OPTIONS[0];
+  const activeTextScale = TEXT_SCALE_OPTIONS.find((option) => option.value === textScale) ?? TEXT_SCALE_OPTIONS[0];
 
   useEffect(() => {
     if (!actionNotice) {
@@ -441,7 +444,36 @@ export function SettingsPageClient() {
                 <Palette className="h-4 w-4 text-primary" />
                 <p className="text-sm font-semibold text-white">Theme + text tuning</p>
               </div>
-              <div id="display-tuning-controls" className="space-y-4">
+              <div className="neon-surface rounded-[1rem] px-4 py-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-sm text-muted">
+                    {activeTheme.label} · {activeTextScale.label} · {themeSource === "system" ? "System theme" : "Manual theme"}
+                  </p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    aria-expanded={showDisplayTuning}
+                    aria-controls="display-tuning-controls"
+                    onClick={() => {
+                      setShowDisplayTuning((current) => !current);
+                    }}
+                  >
+                    {showDisplayTuning ? (
+                      <>
+                        Hide advanced
+                        <ChevronUp className="h-4 w-4" />
+                      </>
+                    ) : (
+                      <>
+                        Advanced tuning
+                        <ChevronDown className="h-4 w-4" />
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+              <div id="display-tuning-controls" className={showDisplayTuning ? "space-y-4" : "hidden"}>
                 <div className="space-y-3">
                   <p className="text-xs font-medium text-primary">Visual theme</p>
                   <div className="grid gap-2 sm:grid-cols-2">
