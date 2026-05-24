@@ -188,7 +188,7 @@ export function PublicProfilePageClient({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="stable-scroll-scope space-y-6">
       {data.isStale ? (
         <StaleState
           message={`This profile snapshot was refreshed ${formatRelativeDays(data.refreshedAt)}.`}

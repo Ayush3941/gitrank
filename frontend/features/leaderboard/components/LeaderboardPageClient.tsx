@@ -123,7 +123,7 @@ export function LeaderboardPageClient() {
   const isBusy = isSwitchingTab || (isFetching && Boolean(snapshot));
 
   return (
-    <div className="space-y-6" aria-busy={isBusy || undefined}>
+    <div className="stable-scroll-scope space-y-6" aria-busy={isBusy || undefined}>
       <PageHeader
         eyebrow="Leaderboard"
         title="Leaderboard"

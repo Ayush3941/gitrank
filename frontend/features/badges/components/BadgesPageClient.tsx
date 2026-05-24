@@ -258,7 +258,7 @@ export function BadgesPageClient() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="stable-scroll-scope space-y-6">
       <PageHeader
         eyebrow="Badges"
         title="Badges"
