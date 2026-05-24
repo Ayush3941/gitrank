@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { AlertTriangle, ArrowRight, Award, ExternalLink, ShieldCheck, Swords } from "lucide-react";
 import { useState } from "react";
@@ -12,9 +13,6 @@ import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
-import { EvidenceSignalsCard } from "@/features/pr-report/components/EvidenceSignalsCard";
-import { ScoreMatrixCard } from "@/features/pr-report/components/ScoreMatrixCard";
-import { XPBreakdownCard } from "@/features/pr-report/components/XPBreakdownCard";
 import { usePrReport } from "@/hooks/use-pr-report";
 import {
   formatContributionStatusLabel,
@@ -27,6 +25,36 @@ import {
 } from "@/lib/presentation/deterministic-impact-summary";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import { formatEvidenceStatusLabel, toneForEvidenceStatus } from "@/lib/presentation/status-tone";
+
+const ScoreMatrixCard = dynamic(
+  () =>
+    import("@/features/pr-report/components/ScoreMatrixCard").then(
+      (mod) => mod.ScoreMatrixCard,
+    ),
+  {
+    loading: () => <TechnicalPanelPlaceholder label="Loading score matrix" />,
+  },
+);
+
+const XPBreakdownCard = dynamic(
+  () =>
+    import("@/features/pr-report/components/XPBreakdownCard").then(
+      (mod) => mod.XPBreakdownCard,
+    ),
+  {
+    loading: () => <TechnicalPanelPlaceholder label="Loading XP breakdown" />,
+  },
+);
+
+const EvidenceSignalsCard = dynamic(
+  () =>
+    import("@/features/pr-report/components/EvidenceSignalsCard").then(
+      (mod) => mod.EvidenceSignalsCard,
+    ),
+  {
+    loading: () => <TechnicalPanelPlaceholder label="Loading evidence signals" />,
+  },
+);
 
 export function PRBattleReportPageClient({
   owner,
@@ -697,4 +725,14 @@ function uniqueStrings(values: string[]): string[] {
     output.push(value);
   }
   return output;
+}
+
+function TechnicalPanelPlaceholder({ label }: { label: string }) {
+  return (
+    <GlowCard variant="loading" className="min-h-[14rem] space-y-3">
+      <p className="text-xs font-medium text-primary">{label}</p>
+      <div className="neon-skeleton h-10 w-1/2" />
+      <div className="neon-skeleton h-24 w-full" />
+    </GlowCard>
+  );
 }
