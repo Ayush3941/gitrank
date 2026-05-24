@@ -394,7 +394,7 @@ export function BadgesPageClient() {
                 ) : null}
               </ul>
             </div>
-            <div className="grid gap-3 md:grid-cols-2 sm:hidden">
+            <div className="grid gap-3 md:grid-cols-2 lg:hidden">
               <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
                 <span className="sr-only">Filter by rarity</span>
                 <select
@@ -427,7 +427,7 @@ export function BadgesPageClient() {
                 </select>
               </label>
             </div>
-            <div className="hidden sm:grid gap-3">
+            <div className="hidden lg:grid gap-3">
               <SegmentedTablist
                 options={BADGE_RARITY_FILTERS.map((item) => ({
                   value: item,
