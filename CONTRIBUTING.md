@@ -229,6 +229,7 @@ Required guardrails:
 - Keep contribution/profile payloads bounded; do not remove the recent-history cap without performance evidence and a fallback strategy.
 - Avoid production polling loops that can amplify CPU/network load. Use event-driven updates or conservative intervals when background refresh is required.
 - Never re-introduce mock adapters into production frontend data paths.
+- Use manual keyboard activation for rendering-heavy segmented filters (`Arrow` keys move focus; `Enter`/`Space` applies) to prevent accidental high-cost rerenders while preserving ARIA tab accessibility.
 
 Frontend PR verification (required before merge):
 
