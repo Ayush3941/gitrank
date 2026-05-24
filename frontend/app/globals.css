@@ -389,7 +389,6 @@ select {
 }
 
 :where(
-    [id],
     a[href],
     [data-scroll-target="true"]
   ) {
