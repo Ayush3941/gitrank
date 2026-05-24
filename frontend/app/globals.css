@@ -348,7 +348,7 @@ body::before {
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
-  filter: saturate(1.08) contrast(1.02) brightness(1.04);
+  filter: saturate(1.05) contrast(1.01) brightness(1.03);
 }
 
 body::after {
@@ -358,22 +358,22 @@ body::after {
   pointer-events: none;
   z-index: -1;
   background:
-    linear-gradient(180deg, rgb(1 4 12 / 0.08), rgb(2 6 16 / 0.28)),
+    linear-gradient(180deg, rgb(1 4 12 / 0.05), rgb(2 6 16 / 0.18)),
     radial-gradient(
       circle at 10% 10%,
-      rgb(var(--primary) / 0.12) 0%,
-      rgb(var(--primary) / 0.085) 56%,
-      rgb(var(--primary) / 0.03) 84%,
+      rgb(var(--primary) / 0.11) 0%,
+      rgb(var(--primary) / 0.075) 64%,
+      rgb(var(--primary) / 0.02) 90%,
       transparent 100%
     ),
     radial-gradient(
       circle at 90% 88%,
-      rgb(var(--primary-2) / 0.11) 0%,
-      rgb(var(--primary-2) / 0.075) 54%,
-      rgb(var(--primary-2) / 0.028) 82%,
+      rgb(var(--primary-2) / 0.1) 0%,
+      rgb(var(--primary-2) / 0.068) 62%,
+      rgb(var(--primary-2) / 0.02) 90%,
       transparent 100%
     );
-  opacity: 0.22;
+  opacity: 0.14;
 }
 
 ::selection {

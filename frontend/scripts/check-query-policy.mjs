@@ -26,6 +26,13 @@ const policyChecks = [
     ],
   },
   {
+    file: "hooks/use-badges.ts",
+    required: [
+      /useQuery<BadgesQueryData>\(\{[\s\S]*retry:\s*false/,
+      /useQuery<BadgesQueryData>\(\{[\s\S]*refetchOnWindowFocus:\s*false/,
+    ],
+  },
+  {
     file: "hooks/use-sync-runs.ts",
     required: [
       /useQuery\(\{[\s\S]*retry:\s*false/,

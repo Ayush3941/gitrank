@@ -26,8 +26,8 @@
   - changed global React Query default retry policy from `retry: 1` to `retry: false` in `QueryProvider` to remove hidden automatic retry bursts across any query not explicitly overridden.
   - disabled ABRA insights retries to avoid repeated same-input AI calls when provider quota/errors occur.
   - disabled window-focus refetch churn for dashboard/contributions/public-profile/leaderboard/quests/pr-report queries and increased constrained-network stale windows on dashboard, leaderboard, and quest reads.
-  - disabled automatic retry loops for core route queries (`profile`, `dashboard`, `contributions`, `quests`, `leaderboard`, `sync-runs`, `pr-report`) so transient failures do not trigger repeated burst retries on constrained laptops/connections.
-  - added `npm run check:query-policy` to enforce low-churn query defaults in core hooks and `QueryProvider`.
+  - disabled automatic retry loops for core route queries (`profile`, `dashboard`, `contributions`, `badges`, `quests`, `leaderboard`, `sync-runs`, `pr-report`) so transient failures do not trigger repeated burst retries on constrained laptops/connections.
+  - added `npm run check:query-policy` to enforce low-churn query defaults in core hooks (including badges) and `QueryProvider`.
   - keeps all explicit refresh and invalidation paths intact while reducing background request bursts and CPU wakeups.
 - Chart data-table disclosure pass:
   - skill radar and timeline cards now include `View data table` toggles for explicit numeric inspection.
