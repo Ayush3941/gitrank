@@ -77,8 +77,11 @@ export function ShareProfileButton({
           });
           scheduleReset();
           return;
-        } catch {
-          // Fallback to clipboard/manual path.
+        } catch (error) {
+          if (isShareCanceledError(error)) {
+            return;
+          }
+          // Fallback to clipboard/manual path for non-cancel failures.
         }
       }
 
@@ -147,4 +150,12 @@ export function ShareProfileButton({
       </span>
     </div>
   );
+}
+
+function isShareCanceledError(error: unknown): boolean {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+  const candidate = error as { name?: unknown };
+  return typeof candidate.name === "string" && candidate.name === "AbortError";
 }

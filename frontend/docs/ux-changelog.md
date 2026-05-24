@@ -2,6 +2,10 @@
 
 ## 2026-05-24
 
+- Share-action fallback hygiene pass:
+  - native Web Share cancellation (`AbortError`) no longer triggers clipboard/manual fallback.
+  - keeps user-intent cancel as a no-op while preserving fallback copy flow for real share failures.
+  - added component tests for cancel-vs-failure fallback behavior.
 - Query churn reduction pass:
   - changed global React Query default retry policy from `retry: 1` to `retry: false` in `QueryProvider` to remove hidden automatic retry bursts across any query not explicitly overridden.
   - disabled ABRA insights retries to avoid repeated same-input AI calls when provider quota/errors occur.
