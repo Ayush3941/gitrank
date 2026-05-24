@@ -64,7 +64,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
                       className="text-sm leading-6 text-muted"
                     />
                   </div>
-                  <p className="mt-3 text-xs text-cyan-100">{nextMove}</p>
+                  {nextMove ? <p className="mt-3 text-xs text-cyan-100">{nextMove}</p> : null}
                 </div>
                 <div className="text-right">
                   <p className="text-xs font-medium text-primary">XP earned</p>
@@ -93,18 +93,18 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
   );
 }
 
-function reportNextMove(report: PullRequestAnalysis): string {
+function reportNextMove(report: PullRequestAnalysis): string | null {
   const state = report.evidenceState.status;
   if (state === "stale" || state === "incomplete") {
-    return "Next move: refresh sync in Settings to update report evidence.";
+    return "Refresh sync in Settings to update report evidence.";
   }
   if (state === "rate_limited") {
-    return "Next move: retry later after rate limits cool down, then reopen this report.";
+    return "Retry after rate-limit cooldown, then reopen this report.";
   }
   if (state === "ai_fallback" || state === "deterministic_only") {
-    return "Next move: deterministic scoring is valid; Gemini summary will attach when available.";
+    return "Deterministic score is valid; Gemini summary will attach when available.";
   }
-  return "Next move: inspect this PR report to keep high-signal contribution quality consistent.";
+  return null;
 }
 
 function deduplicateReportsByPR(reports: PullRequestAnalysis[]): PullRequestAnalysis[] {
