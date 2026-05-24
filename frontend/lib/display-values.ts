@@ -1,3 +1,5 @@
+import { normalizeSkillToken } from "@/lib/presentation/skill-normalization";
+
 export function uniqueDisplayValues(
   values: readonly string[],
   maxItems = Number.POSITIVE_INFINITY,
@@ -25,9 +27,5 @@ export function uniqueDisplayValues(
 }
 
 function normalizeValue(value: string): string {
-  return value
-    .toLowerCase()
-    .replace(/[_-]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  return normalizeSkillToken(value);
 }

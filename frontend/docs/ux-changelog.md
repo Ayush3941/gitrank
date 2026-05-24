@@ -2,6 +2,13 @@
 
 ## 2026-05-24
 
+- Skill-lane canonicalization and dedupe pass:
+  - added shared skill normalization (`backend/back-end/back end`, `frontend/front-end/front end`, `devops/dev ops`, `qa/quality assurance`) before lane aggregation.
+  - profile and dashboard skill-lane dedupe now resolve equivalent labels into one canonical lane instead of repeating near-duplicates.
+  - keeps evidence contracts untouched while making strongest-signal chips and skill maps more readable.
+- Settings sync-panel viewport stability pass:
+  - fixed sync-run results lane to a stable internal height (`h-[22rem]`) so status-filter switches (`All/Completed/Running/Failed`) do not collapse/expand page height.
+  - reduces perceived jumpiness on long settings pages when toggling sync status filters.
 - Scroll-stability hardening pass:
   - disabled `content-visibility` card virtualization and intrinsic placeholder sizing on dashboard/public route cards.
   - switched sync/repository activity panels back to default `overflow-anchor` behavior for more predictable viewport anchoring during filter and data updates.

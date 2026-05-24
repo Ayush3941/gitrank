@@ -4,6 +4,7 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { SkillRadarChart } from "@/components/shared/SkillRadarChart";
 import type { UserProfile } from "@/types/gitrank";
 import type { SkillInsight } from "@/lib/ai/abra-insights-types";
+import { normalizeSkillCategory } from "@/lib/presentation/skill-normalization";
 
 export function SkillBreakdownCard({
   user,
@@ -75,9 +76,7 @@ export function SkillBreakdownCard({
 }
 
 function normalizeKey(value: string): string {
-  const normalized = value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-  if (normalized === "devops") return "infrastructure";
-  return normalized;
+  return normalizeSkillCategory(value);
 }
 
 function deduplicateSkillTree(skills: UserProfile["skillTree"]): UserProfile["skillTree"] {

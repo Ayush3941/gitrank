@@ -28,6 +28,7 @@ import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { formatContributionStatusLabel } from "@/lib/presentation/contribution-status";
+import { normalizeSkillCategory } from "@/lib/presentation/skill-normalization";
 
 const SkillRadarChart = dynamic(
   () =>
@@ -545,9 +546,7 @@ function deduplicateSkillTree(skills: SkillNode[]): SkillNode[] {
 }
 
 function normalizeSkillKey(value: SkillCategory): string {
-  const normalized = value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-  if (normalized === "devops") return "infrastructure";
-  return normalized;
+  return normalizeSkillCategory(value);
 }
 
 function PublicLanePlaceholder({ label }: { label: string }) {

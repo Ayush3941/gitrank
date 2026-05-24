@@ -198,7 +198,7 @@ export function SyncRunActivityPanel({
 
       <div
         id={syncRunsRegionId}
-        className="sync-runs-results-viewport max-h-[32rem] overflow-y-auto pr-1"
+        className="sync-runs-results-viewport h-[22rem] overflow-y-auto pr-1"
       >
         {isLoading ? (
           <div className={`neon-surface grid gap-2 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}>
