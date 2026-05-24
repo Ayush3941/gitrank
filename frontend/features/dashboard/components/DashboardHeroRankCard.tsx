@@ -22,7 +22,7 @@ export function DashboardHeroRankCard({
   identitySummary?: string;
   aiMode?: "gemini" | "deterministic";
 }) {
-  const strongestSignals = uniqueDisplayValues(user.strongestSignals, 6);
+  const strongestSignals = uniqueDisplayValues(user.strongestSignals, 4);
   const nextAction =
     user.syncStatus.state !== "synced" || user.mergedPrCount === 0
       ? {
@@ -157,7 +157,7 @@ export function DashboardHeroRankCard({
         </div>
       ) : null}
       <div className="space-y-3">
-        <p className="text-xs font-medium text-primary">Top signals</p>
+        <p className="text-xs font-medium text-primary">Top signals (latest evidence)</p>
         <ul role="list" className="flex flex-wrap gap-2">
           {strongestSignals.map((signal, index) => (
             <li key={`${signal}-${index}`} className="list-none">

@@ -23,7 +23,7 @@ export function PublicProfileHero({
   archetype?: string;
   identitySummary?: string;
 }) {
-  const topSkills = uniqueDisplayValues(user.topSkills, 6);
+  const topSkills = uniqueDisplayValues(user.topSkills, 4);
 
   return (
     <GlowCard strong className="player-card-shell cyber-hero-shell overflow-hidden p-6 sm:p-8">
@@ -87,7 +87,7 @@ export function PublicProfileHero({
               />
             </div>
           ) : null}
-          <p className="text-xs font-medium text-primary">Top signals</p>
+          <p className="text-xs font-medium text-primary">Top signals (public evidence)</p>
           <ul role="list" className="flex flex-wrap gap-2">
             {topSkills.map((skill, index) => (
               <li key={`${skill}-${index}`}>
