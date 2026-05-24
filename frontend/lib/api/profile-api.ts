@@ -461,6 +461,7 @@ function toFeaturedContributions(
         repo,
         number: entry.pull_request?.number ?? 0,
         title: entry.pull_request?.title || "Contribution",
+        status: "merged",
         summary:
           showAiSummaries
             ? bestExplanationLine(entry.explanation) ||

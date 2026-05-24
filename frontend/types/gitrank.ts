@@ -318,6 +318,7 @@ export interface FeaturedContribution {
   repo: string;
   number: number;
   title: string;
+  status: ContributionStatus;
   summary: string;
   xpEarned: number;
   happenedAt: string;
