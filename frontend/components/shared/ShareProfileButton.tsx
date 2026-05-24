@@ -5,6 +5,7 @@ import type { ComponentProps } from "react";
 import { Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
+import { cn } from "@/lib/cn";
 
 type ButtonProps = Omit<ComponentProps<typeof Button>, "onClick" | "children">;
 
@@ -19,6 +20,7 @@ export function ShareProfileButton({
   errorLabel = "Share failed",
   analyticsTargetPrefix = "profile",
   preferNativeShare = true,
+  className,
   ...buttonProps
 }: ButtonProps & {
   username: string;
@@ -141,7 +143,11 @@ export function ShareProfileButton({
 
   return (
     <div className="inline-flex flex-col items-start gap-1">
-      <Button {...buttonProps} onClick={handleShare}>
+      <Button
+        {...buttonProps}
+        className={cn("min-w-[9rem] justify-center", className)}
+        onClick={handleShare}
+      >
         <Share2 className="h-4 w-4" />
         {currentLabel}
       </Button>
