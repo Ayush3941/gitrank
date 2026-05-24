@@ -36,6 +36,12 @@ for (const relativePath of filterFiles) {
       );
       break;
     }
+    if (!/\bariaControls=/.test(invocation)) {
+      violations.push(
+        `${relativePath}: SegmentedTablist filter controls must set 'ariaControls' for result-region accessibility`,
+      );
+      break;
+    }
   }
 }
 

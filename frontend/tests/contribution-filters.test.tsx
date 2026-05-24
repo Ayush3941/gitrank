@@ -17,10 +17,10 @@ describe("ContributionFilters", () => {
     );
 
     expect(screen.queryByRole("button", { name: /Remove .* filter/i })).toBeNull();
-    expect(screen.getByRole("group", { name: "Contribution category filters" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "All" })).toBeTruthy();
-    expect(screen.getByRole("group", { name: "Contribution sort options" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Newest" })).toBeTruthy();
+    expect(screen.getByRole("tablist", { name: "Contribution category filters" })).toBeTruthy();
+    expect(screen.getByRole("tab", { name: "All" })).toBeTruthy();
+    expect(screen.getByRole("tablist", { name: "Contribution sort options" })).toBeTruthy();
+    expect(screen.getByRole("tab", { name: "Newest" })).toBeTruthy();
   });
 
   it("renders removable active chips and fires clear handlers", () => {

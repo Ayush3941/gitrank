@@ -31,14 +31,14 @@ function renderTablist() {
   render(<TablistHarness onUpdate={(value) => updates.push(value)} />);
   return {
     updates,
-    getButton: (name: RegExp) => screen.getByRole("button", { name }),
+    getTab: (name: RegExp) => screen.getByRole("tab", { name }),
   };
 }
 
 describe("SegmentedTablist", () => {
   it("prevents default mouse-down scrolling behavior while keeping click updates", () => {
-    const { updates, getButton } = renderTablist();
-    const runningButton = getButton(/Running/i);
+    const { updates, getTab } = renderTablist();
+    const runningButton = getTab(/Running/i);
 
     const mouseDownResult = fireEvent.mouseDown(runningButton, { button: 0 });
     expect(mouseDownResult).toBe(false);
@@ -48,8 +48,8 @@ describe("SegmentedTablist", () => {
   });
 
   it("supports arrow-key switching between segmented options", () => {
-    const { updates, getButton } = renderTablist();
-    const allButton = getButton(/All/i);
+    const { updates, getTab } = renderTablist();
+    const allButton = getTab(/All/i);
 
     allButton.focus();
     fireEvent.keyDown(allButton, { key: "ArrowRight" });

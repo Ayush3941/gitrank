@@ -41,7 +41,8 @@ export function SegmentedTablist<T extends string>({
 
   return (
     <div
-      role="group"
+      role="tablist"
+      aria-orientation="horizontal"
       aria-label={ariaLabel}
       aria-describedby={ariaDescribedBy}
       data-segmented-tablist="true"
@@ -63,11 +64,13 @@ export function SegmentedTablist<T extends string>({
             >
               <button
                 type="button"
+                role="tab"
                 id={optionID}
                 title={item.label}
                 aria-label={item.label}
                 aria-controls={ariaControls}
-                aria-pressed={active}
+                aria-selected={active}
+                tabIndex={active ? 0 : -1}
                 data-active={active ? "true" : "false"}
                 data-segmented-option="true"
                 className="focus-ring dashboard-nav-item min-h-11 w-full px-3 py-2 text-center text-sm font-semibold"
