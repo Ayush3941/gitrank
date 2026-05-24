@@ -127,39 +127,42 @@ export function PrivacyRepositoryToggleList({
               </button>
             ) : null}
           </div>
-          <SegmentedTablist
-            options={[
-              {
-                value: "All",
-                label: "All",
-                count: counts.total,
-                minWidthClassName: "min-w-[6.5rem]",
-              },
-              {
-                value: "Public",
-                label: "Public",
-                count: counts.public,
-                minWidthClassName: "min-w-[6.5rem]",
-              },
-              {
-                value: "Hidden",
-                label: "Hidden",
-                count: counts.hidden,
-                minWidthClassName: "min-w-[6.5rem]",
-              },
-            ]}
-            value={visibilityFilter}
-            onValueChange={(next) => {
-              startTransition(() => {
-                setVisibilityFilter(next);
-              });
-            }}
-            ariaLabel="Repository visibility filter"
-            ariaDescribedBy={statusId}
-            ariaControls={repositoriesRegionId}
-            tabIdPrefix="repo-visibility-filter-tab"
-            className="grid grid-cols-3 gap-2"
-          />
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-primary">Visibility</p>
+            <SegmentedTablist
+              options={[
+                {
+                  value: "All",
+                  label: "All",
+                  count: counts.total,
+                  minWidthClassName: "min-w-[6.5rem]",
+                },
+                {
+                  value: "Public",
+                  label: "Public",
+                  count: counts.public,
+                  minWidthClassName: "min-w-[6.5rem]",
+                },
+                {
+                  value: "Hidden",
+                  label: "Hidden",
+                  count: counts.hidden,
+                  minWidthClassName: "min-w-[6.5rem]",
+                },
+              ]}
+              value={visibilityFilter}
+              onValueChange={(next) => {
+                startTransition(() => {
+                  setVisibilityFilter(next);
+                });
+              }}
+              ariaLabel="Repository visibility filter"
+              ariaDescribedBy={statusId}
+              ariaControls={repositoriesRegionId}
+              tabIdPrefix="repo-visibility-filter-tab"
+              wrap
+            />
+          </div>
         </div>
       </div>
       <div

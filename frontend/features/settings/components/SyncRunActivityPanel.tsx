@@ -145,39 +145,43 @@ export function SyncRunActivityPanel({
               </button>
             ) : null}
           </div>
-          <SegmentedTablist
-            options={SYNC_RUN_STATUS_FILTERS.map((status) => {
-              const count =
-                status === "All"
-                  ? statusCounts.all
-                  : status === "Completed"
-                    ? statusCounts.completed
-                    : status === "Running"
-                      ? statusCounts.running
-                      : statusCounts.failed;
-              const Icon =
-                status === "All"
-                  ? Search
-                  : status === "Completed"
-                    ? CheckCircle2
-                    : status === "Running"
-                      ? Clock3
-                      : XCircle;
-              return {
-                value: status,
-                label: status,
-                icon: <Icon className="h-4 w-4" />,
-                count,
-                minWidthClassName: "min-w-[7.5rem]",
-              };
-            })}
-            value={statusFilter}
-            onValueChange={setStatusFilter}
-            ariaLabel="Sync run status filters"
-            ariaDescribedBy={filterStatusId}
-            ariaControls={syncRunsRegionId}
-            tabIdPrefix="sync-run-status-filter"
-          />
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-primary">Status</p>
+            <SegmentedTablist
+              options={SYNC_RUN_STATUS_FILTERS.map((status) => {
+                const count =
+                  status === "All"
+                    ? statusCounts.all
+                    : status === "Completed"
+                      ? statusCounts.completed
+                      : status === "Running"
+                        ? statusCounts.running
+                        : statusCounts.failed;
+                const Icon =
+                  status === "All"
+                    ? Search
+                    : status === "Completed"
+                      ? CheckCircle2
+                      : status === "Running"
+                        ? Clock3
+                        : XCircle;
+                return {
+                  value: status,
+                  label: status,
+                  icon: <Icon className="h-4 w-4" />,
+                  count,
+                  minWidthClassName: "min-w-[7.5rem]",
+                };
+              })}
+              value={statusFilter}
+              onValueChange={setStatusFilter}
+              ariaLabel="Sync run status filters"
+              ariaDescribedBy={filterStatusId}
+              ariaControls={syncRunsRegionId}
+              tabIdPrefix="sync-run-status-filter"
+              wrap
+            />
+          </div>
         </div>
       </div>
 
