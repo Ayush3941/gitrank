@@ -75,6 +75,7 @@ export function ContributionsPageClient() {
   const deferredSearch = useDeferredValue(debouncedSearch);
   const deferredSort = useDeferredValue(sort);
   const useLiteCards = constrainedNetwork || reducedGamification;
+  const effectiveShowCardDetails = showCardDetails && !useLiteCards;
   const cardPageSize = useLiteCards
     ? CONTRIBUTION_CARD_PAGE_SIZE_CONSTRAINED
     : CONTRIBUTION_CARD_PAGE_SIZE_DEFAULT;
@@ -125,7 +126,7 @@ export function ContributionsPageClient() {
     if (!profile) {
       return null;
     }
-    if (useLiteCards || !showCardDetails) {
+    if (!effectiveShowCardDetails) {
       return null;
     }
     if (
@@ -181,9 +182,8 @@ export function ContributionsPageClient() {
     abraContributionSample,
     profile,
     repositories.length,
-    showCardDetails,
+    effectiveShowCardDetails,
     streak.currentStreakDays,
-    useLiteCards,
   ]);
 
   const abraInsights = useAbraInsights(abraPayload);
@@ -199,6 +199,7 @@ export function ContributionsPageClient() {
       window.clearTimeout(timer);
     };
   }, [exportNotice]);
+
   function handleFilterChange(next: string) {
     startTransition(() => {
       setFilter(next);
@@ -267,30 +268,36 @@ export function ContributionsPageClient() {
         )}
         actions={(
           <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                startTransition(() => {
-                  setShowCardDetails((current) => !current);
-                });
-              }}
-              aria-pressed={showCardDetails}
-              aria-controls={CONTRIBUTION_CARDS_REGION_ID}
-            >
-              {showCardDetails ? (
-                <>
-                  <Rows3 className="h-4 w-4" />
-                  Hide details
-                </>
-              ) : (
-                <>
-                  <LayoutList className="h-4 w-4" />
-                  Show details
-                </>
-              )}
-            </Button>
+            {!useLiteCards ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  startTransition(() => {
+                    setShowCardDetails((current) => !current);
+                  });
+                }}
+                aria-pressed={showCardDetails}
+                aria-controls={CONTRIBUTION_CARDS_REGION_ID}
+              >
+                {showCardDetails ? (
+                  <>
+                    <Rows3 className="h-4 w-4" />
+                    Hide details
+                  </>
+                ) : (
+                  <>
+                    <LayoutList className="h-4 w-4" />
+                    Show details
+                  </>
+                )}
+              </Button>
+            ) : (
+              <span className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold">
+                Lite mode
+              </span>
+            )}
             <Button
               type="button"
               variant="secondary"
@@ -393,7 +400,7 @@ export function ContributionsPageClient() {
                 totalCount={filteredRows.length}
                 startPosition={1}
                 useLiteCards={useLiteCards}
-                showDetails={showCardDetails}
+                showDetails={effectiveShowCardDetails}
               />
             </div>
             <div className="flex flex-wrap items-center justify-end gap-3">
