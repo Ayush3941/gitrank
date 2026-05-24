@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Sparkles, Star } from "lucide-react";
-import { AnimatedNumber } from "@/components/shared/AnimatedNumber";
 import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -85,13 +84,13 @@ export function DashboardHeroRankCard({
         <div className="neon-metric rounded-[1.75rem] p-5">
           <p className="text-xs font-medium text-primary">Level</p>
           <p className="mt-3 text-4xl font-semibold text-white">
-            <AnimatedNumber value={user.level.currentLevel} />
+            <span className="numeric-readout">{user.level.currentLevel.toLocaleString("en-US")}</span>
           </p>
         </div>
         <div className="neon-metric rounded-[1.75rem] p-5">
           <p className="text-xs font-medium text-primary">Total XP</p>
           <p className="mt-3 text-4xl font-semibold text-white">
-            <AnimatedNumber value={user.level.currentXp} />
+            <span className="numeric-readout">{user.level.currentXp.toLocaleString("en-US")}</span>
           </p>
         </div>
         <div className="neon-metric rounded-[1.75rem] p-5">
