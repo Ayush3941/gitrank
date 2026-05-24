@@ -282,7 +282,7 @@ export function QuestsPageClient() {
             eyebrow="Quest generation"
             title="No quests ready yet."
             description="Sync and complete scored contributions to unlock quests."
-            actionLabel="Sync now"
+            actionLabel="Open sync settings"
             actionHref="/dashboard/settings"
             analyticsTarget="quests:empty"
           />

@@ -26,7 +26,7 @@ export function DashboardHeroRankCard({
     user.syncStatus.state !== "synced" || user.mergedPrCount === 0
       ? {
           title: "Refresh contribution evidence",
-          description: "Run sync to update PR evidence before ranking progression.",
+          description: "Open sync settings to refresh PR evidence before rank progression.",
           href: "/dashboard/settings",
           cta: "Open sync settings",
         }

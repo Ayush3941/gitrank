@@ -9,6 +9,9 @@
   - removed duplicate reset controls in mission cadence filtering.
   - active cadence now uses a single removable chip (clear action) instead of chip + separate reset button.
   - keeps full filter behavior while reducing control noise above mission lanes.
+- Sync-copy consistency pass:
+  - updated quest empty-state CTA from `Sync now` to `Open sync settings` to match auto-sync model and avoid implying a mandatory manual sync button flow.
+  - updated dashboard hero stale/empty-evidence guidance copy to direct users to settings-based evidence refresh path.
 - Share-action fallback hygiene pass:
   - native Web Share cancellation (`AbortError`) no longer triggers clipboard/manual fallback.
   - share button now keeps a stable minimum width so label transitions (share/copied/shared/error) do not shift surrounding layout.
