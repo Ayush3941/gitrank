@@ -35,6 +35,9 @@
 - Dashboard empty-lane recovery pass:
   - quest and recent-report empty states now include both `Open contributions` and `Open sync settings` actions.
   - reduces dead-end moments when users need either evidence inspection or immediate sync remediation.
+- Public-profile sparse-evidence recovery pass:
+  - added direct `Open contributions` actions to empty skill-map, timeline, and repository lanes.
+  - avoids passive text-only empty cards and keeps public-profile viewers one click away from actionable evidence paths.
 - Segmented filter auto-scroll regression fix:
   - removed forced viewport restoration (`window.scrollTo`) from shared segmented-tab selection and keyboard fallback focus handling.
   - fixes jump-to-top behavior seen when switching filter tabs in dashboard routes (notably settings sync status tabs).

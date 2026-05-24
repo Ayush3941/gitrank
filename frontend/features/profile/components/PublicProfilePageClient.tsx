@@ -259,7 +259,16 @@ export function PublicProfilePageClient({
               <p className="text-xs font-medium text-primary">Skills</p>
               <h2 className="mt-2 text-xl font-semibold text-white">Skill map</h2>
             </div>
-            {constrainedNetwork ? (
+            {skillTree.length === 0 ? (
+              <div className="neon-surface space-y-3 rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
+                <p>Skill evidence is not available in this snapshot yet.</p>
+                <div className="flex flex-wrap gap-2">
+                  <Button asChild size="sm" variant="secondary">
+                    <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
+                  </Button>
+                </div>
+              </div>
+            ) : constrainedNetwork ? (
               <LiteSkillSummary skills={skillTree} />
             ) : (
               <DeferUntilVisible fallback={<PublicLanePlaceholder label="Loading skill map" />}>
@@ -286,7 +295,16 @@ export function PublicProfilePageClient({
               <h2 className="mt-2 text-xl font-semibold text-white">XP timeline</h2>
               <p className="mt-1 text-sm text-muted">{data.trendWindowLabel}</p>
             </div>
-            {constrainedNetwork ? (
+            {data.user.xpTimeline.length === 0 ? (
+              <div className="neon-surface space-y-3 rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
+                <p>Timeline signal is not available in this snapshot yet.</p>
+                <div className="flex flex-wrap gap-2">
+                  <Button asChild size="sm" variant="secondary">
+                    <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
+                  </Button>
+                </div>
+              </div>
+            ) : constrainedNetwork ? (
               <LiteTimelineSummary timeline={data.user.xpTimeline} />
             ) : (
               <DeferUntilVisible fallback={<PublicLanePlaceholder label="Loading timeline" />}>
@@ -304,8 +322,13 @@ export function PublicProfilePageClient({
             </div>
             <div className="space-y-3">
               {data.topRepositories.length === 0 ? (
-                <div className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
+                <div className="neon-surface space-y-3 rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
                   <p>Repository signal is not available in this snapshot yet.</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button asChild size="sm" variant="secondary">
+                      <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <ul role="list" className="space-y-3">
