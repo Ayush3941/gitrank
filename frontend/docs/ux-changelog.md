@@ -10,6 +10,9 @@
 - Public profile repository ranking clarity pass:
   - top repository rows now include explicit rank chips (`#1`, `#2`, `#3`) beside repository names.
   - keeps existing data contract unchanged while making contribution concentration easier to scan in demos and share links.
+- PR report evidence-state clarity pass:
+  - added a compact `Report processing state` callout when reports are deterministic-only, stale/incomplete, fallback, or rate-limited.
+  - each non-complete state now includes an explicit action path (`Open settings` or `View contributions`) so users can recover without hunting through tabs.
 - Segmented filter auto-scroll regression fix:
   - removed forced viewport restoration (`window.scrollTo`) from shared segmented-tab selection and keyboard fallback focus handling.
   - fixes jump-to-top behavior seen when switching filter tabs in dashboard routes (notably settings sync status tabs).

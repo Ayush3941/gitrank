@@ -83,6 +83,12 @@ export function PRBattleReportPageClient({
     evidenceAnchored,
     hasPersistedScoreEvidence,
   );
+  const reportStateGuidance = buildReportStateGuidance({
+    status: evidenceState.status,
+    deterministicOnly: evidenceState.deterministicOnly,
+    hasPersistedScoreEvidence,
+    fallbackDetail,
+  });
   const showEvidenceReasonSummary =
     Boolean(evidenceReasonSummary) &&
     (!evidenceAnchored ||
@@ -224,6 +230,32 @@ export function PRBattleReportPageClient({
         </div>
         </GlowCard>
       </section>
+      {reportStateGuidance ? (
+        <section className="render-opt-section">
+          <GlowCard className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs font-medium text-primary">Report processing state</p>
+              <span
+                className={
+                  reportStateGuidance.tone === "warning"
+                    ? "neon-chip neon-chip-warning rounded-full px-3 py-1 text-xs font-semibold"
+                    : "neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold"
+                }
+              >
+                {reportStateGuidance.label}
+              </span>
+            </div>
+            <p className="text-sm leading-6 text-muted">{reportStateGuidance.message}</p>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild size="sm" variant="secondary">
+                <Link href={reportStateGuidance.href} prefetch={false}>
+                  {reportStateGuidance.cta}
+                </Link>
+              </Button>
+            </div>
+          </GlowCard>
+        </section>
+      ) : null}
       <section className="render-opt-section">
         <GlowCard className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -497,6 +529,84 @@ function normalizeEvidenceReason(
     return null;
   }
   return reason;
+}
+
+function buildReportStateGuidance({
+  status,
+  deterministicOnly,
+  hasPersistedScoreEvidence,
+  fallbackDetail,
+}: {
+  status: string;
+  deterministicOnly: boolean;
+  hasPersistedScoreEvidence: boolean;
+  fallbackDetail?: string | null;
+}):
+  | {
+      tone: "warning" | "info";
+      label: string;
+      message: string;
+      cta: string;
+      href: string;
+    }
+  | null {
+  if (status === "complete") {
+    return null;
+  }
+
+  if (status === "rate_limited") {
+    return {
+      tone: "warning",
+      label: "Rate limited",
+      message:
+        "Gemini enrichment is temporarily rate limited. The deterministic score remains valid and this report will enrich after retry.",
+      cta: "Open settings",
+      href: "/dashboard/settings",
+    };
+  }
+
+  if (status === "ai_fallback") {
+    return {
+      tone: "warning",
+      label: "Deterministic fallback",
+      message: fallbackDetail
+        ? `Gemini response was unavailable (${fallbackDetail}). Deterministic evidence is still serving this report.`
+        : "Gemini response was unavailable. Deterministic evidence is still serving this report.",
+      cta: "Open settings",
+      href: "/dashboard/settings",
+    };
+  }
+
+  if (status === "stale" || status === "incomplete") {
+    return {
+      tone: "warning",
+      label: "Refresh pending",
+      message:
+        "This report snapshot is waiting for the latest sync or scoring replay. Trigger a refresh to pull the newest PR evidence.",
+      cta: "Open settings",
+      href: "/dashboard/settings",
+    };
+  }
+
+  if (status === "deterministic_only" || deterministicOnly || hasPersistedScoreEvidence) {
+    return {
+      tone: "info",
+      label: "Deterministic mode",
+      message:
+        "This report is currently deterministic-only. Scoring evidence is valid, and Gemini enrichment may appear after background processing completes.",
+      cta: "View contributions",
+      href: "/dashboard/contributions",
+    };
+  }
+
+  return {
+    tone: "warning",
+    label: "Processing",
+    message:
+      "Report evidence is still processing. Reopen this report after sync and scoring jobs complete.",
+    cta: "Open settings",
+    href: "/dashboard/settings",
+  };
 }
 
 function deduplicateBadgeUnlocks(
