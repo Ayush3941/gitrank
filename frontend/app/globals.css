@@ -1086,9 +1086,9 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 }
 
 .dashboard-nav-item {
-  border: 1px solid rgb(var(--primary) / 0.09);
+  border: 1px solid rgb(var(--primary) / 0.14);
   background:
-    linear-gradient(150deg, rgb(var(--primary) / 0.018), rgb(var(--primary-2) / 0.014)),
+    linear-gradient(150deg, rgb(var(--primary) / 0.03), rgb(var(--primary-2) / 0.022)),
     rgb(var(--card) / 0.93);
   color: rgb(var(--text-body));
   transition:
@@ -1099,22 +1099,22 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 }
 
 .dashboard-nav-item:hover {
-  border-color: rgb(var(--primary) / 0.32);
+  border-color: rgb(var(--primary) / 0.4);
   color: rgb(var(--text-strong));
   box-shadow:
-    0 0 0 1px rgb(var(--primary) / 0.08),
-    0 3px 10px rgb(1 6 22 / 0.14);
+    0 0 0 1px rgb(var(--primary) / 0.14),
+    0 4px 12px rgb(1 6 22 / 0.16);
 }
 
 .dashboard-nav-item[data-active="true"] {
-  border-color: rgb(var(--primary) / 0.36);
+  border-color: rgb(var(--primary) / 0.5);
   background:
-    linear-gradient(148deg, rgb(var(--primary) / 0.11), rgb(var(--primary-2) / 0.08)),
+    linear-gradient(148deg, rgb(var(--primary) / 0.16), rgb(var(--primary-2) / 0.11)),
     rgb(var(--card-2) / 0.95);
   color: rgb(var(--text-strong));
   box-shadow:
-    0 0 0 1px rgb(var(--primary) / 0.11),
-    0 4px 12px rgb(1 6 22 / 0.16);
+    0 0 0 1px rgb(var(--primary) / 0.2),
+    0 6px 14px rgb(1 6 22 / 0.19);
 }
 
 .dashboard-nav-icon {
