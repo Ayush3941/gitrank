@@ -250,6 +250,14 @@ Recent no-slowdown refinement (May 22, 2026):
 - Dashboard top chrome was simplified to remove always-on display quick-switch controls from the primary nav surface.
 - Theme/text/effect toggles remain available in Settings and onboarding, reducing routine dashboard UI noise and interaction cost.
 
+Recent no-slowdown refinement (May 24, 2026):
+
+- Dashboard route pages now share `stable-scroll-scope` so segmented filters do not yank viewport position when tabs/filters update.
+- `SegmentedTablist` restores viewport using microtask + bounded timeout replay (no `requestAnimationFrame`), satisfying `npm run check:main-thread`.
+- Header meta chips on small screens are now horizontal rails instead of multi-line wraps, reducing header bloat and preserving actionable content density.
+- Dashboard nav rails use thin visible scrollbars (instead of hidden scrollbars) to improve discoverability of horizontal navigation overflow.
+- Background image visibility was increased with softer dark overlays and lower shell-glow opacity to keep text readable while preserving the cyberpunk visual layer.
+
 ## Frontend Excellence Checklist (No-Slowdown Backlog)
 
 Use this as the master frontend refinement backlog. Keep improvements aligned
