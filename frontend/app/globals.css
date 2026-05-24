@@ -999,19 +999,10 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   contain-intrinsic-size: none;
 }
 
-.sync-runs-results-viewport {
-  overflow-anchor: auto;
-}
-
+.sync-runs-panel-shell,
+.repository-visibility-panel-shell,
+.sync-runs-results-viewport,
 .repository-visibility-results-viewport {
-  overflow-anchor: auto;
-}
-
-.sync-runs-panel-shell > :not(.sync-runs-results-viewport) {
-  overflow-anchor: none;
-}
-
-.repository-visibility-panel-shell > :not(.repository-visibility-results-viewport) {
   overflow-anchor: none;
 }
 
