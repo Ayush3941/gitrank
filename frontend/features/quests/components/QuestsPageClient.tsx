@@ -110,7 +110,7 @@ export function QuestsPageClient() {
         actions={(
           <Button asChild variant="secondary" size="sm">
             <Link href="/dashboard/contributions" prefetch={false}>
-              Open contributions
+              Contributions
             </Link>
           </Button>
         )}

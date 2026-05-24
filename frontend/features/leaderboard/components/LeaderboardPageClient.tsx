@@ -129,7 +129,7 @@ export function LeaderboardPageClient() {
         actions={(
           <Button asChild variant="secondary" size="sm">
             <Link href="/dashboard/quests" prefetch={false}>
-              Open quests
+              Quests
             </Link>
           </Button>
         )}

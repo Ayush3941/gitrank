@@ -322,7 +322,7 @@ export function SettingsPageClient() {
         actions={(
           <Button asChild variant="secondary" size="sm">
             <Link href={`/u/${data.user.username}`} prefetch={false}>
-              View public profile
+              Public profile
             </Link>
           </Button>
         )}
