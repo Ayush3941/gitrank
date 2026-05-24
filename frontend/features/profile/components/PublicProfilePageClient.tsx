@@ -251,9 +251,13 @@ export function PublicProfilePageClient({
               <p className="text-xs font-medium text-primary">Skills</p>
               <h2 className="mt-2 text-xl font-semibold text-white">Skill map</h2>
             </div>
-            <DeferUntilVisible fallback={<PublicLanePlaceholder label="Loading skill map" />}>
-              <SkillRadarChart skills={skillTree} />
-            </DeferUntilVisible>
+            {constrainedNetwork ? (
+              <LiteSkillSummary skills={skillTree} />
+            ) : (
+              <DeferUntilVisible fallback={<PublicLanePlaceholder label="Loading skill map" />}>
+                <SkillRadarChart skills={skillTree} />
+              </DeferUntilVisible>
+            )}
           </GlowCard>
         </div>
       </section>
@@ -270,9 +274,13 @@ export function PublicProfilePageClient({
               <h2 className="mt-2 text-xl font-semibold text-white">XP timeline</h2>
               <p className="mt-1 text-sm text-muted">{data.trendWindowLabel}</p>
             </div>
-            <DeferUntilVisible fallback={<PublicLanePlaceholder label="Loading timeline" />}>
-              <TimelineChart data={data.user.xpTimeline} />
-            </DeferUntilVisible>
+            {constrainedNetwork ? (
+              <LiteTimelineSummary timeline={data.user.xpTimeline} />
+            ) : (
+              <DeferUntilVisible fallback={<PublicLanePlaceholder label="Loading timeline" />}>
+                <TimelineChart data={data.user.xpTimeline} />
+              </DeferUntilVisible>
+            )}
           </GlowCard>
           <GlowCard className="space-y-5">
             <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
@@ -312,6 +320,94 @@ export function PublicProfilePageClient({
           </GlowCard>
         </div>
       </section>
+    </div>
+  );
+}
+
+function LiteSkillSummary({ skills }: { skills: SkillNode[] }) {
+  if (skills.length === 0) {
+    return (
+      <div className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
+        <p>Skill evidence is not available in this snapshot yet.</p>
+      </div>
+    );
+  }
+
+  const topSkills = [...skills]
+    .sort((left, right) => right.score - left.score)
+    .slice(0, 5);
+  const maxScore = topSkills.reduce((max, skill) => Math.max(max, skill.score), 0) || 1;
+
+  return (
+    <div className="space-y-3">
+      <p className="text-xs text-muted">Lite mode keeps profile rendering smooth on constrained devices.</p>
+      <ul role="list" className="space-y-3">
+        {topSkills.map((skill, index) => {
+          const width = Math.max(8, Math.round((skill.score / maxScore) * 100));
+          return (
+            <li
+              key={`${skill.category}-${index}`}
+              className="neon-surface rounded-[1.3rem] px-4 py-3"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-medium text-white">{skill.category}</p>
+                <p className="text-xs text-muted">{skill.score}</p>
+              </div>
+              <div className="mt-2 h-2 rounded-full bg-primary/10">
+                <div
+                  className="h-full rounded-full bg-primary/70"
+                  style={{ width: `${Math.min(100, width)}%` }}
+                />
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+function LiteTimelineSummary({
+  timeline,
+}: {
+  timeline: Array<{ label: string; xp: number }>;
+}) {
+  if (timeline.length === 0) {
+    return (
+      <div className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
+        <p>Timeline signal is not available in this snapshot yet.</p>
+      </div>
+    );
+  }
+
+  const recent = timeline.slice(-6);
+  const latest = recent[recent.length - 1];
+  const previous = recent.length > 1 ? recent[recent.length - 2] : null;
+  const delta = previous ? latest.xp - previous.xp : 0;
+
+  return (
+    <div className="space-y-3">
+      <div className="neon-surface rounded-[1.3rem] px-4 py-3">
+        <p className="text-xs text-muted">Latest XP snapshot</p>
+        <p className="mt-1 text-lg font-semibold text-white">
+          {latest.xp.toLocaleString("en-US")} XP
+        </p>
+        <p className="mt-1 text-xs text-muted">
+          {latest.label}
+          {previous ? ` • ${delta >= 0 ? "+" : ""}${delta.toLocaleString("en-US")} vs previous` : ""}
+        </p>
+      </div>
+      <ul role="list" className="space-y-2">
+        {recent.map((point, index) => (
+          <li
+            key={`${point.label}-${index}`}
+            className="neon-surface flex items-center justify-between gap-3 rounded-[1.2rem] px-4 py-2.5"
+          >
+            <p className="text-sm text-muted">{point.label}</p>
+            <p className="text-sm font-semibold text-white">{point.xp.toLocaleString("en-US")}</p>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
