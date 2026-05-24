@@ -4,8 +4,8 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useMemo, useRef } from "react";
 import { Activity, Flame, Medal } from "lucide-react";
-import { DashboardHeroRankCard } from "@/features/dashboard/components/DashboardHeroRankCard";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { DashboardHeroRankCard } from "@/features/dashboard/components/DashboardHeroRankCard";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
@@ -65,16 +65,6 @@ export function DashboardPageClient() {
     () => summarizeContributionStreak(user?.contributions ?? []),
     [user?.contributions],
   );
-  const contributionWindowCap = 100;
-  const contributionWindowCount = Math.min(
-    user?.contributions.length ?? 0,
-    contributionWindowCap,
-  );
-  const contributionWindowFillRate =
-    contributionWindowCap > 0
-      ? Math.round((contributionWindowCount / contributionWindowCap) * 100)
-      : 0;
-  const reportHealthLabel = summarizeReportHealthLabel(recentReports);
   const abraPayload = useMemo(() => {
     if (!user) {
       return null;
@@ -217,35 +207,6 @@ export function DashboardPageClient() {
         />
       ) : null}
       <section>
-        <GlowCard className="space-y-2">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs font-medium text-primary">Signal health</p>
-            <p className="text-xs text-muted">
-              {user.syncStatus.lastSyncedAt
-                ? `Last sync ${formatRelativeDays(user.syncStatus.lastSyncedAt)}`
-                : "No sync timestamp"}
-            </p>
-          </div>
-          <ul role="list" className="flex flex-wrap gap-2">
-            <li className="list-none">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs font-semibold">
-                Sync {formatSyncStateLabel(user.syncStatus.state)}
-              </span>
-            </li>
-            <li className="list-none">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs font-semibold">
-                Evidence {contributionWindowCount}/{contributionWindowCap} ({contributionWindowFillRate}%)
-              </span>
-            </li>
-            <li className="list-none">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs font-semibold">
-                Reports {reportHealthLabel}
-              </span>
-            </li>
-          </ul>
-        </GlowCard>
-      </section>
-      <section>
         <DashboardHeroRankCard
           user={user}
           archetype={abraInsights.data?.archetype ?? fallbackArchetype}
@@ -311,32 +272,4 @@ function LazyLanePlaceholder({ label }: { label: string }) {
       <div className="neon-skeleton h-24 w-full" />
     </GlowCard>
   );
-}
-
-function summarizeReportHealthLabel(reports: Array<{ evidenceState: { status: string } }>): string {
-  if (reports.length === 0) {
-    return "No reports";
-  }
-
-  const statuses = reports.map((report) => report.evidenceState.status);
-  if (statuses.some((status) => status === "stale" || status === "incomplete")) {
-    return "Partial evidence";
-  }
-  if (statuses.some((status) => status === "rate_limited")) {
-    return "Rate-limited";
-  }
-  if (statuses.some((status) => status === "deterministic_only" || status === "ai_fallback")) {
-    return "Deterministic";
-  }
-  return "Gemini-ready";
-}
-
-function formatSyncStateLabel(state: string): string {
-  if (state === "synced") return "Synced";
-  if (state === "syncing") return "Syncing";
-  if (state === "stale") return "Stale";
-  if (state === "failed") return "Failed";
-  if (state === "rate_limited") return "Rate-limited";
-  if (state === "partially_synced") return "Partial sync";
-  return "Not synced yet";
 }
