@@ -8,6 +8,7 @@ import { DashboardHeroRankCard } from "@/features/dashboard/components/Dashboard
 import { GlowCard } from "@/components/shared/GlowCard";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useDashboard } from "@/hooks/use-dashboard";
+import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -55,6 +56,7 @@ const RecentBattleReports = dynamic(
 );
 
 export function DashboardPageClient() {
+  const constrainedNetwork = useNetworkConstraintPreference();
   const { data, isLoading, isError, isFetching, refetch } = useDashboard();
   const scoreExplanationEventSent = useRef(false);
   const user = data?.user;
@@ -75,6 +77,9 @@ export function DashboardPageClient() {
   const reportHealthLabel = summarizeReportHealthLabel(recentReports);
   const abraPayload = useMemo(() => {
     if (!user) {
+      return null;
+    }
+    if (constrainedNetwork) {
       return null;
     }
     if (
@@ -126,7 +131,7 @@ export function DashboardPageClient() {
         evidencePrIds: badge.evidencePrIds,
       })),
     };
-  }, [streak.currentStreakDays, user]);
+  }, [constrainedNetwork, streak.currentStreakDays, user]);
   const abraInsights = useAbraInsights(abraPayload);
   const fallbackArchetype = useMemo(
     () => (user ? deriveDeterministicArchetype(user.strongestSignals) : "Systems Builder"),
