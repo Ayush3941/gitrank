@@ -95,6 +95,30 @@ export function PRBattleReportPageClient({
         eyebrow="PR Report"
         title="PR battle report"
         description="Explainable PR score report."
+        meta={(
+          <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                {data.contribution.owner}/{data.contribution.repo}
+              </span>
+            </li>
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                PR #{data.contribution.number}
+              </span>
+            </li>
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                {formatContributionStatus(data.contribution.status)}
+              </span>
+            </li>
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                Evidence {evidenceState.status.replace("_", " ")}
+              </span>
+            </li>
+          </ul>
+        )}
         actions={(
           <div className="flex flex-wrap gap-2">
             <Button asChild variant="secondary">
