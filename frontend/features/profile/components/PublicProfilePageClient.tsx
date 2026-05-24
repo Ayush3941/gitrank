@@ -341,10 +341,22 @@ function LiteSkillSummary({ skills }: { skills: SkillNode[] }) {
   const topSkills = [...skills]
     .sort((left, right) => right.score - left.score)
     .slice(0, 5);
+  const strongest = topSkills[0];
   const maxScore = topSkills.reduce((max, skill) => Math.max(max, skill.score), 0) || 1;
 
   return (
     <div className="space-y-3">
+      {strongest ? (
+        <div className="neon-surface border border-primary/22 px-4 py-3">
+          <p className="text-xs font-medium text-primary">Strongest lane</p>
+          <p className="mt-1 text-sm font-semibold text-white">
+            {strongest.category}
+          </p>
+          <p className="mt-1 text-xs text-muted">
+            Signal {strongest.score.toLocaleString("en-US")}
+          </p>
+        </div>
+      ) : null}
       <ul role="list" className="space-y-3">
         {topSkills.map((skill, index) => {
           const width = Math.max(8, Math.round((skill.score / maxScore) * 100));
@@ -385,20 +397,31 @@ function LiteTimelineSummary({
   }
 
   const recent = timeline.slice(-6);
+  const first = recent[0];
   const latest = recent[recent.length - 1];
   const previous = recent.length > 1 ? recent[recent.length - 2] : null;
   const delta = previous ? latest.xp - previous.xp : 0;
+  const windowDelta = latest.xp - first.xp;
+  const momentumLabel = delta > 0 ? "Rising" : delta < 0 ? "Cooling" : "Flat";
 
   return (
     <div className="space-y-3">
       <div className="neon-surface rounded-[1.3rem] px-4 py-3">
-        <p className="text-xs text-muted">Latest XP snapshot</p>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs text-muted">Latest XP snapshot</p>
+          <span className="neon-chip neon-chip-muted rounded-full px-2.5 py-1 text-xs font-semibold">
+            {momentumLabel}
+          </span>
+        </div>
         <p className="mt-1 text-lg font-semibold text-white">
           {latest.xp.toLocaleString("en-US")} XP
         </p>
         <p className="mt-1 text-xs text-muted">
           {latest.label}
           {previous ? ` • ${delta >= 0 ? "+" : ""}${delta.toLocaleString("en-US")} vs previous` : ""}
+        </p>
+        <p className="mt-1 text-xs text-muted">
+          Recent window change: {windowDelta >= 0 ? "+" : ""}{windowDelta.toLocaleString("en-US")} XP
         </p>
       </div>
       <ul role="list" className="space-y-2">

@@ -35,6 +35,10 @@
   - dashboard skill breakdown now prioritizes the top 4 strongest skill lanes by score for first-pass readability.
   - added a compact follow-up affordance linking to the full public profile skill map when additional lanes exist.
   - reduces repeated low-signal cards in the dashboard command center without removing access to full skill detail.
+- Public profile lite-summary readability pass:
+  - lite skill summary now surfaces the strongest lane explicitly before the compact lane list.
+  - lite timeline summary now includes a momentum chip and recent-window XP delta to clarify trend direction in constrained mode.
+  - visual regression baseline updated for the intentional public-profile shell changes.
 
 ## 2026-05-22
 
