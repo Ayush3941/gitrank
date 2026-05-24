@@ -10,16 +10,14 @@ export function LeaderboardArena({
   snapshot,
   rowLimit,
   showDetails = true,
+  viewMode = "full",
 }: {
   snapshot: LeaderboardSnapshot;
   rowLimit?: number;
   showDetails?: boolean;
+  viewMode?: "nearby" | "full";
 }) {
   const rows = snapshot.rows;
-  const visibleRows =
-    typeof rowLimit === "number" && rowLimit > 0
-      ? rows.slice(0, rowLimit)
-      : rows;
   const currentUser =
     snapshot.currentUser ?? rows.find((row) => row.isCurrentUser) ?? null;
   const currentUserIndex = currentUser
@@ -38,6 +36,12 @@ export function LeaderboardArena({
     currentUser && nextAboveRow
       ? Math.max(0, nextAboveRow.seasonXp - currentUser.seasonXp)
       : 0;
+  const nearbyRows = buildNearbyRows(rows, localBracketRows);
+  const sourceRows = viewMode === "nearby" ? nearbyRows : rows;
+  const visibleRows =
+    typeof rowLimit === "number" && rowLimit > 0
+      ? sourceRows.slice(0, rowLimit)
+      : sourceRows;
 
   return (
     <div className="grid gap-4">
@@ -80,6 +84,14 @@ export function LeaderboardArena({
           </li>
         </ul>
       </GlowCard>
+      {viewMode === "nearby" ? (
+        <div className="neon-surface rounded-[1rem] px-4 py-3">
+          <p className="text-sm font-semibold text-white">Nearby rank view</p>
+          <p className="mt-1 text-xs text-muted">
+            Showing podium plus your local bracket to keep comparisons focused.
+          </p>
+        </div>
+      ) : null}
       {currentUser && localBracketRows.length > 0 ? (
         <div className="space-y-3">
           <h2 className="text-sm font-semibold text-white">
@@ -216,6 +228,18 @@ export function LeaderboardArena({
       </ol>
     </div>
   );
+}
+
+function buildNearbyRows(
+  allRows: LeaderboardSnapshot["rows"],
+  localBracketRows: LeaderboardSnapshot["rows"],
+) {
+  const topRows = allRows.slice(0, 3);
+  const merged = new Map<string, (typeof allRows)[number]>();
+  for (const row of [...topRows, ...localBracketRows]) {
+    merged.set(row.username, row);
+  }
+  return Array.from(merged.values()).sort((a, b) => a.rank - b.rank);
 }
 
 function CompactRule({

@@ -69,6 +69,7 @@ const TAB_ICONS: Record<LeaderboardTab, typeof Globe2> = {
 const LEADERBOARD_ROW_PAGE_SIZE_DEFAULT = 12;
 const LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED = 6;
 const LEADERBOARD_ROWS_REGION_ID = "leaderboard-rows-region";
+const LEADERBOARD_NEARBY_DEFAULT_THRESHOLD = 10;
 
 export function LeaderboardPageClient() {
   const router = useRouter();
@@ -80,6 +81,7 @@ export function LeaderboardPageClient() {
     : LEADERBOARD_ROW_PAGE_SIZE_DEFAULT;
   const [visibleRowCount, setVisibleRowCount] = useState(rowPageSize);
   const [showLaneDetails, setShowLaneDetails] = useState(false);
+  const [preferNearbyMode, setPreferNearbyMode] = useState(true);
   const tabFromURL = laneParamToTab(searchParams.get("lane"));
   const tab = tabFromURL ?? "Global";
   const deferredTab = useDeferredValue(tab);
@@ -107,6 +109,11 @@ export function LeaderboardPageClient() {
   const safeVisibleRowCount = Math.min(rows.length, visibleRowCount);
   const hasMoreRows = rows.length > safeVisibleRowCount;
   const remainingRows = Math.max(0, rows.length - safeVisibleRowCount);
+  const supportsNearbyMode =
+    Boolean(snapshot?.currentUser) &&
+    rows.length >= LEADERBOARD_NEARBY_DEFAULT_THRESHOLD;
+  const effectiveMode: "nearby" | "full" =
+    supportsNearbyMode && preferNearbyMode ? "nearby" : "full";
 
   function handleTabChange(value: string) {
     const nextTab = value as LeaderboardTab;
@@ -116,6 +123,7 @@ export function LeaderboardPageClient() {
     const query = nextParams.toString();
     startTransition(() => {
       setVisibleRowCount(rowPageSize);
+      setPreferNearbyMode(true);
       router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
     });
   }
@@ -133,7 +141,7 @@ export function LeaderboardPageClient() {
             items={[
               { label: `Lane ${TAB_LABELS[tab]}` },
               { label: `Rows ${rows.length}` },
-              { label: `Showing ${safeVisibleRowCount}` },
+              { label: effectiveMode === "nearby" ? "View Nearby" : `Showing ${safeVisibleRowCount}` },
               {
                 label: `Sync ${formatSyncStateLabel(myProfile?.user.syncStatus.state)}`,
                 tone: toneForSyncState(myProfile?.user.syncStatus.state),
@@ -220,6 +228,20 @@ export function LeaderboardPageClient() {
                 Reset to Global
               </Button>
             ) : null}
+            {supportsNearbyMode ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setPreferNearbyMode((current) => !current);
+                }}
+                aria-controls={LEADERBOARD_ROWS_REGION_ID}
+                aria-pressed={effectiveMode === "nearby"}
+              >
+                {effectiveMode === "nearby" ? "Show full board" : "Show nearby view"}
+              </Button>
+            ) : null}
           </div>
         </div>
       </section>
@@ -263,12 +285,13 @@ export function LeaderboardPageClient() {
           <div id={LEADERBOARD_ROWS_REGION_ID}>
             <LeaderboardArena
               snapshot={snapshot}
-              rowLimit={safeVisibleRowCount}
+              rowLimit={effectiveMode === "full" ? safeVisibleRowCount : undefined}
               showDetails={showLaneDetails}
+              viewMode={effectiveMode}
             />
           </div>
           <div className="flex flex-wrap items-center justify-end gap-3">
-            {hasMoreRows ? (
+            {effectiveMode === "full" && hasMoreRows ? (
               <Button
                 type="button"
                 variant="secondary"

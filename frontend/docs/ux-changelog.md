@@ -15,6 +15,10 @@
 - Navigation language consistency pass:
   - unified marketing-header anchor chips with shared dashboard-nav visual tokens (`dashboard-nav-item`) for one consistent navigation treatment across public and authenticated surfaces.
   - removed unused `marketing-nav-chip` CSS after migration to avoid style drift.
+- Leaderboard nearby-rank mode pass:
+  - added a focused `Nearby` view mode for larger lanes (default when user rank context is available), showing podium plus the user's local bracket before the full board.
+  - added an explicit `Show full board` / `Show nearby view` toggle to switch between motivational local context and complete ranking scans.
+  - keeps full-lane access intact while reducing cognitive overload and render density in dense lanes.
 
 ## 2026-05-22
 
