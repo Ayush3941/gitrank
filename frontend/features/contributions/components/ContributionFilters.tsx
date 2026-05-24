@@ -1,9 +1,11 @@
 "use client";
 
 import {
+  BarChart3,
   BookText,
   Bug,
   CircleDot,
+  Clock3,
   FlaskConical,
   Gauge,
   GitMerge,
@@ -42,6 +44,20 @@ const filterIconByValue = {
   Security: ShieldCheck,
   Performance: Gauge,
   "High XP": Trophy,
+} as const;
+
+const sortOptions = [
+  "Newest",
+  "Highest XP",
+  "Highest Difficulty",
+  "Highest Impact",
+] as const;
+
+const sortIconByValue = {
+  Newest: Clock3,
+  "Highest XP": Trophy,
+  "Highest Difficulty": Gauge,
+  "Highest Impact": BarChart3,
 } as const;
 
 export function ContributionFilters({
@@ -170,7 +186,7 @@ export function ContributionFilters({
           ariaControls={resultsRegionId}
           tabIdPrefix="contribution-filter-tab"
         />
-        <div className="grid gap-3 lg:grid-cols-[1fr,16rem]">
+        <div className="grid gap-3">
           <div className="relative">
             <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted" />
             <Input
@@ -195,24 +211,25 @@ export function ContributionFilters({
               </button>
             ) : null}
           </div>
-          <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
-            <span className="sr-only">Sort contributions</span>
-            <select
-              value={sort}
-              onChange={(event) =>
-                onSortChange(event.target.value as "Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact")
-              }
-              aria-label="Sort contributions"
-              aria-describedby={statusId}
-              aria-controls={resultsRegionId}
-              className="focus-ring h-full w-full bg-transparent text-sm text-foreground outline-none"
-            >
-              <option value="Newest" className="bg-card text-foreground">Newest</option>
-              <option value="Highest XP" className="bg-card text-foreground">Highest XP</option>
-              <option value="Highest Difficulty" className="bg-card text-foreground">Highest Difficulty</option>
-              <option value="Highest Impact" className="bg-card text-foreground">Highest Impact</option>
-            </select>
-          </label>
+          <SegmentedTablist
+            options={sortOptions.map((item) => {
+              const Icon = sortIconByValue[item];
+              return {
+                value: item,
+                label: item,
+                icon: <Icon className="h-4 w-4" />,
+                minWidthClassName: "min-w-[9rem]",
+              };
+            })}
+            value={sort}
+            onValueChange={(next) =>
+              onSortChange(next as "Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact")
+            }
+            ariaLabel="Contribution sort options"
+            ariaDescribedBy={statusId}
+            ariaControls={resultsRegionId}
+            tabIdPrefix="contribution-sort-tab"
+          />
         </div>
       </div>
     </section>
