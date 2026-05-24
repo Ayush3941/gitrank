@@ -155,7 +155,8 @@ export function QuestsPageClient() {
               </Button>
             ) : null}
           </div>
-          <div>
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-primary">Cadence</p>
             <SegmentedTablist
               options={QUEST_FILTERS.map((item) => {
                 const count =
@@ -185,6 +186,7 @@ export function QuestsPageClient() {
               ariaLabel="Mission cadence filters"
               ariaDescribedBy={filterStatusId}
               tabIdPrefix="quest-filter-tab"
+              wrap
             />
           </div>
         </section>

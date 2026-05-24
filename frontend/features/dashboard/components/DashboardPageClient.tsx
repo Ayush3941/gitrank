@@ -182,7 +182,7 @@ export function DashboardPageClient() {
       <PageHeader
         eyebrow="Dashboard"
         title="Dashboard"
-        description="Live contributor signal board."
+        description="Identity, progression, and report lanes."
         actions={(
           <Button asChild variant="secondary" size="sm">
             <Link href="/dashboard/contributions" prefetch={false}>
