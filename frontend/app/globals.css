@@ -993,6 +993,12 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   contain-intrinsic-size: none;
 }
 
+.dashboard-stable-scroll .render-opt-card {
+  contain: none;
+  content-visibility: visible;
+  contain-intrinsic-size: none;
+}
+
 .sync-runs-results-viewport {
   overflow-anchor: auto;
 }
