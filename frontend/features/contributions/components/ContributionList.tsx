@@ -35,7 +35,8 @@ export function ContributionList({
         const position = startPosition + index;
         const signalIndex = contributionSignalIndex(item);
         const signalBand = contributionSignalBand(signalIndex);
-        const showStatusChip = item.status !== "merged";
+        const compactMeta = useLiteCards || !showDetails;
+        const showStatusChip = compactMeta || item.status !== "merged";
         const reportState = contributionReportState(item);
         return (
           <li
@@ -54,6 +55,11 @@ export function ContributionList({
                     <span className="neon-chip neon-chip-info rounded-full px-3 py-1 font-semibold">
                       PR #{item.number}
                     </span>
+                    {compactMeta ? (
+                      <span className="neon-chip neon-chip-info rounded-full px-3 py-1 font-semibold">
+                        {item.category}
+                      </span>
+                    ) : null}
                     {showStatusChip ? (
                       <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
                         {formatContributionStatus(item.status)}
@@ -65,28 +71,30 @@ export function ContributionList({
                       </span>
                     ) : null}
                   </div>
-                  <h3 className="mt-2 break-anywhere text-xl font-semibold text-white">{item.title}</h3>
-                  <ul role="list" className="mt-3 flex flex-wrap gap-2 text-xs cyber-copy">
-                    <li className="list-none">
-                      <span className={`neon-chip rounded-full px-3 py-1.5 font-semibold ${tier.className}`}>{tier.label}</span>
-                    </li>
-                    <li className="list-none">
-                      <span className="neon-chip neon-chip-info rounded-full px-3 py-1.5 font-semibold">{item.category}</span>
-                    </li>
-                    {!useLiteCards && showDetails ? (
+                  <h3 className={`break-anywhere font-semibold text-white ${compactMeta ? "text-lg" : "mt-2 text-xl"}`}>
+                    {item.title}
+                  </h3>
+                  {!compactMeta ? (
+                    <ul role="list" className="mt-3 flex flex-wrap gap-2 text-xs cyber-copy">
+                      <li className="list-none">
+                        <span className={`neon-chip rounded-full px-3 py-1.5 font-semibold ${tier.className}`}>{tier.label}</span>
+                      </li>
+                      <li className="list-none">
+                        <span className="neon-chip neon-chip-info rounded-full px-3 py-1.5 font-semibold">{item.category}</span>
+                      </li>
                       <li className="list-none">
                         <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-3 py-1.5 font-semibold">
                           <CalendarDays className="h-3 w-3" />
                           {formatContributionDate(item.mergedAt)}
                         </span>
                       </li>
-                    ) : null}
-                    {showDetails && item.maintainerReviewed ? (
-                      <li className="list-none">
-                        <span className="neon-chip neon-chip-success rounded-full px-3 py-1.5 font-semibold">Maintainer reviewed</span>
-                      </li>
-                    ) : null}
-                  </ul>
+                      {item.maintainerReviewed ? (
+                        <li className="list-none">
+                          <span className="neon-chip neon-chip-success rounded-full px-3 py-1.5 font-semibold">Maintainer reviewed</span>
+                        </li>
+                      ) : null}
+                    </ul>
+                  ) : null}
                 </div>
                 <div className={`neon-surface border-primary/28 text-right ${useLiteCards ? "rounded-[1rem] px-3 py-2.5" : "rounded-[1.25rem] px-4 py-3"}`}>
                   <p className="text-xs font-medium text-primary">Earned</p>
