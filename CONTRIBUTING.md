@@ -240,6 +240,7 @@ npm run lint
 npm run build
 npm run check:no-production-mocks
 npm run check:jsx-ids
+npm run check:scroll-jumps
 npm run test:smoke
 ```
 
@@ -254,7 +255,7 @@ Recent no-slowdown refinement (May 22, 2026):
 Recent no-slowdown refinement (May 24, 2026):
 
 - Dashboard route pages now share `stable-scroll-scope` so segmented filters do not yank viewport position when tabs/filters update.
-- `SegmentedTablist` restores viewport using microtask + bounded timeout replay (no `requestAnimationFrame`), satisfying `npm run check:main-thread`.
+- `SegmentedTablist` now avoids viewport-restoration scroll calls entirely, and `npm run check:scroll-jumps` prevents direct scroll-jump APIs from being reintroduced in product routes.
 - Header meta chips on small screens are now horizontal rails instead of multi-line wraps, reducing header bloat and preserving actionable content density.
 - Dashboard nav rails use thin visible scrollbars (instead of hidden scrollbars) to improve discoverability of horizontal navigation overflow.
 - Background image visibility was increased with softer dark overlays and lower shell-glow opacity to keep text readable while preserving the cyberpunk visual layer.
@@ -417,6 +418,7 @@ Verification snapshot (May 17, 2026):
 - `cd frontend && npm run check:contrast`
 - `cd frontend && npm run check:media-stability`
 - `cd frontend && npm run check:main-thread`
+- `cd frontend && npm run check:scroll-jumps`
 - `cd frontend && npm run check:perf-budgets`
 - `cd frontend && npm run analyze:bundle`
 - `cd frontend && npx lighthouse http://localhost:4113/ --chrome-flags='--headless --incognito --no-sandbox --disable-gpu --disable-software-rasterizer --disable-dev-shm-usage' --output=json --output-path=docs/evidence/weekly-2026-05-17/lighthouse-home.json`

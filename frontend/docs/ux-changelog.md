@@ -28,6 +28,9 @@
   - added a clear preview-only label to avoid fake-live confusion and optionally shows the signed-in user's current tier plus XP-to-next-tier guidance.
   - keeps no-fake-user policy intact while preventing a dead empty leaderboard experience.
   - added live-fixture smoke coverage (`tests/live-fixture-render.test.tsx`) for the no-rows leaderboard preview state.
+- Scroll-jump regression guard pass:
+  - added `scripts/check-scroll-jump-apis.mjs` and `npm run check:scroll-jumps` to block direct `window.scrollTo` / `scrollIntoView` APIs in product route code.
+  - updated docs checklists so this guard runs alongside existing no-mock, nested-interactive, and main-thread checks.
 
 ## 2026-05-22
 
