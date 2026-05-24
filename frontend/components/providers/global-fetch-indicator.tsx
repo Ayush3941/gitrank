@@ -7,8 +7,8 @@ import {
   useReducedGamification,
 } from "@/hooks/use-gamification-preference";
 
-const SHOW_DELAY_MS = 120;
-const MIN_VISIBLE_MS = 260;
+const SHOW_DELAY_MS = 220;
+const MIN_VISIBLE_MS = 320;
 
 export function GlobalFetchIndicator() {
   const reducedGamification = useReducedGamification();
