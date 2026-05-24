@@ -124,7 +124,7 @@ export function ContributionsPageClient() {
     if (!profile) {
       return null;
     }
-    if (useLiteCards) {
+    if (useLiteCards || !showCardDetails) {
       return null;
     }
     if (
@@ -180,6 +180,7 @@ export function ContributionsPageClient() {
     abraContributionSample,
     profile,
     repositories.length,
+    showCardDetails,
     streak.currentStreakDays,
     useLiteCards,
   ]);
