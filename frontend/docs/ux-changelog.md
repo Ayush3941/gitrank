@@ -32,6 +32,9 @@
 - Public-profile empty-state recovery pass:
   - added direct CTAs to empty badge and empty best-PR lanes on the public profile shell.
   - keeps share pages non-blocking by routing users straight to quests/contributions when profile evidence is sparse.
+- Dashboard empty-lane recovery pass:
+  - quest and recent-report empty states now include both `Open contributions` and `Open sync settings` actions.
+  - reduces dead-end moments when users need either evidence inspection or immediate sync remediation.
 - Segmented filter auto-scroll regression fix:
   - removed forced viewport restoration (`window.scrollTo`) from shared segmented-tab selection and keyboard fallback focus handling.
   - fixes jump-to-top behavior seen when switching filter tabs in dashboard routes (notably settings sync status tabs).
