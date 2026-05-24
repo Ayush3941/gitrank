@@ -250,7 +250,7 @@ export function ContributionsPageClient() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="stable-scroll-scope space-y-6">
       <PageHeader
         eyebrow="Contributions"
         title="Contributions"
