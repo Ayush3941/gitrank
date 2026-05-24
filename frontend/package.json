@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "check:no-production-mocks": "node scripts/check-no-production-mocks.mjs",
+    "check:no-hardcoded-identities": "node scripts/check-no-hardcoded-identities.mjs",
     "check:client-env-safety": "node scripts/check-client-env-safety.mjs",
     "check:server-boundaries": "node scripts/check-server-boundaries.mjs",
     "check:cache-strategy": "node scripts/check-route-cache-strategy.mjs",

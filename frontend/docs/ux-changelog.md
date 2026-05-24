@@ -5,6 +5,9 @@
 - Global backdrop visibility smoothing pass:
   - reduced heavy overlay opacity and softened radial/linear overlay falloff so `assets/background.jpg` remains visible without sacrificing text contrast.
   - kept the background locked to viewport (`body::before` fixed layer) while slightly lowering saturation/contrast boost to avoid harsh banding on neon themes.
+- Hardcoded identity guard pass:
+  - added `npm run check:no-hardcoded-identities` to block banned personal/demo identity literals in production frontend modules (`app`, `components`, `features`, `hooks`, `lib`).
+  - prevents accidental reintroduction of fake/sample handles into live dashboard, profile, or contribution UI copy.
 - Segmented-filter focus no-scroll pass:
   - pointer interactions on shared segmented filters now apply focus with `preventScroll` semantics before selection, reducing browser-driven jump-to-control behavior during filter changes.
   - helps stabilize settings sync-status and similar segmented lanes where users reported abrupt viewport jumps.
