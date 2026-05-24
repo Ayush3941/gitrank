@@ -81,6 +81,7 @@ export function ShareProfileButton({
           return;
         } catch (error) {
           if (isShareCanceledError(error)) {
+            setState("idle");
             return;
           }
           // Fallback to clipboard/manual path for non-cancel failures.

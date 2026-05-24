@@ -62,6 +62,9 @@ describe("ShareProfileButton", () => {
     await waitFor(() => {
       expect(shareMock).toHaveBeenCalledTimes(1);
     });
+    expect(
+      screen.getByRole("button", { name: "Share profile" }),
+    ).toBeTruthy();
     expect(writeTextMock).not.toHaveBeenCalled();
     expect(promptMock).not.toHaveBeenCalled();
     expect(emitAnalyticsEventMock).not.toHaveBeenCalled();

@@ -5,6 +5,7 @@
 - Share-action fallback hygiene pass:
   - native Web Share cancellation (`AbortError`) no longer triggers clipboard/manual fallback.
   - share button now keeps a stable minimum width so label transitions (share/copied/shared/error) do not shift surrounding layout.
+  - cancellation now explicitly resets the button state to idle so stale labels never persist after a dismissed native-share sheet.
   - keeps user-intent cancel as a no-op while preserving fallback copy flow for real share failures.
   - added component tests for cancel-vs-failure fallback behavior.
 - Query churn reduction pass:
