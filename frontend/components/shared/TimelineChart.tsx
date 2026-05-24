@@ -32,6 +32,16 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
   const lastPoint = safeData[safeData.length - 1];
   const growth = lastPoint.xp - firstPoint.xp;
   const topPoint = safeData.reduce((best, point) => (point.xp > best.xp ? point : best), safeData[0]);
+  const previousPoint = safeData.length > 1 ? safeData[safeData.length - 2] : null;
+  const latestDelta = previousPoint ? lastPoint.xp - previousPoint.xp : 0;
+  const recentWindow = safeData.slice(-8);
+  const momentumLabel = latestDelta > 0 ? "Rising" : latestDelta < 0 ? "Cooling" : "Flat";
+  const momentumToneClass =
+    latestDelta > 0
+      ? "neon-chip neon-chip-success"
+      : latestDelta < 0
+        ? "neon-chip neon-chip-warning"
+        : "neon-chip neon-chip-muted";
 
   return (
     <div className="space-y-3">
@@ -51,16 +61,22 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
         <p className="sr-only">Contribution quality timeline showing cumulative XP growth over time.</p>
       </div>
       <div className="neon-surface px-4 py-3">
-        <p className="text-xs font-medium text-primary">Timeline summary</p>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs font-medium text-primary">Timeline summary</p>
+          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${momentumToneClass}`}>
+            Momentum {momentumLabel}
+          </span>
+        </div>
         <p id={summaryId} className="mt-2 text-sm text-muted">
           Start {firstPoint.label}: {firstPoint.xp} XP. Latest {lastPoint.label}: {lastPoint.xp} XP.
           {" "}Net change: {growth >= 0 ? "+" : ""}{growth} XP.
         </p>
         <p className="mt-1 text-sm text-muted">
           Peak month: {topPoint.label} ({topPoint.xp} XP).
+          {previousPoint ? ` Latest step: ${formatSignedXP(latestDelta)} XP.` : ""}
         </p>
         <ul role="list" className="mt-3 space-y-1 text-xs text-muted">
-          {safeData.map((point, index) => (
+          {recentWindow.map((point, index) => (
             <li key={`${point.label}-${index}`} className="flex items-center justify-between gap-3">
               <span>{point.label}</span>
               <span>{point.xp} XP</span>
@@ -70,6 +86,13 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
       </div>
     </div>
   );
+}
+
+function formatSignedXP(value: number): string {
+  if (value > 0) {
+    return `+${value}`;
+  }
+  return `${value}`;
 }
 
 function TimelineChartFallback() {
