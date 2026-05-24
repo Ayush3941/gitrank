@@ -87,7 +87,7 @@ export function SyncRunActivityPanel({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="sync-runs-panel-shell space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm font-semibold text-white">Recent sync runs</p>
         <div className="flex flex-wrap items-center gap-2">

@@ -65,7 +65,7 @@ export function PrivacyRepositoryToggleList({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="repository-visibility-panel-shell space-y-3">
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p id={statusId} role="status" aria-live="polite" className="text-xs font-medium text-cyan-200">

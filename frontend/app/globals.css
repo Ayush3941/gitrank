@@ -1007,6 +1007,14 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   overflow-anchor: auto;
 }
 
+.sync-runs-panel-shell > :not(.sync-runs-results-viewport) {
+  overflow-anchor: none;
+}
+
+.repository-visibility-panel-shell > :not(.repository-visibility-results-viewport) {
+  overflow-anchor: none;
+}
+
 @supports not (content-visibility: auto) {
   .render-opt-card {
     contain: none;
