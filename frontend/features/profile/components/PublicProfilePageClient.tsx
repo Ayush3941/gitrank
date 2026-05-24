@@ -345,7 +345,6 @@ function LiteSkillSummary({ skills }: { skills: SkillNode[] }) {
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-muted">Lite mode keeps profile rendering smooth on constrained devices.</p>
       <ul role="list" className="space-y-3">
         {topSkills.map((skill, index) => {
           const width = Math.max(8, Math.round((skill.score / maxScore) * 100));
@@ -440,7 +439,6 @@ function LiteBestPRSummary({
 
   return (
     <GlowCard className="space-y-4">
-      <p className="text-xs text-muted">Lite mode shows compact report highlights for faster rendering.</p>
       <ul role="list" className="space-y-3">
         {reports.slice(0, 4).map((report, index) => (
           <li
