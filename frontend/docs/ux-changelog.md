@@ -8,6 +8,10 @@
 - Added regression coverage:
   - updated `tests/segmented-tablist.test.tsx` to assert tab selection does not invoke viewport scroll restoration.
   - keeps filter interactions stable while preserving manual keyboard activation behavior.
+- Reduced decorative interaction motion on dashboard chrome:
+  - softened `cyber-card` hover deltas so cards keep visual hierarchy without expensive hover glow jumps.
+  - simplified dashboard-route-nav interaction transitions to quick color/border updates and removed heavy hover shadow pulses.
+  - keeps nav affordance intact while reducing perceived jitter on lower-power devices.
 
 ## 2026-05-22
 
