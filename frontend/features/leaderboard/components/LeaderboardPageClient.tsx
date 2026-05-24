@@ -151,23 +151,27 @@ export function LeaderboardPageClient() {
         />
       ) : null}
       <section className="space-y-3">
-        <SegmentedTablist
-          options={tabs.map((item) => {
-            const Icon = TAB_ICONS[item];
-            return {
-              value: item,
-              label: TAB_LABELS[item],
-              icon: <Icon className="h-4 w-4" />,
-              minWidthClassName: "min-w-[9rem]",
-            };
-          })}
-          value={tab}
-          onValueChange={handleTabChange}
-          ariaLabel="Leaderboard lane filters"
-          ariaControls={LEADERBOARD_ROWS_REGION_ID}
-          className="w-full"
-          tabIdPrefix="leaderboard-lane-tab"
-        />
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-primary">Lane</p>
+          <SegmentedTablist
+            options={tabs.map((item) => {
+              const Icon = TAB_ICONS[item];
+              return {
+                value: item,
+                label: TAB_LABELS[item],
+                icon: <Icon className="h-4 w-4" />,
+                minWidthClassName: "min-w-[9rem]",
+              };
+            })}
+            value={tab}
+            onValueChange={handleTabChange}
+            ariaLabel="Leaderboard lane filters"
+            ariaControls={LEADERBOARD_ROWS_REGION_ID}
+            className="w-full"
+            tabIdPrefix="leaderboard-lane-tab"
+            wrap
+          />
+        </div>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p role="status" aria-live="polite" className="sr-only">
             {isBusy
