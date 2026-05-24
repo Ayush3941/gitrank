@@ -68,7 +68,7 @@ export function ContributionsPageClient() {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact">("Newest");
   const [exportNotice, setExportNotice] = useState("");
-  const [showCardDetails, setShowCardDetails] = useState(!constrainedNetwork);
+  const [showCardDetails, setShowCardDetails] = useState(false);
   const debouncedSearch = useDebouncedValue(search, CONTRIBUTION_SEARCH_DEBOUNCE_MS);
   const deferredFilter = useDeferredValue(filter);
   const deferredSearch = useDeferredValue(debouncedSearch);
