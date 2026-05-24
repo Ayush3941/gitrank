@@ -34,7 +34,7 @@ const QUEST_GROUP_PAGE_SIZE_DEFAULT = 6;
 const QUEST_GROUP_PAGE_SIZE_CONSTRAINED = 3;
 const QUEST_MISSIONS_REGION_ID = "quests-missions-region";
 const QUEST_FILTERS: Array<{ value: "All" | Quest["cadence"]; label: string }> = [
-  { value: "All", label: "All missions" },
+  { value: "All", label: "All" },
   { value: "Daily", label: "Daily" },
   { value: "Weekly", label: "Weekly" },
   { value: "Long-term", label: "Long-term" },

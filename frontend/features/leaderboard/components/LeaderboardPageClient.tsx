@@ -52,7 +52,7 @@ const TAB_LABELS: Record<LeaderboardTab, string> = {
   Testing: "Testing",
   Documentation: "Documentation",
   "Weekly XP": "Weekly XP",
-  "Rising Contributors": "Rising Contributors",
+  "Rising Contributors": "Rising",
 };
 
 const TAB_ICONS: Record<LeaderboardTab, typeof Globe2> = {
