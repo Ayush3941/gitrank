@@ -2,6 +2,10 @@
 
 ## 2026-05-24
 
+- Deterministic impact-summary fallback upgrade:
+  - contribution cards and PR battle reports now use structured deterministic summaries when Gemini text is missing, stale, or placeholder-only.
+  - fallback copy now includes contribution category/scope, evidence context, and a concrete next-improvement suggestion instead of generic pending text.
+  - keeps AI enrichment optional while maintaining presentation-quality narrative for demo and low-quota paths.
 - Skill-lane canonicalization and dedupe pass:
   - added shared skill normalization (`backend/back-end/back end`, `frontend/front-end/front end`, `devops/dev ops`, `qa/quality assurance`) before lane aggregation.
   - profile and dashboard skill-lane dedupe now resolve equivalent labels into one canonical lane instead of repeating near-duplicates.

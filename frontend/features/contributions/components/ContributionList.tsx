@@ -6,6 +6,10 @@ import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { GlowCard } from "@/components/shared/GlowCard";
 import type { ContributionNarrative } from "@/lib/ai/abra-insights-types";
 import { formatContributionStatusLabel } from "@/lib/presentation/contribution-status";
+import {
+  buildDeterministicImpactSummary,
+  shouldUseDeterministicImpactSummary,
+} from "@/lib/presentation/deterministic-impact-summary";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import type { Contribution } from "@/types/gitrank";
 
@@ -115,6 +119,7 @@ export function ContributionList({
               </div>
               {showDetails ? (
                 <AIPanel
+                  contribution={item}
                   fallbackSummary={item.aiSummary}
                   narrative={narratives?.[item.id]}
                   lite={useLiteCards}
@@ -238,15 +243,21 @@ function formatContributionDate(value: string): string {
 }
 
 function AIPanel({
+  contribution,
   narrative,
   fallbackSummary,
   lite = false,
 }: {
+  contribution: Contribution;
   narrative?: ContributionNarrative;
   fallbackSummary: string;
   lite?: boolean;
 }) {
-  const summary = sanitizeReportSummary(narrative?.pitch || fallbackSummary);
+  const preferredSummary = narrative?.pitch || fallbackSummary;
+  const sanitizedSummary = sanitizeReportSummary(preferredSummary);
+  const summary = shouldUseDeterministicImpactSummary(sanitizedSummary)
+    ? buildDeterministicImpactSummary(contribution)
+    : sanitizedSummary;
 
   return (
       <div className={`neon-surface border-fuchsia-300/28 ${lite ? "rounded-[1rem] px-3 py-3" : "rounded-[1.35rem] px-4 py-4"}`}>

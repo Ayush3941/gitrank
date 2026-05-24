@@ -21,6 +21,10 @@ import {
   toneForContributionStatus,
 } from "@/lib/presentation/contribution-status";
 import { buildEvidenceSignalChips } from "@/lib/presentation/evidence-signal";
+import {
+  buildDeterministicImpactSummary,
+  shouldUseDeterministicImpactSummary,
+} from "@/lib/presentation/deterministic-impact-summary";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import { formatEvidenceStatusLabel, toneForEvidenceStatus } from "@/lib/presentation/status-tone";
 
@@ -71,6 +75,9 @@ export function PRBattleReportPageClient({
   const suggestedQuest = data.suggestedQuest;
   const evidenceState = data.evidenceState;
   const sanitizedReportSummary = sanitizeReportSummary(data.contribution.aiSummary);
+  const reportSummary = shouldUseDeterministicImpactSummary(sanitizedReportSummary)
+    ? buildDeterministicImpactSummary(data.contribution)
+    : sanitizedReportSummary;
   const evidenceAnchored = evidenceState.status === "complete" || evidenceState.status === "deterministic_only";
   const fallbackReason = extractFallbackReason(data.contribution.evidenceSignals);
   const fallbackDetail = fallbackReason ? formatFallbackReason(fallbackReason) : null;
@@ -261,7 +268,7 @@ export function PRBattleReportPageClient({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs font-medium text-primary">AI summary</p>
             <CopyTextButton
-              text={sanitizedReportSummary}
+              text={reportSummary}
               label="Copy summary"
               copiedLabel="Summary copied"
               analyticsTarget="pr-report/ai-summary"
@@ -275,7 +282,7 @@ export function PRBattleReportPageClient({
             </p>
           ) : null}
           <ExpandableText
-            text={sanitizedReportSummary}
+            text={reportSummary}
             lines={5}
             minLengthForToggle={260}
             textClassName="break-anywhere text-base leading-8 text-muted"
