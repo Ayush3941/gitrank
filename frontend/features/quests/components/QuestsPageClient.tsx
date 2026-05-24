@@ -155,27 +155,7 @@ export function QuestsPageClient() {
               </Button>
             ) : null}
           </div>
-          <div className="lg:hidden">
-            <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
-              <span className="sr-only">Mission cadence filter</span>
-              <select
-                value={cadenceFilter}
-                onChange={(event) => {
-                  handleCadenceFilterChange(event.target.value as "All" | Quest["cadence"]);
-                }}
-                aria-label="Mission cadence filter"
-                aria-describedby={filterStatusId}
-                className="focus-ring h-full w-full bg-transparent text-sm text-foreground outline-none"
-              >
-                {QUEST_FILTERS.map((item) => (
-                  <option key={`quest-filter-option-${item.value}`} value={item.value} className="bg-card text-foreground">
-                    {item.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-          <div className="hidden lg:block">
+          <div>
             <SegmentedTablist
               options={QUEST_FILTERS.map((item) => {
                 const count =

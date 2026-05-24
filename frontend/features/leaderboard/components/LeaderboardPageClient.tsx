@@ -151,43 +151,23 @@ export function LeaderboardPageClient() {
         />
       ) : null}
       <section className="space-y-3">
-        <div className="lg:hidden">
-          <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
-            <span className="sr-only">Leaderboard lane filter</span>
-            <select
-              value={tab}
-              onChange={(event) => handleTabChange(event.target.value)}
-              aria-label="Leaderboard lane filter"
-              aria-controls={LEADERBOARD_ROWS_REGION_ID}
-              className="focus-ring h-full w-full bg-transparent text-sm text-foreground outline-none"
-            >
-              {tabs.map((item) => (
-                <option key={`leaderboard-lane-option-${item}`} value={item} className="bg-card text-foreground">
-                  {TAB_LABELS[item]}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-        <div className="hidden lg:block">
-          <SegmentedTablist
-            options={tabs.map((item) => {
-              const Icon = TAB_ICONS[item];
-              return {
-                value: item,
-                label: TAB_LABELS[item],
-                icon: <Icon className="h-4 w-4" />,
-                minWidthClassName: "min-w-[9rem]",
-              };
-            })}
-            value={tab}
-            onValueChange={handleTabChange}
-            ariaLabel="Leaderboard lane filters"
-            ariaControls={LEADERBOARD_ROWS_REGION_ID}
-            className="w-full"
-            tabIdPrefix="leaderboard-lane-tab"
-          />
-        </div>
+        <SegmentedTablist
+          options={tabs.map((item) => {
+            const Icon = TAB_ICONS[item];
+            return {
+              value: item,
+              label: TAB_LABELS[item],
+              icon: <Icon className="h-4 w-4" />,
+              minWidthClassName: "min-w-[9rem]",
+            };
+          })}
+          value={tab}
+          onValueChange={handleTabChange}
+          ariaLabel="Leaderboard lane filters"
+          ariaControls={LEADERBOARD_ROWS_REGION_ID}
+          className="w-full"
+          tabIdPrefix="leaderboard-lane-tab"
+        />
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p role="status" aria-live="polite" className="sr-only">
             {isBusy

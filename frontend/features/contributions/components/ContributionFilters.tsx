@@ -154,43 +154,22 @@ export function ContributionFilters({
         </div>
       ) : null}
       <div id="contribution-mobile-controls">
-        <div className="lg:hidden">
-          <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
-            <span className="sr-only">Contribution category filter</span>
-            <select
-              value={value}
-              onChange={(event) => onValueChange(event.target.value)}
-              aria-label="Contribution category filter"
-              aria-describedby={statusId}
-              aria-controls={resultsRegionId}
-              className="focus-ring h-full w-full bg-transparent text-sm text-foreground outline-none"
-            >
-              {filters.map((filter) => (
-                <option key={filter.value} value={filter.value} className="bg-card text-foreground">
-                  {filter.value}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-        <div className="hidden lg:block">
-          <SegmentedTablist
-            options={filters.map((filter) => {
-              const Icon = filterIconByValue[filter.value];
-              return {
-                value: filter.value,
-                label: filter.value,
-                icon: <Icon className="h-4 w-4" />,
-                minWidthClassName: "min-w-[8.5rem]",
-              };
-            })}
-            value={value}
-            onValueChange={onValueChange}
-            ariaLabel="Contribution category filters"
-            ariaControls={resultsRegionId}
-            tabIdPrefix="contribution-filter-tab"
-          />
-        </div>
+        <SegmentedTablist
+          options={filters.map((filter) => {
+            const Icon = filterIconByValue[filter.value];
+            return {
+              value: filter.value,
+              label: filter.value,
+              icon: <Icon className="h-4 w-4" />,
+              minWidthClassName: "min-w-[8.5rem]",
+            };
+          })}
+          value={value}
+          onValueChange={onValueChange}
+          ariaLabel="Contribution category filters"
+          ariaControls={resultsRegionId}
+          tabIdPrefix="contribution-filter-tab"
+        />
         <div className="grid gap-3 lg:grid-cols-[1fr,16rem]">
           <div className="relative">
             <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted" />

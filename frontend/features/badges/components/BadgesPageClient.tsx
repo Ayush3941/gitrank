@@ -395,40 +395,7 @@ export function BadgesPageClient() {
                 ) : null}
               </ul>
             </div>
-            <div className="grid gap-3 md:grid-cols-2 lg:hidden">
-              <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
-                <span className="sr-only">Filter by rarity</span>
-                <select
-                  value={rarity}
-                  onChange={(event) => handleRarityChange(event.target.value as BadgeRarity | "All")}
-                  aria-label="Filter by rarity"
-                  aria-describedby={badgesFilterStatusId}
-                  aria-controls={BADGES_EARNED_REGION_ID}
-                  className="focus-ring h-full w-full bg-transparent text-sm text-foreground outline-none"
-                >
-                  <option value="All" className="bg-card text-foreground">All rarities</option>
-                  {BADGE_RARITY_FILTERS.filter((item) => item !== "All").map((item) => (
-                    <option key={`rarity-option-${item}`} value={item} className="bg-card text-foreground">{item}</option>
-                  ))}
-                </select>
-              </label>
-              <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
-                <span className="sr-only">Filter by unlock state</span>
-                <select
-                  value={visibility}
-                  onChange={(event) => handleVisibilityChange(event.target.value as typeof visibility)}
-                  aria-label="Filter by unlock state"
-                  aria-describedby={badgesFilterStatusId}
-                  aria-controls={BADGES_EARNED_REGION_ID}
-                  className="focus-ring h-full w-full bg-transparent text-sm text-foreground outline-none"
-                >
-                  <option value="All" className="bg-card text-foreground">All badges</option>
-                  <option value="Unlocked" className="bg-card text-foreground">Unlocked</option>
-                  <option value="Locked" className="bg-card text-foreground">Locked</option>
-                </select>
-              </label>
-            </div>
-            <div className="hidden lg:grid gap-3">
+            <div className="grid gap-3">
               <SegmentedTablist
                 options={BADGE_RARITY_FILTERS.map((item) => ({
                   value: item,
