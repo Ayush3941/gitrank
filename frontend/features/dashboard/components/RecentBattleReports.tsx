@@ -26,7 +26,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
       <ul role="list" className="grid gap-3">
         {sortedReports.length === 0 ? (
           <li className="list-none neon-surface space-y-3 rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
-            <p>No reports yet. Sync merged PRs to generate report cards.</p>
+            <p>No reports yet. Merge PRs and GitRank will attach battle reports automatically.</p>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" variant="secondary">
                 <Link href="/dashboard/contributions" prefetch={false}>Inspect contributions</Link>
@@ -49,9 +49,6 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
                   <div className="mt-2 flex flex-wrap gap-2">
                     <span className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
                       {report.contribution.category}
-                    </span>
-                    <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs font-semibold">
-                      Difficulty {report.contribution.difficultyScore}
                     </span>
                     <span className={`neon-chip rounded-full px-3 py-1 text-xs font-semibold ${evidencePill.className}`}>
                       {evidencePill.label}
@@ -100,9 +97,6 @@ function reportNextMove(report: PullRequestAnalysis): string | null {
   }
   if (state === "rate_limited") {
     return "Retry after rate-limit cooldown, then reopen this report.";
-  }
-  if (state === "ai_fallback" || state === "deterministic_only") {
-    return "Deterministic score is valid; Gemini summary will attach when available.";
   }
   return null;
 }
