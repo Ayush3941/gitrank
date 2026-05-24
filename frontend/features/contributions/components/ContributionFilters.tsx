@@ -154,7 +154,7 @@ export function ContributionFilters({
         </div>
       ) : null}
       <div id="contribution-mobile-controls">
-        <div className="sm:hidden">
+        <div className="lg:hidden">
           <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
             <span className="sr-only">Contribution category filter</span>
             <select
@@ -173,7 +173,7 @@ export function ContributionFilters({
             </select>
           </label>
         </div>
-        <div className="hidden sm:block">
+        <div className="hidden lg:block">
           <SegmentedTablist
             options={filters.map((filter) => {
               const Icon = filterIconByValue[filter.value];
