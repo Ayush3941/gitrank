@@ -18,6 +18,7 @@ export function useAbraInsights(payload: AbraInsightsRequest | null) {
   return useQuery({
     queryKey: ["abra-insights", fingerprint],
     enabled: Boolean(payload),
+    retry: false,
     staleTime: 15 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     queryFn: async () => {

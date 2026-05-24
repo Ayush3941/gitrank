@@ -2,6 +2,10 @@
 
 ## 2026-05-24
 
+- Query churn reduction pass:
+  - disabled ABRA insights retries to avoid repeated same-input AI calls when provider quota/errors occur.
+  - disabled window-focus refetch churn for dashboard/contributions profile queries and increased constrained-network stale windows on dashboard reads.
+  - keeps all explicit refresh and invalidation paths intact while reducing background request bursts and CPU wakeups.
 - Chart data-table disclosure pass:
   - skill radar and timeline cards now include `View data table` toggles for explicit numeric inspection.
   - each table exposes lane/window, score/XP, and delta values, improving shareability and non-visual interpretation without removing chart visuals.

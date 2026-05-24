@@ -21,6 +21,8 @@ export function useContributions(params: ContributionParams) {
     queryKey: ["contributions", "profile"],
     queryFn: getMyProfile,
     staleTime: 60_000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
     select: (profile) => ({
       rows: filterContributions(profile.user.contributions, params),
       profile,
