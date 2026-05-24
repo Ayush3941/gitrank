@@ -258,7 +258,7 @@ export function BadgesPageClient() {
       <PageHeader
         eyebrow="Badges"
         title="Badges"
-        description="Unlocked achievements and next milestones."
+        description="Achievements and next unlocks."
         actions={(
           <Button asChild variant="secondary" size="sm">
             <Link href="/dashboard/contributions" prefetch={false}>
@@ -474,7 +474,7 @@ export function BadgesPageClient() {
           {isError ? (
             <ErrorState
               title="Badge sync failed"
-              description="Badge evidence could not be refreshed. Retry or use your latest snapshot."
+              description="Badge refresh failed. Retry or use your latest snapshot."
               onRetry={() => {
                 void refetch();
               }}

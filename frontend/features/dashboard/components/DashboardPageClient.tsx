@@ -171,7 +171,7 @@ export function DashboardPageClient() {
     return (
       <ErrorState
         title="Dashboard sync failed"
-        description="The dashboard could not refresh. Retry or open sync settings."
+        description="Dashboard refresh failed. Retry or open sync settings."
         onRetry={() => {
           void refetch();
         }}
@@ -187,7 +187,7 @@ export function DashboardPageClient() {
       <PageHeader
         eyebrow="Dashboard"
         title="Dashboard"
-        description="Live contributor snapshot from merged PR evidence."
+        description="Live contributor signal board."
         actions={(
           <Button asChild variant="secondary" size="sm">
             <Link href="/dashboard/contributions" prefetch={false}>

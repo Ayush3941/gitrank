@@ -90,7 +90,7 @@ export function PRBattleReportPageClient({
       <PageHeader
         eyebrow="PR Report"
         title="PR battle report"
-        description="Explainable score and evidence."
+        description="Explainable PR score report."
         actions={(
           <div className="flex flex-wrap gap-2">
             <Button asChild variant="secondary">

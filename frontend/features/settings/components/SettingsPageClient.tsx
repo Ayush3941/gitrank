@@ -318,7 +318,7 @@ export function SettingsPageClient() {
       <PageHeader
         eyebrow="Settings"
         title="Settings"
-        description="Manage account link, privacy controls, and display preferences."
+        description="Account, privacy, and display controls."
         actions={(
           <Button asChild variant="secondary" size="sm">
             <Link href={`/u/${data.user.username}`} prefetch={false}>

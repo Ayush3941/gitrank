@@ -106,7 +106,7 @@ export function QuestsPageClient() {
       <PageHeader
         eyebrow="Quests"
         title="Quests"
-        description="Daily, weekly, and long-term missions."
+        description="Daily, weekly, and long-term quest lanes."
         actions={(
           <Button asChild variant="secondary" size="sm">
             <Link href="/dashboard/contributions" prefetch={false}>

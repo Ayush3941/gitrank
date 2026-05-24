@@ -253,7 +253,7 @@ export function ContributionsPageClient() {
       <PageHeader
         eyebrow="Contributions"
         title="Contributions"
-        description="Filter, inspect, and export scored PR cards."
+        description="Scored PR cards with fast filters."
         actions={(
           <div className="flex flex-wrap gap-2">
             <Button
@@ -343,7 +343,7 @@ export function ContributionsPageClient() {
       {isError ? (
         <ErrorState
           title="Contribution sync failed"
-          description="GitHub data could not be refreshed. Retry or open sync settings."
+          description="Sync refresh failed. Retry or open sync settings."
           onRetry={() => {
             void refetch();
           }}
