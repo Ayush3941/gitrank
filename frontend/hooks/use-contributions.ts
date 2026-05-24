@@ -19,6 +19,7 @@ type ContributionsQueryData = {
 export function useContributions(params: ContributionParams) {
   return useQuery<ProfileViewData, Error, ContributionsQueryData>({
     queryKey: ["contributions", "profile"],
+    retry: false,
     queryFn: getMyProfile,
     staleTime: 60_000,
     refetchOnWindowFocus: false,

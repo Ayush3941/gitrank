@@ -13,6 +13,7 @@ export function useDashboard() {
 
   return useQuery({
     queryKey: ["dashboard"],
+    retry: false,
     staleTime: constrainedNetwork ? 90_000 : 30_000,
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,

@@ -9,6 +9,7 @@ export function useLeaderboard(tab: LeaderboardTab = "Global") {
 
   return useQuery({
     queryKey: ["leaderboard", tab],
+    retry: false,
     staleTime: constrainedNetwork ? 90_000 : 30_000,
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,

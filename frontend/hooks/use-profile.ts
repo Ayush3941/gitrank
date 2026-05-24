@@ -81,6 +81,7 @@ type BackedPrivacySettings = Partial<
 export function useProfile(username: string) {
   return useQuery({
     queryKey: ["profile", "public", username],
+    retry: false,
     queryFn: () => getPublicProfile(username),
     staleTime: 60_000,
     refetchOnWindowFocus: false,
@@ -93,6 +94,7 @@ export function useMyProfile() {
 
   return useQuery({
     queryKey: myProfileQueryKey,
+    retry: false,
     queryFn: getMyProfile,
     staleTime: constrainedNetwork
       ? PROFILE_SYNC_STALE_TIME_CONSTRAINED_MS

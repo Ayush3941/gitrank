@@ -17,6 +17,7 @@ export function useSyncRuns(limit = 25) {
 
   return useQuery({
     queryKey: ["sync", "runs", limit],
+    retry: false,
     queryFn: () => listMySyncRuns(limit),
     staleTime: constrainedNetwork
       ? SYNC_RUNS_STALE_TIME_CONSTRAINED_MS

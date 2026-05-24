@@ -6,6 +6,7 @@ import { getLivePrReport } from "@/lib/api/pr-report-api";
 export function usePrReport(owner: string, repo: string, number: number) {
   return useQuery({
     queryKey: ["pr-report", owner, repo, number],
+    retry: false,
     staleTime: 60_000,
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
