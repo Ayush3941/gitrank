@@ -39,6 +39,7 @@ import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics"
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import type { BadgeRarity } from "@/types/gitrank";
 const BADGES_EARNED_REGION_ID = "badges-earned-region";
+const BADGES_LOCKED_REGION_ID = "badges-locked-lane";
 const LOCKED_BADGE_PAGE_SIZE_DEFAULT = 8;
 const LOCKED_BADGE_PAGE_SIZE_CONSTRAINED = 4;
 const BADGE_SHELF_PAGE_SIZE_DEFAULT = 10;
@@ -539,7 +540,7 @@ export function BadgesPageClient() {
               type="button"
               size="sm"
               variant="secondary"
-              aria-controls="badges-locked-lane"
+              aria-controls={BADGES_LOCKED_REGION_ID}
               aria-expanded={showLockedBadges}
               onClick={() => {
                 setShowLockedBadges((current) => !current);
@@ -548,12 +549,15 @@ export function BadgesPageClient() {
               {showLockedBadges ? "Hide" : "Show"}
             </Button>
           </div>
-          {!showLockedBadges ? (
-            <div id="badges-locked-lane" className="sr-only" aria-hidden="true">
-              Locked badge paths hidden.
-            </div>
-          ) : lockedBadges.length > 0 ? (
-            <div id="badges-locked-lane" className="neon-surface rounded-[1.4rem] border border-fuchsia-300/24 p-3">
+          <div
+            id={BADGES_LOCKED_REGION_ID}
+            className={!showLockedBadges ? "sr-only" : undefined}
+            aria-hidden={!showLockedBadges ? true : undefined}
+          >
+            {!showLockedBadges ? (
+              <div>Locked badge paths hidden.</div>
+            ) : lockedBadges.length > 0 ? (
+              <div className="neon-surface rounded-[1.4rem] border border-fuchsia-300/24 p-3">
               <ul role="list" className="grid gap-3 md:grid-cols-3">
                 {visibleLockedBadges.map((badge, index) => (
                   <li key={`${badge.id}-${index}`} className="render-opt-card neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4">
@@ -609,12 +613,13 @@ export function BadgesPageClient() {
                   </Button>
                 </div>
               ) : null}
-            </div>
-          ) : (
-            <div id="badges-locked-lane" className="neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4 text-sm text-muted">
-              No locked badge definitions are returned by this snapshot.
-            </div>
-          )}
+              </div>
+            ) : (
+              <div className="neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4 text-sm text-muted">
+                No locked badge definitions are returned by this snapshot.
+              </div>
+            )}
+          </div>
         </section>
       ) : null}
     </div>
