@@ -51,7 +51,7 @@ export function SegmentedTablist<T extends string>({
     const beforeX = window.scrollX;
     const beforeY = window.scrollY;
     run();
-    window.requestAnimationFrame(() => {
+    queueMicrotask(() => {
       try {
         window.scrollTo({ left: beforeX, top: beforeY, behavior: "auto" });
       } catch {
