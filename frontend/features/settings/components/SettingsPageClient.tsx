@@ -319,6 +319,30 @@ export function SettingsPageClient() {
         eyebrow="Settings"
         title="Settings"
         description="Privacy, sync, and display controls."
+        meta={(
+          <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                @{data.user.username}
+              </span>
+            </li>
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                Repos {data.user.repositories.length}
+              </span>
+            </li>
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                Hidden {hiddenRepositoryCount}
+              </span>
+            </li>
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                Sync {data.user.syncStatus.state}
+              </span>
+            </li>
+          </ul>
+        )}
         actions={(
           <Button asChild variant="secondary" size="sm">
             <Link href={`/u/${data.user.username}`} prefetch={false}>
