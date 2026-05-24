@@ -262,6 +262,30 @@ export function BadgesPageClient() {
         eyebrow="Badges"
         title="Badges"
         description="Achievements and next unlocks."
+        meta={(
+          <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                Earned {unlockedCount}
+              </span>
+            </li>
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                Total {totalCount}
+              </span>
+            </li>
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                Completion {completionPercent}%
+              </span>
+            </li>
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                Locked {lockedBadges.length}
+              </span>
+            </li>
+          </ul>
+        )}
         actions={(
           <Button asChild variant="secondary" size="sm">
             <Link href="/dashboard/contributions" prefetch={false}>

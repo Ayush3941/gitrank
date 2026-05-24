@@ -183,6 +183,30 @@ export function DashboardPageClient() {
         eyebrow="Dashboard"
         title="Dashboard"
         description="Identity, progression, and report lanes."
+        meta={(
+          <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                Rank {user.level.rankTier}
+              </span>
+            </li>
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                Merged PRs {user.mergedPrCount}
+              </span>
+            </li>
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                Streak {streak.currentStreakDays}d
+              </span>
+            </li>
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                Sync {user.syncStatus.state}
+              </span>
+            </li>
+          </ul>
+        )}
         actions={(
           <Button asChild variant="secondary" size="sm">
             <Link href="/dashboard/contributions" prefetch={false}>

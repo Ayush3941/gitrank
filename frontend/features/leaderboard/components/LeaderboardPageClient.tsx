@@ -126,6 +126,30 @@ export function LeaderboardPageClient() {
         eyebrow="Leaderboard"
         title="Leaderboard"
         description="Rank lanes and promotion progress."
+        meta={(
+          <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                Lane {TAB_LABELS[tab]}
+              </span>
+            </li>
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                Rows {rows.length}
+              </span>
+            </li>
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                Showing {safeVisibleRowCount}
+              </span>
+            </li>
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                Sync {myProfile?.user.syncStatus.state ?? "unknown"}
+              </span>
+            </li>
+          </ul>
+        )}
         actions={(
           <Button asChild variant="secondary" size="sm">
             <Link href="/dashboard/quests" prefetch={false}>

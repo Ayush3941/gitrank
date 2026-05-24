@@ -108,6 +108,30 @@ export function QuestsPageClient() {
         eyebrow="Quests"
         title="Quests"
         description="Daily, weekly, and long-term quest lanes."
+        meta={(
+          <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                Missions {visibleQuestCount}
+              </span>
+            </li>
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                Streak {streak.currentStreakDays}d
+              </span>
+            </li>
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                Day {dayOfYear}/365
+              </span>
+            </li>
+            <li className="list-none">
+              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
+                Focus {deferredCadenceFilter}
+              </span>
+            </li>
+          </ul>
+        )}
         actions={(
           <Button asChild variant="secondary" size="sm">
             <Link href="/dashboard/contributions" prefetch={false}>
