@@ -27,6 +27,7 @@ import { useNetworkConstraintPreference } from "@/hooks/use-gamification-prefere
 import { useMyProfile } from "@/hooks/use-profile";
 import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
 import { formatRelativeDays } from "@/lib/formatters";
+import { toneForSyncState } from "@/lib/presentation/status-tone";
 
 const LeaderboardArena = dynamic(
   () =>
@@ -133,7 +134,10 @@ export function LeaderboardPageClient() {
               { label: `Lane ${TAB_LABELS[tab]}` },
               { label: `Rows ${rows.length}` },
               { label: `Showing ${safeVisibleRowCount}` },
-              { label: `Sync ${myProfile?.user.syncStatus.state ?? "unknown"}` },
+              {
+                label: `Sync ${myProfile?.user.syncStatus.state ?? "unknown"}`,
+                tone: toneForSyncState(myProfile?.user.syncStatus.state),
+              },
             ]}
           />
         )}

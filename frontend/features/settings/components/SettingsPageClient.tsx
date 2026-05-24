@@ -37,6 +37,7 @@ import {
   type TextScalePreference,
   useTextScalePreference,
 } from "@/hooks/use-text-scale-preference";
+import { toneForSyncState } from "@/lib/presentation/status-tone";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import { type ThemePreference, useThemePreference } from "@/hooks/use-theme-preference";
 
@@ -326,7 +327,7 @@ export function SettingsPageClient() {
               { label: `@${data.user.username}` },
               { label: `Repos ${data.user.repositories.length}` },
               { label: `Hidden ${hiddenRepositoryCount}` },
-              { label: `Sync ${data.user.syncStatus.state}` },
+              { label: `Sync ${data.user.syncStatus.state}`, tone: toneForSyncState(data.user.syncStatus.state) },
             ]}
           />
         )}

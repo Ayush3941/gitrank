@@ -18,6 +18,7 @@ import { XPBreakdownCard } from "@/features/pr-report/components/XPBreakdownCard
 import { usePrReport } from "@/hooks/use-pr-report";
 import { buildEvidenceSignalChips } from "@/lib/presentation/evidence-signal";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
+import { toneForEvidenceStatus } from "@/lib/presentation/status-tone";
 
 export function PRBattleReportPageClient({
   owner,
@@ -101,8 +102,14 @@ export function PRBattleReportPageClient({
             items={[
               { label: `${data.contribution.owner}/${data.contribution.repo}` },
               { label: `PR #${data.contribution.number}` },
-              { label: formatContributionStatus(data.contribution.status) },
-              { label: `Evidence ${evidenceState.status.replace("_", " ")}` },
+              {
+                label: formatContributionStatus(data.contribution.status),
+                tone: toneForContributionStatus(data.contribution.status),
+              },
+              {
+                label: `Evidence ${evidenceState.status.replace("_", " ")}`,
+                tone: toneForEvidenceStatus(evidenceState.status),
+              },
             ]}
           />
         )}
@@ -389,6 +396,20 @@ function formatContributionStatus(status: string): string {
     return "Closed";
   }
   return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function toneForContributionStatus(status: string): "muted" | "info" | "success" | "warning" {
+  const value = status.trim().toLowerCase();
+  if (value === "merged") {
+    return "success";
+  }
+  if (value === "open") {
+    return "info";
+  }
+  if (value === "closed") {
+    return "warning";
+  }
+  return "muted";
 }
 
 function extractFallbackReason(signals: string[]): string | null {

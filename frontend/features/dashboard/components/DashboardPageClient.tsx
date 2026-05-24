@@ -24,6 +24,7 @@ import { formatRelativeDays } from "@/lib/formatters";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
+import { toneForSyncState } from "@/lib/presentation/status-tone";
 import { Button } from "@/components/ui/button";
 
 const CurrentLeagueCard = dynamic(
@@ -190,7 +191,7 @@ export function DashboardPageClient() {
               { label: `Rank ${user.level.rankTier}` },
               { label: `Merged PRs ${user.mergedPrCount.toLocaleString("en-US")}` },
               { label: `Streak ${streak.currentStreakDays}d` },
-              { label: `Sync ${user.syncStatus.state}` },
+              { label: `Sync ${user.syncStatus.state}`, tone: toneForSyncState(user.syncStatus.state) },
             ]}
           />
         )}

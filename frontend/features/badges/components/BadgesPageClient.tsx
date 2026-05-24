@@ -268,8 +268,14 @@ export function BadgesPageClient() {
             items={[
               { label: `Earned ${unlockedCount}` },
               { label: `Total ${totalCount}` },
-              { label: `Completion ${completionPercent}%` },
-              { label: `Locked ${lockedBadges.length}` },
+              {
+                label: `Completion ${completionPercent}%`,
+                tone: completionPercent >= 100 ? "success" : completionPercent >= 50 ? "info" : "warning",
+              },
+              {
+                label: `Locked ${lockedBadges.length}`,
+                tone: lockedBadges.length > 0 ? "warning" : "success",
+              },
             ]}
           />
         )}
