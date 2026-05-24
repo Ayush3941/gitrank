@@ -8,6 +8,7 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -96,28 +97,14 @@ export function PRBattleReportPageClient({
         title="PR battle report"
         description="Explainable PR score report."
         meta={(
-          <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
-            <li className="list-none">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
-                {data.contribution.owner}/{data.contribution.repo}
-              </span>
-            </li>
-            <li className="list-none">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
-                PR #{data.contribution.number}
-              </span>
-            </li>
-            <li className="list-none">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
-                {formatContributionStatus(data.contribution.status)}
-              </span>
-            </li>
-            <li className="list-none">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
-                Evidence {evidenceState.status.replace("_", " ")}
-              </span>
-            </li>
-          </ul>
+          <HeaderMetaChips
+            items={[
+              { label: `${data.contribution.owner}/${data.contribution.repo}` },
+              { label: `PR #${data.contribution.number}` },
+              { label: formatContributionStatus(data.contribution.status) },
+              { label: `Evidence ${evidenceState.status.replace("_", " ")}` },
+            ]}
+          />
         )}
         actions={(
           <div className="flex flex-wrap gap-2">

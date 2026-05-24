@@ -18,6 +18,7 @@ import { ExpandableText } from "@/components/shared/ExpandableText";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { InlineNotice } from "@/components/shared/InlineNotice";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -263,28 +264,14 @@ export function BadgesPageClient() {
         title="Badges"
         description="Achievements and next unlocks."
         meta={(
-          <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
-            <li className="list-none">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
-                Earned {unlockedCount}
-              </span>
-            </li>
-            <li className="list-none">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
-                Total {totalCount}
-              </span>
-            </li>
-            <li className="list-none">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
-                Completion {completionPercent}%
-              </span>
-            </li>
-            <li className="list-none">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
-                Locked {lockedBadges.length}
-              </span>
-            </li>
-          </ul>
+          <HeaderMetaChips
+            items={[
+              { label: `Earned ${unlockedCount}` },
+              { label: `Total ${totalCount}` },
+              { label: `Completion ${completionPercent}%` },
+              { label: `Locked ${lockedBadges.length}` },
+            ]}
+          />
         )}
         actions={(
           <Button asChild variant="secondary" size="sm">

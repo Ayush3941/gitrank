@@ -6,6 +6,7 @@ import { Download, LayoutList, Rows3 } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { InlineNotice } from "@/components/shared/InlineNotice";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -256,23 +257,13 @@ export function ContributionsPageClient() {
         title="Contributions"
         description="Scored PR cards with fast filters."
         meta={(
-          <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
-            <li className="list-none">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
-                Evidence rows {filteredRows.length}
-              </span>
-            </li>
-            <li className="list-none">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
-                Repos {repositories.length}
-              </span>
-            </li>
-            <li className="list-none">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
-                Streak {streak.currentStreakDays}d
-              </span>
-            </li>
-          </ul>
+          <HeaderMetaChips
+            items={[
+              { label: `Evidence rows ${filteredRows.length}` },
+              { label: `Repos ${repositories.length}` },
+              { label: `Streak ${streak.currentStreakDays}d` },
+            ]}
+          />
         )}
         actions={(
           <div className="flex flex-wrap gap-2">

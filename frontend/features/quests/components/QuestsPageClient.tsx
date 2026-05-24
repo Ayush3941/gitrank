@@ -17,6 +17,7 @@ import { startTransition, useDeferredValue, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
@@ -109,28 +110,14 @@ export function QuestsPageClient() {
         title="Quests"
         description="Daily, weekly, and long-term quest lanes."
         meta={(
-          <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
-            <li className="list-none">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
-                Missions {visibleQuestCount}
-              </span>
-            </li>
-            <li className="list-none">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
-                Streak {streak.currentStreakDays}d
-              </span>
-            </li>
-            <li className="list-none">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
-                Day {dayOfYear}/365
-              </span>
-            </li>
-            <li className="list-none">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
-                Focus {deferredCadenceFilter}
-              </span>
-            </li>
-          </ul>
+          <HeaderMetaChips
+            items={[
+              { label: `Missions ${visibleQuestCount}` },
+              { label: `Streak ${streak.currentStreakDays}d` },
+              { label: `Day ${dayOfYear}/365` },
+              { label: `Focus ${deferredCadenceFilter}` },
+            ]}
+          />
         )}
         actions={(
           <Button asChild variant="secondary" size="sm">

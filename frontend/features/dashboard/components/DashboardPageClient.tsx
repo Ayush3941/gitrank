@@ -10,6 +10,7 @@ import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StaleState } from "@/components/shared/StaleState";
@@ -184,28 +185,14 @@ export function DashboardPageClient() {
         title="Dashboard"
         description="Identity, progression, and report lanes."
         meta={(
-          <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
-            <li className="list-none">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
-                Rank {user.level.rankTier}
-              </span>
-            </li>
-            <li className="list-none">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
-                Merged PRs {user.mergedPrCount}
-              </span>
-            </li>
-            <li className="list-none">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
-                Streak {streak.currentStreakDays}d
-              </span>
-            </li>
-            <li className="list-none">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
-                Sync {user.syncStatus.state}
-              </span>
-            </li>
-          </ul>
+          <HeaderMetaChips
+            items={[
+              { label: `Rank ${user.level.rankTier}` },
+              { label: `Merged PRs ${user.mergedPrCount.toLocaleString("en-US")}` },
+              { label: `Streak ${streak.currentStreakDays}d` },
+              { label: `Sync ${user.syncStatus.state}` },
+            ]}
+          />
         )}
         actions={(
           <Button asChild variant="secondary" size="sm">

@@ -15,6 +15,7 @@ import {
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
@@ -127,28 +128,14 @@ export function LeaderboardPageClient() {
         title="Leaderboard"
         description="Rank lanes and promotion progress."
         meta={(
-          <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
-            <li className="list-none">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
-                Lane {TAB_LABELS[tab]}
-              </span>
-            </li>
-            <li className="list-none">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
-                Rows {rows.length}
-              </span>
-            </li>
-            <li className="list-none">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
-                Showing {safeVisibleRowCount}
-              </span>
-            </li>
-            <li className="list-none">
-              <span className="neon-chip neon-chip-muted rounded-full px-3 py-1">
-                Sync {myProfile?.user.syncStatus.state ?? "unknown"}
-              </span>
-            </li>
-          </ul>
+          <HeaderMetaChips
+            items={[
+              { label: `Lane ${TAB_LABELS[tab]}` },
+              { label: `Rows ${rows.length}` },
+              { label: `Showing ${safeVisibleRowCount}` },
+              { label: `Sync ${myProfile?.user.syncStatus.state ?? "unknown"}` },
+            ]}
+          />
         )}
         actions={(
           <Button asChild variant="secondary" size="sm">
