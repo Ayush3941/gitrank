@@ -136,37 +136,21 @@ export function QuestsPageClient() {
                 ? `Showing all ${visibleQuestCount} missions`
                 : `Showing ${visibleQuestCount} ${deferredCadenceFilter.toLowerCase()} missions`}
           </p>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
-              {canResetCadenceFilter ? (
-                <li className="list-none">
-                  <button
-                    type="button"
-                    className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
-                    onClick={() => {
-                      handleCadenceFilterChange("All");
-                    }}
-                    title="Clear mission filter"
-                  >
-                    Cadence: {cadenceFilter}
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </li>
-              ) : null}
-            </ul>
-            {canResetCadenceFilter ? (
-              <Button
+          {canResetCadenceFilter ? (
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <button
                 type="button"
-                size="sm"
-                variant="ghost"
+                className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
                 onClick={() => {
                   handleCadenceFilterChange("All");
                 }}
+                title="Clear mission filter"
               >
-                Reset filters
-              </Button>
-            ) : null}
-          </div>
+                Cadence: {cadenceFilter}
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ) : null}
           <div className="space-y-2">
             <p className="text-xs font-medium text-primary">Cadence</p>
             <SegmentedTablist

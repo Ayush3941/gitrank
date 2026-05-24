@@ -2,6 +2,10 @@
 
 ## 2026-05-24
 
+- Quests filter declutter pass:
+  - removed duplicate reset controls in mission cadence filtering.
+  - active cadence now uses a single removable chip (clear action) instead of chip + separate reset button.
+  - keeps full filter behavior while reducing control noise above mission lanes.
 - Share-action fallback hygiene pass:
   - native Web Share cancellation (`AbortError`) no longer triggers clipboard/manual fallback.
   - share button now keeps a stable minimum width so label transitions (share/copied/shared/error) do not shift surrounding layout.
