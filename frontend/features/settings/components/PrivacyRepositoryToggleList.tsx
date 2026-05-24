@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Search, X } from "lucide-react";
-import { startTransition, useMemo, useState } from "react";
+import { startTransition, useDeferredValue, useMemo, useState } from "react";
 import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,13 +21,13 @@ export function PrivacyRepositoryToggleList({
   const [items, setItems] = useState(repositories);
   const [search, setSearch] = useState("");
   const [visibilityFilter, setVisibilityFilter] = useState<"All" | "Public" | "Hidden">("All");
+  const deferredSearch = useDeferredValue(search);
   const controlled = typeof onToggle === "function";
   const visibleItems = controlled ? repositories : items;
   const canReset = search.trim().length > 0 || visibilityFilter !== "All";
   const compactSearch =
     search.trim().length > 32 ? `${search.trim().slice(0, 32)}…` : search.trim();
   const statusId = "settings-repositories-filter-status";
-  const visibilityGroupId = "settings-repositories-visibility-group";
   const repositoriesRegionId = "settings-repositories-visibility-region";
   const counts = useMemo(() => {
     const publicCount = visibleItems.filter((repo) => repo.visibility === "Public").length;
@@ -38,7 +38,7 @@ export function PrivacyRepositoryToggleList({
     };
   }, [visibleItems]);
   const filteredItems = useMemo(() => {
-    const term = search.trim().toLowerCase();
+    const term = deferredSearch.trim().toLowerCase();
 
     return visibleItems.filter((repo) => {
       const visibilityMatch =
@@ -49,7 +49,7 @@ export function PrivacyRepositoryToggleList({
         repo.reason.toLowerCase().includes(term);
       return visibilityMatch && searchMatch;
     });
-  }, [search, visibilityFilter, visibleItems]);
+  }, [deferredSearch, visibilityFilter, visibleItems]);
 
   function handleReset() {
     startTransition(() => {
@@ -127,65 +127,39 @@ export function PrivacyRepositoryToggleList({
               </button>
             ) : null}
           </div>
-          <div className="lg:hidden">
-            <label className="neon-surface flex h-11 items-center rounded-[0.1rem] border border-primary/28 px-3">
-              <span className="sr-only">Repository visibility filter</span>
-              <select
-                value={visibilityFilter}
-                onChange={(event) => {
-                  startTransition(() => {
-                    setVisibilityFilter(event.target.value as "All" | "Public" | "Hidden");
-                  });
-                }}
-                aria-label="Repository visibility filter"
-                aria-describedby={statusId}
-                aria-controls={repositoriesRegionId}
-                className="focus-ring h-full w-full bg-transparent text-sm text-foreground outline-none"
-              >
-                <option value="All" className="bg-card text-foreground">All</option>
-                <option value="Public" className="bg-card text-foreground">Public</option>
-                <option value="Hidden" className="bg-card text-foreground">Hidden</option>
-              </select>
-            </label>
-          </div>
-          <div className="hidden lg:block">
-            <span id={visibilityGroupId} className="sr-only">
-              Repository visibility filter
-            </span>
-            <SegmentedTablist
-              options={[
-                {
-                  value: "All",
-                  label: "All",
-                  count: counts.total,
-                  minWidthClassName: "min-w-[6.5rem]",
-                },
-                {
-                  value: "Public",
-                  label: "Public",
-                  count: counts.public,
-                  minWidthClassName: "min-w-[6.5rem]",
-                },
-                {
-                  value: "Hidden",
-                  label: "Hidden",
-                  count: counts.hidden,
-                  minWidthClassName: "min-w-[6.5rem]",
-                },
-              ]}
-              value={visibilityFilter}
-              onValueChange={(next) => {
-                startTransition(() => {
-                  setVisibilityFilter(next);
-                });
-              }}
-              ariaLabel="Repository visibility filter"
-              ariaDescribedBy={statusId}
-              ariaControls={repositoriesRegionId}
-              tabIdPrefix="repo-visibility-filter-tab"
-              className="grid grid-cols-3 gap-2"
-            />
-          </div>
+          <SegmentedTablist
+            options={[
+              {
+                value: "All",
+                label: "All",
+                count: counts.total,
+                minWidthClassName: "min-w-[6.5rem]",
+              },
+              {
+                value: "Public",
+                label: "Public",
+                count: counts.public,
+                minWidthClassName: "min-w-[6.5rem]",
+              },
+              {
+                value: "Hidden",
+                label: "Hidden",
+                count: counts.hidden,
+                minWidthClassName: "min-w-[6.5rem]",
+              },
+            ]}
+            value={visibilityFilter}
+            onValueChange={(next) => {
+              startTransition(() => {
+                setVisibilityFilter(next);
+              });
+            }}
+            ariaLabel="Repository visibility filter"
+            ariaDescribedBy={statusId}
+            ariaControls={repositoriesRegionId}
+            tabIdPrefix="repo-visibility-filter-tab"
+            className="grid grid-cols-3 gap-2"
+          />
         </div>
       </div>
       <div
