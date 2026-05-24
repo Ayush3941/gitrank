@@ -614,12 +614,25 @@ export function SettingsPageClient() {
             <p className="text-xs font-medium text-primary">Data controls</p>
             <h2 className="mt-2 text-xl font-semibold text-white">Data export and deletion</h2>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <Button variant="secondary" disabled={isActing} onClick={handleExportAccountData}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Button
+              variant="secondary"
+              className="w-full justify-center"
+              disabled={isActing}
+              onClick={handleExportAccountData}
+            >
               <Download className="h-4 w-4" />
               {exportAccount.isPending ? "Exporting..." : "Export data"}
             </Button>
-            <Button variant="danger" disabled={isActing} onClick={handleDeleteAccount}>
+          </div>
+          <div className="space-y-2 rounded-[0.1rem] border border-rose-300/24 bg-rose-500/8 px-3 py-3">
+            <p className="text-xs text-rose-100">Delete permanently removes profile, score, badges, and session data.</p>
+            <Button
+              variant="danger"
+              className="w-full justify-center"
+              disabled={isActing}
+              onClick={handleDeleteAccount}
+            >
               <Trash2 className="h-4 w-4" />
               {deleteAccount.isPending ? "Deleting account..." : "Delete account"}
             </Button>
