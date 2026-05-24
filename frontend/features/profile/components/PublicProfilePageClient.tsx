@@ -262,9 +262,13 @@ export function PublicProfilePageClient({
         </div>
       </section>
       <section className="render-opt-section space-y-4" aria-label="Top PR battle reports">
-        <DeferUntilVisible fallback={<PublicLanePlaceholder label="Loading battle reports" />}>
-          <BestPRsPanel reports={data.featuredContributions} reportDetails={data.recentReports} />
-        </DeferUntilVisible>
+        {constrainedNetwork ? (
+          <LiteBestPRSummary reports={data.featuredContributions} />
+        ) : (
+          <DeferUntilVisible fallback={<PublicLanePlaceholder label="Loading battle reports" />}>
+            <BestPRsPanel reports={data.featuredContributions} reportDetails={data.recentReports} />
+          </DeferUntilVisible>
+        )}
       </section>
       <section className="render-opt-section space-y-4" aria-label="Timeline and repositories">
         <div className="grid gap-6 xl:grid-cols-[1.08fr,0.92fr]">
@@ -409,6 +413,48 @@ function LiteTimelineSummary({
         ))}
       </ul>
     </div>
+  );
+}
+
+function LiteBestPRSummary({
+  reports,
+}: {
+  reports: Array<{
+    id: string;
+    owner: string;
+    repo: string;
+    number: number;
+    title: string;
+    xpEarned: number;
+    status: string;
+  }>;
+}) {
+  if (reports.length === 0) {
+    return (
+      <GlowCard className="space-y-3">
+        <p className="text-sm text-muted">No public battle reports are available in this snapshot yet.</p>
+      </GlowCard>
+    );
+  }
+
+  return (
+    <GlowCard className="space-y-4">
+      <p className="text-xs text-muted">Lite mode shows compact report highlights for faster rendering.</p>
+      <ul role="list" className="space-y-3">
+        {reports.slice(0, 4).map((report, index) => (
+          <li
+            key={`${report.owner}/${report.repo}#${report.number}-${index}`}
+            className="neon-surface rounded-[1.3rem] px-4 py-3"
+          >
+            <p className="break-anywhere text-sm font-medium text-white">{report.title}</p>
+            <p className="mt-1 break-anywhere text-xs text-muted">
+              {report.owner}/{report.repo} #{report.number} • {report.status}
+            </p>
+            <p className="mt-2 text-xs font-semibold text-primary">+{report.xpEarned} XP</p>
+          </li>
+        ))}
+      </ul>
+    </GlowCard>
   );
 }
 
