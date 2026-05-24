@@ -1,6 +1,9 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
-import { handleHorizontalTabKeyDown } from "@/components/shared/tablist-keyboard";
+import {
+  handleHorizontalTabKeyDown,
+  type TablistKeyboardActivation,
+} from "@/components/shared/tablist-keyboard";
 
 export type SegmentedTabOption<T extends string> = {
   value: T;
@@ -20,6 +23,7 @@ export function SegmentedTablist<T extends string>({
   tabIdPrefix = "segmented-tab",
   className,
   wrap = false,
+  keyboardActivation = "manual",
 }: {
   options: Array<SegmentedTabOption<T>>;
   value: T;
@@ -30,6 +34,7 @@ export function SegmentedTablist<T extends string>({
   tabIdPrefix?: string;
   className?: string;
   wrap?: boolean;
+  keyboardActivation?: TablistKeyboardActivation;
 }) {
   return (
     <div
@@ -65,11 +70,23 @@ export function SegmentedTablist<T extends string>({
                 tabIndex={active ? 0 : -1}
                 data-active={active ? "true" : "false"}
                 data-segmented-option="true"
+                data-segmented-value={item.value}
                 className="focus-ring dashboard-nav-item min-h-11 w-full px-3 py-2 text-center text-sm font-semibold"
                 onClick={() => {
                   onValueChange(item.value);
                 }}
-                onKeyDown={handleHorizontalTabKeyDown}
+                onKeyDown={(event) => {
+                  handleHorizontalTabKeyDown(event, {
+                    activationMode: keyboardActivation,
+                    onActivate: (target) => {
+                      const nextValue = target.getAttribute("data-segmented-value");
+                      if (!nextValue) {
+                        return;
+                      }
+                      onValueChange(nextValue as T);
+                    },
+                  });
+                }}
               >
                 <span className="inline-flex items-center gap-2">
                   {item.icon ? (

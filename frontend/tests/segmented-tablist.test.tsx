@@ -47,13 +47,18 @@ describe("SegmentedTablist", () => {
     expect(updates.at(-1)).toBe("Running");
   });
 
-  it("supports arrow-key switching between segmented options", () => {
+  it("uses manual keyboard activation for arrow navigation", () => {
     const { updates, getTab } = renderTablist();
     const allButton = getTab(/All/i);
+    const runningButton = getTab(/Running/i);
 
     allButton.focus();
     fireEvent.keyDown(allButton, { key: "ArrowRight" });
 
+    expect(updates).toHaveLength(0);
+    expect(document.activeElement).toBe(runningButton);
+
+    fireEvent.keyDown(runningButton, { key: "Enter" });
     expect(updates.at(-1)).toBe("Running");
   });
 });
