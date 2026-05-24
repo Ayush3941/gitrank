@@ -2,6 +2,13 @@
 
 ## 2026-05-24
 
+- Scroll-stability hardening pass:
+  - disabled `content-visibility` card virtualization and intrinsic placeholder sizing on dashboard/public route cards.
+  - switched sync/repository activity panels back to default `overflow-anchor` behavior for more predictable viewport anchoring during filter and data updates.
+  - reduces jumpy auto-scroll behavior reported on long settings/contributions sessions.
+- Public profile repository ranking clarity pass:
+  - top repository rows now include explicit rank chips (`#1`, `#2`, `#3`) beside repository names.
+  - keeps existing data contract unchanged while making contribution concentration easier to scan in demos and share links.
 - Segmented filter auto-scroll regression fix:
   - removed forced viewport restoration (`window.scrollTo`) from shared segmented-tab selection and keyboard fallback focus handling.
   - fixes jump-to-top behavior seen when switching filter tabs in dashboard routes (notably settings sync status tabs).

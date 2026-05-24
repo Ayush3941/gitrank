@@ -1023,9 +1023,9 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 }
 
 .render-opt-card {
-  contain: layout paint;
-  content-visibility: auto;
-  contain-intrinsic-size: 1px 320px;
+  contain: none;
+  content-visibility: visible;
+  contain-intrinsic-size: none;
 }
 
 .render-opt-section {
@@ -1044,17 +1044,7 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 .repository-visibility-panel-shell,
 .sync-runs-results-viewport,
 .repository-visibility-results-viewport {
-  overflow-anchor: none;
-}
-
-@supports not (content-visibility: auto) {
-  .render-opt-card {
-    contain: none;
-  }
-
-  .render-opt-section {
-    contain: none;
-  }
+  overflow-anchor: auto;
 }
 
 .cyber-link {

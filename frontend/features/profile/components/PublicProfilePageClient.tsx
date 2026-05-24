@@ -305,12 +305,17 @@ export function PublicProfilePageClient({
                   {data.topRepositories.slice(0, 3).map((repository, index) => (
                     <li key={`${repository.name}-${index}`} className="render-opt-card neon-surface rounded-[1.5rem] px-4 py-3">
                       <div className="flex items-start justify-between gap-3">
-                        <div>
+                        <div className="flex items-start gap-3">
+                          <span className="neon-chip neon-chip-muted inline-flex min-w-10 justify-center rounded-full px-2 py-1 text-xs font-semibold">
+                            #{index + 1}
+                          </span>
+                          <div>
                           <p className="break-anywhere font-medium text-white">{repository.name}</p>
                           <p className="break-anywhere text-sm text-muted">
                             {repository.contributionCount} scored contributions
                             {repository.primarySkill ? ` • ${repository.primarySkill}` : ""}
                           </p>
+                          </div>
                         </div>
                         <div className="text-right">
                           <p className="text-xs font-medium text-primary">XP</p>
