@@ -261,17 +261,17 @@ export function SyncRunActivityPanel({
           <div className={`neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}>
             <p>No sync runs match the current search or status filter.</p>
             <div className="flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="secondary"
-                  onClick={handleResetFilters}
-                  disabled={!canReset}
-                >
-                  Clear all
-                </Button>
-              </div>
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                onClick={handleResetFilters}
+                disabled={!canReset}
+              >
+                Reset filters
+              </Button>
             </div>
+          </div>
         ) : (
           <ol role="list" className={`grid gap-2 ${resultsRegionClassName}`}>
             {filteredRuns.map((run, index) => {

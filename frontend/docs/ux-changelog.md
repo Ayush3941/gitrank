@@ -21,6 +21,9 @@
   - replaced dense active-filter chip controls with a compact summary row (`Lane`, `View`, `Details`, `Reset`).
   - kept lane selection and detail/view toggles unchanged while reducing repetitive control chrome.
   - normalized layout structure in the leaderboard control block to avoid visual jitter and keep scan order clear.
+- Settings filter reset-copy consistency pass:
+  - aligned no-results recovery actions in sync activity and repository visibility panels to `Reset filters`.
+  - keeps fallback actions semantically aligned with the summary-row `Reset` pattern used across dashboard tabs.
 - Contributions filter-summary presentation pass:
   - surfaced an always-visible summary row (`Category: ...`, `Sort: ...`, `Reset`) so active view state is readable without scanning multiple control lanes.
   - reduced duplicate chip chrome by keeping removable chips focused on search terms only.

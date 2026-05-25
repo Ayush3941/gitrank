@@ -258,7 +258,7 @@ export function PrivacyRepositoryToggleList({
                 aria-controls={repositoriesRegionId}
                 disabled={!canReset}
               >
-                Clear all
+                Reset filters
               </Button>
               <Button asChild size="sm" variant="secondary">
                 <Link href="/dashboard" prefetch={false}>Open dashboard</Link>
