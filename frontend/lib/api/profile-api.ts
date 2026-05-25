@@ -23,6 +23,7 @@ import {
   nextRankTier,
   normalizeRankTier,
 } from "@/lib/runtime/rank-tier-policy";
+import { normalizeSkillCategory as normalizeRuntimeSkillCategory } from "@/lib/runtime/skill-category-policy";
 import type { PullRequestAnalysis } from "@/types/gitrank";
 
 const DEFAULT_CSRF_COOKIE_NAME = frontendPolicy.csrfCookieName;
@@ -876,88 +877,7 @@ function badgeIconForKey(key: string): BadgeIcon {
 }
 
 function normalizeSkillCategory(value: string): SkillCategory {
-  const normalized = value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "");
-  const mapped: Record<string, SkillCategory> = {
-    architecture: "Architecture",
-    arch: "Architecture",
-    backend: "Backend",
-    back_end: "Backend",
-    service: "Backend",
-    services: "Backend",
-    api: "Backend",
-    server: "Backend",
-    bugfix: "Backend",
-    bug_fix: "Backend",
-    devops: "DevOps",
-    dev_ops: "DevOps",
-    infra: "DevOps",
-    docs: "Documentation",
-    doc: "Documentation",
-    documentation: "Documentation",
-    frontend: "Frontend",
-    front_end: "Frontend",
-    ui: "Frontend",
-    ux: "Frontend",
-    infrastructure: "DevOps",
-    performance: "Performance",
-    perf: "Performance",
-    optimization: "Performance",
-    review: "Review",
-    reviews: "Review",
-    code_review: "Review",
-    security: "Security",
-    secure: "Security",
-    hardening: "Security",
-    testing: "Testing",
-    test: "Testing",
-    qa: "Testing",
-    tests: "Testing",
-  };
-  const direct = mapped[normalized];
-  if (direct) {
-    return direct;
-  }
-  if (normalized.includes("front") || normalized.includes("ui") || normalized.includes("ux")) {
-    return "Frontend";
-  }
-  if (normalized.includes("doc")) {
-    return "Documentation";
-  }
-  if (normalized.includes("test") || normalized.includes("qa")) {
-    return "Testing";
-  }
-  if (normalized.includes("sec") || normalized.includes("auth")) {
-    return "Security";
-  }
-  if (
-    normalized.includes("infra") ||
-    normalized.includes("ops") ||
-    normalized.includes("deploy") ||
-    normalized.includes("ci") ||
-    normalized.includes("cd")
-  ) {
-    return "DevOps";
-  }
-  if (normalized.includes("perf") || normalized.includes("optimiz")) {
-    return "Performance";
-  }
-  if (normalized.includes("review")) {
-    return "Review";
-  }
-  if (
-    normalized.includes("api") ||
-    normalized.includes("service") ||
-    normalized.includes("backend") ||
-    normalized.includes("server") ||
-    normalized.includes("bug")
-  ) {
-    return "Backend";
-  }
-  return "Architecture";
+  return normalizeRuntimeSkillCategory(value, "Architecture");
 }
 
 function uniqueSkillCategories(skills: SkillCategory[]): SkillCategory[] {

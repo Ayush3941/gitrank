@@ -10,6 +10,7 @@ import {
   divisionForRankTier,
   normalizeRankTier,
 } from "@/lib/runtime/rank-tier-policy";
+import { normalizeSkillCategory as normalizeRuntimeSkillCategory } from "@/lib/runtime/skill-category-policy";
 
 export type LeaderboardTab =
   | "Global"
@@ -234,23 +235,5 @@ function divisionForTier(rankTier: RankTier): string {
 }
 
 function normalizeSkillCategory(value: string): SkillCategory {
-  const normalized = value.trim().toLowerCase();
-  const mapped: Record<string, SkillCategory> = {
-    architecture: "Architecture",
-    backend: "Backend",
-    bugfix: "Backend",
-    bug_fix: "Backend",
-    devops: "DevOps",
-    docs: "Documentation",
-    documentation: "Documentation",
-    frontend: "Frontend",
-    infrastructure: "DevOps",
-    performance: "Performance",
-    review: "Review",
-    reviews: "Review",
-    security: "Security",
-    testing: "Testing",
-    tests: "Testing",
-  };
-  return mapped[normalized] ?? "Backend";
+  return normalizeRuntimeSkillCategory(value);
 }
