@@ -333,6 +333,9 @@ export function SettingsPageClient() {
                 label: `Sync ${formatSyncStateLabel(data.user.syncStatus.state)}`,
                 tone: toneForSyncState(data.user.syncStatus.state),
               },
+              ...(networkConstraintReason
+                ? [{ label: "Runtime Lite mode", tone: "info" as const }]
+                : []),
             ]}
           />
         )}

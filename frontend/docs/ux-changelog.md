@@ -40,6 +40,9 @@
 - Runtime-mode visibility extension pass:
   - added `Runtime Lite mode` visibility to PR report header metadata and public profile hero context.
   - aligns constrained-render transparency across dashboard, contributions, leaderboard, badges, quests, settings, public profile, and PR report routes.
+- Settings header runtime consistency pass:
+  - added `Runtime Lite mode` chip to the Settings page header metadata so runtime-mode status is visible in every authenticated dashboard lane header.
+  - keeps route-level mode signaling uniform while preserving detailed reason text inside Settings display controls.
 - Empty-state action consistency pass:
   - standardized empty-state secondary actions from tiny text links to real `Button` controls with consistent hierarchy.
   - added responsive full-width CTA behavior on narrow viewports for easier touch targeting and clearer next-step recovery.
