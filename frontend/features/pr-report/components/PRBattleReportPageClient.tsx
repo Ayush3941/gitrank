@@ -13,6 +13,7 @@ import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
+import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { usePrReport } from "@/hooks/use-pr-report";
 import {
   formatContributionStatusLabel,
@@ -65,6 +66,7 @@ export function PRBattleReportPageClient({
   repo: string;
   number: number;
 }) {
+  const constrainedNetwork = useNetworkConstraintPreference();
   const { data, isLoading, isError, refetch } = usePrReport(owner, repo, number);
   const [showTechnicalBreakdown, setShowTechnicalBreakdown] = useState(false);
 
@@ -159,6 +161,9 @@ export function PRBattleReportPageClient({
                 label: `Evidence ${formatEvidenceStatusLabel(evidenceState.status)}`,
                 tone: toneForEvidenceStatus(evidenceState.status),
               },
+              ...(constrainedNetwork
+                ? [{ label: "Runtime Lite mode", tone: "info" as const }]
+                : []),
             ]}
           />
         )}

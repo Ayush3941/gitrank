@@ -212,6 +212,7 @@ export function PublicProfilePageClient({
           archetype={abraInsights.data?.archetype ?? fallbackArchetype}
           identitySummary={abraInsights.data?.identitySummary ?? fallbackIdentitySummary}
           identitySummaryMode={abraInsights.data?.generatedBy ?? "deterministic"}
+          runtimeLiteMode={constrainedNetwork}
         />
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <StatCard label="GitRank score" value={data.user.gitRankScore} icon={<Stars className="h-5 w-5 text-primary" />} />

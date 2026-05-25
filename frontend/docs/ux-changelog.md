@@ -37,6 +37,9 @@
 - Public-profile summary-source transparency pass:
   - public profile identity callout now labels source mode explicitly (`Gemini` or `Deterministic`) to match dashboard/report transparency language.
   - reduces ambiguity when AI enrichment is unavailable and deterministic fallback is serving user-facing summary text.
+- Runtime-mode visibility extension pass:
+  - added `Runtime Lite mode` visibility to PR report header metadata and public profile hero context.
+  - aligns constrained-render transparency across dashboard, contributions, leaderboard, badges, quests, settings, public profile, and PR report routes.
 - Empty-state action consistency pass:
   - standardized empty-state secondary actions from tiny text links to real `Button` controls with consistent hierarchy.
   - added responsive full-width CTA behavior on narrow viewports for easier touch targeting and clearer next-step recovery.

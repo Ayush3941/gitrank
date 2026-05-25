@@ -19,12 +19,14 @@ export function PublicProfileHero({
   archetype,
   identitySummary,
   identitySummaryMode = "deterministic",
+  runtimeLiteMode = false,
 }: {
   user: UserProfile;
   shareHeadline: string;
   archetype?: string;
   identitySummary?: string;
   identitySummaryMode?: "gemini" | "deterministic";
+  runtimeLiteMode?: boolean;
 }) {
   const topSkills = uniqueDisplayValues(user.topSkills, 4);
 
@@ -54,6 +56,9 @@ export function PublicProfileHero({
                 {user.title}
                 {archetype ? ` • ${archetype}` : ""}
               </p>
+              {runtimeLiteMode ? (
+                <p className="text-xs text-cyan-200">Runtime Lite mode</p>
+              ) : null}
             </div>
           </div>
           <ExpandableText
