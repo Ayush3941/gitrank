@@ -38,6 +38,9 @@
 - Segmented-label accessibility-name guard pass:
   - updated shared segmented-tablist naming logic so compact labels only alter accessible names when they differ from the full label.
   - prevents duplicated names like `Newest (Newest)` and keeps role-name queries stable in tests and assistive output.
+- Repository-visibility result-feedback pass:
+  - added visible count feedback (`x of y repositories`) in repository-visibility controls header.
+  - keeps settings filter behavior aligned with dashboard filter-panel guidance where result impact is visible before users scroll the list.
 
 ## 2026-05-24
 

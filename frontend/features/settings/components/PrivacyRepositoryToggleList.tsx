@@ -71,6 +71,10 @@ export function PrivacyRepositoryToggleList({
           <p id={statusId} role="status" aria-live="polite" className="sr-only">
             {`${filteredItems.length} of ${counts.total} repositories`}
           </p>
+          <p className="text-xs font-medium text-primary">Repository controls</p>
+          <p className="text-xs text-muted">{`${filteredItems.length} of ${counts.total} repositories`}</p>
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap gap-2">
             <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">Public {counts.public}</span>
             <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">Hidden {counts.hidden}</span>
