@@ -32,7 +32,7 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
       <ul
         role="list"
         className={cn(
-          "dashboard-nav-track lane-rail flex flex-nowrap gap-1.5 overflow-x-auto p-0.5 sm:grid sm:grid-cols-5 sm:overflow-visible sm:p-0",
+          "dashboard-nav-track lane-rail flex flex-nowrap gap-2 overflow-x-auto p-0.5 sm:grid sm:grid-cols-5 sm:overflow-visible sm:p-0",
         )}
       >
         {dashboardNavItems.map((item) => {

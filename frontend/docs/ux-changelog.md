@@ -42,6 +42,9 @@
 - Contributions contextual-copy polish pass:
   - rewrote category guidance in a more conversational tone while preserving the same accuracy boundary.
   - keeps skill framing clear without sounding overly rigid.
+- Segmented-lane touch-spacing pass:
+  - increased segmented-control option gaps from `gap-1.5` to `gap-2` (8px) in shared segmented tablists and dashboard route navigation.
+  - improves adjacent target separation for touch inputs without changing route/filter behavior.
 - Contributions filter-summary presentation pass:
   - surfaced an always-visible summary row (`Category: ...`, `Sort: ...`, `Reset`) so active view state is readable without scanning multiple control lanes.
   - reduced duplicate chip chrome by keeping removable chips focused on search terms only.

@@ -54,8 +54,8 @@ export function SegmentedTablist<T extends string>({
       data-segmented-tablist="true"
       className={cn(
         wrap
-          ? "dashboard-nav-track lane-rail flex flex-wrap gap-1.5 overflow-visible p-0.5"
-          : "dashboard-nav-track lane-rail flex gap-1.5 overflow-x-auto p-0.5",
+          ? "dashboard-nav-track lane-rail flex flex-wrap gap-2 overflow-visible p-0.5"
+          : "dashboard-nav-track lane-rail flex gap-2 overflow-x-auto p-0.5",
         className,
       )}
     >
