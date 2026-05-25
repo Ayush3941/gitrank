@@ -143,55 +143,67 @@ export function QuestsPageClient() {
                 ? `Showing all ${visibleQuestCount} missions`
                 : `Showing ${visibleQuestCount} ${deferredCadenceFilter.toLowerCase()} missions`}
           </p>
-          {canResetCadenceFilter ? (
-            <div className="flex flex-wrap items-center gap-2 text-xs">
-              <button
-                type="button"
-                className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
-                onClick={() => {
-                  handleCadenceFilterChange("All");
-                }}
-                title="Clear mission filter"
-              >
-                Cadence: {cadenceFilter}
-                <X className="h-3.5 w-3.5" />
-              </button>
+          <div className="neon-surface space-y-3 rounded-[1rem] px-3 py-3 sm:px-4 sm:py-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs font-medium text-primary">Mission controls</p>
+              <p className="text-xs text-muted">
+                {isFiltering
+                  ? "Updating missions..."
+                  : deferredCadenceFilter === "All"
+                    ? `${visibleQuestCount} missions`
+                    : `${visibleQuestCount} ${deferredCadenceFilter.toLowerCase()} missions`}
+              </p>
             </div>
-          ) : null}
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-primary">Cadence</p>
-            <SegmentedTablist
-              options={QUEST_FILTERS.map((item) => {
-                const count =
-                  item.value === "All"
-                    ? quests.length
-                    : questMap[item.value].length;
-                const Icon =
-                  item.value === "All"
-                    ? LayoutGrid
-                    : item.value === "Daily"
-                      ? CalendarClock
-                      : item.value === "Weekly"
-                        ? CalendarDays
-                        : item.value === "Long-term"
-                          ? Route
-                          : Sparkles;
-                return {
-                  value: item.value,
-                  label: item.label,
-                  icon: <Icon className="h-4 w-4" />,
-                  count,
-                  minWidthClassName: "min-w-[8.5rem]",
-                };
-              })}
-              value={cadenceFilter}
-              onValueChange={handleCadenceFilterChange}
-              ariaLabel="Mission cadence filters"
-              ariaDescribedBy={filterStatusId}
-              ariaControls={QUEST_MISSIONS_REGION_ID}
-              tabIdPrefix="quest-filter-tab"
-              wrap
-            />
+            {canResetCadenceFilter ? (
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <button
+                  type="button"
+                  className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
+                  onClick={() => {
+                    handleCadenceFilterChange("All");
+                  }}
+                  title="Clear mission filter"
+                >
+                  Cadence: {cadenceFilter}
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ) : null}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-primary">Cadence lane</p>
+              <SegmentedTablist
+                options={QUEST_FILTERS.map((item) => {
+                  const count =
+                    item.value === "All"
+                      ? quests.length
+                      : questMap[item.value].length;
+                  const Icon =
+                    item.value === "All"
+                      ? LayoutGrid
+                      : item.value === "Daily"
+                        ? CalendarClock
+                        : item.value === "Weekly"
+                          ? CalendarDays
+                          : item.value === "Long-term"
+                            ? Route
+                            : Sparkles;
+                  return {
+                    value: item.value,
+                    label: item.label,
+                    icon: <Icon className="h-4 w-4" />,
+                    count,
+                    minWidthClassName: "min-w-[8.5rem]",
+                  };
+                })}
+                value={cadenceFilter}
+                onValueChange={handleCadenceFilterChange}
+                ariaLabel="Mission cadence filters"
+                ariaDescribedBy={filterStatusId}
+                ariaControls={QUEST_MISSIONS_REGION_ID}
+                tabIdPrefix="quest-filter-tab"
+                wrap={false}
+              />
+            </div>
           </div>
         </section>
       ) : null}
