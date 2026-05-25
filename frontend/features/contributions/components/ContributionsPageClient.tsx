@@ -396,7 +396,7 @@ export function ContributionsPageClient() {
           focusCounts={focusCounts}
         />
         <p className="mt-2 text-xs text-muted">
-          Categories are a readable summary of recent PR themes, not fixed labels about your overall expertise.
+          Think of categories as a snapshot of recent PR themes, not a final verdict on your overall expertise.
         </p>
       </section>
       {isLoading ? <LoadingState message="Loading contributions..." /> : null}

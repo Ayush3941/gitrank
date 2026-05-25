@@ -39,6 +39,9 @@
 - Leaderboard control header declutter pass:
   - removed duplicated visible `Viewing/Refreshing` text from leaderboard controls while keeping the live status region for assistive tech.
   - keeps control scan order focused on filter state chips (`Lane`, `View`, `Details`) and actions.
+- Contributions contextual-copy polish pass:
+  - rewrote category guidance in a more conversational tone while preserving the same accuracy boundary.
+  - keeps skill framing clear without sounding overly rigid.
 - Contributions filter-summary presentation pass:
   - surfaced an always-visible summary row (`Category: ...`, `Sort: ...`, `Reset`) so active view state is readable without scanning multiple control lanes.
   - reduced duplicate chip chrome by keeping removable chips focused on search terms only.
