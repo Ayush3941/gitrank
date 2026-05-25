@@ -22,6 +22,7 @@ import {
 } from "@/tests/helpers/live-fixtures";
 
 const requestedPaths: string[] = [];
+let mockedSearchParams = "";
 
 vi.mock("next/link", () => ({
   default: ({ href, children }: { href: string; children: ReactNode }) => (
@@ -36,7 +37,7 @@ vi.mock("next/navigation", () => ({
     prefetch: vi.fn(),
   }),
   usePathname: () => "/dashboard/leaderboard",
-  useSearchParams: () => new URLSearchParams(""),
+  useSearchParams: () => new URLSearchParams(mockedSearchParams),
 }));
 
 vi.mock("next/image", () => ({
@@ -63,6 +64,7 @@ vi.mock("@/components/shared/TimelineChart", () => ({
 describe("live fixture frontend smoke coverage", () => {
   beforeEach(() => {
     requestedPaths.length = 0;
+    mockedSearchParams = "";
     vi.stubGlobal("fetch", vi.fn(liveFixtureFetch));
   });
 
@@ -177,6 +179,17 @@ describe("live fixture frontend smoke coverage", () => {
     expect(await screen.findByText("Lane: Global")).toBeTruthy();
     expect(await screen.findByText(/View: (Nearby|Full board)/)).toBeTruthy();
     expect(await screen.findByText("Details: Off")).toBeTruthy();
+    expect(nonAnalyticsPaths().sort()).toEqual(
+      ["/api/leaderboard", "/api/profile/me"].sort(),
+    );
+  }, 15_000);
+
+  it("renders leaderboard with active lane summary when lane query is preset", async () => {
+    mockedSearchParams = "lane=backend";
+    renderWithClient(<LeaderboardPageClient />);
+
+    expect(await screen.findByText("Lane: Backend")).toBeTruthy();
+    expect(await screen.findByText("Active: 1")).toBeTruthy();
     expect(nonAnalyticsPaths().sort()).toEqual(
       ["/api/leaderboard", "/api/profile/me"].sort(),
     );

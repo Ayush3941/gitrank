@@ -61,6 +61,7 @@
   - extended live fixture tests to verify `Active: 1` state appears when quest and badge filters move off defaults.
   - confirms the applied-filter count summary pattern works across additional dashboard lanes, not only unit-level filter components.
   - fixed a badges runtime regression uncovered by this test (`isFiltering` state is now defined before use).
+  - added leaderboard route-param coverage to assert lane-prefilled states surface `Active: 1` in summary chips.
 - Contributions filter-summary presentation pass:
   - surfaced an always-visible summary row (`Category: ...`, `Sort: ...`, `Reset`) so active view state is readable without scanning multiple control lanes.
   - reduced duplicate chip chrome by keeping removable chips focused on search terms only.
