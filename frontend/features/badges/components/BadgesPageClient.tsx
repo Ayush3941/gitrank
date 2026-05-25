@@ -385,7 +385,13 @@ export function BadgesPageClient() {
           <p id={badgesFilterStatusId} role="status" aria-live="polite" className="sr-only">
             Showing {filtered.length} of {totalCount} badges
           </p>
-          <div className="space-y-3">
+          <div className="neon-surface space-y-3 rounded-[1rem] px-3 py-3 sm:px-4 sm:py-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs font-medium text-primary">Badge controls</p>
+              <p className="text-xs text-muted">
+                {isFiltering ? "Updating shelf..." : `${filtered.length} of ${totalCount} badges`}
+              </p>
+            </div>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
                 {rarity !== "All" ? (
@@ -436,7 +442,7 @@ export function BadgesPageClient() {
                   ariaDescribedBy={badgesFilterStatusId}
                   ariaControls={BADGES_EARNED_REGION_ID}
                   tabIdPrefix="badge-rarity-tab"
-                  wrap
+                  wrap={false}
                 />
               </div>
               <div className="space-y-2">
@@ -464,7 +470,7 @@ export function BadgesPageClient() {
                   ariaDescribedBy={badgesFilterStatusId}
                   ariaControls={BADGES_EARNED_REGION_ID}
                   tabIdPrefix="badge-visibility-tab"
-                  wrap
+                  wrap={false}
                 />
               </div>
             </div>
