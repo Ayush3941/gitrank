@@ -383,6 +383,9 @@ export function ContributionsPageClient() {
           onClearCategory={handleClearCategoryFilter}
           onClearSort={handleClearSortFilter}
         />
+        <p className="mt-2 text-xs text-muted">
+          Contribution categories are PR-topic classifications used for evidence routing and trend tracking.
+        </p>
       </section>
       {isLoading ? <LoadingState message="Loading contributions..." /> : null}
       {isError ? (

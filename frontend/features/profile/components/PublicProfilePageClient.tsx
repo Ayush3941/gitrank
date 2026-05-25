@@ -273,6 +273,9 @@ export function PublicProfilePageClient({
             <div>
               <p className="text-xs font-medium text-primary">Skills</p>
               <h2 className="mt-2 text-xl font-semibold text-white">Skill map</h2>
+              <p className="mt-1 text-sm text-muted">
+                Skill lanes are evidence-weighted classification signals from visible PR history.
+              </p>
             </div>
             {skillTree.length === 0 ? (
               <div className="neon-surface space-y-3 rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
