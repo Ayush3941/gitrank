@@ -58,6 +58,9 @@
 - Snapshot freshness component test coverage pass:
   - added focused tests for `SnapshotFreshnessPill` render behavior (missing timestamp, custom/default labels, normalized datetime output).
   - hardens a shared component now used across multiple route headers.
+- Leaderboard no-rows recovery action pass:
+  - added explicit `Open sync settings` recovery action alongside `Open contributions` in the no-live-rows leaderboard preview state.
+  - keeps users out of dead-end preview-only states when missing rows are caused by sync freshness gaps.
 - Empty-state action consistency pass:
   - standardized empty-state secondary actions from tiny text links to real `Button` controls with consistent hierarchy.
   - added responsive full-width CTA behavior on narrow viewports for easier touch targeting and clearer next-step recovery.

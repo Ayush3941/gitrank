@@ -295,6 +295,18 @@ export function LeaderboardPageClient() {
                 </p>
               </div>
             ) : null}
+            <div className="flex flex-wrap gap-2">
+              <Button asChild size="sm" variant="secondary">
+                <Link href="/dashboard/contributions" prefetch={false}>
+                  Open contributions
+                </Link>
+              </Button>
+              <Button asChild size="sm" variant="ghost">
+                <Link href="/dashboard/settings" prefetch={false}>
+                  Open sync settings
+                </Link>
+              </Button>
+            </div>
           </GlowCard>
         </section>
       ) : null}
