@@ -4,6 +4,7 @@ import {
   handleHorizontalTabKeyDown,
   type TablistKeyboardActivation,
 } from "@/components/shared/tablist-keyboard";
+import { focusWithoutScroll } from "@/components/shared/focus-without-scroll";
 
 export type SegmentedTabOption<T extends string> = {
   value: T;
@@ -41,14 +42,6 @@ export function SegmentedTablist<T extends string>({
       return;
     }
     onValueChange(nextValue);
-  }
-
-  function focusWithoutScroll(element: HTMLButtonElement) {
-    try {
-      element.focus({ preventScroll: true });
-    } catch {
-      element.focus();
-    }
   }
 
   return (

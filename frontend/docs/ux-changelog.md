@@ -2,6 +2,13 @@
 
 ## 2026-05-24
 
+- Segmented-tab focus fallback hardening pass:
+  - introduced shared `focusWithoutScroll` fallback restoration logic for browsers that do not support `focus({ preventScroll: true })`.
+  - wired the helper into both pointer selection and keyboard navigation paths for segmented tablists.
+  - reduces jump-to-top behavior on long dashboard/settings pages when switching status filters.
+- Visual regression snapshot hardening pass:
+  - switched route-level visual regression assertions from brittle full-HTML snapshots to stable semantic summaries.
+  - updated snapshots to reflect summary-based baselines for dashboard, leaderboard, and public profile shells.
 - Empty-state action consistency pass:
   - standardized empty-state secondary actions from tiny text links to real `Button` controls with consistent hierarchy.
   - added responsive full-width CTA behavior on narrow viewports for easier touch targeting and clearer next-step recovery.

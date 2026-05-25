@@ -1,4 +1,5 @@
 import type { KeyboardEvent } from "react";
+import { focusWithoutScroll } from "@/components/shared/focus-without-scroll";
 
 export type TablistKeyboardActivation = "automatic" | "manual";
 
@@ -55,14 +56,6 @@ export function handleHorizontalTabKeyDown(
   focusWithoutScroll(nextOption);
   if ((options?.activationMode ?? "manual") === "automatic") {
     activateOption(nextOption, options?.onActivate);
-  }
-}
-
-function focusWithoutScroll(element: HTMLElement) {
-  try {
-    element.focus({ preventScroll: true });
-  } catch {
-    element.focus();
   }
 }
 
