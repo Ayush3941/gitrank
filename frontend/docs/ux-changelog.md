@@ -49,6 +49,9 @@
 - Sync-run filter-state visibility pass:
   - settings sync activity now surfaces active search/status filters as removable chips and keeps a one-click `Reset filters` control visible whenever filters are active.
   - improves filter-state clarity and reduces dead-end resets that previously only appeared in no-result states.
+- Header freshness consistency pass:
+  - added shared `SnapshotFreshnessPill` metadata into core route headers (contributions, badges, quests, leaderboard, settings, PR report, dashboard) to surface recency at the same hierarchy as primary actions.
+  - improves trust/scannability by making data age visible without requiring stale-state banners first.
 - Empty-state action consistency pass:
   - standardized empty-state secondary actions from tiny text links to real `Button` controls with consistent hierarchy.
   - added responsive full-width CTA behavior on narrow viewports for easier touch targeting and clearer next-step recovery.

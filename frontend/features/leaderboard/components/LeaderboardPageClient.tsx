@@ -19,6 +19,7 @@ import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
+import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { StaleState } from "@/components/shared/StaleState";
 import { Button } from "@/components/ui/button";
 import { laneParamToTab, tabToLaneParam } from "@/features/leaderboard/lib/lane-param";
@@ -153,11 +154,14 @@ export function LeaderboardPageClient() {
           />
         )}
         actions={(
-          <Button asChild variant="secondary" size="sm">
-            <Link href="/dashboard/quests" prefetch={false}>
-              Quests
-            </Link>
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <SnapshotFreshnessPill refreshedAt={myProfile?.refreshedAt} label="Refreshed" />
+            <Button asChild variant="secondary" size="sm">
+              <Link href="/dashboard/quests" prefetch={false}>
+                Quests
+              </Link>
+            </Button>
+          </div>
         )}
       />
       {myProfile?.user.syncStatus.state === "stale" ? (

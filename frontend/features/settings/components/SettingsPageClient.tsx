@@ -10,6 +10,7 @@ import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { InlineNotice } from "@/components/shared/InlineNotice";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -340,11 +341,14 @@ export function SettingsPageClient() {
           />
         )}
         actions={(
-          <Button asChild variant="secondary" size="sm">
-            <Link href={`/u/${data.user.username}`} prefetch={false}>
-              Public profile
-            </Link>
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <SnapshotFreshnessPill refreshedAt={data.refreshedAt} label="Refreshed" />
+            <Button asChild variant="secondary" size="sm">
+              <Link href={`/u/${data.user.username}`} prefetch={false}>
+                Public profile
+              </Link>
+            </Button>
+          </div>
         )}
       />
       <section>

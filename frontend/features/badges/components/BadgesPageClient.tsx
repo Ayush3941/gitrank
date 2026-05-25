@@ -23,6 +23,7 @@ import { InlineNotice } from "@/components/shared/InlineNotice";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
+import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { StaleState } from "@/components/shared/StaleState";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -285,11 +286,14 @@ export function BadgesPageClient() {
           />
         )}
         actions={(
-          <Button asChild variant="secondary" size="sm">
-            <Link href="/dashboard/contributions" prefetch={false}>
-              Contributions
-            </Link>
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <SnapshotFreshnessPill refreshedAt={profile?.refreshedAt} label="Refreshed" />
+            <Button asChild variant="secondary" size="sm">
+              <Link href="/dashboard/contributions" prefetch={false}>
+                Contributions
+              </Link>
+            </Button>
+          </div>
         )}
       />
       <section className="render-opt-section space-y-4">

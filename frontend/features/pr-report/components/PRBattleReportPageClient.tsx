@@ -12,6 +12,7 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { Button } from "@/components/ui/button";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { usePrReport } from "@/hooks/use-pr-report";
@@ -169,6 +170,10 @@ export function PRBattleReportPageClient({
         )}
         actions={(
           <div className="flex flex-wrap gap-2">
+            <SnapshotFreshnessPill
+              refreshedAt={data.generatedAt ?? data.sourceUpdatedAt}
+              label="Generated"
+            />
             <Button asChild variant="secondary">
               <Link href="/dashboard/contributions" prefetch={false}>Back to contributions</Link>
             </Button>

@@ -13,6 +13,7 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
 import {
@@ -202,11 +203,14 @@ export function DashboardPageClient() {
           />
         )}
         actions={(
-          <Button asChild variant="secondary" size="sm">
-            <Link href="/dashboard/contributions" prefetch={false}>
-              View PR cards
-            </Link>
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <SnapshotFreshnessPill refreshedAt={data.refreshedAt} label="Refreshed" />
+            <Button asChild variant="secondary" size="sm">
+              <Link href="/dashboard/contributions" prefetch={false}>
+                View PR cards
+              </Link>
+            </Button>
+          </div>
         )}
       />
       {user.syncStatus.state === "stale" ? (

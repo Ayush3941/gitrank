@@ -11,6 +11,7 @@ import { InlineNotice } from "@/components/shared/InlineNotice";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ContributionPulseStrip } from "@/components/shared/ContributionPulseStrip";
+import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { StaleState } from "@/components/shared/StaleState";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
 import { useContributions } from "@/hooks/use-contributions";
@@ -272,6 +273,7 @@ export function ContributionsPageClient() {
         )}
         actions={(
           <div className="flex flex-wrap gap-2">
+            <SnapshotFreshnessPill refreshedAt={profile?.refreshedAt} label="Refreshed" />
             {!useLiteCards ? (
               <Button
                 type="button"

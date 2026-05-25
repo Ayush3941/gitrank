@@ -21,6 +21,7 @@ import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
+import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { StaleState } from "@/components/shared/StaleState";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -123,11 +124,17 @@ export function QuestsPageClient() {
           />
         )}
         actions={(
-          <Button asChild variant="secondary" size="sm">
-            <Link href="/dashboard/contributions" prefetch={false}>
-              Contributions
-            </Link>
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <SnapshotFreshnessPill
+              refreshedAt={data?.staleness?.refreshedAt}
+              label="Refreshed"
+            />
+            <Button asChild variant="secondary" size="sm">
+              <Link href="/dashboard/contributions" prefetch={false}>
+                Contributions
+              </Link>
+            </Button>
+          </div>
         )}
       />
       {!isLoading && !isError ? (
