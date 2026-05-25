@@ -11,6 +11,9 @@
 - Prefetch consistency cleanup:
   - closed remaining default-prefetch gaps in shared marketing shell and onboarding login return link so non-critical landing-path navigation is uniformly explicit.
   - keeps route behavior unchanged while removing unnecessary background fetch variance across entry flows.
+- Onboarding prefetch policy guard:
+  - added `npm run check:onboarding-prefetch-policy` to enforce explicit `prefetch={false}` on onboarding/marketing internal links.
+  - wired this guard into frontend CI so entry-flow prefetch boundaries stay stable across future updates.
 - Global backdrop visibility smoothing pass:
   - reduced heavy overlay opacity and softened radial/linear overlay falloff so `assets/background.jpg` remains visible without sacrificing text contrast.
   - kept the background locked to viewport (`body::before` fixed layer) while slightly lowering saturation/contrast boost to avoid harsh banding on neon themes.
