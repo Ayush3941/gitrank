@@ -41,6 +41,9 @@
 - Repository-visibility result-feedback pass:
   - added visible count feedback (`x of y repositories`) in repository-visibility controls header.
   - keeps settings filter behavior aligned with dashboard filter-panel guidance where result impact is visible before users scroll the list.
+- Onboarding sync-status copy alignment pass:
+  - updated onboarding analyzer status line from raw `Status:` phrasing to the same concise lane style used across dashboard routes (`Sync · ...`).
+  - keeps top-level status language consistent between onboarding and post-auth dashboard surfaces.
 
 ## 2026-05-24
 

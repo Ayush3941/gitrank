@@ -208,7 +208,7 @@ export function SyncPipeline() {
           </p>
           {data ? (
             <p className="text-sm text-muted">
-              Status: {formatSyncStateLabel(data.user.syncStatus.state)} • last refresh{" "}
+              Sync · {formatSyncStateLabel(data.user.syncStatus.state)} • last refresh{" "}
               {formatRelativeDays(data.refreshedAt)}
             </p>
           ) : null}
