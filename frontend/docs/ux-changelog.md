@@ -55,6 +55,9 @@
 - Public-profile snapshot status strip pass:
   - added an always-visible public-profile status strip with refreshed timestamp, fresh/partial evidence state, and runtime-lite mode indicator.
   - improves share-page trust by exposing evidence freshness context even when stale-state banners are not active.
+- Snapshot freshness component test coverage pass:
+  - added focused tests for `SnapshotFreshnessPill` render behavior (missing timestamp, custom/default labels, normalized datetime output).
+  - hardens a shared component now used across multiple route headers.
 - Empty-state action consistency pass:
   - standardized empty-state secondary actions from tiny text links to real `Button` controls with consistent hierarchy.
   - added responsive full-width CTA behavior on narrow viewports for easier touch targeting and clearer next-step recovery.
