@@ -31,7 +31,7 @@ describe("SyncRunActivityPanel", () => {
       />,
     );
 
-    expect(screen.getByText("Status: All")).toBeTruthy();
+    expect(screen.getByText("View: All")).toBeTruthy();
     expect(screen.queryByText(/Active:/)).toBeNull();
     expect(screen.queryByText(/Search:/)).toBeNull();
 
@@ -41,11 +41,11 @@ describe("SyncRunActivityPanel", () => {
 
     expect(screen.getByText("Search: missing-run")).toBeTruthy();
     expect(screen.getByText("Active: 1")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Reset" })).toBeTruthy();
+    expect(screen.getAllByRole("button", { name: "Reset filters" }).length).toBeGreaterThan(0);
     expect(screen.getByText("No sync runs match the current search or status filter.")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Reset filters" })).toBeTruthy();
+    expect(screen.getAllByRole("button", { name: "Reset filters" }).length).toBeGreaterThan(0);
 
-    fireEvent.click(screen.getByRole("button", { name: "Reset" }));
+    fireEvent.click(screen.getAllByRole("button", { name: "Reset filters" })[0]);
 
     const searchBox = screen.getByRole("textbox", { name: "Search sync runs" }) as HTMLInputElement;
     expect(searchBox.value).toBe("");

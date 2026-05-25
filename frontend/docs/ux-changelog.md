@@ -9,6 +9,9 @@
 - Contributions filter-note presentation pass:
   - moved the category interpretation note into the filter surface itself instead of leaving it as a detached paragraph.
   - keeps control context and caution copy in one visual block, reducing scan fragmentation.
+- Settings sync-filter wording pass:
+  - renamed summary chip from `Status` to `View` and lane heading to `Run status` for clearer scanning.
+  - standardized primary reset action label to `Reset filters` in the summary row.
 - Contributions filter-summary wording pass:
   - updated summary chips from `Category/Sort` to `View/Order` for cleaner scan semantics.
   - refined helper copy to plain-language guidance: use Status for PR state and Focus for work type.

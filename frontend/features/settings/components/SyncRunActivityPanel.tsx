@@ -150,7 +150,7 @@ export function SyncRunActivityPanel({
             ) : null}
           </div>
           <div className="space-y-2">
-            <p className="text-xs font-medium text-primary">Status</p>
+            <p className="text-xs font-medium text-primary">Run status</p>
             <SegmentedTablist
               options={SYNC_RUN_STATUS_FILTERS.map((status) => {
                 const count =
@@ -193,7 +193,7 @@ export function SyncRunActivityPanel({
               </span>
             ) : null}
             <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-              Status: {statusFilter}
+              View: {statusFilter}
             </span>
             {trimmedSearch.length > 0 ? (
               <button
@@ -217,7 +217,7 @@ export function SyncRunActivityPanel({
                 aria-controls={syncRunsRegionId}
                 className="h-8 px-3"
               >
-                Reset
+                Reset filters
               </Button>
             ) : null}
           </div>
