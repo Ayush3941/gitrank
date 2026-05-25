@@ -272,6 +272,7 @@ export function SyncRunActivityPanel({
             {filteredRuns.map((run, index) => {
               const safeLastError = sanitizeSyncRunErrorMessage(run.last_error);
               const metricsSummary = summarizeRunMetrics(run.metrics);
+              const partial = hasPartialRunMetrics(run.metrics);
               return (
                 <li key={`${run.id}-${index}`}>
                   <article className="render-opt-card neon-surface space-y-2 px-4 py-3">
@@ -284,7 +285,7 @@ export function SyncRunActivityPanel({
                           {run.subject || "No subject"} • {run.run_type}
                         </p>
                       </div>
-                      <StatusChip status={run.status} />
+                      <StatusChip status={run.status} partial={partial} />
                     </div>
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
                       <span>
@@ -316,9 +317,17 @@ export function SyncRunActivityPanel({
   );
 }
 
-function StatusChip({ status }: { status: string }) {
+function StatusChip({ status, partial = false }: { status: string; partial?: boolean }) {
   const normalized = syncRunStatusLabel(status);
   if (normalized === "Completed") {
+    if (partial) {
+      return (
+        <span className="neon-chip neon-chip-warning inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold">
+          <AlertTriangle className="h-3.5 w-3.5" />
+          Partial
+        </span>
+      );
+    }
     return (
       <span className="neon-chip neon-chip-success inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold">
         <CheckCircle2 className="h-3.5 w-3.5" />
@@ -473,6 +482,13 @@ function metricSumBySuffix(metrics: Record<string, number>, suffix: string): num
     total += Math.floor(value);
   }
   return total;
+}
+
+function hasPartialRunMetrics(metrics?: Record<string, number>): boolean {
+  if (!metrics) {
+    return false;
+  }
+  return metricSumBySuffix(metrics, "_skipped") > 0 || metricSumBySuffix(metrics, "_fetch_errors") > 0;
 }
 
 function toNormalizedDateTime(value?: string): string | null {

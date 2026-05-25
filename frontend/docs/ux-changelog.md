@@ -5,6 +5,7 @@
 - Settings sync metrics visibility pass:
   - sync-run cards now render compact telemetry summaries (`PRs`, `Reviews`, `Issues`, `Commits`) when backend metrics are available.
   - summary logic reads both legacy counters and new backend-prefixed keys (`persisted_*`, `fetched_*`) and highlights skipped/fetch-error counts.
+  - completed runs with skipped or fetch-error telemetry now render a `Partial` status chip instead of a false-clean `Completed` badge.
 - Segmented-tab pointer-focus scroll-jump fix:
   - removed forced pointer-down focus behavior in shared segmented tablists.
   - pointer and mouse interactions now select without pre-focusing, reducing viewport jump risk on long settings/dashboard pages.

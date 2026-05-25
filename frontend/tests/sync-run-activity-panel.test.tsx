@@ -72,5 +72,6 @@ describe("SyncRunActivityPanel", () => {
     );
 
     expect(screen.getByText("PRs 3/5 · Reviews 2/4 · Skipped 1")).toBeTruthy();
+    expect(screen.getByText("Partial")).toBeTruthy();
   });
 });
