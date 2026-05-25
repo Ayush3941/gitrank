@@ -113,6 +113,7 @@ export function BadgesPageClient() {
   const unlockedCount = allBadges.filter((badge) => badge.unlocked).length;
   const totalCount = allBadges.length;
   const visibleLockedBadges = lockedBadgesSorted.slice(0, visibleLockedCount);
+  const lockedBadgePreview = lockedBadgesSorted.slice(0, 3);
   const hasMoreLockedBadges = lockedBadgesSorted.length > visibleLockedBadges.length;
   const remainingLockedBadges = Math.max(0, lockedBadgesSorted.length - visibleLockedBadges.length);
   const visibleBadges = filtered.slice(0, visibleBadgeCount);
@@ -554,11 +555,29 @@ export function BadgesPageClient() {
           </div>
           <div
             id={BADGES_LOCKED_REGION_ID}
-            className={!showLockedBadges ? "sr-only" : undefined}
-            aria-hidden={!showLockedBadges ? true : undefined}
           >
             {!showLockedBadges ? (
-              <div>Locked badge paths hidden.</div>
+              lockedBadgePreview.length > 0 ? (
+                <div className="neon-surface rounded-[1.4rem] border border-fuchsia-300/18 px-4 py-4">
+                  <p className="text-xs font-medium text-fuchsia-200">Upcoming unlock queue</p>
+                  <ul role="list" className="mt-3 grid gap-2 md:grid-cols-3">
+                    {lockedBadgePreview.map((badge, index) => (
+                      <li key={`${badge.id}-preview-${index}`} className="list-none rounded-[0.8rem] border border-fuchsia-300/20 bg-fuchsia-400/6 px-3 py-2">
+                        <p className="text-sm font-semibold text-white">{badge.name}</p>
+                        <p className="mt-1 text-xs text-muted">{badge.rarity}</p>
+                        <p className="mt-1 text-xs text-cyan-100">{badge.progress ?? 0}% complete</p>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-3 text-xs text-muted">
+                    Expand to view full unlock conditions and path links.
+                  </p>
+                </div>
+              ) : (
+                <div className="neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4 text-sm text-muted">
+                  No locked badge definitions are returned by this snapshot.
+                </div>
+              )
             ) : lockedBadges.length > 0 ? (
               <div className="neon-surface rounded-[1.4rem] border border-fuchsia-300/24 p-3">
               <ul role="list" className="grid gap-3 md:grid-cols-3">

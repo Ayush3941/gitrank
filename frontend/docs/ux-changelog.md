@@ -43,6 +43,9 @@
 - Settings header runtime consistency pass:
   - added `Runtime Lite mode` chip to the Settings page header metadata so runtime-mode status is visible in every authenticated dashboard lane header.
   - keeps route-level mode signaling uniform while preserving detailed reason text inside Settings display controls.
+- Locked-badge collapsed preview pass:
+  - replaced the hidden-placeholder collapsed state in the locked badge section with a visible preview queue of upcoming badge unlocks.
+  - keeps full locked-path details behind expand while preserving useful context when the section is collapsed.
 - Empty-state action consistency pass:
   - standardized empty-state secondary actions from tiny text links to real `Button` controls with consistent hierarchy.
   - added responsive full-width CTA behavior on narrow viewports for easier touch targeting and clearer next-step recovery.
