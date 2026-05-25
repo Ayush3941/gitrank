@@ -140,60 +140,52 @@ export function PrivacyRepositoryToggleList({
               ariaDescribedBy={statusId}
               ariaControls={repositoriesRegionId}
               tabIdPrefix="repo-visibility-filter-tab"
-              wrap={false}
+              wrap
             />
           </div>
         </div>
-        {canReset ? (
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex min-w-0 flex-1 items-center gap-2">
-              <p className="text-xs font-medium text-primary">Active filters</p>
-              <ul role="list" className="flex min-w-0 flex-wrap items-center gap-2 text-xs">
-                {searchTerm.length > 0 ? (
-                  <li className="list-none">
-                    <button
-                      type="button"
-                      className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
-                      onClick={handleClearSearch}
-                      aria-label="Clear repository search filter"
-                      aria-controls={repositoriesRegionId}
-                      title="Clear search filter"
-                    >
-                      Search · {compactSearch}
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </li>
-                ) : null}
-                {visibilityFilter !== "All" ? (
-                  <li className="list-none">
-                    <button
-                      type="button"
-                      className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
-                      onClick={() => {
-                        startTransition(() => {
-                          setVisibilityFilter("All");
-                        });
-                      }}
-                      aria-label={`Clear repository visibility filter ${visibilityFilter}`}
-                      aria-controls={repositoriesRegionId}
-                      title="Clear visibility filter"
-                    >
-                      Visibility · {visibilityFilter}
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </li>
-                ) : null}
-              </ul>
-            </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+            Visibility: {visibilityFilter}
+          </span>
+          {searchTerm.length > 0 ? (
+            <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+              Search: {compactSearch}
+            </span>
+          ) : null}
+          {canReset ? (
             <Button
               type="button"
               size="sm"
               variant="ghost"
               onClick={handleReset}
               aria-controls={repositoriesRegionId}
+              className="h-8 px-3"
             >
-              Clear all
+              Reset
             </Button>
+          ) : null}
+        </div>
+        {canReset ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-xs font-medium text-primary">Active filters</p>
+            <ul role="list" className="flex min-w-0 flex-wrap items-center gap-2 text-xs">
+              {searchTerm.length > 0 ? (
+                <li className="list-none">
+                  <button
+                    type="button"
+                    className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
+                    onClick={handleClearSearch}
+                    aria-label="Clear repository search filter"
+                    aria-controls={repositoriesRegionId}
+                    title="Clear search filter"
+                  >
+                    Search · {compactSearch}
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </li>
+              ) : null}
+            </ul>
           </div>
         ) : null}
       </div>

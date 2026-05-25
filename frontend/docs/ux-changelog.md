@@ -13,6 +13,10 @@
   - badges and quests now use the same concise summary row model (`Rarity/State` or `Cadence` + `Reset`) instead of repeating removable filter chips.
   - enabled wrapping segmented lanes with tighter mobile widths for long option labels.
   - added compact labels for long quest cadence names to keep controls scanable on narrow screens.
+- Repository-privacy filter consistency pass:
+  - settings repository visibility controls now follow the same summary-first pattern (`Visibility`, optional `Search`, `Reset`).
+  - reduced duplicate filter-chip noise by keeping removable chips focused on search text only.
+  - enabled segmented visibility lanes to wrap instead of forcing horizontal-only scrolling.
 - Contributions filter-summary presentation pass:
   - surfaced an always-visible summary row (`Category: ...`, `Sort: ...`, `Reset`) so active view state is readable without scanning multiple control lanes.
   - reduced duplicate chip chrome by keeping removable chips focused on search terms only.
