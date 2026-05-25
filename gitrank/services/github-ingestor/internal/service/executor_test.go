@@ -702,7 +702,14 @@ func TestExecutorFetchLiveInstallationRepositoryTargetsCapsPageDepth(t *testing.
 		t.Fatalf("NewRESTClient() error = %v", err)
 	}
 
-	executor := NewExecutor(config.App{}, nil, client)
+	cfg := config.App{
+		GitHub: config.GitHub{
+			MaxPageSize:                    100,
+			InstallationRepositoryPageSize: 50,
+			InstallationRepositoryMaxPages: 10,
+		},
+	}
+	executor := NewExecutor(cfg, nil, client)
 
 	repositories, incomplete, err := executor.fetchLiveInstallationRepositoryTargets(context.Background(), client)
 	if err != nil {
@@ -711,8 +718,8 @@ func TestExecutorFetchLiveInstallationRepositoryTargetsCapsPageDepth(t *testing.
 	if !incomplete {
 		t.Fatal("incomplete = false, want true when max page depth is reached")
 	}
-	if requests != defaultInstallationRepositoryMaxPages {
-		t.Fatalf("requests = %d, want capped %d", requests, defaultInstallationRepositoryMaxPages)
+	if requests != cfg.GitHub.InstallationRepositoryMaxPages {
+		t.Fatalf("requests = %d, want capped %d", requests, cfg.GitHub.InstallationRepositoryMaxPages)
 	}
 	if len(repositories) != 1 {
 		t.Fatalf("repositories len = %d, want deduped single repository", len(repositories))

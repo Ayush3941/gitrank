@@ -109,6 +109,8 @@ type GitHub struct {
 	PullRequestReviewPageSize      int
 	CommitSyncPageSize             int
 	UserRepositorySyncLimit        int
+	InstallationRepositoryPageSize int
+	InstallationRepositoryMaxPages int
 	AuthoredPRSearchLimit          int
 	AuthoredPRSyncLimit            int
 	UserPRSyncTimeoutDefault       time.Duration
@@ -296,6 +298,8 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			PullRequestReviewPageSize:      getInt("GITHUB_PULL_REQUEST_REVIEW_PAGE_SIZE", 10),
 			CommitSyncPageSize:             getInt("GITHUB_COMMIT_SYNC_PAGE_SIZE", 50),
 			UserRepositorySyncLimit:        getInt("GITHUB_USER_REPOSITORY_SYNC_LIMIT", 100),
+			InstallationRepositoryPageSize: getInt("GITHUB_INSTALLATION_REPOSITORY_PAGE_SIZE", 50),
+			InstallationRepositoryMaxPages: getInt("GITHUB_INSTALLATION_REPOSITORY_MAX_PAGES", 10),
 			AuthoredPRSearchLimit:          getInt("GITHUB_AUTHORED_PR_SEARCH_LIMIT", 100),
 			AuthoredPRSyncLimit:            getInt("GITHUB_AUTHORED_PR_SYNC_LIMIT", 10),
 			UserPRSyncTimeoutDefault:       getDuration("GITHUB_USER_PR_SYNC_TIMEOUT_DEFAULT", 20*time.Second),
@@ -509,6 +513,12 @@ func (a App) ValidateBase() error {
 	}
 	if a.GitHub.UserRepositorySyncLimit <= 0 || a.GitHub.UserRepositorySyncLimit > 500 {
 		problems = append(problems, "GITHUB_USER_REPOSITORY_SYNC_LIMIT must be between 1 and 500")
+	}
+	if a.GitHub.InstallationRepositoryPageSize <= 0 || a.GitHub.InstallationRepositoryPageSize > 100 {
+		problems = append(problems, "GITHUB_INSTALLATION_REPOSITORY_PAGE_SIZE must be between 1 and 100")
+	}
+	if a.GitHub.InstallationRepositoryMaxPages <= 0 || a.GitHub.InstallationRepositoryMaxPages > 200 {
+		problems = append(problems, "GITHUB_INSTALLATION_REPOSITORY_MAX_PAGES must be between 1 and 200")
 	}
 	if a.GitHub.AuthoredPRSearchLimit <= 0 || a.GitHub.AuthoredPRSearchLimit > 100 {
 		problems = append(problems, "GITHUB_AUTHORED_PR_SEARCH_LIMIT must be between 1 and 100")

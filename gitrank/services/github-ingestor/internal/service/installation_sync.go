@@ -11,11 +11,6 @@ import (
 	"github.com/gitrank/gitrank/packages/githubapi"
 )
 
-const (
-	defaultInstallationRepositoryPageSize = 50
-	defaultInstallationRepositoryMaxPages = 10
-)
-
 type githubInstallationClientFactory func(context.Context, int64) (*githubapi.RESTClient, bool, error)
 
 func newGitHubInstallationClientFactory(cfg config.App) githubInstallationClientFactory {
@@ -90,11 +85,11 @@ func (e *Executor) fetchLiveInstallationRepositoryTargets(
 		return nil, false, fmt.Errorf("installation REST client is required")
 	}
 
-	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, defaultInstallationRepositoryPageSize)
+	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, e.cfg.GitHub.InstallationRepositoryPageSize)
 	repositories := make([]string, 0, perPage)
 	seen := make(map[string]struct{}, perPage)
 
-	for page := 1; page <= defaultInstallationRepositoryMaxPages; page++ {
+	for page := 1; page <= e.cfg.GitHub.InstallationRepositoryMaxPages; page++ {
 		result, meta, err := githubapi.ListInstallationRepositories(ctx, client, githubapi.InstallationRepositoriesRequest{
 			PerPage: perPage,
 			Page:    page,

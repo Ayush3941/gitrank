@@ -73,6 +73,12 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.GitHub.UserRepositorySyncLimit != 100 {
 		t.Fatalf("GitHub.UserRepositorySyncLimit = %d, want 100", cfg.GitHub.UserRepositorySyncLimit)
 	}
+	if cfg.GitHub.InstallationRepositoryPageSize != 50 {
+		t.Fatalf("GitHub.InstallationRepositoryPageSize = %d, want 50", cfg.GitHub.InstallationRepositoryPageSize)
+	}
+	if cfg.GitHub.InstallationRepositoryMaxPages != 10 {
+		t.Fatalf("GitHub.InstallationRepositoryMaxPages = %d, want 10", cfg.GitHub.InstallationRepositoryMaxPages)
+	}
 	if cfg.GitHub.UserPRSyncTimeoutDefault != 20*time.Second {
 		t.Fatalf("GitHub.UserPRSyncTimeoutDefault = %v, want 20s", cfg.GitHub.UserPRSyncTimeoutDefault)
 	}
@@ -137,6 +143,8 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	t.Setenv("GITHUB_PULL_REQUEST_REVIEW_PAGE_SIZE", "22")
 	t.Setenv("GITHUB_COMMIT_SYNC_PAGE_SIZE", "40")
 	t.Setenv("GITHUB_USER_REPOSITORY_SYNC_LIMIT", "120")
+	t.Setenv("GITHUB_INSTALLATION_REPOSITORY_PAGE_SIZE", "60")
+	t.Setenv("GITHUB_INSTALLATION_REPOSITORY_MAX_PAGES", "14")
 	t.Setenv("GITHUB_AUTHORED_PR_SEARCH_LIMIT", "80")
 	t.Setenv("GITHUB_AUTHORED_PR_SYNC_LIMIT", "12")
 	t.Setenv("GITHUB_USER_PR_SYNC_TIMEOUT_DEFAULT", "30s")
@@ -239,6 +247,12 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	}
 	if cfg.GitHub.UserRepositorySyncLimit != 120 {
 		t.Fatalf("GitHub.UserRepositorySyncLimit = %d, want 120", cfg.GitHub.UserRepositorySyncLimit)
+	}
+	if cfg.GitHub.InstallationRepositoryPageSize != 60 {
+		t.Fatalf("GitHub.InstallationRepositoryPageSize = %d, want 60", cfg.GitHub.InstallationRepositoryPageSize)
+	}
+	if cfg.GitHub.InstallationRepositoryMaxPages != 14 {
+		t.Fatalf("GitHub.InstallationRepositoryMaxPages = %d, want 14", cfg.GitHub.InstallationRepositoryMaxPages)
 	}
 	if cfg.GitHub.UserPRSyncTimeoutDefault != 30*time.Second {
 		t.Fatalf("GitHub.UserPRSyncTimeoutDefault = %v, want 30s", cfg.GitHub.UserPRSyncTimeoutDefault)
