@@ -223,7 +223,7 @@ export function ContributionFilters({
               disabled={!canReset || isFiltering}
               aria-controls={resultsRegionId}
             >
-              Reset
+              Reset all
             </Button>
           ) : null}
         </div>
