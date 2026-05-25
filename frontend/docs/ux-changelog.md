@@ -17,6 +17,10 @@
   - added optional compact labels to shared `SegmentedTablist` so mobile can render shorter lane names while preserving full labels for desktop and assistive text.
   - applied compact labels to leaderboard lanes (`Documentation` → `Docs`, `Weekly XP` → `Weekly`, `Testing` → `Tests`) with tighter mobile min widths.
   - updated segmented-tablist tests to assert the focus-first mousedown behavior that prevents scroll jumps before click selection.
+- Leaderboard active-filter clarity pass:
+  - added an `Active filters` row to leaderboard controls with removable chips for lane selection, details view, and full-board mode.
+  - added one-click `Clear all` control to restore default leaderboard context (`Global` lane, nearby mode, details off).
+  - keeps leaderboard controls consistent with Contributions/Badges/Quests filter-shell behavior.
 
 ## 2026-05-24
 

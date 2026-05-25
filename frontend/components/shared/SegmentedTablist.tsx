@@ -63,6 +63,9 @@ export function SegmentedTablist<T extends string>({
         {options.map((item) => {
           const active = value === item.value;
           const optionID = `${tabIdPrefix}-${item.value.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+          const accessibleLabel = item.compactLabel
+            ? `${item.compactLabel} (${item.label})`
+            : item.label;
           return (
             <li
               key={item.value}
@@ -73,7 +76,7 @@ export function SegmentedTablist<T extends string>({
                 role="tab"
                 id={optionID}
                 title={item.label}
-                aria-label={item.label}
+                aria-label={accessibleLabel}
                 aria-controls={ariaControls}
                 aria-selected={active}
                 tabIndex={active ? 0 : -1}
