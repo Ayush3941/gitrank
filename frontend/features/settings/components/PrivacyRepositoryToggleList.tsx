@@ -156,9 +156,17 @@ export function PrivacyRepositoryToggleList({
             Visibility: {visibilityFilter}
           </span>
           {searchTerm.length > 0 ? (
-            <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+            <button
+              type="button"
+              className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
+              onClick={handleClearSearch}
+              aria-label={`Remove Search · ${compactSearch} filter`}
+              aria-controls={repositoriesRegionId}
+              title="Clear search filter"
+            >
               Search: {compactSearch}
-            </span>
+              <X className="h-3.5 w-3.5" />
+            </button>
           ) : null}
           {canReset ? (
             <Button
@@ -173,25 +181,6 @@ export function PrivacyRepositoryToggleList({
             </Button>
           ) : null}
         </div>
-        {searchTerm.length > 0 ? (
-          <div className="flex flex-wrap items-center gap-2">
-            <ul role="list" className="flex min-w-0 flex-wrap items-center gap-2 text-xs">
-              <li className="list-none">
-                <button
-                  type="button"
-                  className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
-                  onClick={handleClearSearch}
-                  aria-label="Clear repository search filter"
-                  aria-controls={repositoriesRegionId}
-                  title="Clear search filter"
-                >
-                  Search · {compactSearch}
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </li>
-            </ul>
-          </div>
-        ) : null}
       </div>
       <div
         id={repositoriesRegionId}

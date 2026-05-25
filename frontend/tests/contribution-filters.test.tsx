@@ -42,7 +42,7 @@ describe("ContributionFilters", () => {
     expect(screen.getByText("Category: Docs")).toBeTruthy();
     expect(screen.getByText("Sort: Highest XP")).toBeTruthy();
     expect(screen.getByText("Active: 3")).toBeTruthy();
-    expect(screen.getByText("Search · very-specific-repo-name")).toBeTruthy();
+    expect(screen.getByText("Search: very-specific-repo-name")).toBeTruthy();
     expect(screen.queryByRole("button", { name: /Remove Focus · Docs filter/i })).toBeNull();
     expect(screen.queryByRole("button", { name: /Remove Sort · Highest XP filter/i })).toBeNull();
 

@@ -143,11 +143,7 @@ export function ContributionFilters({
     (value !== "All" ? 1 : 0) +
     (search.trim().length > 0 ? 1 : 0) +
     (sort !== "Newest" ? 1 : 0);
-  const activeChips: Array<{ key: "search"; label: string }> = [];
-  if (search.trim().length > 0) {
-    const compactSearch = search.trim().length > 28 ? `${search.trim().slice(0, 28)}…` : search.trim();
-    activeChips.push({ key: "search", label: `Search · ${compactSearch}` });
-  }
+  const compactSearch = search.trim().length > 28 ? `${search.trim().slice(0, 28)}…` : search.trim();
 
   function handleStatusChange(nextValue: string) {
     const next = nextValue as StatusFilterValue;
@@ -201,6 +197,25 @@ export function ContributionFilters({
         <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
           Sort: {sort}
         </span>
+        {search.trim().length > 0 ? (
+          onClearSearch ? (
+            <button
+              type="button"
+              className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
+              onClick={onClearSearch}
+              disabled={isFiltering}
+              aria-label={`Remove Search · ${compactSearch} filter`}
+              aria-controls={resultsRegionId}
+            >
+              Search: {compactSearch}
+              <X className="h-3.5 w-3.5" />
+            </button>
+          ) : (
+            <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+              Search: {compactSearch}
+            </span>
+          )
+        ) : null}
         {onReset ? (
           <Button
             type="button"
@@ -215,36 +230,6 @@ export function ContributionFilters({
           </Button>
         ) : null}
       </div>
-      {activeChips.length ? (
-        <div className="flex min-w-0 flex-wrap items-center gap-2 text-xs">
-          <ul role="list" className="flex min-w-0 flex-wrap gap-2">
-            {activeChips.map((chip) => {
-              const handleRemove = onClearSearch;
-              return (
-                <li key={chip.key} className="list-none">
-                  {handleRemove ? (
-                    <button
-                      type="button"
-                      className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold"
-                      onClick={handleRemove}
-                      disabled={isFiltering}
-                      aria-label={`Remove ${chip.label} filter`}
-                      aria-controls={resultsRegionId}
-                    >
-                      {chip.label}
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  ) : (
-                    <span className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold">
-                      {chip.label}
-                    </span>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ) : null}
       <div id="contribution-mobile-controls">
         <div className="space-y-2">
           <p className="text-xs font-medium text-primary">Status lane</p>
