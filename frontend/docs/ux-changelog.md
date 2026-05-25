@@ -34,6 +34,9 @@
 - Cross-lane runtime-mode consistency pass:
   - extended `Runtime Lite mode` header metadata chips to leaderboard, badges, and quests so all core dashboard lanes expose the same constrained-render context.
   - keeps performance-mode messaging consistent across navigation instead of only a subset of tabs.
+- Public-profile summary-source transparency pass:
+  - public profile identity callout now labels source mode explicitly (`Gemini` or `Deterministic`) to match dashboard/report transparency language.
+  - reduces ambiguity when AI enrichment is unavailable and deterministic fallback is serving user-facing summary text.
 - Empty-state action consistency pass:
   - standardized empty-state secondary actions from tiny text links to real `Button` controls with consistent hierarchy.
   - added responsive full-width CTA behavior on narrow viewports for easier touch targeting and clearer next-step recovery.

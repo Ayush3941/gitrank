@@ -18,11 +18,13 @@ export function PublicProfileHero({
   shareHeadline,
   archetype,
   identitySummary,
+  identitySummaryMode = "deterministic",
 }: {
   user: UserProfile;
   shareHeadline: string;
   archetype?: string;
   identitySummary?: string;
+  identitySummaryMode?: "gemini" | "deterministic";
 }) {
   const topSkills = uniqueDisplayValues(user.topSkills, 4);
 
@@ -69,7 +71,9 @@ export function PublicProfileHero({
           {identitySummary ? (
             <div className="neon-callout rounded-2xl px-4 py-3 text-sm text-muted">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="cyber-readout text-xs font-medium text-cyan-200">Identity summary</p>
+                <p className="cyber-readout text-xs font-medium text-cyan-200">
+                  Identity summary ({identitySummaryMode === "gemini" ? "Gemini" : "Deterministic"})
+                </p>
                 <CopyTextButton
                   text={identitySummary}
                   label="Copy summary"
