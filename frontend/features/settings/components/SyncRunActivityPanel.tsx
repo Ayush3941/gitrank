@@ -179,7 +179,7 @@ export function SyncRunActivityPanel({
               ariaDescribedBy={filterStatusId}
               ariaControls={syncRunsRegionId}
               tabIdPrefix="sync-run-status-filter"
-              wrap
+              wrap={false}
             />
           </div>
           {canReset ? (
