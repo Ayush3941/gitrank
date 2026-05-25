@@ -429,6 +429,22 @@ function summarizeRunMetrics(metrics?: Record<string, number>): string {
     metricCount(metrics, "persisted_commits", "commits"),
     metricCount(metrics, "fetched_commits"),
   );
+  const failures = metricCount(metrics, "fetched_failed", "failed");
+  if (failures > 0) {
+    segments.push(`Failures ${failures}`);
+  }
+  const timeoutErrors = metricCount(metrics, "fetched_timeout_errors", "timeout_errors");
+  if (timeoutErrors > 0) {
+    segments.push(`Timeout ${timeoutErrors}`);
+  }
+  const rateLimited = metricCount(metrics, "fetched_rate_limited", "rate_limited");
+  if (rateLimited > 0) {
+    segments.push(`Rate limited ${rateLimited}`);
+  }
+  const upstreamErrors = metricCount(metrics, "fetched_upstream_errors", "upstream_errors");
+  if (upstreamErrors > 0) {
+    segments.push(`Upstream ${upstreamErrors}`);
+  }
 
   const skipped = metricSumBySuffix(metrics, "_skipped");
   if (skipped > 0) {

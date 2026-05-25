@@ -242,6 +242,7 @@ Current state:
 - `POST /v1/sync/commit/execute` performs a bounded live commit sync and persists one public commit in PostgreSQL
 - manual sync requests persist queued sync-run records and can be queried through `GET /v1/sync/runs` with user, repository, subject, requester, correlation, and delivery filters
 - sync-run `metrics_jsonb` now carries both legacy persisted counters and explicit prefixed telemetry (`persisted_*`, `fetched_*`) so clients can distinguish what was fetched versus what was actually persisted
+- failed sync runs now attach classified fetched telemetry (`failed`, `timeout_errors`, `rate_limited`, `auth_errors`, `upstream_errors`, `request_errors`) so UI and operators can see error categories without parsing raw error text
 - sync requests still enqueue scheduler runtime-state jobs rather than a dedicated normalized job table
 - bounded user-mode historical orchestration now covers score history, badge evidence, quests, PR reports, and leaderboard seasons through explicit scheduler modes
 

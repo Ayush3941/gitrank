@@ -25,6 +25,20 @@ const sampleRun = {
   },
 };
 
+const failedRun = {
+  id: "run_failed_1",
+  run_type: "user",
+  status: "failed",
+  subject: "octocat",
+  started_at: "2026-05-25T00:00:00Z",
+  finished_at: "2026-05-25T00:00:20Z",
+  metrics: {
+    failed: 1,
+    timeout_errors: 1,
+  },
+  last_error: "context deadline exceeded (Client.Timeout exceeded while awaiting headers)",
+};
+
 describe("SyncRunActivityPanel", () => {
   it("keeps summary-first filters and reset flow consistent", () => {
     render(
@@ -73,5 +87,21 @@ describe("SyncRunActivityPanel", () => {
 
     expect(screen.getByText("PRs 3/5 · Reviews 2/4 · Skipped 1")).toBeTruthy();
     expect(screen.getByText("Partial")).toBeTruthy();
+  });
+
+  it("surfaces failure telemetry for failed runs", () => {
+    render(
+      <SyncRunActivityPanel
+        runs={[failedRun]}
+        lastUpdatedAt="2026-05-25T00:05:00Z"
+        isLoading={false}
+        isRefreshing={false}
+        isError={false}
+        onRefresh={() => undefined}
+      />,
+    );
+
+    expect(screen.getByText("Failures 1 · Timeout 1")).toBeTruthy();
+    expect(screen.getByText(/Last error:/)).toBeTruthy();
   });
 });

@@ -170,6 +170,56 @@ func TestIsRecoverableUserSyncSelectionError(t *testing.T) {
 	}
 }
 
+func TestSyncFailureFetchedMetrics(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		err      error
+		wantKeys []string
+	}{
+		{
+			name:     "timeout tagged",
+			err:      context.DeadlineExceeded,
+			wantKeys: []string{"failed", "timeout_errors"},
+		},
+		{
+			name:     "rate limit tagged",
+			err:      errors.New("GitHub API GET https://api.github.com/search/issues failed with status 429"),
+			wantKeys: []string{"failed", "rate_limited"},
+		},
+		{
+			name:     "auth tagged",
+			err:      errors.New("GitHub API GET https://api.github.com/repos/octo/repo failed with status 403"),
+			wantKeys: []string{"failed", "auth_errors"},
+		},
+		{
+			name:     "upstream tagged",
+			err:      errors.New("GitHub API GET https://api.github.com/repos/octo/repo failed with status 502"),
+			wantKeys: []string{"failed", "upstream_errors"},
+		},
+		{
+			name:     "generic request tagged",
+			err:      errors.New("invalid request payload"),
+			wantKeys: []string{"failed", "request_errors"},
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			metrics := syncFailureFetchedMetrics(test.err)
+			for _, key := range test.wantKeys {
+				if metrics[key] != 1 {
+					t.Fatalf("syncFailureFetchedMetrics(%v)[%q] = %d, want 1", test.err, key, metrics[key])
+				}
+			}
+		})
+	}
+}
+
 func TestBoundedUserPRSyncTimeout(t *testing.T) {
 	t.Parallel()
 

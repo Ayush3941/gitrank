@@ -938,6 +938,7 @@ func (e *Executor) recordFailedSyncRun(
 			RequestedUserLogin:          req.User,
 			RequestedBySubject:          actor.Subject,
 			RequestedByGitHubLogin:      actor.GitHubLogin,
+			Fetched:                     syncFailureFetchedMetrics(failure),
 			StartedAt:                   startedAt,
 			FinishedAt:                  timePointer(time.Now().UTC()),
 		})
@@ -970,6 +971,7 @@ func (e *Executor) recordFailedUserSyncRun(
 			RequestedBySubject:     actor.Subject,
 			RequestedByGitHubLogin: actor.GitHubLogin,
 			Result:                 result,
+			Fetched:                syncFailureFetchedMetrics(failure),
 			StartedAt:              startedAt,
 			FinishedAt:             timePointer(time.Now().UTC()),
 		})
@@ -1003,6 +1005,7 @@ func (e *Executor) recordFailedInstallationSyncRun(
 			RequestedBySubject:     actor.Subject,
 			RequestedByGitHubLogin: actor.GitHubLogin,
 			Result:                 result,
+			Fetched:                syncFailureFetchedMetrics(failure),
 			StartedAt:              startedAt,
 			FinishedAt:             timePointer(time.Now().UTC()),
 		})
@@ -1038,6 +1041,7 @@ func (e *Executor) recordFailedPullRequestSurfaceSyncRun(
 			RequestedRepositoryFullName: req.Repository,
 			RequestedBySubject:          actor.Subject,
 			RequestedByGitHubLogin:      actor.GitHubLogin,
+			Fetched:                     syncFailureFetchedMetrics(failure),
 			StartedAt:                   startedAt,
 			FinishedAt:                  timePointer(time.Now().UTC()),
 		})
@@ -1072,6 +1076,7 @@ func (e *Executor) recordFailedIssueSyncRun(
 			RequestedRepositoryFullName: req.Repository,
 			RequestedBySubject:          actor.Subject,
 			RequestedByGitHubLogin:      actor.GitHubLogin,
+			Fetched:                     syncFailureFetchedMetrics(failure),
 			StartedAt:                   startedAt,
 			FinishedAt:                  timePointer(time.Now().UTC()),
 		})
@@ -1106,6 +1111,7 @@ func (e *Executor) recordFailedCommitSyncRun(
 			RequestedRepositoryFullName: req.Repository,
 			RequestedBySubject:          actor.Subject,
 			RequestedByGitHubLogin:      actor.GitHubLogin,
+			Fetched:                     syncFailureFetchedMetrics(failure),
 			StartedAt:                   startedAt,
 			FinishedAt:                  timePointer(time.Now().UTC()),
 		})
@@ -1504,6 +1510,35 @@ func isRecoverableUserSyncSelectionError(err error) bool {
 		return true
 	}
 	return statusCode >= http.StatusInternalServerError
+}
+
+func syncFailureFetchedMetrics(err error) map[string]int {
+	metrics := map[string]int{
+		"failed": 1,
+	}
+	if err == nil {
+		return metrics
+	}
+	if isSkippableGitHubTimeoutError(err) {
+		metrics["timeout_errors"] = 1
+		return metrics
+	}
+	statusCode, ok := gitHubStatusCodeFromError(err)
+	if !ok {
+		metrics["request_errors"] = 1
+		return metrics
+	}
+	switch {
+	case statusCode == http.StatusTooManyRequests:
+		metrics["rate_limited"] = 1
+	case statusCode == http.StatusForbidden || statusCode == http.StatusUnauthorized:
+		metrics["auth_errors"] = 1
+	case statusCode >= http.StatusInternalServerError:
+		metrics["upstream_errors"] = 1
+	default:
+		metrics["request_errors"] = 1
+	}
+	return metrics
 }
 
 func isSkippableGitHubTimeoutError(err error) bool {
