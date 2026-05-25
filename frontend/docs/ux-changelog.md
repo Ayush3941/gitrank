@@ -51,6 +51,9 @@
 - Applied-filter count visibility pass:
   - added `Active: N` filter-summary chips across contributions, badges, quests, leaderboard, sync-log, and repository-visibility controls.
   - keeps active-filter state quantifiable at a glance while preserving existing reset and chip removal behavior.
+- Active-filter count regression coverage pass:
+  - extended contribution and sync-run filter tests to assert `Active: N` behavior in default and filtered states.
+  - protects the new summary-count contract from silent UI regressions.
 - Contributions filter-summary presentation pass:
   - surfaced an always-visible summary row (`Category: ...`, `Sort: ...`, `Reset`) so active view state is readable without scanning multiple control lanes.
   - reduced duplicate chip chrome by keeping removable chips focused on search terms only.

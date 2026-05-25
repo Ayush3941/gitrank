@@ -32,6 +32,7 @@ describe("SyncRunActivityPanel", () => {
     );
 
     expect(screen.getByText("Status: All")).toBeTruthy();
+    expect(screen.queryByText(/Active:/)).toBeNull();
     expect(screen.queryByText(/Search:/)).toBeNull();
 
     fireEvent.change(screen.getByRole("textbox", { name: "Search sync runs" }), {
@@ -39,6 +40,7 @@ describe("SyncRunActivityPanel", () => {
     });
 
     expect(screen.getByText("Search: missing-run")).toBeTruthy();
+    expect(screen.getByText("Active: 1")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Reset" })).toBeTruthy();
     expect(screen.getByText("No sync runs match the current search or status filter.")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Reset filters" })).toBeTruthy();
