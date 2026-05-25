@@ -24,6 +24,9 @@
 - Settings filter reset-copy consistency pass:
   - aligned no-results recovery actions in sync activity and repository visibility panels to `Reset filters`.
   - keeps fallback actions semantically aligned with the summary-row `Reset` pattern used across dashboard tabs.
+- Dashboard filter regression-coverage pass:
+  - added `SyncRunActivityPanel` coverage for summary-first status/search/reset behavior and no-results reset action.
+  - extended live fixture leaderboard coverage to assert the new summary row (`Lane`, `View`, `Details`) render contract.
 - Contributions filter-summary presentation pass:
   - surfaced an always-visible summary row (`Category: ...`, `Sort: ...`, `Reset`) so active view state is readable without scanning multiple control lanes.
   - reduced duplicate chip chrome by keeping removable chips focused on search terms only.

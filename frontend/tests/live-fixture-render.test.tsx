@@ -157,6 +157,9 @@ describe("live fixture frontend smoke coverage", () => {
         { timeout: 15_000 },
       ),
     ).toBeTruthy();
+    expect(await screen.findByText("Lane: Global")).toBeTruthy();
+    expect(await screen.findByText(/View: (Nearby|Full board)/)).toBeTruthy();
+    expect(await screen.findByText("Details: Off")).toBeTruthy();
     expect(nonAnalyticsPaths().sort()).toEqual(
       ["/api/leaderboard", "/api/profile/me"].sort(),
     );
