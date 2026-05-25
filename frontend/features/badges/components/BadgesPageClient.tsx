@@ -393,38 +393,52 @@ export function BadgesPageClient() {
               </p>
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
-                {rarity !== "All" ? (
-                  <li className="list-none">
-                    <button
-                      type="button"
-                      className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
-                      onClick={handleClearRarityFilter}
-                      aria-label={`Remove rarity filter ${rarity}`}
-                      aria-controls={BADGES_EARNED_REGION_ID}
-                      title="Clear rarity filter"
-                    >
-                      Rarity: {rarity}
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </li>
-                ) : null}
-                {visibility !== "All" ? (
-                  <li className="list-none">
-                    <button
-                      type="button"
-                      className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
-                      onClick={handleClearVisibilityFilter}
-                      aria-label={`Remove state filter ${visibility}`}
-                      aria-controls={BADGES_EARNED_REGION_ID}
-                      title="Clear state filter"
-                    >
-                      State: {visibility}
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </li>
-                ) : null}
-              </ul>
+              <div className="flex min-w-0 flex-1 items-center gap-2">
+                <p className="text-xs font-medium text-primary">Active filters</p>
+                <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
+                  {rarity !== "All" ? (
+                    <li className="list-none">
+                      <button
+                        type="button"
+                        className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
+                        onClick={handleClearRarityFilter}
+                        aria-label={`Remove rarity filter ${rarity}`}
+                        aria-controls={BADGES_EARNED_REGION_ID}
+                        title="Clear rarity filter"
+                      >
+                        Rarity · {rarity}
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </li>
+                  ) : null}
+                  {visibility !== "All" ? (
+                    <li className="list-none">
+                      <button
+                        type="button"
+                        className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
+                        onClick={handleClearVisibilityFilter}
+                        aria-label={`Remove state filter ${visibility}`}
+                        aria-controls={BADGES_EARNED_REGION_ID}
+                        title="Clear state filter"
+                      >
+                        State · {visibility}
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </li>
+                  ) : null}
+                </ul>
+              </div>
+              {canResetFilters ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleResetFilters}
+                  aria-controls={BADGES_EARNED_REGION_ID}
+                >
+                  Clear all
+                </Button>
+              ) : null}
             </div>
             <div className="grid gap-3">
               <div className="space-y-2">

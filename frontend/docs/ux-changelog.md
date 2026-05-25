@@ -9,6 +9,10 @@
 - Dashboard route-nav lane stability pass:
   - kept horizontal scroll behavior on mobile, but switched desktop dashboard nav to a stable 5-lane grid layout.
   - removed desktop min-width lane jitter so `Dashboard`, `Contributions`, `Badges`, `Quests`, and `Settings` align consistently across route transitions.
+- Cross-tab active-filter consistency pass:
+  - applied the same `Active filters` row pattern used in Contributions to both Badges and Quests control surfaces.
+  - updated chip labels to lane-friendly formatting (`Rarity · ...`, `State · ...`, `Cadence · ...`) and added a single `Clear all` action in each filter shell.
+  - keeps filter interactions visually and behaviorally consistent across all major dashboard tabs.
 
 ## 2026-05-24
 

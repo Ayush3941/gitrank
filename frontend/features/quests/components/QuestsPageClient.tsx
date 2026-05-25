@@ -155,18 +155,38 @@ export function QuestsPageClient() {
               </p>
             </div>
             {canResetCadenceFilter ? (
-              <div className="flex flex-wrap items-center gap-2 text-xs">
-                <button
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex min-w-0 flex-1 items-center gap-2">
+                  <p className="text-xs font-medium text-primary">Active filters</p>
+                  <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
+                    <li className="list-none">
+                      <button
+                        type="button"
+                        className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
+                        onClick={() => {
+                          handleCadenceFilterChange("All");
+                        }}
+                        title="Clear mission filter"
+                        aria-controls={QUEST_MISSIONS_REGION_ID}
+                        aria-label={`Remove cadence filter ${cadenceFilter}`}
+                      >
+                        Cadence · {cadenceFilter}
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+                <Button
                   type="button"
-                  className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
+                  size="sm"
+                  variant="ghost"
                   onClick={() => {
                     handleCadenceFilterChange("All");
                   }}
-                  title="Clear mission filter"
+                  aria-controls={QUEST_MISSIONS_REGION_ID}
                 >
-                  Cadence: {cadenceFilter}
-                  <X className="h-3.5 w-3.5" />
-                </button>
+                  Clear all
+                </Button>
               </div>
             ) : null}
             <div className="space-y-2">
