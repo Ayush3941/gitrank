@@ -84,6 +84,7 @@ export function SegmentedTablist<T extends string>({
                   if (event.button !== 0) {
                     return;
                   }
+                  event.preventDefault();
                   focusWithoutScroll(event.currentTarget);
                 }}
                 onClick={() => {
