@@ -56,33 +56,32 @@ export function EmptyState({
         <p className="max-w-xl text-sm text-muted">{description}</p>
       </div>
       {actionLabel || secondaryActionLabel ? (
-        <div className="flex flex-col items-start gap-2">
+        <div className="flex w-full flex-col items-start gap-2 sm:w-auto sm:flex-row sm:items-center">
           {actionLabel && actionHref ? (
-            <Button asChild>
-              <Link href={actionHref}>{actionLabel}</Link>
+            <Button asChild className="w-full justify-center sm:w-auto">
+              <Link href={actionHref} prefetch={false}>{actionLabel}</Link>
             </Button>
           ) : null}
           {actionLabel && !actionHref && onAction ? (
-            <Button onClick={onAction}>
+            <Button onClick={onAction} className="w-full justify-center sm:w-auto">
               {actionLabel}
             </Button>
           ) : null}
           {secondaryActionLabel && secondaryActionHref ? (
-            <Link
-              href={secondaryActionHref}
-              className="focus-ring text-sm font-medium text-cyan-100 underline decoration-cyan-300/70 underline-offset-2 hover:text-cyan-50"
-            >
-              {secondaryActionLabel}
-            </Link>
+            <Button asChild variant="secondary" size="sm" className="w-full justify-center sm:w-auto">
+              <Link href={secondaryActionHref} prefetch={false}>{secondaryActionLabel}</Link>
+            </Button>
           ) : null}
           {secondaryActionLabel && !secondaryActionHref && onSecondaryAction ? (
-            <button
+            <Button
               type="button"
               onClick={onSecondaryAction}
-              className="focus-ring text-sm font-medium text-cyan-100 underline decoration-cyan-300/70 underline-offset-2 hover:text-cyan-50"
+              variant="secondary"
+              size="sm"
+              className="w-full justify-center sm:w-auto"
             >
               {secondaryActionLabel}
-            </button>
+            </Button>
           ) : null}
         </div>
       ) : null}

@@ -2,6 +2,9 @@
 
 ## 2026-05-24
 
+- Empty-state action consistency pass:
+  - standardized empty-state secondary actions from tiny text links to real `Button` controls with consistent hierarchy.
+  - added responsive full-width CTA behavior on narrow viewports for easier touch targeting and clearer next-step recovery.
 - Global backdrop visibility smoothing pass:
   - reduced heavy overlay opacity and softened radial/linear overlay falloff so `assets/background.jpg` remains visible without sacrificing text contrast.
   - kept the background locked to viewport (`body::before` fixed layer) while slightly lowering saturation/contrast boost to avoid harsh banding on neon themes.
