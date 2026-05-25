@@ -36,6 +36,8 @@ export function SyncRunActivityPanel({
   const canReset = search.trim().length > 0 || statusFilter !== "All";
   const trimmedSearch = search.trim();
   const compactSearch = trimmedSearch.length > 28 ? `${trimmedSearch.slice(0, 28)}…` : trimmedSearch;
+  const activeFilterCount =
+    (statusFilter !== "All" ? 1 : 0) + (trimmedSearch.length > 0 ? 1 : 0);
   const filterStatusId = "settings-sync-filter-status";
   const syncRunsRegionId = "settings-sync-runs-region";
   const statusCounts = useMemo(() => {
@@ -185,6 +187,11 @@ export function SyncRunActivityPanel({
             />
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            {activeFilterCount > 0 ? (
+              <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+                Active: {activeFilterCount}
+              </span>
+            ) : null}
             <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
               Status: {statusFilter}
             </span>

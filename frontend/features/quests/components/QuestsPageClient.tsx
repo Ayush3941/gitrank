@@ -94,6 +94,7 @@ export function QuestsPageClient() {
       ? quests.length
       : questMap[deferredCadenceFilter].length;
   const canResetCadenceFilter = cadenceFilter !== "All";
+  const activeFilterCount = canResetCadenceFilter ? 1 : 0;
   const isFiltering = deferredCadenceFilter !== cadenceFilter;
   const filterStatusId = "quests-filter-status";
 
@@ -154,6 +155,11 @@ export function QuestsPageClient() {
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
+              {activeFilterCount > 0 ? (
+                <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+                  Active: {activeFilterCount}
+                </span>
+              ) : null}
               <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
                 Cadence: {cadenceFilter}
               </span>

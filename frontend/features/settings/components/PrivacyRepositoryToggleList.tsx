@@ -27,6 +27,8 @@ export function PrivacyRepositoryToggleList({
   const controlled = typeof onToggle === "function";
   const visibleItems = controlled ? repositories : items;
   const canReset = searchTerm.length > 0 || visibilityFilter !== "All";
+  const activeFilterCount =
+    (visibilityFilter !== "All" ? 1 : 0) + (searchTerm.length > 0 ? 1 : 0);
   const statusId = "settings-repositories-filter-status";
   const repositoriesRegionId = "settings-repositories-visibility-region";
   const counts = useMemo(() => {
@@ -145,6 +147,11 @@ export function PrivacyRepositoryToggleList({
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {activeFilterCount > 0 ? (
+            <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+              Active: {activeFilterCount}
+            </span>
+          ) : null}
           <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
             Visibility: {visibilityFilter}
           </span>

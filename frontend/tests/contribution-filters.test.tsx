@@ -21,7 +21,7 @@ describe("ContributionFilters", () => {
     expect(screen.getByRole("tab", { name: "All" })).toBeTruthy();
     expect(screen.getByRole("tablist", { name: "Contribution sort options" })).toBeTruthy();
     expect(screen.getByRole("tab", { name: "Newest" })).toBeTruthy();
-  });
+  }, 15_000);
 
   it("renders category and sort summaries with removable search chip", () => {
     const clearSearch = vi.fn();

@@ -139,6 +139,10 @@ export function ContributionFilters({
 
   const activeCategoryLabel =
     activeStatus !== "All" ? activeStatus : activeFocus !== "Any" ? activeFocus : "All";
+  const activeFilterCount =
+    (value !== "All" ? 1 : 0) +
+    (search.trim().length > 0 ? 1 : 0) +
+    (sort !== "Newest" ? 1 : 0);
   const activeChips: Array<{ key: "search"; label: string }> = [];
   if (search.trim().length > 0) {
     const compactSearch = search.trim().length > 28 ? `${search.trim().slice(0, 28)}…` : search.trim();
@@ -186,6 +190,11 @@ export function ContributionFilters({
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
+        {activeFilterCount > 0 ? (
+          <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+            Active: {activeFilterCount}
+          </span>
+        ) : null}
         <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
           Category: {activeCategoryLabel}
         </span>

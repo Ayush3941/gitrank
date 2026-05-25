@@ -48,6 +48,9 @@
 - Active-filter row simplification pass:
   - removed redundant visible `Active filters` labels from contribution, sync-log, and repository-visibility search-chip rows.
   - fixed repository visibility to only render the chip row when a search filter is actually active (avoids empty-row chrome).
+- Applied-filter count visibility pass:
+  - added `Active: N` filter-summary chips across contributions, badges, quests, leaderboard, sync-log, and repository-visibility controls.
+  - keeps active-filter state quantifiable at a glance while preserving existing reset and chip removal behavior.
 - Contributions filter-summary presentation pass:
   - surfaced an always-visible summary row (`Category: ...`, `Sort: ...`, `Reset`) so active view state is readable without scanning multiple control lanes.
   - reduced duplicate chip chrome by keeping removable chips focused on search terms only.

@@ -89,6 +89,8 @@ export function BadgesPageClient() {
   const [visibleBadgeCount, setVisibleBadgeCount] = useState(badgeShelfPageSize);
   const [showLockedBadges, setShowLockedBadges] = useState(false);
   const canResetFilters = rarity !== "All" || visibility !== "All";
+  const activeFilterCount =
+    (rarity !== "All" ? 1 : 0) + (visibility !== "All" ? 1 : 0);
   const badgesFilterStatusId = "badges-filter-status";
 
   const allBadges = useMemo(() => deduplicateBadgesByName(data?.badges ?? []), [data?.badges]);
@@ -376,6 +378,11 @@ export function BadgesPageClient() {
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
+              {activeFilterCount > 0 ? (
+                <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+                  Active: {activeFilterCount}
+                </span>
+              ) : null}
               <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
                 Rarity: {rarity}
               </span>

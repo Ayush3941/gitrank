@@ -127,6 +127,10 @@ export function LeaderboardPageClient() {
   const hasLaneFilter = tab !== "Global";
   const hasViewFilter = supportsNearbyMode && effectiveMode === "full";
   const hasDetailsFilter = showLaneDetails;
+  const activeFilterCount =
+    (hasLaneFilter ? 1 : 0) +
+    (hasViewFilter ? 1 : 0) +
+    (hasDetailsFilter ? 1 : 0);
   const canClearAllControls = hasLaneFilter || hasViewFilter || hasDetailsFilter;
 
   function replaceLane(nextTab: LeaderboardTab) {
@@ -203,6 +207,11 @@ export function LeaderboardPageClient() {
             <p className="text-xs font-medium text-primary">Leaderboard controls</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            {activeFilterCount > 0 ? (
+              <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+                Active: {activeFilterCount}
+              </span>
+            ) : null}
             <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
               Lane: {TAB_LABELS[tab]}
             </span>
