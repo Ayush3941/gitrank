@@ -32,14 +32,14 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
       <ul
         role="list"
         className={cn(
-          "dashboard-nav-track lane-rail flex flex-nowrap gap-1.5 overflow-x-auto p-0.5",
+          "dashboard-nav-track lane-rail flex flex-nowrap gap-1.5 overflow-x-auto p-0.5 sm:grid sm:grid-cols-5 sm:overflow-visible sm:p-0",
         )}
       >
         {dashboardNavItems.map((item) => {
           const active = isActive(item.href, item.exact);
           const Icon = iconByKey[item.icon];
           return (
-            <li key={item.href} className="list-none min-w-[6.75rem] shrink-0 sm:min-w-[8rem]">
+            <li key={item.href} className="list-none min-w-[6.75rem] shrink-0 sm:min-w-0">
               <Link
                 href={item.href}
                 aria-current={active ? "page" : undefined}
