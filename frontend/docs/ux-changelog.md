@@ -52,6 +52,9 @@
 - Header freshness consistency pass:
   - added shared `SnapshotFreshnessPill` metadata into core route headers (contributions, badges, quests, leaderboard, settings, PR report, dashboard) to surface recency at the same hierarchy as primary actions.
   - improves trust/scannability by making data age visible without requiring stale-state banners first.
+- Public-profile snapshot status strip pass:
+  - added an always-visible public-profile status strip with refreshed timestamp, fresh/partial evidence state, and runtime-lite mode indicator.
+  - improves share-page trust by exposing evidence freshness context even when stale-state banners are not active.
 - Empty-state action consistency pass:
   - standardized empty-state secondary actions from tiny text links to real `Button` controls with consistent hierarchy.
   - added responsive full-width CTA behavior on narrow viewports for easier touch targeting and clearer next-step recovery.

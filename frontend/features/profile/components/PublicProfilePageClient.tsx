@@ -11,6 +11,7 @@ import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { RarityBadge } from "@/components/shared/RarityBadge";
+import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
 import { Button } from "@/components/ui/button";
@@ -205,6 +206,23 @@ export function PublicProfilePageClient({
           analyticsTarget="public-profile:stale"
         />
       ) : null}
+      <div className="flex flex-wrap items-center gap-2">
+        <SnapshotFreshnessPill refreshedAt={data.refreshedAt} label="Refreshed" />
+        <span
+          className={
+            data.partialProfileAvailable
+              ? "rounded-full border border-amber-400/24 bg-amber-400/12 px-3 py-1 text-xs font-semibold text-amber-100"
+              : "neon-chip neon-chip-success rounded-full px-3 py-1 text-xs font-semibold"
+          }
+        >
+          {data.partialProfileAvailable ? "Partial evidence mode" : "Fresh snapshot"}
+        </span>
+        {constrainedNetwork ? (
+          <span className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
+            Runtime Lite mode
+          </span>
+        ) : null}
+      </div>
       <section className="space-y-6">
         <PublicProfileHero
           user={data.user}
