@@ -84,6 +84,8 @@ export function ContributionFilters({
   onClearSearch,
   resultsRegionId,
   compact = false,
+  statusCounts,
+  focusCounts,
 }: {
   value: string;
   onValueChange: (value: string) => void;
@@ -100,6 +102,8 @@ export function ContributionFilters({
   onClearSearch?: () => void;
   resultsRegionId?: string;
   compact?: boolean;
+  statusCounts?: Partial<Record<(typeof statusFilters)[number]["value"], number>>;
+  focusCounts?: Partial<Record<(typeof focusFilters)[number]["value"], number>>;
 }) {
   type StatusFilterValue = (typeof statusFilters)[number]["value"];
   type FocusFilterValue = (typeof focusFilters)[number]["value"];
@@ -227,6 +231,7 @@ export function ContributionFilters({
                 value: filter.value,
                 label: filter.value,
                 icon: <Icon className="h-4 w-4" />,
+                count: statusCounts?.[filter.value],
                 minWidthClassName: "min-w-[7.5rem]",
               };
             })}
@@ -248,6 +253,7 @@ export function ContributionFilters({
                   value: filter.value,
                   label: filter.value,
                   icon: <Icon className="h-4 w-4" />,
+                  count: focusCounts?.[filter.value],
                   minWidthClassName: "min-w-[8rem]",
                 };
               })}

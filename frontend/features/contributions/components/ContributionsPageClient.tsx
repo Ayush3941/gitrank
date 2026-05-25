@@ -63,6 +63,7 @@ const ABRA_CONTRIBUTION_SAMPLE_LIMIT = 24;
 const CONTRIBUTION_CARDS_REGION_ID = "contributions-cards-region";
 const CONTRIBUTION_SEARCH_DEBOUNCE_MS = 220;
 const CONTRIBUTION_RENDER_HARD_CAP = 100;
+const HIGH_XP_COUNT_THRESHOLD = 200;
 
 export function ContributionsPageClient() {
   const constrainedNetwork = useNetworkConstraintPreference();
@@ -88,6 +89,31 @@ export function ContributionsPageClient() {
     sort: deferredSort,
   });
   const profile = data?.profile;
+  const contributionUniverse = useMemo(
+    () => deduplicateContributionsByPR(profile?.user.contributions ?? []),
+    [profile?.user.contributions],
+  );
+  const statusCounts = useMemo(
+    () => ({
+      All: contributionUniverse.length,
+      Merged: contributionUniverse.filter((row) => row.status === "merged").length,
+      Open: contributionUniverse.filter((row) => row.status === "open").length,
+    }),
+    [contributionUniverse],
+  );
+  const focusCounts = useMemo(
+    () => ({
+      Any: contributionUniverse.length,
+      Docs: contributionUniverse.filter((row) => row.category === "Documentation").length,
+      Tests: contributionUniverse.filter((row) => row.category === "Testing").length,
+      "Bug Fixes": contributionUniverse.filter((row) => row.category === "Bug Fix").length,
+      Infra: contributionUniverse.filter((row) => row.category === "Infrastructure").length,
+      Security: contributionUniverse.filter((row) => row.category === "Security").length,
+      Performance: contributionUniverse.filter((row) => row.category === "Performance").length,
+      "High XP": contributionUniverse.filter((row) => row.xpEarned >= HIGH_XP_COUNT_THRESHOLD).length,
+    }),
+    [contributionUniverse],
+  );
   const filteredRows = useMemo(
     () =>
       deduplicateContributionsByPR(data?.rows ?? []).slice(
@@ -382,6 +408,8 @@ export function ContributionsPageClient() {
           onClearSearch={handleClearSearchFilter}
           onClearCategory={handleClearCategoryFilter}
           onClearSort={handleClearSortFilter}
+          statusCounts={statusCounts}
+          focusCounts={focusCounts}
         />
         <p className="mt-2 text-xs text-muted">
           Categories group PR topics so you can scan impact patterns faster.
