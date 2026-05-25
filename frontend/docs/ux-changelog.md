@@ -12,6 +12,9 @@
 - Settings sync-filter wording pass:
   - renamed summary chip from `Status` to `View` and lane heading to `Run status` for clearer scanning.
   - standardized primary reset action label to `Reset filters` in the summary row.
+- Dashboard route-nav mobile wrap pass:
+  - switched dashboard top navigation from horizontal-only overflow to wrapped lanes on small screens.
+  - keeps all primary tabs visible without side scrolling while preserving the same desktop 5-lane layout.
 - Contributions filter-summary wording pass:
   - updated summary chips from `Category/Sort` to `View/Order` for cleaner scan semantics.
   - refined helper copy to plain-language guidance: use Status for PR state and Focus for work type.
