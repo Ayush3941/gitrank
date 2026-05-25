@@ -1602,6 +1602,7 @@ ABRA implementation checklist:
 - [x] Contributions tab is rebuilt into achievement-style PR cards with polished hierarchy, category/type chips, score/impact indicators, and clear status/date/repository metadata.
 - [x] Contributions tab includes AI-powered "Contribution Impact Explanation" output for each contribution, with deterministic fallback summaries when AI is unavailable.
 - [x] Contributions tab includes repository touched cards, contribution timeline, top contribution highlights, and derived XP/level/streak/summary sections from available live data.
+- [x] Contributions filters present a concise state summary (`Category`, `Sort`, `Reset`) while keeping search filtering removable and obvious, reducing duplicate chrome on dense views.
 - [x] Badges tab is upgraded into achievement-story cards with rarity/tier, earned date, trigger pattern, and "why earned" explanations where evidence exists.
 - [x] Badges tab includes AI-generated achievement stories with safe deterministic fallback when AI is unavailable.
 - [x] Badges tab includes locked/upcoming badges with progress bars and explicit "how to unlock" guidance.
