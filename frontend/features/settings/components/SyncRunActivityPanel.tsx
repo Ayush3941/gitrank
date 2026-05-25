@@ -182,6 +182,53 @@ export function SyncRunActivityPanel({
               wrap
             />
           </div>
+          {canReset ? (
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
+                {search.trim().length > 0 ? (
+                  <li className="list-none">
+                    <button
+                      type="button"
+                      className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
+                      onClick={handleClearSearch}
+                      aria-label="Clear sync run search filter"
+                      aria-controls={syncRunsRegionId}
+                      title="Clear search filter"
+                    >
+                      Search: {search.trim()}
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </li>
+                ) : null}
+                {statusFilter !== "All" ? (
+                  <li className="list-none">
+                    <button
+                      type="button"
+                      className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
+                      onClick={() => {
+                        setStatusFilter("All");
+                      }}
+                      aria-label={`Clear sync run status filter ${statusFilter}`}
+                      aria-controls={syncRunsRegionId}
+                      title="Clear status filter"
+                    >
+                      Status: {statusFilter}
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </li>
+                ) : null}
+              </ul>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={handleResetFilters}
+                aria-controls={syncRunsRegionId}
+              >
+                Reset filters
+              </Button>
+            </div>
+          ) : null}
         </div>
       </div>
 

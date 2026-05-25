@@ -46,6 +46,9 @@
 - Locked-badge collapsed preview pass:
   - replaced the hidden-placeholder collapsed state in the locked badge section with a visible preview queue of upcoming badge unlocks.
   - keeps full locked-path details behind expand while preserving useful context when the section is collapsed.
+- Sync-run filter-state visibility pass:
+  - settings sync activity now surfaces active search/status filters as removable chips and keeps a one-click `Reset filters` control visible whenever filters are active.
+  - improves filter-state clarity and reduces dead-end resets that previously only appeared in no-result states.
 - Empty-state action consistency pass:
   - standardized empty-state secondary actions from tiny text links to real `Button` controls with consistent hierarchy.
   - added responsive full-width CTA behavior on narrow viewports for easier touch targeting and clearer next-step recovery.
