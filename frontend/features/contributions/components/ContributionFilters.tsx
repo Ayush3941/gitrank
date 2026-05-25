@@ -245,22 +245,22 @@ export function ContributionFilters({
           <SegmentedTablist
             options={statusFilters.map((filter) => {
               const Icon = statusIconByValue[filter.value];
-              return {
-                value: filter.value,
-                label: filter.value,
-                icon: <Icon className="h-4 w-4" />,
-                count: statusCounts?.[filter.value],
-                minWidthClassName: "min-w-[7.5rem]",
-              };
-            })}
-            value={activeStatus}
-            onValueChange={handleStatusChange}
-            ariaLabel="Contribution status filters"
-            ariaControls={resultsRegionId}
-            tabIdPrefix="contribution-status-tab"
-            wrap={false}
-          />
-        </div>
+                return {
+                  value: filter.value,
+                  label: filter.value,
+                  icon: <Icon className="h-4 w-4" />,
+                  count: statusCounts?.[filter.value],
+                  minWidthClassName: "min-w-[6.75rem] sm:min-w-[8rem]",
+                };
+              })}
+              value={activeStatus}
+              onValueChange={handleStatusChange}
+              ariaLabel="Contribution status filters"
+              ariaControls={resultsRegionId}
+              tabIdPrefix="contribution-status-tab"
+              wrap
+            />
+          </div>
         <div className="grid gap-3">
           <div className="space-y-2">
             <p className="text-xs font-medium text-primary">Focus lane</p>

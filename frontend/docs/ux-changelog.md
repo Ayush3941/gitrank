@@ -27,6 +27,9 @@
 - Dashboard filter regression-coverage pass:
   - added `SyncRunActivityPanel` coverage for summary-first status/search/reset behavior and no-results reset action.
   - extended live fixture leaderboard coverage to assert the new summary row (`Lane`, `View`, `Details`) render contract.
+- Contributions status-lane wrap pass:
+  - switched the status segmented control to wrapping behavior with tighter mobile minimum widths.
+  - removes the last forced horizontal-only segmented lane pattern in dashboard filter controls.
 - Contributions filter-summary presentation pass:
   - surfaced an always-visible summary row (`Category: ...`, `Sort: ...`, `Reset`) so active view state is readable without scanning multiple control lanes.
   - reduced duplicate chip chrome by keeping removable chips focused on search terms only.
