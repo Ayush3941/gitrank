@@ -20,10 +20,14 @@ import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-const filters = [
+const statusFilters = [
   { value: "All" },
   { value: "Merged" },
   { value: "Open" },
+] as const;
+
+const focusFilters = [
+  { value: "Any" },
   { value: "Docs" },
   { value: "Tests" },
   { value: "Bug Fixes" },
@@ -33,10 +37,14 @@ const filters = [
   { value: "High XP" },
 ] as const;
 
-const filterIconByValue = {
+const statusIconByValue = {
   All: LayoutGrid,
   Merged: GitMerge,
   Open: CircleDot,
+} as const;
+
+const focusIconByValue = {
+  Any: LayoutGrid,
   Docs: BookText,
   Tests: FlaskConical,
   "Bug Fixes": Bug,
@@ -93,6 +101,9 @@ export function ContributionFilters({
   resultsRegionId?: string;
   compact?: boolean;
 }) {
+  type StatusFilterValue = (typeof statusFilters)[number]["value"];
+  type FocusFilterValue = (typeof focusFilters)[number]["value"];
+
   const statusId = "contribution-filter-status";
   const activeChips: Array<{ key: "category" | "search" | "sort"; label: string }> = [];
   if (value !== "All") {
@@ -104,6 +115,37 @@ export function ContributionFilters({
   }
   if (sort !== "Newest") {
     activeChips.push({ key: "sort", label: sort });
+  }
+
+  const activeStatus: StatusFilterValue =
+    value === "Merged" || value === "Open" ? value : "All";
+  const activeFocus: FocusFilterValue =
+    value === "Docs" ||
+    value === "Tests" ||
+    value === "Bug Fixes" ||
+    value === "Infra" ||
+    value === "Security" ||
+    value === "Performance" ||
+    value === "High XP"
+      ? value
+      : "Any";
+
+  function handleStatusChange(nextValue: string) {
+    const next = nextValue as StatusFilterValue;
+    if (next === "All") {
+      onValueChange(activeFocus === "Any" ? "All" : activeFocus);
+      return;
+    }
+    onValueChange(next);
+  }
+
+  function handleFocusChange(nextValue: string) {
+    const next = nextValue as FocusFilterValue;
+    if (next === "Any") {
+      onValueChange(activeStatus);
+      return;
+    }
+    onValueChange(next);
   }
 
   return (
@@ -177,26 +219,46 @@ export function ContributionFilters({
       ) : null}
       <div id="contribution-mobile-controls">
         <div className="space-y-2">
-          <p className="text-xs font-medium text-primary">Category lane</p>
+          <p className="text-xs font-medium text-primary">Status lane</p>
           <SegmentedTablist
-            options={filters.map((filter) => {
-              const Icon = filterIconByValue[filter.value];
+            options={statusFilters.map((filter) => {
+              const Icon = statusIconByValue[filter.value];
               return {
                 value: filter.value,
                 label: filter.value,
                 icon: <Icon className="h-4 w-4" />,
-                minWidthClassName: "min-w-[8.5rem]",
+                minWidthClassName: "min-w-[7.5rem]",
               };
             })}
-            value={value}
-            onValueChange={onValueChange}
-            ariaLabel="Contribution category filters"
+            value={activeStatus}
+            onValueChange={handleStatusChange}
+            ariaLabel="Contribution status filters"
             ariaControls={resultsRegionId}
-            tabIdPrefix="contribution-filter-tab"
+            tabIdPrefix="contribution-status-tab"
             wrap={false}
           />
         </div>
         <div className="grid gap-3">
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-primary">Focus lane</p>
+            <SegmentedTablist
+              options={focusFilters.map((filter) => {
+                const Icon = focusIconByValue[filter.value];
+                return {
+                  value: filter.value,
+                  label: filter.value,
+                  icon: <Icon className="h-4 w-4" />,
+                  minWidthClassName: "min-w-[8rem]",
+                };
+              })}
+              value={activeFocus}
+              onValueChange={handleFocusChange}
+              ariaLabel="Contribution focus filters"
+              ariaControls={resultsRegionId}
+              tabIdPrefix="contribution-focus-tab"
+              wrap={false}
+            />
+          </div>
           <div className="relative">
             <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted" />
             <Input
