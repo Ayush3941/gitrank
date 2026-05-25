@@ -4,6 +4,8 @@ import { cleanup } from "@testing-library/react";
 process.env.GITRANK_PUBLIC_BASE_URL ??= "http://localhost:3000";
 process.env.GITRANK_API_BASE_URL ??= "http://localhost:8080";
 process.env.GITRANK_AUTH_BASE_URL ??= "http://localhost:8081";
+process.env.NEXT_PUBLIC_GITRANK_CSRF_COOKIE_NAME ??= "gitrank_csrf";
+process.env.NEXT_PUBLIC_GITRANK_SCORE_VERSION_FALLBACK ??= "v1alpha1";
 
 afterEach(() => {
   cleanup();

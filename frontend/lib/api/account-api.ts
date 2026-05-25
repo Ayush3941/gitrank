@@ -1,5 +1,6 @@
-const DEFAULT_CSRF_COOKIE_NAME =
-  process.env.NEXT_PUBLIC_GITRANK_CSRF_COOKIE_NAME ?? "gitrank_csrf";
+import { frontendPolicy } from "@/lib/runtime/frontend-policy";
+
+const DEFAULT_CSRF_COOKIE_NAME = frontendPolicy.csrfCookieName;
 
 type ApiErrorResponse = {
   error?: {

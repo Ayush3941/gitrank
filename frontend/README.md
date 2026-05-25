@@ -145,6 +145,12 @@ If you expose a non-default CSRF cookie name to the browser, also set:
 NEXT_PUBLIC_GITRANK_CSRF_COOKIE_NAME=gitrank_csrf
 ```
 
+Set deterministic score-version fallback copy used when score history metadata is missing:
+
+```bash
+NEXT_PUBLIC_GITRANK_SCORE_VERSION_FALLBACK=v1alpha1
+```
+
 If your backend uses a non-default session cookie name:
 
 ```bash

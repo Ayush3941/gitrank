@@ -19,10 +19,10 @@ import {
   type ApiPRReportResponse,
   toPullRequestAnalysis,
 } from "@/lib/api/pr-report-api";
+import { frontendPolicy } from "@/lib/runtime/frontend-policy";
 import type { PullRequestAnalysis } from "@/types/gitrank";
 
-const DEFAULT_CSRF_COOKIE_NAME =
-  process.env.NEXT_PUBLIC_GITRANK_CSRF_COOKIE_NAME ?? "gitrank_csrf";
+const DEFAULT_CSRF_COOKIE_NAME = frontendPolicy.csrfCookieName;
 
 type ApiProfileSummary = {
   handle: string;
@@ -847,7 +847,7 @@ function scoreVersionFromHistory(entries: ApiScoreHistoryEntry[]): string {
       }
     }
   }
-  return "v1alpha1";
+  return frontendPolicy.scoreVersionFallback;
 }
 
 function nextRankTier(rankTier: RankTier): RankTier | undefined {
