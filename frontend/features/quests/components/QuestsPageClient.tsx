@@ -117,9 +117,6 @@ export function QuestsPageClient() {
               { label: `Streak ${streak.currentStreakDays}d` },
               { label: `Day ${dayOfYear}/365` },
               { label: `Focus ${deferredCadenceFilter}` },
-              ...(constrainedNetwork
-                ? [{ label: "Runtime Lite mode", tone: "info" as const }]
-                : []),
             ]}
           />
         )}

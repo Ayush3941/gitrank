@@ -14,7 +14,6 @@ import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { Button } from "@/components/ui/button";
-import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { usePrReport } from "@/hooks/use-pr-report";
 import {
   formatContributionStatusLabel,
@@ -67,7 +66,6 @@ export function PRBattleReportPageClient({
   repo: string;
   number: number;
 }) {
-  const constrainedNetwork = useNetworkConstraintPreference();
   const { data, isLoading, isError, refetch } = usePrReport(owner, repo, number);
   const [showTechnicalBreakdown, setShowTechnicalBreakdown] = useState(false);
 
@@ -162,9 +160,6 @@ export function PRBattleReportPageClient({
                 label: `Evidence ${formatEvidenceStatusLabel(evidenceState.status)}`,
                 tone: toneForEvidenceStatus(evidenceState.status),
               },
-              ...(constrainedNetwork
-                ? [{ label: "Runtime Lite mode", tone: "info" as const }]
-                : []),
             ]}
           />
         )}
@@ -348,8 +343,9 @@ export function PRBattleReportPageClient({
             {showTechnicalBreakdown ? "Hide details" : "Show details"}
           </Button>
         </div>
-        {showTechnicalBreakdown ? (
-          <div id="pr-report-technical-panels" className="space-y-6">
+        <div id="pr-report-technical-panels">
+          {showTechnicalBreakdown ? (
+          <div className="space-y-6">
             <section className="render-opt-section">
               <div className="grid gap-6 xl:grid-cols-[1.02fr,0.98fr]">
                 <ScoreMatrixCard report={data} />
@@ -403,7 +399,41 @@ export function PRBattleReportPageClient({
               </section>
             ) : null}
           </div>
-        ) : null}
+          ) : (
+          <GlowCard className="space-y-4">
+            <p className="text-xs font-medium text-primary">Quick read</p>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="neon-surface rounded-[1.2rem] px-4 py-3">
+                <p className="text-xs text-muted">Difficulty</p>
+                <p className="mt-1 text-sm font-semibold text-white">
+                  {data.contribution.difficultyScore}
+                </p>
+              </div>
+              <div className="neon-surface rounded-[1.2rem] px-4 py-3">
+                <p className="text-xs text-muted">Impact</p>
+                <p className="mt-1 text-sm font-semibold text-white">
+                  {data.contribution.impactScore}
+                </p>
+              </div>
+              <div className="neon-surface rounded-[1.2rem] px-4 py-3">
+                <p className="text-xs text-muted">Review depth</p>
+                <p className="mt-1 text-sm font-semibold text-white">
+                  {data.contribution.reviewDepthScore}
+                </p>
+              </div>
+              <div className="neon-surface rounded-[1.2rem] px-4 py-3">
+                <p className="text-xs text-muted">Test signal</p>
+                <p className="mt-1 text-sm font-semibold text-white">
+                  {data.contribution.testSignalScore}
+                </p>
+              </div>
+            </div>
+            <p className="text-xs text-muted">
+              Expand technical breakdown to inspect XP component math, evidence signals, and badge rewards.
+            </p>
+          </GlowCard>
+          )}
+        </div>
       </section>
       {data.suggestedQuestId ? (
         <section className="render-opt-section">

@@ -196,9 +196,6 @@ export function DashboardPageClient() {
                 label: `Sync ${formatSyncStateLabel(user.syncStatus.state)}`,
                 tone: toneForSyncState(user.syncStatus.state),
               },
-              ...(constrainedNetwork
-                ? [{ label: "Runtime Lite mode", tone: "info" as const }]
-                : []),
             ]}
           />
         )}

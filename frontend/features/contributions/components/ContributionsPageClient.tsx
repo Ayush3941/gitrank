@@ -265,9 +265,6 @@ export function ContributionsPageClient() {
               { label: `Evidence rows ${filteredRows.length}` },
               { label: `Repos ${repositories.length}` },
               { label: `Streak ${streak.currentStreakDays}d` },
-              ...(useLiteCards
-                ? [{ label: "Runtime Lite mode", tone: "info" as const }]
-                : []),
             ]}
           />
         )}
@@ -299,11 +296,7 @@ export function ContributionsPageClient() {
                   </>
                 )}
               </Button>
-            ) : (
-              <span className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold">
-                Lite mode
-              </span>
-            )}
+            ) : null}
             <Button
               type="button"
               variant="secondary"

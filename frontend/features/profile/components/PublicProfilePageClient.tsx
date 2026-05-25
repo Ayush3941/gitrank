@@ -217,11 +217,6 @@ export function PublicProfilePageClient({
         >
           {data.partialProfileAvailable ? "Partial evidence mode" : "Fresh snapshot"}
         </span>
-        {constrainedNetwork ? (
-          <span className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
-            Runtime Lite mode
-          </span>
-        ) : null}
       </div>
       <section className="space-y-6">
         <PublicProfileHero
@@ -230,7 +225,6 @@ export function PublicProfilePageClient({
           archetype={abraInsights.data?.archetype ?? fallbackArchetype}
           identitySummary={abraInsights.data?.identitySummary ?? fallbackIdentitySummary}
           identitySummaryMode={abraInsights.data?.generatedBy ?? "deterministic"}
-          runtimeLiteMode={constrainedNetwork}
         />
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <StatCard label="GitRank score" value={data.user.gitRankScore} icon={<Stars className="h-5 w-5 text-primary" />} />

@@ -147,9 +147,6 @@ export function LeaderboardPageClient() {
                 label: `Sync ${formatSyncStateLabel(myProfile?.user.syncStatus.state)}`,
                 tone: toneForSyncState(myProfile?.user.syncStatus.state),
               },
-              ...(constrainedNetwork
-                ? [{ label: "Runtime Lite mode", tone: "info" as const }]
-                : []),
             ]}
           />
         )}

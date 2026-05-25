@@ -30,7 +30,6 @@ import { useSyncRuns } from "@/hooks/use-sync-runs";
 import {
   useAccountGamificationPreference,
   useGamificationPreference,
-  useNetworkConstraintReason,
 } from "@/hooks/use-gamification-preference";
 import {
   useDisplayShortcutsEnabled,
@@ -141,7 +140,6 @@ export function SettingsPageClient() {
   const logoutSession = useLogoutSession();
   const accountLinkStart = useStartAccountLink();
   const { setReducedGamification } = useGamificationPreference();
-  const networkConstraintReason = useNetworkConstraintReason();
   const { theme, themeSource, setTheme, clearThemePreference } = useThemePreference();
   const { textScale, setTextScale } = useTextScalePreference();
   const { enabled: displayShortcutsEnabled, setEnabled: setDisplayShortcutsEnabled } =
@@ -334,9 +332,6 @@ export function SettingsPageClient() {
                 label: `Sync ${formatSyncStateLabel(data.user.syncStatus.state)}`,
                 tone: toneForSyncState(data.user.syncStatus.state),
               },
-              ...(networkConstraintReason
-                ? [{ label: "Runtime Lite mode", tone: "info" as const }]
-                : []),
             ]}
           />
         )}
@@ -452,11 +447,6 @@ export function SettingsPageClient() {
               <p className="mt-2 text-sm leading-6 text-muted">
                 Reduce visual effects. Scores and privacy stay unchanged.
               </p>
-              {networkConstraintReason ? (
-                <p className="mt-2 text-xs text-muted">
-                  Runtime Lite mode is active: {networkConstraintReasonLabel(networkConstraintReason)}.
-                </p>
-              ) : null}
             </div>
             <Switch
               id="reduced-gamification"
@@ -774,31 +764,4 @@ function SettingsPanelPlaceholder({ label }: { label: string }) {
       <div className="neon-skeleton h-24 w-full" />
     </div>
   );
-}
-
-function networkConstraintReasonLabel(
-  reason:
-    | "save-data"
-    | "slow-connection"
-    | "reduced-data-preference"
-    | "low-device-memory"
-    | "low-cpu-cores"
-    | "slow-display-updates",
-): string {
-  if (reason === "save-data") {
-    return "Save-Data preference";
-  }
-  if (reason === "slow-connection") {
-    return "slow network connection";
-  }
-  if (reason === "reduced-data-preference") {
-    return "reduced-data preference";
-  }
-  if (reason === "low-device-memory") {
-    return "limited device memory";
-  }
-  if (reason === "low-cpu-cores") {
-    return "limited CPU cores";
-  }
-  return "slow display update capability";
 }
