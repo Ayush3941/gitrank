@@ -22,6 +22,9 @@
 - Contribution pulse regression coverage pass:
   - added focused tests for `ContributionPulseStrip` day-window rendering and same-day contribution aggregation behavior.
   - prevents accidental regressions in active-day counts or accessibility labels as pulse visuals evolve.
+- Runtime mode visibility pass:
+  - added an explicit `Runtime Lite mode` meta chip in dashboard and contributions headers when constrained-network/reduced-cost rendering is active.
+  - makes performance-saving render mode visible to users so simplified visuals are intentional and understandable.
 - Empty-state action consistency pass:
   - standardized empty-state secondary actions from tiny text links to real `Button` controls with consistent hierarchy.
   - added responsive full-width CTA behavior on narrow viewports for easier touch targeting and clearer next-step recovery.

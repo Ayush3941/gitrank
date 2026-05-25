@@ -21,6 +21,7 @@ exports[`route-level visual regression snapshots > matches dashboard visual shel
     "Merged PRs 12",
     "Streak 0d",
     "Sync Synced",
+    "Runtime Lite mode",
   ],
   "rootClassName": "stable-scroll-scope space-y-6",
   "route": "dashboard",

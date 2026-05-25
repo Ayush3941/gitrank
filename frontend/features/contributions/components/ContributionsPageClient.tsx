@@ -264,6 +264,9 @@ export function ContributionsPageClient() {
               { label: `Evidence rows ${filteredRows.length}` },
               { label: `Repos ${repositories.length}` },
               { label: `Streak ${streak.currentStreakDays}d` },
+              ...(useLiteCards
+                ? [{ label: "Runtime Lite mode", tone: "info" as const }]
+                : []),
             ]}
           />
         )}
