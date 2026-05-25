@@ -296,7 +296,7 @@ export function LeaderboardPageClient() {
                   label: TAB_LABELS[item],
                   compactLabel: TAB_COMPACT_LABELS[item],
                   icon: <Icon className="h-4 w-4" />,
-                  minWidthClassName: "min-w-[7.5rem] sm:min-w-[9rem]",
+                  minWidthClassName: "min-w-[6.75rem] sm:min-w-[8.5rem]",
                 };
               })}
               value={tab}
@@ -305,7 +305,7 @@ export function LeaderboardPageClient() {
               ariaControls={LEADERBOARD_ROWS_REGION_ID}
               className="w-full"
               tabIdPrefix="leaderboard-lane-tab"
-              wrap={false}
+              wrap
             />
           </div>
           <div className="flex flex-wrap items-center gap-2">
