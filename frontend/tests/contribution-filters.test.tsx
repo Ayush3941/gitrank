@@ -51,4 +51,22 @@ describe("ContributionFilters", () => {
     );
     expect(clearSearch).toHaveBeenCalledTimes(1);
   });
+
+  it("falls back to onSearchChange when no onClearSearch handler is provided", () => {
+    const onSearchChange = vi.fn();
+
+    render(
+      <ContributionFilters
+        value="All"
+        onValueChange={() => undefined}
+        search="llvm"
+        onSearchChange={onSearchChange}
+        sort="Newest"
+        onSortChange={() => undefined}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Clear contribution search/i }));
+    expect(onSearchChange).toHaveBeenCalledWith("");
+  });
 });

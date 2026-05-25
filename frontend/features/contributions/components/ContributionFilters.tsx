@@ -143,7 +143,16 @@ export function ContributionFilters({
     (value !== "All" ? 1 : 0) +
     (search.trim().length > 0 ? 1 : 0) +
     (sort !== "Newest" ? 1 : 0);
-  const compactSearch = search.trim().length > 28 ? `${search.trim().slice(0, 28)}…` : search.trim();
+  const trimmedSearch = search.trim();
+  const compactSearch = trimmedSearch.length > 28 ? `${trimmedSearch.slice(0, 28)}…` : trimmedSearch;
+
+  function handleClearSearch() {
+    if (onClearSearch) {
+      onClearSearch();
+      return;
+    }
+    onSearchChange("");
+  }
 
   function handleStatusChange(nextValue: string) {
     const next = nextValue as StatusFilterValue;
@@ -197,24 +206,18 @@ export function ContributionFilters({
         <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
           Order: {sort}
         </span>
-        {search.trim().length > 0 ? (
-          onClearSearch ? (
-            <button
-              type="button"
-              className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
-              onClick={onClearSearch}
-              disabled={isFiltering}
-              aria-label={`Remove Search · ${compactSearch} filter`}
-              aria-controls={resultsRegionId}
-            >
-              Search: {compactSearch}
-              <X className="h-3.5 w-3.5" />
-            </button>
-          ) : (
-            <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-              Search: {compactSearch}
-            </span>
-          )
+        {trimmedSearch.length > 0 ? (
+          <button
+            type="button"
+            className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
+            onClick={handleClearSearch}
+            disabled={isFiltering}
+            aria-label={`Remove Search · ${compactSearch} filter`}
+            aria-controls={resultsRegionId}
+          >
+            Search: {compactSearch}
+            <X className="h-3.5 w-3.5" />
+          </button>
         ) : null}
         {onReset ? (
           <Button
@@ -286,10 +289,10 @@ export function ContributionFilters({
               aria-label="Search contributions"
               aria-describedby={statusId}
             />
-            {search.trim().length > 0 ? (
+            {trimmedSearch.length > 0 ? (
               <button
                 type="button"
-                onClick={onClearSearch}
+                onClick={handleClearSearch}
                 disabled={isFiltering}
                 className="focus-ring absolute top-1/2 right-3 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-cyan-100 hover:bg-primary/12 hover:text-white disabled:opacity-60"
                 aria-label="Clear contribution search"

@@ -5,6 +5,7 @@
 - Contributions filter-summary wording pass:
   - updated summary chips from `Category/Sort` to `View/Order` for cleaner scan semantics.
   - refined helper copy to plain-language guidance: use Status for PR state and Focus for work type.
+  - added a clear-search fallback path that resets via `onSearchChange("")` when an explicit clear handler is absent.
 - Segmented-tab pointer interaction hardening pass:
   - added pointer-down focus-without-scroll handling before click selection in shared segmented tablists.
   - preserves no-jump behavior for touch, pen, and mouse paths while keeping keyboard activation unchanged.
