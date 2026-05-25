@@ -57,6 +57,10 @@
 - Inline-notice dismiss affordance pass:
   - increased shared inline-notice dismiss control from `h-5 w-5` to `h-6 w-6` for easier touch and pointer targeting.
   - added dedicated `InlineNotice` test coverage for placeholder rendering and dismiss callback behavior.
+- Filter-summary integration coverage pass:
+  - extended live fixture tests to verify `Active: 1` state appears when quest and badge filters move off defaults.
+  - confirms the applied-filter count summary pattern works across additional dashboard lanes, not only unit-level filter components.
+  - fixed a badges runtime regression uncovered by this test (`isFiltering` state is now defined before use).
 - Contributions filter-summary presentation pass:
   - surfaced an always-visible summary row (`Category: ...`, `Sort: ...`, `Reset`) so active view state is readable without scanning multiple control lanes.
   - reduced duplicate chip chrome by keeping removable chips focused on search terms only.

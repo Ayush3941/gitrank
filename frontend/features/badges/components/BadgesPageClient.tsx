@@ -89,6 +89,7 @@ export function BadgesPageClient() {
   const [visibleBadgeCount, setVisibleBadgeCount] = useState(badgeShelfPageSize);
   const [showLockedBadges, setShowLockedBadges] = useState(false);
   const canResetFilters = rarity !== "All" || visibility !== "All";
+  const isFiltering = deferredRarity !== rarity || deferredVisibility !== visibility;
   const activeFilterCount =
     (rarity !== "All" ? 1 : 0) + (visibility !== "All" ? 1 : 0);
   const badgesFilterStatusId = "badges-filter-status";

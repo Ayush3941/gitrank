@@ -2,6 +2,7 @@ import React, { type ReactNode } from "react";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DashboardPageClient } from "@/features/dashboard/components/DashboardPageClient";
+import { BadgesPageClient } from "@/features/badges/components/BadgesPageClient";
 import { LeaderboardPageClient } from "@/features/leaderboard/components/LeaderboardPageClient";
 import { PRBattleReportPageClient } from "@/features/pr-report/components/PRBattleReportPageClient";
 import { PublicProfilePageClient } from "@/features/profile/components/PublicProfilePageClient";
@@ -89,9 +90,25 @@ describe("live fixture frontend smoke coverage", () => {
     expect(
       await screen.findByText("Backed by live quest fixture evidence."),
     ).toBeTruthy();
+    expect(screen.queryByText("Active: 1")).toBeNull();
+    fireEvent.click(screen.getByRole("tab", { name: /Weekly/i }));
+    expect(await screen.findByText("Cadence: Weekly")).toBeTruthy();
+    expect(await screen.findByText("Active: 1")).toBeTruthy();
     expect(nonAnalyticsPaths().sort()).toEqual(
       ["/api/profile/me", "/api/profile/me/quests"].sort(),
     );
+  }, 15_000);
+
+  it("renders badges view with active-filter count summary when a lane is selected", async () => {
+    renderWithClient(<BadgesPageClient />);
+
+    expect(await screen.findByRole("heading", { name: "Badges" })).toBeTruthy();
+    expect(screen.queryByText("Active: 1")).toBeNull();
+
+    fireEvent.click(screen.getByRole("tab", { name: /Rare/i }));
+    expect(await screen.findByText("Rarity: Rare")).toBeTruthy();
+    expect(await screen.findByText("Active: 1")).toBeTruthy();
+    expect(nonAnalyticsPaths()).toEqual(["/api/profile/me"]);
   }, 15_000);
 
   it("renders PR battle report from the live PR report fixture route", async () => {
