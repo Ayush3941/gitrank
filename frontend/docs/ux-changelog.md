@@ -31,6 +31,9 @@
 - Network-constraint hydration stability pass:
   - switched network-constraint `useSyncExternalStore` server snapshots from a synthetic default reason to `null`.
   - prevents transient server-side Lite-mode assumptions before real client capability detection completes.
+- Cross-lane runtime-mode consistency pass:
+  - extended `Runtime Lite mode` header metadata chips to leaderboard, badges, and quests so all core dashboard lanes expose the same constrained-render context.
+  - keeps performance-mode messaging consistent across navigation instead of only a subset of tabs.
 - Empty-state action consistency pass:
   - standardized empty-state secondary actions from tiny text links to real `Button` controls with consistent hierarchy.
   - added responsive full-width CTA behavior on narrow viewports for easier touch targeting and clearer next-step recovery.

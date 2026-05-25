@@ -277,6 +277,9 @@ export function BadgesPageClient() {
                 label: `Locked ${lockedBadges.length}`,
                 tone: lockedBadges.length > 0 ? "warning" : "success",
               },
+              ...(constrainedNetwork
+                ? [{ label: "Runtime Lite mode", tone: "info" as const }]
+                : []),
             ]}
           />
         )}
