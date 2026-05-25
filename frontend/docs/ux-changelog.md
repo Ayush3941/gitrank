@@ -21,6 +21,10 @@
   - added an `Active filters` row to leaderboard controls with removable chips for lane selection, details view, and full-board mode.
   - added one-click `Clear all` control to restore default leaderboard context (`Global` lane, nearby mode, details off).
   - keeps leaderboard controls consistent with Contributions/Badges/Quests filter-shell behavior.
+- Settings sync-log filter consistency pass:
+  - migrated sync-run activity chips to the same active-filter pattern (`Search · ...`, `Status · ...`) with an explicit `Active filters` label.
+  - replaced older `Reset filters` copy with `Clear all` in both control and no-results recovery actions.
+  - aligns settings filter terminology and visual hierarchy with the rest of dashboard tabs.
 
 ## 2026-05-24
 

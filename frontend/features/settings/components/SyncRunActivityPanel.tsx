@@ -184,40 +184,43 @@ export function SyncRunActivityPanel({
           </div>
           {canReset ? (
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
-                {search.trim().length > 0 ? (
-                  <li className="list-none">
-                    <button
-                      type="button"
-                      className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
-                      onClick={handleClearSearch}
-                      aria-label="Clear sync run search filter"
-                      aria-controls={syncRunsRegionId}
-                      title="Clear search filter"
-                    >
-                      Search: {search.trim()}
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </li>
-                ) : null}
-                {statusFilter !== "All" ? (
-                  <li className="list-none">
-                    <button
-                      type="button"
-                      className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
-                      onClick={() => {
-                        setStatusFilter("All");
-                      }}
-                      aria-label={`Clear sync run status filter ${statusFilter}`}
-                      aria-controls={syncRunsRegionId}
-                      title="Clear status filter"
-                    >
-                      Status: {statusFilter}
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </li>
-                ) : null}
-              </ul>
+              <div className="flex min-w-0 flex-1 items-center gap-2">
+                <p className="text-xs font-medium text-primary">Active filters</p>
+                <ul role="list" className="flex min-w-0 flex-wrap items-center gap-2 text-xs">
+                  {search.trim().length > 0 ? (
+                    <li className="list-none">
+                      <button
+                        type="button"
+                        className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
+                        onClick={handleClearSearch}
+                        aria-label="Clear sync run search filter"
+                        aria-controls={syncRunsRegionId}
+                        title="Clear search filter"
+                      >
+                        Search · {search.trim()}
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </li>
+                  ) : null}
+                  {statusFilter !== "All" ? (
+                    <li className="list-none">
+                      <button
+                        type="button"
+                        className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
+                        onClick={() => {
+                          setStatusFilter("All");
+                        }}
+                        aria-label={`Clear sync run status filter ${statusFilter}`}
+                        aria-controls={syncRunsRegionId}
+                        title="Clear status filter"
+                      >
+                        Status · {statusFilter}
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </li>
+                  ) : null}
+                </ul>
+              </div>
               <Button
                 type="button"
                 size="sm"
@@ -225,7 +228,7 @@ export function SyncRunActivityPanel({
                 onClick={handleResetFilters}
                 aria-controls={syncRunsRegionId}
               >
-                Reset filters
+                Clear all
               </Button>
             </div>
           ) : null}
@@ -264,17 +267,17 @@ export function SyncRunActivityPanel({
           <div className={`neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}>
             <p>No sync runs match the current search or status filter.</p>
             <div className="flex flex-wrap gap-2">
-              <Button
-                type="button"
-                size="sm"
-                variant="secondary"
-                onClick={handleResetFilters}
-                disabled={!canReset}
-              >
-                Reset filters
-              </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  onClick={handleResetFilters}
+                  disabled={!canReset}
+                >
+                  Clear all
+                </Button>
+              </div>
             </div>
-          </div>
         ) : (
           <ol role="list" className={`grid gap-2 ${resultsRegionClassName}`}>
             {filteredRuns.map((run, index) => {
