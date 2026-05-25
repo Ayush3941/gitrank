@@ -54,6 +54,17 @@ const focusIconByValue = {
   "High XP": Trophy,
 } as const;
 
+const focusCompactLabelByValue = {
+  Any: "Any",
+  Docs: "Docs",
+  Tests: "Tests",
+  "Bug Fixes": "Bugfix",
+  Infra: "Infra",
+  Security: "Security",
+  Performance: "Perf",
+  "High XP": "High XP",
+} as const;
+
 const sortOptions = [
   "Newest",
   "Highest XP",
@@ -66,6 +77,13 @@ const sortIconByValue = {
   "Highest XP": Trophy,
   "Highest Difficulty": Gauge,
   "Highest Impact": BarChart3,
+} as const;
+
+const sortCompactLabelByValue = {
+  Newest: "Newest",
+  "Highest XP": "Top XP",
+  "Highest Difficulty": "Top Diff",
+  "Highest Impact": "Top Impact",
 } as const;
 
 export function ContributionFilters({
@@ -262,9 +280,10 @@ export function ContributionFilters({
                 return {
                   value: filter.value,
                   label: filter.value,
+                  compactLabel: focusCompactLabelByValue[filter.value],
                   icon: <Icon className="h-4 w-4" />,
                   count: focusCounts?.[filter.value],
-                  minWidthClassName: "min-w-[8rem]",
+                  minWidthClassName: "min-w-[7.25rem] sm:min-w-[8rem]",
                 };
               })}
               value={activeFocus}
@@ -310,8 +329,9 @@ export function ContributionFilters({
                 return {
                   value: item,
                   label: item,
+                  compactLabel: sortCompactLabelByValue[item],
                   icon: <Icon className="h-4 w-4" />,
-                  minWidthClassName: "min-w-[9rem]",
+                  minWidthClassName: "min-w-[7.5rem] sm:min-w-[9rem]",
                 };
               })}
               value={sort}

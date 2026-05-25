@@ -63,7 +63,11 @@ export function SegmentedTablist<T extends string>({
         {options.map((item) => {
           const active = value === item.value;
           const optionID = `${tabIdPrefix}-${item.value.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
-          const accessibleLabel = item.compactLabel
+          const hasDistinctCompactLabel =
+            typeof item.compactLabel === "string" &&
+            item.compactLabel.trim().length > 0 &&
+            item.compactLabel !== item.label;
+          const accessibleLabel = hasDistinctCompactLabel
             ? `${item.compactLabel} (${item.label})`
             : item.label;
           return (
@@ -113,7 +117,7 @@ export function SegmentedTablist<T extends string>({
                       {item.icon}
                     </span>
                   ) : null}
-                  {item.compactLabel ? (
+                  {hasDistinctCompactLabel ? (
                     <>
                       <span className="truncate sm:hidden">{item.compactLabel}</span>
                       <span className="hidden truncate sm:inline">{item.label}</span>

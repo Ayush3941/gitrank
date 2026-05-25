@@ -32,6 +32,12 @@
   - added an `Active filters` strip to repository-visibility controls in Settings with removable `Search · ...` and `Visibility · ...` chips.
   - added one-click `Clear all` and replaced the remaining empty-state `Reset` action with `Clear all`.
   - aligns repository privacy controls with the same filter interaction model used across the rest of dashboard tabs.
+- Contributions compact-segment label pass:
+  - added compact mobile labels for longer contribution lanes and sort options (for example `Bugfix`, `Perf`, `Top Diff`) while preserving full desktop labels.
+  - reduced mobile minimum widths for those lane options to keep contribution controls easier to scan without excessive horizontal travel.
+- Segmented-label accessibility-name guard pass:
+  - updated shared segmented-tablist naming logic so compact labels only alter accessible names when they differ from the full label.
+  - prevents duplicated names like `Newest (Newest)` and keeps role-name queries stable in tests and assistive output.
 
 ## 2026-05-24
 
