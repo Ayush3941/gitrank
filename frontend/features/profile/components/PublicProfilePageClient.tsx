@@ -167,7 +167,7 @@ export function PublicProfilePageClient({
     return (
       <ErrorState
         title="Profile unavailable"
-        description="The public profile could not be loaded. Retry or open dashboard."
+        description="The public profile is unavailable right now. Retry or open dashboard."
         onRetry={() => {
           void refetch();
         }}
@@ -183,7 +183,7 @@ export function PublicProfilePageClient({
       <EmptyState
         eyebrow="Public profile visibility"
         title="Profile unavailable"
-        description="This profile is hidden, missing, or has not earned a public GitRank score yet."
+        description="This profile is hidden, missing, or waiting for its first public GitRank score."
         actionLabel="Open dashboard"
         actionHref="/dashboard"
         analyticsTarget="public-profile:empty"
@@ -274,7 +274,7 @@ export function PublicProfilePageClient({
               <p className="text-xs font-medium text-primary">Skills</p>
               <h2 className="mt-2 text-xl font-semibold text-white">Skill map</h2>
               <p className="mt-1 text-sm text-muted">
-                Skill lanes are evidence-weighted classification signals from visible PR history.
+                Think of this as a live map of what your visible PR history is signaling right now.
               </p>
             </div>
             {skillTree.length === 0 ? (

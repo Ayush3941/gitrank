@@ -77,7 +77,7 @@ export function PRBattleReportPageClient({
     return (
       <ErrorState
         title="Battle report failed"
-        description="The score breakdown could not be loaded. Retry or return to contributions."
+        description="The score breakdown is unavailable right now. Retry or return to contributions."
         onRetry={() => {
           void refetch();
         }}
@@ -92,8 +92,8 @@ export function PRBattleReportPageClient({
     return (
       <EmptyState
         eyebrow="PR evidence"
-        title="Battle report not found"
-        description="This PR either has not been synced, is private, or has not produced a scored report yet."
+        title="Battle report unavailable"
+        description="This PR may still be syncing, may be private, or may be waiting for score report generation."
         actionLabel="Open contributions"
         actionHref="/dashboard/contributions"
         analyticsTarget="pr-report:empty"

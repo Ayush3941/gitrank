@@ -86,19 +86,19 @@ export function LandingPage() {
           <SectionHeader
             eyebrow="Problem"
             title="Why GitRank exists"
-            description="Activity volume alone does not describe contribution quality."
+            description="Contribution quality needs more than activity volume."
           />
           <div className="grid gap-6 lg:grid-cols-3">
           {[
           {
             icon: <ChartNoAxesCombined className="h-5 w-5 text-primary" />,
-            title: "Activity is not skill.",
+            title: "Skill needs evidence.",
             text: "Commits, stars, and streaks miss difficulty and real impact.",
           },
           {
             icon: <GitPullRequestArrow className="h-5 w-5 text-primary" />,
-            title: "PRs are not equal work.",
-            text: "A typo fix and a deep runtime patch should not score the same.",
+            title: "PRs carry different impact.",
+            text: "A typo fix and a deep runtime patch deserve different score weight.",
           },
           {
             icon: <ShieldCheck className="h-5 w-5 text-primary" />,
@@ -220,8 +220,8 @@ export function LandingPage() {
         <GlowCard className="space-y-5">
           <SectionHeader
             eyebrow="Badge shelf"
-            title="Visible milestones, not vanity clutter"
-            description="Badges unlock from sustained evidence, not noisy activity."
+            title="Visible milestones with signal-first design"
+            description="Badges unlock from sustained evidence and meaningful activity."
           />
           <ul role="list" className="grid gap-3 sm:grid-cols-2">
             {[

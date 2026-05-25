@@ -192,7 +192,7 @@ export function SettingsPageClient() {
     return (
       <ErrorState
         title="Settings unavailable"
-        description="Could not load settings. Retry in a moment."
+        description="Settings are unavailable right now. Retry in a moment."
         onRetry={() => {
           void refetch();
         }}
@@ -259,7 +259,7 @@ export function SettingsPageClient() {
     accountLinkStart.mutate("/dashboard/settings", {
       onSuccess: (result) => {
         if (!result.authorize_url) {
-          setActionNotice("Account relink response did not include authorize_url.");
+          setActionNotice("Account relink response is missing authorize_url.");
           return;
         }
         window.location.assign(result.authorize_url);

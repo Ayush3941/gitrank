@@ -238,9 +238,9 @@ export function LeaderboardPageClient() {
       </section>
       {isLoading ? <LoadingState message="Loading leaderboard..." /> : null}
       {isError ? (
-        <ErrorState
-          title="Leaderboard unavailable"
-          description="The ranking snapshot could not be refreshed. Retry or open dashboard."
+      <ErrorState
+        title="Leaderboard unavailable"
+        description="The ranking snapshot is unavailable right now. Retry or open dashboard."
           onRetry={() => {
             void refetch();
           }}

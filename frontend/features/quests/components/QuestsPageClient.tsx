@@ -275,7 +275,7 @@ export function QuestsPageClient() {
         {isError ? (
           <ErrorState
             title="Quest engine unavailable"
-            description="Quest recommendations could not load. Retry or open sync settings."
+            description="Quest recommendations are unavailable right now. Retry or open sync settings."
             onRetry={() => {
               void refetch();
             }}

@@ -160,7 +160,7 @@ export function DashboardHeroRankCard({
       <div className="space-y-3">
         <p className="text-xs font-medium text-primary">Top signals (latest evidence)</p>
         <p className="text-xs text-muted">
-          Signals summarize recent PR-topic classification and evidence, not absolute expertise.
+          This is a quick read of where your recent PRs are landing right now.
         </p>
         <ul role="list" className="flex flex-wrap gap-2">
           {strongestSignals.map((signal, index) => (
