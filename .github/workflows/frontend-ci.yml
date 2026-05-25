@@ -38,6 +38,9 @@ jobs:
       - name: Check hardcoded identity literals
         run: npm run check:no-hardcoded-identities
 
+      - name: Check conversational copy tone
+        run: npm run check:copy-tone
+
       - name: Check sync copy policy
         run: npm run check:sync-copy-policy
 

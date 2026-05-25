@@ -57,6 +57,7 @@ Font assets are bundled in `public/assets/fonts` so local and CI builds do not r
 npm run lint
 npm run check:no-production-mocks
 npm run check:no-hardcoded-identities
+npm run check:copy-tone
 npm run check:sync-copy-policy
 npm run check:onboarding-prefetch-policy
 npm run check:jsx-ids
@@ -86,12 +87,13 @@ The public profile page, authenticated dashboard overview, onboarding reveal, ba
 - leaderboard rows surface season snapshot IDs, rank movement event IDs, profile-snapshot provenance, score version, source watermark, and missing rank-ledger evidence when the backend provides it
 - `npm run check:no-production-mocks` fails CI if production app, hook, feature, or API modules import mock datasets, preview adapters, or demo query plumbing
 - `npm run check:no-hardcoded-identities` fails CI if production frontend modules include banned personal/demo identity literals (`Ayush3941`, `Ayush Kumar Gaur`, `octocat`)
+- `npm run check:copy-tone` fails CI if production UI copy regresses to stale/non-conversational negation phrases such as "could not load" or "is not available in this snapshot yet"
 - `npm run check:sync-copy-policy` fails CI if production frontend modules reintroduce manual-sync phrasing (`Run sync`, `Sync now`) instead of auto-sync guidance copy
 - `npm run check:onboarding-prefetch-policy` fails CI if onboarding/marketing internal links omit explicit `prefetch={false}` in performance-sensitive entry flows
 - `npm run check:jsx-ids` fails CI if a TSX file reuses the same literal `id` more than once, preventing duplicate region IDs that break a11y and section controls
 - `npm run check:scroll-jumps` fails CI if product routes reintroduce direct `window.scrollTo`/`scrollIntoView` style APIs that can cause viewport jumps
 - `npm run check:motion-budget` fails CI if product routes reintroduce heavy animation patterns (`framer-motion`, animation utility classes, keyframes, or `transition: all`)
-- frontend CI enforces these UI integrity checks directly (`no-hardcoded-identities`, `query-policy`, `jsx-keys`, `jsx-ids`, `nested-interactive`, `scroll-jumps`, `motion-budget`) so regressions fail pull requests before merge
+- frontend CI enforces these UI integrity checks directly (`no-hardcoded-identities`, `copy-tone`, `query-policy`, `jsx-keys`, `jsx-ids`, `nested-interactive`, `scroll-jumps`, `motion-budget`) so regressions fail pull requests before merge
 - frontend CI also runs `../gitrank/scripts/verify_v2_no_mock_release_gate.sh` to verify critical OpenAPI entries, worker-flow coverage, and live fixture coverage stay wired
 - `npm run test:smoke` renders dashboard, quest, PR-report, profile, leaderboard, and settings flows from live-shaped BFF fixtures
 
