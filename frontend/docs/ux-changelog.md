@@ -16,6 +16,9 @@
 - Shared contribution-pulse component pass:
   - extracted the pulse strip into a reusable shared component and reused it in both dashboard and public-profile hero surfaces.
   - public profile now includes a compact 10-day pulse lane for shareable momentum context aligned with dashboard semantics.
+- Contributions momentum strip pass:
+  - added a compact contribution-momentum panel to the Contributions route with streak chips and a 21-day pulse strip.
+  - uses existing persisted profile contribution timestamps only (no new fetch paths), keeping the enhancement low-cost on CPU/network.
 - Empty-state action consistency pass:
   - standardized empty-state secondary actions from tiny text links to real `Button` controls with consistent hierarchy.
   - added responsive full-width CTA behavior on narrow viewports for easier touch targeting and clearer next-step recovery.

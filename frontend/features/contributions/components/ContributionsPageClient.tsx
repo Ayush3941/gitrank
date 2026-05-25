@@ -10,6 +10,7 @@ import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { InlineNotice } from "@/components/shared/InlineNotice";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { ContributionPulseStrip } from "@/components/shared/ContributionPulseStrip";
 import { StaleState } from "@/components/shared/StaleState";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
 import { useContributions } from "@/hooks/use-contributions";
@@ -337,6 +338,34 @@ export function ContributionsPageClient() {
           actionHref="/dashboard/settings"
           analyticsTarget="contributions:stale"
         />
+      ) : null}
+      {profile ? (
+        <section className="render-opt-section">
+          <GlowCard className="space-y-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-medium text-primary">Contribution momentum</p>
+                <h2 className="mt-2 text-xl font-semibold text-white">Recent activity signal</h2>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs font-semibold">
+                  Current streak {streak.currentStreakDays}d
+                </span>
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs font-semibold">
+                  Best streak {streak.bestStreakDays}d
+                </span>
+                <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs font-semibold">
+                  Active days {streak.activeDaysThisYear}
+                </span>
+              </div>
+            </div>
+            <ContributionPulseStrip
+              contributions={profile.user.contributions}
+              days={21}
+              label="21-day contribution pulse"
+            />
+          </GlowCard>
+        </section>
       ) : null}
       <section>
         <ContributionFilters
