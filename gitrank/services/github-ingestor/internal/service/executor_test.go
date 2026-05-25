@@ -479,7 +479,8 @@ func TestExecutorFetchPullRequestFilesUsesBoundedRESTEndpoint(t *testing.T) {
 
 	executor := NewExecutor(config.App{
 		GitHub: config.GitHub{
-			MaxPageSize: 7,
+			MaxPageSize:            7,
+			RepositorySyncPageSize: 10,
 		},
 	}, nil, client)
 
@@ -573,7 +574,8 @@ func TestExecutorFetchAuthoredPullRequestTargetsUsesGitHubSearch(t *testing.T) {
 
 	executor := NewExecutor(config.App{
 		GitHub: config.GitHub{
-			MaxPageSize: 9,
+			MaxPageSize:           9,
+			AuthoredPRSearchLimit: 100,
 		},
 	}, nil, client)
 
@@ -652,7 +654,9 @@ func TestExecutorFetchLiveInstallationRepositoryTargetsUsesPaginationAndFilters(
 
 	executor := NewExecutor(config.App{
 		GitHub: config.GitHub{
-			MaxPageSize: 3,
+			MaxPageSize:                    3,
+			InstallationRepositoryPageSize: 3,
+			InstallationRepositoryMaxPages: 10,
 		},
 	}, nil, client)
 
@@ -919,14 +923,15 @@ func TestExecutorFetchPullRequestsUsesGraphQLBatchWhenTokenAvailable(t *testing.
 
 	executor := NewExecutor(config.App{
 		GitHub: config.GitHub{
-			GraphQLURL:       graphqlServer.URL,
-			APIVersion:       "2026-03-10",
-			UserAgent:        "GitRank/test",
-			RequestTimeout:   time.Second,
-			MaxPageSize:      50,
-			GraphQLPageSize:  20,
-			SecondaryBackoff: time.Millisecond,
-			MaxConcurrency:   1,
+			GraphQLURL:             graphqlServer.URL,
+			APIVersion:             "2026-03-10",
+			UserAgent:              "GitRank/test",
+			RequestTimeout:         time.Second,
+			MaxPageSize:            50,
+			GraphQLPageSize:        20,
+			RepositorySyncPageSize: 10,
+			SecondaryBackoff:       time.Millisecond,
+			MaxConcurrency:         1,
 		},
 	}, nil, restClient)
 	executor.graphqlTokenSource = func(context.Context, SyncRequestActor, time.Time) (githubapi.TokenSource, bool, error) {

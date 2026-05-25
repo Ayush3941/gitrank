@@ -15,11 +15,13 @@ const analyzerVersion = "deterministic.v1"
 const aiSummaryPromptVersion = "gemini.summary.v1"
 
 type AIConfig struct {
-	Provider       string
-	APIKey         string
-	Model          string
-	BaseURL        string
-	RequestTimeout time.Duration
+	Provider            string
+	APIKey              string
+	Model               string
+	BaseURL             string
+	RequestTimeout      time.Duration
+	SummaryMaxRunes     int
+	PromptFilePathLimit int
 }
 
 type Service struct {

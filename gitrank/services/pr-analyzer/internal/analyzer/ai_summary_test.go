@@ -14,9 +14,11 @@ import (
 
 func TestNewGeminiSummaryClientRequiresCredentials(t *testing.T) {
 	client := newGeminiSummaryClient(AIConfig{
-		Provider: "gemini",
-		Model:    "gemini-2.5-flash",
-		BaseURL:  "https://generativelanguage.googleapis.com/v1beta/openai",
+		Provider:            "gemini",
+		Model:               "gemini-2.5-flash",
+		BaseURL:             "https://generativelanguage.googleapis.com/v1beta/openai",
+		SummaryMaxRunes:     320,
+		PromptFilePathLimit: 12,
 	})
 	if client != nil {
 		t.Fatal("newGeminiSummaryClient() = non-nil, want nil without API key")
@@ -37,10 +39,13 @@ func TestGeminiSummaryClientSummarizeSuccess(t *testing.T) {
 	defer server.Close()
 
 	client := newGeminiSummaryClient(AIConfig{
-		Provider: "gemini",
-		APIKey:   "test-key",
-		Model:    "gemini-2.5-flash",
-		BaseURL:  server.URL + "/v1beta/openai",
+		Provider:            "gemini",
+		APIKey:              "test-key",
+		Model:               "gemini-2.5-flash",
+		BaseURL:             server.URL + "/v1beta/openai",
+		RequestTimeout:      2 * time.Second,
+		SummaryMaxRunes:     320,
+		PromptFilePathLimit: 12,
 	})
 	if client == nil {
 		t.Fatal("newGeminiSummaryClient() = nil, want configured client")
@@ -81,11 +86,13 @@ func TestGeminiSummaryClientSummarizeRateLimitFallbackReason(t *testing.T) {
 	defer server.Close()
 
 	client := newGeminiSummaryClient(AIConfig{
-		Provider:       "gemini",
-		APIKey:         "test-key",
-		Model:          "gemini-2.5-flash",
-		BaseURL:        server.URL,
-		RequestTimeout: 2 * time.Second,
+		Provider:            "gemini",
+		APIKey:              "test-key",
+		Model:               "gemini-2.5-flash",
+		BaseURL:             server.URL,
+		RequestTimeout:      2 * time.Second,
+		SummaryMaxRunes:     320,
+		PromptFilePathLimit: 12,
 	})
 	if client == nil {
 		t.Fatal("newGeminiSummaryClient() = nil, want configured client")

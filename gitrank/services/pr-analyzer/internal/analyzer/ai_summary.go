@@ -10,23 +10,18 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 	"unicode/utf8"
 
 	"github.com/gitrank/gitrank/packages/contracts"
 )
 
-const (
-	defaultAISummaryTimeout = 20 * time.Second
-	maxAISummaryRunes       = 320
-	maxPromptFilePaths      = 12
-)
-
 type geminiSummaryClient struct {
-	httpClient *http.Client
-	endpoint   string
-	apiKey     string
-	model      string
+	httpClient          *http.Client
+	endpoint            string
+	apiKey              string
+	model               string
+	maxSummaryRunes     int
+	promptFilePathLimit int
 }
 
 type chatCompletionRequest struct {
@@ -95,15 +90,19 @@ func newGeminiSummaryClient(cfg AIConfig) *geminiSummaryClient {
 	parsedBase.Fragment = ""
 
 	timeout := cfg.RequestTimeout
-	if timeout <= 0 {
-		timeout = defaultAISummaryTimeout
+	maxSummaryRunes := cfg.SummaryMaxRunes
+	promptFilePathLimit := cfg.PromptFilePathLimit
+	if timeout <= 0 || maxSummaryRunes <= 0 || promptFilePathLimit <= 0 {
+		return nil
 	}
 
 	return &geminiSummaryClient{
-		httpClient: &http.Client{Timeout: timeout},
-		endpoint:   parsedBase.String(),
-		apiKey:     apiKey,
-		model:      model,
+		httpClient:          &http.Client{Timeout: timeout},
+		endpoint:            parsedBase.String(),
+		apiKey:              apiKey,
+		model:               model,
+		maxSummaryRunes:     maxSummaryRunes,
+		promptFilePathLimit: promptFilePathLimit,
 	}
 }
 
@@ -131,7 +130,7 @@ func (c *geminiSummaryClient) Summarize(
 			},
 			{
 				Role:    "user",
-				Content: buildAISummaryPrompt(req, baseline),
+				Content: buildAISummaryPrompt(req, baseline, c.promptFilePathLimit),
 			},
 		},
 	})
@@ -172,7 +171,7 @@ func (c *geminiSummaryClient) Summarize(
 	}
 
 	summary := extractCompletionText(completion.Choices[0].Message.Content)
-	summary = normalizeAISummary(summary)
+	summary = normalizeAISummary(summary, c.maxSummaryRunes)
 	if summary == "" {
 		return "", &aiSummaryError{
 			reason: "ai_empty_summary",
@@ -210,14 +209,14 @@ func extractCompletionText(content any) string {
 	}
 }
 
-func normalizeAISummary(summary string) string {
+func normalizeAISummary(summary string, maxSummaryRunes int) string {
 	summary = strings.Join(strings.Fields(strings.TrimSpace(summary)), " ")
 	if summary == "" {
 		return ""
 	}
-	if utf8.RuneCountInString(summary) > maxAISummaryRunes {
+	if maxSummaryRunes > 0 && utf8.RuneCountInString(summary) > maxSummaryRunes {
 		runes := []rune(summary)
-		summary = string(runes[:maxAISummaryRunes])
+		summary = string(runes[:maxSummaryRunes])
 	}
 	return strings.TrimSpace(summary)
 }
@@ -244,6 +243,7 @@ func classifyAIHTTPFailure(statusCode int, body string) string {
 func buildAISummaryPrompt(
 	req contracts.PullRequestAnalysisRequest,
 	baseline contracts.PullRequestAnalysisResponse,
+	promptFilePathLimit int,
 ) string {
 	filePaths := make([]string, 0, len(req.PullRequest.Files))
 	for _, file := range req.PullRequest.Files {
@@ -252,7 +252,7 @@ func buildAISummaryPrompt(
 			continue
 		}
 		filePaths = append(filePaths, path)
-		if len(filePaths) >= maxPromptFilePaths {
+		if promptFilePathLimit > 0 && len(filePaths) >= promptFilePathLimit {
 			break
 		}
 	}

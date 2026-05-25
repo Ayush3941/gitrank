@@ -94,6 +94,9 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.AI.PRMaxChangedFiles != 100 || cfg.AI.PRMaxFileRecords != 100 || cfg.AI.PRMaxEstimatedTokens != 30000 {
 		t.Fatalf("AI PR limits = changed_files %d file_records %d tokens %d, want defaults", cfg.AI.PRMaxChangedFiles, cfg.AI.PRMaxFileRecords, cfg.AI.PRMaxEstimatedTokens)
 	}
+	if cfg.AI.SummaryMaxRunes != 320 || cfg.AI.SummaryPromptFilePathLimit != 12 {
+		t.Fatalf("AI summary limits = runes %d prompt_paths %d, want 320/12", cfg.AI.SummaryMaxRunes, cfg.AI.SummaryPromptFilePathLimit)
+	}
 	if cfg.Scoring.ScoreVersion != "v1alpha1" {
 		t.Fatalf("Scoring.ScoreVersion = %q, want v1alpha1", cfg.Scoring.ScoreVersion)
 	}
@@ -158,6 +161,8 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	t.Setenv("AI_PR_MAX_CHANGED_FILES", "24")
 	t.Setenv("AI_PR_MAX_FILE_RECORDS", "30")
 	t.Setenv("AI_PR_MAX_DIFF_LINES", "900")
+	t.Setenv("AI_SUMMARY_MAX_RUNES", "500")
+	t.Setenv("AI_SUMMARY_PROMPT_FILE_PATH_LIMIT", "18")
 	t.Setenv("AI_PR_MAX_INPUT_CHARS", "16000")
 	t.Setenv("AI_PR_MAX_ESTIMATED_TOKENS", "4000")
 	t.Setenv("AI_PR_MAX_ESTIMATED_COST_USD", "0.08")
@@ -265,6 +270,9 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	}
 	if cfg.AI.PRMaxChangedFiles != 24 || cfg.AI.PRMaxFileRecords != 30 {
 		t.Fatalf("AI file limits = changed %d files %d, want 24/30", cfg.AI.PRMaxChangedFiles, cfg.AI.PRMaxFileRecords)
+	}
+	if cfg.AI.SummaryMaxRunes != 500 || cfg.AI.SummaryPromptFilePathLimit != 18 {
+		t.Fatalf("AI summary limits = runes %d prompt_paths %d, want 500/18", cfg.AI.SummaryMaxRunes, cfg.AI.SummaryPromptFilePathLimit)
 	}
 	if cfg.AI.Provider != "gemini" || cfg.AI.Model != "gemini-2.5-pro" {
 		t.Fatalf("AI provider/model = %s/%s, want gemini/gemini-2.5-pro", cfg.AI.Provider, cfg.AI.Model)

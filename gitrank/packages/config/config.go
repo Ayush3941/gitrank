@@ -134,6 +134,8 @@ type AI struct {
 	Model                      string
 	BaseURL                    string
 	RequestTimeout             time.Duration
+	SummaryMaxRunes            int
+	SummaryPromptFilePathLimit int
 	ModerationModel            string
 	EmbeddingModel             string
 	PRMaxChangedFiles          int
@@ -322,6 +324,8 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			Model:                      getEnv("GEMINI_MODEL", "gemini-2.5-flash"),
 			BaseURL:                    getEnv("GEMINI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai"),
 			RequestTimeout:             getDuration("AI_REQUEST_TIMEOUT", 20*time.Second),
+			SummaryMaxRunes:            getInt("AI_SUMMARY_MAX_RUNES", 320),
+			SummaryPromptFilePathLimit: getInt("AI_SUMMARY_PROMPT_FILE_PATH_LIMIT", 12),
 			ModerationModel:            getEnv("GEMINI_MODERATION_MODEL", ""),
 			EmbeddingModel:             getEnv("GEMINI_EMBEDDING_MODEL", "text-embedding-004"),
 			PRMaxChangedFiles:          getInt("AI_PR_MAX_CHANGED_FILES", 100),
@@ -582,6 +586,12 @@ func (a App) ValidateBase() error {
 	}
 	if a.AI.RequestTimeout <= 0 {
 		problems = append(problems, "AI_REQUEST_TIMEOUT must be positive")
+	}
+	if a.AI.SummaryMaxRunes <= 0 || a.AI.SummaryMaxRunes > 2048 {
+		problems = append(problems, "AI_SUMMARY_MAX_RUNES must be between 1 and 2048")
+	}
+	if a.AI.SummaryPromptFilePathLimit <= 0 || a.AI.SummaryPromptFilePathLimit > 200 {
+		problems = append(problems, "AI_SUMMARY_PROMPT_FILE_PATH_LIMIT must be between 1 and 200")
 	}
 	if a.AI.PRMaxChangedFiles <= 0 {
 		problems = append(problems, "AI_PR_MAX_CHANGED_FILES must be positive")
