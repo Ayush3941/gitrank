@@ -61,6 +61,7 @@ npm run check:sync-copy-policy
 npm run check:onboarding-prefetch-policy
 npm run check:jsx-ids
 npm run check:scroll-jumps
+npm run check:motion-budget
 npm run test:smoke
 npm run build
 ```
@@ -89,7 +90,8 @@ The public profile page, authenticated dashboard overview, onboarding reveal, ba
 - `npm run check:onboarding-prefetch-policy` fails CI if onboarding/marketing internal links omit explicit `prefetch={false}` in performance-sensitive entry flows
 - `npm run check:jsx-ids` fails CI if a TSX file reuses the same literal `id` more than once, preventing duplicate region IDs that break a11y and section controls
 - `npm run check:scroll-jumps` fails CI if product routes reintroduce direct `window.scrollTo`/`scrollIntoView` style APIs that can cause viewport jumps
-- frontend CI enforces these UI integrity checks directly (`no-hardcoded-identities`, `query-policy`, `jsx-keys`, `jsx-ids`, `nested-interactive`, `scroll-jumps`) so regressions fail pull requests before merge
+- `npm run check:motion-budget` fails CI if product routes reintroduce heavy animation patterns (`framer-motion`, animation utility classes, keyframes, or `transition: all`)
+- frontend CI enforces these UI integrity checks directly (`no-hardcoded-identities`, `query-policy`, `jsx-keys`, `jsx-ids`, `nested-interactive`, `scroll-jumps`, `motion-budget`) so regressions fail pull requests before merge
 - frontend CI also runs `../gitrank/scripts/verify_v2_no_mock_release_gate.sh` to verify critical OpenAPI entries, worker-flow coverage, and live fixture coverage stay wired
 - `npm run test:smoke` renders dashboard, quest, PR-report, profile, leaderboard, and settings flows from live-shaped BFF fixtures
 
