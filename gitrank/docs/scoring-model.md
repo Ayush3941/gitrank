@@ -117,6 +117,11 @@ ContributionScore =
   * max(0.35, 1 - SpamPenalty)
 ```
 
+Runtime policy note:
+
+- In production code, deterministic formula constants are configured via `SCORING_*` environment variables (score version, category weights, repository/outcome modifiers, diminishing rules, spam penalties, and level thresholds).
+- This keeps formula changes deploy-time configurable without hardcoding new constants into service logic.
+
 ## Explainability Requirement
 
 Every score event must expose:

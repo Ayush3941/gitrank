@@ -63,11 +63,11 @@ func TestBuildReplayMonitorsAndExcludesSelfMergedPullRequests(t *testing.T) {
 	if selfMerged, _ := events[0].Metadata["self_merged"].(bool); !selfMerged {
 		t.Fatalf("metadata self_merged = %v, want true", events[0].Metadata["self_merged"])
 	}
-	if version, _ := events[0].Metadata["score_formula_inputs_version"].(string); version != "score-components/v1" {
-		t.Fatalf("score_formula_inputs_version = %q, want score-components/v1", version)
+	if version, _ := events[0].Metadata["score_formula_inputs_version"].(string); version != "score-components/v1alpha1" {
+		t.Fatalf("score_formula_inputs_version = %q, want score-components/v1alpha1", version)
 	}
-	if version, _ := events[0].Metadata["formula_version"].(string); version != "score-components/v1" {
-		t.Fatalf("formula_version = %q, want score-components/v1", version)
+	if version, _ := events[0].Metadata["formula_version"].(string); version != "score-components/v1alpha1" {
+		t.Fatalf("formula_version = %q, want score-components/v1alpha1", version)
 	}
 	if pullRequestID, _ := events[0].Metadata["pull_request_id"].(string); pullRequestID != "pr-1" {
 		t.Fatalf("metadata pull_request_id = %q, want pr-1", pullRequestID)

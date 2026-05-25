@@ -29,10 +29,11 @@ type Service struct {
 }
 
 func New(cfg config.App, pool *pgxpool.Pool, log *slog.Logger) (*Service, error) {
+	engine := scoring.NewWithPolicy(cfg.Scoring)
 	return &Service{
 		cfg:    cfg,
 		log:    log,
-		engine: scoring.New(),
+		engine: engine,
 		store:  NewStore(pool),
 	}, nil
 }
@@ -71,7 +72,7 @@ func (s *Service) ReplayUser(ctx context.Context, userID string, req contracts.R
 	events, snapshot, badges, aggregateSkills, sourceWatermark := s.buildReplay(userID, triggerType, candidates, now.UTC())
 	run, savedSnapshot, err := s.store.SaveReplay(ctx, replayRunRecord{
 		UserID:           userID,
-		ScoreVersion:     scoring.ScoreVersion,
+		ScoreVersion:     s.scoreVersion(),
 		TriggerType:      triggerType,
 		Status:           "completed",
 		SourceWatermark:  sourceWatermark,
@@ -102,8 +103,8 @@ func (s *Service) VerifyReplay(ctx context.Context, userID string, req contracts
 	if err := req.Validate(); err != nil {
 		return contracts.ScoreReplayVerificationResponse{}, fmt.Errorf("%w: %v", ErrInvalidRequest, err)
 	}
-	if version := strings.TrimSpace(req.ScoreVersion); version != "" && version != scoring.ScoreVersion {
-		return contracts.ScoreReplayVerificationResponse{}, fmt.Errorf("%w: score_version must be %s", ErrInvalidRequest, scoring.ScoreVersion)
+	if version := strings.TrimSpace(req.ScoreVersion); version != "" && version != s.scoreVersion() {
+		return contracts.ScoreReplayVerificationResponse{}, fmt.Errorf("%w: score_version must be %s", ErrInvalidRequest, s.scoreVersion())
 	}
 	if err := s.store.EnsureUser(ctx, userID); err != nil {
 		return contracts.ScoreReplayVerificationResponse{}, err
@@ -130,7 +131,7 @@ func (s *Service) VerifyReplay(ctx context.Context, userID string, req contracts
 	events, snapshot, badges, _, sourceWatermark := s.buildReplay(userID, "verification", candidates, now.UTC())
 	return contracts.ScoreReplayVerificationResponse{
 		UserID:            userID,
-		ScoreVersion:      scoring.ScoreVersion,
+		ScoreVersion:      s.scoreVersion(),
 		Repository:        repository,
 		From:              optionalUTCTime(req.From),
 		To:                optionalUTCTime(req.To),
@@ -146,6 +147,14 @@ func (s *Service) VerifyReplay(ctx context.Context, userID string, req contracts
 		GeneratedAt:       now.UTC(),
 		Persisted:         false,
 	}, nil
+}
+
+func (s *Service) scoreVersion() string {
+	version := strings.TrimSpace(s.cfg.Scoring.ScoreVersion)
+	if version == "" {
+		return scoring.DefaultScoreVersion
+	}
+	return version
 }
 
 func optionalUTCTime(value time.Time) *time.Time {
@@ -255,6 +264,7 @@ func (s *Service) buildReplay(userID, triggerType string, candidates []replayCan
 			response.Explanation = append(response.Explanation, "self-merged pull request excluded from score")
 			response.SuspiciousActivity = true
 		}
+		formulaVersion := "score-components/" + response.ScoreVersion
 
 		event := scoreEventRecord{
 			EventKey:      fmt.Sprintf("pr:%s:analysis:%s:score:%s", candidate.PullRequestID, candidate.AnalysisID, response.ScoreVersion),
@@ -283,8 +293,8 @@ func (s *Service) buildReplay(userID, triggerType string, candidates []replayCan
 				"total_xp":                     response.TotalXP,
 				"raw_formula_total_xp":         rawFormulaTotalXP,
 				"level":                        response.Level,
-				"score_formula_inputs_version": "score-components/v1",
-				"formula_version":              "score-components/v1",
+				"score_formula_inputs_version": formulaVersion,
+				"formula_version":              formulaVersion,
 				"pull_request_id":              candidate.PullRequestID,
 				"analysis_id":                  candidate.AnalysisID,
 				"repository_full_name":         candidate.Repository.FullName,
@@ -318,10 +328,10 @@ func (s *Service) buildReplay(userID, triggerType string, candidates []replayCan
 	badges := issueBadges(events, aggregateSkills)
 	snapshot := scoreSnapshotRecord{
 		UserID:            userID,
-		ScoreVersion:      scoring.ScoreVersion,
+		ScoreVersion:      s.scoreVersion(),
 		TriggerType:       triggerType,
 		TotalXP:           totalXP,
-		Level:             scoring.LevelForXP(totalXP),
+		Level:             s.engine.LevelForXP(totalXP),
 		RankTier:          rankTierForXP(totalXP),
 		TopSkills:         buildSkillAreas(aggregateSkills),
 		BadgeKeys:         badgeKeys(badges),

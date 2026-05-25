@@ -34,6 +34,7 @@ type App struct {
 	Auth            Auth
 	GitHub          GitHub
 	AI              AI
+	Scoring         Scoring
 	Observability   Observability
 	Scheduler       Scheduler
 }
@@ -140,6 +141,63 @@ type AI struct {
 	PRMaxEstimatedTokens       int
 	PRMaxEstimatedCostUSD      float64
 	EstimatedInputTokenCostUSD float64
+}
+
+type Scoring struct {
+	ScoreVersion string
+	BaseXP       float64
+	MinXP        int
+
+	CategoryWeightDefault            float64
+	CategoryWeightDocumentation      float64
+	CategoryWeightTests              float64
+	CategoryWeightBugFix             float64
+	CategoryWeightFeature            float64
+	CategoryWeightRefactor           float64
+	CategoryWeightPerformance        float64
+	CategoryWeightInfrastructure     float64
+	CategoryWeightSecurity           float64
+	CategoryWeightMaintainerDesign   float64
+	RepositoryMaintainersThreshold   int
+	RepositoryMaintainersBonus       float64
+	RepositoryStarsTierOneThreshold  int
+	RepositoryStarsTierOneBonus      float64
+	RepositoryStarsTierTwoThreshold  int
+	RepositoryStarsTierTwoBonus      float64
+	RepositoryArchivedPenalty        float64
+	RepositoryWeightMin              float64
+	RepositoryWeightMax              float64
+	OutcomeWeightMerged              float64
+	OutcomeWeightDraft               float64
+	OutcomeWeightClosed              float64
+	OutcomeWeightOpen                float64
+	ConsistencyActiveWeeksCap        int
+	ConsistencyActiveWeekBonus       float64
+	ConsistencyMeaningfulRatioBonus  float64
+	ConsistencyRecentMergedThreshold int
+	ConsistencyRecentMergedBonus     float64
+	ConsistencyModifierMax           float64
+	DiminishingSimilarCap            int
+	DiminishingSimilarStep           float64
+	DiminishingCategoryCap           int
+	DiminishingCategoryStep          float64
+	DiminishingRepositoryThreshold   int
+	DiminishingRepositoryPenalty     float64
+	DiminishingModifierMin           float64
+	SpamDocsSmallChangeSizeLimit     int
+	SpamDocsSmallChangePenalty       float64
+	SpamTinyChangedFilesLimit        int
+	SpamTinyChangeSizeLimit          int
+	SpamTinyChangePenalty            float64
+	SpamDocsOnlyPenalty              float64
+	SpamPenaltyMax                   float64
+	SpamMultiplierFloor              float64
+	SuspiciousPenaltyThreshold       float64
+	LevelContributorMinXP            int
+	LevelBuilderMinXP                int
+	LevelSpecialistMinXP             int
+	LevelMaintainerMinXP             int
+	LevelArchitectMinXP              int
 }
 
 type Observability struct {
@@ -269,6 +327,68 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			PRMaxEstimatedTokens:       getInt("AI_PR_MAX_ESTIMATED_TOKENS", 30000),
 			PRMaxEstimatedCostUSD:      getFloat("AI_PR_MAX_ESTIMATED_COST_USD", 0.25),
 			EstimatedInputTokenCostUSD: getFloat("AI_ESTIMATED_INPUT_TOKEN_COST_USD", 0.000005),
+		},
+		Scoring: Scoring{
+			ScoreVersion: strings.TrimSpace(getEnv("SCORING_SCORE_VERSION", "v1alpha1")),
+			BaseXP:       getFloat("SCORING_BASE_XP", 100),
+			MinXP:        getInt("SCORING_MIN_XP", 10),
+
+			CategoryWeightDefault:          getFloat("SCORING_CATEGORY_WEIGHT_DEFAULT", 1.0),
+			CategoryWeightDocumentation:    getFloat("SCORING_CATEGORY_WEIGHT_DOCUMENTATION", 0.8),
+			CategoryWeightTests:            getFloat("SCORING_CATEGORY_WEIGHT_TESTS", 1.1),
+			CategoryWeightBugFix:           getFloat("SCORING_CATEGORY_WEIGHT_BUG_FIX", 1.3),
+			CategoryWeightFeature:          getFloat("SCORING_CATEGORY_WEIGHT_FEATURE", 1.5),
+			CategoryWeightRefactor:         getFloat("SCORING_CATEGORY_WEIGHT_REFACTOR", 1.2),
+			CategoryWeightPerformance:      getFloat("SCORING_CATEGORY_WEIGHT_PERFORMANCE", 1.6),
+			CategoryWeightInfrastructure:   getFloat("SCORING_CATEGORY_WEIGHT_INFRASTRUCTURE", 1.2),
+			CategoryWeightSecurity:         getFloat("SCORING_CATEGORY_WEIGHT_SECURITY", 1.7),
+			CategoryWeightMaintainerDesign: getFloat("SCORING_CATEGORY_WEIGHT_MAINTAINER_DESIGN", 1.8),
+
+			RepositoryMaintainersThreshold:  getInt("SCORING_REPOSITORY_MAINTAINERS_THRESHOLD", 3),
+			RepositoryMaintainersBonus:      getFloat("SCORING_REPOSITORY_MAINTAINERS_BONUS", 0.1),
+			RepositoryStarsTierOneThreshold: getInt("SCORING_REPOSITORY_STARS_TIER_ONE_THRESHOLD", 100),
+			RepositoryStarsTierOneBonus:     getFloat("SCORING_REPOSITORY_STARS_TIER_ONE_BONUS", 0.05),
+			RepositoryStarsTierTwoThreshold: getInt("SCORING_REPOSITORY_STARS_TIER_TWO_THRESHOLD", 1000),
+			RepositoryStarsTierTwoBonus:     getFloat("SCORING_REPOSITORY_STARS_TIER_TWO_BONUS", 0.05),
+			RepositoryArchivedPenalty:       getFloat("SCORING_REPOSITORY_ARCHIVED_PENALTY", 0.2),
+			RepositoryWeightMin:             getFloat("SCORING_REPOSITORY_WEIGHT_MIN", 0.75),
+			RepositoryWeightMax:             getFloat("SCORING_REPOSITORY_WEIGHT_MAX", 1.35),
+
+			OutcomeWeightMerged: getFloat("SCORING_OUTCOME_WEIGHT_MERGED", 1.4),
+			OutcomeWeightDraft:  getFloat("SCORING_OUTCOME_WEIGHT_DRAFT", 0.35),
+			OutcomeWeightClosed: getFloat("SCORING_OUTCOME_WEIGHT_CLOSED", 0.5),
+			OutcomeWeightOpen:   getFloat("SCORING_OUTCOME_WEIGHT_OPEN", 0.9),
+
+			ConsistencyActiveWeeksCap:        getInt("SCORING_CONSISTENCY_ACTIVE_WEEKS_CAP", 12),
+			ConsistencyActiveWeekBonus:       getFloat("SCORING_CONSISTENCY_ACTIVE_WEEK_BONUS", 0.02),
+			ConsistencyMeaningfulRatioBonus:  getFloat("SCORING_CONSISTENCY_MEANINGFUL_RATIO_BONUS", 0.1),
+			ConsistencyRecentMergedThreshold: getInt("SCORING_CONSISTENCY_RECENT_MERGED_THRESHOLD", 5),
+			ConsistencyRecentMergedBonus:     getFloat("SCORING_CONSISTENCY_RECENT_MERGED_BONUS", 0.05),
+			ConsistencyModifierMax:           getFloat("SCORING_CONSISTENCY_MODIFIER_MAX", 1.4),
+
+			DiminishingSimilarCap:          getInt("SCORING_DIMINISHING_SIMILAR_CAP", 5),
+			DiminishingSimilarStep:         getFloat("SCORING_DIMINISHING_SIMILAR_STEP", 0.08),
+			DiminishingCategoryCap:         getInt("SCORING_DIMINISHING_CATEGORY_CAP", 8),
+			DiminishingCategoryStep:        getFloat("SCORING_DIMINISHING_CATEGORY_STEP", 0.025),
+			DiminishingRepositoryThreshold: getInt("SCORING_DIMINISHING_REPOSITORY_THRESHOLD", 6),
+			DiminishingRepositoryPenalty:   getFloat("SCORING_DIMINISHING_REPOSITORY_PENALTY", 0.1),
+			DiminishingModifierMin:         getFloat("SCORING_DIMINISHING_MODIFIER_MIN", 0.6),
+
+			SpamDocsSmallChangeSizeLimit: getInt("SCORING_SPAM_DOCS_SMALL_CHANGE_SIZE_LIMIT", 20),
+			SpamDocsSmallChangePenalty:   getFloat("SCORING_SPAM_DOCS_SMALL_CHANGE_PENALTY", 0.2),
+			SpamTinyChangedFilesLimit:    getInt("SCORING_SPAM_TINY_CHANGED_FILES_LIMIT", 2),
+			SpamTinyChangeSizeLimit:      getInt("SCORING_SPAM_TINY_CHANGE_SIZE_LIMIT", 15),
+			SpamTinyChangePenalty:        getFloat("SCORING_SPAM_TINY_CHANGE_PENALTY", 0.1),
+			SpamDocsOnlyPenalty:          getFloat("SCORING_SPAM_DOCS_ONLY_PENALTY", 0.05),
+			SpamPenaltyMax:               getFloat("SCORING_SPAM_PENALTY_MAX", 0.35),
+			SpamMultiplierFloor:          getFloat("SCORING_SPAM_MULTIPLIER_FLOOR", 0.35),
+			SuspiciousPenaltyThreshold:   getFloat("SCORING_SUSPICIOUS_PENALTY_THRESHOLD", 0.2),
+
+			LevelContributorMinXP: getInt("SCORING_LEVEL_CONTRIBUTOR_MIN_XP", 60),
+			LevelBuilderMinXP:     getInt("SCORING_LEVEL_BUILDER_MIN_XP", 100),
+			LevelSpecialistMinXP:  getInt("SCORING_LEVEL_SPECIALIST_MIN_XP", 140),
+			LevelMaintainerMinXP:  getInt("SCORING_LEVEL_MAINTAINER_MIN_XP", 180),
+			LevelArchitectMinXP:   getInt("SCORING_LEVEL_ARCHITECT_MIN_XP", 250),
 		},
 		Observability: Observability{
 			Enabled:           getBool("OTEL_ENABLED", false),
@@ -473,6 +593,90 @@ func (a App) ValidateBase() error {
 	}
 	if a.AI.EstimatedInputTokenCostUSD <= 0 {
 		problems = append(problems, "AI_ESTIMATED_INPUT_TOKEN_COST_USD must be positive")
+	}
+	if strings.TrimSpace(a.Scoring.ScoreVersion) == "" {
+		problems = append(problems, "SCORING_SCORE_VERSION is required")
+	}
+	if a.Scoring.BaseXP <= 0 {
+		problems = append(problems, "SCORING_BASE_XP must be positive")
+	}
+	if a.Scoring.MinXP <= 0 {
+		problems = append(problems, "SCORING_MIN_XP must be positive")
+	}
+	if a.Scoring.CategoryWeightDefault <= 0 {
+		problems = append(problems, "SCORING_CATEGORY_WEIGHT_DEFAULT must be positive")
+	}
+	if a.Scoring.CategoryWeightDocumentation <= 0 || a.Scoring.CategoryWeightTests <= 0 || a.Scoring.CategoryWeightBugFix <= 0 ||
+		a.Scoring.CategoryWeightFeature <= 0 || a.Scoring.CategoryWeightRefactor <= 0 || a.Scoring.CategoryWeightPerformance <= 0 ||
+		a.Scoring.CategoryWeightInfrastructure <= 0 || a.Scoring.CategoryWeightSecurity <= 0 || a.Scoring.CategoryWeightMaintainerDesign <= 0 {
+		problems = append(problems, "all SCORING_CATEGORY_WEIGHT_* values must be positive")
+	}
+	if a.Scoring.RepositoryMaintainersThreshold <= 0 {
+		problems = append(problems, "SCORING_REPOSITORY_MAINTAINERS_THRESHOLD must be positive")
+	}
+	if a.Scoring.RepositoryMaintainersBonus < 0 || a.Scoring.RepositoryStarsTierOneBonus < 0 || a.Scoring.RepositoryStarsTierTwoBonus < 0 {
+		problems = append(problems, "SCORING_REPOSITORY_*_BONUS values must be non-negative")
+	}
+	if a.Scoring.RepositoryStarsTierOneThreshold <= 0 || a.Scoring.RepositoryStarsTierTwoThreshold <= 0 {
+		problems = append(problems, "SCORING_REPOSITORY_STARS_*_THRESHOLD values must be positive")
+	}
+	if a.Scoring.RepositoryStarsTierTwoThreshold < a.Scoring.RepositoryStarsTierOneThreshold {
+		problems = append(problems, "SCORING_REPOSITORY_STARS_TIER_TWO_THRESHOLD must be >= SCORING_REPOSITORY_STARS_TIER_ONE_THRESHOLD")
+	}
+	if a.Scoring.RepositoryArchivedPenalty < 0 {
+		problems = append(problems, "SCORING_REPOSITORY_ARCHIVED_PENALTY must be non-negative")
+	}
+	if a.Scoring.RepositoryWeightMin <= 0 || a.Scoring.RepositoryWeightMax <= 0 || a.Scoring.RepositoryWeightMax < a.Scoring.RepositoryWeightMin {
+		problems = append(problems, "SCORING_REPOSITORY_WEIGHT_MIN/MAX must be positive and MAX >= MIN")
+	}
+	if a.Scoring.OutcomeWeightMerged <= 0 || a.Scoring.OutcomeWeightDraft <= 0 || a.Scoring.OutcomeWeightClosed <= 0 || a.Scoring.OutcomeWeightOpen <= 0 {
+		problems = append(problems, "SCORING_OUTCOME_WEIGHT_* values must be positive")
+	}
+	if a.Scoring.ConsistencyActiveWeeksCap <= 0 {
+		problems = append(problems, "SCORING_CONSISTENCY_ACTIVE_WEEKS_CAP must be positive")
+	}
+	if a.Scoring.ConsistencyActiveWeekBonus < 0 || a.Scoring.ConsistencyMeaningfulRatioBonus < 0 || a.Scoring.ConsistencyRecentMergedBonus < 0 {
+		problems = append(problems, "SCORING_CONSISTENCY_*_BONUS values must be non-negative")
+	}
+	if a.Scoring.ConsistencyRecentMergedThreshold <= 0 {
+		problems = append(problems, "SCORING_CONSISTENCY_RECENT_MERGED_THRESHOLD must be positive")
+	}
+	if a.Scoring.ConsistencyModifierMax <= 0 {
+		problems = append(problems, "SCORING_CONSISTENCY_MODIFIER_MAX must be positive")
+	}
+	if a.Scoring.DiminishingSimilarCap < 0 || a.Scoring.DiminishingCategoryCap < 0 || a.Scoring.DiminishingRepositoryThreshold < 0 {
+		problems = append(problems, "SCORING_DIMINISHING_*_CAP/THRESHOLD values must be non-negative")
+	}
+	if a.Scoring.DiminishingSimilarStep < 0 || a.Scoring.DiminishingCategoryStep < 0 || a.Scoring.DiminishingRepositoryPenalty < 0 {
+		problems = append(problems, "SCORING_DIMINISHING_*_STEP/PENALTY values must be non-negative")
+	}
+	if a.Scoring.DiminishingModifierMin <= 0 || a.Scoring.DiminishingModifierMin > 1 {
+		problems = append(problems, "SCORING_DIMINISHING_MODIFIER_MIN must be in (0, 1]")
+	}
+	if a.Scoring.SpamDocsSmallChangeSizeLimit <= 0 || a.Scoring.SpamTinyChangedFilesLimit <= 0 || a.Scoring.SpamTinyChangeSizeLimit <= 0 {
+		problems = append(problems, "SCORING_SPAM_*_LIMIT values must be positive")
+	}
+	if a.Scoring.SpamDocsSmallChangePenalty < 0 || a.Scoring.SpamTinyChangePenalty < 0 || a.Scoring.SpamDocsOnlyPenalty < 0 {
+		problems = append(problems, "SCORING_SPAM_*_PENALTY values must be non-negative")
+	}
+	if a.Scoring.SpamPenaltyMax < 0 || a.Scoring.SpamPenaltyMax > 1 {
+		problems = append(problems, "SCORING_SPAM_PENALTY_MAX must be between 0 and 1")
+	}
+	if a.Scoring.SpamMultiplierFloor <= 0 || a.Scoring.SpamMultiplierFloor > 1 {
+		problems = append(problems, "SCORING_SPAM_MULTIPLIER_FLOOR must be in (0, 1]")
+	}
+	if a.Scoring.SuspiciousPenaltyThreshold < 0 || a.Scoring.SuspiciousPenaltyThreshold > 1 {
+		problems = append(problems, "SCORING_SUSPICIOUS_PENALTY_THRESHOLD must be between 0 and 1")
+	}
+	if a.Scoring.LevelContributorMinXP <= 0 || a.Scoring.LevelBuilderMinXP <= 0 || a.Scoring.LevelSpecialistMinXP <= 0 ||
+		a.Scoring.LevelMaintainerMinXP <= 0 || a.Scoring.LevelArchitectMinXP <= 0 {
+		problems = append(problems, "SCORING_LEVEL_*_MIN_XP values must be positive")
+	}
+	if !(a.Scoring.LevelContributorMinXP < a.Scoring.LevelBuilderMinXP &&
+		a.Scoring.LevelBuilderMinXP < a.Scoring.LevelSpecialistMinXP &&
+		a.Scoring.LevelSpecialistMinXP < a.Scoring.LevelMaintainerMinXP &&
+		a.Scoring.LevelMaintainerMinXP < a.Scoring.LevelArchitectMinXP) {
+		problems = append(problems, "SCORING_LEVEL_*_MIN_XP values must be strictly increasing")
 	}
 	if a.Scheduler.WorkerConcurrency <= 0 {
 		problems = append(problems, "JOB_WORKER_CONCURRENCY must be positive")

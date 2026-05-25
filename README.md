@@ -132,6 +132,7 @@ Gemini path:
 ## Evidence and Sync Notes
 
 - User sync limits are runtime-configurable (`GITHUB_AUTHORED_PR_SYNC_LIMIT`, `GITHUB_AUTHORED_PR_SEARCH_LIMIT`, page-size and timeout policy env vars).
+- Deterministic score math is runtime-configurable through `SCORING_*` env policy values; AI summaries never directly assign XP.
 - Profile/report pages are snapshot-backed and may show partial/stale states.
 - Upstream failures are surfaced as explicit sync/evidence states.
 

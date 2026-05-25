@@ -5,24 +5,32 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/gitrank/gitrank/packages/config"
 	"github.com/gitrank/gitrank/packages/contracts"
 )
 
-const ScoreVersion = "v1alpha1"
+const DefaultScoreVersion = "v1alpha1"
 
-type Engine struct{}
-
-func New() Engine {
-	return Engine{}
+type Engine struct {
+	policy config.Scoring
 }
 
-func (Engine) Score(req contracts.ScoreContributionRequest) contracts.ScoreContributionResponse {
-	categoryWeight := categoryWeight(req.Analysis.Category)
-	repositoryWeight := repositoryWeight(req.Repository)
-	outcomeWeight := outcomeWeight(req.PullRequest)
-	consistencyModifier := consistencyModifier(req.Contributor)
-	diminishingReturnsModifier := diminishingReturnsModifier(req.Contributor)
-	spamPenalty := spamPenalty(req)
+func New() Engine {
+	return Engine{policy: defaultPolicy()}
+}
+
+func NewWithPolicy(policy config.Scoring) Engine {
+	return Engine{policy: policy}
+}
+
+func (e Engine) Score(req contracts.ScoreContributionRequest) contracts.ScoreContributionResponse {
+	policy := e.policy
+	categoryWeight := categoryWeight(policy, req.Analysis.Category)
+	repositoryWeight := repositoryWeight(policy, req.Repository)
+	outcomeWeight := outcomeWeight(policy, req.PullRequest)
+	consistencyModifier := consistencyModifier(policy, req.Contributor)
+	diminishingReturnsModifier := diminishingReturnsModifier(policy, req.Contributor)
+	spamPenalty := spamPenalty(policy, req)
 	multiplier := categoryWeight *
 		req.Analysis.TechnicalDepth *
 		req.Analysis.ReviewStrength *
@@ -30,19 +38,19 @@ func (Engine) Score(req contracts.ScoreContributionRequest) contracts.ScoreContr
 		outcomeWeight *
 		consistencyModifier *
 		diminishingReturnsModifier *
-		max(0.35, 1.0-spamPenalty)
+		max(policy.SpamMultiplierFloor, 1.0-spamPenalty)
 
-	totalXP := int(math.Round(100 * multiplier))
-	if totalXP < 10 {
-		totalXP = 10
+	totalXP := int(math.Round(policy.BaseXP * multiplier))
+	if totalXP < policy.MinXP {
+		totalXP = policy.MinXP
 	}
 
 	skillXP := distributeSkillXP(req.Analysis.Skills, totalXP)
 
 	return contracts.ScoreContributionResponse{
-		ScoreVersion:               ScoreVersion,
+		ScoreVersion:               policy.ScoreVersion,
 		TotalXP:                    totalXP,
-		Level:                      LevelForXP(totalXP),
+		Level:                      levelForXP(policy, totalXP),
 		CategoryWeight:             categoryWeight,
 		TechnicalDepth:             req.Analysis.TechnicalDepth,
 		ReviewStrength:             req.Analysis.ReviewStrength,
@@ -52,111 +60,115 @@ func (Engine) Score(req contracts.ScoreContributionRequest) contracts.ScoreContr
 		DiminishingReturnsModifier: diminishingReturnsModifier,
 		SpamPenalty:                spamPenalty,
 		SkillXP:                    skillXP,
-		Explanation:                buildExplanation(req, totalXP, spamPenalty, diminishingReturnsModifier),
-		SuspiciousActivity:         spamPenalty >= 0.2,
+		Explanation:                buildExplanation(policy, req, totalXP, spamPenalty, diminishingReturnsModifier),
+		SuspiciousActivity:         spamPenalty >= policy.SuspiciousPenaltyThreshold,
 	}
 }
 
-func categoryWeight(category string) float64 {
+func (e Engine) LevelForXP(xp int) string {
+	return levelForXP(e.policy, xp)
+}
+
+func categoryWeight(policy config.Scoring, category string) float64 {
 	switch category {
 	case "documentation":
-		return 0.8
+		return policy.CategoryWeightDocumentation
 	case "tests":
-		return 1.1
+		return policy.CategoryWeightTests
 	case "bug_fix":
-		return 1.3
+		return policy.CategoryWeightBugFix
 	case "feature":
-		return 1.5
+		return policy.CategoryWeightFeature
 	case "refactor":
-		return 1.2
+		return policy.CategoryWeightRefactor
 	case "performance":
-		return 1.6
+		return policy.CategoryWeightPerformance
 	case "infrastructure":
-		return 1.2
+		return policy.CategoryWeightInfrastructure
 	case "security":
-		return 1.7
+		return policy.CategoryWeightSecurity
 	case "maintainer_design":
-		return 1.8
+		return policy.CategoryWeightMaintainerDesign
 	default:
-		return 1.0
+		return policy.CategoryWeightDefault
 	}
 }
 
-func repositoryWeight(repo contracts.RepositoryContext) float64 {
+func repositoryWeight(policy config.Scoring, repo contracts.RepositoryContext) float64 {
 	weight := 1.0
-	if repo.Maintainers >= 3 {
-		weight += 0.1
+	if repo.Maintainers >= policy.RepositoryMaintainersThreshold {
+		weight += policy.RepositoryMaintainersBonus
 	}
-	if repo.Stars >= 100 {
-		weight += 0.05
+	if repo.Stars >= policy.RepositoryStarsTierOneThreshold {
+		weight += policy.RepositoryStarsTierOneBonus
 	}
-	if repo.Stars >= 1000 {
-		weight += 0.05
+	if repo.Stars >= policy.RepositoryStarsTierTwoThreshold {
+		weight += policy.RepositoryStarsTierTwoBonus
 	}
 	if repo.Archived {
-		weight -= 0.2
+		weight -= policy.RepositoryArchivedPenalty
 	}
-	if weight < 0.75 {
-		return 0.75
+	if weight < policy.RepositoryWeightMin {
+		return policy.RepositoryWeightMin
 	}
-	if weight > 1.35 {
-		return 1.35
+	if weight > policy.RepositoryWeightMax {
+		return policy.RepositoryWeightMax
 	}
 	return weight
 }
 
-func outcomeWeight(pr contracts.PullRequestContext) float64 {
+func outcomeWeight(policy config.Scoring, pr contracts.PullRequestContext) float64 {
 	switch {
 	case pr.Merged:
-		return 1.4
+		return policy.OutcomeWeightMerged
 	case pr.Draft:
-		return 0.35
+		return policy.OutcomeWeightDraft
 	case strings.EqualFold(pr.State, "closed"):
-		return 0.5
+		return policy.OutcomeWeightClosed
 	default:
-		return 0.9
+		return policy.OutcomeWeightOpen
 	}
 }
 
-func consistencyModifier(contributor contracts.ContributorContext) float64 {
+func consistencyModifier(policy config.Scoring, contributor contracts.ContributorContext) float64 {
 	modifier := 1.0
-	modifier += float64(min(contributor.ConsecutiveActiveWeeks, 12)) * 0.02
-	modifier += clamp(contributor.MeaningfulContributionRatio, 0, 1) * 0.1
-	if contributor.RecentMergedPullRequests >= 5 {
-		modifier += 0.05
+	modifier += float64(min(contributor.ConsecutiveActiveWeeks, policy.ConsistencyActiveWeeksCap)) * policy.ConsistencyActiveWeekBonus
+	modifier += clamp(contributor.MeaningfulContributionRatio, 0, 1) * policy.ConsistencyMeaningfulRatioBonus
+	if contributor.RecentMergedPullRequests >= policy.ConsistencyRecentMergedThreshold {
+		modifier += policy.ConsistencyRecentMergedBonus
 	}
-	if modifier > 1.4 {
-		return 1.4
+	if modifier > policy.ConsistencyModifierMax {
+		return policy.ConsistencyModifierMax
 	}
 	return modifier
 }
 
-func diminishingReturnsModifier(contributor contracts.ContributorContext) float64 {
+func diminishingReturnsModifier(policy config.Scoring, contributor contracts.ContributorContext) float64 {
 	modifier := 1.0
-	modifier -= float64(min(contributor.RecentSimilarPullRequests, 5)) * 0.08
-	modifier -= float64(min(contributor.RecentCategoryPullRequests, 8)) * 0.025
-	if contributor.RecentRepositoryPullRequests >= 6 {
-		modifier -= 0.1
+	modifier -= float64(min(contributor.RecentSimilarPullRequests, policy.DiminishingSimilarCap)) * policy.DiminishingSimilarStep
+	modifier -= float64(min(contributor.RecentCategoryPullRequests, policy.DiminishingCategoryCap)) * policy.DiminishingCategoryStep
+	if contributor.RecentRepositoryPullRequests >= policy.DiminishingRepositoryThreshold {
+		modifier -= policy.DiminishingRepositoryPenalty
 	}
-	if modifier < 0.6 {
-		return 0.6
+	if modifier < policy.DiminishingModifierMin {
+		return policy.DiminishingModifierMin
 	}
 	return modifier
 }
 
-func spamPenalty(req contracts.ScoreContributionRequest) float64 {
+func spamPenalty(policy config.Scoring, req contracts.ScoreContributionRequest) float64 {
 	penalty := 0.0
-	if req.Analysis.Category == "documentation" && req.PullRequest.Additions+req.PullRequest.Deletions < 20 {
-		penalty += 0.2
+	if req.Analysis.Category == "documentation" && req.PullRequest.Additions+req.PullRequest.Deletions < policy.SpamDocsSmallChangeSizeLimit {
+		penalty += policy.SpamDocsSmallChangePenalty
 	}
-	if req.PullRequest.ChangedFiles <= 2 && req.PullRequest.Additions+req.PullRequest.Deletions < 15 {
-		penalty += 0.1
+	if req.PullRequest.ChangedFiles <= policy.SpamTinyChangedFilesLimit && req.PullRequest.Additions+req.PullRequest.Deletions < policy.SpamTinyChangeSizeLimit {
+		penalty += policy.SpamTinyChangePenalty
 	}
 	if req.Analysis.FileBreakdown.Source == 0 && req.Analysis.FileBreakdown.Tests == 0 && req.Analysis.FileBreakdown.Docs > 0 {
-		penalty += 0.05
+		penalty += policy.SpamDocsOnlyPenalty
 	}
-	if penalty > 0.35 {
-		return 0.35
+	if penalty > policy.SpamPenaltyMax {
+		return policy.SpamPenaltyMax
 	}
 	return penalty
 }
@@ -179,9 +191,9 @@ func distributeSkillXP(skills []string, totalXP int) map[string]int {
 	return result
 }
 
-func buildExplanation(req contracts.ScoreContributionRequest, totalXP int, spamPenalty, diminishingReturns float64) []string {
+func buildExplanation(policy config.Scoring, req contracts.ScoreContributionRequest, totalXP int, spamPenalty, diminishingReturns float64) []string {
 	explanation := []string{
-		"score version " + ScoreVersion,
+		"score version " + policy.ScoreVersion,
 		"strict PR XP award strategy executed before AI summaries",
 		"category " + strings.ReplaceAll(req.Analysis.Category, "_", " "),
 		"technical depth and review strength were applied deterministically",
@@ -199,17 +211,17 @@ func buildExplanation(req contracts.ScoreContributionRequest, totalXP int, spamP
 	return explanation
 }
 
-func LevelForXP(xp int) string {
+func levelForXP(policy config.Scoring, xp int) string {
 	switch {
-	case xp >= 250:
+	case xp >= policy.LevelArchitectMinXP:
 		return "Architect"
-	case xp >= 180:
+	case xp >= policy.LevelMaintainerMinXP:
 		return "Maintainer"
-	case xp >= 140:
+	case xp >= policy.LevelSpecialistMinXP:
 		return "Specialist"
-	case xp >= 100:
+	case xp >= policy.LevelBuilderMinXP:
 		return "Builder"
-	case xp >= 60:
+	case xp >= policy.LevelContributorMinXP:
 		return "Contributor"
 	default:
 		return "Explorer"
@@ -242,4 +254,69 @@ func min(a, b int) int {
 
 func itoa(value int) string {
 	return strconv.Itoa(value)
+}
+
+func defaultPolicy() config.Scoring {
+	return config.Scoring{
+		ScoreVersion: DefaultScoreVersion,
+		BaseXP:       100,
+		MinXP:        10,
+
+		CategoryWeightDefault:          1.0,
+		CategoryWeightDocumentation:    0.8,
+		CategoryWeightTests:            1.1,
+		CategoryWeightBugFix:           1.3,
+		CategoryWeightFeature:          1.5,
+		CategoryWeightRefactor:         1.2,
+		CategoryWeightPerformance:      1.6,
+		CategoryWeightInfrastructure:   1.2,
+		CategoryWeightSecurity:         1.7,
+		CategoryWeightMaintainerDesign: 1.8,
+
+		RepositoryMaintainersThreshold:  3,
+		RepositoryMaintainersBonus:      0.1,
+		RepositoryStarsTierOneThreshold: 100,
+		RepositoryStarsTierOneBonus:     0.05,
+		RepositoryStarsTierTwoThreshold: 1000,
+		RepositoryStarsTierTwoBonus:     0.05,
+		RepositoryArchivedPenalty:       0.2,
+		RepositoryWeightMin:             0.75,
+		RepositoryWeightMax:             1.35,
+
+		OutcomeWeightMerged: 1.4,
+		OutcomeWeightDraft:  0.35,
+		OutcomeWeightClosed: 0.5,
+		OutcomeWeightOpen:   0.9,
+
+		ConsistencyActiveWeeksCap:        12,
+		ConsistencyActiveWeekBonus:       0.02,
+		ConsistencyMeaningfulRatioBonus:  0.1,
+		ConsistencyRecentMergedThreshold: 5,
+		ConsistencyRecentMergedBonus:     0.05,
+		ConsistencyModifierMax:           1.4,
+
+		DiminishingSimilarCap:          5,
+		DiminishingSimilarStep:         0.08,
+		DiminishingCategoryCap:         8,
+		DiminishingCategoryStep:        0.025,
+		DiminishingRepositoryThreshold: 6,
+		DiminishingRepositoryPenalty:   0.1,
+		DiminishingModifierMin:         0.6,
+
+		SpamDocsSmallChangeSizeLimit: 20,
+		SpamDocsSmallChangePenalty:   0.2,
+		SpamTinyChangedFilesLimit:    2,
+		SpamTinyChangeSizeLimit:      15,
+		SpamTinyChangePenalty:        0.1,
+		SpamDocsOnlyPenalty:          0.05,
+		SpamPenaltyMax:               0.35,
+		SpamMultiplierFloor:          0.35,
+		SuspiciousPenaltyThreshold:   0.2,
+
+		LevelContributorMinXP: 60,
+		LevelBuilderMinXP:     100,
+		LevelSpecialistMinXP:  140,
+		LevelMaintainerMinXP:  180,
+		LevelArchitectMinXP:   250,
+	}
 }

@@ -112,8 +112,9 @@ func TestScoreRepeatedSimilarContributionGetsDiminishingReturns(t *testing.T) {
 }
 
 func TestRepositoryWeightIsBounded(t *testing.T) {
+	policy := defaultPolicy()
 	t.Run("high profile repository bonus is capped", func(t *testing.T) {
-		got := repositoryWeight(contracts.RepositoryContext{
+		got := repositoryWeight(policy, contracts.RepositoryContext{
 			FullName:    "octo/repo",
 			Maintainers: 99,
 			Stars:       1_000_000,
@@ -124,7 +125,7 @@ func TestRepositoryWeightIsBounded(t *testing.T) {
 	})
 
 	t.Run("archived repository penalty is floored", func(t *testing.T) {
-		got := repositoryWeight(contracts.RepositoryContext{
+		got := repositoryWeight(policy, contracts.RepositoryContext{
 			FullName: "octo/repo",
 			Archived: true,
 		})

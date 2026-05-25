@@ -88,6 +88,15 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.AI.PRMaxChangedFiles != 100 || cfg.AI.PRMaxFileRecords != 100 || cfg.AI.PRMaxEstimatedTokens != 30000 {
 		t.Fatalf("AI PR limits = changed_files %d file_records %d tokens %d, want defaults", cfg.AI.PRMaxChangedFiles, cfg.AI.PRMaxFileRecords, cfg.AI.PRMaxEstimatedTokens)
 	}
+	if cfg.Scoring.ScoreVersion != "v1alpha1" {
+		t.Fatalf("Scoring.ScoreVersion = %q, want v1alpha1", cfg.Scoring.ScoreVersion)
+	}
+	if cfg.Scoring.BaseXP != 100 || cfg.Scoring.MinXP != 10 {
+		t.Fatalf("Scoring base/min = %.2f/%d, want 100/10", cfg.Scoring.BaseXP, cfg.Scoring.MinXP)
+	}
+	if cfg.Scoring.LevelArchitectMinXP != 250 || cfg.Scoring.LevelMaintainerMinXP != 180 {
+		t.Fatalf("Scoring level thresholds = architect %d maintainer %d, want 250/180", cfg.Scoring.LevelArchitectMinXP, cfg.Scoring.LevelMaintainerMinXP)
+	}
 	if cfg.AI.Provider != "gemini" {
 		t.Fatalf("AI.Provider = %q, want gemini", cfg.AI.Provider)
 	}
@@ -145,6 +154,12 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	t.Setenv("AI_PR_MAX_ESTIMATED_TOKENS", "4000")
 	t.Setenv("AI_PR_MAX_ESTIMATED_COST_USD", "0.08")
 	t.Setenv("AI_ESTIMATED_INPUT_TOKEN_COST_USD", "0.00001")
+	t.Setenv("SCORING_SCORE_VERSION", "v1beta2")
+	t.Setenv("SCORING_BASE_XP", "130")
+	t.Setenv("SCORING_MIN_XP", "15")
+	t.Setenv("SCORING_CATEGORY_WEIGHT_FEATURE", "1.65")
+	t.Setenv("SCORING_REPOSITORY_WEIGHT_MAX", "1.5")
+	t.Setenv("SCORING_LEVEL_ARCHITECT_MIN_XP", "300")
 	t.Setenv("JOB_WORKER_CONCURRENCY", "9")
 	t.Setenv("SCHEDULER_RUN_MODE", "worker")
 	t.Setenv("JOB_DEAD_LETTER_QUEUE", "custom-dead-letter")
@@ -242,6 +257,21 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	}
 	if cfg.AI.PRMaxEstimatedCostUSD != 0.08 || cfg.AI.EstimatedInputTokenCostUSD != 0.00001 {
 		t.Fatalf("AI cost limits = max %.5f token %.5f, want 0.08/0.00001", cfg.AI.PRMaxEstimatedCostUSD, cfg.AI.EstimatedInputTokenCostUSD)
+	}
+	if cfg.Scoring.ScoreVersion != "v1beta2" {
+		t.Fatalf("Scoring.ScoreVersion = %q, want v1beta2", cfg.Scoring.ScoreVersion)
+	}
+	if cfg.Scoring.BaseXP != 130 || cfg.Scoring.MinXP != 15 {
+		t.Fatalf("Scoring base/min = %.2f/%d, want 130/15", cfg.Scoring.BaseXP, cfg.Scoring.MinXP)
+	}
+	if cfg.Scoring.CategoryWeightFeature != 1.65 {
+		t.Fatalf("Scoring.CategoryWeightFeature = %.2f, want 1.65", cfg.Scoring.CategoryWeightFeature)
+	}
+	if cfg.Scoring.RepositoryWeightMax != 1.5 {
+		t.Fatalf("Scoring.RepositoryWeightMax = %.2f, want 1.5", cfg.Scoring.RepositoryWeightMax)
+	}
+	if cfg.Scoring.LevelArchitectMinXP != 300 {
+		t.Fatalf("Scoring.LevelArchitectMinXP = %d, want 300", cfg.Scoring.LevelArchitectMinXP)
 	}
 	if cfg.Scheduler.WorkerConcurrency != 9 {
 		t.Fatalf("Scheduler.WorkerConcurrency = %d, want 9", cfg.Scheduler.WorkerConcurrency)
