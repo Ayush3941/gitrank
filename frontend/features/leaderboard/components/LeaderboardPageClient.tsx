@@ -178,33 +178,39 @@ export function LeaderboardPageClient() {
         />
       ) : null}
       <section className="space-y-3">
-        <div className="space-y-2">
-          <p className="text-xs font-medium text-primary">Lane</p>
-          <SegmentedTablist
-            options={tabs.map((item) => {
-              const Icon = TAB_ICONS[item];
-              return {
-                value: item,
-                label: TAB_LABELS[item],
-                icon: <Icon className="h-4 w-4" />,
-                minWidthClassName: "min-w-[9rem]",
-              };
-            })}
-            value={tab}
-            onValueChange={handleTabChange}
-            ariaLabel="Leaderboard lane filters"
-            ariaControls={LEADERBOARD_ROWS_REGION_ID}
-            className="w-full"
-            tabIdPrefix="leaderboard-lane-tab"
-            wrap
-          />
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p role="status" aria-live="polite" className="sr-only">
-            {isBusy
-              ? `Refreshing ${tab}...`
-              : `Viewing ${tab}`}
-          </p>
+        <p role="status" aria-live="polite" className="sr-only">
+          {isBusy
+            ? `Refreshing ${tab}...`
+            : `Viewing ${tab}`}
+        </p>
+        <div className="neon-surface space-y-3 rounded-[1rem] px-3 py-3 sm:px-4 sm:py-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-medium text-primary">Leaderboard controls</p>
+            <p className="text-xs text-muted">
+              {isBusy ? `Refreshing ${tab}...` : `Viewing ${tab}`}
+            </p>
+          </div>
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-primary">Lane</p>
+            <SegmentedTablist
+              options={tabs.map((item) => {
+                const Icon = TAB_ICONS[item];
+                return {
+                  value: item,
+                  label: TAB_LABELS[item],
+                  icon: <Icon className="h-4 w-4" />,
+                  minWidthClassName: "min-w-[9rem]",
+                };
+              })}
+              value={tab}
+              onValueChange={handleTabChange}
+              ariaLabel="Leaderboard lane filters"
+              ariaControls={LEADERBOARD_ROWS_REGION_ID}
+              className="w-full"
+              tabIdPrefix="leaderboard-lane-tab"
+              wrap={false}
+            />
+          </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button
               type="button"
