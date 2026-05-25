@@ -5,6 +5,7 @@ import type {
   RankTier,
   SkillCategory,
 } from "@/types/gitrank";
+import { frontendPolicy } from "@/lib/runtime/frontend-policy";
 
 export type LeaderboardTab =
   | "Global"
@@ -189,7 +190,7 @@ function seasonFromResponse(payload: ApiLeaderboardResponse): LeaderboardSeason 
   return seasonFromGeneratedAt(payload.generated_at, payload.scoring_version);
 }
 
-function seasonFromGeneratedAt(generatedAt?: string, scoringVersion = "v1alpha1"): LeaderboardSeason {
+function seasonFromGeneratedAt(generatedAt?: string, scoringVersion = frontendPolicy.scoreVersionFallback): LeaderboardSeason {
   const generated =
     !generatedAt || Number.isNaN(Date.parse(generatedAt)) ? new Date() : new Date(generatedAt);
   const day = generated.getUTCDay();
