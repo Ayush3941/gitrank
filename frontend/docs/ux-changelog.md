@@ -1,5 +1,15 @@
 # Frontend UX Changelog
 
+## 2026-05-25
+
+- Contribution filter active-chip clarity pass:
+  - replaced dense chip labels (`Category: ...`, `Sort: ...`) with clearer lane-focused labels (`Status · ...`, `Focus · ...`, `Sort · ...`).
+  - added an explicit `Active filters` strip and unified `Clear all` reset action for faster scanning and simpler recovery.
+  - updated contribution-filter tests to lock in the new presentation semantics.
+- Dashboard route-nav lane stability pass:
+  - kept horizontal scroll behavior on mobile, but switched desktop dashboard nav to a stable 5-lane grid layout.
+  - removed desktop min-width lane jitter so `Dashboard`, `Contributions`, `Badges`, `Quests`, and `Settings` align consistently across route transitions.
+
 ## 2026-05-24
 
 - Segmented-tab focus fallback hardening pass:
