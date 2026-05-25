@@ -136,6 +136,7 @@ type AI struct {
 	RequestTimeout             time.Duration
 	SummaryMaxRunes            int
 	SummaryPromptFilePathLimit int
+	AnalyzerPolicyJSON         string
 	ModerationModel            string
 	EmbeddingModel             string
 	PRMaxChangedFiles          int
@@ -326,6 +327,7 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			RequestTimeout:             getDuration("AI_REQUEST_TIMEOUT", 20*time.Second),
 			SummaryMaxRunes:            getInt("AI_SUMMARY_MAX_RUNES", 320),
 			SummaryPromptFilePathLimit: getInt("AI_SUMMARY_PROMPT_FILE_PATH_LIMIT", 12),
+			AnalyzerPolicyJSON:         getEnv("AI_ANALYZER_POLICY_JSON", ""),
 			ModerationModel:            getEnv("GEMINI_MODERATION_MODEL", ""),
 			EmbeddingModel:             getEnv("GEMINI_EMBEDDING_MODEL", "text-embedding-004"),
 			PRMaxChangedFiles:          getInt("AI_PR_MAX_CHANGED_FILES", 100),
@@ -592,6 +594,9 @@ func (a App) ValidateBase() error {
 	}
 	if a.AI.SummaryPromptFilePathLimit <= 0 || a.AI.SummaryPromptFilePathLimit > 200 {
 		problems = append(problems, "AI_SUMMARY_PROMPT_FILE_PATH_LIMIT must be between 1 and 200")
+	}
+	if len(strings.TrimSpace(a.AI.AnalyzerPolicyJSON)) > 128*1024 {
+		problems = append(problems, "AI_ANALYZER_POLICY_JSON must be <= 128KB")
 	}
 	if a.AI.PRMaxChangedFiles <= 0 {
 		problems = append(problems, "AI_PR_MAX_CHANGED_FILES must be positive")

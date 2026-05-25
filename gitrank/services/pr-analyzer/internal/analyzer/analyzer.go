@@ -22,19 +22,24 @@ type AIConfig struct {
 	RequestTimeout      time.Duration
 	SummaryMaxRunes     int
 	PromptFilePathLimit int
+	AnalyzerPolicyJSON  string
 }
 
 type Service struct {
 	summaryClient *geminiSummaryClient
+	policy        AnalyzerPolicy
 }
 
 func New() Service {
-	return Service{}
+	return Service{
+		policy: defaultAnalyzerPolicy(),
+	}
 }
 
 func NewWithAI(cfg AIConfig) Service {
 	return Service{
 		summaryClient: newGeminiSummaryClient(cfg),
+		policy:        loadAnalyzerPolicy(cfg.AnalyzerPolicyJSON),
 	}
 }
 
@@ -49,14 +54,14 @@ func (s Service) analyze(ctx context.Context, req contracts.PullRequestAnalysisR
 
 	breakdown := classifyFiles(req.PullRequest.Files)
 	features := deriveFeatures(req, breakdown)
-	category := classifyCategory(req, breakdown)
-	confidence := categoryConfidence(category, breakdown, req.PullRequest, features)
-	depth := technicalDepth(req.PullRequest, breakdown, features)
-	review := reviewStrength(req.PullRequest.Reviews, features.reviewCycles)
+	category := classifyCategory(req, breakdown, s.policy)
+	confidence := categoryConfidence(category, breakdown, req.PullRequest, features, s.policy)
+	depth := technicalDepth(req.PullRequest, breakdown, features, s.policy)
+	review := reviewStrength(req.PullRequest.Reviews, features.reviewCycles, s.policy)
 	signals := buildSignals(req, breakdown, category, features)
-	skills := buildSkills(category, breakdown)
-	flags := buildFlags(req, breakdown, features)
-	summary := buildSummary(category, breakdown, req.PullRequest, req.Repository, review, features)
+	skills := buildSkills(category, breakdown, s.policy)
+	flags := buildFlags(req, breakdown, features, s.policy)
+	summary := buildSummary(category, breakdown, req.PullRequest, req.Repository, review, features, s.policy)
 
 	response := contracts.PullRequestAnalysisResponse{
 		SchemaVersion:           contracts.PullRequestAnalysisSchemaVersion,
@@ -79,7 +84,7 @@ func (s Service) analyze(ctx context.Context, req contracts.PullRequestAnalysisR
 		Flags:                   flags,
 		FileBreakdown:           breakdown,
 	}
-	if err := applyHallucinationGuardrails(req, breakdown, features, response); err != nil {
+	if err := applyHallucinationGuardrails(req, breakdown, features, response, s.policy); err != nil {
 		return contracts.PullRequestAnalysisResponse{}, errors.New("analysis response failed guardrails: " + err.Error())
 	}
 	if err := response.Validate(); err != nil {
@@ -107,7 +112,7 @@ func (s Service) analyze(ctx context.Context, req contracts.PullRequestAnalysisR
 	response.ModelName = s.summaryClient.model
 	response.FallbackReason = ""
 
-	if err := applyHallucinationGuardrails(req, breakdown, features, response); err != nil {
+	if err := applyHallucinationGuardrails(req, breakdown, features, response, s.policy); err != nil {
 		response.Summary = summary
 		response.AnalysisSource = contracts.AnalysisSourceDeterministic
 		response.PromptVersion = ""
@@ -173,99 +178,99 @@ func classifyFiles(files []contracts.ChangedFile) contracts.FileBreakdown {
 	return breakdown
 }
 
-func classifyCategory(req contracts.PullRequestAnalysisRequest, breakdown contracts.FileBreakdown) string {
+func classifyCategory(req contracts.PullRequestAnalysisRequest, breakdown contracts.FileBreakdown, policy AnalyzerPolicy) string {
 	text := strings.ToLower(req.PullRequest.Title + " " + req.PullRequest.Body + " " + strings.Join(req.PullRequest.Labels, " "))
 
 	switch {
-	case strings.Contains(text, "security") || strings.Contains(text, "cve") || strings.Contains(text, "auth"):
+	case hasAnyKeyword(text, policy.SecurityKeywords):
 		return "security"
 	case breakdown.Source == 0 && breakdown.Tests == 0 && breakdown.Docs > 0:
 		return "documentation"
 	case breakdown.Source == 0 && breakdown.Tests > 0:
 		return "tests"
-	case strings.Contains(text, "performance") || strings.Contains(text, "latency") || strings.Contains(text, "optimiz"):
+	case hasAnyKeyword(text, policy.PerformanceKeywords):
 		return "performance"
-	case strings.Contains(text, "refactor") || strings.Contains(text, "cleanup") || strings.Contains(text, "rename"):
+	case hasAnyKeyword(text, policy.RefactorKeywords):
 		return "refactor"
 	case breakdown.Infra > 0 && breakdown.Source == 0:
 		return "infrastructure"
-	case strings.Contains(text, "bug") || strings.Contains(text, "fix") || strings.Contains(text, "regression"):
+	case hasAnyKeyword(text, policy.BugFixKeywords):
 		return "bug_fix"
-	case strings.Contains(text, "design") || strings.Contains(text, "architecture"):
+	case hasAnyKeyword(text, policy.MaintainerDesignKeywords):
 		return "maintainer_design"
 	default:
 		return "feature"
 	}
 }
 
-func categoryConfidence(category string, breakdown contracts.FileBreakdown, pr contracts.PullRequestContext, features derivedFeatures) float64 {
-	base := 0.6
+func categoryConfidence(category string, breakdown contracts.FileBreakdown, pr contracts.PullRequestContext, features derivedFeatures, policy AnalyzerPolicy) float64 {
+	base := policy.ConfidenceBase
 	if category == "documentation" && breakdown.Source == 0 {
-		base += 0.25
+		base += policy.ConfidenceDocsOnlyBonus
 	}
 	if breakdown.Source > 0 && pr.ChangedFiles > 0 {
-		base += 0.1
+		base += policy.ConfidenceSourceBonus
 	}
 	if len(pr.Labels) > 0 {
-		base += 0.05
+		base += policy.ConfidenceLabelsBonus
 	}
 	if len(features.issueReferences) > 0 {
-		base += 0.03
+		base += policy.ConfidenceIssueReferenceBonus
 	}
 	if len(features.criticalityTags) > 0 {
-		base += 0.02
+		base += policy.ConfidenceCriticalityBonus
 	}
-	if base > 0.95 {
-		return 0.95
+	if base > policy.ConfidenceMax {
+		return policy.ConfidenceMax
 	}
 	return base
 }
 
-func technicalDepth(pr contracts.PullRequestContext, breakdown contracts.FileBreakdown, features derivedFeatures) float64 {
-	score := 0.75
-	score += float64(min(pr.ChangedFiles, 12)) * 0.04
-	score += float64(min(pr.Commits, 8)) * 0.03
-	score += float64(min(pr.Additions+pr.Deletions, 800)) / 1000
-	score += float64(breakdown.Source) * 0.08
-	score += float64(breakdown.Tests) * 0.05
+func technicalDepth(pr contracts.PullRequestContext, breakdown contracts.FileBreakdown, features derivedFeatures, policy AnalyzerPolicy) float64 {
+	score := policy.DepthBase
+	score += float64(min(pr.ChangedFiles, policy.DepthChangedFilesCap)) * policy.DepthChangedFilesBonus
+	score += float64(min(pr.Commits, policy.DepthCommitsCap)) * policy.DepthCommitsBonus
+	score += float64(min(pr.Additions+pr.Deletions, policy.DepthDiffLinesCap)) / policy.DepthDiffLinesDivisor
+	score += float64(breakdown.Source) * policy.DepthSourceFilesBonus
+	score += float64(breakdown.Tests) * policy.DepthTestFilesBonus
 	if breakdown.Infra > 0 && breakdown.Source > 0 {
-		score += 0.15
+		score += policy.DepthInfraSourceBonus
 	}
-	score += float64(min(len(features.criticalityTags), 3)) * 0.05
+	score += float64(min(len(features.criticalityTags), policy.DepthCriticalityCap)) * policy.DepthCriticalityBonus
 	if len(features.detectedLanguages) > 1 {
-		score += 0.08
+		score += policy.DepthPolyglotBonus
 	}
 	if pr.Draft {
-		score -= 0.2
+		score -= policy.DepthDraftPenalty
 	}
-	if score < 0.5 {
-		return 0.5
+	if score < policy.DepthMin {
+		return policy.DepthMin
 	}
-	if score > 2.25 {
-		return 2.25
+	if score > policy.DepthMax {
+		return policy.DepthMax
 	}
 	return score
 }
 
-func reviewStrength(reviews []contracts.ReviewSignal, reviewCycles int) float64 {
-	score := 0.85
+func reviewStrength(reviews []contracts.ReviewSignal, reviewCycles int, policy AnalyzerPolicy) float64 {
+	score := policy.ReviewBase
 	for _, review := range reviews {
 		switch strings.ToLower(review.State) {
 		case "approved":
-			score += 0.12
+			score += policy.ReviewApprovedBonus
 		case "changes_requested":
-			score += 0.08
+			score += policy.ReviewChangesRequestedBonus
 		case "commented":
-			score += 0.03
+			score += policy.ReviewCommentedBonus
 		}
 
 		if assoc := strings.ToLower(review.AuthorAssociation); assoc == "member" || assoc == "owner" || assoc == "collaborator" {
-			score += 0.05
+			score += policy.ReviewMaintainerAssociationAdd
 		}
 	}
-	score += float64(min(reviewCycles, 3)) * 0.05
-	if score > 1.5 {
-		return 1.5
+	score += float64(min(reviewCycles, policy.ReviewCyclesCap)) * policy.ReviewCyclesBonus
+	if score > policy.ReviewMax {
+		return policy.ReviewMax
 	}
 	return score
 }
@@ -305,28 +310,10 @@ func buildSignals(req contracts.PullRequestAnalysisRequest, breakdown contracts.
 	return signals
 }
 
-func buildSkills(category string, breakdown contracts.FileBreakdown) []string {
-	var skills []string
-
-	switch category {
-	case "documentation":
-		skills = append(skills, "documentation")
-	case "tests":
-		skills = append(skills, "testing")
-	case "bug_fix":
-		skills = append(skills, "debugging", "backend")
-	case "feature":
-		skills = append(skills, "backend", "api_design")
-	case "refactor":
-		skills = append(skills, "systems", "tooling")
-	case "performance":
-		skills = append(skills, "performance", "backend")
-	case "infrastructure":
-		skills = append(skills, "tooling", "systems")
-	case "security":
-		skills = append(skills, "security", "backend")
-	case "maintainer_design":
-		skills = append(skills, "systems", "api_design")
+func buildSkills(category string, breakdown contracts.FileBreakdown, policy AnalyzerPolicy) []string {
+	skills := slices.Clone(policy.CategorySkills[category])
+	if len(skills) == 0 {
+		skills = slices.Clone(policy.CategorySkills["feature"])
 	}
 
 	if breakdown.Tests > 0 && !slices.Contains(skills, "testing") {
@@ -336,7 +323,7 @@ func buildSkills(category string, breakdown contracts.FileBreakdown) []string {
 	return skills
 }
 
-func buildFlags(req contracts.PullRequestAnalysisRequest, breakdown contracts.FileBreakdown, features derivedFeatures) []string {
+func buildFlags(req contracts.PullRequestAnalysisRequest, breakdown contracts.FileBreakdown, features derivedFeatures, policy AnalyzerPolicy) []string {
 	var flags []string
 
 	if req.PullRequest.Draft {
@@ -345,7 +332,8 @@ func buildFlags(req contracts.PullRequestAnalysisRequest, breakdown contracts.Fi
 	if req.Repository.Archived {
 		flags = append(flags, "archived_repository")
 	}
-	if req.PullRequest.ChangedFiles <= 2 && req.PullRequest.Additions+req.PullRequest.Deletions < 15 {
+	if req.PullRequest.ChangedFiles <= policy.SmallChangeMaxFiles &&
+		req.PullRequest.Additions+req.PullRequest.Deletions <= policy.SmallChangeMaxDiffLines {
 		flags = append(flags, "small_change")
 	}
 	if breakdown.Docs > 0 && breakdown.Source == 0 && breakdown.Tests == 0 {
@@ -364,7 +352,7 @@ func buildFlags(req contracts.PullRequestAnalysisRequest, breakdown contracts.Fi
 	return flags
 }
 
-func buildSummary(category string, breakdown contracts.FileBreakdown, pr contracts.PullRequestContext, repo contracts.RepositoryContext, review float64, features derivedFeatures) string {
+func buildSummary(category string, breakdown contracts.FileBreakdown, pr contracts.PullRequestContext, repo contracts.RepositoryContext, review float64, features derivedFeatures, policy AnalyzerPolicy) string {
 	parts := []string{
 		strings.ReplaceAll(category, "_", " "),
 		fmt.Sprintf("PR touching %d files", pr.ChangedFiles),
@@ -388,7 +376,7 @@ func buildSummary(category string, breakdown contracts.FileBreakdown, pr contrac
 	if len(features.issueReferences) > 0 {
 		parts = append(parts, fmt.Sprintf("linked issues %d", len(features.issueReferences)))
 	}
-	if review >= 1.1 {
+	if review >= policy.ReviewMeaningfulThreshold {
 		parts = append(parts, "meaningful review activity")
 	}
 	if features.reviewCycles > 0 {

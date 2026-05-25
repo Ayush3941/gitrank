@@ -33,6 +33,15 @@ import { formatRelativeDays } from "@/lib/formatters";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { contributionDisplayConfig } from "@/lib/runtime/contribution-display-config";
+import {
+  buildContributionFocusCounts,
+  buildContributionStatusCounts,
+  CONTRIBUTION_DEFAULT_FILTER,
+  CONTRIBUTION_DEFAULT_SORT,
+  type ContributionFilterValue,
+  type ContributionSortOption,
+  toContributionQueryFilter,
+} from "@/lib/runtime/contribution-filter-policy";
 import type { Contribution } from "@/types/gitrank";
 
 const ContributionList = dynamic(
@@ -45,28 +54,15 @@ const ContributionList = dynamic(
   },
 );
 
-const filterMap: Record<string, string> = {
-  All: "All",
-  Merged: "merged",
-  Open: "open",
-  Docs: "Documentation",
-  Tests: "Testing",
-  "Bug Fixes": "Bug Fix",
-  Infra: "Infrastructure",
-  Security: "Security",
-  Performance: "Performance",
-  "High XP": "High XP",
-};
-
 const CONTRIBUTION_CARDS_REGION_ID = "contributions-cards-region";
 const CONTRIBUTION_SEARCH_DEBOUNCE_MS = 220;
 
 export function ContributionsPageClient() {
   const constrainedNetwork = useNetworkConstraintPreference();
   const reducedGamification = useReducedGamification();
-  const [filter, setFilter] = useState("All");
+  const [filter, setFilter] = useState<ContributionFilterValue>(CONTRIBUTION_DEFAULT_FILTER);
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState<"Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact">("Newest");
+  const [sort, setSort] = useState<ContributionSortOption>(CONTRIBUTION_DEFAULT_SORT);
   const [exportNotice, setExportNotice] = useState("");
   const [showCardDetails, setShowCardDetails] = useState(false);
   const debouncedSearch = useDebouncedValue(search, CONTRIBUTION_SEARCH_DEBOUNCE_MS);
@@ -80,7 +76,7 @@ export function ContributionsPageClient() {
     : contributionDisplayConfig.cardPageSize;
   const [visibleCardCount, setVisibleCardCount] = useState(cardPageSize);
   const { data, isLoading, isError, refetch } = useContributions({
-    filter: filterMap[deferredFilter],
+    filter: toContributionQueryFilter(deferredFilter),
     search: deferredSearch,
     sort: deferredSort,
   });
@@ -90,24 +86,11 @@ export function ContributionsPageClient() {
     [profile?.user.contributions],
   );
   const statusCounts = useMemo(
-    () => ({
-      All: contributionUniverse.length,
-      Merged: contributionUniverse.filter((row) => row.status === "merged").length,
-      Open: contributionUniverse.filter((row) => row.status === "open").length,
-    }),
+    () => buildContributionStatusCounts(contributionUniverse),
     [contributionUniverse],
   );
   const focusCounts = useMemo(
-    () => ({
-      Any: contributionUniverse.length,
-      Docs: contributionUniverse.filter((row) => row.category === "Documentation").length,
-      Tests: contributionUniverse.filter((row) => row.category === "Testing").length,
-      "Bug Fixes": contributionUniverse.filter((row) => row.category === "Bug Fix").length,
-      Infra: contributionUniverse.filter((row) => row.category === "Infrastructure").length,
-      Security: contributionUniverse.filter((row) => row.category === "Security").length,
-      Performance: contributionUniverse.filter((row) => row.category === "Performance").length,
-      "High XP": contributionUniverse.filter((row) => row.xpEarned >= contributionDisplayConfig.highXPThreshold).length,
-    }),
+    () => buildContributionFocusCounts(contributionUniverse, contributionDisplayConfig.highXPThreshold),
     [contributionUniverse],
   );
   const filteredRows = useMemo(
@@ -129,7 +112,10 @@ export function ContributionsPageClient() {
     deferredSearch !== debouncedSearch ||
     debouncedSearch !== search ||
     deferredSort !== sort;
-  const canReset = filter !== "All" || search.trim().length > 0 || sort !== "Newest";
+  const canReset =
+    filter !== CONTRIBUTION_DEFAULT_FILTER ||
+    search.trim().length > 0 ||
+    sort !== CONTRIBUTION_DEFAULT_SORT;
   const totalContributionEvidence = profile?.user.contributions.length ?? 0;
   const isFilteredNoResults =
     canReset && totalContributionEvidence > 0 && filteredRows.length === 0;
@@ -224,7 +210,7 @@ export function ContributionsPageClient() {
     };
   }, [exportNotice]);
 
-  function handleFilterChange(next: string) {
+  function handleFilterChange(next: ContributionFilterValue) {
     startTransition(() => {
       setFilter(next);
       setVisibleCardCount(cardPageSize);
@@ -238,7 +224,7 @@ export function ContributionsPageClient() {
     });
   }
 
-  function handleSortChange(next: "Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact") {
+  function handleSortChange(next: ContributionSortOption) {
     startTransition(() => {
       setSort(next);
       setVisibleCardCount(cardPageSize);
@@ -247,9 +233,9 @@ export function ContributionsPageClient() {
 
   function handleResetFilters() {
     startTransition(() => {
-      setFilter("All");
+      setFilter(CONTRIBUTION_DEFAULT_FILTER);
       setSearch("");
-      setSort("Newest");
+      setSort(CONTRIBUTION_DEFAULT_SORT);
       setVisibleCardCount(cardPageSize);
     });
   }

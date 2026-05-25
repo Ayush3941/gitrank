@@ -25,6 +25,7 @@ func NewRouterWithStore(cfg config.App, analysisStore *analyzer.Store, log *slog
 		RequestTimeout:      cfg.AI.RequestTimeout,
 		SummaryMaxRunes:     cfg.AI.SummaryMaxRunes,
 		PromptFilePathLimit: cfg.AI.SummaryPromptFilePathLimit,
+		AnalyzerPolicyJSON:  cfg.AI.AnalyzerPolicyJSON,
 	})
 	metrics := httpkit.NewMetrics(cfg.ServiceName)
 	analysisMetrics := newAnalysisMetricsSource(cfg.ServiceName)

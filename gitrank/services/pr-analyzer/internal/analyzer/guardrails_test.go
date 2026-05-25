@@ -31,7 +31,7 @@ func TestHallucinationGuardrailsRejectUnsupportedLanguageClaims(t *testing.T) {
 		Flags:                   []string{"critical_path_change"},
 	}
 
-	err := applyHallucinationGuardrails(req, breakdown, features, resp)
+	err := applyHallucinationGuardrails(req, breakdown, features, resp, defaultAnalyzerPolicy())
 	if err == nil || !strings.Contains(err.Error(), `detected_languages entry "Python"`) {
 		t.Fatalf("applyHallucinationGuardrails() error = %v, want unsupported language rejection", err)
 	}
@@ -62,7 +62,7 @@ func TestHallucinationGuardrailsRejectUnsupportedIssueReferences(t *testing.T) {
 		Flags:             []string{"critical_path_change"},
 	}
 
-	err := applyHallucinationGuardrails(req, breakdown, features, resp)
+	err := applyHallucinationGuardrails(req, breakdown, features, resp, defaultAnalyzerPolicy())
 	if err == nil || !strings.Contains(err.Error(), `issue_references entry "octo/repo#999"`) {
 		t.Fatalf("applyHallucinationGuardrails() error = %v, want unsupported issue reference rejection", err)
 	}
@@ -91,7 +91,7 @@ func TestHallucinationGuardrailsRejectOverconfidentSummaryPhrases(t *testing.T) 
 		Flags:             []string{"critical_path_change"},
 	}
 
-	err := applyHallucinationGuardrails(req, breakdown, features, resp)
+	err := applyHallucinationGuardrails(req, breakdown, features, resp, defaultAnalyzerPolicy())
 	if err == nil || !strings.Contains(err.Error(), `summary contains unsupported certainty phrase "expert"`) {
 		t.Fatalf("applyHallucinationGuardrails() error = %v, want certainty phrase rejection", err)
 	}

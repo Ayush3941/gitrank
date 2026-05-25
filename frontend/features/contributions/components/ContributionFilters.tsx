@@ -19,31 +19,28 @@ import {
 import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  contributionFocusFilters,
+  CONTRIBUTION_DEFAULT_FILTER,
+  CONTRIBUTION_DEFAULT_SORT,
+  contributionSortOptions,
+  contributionStatusFilters,
+  isContributionSortOption,
+  resolveContributionFocusFilter,
+  resolveContributionStatusFilter,
+  type ContributionFilterValue,
+  type ContributionFocusFilter,
+  type ContributionSortOption,
+  type ContributionStatusFilter,
+} from "@/lib/runtime/contribution-filter-policy";
 
-const statusFilters = [
-  { value: "All" },
-  { value: "Merged" },
-  { value: "Open" },
-] as const;
-
-const focusFilters = [
-  { value: "Any" },
-  { value: "Docs" },
-  { value: "Tests" },
-  { value: "Bug Fixes" },
-  { value: "Infra" },
-  { value: "Security" },
-  { value: "Performance" },
-  { value: "High XP" },
-] as const;
-
-const statusIconByValue = {
+const statusIconByValue: Record<ContributionStatusFilter, typeof LayoutGrid> = {
   All: LayoutGrid,
   Merged: GitMerge,
   Open: CircleDot,
-} as const;
+};
 
-const focusIconByValue = {
+const focusIconByValue: Record<ContributionFocusFilter, typeof LayoutGrid> = {
   Any: LayoutGrid,
   Docs: BookText,
   Tests: FlaskConical,
@@ -52,9 +49,9 @@ const focusIconByValue = {
   Security: ShieldCheck,
   Performance: Gauge,
   "High XP": Trophy,
-} as const;
+};
 
-const focusCompactLabelByValue = {
+const focusCompactLabelByValue: Record<ContributionFocusFilter, string> = {
   Any: "Any",
   Docs: "Docs",
   Tests: "Tests",
@@ -63,28 +60,21 @@ const focusCompactLabelByValue = {
   Security: "Security",
   Performance: "Perf",
   "High XP": "High XP",
-} as const;
+};
 
-const sortOptions = [
-  "Newest",
-  "Highest XP",
-  "Highest Difficulty",
-  "Highest Impact",
-] as const;
-
-const sortIconByValue = {
+const sortIconByValue: Record<ContributionSortOption, typeof Clock3> = {
   Newest: Clock3,
   "Highest XP": Trophy,
   "Highest Difficulty": Gauge,
   "Highest Impact": BarChart3,
-} as const;
+};
 
-const sortCompactLabelByValue = {
+const sortCompactLabelByValue: Record<ContributionSortOption, string> = {
   Newest: "Newest",
   "Highest XP": "Top XP",
   "Highest Difficulty": "Top Diff",
   "Highest Impact": "Top Impact",
-} as const;
+};
 
 export function ContributionFilters({
   value,
@@ -104,12 +94,12 @@ export function ContributionFilters({
   focusCounts,
   contextNote,
 }: {
-  value: string;
-  onValueChange: (value: string) => void;
+  value: ContributionFilterValue;
+  onValueChange: (value: ContributionFilterValue) => void;
   search: string;
   onSearchChange: (value: string) => void;
-  sort: string;
-  onSortChange: (value: "Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact") => void;
+  sort: ContributionSortOption;
+  onSortChange: (value: ContributionSortOption) => void;
   resultCount?: number;
   isFiltering?: boolean;
   canReset?: boolean;
@@ -117,34 +107,20 @@ export function ContributionFilters({
   onClearSearch?: () => void;
   resultsRegionId?: string;
   compact?: boolean;
-  statusCounts?: Partial<Record<(typeof statusFilters)[number]["value"], number>>;
-  focusCounts?: Partial<Record<(typeof focusFilters)[number]["value"], number>>;
+  statusCounts?: Partial<Record<ContributionStatusFilter, number>>;
+  focusCounts?: Partial<Record<ContributionFocusFilter, number>>;
   contextNote?: string;
 }) {
-  type StatusFilterValue = (typeof statusFilters)[number]["value"];
-  type FocusFilterValue = (typeof focusFilters)[number]["value"];
-
   const statusId = "contribution-filter-status";
-
-  const activeStatus: StatusFilterValue =
-    value === "Merged" || value === "Open" ? value : "All";
-  const activeFocus: FocusFilterValue =
-    value === "Docs" ||
-    value === "Tests" ||
-    value === "Bug Fixes" ||
-    value === "Infra" ||
-    value === "Security" ||
-    value === "Performance" ||
-    value === "High XP"
-      ? value
-      : "Any";
+  const activeStatus = resolveContributionStatusFilter(value);
+  const activeFocus = resolveContributionFocusFilter(value);
 
   const activeViewLabel =
     activeStatus !== "All" ? activeStatus : activeFocus !== "Any" ? activeFocus : "All";
   const activeFilterCount =
-    (value !== "All" ? 1 : 0) +
+    (value !== CONTRIBUTION_DEFAULT_FILTER ? 1 : 0) +
     (search.trim().length > 0 ? 1 : 0) +
-    (sort !== "Newest" ? 1 : 0);
+    (sort !== CONTRIBUTION_DEFAULT_SORT ? 1 : 0);
   const trimmedSearch = search.trim();
   const compactSearch = trimmedSearch.length > 28 ? `${trimmedSearch.slice(0, 28)}…` : trimmedSearch;
 
@@ -157,7 +133,7 @@ export function ContributionFilters({
   }
 
   function handleStatusChange(nextValue: string) {
-    const next = nextValue as StatusFilterValue;
+    const next = nextValue as ContributionStatusFilter;
     if (next === "All") {
       onValueChange(activeFocus === "Any" ? "All" : activeFocus);
       return;
@@ -166,7 +142,7 @@ export function ContributionFilters({
   }
 
   function handleFocusChange(nextValue: string) {
-    const next = nextValue as FocusFilterValue;
+    const next = nextValue as ContributionFocusFilter;
     if (next === "Any") {
       onValueChange(activeStatus);
       return;
@@ -239,13 +215,13 @@ export function ContributionFilters({
         <div className="space-y-2">
           <p className="text-xs font-medium text-primary">Status lane</p>
           <SegmentedTablist
-            options={statusFilters.map((filter) => {
-              const Icon = statusIconByValue[filter.value];
+            options={contributionStatusFilters.map((filter) => {
+              const Icon = statusIconByValue[filter];
                 return {
-                  value: filter.value,
-                  label: filter.value,
+                  value: filter,
+                  label: filter,
                   icon: <Icon className="h-4 w-4" />,
-                  count: statusCounts?.[filter.value],
+                  count: statusCounts?.[filter],
                   minWidthClassName: "min-w-[6.75rem] sm:min-w-[8rem]",
                 };
               })}
@@ -261,14 +237,14 @@ export function ContributionFilters({
           <div className="space-y-2">
             <p className="text-xs font-medium text-primary">Focus lane</p>
             <SegmentedTablist
-              options={focusFilters.map((filter) => {
-                const Icon = focusIconByValue[filter.value];
+              options={contributionFocusFilters.map((filter) => {
+                const Icon = focusIconByValue[filter];
                 return {
-                  value: filter.value,
-                  label: filter.value,
-                  compactLabel: focusCompactLabelByValue[filter.value],
+                  value: filter,
+                  label: filter,
+                  compactLabel: focusCompactLabelByValue[filter],
                   icon: <Icon className="h-4 w-4" />,
-                  count: focusCounts?.[filter.value],
+                  count: focusCounts?.[filter],
                   minWidthClassName: "min-w-[7.25rem] sm:min-w-[8rem]",
                 };
               })}
@@ -308,7 +284,7 @@ export function ContributionFilters({
           <div className="space-y-2">
             <p className="text-xs font-medium text-primary">Sort order</p>
             <SegmentedTablist
-              options={sortOptions.map((item) => {
+              options={contributionSortOptions.map((item) => {
                 const Icon = sortIconByValue[item];
                 return {
                   value: item,
@@ -319,9 +295,12 @@ export function ContributionFilters({
                 };
               })}
               value={sort}
-              onValueChange={(next) =>
-                onSortChange(next as "Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact")
-              }
+              onValueChange={(next) => {
+                if (!isContributionSortOption(next)) {
+                  return;
+                }
+                onSortChange(next);
+              }}
               ariaLabel="Contribution sort options"
               ariaDescribedBy={statusId}
               ariaControls={resultsRegionId}
