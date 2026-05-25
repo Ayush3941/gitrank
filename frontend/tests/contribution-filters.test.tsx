@@ -17,7 +17,7 @@ describe("ContributionFilters", () => {
     );
 
     expect(screen.queryByRole("button", { name: /Remove .* filter/i })).toBeNull();
-    expect(screen.getByRole("tablist", { name: "Contribution category filters" })).toBeTruthy();
+    expect(screen.getByRole("tablist", { name: "Contribution status filters" })).toBeTruthy();
     expect(screen.getByRole("tab", { name: "All" })).toBeTruthy();
     expect(screen.getByRole("tablist", { name: "Contribution sort options" })).toBeTruthy();
     expect(screen.getByRole("tab", { name: "Newest" })).toBeTruthy();
@@ -42,11 +42,11 @@ describe("ContributionFilters", () => {
       />,
     );
 
-    expect(screen.getByText("Category: Docs")).toBeTruthy();
+    expect(screen.getByText("Focus: Docs")).toBeTruthy();
     expect(screen.getByText("Search: very-specific-repo-name")).toBeTruthy();
     expect(screen.getByText("Sort: Highest XP")).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("button", { name: /Remove Category: Docs filter/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Remove Focus: Docs filter/i }));
     fireEvent.click(screen.getByRole("button", { name: /Remove Search: very-specific-repo-name filter/i }));
     fireEvent.click(screen.getByRole("button", { name: /Remove Sort: Highest XP filter/i }));
 

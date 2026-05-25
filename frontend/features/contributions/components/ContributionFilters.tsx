@@ -109,17 +109,6 @@ export function ContributionFilters({
   type FocusFilterValue = (typeof focusFilters)[number]["value"];
 
   const statusId = "contribution-filter-status";
-  const activeChips: Array<{ key: "category" | "search" | "sort"; label: string }> = [];
-  if (value !== "All") {
-    activeChips.push({ key: "category", label: value });
-  }
-  if (search.trim().length > 0) {
-    const compactSearch = search.trim().length > 28 ? `${search.trim().slice(0, 28)}…` : search.trim();
-    activeChips.push({ key: "search", label: `Search: ${compactSearch}` });
-  }
-  if (sort !== "Newest") {
-    activeChips.push({ key: "sort", label: sort });
-  }
 
   const activeStatus: StatusFilterValue =
     value === "Merged" || value === "Open" ? value : "All";
@@ -133,6 +122,24 @@ export function ContributionFilters({
     value === "High XP"
       ? value
       : "Any";
+
+  const activeChips: Array<{ key: "category" | "search" | "sort"; label: string }> = [];
+  if (value !== "All") {
+    const categoryLabel =
+      activeStatus !== "All"
+        ? `Status: ${activeStatus}`
+        : activeFocus !== "Any"
+          ? `Focus: ${activeFocus}`
+          : value;
+    activeChips.push({ key: "category", label: categoryLabel });
+  }
+  if (search.trim().length > 0) {
+    const compactSearch = search.trim().length > 28 ? `${search.trim().slice(0, 28)}…` : search.trim();
+    activeChips.push({ key: "search", label: `Search: ${compactSearch}` });
+  }
+  if (sort !== "Newest") {
+    activeChips.push({ key: "sort", label: `Sort: ${sort}` });
+  }
 
   function handleStatusChange(nextValue: string) {
     const next = nextValue as StatusFilterValue;
@@ -265,7 +272,7 @@ export function ContributionFilters({
               wrap={false}
             />
             <p className="text-xs text-muted">
-              Status lanes track PR state. Focus lanes track topic and impact patterns.
+              Status shows PR state. Focus helps you inspect the type of contribution signal.
             </p>
           </div>
           <div className="relative">

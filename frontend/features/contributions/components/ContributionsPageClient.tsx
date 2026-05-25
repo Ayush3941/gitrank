@@ -412,7 +412,7 @@ export function ContributionsPageClient() {
           focusCounts={focusCounts}
         />
         <p className="mt-2 text-xs text-muted">
-          Categories group PR topics so you can scan impact patterns faster.
+          These lanes help you isolate PR status and work type before reviewing battle reports.
         </p>
       </section>
       {isLoading ? <LoadingState message="Loading contributions..." /> : null}
