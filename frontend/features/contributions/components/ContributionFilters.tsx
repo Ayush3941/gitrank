@@ -156,7 +156,7 @@ export function ContributionFilters({
     <section
       aria-label="Contribution filters"
       data-compact={compact ? "true" : "false"}
-      className="space-y-4"
+      className="neon-surface space-y-4 rounded-[1rem] px-3 py-3 sm:px-4 sm:py-4"
     >
       <p
         id={statusId}
