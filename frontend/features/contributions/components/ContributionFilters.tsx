@@ -127,18 +127,18 @@ export function ContributionFilters({
   if (value !== "All") {
     const categoryLabel =
       activeStatus !== "All"
-        ? `Status: ${activeStatus}`
+        ? `Status · ${activeStatus}`
         : activeFocus !== "Any"
-          ? `Focus: ${activeFocus}`
+          ? `Focus · ${activeFocus}`
           : value;
     activeChips.push({ key: "category", label: categoryLabel });
   }
   if (search.trim().length > 0) {
     const compactSearch = search.trim().length > 28 ? `${search.trim().slice(0, 28)}…` : search.trim();
-    activeChips.push({ key: "search", label: `Search: ${compactSearch}` });
+    activeChips.push({ key: "search", label: `Search · ${compactSearch}` });
   }
   if (sort !== "Newest") {
-    activeChips.push({ key: "sort", label: `Sort: ${sort}` });
+    activeChips.push({ key: "sort", label: `Sort · ${sort}` });
   }
 
   function handleStatusChange(nextValue: string) {
@@ -183,37 +183,40 @@ export function ContributionFilters({
       </div>
       {activeChips.length ? (
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <ul role="list" className="flex flex-wrap gap-2 text-xs">
-            {activeChips.map((chip) => {
-              const handleRemove =
-                chip.key === "category"
-                  ? onClearCategory
-                  : chip.key === "search"
-                    ? onClearSearch
-                    : onClearSort;
-              return (
-                <li key={chip.key} className="list-none">
-                  {handleRemove ? (
-                    <button
-                      type="button"
-                      className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold"
-                      onClick={handleRemove}
-                      disabled={isFiltering}
-                      aria-label={`Remove ${chip.label} filter`}
-                      aria-controls={resultsRegionId}
-                    >
-                      {chip.label}
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  ) : (
-                    <span className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold">
-                      {chip.label}
-                    </span>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <p className="text-xs font-medium text-primary">Active filters</p>
+            <ul role="list" className="flex min-w-0 flex-wrap gap-2 text-xs">
+              {activeChips.map((chip) => {
+                const handleRemove =
+                  chip.key === "category"
+                    ? onClearCategory
+                    : chip.key === "search"
+                      ? onClearSearch
+                      : onClearSort;
+                return (
+                  <li key={chip.key} className="list-none">
+                    {handleRemove ? (
+                      <button
+                        type="button"
+                        className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold"
+                        onClick={handleRemove}
+                        disabled={isFiltering}
+                        aria-label={`Remove ${chip.label} filter`}
+                        aria-controls={resultsRegionId}
+                      >
+                        {chip.label}
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    ) : (
+                      <span className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold">
+                        {chip.label}
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
           {onReset ? (
             <Button
               type="button"
@@ -223,7 +226,7 @@ export function ContributionFilters({
               disabled={!canReset || isFiltering}
               aria-controls={resultsRegionId}
             >
-              Reset all
+              Clear all
             </Button>
           ) : null}
         </div>
