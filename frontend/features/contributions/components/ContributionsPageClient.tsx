@@ -265,20 +265,6 @@ export function ContributionsPageClient() {
     });
   }
 
-  function handleClearCategoryFilter() {
-    startTransition(() => {
-      setFilter("All");
-      setVisibleCardCount(cardPageSize);
-    });
-  }
-
-  function handleClearSortFilter() {
-    startTransition(() => {
-      setSort("Newest");
-      setVisibleCardCount(cardPageSize);
-    });
-  }
-
   return (
     <div className="stable-scroll-scope space-y-6">
       <PageHeader
@@ -406,13 +392,11 @@ export function ContributionsPageClient() {
           onReset={handleResetFilters}
           compact
           onClearSearch={handleClearSearchFilter}
-          onClearCategory={handleClearCategoryFilter}
-          onClearSort={handleClearSortFilter}
           statusCounts={statusCounts}
           focusCounts={focusCounts}
         />
         <p className="mt-2 text-xs text-muted">
-          These lanes help you isolate PR status and work type before reviewing battle reports.
+          Categories are a readable summary of recent PR themes, not fixed labels about your overall expertise.
         </p>
       </section>
       {isLoading ? <LoadingState message="Loading contributions..." /> : null}

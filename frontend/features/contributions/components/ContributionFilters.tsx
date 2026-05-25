@@ -93,8 +93,6 @@ export function ContributionFilters({
   onSearchChange,
   sort,
   onSortChange,
-  onClearCategory,
-  onClearSort,
   resultCount,
   isFiltering,
   canReset,
@@ -111,8 +109,6 @@ export function ContributionFilters({
   onSearchChange: (value: string) => void;
   sort: string;
   onSortChange: (value: "Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact") => void;
-  onClearCategory?: () => void;
-  onClearSort?: () => void;
   resultCount?: number;
   isFiltering?: boolean;
   canReset?: boolean;
@@ -141,22 +137,12 @@ export function ContributionFilters({
       ? value
       : "Any";
 
-  const activeChips: Array<{ key: "category" | "search" | "sort"; label: string }> = [];
-  if (value !== "All") {
-    const categoryLabel =
-      activeStatus !== "All"
-        ? `Status · ${activeStatus}`
-        : activeFocus !== "Any"
-          ? `Focus · ${activeFocus}`
-          : value;
-    activeChips.push({ key: "category", label: categoryLabel });
-  }
+  const activeCategoryLabel =
+    activeStatus !== "All" ? activeStatus : activeFocus !== "Any" ? activeFocus : "All";
+  const activeChips: Array<{ key: "search"; label: string }> = [];
   if (search.trim().length > 0) {
     const compactSearch = search.trim().length > 28 ? `${search.trim().slice(0, 28)}…` : search.trim();
     activeChips.push({ key: "search", label: `Search · ${compactSearch}` });
-  }
-  if (sort !== "Newest") {
-    activeChips.push({ key: "sort", label: `Sort · ${sort}` });
   }
 
   function handleStatusChange(nextValue: string) {
@@ -199,18 +185,34 @@ export function ContributionFilters({
           {isFiltering ? "Updating cards..." : `${resultCount ?? 0} cards`}
         </p>
       </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+          Category: {activeCategoryLabel}
+        </span>
+        <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+          Sort: {sort}
+        </span>
+        {onReset ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={onReset}
+            disabled={!canReset || isFiltering}
+            aria-controls={resultsRegionId}
+            className="h-8 px-3"
+          >
+            Reset
+          </Button>
+        ) : null}
+      </div>
       {activeChips.length ? (
-        <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <p className="text-xs font-medium text-primary">Active filters</p>
             <ul role="list" className="flex min-w-0 flex-wrap gap-2 text-xs">
               {activeChips.map((chip) => {
-                const handleRemove =
-                  chip.key === "category"
-                    ? onClearCategory
-                    : chip.key === "search"
-                      ? onClearSearch
-                      : onClearSort;
+                const handleRemove = onClearSearch;
                 return (
                   <li key={chip.key} className="list-none">
                     {handleRemove ? (
@@ -235,18 +237,6 @@ export function ContributionFilters({
               })}
             </ul>
           </div>
-          {onReset ? (
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={onReset}
-              disabled={!canReset || isFiltering}
-              aria-controls={resultsRegionId}
-            >
-              Clear all
-            </Button>
-          ) : null}
         </div>
       ) : null}
       <div id="contribution-mobile-controls">
@@ -291,7 +281,7 @@ export function ContributionFilters({
               ariaLabel="Contribution focus filters"
               ariaControls={resultsRegionId}
               tabIdPrefix="contribution-focus-tab"
-              wrap={false}
+              wrap
             />
             <p className="text-xs text-muted">
               Status shows PR state. Focus helps you inspect the type of contribution signal.
@@ -342,7 +332,7 @@ export function ContributionFilters({
               ariaDescribedBy={statusId}
               ariaControls={resultsRegionId}
               tabIdPrefix="contribution-sort-tab"
-              wrap={false}
+              wrap
             />
           </div>
         </div>

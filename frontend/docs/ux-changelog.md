@@ -2,6 +2,13 @@
 
 ## 2026-05-25
 
+- Contributions filter-summary presentation pass:
+  - surfaced an always-visible summary row (`Category: ...`, `Sort: ...`, `Reset`) so active view state is readable without scanning multiple control lanes.
+  - reduced duplicate chip chrome by keeping removable chips focused on search terms only.
+  - updated contribution-filter tests to lock the new contract (summary labels + removable search chip).
+- Leaderboard lane-wrap resilience pass:
+  - enabled wrapping for lane tabs and tightened lane minimum widths on narrow viewports.
+  - keeps all lane options reachable without forced horizontal-only scrolling.
 - Contribution filter active-chip clarity pass:
   - replaced dense chip labels (`Category: ...`, `Sort: ...`) with clearer lane-focused labels (`Status · ...`, `Focus · ...`, `Sort · ...`).
   - added an explicit `Active filters` strip and unified `Clear all` reset action for faster scanning and simpler recovery.

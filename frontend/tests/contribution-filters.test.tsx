@@ -23,10 +23,8 @@ describe("ContributionFilters", () => {
     expect(screen.getByRole("tab", { name: "Newest" })).toBeTruthy();
   });
 
-  it("renders removable active chips and fires clear handlers", () => {
-    const clearCategory = vi.fn();
+  it("renders category and sort summaries with removable search chip", () => {
     const clearSearch = vi.fn();
-    const clearSort = vi.fn();
 
     render(
       <ContributionFilters
@@ -36,23 +34,20 @@ describe("ContributionFilters", () => {
         onSearchChange={() => undefined}
         sort="Highest XP"
         onSortChange={() => undefined}
-        onClearCategory={clearCategory}
         onClearSearch={clearSearch}
-        onClearSort={clearSort}
       />,
     );
 
     expect(screen.getByText("Active filters")).toBeTruthy();
-    expect(screen.getByText("Focus · Docs")).toBeTruthy();
+    expect(screen.getByText("Category: Docs")).toBeTruthy();
+    expect(screen.getByText("Sort: Highest XP")).toBeTruthy();
     expect(screen.getByText("Search · very-specific-repo-name")).toBeTruthy();
-    expect(screen.getByText("Sort · Highest XP")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /Remove Focus · Docs filter/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /Remove Sort · Highest XP filter/i })).toBeNull();
 
-    fireEvent.click(screen.getByRole("button", { name: /Remove Focus · Docs filter/i }));
-    fireEvent.click(screen.getByRole("button", { name: /Remove Search · very-specific-repo-name filter/i }));
-    fireEvent.click(screen.getByRole("button", { name: /Remove Sort · Highest XP filter/i }));
-
-    expect(clearCategory).toHaveBeenCalledTimes(1);
+    fireEvent.click(
+      screen.getByRole("button", { name: /Remove Search · very-specific-repo-name filter/i }),
+    );
     expect(clearSearch).toHaveBeenCalledTimes(1);
-    expect(clearSort).toHaveBeenCalledTimes(1);
   });
 });
