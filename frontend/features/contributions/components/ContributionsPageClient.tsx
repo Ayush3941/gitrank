@@ -32,6 +32,7 @@ import {
 import { formatRelativeDays } from "@/lib/formatters";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
+import { contributionDisplayConfig } from "@/lib/runtime/contribution-display-config";
 import type { Contribution } from "@/types/gitrank";
 
 const ContributionList = dynamic(
@@ -57,13 +58,8 @@ const filterMap: Record<string, string> = {
   "High XP": "High XP",
 };
 
-const CONTRIBUTION_CARD_PAGE_SIZE_DEFAULT = 12;
-const CONTRIBUTION_CARD_PAGE_SIZE_CONSTRAINED = 6;
-const ABRA_CONTRIBUTION_SAMPLE_LIMIT = 24;
 const CONTRIBUTION_CARDS_REGION_ID = "contributions-cards-region";
 const CONTRIBUTION_SEARCH_DEBOUNCE_MS = 220;
-const CONTRIBUTION_RENDER_HARD_CAP = 100;
-const HIGH_XP_COUNT_THRESHOLD = 200;
 
 export function ContributionsPageClient() {
   const constrainedNetwork = useNetworkConstraintPreference();
@@ -80,8 +76,8 @@ export function ContributionsPageClient() {
   const useLiteCards = constrainedNetwork || reducedGamification;
   const effectiveShowCardDetails = showCardDetails && !useLiteCards;
   const cardPageSize = useLiteCards
-    ? CONTRIBUTION_CARD_PAGE_SIZE_CONSTRAINED
-    : CONTRIBUTION_CARD_PAGE_SIZE_DEFAULT;
+    ? contributionDisplayConfig.constrainedCardPageSize
+    : contributionDisplayConfig.cardPageSize;
   const [visibleCardCount, setVisibleCardCount] = useState(cardPageSize);
   const { data, isLoading, isError, refetch } = useContributions({
     filter: filterMap[deferredFilter],
@@ -110,7 +106,7 @@ export function ContributionsPageClient() {
       Infra: contributionUniverse.filter((row) => row.category === "Infrastructure").length,
       Security: contributionUniverse.filter((row) => row.category === "Security").length,
       Performance: contributionUniverse.filter((row) => row.category === "Performance").length,
-      "High XP": contributionUniverse.filter((row) => row.xpEarned >= HIGH_XP_COUNT_THRESHOLD).length,
+      "High XP": contributionUniverse.filter((row) => row.xpEarned >= contributionDisplayConfig.highXPThreshold).length,
     }),
     [contributionUniverse],
   );
@@ -118,7 +114,7 @@ export function ContributionsPageClient() {
     () =>
       deduplicateContributionsByPR(data?.rows ?? []).slice(
         0,
-        CONTRIBUTION_RENDER_HARD_CAP,
+        contributionDisplayConfig.renderHardCap,
       ),
     [data?.rows],
   );
@@ -147,7 +143,7 @@ export function ContributionsPageClient() {
     [profile?.user.contributions],
   );
   const abraContributionSample = useMemo(
-    () => filteredRows.slice(0, ABRA_CONTRIBUTION_SAMPLE_LIMIT),
+    () => filteredRows.slice(0, contributionDisplayConfig.abraSampleLimit),
     [filteredRows],
   );
   const abraPayload = useMemo(() => {
@@ -394,7 +390,7 @@ export function ContributionsPageClient() {
           onClearSearch={handleClearSearchFilter}
           statusCounts={statusCounts}
           focusCounts={focusCounts}
-          contextNote="Use these filters to read recent PR patterns, not to make permanent skill labels."
+          contextNote="Use these filters to read your recent PR patterns; they are signals, not permanent labels."
         />
       </section>
       {isLoading ? <LoadingState message="Loading contributions..." /> : null}

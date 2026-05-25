@@ -131,7 +131,7 @@ Gemini path:
 
 ## Evidence and Sync Notes
 
-- `GITHUB_AUTHORED_PR_SYNC_LIMIT` controls authored PR fetch size (default `10`).
+- User sync limits are runtime-configurable (`GITHUB_AUTHORED_PR_SYNC_LIMIT`, `GITHUB_AUTHORED_PR_SEARCH_LIMIT`, page-size and timeout policy env vars).
 - Profile/report pages are snapshot-backed and may show partial/stale states.
 - Upstream failures are surfaced as explicit sync/evidence states.
 

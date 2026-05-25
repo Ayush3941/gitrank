@@ -223,6 +223,10 @@ func TestSyncFailureFetchedMetrics(t *testing.T) {
 func TestBoundedUserPRSyncTimeout(t *testing.T) {
 	t.Parallel()
 
+	defaultTimeout := 20 * time.Second
+	minTimeout := 10 * time.Second
+	maxTimeout := 60 * time.Second
+
 	tests := []struct {
 		name string
 		cfg  config.App
@@ -230,29 +234,50 @@ func TestBoundedUserPRSyncTimeout(t *testing.T) {
 	}{
 		{
 			name: "uses fallback when timeout is missing",
-			cfg:  config.App{},
-			want: defaultUserPRSyncTimeout,
+			cfg: config.App{
+				GitHub: config.GitHub{
+					UserPRSyncTimeoutDefault: defaultTimeout,
+					UserPRSyncTimeoutMin:     minTimeout,
+					UserPRSyncTimeoutMax:     maxTimeout,
+				},
+			},
+			want: defaultTimeout,
 		},
 		{
 			name: "uses minimum bound when timeout is too short",
 			cfg: config.App{
-				GitHub: config.GitHub{RequestTimeout: 5 * time.Second},
+				GitHub: config.GitHub{
+					RequestTimeout:           5 * time.Second,
+					UserPRSyncTimeoutDefault: defaultTimeout,
+					UserPRSyncTimeoutMin:     minTimeout,
+					UserPRSyncTimeoutMax:     maxTimeout,
+				},
 			},
-			want: minUserPRSyncTimeout,
+			want: minTimeout,
 		},
 		{
 			name: "uses configured timeout when within bounds",
 			cfg: config.App{
-				GitHub: config.GitHub{RequestTimeout: 25 * time.Second},
+				GitHub: config.GitHub{
+					RequestTimeout:           25 * time.Second,
+					UserPRSyncTimeoutDefault: defaultTimeout,
+					UserPRSyncTimeoutMin:     minTimeout,
+					UserPRSyncTimeoutMax:     maxTimeout,
+				},
 			},
 			want: 25 * time.Second,
 		},
 		{
 			name: "uses maximum bound when timeout is too high",
 			cfg: config.App{
-				GitHub: config.GitHub{RequestTimeout: 90 * time.Second},
+				GitHub: config.GitHub{
+					RequestTimeout:           90 * time.Second,
+					UserPRSyncTimeoutDefault: defaultTimeout,
+					UserPRSyncTimeoutMin:     minTimeout,
+					UserPRSyncTimeoutMax:     maxTimeout,
+				},
 			},
-			want: maxUserPRSyncTimeout,
+			want: maxTimeout,
 		},
 	}
 
@@ -264,6 +289,25 @@ func TestBoundedUserPRSyncTimeout(t *testing.T) {
 				t.Fatalf("boundedUserPRSyncTimeout() = %s, want %s", got, test.want)
 			}
 		})
+	}
+}
+
+func TestBoundedAuthoredPRSyncLimit(t *testing.T) {
+	t.Parallel()
+
+	cfg := config.GitHub{
+		AuthoredPRSyncLimit:   15,
+		AuthoredPRSearchLimit: 100,
+	}
+
+	if got := boundedAuthoredPRSyncLimit(cfg, 0); got != 15 {
+		t.Fatalf("boundedAuthoredPRSyncLimit(default) = %d, want 15", got)
+	}
+	if got := boundedAuthoredPRSyncLimit(cfg, 55); got != 55 {
+		t.Fatalf("boundedAuthoredPRSyncLimit(55) = %d, want 55", got)
+	}
+	if got := boundedAuthoredPRSyncLimit(cfg, 120); got != 100 {
+		t.Fatalf("boundedAuthoredPRSyncLimit(120) = %d, want 100", got)
 	}
 }
 

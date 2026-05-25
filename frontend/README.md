@@ -132,24 +132,17 @@ NEXT_PUBLIC_WEB_VITALS_SAMPLE_RATE=0.35
 
 ## Backend Configuration
 
-The frontend expects the Go gateway at `http://localhost:8080` by default.
-
-Override it with:
+Set these server-side env vars for frontend proxy routes:
 
 ```bash
 GITRANK_API_BASE_URL=http://localhost:8080
+GITRANK_AUTH_BASE_URL=http://localhost:8081
 ```
 
 If you expose a non-default CSRF cookie name to the browser, also set:
 
 ```bash
 NEXT_PUBLIC_GITRANK_CSRF_COOKIE_NAME=gitrank_csrf
-```
-
-The OAuth proxy defaults to auth-service at `http://localhost:8081`:
-
-```bash
-GITRANK_AUTH_BASE_URL=http://localhost:8081
 ```
 
 If your backend uses a non-default session cookie name:
@@ -164,6 +157,16 @@ GitHub auth is initiated and completed through frontend routes:
 - `GET /oauth/github/callback`
 
 These routes proxy to auth-service and preserve auth cookies on the frontend origin.
+
+Optional contribution UI policy values (no hardcoded thresholds in component logic):
+
+```bash
+NEXT_PUBLIC_GITRANK_CONTRIBUTION_CARD_PAGE_SIZE=12
+NEXT_PUBLIC_GITRANK_CONTRIBUTION_CARD_PAGE_SIZE_CONSTRAINED=6
+NEXT_PUBLIC_GITRANK_CONTRIBUTION_RENDER_HARD_CAP=100
+NEXT_PUBLIC_GITRANK_ABRA_CONTRIBUTION_SAMPLE_LIMIT=24
+NEXT_PUBLIC_GITRANK_HIGH_XP_THRESHOLD=200
+```
 
 ## Optional Gemini ABRA Insights
 

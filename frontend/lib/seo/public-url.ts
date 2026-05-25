@@ -1,15 +1,13 @@
-const fallbackBaseURL = "http://localhost:3000";
-
 export function publicBaseURL(): string {
   const candidate = process.env.GITRANK_PUBLIC_BASE_URL?.trim();
   if (!candidate) {
-    return fallbackBaseURL;
+    throw new Error("GITRANK_PUBLIC_BASE_URL is required");
   }
 
   try {
     return new URL(candidate).origin;
   } catch {
-    return fallbackBaseURL;
+    throw new Error("GITRANK_PUBLIC_BASE_URL must be a valid absolute URL");
   }
 }
 

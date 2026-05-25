@@ -104,7 +104,15 @@ type GitHub struct {
 	RequestTimeout                 time.Duration
 	MaxPageSize                    int
 	GraphQLPageSize                int
+	RepositorySyncPageSize         int
+	PullRequestReviewPageSize      int
+	CommitSyncPageSize             int
+	UserRepositorySyncLimit        int
+	AuthoredPRSearchLimit          int
 	AuthoredPRSyncLimit            int
+	UserPRSyncTimeoutDefault       time.Duration
+	UserPRSyncTimeoutMin           time.Duration
+	UserPRSyncTimeoutMax           time.Duration
 	MaxBodyBytes                   int
 	DedupeTTL                      time.Duration
 	FailedLookback                 time.Duration
@@ -226,7 +234,15 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			RequestTimeout:                 getDuration("GITHUB_REQUEST_TIMEOUT", 20*time.Second),
 			MaxPageSize:                    getInt("GITHUB_MAX_PAGE_SIZE", 100),
 			GraphQLPageSize:                getInt("GITHUB_GRAPHQL_PAGE_SIZE", 100),
+			RepositorySyncPageSize:         getInt("GITHUB_REPOSITORY_SYNC_PAGE_SIZE", 10),
+			PullRequestReviewPageSize:      getInt("GITHUB_PULL_REQUEST_REVIEW_PAGE_SIZE", 10),
+			CommitSyncPageSize:             getInt("GITHUB_COMMIT_SYNC_PAGE_SIZE", 50),
+			UserRepositorySyncLimit:        getInt("GITHUB_USER_REPOSITORY_SYNC_LIMIT", 100),
+			AuthoredPRSearchLimit:          getInt("GITHUB_AUTHORED_PR_SEARCH_LIMIT", 100),
 			AuthoredPRSyncLimit:            getInt("GITHUB_AUTHORED_PR_SYNC_LIMIT", 10),
+			UserPRSyncTimeoutDefault:       getDuration("GITHUB_USER_PR_SYNC_TIMEOUT_DEFAULT", 20*time.Second),
+			UserPRSyncTimeoutMin:           getDuration("GITHUB_USER_PR_SYNC_TIMEOUT_MIN", 10*time.Second),
+			UserPRSyncTimeoutMax:           getDuration("GITHUB_USER_PR_SYNC_TIMEOUT_MAX", 60*time.Second),
 			MaxBodyBytes:                   getInt("GITHUB_WEBHOOK_MAX_BODY_BYTES", 1<<20),
 			DedupeTTL:                      getDuration("GITHUB_WEBHOOK_DEDUPE_TTL", 7*24*time.Hour),
 			FailedLookback:                 getDuration("GITHUB_FAILED_DELIVERY_LOOKBACK", 72*time.Hour),
@@ -362,8 +378,38 @@ func (a App) ValidateBase() error {
 	if a.GitHub.GraphQLPageSize <= 0 || a.GitHub.GraphQLPageSize > 100 {
 		problems = append(problems, "GITHUB_GRAPHQL_PAGE_SIZE must be between 1 and 100")
 	}
-	if a.GitHub.AuthoredPRSyncLimit <= 0 || a.GitHub.AuthoredPRSyncLimit > 100 {
-		problems = append(problems, "GITHUB_AUTHORED_PR_SYNC_LIMIT must be between 1 and 100")
+	if a.GitHub.RepositorySyncPageSize <= 0 || a.GitHub.RepositorySyncPageSize > 100 {
+		problems = append(problems, "GITHUB_REPOSITORY_SYNC_PAGE_SIZE must be between 1 and 100")
+	}
+	if a.GitHub.PullRequestReviewPageSize <= 0 || a.GitHub.PullRequestReviewPageSize > 100 {
+		problems = append(problems, "GITHUB_PULL_REQUEST_REVIEW_PAGE_SIZE must be between 1 and 100")
+	}
+	if a.GitHub.CommitSyncPageSize <= 0 || a.GitHub.CommitSyncPageSize > 100 {
+		problems = append(problems, "GITHUB_COMMIT_SYNC_PAGE_SIZE must be between 1 and 100")
+	}
+	if a.GitHub.UserRepositorySyncLimit <= 0 || a.GitHub.UserRepositorySyncLimit > 500 {
+		problems = append(problems, "GITHUB_USER_REPOSITORY_SYNC_LIMIT must be between 1 and 500")
+	}
+	if a.GitHub.AuthoredPRSearchLimit <= 0 || a.GitHub.AuthoredPRSearchLimit > 100 {
+		problems = append(problems, "GITHUB_AUTHORED_PR_SEARCH_LIMIT must be between 1 and 100")
+	}
+	if a.GitHub.AuthoredPRSyncLimit <= 0 || a.GitHub.AuthoredPRSyncLimit > a.GitHub.AuthoredPRSearchLimit {
+		problems = append(problems, "GITHUB_AUTHORED_PR_SYNC_LIMIT must be between 1 and GITHUB_AUTHORED_PR_SEARCH_LIMIT")
+	}
+	if a.GitHub.UserPRSyncTimeoutDefault <= 0 {
+		problems = append(problems, "GITHUB_USER_PR_SYNC_TIMEOUT_DEFAULT must be positive")
+	}
+	if a.GitHub.UserPRSyncTimeoutMin <= 0 {
+		problems = append(problems, "GITHUB_USER_PR_SYNC_TIMEOUT_MIN must be positive")
+	}
+	if a.GitHub.UserPRSyncTimeoutMax <= 0 {
+		problems = append(problems, "GITHUB_USER_PR_SYNC_TIMEOUT_MAX must be positive")
+	}
+	if a.GitHub.UserPRSyncTimeoutMax < a.GitHub.UserPRSyncTimeoutMin {
+		problems = append(problems, "GITHUB_USER_PR_SYNC_TIMEOUT_MAX must be greater than or equal to GITHUB_USER_PR_SYNC_TIMEOUT_MIN")
+	}
+	if a.GitHub.UserPRSyncTimeoutDefault < a.GitHub.UserPRSyncTimeoutMin || a.GitHub.UserPRSyncTimeoutDefault > a.GitHub.UserPRSyncTimeoutMax {
+		problems = append(problems, "GITHUB_USER_PR_SYNC_TIMEOUT_DEFAULT must be between GITHUB_USER_PR_SYNC_TIMEOUT_MIN and GITHUB_USER_PR_SYNC_TIMEOUT_MAX")
 	}
 	if strings.TrimSpace(a.GitHub.APIVersion) == "" {
 		problems = append(problems, "GITHUB_API_VERSION is required")

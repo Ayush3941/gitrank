@@ -1,6 +1,6 @@
 import "server-only";
 
-const authBaseURL = process.env.GITRANK_AUTH_BASE_URL ?? "http://localhost:8081";
+const authBaseURL = readRequiredOrigin("GITRANK_AUTH_BASE_URL");
 
 export async function proxyAuth(request: Request, path: string): Promise<Response> {
   const target = new URL(path, `${authBaseURL.replace(/\/$/, "")}/`);
@@ -57,4 +57,16 @@ function readSetCookieHeaders(headers: Headers): string[] {
 
   const fallback = headers.get("set-cookie");
   return fallback ? [fallback] : [];
+}
+
+function readRequiredOrigin(envKey: string): string {
+  const raw = process.env[envKey]?.trim();
+  if (!raw) {
+    throw new Error(`${envKey} is required`);
+  }
+  try {
+    return new URL(raw).origin;
+  } catch {
+    throw new Error(`${envKey} must be a valid absolute URL`);
+  }
 }

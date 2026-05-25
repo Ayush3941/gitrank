@@ -1620,7 +1620,7 @@ ABRA implementation checklist:
 - [x] Strong loading, empty, stale, and error states are present across the upgraded tabs and profile/reveal flows.
 - [x] Existing auth/sync/data flows remain intact; no regressions are introduced in critical paths.
 - [x] Manual sync-button UX is removed from authenticated product flows; dashboard and onboarding sync behavior is background-driven.
-- [x] Auto user-history sync is intentionally bounded (latest 10 authored PRs per run by default via `GITHUB_AUTHORED_PR_SYNC_LIMIT`) and tolerates partial GitHub sub-endpoint failures (reviews/comments/files) so one unstable endpoint does not fail the full sync.
+- [x] Auto user-history sync is intentionally bounded through runtime policy env vars (`GITHUB_AUTHORED_PR_SYNC_LIMIT`, `GITHUB_AUTHORED_PR_SEARCH_LIMIT`, sync page sizes, and PR sync timeout bounds) and tolerates partial GitHub sub-endpoint failures (reviews/comments/files) so one unstable endpoint does not fail the full sync.
 - [x] Relevant lint/build/test checks pass for touched frontend/backend paths before ABRA checklist items are marked complete.
 - [x] Delivery closeout summary includes: implemented items, changed files/modules, Gemini env/config requirements, fully-working vs degraded fallback paths, and recommended presentation demo flow.
 

@@ -19,15 +19,7 @@ import (
 )
 
 const (
-	defaultRepositorySyncPageSize    = 10
-	defaultPullRequestReviewPageSize = 10
-	defaultCommitSyncPageSize        = 50
-	defaultUserRepositoryLimit       = 100
-	defaultAuthoredPRSearchLimit     = 100
-	defaultAuthoredPRSyncLimit       = 10
-	defaultUserPRSyncTimeout         = 20 * time.Second
-	minUserPRSyncTimeout             = 10 * time.Second
-	maxUserPRSyncTimeout             = 60 * time.Second
+	defaultFallbackPageSize = 20
 )
 
 var gitHubStatusCodePattern = regexp.MustCompile(`status (\d{3})`)
@@ -296,7 +288,7 @@ func (e *Executor) SyncUser(
 		return response, err
 	}
 
-	authoredPRSyncLimit := boundedAuthoredPRSyncLimit(e.cfg.GitHub.AuthoredPRSyncLimit)
+	authoredPRSyncLimit := boundedAuthoredPRSyncLimit(e.cfg.GitHub, e.cfg.GitHub.AuthoredPRSyncLimit)
 	authoredPullRequests, authoredSearchIncomplete, err := runtime.fetchAuthoredPullRequestTargets(ctx, user, authoredPRSyncLimit)
 	if err != nil {
 		response.Fetched["authored_pull_request_search_failed"] = 1
@@ -1120,7 +1112,7 @@ func (e *Executor) recordFailedCommitSyncRun(
 }
 
 func (e *Executor) fetchUserRepositories(ctx context.Context, user string) ([]map[string]any, error) {
-	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, defaultUserRepositoryLimit)
+	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, e.cfg.GitHub.UserRepositorySyncLimit)
 	var repositories []map[string]any
 	_, err := e.client.GetJSON(ctx, fmt.Sprintf("/users/%s/repos", url.PathEscape(user)), url.Values{
 		"type":      []string{"owner"},
@@ -1150,8 +1142,8 @@ func (e *Executor) fetchUserRepositories(ctx context.Context, user string) ([]ma
 
 func (e *Executor) fetchAuthoredPullRequestTargets(ctx context.Context, user string, limit int) ([]authoredPullRequestTarget, bool, error) {
 	perPage := min(
-		boundedPageSize(e.cfg.GitHub.MaxPageSize, defaultAuthoredPRSearchLimit),
-		boundedAuthoredPRSyncLimit(limit),
+		boundedPageSize(e.cfg.GitHub.MaxPageSize, e.cfg.GitHub.AuthoredPRSearchLimit),
+		boundedAuthoredPRSyncLimit(e.cfg.GitHub, limit),
 	)
 	result, _, err := githubapi.SearchIssuesAndPullRequests(ctx, e.client, githubapi.IssueSearchRequest{
 		Query:   fmt.Sprintf("author:%s type:pr archived:false", user),
@@ -1235,7 +1227,7 @@ func (e *Executor) fetchPullRequest(ctx context.Context, owner, name string, num
 }
 
 func (e *Executor) fetchPullRequestReviews(ctx context.Context, owner, name string, number int) ([]map[string]any, error) {
-	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, defaultPullRequestReviewPageSize)
+	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, e.cfg.GitHub.PullRequestReviewPageSize)
 	var reviews []map[string]any
 	_, err := e.client.GetJSON(ctx, fmt.Sprintf("/repos/%s/%s/pulls/%d/reviews", owner, name, number), url.Values{
 		"per_page": []string{fmt.Sprintf("%d", perPage)},
@@ -1247,7 +1239,7 @@ func (e *Executor) fetchPullRequestReviews(ctx context.Context, owner, name stri
 }
 
 func (e *Executor) fetchPullRequestReviewComments(ctx context.Context, owner, name string, number int) ([]map[string]any, error) {
-	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, defaultRepositorySyncPageSize)
+	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, e.cfg.GitHub.RepositorySyncPageSize)
 	var comments []map[string]any
 	_, err := e.client.GetJSON(ctx, fmt.Sprintf("/repos/%s/%s/pulls/%d/comments", owner, name, number), url.Values{
 		"per_page": []string{fmt.Sprintf("%d", perPage)},
@@ -1259,7 +1251,7 @@ func (e *Executor) fetchPullRequestReviewComments(ctx context.Context, owner, na
 }
 
 func (e *Executor) fetchPullRequestFiles(ctx context.Context, owner, name string, number int) ([]map[string]any, error) {
-	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, defaultRepositorySyncPageSize)
+	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, e.cfg.GitHub.RepositorySyncPageSize)
 	var files []map[string]any
 	_, err := e.client.GetJSON(ctx, fmt.Sprintf("/repos/%s/%s/pulls/%d/files", owner, name, number), url.Values{
 		"per_page": []string{fmt.Sprintf("%d", perPage)},
@@ -1313,9 +1305,9 @@ func (e *Executor) fetchPullRequests(ctx context.Context, owner, name string, ac
 		return nil, nil, err
 	}
 
-	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, defaultRepositorySyncPageSize)
+	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, e.cfg.GitHub.RepositorySyncPageSize)
 	if useGraphQL {
-		perPage = min(perPage, boundedPageSize(e.cfg.GitHub.GraphQLPageSize, defaultRepositorySyncPageSize))
+		perPage = min(perPage, boundedPageSize(e.cfg.GitHub.GraphQLPageSize, e.cfg.GitHub.RepositorySyncPageSize))
 	}
 	summaries, err := e.fetchPullRequestSummaries(ctx, owner, name, perPage)
 	if err != nil {
@@ -1350,7 +1342,7 @@ func (e *Executor) fetchPullRequestSummaries(ctx context.Context, owner, name st
 func (e *Executor) fetchPullRequestsRESTDetails(ctx context.Context, owner, name string, summaries []map[string]any, perPage int) ([]map[string]any, map[int][]map[string]any, error) {
 	pullRequests := make([]map[string]any, 0, len(summaries))
 	reviewsByNumber := make(map[int][]map[string]any, len(summaries))
-	reviewPerPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, defaultPullRequestReviewPageSize)
+	reviewPerPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, e.cfg.GitHub.PullRequestReviewPageSize)
 	for _, summary := range summaries {
 		number := intValue(summary["number"])
 		if number <= 0 {
@@ -1382,7 +1374,7 @@ func (e *Executor) fetchPullRequestsRESTDetails(ctx context.Context, owner, name
 }
 
 func (e *Executor) fetchIssues(ctx context.Context, owner, name string) ([]map[string]any, error) {
-	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, defaultRepositorySyncPageSize)
+	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, e.cfg.GitHub.RepositorySyncPageSize)
 	var issues []map[string]any
 	_, err := e.client.GetJSON(ctx, fmt.Sprintf("/repos/%s/%s/issues", owner, name), url.Values{
 		"state":     []string{"all"},
@@ -1405,7 +1397,7 @@ func (e *Executor) fetchIssues(ctx context.Context, owner, name string) ([]map[s
 }
 
 func (e *Executor) fetchCommits(ctx context.Context, owner, name string) ([]map[string]any, error) {
-	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, defaultCommitSyncPageSize)
+	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, e.cfg.GitHub.CommitSyncPageSize)
 	var commits []map[string]any
 	_, err := e.client.GetJSON(ctx, fmt.Sprintf("/repos/%s/%s/commits", owner, name), url.Values{
 		"per_page": []string{fmt.Sprintf("%d", perPage)},
@@ -1455,7 +1447,7 @@ func boundedPageSize(configured, fallback int) int {
 		return configured
 	}
 	if fallback <= 0 {
-		return 20
+		return defaultFallbackPageSize
 	}
 	return fallback
 }
@@ -1568,22 +1560,31 @@ func isSkippableGitHubTimeoutError(err error) bool {
 func boundedUserPRSyncTimeout(cfg config.App) time.Duration {
 	timeout := cfg.GitHub.RequestTimeout
 	if timeout <= 0 {
-		return defaultUserPRSyncTimeout
+		timeout = cfg.GitHub.UserPRSyncTimeoutDefault
 	}
-	if timeout < minUserPRSyncTimeout {
-		return minUserPRSyncTimeout
+	minTimeout := cfg.GitHub.UserPRSyncTimeoutMin
+	maxTimeout := cfg.GitHub.UserPRSyncTimeoutMax
+	if minTimeout <= 0 || maxTimeout <= 0 || maxTimeout < minTimeout {
+		return timeout
 	}
-	if timeout > maxUserPRSyncTimeout {
-		return maxUserPRSyncTimeout
+	if timeout < minTimeout {
+		return minTimeout
+	}
+	if timeout > maxTimeout {
+		return maxTimeout
 	}
 	return timeout
 }
 
-func boundedAuthoredPRSyncLimit(limit int) int {
+func boundedAuthoredPRSyncLimit(cfg config.GitHub, limit int) int {
 	if limit <= 0 {
-		return defaultAuthoredPRSyncLimit
+		limit = cfg.AuthoredPRSyncLimit
 	}
-	return min(limit, defaultAuthoredPRSearchLimit)
+	maxLimit := cfg.AuthoredPRSearchLimit
+	if maxLimit <= 0 {
+		return limit
+	}
+	return min(limit, maxLimit)
 }
 
 func gitHubStatusCodeFromError(err error) (int, bool) {
