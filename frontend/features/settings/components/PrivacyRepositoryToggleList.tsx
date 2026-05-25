@@ -98,7 +98,7 @@ export function PrivacyRepositoryToggleList({
               <button
                 type="button"
                 onClick={handleClearSearch}
-                className="focus-ring absolute top-1/2 right-3 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-cyan-100 hover:text-white"
+                className="focus-ring absolute top-1/2 right-3 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-cyan-100 hover:bg-primary/12 hover:text-white"
                 aria-label="Clear repository search"
                 aria-controls={repositoriesRegionId}
                 title="Clear search"

@@ -30,6 +30,9 @@
 - Contributions status-lane wrap pass:
   - switched the status segmented control to wrapping behavior with tighter mobile minimum widths.
   - removes the last forced horizontal-only segmented lane pattern in dashboard filter controls.
+- Filter clear-control readability pass:
+  - increased search-clear icon control size from `h-7 w-7` to `h-8 w-8` across contribution, sync-log, and repository-visibility filters.
+  - added subtle hover background treatment so clear controls remain visible in dense neon surfaces.
 - Contributions filter-summary presentation pass:
   - surfaced an always-visible summary row (`Category: ...`, `Sort: ...`, `Reset`) so active view state is readable without scanning multiple control lanes.
   - reduced duplicate chip chrome by keeping removable chips focused on search terms only.

@@ -302,7 +302,7 @@ export function ContributionFilters({
                 type="button"
                 onClick={onClearSearch}
                 disabled={isFiltering}
-                className="focus-ring absolute top-1/2 right-3 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-cyan-100 hover:text-white disabled:opacity-60"
+                className="focus-ring absolute top-1/2 right-3 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-cyan-100 hover:bg-primary/12 hover:text-white disabled:opacity-60"
                 aria-label="Clear contribution search"
                 aria-controls={resultsRegionId}
                 title="Clear search"
