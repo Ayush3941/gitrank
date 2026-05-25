@@ -106,23 +106,18 @@ export function DashboardHeroRankCard({
       </div>
       <XPProgress current={user.level.currentXp} next={user.level.nextLevelXp} />
       <ContributionPulseStrip contributions={user.contributions} label="14-day activity pulse" />
-      <div className="rounded-[1.75rem] border border-emerald-400/16 bg-emerald-400/8 p-4">
-        <div className="flex items-start gap-3">
-          <Sparkles className="mt-0.5 h-4 w-4 text-emerald-200" />
-          <div>
-            <p className="text-sm font-semibold text-white">Rank-up preview</p>
-            <p className="mt-1 text-sm leading-6 text-muted">
-              {user.rankProgress.nextTier
-                ? `${user.rankProgress.xpToNextTier.toLocaleString("en-US")} XP to ${user.rankProgress.nextTier}.`
-                : "Already at top tier."}
-            </p>
-          </div>
-        </div>
-      </div>
       <div className="rounded-[1.75rem] border border-primary/18 bg-primary/8 p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="space-y-1">
-            <p className="text-sm font-semibold text-white">{nextAction.title}</p>
+            <p className="inline-flex items-center gap-2 text-sm font-semibold text-white">
+              <Sparkles className="h-4 w-4 text-emerald-200" />
+              Next move
+            </p>
+            <p className="text-sm leading-6 text-muted">
+              {user.rankProgress.nextTier
+                ? `${user.rankProgress.xpToNextTier.toLocaleString("en-US")} XP to ${user.rankProgress.nextTier}.`
+                : "Top tier reached for this season."}
+            </p>
             <p className="text-sm leading-6 text-muted">{nextAction.description}</p>
           </div>
           <Button asChild variant="secondary" size="sm">

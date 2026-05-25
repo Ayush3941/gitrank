@@ -96,14 +96,14 @@ export function ContributionFilters({
   const statusId = "contribution-filter-status";
   const activeChips: Array<{ key: "category" | "search" | "sort"; label: string }> = [];
   if (value !== "All") {
-    activeChips.push({ key: "category", label: `Category: ${value}` });
+    activeChips.push({ key: "category", label: value });
   }
   if (search.trim().length > 0) {
     const compactSearch = search.trim().length > 28 ? `${search.trim().slice(0, 28)}…` : search.trim();
     activeChips.push({ key: "search", label: `Search: ${compactSearch}` });
   }
   if (sort !== "Newest") {
-    activeChips.push({ key: "sort", label: `Sort: ${sort}` });
+    activeChips.push({ key: "sort", label: sort });
   }
 
   return (
@@ -122,6 +122,12 @@ export function ContributionFilters({
           ? "Updating..."
           : `${resultCount ?? 0} cards`}
       </p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs font-medium text-primary">Contribution controls</p>
+        <p className="text-xs text-muted">
+          {isFiltering ? "Updating cards..." : `${resultCount ?? 0} cards`}
+        </p>
+      </div>
       {activeChips.length ? (
         <div className="flex flex-wrap items-center justify-between gap-2">
           <ul role="list" className="flex flex-wrap gap-2 text-xs">
@@ -171,7 +177,7 @@ export function ContributionFilters({
       ) : null}
       <div id="contribution-mobile-controls">
         <div className="space-y-2">
-          <p className="text-xs font-medium text-primary">Category</p>
+          <p className="text-xs font-medium text-primary">Category lane</p>
           <SegmentedTablist
             options={filters.map((filter) => {
               const Icon = filterIconByValue[filter.value];
@@ -187,7 +193,7 @@ export function ContributionFilters({
             ariaLabel="Contribution category filters"
             ariaControls={resultsRegionId}
             tabIdPrefix="contribution-filter-tab"
-            wrap
+            wrap={false}
           />
         </div>
         <div className="grid gap-3">
@@ -216,7 +222,7 @@ export function ContributionFilters({
             ) : null}
           </div>
           <div className="space-y-2">
-            <p className="text-xs font-medium text-primary">Sort</p>
+            <p className="text-xs font-medium text-primary">Sort order</p>
             <SegmentedTablist
               options={sortOptions.map((item) => {
                 const Icon = sortIconByValue[item];
@@ -235,7 +241,7 @@ export function ContributionFilters({
               ariaDescribedBy={statusId}
               ariaControls={resultsRegionId}
               tabIdPrefix="contribution-sort-tab"
-              wrap
+              wrap={false}
             />
           </div>
         </div>
