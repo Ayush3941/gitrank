@@ -14,6 +14,9 @@
 - Onboarding prefetch policy guard:
   - added `npm run check:onboarding-prefetch-policy` to enforce explicit `prefetch={false}` on onboarding/marketing internal links.
   - wired this guard into frontend CI so entry-flow prefetch boundaries stay stable across future updates.
+- Repository-privacy empty-state accessibility fix:
+  - restored an always-rendered `Reset` button in the empty repository-visibility state (disabled when no active filters).
+  - keeps actionable controls discoverable for assistive tech and aligns with accessibility regression tests.
 - Global backdrop visibility smoothing pass:
   - reduced heavy overlay opacity and softened radial/linear overlay falloff so `assets/background.jpg` remains visible without sacrificing text contrast.
   - kept the background locked to viewport (`body::before` fixed layer) while slightly lowering saturation/contrast boost to avoid harsh banding on neon themes.

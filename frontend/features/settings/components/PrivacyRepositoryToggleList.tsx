@@ -200,17 +200,16 @@ export function PrivacyRepositoryToggleList({
               </p>
             )}
             <div className="flex flex-wrap gap-2">
-              {canReset ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="secondary"
-                  onClick={handleReset}
-                  aria-controls={repositoriesRegionId}
-                >
-                  Reset filters
-                </Button>
-              ) : null}
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                onClick={handleReset}
+                aria-controls={repositoriesRegionId}
+                disabled={!canReset}
+              >
+                Reset
+              </Button>
               <Button asChild size="sm" variant="secondary">
                 <Link href="/dashboard" prefetch={false}>Open dashboard</Link>
               </Button>
