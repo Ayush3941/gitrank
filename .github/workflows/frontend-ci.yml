@@ -83,6 +83,9 @@ jobs:
       - name: Check main-thread interaction guards
         run: npm run check:main-thread
 
+      - name: Check motion budget guardrails
+        run: npm run check:motion-budget
+
       - name: Verify V2 no-mock release gate
         run: ../gitrank/scripts/verify_v2_no_mock_release_gate.sh
 
