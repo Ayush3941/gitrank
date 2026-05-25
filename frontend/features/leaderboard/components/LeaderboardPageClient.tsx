@@ -11,7 +11,6 @@ import {
   FlaskConical,
   Globe2,
   TrendingUp,
-  X,
 } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -197,97 +196,47 @@ export function LeaderboardPageClient() {
       ) : null}
       <section className="space-y-3">
         <p role="status" aria-live="polite" className="sr-only">
-          {isBusy
-            ? `Refreshing ${tab}...`
-            : `Viewing ${tab}`}
+          {isBusy ? `Refreshing ${tab}...` : `Viewing ${tab}`}
         </p>
-          <div className="neon-surface space-y-3 rounded-[1rem] px-3 py-3 sm:px-4 sm:py-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-xs font-medium text-primary">Leaderboard controls</p>
-              <p className="text-xs text-muted">
-                {isBusy ? `Refreshing ${tab}...` : `Viewing ${tab}`}
-              </p>
-            </div>
+        <div className="neon-surface space-y-3 rounded-[1rem] px-3 py-3 sm:px-4 sm:py-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-medium text-primary">Leaderboard controls</p>
+            <p className="text-xs text-muted">
+              {isBusy ? `Refreshing ${tab}...` : `Viewing ${tab}`}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+              Lane: {TAB_LABELS[tab]}
+            </span>
+            <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+              View: {effectiveMode === "nearby" ? "Nearby" : "Full board"}
+            </span>
+            <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+              Details: {showLaneDetails ? "On" : "Off"}
+            </span>
             {canClearAllControls ? (
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex min-w-0 flex-1 items-center gap-2">
-                  <p className="text-xs font-medium text-primary">Active filters</p>
-                  <ul role="list" className="flex min-w-0 flex-wrap gap-2 text-xs">
-                    {hasLaneFilter ? (
-                      <li className="list-none">
-                        <button
-                          type="button"
-                          className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
-                          onClick={() => {
-                            startTransition(() => {
-                              setVisibleRowCount(rowPageSize);
-                              setPreferNearbyMode(true);
-                              replaceLane("Global");
-                            });
-                          }}
-                          aria-controls={LEADERBOARD_ROWS_REGION_ID}
-                          aria-label={`Remove lane filter ${TAB_LABELS[tab]}`}
-                        >
-                          Lane · {TAB_LABELS[tab]}
-                          <X className="h-3.5 w-3.5" />
-                        </button>
-                      </li>
-                    ) : null}
-                    {hasDetailsFilter ? (
-                      <li className="list-none">
-                        <button
-                          type="button"
-                          className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
-                          onClick={() => {
-                            setShowLaneDetails(false);
-                          }}
-                          aria-controls={LEADERBOARD_ROWS_REGION_ID}
-                          aria-label="Disable details lane"
-                        >
-                          Details · On
-                          <X className="h-3.5 w-3.5" />
-                        </button>
-                      </li>
-                    ) : null}
-                    {hasViewFilter ? (
-                      <li className="list-none">
-                        <button
-                          type="button"
-                          className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
-                          onClick={() => {
-                            setPreferNearbyMode(true);
-                            setVisibleRowCount(rowPageSize);
-                          }}
-                          aria-controls={LEADERBOARD_ROWS_REGION_ID}
-                          aria-label="Switch to nearby leaderboard view"
-                        >
-                          View · Full board
-                          <X className="h-3.5 w-3.5" />
-                        </button>
-                      </li>
-                    ) : null}
-                  </ul>
-                </div>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => {
-                    startTransition(() => {
-                      setShowLaneDetails(false);
-                      setPreferNearbyMode(true);
-                      setVisibleRowCount(rowPageSize);
-                      replaceLane("Global");
-                    });
-                  }}
-                  aria-controls={LEADERBOARD_ROWS_REGION_ID}
-                >
-                  Clear all
-                </Button>
-              </div>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  startTransition(() => {
+                    setShowLaneDetails(false);
+                    setPreferNearbyMode(true);
+                    setVisibleRowCount(rowPageSize);
+                    replaceLane("Global");
+                  });
+                }}
+                aria-controls={LEADERBOARD_ROWS_REGION_ID}
+                className="h-8 px-3"
+              >
+                Reset
+              </Button>
             ) : null}
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-primary">Lane</p>
+          </div>
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-primary">Lane</p>
             <SegmentedTablist
               options={tabs.map((item) => {
                 const Icon = TAB_ICONS[item];
@@ -341,9 +290,9 @@ export function LeaderboardPageClient() {
       </section>
       {isLoading ? <LoadingState message="Loading leaderboard..." /> : null}
       {isError ? (
-      <ErrorState
-        title="Leaderboard unavailable"
-        description="The ranking snapshot is unavailable right now. Retry or open dashboard."
+        <ErrorState
+          title="Leaderboard unavailable"
+          description="The ranking snapshot is unavailable right now. Retry or open dashboard."
           onRetry={() => {
             void refetch();
           }}

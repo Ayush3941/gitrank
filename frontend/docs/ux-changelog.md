@@ -17,6 +17,10 @@
   - settings repository visibility controls now follow the same summary-first pattern (`Visibility`, optional `Search`, `Reset`).
   - reduced duplicate filter-chip noise by keeping removable chips focused on search text only.
   - enabled segmented visibility lanes to wrap instead of forcing horizontal-only scrolling.
+- Leaderboard filter-surface consistency pass:
+  - replaced dense active-filter chip controls with a compact summary row (`Lane`, `View`, `Details`, `Reset`).
+  - kept lane selection and detail/view toggles unchanged while reducing repetitive control chrome.
+  - normalized layout structure in the leaderboard control block to avoid visual jitter and keep scan order clear.
 - Contributions filter-summary presentation pass:
   - surfaced an always-visible summary row (`Category: ...`, `Sort: ...`, `Reset`) so active view state is readable without scanning multiple control lanes.
   - reduced duplicate chip chrome by keeping removable chips focused on search terms only.
