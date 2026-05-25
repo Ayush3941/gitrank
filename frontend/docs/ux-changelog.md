@@ -2,6 +2,9 @@
 
 ## 2026-05-25
 
+- Contributions filter-summary wording pass:
+  - updated summary chips from `Category/Sort` to `View/Order` for cleaner scan semantics.
+  - refined helper copy to plain-language guidance: use Status for PR state and Focus for work type.
 - Segmented-tab pointer interaction hardening pass:
   - added pointer-down focus-without-scroll handling before click selection in shared segmented tablists.
   - preserves no-jump behavior for touch, pen, and mouse paths while keeping keyboard activation unchanged.

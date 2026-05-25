@@ -137,7 +137,7 @@ export function ContributionFilters({
       ? value
       : "Any";
 
-  const activeCategoryLabel =
+  const activeViewLabel =
     activeStatus !== "All" ? activeStatus : activeFocus !== "Any" ? activeFocus : "All";
   const activeFilterCount =
     (value !== "All" ? 1 : 0) +
@@ -192,10 +192,10 @@ export function ContributionFilters({
           </span>
         ) : null}
         <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-          Category: {activeCategoryLabel}
+          View: {activeViewLabel}
         </span>
         <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-          Sort: {sort}
+          Order: {sort}
         </span>
         {search.trim().length > 0 ? (
           onClearSearch ? (
@@ -274,9 +274,7 @@ export function ContributionFilters({
               tabIdPrefix="contribution-focus-tab"
               wrap
             />
-            <p className="text-xs text-muted">
-              Status shows PR state. Focus helps you inspect the type of contribution signal.
-            </p>
+            <p className="text-xs text-muted">Use Status for PR state and Focus for the kind of work it was.</p>
           </div>
           <div className="relative">
             <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted" />

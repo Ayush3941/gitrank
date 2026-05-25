@@ -24,7 +24,7 @@ describe("ContributionFilters", () => {
     expect(screen.getByRole("tab", { name: "Newest" })).toBeTruthy();
   }, 15_000);
 
-  it("renders category and sort summaries with removable search chip", () => {
+  it("renders view and sort summaries with removable search chip", () => {
     const clearSearch = vi.fn();
 
     render(
@@ -39,8 +39,8 @@ describe("ContributionFilters", () => {
       />,
     );
 
-    expect(screen.getByText("Category: Docs")).toBeTruthy();
-    expect(screen.getByText("Sort: Highest XP")).toBeTruthy();
+    expect(screen.getByText("View: Docs")).toBeTruthy();
+    expect(screen.getByText("Order: Highest XP")).toBeTruthy();
     expect(screen.getByText("Active: 3")).toBeTruthy();
     expect(screen.getByText("Search: very-specific-repo-name")).toBeTruthy();
     expect(screen.queryByRole("button", { name: /Remove Focus · Docs filter/i })).toBeNull();
