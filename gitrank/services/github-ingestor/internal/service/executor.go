@@ -155,6 +155,22 @@ func (e *Executor) SyncRepository(
 			return response, err
 		}
 	}
+	fetchedCounts := map[string]int{
+		"repositories":  1,
+		"pull_requests": len(pullRequests),
+		"reviews":       countReviewMaps(reviewsByNumber),
+		"issues":        len(issues),
+		"commits":       len(commits),
+	}
+	if pullRequestsSkipped {
+		fetchedCounts["pull_requests_skipped"] = 1
+	}
+	if issuesSkipped {
+		fetchedCounts["issues_skipped"] = 1
+	}
+	if commitsSkipped {
+		fetchedCounts["commits_skipped"] = 1
+	}
 
 	finishedAt := time.Now().UTC()
 	persisted, err := e.store.WithTx(ctx, func(tx *TxStore) (PersistResult, error) {
@@ -224,6 +240,7 @@ func (e *Executor) SyncRepository(
 			RequestedBySubject:          actor.Subject,
 			RequestedByGitHubLogin:      actor.GitHubLogin,
 			Result:                      result,
+			Fetched:                     fetchedCounts,
 			StartedAt:                   startedAt,
 			FinishedAt:                  timePointer(finishedAt),
 		}); err != nil {
@@ -240,22 +257,7 @@ func (e *Executor) SyncRepository(
 	response.Status = "completed"
 	response.FinishedAt = finishedAt
 	response.Persisted = persisted.EntityCounts()
-	response.Fetched = map[string]int{
-		"repositories":  1,
-		"pull_requests": len(pullRequests),
-		"reviews":       countReviewMaps(reviewsByNumber),
-		"issues":        len(issues),
-		"commits":       len(commits),
-	}
-	if pullRequestsSkipped {
-		response.Fetched["pull_requests_skipped"] = 1
-	}
-	if issuesSkipped {
-		response.Fetched["issues_skipped"] = 1
-	}
-	if commitsSkipped {
-		response.Fetched["commits_skipped"] = 1
-	}
+	response.Fetched = fetchedCounts
 	return response, nil
 }
 
@@ -357,6 +359,7 @@ func (e *Executor) SyncUser(
 			RequestedBySubject:     actor.Subject,
 			RequestedByGitHubLogin: actor.GitHubLogin,
 			Result:                 aggregatePersisted,
+			Fetched:                response.Fetched,
 			StartedAt:              startedAt,
 			FinishedAt:             timePointer(finishedAt),
 		})
@@ -470,6 +473,7 @@ func (e *Executor) SyncInstallation(
 			RequestedBySubject:     actor.Subject,
 			RequestedByGitHubLogin: actor.GitHubLogin,
 			Result:                 aggregatePersisted,
+			Fetched:                response.Fetched,
 			StartedAt:              startedAt,
 			FinishedAt:             timePointer(finishedAt),
 		})
@@ -581,6 +585,37 @@ func (e *Executor) syncPullRequestSurface(
 		filesFetchError = true
 		files = nil
 	}
+	fetchedCounts := map[string]int{
+		"repositories":       1,
+		"pull_requests":      1,
+		"pull_request_files": len(files),
+		"reviews":            len(reviews),
+		"review_comments":    len(reviewComments),
+	}
+	if reviewsSkipped {
+		fetchedCounts["reviews_skipped"] = 1
+		if options.skipReviews {
+			fetchedCounts["reviews_skipped_policy"] = 1
+		}
+	}
+	if reviewCommentsSkipped {
+		fetchedCounts["review_comments_skipped"] = 1
+		if options.skipReviewComments {
+			fetchedCounts["review_comments_skipped_policy"] = 1
+		}
+	}
+	if filesSkipped {
+		fetchedCounts["pull_request_files_skipped"] = 1
+	}
+	if reviewsFetchError {
+		fetchedCounts["reviews_fetch_errors"] = 1
+	}
+	if reviewCommentsFetchError {
+		fetchedCounts["review_comments_fetch_errors"] = 1
+	}
+	if filesFetchError {
+		fetchedCounts["pull_request_files_fetch_errors"] = 1
+	}
 
 	finishedAt := time.Now().UTC()
 	persisted, err := e.store.WithTx(ctx, func(tx *TxStore) (PersistResult, error) {
@@ -655,6 +690,7 @@ func (e *Executor) syncPullRequestSurface(
 			RequestedBySubject:          actor.Subject,
 			RequestedByGitHubLogin:      actor.GitHubLogin,
 			Result:                      result,
+			Fetched:                     fetchedCounts,
 			StartedAt:                   startedAt,
 			FinishedAt:                  timePointer(finishedAt),
 		}); err != nil {
@@ -671,37 +707,7 @@ func (e *Executor) syncPullRequestSurface(
 	response.Status = "completed"
 	response.FinishedAt = finishedAt
 	response.Persisted = persisted.EntityCounts()
-	response.Fetched = map[string]int{
-		"repositories":       1,
-		"pull_requests":      1,
-		"pull_request_files": len(files),
-		"reviews":            len(reviews),
-		"review_comments":    len(reviewComments),
-	}
-	if reviewsSkipped {
-		response.Fetched["reviews_skipped"] = 1
-		if options.skipReviews {
-			response.Fetched["reviews_skipped_policy"] = 1
-		}
-	}
-	if reviewCommentsSkipped {
-		response.Fetched["review_comments_skipped"] = 1
-		if options.skipReviewComments {
-			response.Fetched["review_comments_skipped_policy"] = 1
-		}
-	}
-	if filesSkipped {
-		response.Fetched["pull_request_files_skipped"] = 1
-	}
-	if reviewsFetchError {
-		response.Fetched["reviews_fetch_errors"] = 1
-	}
-	if reviewCommentsFetchError {
-		response.Fetched["review_comments_fetch_errors"] = 1
-	}
-	if filesFetchError {
-		response.Fetched["pull_request_files_fetch_errors"] = 1
-	}
+	response.Fetched = fetchedCounts
 	return response, nil
 }
 
@@ -746,6 +752,10 @@ func (e *Executor) SyncIssue(
 		_ = e.recordFailedIssueSyncRun(ctx, req, actor, correlationID, startedAt, err)
 		return response, err
 	}
+	fetchedCounts := map[string]int{
+		"repositories": 1,
+		"issues":       1,
+	}
 
 	finishedAt := time.Now().UTC()
 	persisted, err := e.store.WithTx(ctx, func(tx *TxStore) (PersistResult, error) {
@@ -781,6 +791,7 @@ func (e *Executor) SyncIssue(
 			RequestedBySubject:          actor.Subject,
 			RequestedByGitHubLogin:      actor.GitHubLogin,
 			Result:                      result,
+			Fetched:                     fetchedCounts,
 			StartedAt:                   startedAt,
 			FinishedAt:                  timePointer(finishedAt),
 		}); err != nil {
@@ -797,10 +808,7 @@ func (e *Executor) SyncIssue(
 	response.Status = "completed"
 	response.FinishedAt = finishedAt
 	response.Persisted = persisted.EntityCounts()
-	response.Fetched = map[string]int{
-		"repositories": 1,
-		"issues":       1,
-	}
+	response.Fetched = fetchedCounts
 	return response, nil
 }
 
@@ -845,6 +853,10 @@ func (e *Executor) SyncCommit(
 		_ = e.recordFailedCommitSyncRun(ctx, req, actor, correlationID, startedAt, err)
 		return response, err
 	}
+	fetchedCounts := map[string]int{
+		"repositories": 1,
+		"commits":      1,
+	}
 
 	finishedAt := time.Now().UTC()
 	persisted, err := e.store.WithTx(ctx, func(tx *TxStore) (PersistResult, error) {
@@ -876,6 +888,7 @@ func (e *Executor) SyncCommit(
 			RequestedBySubject:          actor.Subject,
 			RequestedByGitHubLogin:      actor.GitHubLogin,
 			Result:                      result,
+			Fetched:                     fetchedCounts,
 			StartedAt:                   startedAt,
 			FinishedAt:                  timePointer(finishedAt),
 		}); err != nil {
@@ -892,10 +905,7 @@ func (e *Executor) SyncCommit(
 	response.Status = "completed"
 	response.FinishedAt = finishedAt
 	response.Persisted = persisted.EntityCounts()
-	response.Fetched = map[string]int{
-		"repositories": 1,
-		"commits":      1,
-	}
+	response.Fetched = fetchedCounts
 	return response, nil
 }
 

@@ -16,6 +16,13 @@ const sampleRun = {
   subject: "octocat",
   started_at: "2026-05-25T00:00:00Z",
   finished_at: "2026-05-25T00:02:00Z",
+  metrics: {
+    pull_requests: 3,
+    fetched_pull_requests: 5,
+    reviews: 2,
+    fetched_reviews: 4,
+    reviews_skipped: 1,
+  },
 };
 
 describe("SyncRunActivityPanel", () => {
@@ -50,5 +57,20 @@ describe("SyncRunActivityPanel", () => {
     const searchBox = screen.getByRole("textbox", { name: "Search sync runs" }) as HTMLInputElement;
     expect(searchBox.value).toBe("");
     expect(screen.queryByText("Search: missing-run")).toBeNull();
+  });
+
+  it("renders compact fetched/persisted metrics summaries when run metrics exist", () => {
+    render(
+      <SyncRunActivityPanel
+        runs={[sampleRun]}
+        lastUpdatedAt="2026-05-25T00:05:00Z"
+        isLoading={false}
+        isRefreshing={false}
+        isError={false}
+        onRefresh={() => undefined}
+      />,
+    );
+
+    expect(screen.getByText("PRs 3/5 · Reviews 2/4 · Skipped 1")).toBeTruthy();
   });
 });

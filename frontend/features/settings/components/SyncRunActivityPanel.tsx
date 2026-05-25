@@ -271,6 +271,7 @@ export function SyncRunActivityPanel({
           <ol role="list" className={`grid gap-2 ${resultsRegionClassName}`}>
             {filteredRuns.map((run, index) => {
               const safeLastError = sanitizeSyncRunErrorMessage(run.last_error);
+              const metricsSummary = summarizeRunMetrics(run.metrics);
               return (
                 <li key={`${run.id}-${index}`}>
                   <article className="render-opt-card neon-surface space-y-2 px-4 py-3">
@@ -296,6 +297,9 @@ export function SyncRunActivityPanel({
                         <span className="break-anywhere">Correlation {run.correlation_id}</span>
                       ) : null}
                     </div>
+                    {metricsSummary ? (
+                      <p className="break-anywhere text-xs text-muted">{metricsSummary}</p>
+                    ) : null}
                     {safeLastError ? (
                       <p className="break-anywhere text-xs text-rose-100">
                         Last error: {safeLastError}
@@ -384,6 +388,91 @@ function runDuration(startedAt: string, finishedAt: string): string {
   }
   const hours = Math.floor(minutes / 60);
   return `${hours}h ${minutes % 60}m`;
+}
+
+function summarizeRunMetrics(metrics?: Record<string, number>): string {
+  if (!metrics || Object.keys(metrics).length === 0) {
+    return "";
+  }
+
+  const segments: string[] = [];
+  pushMetricSegment(
+    segments,
+    "PRs",
+    metricCount(metrics, "persisted_pull_requests", "pull_requests"),
+    metricCount(metrics, "fetched_pull_requests"),
+  );
+  pushMetricSegment(
+    segments,
+    "Reviews",
+    metricCount(metrics, "persisted_reviews", "reviews"),
+    metricCount(metrics, "fetched_reviews"),
+  );
+  pushMetricSegment(
+    segments,
+    "Issues",
+    metricCount(metrics, "persisted_issues", "issues"),
+    metricCount(metrics, "fetched_issues"),
+  );
+  pushMetricSegment(
+    segments,
+    "Commits",
+    metricCount(metrics, "persisted_commits", "commits"),
+    metricCount(metrics, "fetched_commits"),
+  );
+
+  const skipped = metricSumBySuffix(metrics, "_skipped");
+  if (skipped > 0) {
+    segments.push(`Skipped ${skipped}`);
+  }
+  const fetchErrors = metricSumBySuffix(metrics, "_fetch_errors");
+  if (fetchErrors > 0) {
+    segments.push(`Fetch errors ${fetchErrors}`);
+  }
+
+  return segments.join(" · ");
+}
+
+function pushMetricSegment(
+  segments: string[],
+  label: string,
+  persisted: number,
+  fetched: number,
+) {
+  if (persisted <= 0 && fetched <= 0) {
+    return;
+  }
+  if (fetched > 0) {
+    segments.push(`${label} ${persisted}/${fetched}`);
+    return;
+  }
+  segments.push(`${label} ${persisted}`);
+}
+
+function metricCount(metrics: Record<string, number>, ...keys: string[]): number {
+  let count = 0;
+  for (const key of keys) {
+    const value = metrics[key];
+    if (!Number.isFinite(value)) {
+      continue;
+    }
+    const rounded = Math.max(0, Math.floor(value));
+    if (rounded > count) {
+      count = rounded;
+    }
+  }
+  return count;
+}
+
+function metricSumBySuffix(metrics: Record<string, number>, suffix: string): number {
+  let total = 0;
+  for (const [key, value] of Object.entries(metrics)) {
+    if (!key.endsWith(suffix) || !Number.isFinite(value) || value <= 0) {
+      continue;
+    }
+    total += Math.floor(value);
+  }
+  return total;
 }
 
 function toNormalizedDateTime(value?: string): string | null {

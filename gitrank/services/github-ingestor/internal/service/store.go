@@ -39,6 +39,7 @@ type payloadSyncRunInput struct {
 	RequestedBySubject          string
 	RequestedByGitHubLogin      string
 	Result                      PersistResult
+	Fetched                     map[string]int
 	StartedAt                   time.Time
 	FinishedAt                  *time.Time
 }
@@ -775,7 +776,7 @@ func (s *TxStore) UpsertCommits(payload map[string]any, repositoryID string, now
 }
 
 func (s *TxStore) InsertSyncRun(input payloadSyncRunInput) error {
-	metricsJSON := encodeJSON(input.Result.EntityCounts())
+	metricsJSON := encodeJSON(composeSyncRunMetrics(input.Result.EntityCounts(), input.Fetched))
 	status := defaultString(strings.TrimSpace(input.Status), "completed")
 	_, err := s.tx.Exec(s.context(), `
 		INSERT INTO github_sync_runs (
@@ -829,6 +830,32 @@ func (s *TxStore) InsertSyncRun(input payloadSyncRunInput) error {
 		metricsJSON,
 	)
 	return err
+}
+
+func composeSyncRunMetrics(persisted map[string]int, fetched map[string]int) map[string]int {
+	metrics := make(map[string]int, len(persisted)+(len(fetched)*2))
+
+	for key, value := range persisted {
+		key = strings.TrimSpace(key)
+		if key == "" {
+			continue
+		}
+		metrics[key] = value
+		metrics["persisted_"+key] = value
+	}
+
+	for key, value := range fetched {
+		key = strings.TrimSpace(key)
+		if key == "" {
+			continue
+		}
+		metrics["fetched_"+key] = value
+		if _, exists := metrics[key]; !exists {
+			metrics[key] = value
+		}
+	}
+
+	return metrics
 }
 
 func (s *Store) ListSyncRuns(ctx context.Context, filter contracts.GitHubSyncRunFilter) ([]contracts.GitHubSyncRunView, error) {
