@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { GitPullRequest, ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import type { ReactNode } from "react";
+import { ContributionPulseStrip } from "@/components/shared/ContributionPulseStrip";
 import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -97,6 +98,11 @@ export function PublicProfileHero({
               </li>
             ))}
           </ul>
+          <ContributionPulseStrip
+            contributions={user.contributions}
+            days={10}
+            label="10-day public contribution pulse"
+          />
           <div className="flex flex-wrap gap-2">
             <ShareProfileButton
               variant="secondary"
