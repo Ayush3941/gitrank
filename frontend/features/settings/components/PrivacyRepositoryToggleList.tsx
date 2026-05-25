@@ -134,7 +134,7 @@ export function PrivacyRepositoryToggleList({
               ariaDescribedBy={statusId}
               ariaControls={repositoriesRegionId}
               tabIdPrefix="repo-visibility-filter-tab"
-              wrap
+              wrap={false}
             />
           </div>
         </div>
