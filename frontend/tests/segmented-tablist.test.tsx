@@ -36,12 +36,13 @@ function renderTablist() {
 }
 
 describe("SegmentedTablist", () => {
-  it("keeps native mouse-down behavior while applying click updates", () => {
+  it("applies no-scroll focus behavior before click updates", () => {
     const { updates, getTab } = renderTablist();
     const runningButton = getTab(/Running/i);
 
     const mouseDownResult = fireEvent.mouseDown(runningButton, { button: 0 });
-    expect(mouseDownResult).toBe(true);
+    expect(mouseDownResult).toBe(false);
+    expect(document.activeElement).toBe(runningButton);
 
     fireEvent.click(runningButton);
     expect(updates.at(-1)).toBe("Running");

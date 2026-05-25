@@ -9,6 +9,7 @@ import { focusWithoutScroll } from "@/components/shared/focus-without-scroll";
 export type SegmentedTabOption<T extends string> = {
   value: T;
   label: string;
+  compactLabel?: string;
   icon?: ReactNode;
   count?: number;
   minWidthClassName?: string;
@@ -109,7 +110,14 @@ export function SegmentedTablist<T extends string>({
                       {item.icon}
                     </span>
                   ) : null}
-                  <span className="truncate">{item.label}</span>
+                  {item.compactLabel ? (
+                    <>
+                      <span className="truncate sm:hidden">{item.compactLabel}</span>
+                      <span className="hidden truncate sm:inline">{item.label}</span>
+                    </>
+                  ) : (
+                    <span className="truncate">{item.label}</span>
+                  )}
                   {typeof item.count === "number" ? (
                     <span className="rounded-full border border-primary/22 bg-primary/10 px-1.5 py-0.5 text-[11px] leading-none text-primary">
                       {item.count}

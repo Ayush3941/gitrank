@@ -13,6 +13,10 @@
   - applied the same `Active filters` row pattern used in Contributions to both Badges and Quests control surfaces.
   - updated chip labels to lane-friendly formatting (`Rarity · ...`, `State · ...`, `Cadence · ...`) and added a single `Clear all` action in each filter shell.
   - keeps filter interactions visually and behaviorally consistent across all major dashboard tabs.
+- Segmented-control compact-label pass:
+  - added optional compact labels to shared `SegmentedTablist` so mobile can render shorter lane names while preserving full labels for desktop and assistive text.
+  - applied compact labels to leaderboard lanes (`Documentation` → `Docs`, `Weekly XP` → `Weekly`, `Testing` → `Tests`) with tighter mobile min widths.
+  - updated segmented-tablist tests to assert the focus-first mousedown behavior that prevents scroll jumps before click selection.
 
 ## 2026-05-24
 

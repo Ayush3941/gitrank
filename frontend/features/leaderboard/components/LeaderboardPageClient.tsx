@@ -58,6 +58,15 @@ const TAB_LABELS: Record<LeaderboardTab, string> = {
   "Rising Contributors": "Rising",
 };
 
+const TAB_COMPACT_LABELS: Record<LeaderboardTab, string> = {
+  Global: "Global",
+  Backend: "Backend",
+  Testing: "Tests",
+  Documentation: "Docs",
+  "Weekly XP": "Weekly",
+  "Rising Contributors": "Rising",
+};
+
 const TAB_ICONS: Record<LeaderboardTab, typeof Globe2> = {
   Global: Globe2,
   Backend: Cpu,
@@ -198,8 +207,9 @@ export function LeaderboardPageClient() {
                 return {
                   value: item,
                   label: TAB_LABELS[item],
+                  compactLabel: TAB_COMPACT_LABELS[item],
                   icon: <Icon className="h-4 w-4" />,
-                  minWidthClassName: "min-w-[9rem]",
+                  minWidthClassName: "min-w-[7.5rem] sm:min-w-[9rem]",
                 };
               })}
               value={tab}
