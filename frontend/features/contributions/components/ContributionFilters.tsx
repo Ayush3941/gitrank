@@ -102,6 +102,7 @@ export function ContributionFilters({
   compact = false,
   statusCounts,
   focusCounts,
+  contextNote,
 }: {
   value: string;
   onValueChange: (value: string) => void;
@@ -118,6 +119,7 @@ export function ContributionFilters({
   compact?: boolean;
   statusCounts?: Partial<Record<(typeof statusFilters)[number]["value"], number>>;
   focusCounts?: Partial<Record<(typeof focusFilters)[number]["value"], number>>;
+  contextNote?: string;
 }) {
   type StatusFilterValue = (typeof statusFilters)[number]["value"];
   type FocusFilterValue = (typeof focusFilters)[number]["value"];
@@ -327,6 +329,7 @@ export function ContributionFilters({
               wrap
             />
           </div>
+          {contextNote ? <p className="text-xs text-muted">{contextNote}</p> : null}
         </div>
       </div>
     </section>

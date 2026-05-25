@@ -394,10 +394,8 @@ export function ContributionsPageClient() {
           onClearSearch={handleClearSearchFilter}
           statusCounts={statusCounts}
           focusCounts={focusCounts}
+          contextNote="Use these filters to read recent PR patterns, not to make permanent skill labels."
         />
-        <p className="mt-2 text-xs text-muted">
-          Think of categories as a snapshot of recent PR themes, not a final verdict on your overall expertise.
-        </p>
       </section>
       {isLoading ? <LoadingState message="Loading contributions..." /> : null}
       {isError ? (

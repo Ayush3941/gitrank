@@ -6,6 +6,9 @@
   - removed forced pointer-down focus behavior in shared segmented tablists.
   - pointer and mouse interactions now select without pre-focusing, reducing viewport jump risk on long settings/dashboard pages.
   - keyboard tab/arrow/enter behavior remains unchanged for accessibility.
+- Contributions filter-note presentation pass:
+  - moved the category interpretation note into the filter surface itself instead of leaving it as a detached paragraph.
+  - keeps control context and caution copy in one visual block, reducing scan fragmentation.
 - Contributions filter-summary wording pass:
   - updated summary chips from `Category/Sort` to `View/Order` for cleaner scan semantics.
   - refined helper copy to plain-language guidance: use Status for PR state and Focus for work type.
