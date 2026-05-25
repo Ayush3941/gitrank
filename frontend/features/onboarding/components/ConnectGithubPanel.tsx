@@ -93,10 +93,10 @@ export function ConnectGithubPanel() {
             </Link>
           </Button>
           <Button asChild variant="secondary" size="lg">
-            <Link href="/onboarding/analyzing">Continue analyzing</Link>
+            <Link href="/onboarding/analyzing" prefetch={false}>Continue analyzing</Link>
           </Button>
           <Button asChild variant="secondary" size="lg">
-            <Link href="/">Back to landing</Link>
+            <Link href="/" prefetch={false}>Back to landing</Link>
           </Button>
         </div>
       </GlowCard>

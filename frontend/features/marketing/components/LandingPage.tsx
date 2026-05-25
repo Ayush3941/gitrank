@@ -51,7 +51,7 @@ export function LandingPage() {
                 </Link>
               </Button>
               <Button asChild variant="secondary" size="lg">
-                <Link href="/onboarding/connect-github">See onboarding flow</Link>
+                <Link href="/onboarding/connect-github" prefetch={false}>See onboarding flow</Link>
               </Button>
             </div>
           </div>

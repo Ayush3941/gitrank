@@ -321,7 +321,7 @@ export function SyncPipeline() {
           {isSynced ? (
             <>
               <Button asChild>
-                <Link href="/onboarding/reveal">Continue to reveal</Link>
+                <Link href="/onboarding/reveal" prefetch={false}>Continue to reveal</Link>
               </Button>
               <Button asChild variant="secondary">
                 <Link href="/dashboard" prefetch={false}>Open dashboard</Link>

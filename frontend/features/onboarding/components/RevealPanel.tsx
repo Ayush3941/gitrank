@@ -153,7 +153,7 @@ export function RevealPanel({
         <div className="flex flex-wrap justify-center gap-3">
           {needsSyncRecovery ? (
             <Button asChild size="lg">
-              <Link href="/onboarding/analyzing">
+              <Link href="/onboarding/analyzing" prefetch={false}>
                 {recoveryActionLabel}
                 <ArrowRight className="h-4 w-4" />
               </Link>
