@@ -25,6 +25,9 @@
 - Runtime mode visibility pass:
   - added an explicit `Runtime Lite mode` meta chip in dashboard and contributions headers when constrained-network/reduced-cost rendering is active.
   - makes performance-saving render mode visible to users so simplified visuals are intentional and understandable.
+- Runtime mode reason transparency pass:
+  - settings now surfaces the active Lite-mode reason (`Save-Data`, slow connection, reduced-data preference, low memory/CPU, or slow display updates) beside reduced-gamification controls.
+  - helps users understand why rendering was simplified without guessing whether behavior is a bug.
 - Empty-state action consistency pass:
   - standardized empty-state secondary actions from tiny text links to real `Button` controls with consistent hierarchy.
   - added responsive full-width CTA behavior on narrow viewports for easier touch targeting and clearer next-step recovery.
