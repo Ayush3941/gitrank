@@ -29,6 +29,7 @@ func New(cfg config.App, pool *pgxpool.Pool, cache *Cache, log *slog.Logger) (*S
 	if err := cfg.ValidateProfileService(); err != nil {
 		return nil, err
 	}
+	setRankTierPolicy(cfg.Scoring)
 	if cache == nil {
 		cache = &Cache{}
 	}

@@ -570,18 +570,7 @@ func levelLabelForLevel(level int) string {
 }
 
 func rankTierForXP(totalXP int) string {
-	switch {
-	case totalXP >= 15000:
-		return "Diamond"
-	case totalXP >= 9000:
-		return "Platinum I"
-	case totalXP >= 4000:
-		return "Gold III"
-	case totalXP >= 1500:
-		return "Silver II"
-	default:
-		return "Bronze I"
-	}
+	return currentRankTierPolicy().RankTierForXP(totalXP)
 }
 
 func buildStrengthSummary(skills []contracts.SkillAreaView) string {

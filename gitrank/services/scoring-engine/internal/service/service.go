@@ -332,7 +332,7 @@ func (s *Service) buildReplay(userID, triggerType string, candidates []replayCan
 		TriggerType:       triggerType,
 		TotalXP:           totalXP,
 		Level:             s.engine.LevelForXP(totalXP),
-		RankTier:          rankTierForXP(totalXP),
+		RankTier:          rankTierForXP(totalXP, s.cfg.Scoring),
 		TopSkills:         buildSkillAreas(aggregateSkills),
 		BadgeKeys:         badgeKeys(badges),
 		ContributionCount: len(events),
@@ -918,19 +918,8 @@ func normalizeTriggerType(trigger string) string {
 	}
 }
 
-func rankTierForXP(totalXP int) string {
-	switch {
-	case totalXP >= 15000:
-		return "Diamond"
-	case totalXP >= 9000:
-		return "Platinum I"
-	case totalXP >= 4000:
-		return "Gold III"
-	case totalXP >= 1500:
-		return "Silver II"
-	default:
-		return "Bronze I"
-	}
+func rankTierForXP(totalXP int, policy config.Scoring) string {
+	return policy.RankTierForXP(totalXP)
 }
 
 func startOfWeek(value time.Time) time.Time {

@@ -6,6 +6,10 @@ import type {
   SkillCategory,
 } from "@/types/gitrank";
 import { frontendPolicy } from "@/lib/runtime/frontend-policy";
+import {
+  divisionForRankTier,
+  normalizeRankTier,
+} from "@/lib/runtime/rank-tier-policy";
 
 export type LeaderboardTab =
   | "Global"
@@ -226,31 +230,7 @@ function formatMonthDay(value: Date): string {
 }
 
 function divisionForTier(rankTier: RankTier): string {
-  const base = rankTier.split(" ")[0];
-  const mapped: Record<string, string> = {
-    Bronze: "Bronze Foundry",
-    Silver: "Silver Workshop",
-    Gold: "Gold Forge",
-    Platinum: "Platinum Crucible",
-    Diamond: "Diamond Arena",
-  };
-  return mapped[base] ?? "Open Arena";
-}
-
-function normalizeRankTier(value: string): RankTier {
-  const normalized = value.trim().toLowerCase();
-  const mapped: Record<string, RankTier> = {
-    bronze: "Bronze I",
-    "bronze i": "Bronze I",
-    silver: "Silver II",
-    "silver ii": "Silver II",
-    gold: "Gold III",
-    "gold iii": "Gold III",
-    platinum: "Platinum I",
-    "platinum i": "Platinum I",
-    diamond: "Diamond",
-  };
-  return mapped[normalized] ?? "Bronze I";
+  return divisionForRankTier(rankTier);
 }
 
 function normalizeSkillCategory(value: string): SkillCategory {

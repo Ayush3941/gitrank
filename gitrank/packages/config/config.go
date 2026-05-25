@@ -149,9 +149,18 @@ type AI struct {
 }
 
 type Scoring struct {
-	ScoreVersion string
-	BaseXP       float64
-	MinXP        int
+	ScoreVersion          string
+	BaseXP                float64
+	MinXP                 int
+	RankTierBronzeLabel   string
+	RankTierSilverLabel   string
+	RankTierGoldLabel     string
+	RankTierPlatinumLabel string
+	RankTierDiamondLabel  string
+	RankTierSilverMinXP   int
+	RankTierGoldMinXP     int
+	RankTierPlatinumMinXP int
+	RankTierDiamondMinXP  int
 
 	CategoryWeightDefault            float64
 	CategoryWeightDocumentation      float64
@@ -339,9 +348,18 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			EstimatedInputTokenCostUSD: getFloat("AI_ESTIMATED_INPUT_TOKEN_COST_USD", 0.000005),
 		},
 		Scoring: Scoring{
-			ScoreVersion: strings.TrimSpace(getEnv("SCORING_SCORE_VERSION", "v1alpha1")),
-			BaseXP:       getFloat("SCORING_BASE_XP", 100),
-			MinXP:        getInt("SCORING_MIN_XP", 10),
+			ScoreVersion:          strings.TrimSpace(getEnv("SCORING_SCORE_VERSION", "v1alpha1")),
+			BaseXP:                getFloat("SCORING_BASE_XP", 100),
+			MinXP:                 getInt("SCORING_MIN_XP", 10),
+			RankTierBronzeLabel:   strings.TrimSpace(getEnv("SCORING_RANK_TIER_BRONZE_LABEL", "Bronze I")),
+			RankTierSilverLabel:   strings.TrimSpace(getEnv("SCORING_RANK_TIER_SILVER_LABEL", "Silver II")),
+			RankTierGoldLabel:     strings.TrimSpace(getEnv("SCORING_RANK_TIER_GOLD_LABEL", "Gold III")),
+			RankTierPlatinumLabel: strings.TrimSpace(getEnv("SCORING_RANK_TIER_PLATINUM_LABEL", "Platinum I")),
+			RankTierDiamondLabel:  strings.TrimSpace(getEnv("SCORING_RANK_TIER_DIAMOND_LABEL", "Diamond")),
+			RankTierSilverMinXP:   getInt("SCORING_RANK_TIER_SILVER_MIN_XP", 1500),
+			RankTierGoldMinXP:     getInt("SCORING_RANK_TIER_GOLD_MIN_XP", 4000),
+			RankTierPlatinumMinXP: getInt("SCORING_RANK_TIER_PLATINUM_MIN_XP", 9000),
+			RankTierDiamondMinXP:  getInt("SCORING_RANK_TIER_DIAMOND_MIN_XP", 15000),
 
 			CategoryWeightDefault:          getFloat("SCORING_CATEGORY_WEIGHT_DEFAULT", 1.0),
 			CategoryWeightDocumentation:    getFloat("SCORING_CATEGORY_WEIGHT_DOCUMENTATION", 0.8),
@@ -627,6 +645,24 @@ func (a App) ValidateBase() error {
 	}
 	if a.Scoring.MinXP <= 0 {
 		problems = append(problems, "SCORING_MIN_XP must be positive")
+	}
+	if strings.TrimSpace(a.Scoring.RankTierBronzeLabel) == "" ||
+		strings.TrimSpace(a.Scoring.RankTierSilverLabel) == "" ||
+		strings.TrimSpace(a.Scoring.RankTierGoldLabel) == "" ||
+		strings.TrimSpace(a.Scoring.RankTierPlatinumLabel) == "" ||
+		strings.TrimSpace(a.Scoring.RankTierDiamondLabel) == "" {
+		problems = append(problems, "SCORING_RANK_TIER_*_LABEL values are required")
+	}
+	if a.Scoring.RankTierSilverMinXP <= 0 ||
+		a.Scoring.RankTierGoldMinXP <= 0 ||
+		a.Scoring.RankTierPlatinumMinXP <= 0 ||
+		a.Scoring.RankTierDiamondMinXP <= 0 {
+		problems = append(problems, "SCORING_RANK_TIER_*_MIN_XP values must be positive")
+	}
+	if !(a.Scoring.RankTierSilverMinXP < a.Scoring.RankTierGoldMinXP &&
+		a.Scoring.RankTierGoldMinXP < a.Scoring.RankTierPlatinumMinXP &&
+		a.Scoring.RankTierPlatinumMinXP < a.Scoring.RankTierDiamondMinXP) {
+		problems = append(problems, "SCORING_RANK_TIER_*_MIN_XP values must be strictly increasing")
 	}
 	if a.Scoring.CategoryWeightDefault <= 0 {
 		problems = append(problems, "SCORING_CATEGORY_WEIGHT_DEFAULT must be positive")
@@ -963,6 +999,89 @@ func (a App) ValidateAI() error {
 
 func (a App) IsProduction() bool {
 	return a.Env == Production
+}
+
+func (s Scoring) RankTierForXP(totalXP int) string {
+	bronze, silver, gold, platinum, diamond, silverMin, goldMin, platinumMin, diamondMin := s.normalizedRankTierPolicy()
+	switch {
+	case totalXP >= diamondMin:
+		return diamond
+	case totalXP >= platinumMin:
+		return platinum
+	case totalXP >= goldMin:
+		return gold
+	case totalXP >= silverMin:
+		return silver
+	default:
+		return bronze
+	}
+}
+
+func (s Scoring) OrderedRankTiers() []string {
+	bronze, silver, gold, platinum, diamond, _, _, _, _ := s.normalizedRankTierPolicy()
+	order := make([]string, 0, 5)
+	appendUnique := func(value string) {
+		for _, existing := range order {
+			if existing == value {
+				return
+			}
+		}
+		order = append(order, value)
+	}
+	appendUnique(bronze)
+	appendUnique(silver)
+	appendUnique(gold)
+	appendUnique(platinum)
+	appendUnique(diamond)
+	return order
+}
+
+func (s Scoring) normalizedRankTierPolicy() (bronze, silver, gold, platinum, diamond string, silverMin, goldMin, platinumMin, diamondMin int) {
+	bronze = strings.TrimSpace(s.RankTierBronzeLabel)
+	if bronze == "" {
+		bronze = "Bronze I"
+	}
+	silver = strings.TrimSpace(s.RankTierSilverLabel)
+	if silver == "" {
+		silver = "Silver II"
+	}
+	gold = strings.TrimSpace(s.RankTierGoldLabel)
+	if gold == "" {
+		gold = "Gold III"
+	}
+	platinum = strings.TrimSpace(s.RankTierPlatinumLabel)
+	if platinum == "" {
+		platinum = "Platinum I"
+	}
+	diamond = strings.TrimSpace(s.RankTierDiamondLabel)
+	if diamond == "" {
+		diamond = "Diamond"
+	}
+
+	silverMin = s.RankTierSilverMinXP
+	if silverMin <= 0 {
+		silverMin = 1500
+	}
+	goldMin = s.RankTierGoldMinXP
+	if goldMin <= silverMin {
+		goldMin = maxInt(4000, silverMin+1)
+	}
+	platinumMin = s.RankTierPlatinumMinXP
+	if platinumMin <= goldMin {
+		platinumMin = maxInt(9000, goldMin+1)
+	}
+	diamondMin = s.RankTierDiamondMinXP
+	if diamondMin <= platinumMin {
+		diamondMin = maxInt(15000, platinumMin+1)
+	}
+	return bronze, silver, gold, platinum, diamond, silverMin, goldMin, platinumMin, diamondMin
+}
+
+func maxInt(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
 
 func decodeBase64Key(value string) ([]byte, error) {

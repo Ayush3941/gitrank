@@ -106,6 +106,27 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.Scoring.BaseXP != 100 || cfg.Scoring.MinXP != 10 {
 		t.Fatalf("Scoring base/min = %.2f/%d, want 100/10", cfg.Scoring.BaseXP, cfg.Scoring.MinXP)
 	}
+	if cfg.Scoring.RankTierSilverMinXP != 1500 || cfg.Scoring.RankTierGoldMinXP != 4000 ||
+		cfg.Scoring.RankTierPlatinumMinXP != 9000 || cfg.Scoring.RankTierDiamondMinXP != 15000 {
+		t.Fatalf(
+			"Scoring rank tier thresholds = %d/%d/%d/%d, want 1500/4000/9000/15000",
+			cfg.Scoring.RankTierSilverMinXP,
+			cfg.Scoring.RankTierGoldMinXP,
+			cfg.Scoring.RankTierPlatinumMinXP,
+			cfg.Scoring.RankTierDiamondMinXP,
+		)
+	}
+	if cfg.Scoring.RankTierBronzeLabel != "Bronze I" || cfg.Scoring.RankTierSilverLabel != "Silver II" ||
+		cfg.Scoring.RankTierGoldLabel != "Gold III" || cfg.Scoring.RankTierPlatinumLabel != "Platinum I" ||
+		cfg.Scoring.RankTierDiamondLabel != "Diamond" {
+		t.Fatalf("Scoring rank tier labels = %+v, want default labels", []string{
+			cfg.Scoring.RankTierBronzeLabel,
+			cfg.Scoring.RankTierSilverLabel,
+			cfg.Scoring.RankTierGoldLabel,
+			cfg.Scoring.RankTierPlatinumLabel,
+			cfg.Scoring.RankTierDiamondLabel,
+		})
+	}
 	if cfg.Scoring.LevelArchitectMinXP != 250 || cfg.Scoring.LevelMaintainerMinXP != 180 {
 		t.Fatalf("Scoring level thresholds = architect %d maintainer %d, want 250/180", cfg.Scoring.LevelArchitectMinXP, cfg.Scoring.LevelMaintainerMinXP)
 	}
@@ -174,6 +195,15 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	t.Setenv("SCORING_SCORE_VERSION", "v1beta2")
 	t.Setenv("SCORING_BASE_XP", "130")
 	t.Setenv("SCORING_MIN_XP", "15")
+	t.Setenv("SCORING_RANK_TIER_SILVER_MIN_XP", "1200")
+	t.Setenv("SCORING_RANK_TIER_GOLD_MIN_XP", "3200")
+	t.Setenv("SCORING_RANK_TIER_PLATINUM_MIN_XP", "7600")
+	t.Setenv("SCORING_RANK_TIER_DIAMOND_MIN_XP", "12000")
+	t.Setenv("SCORING_RANK_TIER_BRONZE_LABEL", "Bronze I")
+	t.Setenv("SCORING_RANK_TIER_SILVER_LABEL", "Silver II")
+	t.Setenv("SCORING_RANK_TIER_GOLD_LABEL", "Gold III")
+	t.Setenv("SCORING_RANK_TIER_PLATINUM_LABEL", "Platinum I")
+	t.Setenv("SCORING_RANK_TIER_DIAMOND_LABEL", "Diamond")
 	t.Setenv("SCORING_CATEGORY_WEIGHT_FEATURE", "1.65")
 	t.Setenv("SCORING_REPOSITORY_WEIGHT_MAX", "1.5")
 	t.Setenv("SCORING_LEVEL_ARCHITECT_MIN_XP", "300")
@@ -292,6 +322,16 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	}
 	if cfg.Scoring.BaseXP != 130 || cfg.Scoring.MinXP != 15 {
 		t.Fatalf("Scoring base/min = %.2f/%d, want 130/15", cfg.Scoring.BaseXP, cfg.Scoring.MinXP)
+	}
+	if cfg.Scoring.RankTierSilverMinXP != 1200 || cfg.Scoring.RankTierGoldMinXP != 3200 ||
+		cfg.Scoring.RankTierPlatinumMinXP != 7600 || cfg.Scoring.RankTierDiamondMinXP != 12000 {
+		t.Fatalf(
+			"Scoring rank tier thresholds = %d/%d/%d/%d, want 1200/3200/7600/12000",
+			cfg.Scoring.RankTierSilverMinXP,
+			cfg.Scoring.RankTierGoldMinXP,
+			cfg.Scoring.RankTierPlatinumMinXP,
+			cfg.Scoring.RankTierDiamondMinXP,
+		)
 	}
 	if cfg.Scoring.CategoryWeightFeature != 1.65 {
 		t.Fatalf("Scoring.CategoryWeightFeature = %.2f, want 1.65", cfg.Scoring.CategoryWeightFeature)
@@ -434,5 +474,36 @@ func TestValidatePRAnalyzerServiceRequiresDatabase(t *testing.T) {
 	}
 	if err := cfg.ValidatePRAnalyzerService(); err != nil {
 		t.Fatalf("ValidatePRAnalyzerService() error = %v", err)
+	}
+}
+
+func TestScoringRankTierForXPUsesConfiguredThresholds(t *testing.T) {
+	policy := Scoring{
+		RankTierBronzeLabel:   "Bronze I",
+		RankTierSilverLabel:   "Silver II",
+		RankTierGoldLabel:     "Gold III",
+		RankTierPlatinumLabel: "Platinum I",
+		RankTierDiamondLabel:  "Diamond",
+		RankTierSilverMinXP:   1200,
+		RankTierGoldMinXP:     3200,
+		RankTierPlatinumMinXP: 7600,
+		RankTierDiamondMinXP:  12000,
+	}
+
+	cases := []struct {
+		xp   int
+		want string
+	}{
+		{xp: 0, want: "Bronze I"},
+		{xp: 1199, want: "Bronze I"},
+		{xp: 1200, want: "Silver II"},
+		{xp: 3200, want: "Gold III"},
+		{xp: 7600, want: "Platinum I"},
+		{xp: 12000, want: "Diamond"},
+	}
+	for _, tc := range cases {
+		if got := policy.RankTierForXP(tc.xp); got != tc.want {
+			t.Fatalf("RankTierForXP(%d) = %q, want %q", tc.xp, got, tc.want)
+		}
 	}
 }

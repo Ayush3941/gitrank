@@ -8,7 +8,6 @@ import type {
   PRCategory,
   PrivacySettings,
   ProfileRepositorySummary,
-  RankTier,
   ProfileViewData,
   RepositoryVisibility,
   SkillCategory,
@@ -20,6 +19,10 @@ import {
   toPullRequestAnalysis,
 } from "@/lib/api/pr-report-api";
 import { frontendPolicy } from "@/lib/runtime/frontend-policy";
+import {
+  nextRankTier,
+  normalizeRankTier,
+} from "@/lib/runtime/rank-tier-policy";
 import type { PullRequestAnalysis } from "@/types/gitrank";
 
 const DEFAULT_CSRF_COOKIE_NAME = frontendPolicy.csrfCookieName;
@@ -848,28 +851,6 @@ function scoreVersionFromHistory(entries: ApiScoreHistoryEntry[]): string {
     }
   }
   return frontendPolicy.scoreVersionFallback;
-}
-
-function nextRankTier(rankTier: RankTier): RankTier | undefined {
-  const order: RankTier[] = ["Bronze I", "Silver II", "Gold III", "Platinum I", "Diamond"];
-  const index = order.indexOf(rankTier);
-  return index >= 0 ? order[index + 1] : undefined;
-}
-
-function normalizeRankTier(value: string): RankTier {
-  const normalized = value.trim().toLowerCase();
-  const mapped: Record<string, RankTier> = {
-    bronze: "Bronze I",
-    "bronze i": "Bronze I",
-    silver: "Silver II",
-    "silver ii": "Silver II",
-    gold: "Gold III",
-    "gold iii": "Gold III",
-    platinum: "Platinum I",
-    "platinum i": "Platinum I",
-    diamond: "Diamond",
-  };
-  return mapped[normalized] ?? "Bronze I";
 }
 
 function badgeRarityForKey(key: string): BadgeRarity {
