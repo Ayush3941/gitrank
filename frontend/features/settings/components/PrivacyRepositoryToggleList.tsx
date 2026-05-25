@@ -246,7 +246,7 @@ export function PrivacyRepositoryToggleList({
             ) : (
               <p>
                 No repositories match the current search and visibility filter.
-                Clear filters or widen the search scope.
+                Reset filters or widen the search scope.
               </p>
             )}
             <div className="flex flex-wrap gap-2">

@@ -422,10 +422,10 @@ export function ContributionsPageClient() {
           }
           description={
             isFilteredNoResults
-              ? "Clear filters or widen search."
+              ? "Reset filters or widen search."
               : "Open sync settings to refresh GitHub evidence for scored PR cards."
           }
-          actionLabel={isFilteredNoResults ? "Clear filters" : "Open sync settings"}
+          actionLabel={isFilteredNoResults ? "Reset filters" : "Open sync settings"}
           actionHref={isFilteredNoResults ? undefined : "/dashboard/settings"}
           onAction={isFilteredNoResults ? handleResetFilters : undefined}
           analyticsTarget={isFilteredNoResults ? "contributions:empty-filtered" : "contributions:empty"}

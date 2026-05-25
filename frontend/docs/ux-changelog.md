@@ -33,6 +33,9 @@
 - Filter clear-control readability pass:
   - increased search-clear icon control size from `h-7 w-7` to `h-8 w-8` across contribution, sync-log, and repository-visibility filters.
   - added subtle hover background treatment so clear controls remain visible in dense neon surfaces.
+- Filter vocabulary consistency pass:
+  - standardized filtered empty-state recovery wording to `Reset filters` across contributions, badges, and repository visibility.
+  - aligns fallback text and action labels with the summary-first control pattern already used in active filter surfaces.
 - Contributions filter-summary presentation pass:
   - surfaced an always-visible summary row (`Category: ...`, `Sort: ...`, `Reset`) so active view state is readable without scanning multiple control lanes.
   - reduced duplicate chip chrome by keeping removable chips focused on search terms only.
