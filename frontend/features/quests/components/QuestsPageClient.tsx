@@ -11,7 +11,6 @@ import {
   Route,
   ShieldCheck,
   Sparkles,
-  X,
 } from "lucide-react";
 import { startTransition, useDeferredValue, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -154,28 +153,11 @@ export function QuestsPageClient() {
                     : `${visibleQuestCount} ${deferredCadenceFilter.toLowerCase()} missions`}
               </p>
             </div>
-            {canResetCadenceFilter ? (
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex min-w-0 flex-1 items-center gap-2">
-                  <p className="text-xs font-medium text-primary">Active filters</p>
-                  <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
-                    <li className="list-none">
-                      <button
-                        type="button"
-                        className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
-                        onClick={() => {
-                          handleCadenceFilterChange("All");
-                        }}
-                        title="Clear mission filter"
-                        aria-controls={QUEST_MISSIONS_REGION_ID}
-                        aria-label={`Remove cadence filter ${cadenceFilter}`}
-                      >
-                        Cadence · {cadenceFilter}
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </li>
-                  </ul>
-                </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+                Cadence: {cadenceFilter}
+              </span>
+              {canResetCadenceFilter ? (
                 <Button
                   type="button"
                   size="sm"
@@ -184,11 +166,12 @@ export function QuestsPageClient() {
                     handleCadenceFilterChange("All");
                   }}
                   aria-controls={QUEST_MISSIONS_REGION_ID}
+                  className="h-8 px-3"
                 >
-                  Clear all
+                  Reset
                 </Button>
-              </div>
-            ) : null}
+              ) : null}
+            </div>
             <div className="space-y-2">
               <p className="text-xs font-medium text-primary">Cadence lane</p>
               <SegmentedTablist
@@ -210,9 +193,15 @@ export function QuestsPageClient() {
                   return {
                     value: item.value,
                     label: item.label,
+                    compactLabel:
+                      item.value === "Skill-based"
+                        ? "Skills"
+                        : item.value === "Long-term"
+                          ? "Long"
+                          : item.label,
                     icon: <Icon className="h-4 w-4" />,
                     count,
-                    minWidthClassName: "min-w-[8.5rem]",
+                    minWidthClassName: "min-w-[6.75rem] sm:min-w-[8rem]",
                   };
                 })}
                 value={cadenceFilter}
@@ -221,7 +210,7 @@ export function QuestsPageClient() {
                 ariaDescribedBy={filterStatusId}
                 ariaControls={QUEST_MISSIONS_REGION_ID}
                 tabIdPrefix="quest-filter-tab"
-                wrap={false}
+                wrap
               />
             </div>
           </div>

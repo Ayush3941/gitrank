@@ -11,7 +11,6 @@ import {
   Sparkles,
   Trophy,
   Unlock,
-  X,
 } from "lucide-react";
 import { startTransition, type ReactNode, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { ExpandableText } from "@/components/shared/ExpandableText";
@@ -244,22 +243,6 @@ export function BadgesPageClient() {
     });
   }
 
-  function handleClearRarityFilter() {
-    startTransition(() => {
-      setRarity("All");
-      setVisibleLockedCount(lockedBadgePageSize);
-      setVisibleBadgeCount(badgeShelfPageSize);
-    });
-  }
-
-  function handleClearVisibilityFilter() {
-    startTransition(() => {
-      setVisibility("All");
-      setVisibleLockedCount(lockedBadgePageSize);
-      setVisibleBadgeCount(badgeShelfPageSize);
-    });
-  }
-
   return (
     <div className="stable-scroll-scope space-y-6">
       <PageHeader
@@ -392,42 +375,13 @@ export function BadgesPageClient() {
                 {isFiltering ? "Updating shelf..." : `${filtered.length} of ${totalCount} badges`}
               </p>
             </div>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex min-w-0 flex-1 items-center gap-2">
-                <p className="text-xs font-medium text-primary">Active filters</p>
-                <ul role="list" className="flex flex-wrap items-center gap-2 text-xs">
-                  {rarity !== "All" ? (
-                    <li className="list-none">
-                      <button
-                        type="button"
-                        className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
-                        onClick={handleClearRarityFilter}
-                        aria-label={`Remove rarity filter ${rarity}`}
-                        aria-controls={BADGES_EARNED_REGION_ID}
-                        title="Clear rarity filter"
-                      >
-                        Rarity · {rarity}
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </li>
-                  ) : null}
-                  {visibility !== "All" ? (
-                    <li className="list-none">
-                      <button
-                        type="button"
-                        className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
-                        onClick={handleClearVisibilityFilter}
-                        aria-label={`Remove state filter ${visibility}`}
-                        aria-controls={BADGES_EARNED_REGION_ID}
-                        title="Clear state filter"
-                      >
-                        State · {visibility}
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </li>
-                  ) : null}
-                </ul>
-              </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+                Rarity: {rarity}
+              </span>
+              <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+                State: {visibility}
+              </span>
               {canResetFilters ? (
                 <Button
                   type="button"
@@ -435,8 +389,9 @@ export function BadgesPageClient() {
                   variant="ghost"
                   onClick={handleResetFilters}
                   aria-controls={BADGES_EARNED_REGION_ID}
+                  className="h-8 px-3"
                 >
-                  Clear all
+                  Reset
                 </Button>
               ) : null}
             </div>
@@ -447,8 +402,18 @@ export function BadgesPageClient() {
                   options={BADGE_RARITY_FILTERS.map((item) => ({
                     value: item,
                     label: item,
+                    compactLabel:
+                      item === "Legendary"
+                        ? "Legend"
+                        : item === "Uncommon"
+                          ? "Uncommon"
+                          : item === "Common"
+                            ? "Common"
+                            : item === "Mythic"
+                              ? "Mythic"
+                              : item,
                     icon: <Gem className="h-4 w-4" />,
-                    minWidthClassName: "min-w-[8rem]",
+                    minWidthClassName: "min-w-[6.75rem] sm:min-w-[8rem]",
                   }))}
                   value={rarity}
                   onValueChange={handleRarityChange}
@@ -456,7 +421,7 @@ export function BadgesPageClient() {
                   ariaDescribedBy={badgesFilterStatusId}
                   ariaControls={BADGES_EARNED_REGION_ID}
                   tabIdPrefix="badge-rarity-tab"
-                  wrap={false}
+                  wrap
                 />
               </div>
               <div className="space-y-2">
@@ -475,7 +440,7 @@ export function BadgesPageClient() {
                       label: item,
                       icon: <Icon className="h-4 w-4" />,
                       count,
-                      minWidthClassName: "min-w-[8rem]",
+                      minWidthClassName: "min-w-[6.75rem] sm:min-w-[8rem]",
                     };
                   })}
                   value={visibility}
@@ -484,7 +449,7 @@ export function BadgesPageClient() {
                   ariaDescribedBy={badgesFilterStatusId}
                   ariaControls={BADGES_EARNED_REGION_ID}
                   tabIdPrefix="badge-visibility-tab"
-                  wrap={false}
+                  wrap
                 />
               </div>
             </div>

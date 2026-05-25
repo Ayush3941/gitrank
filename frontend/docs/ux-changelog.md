@@ -9,6 +9,10 @@
   - switched sync status segmented controls to wrapping lanes with narrower minimum widths to avoid horizontal jitter.
   - added a concise summary row (`Status`, optional `Search`, `Reset`) and reduced duplicate filter-chip noise.
   - kept removable active chips focused on search terms only for faster recovery on dense sync logs.
+- Badge and quest filter consistency pass:
+  - badges and quests now use the same concise summary row model (`Rarity/State` or `Cadence` + `Reset`) instead of repeating removable filter chips.
+  - enabled wrapping segmented lanes with tighter mobile widths for long option labels.
+  - added compact labels for long quest cadence names to keep controls scanable on narrow screens.
 - Contributions filter-summary presentation pass:
   - surfaced an always-visible summary row (`Category: ...`, `Sort: ...`, `Reset`) so active view state is readable without scanning multiple control lanes.
   - reduced duplicate chip chrome by keeping removable chips focused on search terms only.
