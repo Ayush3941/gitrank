@@ -54,6 +54,9 @@
 - Active-filter count regression coverage pass:
   - extended contribution and sync-run filter tests to assert `Active: N` behavior in default and filtered states.
   - protects the new summary-count contract from silent UI regressions.
+- Inline-notice dismiss affordance pass:
+  - increased shared inline-notice dismiss control from `h-5 w-5` to `h-6 w-6` for easier touch and pointer targeting.
+  - added dedicated `InlineNotice` test coverage for placeholder rendering and dismiss callback behavior.
 - Contributions filter-summary presentation pass:
   - surfaced an always-visible summary row (`Category: ...`, `Sort: ...`, `Reset`) so active view state is readable without scanning multiple control lanes.
   - reduced duplicate chip chrome by keeping removable chips focused on search terms only.
