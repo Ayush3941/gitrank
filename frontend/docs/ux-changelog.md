@@ -28,6 +28,9 @@
 - Runtime mode reason transparency pass:
   - settings now surfaces the active Lite-mode reason (`Save-Data`, slow connection, reduced-data preference, low memory/CPU, or slow display updates) beside reduced-gamification controls.
   - helps users understand why rendering was simplified without guessing whether behavior is a bug.
+- Network-constraint hydration stability pass:
+  - switched network-constraint `useSyncExternalStore` server snapshots from a synthetic default reason to `null`.
+  - prevents transient server-side Lite-mode assumptions before real client capability detection completes.
 - Empty-state action consistency pass:
   - standardized empty-state secondary actions from tiny text links to real `Button` controls with consistent hierarchy.
   - added responsive full-width CTA behavior on narrow viewports for easier touch targeting and clearer next-step recovery.

@@ -58,7 +58,7 @@ export function useNetworkConstraintPreference() {
   const networkConstraintReason = useSyncExternalStore<NetworkConstraintReason | null>(
     subscribeNetworkConstraint,
     getNetworkConstraintReasonSnapshot,
-    () => "reduced-data-preference",
+    () => null,
   );
   return Boolean(networkConstraintReason);
 }
@@ -67,7 +67,7 @@ export function useNetworkConstraintReason() {
   return useSyncExternalStore<NetworkConstraintReason | null>(
     subscribeNetworkConstraint,
     getNetworkConstraintReasonSnapshot,
-    () => "reduced-data-preference",
+    () => null,
   );
 }
 
@@ -227,7 +227,7 @@ function subscribeNetworkConstraint(callback: () => void) {
 
 function getNetworkConstraintReasonSnapshot() {
   if (typeof window === "undefined") {
-    return "reduced-data-preference" as NetworkConstraintReason;
+    return null;
   }
   return inferNetworkConstraintReason();
 }
