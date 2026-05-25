@@ -514,10 +514,10 @@ export function BadgesPageClient() {
               }
               description={
                 canResetFilters && totalCount > 0
-                  ? "Reset filters to view earned and locked badges."
+                  ? "Clear filters to view earned and locked badges."
                   : "Complete a meaningful merged PR to unlock badges."
               }
-              actionLabel={canResetFilters && totalCount > 0 ? "Reset filters" : "Open quests"}
+              actionLabel={canResetFilters && totalCount > 0 ? "Clear filters" : "Open quests"}
               actionHref={canResetFilters && totalCount > 0 ? undefined : "/dashboard/quests"}
               onAction={canResetFilters && totalCount > 0 ? handleResetFilters : undefined}
               analyticsTarget={

@@ -25,6 +25,9 @@
   - migrated sync-run activity chips to the same active-filter pattern (`Search · ...`, `Status · ...`) with an explicit `Active filters` label.
   - replaced older `Reset filters` copy with `Clear all` in both control and no-results recovery actions.
   - aligns settings filter terminology and visual hierarchy with the rest of dashboard tabs.
+- Cross-route filter-copy harmonization pass:
+  - updated remaining empty-state filter recovery copy from `Reset filters` to `Clear filters` in Contributions, Badges, and repository-visibility messaging.
+  - keeps terminology consistent with the active-chip filter pattern introduced across dashboard surfaces.
 
 ## 2026-05-24
 
