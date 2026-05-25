@@ -39,7 +39,7 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
           const active = isActive(item.href, item.exact);
           const Icon = iconByKey[item.icon];
           return (
-            <li key={item.href} className="list-none min-w-[8rem] shrink-0">
+            <li key={item.href} className="list-none min-w-[6.75rem] shrink-0 sm:min-w-[8rem]">
               <Link
                 href={item.href}
                 aria-current={active ? "page" : undefined}
