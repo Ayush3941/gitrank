@@ -19,6 +19,9 @@
 - Contributions momentum strip pass:
   - added a compact contribution-momentum panel to the Contributions route with streak chips and a 21-day pulse strip.
   - uses existing persisted profile contribution timestamps only (no new fetch paths), keeping the enhancement low-cost on CPU/network.
+- Contribution pulse regression coverage pass:
+  - added focused tests for `ContributionPulseStrip` day-window rendering and same-day contribution aggregation behavior.
+  - prevents accidental regressions in active-day counts or accessibility labels as pulse visuals evolve.
 - Empty-state action consistency pass:
   - standardized empty-state secondary actions from tiny text links to real `Button` controls with consistent hierarchy.
   - added responsive full-width CTA behavior on narrow viewports for easier touch targeting and clearer next-step recovery.
