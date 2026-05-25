@@ -201,9 +201,6 @@ export function LeaderboardPageClient() {
         <div className="neon-surface space-y-3 rounded-[1rem] px-3 py-3 sm:px-4 sm:py-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs font-medium text-primary">Leaderboard controls</p>
-            <p className="text-xs text-muted">
-              {isBusy ? `Refreshing ${tab}...` : `Viewing ${tab}`}
-            </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">

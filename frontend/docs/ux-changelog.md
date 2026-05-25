@@ -36,6 +36,9 @@
 - Filter vocabulary consistency pass:
   - standardized filtered empty-state recovery wording to `Reset filters` across contributions, badges, and repository visibility.
   - aligns fallback text and action labels with the summary-first control pattern already used in active filter surfaces.
+- Leaderboard control header declutter pass:
+  - removed duplicated visible `Viewing/Refreshing` text from leaderboard controls while keeping the live status region for assistive tech.
+  - keeps control scan order focused on filter state chips (`Lane`, `View`, `Details`) and actions.
 - Contributions filter-summary presentation pass:
   - surfaced an always-visible summary row (`Category: ...`, `Sort: ...`, `Reset`) so active view state is readable without scanning multiple control lanes.
   - reduced duplicate chip chrome by keeping removable chips focused on search terms only.
