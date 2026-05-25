@@ -28,6 +28,10 @@
 - Cross-route filter-copy harmonization pass:
   - updated remaining empty-state filter recovery copy from `Reset filters` to `Clear filters` in Contributions, Badges, and repository-visibility messaging.
   - keeps terminology consistent with the active-chip filter pattern introduced across dashboard surfaces.
+- Repository-visibility filter-surface consistency pass:
+  - added an `Active filters` strip to repository-visibility controls in Settings with removable `Search · ...` and `Visibility · ...` chips.
+  - added one-click `Clear all` and replaced the remaining empty-state `Reset` action with `Clear all`.
+  - aligns repository privacy controls with the same filter interaction model used across the rest of dashboard tabs.
 
 ## 2026-05-24
 

@@ -22,9 +22,11 @@ export function PrivacyRepositoryToggleList({
   const [search, setSearch] = useState("");
   const [visibilityFilter, setVisibilityFilter] = useState<"All" | "Public" | "Hidden">("All");
   const deferredSearch = useDeferredValue(search);
+  const searchTerm = search.trim();
+  const compactSearch = searchTerm.length > 28 ? `${searchTerm.slice(0, 28)}…` : searchTerm;
   const controlled = typeof onToggle === "function";
   const visibleItems = controlled ? repositories : items;
-  const canReset = search.trim().length > 0 || visibilityFilter !== "All";
+  const canReset = searchTerm.length > 0 || visibilityFilter !== "All";
   const statusId = "settings-repositories-filter-status";
   const repositoriesRegionId = "settings-repositories-visibility-region";
   const counts = useMemo(() => {
@@ -88,7 +90,7 @@ export function PrivacyRepositoryToggleList({
               aria-label="Search repositories"
               aria-describedby={statusId}
             />
-            {search.trim().length > 0 ? (
+            {searchTerm.length > 0 ? (
               <button
                 type="button"
                 onClick={handleClearSearch}
@@ -138,6 +140,58 @@ export function PrivacyRepositoryToggleList({
             />
           </div>
         </div>
+        {canReset ? (
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <p className="text-xs font-medium text-primary">Active filters</p>
+              <ul role="list" className="flex min-w-0 flex-wrap items-center gap-2 text-xs">
+                {searchTerm.length > 0 ? (
+                  <li className="list-none">
+                    <button
+                      type="button"
+                      className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
+                      onClick={handleClearSearch}
+                      aria-label="Clear repository search filter"
+                      aria-controls={repositoriesRegionId}
+                      title="Clear search filter"
+                    >
+                      Search · {compactSearch}
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </li>
+                ) : null}
+                {visibilityFilter !== "All" ? (
+                  <li className="list-none">
+                    <button
+                      type="button"
+                      className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
+                      onClick={() => {
+                        startTransition(() => {
+                          setVisibilityFilter("All");
+                        });
+                      }}
+                      aria-label={`Clear repository visibility filter ${visibilityFilter}`}
+                      aria-controls={repositoriesRegionId}
+                      title="Clear visibility filter"
+                    >
+                      Visibility · {visibilityFilter}
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </li>
+                ) : null}
+              </ul>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={handleReset}
+              aria-controls={repositoriesRegionId}
+            >
+              Clear all
+            </Button>
+          </div>
+        ) : null}
       </div>
       <div
         id={repositoriesRegionId}
@@ -208,7 +262,7 @@ export function PrivacyRepositoryToggleList({
                 aria-controls={repositoriesRegionId}
                 disabled={!canReset}
               >
-                Reset
+                Clear all
               </Button>
               <Button asChild size="sm" variant="secondary">
                 <Link href="/dashboard" prefetch={false}>Open dashboard</Link>
