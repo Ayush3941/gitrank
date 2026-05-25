@@ -233,7 +233,7 @@ function contributionSignalBand(signalIndex: number): ContributionSignalBand {
 function formatContributionDate(value: string): string {
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) {
-    return "Date unavailable";
+    return "Date pending";
   }
   return parsed.toLocaleDateString(undefined, {
     month: "short",

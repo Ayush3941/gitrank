@@ -164,7 +164,7 @@ export function SyncPipeline() {
 
   const actionError = sanitizeUserFacingError(
     (userSync.error as Error | null)?.message ||
-      (isError ? "Authenticated profile snapshot is unavailable." : ""),
+      (isError ? "Authenticated profile snapshot is loading. Retry in a moment." : ""),
     "onboarding-sync",
   );
   const canRetrySync =

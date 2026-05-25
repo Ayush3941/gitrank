@@ -370,7 +370,7 @@ function runLabel(run: ApiSyncRunRecord): string {
 function toFriendlyTimestamp(value: string): string {
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) {
-    return "time unavailable";
+    return "time pending";
   }
   return parsed.toLocaleString();
 }

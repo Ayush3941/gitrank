@@ -73,7 +73,7 @@ export function LandingPage() {
               <Metric label="Tests" value="Verified" />
             </div>
             <div className="space-y-2">
-              <TrustPill text="No synthetic production users." />
+              <TrustPill text="Live production users only." />
               <TrustPill text="Deterministic scoring owns rank authority." />
               <TrustPill text="Gemini only enriches explanations." />
             </div>

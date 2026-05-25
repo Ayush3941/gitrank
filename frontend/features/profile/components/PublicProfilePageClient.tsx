@@ -260,7 +260,7 @@ export function PublicProfilePageClient({
               </ul>
             ) : (
               <div className="neon-surface space-y-3 rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
-                <p>No unlocked badges in this snapshot yet.</p>
+                <p>Badge unlocks will appear here as scored contributions land.</p>
                 <div className="flex flex-wrap gap-2">
                   <Button asChild size="sm" variant="secondary">
                     <Link href="/dashboard/quests" prefetch={false}>Open quests</Link>
@@ -279,7 +279,7 @@ export function PublicProfilePageClient({
             </div>
             {skillTree.length === 0 ? (
               <div className="neon-surface space-y-3 rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
-                <p>Skill evidence is not available in this snapshot yet.</p>
+                <p>Skill evidence will appear here after the next scored snapshot.</p>
                 <div className="flex flex-wrap gap-2">
                   <Button asChild size="sm" variant="secondary">
                     <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
@@ -315,7 +315,7 @@ export function PublicProfilePageClient({
             </div>
             {data.user.xpTimeline.length === 0 ? (
               <div className="neon-surface space-y-3 rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
-                <p>Timeline signal is not available in this snapshot yet.</p>
+                <p>Timeline signal will appear here after more scored history is synced.</p>
                 <div className="flex flex-wrap gap-2">
                   <Button asChild size="sm" variant="secondary">
                     <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
@@ -341,7 +341,7 @@ export function PublicProfilePageClient({
             <div className="space-y-3">
               {data.topRepositories.length === 0 ? (
                 <div className="neon-surface space-y-3 rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
-                  <p>Repository signal is not available in this snapshot yet.</p>
+                  <p>Repository signal will appear here after more scored PR evidence is synced.</p>
                   <div className="flex flex-wrap gap-2">
                     <Button asChild size="sm" variant="secondary">
                       <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
@@ -386,7 +386,7 @@ function LiteSkillSummary({ skills }: { skills: SkillNode[] }) {
   if (skills.length === 0) {
     return (
       <div className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
-        <p>Skill evidence is not available in this snapshot yet.</p>
+        <p>Skill evidence will appear here after the next scored snapshot.</p>
       </div>
     );
   }
@@ -444,7 +444,7 @@ function LiteTimelineSummary({
   if (timeline.length === 0) {
     return (
       <div className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
-        <p>Timeline signal is not available in this snapshot yet.</p>
+        <p>Timeline signal will appear here after more scored history is synced.</p>
       </div>
     );
   }

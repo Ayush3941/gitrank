@@ -190,8 +190,8 @@ export function PrivacyRepositoryToggleList({
           <div className="neon-surface space-y-3 rounded-[1.75rem] border-dashed px-4 py-4 text-sm text-muted">
             {counts.total === 0 ? (
               <p>
-                Repository visibility records are not available in this profile snapshot yet.
-                Open sync settings to refresh repository privacy controls.
+                Repository visibility records will appear here after the next profile sync.
+                Open sync settings to refresh repository privacy controls now.
               </p>
             ) : (
               <p>
