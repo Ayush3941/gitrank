@@ -4,7 +4,6 @@ import {
   handleHorizontalTabKeyDown,
   type TablistKeyboardActivation,
 } from "@/components/shared/tablist-keyboard";
-import { focusWithoutScroll } from "@/components/shared/focus-without-scroll";
 
 export type SegmentedTabOption<T extends string> = {
   value: T;
@@ -88,23 +87,6 @@ export function SegmentedTablist<T extends string>({
                 data-segmented-option="true"
                 data-segmented-value={item.value}
                 className="focus-ring dashboard-nav-item min-h-11 w-full px-3 py-2 text-center text-sm font-semibold"
-                onPointerDown={(event) => {
-                  if (event.button !== 0) {
-                    return;
-                  }
-                  event.preventDefault();
-                  focusWithoutScroll(event.currentTarget);
-                }}
-                onMouseDown={(event) => {
-                  if (event.defaultPrevented) {
-                    return;
-                  }
-                  if (event.button !== 0) {
-                    return;
-                  }
-                  event.preventDefault();
-                  focusWithoutScroll(event.currentTarget);
-                }}
                 onClick={() => {
                   handleSelect(item.value);
                 }}
