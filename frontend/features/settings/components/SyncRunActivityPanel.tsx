@@ -208,7 +208,6 @@ export function SyncRunActivityPanel({
           </div>
           {trimmedSearch.length > 0 ? (
             <div className="flex flex-wrap items-center gap-2">
-              <p className="text-xs font-medium text-primary">Active filters</p>
               <ul role="list" className="flex min-w-0 flex-wrap items-center gap-2 text-xs">
                 <li className="list-none">
                   <button

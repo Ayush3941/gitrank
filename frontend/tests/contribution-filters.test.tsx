@@ -38,7 +38,6 @@ describe("ContributionFilters", () => {
       />,
     );
 
-    expect(screen.getByText("Active filters")).toBeTruthy();
     expect(screen.getByText("Category: Docs")).toBeTruthy();
     expect(screen.getByText("Sort: Highest XP")).toBeTruthy();
     expect(screen.getByText("Search · very-specific-repo-name")).toBeTruthy();

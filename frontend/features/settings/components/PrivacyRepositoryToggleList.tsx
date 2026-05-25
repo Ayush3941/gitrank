@@ -166,25 +166,22 @@ export function PrivacyRepositoryToggleList({
             </Button>
           ) : null}
         </div>
-        {canReset ? (
+        {searchTerm.length > 0 ? (
           <div className="flex flex-wrap items-center gap-2">
-            <p className="text-xs font-medium text-primary">Active filters</p>
             <ul role="list" className="flex min-w-0 flex-wrap items-center gap-2 text-xs">
-              {searchTerm.length > 0 ? (
-                <li className="list-none">
-                  <button
-                    type="button"
-                    className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
-                    onClick={handleClearSearch}
-                    aria-label="Clear repository search filter"
-                    aria-controls={repositoriesRegionId}
-                    title="Clear search filter"
-                  >
-                    Search · {compactSearch}
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </li>
-              ) : null}
+              <li className="list-none">
+                <button
+                  type="button"
+                  className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
+                  onClick={handleClearSearch}
+                  aria-label="Clear repository search filter"
+                  aria-controls={repositoriesRegionId}
+                  title="Clear search filter"
+                >
+                  Search · {compactSearch}
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </li>
             </ul>
           </div>
         ) : null}

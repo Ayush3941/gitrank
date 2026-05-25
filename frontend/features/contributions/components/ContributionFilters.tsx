@@ -207,36 +207,33 @@ export function ContributionFilters({
         ) : null}
       </div>
       {activeChips.length ? (
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex min-w-0 flex-1 items-center gap-2">
-            <p className="text-xs font-medium text-primary">Active filters</p>
-            <ul role="list" className="flex min-w-0 flex-wrap gap-2 text-xs">
-              {activeChips.map((chip) => {
-                const handleRemove = onClearSearch;
-                return (
-                  <li key={chip.key} className="list-none">
-                    {handleRemove ? (
-                      <button
-                        type="button"
-                        className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold"
-                        onClick={handleRemove}
-                        disabled={isFiltering}
-                        aria-label={`Remove ${chip.label} filter`}
-                        aria-controls={resultsRegionId}
-                      >
-                        {chip.label}
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    ) : (
-                      <span className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold">
-                        {chip.label}
-                      </span>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
+        <div className="flex min-w-0 flex-wrap items-center gap-2 text-xs">
+          <ul role="list" className="flex min-w-0 flex-wrap gap-2">
+            {activeChips.map((chip) => {
+              const handleRemove = onClearSearch;
+              return (
+                <li key={chip.key} className="list-none">
+                  {handleRemove ? (
+                    <button
+                      type="button"
+                      className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold"
+                      onClick={handleRemove}
+                      disabled={isFiltering}
+                      aria-label={`Remove ${chip.label} filter`}
+                      aria-controls={resultsRegionId}
+                    >
+                      {chip.label}
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  ) : (
+                    <span className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 font-semibold">
+                      {chip.label}
+                    </span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
         </div>
       ) : null}
       <div id="contribution-mobile-controls">

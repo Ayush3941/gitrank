@@ -45,6 +45,9 @@
 - Segmented-lane touch-spacing pass:
   - increased segmented-control option gaps from `gap-1.5` to `gap-2` (8px) in shared segmented tablists and dashboard route navigation.
   - improves adjacent target separation for touch inputs without changing route/filter behavior.
+- Active-filter row simplification pass:
+  - removed redundant visible `Active filters` labels from contribution, sync-log, and repository-visibility search-chip rows.
+  - fixed repository visibility to only render the chip row when a search filter is actually active (avoids empty-row chrome).
 - Contributions filter-summary presentation pass:
   - surfaced an always-visible summary row (`Category: ...`, `Sort: ...`, `Reset`) so active view state is readable without scanning multiple control lanes.
   - reduced duplicate chip chrome by keeping removable chips focused on search terms only.
