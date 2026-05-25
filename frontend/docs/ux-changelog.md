@@ -8,6 +8,9 @@
 - Prefetch-boundary pass for onboarding and marketing CTAs:
   - added explicit `prefetch={false}` on non-critical onboarding/marketing links (`/onboarding/analyzing`, `/onboarding/reveal`, `/onboarding/connect-github`, `/`) to reduce background route prefetch churn.
   - keeps core navigation intact while lowering speculative network work on constrained devices.
+- Prefetch consistency cleanup:
+  - closed remaining default-prefetch gaps in shared marketing shell and onboarding login return link so non-critical landing-path navigation is uniformly explicit.
+  - keeps route behavior unchanged while removing unnecessary background fetch variance across entry flows.
 - Global backdrop visibility smoothing pass:
   - reduced heavy overlay opacity and softened radial/linear overlay falloff so `assets/background.jpg` remains visible without sacrificing text contrast.
   - kept the background locked to viewport (`body::before` fixed layer) while slightly lowering saturation/contrast boost to avoid harsh banding on neon themes.

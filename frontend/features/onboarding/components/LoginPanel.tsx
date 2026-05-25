@@ -48,7 +48,7 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
               </Link>
             </Button>
             <Button asChild variant="secondary" size="lg">
-              <Link href="/">Back to landing</Link>
+              <Link href="/" prefetch={false}>Back to landing</Link>
             </Button>
           </div>
         </div>

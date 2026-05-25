@@ -11,7 +11,7 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
         <header className="glass-panel cyber-card cyber-frame neon-outline px-5 py-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap items-center gap-4">
-              <Link href="/" className="flex items-center gap-3">
+              <Link href="/" prefetch={false} className="flex items-center gap-3">
                 <div className="rounded-3xl bg-primary/16 p-3 text-primary ring-glow">
                   <Sparkles className="h-5 w-5" />
                 </div>
