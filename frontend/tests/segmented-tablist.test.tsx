@@ -36,6 +36,18 @@ function renderTablist() {
 }
 
 describe("SegmentedTablist", () => {
+  it("applies no-scroll focus behavior on pointer down before click updates", () => {
+    const { updates, getTab } = renderTablist();
+    const runningButton = getTab(/Running/i);
+
+    const pointerDownResult = fireEvent.pointerDown(runningButton, { button: 0, pointerType: "touch" });
+    expect(pointerDownResult).toBe(false);
+    expect(document.activeElement).toBe(runningButton);
+
+    fireEvent.click(runningButton);
+    expect(updates.at(-1)).toBe("Running");
+  });
+
   it("applies no-scroll focus behavior before click updates", () => {
     const { updates, getTab } = renderTablist();
     const runningButton = getTab(/Running/i);

@@ -2,6 +2,13 @@
 
 ## 2026-05-25
 
+- Segmented-tab pointer interaction hardening pass:
+  - added pointer-down focus-without-scroll handling before click selection in shared segmented tablists.
+  - preserves no-jump behavior for touch, pen, and mouse paths while keeping keyboard activation unchanged.
+- Settings sync-filter simplification pass:
+  - switched sync status segmented controls to wrapping lanes with narrower minimum widths to avoid horizontal jitter.
+  - added a concise summary row (`Status`, optional `Search`, `Reset`) and reduced duplicate filter-chip noise.
+  - kept removable active chips focused on search terms only for faster recovery on dense sync logs.
 - Contributions filter-summary presentation pass:
   - surfaced an always-visible summary row (`Category: ...`, `Sort: ...`, `Reset`) so active view state is readable without scanning multiple control lanes.
   - reduced duplicate chip chrome by keeping removable chips focused on search terms only.

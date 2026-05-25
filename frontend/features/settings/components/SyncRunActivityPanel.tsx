@@ -34,6 +34,8 @@ export function SyncRunActivityPanel({
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<SyncRunStatusFilter>("All");
   const canReset = search.trim().length > 0 || statusFilter !== "All";
+  const trimmedSearch = search.trim();
+  const compactSearch = trimmedSearch.length > 28 ? `${trimmedSearch.slice(0, 28)}…` : trimmedSearch;
   const filterStatusId = "settings-sync-filter-status";
   const syncRunsRegionId = "settings-sync-runs-region";
   const statusCounts = useMemo(() => {
@@ -170,7 +172,7 @@ export function SyncRunActivityPanel({
                   label: status,
                   icon: <Icon className="h-4 w-4" />,
                   count,
-                  minWidthClassName: "min-w-[7.5rem]",
+                  minWidthClassName: "min-w-[6.75rem] sm:min-w-[8rem]",
                 };
               })}
               value={statusFilter}
@@ -179,57 +181,49 @@ export function SyncRunActivityPanel({
               ariaDescribedBy={filterStatusId}
               ariaControls={syncRunsRegionId}
               tabIdPrefix="sync-run-status-filter"
-              wrap={false}
+              wrap
             />
           </div>
-          {canReset ? (
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex min-w-0 flex-1 items-center gap-2">
-                <p className="text-xs font-medium text-primary">Active filters</p>
-                <ul role="list" className="flex min-w-0 flex-wrap items-center gap-2 text-xs">
-                  {search.trim().length > 0 ? (
-                    <li className="list-none">
-                      <button
-                        type="button"
-                        className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
-                        onClick={handleClearSearch}
-                        aria-label="Clear sync run search filter"
-                        aria-controls={syncRunsRegionId}
-                        title="Clear search filter"
-                      >
-                        Search · {search.trim()}
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </li>
-                  ) : null}
-                  {statusFilter !== "All" ? (
-                    <li className="list-none">
-                      <button
-                        type="button"
-                        className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
-                        onClick={() => {
-                          setStatusFilter("All");
-                        }}
-                        aria-label={`Clear sync run status filter ${statusFilter}`}
-                        aria-controls={syncRunsRegionId}
-                        title="Clear status filter"
-                      >
-                        Status · {statusFilter}
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </li>
-                  ) : null}
-                </ul>
-              </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+              Status: {statusFilter}
+            </span>
+            {trimmedSearch.length > 0 ? (
+              <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+                Search: {compactSearch}
+              </span>
+            ) : null}
+            {canReset ? (
               <Button
                 type="button"
                 size="sm"
                 variant="ghost"
                 onClick={handleResetFilters}
                 aria-controls={syncRunsRegionId}
+                className="h-8 px-3"
               >
-                Clear all
+                Reset
               </Button>
+            ) : null}
+          </div>
+          {trimmedSearch.length > 0 ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-xs font-medium text-primary">Active filters</p>
+              <ul role="list" className="flex min-w-0 flex-wrap items-center gap-2 text-xs">
+                <li className="list-none">
+                  <button
+                    type="button"
+                    className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold"
+                    onClick={handleClearSearch}
+                    aria-label="Clear sync run search filter"
+                    aria-controls={syncRunsRegionId}
+                    title="Clear search filter"
+                  >
+                    Search · {compactSearch}
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </li>
+              </ul>
             </div>
           ) : null}
         </div>
