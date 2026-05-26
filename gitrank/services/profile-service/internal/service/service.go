@@ -161,6 +161,8 @@ func (s *Service) Leaderboard(ctx context.Context, limit int, now time.Time) (co
 		SeasonKey:             season.SeasonKey,
 		SeasonSnapshotVersion: season.SnapshotVersion,
 		ScoringVersion:        season.ScoreVersion,
+		PromotionRule:         s.cfg.Scoring.LeaderboardPromotionRule,
+		ResetRule:             s.cfg.Scoring.LeaderboardResetRule,
 	}, nil
 }
 

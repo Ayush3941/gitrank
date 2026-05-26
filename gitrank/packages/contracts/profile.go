@@ -305,6 +305,8 @@ type LeaderboardResponse struct {
 	SeasonKey             string                 `json:"season_key,omitempty"`
 	SeasonSnapshotVersion string                 `json:"season_snapshot_version,omitempty"`
 	ScoringVersion        string                 `json:"scoring_version,omitempty"`
+	PromotionRule         string                 `json:"promotion_rule,omitempty"`
+	ResetRule             string                 `json:"reset_rule,omitempty"`
 }
 
 type LeaderboardMaterializationResponse struct {

@@ -11,6 +11,7 @@ import {
   normalizeRankTier,
 } from "@/lib/runtime/rank-tier-policy";
 import { normalizeSkillCategory as normalizeRuntimeSkillCategory } from "@/lib/runtime/skill-category-policy";
+import { leaderboardSeasonPolicy } from "@/lib/runtime/leaderboard-season-policy";
 
 export type LeaderboardTab =
   | "Global"
@@ -55,6 +56,8 @@ type ApiLeaderboardResponse = {
     end_at?: string;
   };
   scoring_version?: string;
+  promotion_rule?: string;
+  reset_rule?: string;
 };
 
 type ApiErrorResponse = {
@@ -185,17 +188,27 @@ function seasonFromResponse(payload: ApiLeaderboardResponse): LeaderboardSeason 
         endsAt: endsAt.toISOString(),
         status: "Active",
         scoringVersion: payload.scoring_version ?? "unknown",
-        promotionRule: "Top 25 move toward the next rank tier when the season locks.",
-        resetRule: "Weekly XP resets after the window; total XP and score evidence are retained.",
+        promotionRule: payload.promotion_rule ?? leaderboardSeasonPolicy.promotionRule,
+        resetRule: payload.reset_rule ?? leaderboardSeasonPolicy.resetRule,
         explanation:
           "Leaderboard rows are backed by persisted season snapshots and rank movement events.",
       };
     }
   }
-  return seasonFromGeneratedAt(payload.generated_at, payload.scoring_version);
+  return seasonFromGeneratedAt(
+    payload.generated_at,
+    payload.scoring_version,
+    payload.promotion_rule,
+    payload.reset_rule,
+  );
 }
 
-function seasonFromGeneratedAt(generatedAt?: string, scoringVersion = frontendPolicy.scoreVersionFallback): LeaderboardSeason {
+function seasonFromGeneratedAt(
+  generatedAt?: string,
+  scoringVersion = frontendPolicy.scoreVersionFallback,
+  promotionRule?: string,
+  resetRule?: string,
+): LeaderboardSeason {
   const generated =
     !generatedAt || Number.isNaN(Date.parse(generatedAt)) ? new Date() : new Date(generatedAt);
   const day = generated.getUTCDay();
@@ -215,8 +228,8 @@ function seasonFromGeneratedAt(generatedAt?: string, scoringVersion = frontendPo
     endsAt: endsAt.toISOString(),
     status: "Active",
     scoringVersion,
-    promotionRule: "Top 25 move toward the next rank tier when the season locks.",
-    resetRule: "Weekly XP resets after the window; total XP and score evidence are retained.",
+    promotionRule: promotionRule ?? leaderboardSeasonPolicy.promotionRule,
+    resetRule: resetRule ?? leaderboardSeasonPolicy.resetRule,
     explanation:
       "Leaderboard rows are ordered from public profile snapshots and scoped by the selected focus tab.",
   };

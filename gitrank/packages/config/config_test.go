@@ -127,6 +127,9 @@ func TestLoadDefaults(t *testing.T) {
 			cfg.Scoring.RankTierDiamondLabel,
 		})
 	}
+	if cfg.Scoring.LeaderboardPromotionRule == "" || cfg.Scoring.LeaderboardResetRule == "" {
+		t.Fatalf("Scoring leaderboard rules must not be empty")
+	}
 	if cfg.Scoring.LevelArchitectMinXP != 250 || cfg.Scoring.LevelMaintainerMinXP != 180 {
 		t.Fatalf("Scoring level thresholds = architect %d maintainer %d, want 250/180", cfg.Scoring.LevelArchitectMinXP, cfg.Scoring.LevelMaintainerMinXP)
 	}
@@ -204,6 +207,8 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	t.Setenv("SCORING_RANK_TIER_GOLD_LABEL", "Gold III")
 	t.Setenv("SCORING_RANK_TIER_PLATINUM_LABEL", "Platinum I")
 	t.Setenv("SCORING_RANK_TIER_DIAMOND_LABEL", "Diamond")
+	t.Setenv("SCORING_LEADERBOARD_PROMOTION_RULE", "Top 20 move toward promotion review.")
+	t.Setenv("SCORING_LEADERBOARD_RESET_RULE", "Weekly XP resets; total XP remains.")
 	t.Setenv("SCORING_CATEGORY_WEIGHT_FEATURE", "1.65")
 	t.Setenv("SCORING_REPOSITORY_WEIGHT_MAX", "1.5")
 	t.Setenv("SCORING_LEVEL_ARCHITECT_MIN_XP", "300")
@@ -332,6 +337,10 @@ func TestLoadHonorsOverrides(t *testing.T) {
 			cfg.Scoring.RankTierPlatinumMinXP,
 			cfg.Scoring.RankTierDiamondMinXP,
 		)
+	}
+	if cfg.Scoring.LeaderboardPromotionRule != "Top 20 move toward promotion review." ||
+		cfg.Scoring.LeaderboardResetRule != "Weekly XP resets; total XP remains." {
+		t.Fatalf("Scoring leaderboard rules override mismatch: %+v / %+v", cfg.Scoring.LeaderboardPromotionRule, cfg.Scoring.LeaderboardResetRule)
 	}
 	if cfg.Scoring.CategoryWeightFeature != 1.65 {
 		t.Fatalf("Scoring.CategoryWeightFeature = %.2f, want 1.65", cfg.Scoring.CategoryWeightFeature)

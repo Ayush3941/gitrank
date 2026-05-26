@@ -149,18 +149,20 @@ type AI struct {
 }
 
 type Scoring struct {
-	ScoreVersion          string
-	BaseXP                float64
-	MinXP                 int
-	RankTierBronzeLabel   string
-	RankTierSilverLabel   string
-	RankTierGoldLabel     string
-	RankTierPlatinumLabel string
-	RankTierDiamondLabel  string
-	RankTierSilverMinXP   int
-	RankTierGoldMinXP     int
-	RankTierPlatinumMinXP int
-	RankTierDiamondMinXP  int
+	ScoreVersion             string
+	BaseXP                   float64
+	MinXP                    int
+	RankTierBronzeLabel      string
+	RankTierSilverLabel      string
+	RankTierGoldLabel        string
+	RankTierPlatinumLabel    string
+	RankTierDiamondLabel     string
+	RankTierSilverMinXP      int
+	RankTierGoldMinXP        int
+	RankTierPlatinumMinXP    int
+	RankTierDiamondMinXP     int
+	LeaderboardPromotionRule string
+	LeaderboardResetRule     string
 
 	CategoryWeightDefault            float64
 	CategoryWeightDocumentation      float64
@@ -348,18 +350,20 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			EstimatedInputTokenCostUSD: getFloat("AI_ESTIMATED_INPUT_TOKEN_COST_USD", 0.000005),
 		},
 		Scoring: Scoring{
-			ScoreVersion:          strings.TrimSpace(getEnv("SCORING_SCORE_VERSION", "v1alpha1")),
-			BaseXP:                getFloat("SCORING_BASE_XP", 100),
-			MinXP:                 getInt("SCORING_MIN_XP", 10),
-			RankTierBronzeLabel:   strings.TrimSpace(getEnv("SCORING_RANK_TIER_BRONZE_LABEL", "Bronze I")),
-			RankTierSilverLabel:   strings.TrimSpace(getEnv("SCORING_RANK_TIER_SILVER_LABEL", "Silver II")),
-			RankTierGoldLabel:     strings.TrimSpace(getEnv("SCORING_RANK_TIER_GOLD_LABEL", "Gold III")),
-			RankTierPlatinumLabel: strings.TrimSpace(getEnv("SCORING_RANK_TIER_PLATINUM_LABEL", "Platinum I")),
-			RankTierDiamondLabel:  strings.TrimSpace(getEnv("SCORING_RANK_TIER_DIAMOND_LABEL", "Diamond")),
-			RankTierSilverMinXP:   getInt("SCORING_RANK_TIER_SILVER_MIN_XP", 1500),
-			RankTierGoldMinXP:     getInt("SCORING_RANK_TIER_GOLD_MIN_XP", 4000),
-			RankTierPlatinumMinXP: getInt("SCORING_RANK_TIER_PLATINUM_MIN_XP", 9000),
-			RankTierDiamondMinXP:  getInt("SCORING_RANK_TIER_DIAMOND_MIN_XP", 15000),
+			ScoreVersion:             strings.TrimSpace(getEnv("SCORING_SCORE_VERSION", "v1alpha1")),
+			BaseXP:                   getFloat("SCORING_BASE_XP", 100),
+			MinXP:                    getInt("SCORING_MIN_XP", 10),
+			RankTierBronzeLabel:      strings.TrimSpace(getEnv("SCORING_RANK_TIER_BRONZE_LABEL", "Bronze I")),
+			RankTierSilverLabel:      strings.TrimSpace(getEnv("SCORING_RANK_TIER_SILVER_LABEL", "Silver II")),
+			RankTierGoldLabel:        strings.TrimSpace(getEnv("SCORING_RANK_TIER_GOLD_LABEL", "Gold III")),
+			RankTierPlatinumLabel:    strings.TrimSpace(getEnv("SCORING_RANK_TIER_PLATINUM_LABEL", "Platinum I")),
+			RankTierDiamondLabel:     strings.TrimSpace(getEnv("SCORING_RANK_TIER_DIAMOND_LABEL", "Diamond")),
+			RankTierSilverMinXP:      getInt("SCORING_RANK_TIER_SILVER_MIN_XP", 1500),
+			RankTierGoldMinXP:        getInt("SCORING_RANK_TIER_GOLD_MIN_XP", 4000),
+			RankTierPlatinumMinXP:    getInt("SCORING_RANK_TIER_PLATINUM_MIN_XP", 9000),
+			RankTierDiamondMinXP:     getInt("SCORING_RANK_TIER_DIAMOND_MIN_XP", 15000),
+			LeaderboardPromotionRule: strings.TrimSpace(getEnv("SCORING_LEADERBOARD_PROMOTION_RULE", "Top 25 move toward the next rank tier when the season locks.")),
+			LeaderboardResetRule:     strings.TrimSpace(getEnv("SCORING_LEADERBOARD_RESET_RULE", "Weekly XP resets after the window; total XP and score evidence are retained.")),
 
 			CategoryWeightDefault:          getFloat("SCORING_CATEGORY_WEIGHT_DEFAULT", 1.0),
 			CategoryWeightDocumentation:    getFloat("SCORING_CATEGORY_WEIGHT_DOCUMENTATION", 0.8),
@@ -663,6 +667,9 @@ func (a App) ValidateBase() error {
 		a.Scoring.RankTierGoldMinXP < a.Scoring.RankTierPlatinumMinXP &&
 		a.Scoring.RankTierPlatinumMinXP < a.Scoring.RankTierDiamondMinXP) {
 		problems = append(problems, "SCORING_RANK_TIER_*_MIN_XP values must be strictly increasing")
+	}
+	if strings.TrimSpace(a.Scoring.LeaderboardPromotionRule) == "" || strings.TrimSpace(a.Scoring.LeaderboardResetRule) == "" {
+		problems = append(problems, "SCORING_LEADERBOARD_PROMOTION_RULE and SCORING_LEADERBOARD_RESET_RULE are required")
 	}
 	if a.Scoring.CategoryWeightDefault <= 0 {
 		problems = append(problems, "SCORING_CATEGORY_WEIGHT_DEFAULT must be positive")

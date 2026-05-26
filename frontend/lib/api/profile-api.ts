@@ -24,6 +24,7 @@ import {
   normalizeRankTier,
 } from "@/lib/runtime/rank-tier-policy";
 import { normalizeSkillCategory as normalizeRuntimeSkillCategory } from "@/lib/runtime/skill-category-policy";
+import { leaderboardSeasonPolicy } from "@/lib/runtime/leaderboard-season-policy";
 import type { PullRequestAnalysis } from "@/types/gitrank";
 
 const DEFAULT_CSRF_COOKIE_NAME = frontendPolicy.csrfCookieName;
@@ -831,8 +832,8 @@ function seasonFromRefreshedAt(refreshedAt: string, scoringVersion: string): Lea
     endsAt: endsAt.toISOString(),
     status: "Active",
     scoringVersion,
-    promotionRule: "Top 25 in the active tier move toward promotion review.",
-    resetRule: "Season XP resets weekly; profile evidence and total XP stay preserved.",
+    promotionRule: leaderboardSeasonPolicy.promotionRule,
+    resetRule: leaderboardSeasonPolicy.resetRule,
     explanation:
       "Season progress is derived from the latest profile snapshot and current score-event window.",
   };
