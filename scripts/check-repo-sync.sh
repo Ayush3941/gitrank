@@ -10,7 +10,7 @@ fail() {
 
 contains_generated_runtime_artifacts() {
   local matches
-  matches="$(cd "$ROOT_DIR" && git ls-files | rg '(^|/)(\.tmp|\.run|\.logs)/|\.pid$|\.log$|\.test$|coverage\.out$|\.tsbuildinfo$' || true)"
+  matches="$(cd "$ROOT_DIR" && git ls-files | rg '(^|/)(\.tmp|\.run|\.logs|\.gocache|node_modules|\.next)/|\.pid$|\.log$|\.test$|coverage\.out$|\.tsbuildinfo$' || true)"
   if [[ -n "$matches" ]]; then
     printf '%s\n' "$matches"
     return 0

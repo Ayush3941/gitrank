@@ -32,7 +32,7 @@ This top-level map keeps navigation simple without changing service runtime path
 
 - Run `./scripts/check-repo-sync.sh` before finalizing structural/doc changes.
 - It verifies:
-  - no tracked runtime/generated clutter files
+  - no tracked runtime/generated clutter files (including cache trees such as `.tmp`, `.gocache`, `node_modules`, and `.next`)
   - no stale research filename references
   - root tree cleanliness for large binary references
   - `docs/REPO_TREE.md` freshness
