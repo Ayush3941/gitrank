@@ -372,6 +372,7 @@ export interface ProfileViewData {
   topRepositories: ProfileRepositorySummary[];
   recentReports: PullRequestAnalysis[];
   scoreHistoryCap?: number;
+  highXPThreshold?: number;
   shareHeadline: string;
   trendWindowLabel: string;
   refreshedAt: string;

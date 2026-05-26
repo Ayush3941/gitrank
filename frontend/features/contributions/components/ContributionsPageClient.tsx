@@ -85,13 +85,17 @@ export function ContributionsPageClient() {
     () => deduplicateContributionsByPR(profile?.user.contributions ?? []),
     [profile?.user.contributions],
   );
+  const effectiveHighXPThreshold = Math.max(
+    1,
+    profile?.highXPThreshold ?? contributionDisplayConfig.highXPThreshold,
+  );
   const statusCounts = useMemo(
     () => buildContributionStatusCounts(contributionUniverse),
     [contributionUniverse],
   );
   const focusCounts = useMemo(
-    () => buildContributionFocusCounts(contributionUniverse, contributionDisplayConfig.highXPThreshold),
-    [contributionUniverse],
+    () => buildContributionFocusCounts(contributionUniverse, effectiveHighXPThreshold),
+    [contributionUniverse, effectiveHighXPThreshold],
   );
   const effectiveHistoryCap = Math.max(
     1,

@@ -159,6 +159,7 @@ type ApiPublicProfileResponse = {
   badges?: ApiBadge[];
   score_history?: ApiScoreHistoryEntry[];
   score_history_cap?: number;
+  high_xp_threshold?: number;
   timeline: ApiTimeline;
   share_card: ApiShareCard;
   staleness: ApiStaleness;
@@ -380,6 +381,7 @@ function toProfileViewData(
     topRepositories: toTopRepositories(response.top_repositories ?? []),
     recentReports,
     scoreHistoryCap: Math.max(1, response.score_history_cap ?? contributionDisplayConfig.renderHardCap),
+    highXPThreshold: Math.max(1, response.high_xp_threshold ?? contributionDisplayConfig.highXPThreshold),
     shareHeadline: response.share_card.headline,
     trendWindowLabel: response.timeline.window.label,
     refreshedAt: response.staleness.refreshed_at,

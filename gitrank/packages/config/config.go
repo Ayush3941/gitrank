@@ -168,6 +168,7 @@ type Scoring struct {
 	LeaderboardSafetyCutoffRank    int
 	LeaderboardDefaultLimit        int
 	LeaderboardMaxLimit            int
+	HighXPThreshold                int
 
 	CategoryWeightDefault            float64
 	CategoryWeightDocumentation      float64
@@ -374,6 +375,7 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			LeaderboardSafetyCutoffRank:    getInt("SCORING_LEADERBOARD_SAFETY_CUTOFF_RANK", 75),
 			LeaderboardDefaultLimit:        getInt("SCORING_LEADERBOARD_DEFAULT_LIMIT", 50),
 			LeaderboardMaxLimit:            getInt("SCORING_LEADERBOARD_MAX_LIMIT", 100),
+			HighXPThreshold:                getInt("SCORING_HIGH_XP_THRESHOLD", 200),
 
 			CategoryWeightDefault:          getFloat("SCORING_CATEGORY_WEIGHT_DEFAULT", 1.0),
 			CategoryWeightDocumentation:    getFloat("SCORING_CATEGORY_WEIGHT_DOCUMENTATION", 0.8),
@@ -695,6 +697,9 @@ func (a App) ValidateBase() error {
 	}
 	if a.Scoring.LeaderboardMaxLimit < a.Scoring.LeaderboardDefaultLimit {
 		problems = append(problems, "SCORING_LEADERBOARD_MAX_LIMIT must be >= SCORING_LEADERBOARD_DEFAULT_LIMIT")
+	}
+	if a.Scoring.HighXPThreshold <= 0 {
+		problems = append(problems, "SCORING_HIGH_XP_THRESHOLD must be positive")
 	}
 	if a.Scoring.CategoryWeightDefault <= 0 {
 		problems = append(problems, "SCORING_CATEGORY_WEIGHT_DEFAULT must be positive")

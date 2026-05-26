@@ -26,13 +26,21 @@ export function useContributions(params: ContributionParams) {
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
     select: (profile) => ({
-      rows: filterContributions(profile.user.contributions, params),
+      rows: filterContributions(
+        profile.user.contributions,
+        params,
+        profile.highXPThreshold ?? contributionDisplayConfig.highXPThreshold,
+      ),
       profile,
     }),
   });
 }
 
-function filterContributions(rows: Contribution[], params: ContributionParams) {
+function filterContributions(
+  rows: Contribution[],
+  params: ContributionParams,
+  highXPThreshold: number,
+) {
   const deduplicatedRows = deduplicateContributions(rows);
   const normalizedFilter = (params.filter ?? "All").toLowerCase();
   const term = (params.search ?? "").trim().toLowerCase();
@@ -47,7 +55,7 @@ function filterContributions(rows: Contribution[], params: ContributionParams) {
 
     const highXpMatch =
       normalizedFilter !== "high xp" ||
-      item.xpEarned >= contributionDisplayConfig.highXPThreshold;
+      item.xpEarned >= highXPThreshold;
     const searchMatch =
       term.length === 0 ||
       item.title.toLowerCase().includes(term) ||

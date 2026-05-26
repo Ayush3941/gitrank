@@ -1625,6 +1625,7 @@ ABRA implementation checklist:
 - [x] Contribution category domain logic is backend-authoritative and centralized; frontend no longer infers categories from free text and CI blocks duplicate PR-category mapping logic outside `frontend/lib/runtime/pr-category-policy.ts`.
 - [x] Profile score-history window cap is contract-driven (`SCORING_PROFILE_SCORE_HISTORY_LIMIT` via `score_history_cap`) and frontend filtering/rendering honors backend cap instead of fixed constants.
 - [x] Leaderboard fetch limits are env-driven (`SCORING_LEADERBOARD_DEFAULT_LIMIT`, `SCORING_LEADERBOARD_MAX_LIMIT`) and no longer use fixed request caps in profile-service code.
+- [x] High-XP lane threshold is contract-driven (`SCORING_HIGH_XP_THRESHOLD` via `high_xp_threshold`) so frontend filter logic follows backend policy without fixed XP literals.
 - [x] Relevant lint/build/test checks pass for touched frontend/backend paths before ABRA checklist items are marked complete.
 - [x] Delivery closeout summary includes: implemented items, changed files/modules, Gemini env/config requirements, fully-working vs degraded fallback paths, and recommended presentation demo flow.
 

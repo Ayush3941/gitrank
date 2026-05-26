@@ -2336,6 +2336,10 @@ components:
           type: integer
           description: Maximum score-history entries projected into this profile snapshot response.
           minimum: 1
+        high_xp_threshold:
+          type: integer
+          description: XP threshold used for high-impact contribution filtering lanes.
+          minimum: 1
         timeline:
           $ref: "#/components/schemas/ProfileTimeline"
         share_card:
@@ -2371,6 +2375,10 @@ components:
         score_history_cap:
           type: integer
           description: Maximum score-history entries projected into this profile snapshot response.
+          minimum: 1
+        high_xp_threshold:
+          type: integer
+          description: XP threshold used for high-impact contribution filtering lanes.
           minimum: 1
         recent_pr_reports:
           type: array

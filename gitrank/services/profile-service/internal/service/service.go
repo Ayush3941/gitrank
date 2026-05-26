@@ -109,6 +109,7 @@ func (s *Service) PublicProfile(ctx context.Context, handle string, now time.Tim
 		visibility,
 		now.UTC(),
 		s.cfg.Scoring.ProfileScoreHistoryLimit,
+		s.cfg.Scoring.HighXPThreshold,
 	)
 	if err := s.cache.SetJSON(ctx, cacheKey, response, s.publicCacheTTL); err != nil {
 		s.log.Warn("profile cache write failed", "error", err, "cache_key", cacheKey)
@@ -329,6 +330,7 @@ func (s *Service) PrivateProfile(ctx context.Context, sessionToken string, now t
 		pullRequestReportsFromRecords(recentReportRecords, now.UTC()),
 		now.UTC(),
 		s.cfg.Scoring.ProfileScoreHistoryLimit,
+		s.cfg.Scoring.HighXPThreshold,
 	)
 	if err := s.cache.SetJSON(ctx, cacheKey, response, s.privateCacheTTL); err != nil {
 		s.log.Warn("profile cache write failed", "error", err, "cache_key", cacheKey)
@@ -496,6 +498,7 @@ func publicResponseFromSnapshot(
 	visibility []repositoryVisibilityRecord,
 	now time.Time,
 	scoreHistoryCap int,
+	highXPThreshold int,
 ) contracts.PublicProfileResponse {
 	repoMap := visibilityMap(visibility)
 	publicRepos := make([]contracts.TopRepositoryView, 0, len(snapshot.Repositories))
@@ -528,6 +531,7 @@ func publicResponseFromSnapshot(
 		Badges:          snapshot.Badges,
 		ScoreHistory:    publicHistory,
 		ScoreHistoryCap: scoreHistoryCap,
+		HighXPThreshold: highXPThreshold,
 		Timeline:        snapshot.Timeline,
 		ShareCard:       snapshot.ShareCard,
 		Staleness:       staleness,
@@ -541,6 +545,7 @@ func privateResponseFromSnapshot(
 	recentReports []contracts.PullRequestReportResponse,
 	now time.Time,
 	scoreHistoryCap int,
+	highXPThreshold int,
 ) contracts.PrivateProfileResponse {
 	repoMap := visibilityMap(visibility)
 	privateRepos := make([]contracts.TopRepositoryView, 0, len(snapshot.Repositories))
@@ -587,6 +592,7 @@ func privateResponseFromSnapshot(
 		Timeline:             snapshot.Timeline,
 		ScoreHistory:         snapshot.ScoreHistory,
 		ScoreHistoryCap:      scoreHistoryCap,
+		HighXPThreshold:      highXPThreshold,
 		RecentPRReports:      recentReports,
 		Privacy:              settings,
 		RepositoryVisibility: visibilityViews,

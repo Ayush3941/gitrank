@@ -253,9 +253,12 @@ func TestPublicResponseMarksSkillEvidenceStale(t *testing.T) {
 		SourceWatermark: now.Add(-time.Hour),
 	}
 
-	response := publicResponseFromSnapshot(snapshot, contractsDefaults(), nil, now, 100)
+	response := publicResponseFromSnapshot(snapshot, contractsDefaults(), nil, now, 100, 200)
 	if response.ScoreHistoryCap != 100 {
 		t.Fatalf("ScoreHistoryCap = %d, want 100", response.ScoreHistoryCap)
+	}
+	if response.HighXPThreshold != 200 {
+		t.Fatalf("HighXPThreshold = %d, want 200", response.HighXPThreshold)
 	}
 	if !response.Staleness.IsStale {
 		t.Fatal("Staleness.IsStale = false, want true")
@@ -283,7 +286,7 @@ func TestPublicResponseFiltersHiddenRepositories(t *testing.T) {
 
 	response := publicResponseFromSnapshot(snapshot, contractsDefaults(), []repositoryVisibilityRecord{
 		{FullName: "octocat/private-lab", Visibility: "hidden"},
-	}, now, 100)
+	}, now, 100, 200)
 
 	if len(response.TopRepositories) != 1 {
 		t.Fatalf("len(TopRepositories) = %d, want 1", len(response.TopRepositories))
@@ -319,9 +322,12 @@ func TestPrivateResponseIncludesRecentPullRequestReports(t *testing.T) {
 		},
 	}
 
-	response := privateResponseFromSnapshot(snapshot, contractsDefaults(), nil, reports, now, 100)
+	response := privateResponseFromSnapshot(snapshot, contractsDefaults(), nil, reports, now, 100, 200)
 	if response.ScoreHistoryCap != 100 {
 		t.Fatalf("ScoreHistoryCap = %d, want 100", response.ScoreHistoryCap)
+	}
+	if response.HighXPThreshold != 200 {
+		t.Fatalf("HighXPThreshold = %d, want 200", response.HighXPThreshold)
 	}
 
 	if len(response.RecentPRReports) != 1 {
@@ -447,7 +453,7 @@ func BenchmarkPublicProfileResponseFromSnapshot(b *testing.B) {
 
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		_ = publicResponseFromSnapshot(snapshot, settings, visibility, now, 100)
+		_ = publicResponseFromSnapshot(snapshot, settings, visibility, now, 100, 200)
 	}
 }
 
