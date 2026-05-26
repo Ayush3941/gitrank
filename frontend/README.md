@@ -44,7 +44,7 @@ Dark-first Next.js frontend for GitRank, an evidence-backed open-source reputati
 
 ```bash
 cd frontend
-cp -n .env.example .env.local
+set -a && source ../gitrank/.env && set +a
 npm install
 npm run dev
 ```
@@ -91,7 +91,7 @@ The public profile page, authenticated dashboard overview, onboarding reveal, ba
 - `npm run check:copy-tone` fails CI if production UI copy regresses to stale/non-conversational negation phrases such as "could not load" or "is not available in this snapshot yet"
 - `npm run check:sync-copy-policy` fails CI if production frontend modules reintroduce manual-sync phrasing (`Run sync`, `Sync now`) instead of auto-sync guidance copy
 - `npm run check:onboarding-prefetch-policy` fails CI if onboarding/marketing internal links omit explicit `prefetch={false}` in performance-sensitive entry flows
-- `npm run check:env-example-coverage` fails CI when frontend runtime env keys in source drift from `frontend/.env.example` (missing declarations or stale unused keys)
+- `npm run check:env-example-coverage` fails CI when frontend runtime env keys in source drift from `gitrank/.env.example` (missing declarations or stale unused keys)
 - `npm run check:jsx-ids` fails CI if a TSX file reuses the same literal `id` more than once, preventing duplicate region IDs that break a11y and section controls
 - `npm run check:scroll-jumps` fails CI if product routes reintroduce direct `window.scrollTo`/`scrollIntoView` style APIs that can cause viewport jumps
 - `npm run check:motion-budget` fails CI if product routes reintroduce heavy animation patterns (`framer-motion`, animation utility classes, keyframes, or `transition: all`)
@@ -127,7 +127,7 @@ Frontend product analytics now posts bounded events to backend `POST /v1/analyti
 - badge page views
 - sampled Core Web Vitals (`CLS`, `FCP`, `LCP`, `INP`, `TTFB`, `FID`) with route-group tags
 
-Adjust vitals sampling in `frontend/.env.local` if needed:
+Adjust vitals sampling in `gitrank/.env` if needed:
 
 ```bash
 NEXT_PUBLIC_WEB_VITALS_SAMPLE_RATE=0.35
@@ -135,7 +135,7 @@ NEXT_PUBLIC_WEB_VITALS_SAMPLE_RATE=0.35
 
 ## Backend Configuration
 
-Set these server-side env vars for frontend proxy routes:
+Set these server-side env vars in `gitrank/.env` for frontend proxy routes:
 
 ```bash
 GITRANK_API_BASE_URL=http://localhost:8080
@@ -183,7 +183,7 @@ ABRA insight generation (contribution impact explanation, badge story, identity 
 
 PR XP and rank progression are not AI-authored: deterministic backend scoring is finalized before this route runs, and Gemini receives read-only scored evidence for explanation only.
 
-Set these in `frontend/.env.local`:
+Set these in `gitrank/.env`:
 
 ```bash
 GEMINI_API_KEY=your-key

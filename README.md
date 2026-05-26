@@ -85,7 +85,6 @@ auth-service -> github-ingestor -> pr-analyzer -> scoring-engine
 
 ```bash
 cp -n gitrank/.env.example gitrank/.env
-cp -n frontend/.env.example frontend/.env.local
 ```
 
 ### 2) Configure required secrets in `gitrank/.env`
@@ -102,6 +101,8 @@ Gemini path:
 - `AI_PROVIDER=gemini`
 - `GEMINI_API_KEY`
 - optional `GEMINI_MODEL` (default `gemini-2.5-flash`)
+
+Frontend runtime also reads its server env from this same `gitrank/.env` export path.
 
 ### 3) Start stack
 

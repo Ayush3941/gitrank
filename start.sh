@@ -5,7 +5,6 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKEND_DIR="$ROOT_DIR/gitrank"
 FRONTEND_DIR="$ROOT_DIR/frontend"
 BACKEND_ENV_FILE="$BACKEND_DIR/.env"
-FRONTEND_ENV_FILE="$FRONTEND_DIR/.env.local"
 LOG_DIR="$ROOT_DIR/.logs"
 RUN_DIR="$ROOT_DIR/.run"
 BIN_DIR="$RUN_DIR/bin"
@@ -141,10 +140,6 @@ mkdir -p "$BIN_DIR"
 if [[ ! -f "$BACKEND_ENV_FILE" ]]; then
   log "creating backend env from template: $BACKEND_ENV_FILE"
   cp "$BACKEND_DIR/.env.example" "$BACKEND_ENV_FILE"
-fi
-if [[ ! -f "$FRONTEND_ENV_FILE" ]]; then
-  log "creating frontend env from template: $FRONTEND_ENV_FILE"
-  cp "$FRONTEND_DIR/.env.example" "$FRONTEND_ENV_FILE"
 fi
 
 set -a

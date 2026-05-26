@@ -46,6 +46,9 @@ assert_large_tracked_file_budget() {
   local failed=0
   local file size
   while IFS= read -r file; do
+    if [[ ! -f "$ROOT_DIR/$file" ]]; then
+      continue
+    fi
     size="$(wc -c <"$ROOT_DIR/$file")"
     if [[ "$size" -gt "$limit_bytes" ]]; then
       printf 'tracked file exceeds size budget (%s bytes): %s\n' "$size" "$file" >&2
@@ -155,11 +158,11 @@ PY
   fi
 }
 
-assert_frontend_env_example_coverage() {
+assert_frontend_env_coverage_against_backend_env() {
   if ! (
-    cd "$ROOT_DIR/frontend" && node scripts/check-env-example-coverage.mjs >/dev/null
+    cd "$ROOT_DIR/frontend" && node scripts/check-env-example-coverage.mjs ../gitrank/.env.example >/dev/null
   ); then
-    fail "frontend .env.example coverage drift detected"
+    fail "frontend env coverage drift against gitrank/.env.example"
   fi
 }
 
@@ -263,7 +266,7 @@ main() {
   assert_no_placeholder_public_assets
   assert_frontend_public_assets_are_referenced
   assert_weekly_evidence_png_deduplicated
-  assert_frontend_env_example_coverage
+  assert_frontend_env_coverage_against_backend_env
   assert_backend_env_default_parity
 
   if ! check_markdown_relative_links; then

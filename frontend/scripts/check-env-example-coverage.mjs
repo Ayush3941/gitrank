@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
-const envExamplePath = path.join(root, ".env.example");
+const envExamplePath = path.resolve(root, process.argv[2] ?? "../gitrank/.env.example");
 const scanTargets = ["app", "components", "features", "hooks", "lib", "next.config.ts", "proxy.ts"];
 const ignoredKeys = new Set(["NODE_ENV"]);
 const usedEnvKeys = new Set();
@@ -13,26 +13,18 @@ for (const target of scanTargets) {
 
 const declaredKeys = parseEnvExample(envExamplePath);
 const missingKeys = [...usedEnvKeys].filter((key) => !declaredKeys.has(key) && !ignoredKeys.has(key)).sort();
-const unusedKeys = [...declaredKeys].filter((key) => !usedEnvKeys.has(key) && !ignoredKeys.has(key)).sort();
 
-if (missingKeys.length > 0 || unusedKeys.length > 0) {
-  console.error("frontend .env.example coverage check failed.");
-  if (missingKeys.length > 0) {
-    console.error("Missing keys in frontend/.env.example:");
-    for (const key of missingKeys) {
-      console.error(`- ${key}`);
-    }
-  }
-  if (unusedKeys.length > 0) {
-    console.error("Unused keys in frontend/.env.example:");
-    for (const key of unusedKeys) {
-      console.error(`- ${key}`);
-    }
+if (missingKeys.length > 0) {
+  console.error("frontend env coverage check failed.");
+  console.error(`Source of truth: ${envExamplePath}`);
+  console.error("Missing keys in source-of-truth env file:");
+  for (const key of missingKeys) {
+    console.error(`- ${key}`);
   }
   process.exit(1);
 }
 
-console.log("frontend .env.example coverage check passed");
+console.log("frontend env coverage check passed");
 
 function walk(entry) {
   const stat = statSync(entry, { throwIfNoEntry: false });

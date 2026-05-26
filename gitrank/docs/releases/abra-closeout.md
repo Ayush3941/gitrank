@@ -54,7 +54,7 @@ Frontend runtime configuration (server-side route):
 
 Documented in:
 
-- `frontend/.env.example`
+- `gitrank/.env.example`
 - `frontend/README.md`
 
 ## Working vs degraded behavior
