@@ -263,6 +263,12 @@ assert_markdown_make_target_refs() {
   fi
 }
 
+assert_markdown_script_path_refs() {
+  if ! "$ROOT_DIR/scripts/check-doc-script-paths.sh" >/dev/null; then
+    fail "markdown script path references drifted from tracked scripts"
+  fi
+}
+
 assert_clean_root_binary_clutter() {
   local pdfs
   pdfs="$(find "$ROOT_DIR" -maxdepth 1 -type f -name '*.pdf' -print || true)"
@@ -290,6 +296,7 @@ main() {
   assert_frontend_stale_refresh_sync_wiring
   assert_markdown_npm_script_refs
   assert_markdown_make_target_refs
+  assert_markdown_script_path_refs
   assert_backend_env_default_parity
 
   if ! check_markdown_relative_links; then

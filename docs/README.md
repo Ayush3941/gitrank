@@ -37,6 +37,7 @@ This top-level map keeps navigation simple without changing service runtime path
   - root tree cleanliness for large binary references
   - `docs/REPO_TREE.md` freshness
   - markdown command drift guards (`frontend/package.json` npm scripts and `gitrank/Makefile` targets)
+  - markdown script-path references for both repo-root and `gitrank/` workspace command contexts
   - markdown relative-link integrity across tracked docs
 
 ## Navigation Rule
