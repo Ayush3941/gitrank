@@ -241,6 +241,7 @@ npm run build
 npm run check:no-production-mocks
 npm run check:jsx-ids
 npm run check:scroll-jumps
+npm run check:stale-refresh-sync
 npm run test:smoke
 ```
 
@@ -425,6 +426,7 @@ Verification snapshot (May 17, 2026):
 - `cd frontend && npm run check:media-stability`
 - `cd frontend && npm run check:main-thread`
 - `cd frontend && npm run check:scroll-jumps`
+- `cd frontend && npm run check:stale-refresh-sync`
 - `cd frontend && npm run check:perf-budgets`
 - `cd frontend && npm run analyze:bundle`
 - `cd frontend && npx lighthouse http://localhost:4113/ --chrome-flags='--headless --incognito --no-sandbox --disable-gpu --disable-software-rasterizer --disable-dev-shm-usage' --output=json --output-path=docs/evidence/weekly-2026-05-17/lighthouse-home.json`

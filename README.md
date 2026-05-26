@@ -155,6 +155,7 @@ Frontend (from `frontend/`):
 npm run lint
 npm run test:smoke
 npm run test:a11y
+npm run check:stale-refresh-sync
 npm run build
 ```
 
