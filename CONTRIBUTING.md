@@ -410,6 +410,7 @@ Verification snapshot (May 17, 2026):
 - `cd frontend && npm run test:visual`
 - `cd frontend && npm run test:a11y`
 - `cd frontend && npm run test:contracts`
+- `cd frontend && npm run check:backend-gateway-route-parity`
 - `cd frontend && npm run check:bff-route-contract-coverage`
 - `cd frontend && npm run check:no-production-mocks`
 - `cd frontend && npm run check:pr-category-policy`

@@ -61,6 +61,7 @@ These are intentionally infrastructure/ops routes and are excluded from product 
 ## Verification Commands
 
 ```bash
+npm --prefix frontend run check:backend-gateway-route-parity
 npm --prefix frontend run check:bff-route-contract-coverage
 npm --prefix frontend run test:contracts -- tests/bff-route-contract.test.ts
 npx --prefix frontend vitest run frontend/tests/session-api.test.ts frontend/tests/account-api-sync-errors.test.ts
