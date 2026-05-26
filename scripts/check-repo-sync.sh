@@ -257,6 +257,12 @@ assert_markdown_npm_script_refs() {
   fi
 }
 
+assert_markdown_make_target_refs() {
+  if ! "$ROOT_DIR/scripts/check-doc-make-targets.sh" >/dev/null; then
+    fail "markdown make target references drifted from gitrank/Makefile"
+  fi
+}
+
 assert_clean_root_binary_clutter() {
   local pdfs
   pdfs="$(find "$ROOT_DIR" -maxdepth 1 -type f -name '*.pdf' -print || true)"
@@ -283,6 +289,7 @@ main() {
   assert_frontend_env_coverage_against_backend_env
   assert_frontend_stale_refresh_sync_wiring
   assert_markdown_npm_script_refs
+  assert_markdown_make_target_refs
   assert_backend_env_default_parity
 
   if ! check_markdown_relative_links; then
