@@ -152,6 +152,7 @@ type Scoring struct {
 	ScoreVersion                   string
 	BaseXP                         float64
 	MinXP                          int
+	LevelStepXP                    int
 	ProfileScoreHistoryLimit       int
 	RankTierBronzeLabel            string
 	RankTierSilverLabel            string
@@ -359,6 +360,7 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			ScoreVersion:                   strings.TrimSpace(getEnv("SCORING_SCORE_VERSION", "v1alpha1")),
 			BaseXP:                         getFloat("SCORING_BASE_XP", 100),
 			MinXP:                          getInt("SCORING_MIN_XP", 10),
+			LevelStepXP:                    getInt("SCORING_LEVEL_STEP_XP", 300),
 			ProfileScoreHistoryLimit:       getInt("SCORING_PROFILE_SCORE_HISTORY_LIMIT", 100),
 			RankTierBronzeLabel:            strings.TrimSpace(getEnv("SCORING_RANK_TIER_BRONZE_LABEL", "Bronze I")),
 			RankTierSilverLabel:            strings.TrimSpace(getEnv("SCORING_RANK_TIER_SILVER_LABEL", "Silver II")),
@@ -661,6 +663,9 @@ func (a App) ValidateBase() error {
 	}
 	if a.Scoring.MinXP <= 0 {
 		problems = append(problems, "SCORING_MIN_XP must be positive")
+	}
+	if a.Scoring.LevelStepXP <= 0 {
+		problems = append(problems, "SCORING_LEVEL_STEP_XP must be positive")
 	}
 	if a.Scoring.ProfileScoreHistoryLimit <= 0 {
 		problems = append(problems, "SCORING_PROFILE_SCORE_HISTORY_LIMIT must be positive")

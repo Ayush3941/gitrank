@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	profileStaleTTL = 15 * time.Minute
-	levelStepXP     = 300
+	profileStaleTTL    = 15 * time.Minute
+	defaultLevelStepXP = 300
 )
 
 func buildSnapshot(user userRecord, scoreRows []scoreRow, badges []badgeRecord, now time.Time, scoreHistoryLimit int) snapshotRecord {
@@ -616,14 +616,23 @@ func levelViewForXP(totalXP int) contracts.ProfileLevelView {
 	if totalXP < 0 {
 		totalXP = 0
 	}
-	currentLevel := totalXP/levelStepXP + 1
+	stepXP := currentLevelStepXP()
+	currentLevel := totalXP/stepXP + 1
 	return contracts.ProfileLevelView{
 		Label:        levelLabelForLevel(currentLevel),
 		CurrentLevel: currentLevel,
 		CurrentXP:    totalXP,
-		NextLevelXP:  currentLevel * levelStepXP,
+		NextLevelXP:  currentLevel * stepXP,
 		RankTier:     rankTierForXP(totalXP),
 	}
+}
+
+func currentLevelStepXP() int {
+	stepXP := currentRankTierPolicy().LevelStepXP
+	if stepXP <= 0 {
+		return defaultLevelStepXP
+	}
+	return stepXP
 }
 
 func levelLabelForLevel(level int) string {
