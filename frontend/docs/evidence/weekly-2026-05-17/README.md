@@ -7,14 +7,15 @@ design/performance hardening.
 
 Current route screenshots captured via headless Chromium:
 
-- `playwright-login.png`
 - `playwright-dashboard.png`
-- `playwright-dashboard-contributions.png`
-- `playwright-dashboard-badges.png`
-- `playwright-dashboard-quests.png`
-- `playwright-dashboard-settings.png`
-- `playwright-dashboard-leaderboard.png`
 - `playwright-u-live-maintainer.png`
+- `playwright-home.png`
+
+Notes:
+
+- Multiple dashboard/login route screenshots produced byte-identical captures in this run.
+- Duplicate files were removed to keep the evidence folder useful and non-redundant.
+- Route-specific metric coverage still exists in the Lighthouse JSON artifacts listed below.
 
 ## Before and After Pair (Home Route)
 
@@ -23,6 +24,9 @@ artifacts:
 
 - before: `lighthouse-home-before-final.png`
 - after: `lighthouse-home-final.png`
+
+Only one dashboard final screenshot artifact is retained (`lighthouse-dashboard-final.png`);
+the per-route dashboard/login final screenshots were byte-identical duplicates and removed.
 
 Metric diff (`/` route, incognito Lighthouse):
 

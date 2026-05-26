@@ -98,6 +98,63 @@ assert_no_placeholder_public_assets() {
   done
 }
 
+assert_frontend_public_assets_are_referenced() {
+  local failed=0
+  local asset rel web_ref
+  while IFS= read -r asset; do
+    rel="${asset#frontend/public/}"
+    web_ref="/$rel"
+
+    if ! (
+      cd "$ROOT_DIR" && rg -q -F -- "$web_ref" frontend/app frontend/components frontend/features frontend/hooks frontend/lib
+    ) && ! (
+      cd "$ROOT_DIR" && rg -q -F -- "$rel" frontend/app frontend/components frontend/features frontend/hooks frontend/lib
+    ); then
+      printf 'frontend public asset appears unreferenced by source: %s\n' "$asset" >&2
+      failed=1
+    fi
+  done < <(cd "$ROOT_DIR" && find frontend/public/assets -type f | sort)
+
+  if [[ "$failed" -ne 0 ]]; then
+    fail "frontend public asset reference audit failed"
+  fi
+}
+
+assert_weekly_evidence_png_deduplicated() {
+  local evidence_dir="$ROOT_DIR/frontend/docs/evidence/weekly-2026-05-17"
+  [[ -d "$evidence_dir" ]] || return 0
+
+  if ! python - "$evidence_dir" <<'PY'
+import hashlib
+import pathlib
+import sys
+
+evidence_dir = pathlib.Path(sys.argv[1])
+pngs = sorted(evidence_dir.glob("*.png"))
+groups = {}
+for png in pngs:
+    digest = hashlib.sha256(png.read_bytes()).hexdigest()
+    groups.setdefault(digest, []).append(png.name)
+
+allowed_duplicate_group = {"lighthouse-home-before-final.png", "lighthouse-home-final.png"}
+violations = []
+for names in groups.values():
+    if len(names) < 2:
+        continue
+    if set(names) == allowed_duplicate_group:
+        continue
+    violations.append(sorted(names))
+
+if violations:
+    for group in violations:
+        print("duplicate weekly evidence PNG group:", ", ".join(group), file=sys.stderr)
+    sys.exit(1)
+PY
+  then
+    fail "weekly evidence PNG deduplication check failed"
+  fi
+}
+
 check_markdown_relative_links() {
   local missing=0
   local file dir token target clean resolved
@@ -187,6 +244,8 @@ main() {
   assert_large_tracked_file_budget
   assert_frontend_background_asset_layout
   assert_no_placeholder_public_assets
+  assert_frontend_public_assets_are_referenced
+  assert_weekly_evidence_png_deduplicated
 
   if ! check_markdown_relative_links; then
     fail "broken markdown relative links detected"
