@@ -11,7 +11,6 @@ const duplicates = [];
 
 for (const relRoot of scanRoots) {
   const absRoot = path.join(root, relRoot);
-  // eslint-disable-next-line no-await-in-loop
   await walk(absRoot);
 }
 
@@ -39,7 +38,6 @@ async function walk(dir) {
   for (const entry of entries) {
     const abs = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      // eslint-disable-next-line no-await-in-loop
       await walk(abs);
       continue;
     }
@@ -48,13 +46,11 @@ async function walk(dir) {
       continue;
     }
 
-    // eslint-disable-next-line no-await-in-loop
     const fileStat = await stat(abs);
     if (!fileStat.isFile()) {
       continue;
     }
 
-    // eslint-disable-next-line no-await-in-loop
     const source = await readFile(abs, "utf8");
     const counts = new Map();
 
