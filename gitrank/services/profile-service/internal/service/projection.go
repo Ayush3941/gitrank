@@ -317,6 +317,7 @@ func buildScoreHistory(scoreRows []scoreRow) []contracts.ScoreHistoryEntry {
 		entry := contracts.ScoreHistoryEntry{
 			EventID:         row.EventID,
 			EventType:       row.EventType,
+			Category:        strings.TrimSpace(row.Category),
 			DeltaXP:         row.DeltaXP,
 			CreatedAt:       row.CreatedAt.UTC(),
 			ScoreVersion:    row.ScoreVersion,

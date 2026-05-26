@@ -94,6 +94,7 @@ type PullRequestReference struct {
 type ScoreHistoryEntry struct {
 	EventID         string                `json:"event_id"`
 	EventType       string                `json:"event_type"`
+	Category        string                `json:"category,omitempty"`
 	DeltaXP         int                   `json:"delta_xp"`
 	CreatedAt       time.Time             `json:"created_at"`
 	ScoreVersion    string                `json:"score_version,omitempty"`

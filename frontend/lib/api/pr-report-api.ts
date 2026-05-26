@@ -1,13 +1,13 @@
 import type {
   Contribution,
-  PRCategory,
   PRBadgeUnlock,
   PREvidenceState,
   PullRequestAnalysis,
   ScoreBreakdown,
   ScoreComponent,
-  SkillCategory,
 } from "@/types/gitrank";
+import { normalizePRCategory } from "@/lib/runtime/pr-category-policy";
+import { normalizeSkillCategory as normalizeRuntimeSkillCategory } from "@/lib/runtime/skill-category-policy";
 
 export type ApiPRReportContribution = {
   id: string;
@@ -162,7 +162,7 @@ export function toPullRequestAnalysis(
           description: report.suggested_quest.description,
           status: report.suggested_quest.status,
           weakAreaTarget: report.suggested_quest.weak_area_target
-            ? normalizeSkillCategory(report.suggested_quest.weak_area_target)
+            ? normalizeRuntimeSkillCategory(report.suggested_quest.weak_area_target)
             : undefined,
           whyRecommended: report.suggested_quest.why_recommended,
           evidenceSignals: report.suggested_quest.evidence_signals ?? [],
@@ -193,7 +193,7 @@ function toContribution(source: ApiPRReportContribution): Contribution {
     number: source.number,
     title: source.title,
     status: normalizeStatus(source.status),
-    category: normalizeCategory(source.category),
+    category: normalizePRCategory(source.category),
     difficultyScore: source.difficulty_score,
     impactScore: source.impact_score,
     reviewDepthScore: source.review_depth_score,
@@ -251,46 +251,6 @@ function normalizeStatus(value: string): Contribution["status"] {
   if (normalized === "closed") return "closed";
   if (normalized === "open") return "open";
   return "merged";
-}
-
-function normalizeCategory(value: string): PRCategory {
-  const normalized = value.trim().toLowerCase();
-  const mapped: Record<string, PRCategory> = {
-    architecture: "Architecture",
-    backend: "Backend",
-    "bug fix": "Bug Fix",
-    bugfix: "Bug Fix",
-    documentation: "Documentation",
-    docs: "Documentation",
-    frontend: "Backend",
-    infrastructure: "Infrastructure",
-    devops: "Infrastructure",
-    performance: "Performance",
-    review: "Review",
-    security: "Security",
-    testing: "Testing",
-    tests: "Testing",
-  };
-  return mapped[normalized] ?? "Backend";
-}
-
-function normalizeSkillCategory(value: string): SkillCategory {
-  const normalized = value.trim().toLowerCase();
-  const mapped: Record<string, SkillCategory> = {
-    architecture: "Architecture",
-    backend: "Backend",
-    documentation: "Documentation",
-    docs: "Documentation",
-    frontend: "Frontend",
-    infrastructure: "DevOps",
-    devops: "DevOps",
-    performance: "Performance",
-    review: "Review",
-    security: "Security",
-    testing: "Testing",
-    tests: "Testing",
-  };
-  return mapped[normalized] ?? "Backend";
 }
 
 async function responseErrorMessage(response: Response): Promise<string> {

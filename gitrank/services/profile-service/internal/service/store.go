@@ -58,6 +58,7 @@ type accountExportRecord struct {
 type scoreRow struct {
 	EventID               string
 	EventType             string
+	Category              string
 	DeltaXP               int
 	ScoreVersion          string
 	FormulaVersion        string
@@ -240,6 +241,11 @@ func (s *Store) LoadScoreRows(ctx context.Context, userID string, selection scor
 		SELECT
 			se.id::text,
 			se.event_type,
+			COALESCE(
+				NULLIF(se.metadata_jsonb->>'category', ''),
+				NULLIF(ca.category, ''),
+				''
+			),
 			se.delta_total_xp,
 			se.score_version,
 			COALESCE(
@@ -337,6 +343,7 @@ func (s *Store) LoadScoreRows(ctx context.Context, userID string, selection scor
 		if err := rows.Scan(
 			&record.EventID,
 			&record.EventType,
+			&record.Category,
 			&record.DeltaXP,
 			&record.ScoreVersion,
 			&record.FormulaVersion,

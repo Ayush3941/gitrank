@@ -1,4 +1,5 @@
-import type { Quest, QuestStatus, SkillCategory } from "@/types/gitrank";
+import type { Quest, QuestStatus } from "@/types/gitrank";
+import { normalizeSkillCategory as normalizeRuntimeSkillCategory } from "@/lib/runtime/skill-category-policy";
 
 type ApiQuest = {
   id: string;
@@ -88,7 +89,7 @@ function toQuest(quest: ApiQuest): Quest {
     progress: Math.max(0, quest.progress),
     goal: Math.max(1, quest.goal),
     weakAreaTarget: quest.weak_area_target
-      ? normalizeSkillCategory(quest.weak_area_target)
+      ? normalizeRuntimeSkillCategory(quest.weak_area_target)
       : undefined,
     whyRecommended: quest.why_recommended,
     evidenceSignals: quest.evidence_signals ?? [],
@@ -109,26 +110,6 @@ function normalizeCadence(value: string): Quest["cadence"] {
   if (normalized === "long-term" || normalized === "longterm") return "Long-term";
   if (normalized === "skill-based" || normalized === "skill") return "Skill-based";
   return "Weekly";
-}
-
-function normalizeSkillCategory(value: string): SkillCategory {
-  const normalized = value.trim().toLowerCase();
-  const mapped: Record<string, SkillCategory> = {
-    architecture: "Architecture",
-    backend: "Backend",
-    devops: "DevOps",
-    documentation: "Documentation",
-    docs: "Documentation",
-    frontend: "Frontend",
-    infra: "DevOps",
-    infrastructure: "DevOps",
-    performance: "Performance",
-    review: "Review",
-    security: "Security",
-    testing: "Testing",
-    tests: "Testing",
-  };
-  return mapped[normalized] ?? "Backend";
 }
 
 async function responseErrorMessage(response: Response): Promise<string> {

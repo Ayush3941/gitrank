@@ -5,7 +5,6 @@ import type {
   Contribution,
   FeaturedContribution,
   LeaderboardSeason,
-  PRCategory,
   PrivacySettings,
   ProfileRepositorySummary,
   ProfileViewData,
@@ -25,6 +24,10 @@ import {
 } from "@/lib/runtime/rank-tier-policy";
 import { normalizeSkillCategory as normalizeRuntimeSkillCategory } from "@/lib/runtime/skill-category-policy";
 import { leaderboardSeasonPolicy } from "@/lib/runtime/leaderboard-season-policy";
+import {
+  inferPRCategoryFromText,
+  normalizePRCategory,
+} from "@/lib/runtime/pr-category-policy";
 import type { PullRequestAnalysis } from "@/types/gitrank";
 
 const DEFAULT_CSRF_COOKIE_NAME = frontendPolicy.csrfCookieName;
@@ -91,6 +94,7 @@ type ApiPullRequestReference = {
 type ApiScoreHistoryEntry = {
   event_id: string;
   event_type: string;
+  category?: string;
   delta_xp: number;
   created_at: string;
   score_version?: string;
@@ -502,7 +506,12 @@ function toContributions(
         number: entry.pull_request?.number ?? 0,
         title: entry.pull_request?.title || "Contribution",
         status: "merged",
-        category: inferPRCategory(entry),
+        category: entry.category
+          ? normalizePRCategory(entry.category)
+          : inferPRCategoryFromText(
+              entry.pull_request?.title ?? "",
+              entry.explanation,
+            ),
         difficultyScore: 0,
         impactScore: 0,
         reviewDepthScore: 0,
@@ -634,6 +643,7 @@ function collapseScoreHistoryByPullRequest(
     if (isNewerTimestamp(entry.created_at, existing.created_at)) {
       existing.event_id = entry.event_id;
       existing.event_type = entry.event_type;
+      existing.category = entry.category || existing.category;
       existing.created_at = entry.created_at;
       existing.score_version = entry.score_version || existing.score_version;
       existing.formula_version = entry.formula_version || existing.formula_version;
@@ -648,6 +658,9 @@ function collapseScoreHistoryByPullRequest(
     }
     if (!existing.formula_version && entry.formula_version) {
       existing.formula_version = entry.formula_version;
+    }
+    if (!existing.category && entry.category) {
+      existing.category = entry.category;
     }
     if (!existing.pull_request_id && entry.pull_request_id) {
       existing.pull_request_id = entry.pull_request_id;
@@ -737,19 +750,6 @@ function isNewerTimestamp(candidate: string, baseline: string): boolean {
 
 function contributionKey(owner: string, repo: string, number: number): string {
   return `${owner.toLowerCase()}/${repo.toLowerCase()}#${number}`;
-}
-
-function inferPRCategory(entry: ApiScoreHistoryEntry): PRCategory {
-  const text = `${entry.pull_request?.title ?? ""} ${(entry.explanation ?? []).join(" ")}`.toLowerCase();
-  if (text.includes("security")) return "Security";
-  if (text.includes("performance")) return "Performance";
-  if (text.includes("test")) return "Testing";
-  if (text.includes("doc")) return "Documentation";
-  if (text.includes("infra") || text.includes("deploy") || text.includes("kubernetes")) return "Infrastructure";
-  if (text.includes("review")) return "Review";
-  if (text.includes("architecture")) return "Architecture";
-  if (text.includes("bug") || text.includes("fix")) return "Bug Fix";
-  return "Backend";
 }
 
 function toBadges(source: ApiBadge[]): Badge[] {
