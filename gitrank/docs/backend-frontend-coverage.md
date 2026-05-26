@@ -49,6 +49,8 @@ Scope:
 | `GET /v1/session/me` | `GET /api/session/me` | Settings session identity panel |
 | `POST /v1/session/refresh` | `POST /api/session/refresh` | Settings refresh session action |
 | `POST /v1/session/logout` | `POST /api/session/logout` | Settings sign out |
+| `GET /oauth/github/start` | `GET /oauth/github/start` | Login/OAuth entry |
+| `GET /oauth/github/callback` | `GET /oauth/github/callback` | OAuth completion and session bootstrap |
 
 ### Backend Operational Routes (not frontend product routes)
 
@@ -64,6 +66,6 @@ These are intentionally infrastructure/ops routes and are excluded from product 
 npm --prefix frontend run check:backend-gateway-route-parity
 npm --prefix frontend run check:bff-route-contract-coverage
 npm --prefix frontend run test:contracts -- tests/bff-route-contract.test.ts
-npx --prefix frontend vitest run frontend/tests/session-api.test.ts frontend/tests/account-api-sync-errors.test.ts
+npx --prefix frontend vitest run frontend/tests/oauth-auth-proxy-routes.test.ts frontend/tests/session-api.test.ts frontend/tests/account-api-sync-errors.test.ts frontend/tests/profile-schema-api.test.ts
 go test ./services/api-gateway/internal/httpapi ./services/api-gateway/internal/app
 ```

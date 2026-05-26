@@ -35,7 +35,7 @@
     "analyze:bundle": "node scripts/analyze-bundle.mjs",
     "test:smoke": "vitest run tests/live-fixture-render.test.tsx",
     "test:a11y": "vitest run tests/accessibility.test.tsx tests/accessibility-controls.test.tsx tests/settings-form-accessibility.test.tsx",
-    "test:contracts": "npm run check:backend-gateway-route-parity && npm run check:bff-route-contract-coverage && vitest run tests/bff-route-contract.test.ts",
+    "test:contracts": "npm run check:backend-gateway-route-parity && npm run check:bff-route-contract-coverage && vitest run tests/bff-route-contract.test.ts tests/oauth-auth-proxy-routes.test.ts",
     "test:visual": "vitest run tests/visual-regression.test.tsx"
   },
   "dependencies": {
