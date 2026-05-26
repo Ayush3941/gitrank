@@ -93,6 +93,7 @@ The public profile page, authenticated dashboard overview, onboarding reveal, ba
 - `npm run check:jsx-ids` fails CI if a TSX file reuses the same literal `id` more than once, preventing duplicate region IDs that break a11y and section controls
 - `npm run check:scroll-jumps` fails CI if product routes reintroduce direct `window.scrollTo`/`scrollIntoView` style APIs that can cause viewport jumps
 - `npm run check:motion-budget` fails CI if product routes reintroduce heavy animation patterns (`framer-motion`, animation utility classes, keyframes, or `transition: all`)
+- `npm run check:perf-budgets` reads `.next/build-manifest.json`; without a prior frontend build it exits cleanly with guidance, and `STRICT_PERF_BUDGET_MANIFEST=1` enforces hard-fail behavior
 - frontend CI enforces these UI integrity checks directly (`no-hardcoded-identities`, `copy-tone`, `query-policy`, `jsx-keys`, `jsx-ids`, `nested-interactive`, `scroll-jumps`, `motion-budget`) so regressions fail pull requests before merge
 - frontend CI also runs `../gitrank/scripts/verify_v2_no_mock_release_gate.sh` to verify critical OpenAPI entries, worker-flow coverage, and live fixture coverage stay wired
 - `npm run test:smoke` renders dashboard, quest, PR-report, profile, leaderboard, and settings flows from live-shaped BFF fixtures

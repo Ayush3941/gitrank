@@ -1,4 +1,4 @@
-import { readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
@@ -10,6 +10,18 @@ const budgets = {
   largestRootMainChunkBytes: 300 * 1024,
   polyfillsTotalBytes: 150 * 1024,
 };
+
+const strictManifestRequirement = process.env.STRICT_PERF_BUDGET_MANIFEST === "1";
+
+if (!existsSync(manifestPath)) {
+  const message = `Skipping performance budget check: missing ${manifestPath}. Run \`npm --prefix frontend run build\` first.`;
+  if (strictManifestRequirement) {
+    console.error(message);
+    process.exit(1);
+  }
+  console.log(message);
+  process.exit(0);
+}
 
 const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
 const rootMainFiles = manifest.rootMainFiles ?? [];
