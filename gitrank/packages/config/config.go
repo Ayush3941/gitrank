@@ -166,6 +166,8 @@ type Scoring struct {
 	LeaderboardResetRule           string
 	LeaderboardPromotionCutoffRank int
 	LeaderboardSafetyCutoffRank    int
+	LeaderboardDefaultLimit        int
+	LeaderboardMaxLimit            int
 
 	CategoryWeightDefault            float64
 	CategoryWeightDocumentation      float64
@@ -370,6 +372,8 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			LeaderboardResetRule:           strings.TrimSpace(getEnv("SCORING_LEADERBOARD_RESET_RULE", "Weekly XP resets after the window; total XP and score evidence are retained.")),
 			LeaderboardPromotionCutoffRank: getInt("SCORING_LEADERBOARD_PROMOTION_CUTOFF_RANK", 25),
 			LeaderboardSafetyCutoffRank:    getInt("SCORING_LEADERBOARD_SAFETY_CUTOFF_RANK", 75),
+			LeaderboardDefaultLimit:        getInt("SCORING_LEADERBOARD_DEFAULT_LIMIT", 50),
+			LeaderboardMaxLimit:            getInt("SCORING_LEADERBOARD_MAX_LIMIT", 100),
 
 			CategoryWeightDefault:          getFloat("SCORING_CATEGORY_WEIGHT_DEFAULT", 1.0),
 			CategoryWeightDocumentation:    getFloat("SCORING_CATEGORY_WEIGHT_DOCUMENTATION", 0.8),
@@ -685,6 +689,12 @@ func (a App) ValidateBase() error {
 	}
 	if a.Scoring.LeaderboardSafetyCutoffRank < a.Scoring.LeaderboardPromotionCutoffRank {
 		problems = append(problems, "SCORING_LEADERBOARD_SAFETY_CUTOFF_RANK must be >= SCORING_LEADERBOARD_PROMOTION_CUTOFF_RANK")
+	}
+	if a.Scoring.LeaderboardDefaultLimit <= 0 || a.Scoring.LeaderboardMaxLimit <= 0 {
+		problems = append(problems, "SCORING_LEADERBOARD_DEFAULT_LIMIT and SCORING_LEADERBOARD_MAX_LIMIT must be positive")
+	}
+	if a.Scoring.LeaderboardMaxLimit < a.Scoring.LeaderboardDefaultLimit {
+		problems = append(problems, "SCORING_LEADERBOARD_MAX_LIMIT must be >= SCORING_LEADERBOARD_DEFAULT_LIMIT")
 	}
 	if a.Scoring.CategoryWeightDefault <= 0 {
 		problems = append(problems, "SCORING_CATEGORY_WEIGHT_DEFAULT must be positive")

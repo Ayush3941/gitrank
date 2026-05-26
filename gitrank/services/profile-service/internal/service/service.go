@@ -126,10 +126,13 @@ func (s *Service) PublicProfileCard(ctx context.Context, handle string, now time
 
 func (s *Service) Leaderboard(ctx context.Context, limit int, now time.Time) (contracts.LeaderboardResponse, error) {
 	if limit <= 0 {
-		limit = 50
+		limit = s.cfg.Scoring.LeaderboardDefaultLimit
 	}
-	if limit > 100 {
-		limit = 100
+	if limit > s.cfg.Scoring.LeaderboardMaxLimit {
+		limit = s.cfg.Scoring.LeaderboardMaxLimit
+	}
+	if limit > leaderboardMaxMaterializedRows {
+		limit = leaderboardMaxMaterializedRows
 	}
 
 	season, entries, ok, err := s.store.LoadFreshLeaderboardSeason(ctx, now.UTC(), limit)
