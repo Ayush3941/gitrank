@@ -320,6 +320,12 @@ assert_workflow_frontend_npm_scripts() {
   fi
 }
 
+assert_repo_sync_check_coverage() {
+  if ! "$ROOT_DIR/scripts/check-repo-sync-check-coverage.sh" >/dev/null; then
+    fail "repo sync check coverage drifted from tracked scripts/check-*.sh"
+  fi
+}
+
 assert_root_script_discoverability() {
   if ! "$ROOT_DIR/scripts/check-root-script-discoverability.sh" >/dev/null; then
     fail "root script discoverability drifted from docs/repo-sync entrypoints"
@@ -392,6 +398,7 @@ main() {
   assert_workflow_script_refs
   assert_workflow_make_target_refs
   assert_workflow_frontend_npm_scripts
+  assert_repo_sync_check_coverage
   assert_root_script_discoverability
   assert_shell_script_syntax
   assert_frontend_node_script_syntax
