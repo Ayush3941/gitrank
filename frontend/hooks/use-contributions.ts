@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getMyProfile } from "@/lib/api/profile-api";
 import { contributionDisplayConfig } from "@/lib/runtime/contribution-display-config";
+import { deduplicateContributionsByPullRequest } from "@/lib/presentation/contribution-dedup";
 import type { Contribution } from "@/types/gitrank";
 import type { ProfileViewData } from "@/types/gitrank";
 
@@ -41,7 +42,7 @@ function filterContributions(
   params: ContributionParams,
   highXPThreshold: number,
 ) {
-  const deduplicatedRows = deduplicateContributions(rows);
+  const deduplicatedRows = deduplicateContributionsByPullRequest(rows);
   const normalizedFilter = (params.filter ?? "All").toLowerCase();
   const term = (params.search ?? "").trim().toLowerCase();
   const sort = params.sort ?? "Newest";
@@ -74,63 +75,4 @@ function filterContributions(
   };
 
   return [...filtered].sort(sorters[sort]);
-}
-
-function deduplicateContributions(rows: Contribution[]): Contribution[] {
-  const byPullRequest = new Map<string, Contribution>();
-  for (const row of rows) {
-    const key = `${row.owner}/${row.repo}#${row.number}`;
-    const current = byPullRequest.get(key);
-    if (!current) {
-      byPullRequest.set(key, {
-        ...row,
-        evidenceSignals: uniqueEvidenceSignals(row.evidenceSignals),
-      });
-      continue;
-    }
-
-    const shouldReplace =
-      row.xpEarned > current.xpEarned ||
-      (row.xpEarned === current.xpEarned &&
-        new Date(row.mergedAt).getTime() > new Date(current.mergedAt).getTime());
-
-    if (!shouldReplace) {
-      byPullRequest.set(key, {
-        ...current,
-        evidenceSignals: uniqueEvidenceSignals([
-          ...current.evidenceSignals,
-          ...row.evidenceSignals,
-        ]),
-      });
-      continue;
-    }
-
-    byPullRequest.set(key, {
-      ...row,
-      aiSummary: row.aiSummary.trim() ? row.aiSummary : current.aiSummary,
-      evidenceSignals: uniqueEvidenceSignals([
-        ...current.evidenceSignals,
-        ...row.evidenceSignals,
-      ]),
-    });
-  }
-  return Array.from(byPullRequest.values());
-}
-
-function uniqueEvidenceSignals(values: string[]): string[] {
-  const seen = new Set<string>();
-  const next: string[] = [];
-  for (const value of values) {
-    const normalized = value.trim();
-    if (!normalized) {
-      continue;
-    }
-    const key = normalized.toLowerCase();
-    if (seen.has(key)) {
-      continue;
-    }
-    seen.add(key);
-    next.push(normalized);
-  }
-  return next;
 }

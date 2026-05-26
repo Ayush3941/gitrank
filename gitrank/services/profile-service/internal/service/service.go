@@ -322,7 +322,11 @@ func (s *Service) PrivateProfile(ctx context.Context, sessionToken string, now t
 		s.log.Warn("profile cache read failed", "error", err, "cache_key", cacheKey)
 	}
 
-	recentReportRecords, err := s.store.LoadRecentPullRequestReportsForUser(ctx, user.ID, 4)
+	recentReportRecords, err := s.store.LoadRecentPullRequestReportsForUser(
+		ctx,
+		user.ID,
+		s.cfg.Profile.RecentReportsDefaultLimit,
+	)
 	if err != nil {
 		return contracts.PrivateProfileResponse{}, err
 	}

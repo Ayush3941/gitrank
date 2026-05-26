@@ -114,10 +114,10 @@ func (s *Service) BackfillPullRequestReportsForUser(ctx context.Context, userID 
 		return contracts.PullRequestReportBackfillResponse{}, ErrInvalidRequest
 	}
 	if limit <= 0 {
-		limit = 50
+		limit = s.cfg.Profile.ReportBackfillDefaultLimit
 	}
-	if limit > 200 {
-		limit = 200
+	if limit > s.cfg.Profile.ReportBackfillMaxLimit {
+		limit = s.cfg.Profile.ReportBackfillMaxLimit
 	}
 
 	now = now.UTC()
@@ -265,10 +265,7 @@ func (s *Store) LoadPullRequestReport(ctx context.Context, owner, repo string, n
 
 func (s *Store) ListPullRequestReportBackfillTargets(ctx context.Context, userID string, limit int) ([]pullRequestReportBackfillTarget, error) {
 	if limit <= 0 {
-		limit = 50
-	}
-	if limit > 200 {
-		limit = 200
+		limit = 1
 	}
 
 	rows, err := s.pool.Query(ctx, `
@@ -307,10 +304,7 @@ func (s *Store) ListPullRequestReportBackfillTargets(ctx context.Context, userID
 
 func (s *Store) LoadRecentPullRequestReportsForUser(ctx context.Context, userID string, limit int) ([]pullRequestReportRecord, error) {
 	if limit <= 0 {
-		limit = 4
-	}
-	if limit > 10 {
-		limit = 10
+		limit = 1
 	}
 
 	selection, err := s.LoadLatestScoreSelection(ctx, userID)

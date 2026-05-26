@@ -32,6 +32,7 @@ import {
 import { formatRelativeDays } from "@/lib/formatters";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
+import { deduplicateContributionsByPullRequest } from "@/lib/presentation/contribution-dedup";
 import { contributionDisplayConfig } from "@/lib/runtime/contribution-display-config";
 import {
   buildContributionFocusCounts,
@@ -82,7 +83,7 @@ export function ContributionsPageClient() {
   });
   const profile = data?.profile;
   const contributionUniverse = useMemo(
-    () => deduplicateContributionsByPR(profile?.user.contributions ?? []),
+    () => deduplicateContributionsByPullRequest(profile?.user.contributions ?? []),
     [profile?.user.contributions],
   );
   const effectiveHighXPThreshold = Math.max(
@@ -106,7 +107,7 @@ export function ContributionsPageClient() {
   );
   const filteredRows = useMemo(
     () =>
-      deduplicateContributionsByPR(data?.rows ?? []).slice(
+      deduplicateContributionsByPullRequest(data?.rows ?? []).slice(
         0,
         effectiveHistoryCap,
       ),
@@ -460,27 +461,6 @@ export function ContributionsPageClient() {
       ) : null}
     </div>
   );
-}
-
-function deduplicateContributionsByPR(rows: Contribution[]): Contribution[] {
-  const byPR = new Map<string, Contribution>();
-  for (const row of rows) {
-    const key = `${row.owner.toLowerCase()}/${row.repo.toLowerCase()}#${row.number}`;
-    const existing = byPR.get(key);
-    if (!existing) {
-      byPR.set(key, row);
-      continue;
-    }
-    const existingMergedAt = Date.parse(existing.mergedAt);
-    const nextMergedAt = Date.parse(row.mergedAt);
-    const preferRow =
-      row.xpEarned > existing.xpEarned ||
-      (row.xpEarned === existing.xpEarned && nextMergedAt > existingMergedAt);
-    if (preferRow) {
-      byPR.set(key, row);
-    }
-  }
-  return Array.from(byPR.values());
 }
 
 function downloadContributionsCSV(rows: Contribution[]) {

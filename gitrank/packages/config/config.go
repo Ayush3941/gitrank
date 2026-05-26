@@ -225,9 +225,13 @@ type Scoring struct {
 }
 
 type Profile struct {
-	PublicCacheTTL   time.Duration
-	PrivateCacheTTL  time.Duration
-	SnapshotStaleTTL time.Duration
+	PublicCacheTTL             time.Duration
+	PrivateCacheTTL            time.Duration
+	SnapshotStaleTTL           time.Duration
+	RecentReportsDefaultLimit  int
+	RecentReportsMaxLimit      int
+	ReportBackfillDefaultLimit int
+	ReportBackfillMaxLimit     int
 }
 
 type Observability struct {
@@ -444,9 +448,13 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			LevelArchitectMinXP:   getInt("SCORING_LEVEL_ARCHITECT_MIN_XP", 250),
 		},
 		Profile: Profile{
-			PublicCacheTTL:   getDuration("PROFILE_PUBLIC_CACHE_TTL", 5*time.Minute),
-			PrivateCacheTTL:  getDuration("PROFILE_PRIVATE_CACHE_TTL", 2*time.Minute),
-			SnapshotStaleTTL: getDuration("PROFILE_SNAPSHOT_STALE_TTL", 15*time.Minute),
+			PublicCacheTTL:             getDuration("PROFILE_PUBLIC_CACHE_TTL", 5*time.Minute),
+			PrivateCacheTTL:            getDuration("PROFILE_PRIVATE_CACHE_TTL", 2*time.Minute),
+			SnapshotStaleTTL:           getDuration("PROFILE_SNAPSHOT_STALE_TTL", 15*time.Minute),
+			RecentReportsDefaultLimit:  getInt("PROFILE_RECENT_REPORTS_DEFAULT_LIMIT", 4),
+			RecentReportsMaxLimit:      getInt("PROFILE_RECENT_REPORTS_MAX_LIMIT", 10),
+			ReportBackfillDefaultLimit: getInt("PROFILE_REPORT_BACKFILL_DEFAULT_LIMIT", 50),
+			ReportBackfillMaxLimit:     getInt("PROFILE_REPORT_BACKFILL_MAX_LIMIT", 200),
 		},
 		Observability: Observability{
 			Enabled:           getBool("OTEL_ENABLED", false),
@@ -953,6 +961,18 @@ func (a App) ValidateProfileService() error {
 	}
 	if a.Profile.SnapshotStaleTTL <= 0 {
 		problems = append(problems, "PROFILE_SNAPSHOT_STALE_TTL must be a positive duration")
+	}
+	if a.Profile.RecentReportsDefaultLimit <= 0 || a.Profile.RecentReportsMaxLimit <= 0 {
+		problems = append(problems, "PROFILE_RECENT_REPORTS_DEFAULT_LIMIT and PROFILE_RECENT_REPORTS_MAX_LIMIT must be positive")
+	}
+	if a.Profile.RecentReportsMaxLimit < a.Profile.RecentReportsDefaultLimit {
+		problems = append(problems, "PROFILE_RECENT_REPORTS_MAX_LIMIT must be >= PROFILE_RECENT_REPORTS_DEFAULT_LIMIT")
+	}
+	if a.Profile.ReportBackfillDefaultLimit <= 0 || a.Profile.ReportBackfillMaxLimit <= 0 {
+		problems = append(problems, "PROFILE_REPORT_BACKFILL_DEFAULT_LIMIT and PROFILE_REPORT_BACKFILL_MAX_LIMIT must be positive")
+	}
+	if a.Profile.ReportBackfillMaxLimit < a.Profile.ReportBackfillDefaultLimit {
+		problems = append(problems, "PROFILE_REPORT_BACKFILL_MAX_LIMIT must be >= PROFILE_REPORT_BACKFILL_DEFAULT_LIMIT")
 	}
 
 	if len(problems) == 0 {
