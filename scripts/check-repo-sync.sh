@@ -296,6 +296,12 @@ assert_markdown_env_var_refs() {
   fi
 }
 
+assert_makefile_script_refs() {
+  if ! "$ROOT_DIR/scripts/check-makefile-script-refs.sh" >/dev/null; then
+    fail "gitrank/Makefile script references drifted from tracked executable scripts"
+  fi
+}
+
 assert_clean_root_binary_clutter() {
   local pdfs
   pdfs="$(find "$ROOT_DIR" -maxdepth 1 -type f -name '*.pdf' -print || true)"
@@ -328,6 +334,7 @@ main() {
   assert_markdown_portable_paths
   assert_runtime_identity_hygiene
   assert_markdown_env_var_refs
+  assert_makefile_script_refs
   assert_backend_env_default_parity
 
   if ! check_markdown_relative_links; then
