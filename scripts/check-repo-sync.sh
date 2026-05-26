@@ -275,6 +275,12 @@ assert_markdown_go_command_path_refs() {
   fi
 }
 
+assert_markdown_portable_paths() {
+  if ! "$ROOT_DIR/scripts/check-doc-portable-paths.sh" >/dev/null; then
+    fail "markdown docs contain machine-specific absolute paths"
+  fi
+}
+
 assert_clean_root_binary_clutter() {
   local pdfs
   pdfs="$(find "$ROOT_DIR" -maxdepth 1 -type f -name '*.pdf' -print || true)"
@@ -304,6 +310,7 @@ main() {
   assert_markdown_make_target_refs
   assert_markdown_script_path_refs
   assert_markdown_go_command_path_refs
+  assert_markdown_portable_paths
   assert_backend_env_default_parity
 
   if ! check_markdown_relative_links; then

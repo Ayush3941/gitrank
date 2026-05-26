@@ -39,6 +39,7 @@ This top-level map keeps navigation simple without changing service runtime path
   - markdown command drift guards (`frontend/package.json` npm scripts and `gitrank/Makefile` targets)
   - markdown script-path references for both repo-root and `gitrank/` workspace command contexts
   - markdown `go test/run/build/vet` path references against current repo paths
+  - machine-specific absolute path leakage in primary docs (for example user-home absolute paths on Linux/macOS/Windows)
   - markdown relative-link integrity across tracked docs
 
 ## Navigation Rule
