@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { FolderGit2, LockKeyhole, Sparkles } from "lucide-react";
+import { FolderGit2, LockKeyhole } from "lucide-react";
+import { BrandLogo } from "@/components/shared/BrandLogo";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { TextScaleQuickSwitcher } from "@/components/shared/TextScaleQuickSwitcher";
 import { ThemeQuickSwitcher } from "@/components/shared/ThemeQuickSwitcher";
@@ -53,8 +54,8 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
           </div>
         </div>
         <GlowCard className="space-y-4">
-          <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
-            <Sparkles className="h-5 w-5" />
+          <div className="inline-flex rounded-3xl border border-primary/22 bg-primary/12 p-2.5 text-primary">
+            <BrandLogo size={20} className="h-5 w-5" alt="GitRank" />
           </div>
           <h2 className="text-2xl font-semibold text-white">How scoring works</h2>
           <div className="space-y-3">

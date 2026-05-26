@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { ArrowRight, FolderGit2, ShieldCheck, Sparkles, Timer } from "lucide-react";
+import { ArrowRight, FolderGit2, ShieldCheck, Timer } from "lucide-react";
+import { BrandLogo } from "@/components/shared/BrandLogo";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Button } from "@/components/ui/button";
 import { OnboardingStepper } from "@/features/onboarding/components/OnboardingStepper";
@@ -131,7 +132,7 @@ export function ConnectGithubPanel() {
         </div>
         <div className="rounded-[1.75rem] border border-primary/18 bg-primary/8 p-4 text-sm text-muted">
           <div className="flex items-center gap-2 text-primary">
-            <Sparkles className="h-4 w-4" />
+            <BrandLogo size={16} className="h-4 w-4" alt="GitRank" />
             Meaning-first scoring
           </div>
           <p className="mt-2">

@@ -13,9 +13,9 @@ export default function manifest(): MetadataRoute.Manifest {
     categories: ["developer tools", "productivity", "social"],
     icons: [
       {
-        src: "/favicon.ico",
-        sizes: "any",
-        type: "image/x-icon",
+        src: "/assets/logo.png",
+        sizes: "512x512",
+        type: "image/png",
       },
     ],
   };

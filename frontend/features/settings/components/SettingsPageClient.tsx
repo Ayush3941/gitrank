@@ -3,7 +3,8 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ChevronDown, ChevronUp, Download, FolderGit2, LogOut, Palette, RefreshCw, Sparkles, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Download, FolderGit2, LogOut, Palette, RefreshCw, Trash2 } from "lucide-react";
+import { BrandLogo } from "@/components/shared/BrandLogo";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
@@ -513,7 +514,7 @@ export function SettingsPageClient() {
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="max-w-2xl">
               <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
-                <Sparkles className="h-5 w-5" />
+                <BrandLogo size={20} className="h-5 w-5" alt="GitRank" />
               </div>
               <p className="mt-4 text-xs font-medium text-primary">Display preference</p>
               <h2 className="mt-2 text-xl font-semibold text-white">Reduced gamification</h2>

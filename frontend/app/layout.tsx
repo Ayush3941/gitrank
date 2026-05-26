@@ -86,6 +86,11 @@ export const metadata: Metadata = {
       "Evidence-backed contribution scoring, progression loops, and public contributor proof.",
     images: ["/twitter-image"],
   },
+  icons: {
+    icon: [{ url: "/assets/logo.png", type: "image/png", sizes: "512x512" }],
+    shortcut: [{ url: "/assets/logo.png", type: "image/png", sizes: "512x512" }],
+    apple: [{ url: "/assets/logo.png", type: "image/png", sizes: "512x512" }],
+  },
 };
 
 export const viewport: Viewport = {

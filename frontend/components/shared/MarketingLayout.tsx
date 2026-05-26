@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { ArrowUpRight, Sparkles } from "lucide-react";
 import { AppShell } from "@/components/shared/AppShell";
+import { ArrowUpRight } from "lucide-react";
+import { BrandLogo } from "@/components/shared/BrandLogo";
 import { Button } from "@/components/ui/button";
 
 export function MarketingLayout({ children }: { children: ReactNode }) {
@@ -12,8 +13,8 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap items-center gap-4">
               <Link href="/" prefetch={false} className="flex items-center gap-3">
-                <div className="rounded-3xl bg-primary/16 p-3 text-primary ring-glow">
-                  <Sparkles className="h-5 w-5" />
+                <div className="rounded-3xl border border-primary/24 bg-primary/14 p-2.5 text-primary ring-glow">
+                  <BrandLogo size={22} className="h-[22px] w-[22px]" alt="GitRank" priority />
                 </div>
                 <div>
                   <p className="cyber-title text-lg font-semibold text-foreground">GitRank</p>

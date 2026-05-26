@@ -1730,8 +1730,9 @@
     descriptions/recommendations to preserve scanability.
 
 - Optimized hero/background rendering while preserving cyber style:
-  - compressed `public/background.jpg` from large source to web-safe size
-  - added `public/background.webp` and CSS `image-set()` fallback selection
+  - compressed runtime background image and standardized served assets under
+    `public/assets/background.*`
+  - added WebP + JPEG fallback selection through CSS `image-set()`
   - moved to fixed desktop + scroll-mobile background attachment policy
 - Added always-accessible theme switching and readability pass:
   - new shared `ThemeQuickSwitcher` action in dashboard top bar + sidebar

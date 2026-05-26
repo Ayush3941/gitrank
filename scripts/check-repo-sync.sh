@@ -18,6 +18,70 @@ contains_generated_runtime_artifacts() {
   return 1
 }
 
+assert_script_entrypoint_hygiene() {
+  local failed=0
+  local file first_line
+  while IFS= read -r file; do
+    [[ -z "$file" ]] && continue
+
+    if [[ ! -x "$ROOT_DIR/$file" ]]; then
+      printf 'script is not executable: %s\n' "$file" >&2
+      failed=1
+    fi
+
+    first_line="$(head -n 1 "$ROOT_DIR/$file" || true)"
+    if [[ ! "$first_line" =~ ^#!(/usr/bin/env[[:space:]]+(sh|bash)|/bin/(sh|bash))$ ]]; then
+      printf 'script missing normalized shebang: %s (%s)\n' "$file" "$first_line" >&2
+      failed=1
+    fi
+  done < <(cd "$ROOT_DIR" && git ls-files 'scripts/*.sh' 'gitrank/scripts/*.sh' 'start.sh')
+
+  if [[ "$failed" -ne 0 ]]; then
+    fail "script entrypoint hygiene failed"
+  fi
+}
+
+assert_large_tracked_file_budget() {
+  local limit_bytes=$((5 * 1024 * 1024))
+  local failed=0
+  local file size
+  while IFS= read -r file; do
+    size="$(wc -c <"$ROOT_DIR/$file")"
+    if [[ "$size" -gt "$limit_bytes" ]]; then
+      printf 'tracked file exceeds size budget (%s bytes): %s\n' "$size" "$file" >&2
+      failed=1
+    fi
+  done < <(cd "$ROOT_DIR" && git ls-files)
+
+  if [[ "$failed" -ne 0 ]]; then
+    fail "tracked file size budget exceeded (5MB)"
+  fi
+}
+
+assert_frontend_background_asset_layout() {
+  local legacy_dupes=(
+    "frontend/public/background.jpg"
+    "frontend/public/background.webp"
+  )
+  local required_assets=(
+    "frontend/public/assets/background.jpg"
+    "frontend/public/assets/background.webp"
+  )
+  local path
+
+  for path in "${legacy_dupes[@]}"; do
+    if (cd "$ROOT_DIR" && git ls-files --error-unmatch "$path" >/dev/null 2>&1); then
+      fail "legacy background duplicate is tracked: $path"
+    fi
+  done
+
+  for path in "${required_assets[@]}"; do
+    if [[ ! -f "$ROOT_DIR/$path" ]]; then
+      fail "required frontend background asset missing: $path"
+    fi
+  done
+}
+
 check_markdown_relative_links() {
   local missing=0
   local file dir token target clean resolved
@@ -59,10 +123,15 @@ check_markdown_relative_links() {
 }
 
 ensure_repo_tree_in_sync() {
-  "$ROOT_DIR/scripts/generate-repo-tree.sh" >/dev/null
-  if ! (cd "$ROOT_DIR" && git diff --quiet -- docs/REPO_TREE.md); then
+  local tmp_tree
+  tmp_tree="$(mktemp "${TMPDIR:-/tmp}/gitrank-repo-tree.XXXXXX.md")"
+  trap 'rm -f "$tmp_tree"' RETURN
+  "$ROOT_DIR/scripts/generate-repo-tree.sh" "$tmp_tree" >/dev/null
+  if ! cmp -s "$tmp_tree" "$ROOT_DIR/docs/REPO_TREE.md"; then
     fail "docs/REPO_TREE.md is stale; run ./scripts/generate-repo-tree.sh"
   fi
+  rm -f "$tmp_tree"
+  trap - RETURN
 }
 
 assert_no_stale_pdf_references() {
@@ -98,6 +167,9 @@ main() {
   assert_no_stale_pdf_references
   assert_clean_root_binary_clutter
   ensure_repo_tree_in_sync
+  assert_script_entrypoint_hygiene
+  assert_large_tracked_file_budget
+  assert_frontend_background_asset_layout
 
   if ! check_markdown_relative_links; then
     fail "broken markdown relative links detected"
