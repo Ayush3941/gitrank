@@ -194,6 +194,29 @@ func TestPullRequestReportFromRecordInfersDeterministicSourceFromScorePayloadWit
 	}
 }
 
+func TestPullRequestReportFromRecordDoesNotInferCategoryFromFreeText(t *testing.T) {
+	now := time.Date(2026, 5, 10, 14, 0, 0, 0, time.UTC)
+	report := pullRequestReportFromRecord(pullRequestReportRecord{
+		PullRequestID: "pr-db-4",
+		Owner:         "octo",
+		Repo:          "repo",
+		Number:        11,
+		Title:         "security fix for auth path",
+		Body:          "hardening without persisted category metadata",
+		State:         "closed",
+		Merged:        true,
+		OccurredAt:    now.Add(-2 * time.Hour),
+		UpdatedAt:     now.Add(-time.Hour),
+		ScoreEventID:  "score-4",
+		ScoreVersion:  "v1alpha1",
+		XP:            60,
+	}, now)
+
+	if report.Contribution.Category != "Unknown" {
+		t.Fatalf("Category = %q, want Unknown when persisted category evidence is missing", report.Contribution.Category)
+	}
+}
+
 func containsString(values []string, expected string) bool {
 	for _, value := range values {
 		if value == expected {

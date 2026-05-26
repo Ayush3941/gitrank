@@ -630,7 +630,9 @@ func scanPullRequestReport(row rowScanner) (pullRequestReportRecord, error) {
 }
 
 func pullRequestReportFromRecord(record pullRequestReportRecord, now time.Time) contracts.PullRequestReportResponse {
-	category := firstNonEmpty(stringFromMap(record.ScoreMetadata, "category"), record.Category, inferReportCategory(record))
+	category := canonicalContributionCategory(
+		firstNonEmpty(stringFromMap(record.ScoreMetadata, "category"), record.Category),
+	)
 	difficulty := scorePercent(numberFromMap(record.ScoreMetadata, "technical_depth"), derivedDifficulty(record))
 	reviewDepth := scorePercent(numberFromMap(record.ScoreMetadata, "review_strength"), derivedReviewDepth(record))
 	testSignal := derivedTestSignal(record)
@@ -1114,30 +1116,6 @@ func reportStatus(record pullRequestReportRecord) string {
 		return "closed"
 	default:
 		return "open"
-	}
-}
-
-func inferReportCategory(record pullRequestReportRecord) string {
-	text := strings.ToLower(record.Title + " " + record.Body + " " + strings.Join(record.AnalysisSignals, " "))
-	switch {
-	case strings.Contains(text, "security") || strings.Contains(text, "auth"):
-		return "Security"
-	case strings.Contains(text, "perf") || strings.Contains(text, "benchmark"):
-		return "Performance"
-	case record.TestFiles > 0 || strings.Contains(text, "test"):
-		return "Testing"
-	case record.DocsFiles > 0 || strings.Contains(text, "doc"):
-		return "Documentation"
-	case strings.Contains(text, "infra") || strings.Contains(text, "ci") || strings.Contains(text, "deploy"):
-		return "Infrastructure"
-	case strings.Contains(text, "review"):
-		return "Review"
-	case strings.Contains(text, "architecture") || strings.Contains(text, "schema"):
-		return "Architecture"
-	case strings.Contains(text, "fix") || strings.Contains(text, "bug"):
-		return "Bug Fix"
-	default:
-		return "Backend"
 	}
 }
 
