@@ -320,6 +320,12 @@ assert_workflow_frontend_npm_scripts() {
   fi
 }
 
+assert_root_script_discoverability() {
+  if ! "$ROOT_DIR/scripts/check-root-script-discoverability.sh" >/dev/null; then
+    fail "root script discoverability drifted from docs/repo-sync entrypoints"
+  fi
+}
+
 assert_frontend_script_discoverability() {
   if ! "$ROOT_DIR/scripts/check-frontend-script-discoverability.sh" >/dev/null; then
     fail "frontend script discoverability drifted from package/workflow/repo-sync entrypoints"
@@ -386,6 +392,7 @@ main() {
   assert_workflow_script_refs
   assert_workflow_make_target_refs
   assert_workflow_frontend_npm_scripts
+  assert_root_script_discoverability
   assert_shell_script_syntax
   assert_frontend_node_script_syntax
   assert_frontend_script_discoverability
