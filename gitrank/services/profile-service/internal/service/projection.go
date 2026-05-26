@@ -313,11 +313,12 @@ func buildScoreHistory(scoreRows []scoreRow) []contracts.ScoreHistoryEntry {
 	out := make([]contracts.ScoreHistoryEntry, 0, limit)
 	for i := 0; i < limit; i++ {
 		row := scoreRows[i]
+		category := scoreHistoryCategory(row)
 		evidenceState, evidenceMissing := scoreHistoryEvidenceState(row)
 		entry := contracts.ScoreHistoryEntry{
 			EventID:         row.EventID,
 			EventType:       row.EventType,
-			Category:        strings.TrimSpace(row.Category),
+			Category:        category,
 			DeltaXP:         row.DeltaXP,
 			CreatedAt:       row.CreatedAt.UTC(),
 			ScoreVersion:    row.ScoreVersion,
@@ -358,6 +359,74 @@ func scoreHistoryEvidenceState(row scoreRow) (string, []string) {
 		return "partial", missing
 	}
 	return "complete", nil
+}
+
+func scoreHistoryCategory(row scoreRow) string {
+	if category := canonicalContributionCategory(row.Category); category != "Unknown" {
+		return category
+	}
+	return canonicalCategoryFromSkills(row.Skills)
+}
+
+func canonicalContributionCategory(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "documentation", "docs", "doc":
+		return "Documentation"
+	case "tests", "test", "testing":
+		return "Testing"
+	case "bug_fix", "bug fix", "bugfix", "bug", "fix":
+		return "Bug Fix"
+	case "feature", "refactor", "backend", "frontend":
+		return "Backend"
+	case "infrastructure", "infra", "devops":
+		return "Infrastructure"
+	case "security":
+		return "Security"
+	case "performance", "perf":
+		return "Performance"
+	case "architecture", "arch", "maintainer_design", "design":
+		return "Architecture"
+	case "review", "reviews":
+		return "Review"
+	default:
+		return "Unknown"
+	}
+}
+
+func canonicalCategoryFromSkills(skills map[string]int) string {
+	bestSkill := ""
+	bestScore := 0
+	for key, score := range skills {
+		if score <= 0 {
+			continue
+		}
+		if score > bestScore {
+			bestScore = score
+			bestSkill = key
+		}
+	}
+	switch strings.ToLower(strings.TrimSpace(bestSkill)) {
+	case "documentation", "docs", "doc":
+		return "Documentation"
+	case "testing", "tests", "test", "qa":
+		return "Testing"
+	case "security":
+		return "Security"
+	case "review", "code_review", "reviews":
+		return "Review"
+	case "devops", "infra", "infrastructure":
+		return "Infrastructure"
+	case "performance", "perf":
+		return "Performance"
+	case "architecture", "systems", "api_design":
+		return "Architecture"
+	case "frontend", "ui", "ux":
+		return "Backend"
+	case "backend", "api", "service", "services", "debugging":
+		return "Backend"
+	default:
+		return "Unknown"
+	}
 }
 
 func buildTimeline(scoreRows []scoreRow, sourceWatermark time.Time) contracts.ProfileTimeline {

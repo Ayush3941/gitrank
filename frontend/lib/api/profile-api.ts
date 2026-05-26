@@ -25,7 +25,6 @@ import {
 import { normalizeSkillCategory as normalizeRuntimeSkillCategory } from "@/lib/runtime/skill-category-policy";
 import { leaderboardSeasonPolicy } from "@/lib/runtime/leaderboard-season-policy";
 import {
-  inferPRCategoryFromText,
   normalizePRCategory,
 } from "@/lib/runtime/pr-category-policy";
 import type { PullRequestAnalysis } from "@/types/gitrank";
@@ -506,12 +505,7 @@ function toContributions(
         number: entry.pull_request?.number ?? 0,
         title: entry.pull_request?.title || "Contribution",
         status: "merged",
-        category: entry.category
-          ? normalizePRCategory(entry.category)
-          : inferPRCategoryFromText(
-              entry.pull_request?.title ?? "",
-              entry.explanation,
-            ),
+        category: normalizePRCategory(entry.category ?? ""),
         difficultyScore: 0,
         impactScore: 0,
         reviewDepthScore: 0,

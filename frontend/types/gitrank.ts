@@ -14,7 +14,8 @@ export type PRCategory =
   | "Security"
   | "Performance"
   | "Architecture"
-  | "Review";
+  | "Review"
+  | "Unknown";
 
 export type BadgeRarity =
   | "Common"

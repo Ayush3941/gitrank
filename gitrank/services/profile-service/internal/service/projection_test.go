@@ -161,6 +161,60 @@ func TestBuildScoreHistoryIncludesEvidenceLinks(t *testing.T) {
 	}
 }
 
+func TestBuildScoreHistoryNormalizesCategoryFromEvidence(t *testing.T) {
+	now := time.Date(2026, 5, 5, 13, 0, 0, 0, time.UTC)
+	history := buildScoreHistory([]scoreRow{
+		{
+			EventID:        "feature-event",
+			EventType:      "score.computed",
+			Category:       "feature",
+			DeltaXP:        120,
+			ScoreVersion:   "v1alpha1",
+			FormulaVersion: "score-components/v1",
+			PullRequestID:  "pr-1",
+			AnalysisID:     "analysis-1",
+			CreatedAt:      now,
+			Repository:     "octo/repo",
+			PRNumber:       42,
+		},
+		{
+			EventID:        "skills-security-event",
+			EventType:      "score.computed",
+			DeltaXP:        40,
+			ScoreVersion:   "v1alpha1",
+			FormulaVersion: "score-components/v1",
+			PullRequestID:  "pr-2",
+			AnalysisID:     "analysis-2",
+			CreatedAt:      now.Add(-time.Hour),
+			Repository:     "octo/repo",
+			PRNumber:       43,
+			Skills:         map[string]int{"security": 80, "backend": 20},
+		},
+		{
+			EventID:        "unknown-event",
+			EventType:      "score.computed",
+			DeltaXP:        20,
+			ScoreVersion:   "v1alpha1",
+			FormulaVersion: "score-components/v1",
+			PullRequestID:  "pr-3",
+			AnalysisID:     "analysis-3",
+			CreatedAt:      now.Add(-2 * time.Hour),
+			Repository:     "octo/repo",
+			PRNumber:       44,
+		},
+	})
+
+	if got := history[0].Category; got != "Backend" {
+		t.Fatalf("history[0].Category = %q, want Backend", got)
+	}
+	if got := history[1].Category; got != "Security" {
+		t.Fatalf("history[1].Category = %q, want Security", got)
+	}
+	if got := history[2].Category; got != "Unknown" {
+		t.Fatalf("history[2].Category = %q, want Unknown", got)
+	}
+}
+
 func TestPublicResponseMarksSkillEvidenceStale(t *testing.T) {
 	now := time.Date(2026, 5, 5, 13, 0, 0, 0, time.UTC)
 	snapshot := snapshotRecord{

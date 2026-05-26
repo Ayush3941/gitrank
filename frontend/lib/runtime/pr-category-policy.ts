@@ -32,7 +32,7 @@ const aliasToCategory: Record<string, PRCategory> = {
 
 export function normalizePRCategory(
   value: string,
-  fallback: PRCategory = "Backend",
+  fallback: PRCategory = "Unknown",
 ): PRCategory {
   const normalized = value
     .trim()
@@ -42,21 +42,4 @@ export function normalizePRCategory(
     return fallback;
   }
   return aliasToCategory[normalized] ?? fallback;
-}
-
-export function inferPRCategoryFromText(
-  title: string,
-  explanation: string[] = [],
-  fallback: PRCategory = "Backend",
-): PRCategory {
-  const text = `${title} ${explanation.join(" ")}`.toLowerCase();
-  if (text.includes("security")) return "Security";
-  if (text.includes("performance")) return "Performance";
-  if (text.includes("test")) return "Testing";
-  if (text.includes("doc")) return "Documentation";
-  if (text.includes("infra") || text.includes("deploy") || text.includes("kubernetes")) return "Infrastructure";
-  if (text.includes("review")) return "Review";
-  if (text.includes("architecture")) return "Architecture";
-  if (text.includes("bug") || text.includes("fix")) return "Bug Fix";
-  return fallback;
 }
