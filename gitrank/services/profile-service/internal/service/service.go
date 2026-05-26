@@ -30,6 +30,7 @@ func New(cfg config.App, pool *pgxpool.Pool, cache *Cache, log *slog.Logger) (*S
 		return nil, err
 	}
 	setRankTierPolicy(cfg.Scoring)
+	setProfileSnapshotStaleTTL(cfg.Profile.SnapshotStaleTTL)
 	if cache == nil {
 		cache = &Cache{}
 	}
@@ -40,8 +41,8 @@ func New(cfg config.App, pool *pgxpool.Pool, cache *Cache, log *slog.Logger) (*S
 		store:           NewStore(pool),
 		cache:           cache,
 		sessionSecrets:  cfg.SessionSecretRing(),
-		publicCacheTTL:  5 * time.Minute,
-		privateCacheTTL: 2 * time.Minute,
+		publicCacheTTL:  cfg.Profile.PublicCacheTTL,
+		privateCacheTTL: cfg.Profile.PrivateCacheTTL,
 	}, nil
 }
 

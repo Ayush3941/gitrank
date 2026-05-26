@@ -10,7 +10,6 @@ import (
 )
 
 const (
-	profileStaleTTL    = 15 * time.Minute
 	defaultLevelStepXP = 300
 )
 
@@ -80,7 +79,7 @@ func buildSnapshot(user userRecord, scoreRows []scoreRow, badges []badgeRecord, 
 		ScoreHistory:    history,
 		ShareCard:       shareCard,
 		RefreshedAt:     now.UTC(),
-		StaleAfter:      now.UTC().Add(profileStaleTTL),
+		StaleAfter:      now.UTC().Add(currentProfileSnapshotStaleTTL()),
 		SourceWatermark: sourceWatermark.UTC(),
 	}
 }

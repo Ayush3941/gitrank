@@ -35,6 +35,7 @@ type App struct {
 	GitHub          GitHub
 	AI              AI
 	Scoring         Scoring
+	Profile         Profile
 	Observability   Observability
 	Scheduler       Scheduler
 }
@@ -221,6 +222,12 @@ type Scoring struct {
 	LevelSpecialistMinXP             int
 	LevelMaintainerMinXP             int
 	LevelArchitectMinXP              int
+}
+
+type Profile struct {
+	PublicCacheTTL   time.Duration
+	PrivateCacheTTL  time.Duration
+	SnapshotStaleTTL time.Duration
 }
 
 type Observability struct {
@@ -435,6 +442,11 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			LevelSpecialistMinXP:  getInt("SCORING_LEVEL_SPECIALIST_MIN_XP", 140),
 			LevelMaintainerMinXP:  getInt("SCORING_LEVEL_MAINTAINER_MIN_XP", 180),
 			LevelArchitectMinXP:   getInt("SCORING_LEVEL_ARCHITECT_MIN_XP", 250),
+		},
+		Profile: Profile{
+			PublicCacheTTL:   getDuration("PROFILE_PUBLIC_CACHE_TTL", 5*time.Minute),
+			PrivateCacheTTL:  getDuration("PROFILE_PRIVATE_CACHE_TTL", 2*time.Minute),
+			SnapshotStaleTTL: getDuration("PROFILE_SNAPSHOT_STALE_TTL", 15*time.Minute),
 		},
 		Observability: Observability{
 			Enabled:           getBool("OTEL_ENABLED", false),
@@ -935,6 +947,12 @@ func (a App) ValidateProfileService() error {
 	}
 	if strings.TrimSpace(a.Auth.CSRFCookieName) == "" {
 		problems = append(problems, "AUTH_CSRF_COOKIE_NAME is required")
+	}
+	if a.Profile.PublicCacheTTL <= 0 || a.Profile.PrivateCacheTTL <= 0 {
+		problems = append(problems, "PROFILE_PUBLIC_CACHE_TTL and PROFILE_PRIVATE_CACHE_TTL must be positive durations")
+	}
+	if a.Profile.SnapshotStaleTTL <= 0 {
+		problems = append(problems, "PROFILE_SNAPSHOT_STALE_TTL must be a positive duration")
 	}
 
 	if len(problems) == 0 {
