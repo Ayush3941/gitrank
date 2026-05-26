@@ -1369,7 +1369,10 @@ func defaultServiceAddr(addrEnvKey string) string {
 
 func getEnv(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
-		return strings.TrimSpace(value)
+		trimmed := strings.TrimSpace(value)
+		if trimmed != "" {
+			return trimmed
+		}
 	}
 	return fallback
 }

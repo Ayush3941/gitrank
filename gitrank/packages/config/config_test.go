@@ -372,6 +372,35 @@ func TestLoadDefaultsByServiceAddressKey(t *testing.T) {
 	}
 }
 
+func TestLoadTreatsBlankEnvValuesAsUnset(t *testing.T) {
+	t.Setenv("GITRANK_PUBLIC_BASE_URL", "   ")
+	t.Setenv("GITRANK_API_BASE_URL", "")
+	t.Setenv("GITRANK_SERVICE_NAME", "   ")
+	t.Setenv("AUTH_RATE_LIMIT_MAX_ATTEMPTS", "   ")
+	t.Setenv("GITHUB_REQUEST_TIMEOUT", "")
+
+	cfg, err := Load("api-gateway", "API_GATEWAY_ADDR")
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+
+	if cfg.PublicBaseURL != "http://localhost:3000" {
+		t.Fatalf("PublicBaseURL = %q, want default http://localhost:3000", cfg.PublicBaseURL)
+	}
+	if cfg.APIBaseURL != "http://localhost:8080" {
+		t.Fatalf("APIBaseURL = %q, want default http://localhost:8080", cfg.APIBaseURL)
+	}
+	if cfg.ServiceName != "api-gateway" {
+		t.Fatalf("ServiceName = %q, want service fallback api-gateway", cfg.ServiceName)
+	}
+	if cfg.Auth.RateLimitMaxAttempts != 30 {
+		t.Fatalf("Auth.RateLimitMaxAttempts = %d, want default 30", cfg.Auth.RateLimitMaxAttempts)
+	}
+	if cfg.GitHub.RequestTimeout != 20*time.Second {
+		t.Fatalf("GitHub.RequestTimeout = %v, want default 20s", cfg.GitHub.RequestTimeout)
+	}
+}
+
 func TestLoadHonorsOverrides(t *testing.T) {
 	t.Setenv("GITRANK_ENV", "production")
 	t.Setenv("GITRANK_SERVICE_NAME", "custom-service")
