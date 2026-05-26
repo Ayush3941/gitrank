@@ -47,6 +47,7 @@ This top-level map keeps navigation simple without changing service runtime path
   - workflow `run` script references in `.github/workflows/*` aligned with tracked executable scripts
   - workflow `make <target>` references in `.github/workflows/*` aligned with `gitrank/Makefile` targets
   - workflow `npm run <script>` references in `.github/workflows/*` aligned with `frontend/package.json` scripts
+  - syntax validation for tracked shell entrypoints and frontend `scripts/*.mjs` audit scripts
   - tracked `frontend/scripts/*.mjs` remain discoverable from package/workflow/repo-sync entrypoints
   - `start.sh` service/script contracts aligned with real backend cmd entrypoints and required boot dependencies
   - markdown relative-link integrity across tracked docs
