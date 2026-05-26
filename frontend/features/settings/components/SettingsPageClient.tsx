@@ -46,6 +46,7 @@ import { BackendCapabilityPanel } from "@/features/settings/components/BackendCa
 import { useAuthSession, useRefreshAuthSession } from "@/hooks/use-auth-session";
 import { ProfileSchemaPanel } from "@/features/settings/components/ProfileSchemaPanel";
 import { SyncQueueControls } from "@/features/settings/components/SyncQueueControls";
+import { ServiceManifestPanel } from "@/features/settings/components/ServiceManifestPanel";
 
 type BackedPrivacyKey =
   | "publicProfileEnabled"
@@ -483,6 +484,12 @@ export function SettingsPageClient() {
       <section className="render-opt-section" id="settings-profile-schema-panel">
         <GlowCard className="space-y-4">
           <ProfileSchemaPanel />
+        </GlowCard>
+      </section>
+
+      <section className="render-opt-section" id="settings-service-manifests-panel">
+        <GlowCard className="space-y-4">
+          <ServiceManifestPanel />
         </GlowCard>
       </section>
 

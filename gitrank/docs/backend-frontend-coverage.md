@@ -53,6 +53,10 @@ Scope:
 | `GET /oauth/github/start` | `GET /oauth/github/start` | Login/OAuth entry |
 | `GET /oauth/github/callback` | `GET /oauth/github/callback` | OAuth completion and session bootstrap |
 
+### Aggregated backend manifest probe route
+
+- `GET /api/meta/services` probes `/v1/meta/manifest` across all backend services (`api-gateway`, `auth-service`, `github-ingestor`, `pr-analyzer`, `profile-service`, `scoring-engine`, `scheduler-worker`) and surfaces live route/dependency status in Settings.
+
 ### Backend Operational Routes (not frontend product routes)
 
 - `GET /healthz`
@@ -69,5 +73,6 @@ npm --prefix frontend run check:auth-service-route-parity
 npm --prefix frontend run check:bff-route-contract-coverage
 npm --prefix frontend run test:contracts -- tests/bff-route-contract.test.ts
 npx --prefix frontend vitest run frontend/tests/oauth-auth-proxy-routes.test.ts frontend/tests/session-api.test.ts frontend/tests/account-api-sync-errors.test.ts frontend/tests/profile-schema-api.test.ts
+npx --prefix frontend vitest run frontend/tests/meta-services-route.test.ts frontend/tests/service-manifests-api.test.ts frontend/tests/meta-api.test.ts frontend/tests/public-profile-hero-card-link.test.ts
 go test ./services/api-gateway/internal/httpapi ./services/api-gateway/internal/app
 ```

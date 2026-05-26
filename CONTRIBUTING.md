@@ -413,6 +413,7 @@ Verification snapshot (May 17, 2026):
 - `cd frontend && npm run check:backend-gateway-route-parity`
 - `cd frontend && npm run check:auth-service-route-parity`
 - `cd frontend && npm run check:bff-route-contract-coverage`
+- `cd frontend && npx vitest run tests/meta-services-route.test.ts tests/service-manifests-api.test.ts tests/meta-api.test.ts tests/public-profile-hero-card-link.test.ts`
 - `cd frontend && npm run check:no-production-mocks`
 - `cd frontend && npm run check:pr-category-policy`
 - `cd frontend && npm run check:contribution-dedup-policy`
