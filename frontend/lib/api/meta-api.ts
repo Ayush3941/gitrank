@@ -40,6 +40,18 @@ export async function getServiceManifest(): Promise<ServiceManifest> {
   return (await response.json()) as ServiceManifest;
 }
 
+export async function getServiceDependencies(): Promise<ServiceDependencySpec[]> {
+  const response = await fetch("/api/meta/dependencies", {
+    cache: "no-store",
+    credentials: "same-origin",
+  });
+  if (!response.ok) {
+    throw new Error(await responseErrorMessage(response, "Service dependencies request failed."));
+  }
+  const payload = (await response.json()) as ServiceDependencySpec[];
+  return Array.isArray(payload) ? payload : [];
+}
+
 async function responseErrorMessage(response: Response, fallback: string): Promise<string> {
   const defaultMessage = `${fallback} Status ${response.status}.`;
   try {

@@ -2,13 +2,15 @@
 
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useServiceManifest } from "@/hooks/use-service-manifest";
+import { useServiceDependencies, useServiceManifest } from "@/hooks/use-service-manifest";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 
 export function BackendCapabilityPanel() {
-  const { data, isLoading, isError, isFetching, error, refetch } = useServiceManifest();
+  const manifestQuery = useServiceManifest();
+  const dependenciesQuery = useServiceDependencies();
+  const { data, isLoading, isError, isFetching, error } = manifestQuery;
   const routes = data?.routes ?? [];
-  const dependencies = data?.dependencies ?? [];
+  const dependencies = dependenciesQuery.data ?? data?.dependencies ?? [];
   const implementedRouteCount = routes.filter((route) => route.status === "implemented").length;
 
   const errorMessage = sanitizeUserFacingError(
@@ -31,11 +33,12 @@ export function BackendCapabilityPanel() {
           size="sm"
           disabled={isFetching}
           onClick={() => {
-            void refetch();
+            void manifestQuery.refetch();
+            void dependenciesQuery.refetch();
           }}
         >
           <RefreshCw className="h-4 w-4" />
-          {isFetching ? "Refreshing..." : "Refresh"}
+          {isFetching || dependenciesQuery.isFetching ? "Refreshing..." : "Refresh"}
         </Button>
       </div>
 
@@ -44,6 +47,13 @@ export function BackendCapabilityPanel() {
       ) : isError ? (
         <p role="alert" className="text-sm text-rose-200">
           {errorMessage}
+        </p>
+      ) : dependenciesQuery.isError ? (
+        <p role="alert" className="text-sm text-rose-200">
+          {sanitizeUserFacingError(
+            (dependenciesQuery.error as Error | null)?.message ?? "",
+            "settings-backend-capabilities",
+          )}
         </p>
       ) : (
         <>
