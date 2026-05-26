@@ -44,6 +44,7 @@ This top-level map keeps navigation simple without changing service runtime path
   - markdown env-variable references aligned with supported env examples/script-level variables
   - `gitrank/Makefile` script-target references aligned with tracked executable `gitrank/scripts/*.sh`
   - workflow `run` script references in `.github/workflows/*` aligned with tracked executable scripts
+  - workflow `make <target>` references in `.github/workflows/*` aligned with `gitrank/Makefile` targets
   - markdown relative-link integrity across tracked docs
 
 ## Navigation Rule
