@@ -15,6 +15,20 @@ function parsePositiveMs(
   return integer;
 }
 
+function parseBoolean(raw: string | undefined, fallback: boolean): boolean {
+  if (typeof raw !== "string") {
+    return fallback;
+  }
+  const normalized = raw.trim().toLowerCase();
+  if (normalized === "1" || normalized === "true" || normalized === "yes" || normalized === "on") {
+    return true;
+  }
+  if (normalized === "0" || normalized === "false" || normalized === "no" || normalized === "off") {
+    return false;
+  }
+  return fallback;
+}
+
 const MIN_INTERVAL_MS = 1_000;
 const MAX_INTERVAL_MS = 24 * 60 * 60 * 1_000;
 
@@ -51,6 +65,11 @@ const AUTO_SYNC_SESSION_COOLDOWN_MS = parsePositiveMs(
   20 * 60 * 1_000,
   MIN_INTERVAL_MS,
   MAX_INTERVAL_MS,
+);
+
+const AUTO_SYNC_SESSION_BOOTSTRAP_ENABLED = parseBoolean(
+  process.env.NEXT_PUBLIC_GITRANK_AUTO_SYNC_SESSION_BOOTSTRAP_ENABLED,
+  true,
 );
 
 const PROFILE_SYNC_REFETCH_INTERVAL_MS = parsePositiveMs(
@@ -129,6 +148,7 @@ export const syncPollingPolicy = {
   autoSyncMaxAttemptsPerMount: AUTO_SYNC_MAX_ATTEMPTS_PER_MOUNT,
   autoSyncAttemptRecoveryCooldownMs: AUTO_SYNC_ATTEMPT_RECOVERY_COOLDOWN_MS,
   autoSyncSessionCooldownMs: AUTO_SYNC_SESSION_COOLDOWN_MS,
+  autoSyncSessionBootstrapEnabled: AUTO_SYNC_SESSION_BOOTSTRAP_ENABLED,
   profileSyncRefetchIntervalMs: PROFILE_SYNC_REFETCH_INTERVAL_MS,
   profileSyncRefetchIntervalConstrainedMs: PROFILE_SYNC_REFETCH_INTERVAL_CONSTRAINED_MS,
   profileSyncStaleTimeMs: PROFILE_SYNC_STALE_TIME_MS,

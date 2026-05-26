@@ -6,8 +6,12 @@ import {
   exportMyAccountData,
   logoutCurrentSession,
   queueSyncRequest,
+  runCommitSync,
   runInstallationSync,
+  runIssueSync,
+  runPullRequestSync,
   runRepositorySync,
+  runReviewSync,
   runUserSync,
   startAccountLink,
   requestProfileSync,
@@ -87,6 +91,54 @@ export function useRunInstallationSync() {
 
   return useMutation({
     mutationFn: (installationId: number) => runInstallationSync(installationId),
+    onSuccess: () => {
+      invalidateProfileDerivedQueries(queryClient);
+    },
+  });
+}
+
+export function useRunPullRequestSync() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ repository, number }: { repository: string; number: number }) =>
+      runPullRequestSync(repository, number),
+    onSuccess: () => {
+      invalidateProfileDerivedQueries(queryClient);
+    },
+  });
+}
+
+export function useRunReviewSync() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ repository, number }: { repository: string; number: number }) =>
+      runReviewSync(repository, number),
+    onSuccess: () => {
+      invalidateProfileDerivedQueries(queryClient);
+    },
+  });
+}
+
+export function useRunIssueSync() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ repository, number }: { repository: string; number: number }) =>
+      runIssueSync(repository, number),
+    onSuccess: () => {
+      invalidateProfileDerivedQueries(queryClient);
+    },
+  });
+}
+
+export function useRunCommitSync() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ repository, sha }: { repository: string; sha: string }) =>
+      runCommitSync(repository, sha),
     onSuccess: () => {
       invalidateProfileDerivedQueries(queryClient);
     },

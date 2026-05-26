@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { runRepositorySync, runUserSync } from "@/lib/api/account-api";
+import { runPullRequestSync, runRepositorySync, runUserSync } from "@/lib/api/account-api";
 
 describe("account sync error messaging", () => {
   beforeEach(() => {
@@ -118,6 +118,28 @@ describe("account sync error messaging", () => {
 
     await expect(runRepositorySync("octo/repo")).rejects.toThrow(
       "GitHub rate limits are active right now. Repository sync kept any available evidence. Retry soon or run full dashboard auto-sync.",
+    );
+  });
+
+  it("maps upstream pull-request sync timeouts to actionable copy", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => {
+      return new Response(
+        JSON.stringify({
+          error: {
+            code: "upstream_timeout",
+            message:
+              "Get \"https://api.github.com/repos/octo/repo/pulls/77\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)",
+          },
+        }),
+        {
+          status: 504,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }));
+
+    await expect(runPullRequestSync("octo/repo", 77)).rejects.toThrow(
+      "GitHub took too long to respond. Pull-request sync kept any available evidence. Retry soon with the same owner/repo and PR number.",
     );
   });
 });

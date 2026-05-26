@@ -41,6 +41,8 @@ import {
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import { type ThemePreference, useThemePreference } from "@/hooks/use-theme-preference";
+import { SyncExecutionControls } from "@/features/settings/components/SyncExecutionControls";
+import { BackendCapabilityPanel } from "@/features/settings/components/BackendCapabilityPanel";
 
 type BackedPrivacyKey =
   | "publicProfileEnabled"
@@ -418,6 +420,18 @@ export function SettingsPageClient() {
 
       <section className="render-opt-section" id="settings-sync-activity-panel">
         <SettingsSyncActivitySection />
+      </section>
+
+      <section className="render-opt-section" id="settings-sync-execution-panel">
+        <GlowCard className="space-y-4">
+          <SyncExecutionControls />
+        </GlowCard>
+      </section>
+
+      <section className="render-opt-section" id="settings-backend-capability-panel">
+        <GlowCard className="space-y-4">
+          <BackendCapabilityPanel />
+        </GlowCard>
       </section>
 
       <section className="render-opt-section">

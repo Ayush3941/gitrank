@@ -6,8 +6,10 @@ import { useAccountGamificationPreference } from "@/hooks/use-gamification-prefe
 import { useMyProfile } from "@/hooks/use-profile";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { syncPollingPolicy } from "@/lib/runtime/sync-polling-policy";
+import { frontendPolicy } from "@/lib/runtime/frontend-policy";
 
 const AUTO_SYNC_SESSION_KEY_PREFIX = "gitrank:auto-sync:last-at:";
+const AUTO_SYNC_SESSION_BOOTSTRAP_KEY_PREFIX = "gitrank:auto-sync:bootstrap:";
 
 export function DashboardAutoSyncCoordinator() {
   const { data, isError, isLoading } = useMyProfile();
@@ -35,7 +37,15 @@ export function DashboardAutoSyncCoordinator() {
     const staleSnapshot = syncState.state !== "synced";
     const staleByAge = syncAgeMs >= syncPollingPolicy.autoSyncStaleAgeMs;
     const emptyEvidence = data.user.mergedPrCount === 0;
-    const shouldAutoSync = staleSnapshot || staleByAge || emptyEvidence;
+    const usernameKey = data.user.username.toLowerCase();
+    const sessionFingerprint = readSessionFingerprint();
+    const bootstrapSessionKey = `${AUTO_SYNC_SESSION_BOOTSTRAP_KEY_PREFIX}${usernameKey}:${sessionFingerprint}`;
+    const hasSessionBootstrapAttempt =
+      typeof window !== "undefined" &&
+      window.sessionStorage.getItem(bootstrapSessionKey) === "1";
+    const shouldBootstrapSessionSync =
+      syncPollingPolicy.autoSyncSessionBootstrapEnabled && !hasSessionBootstrapAttempt;
+    const shouldAutoSync = shouldBootstrapSessionSync || staleSnapshot || staleByAge || emptyEvidence;
 
     if (!shouldAutoSync || syncState.state === "syncing" || isUserSyncPending) {
       return;
@@ -54,15 +64,20 @@ export function DashboardAutoSyncCoordinator() {
     }
 
     if (typeof window !== "undefined") {
-      const sessionKey = `${AUTO_SYNC_SESSION_KEY_PREFIX}${data.user.username.toLowerCase()}`;
-      const lastSessionAttempt = Number(window.sessionStorage.getItem(sessionKey) ?? "");
-      if (
-        Number.isFinite(lastSessionAttempt) &&
-        now - lastSessionAttempt < syncPollingPolicy.autoSyncSessionCooldownMs
-      ) {
-        return;
+      if (!shouldBootstrapSessionSync) {
+        const sessionKey = `${AUTO_SYNC_SESSION_KEY_PREFIX}${usernameKey}`;
+        const lastSessionAttempt = Number(window.sessionStorage.getItem(sessionKey) ?? "");
+        if (
+          Number.isFinite(lastSessionAttempt) &&
+          now - lastSessionAttempt < syncPollingPolicy.autoSyncSessionCooldownMs
+        ) {
+          return;
+        }
       }
-      window.sessionStorage.setItem(sessionKey, String(now));
+      window.sessionStorage.setItem(`${AUTO_SYNC_SESSION_KEY_PREFIX}${usernameKey}`, String(now));
+      if (shouldBootstrapSessionSync) {
+        window.sessionStorage.setItem(bootstrapSessionKey, "1");
+      }
     }
 
     autoSyncLastAttempt.current = now;
@@ -72,7 +87,7 @@ export function DashboardAutoSyncCoordinator() {
         autoSyncLastAttempt.current = Date.now();
         autoSyncAttempts.current = 0;
         void emitAnalyticsEvent({
-          eventName: "sync.queued",
+          eventName: shouldBootstrapSessionSync ? "sync.session_bootstrap" : "sync.queued",
           source: "frontend",
           target: "dashboard",
           status: "success",
@@ -81,13 +96,13 @@ export function DashboardAutoSyncCoordinator() {
       onError: () => {
         const attemptsRemaining = syncPollingPolicy.autoSyncMaxAttemptsPerMount - autoSyncAttempts.current;
         void emitAnalyticsEvent({
-          eventName: "sync.failed",
+          eventName: shouldBootstrapSessionSync ? "sync.session_bootstrap" : "sync.failed",
           source: "frontend",
           target: "dashboard",
           status: "failure",
         });
         if (attemptsRemaining <= 0 && typeof window !== "undefined") {
-          const sessionKey = `${AUTO_SYNC_SESSION_KEY_PREFIX}${data.user.username.toLowerCase()}`;
+          const sessionKey = `${AUTO_SYNC_SESSION_KEY_PREFIX}${usernameKey}`;
           window.sessionStorage.setItem(sessionKey, String(Date.now()));
         }
       },
@@ -95,4 +110,26 @@ export function DashboardAutoSyncCoordinator() {
   }, [data, isError, isLoading, isUserSyncPending, requestProfileSync]);
 
   return null;
+}
+
+function readSessionFingerprint(): string {
+  if (typeof document === "undefined") {
+    return "server";
+  }
+  const token = readCookieValue(frontendPolicy.csrfCookieName);
+  if (!token) {
+    return "missing-csrf";
+  }
+  return token.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 64) || "present";
+}
+
+function readCookieValue(name: string): string | null {
+  const match = document.cookie
+    .split(";")
+    .map((value) => value.trim())
+    .find((value) => value.startsWith(`${name}=`));
+  if (!match) {
+    return null;
+  }
+  return decodeURIComponent(match.slice(name.length + 1));
 }

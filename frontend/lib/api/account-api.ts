@@ -267,6 +267,102 @@ export async function runInstallationSync(
   });
 }
 
+export async function runPullRequestSync(
+  repository: string,
+  number: number,
+): Promise<ApiSyncExecutionResponse> {
+  const csrfToken = requireCSRFToken();
+  const response = await fetch("/api/sync/pull-request", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
+    },
+    credentials: "same-origin",
+    cache: "no-store",
+    body: JSON.stringify({
+      repository,
+      number,
+    }),
+  });
+  return adaptJSON<ApiSyncExecutionResponse>(response, "Pull request sync failed.", {
+    transformError: (message, status, code) =>
+      sanitizeSyncExecutionError(message, status, code, "pull_request"),
+  });
+}
+
+export async function runReviewSync(
+  repository: string,
+  number: number,
+): Promise<ApiSyncExecutionResponse> {
+  const csrfToken = requireCSRFToken();
+  const response = await fetch("/api/sync/review", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
+    },
+    credentials: "same-origin",
+    cache: "no-store",
+    body: JSON.stringify({
+      repository,
+      number,
+    }),
+  });
+  return adaptJSON<ApiSyncExecutionResponse>(response, "Review sync failed.", {
+    transformError: (message, status, code) =>
+      sanitizeSyncExecutionError(message, status, code, "review"),
+  });
+}
+
+export async function runIssueSync(
+  repository: string,
+  number: number,
+): Promise<ApiSyncExecutionResponse> {
+  const csrfToken = requireCSRFToken();
+  const response = await fetch("/api/sync/issue", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
+    },
+    credentials: "same-origin",
+    cache: "no-store",
+    body: JSON.stringify({
+      repository,
+      number,
+    }),
+  });
+  return adaptJSON<ApiSyncExecutionResponse>(response, "Issue sync failed.", {
+    transformError: (message, status, code) =>
+      sanitizeSyncExecutionError(message, status, code, "issue"),
+  });
+}
+
+export async function runCommitSync(
+  repository: string,
+  sha: string,
+): Promise<ApiSyncExecutionResponse> {
+  const csrfToken = requireCSRFToken();
+  const response = await fetch("/api/sync/commit", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
+    },
+    credentials: "same-origin",
+    cache: "no-store",
+    body: JSON.stringify({
+      repository,
+      sha,
+    }),
+  });
+  return adaptJSON<ApiSyncExecutionResponse>(response, "Commit sync failed.", {
+    transformError: (message, status, code) =>
+      sanitizeSyncExecutionError(message, status, code, "commit"),
+  });
+}
+
 export async function unlinkMyAccount(): Promise<ApiAccountUnlinkResponse> {
   const csrfToken = requireCSRFToken();
   const response = await fetch("/api/account/unlink", {
@@ -358,7 +454,7 @@ function sanitizeSyncExecutionError(
   message: string,
   status: number,
   code: string | undefined,
-  mode: "user" | "repository" | "installation",
+  mode: "user" | "repository" | "installation" | "pull_request" | "review" | "issue" | "commit",
 ): string {
   const normalized = message.toLowerCase();
   if (normalized.includes("context deadline exceeded") || normalized.includes("client.timeout exceeded")) {
@@ -405,7 +501,7 @@ function isTransientUserSyncExecutionFailure(
 }
 
 function syncRecoveryMessage(
-  mode: "user" | "repository" | "installation",
+  mode: "user" | "repository" | "installation" | "pull_request" | "review" | "issue" | "commit",
   reason: string,
 ): string {
   if (mode === "repository") {
@@ -413,6 +509,18 @@ function syncRecoveryMessage(
   }
   if (mode === "installation") {
     return `${reason} Installation sync kept any available evidence. Retry after a short wait.`;
+  }
+  if (mode === "pull_request") {
+    return `${reason} Pull-request sync kept any available evidence. Retry soon with the same owner/repo and PR number.`;
+  }
+  if (mode === "review") {
+    return `${reason} Review sync kept any available evidence. Retry soon with the same owner/repo and review number.`;
+  }
+  if (mode === "issue") {
+    return `${reason} Issue sync kept any available evidence. Retry soon with the same owner/repo and issue number.`;
+  }
+  if (mode === "commit") {
+    return `${reason} Commit sync kept any available evidence. Retry soon with the same owner/repo and commit SHA.`;
   }
   return `${reason} User sync kept any available evidence and dashboard auto-sync will retry in the background.`;
 }

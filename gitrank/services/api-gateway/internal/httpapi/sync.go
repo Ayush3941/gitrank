@@ -108,57 +108,37 @@ func handleSyncRunList(w http.ResponseWriter, r *http.Request, client *http.Clie
 }
 
 func handleRepositorySyncExecution(w http.ResponseWriter, r *http.Request, client *http.Client, ingestorBaseURL string) {
-	var req contracts.SyncRequest
-	if err := httpkit.DecodeJSON(r, &req, 1<<20); err != nil {
-		httpkit.WriteError(w, http.StatusBadRequest, "invalid_json", err.Error(), httpkit.RequestIDFromContext(r.Context()))
-		return
-	}
-
-	principal, _ := authkit.PrincipalFromContext(r.Context())
-	req.Mode = "repository"
-	req.Repository = strings.TrimSpace(req.Repository)
-	if err := req.Normalize(); err != nil {
-		httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
-		return
-	}
-
-	headers := defaultForwardHeaders(r)
-	headers["Content-Type"] = "application/json"
-	headers["X-GitRank-Subject"] = principal.Subject
-	headers["X-GitRank-GitHub-Login"] = principal.GitHubLogin
-
-	body, _ := json.Marshal(req)
-	r.Body = io.NopCloser(bytes.NewReader(body))
-	r.ContentLength = int64(len(body))
-
-	proxyRequest(w, r, client, ingestorBaseURL, "/v1/sync/repository/execute", proxyOptions{
-		ForwardHeaders: headers,
-		ResponseHeaders: map[string]string{
-			"Cache-Control": "private, no-store",
-		},
-		Transform: func(response *http.Response, payload []byte) (int, []byte, map[string]string, error) {
-			if response.StatusCode != http.StatusOK {
-				return response.StatusCode, payload, nil, nil
-			}
-			var execution contracts.GitHubSyncExecutionResponse
-			if err := json.Unmarshal(payload, &execution); err != nil {
-				return 0, nil, nil, err
-			}
-			if strings.TrimSpace(execution.Status) == "" || execution.StartedAt.IsZero() || execution.FinishedAt.IsZero() {
-				return 0, nil, nil, fmt.Errorf("invalid github-ingestor execution contract")
-			}
-			encoded, err := json.Marshal(execution)
-			if err != nil {
-				return 0, nil, nil, err
-			}
-			return http.StatusOK, encoded, map[string]string{
-				"Cache-Control": "private, no-store",
-			}, nil
-		},
-	})
+	handleModeSyncExecution(w, r, client, ingestorBaseURL, "repository", "/v1/sync/repository/execute", nil)
 }
 
 func handleUserSyncExecution(w http.ResponseWriter, r *http.Request, client *http.Client, ingestorBaseURL, scoringBaseURL, profileBaseURL string) {
+	handleModeSyncExecution(w, r, client, ingestorBaseURL, "user", "/v1/sync/user/execute", func(ctx context.Context, principal authkit.Principal, execution *contracts.GitHubSyncExecutionResponse) error {
+		if err := refreshUserDashboardEvidence(ctx, client, principal.Subject, scoringBaseURL, profileBaseURL); err != nil {
+			if execution.Fetched == nil {
+				execution.Fetched = map[string]int{}
+			}
+			execution.Fetched["post_sync_refresh_failed"] = 1
+			return err
+		}
+		return nil
+	})
+}
+
+func handleInstallationSyncExecution(w http.ResponseWriter, r *http.Request, client *http.Client, ingestorBaseURL string) {
+	handleModeSyncExecution(w, r, client, ingestorBaseURL, "installation", "/v1/sync/installation/execute", nil)
+}
+
+type syncExecutionPostProcessor func(context.Context, authkit.Principal, *contracts.GitHubSyncExecutionResponse) error
+
+func handleModeSyncExecution(
+	w http.ResponseWriter,
+	r *http.Request,
+	client *http.Client,
+	ingestorBaseURL string,
+	mode string,
+	targetPath string,
+	postProcessor syncExecutionPostProcessor,
+) {
 	var req contracts.SyncRequest
 	if err := httpkit.DecodeJSON(r, &req, 1<<20); err != nil {
 		httpkit.WriteError(w, http.StatusBadRequest, "invalid_json", err.Error(), httpkit.RequestIDFromContext(r.Context()))
@@ -166,9 +146,11 @@ func handleUserSyncExecution(w http.ResponseWriter, r *http.Request, client *htt
 	}
 
 	principal, _ := authkit.PrincipalFromContext(r.Context())
-	req.Mode = "user"
+	req.Mode = mode
 	req.User = strings.TrimSpace(req.User)
-	if req.User == "" {
+	req.Repository = strings.TrimSpace(req.Repository)
+	req.SHA = strings.TrimSpace(req.SHA)
+	if req.Mode == "user" && req.User == "" {
 		req.User = strings.TrimSpace(principal.GitHubLogin)
 	}
 	if err := req.Normalize(); err != nil {
@@ -185,7 +167,7 @@ func handleUserSyncExecution(w http.ResponseWriter, r *http.Request, client *htt
 	r.Body = io.NopCloser(bytes.NewReader(body))
 	r.ContentLength = int64(len(body))
 
-	proxyRequest(w, r, client, ingestorBaseURL, "/v1/sync/user/execute", proxyOptions{
+	proxyRequest(w, r, client, ingestorBaseURL, targetPath, proxyOptions{
 		ForwardHeaders: headers,
 		ResponseHeaders: map[string]string{
 			"Cache-Control": "private, no-store",
@@ -201,61 +183,8 @@ func handleUserSyncExecution(w http.ResponseWriter, r *http.Request, client *htt
 			if strings.TrimSpace(execution.Status) == "" || execution.StartedAt.IsZero() || execution.FinishedAt.IsZero() {
 				return 0, nil, nil, fmt.Errorf("invalid github-ingestor execution contract")
 			}
-			if err := refreshUserDashboardEvidence(r.Context(), client, principal.Subject, scoringBaseURL, profileBaseURL); err != nil {
-				if execution.Fetched == nil {
-					execution.Fetched = map[string]int{}
-				}
-				execution.Fetched["post_sync_refresh_failed"] = 1
-			}
-			encoded, err := json.Marshal(execution)
-			if err != nil {
-				return 0, nil, nil, err
-			}
-			return http.StatusOK, encoded, map[string]string{
-				"Cache-Control": "private, no-store",
-			}, nil
-		},
-	})
-}
-
-func handleInstallationSyncExecution(w http.ResponseWriter, r *http.Request, client *http.Client, ingestorBaseURL string) {
-	var req contracts.SyncRequest
-	if err := httpkit.DecodeJSON(r, &req, 1<<20); err != nil {
-		httpkit.WriteError(w, http.StatusBadRequest, "invalid_json", err.Error(), httpkit.RequestIDFromContext(r.Context()))
-		return
-	}
-
-	principal, _ := authkit.PrincipalFromContext(r.Context())
-	req.Mode = "installation"
-	if err := req.Normalize(); err != nil {
-		httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
-		return
-	}
-
-	headers := defaultForwardHeaders(r)
-	headers["Content-Type"] = "application/json"
-	headers["X-GitRank-Subject"] = principal.Subject
-	headers["X-GitRank-GitHub-Login"] = principal.GitHubLogin
-
-	body, _ := json.Marshal(req)
-	r.Body = io.NopCloser(bytes.NewReader(body))
-	r.ContentLength = int64(len(body))
-
-	proxyRequest(w, r, client, ingestorBaseURL, "/v1/sync/installation/execute", proxyOptions{
-		ForwardHeaders: headers,
-		ResponseHeaders: map[string]string{
-			"Cache-Control": "private, no-store",
-		},
-		Transform: func(response *http.Response, payload []byte) (int, []byte, map[string]string, error) {
-			if response.StatusCode != http.StatusOK {
-				return response.StatusCode, payload, nil, nil
-			}
-			var execution contracts.GitHubSyncExecutionResponse
-			if err := json.Unmarshal(payload, &execution); err != nil {
-				return 0, nil, nil, err
-			}
-			if strings.TrimSpace(execution.Status) == "" || execution.StartedAt.IsZero() || execution.FinishedAt.IsZero() {
-				return 0, nil, nil, fmt.Errorf("invalid github-ingestor execution contract")
+			if postProcessor != nil {
+				_ = postProcessor(r.Context(), principal, &execution)
 			}
 			encoded, err := json.Marshal(execution)
 			if err != nil {

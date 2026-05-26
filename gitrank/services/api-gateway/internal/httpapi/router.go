@@ -339,6 +339,66 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		handleInstallationSyncExecution(w, r, syncExecutionClient, ingestorBaseURL)
 	})))
 
+	mux.Handle("/v1/sync/pull-request/execute", sessionAuth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			writeMethodNotAllowed(w, r)
+			return
+		}
+		if err := validateSessionCSRF(r, cfg.Auth.SessionCookieName, sessionSecrets); err != nil {
+			httpkit.WriteError(w, http.StatusForbidden, "invalid_csrf", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		if !allowRateLimit(w, r, writeLimiter, "sync_execute_pull_request") {
+			return
+		}
+		handleModeSyncExecution(w, r, syncExecutionClient, ingestorBaseURL, "pull_request", "/v1/sync/pull-request/execute", nil)
+	})))
+
+	mux.Handle("/v1/sync/review/execute", sessionAuth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			writeMethodNotAllowed(w, r)
+			return
+		}
+		if err := validateSessionCSRF(r, cfg.Auth.SessionCookieName, sessionSecrets); err != nil {
+			httpkit.WriteError(w, http.StatusForbidden, "invalid_csrf", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		if !allowRateLimit(w, r, writeLimiter, "sync_execute_review") {
+			return
+		}
+		handleModeSyncExecution(w, r, syncExecutionClient, ingestorBaseURL, "review", "/v1/sync/review/execute", nil)
+	})))
+
+	mux.Handle("/v1/sync/issue/execute", sessionAuth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			writeMethodNotAllowed(w, r)
+			return
+		}
+		if err := validateSessionCSRF(r, cfg.Auth.SessionCookieName, sessionSecrets); err != nil {
+			httpkit.WriteError(w, http.StatusForbidden, "invalid_csrf", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		if !allowRateLimit(w, r, writeLimiter, "sync_execute_issue") {
+			return
+		}
+		handleModeSyncExecution(w, r, syncExecutionClient, ingestorBaseURL, "issue", "/v1/sync/issue/execute", nil)
+	})))
+
+	mux.Handle("/v1/sync/commit/execute", sessionAuth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			writeMethodNotAllowed(w, r)
+			return
+		}
+		if err := validateSessionCSRF(r, cfg.Auth.SessionCookieName, sessionSecrets); err != nil {
+			httpkit.WriteError(w, http.StatusForbidden, "invalid_csrf", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		if !allowRateLimit(w, r, writeLimiter, "sync_execute_commit") {
+			return
+		}
+		handleModeSyncExecution(w, r, syncExecutionClient, ingestorBaseURL, "commit", "/v1/sync/commit/execute", nil)
+	})))
+
 	return httpkit.Chain(
 		mux,
 		httpkit.RequestID,
