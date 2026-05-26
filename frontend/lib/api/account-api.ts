@@ -1,6 +1,10 @@
 import { frontendPolicy } from "@/lib/runtime/frontend-policy";
 
 const DEFAULT_CSRF_COOKIE_NAME = frontendPolicy.csrfCookieName;
+const USER_SYNC_EXECUTION_TIMEOUT_MS = parsePositiveMs(
+  process.env.NEXT_PUBLIC_GITRANK_USER_SYNC_EXECUTION_TIMEOUT_MS,
+  20_000,
+);
 
 type ApiErrorResponse = {
   error?: {
@@ -192,55 +196,37 @@ export async function runRepositorySync(
 export async function runUserSync(user?: string): Promise<ApiSyncExecutionResponse> {
   const csrfToken = requireCSRFToken();
   const normalizedUser = typeof user === "string" ? user.trim() : "";
-  const response = await fetch("/api/sync/user", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRF-Token": csrfToken,
-    },
-    credentials: "same-origin",
-    cache: "no-store",
-    body: JSON.stringify({
-      user: normalizedUser || undefined,
-    }),
-  });
+  let response: Response;
+  try {
+    response = await fetchWithTimeout(
+      "/api/sync/user",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrfToken,
+        },
+        credentials: "same-origin",
+        cache: "no-store",
+        body: JSON.stringify({
+          user: normalizedUser || undefined,
+        }),
+      },
+      USER_SYNC_EXECUTION_TIMEOUT_MS,
+    );
+  } catch (error) {
+    if (isAbortLikeError(error)) {
+      return queueUserSyncFallback(normalizedUser);
+    }
+    throw error;
+  }
   if (response.ok) {
     return (await response.json()) as ApiSyncExecutionResponse;
   }
 
   const parsed = await parseErrorResponse(response, "User sync failed.");
   if (isTransientUserSyncExecutionFailure(parsed.message, response.status, parsed.code)) {
-    const fallbackTimestamp = new Date().toISOString();
-    try {
-      const queued = await queueSyncRequest({
-        mode: "user",
-        user: normalizedUser || undefined,
-      });
-      const acceptedAt = queued.accepted_at;
-      return {
-        status: "queued",
-        mode: "user",
-        user: normalizedUser || undefined,
-        correlation_id: queued.correlation_id,
-        started_at: acceptedAt,
-        finished_at: acceptedAt,
-        fetched: { fallback_queued: 1 },
-        persisted: {},
-      };
-    } catch {
-      return {
-        status: "queued",
-        mode: "user",
-        user: normalizedUser || undefined,
-        started_at: fallbackTimestamp,
-        finished_at: fallbackTimestamp,
-        fetched: {
-          fallback_queued: 1,
-          fallback_queue_unavailable: 1,
-        },
-        persisted: {},
-      };
-    }
+    return queueUserSyncFallback(normalizedUser);
   }
 
   throw new Error(
@@ -542,4 +528,72 @@ function requireCSRFToken(): string {
   }
 
   return decodeURIComponent(cookie.slice(DEFAULT_CSRF_COOKIE_NAME.length + 1));
+}
+
+async function queueUserSyncFallback(user: string): Promise<ApiSyncExecutionResponse> {
+  const fallbackTimestamp = new Date().toISOString();
+  try {
+    const queued = await queueSyncRequest({
+      mode: "user",
+      user: user || undefined,
+    });
+    const acceptedAt = queued.accepted_at;
+    return {
+      status: "queued",
+      mode: "user",
+      user: user || undefined,
+      correlation_id: queued.correlation_id,
+      started_at: acceptedAt,
+      finished_at: acceptedAt,
+      fetched: { fallback_queued: 1 },
+      persisted: {},
+    };
+  } catch {
+    return {
+      status: "queued",
+      mode: "user",
+      user: user || undefined,
+      started_at: fallbackTimestamp,
+      finished_at: fallbackTimestamp,
+      fetched: {
+        fallback_queued: 1,
+        fallback_queue_unavailable: 1,
+      },
+      persisted: {},
+    };
+  }
+}
+
+async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit, timeoutMs: number): Promise<Response> {
+  if (typeof AbortController === "undefined" || timeoutMs <= 0) {
+    return fetch(input, init);
+  }
+  const controller = new AbortController();
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, timeoutMs);
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function isAbortLikeError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+  const message = error.message.toLowerCase();
+  return error.name === "AbortError" || message.includes("timed out") || message.includes("aborted");
+}
+
+function parsePositiveMs(value: string | undefined, fallback: number): number {
+  if (!value) {
+    return fallback;
+  }
+  const parsed = Number.parseInt(value.trim(), 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return fallback;
+  }
+  return parsed;
 }

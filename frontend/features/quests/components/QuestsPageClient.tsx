@@ -69,7 +69,7 @@ export function QuestsPageClient() {
   }));
   const [cadenceFilter, setCadenceFilter] = useState<"All" | Quest["cadence"]>("All");
   const deferredCadenceFilter = useDeferredValue(cadenceFilter);
-  const { data, isLoading, isError, isFetching, refetch } = useQuests();
+  const { data, isLoading, isError, refetch } = useQuests();
   const quests = data?.quests ?? [];
   const profile = data?.profile;
   const contributionRows = profile?.user.contributions ?? [];
@@ -233,14 +233,14 @@ export function QuestsPageClient() {
           onRefresh={() => {
             void (async () => {
               try {
-                await runUserSync.mutateAsync(profile?.user.username);
+                await runUserSync.mutateAsync();
               } catch {
                 // If sync execution fails, still refresh the current snapshot.
               }
               await refetch();
             })();
           }}
-          isRefreshing={isFetching || runUserSync.isPending}
+          isRefreshing={runUserSync.isPending}
           actionLabel="Open sync settings"
           actionHref="/dashboard/settings"
           analyticsTarget="quests:stale"

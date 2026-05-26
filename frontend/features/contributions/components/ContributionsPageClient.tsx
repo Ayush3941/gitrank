@@ -77,7 +77,7 @@ export function ContributionsPageClient() {
     ? contributionDisplayConfig.constrainedCardPageSize
     : contributionDisplayConfig.cardPageSize;
   const [visibleCardCount, setVisibleCardCount] = useState(cardPageSize);
-  const { data, isLoading, isError, isFetching, refetch } = useContributions({
+  const { data, isLoading, isError, refetch } = useContributions({
     filter: toContributionQueryFilter(deferredFilter),
     search: deferredSearch,
     sort: deferredSort,
@@ -343,14 +343,14 @@ export function ContributionsPageClient() {
           onRefresh={() => {
             void (async () => {
               try {
-                await runUserSync.mutateAsync(profile.user.username);
+                await runUserSync.mutateAsync();
               } catch {
                 // If sync execution fails, still refresh the current snapshot.
               }
               await refetch();
             })();
           }}
-          isRefreshing={isFetching || runUserSync.isPending}
+          isRefreshing={runUserSync.isPending}
           actionLabel="Open sync settings"
           actionHref="/dashboard/settings"
           analyticsTarget="contributions:stale"

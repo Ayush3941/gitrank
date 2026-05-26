@@ -100,7 +100,6 @@ export function LeaderboardPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useLeaderboard(deferredTab);
   const {
     data: myProfile,
-    isFetching: isFetchingMyProfile,
     refetch: refetchMyProfile,
   } = useMyProfile();
   const isSwitchingTab = deferredTab !== tab;
@@ -193,14 +192,14 @@ export function LeaderboardPageClient() {
           onRefresh={() => {
             void (async () => {
               try {
-                await runUserSync.mutateAsync(myProfile.user.username);
+                await runUserSync.mutateAsync();
               } catch {
                 // If sync execution fails, still refresh the current snapshot.
               }
               await Promise.allSettled([refetchMyProfile(), refetch()]);
             })();
           }}
-          isRefreshing={isFetching || isFetchingMyProfile || runUserSync.isPending}
+          isRefreshing={runUserSync.isPending}
           actionLabel="Open sync settings"
           actionHref="/dashboard/settings"
           analyticsTarget="leaderboard:stale"

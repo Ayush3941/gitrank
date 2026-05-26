@@ -61,7 +61,7 @@ const RecentBattleReports = dynamic(
 
 export function DashboardPageClient() {
   const constrainedNetwork = useNetworkConstraintPreference();
-  const { data, isLoading, isError, isFetching, refetch } = useDashboard();
+  const { data, isLoading, isError, refetch } = useDashboard();
   const runUserSync = useRunUserSync();
   const scoreExplanationEventSent = useRef(false);
   const user = data?.user;
@@ -221,14 +221,14 @@ export function DashboardPageClient() {
           onRefresh={() => {
             void (async () => {
               try {
-                await runUserSync.mutateAsync(user.username);
+                await runUserSync.mutateAsync();
               } catch {
                 // If sync execution fails, still refresh the current snapshot.
               }
               await refetch();
             })();
           }}
-          isRefreshing={isFetching || runUserSync.isPending}
+          isRefreshing={runUserSync.isPending}
           actionLabel="Open sync settings"
           actionHref="/dashboard/settings"
           analyticsTarget="dashboard:stale"

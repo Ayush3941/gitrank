@@ -71,7 +71,7 @@ const BadgeGrid = dynamic(
 );
 
 export function BadgesPageClient() {
-  const { data, isLoading, isError, isFetching, refetch } = useBadges();
+  const { data, isLoading, isError, refetch } = useBadges();
   const runUserSync = useRunUserSync();
   const constrainedNetwork = useNetworkConstraintPreference();
   const lockedBadgePageSize = constrainedNetwork
@@ -291,14 +291,14 @@ export function BadgesPageClient() {
             onRefresh={() => {
               void (async () => {
                 try {
-                  await runUserSync.mutateAsync(profile.user.username);
+                  await runUserSync.mutateAsync();
                 } catch {
                   // If sync execution fails, still refresh the current snapshot.
                 }
                 await refetch();
               })();
             }}
-            isRefreshing={isFetching || runUserSync.isPending}
+            isRefreshing={runUserSync.isPending}
             actionLabel="Open sync settings"
             actionHref="/dashboard/settings"
             analyticsTarget="badges:stale"

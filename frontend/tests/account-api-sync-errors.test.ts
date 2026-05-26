@@ -100,6 +100,39 @@ describe("account sync error messaging", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it("falls back to queued user sync when direct execution is aborted", async () => {
+    const abortedError = Object.assign(new Error("The operation was aborted."), {
+      name: "AbortError",
+    });
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(abortedError)
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            status: "accepted",
+            job_id: "job-789",
+            correlation_id: "sync-789",
+            accepted_at: "2026-05-17T20:20:00Z",
+          }),
+          {
+            status: 202,
+            headers: { "Content-Type": "application/json" },
+          },
+        ),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await runUserSync("octocat");
+    expect(result.status).toBe("queued");
+    expect(result.mode).toBe("user");
+    expect(result.user).toBe("octocat");
+    expect(result.correlation_id).toBe("sync-789");
+    expect(result.fetched?.fallback_queued).toBe(1);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenNthCalledWith(2, "/api/sync", expect.any(Object));
+  });
+
   it("maps rate-limit repository sync errors to actionable copy", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => {
       return new Response(
