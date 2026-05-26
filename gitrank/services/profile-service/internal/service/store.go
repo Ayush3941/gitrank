@@ -751,7 +751,7 @@ func (s *Store) loadAccountExportSessions(ctx context.Context, userID string) ([
 
 func (s *Store) loadAccountExportAuditEvents(ctx context.Context, userID string, limit int) ([]contracts.AccountExportAuditEvent, []string, error) {
 	if limit <= 0 {
-		limit = 200
+		limit = 1
 	}
 	rows, err := s.pool.Query(ctx, `
 		SELECT
