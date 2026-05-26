@@ -410,6 +410,7 @@ Verification snapshot (May 17, 2026):
 - `cd frontend && npm run test:visual`
 - `cd frontend && npm run test:a11y`
 - `cd frontend && npm run test:contracts`
+- `cd frontend && npm run check:bff-route-contract-coverage`
 - `cd frontend && npm run check:no-production-mocks`
 - `cd frontend && npm run check:pr-category-policy`
 - `cd frontend && npm run check:contribution-dedup-policy`
@@ -426,6 +427,7 @@ Verification snapshot (May 17, 2026):
 - `cd frontend && npx lighthouse http://localhost:4113/ --chrome-flags='--headless --incognito --no-sandbox --disable-gpu --disable-software-rasterizer --disable-dev-shm-usage' --output=json --output-path=docs/evidence/weekly-2026-05-17/lighthouse-home.json`
 - `cd frontend && npx playwright screenshot --full-page http://localhost:4113/dashboard docs/evidence/weekly-2026-05-17/playwright-dashboard.png`
 - Weekly screenshot and metric-diff evidence is recorded in `frontend/docs/evidence/weekly-2026-05-17/README.md`.
+- Backend-to-frontend route parity matrix is tracked in `gitrank/docs/backend-frontend-coverage.md`.
 
 ### Review expectations
 
