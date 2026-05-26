@@ -166,6 +166,14 @@ assert_frontend_env_coverage_against_backend_env() {
   fi
 }
 
+assert_frontend_stale_refresh_sync_wiring() {
+  if ! (
+    cd "$ROOT_DIR/frontend" && node scripts/check-stale-refresh-sync-wiring.mjs >/dev/null
+  ); then
+    fail "frontend stale refresh actions are not wired to user sync execution"
+  fi
+}
+
 assert_backend_env_default_parity() {
   if ! (
     cd "$ROOT_DIR/gitrank/packages/config" \
@@ -267,6 +275,7 @@ main() {
   assert_frontend_public_assets_are_referenced
   assert_weekly_evidence_png_deduplicated
   assert_frontend_env_coverage_against_backend_env
+  assert_frontend_stale_refresh_sync_wiring
   assert_backend_env_default_parity
 
   if ! check_markdown_relative_links; then
