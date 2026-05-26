@@ -60,6 +60,7 @@ npm run check:no-hardcoded-identities
 npm run check:copy-tone
 npm run check:sync-copy-policy
 npm run check:onboarding-prefetch-policy
+npm run check:env-example-coverage
 npm run check:jsx-ids
 npm run check:scroll-jumps
 npm run check:motion-budget
@@ -90,6 +91,7 @@ The public profile page, authenticated dashboard overview, onboarding reveal, ba
 - `npm run check:copy-tone` fails CI if production UI copy regresses to stale/non-conversational negation phrases such as "could not load" or "is not available in this snapshot yet"
 - `npm run check:sync-copy-policy` fails CI if production frontend modules reintroduce manual-sync phrasing (`Run sync`, `Sync now`) instead of auto-sync guidance copy
 - `npm run check:onboarding-prefetch-policy` fails CI if onboarding/marketing internal links omit explicit `prefetch={false}` in performance-sensitive entry flows
+- `npm run check:env-example-coverage` fails CI when frontend runtime env keys in source drift from `frontend/.env.example` (missing declarations or stale unused keys)
 - `npm run check:jsx-ids` fails CI if a TSX file reuses the same literal `id` more than once, preventing duplicate region IDs that break a11y and section controls
 - `npm run check:scroll-jumps` fails CI if product routes reintroduce direct `window.scrollTo`/`scrollIntoView` style APIs that can cause viewport jumps
 - `npm run check:motion-budget` fails CI if product routes reintroduce heavy animation patterns (`framer-motion`, animation utility classes, keyframes, or `transition: all`)

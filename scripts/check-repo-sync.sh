@@ -155,6 +155,14 @@ PY
   fi
 }
 
+assert_frontend_env_example_coverage() {
+  if ! (
+    cd "$ROOT_DIR/frontend" && node scripts/check-env-example-coverage.mjs >/dev/null
+  ); then
+    fail "frontend .env.example coverage drift detected"
+  fi
+}
+
 assert_backend_env_default_parity() {
   if ! (
     cd "$ROOT_DIR/gitrank/packages/config" \
@@ -255,6 +263,7 @@ main() {
   assert_no_placeholder_public_assets
   assert_frontend_public_assets_are_referenced
   assert_weekly_evidence_png_deduplicated
+  assert_frontend_env_example_coverage
   assert_backend_env_default_parity
 
   if ! check_markdown_relative_links; then
