@@ -294,6 +294,8 @@ func buildBadgeViews(badges []badgeRecord) []contracts.BadgeView {
 		out = append(out, contracts.BadgeView{
 			Key:         badge.Key,
 			Name:        humanizeBadgeKey(badge.Key),
+			Rarity:      badgeRarity(badge.Key),
+			Icon:        badgeIcon(badge.Key),
 			Description: badgeDescription(badge.Key),
 			AwardedAt:   badge.AwardedAt.UTC(),
 			Evidence:    badge.Evidence,
@@ -631,5 +633,45 @@ func badgeDescription(key string) string {
 		return "Evidence-backed backend contribution milestone."
 	default:
 		return "Evidence-backed achievement derived from scored contribution history."
+	}
+}
+
+func badgeRarity(key string) string {
+	normalized := strings.ToLower(strings.TrimSpace(key))
+	switch {
+	case strings.Contains(normalized, "mythic"):
+		return "Mythic"
+	case strings.Contains(normalized, "legend"):
+		return "Legendary"
+	case strings.Contains(normalized, "epic"):
+		return "Epic"
+	case strings.Contains(normalized, "rare"):
+		return "Rare"
+	case strings.Contains(normalized, "review"), strings.Contains(normalized, "security"):
+		return "Epic"
+	default:
+		return "Uncommon"
+	}
+}
+
+func badgeIcon(key string) string {
+	normalized := strings.ToLower(strings.TrimSpace(key))
+	switch {
+	case strings.Contains(normalized, "docs"):
+		return "scroll"
+	case strings.Contains(normalized, "test"):
+		return "flask"
+	case strings.Contains(normalized, "review"):
+		return "messages"
+	case strings.Contains(normalized, "security"):
+		return "lock"
+	case strings.Contains(normalized, "infra"):
+		return "wrench"
+	case strings.Contains(normalized, "backend"):
+		return "server"
+	case strings.Contains(normalized, "consistent"):
+		return "calendar"
+	default:
+		return "shield"
 	}
 }

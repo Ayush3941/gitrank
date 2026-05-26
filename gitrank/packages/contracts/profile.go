@@ -78,6 +78,8 @@ type ProfileLevelView struct {
 type BadgeView struct {
 	Key         string         `json:"key"`
 	Name        string         `json:"name"`
+	Rarity      string         `json:"rarity,omitempty"`
+	Icon        string         `json:"icon,omitempty"`
 	Description string         `json:"description,omitempty"`
 	AwardedAt   time.Time      `json:"awarded_at"`
 	Evidence    map[string]any `json:"evidence,omitempty"`

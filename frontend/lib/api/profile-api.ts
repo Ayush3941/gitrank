@@ -75,6 +75,8 @@ type ApiLevel = {
 type ApiBadge = {
   key: string;
   name: string;
+  rarity?: string;
+  icon?: string;
   description?: string;
   awarded_at: string;
   evidence?: Record<string, unknown>;
@@ -754,10 +756,10 @@ function toBadges(source: ApiBadge[]): Badge[] {
   return source.map((badge) => ({
     id: badge.key,
     name: badge.name,
-    rarity: badgeRarityForKey(badge.key),
+    rarity: normalizeBadgeRarity(badge.rarity),
     description: badge.description || "Awarded from verified contribution evidence.",
     unlockCondition: "Earned through verified GitRank scoring evidence.",
-    icon: badgeIconForKey(badge.key),
+    icon: normalizeBadgeIcon(badge.icon),
     unlocked: true,
     earnedAt: badge.awarded_at,
     evidencePrIds: [],
@@ -857,26 +859,43 @@ function scoreVersionFromHistory(entries: ApiScoreHistoryEntry[]): string {
   return frontendPolicy.scoreVersionFallback;
 }
 
-function badgeRarityForKey(key: string): BadgeRarity {
-  const normalized = key.toLowerCase();
-  if (normalized.includes("mythic")) return "Mythic";
-  if (normalized.includes("legend")) return "Legendary";
-  if (normalized.includes("epic")) return "Epic";
-  if (normalized.includes("rare")) return "Rare";
-  if (normalized.includes("review") || normalized.includes("security")) return "Epic";
-  return "Uncommon";
+function normalizeBadgeRarity(value?: string): BadgeRarity {
+  const normalized = (value ?? "").trim().toLowerCase();
+  switch (normalized) {
+    case "common":
+      return "Common";
+    case "rare":
+      return "Rare";
+    case "epic":
+      return "Epic";
+    case "legendary":
+      return "Legendary";
+    case "mythic":
+      return "Mythic";
+    case "uncommon":
+    default:
+      return "Uncommon";
+  }
 }
 
-function badgeIconForKey(key: string): BadgeIcon {
-  const normalized = key.toLowerCase();
-  if (normalized.includes("docs")) return "scroll";
-  if (normalized.includes("test")) return "flask";
-  if (normalized.includes("review")) return "messages";
-  if (normalized.includes("security")) return "lock";
-  if (normalized.includes("infra")) return "wrench";
-  if (normalized.includes("backend")) return "server";
-  if (normalized.includes("consistent")) return "calendar";
-  return "shield";
+function normalizeBadgeIcon(value?: string): BadgeIcon {
+  const normalized = (value ?? "").trim().toLowerCase();
+  switch (normalized) {
+    case "bolt":
+    case "book":
+    case "calendar":
+    case "crown":
+    case "flask":
+    case "lock":
+    case "messages":
+    case "scroll":
+    case "server":
+    case "shield":
+    case "wrench":
+      return normalized;
+    default:
+      return "shield";
+  }
 }
 
 function normalizeSkillCategory(value: string): SkillCategory {
