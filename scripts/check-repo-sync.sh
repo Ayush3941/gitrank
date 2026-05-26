@@ -320,6 +320,12 @@ assert_workflow_frontend_npm_scripts() {
   fi
 }
 
+assert_gitrank_script_discoverability() {
+  if ! "$ROOT_DIR/scripts/check-gitrank-script-discoverability.sh" >/dev/null; then
+    fail "gitrank script discoverability drifted from real entrypoints"
+  fi
+}
+
 assert_clean_root_binary_clutter() {
   local pdfs
   pdfs="$(find "$ROOT_DIR" -maxdepth 1 -type f -name '*.pdf' -print || true)"
@@ -356,6 +362,7 @@ main() {
   assert_workflow_script_refs
   assert_workflow_make_target_refs
   assert_workflow_frontend_npm_scripts
+  assert_gitrank_script_discoverability
   assert_backend_env_default_parity
 
   if ! check_markdown_relative_links; then

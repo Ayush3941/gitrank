@@ -43,6 +43,7 @@ This top-level map keeps navigation simple without changing service runtime path
   - runtime identity hygiene (no personal/demo identity literals in production frontend/backend code paths)
   - markdown env-variable references aligned with supported env examples/script-level variables
   - `gitrank/Makefile` script-target references aligned with tracked executable `gitrank/scripts/*.sh`
+  - tracked `gitrank/scripts/*.sh` remain discoverable from real entrypoints (`gitrank/Makefile`, workflows, startup, docker, and script-to-script calls)
   - workflow `run` script references in `.github/workflows/*` aligned with tracked executable scripts
   - workflow `make <target>` references in `.github/workflows/*` aligned with `gitrank/Makefile` targets
   - workflow `npm run <script>` references in `.github/workflows/*` aligned with `frontend/package.json` scripts
