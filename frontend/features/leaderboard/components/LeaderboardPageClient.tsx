@@ -23,6 +23,7 @@ import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill
 import { StaleState } from "@/components/shared/StaleState";
 import { Button } from "@/components/ui/button";
 import { laneParamToTab, tabToLaneParam } from "@/features/leaderboard/lib/lane-param";
+import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useLeaderboard } from "@/hooks/use-leaderboard";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { useMyProfile } from "@/hooks/use-profile";
@@ -86,6 +87,7 @@ export function LeaderboardPageClient() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const constrainedNetwork = useNetworkConstraintPreference();
+  const runUserSync = useRunUserSync();
   const rowPageSize = constrainedNetwork
     ? LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED
     : LEADERBOARD_ROW_PAGE_SIZE_DEFAULT;
@@ -189,10 +191,16 @@ export function LeaderboardPageClient() {
           )}. Rank updates can lag until sync completes.`}
           updatedAt={myProfile.refreshedAt}
           onRefresh={() => {
-            void refetchMyProfile();
-            void refetch();
+            void (async () => {
+              try {
+                await runUserSync.mutateAsync(myProfile.user.username);
+              } catch {
+                // If sync execution fails, still refresh the current snapshot.
+              }
+              await Promise.allSettled([refetchMyProfile(), refetch()]);
+            })();
           }}
-          isRefreshing={isFetching || isFetchingMyProfile}
+          isRefreshing={isFetching || isFetchingMyProfile || runUserSync.isPending}
           actionLabel="Open sync settings"
           actionHref="/dashboard/settings"
           analyticsTarget="leaderboard:stale"

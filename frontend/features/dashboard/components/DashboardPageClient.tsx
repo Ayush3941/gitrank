@@ -7,6 +7,7 @@ import { Activity, Flame, Medal } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { DashboardHeroRankCard } from "@/features/dashboard/components/DashboardHeroRankCard";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
+import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -61,6 +62,7 @@ const RecentBattleReports = dynamic(
 export function DashboardPageClient() {
   const constrainedNetwork = useNetworkConstraintPreference();
   const { data, isLoading, isError, isFetching, refetch } = useDashboard();
+  const runUserSync = useRunUserSync();
   const scoreExplanationEventSent = useRef(false);
   const user = data?.user;
   const recentReports = data?.recentReports ?? [];
@@ -217,9 +219,16 @@ export function DashboardPageClient() {
           )}.`}
           updatedAt={data.refreshedAt}
           onRefresh={() => {
-            void refetch();
+            void (async () => {
+              try {
+                await runUserSync.mutateAsync(user.username);
+              } catch {
+                // If sync execution fails, still refresh the current snapshot.
+              }
+              await refetch();
+            })();
           }}
-          isRefreshing={isFetching}
+          isRefreshing={isFetching || runUserSync.isPending}
           actionLabel="Open sync settings"
           actionHref="/dashboard/settings"
           analyticsTarget="dashboard:stale"

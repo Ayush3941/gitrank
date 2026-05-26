@@ -27,6 +27,7 @@ import { StaleState } from "@/components/shared/StaleState";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
+import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useBadges } from "@/hooks/use-badges";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
@@ -71,6 +72,7 @@ const BadgeGrid = dynamic(
 
 export function BadgesPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useBadges();
+  const runUserSync = useRunUserSync();
   const constrainedNetwork = useNetworkConstraintPreference();
   const lockedBadgePageSize = constrainedNetwork
     ? LOCKED_BADGE_PAGE_SIZE_CONSTRAINED
@@ -287,9 +289,16 @@ export function BadgesPageClient() {
             )}. New unlocks can appear after the next completed sync.`}
             updatedAt={profile.refreshedAt}
             onRefresh={() => {
-              void refetch();
+              void (async () => {
+                try {
+                  await runUserSync.mutateAsync(profile.user.username);
+                } catch {
+                  // If sync execution fails, still refresh the current snapshot.
+                }
+                await refetch();
+              })();
             }}
-            isRefreshing={isFetching}
+            isRefreshing={isFetching || runUserSync.isPending}
             actionLabel="Open sync settings"
             actionHref="/dashboard/settings"
             analyticsTarget="badges:stale"

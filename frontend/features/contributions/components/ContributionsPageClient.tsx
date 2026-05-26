@@ -14,6 +14,7 @@ import { ContributionPulseStrip } from "@/components/shared/ContributionPulseStr
 import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { StaleState } from "@/components/shared/StaleState";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
+import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useContributions } from "@/hooks/use-contributions";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import {
@@ -76,11 +77,12 @@ export function ContributionsPageClient() {
     ? contributionDisplayConfig.constrainedCardPageSize
     : contributionDisplayConfig.cardPageSize;
   const [visibleCardCount, setVisibleCardCount] = useState(cardPageSize);
-  const { data, isLoading, isError, refetch } = useContributions({
+  const { data, isLoading, isError, isFetching, refetch } = useContributions({
     filter: toContributionQueryFilter(deferredFilter),
     search: deferredSearch,
     sort: deferredSort,
   });
+  const runUserSync = useRunUserSync();
   const profile = data?.profile;
   const contributionUniverse = useMemo(
     () => deduplicateContributionsByPullRequest(profile?.user.contributions ?? []),
@@ -338,6 +340,17 @@ export function ContributionsPageClient() {
             profile.refreshedAt,
           )}. New PR rows can appear after the next sync.`}
           updatedAt={profile.refreshedAt}
+          onRefresh={() => {
+            void (async () => {
+              try {
+                await runUserSync.mutateAsync(profile.user.username);
+              } catch {
+                // If sync execution fails, still refresh the current snapshot.
+              }
+              await refetch();
+            })();
+          }}
+          isRefreshing={isFetching || runUserSync.isPending}
           actionLabel="Open sync settings"
           actionHref="/dashboard/settings"
           analyticsTarget="contributions:stale"

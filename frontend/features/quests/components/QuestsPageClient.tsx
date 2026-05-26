@@ -24,6 +24,7 @@ import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill
 import { StaleState } from "@/components/shared/StaleState";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { useQuests } from "@/hooks/use-quests";
 import { formatRelativeDays } from "@/lib/formatters";
@@ -54,6 +55,7 @@ const QuestCard = dynamic(
 
 export function QuestsPageClient() {
   const constrainedNetwork = useNetworkConstraintPreference();
+  const runUserSync = useRunUserSync();
   const questGroupPageSize = constrainedNetwork
     ? QUEST_GROUP_PAGE_SIZE_CONSTRAINED
     : QUEST_GROUP_PAGE_SIZE_DEFAULT;
@@ -229,9 +231,16 @@ export function QuestsPageClient() {
           )}. Live quest signals may lag until the next sync completes.`}
           updatedAt={data.staleness.refreshedAt}
           onRefresh={() => {
-            void refetch();
+            void (async () => {
+              try {
+                await runUserSync.mutateAsync(profile?.user.username);
+              } catch {
+                // If sync execution fails, still refresh the current snapshot.
+              }
+              await refetch();
+            })();
           }}
-          isRefreshing={isFetching}
+          isRefreshing={isFetching || runUserSync.isPending}
           actionLabel="Open sync settings"
           actionHref="/dashboard/settings"
           analyticsTarget="quests:stale"
