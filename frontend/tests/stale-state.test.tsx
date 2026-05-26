@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { StaleState } from "@/components/shared/StaleState";
 
@@ -16,5 +16,44 @@ describe("StaleState", () => {
     expect(screen.getByText(/Last verified at/i)).toBeTruthy();
     const exactTime = screen.getByText((_content, element) => element?.tagName.toLowerCase() === "time");
     expect(exactTime.getAttribute("datetime")).toMatch(/2026-05-17T18:10:00/);
+  });
+
+  it("shows refresh feedback when refresh is requested", async () => {
+    render(
+      <StaleState
+        message="Profile data is stale."
+        updatedAt="2026-05-17T18:10:00.000Z"
+        onRefresh={async () => ({
+          tone: "success",
+          message: "Refresh queued successfully.",
+        })}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Refresh queued successfully.")).toBeTruthy();
+    });
+  });
+
+  it("shows sanitized refresh errors when refresh fails", async () => {
+    render(
+      <StaleState
+        message="Profile data is stale."
+        updatedAt="2026-05-17T18:10:00.000Z"
+        onRefresh={async () => {
+          throw new Error("context deadline exceeded");
+        }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("GitHub did not respond in time. Wait about a minute, then retry."),
+      ).toBeTruthy();
+    });
   });
 });

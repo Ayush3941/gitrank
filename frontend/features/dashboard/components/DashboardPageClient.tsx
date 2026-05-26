@@ -27,6 +27,7 @@ import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
+import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import { Button } from "@/components/ui/button";
 
 const CurrentLeagueCard = dynamic(
@@ -218,15 +219,13 @@ export function DashboardPageClient() {
             data.refreshedAt,
           )}.`}
           updatedAt={data.refreshedAt}
-          onRefresh={() => {
-            void (async () => {
-              try {
-                await runUserSync.mutateAsync();
-              } catch {
-                // If sync execution fails, still refresh the current snapshot.
-              }
+          onRefresh={async () => {
+            try {
+              const result = await runUserSync.mutateAsync();
+              return buildUserSyncRefreshFeedback(result);
+            } finally {
               await refetch();
-            })();
+            }
           }}
           isRefreshing={runUserSync.isPending}
           actionLabel="Open sync settings"

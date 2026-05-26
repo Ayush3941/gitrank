@@ -34,6 +34,7 @@ import { formatRelativeDays } from "@/lib/formatters";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { deduplicateContributionsByPullRequest } from "@/lib/presentation/contribution-dedup";
+import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import { contributionDisplayConfig } from "@/lib/runtime/contribution-display-config";
 import {
   buildContributionFocusCounts,
@@ -340,15 +341,13 @@ export function ContributionsPageClient() {
             profile.refreshedAt,
           )}. New PR rows can appear after the next sync.`}
           updatedAt={profile.refreshedAt}
-          onRefresh={() => {
-            void (async () => {
-              try {
-                await runUserSync.mutateAsync();
-              } catch {
-                // If sync execution fails, still refresh the current snapshot.
-              }
+          onRefresh={async () => {
+            try {
+              const result = await runUserSync.mutateAsync();
+              return buildUserSyncRefreshFeedback(result);
+            } finally {
               await refetch();
-            })();
+            }
           }}
           isRefreshing={runUserSync.isPending}
           actionLabel="Open sync settings"

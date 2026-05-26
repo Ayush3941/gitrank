@@ -30,6 +30,7 @@ import { useMyProfile } from "@/hooks/use-profile";
 import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
 import { formatRelativeDays } from "@/lib/formatters";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
+import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 
 const LeaderboardArena = dynamic(
   () =>
@@ -189,15 +190,13 @@ export function LeaderboardPageClient() {
             myProfile.refreshedAt,
           )}. Rank updates can lag until sync completes.`}
           updatedAt={myProfile.refreshedAt}
-          onRefresh={() => {
-            void (async () => {
-              try {
-                await runUserSync.mutateAsync();
-              } catch {
-                // If sync execution fails, still refresh the current snapshot.
-              }
+          onRefresh={async () => {
+            try {
+              const result = await runUserSync.mutateAsync();
+              return buildUserSyncRefreshFeedback(result);
+            } finally {
               await Promise.allSettled([refetchMyProfile(), refetch()]);
-            })();
+            }
           }}
           isRefreshing={runUserSync.isPending}
           actionLabel="Open sync settings"

@@ -29,6 +29,7 @@ import { useNetworkConstraintPreference } from "@/hooks/use-gamification-prefere
 import { useQuests } from "@/hooks/use-quests";
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
+import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import type { Quest } from "@/types/gitrank";
 
 const groups: Array<Quest["cadence"]> = ["Daily", "Weekly", "Long-term", "Skill-based"];
@@ -230,15 +231,13 @@ export function QuestsPageClient() {
             data.staleness.refreshedAt,
           )}. Live quest signals may lag until the next sync completes.`}
           updatedAt={data.staleness.refreshedAt}
-          onRefresh={() => {
-            void (async () => {
-              try {
-                await runUserSync.mutateAsync();
-              } catch {
-                // If sync execution fails, still refresh the current snapshot.
-              }
+          onRefresh={async () => {
+            try {
+              const result = await runUserSync.mutateAsync();
+              return buildUserSyncRefreshFeedback(result);
+            } finally {
               await refetch();
-            })();
+            }
           }}
           isRefreshing={runUserSync.isPending}
           actionLabel="Open sync settings"

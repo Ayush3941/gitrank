@@ -38,6 +38,7 @@ import {
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
+import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import type { BadgeRarity } from "@/types/gitrank";
 const BADGES_EARNED_REGION_ID = "badges-earned-region";
 const BADGES_LOCKED_REGION_ID = "badges-locked-lane";
@@ -288,15 +289,13 @@ export function BadgesPageClient() {
               profile.refreshedAt,
             )}. New unlocks can appear after the next completed sync.`}
             updatedAt={profile.refreshedAt}
-            onRefresh={() => {
-              void (async () => {
-                try {
-                  await runUserSync.mutateAsync();
-                } catch {
-                  // If sync execution fails, still refresh the current snapshot.
-                }
+            onRefresh={async () => {
+              try {
+                const result = await runUserSync.mutateAsync();
+                return buildUserSyncRefreshFeedback(result);
+              } finally {
                 await refetch();
-              })();
+              }
             }}
             isRefreshing={runUserSync.isPending}
             actionLabel="Open sync settings"

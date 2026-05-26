@@ -35,7 +35,7 @@ for (const relativePath of targets) {
   assertPattern(
     source,
     relativePath,
-    /<StaleState[\s\S]*onRefresh=\{\(\)\s*=>\s*\{[\s\S]*runUserSync\.mutateAsync\(/,
+    /<StaleState[\s\S]*onRefresh=\{(?:async\s*)?\(\)\s*=>\s*\{[\s\S]*runUserSync\.mutateAsync\(/,
     "stale refresh action does not trigger runUserSync.mutateAsync(...)",
   );
 }

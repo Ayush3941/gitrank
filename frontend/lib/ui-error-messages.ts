@@ -2,7 +2,8 @@ type UserFacingErrorContext =
   | "settings-account-actions"
   | "settings-privacy"
   | "settings-sync-runs"
-  | "onboarding-sync";
+  | "onboarding-sync"
+  | "stale-refresh";
 
 const CONTEXT_FALLBACK_MESSAGES: Record<UserFacingErrorContext, string> = {
   "settings-account-actions":
@@ -13,6 +14,8 @@ const CONTEXT_FALLBACK_MESSAGES: Record<UserFacingErrorContext, string> = {
     "Sync run history is unavailable right now. Retry shortly while the latest profile snapshot remains visible.",
   "onboarding-sync":
     "Sync failed for now. Keep this page open and retry shortly while background refresh continues.",
+  "stale-refresh":
+    "Refresh request failed for now. Retry in a moment while the latest verified profile data stays visible.",
 };
 
 const TECHNICAL_MARKERS = [
