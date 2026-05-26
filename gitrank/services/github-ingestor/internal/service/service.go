@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gitrank/gitrank/packages/config"
 	"github.com/gitrank/gitrank/packages/contracts"
 	"github.com/gitrank/gitrank/packages/githubapi"
 	"github.com/gitrank/gitrank/packages/store"
@@ -17,6 +18,7 @@ import (
 var ErrUnavailable = errors.New("github persistence unavailable")
 
 type Service struct {
+	cfg   config.App
 	store *Store
 }
 
@@ -38,7 +40,14 @@ type SyncRequestActor struct {
 }
 
 func New(pool *pgxpool.Pool) *Service {
-	return &Service{store: NewStore(pool)}
+	return NewWithConfig(config.App{}, pool)
+}
+
+func NewWithConfig(cfg config.App, pool *pgxpool.Pool) *Service {
+	return &Service{
+		cfg:   cfg,
+		store: NewStore(pool),
+	}
 }
 
 func (s *Service) Ready(ctx context.Context) error {
@@ -231,13 +240,14 @@ func (s *Service) ListSyncRuns(ctx context.Context, filter contracts.GitHubSyncR
 	if s == nil || s.store == nil || s.store.pool == nil {
 		return contracts.GitHubSyncRunListResponse{}, ErrUnavailable
 	}
-	runs, err := s.store.ListSyncRuns(ctx, filter)
+	normalized := normalizeSyncRunFilter(filter, s.cfg.GitHub.SyncRunDefaultLimit, s.cfg.GitHub.SyncRunMaxLimit)
+	runs, err := s.store.ListSyncRuns(ctx, normalized)
 	if err != nil {
 		return contracts.GitHubSyncRunListResponse{}, err
 	}
 	return contracts.GitHubSyncRunListResponse{
 		Runs:          runs,
-		AppliedFilter: normalizeSyncRunFilter(filter),
+		AppliedFilter: normalized,
 		LastUpdatedAt: time.Now().UTC(),
 	}, nil
 }
@@ -271,7 +281,7 @@ func (r PersistResult) Summary() string {
 	)
 }
 
-func normalizeSyncRunFilter(filter contracts.GitHubSyncRunFilter) contracts.GitHubSyncRunFilter {
+func normalizeSyncRunFilter(filter contracts.GitHubSyncRunFilter, defaultLimit int, maxLimit int) contracts.GitHubSyncRunFilter {
 	filter.RunType = strings.TrimSpace(filter.RunType)
 	filter.Status = strings.TrimSpace(filter.Status)
 	filter.Subject = strings.TrimSpace(filter.Subject)
@@ -281,11 +291,17 @@ func normalizeSyncRunFilter(filter contracts.GitHubSyncRunFilter) contracts.GitH
 	filter.RequestedByGitHubLogin = strings.TrimSpace(filter.RequestedByGitHubLogin)
 	filter.CorrelationID = strings.TrimSpace(filter.CorrelationID)
 	filter.DeliveryID = strings.TrimSpace(filter.DeliveryID)
-	if filter.Limit <= 0 {
-		filter.Limit = 50
+	if defaultLimit <= 0 {
+		defaultLimit = 1
 	}
-	if filter.Limit > 200 {
-		filter.Limit = 200
+	if maxLimit < defaultLimit {
+		maxLimit = defaultLimit
+	}
+	if filter.Limit <= 0 {
+		filter.Limit = defaultLimit
+	}
+	if filter.Limit > maxLimit {
+		filter.Limit = maxLimit
 	}
 	return filter
 }

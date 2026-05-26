@@ -5,12 +5,8 @@ import { useRequestProfileSync } from "@/hooks/use-account-actions";
 import { useAccountGamificationPreference } from "@/hooks/use-gamification-preference";
 import { useMyProfile } from "@/hooks/use-profile";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
+import { syncPollingPolicy } from "@/lib/runtime/sync-polling-policy";
 
-const AUTO_SYNC_RETRY_INTERVAL_MS = 90_000;
-const AUTO_SYNC_STALE_AGE_MS = 6 * 60 * 60 * 1000;
-const AUTO_SYNC_MAX_ATTEMPTS_PER_MOUNT = 3;
-const AUTO_SYNC_ATTEMPT_RECOVERY_COOLDOWN_MS = 10 * 60 * 1000;
-const AUTO_SYNC_SESSION_COOLDOWN_MS = 20 * 60 * 1000;
 const AUTO_SYNC_SESSION_KEY_PREFIX = "gitrank:auto-sync:last-at:";
 
 export function DashboardAutoSyncCoordinator() {
@@ -37,7 +33,7 @@ export function DashboardAutoSyncCoordinator() {
     const lastSyncedAt = Date.parse(syncState.lastSyncedAt ?? "");
     const syncAgeMs = Number.isNaN(lastSyncedAt) ? Number.POSITIVE_INFINITY : now - lastSyncedAt;
     const staleSnapshot = syncState.state !== "synced";
-    const staleByAge = syncAgeMs >= AUTO_SYNC_STALE_AGE_MS;
+    const staleByAge = syncAgeMs >= syncPollingPolicy.autoSyncStaleAgeMs;
     const emptyEvidence = data.user.mergedPrCount === 0;
     const shouldAutoSync = staleSnapshot || staleByAge || emptyEvidence;
 
@@ -45,15 +41,15 @@ export function DashboardAutoSyncCoordinator() {
       return;
     }
 
-    if (autoSyncAttempts.current >= AUTO_SYNC_MAX_ATTEMPTS_PER_MOUNT) {
-      if (now - autoSyncLastAttempt.current >= AUTO_SYNC_ATTEMPT_RECOVERY_COOLDOWN_MS) {
+    if (autoSyncAttempts.current >= syncPollingPolicy.autoSyncMaxAttemptsPerMount) {
+      if (now - autoSyncLastAttempt.current >= syncPollingPolicy.autoSyncAttemptRecoveryCooldownMs) {
         autoSyncAttempts.current = 0;
       } else {
         return;
       }
     }
 
-    if (now - autoSyncLastAttempt.current < AUTO_SYNC_RETRY_INTERVAL_MS) {
+    if (now - autoSyncLastAttempt.current < syncPollingPolicy.autoSyncRetryIntervalMs) {
       return;
     }
 
@@ -62,7 +58,7 @@ export function DashboardAutoSyncCoordinator() {
       const lastSessionAttempt = Number(window.sessionStorage.getItem(sessionKey) ?? "");
       if (
         Number.isFinite(lastSessionAttempt) &&
-        now - lastSessionAttempt < AUTO_SYNC_SESSION_COOLDOWN_MS
+        now - lastSessionAttempt < syncPollingPolicy.autoSyncSessionCooldownMs
       ) {
         return;
       }
@@ -83,7 +79,7 @@ export function DashboardAutoSyncCoordinator() {
         });
       },
       onError: () => {
-        const attemptsRemaining = AUTO_SYNC_MAX_ATTEMPTS_PER_MOUNT - autoSyncAttempts.current;
+        const attemptsRemaining = syncPollingPolicy.autoSyncMaxAttemptsPerMount - autoSyncAttempts.current;
         void emitAnalyticsEvent({
           eventName: "sync.failed",
           source: "frontend",

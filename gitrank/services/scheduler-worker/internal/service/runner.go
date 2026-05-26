@@ -79,8 +79,9 @@ type httpPullRequestReportExecutor struct {
 }
 
 type httpLeaderboardExecutor struct {
-	baseURL string
-	client  *http.Client
+	baseURL                      string
+	client                       *http.Client
+	leaderboardBackfillWeekFloor int
 }
 
 type jobExecution struct {
@@ -187,11 +188,16 @@ func newLeaderboardExecutor(cfg config.App) leaderboardExecutor {
 	if baseURL == "" {
 		return nil
 	}
+	backfillWeekFloor := cfg.Scoring.LeaderboardBackfillDefaultWeeks
+	if backfillWeekFloor <= 0 {
+		backfillWeekFloor = 1
+	}
 	return &httpLeaderboardExecutor{
 		baseURL: baseURL,
 		client: &http.Client{
 			Timeout: cfg.Services.RequestTimeout,
 		},
+		leaderboardBackfillWeekFloor: backfillWeekFloor,
 	}
 }
 
@@ -450,7 +456,7 @@ func (s *Service) executeLeasedJob(ctx context.Context, job store.QueueJob) (job
 		if s.leaderboardRunner == nil {
 			return jobExecution{}, fmt.Errorf("leaderboard runner is not configured")
 		}
-		execution, err := s.leaderboardRunner.BackfillLeaderboardHistory(ctx, correlationIDForJob(job), 26)
+		execution, err := s.leaderboardRunner.BackfillLeaderboardHistory(ctx, correlationIDForJob(job), s.cfg.Scoring.LeaderboardBackfillDefaultWeeks)
 		if err != nil {
 			return jobExecution{}, err
 		}
@@ -1332,7 +1338,7 @@ func (e *httpLeaderboardExecutor) MaterializeLeaderboard(ctx context.Context, co
 
 func (e *httpLeaderboardExecutor) BackfillLeaderboardHistory(ctx context.Context, correlationID string, weeks int) (contracts.SchedulerLeaderboardHistoryBackfillResponse, error) {
 	if weeks <= 0 {
-		weeks = 26
+		weeks = e.leaderboardBackfillWeekFloor
 	}
 	ctx = httpkit.EnsureTraceContext(ctx)
 	startedAt := time.Now().UTC()

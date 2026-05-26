@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gitrank/gitrank/packages/config"
 	"github.com/gitrank/gitrank/packages/contracts"
 	"github.com/gitrank/gitrank/services/scoring-engine/internal/scoring"
 )
@@ -109,7 +110,7 @@ func TestIssueBadgesLinksPersistedPREvidence(t *testing.T) {
 			PRNumber:      7,
 			PRTitle:       "test: add replay coverage",
 		},
-	}, map[string]int{"testing": 120})
+	}, map[string]int{"testing": 120}, config.Scoring{})
 
 	if len(badges) != 2 {
 		t.Fatalf("badges len = %d, want first merge and test builder", len(badges))

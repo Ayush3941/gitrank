@@ -865,10 +865,7 @@ func (s *Store) ListSyncRuns(ctx context.Context, filter contracts.GitHubSyncRun
 
 	limit := filter.Limit
 	if limit <= 0 {
-		limit = 50
-	}
-	if limit > 200 {
-		limit = 200
+		limit = 1
 	}
 
 	conditions := []string{"1=1"}

@@ -38,7 +38,7 @@ func main() {
 
 	deliveryStore := store.DeliveryStore(store.NewInMemoryDeliveryStore(cfg.GitHub.DedupeTTL))
 	jobQueue := store.NewInMemoryJobQueue()
-	persistence := service.New(nil)
+	persistence := service.NewWithConfig(cfg, nil)
 	var executor *service.Executor
 	restClient, err := githubapi.NewRESTClient(githubapi.ClientConfig{
 		BaseURL:                        cfg.GitHub.APIBaseURL,
@@ -61,7 +61,7 @@ func main() {
 		}
 		defer dbpool.Close()
 		deliveryStore = store.NewPostgresDeliveryStore(dbpool, cfg.Services.RequestTimeout)
-		persistence = service.New(dbpool)
+		persistence = service.NewWithConfig(cfg, dbpool)
 		executor = service.NewExecutor(cfg, dbpool, restClient)
 	}
 

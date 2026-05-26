@@ -20,6 +20,17 @@ const (
 	Production  Environment = "production"
 )
 
+const (
+	defaultLocalDatabaseURL      = "postgres://localhost:55432/gitrank?sslmode=disable"
+	defaultLocalRedisURL         = "redis://localhost:6379/0"
+	defaultDevSessionSecret      = "dev-insecure-session-secret-change-me"
+	defaultDevJWTSigningKey      = "dev-insecure-jwt-signing-key-change-me"
+	defaultDevGitHubClientID     = "dev-github-client-id"
+	defaultDevGitHubClientSecret = "dev-github-client-secret"
+	defaultDevTokenEncryptionKey = "Z2l0cmFuay1kZXYtdG9rZW4ta2V5LTMyYnl0ZXMhISE="
+	defaultLocalOAuthRedirectURL = "http://localhost:8081/oauth/github/callback"
+)
+
 type App struct {
 	Env             Environment
 	ServiceName     string
@@ -114,6 +125,8 @@ type GitHub struct {
 	InstallationRepositoryMaxPages int
 	AuthoredPRSearchLimit          int
 	AuthoredPRSyncLimit            int
+	SyncRunDefaultLimit            int
+	SyncRunMaxLimit                int
 	UserPRSyncTimeoutDefault       time.Duration
 	UserPRSyncTimeoutMin           time.Duration
 	UserPRSyncTimeoutMax           time.Duration
@@ -203,6 +216,32 @@ type Scoring struct {
 	ConsistencyRecentMergedThreshold int
 	ConsistencyRecentMergedBonus     float64
 	ConsistencyModifierMax           float64
+	ReviewStrengthBase               float64
+	ReviewStrengthCommentedBonus     float64
+	ReviewStrengthApprovedBonus      float64
+	ReviewStrengthApprovedCap        int
+	ReviewStrengthChangesBonus       float64
+	ReviewStrengthChangesCap         int
+	ReviewStrengthDenseThreshold     int
+	ReviewStrengthDenseBonus         float64
+	ReviewStrengthMax                float64
+	TechnicalDepthBase               float64
+	TechnicalDepthSourceBonus        float64
+	TechnicalDepthTestsBonus         float64
+	TechnicalDepthInfraConfigBonus   float64
+	TechnicalDepthCrossSurfaceBonus  float64
+	TechnicalDepthChangedFilesMin    int
+	TechnicalDepthChangedFilesBonus  float64
+	TechnicalDepthChangeVolumeMin    int
+	TechnicalDepthChangeVolumeBonus  float64
+	TechnicalDepthCriticalityCap     int
+	TechnicalDepthCriticalityBonus   float64
+	TechnicalDepthMax                float64
+	BadgeMultiRepoRepositoryMin      int
+	BadgeSecurityXPMin               int
+	BadgeTestingXPMin                int
+	BadgeConsistencyWeeksMin         int
+	BadgeEvidencePRLimit             int
 	DiminishingSimilarCap            int
 	DiminishingSimilarStep           float64
 	DiminishingCategoryCap           int
@@ -282,15 +321,15 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			RequestTimeout:        getDuration("INTERNAL_API_REQUEST_TIMEOUT", 5*time.Second),
 		},
 		Database: Database{
-			URL: getEnv("DATABASE_URL", ""),
+			URL: getEnv("DATABASE_URL", defaultLocalDatabaseURL),
 		},
 		Redis: Redis{
-			URL: getEnv("REDIS_URL", ""),
+			URL: getEnv("REDIS_URL", defaultLocalRedisURL),
 		},
 		Auth: Auth{
-			SessionSecret:               getEnv("GITRANK_SESSION_SECRET", ""),
+			SessionSecret:               getEnv("GITRANK_SESSION_SECRET", defaultDevSessionSecret),
 			PreviousSessionSecrets:      getCSV("GITRANK_PREVIOUS_SESSION_SECRETS"),
-			JWTSigningKey:               getEnv("GITRANK_JWT_SIGNING_KEY", ""),
+			JWTSigningKey:               getEnv("GITRANK_JWT_SIGNING_KEY", defaultDevJWTSigningKey),
 			SessionCookieName:           getEnv("AUTH_SESSION_COOKIE_NAME", "gitrank_session"),
 			CSRFCookieName:              getEnv("AUTH_CSRF_COOKIE_NAME", "gitrank_csrf"),
 			SessionCookieDomain:         getEnv("AUTH_COOKIE_DOMAIN", ""),
@@ -300,7 +339,7 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			SessionIdleTTL:              getDuration("AUTH_SESSION_IDLE_TTL", 72*time.Hour),
 			SessionRotationInterval:     getDuration("AUTH_SESSION_ROTATION_INTERVAL", 24*time.Hour),
 			OAuthStateTTL:               getDuration("AUTH_OAUTH_STATE_TTL", 10*time.Minute),
-			TokenEncryptionKey:          getEnv("GITHUB_TOKEN_ENCRYPTION_KEY", ""),
+			TokenEncryptionKey:          getEnv("GITHUB_TOKEN_ENCRYPTION_KEY", defaultDevTokenEncryptionKey),
 			PreviousTokenEncryptionKeys: getCSV("GITHUB_PREVIOUS_TOKEN_ENCRYPTION_KEYS"),
 			AdminGitHubLogins:           getCSV("AUTH_ADMIN_GITHUB_LOGINS"),
 			MaintainerGitHubLogins:      getCSV("AUTH_MAINTAINER_GITHUB_LOGINS"),
@@ -308,12 +347,12 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			RateLimitMaxAttempts:        getInt("AUTH_RATE_LIMIT_MAX_ATTEMPTS", 30),
 		},
 		GitHub: GitHub{
-			ClientID:                       getEnv("GITHUB_CLIENT_ID", ""),
-			ClientSecret:                   getEnv("GITHUB_CLIENT_SECRET", ""),
+			ClientID:                       getEnv("GITHUB_CLIENT_ID", defaultDevGitHubClientID),
+			ClientSecret:                   getEnv("GITHUB_CLIENT_SECRET", defaultDevGitHubClientSecret),
 			AuthorizeURL:                   getEnv("GITHUB_OAUTH_AUTHORIZE_URL", "https://github.com/login/oauth/authorize"),
 			TokenURL:                       getEnv("GITHUB_OAUTH_EXCHANGE_URL", getEnv("GITHUB_OAUTH_TOKEN_URL", "https://github.com/login/oauth/access_token")),
 			DeviceURL:                      getEnv("GITHUB_OAUTH_DEVICE_URL", "https://github.com/login/device/code"),
-			OAuthRedirectURL:               getEnv("GITHUB_OAUTH_REDIRECT_URL", ""),
+			OAuthRedirectURL:               getEnv("GITHUB_OAUTH_REDIRECT_URL", defaultLocalOAuthRedirectURL),
 			AppID:                          getEnv("GITHUB_APP_ID", ""),
 			AppSlug:                        getEnv("GITHUB_APP_SLUG", ""),
 			AppInstallURL:                  getEnv("GITHUB_APP_INSTALL_URL", ""),
@@ -337,6 +376,8 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			InstallationRepositoryMaxPages: getInt("GITHUB_INSTALLATION_REPOSITORY_MAX_PAGES", 10),
 			AuthoredPRSearchLimit:          getInt("GITHUB_AUTHORED_PR_SEARCH_LIMIT", 100),
 			AuthoredPRSyncLimit:            getInt("GITHUB_AUTHORED_PR_SYNC_LIMIT", 10),
+			SyncRunDefaultLimit:            getInt("GITHUB_SYNC_RUN_DEFAULT_LIMIT", 50),
+			SyncRunMaxLimit:                getInt("GITHUB_SYNC_RUN_MAX_LIMIT", 200),
 			UserPRSyncTimeoutDefault:       getDuration("GITHUB_USER_PR_SYNC_TIMEOUT_DEFAULT", 20*time.Second),
 			UserPRSyncTimeoutMin:           getDuration("GITHUB_USER_PR_SYNC_TIMEOUT_MIN", 10*time.Second),
 			UserPRSyncTimeoutMax:           getDuration("GITHUB_USER_PR_SYNC_TIMEOUT_MAX", 60*time.Second),
@@ -427,6 +468,32 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			ConsistencyRecentMergedThreshold: getInt("SCORING_CONSISTENCY_RECENT_MERGED_THRESHOLD", 5),
 			ConsistencyRecentMergedBonus:     getFloat("SCORING_CONSISTENCY_RECENT_MERGED_BONUS", 0.05),
 			ConsistencyModifierMax:           getFloat("SCORING_CONSISTENCY_MODIFIER_MAX", 1.4),
+			ReviewStrengthBase:               getFloat("SCORING_REVIEW_STRENGTH_BASE", 0.8),
+			ReviewStrengthCommentedBonus:     getFloat("SCORING_REVIEW_STRENGTH_COMMENTED_BONUS", 0.05),
+			ReviewStrengthApprovedBonus:      getFloat("SCORING_REVIEW_STRENGTH_APPROVED_BONUS", 0.12),
+			ReviewStrengthApprovedCap:        getInt("SCORING_REVIEW_STRENGTH_APPROVED_CAP", 3),
+			ReviewStrengthChangesBonus:       getFloat("SCORING_REVIEW_STRENGTH_CHANGES_REQUESTED_BONUS", 0.18),
+			ReviewStrengthChangesCap:         getInt("SCORING_REVIEW_STRENGTH_CHANGES_REQUESTED_CAP", 2),
+			ReviewStrengthDenseThreshold:     getInt("SCORING_REVIEW_STRENGTH_DENSE_THRESHOLD", 4),
+			ReviewStrengthDenseBonus:         getFloat("SCORING_REVIEW_STRENGTH_DENSE_BONUS", 0.1),
+			ReviewStrengthMax:                getFloat("SCORING_REVIEW_STRENGTH_MAX", 2.1),
+			TechnicalDepthBase:               getFloat("SCORING_TECHNICAL_DEPTH_BASE", 0.75),
+			TechnicalDepthSourceBonus:        getFloat("SCORING_TECHNICAL_DEPTH_SOURCE_BONUS", 0.2),
+			TechnicalDepthTestsBonus:         getFloat("SCORING_TECHNICAL_DEPTH_TESTS_BONUS", 0.12),
+			TechnicalDepthInfraConfigBonus:   getFloat("SCORING_TECHNICAL_DEPTH_INFRA_CONFIG_BONUS", 0.08),
+			TechnicalDepthCrossSurfaceBonus:  getFloat("SCORING_TECHNICAL_DEPTH_CROSS_SURFACE_BONUS", 0.12),
+			TechnicalDepthChangedFilesMin:    getInt("SCORING_TECHNICAL_DEPTH_CHANGED_FILES_MIN", 5),
+			TechnicalDepthChangedFilesBonus:  getFloat("SCORING_TECHNICAL_DEPTH_CHANGED_FILES_BONUS", 0.12),
+			TechnicalDepthChangeVolumeMin:    getInt("SCORING_TECHNICAL_DEPTH_CHANGE_VOLUME_MIN", 200),
+			TechnicalDepthChangeVolumeBonus:  getFloat("SCORING_TECHNICAL_DEPTH_CHANGE_VOLUME_BONUS", 0.15),
+			TechnicalDepthCriticalityCap:     getInt("SCORING_TECHNICAL_DEPTH_CRITICALITY_CAP", 3),
+			TechnicalDepthCriticalityBonus:   getFloat("SCORING_TECHNICAL_DEPTH_CRITICALITY_BONUS", 0.08),
+			TechnicalDepthMax:                getFloat("SCORING_TECHNICAL_DEPTH_MAX", 2.4),
+			BadgeMultiRepoRepositoryMin:      getInt("SCORING_BADGE_MULTI_REPO_REPOSITORY_MIN", 3),
+			BadgeSecurityXPMin:               getInt("SCORING_BADGE_SECURITY_XP_MIN", 120),
+			BadgeTestingXPMin:                getInt("SCORING_BADGE_TESTING_XP_MIN", 100),
+			BadgeConsistencyWeeksMin:         getInt("SCORING_BADGE_CONSISTENCY_WEEKS_MIN", 4),
+			BadgeEvidencePRLimit:             getInt("SCORING_BADGE_EVIDENCE_PR_LIMIT", 5),
 
 			DiminishingSimilarCap:          getInt("SCORING_DIMINISHING_SIMILAR_CAP", 5),
 			DiminishingSimilarStep:         getFloat("SCORING_DIMINISHING_SIMILAR_STEP", 0.08),
@@ -593,6 +660,12 @@ func (a App) ValidateBase() error {
 	}
 	if a.GitHub.AuthoredPRSyncLimit <= 0 || a.GitHub.AuthoredPRSyncLimit > a.GitHub.AuthoredPRSearchLimit {
 		problems = append(problems, "GITHUB_AUTHORED_PR_SYNC_LIMIT must be between 1 and GITHUB_AUTHORED_PR_SEARCH_LIMIT")
+	}
+	if a.GitHub.SyncRunDefaultLimit <= 0 || a.GitHub.SyncRunMaxLimit <= 0 {
+		problems = append(problems, "GITHUB_SYNC_RUN_DEFAULT_LIMIT and GITHUB_SYNC_RUN_MAX_LIMIT must be positive")
+	}
+	if a.GitHub.SyncRunMaxLimit < a.GitHub.SyncRunDefaultLimit {
+		problems = append(problems, "GITHUB_SYNC_RUN_MAX_LIMIT must be >= GITHUB_SYNC_RUN_DEFAULT_LIMIT")
 	}
 	if a.GitHub.UserPRSyncTimeoutDefault <= 0 {
 		problems = append(problems, "GITHUB_USER_PR_SYNC_TIMEOUT_DEFAULT must be positive")
@@ -779,6 +852,32 @@ func (a App) ValidateBase() error {
 	if a.Scoring.ConsistencyModifierMax <= 0 {
 		problems = append(problems, "SCORING_CONSISTENCY_MODIFIER_MAX must be positive")
 	}
+	if a.Scoring.ReviewStrengthBase <= 0 || a.Scoring.ReviewStrengthCommentedBonus < 0 || a.Scoring.ReviewStrengthApprovedBonus < 0 ||
+		a.Scoring.ReviewStrengthChangesBonus < 0 || a.Scoring.ReviewStrengthDenseBonus < 0 || a.Scoring.ReviewStrengthMax <= 0 {
+		problems = append(problems, "SCORING_REVIEW_STRENGTH_* values must be positive, and *_BONUS values must be non-negative")
+	}
+	if a.Scoring.ReviewStrengthApprovedCap <= 0 || a.Scoring.ReviewStrengthChangesCap <= 0 || a.Scoring.ReviewStrengthDenseThreshold <= 0 {
+		problems = append(problems, "SCORING_REVIEW_STRENGTH_*_CAP/THRESHOLD values must be positive")
+	}
+	if a.Scoring.ReviewStrengthMax < a.Scoring.ReviewStrengthBase {
+		problems = append(problems, "SCORING_REVIEW_STRENGTH_MAX must be >= SCORING_REVIEW_STRENGTH_BASE")
+	}
+	if a.Scoring.TechnicalDepthBase <= 0 || a.Scoring.TechnicalDepthSourceBonus < 0 || a.Scoring.TechnicalDepthTestsBonus < 0 ||
+		a.Scoring.TechnicalDepthInfraConfigBonus < 0 || a.Scoring.TechnicalDepthCrossSurfaceBonus < 0 ||
+		a.Scoring.TechnicalDepthChangedFilesBonus < 0 || a.Scoring.TechnicalDepthChangeVolumeBonus < 0 ||
+		a.Scoring.TechnicalDepthCriticalityBonus < 0 || a.Scoring.TechnicalDepthMax <= 0 {
+		problems = append(problems, "SCORING_TECHNICAL_DEPTH_* values must be positive, and *_BONUS values must be non-negative")
+	}
+	if a.Scoring.TechnicalDepthChangedFilesMin <= 0 || a.Scoring.TechnicalDepthChangeVolumeMin <= 0 || a.Scoring.TechnicalDepthCriticalityCap <= 0 {
+		problems = append(problems, "SCORING_TECHNICAL_DEPTH_*_MIN/CAP values must be positive")
+	}
+	if a.Scoring.TechnicalDepthMax < a.Scoring.TechnicalDepthBase {
+		problems = append(problems, "SCORING_TECHNICAL_DEPTH_MAX must be >= SCORING_TECHNICAL_DEPTH_BASE")
+	}
+	if a.Scoring.BadgeMultiRepoRepositoryMin <= 0 || a.Scoring.BadgeSecurityXPMin <= 0 || a.Scoring.BadgeTestingXPMin <= 0 ||
+		a.Scoring.BadgeConsistencyWeeksMin <= 0 || a.Scoring.BadgeEvidencePRLimit <= 0 {
+		problems = append(problems, "SCORING_BADGE_* threshold values must be positive")
+	}
 	if a.Scoring.DiminishingSimilarCap < 0 || a.Scoring.DiminishingCategoryCap < 0 || a.Scoring.DiminishingRepositoryThreshold < 0 {
 		problems = append(problems, "SCORING_DIMINISHING_*_CAP/THRESHOLD values must be non-negative")
 	}
@@ -932,6 +1031,29 @@ func (a App) ValidateAuthService() error {
 	if a.Auth.RateLimitMaxAttempts <= 0 {
 		problems = append(problems, "AUTH_RATE_LIMIT_MAX_ATTEMPTS must be positive")
 	}
+	if a.IsProduction() {
+		if strings.TrimSpace(a.Database.URL) == defaultLocalDatabaseURL {
+			problems = append(problems, "DATABASE_URL must be overridden in production")
+		}
+		if strings.TrimSpace(a.Auth.SessionSecret) == defaultDevSessionSecret {
+			problems = append(problems, "GITRANK_SESSION_SECRET must be overridden in production")
+		}
+		if strings.TrimSpace(a.Auth.JWTSigningKey) == defaultDevJWTSigningKey {
+			problems = append(problems, "GITRANK_JWT_SIGNING_KEY must be overridden in production")
+		}
+		if strings.TrimSpace(a.Auth.TokenEncryptionKey) == defaultDevTokenEncryptionKey {
+			problems = append(problems, "GITHUB_TOKEN_ENCRYPTION_KEY must be overridden in production")
+		}
+		if strings.TrimSpace(a.GitHub.ClientID) == defaultDevGitHubClientID && strings.TrimSpace(a.GitHub.AppClientID) == "" {
+			problems = append(problems, "GITHUB_CLIENT_ID must be overridden in production")
+		}
+		if strings.TrimSpace(a.GitHub.ClientSecret) == defaultDevGitHubClientSecret && strings.TrimSpace(a.GitHub.AppClientSecret) == "" {
+			problems = append(problems, "GITHUB_CLIENT_SECRET must be overridden in production")
+		}
+		if strings.TrimSpace(a.GitHub.OAuthRedirectURL) == defaultLocalOAuthRedirectURL {
+			problems = append(problems, "GITHUB_OAUTH_REDIRECT_URL must be overridden in production")
+		}
+	}
 	if strings.TrimSpace(a.Auth.TokenEncryptionKey) == "" {
 		problems = append(problems, "GITHUB_TOKEN_ENCRYPTION_KEY is required")
 	} else if _, err := decodeBase64Key(a.Auth.TokenEncryptionKey); err != nil {
@@ -967,6 +1089,14 @@ func (a App) ValidateProfileService() error {
 	}
 	if strings.TrimSpace(a.Auth.CSRFCookieName) == "" {
 		problems = append(problems, "AUTH_CSRF_COOKIE_NAME is required")
+	}
+	if a.IsProduction() {
+		if strings.TrimSpace(a.Auth.SessionSecret) == defaultDevSessionSecret {
+			problems = append(problems, "GITRANK_SESSION_SECRET must be overridden in production")
+		}
+		if strings.TrimSpace(a.Database.URL) == defaultLocalDatabaseURL {
+			problems = append(problems, "DATABASE_URL must be overridden in production")
+		}
 	}
 	if a.Profile.PublicCacheTTL <= 0 || a.Profile.PrivateCacheTTL <= 0 {
 		problems = append(problems, "PROFILE_PUBLIC_CACHE_TTL and PROFILE_PRIVATE_CACHE_TTL must be positive durations")

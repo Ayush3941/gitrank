@@ -249,7 +249,7 @@ func (s *Service) buildReplay(userID, triggerType string, candidates []replayCan
 			sourceWatermark = candidate.AnalysisCreatedAt.UTC()
 		}
 
-		analysis := buildReplayAnalysis(candidate)
+		analysis := buildReplayAnalysis(candidate, s.cfg.Scoring)
 		response := s.engine.Score(contracts.ScoreContributionRequest{
 			Repository:  candidate.Repository,
 			PullRequest: candidate.PullRequest,
@@ -325,7 +325,7 @@ func (s *Service) buildReplay(userID, triggerType string, candidates []replayCan
 		})
 	}
 
-	badges := issueBadges(events, aggregateSkills)
+	badges := issueBadges(events, aggregateSkills, s.cfg.Scoring)
 	snapshot := scoreSnapshotRecord{
 		UserID:            userID,
 		ScoreVersion:      s.scoreVersion(),
@@ -352,7 +352,7 @@ func (c replayCandidate) SelfMerged() bool {
 	return author != "" && mergedBy != "" && author == mergedBy
 }
 
-func buildReplayAnalysis(candidate replayCandidate) contracts.PullRequestAnalysisResponse {
+func buildReplayAnalysis(candidate replayCandidate, policy config.Scoring) contracts.PullRequestAnalysisResponse {
 	breakdown := deriveFileBreakdown(candidate.PullRequest.Files)
 	languages := deriveDetectedLanguages(candidate.PullRequest.Files, candidate.Repository.PrimaryLanguage, candidate.SignalHints)
 	criticality := deriveCriticalityTags(candidate.PullRequest.Files, candidate.SignalHints)
@@ -370,8 +370,8 @@ func buildReplayAnalysis(candidate replayCandidate) contracts.PullRequestAnalysi
 		Category:                category,
 		Summary:                 candidate.Summary,
 		Confidence:              candidate.Confidence,
-		TechnicalDepth:          deriveTechnicalDepth(candidate.PullRequest, breakdown, criticality),
-		ReviewStrength:          deriveReviewStrength(candidate.PullRequest.Reviews),
+		TechnicalDepth:          deriveTechnicalDepth(candidate.PullRequest, breakdown, criticality, policy),
+		ReviewStrength:          deriveReviewStrength(candidate.PullRequest.Reviews, policy),
 		DetectedLanguages:       languages,
 		PrimaryDetectedLanguage: primaryLanguage(languages, candidate.Repository.PrimaryLanguage),
 		CriticalityTags:         criticality,
@@ -536,8 +536,45 @@ func deriveReviewCycles(reviews []contracts.ReviewSignal) int {
 	return cycles
 }
 
-func deriveReviewStrength(reviews []contracts.ReviewSignal) float64 {
-	strength := 0.8
+func deriveReviewStrength(reviews []contracts.ReviewSignal, policy config.Scoring) float64 {
+	baseStrength := policy.ReviewStrengthBase
+	if baseStrength <= 0 {
+		baseStrength = 0.8
+	}
+	commentedBonus := policy.ReviewStrengthCommentedBonus
+	if commentedBonus < 0 {
+		commentedBonus = 0.05
+	}
+	approvedBonus := policy.ReviewStrengthApprovedBonus
+	if approvedBonus < 0 {
+		approvedBonus = 0.12
+	}
+	approvedCap := policy.ReviewStrengthApprovedCap
+	if approvedCap <= 0 {
+		approvedCap = 3
+	}
+	changesBonus := policy.ReviewStrengthChangesBonus
+	if changesBonus < 0 {
+		changesBonus = 0.18
+	}
+	changesCap := policy.ReviewStrengthChangesCap
+	if changesCap <= 0 {
+		changesCap = 2
+	}
+	denseThreshold := policy.ReviewStrengthDenseThreshold
+	if denseThreshold <= 0 {
+		denseThreshold = 4
+	}
+	denseBonus := policy.ReviewStrengthDenseBonus
+	if denseBonus < 0 {
+		denseBonus = 0.1
+	}
+	maxStrength := policy.ReviewStrengthMax
+	if maxStrength < baseStrength {
+		maxStrength = baseStrength
+	}
+
+	strength := baseStrength
 	approvals := 0
 	changes := 0
 	for _, review := range reviews {
@@ -547,43 +584,92 @@ func deriveReviewStrength(reviews []contracts.ReviewSignal) float64 {
 		case "changes_requested":
 			changes++
 		case "commented":
-			strength += 0.05
+			strength += commentedBonus
 		}
 	}
-	strength += float64(min(approvals, 3)) * 0.12
-	strength += float64(min(changes, 2)) * 0.18
-	if len(reviews) >= 4 {
-		strength += 0.1
+	strength += float64(min(approvals, approvedCap)) * approvedBonus
+	strength += float64(min(changes, changesCap)) * changesBonus
+	if len(reviews) >= denseThreshold {
+		strength += denseBonus
 	}
-	if strength > 2.1 {
-		return 2.1
+	if strength > maxStrength {
+		return maxStrength
 	}
 	return strength
 }
 
-func deriveTechnicalDepth(pr contracts.PullRequestContext, breakdown contracts.FileBreakdown, criticality []string) float64 {
-	depth := 0.75
+func deriveTechnicalDepth(pr contracts.PullRequestContext, breakdown contracts.FileBreakdown, criticality []string, policy config.Scoring) float64 {
+	baseDepth := policy.TechnicalDepthBase
+	if baseDepth <= 0 {
+		baseDepth = 0.75
+	}
+	sourceBonus := policy.TechnicalDepthSourceBonus
+	if sourceBonus < 0 {
+		sourceBonus = 0.2
+	}
+	testsBonus := policy.TechnicalDepthTestsBonus
+	if testsBonus < 0 {
+		testsBonus = 0.12
+	}
+	infraConfigBonus := policy.TechnicalDepthInfraConfigBonus
+	if infraConfigBonus < 0 {
+		infraConfigBonus = 0.08
+	}
+	crossSurfaceBonus := policy.TechnicalDepthCrossSurfaceBonus
+	if crossSurfaceBonus < 0 {
+		crossSurfaceBonus = 0.12
+	}
+	changedFilesMin := policy.TechnicalDepthChangedFilesMin
+	if changedFilesMin <= 0 {
+		changedFilesMin = 5
+	}
+	changedFilesBonus := policy.TechnicalDepthChangedFilesBonus
+	if changedFilesBonus < 0 {
+		changedFilesBonus = 0.12
+	}
+	changeVolumeMin := policy.TechnicalDepthChangeVolumeMin
+	if changeVolumeMin <= 0 {
+		changeVolumeMin = 200
+	}
+	changeVolumeBonus := policy.TechnicalDepthChangeVolumeBonus
+	if changeVolumeBonus < 0 {
+		changeVolumeBonus = 0.15
+	}
+	criticalityCap := policy.TechnicalDepthCriticalityCap
+	if criticalityCap <= 0 {
+		criticalityCap = 3
+	}
+	criticalityBonus := policy.TechnicalDepthCriticalityBonus
+	if criticalityBonus < 0 {
+		criticalityBonus = 0.08
+	}
+	maxDepth := policy.TechnicalDepthMax
+	if maxDepth < baseDepth {
+		maxDepth = baseDepth
+	}
+
+	depth := baseDepth
 	if breakdown.Source > 0 {
-		depth += 0.2
+		depth += sourceBonus
 	}
 	if breakdown.Tests > 0 {
-		depth += 0.12
+		depth += testsBonus
 	}
 	if breakdown.Infra > 0 || breakdown.Config > 0 {
-		depth += 0.08
+		depth += infraConfigBonus
 	}
 	if breakdown.Source > 0 && (breakdown.Tests > 0 || breakdown.Infra > 0 || breakdown.Config > 0) {
-		depth += 0.12
+		depth += crossSurfaceBonus
 	}
-	if pr.ChangedFiles >= 5 {
-		depth += 0.12
+	if pr.ChangedFiles >= changedFilesMin {
+		depth += changedFilesBonus
 	}
-	if pr.Additions+pr.Deletions >= 200 {
-		depth += 0.15
+	if pr.Additions+pr.Deletions >= changeVolumeMin {
+		depth += changeVolumeBonus
 	}
-	depth += float64(min(len(criticality), 3)) * 0.08
-	if depth > 2.4 {
-		return 2.4
+	depth += float64(min(len(criticality), criticalityCap)) * criticalityBonus
+	if depth > maxDepth {
+		return maxDepth
 	}
 	return depth
 }
@@ -639,7 +725,28 @@ func deriveSkills(category string, breakdown contracts.FileBreakdown, criticalit
 	return sortSet(set)
 }
 
-func issueBadges(events []scoreEventRecord, aggregateSkills map[string]int) []badgeAward {
+func issueBadges(events []scoreEventRecord, aggregateSkills map[string]int, policy config.Scoring) []badgeAward {
+	repositoryMin := policy.BadgeMultiRepoRepositoryMin
+	if repositoryMin <= 0 {
+		repositoryMin = 3
+	}
+	securityXPMin := policy.BadgeSecurityXPMin
+	if securityXPMin <= 0 {
+		securityXPMin = 120
+	}
+	testingXPMin := policy.BadgeTestingXPMin
+	if testingXPMin <= 0 {
+		testingXPMin = 100
+	}
+	consistencyWeeksMin := policy.BadgeConsistencyWeeksMin
+	if consistencyWeeksMin <= 0 {
+		consistencyWeeksMin = 4
+	}
+	evidencePRLimit := policy.BadgeEvidencePRLimit
+	if evidencePRLimit <= 0 {
+		evidencePRLimit = 5
+	}
+
 	badges := make([]badgeAward, 0, 5)
 	repositories := make(map[string]struct{})
 	activeWeeks := make(map[time.Time]struct{})
@@ -669,11 +776,11 @@ func issueBadges(events []scoreEventRecord, aggregateSkills map[string]int) []ba
 				"rule_version":    "badges/v1",
 				"awarded_for":     "first accepted scored contribution",
 				"evidence_pr_ids": []string{firstMergedEvent.PullRequestID},
-				"evidence_prs":    badgeEvidenceEvents([]scoreEventRecord{*firstMergedEvent}, 1),
+				"evidence_prs":    badgeEvidenceEvents([]scoreEventRecord{*firstMergedEvent}, evidencePRLimit),
 			},
 		})
 	}
-	if len(repositories) >= 3 {
+	if len(repositories) >= repositoryMin {
 		badges = append(badges, badgeAward{
 			Key:       "multi_repo_operator",
 			AwardedAt: latestEventAt(events),
@@ -683,12 +790,12 @@ func issueBadges(events []scoreEventRecord, aggregateSkills map[string]int) []ba
 				"rule_version":      "badges/v1",
 				"repository_count":  len(repositories),
 				"contribution_span": len(events),
-				"evidence_pr_ids":   badgeEvidencePRIDs(events, 5),
-				"evidence_prs":      badgeEvidenceEvents(events, 5),
+				"evidence_pr_ids":   badgeEvidencePRIDs(events, evidencePRLimit),
+				"evidence_prs":      badgeEvidenceEvents(events, evidencePRLimit),
 			},
 		})
 	}
-	if aggregateSkills["security"] >= 120 {
+	if aggregateSkills["security"] >= securityXPMin {
 		badges = append(badges, badgeAward{
 			Key:       "security_signal_1",
 			AwardedAt: latestEventAt(events),
@@ -697,12 +804,12 @@ func issueBadges(events []scoreEventRecord, aggregateSkills map[string]int) []ba
 				"rule":            "security_signal_1",
 				"rule_version":    "badges/v1",
 				"security_xp":     aggregateSkills["security"],
-				"evidence_pr_ids": badgeEvidencePRIDs(skillEvents(events, "security"), 5),
-				"evidence_prs":    badgeEvidenceEvents(skillEvents(events, "security"), 5),
+				"evidence_pr_ids": badgeEvidencePRIDs(skillEvents(events, "security"), evidencePRLimit),
+				"evidence_prs":    badgeEvidenceEvents(skillEvents(events, "security"), evidencePRLimit),
 			},
 		})
 	}
-	if aggregateSkills["testing"] >= 100 {
+	if aggregateSkills["testing"] >= testingXPMin {
 		badges = append(badges, badgeAward{
 			Key:       "test_builder",
 			AwardedAt: latestEventAt(events),
@@ -711,12 +818,12 @@ func issueBadges(events []scoreEventRecord, aggregateSkills map[string]int) []ba
 				"rule":            "test_builder",
 				"rule_version":    "badges/v1",
 				"testing_xp":      aggregateSkills["testing"],
-				"evidence_pr_ids": badgeEvidencePRIDs(skillEvents(events, "testing"), 5),
-				"evidence_prs":    badgeEvidenceEvents(skillEvents(events, "testing"), 5),
+				"evidence_pr_ids": badgeEvidencePRIDs(skillEvents(events, "testing"), evidencePRLimit),
+				"evidence_prs":    badgeEvidenceEvents(skillEvents(events, "testing"), evidencePRLimit),
 			},
 		})
 	}
-	if longestWeekStreak(activeWeeks) >= 4 {
+	if longestWeekStreak(activeWeeks) >= consistencyWeeksMin {
 		badges = append(badges, badgeAward{
 			Key:       "consistency_4w",
 			AwardedAt: latestEventAt(events),
@@ -725,8 +832,8 @@ func issueBadges(events []scoreEventRecord, aggregateSkills map[string]int) []ba
 				"rule":            "consistency_4w",
 				"rule_version":    "badges/v1",
 				"active_weeks":    longestWeekStreak(activeWeeks),
-				"evidence_pr_ids": badgeEvidencePRIDs(events, 5),
-				"evidence_prs":    badgeEvidenceEvents(events, 5),
+				"evidence_pr_ids": badgeEvidencePRIDs(events, evidencePRLimit),
+				"evidence_prs":    badgeEvidenceEvents(events, evidencePRLimit),
 			},
 		})
 	}

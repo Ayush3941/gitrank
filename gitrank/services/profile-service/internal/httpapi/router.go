@@ -64,7 +64,7 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 	})))
 
 	mux.Handle("/v1/leaderboard/materialize", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		response, err := profileService.MaterializeLeaderboard(r.Context(), 100, time.Now().UTC())
+		response, err := profileService.MaterializeLeaderboard(r.Context(), cfg.Scoring.LeaderboardMaxLimit, time.Now().UTC())
 		if err != nil {
 			writeProfileError(w, r, err)
 			return
@@ -73,7 +73,7 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 	})))
 
 	mux.Handle("/v1/leaderboard/materialize/history", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		weeks := 26
+		weeks := cfg.Scoring.LeaderboardBackfillDefaultWeeks
 		if raw := strings.TrimSpace(r.URL.Query().Get("weeks")); raw != "" {
 			value, err := strconv.Atoi(raw)
 			if err != nil || value <= 0 {
@@ -82,7 +82,7 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 			}
 			weeks = value
 		}
-		response, err := profileService.BackfillLeaderboardHistory(r.Context(), weeks, 100, time.Now().UTC())
+		response, err := profileService.BackfillLeaderboardHistory(r.Context(), weeks, cfg.Scoring.LeaderboardMaxLimit, time.Now().UTC())
 		if err != nil {
 			writeProfileError(w, r, err)
 			return
@@ -91,7 +91,7 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 	})))
 
 	mux.Handle("/v1/leaderboard", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		response, err := profileService.Leaderboard(r.Context(), 50, time.Now().UTC())
+		response, err := profileService.Leaderboard(r.Context(), cfg.Scoring.LeaderboardDefaultLimit, time.Now().UTC())
 		if err != nil {
 			writeProfileError(w, r, err)
 			return
@@ -101,7 +101,7 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 
 	mux.Handle("/v1/profile/users/", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if userID, ok := parsePullRequestReportBackfillPath(r.URL.Path); ok {
-			response, err := profileService.BackfillPullRequestReportsForUser(r.Context(), userID, 100, time.Now().UTC())
+			response, err := profileService.BackfillPullRequestReportsForUser(r.Context(), userID, cfg.Profile.ReportBackfillDefaultLimit, time.Now().UTC())
 			if err != nil {
 				writeProfileError(w, r, err)
 				return

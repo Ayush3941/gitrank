@@ -1,13 +1,10 @@
 export function publicBaseURL(): string {
-  const candidate = process.env.GITRANK_PUBLIC_BASE_URL?.trim();
-  if (!candidate) {
-    throw new Error("GITRANK_PUBLIC_BASE_URL is required");
-  }
+  const candidate = process.env.GITRANK_PUBLIC_BASE_URL?.trim() || "http://localhost:3000";
 
   try {
     return new URL(candidate).origin;
   } catch {
-    throw new Error("GITRANK_PUBLIC_BASE_URL must be a valid absolute URL");
+    return "http://localhost:3000";
   }
 }
 
