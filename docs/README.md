@@ -45,6 +45,7 @@ This top-level map keeps navigation simple without changing service runtime path
   - `gitrank/Makefile` script-target references aligned with tracked executable `gitrank/scripts/*.sh`
   - workflow `run` script references in `.github/workflows/*` aligned with tracked executable scripts
   - workflow `make <target>` references in `.github/workflows/*` aligned with `gitrank/Makefile` targets
+  - workflow `npm run <script>` references in `.github/workflows/*` aligned with `frontend/package.json` scripts
   - markdown relative-link integrity across tracked docs
 
 ## Navigation Rule
