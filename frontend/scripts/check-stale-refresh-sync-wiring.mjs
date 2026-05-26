@@ -1,22 +1,24 @@
 #!/usr/bin/env node
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
 const root = process.cwd();
+const featuresRoot = path.join(root, "features");
+const staleStateExemptions = new Set([
+  // Public profile can be viewed anonymously; it should not attempt authenticated sync mutation.
+  "features/profile/components/PublicProfilePageClient.tsx",
+]);
 
-const targets = [
-  "features/dashboard/components/DashboardPageClient.tsx",
-  "features/contributions/components/ContributionsPageClient.tsx",
-  "features/badges/components/BadgesPageClient.tsx",
-  "features/quests/components/QuestsPageClient.tsx",
-  "features/leaderboard/components/LeaderboardPageClient.tsx",
-];
+const targets = await findStaleStateTargets(featuresRoot);
 
 const failures = [];
 
 for (const relativePath of targets) {
   const absolutePath = path.join(root, relativePath);
   const source = await readFile(absolutePath, "utf8");
+  if (staleStateExemptions.has(relativePath)) {
+    continue;
+  }
 
   assertPattern(
     source,
@@ -55,3 +57,34 @@ function assertPattern(source, file, pattern, reason) {
   failures.push({ file, reason });
 }
 
+async function findStaleStateTargets(directory) {
+  const out = [];
+  await walk(directory, out);
+  out.sort();
+  return out;
+}
+
+async function walk(directory, out) {
+  let entries = [];
+  try {
+    entries = await readdir(directory, { withFileTypes: true });
+  } catch {
+    return;
+  }
+
+  for (const entry of entries) {
+    const absolutePath = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      await walk(absolutePath, out);
+      continue;
+    }
+    if (!entry.isFile() || !entry.name.endsWith(".tsx")) {
+      continue;
+    }
+    const source = await readFile(absolutePath, "utf8");
+    if (!source.includes("<StaleState")) {
+      continue;
+    }
+    out.push(path.relative(root, absolutePath));
+  }
+}
