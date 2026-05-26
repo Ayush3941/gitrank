@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { GitPullRequest, ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import type { ReactNode } from "react";
 import { ContributionPulseStrip } from "@/components/shared/ContributionPulseStrip";
@@ -10,6 +11,7 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { XPProgress } from "@/components/shared/XPProgress";
+import { Button } from "@/components/ui/button";
 import { uniqueDisplayValues } from "@/lib/display-values";
 import type { UserProfile } from "@/types/gitrank";
 
@@ -118,6 +120,16 @@ export function PublicProfileHero({
               shareHeadline={shareHeadline}
               analyticsTargetPrefix="public-profile"
             />
+            <Button asChild variant="ghost" size="sm">
+              <Link
+                href={`/api/profile/public/${encodeURIComponent(user.username)}/card`}
+                prefetch={false}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View card JSON
+              </Link>
+            </Button>
           </div>
         </div>
         <div className="neon-surface rounded-[1.85rem] p-5">
