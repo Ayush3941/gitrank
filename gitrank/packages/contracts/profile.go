@@ -389,6 +389,7 @@ type PublicProfileResponse struct {
 	Level           ProfileLevelView     `json:"level"`
 	Badges          []BadgeView          `json:"badges,omitempty"`
 	ScoreHistory    []ScoreHistoryEntry  `json:"score_history,omitempty"`
+	ScoreHistoryCap int                  `json:"score_history_cap,omitempty"`
 	Timeline        ProfileTimeline      `json:"timeline"`
 	ShareCard       ShareableProfileCard `json:"share_card"`
 	Staleness       ProfileStaleness     `json:"staleness"`
@@ -402,6 +403,7 @@ type PrivateProfileResponse struct {
 	Badges               []BadgeView                 `json:"badges,omitempty"`
 	Timeline             ProfileTimeline             `json:"timeline"`
 	ScoreHistory         []ScoreHistoryEntry         `json:"score_history,omitempty"`
+	ScoreHistoryCap      int                         `json:"score_history_cap,omitempty"`
 	RecentPRReports      []PullRequestReportResponse `json:"recent_pr_reports,omitempty"`
 	Privacy              ProfilePrivacySettings      `json:"privacy"`
 	RepositoryVisibility []RepositoryVisibilityView  `json:"repository_visibility,omitempty"`

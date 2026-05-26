@@ -103,7 +103,13 @@ func (s *Service) PublicProfile(ctx context.Context, handle string, now time.Tim
 		s.log.Warn("profile cache read failed", "error", err, "cache_key", cacheKey)
 	}
 
-	response := publicResponseFromSnapshot(snapshot, settings.Settings, visibility, now.UTC())
+	response := publicResponseFromSnapshot(
+		snapshot,
+		settings.Settings,
+		visibility,
+		now.UTC(),
+		s.cfg.Scoring.ProfileScoreHistoryLimit,
+	)
 	if err := s.cache.SetJSON(ctx, cacheKey, response, s.publicCacheTTL); err != nil {
 		s.log.Warn("profile cache write failed", "error", err, "cache_key", cacheKey)
 	}
@@ -319,6 +325,7 @@ func (s *Service) PrivateProfile(ctx context.Context, sessionToken string, now t
 		visibility,
 		pullRequestReportsFromRecords(recentReportRecords, now.UTC()),
 		now.UTC(),
+		s.cfg.Scoring.ProfileScoreHistoryLimit,
 	)
 	if err := s.cache.SetJSON(ctx, cacheKey, response, s.privateCacheTTL); err != nil {
 		s.log.Warn("profile cache write failed", "error", err, "cache_key", cacheKey)
@@ -463,7 +470,13 @@ func (s *Service) rebuildSnapshot(ctx context.Context, user userRecord, now time
 		return snapshotRecord{}, err
 	}
 
-	built := buildSnapshot(user, scoreRows, badges, now.UTC())
+	built := buildSnapshot(
+		user,
+		scoreRows,
+		badges,
+		now.UTC(),
+		s.cfg.Scoring.ProfileScoreHistoryLimit,
+	)
 	snapshot, err := s.store.InsertSnapshot(ctx, user.ID, built)
 	if err != nil {
 		return snapshotRecord{}, err
@@ -474,7 +487,13 @@ func (s *Service) rebuildSnapshot(ctx context.Context, user userRecord, now time
 	return snapshot, nil
 }
 
-func publicResponseFromSnapshot(snapshot snapshotRecord, settings contracts.ProfilePrivacySettings, visibility []repositoryVisibilityRecord, now time.Time) contracts.PublicProfileResponse {
+func publicResponseFromSnapshot(
+	snapshot snapshotRecord,
+	settings contracts.ProfilePrivacySettings,
+	visibility []repositoryVisibilityRecord,
+	now time.Time,
+	scoreHistoryCap int,
+) contracts.PublicProfileResponse {
 	repoMap := visibilityMap(visibility)
 	publicRepos := make([]contracts.TopRepositoryView, 0, len(snapshot.Repositories))
 	for _, repository := range snapshot.Repositories {
@@ -505,13 +524,21 @@ func publicResponseFromSnapshot(snapshot snapshotRecord, settings contracts.Prof
 		Level:           snapshot.ShareCard.Level,
 		Badges:          snapshot.Badges,
 		ScoreHistory:    publicHistory,
+		ScoreHistoryCap: scoreHistoryCap,
 		Timeline:        snapshot.Timeline,
 		ShareCard:       snapshot.ShareCard,
 		Staleness:       staleness,
 	}
 }
 
-func privateResponseFromSnapshot(snapshot snapshotRecord, settings contracts.ProfilePrivacySettings, visibility []repositoryVisibilityRecord, recentReports []contracts.PullRequestReportResponse, now time.Time) contracts.PrivateProfileResponse {
+func privateResponseFromSnapshot(
+	snapshot snapshotRecord,
+	settings contracts.ProfilePrivacySettings,
+	visibility []repositoryVisibilityRecord,
+	recentReports []contracts.PullRequestReportResponse,
+	now time.Time,
+	scoreHistoryCap int,
+) contracts.PrivateProfileResponse {
 	repoMap := visibilityMap(visibility)
 	privateRepos := make([]contracts.TopRepositoryView, 0, len(snapshot.Repositories))
 	for _, repository := range snapshot.Repositories {
@@ -556,6 +583,7 @@ func privateResponseFromSnapshot(snapshot snapshotRecord, settings contracts.Pro
 		Badges:               snapshot.Badges,
 		Timeline:             snapshot.Timeline,
 		ScoreHistory:         snapshot.ScoreHistory,
+		ScoreHistoryCap:      scoreHistoryCap,
 		RecentPRReports:      recentReports,
 		Privacy:              settings,
 		RepositoryVisibility: visibilityViews,

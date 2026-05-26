@@ -14,7 +14,7 @@ const (
 	levelStepXP     = 300
 )
 
-func buildSnapshot(user userRecord, scoreRows []scoreRow, badges []badgeRecord, now time.Time) snapshotRecord {
+func buildSnapshot(user userRecord, scoreRows []scoreRow, badges []badgeRecord, now time.Time, scoreHistoryLimit int) snapshotRecord {
 	totalXP := 0
 	mergedPRs := make(map[string]struct{})
 	for _, row := range scoreRows {
@@ -30,7 +30,7 @@ func buildSnapshot(user userRecord, scoreRows []scoreRow, badges []badgeRecord, 
 	timeline := buildTimeline(scoreRows, sourceWatermark)
 	repositories := buildTopRepositories(scoreRows)
 	badgeViews := buildBadgeViews(badges)
-	history := buildScoreHistory(scoreRows)
+	history := buildScoreHistory(scoreRows, scoreHistoryLimit)
 
 	handle := strings.TrimSpace(user.Handle)
 	if handle == "" {
@@ -304,8 +304,10 @@ func buildBadgeViews(badges []badgeRecord) []contracts.BadgeView {
 	return out
 }
 
-func buildScoreHistory(scoreRows []scoreRow) []contracts.ScoreHistoryEntry {
-	limit := 100
+func buildScoreHistory(scoreRows []scoreRow, limit int) []contracts.ScoreHistoryEntry {
+	if limit <= 0 {
+		limit = len(scoreRows)
+	}
 	if len(scoreRows) < limit {
 		limit = len(scoreRows)
 	}

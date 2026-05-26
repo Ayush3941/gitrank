@@ -125,7 +125,7 @@ func TestBuildScoreHistoryIncludesEvidenceLinks(t *testing.T) {
 			PRTitle:               "Persist score history evidence",
 			CreatedAt:             now.Add(-2 * time.Hour),
 		},
-	})
+	}, 100)
 
 	if len(history) != 3 {
 		t.Fatalf("len(history) = %d, want 3", len(history))
@@ -202,7 +202,7 @@ func TestBuildScoreHistoryNormalizesCategoryFromEvidence(t *testing.T) {
 			Repository:     "octo/repo",
 			PRNumber:       44,
 		},
-	})
+	}, 100)
 
 	if got := history[0].Category; got != "Backend" {
 		t.Fatalf("history[0].Category = %q, want Backend", got)
@@ -212,6 +212,22 @@ func TestBuildScoreHistoryNormalizesCategoryFromEvidence(t *testing.T) {
 	}
 	if got := history[2].Category; got != "Unknown" {
 		t.Fatalf("history[2].Category = %q, want Unknown", got)
+	}
+}
+
+func TestBuildScoreHistoryHonorsConfiguredLimit(t *testing.T) {
+	now := time.Date(2026, 5, 5, 13, 0, 0, 0, time.UTC)
+	history := buildScoreHistory([]scoreRow{
+		{EventID: "e1", EventType: "score.computed", DeltaXP: 1, CreatedAt: now},
+		{EventID: "e2", EventType: "score.computed", DeltaXP: 1, CreatedAt: now.Add(-time.Minute)},
+		{EventID: "e3", EventType: "score.computed", DeltaXP: 1, CreatedAt: now.Add(-2 * time.Minute)},
+	}, 2)
+
+	if len(history) != 2 {
+		t.Fatalf("len(history) = %d, want 2", len(history))
+	}
+	if history[0].EventID != "e1" || history[1].EventID != "e2" {
+		t.Fatalf("history event order = %q, %q; want e1, e2", history[0].EventID, history[1].EventID)
 	}
 }
 
@@ -237,7 +253,10 @@ func TestPublicResponseMarksSkillEvidenceStale(t *testing.T) {
 		SourceWatermark: now.Add(-time.Hour),
 	}
 
-	response := publicResponseFromSnapshot(snapshot, contractsDefaults(), nil, now)
+	response := publicResponseFromSnapshot(snapshot, contractsDefaults(), nil, now, 100)
+	if response.ScoreHistoryCap != 100 {
+		t.Fatalf("ScoreHistoryCap = %d, want 100", response.ScoreHistoryCap)
+	}
 	if !response.Staleness.IsStale {
 		t.Fatal("Staleness.IsStale = false, want true")
 	}
@@ -264,7 +283,7 @@ func TestPublicResponseFiltersHiddenRepositories(t *testing.T) {
 
 	response := publicResponseFromSnapshot(snapshot, contractsDefaults(), []repositoryVisibilityRecord{
 		{FullName: "octocat/private-lab", Visibility: "hidden"},
-	}, now)
+	}, now, 100)
 
 	if len(response.TopRepositories) != 1 {
 		t.Fatalf("len(TopRepositories) = %d, want 1", len(response.TopRepositories))
@@ -300,7 +319,10 @@ func TestPrivateResponseIncludesRecentPullRequestReports(t *testing.T) {
 		},
 	}
 
-	response := privateResponseFromSnapshot(snapshot, contractsDefaults(), nil, reports, now)
+	response := privateResponseFromSnapshot(snapshot, contractsDefaults(), nil, reports, now, 100)
+	if response.ScoreHistoryCap != 100 {
+		t.Fatalf("ScoreHistoryCap = %d, want 100", response.ScoreHistoryCap)
+	}
 
 	if len(response.RecentPRReports) != 1 {
 		t.Fatalf("len(RecentPRReports) = %d, want 1", len(response.RecentPRReports))
@@ -425,7 +447,7 @@ func BenchmarkPublicProfileResponseFromSnapshot(b *testing.B) {
 
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		_ = publicResponseFromSnapshot(snapshot, settings, visibility, now)
+		_ = publicResponseFromSnapshot(snapshot, settings, visibility, now, 100)
 	}
 }
 

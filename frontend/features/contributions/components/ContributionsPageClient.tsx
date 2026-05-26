@@ -93,13 +93,20 @@ export function ContributionsPageClient() {
     () => buildContributionFocusCounts(contributionUniverse, contributionDisplayConfig.highXPThreshold),
     [contributionUniverse],
   );
+  const effectiveHistoryCap = Math.max(
+    1,
+    Math.min(
+      contributionDisplayConfig.renderHardCap,
+      data?.profile.scoreHistoryCap ?? contributionDisplayConfig.renderHardCap,
+    ),
+  );
   const filteredRows = useMemo(
     () =>
       deduplicateContributionsByPR(data?.rows ?? []).slice(
         0,
-        contributionDisplayConfig.renderHardCap,
+        effectiveHistoryCap,
       ),
-    [data?.rows],
+    [data?.rows, effectiveHistoryCap],
   );
   const visibleRows = useMemo(
     () => filteredRows.slice(0, visibleCardCount),

@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { getMyProfile } from "@/lib/api/profile-api";
+import { contributionDisplayConfig } from "@/lib/runtime/contribution-display-config";
 import type { Contribution } from "@/types/gitrank";
 import type { ProfileViewData } from "@/types/gitrank";
 
@@ -44,7 +45,9 @@ function filterContributions(rows: Contribution[], params: ContributionParams) {
       normalizedFilter === item.status ||
       normalizedFilter === item.category.toLowerCase();
 
-    const highXpMatch = normalizedFilter !== "high xp" || item.xpEarned >= 500;
+    const highXpMatch =
+      normalizedFilter !== "high xp" ||
+      item.xpEarned >= contributionDisplayConfig.highXPThreshold;
     const searchMatch =
       term.length === 0 ||
       item.title.toLowerCase().includes(term) ||
