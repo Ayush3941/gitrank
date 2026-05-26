@@ -82,6 +82,22 @@ assert_frontend_background_asset_layout() {
   done
 }
 
+assert_no_placeholder_public_assets() {
+  local placeholder_assets=(
+    "frontend/public/file.svg"
+    "frontend/public/globe.svg"
+    "frontend/public/next.svg"
+    "frontend/public/vercel.svg"
+    "frontend/public/window.svg"
+  )
+  local path
+  for path in "${placeholder_assets[@]}"; do
+    if (cd "$ROOT_DIR" && git ls-files --error-unmatch "$path" >/dev/null 2>&1); then
+      fail "placeholder public asset is tracked but unused: $path"
+    fi
+  done
+}
+
 check_markdown_relative_links() {
   local missing=0
   local file dir token target clean resolved
@@ -170,6 +186,7 @@ main() {
   assert_script_entrypoint_hygiene
   assert_large_tracked_file_budget
   assert_frontend_background_asset_layout
+  assert_no_placeholder_public_assets
 
   if ! check_markdown_relative_links; then
     fail "broken markdown relative links detected"
