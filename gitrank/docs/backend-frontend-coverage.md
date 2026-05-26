@@ -18,6 +18,7 @@ Scope:
 |---|---|---|
 | `GET /v1/meta/manifest` | `GET /api/meta/manifest` | Settings → Backend capability panel |
 | `GET /v1/meta/dependencies` | `GET /api/meta/dependencies` | Settings → Backend capability panel |
+| `GET /v1/profile/schema` | `GET /api/profile/schema` | Settings → Profile schema panel |
 | `GET /v1/leaderboard` | `GET /api/leaderboard` | Leaderboard page, Dashboard rank context |
 | `GET /v1/pr/{owner}/{repo}/{number}/report` | `GET /api/pr/[owner]/[repo]/[number]/report` | PR battle report pages |
 | `POST /v1/analytics/events` | `POST /api/analytics/events` | Frontend analytics event emission |

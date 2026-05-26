@@ -44,6 +44,7 @@ import { type ThemePreference, useThemePreference } from "@/hooks/use-theme-pref
 import { SyncExecutionControls } from "@/features/settings/components/SyncExecutionControls";
 import { BackendCapabilityPanel } from "@/features/settings/components/BackendCapabilityPanel";
 import { useAuthSession, useRefreshAuthSession } from "@/hooks/use-auth-session";
+import { ProfileSchemaPanel } from "@/features/settings/components/ProfileSchemaPanel";
 
 type BackedPrivacyKey =
   | "publicProfileEnabled"
@@ -469,6 +470,12 @@ export function SettingsPageClient() {
       <section className="render-opt-section" id="settings-backend-capability-panel">
         <GlowCard className="space-y-4">
           <BackendCapabilityPanel />
+        </GlowCard>
+      </section>
+
+      <section className="render-opt-section" id="settings-profile-schema-panel">
+        <GlowCard className="space-y-4">
+          <ProfileSchemaPanel />
         </GlowCard>
       </section>
 

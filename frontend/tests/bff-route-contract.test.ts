@@ -56,6 +56,15 @@ describe("BFF route mapping contracts", () => {
     expect(proxyGateway).toHaveBeenCalledWith(request, "/v1/me/quests");
   });
 
+  it("maps /api/profile/schema GET to /v1/profile/schema", async () => {
+    const route = await import("@/app/api/profile/schema/route");
+    const request = new Request("http://gitrank.test/api/profile/schema", { method: "GET" });
+
+    await route.GET(request);
+
+    expect(proxyGateway).toHaveBeenCalledWith(request, "/v1/profile/schema");
+  });
+
   it("maps /api/profile/me/repositories/:owner/:repo PATCH to /v1/me/profile/repositories/:owner/:repo", async () => {
     const route = await import("@/app/api/profile/me/repositories/[owner]/[repo]/route");
     const request = new Request("http://gitrank.test/api/profile/me/repositories/acme/repo", {

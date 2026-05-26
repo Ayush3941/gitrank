@@ -123,6 +123,33 @@ func TestProxyPublicProfileRequest(t *testing.T) {
 	}
 }
 
+func TestProxyProfileSchemaRequest(t *testing.T) {
+	profile := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/profile/schema" {
+			t.Fatalf("path = %q, want /v1/profile/schema", r.URL.Path)
+		}
+		_ = json.NewEncoder(w).Encode(contracts.ProfileSchemaResponse{
+			Sections: []contracts.ProfileSection{
+				{Key: "summary", Summary: "Overall rank, XP, strengths, and freshness", Status: "implemented"},
+			},
+		})
+	}))
+	defer profile.Close()
+
+	router := NewRouter(testConfig(profile.URL, stubAuthServer().URL, stubIngestorServer().URL), testLogger(), "test")
+	request := httptest.NewRequest(http.MethodGet, "/v1/profile/schema", nil)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d", response.Code, http.StatusOK)
+	}
+	if response.Header().Get("Cache-Control") != "public, max-age=60, stale-while-revalidate=300" {
+		t.Fatalf("cache-control = %q", response.Header().Get("Cache-Control"))
+	}
+}
+
 func TestProxyPublicProfileCardRequest(t *testing.T) {
 	profile := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/v1/users/octocat/card" {

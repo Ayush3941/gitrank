@@ -16,6 +16,7 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 			{Method: "GET", Path: "/metrics", Summary: "Prometheus-style service metrics", Status: "implemented"},
 			{Method: "GET", Path: "/v1/meta/manifest", Summary: "Service route and dependency manifest", Status: "implemented"},
 			{Method: "GET", Path: "/v1/meta/dependencies", Summary: "Internal and external API dependency map", Status: "implemented"},
+			{Method: "GET", Path: "/v1/profile/schema", Summary: "Get public profile schema sections", Status: "implemented"},
 			{Method: "GET", Path: "/v1/leaderboard", Summary: "Get the public GitRank leaderboard", Status: "implemented"},
 			{Method: "GET", Path: "/v1/pr/{owner}/{repo}/{number}/report", Summary: "Get a public PR battle report from persisted evidence", Status: "implemented"},
 			{Method: "POST", Path: "/v1/analytics/events", Summary: "Accept bounded product analytics events without code, token, or secret payloads", Status: "implemented"},

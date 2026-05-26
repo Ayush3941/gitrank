@@ -69,6 +69,18 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		httpkit.WriteJSON(w, http.StatusOK, manifest.Dependencies)
 	})))
 
+	mux.Handle("/v1/profile/schema", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !allowRateLimit(w, r, publicReadLimiter, "profile_schema") {
+			return
+		}
+		proxyRequest(w, r, client, profileBaseURL, r.URL.Path, proxyOptions{
+			ForwardHeaders: defaultForwardHeaders(r),
+			ResponseHeaders: map[string]string{
+				"Cache-Control": "public, max-age=60, stale-while-revalidate=300",
+			},
+		})
+	})))
+
 	mux.Handle("/v1/leaderboard", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !allowRateLimit(w, r, publicReadLimiter, "leaderboard") {
 			return
