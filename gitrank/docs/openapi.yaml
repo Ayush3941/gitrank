@@ -2332,6 +2332,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ScoreHistoryEntry"
+        score_history_cap:
+          type: integer
+          description: Maximum score-history entries projected into this profile snapshot response.
+          minimum: 1
         timeline:
           $ref: "#/components/schemas/ProfileTimeline"
         share_card:
@@ -2364,6 +2368,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ScoreHistoryEntry"
+        score_history_cap:
+          type: integer
+          description: Maximum score-history entries projected into this profile snapshot response.
+          minimum: 1
         recent_pr_reports:
           type: array
           items:
