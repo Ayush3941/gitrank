@@ -31,7 +31,7 @@ Optional GitHub App bootstrap secrets (used when repo-admin token secret is not 
 
 - `PROMETHEUS_BASE_URL`
 - `GRAFANA_BASE_URL`
-- `K8S_IMAGE_REGISTRY_OWNER` (optional if default owner is acceptable)
+- `IMAGE_REGISTRY_OWNER` (optional if default owner is acceptable)
 - `K8S_PUBLIC_BASE_URL`
 - `K8S_API_BASE_URL`
 - `K8S_AUTH_COOKIE_DOMAIN`
@@ -42,9 +42,9 @@ Optional GitHub App bootstrap secrets (used when repo-admin token secret is not 
 
 Optional observability tuning variables:
 
-- `OBS_EXPECTED_SERVICES`
-- `OBS_EXPECTED_ALERT_GROUPS`
-- `OBS_EXPECTED_DASHBOARD_TITLES`
+- `EXPECTED_SERVICES`
+- `EXPECTED_ALERT_GROUPS`
+- `EXPECTED_DASHBOARD_TITLES`
 - `K8S_GITHUB_USER_AGENT`
 
 ## External Unblock Checklist
