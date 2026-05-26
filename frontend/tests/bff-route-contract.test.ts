@@ -56,6 +56,25 @@ describe("BFF route mapping contracts", () => {
     expect(proxyGateway).toHaveBeenCalledWith(request, "/v1/me/quests");
   });
 
+  it("maps /api/profile/me/repositories/:owner/:repo PATCH to /v1/me/profile/repositories/:owner/:repo", async () => {
+    const route = await import("@/app/api/profile/me/repositories/[owner]/[repo]/route");
+    const request = new Request("http://gitrank.test/api/profile/me/repositories/acme/repo", {
+      method: "PATCH",
+    });
+
+    await route.PATCH(request, {
+      params: Promise.resolve({
+        owner: "acme/dev",
+        repo: "repo with spaces",
+      }),
+    });
+
+    expect(proxyGateway).toHaveBeenCalledWith(
+      request,
+      "/v1/me/profile/repositories/acme%2Fdev/repo%20with%20spaces",
+    );
+  });
+
   it("maps /api/leaderboard GET to /v1/leaderboard", async () => {
     const route = await import("@/app/api/leaderboard/route");
     const request = new Request("http://gitrank.test/api/leaderboard", { method: "GET" });
@@ -81,6 +100,15 @@ describe("BFF route mapping contracts", () => {
     await route.GET(request);
 
     expect(proxyGateway).toHaveBeenCalledWith(request, "/v1/sync/runs");
+  });
+
+  it("maps /api/sync POST to /v1/sync", async () => {
+    const route = await import("@/app/api/sync/route");
+    const request = new Request("http://gitrank.test/api/sync", { method: "POST" });
+
+    await route.POST(request);
+
+    expect(proxyGateway).toHaveBeenCalledWith(request, "/v1/sync");
   });
 
   it("maps /api/sync/repository POST to /v1/sync/repository/execute", async () => {
@@ -198,6 +226,33 @@ describe("BFF route mapping contracts", () => {
     await route.POST(request);
 
     expect(proxyAuth).toHaveBeenCalledWith(request, "/v1/account/link/start");
+  });
+
+  it("maps /api/session/me GET to auth-service /v1/session/me", async () => {
+    const route = await import("@/app/api/session/me/route");
+    const request = new Request("http://gitrank.test/api/session/me", { method: "GET" });
+
+    await route.GET(request);
+
+    expect(proxyAuth).toHaveBeenCalledWith(request, "/v1/session/me");
+  });
+
+  it("maps /api/session/refresh POST to auth-service /v1/session/refresh", async () => {
+    const route = await import("@/app/api/session/refresh/route");
+    const request = new Request("http://gitrank.test/api/session/refresh", { method: "POST" });
+
+    await route.POST(request);
+
+    expect(proxyAuth).toHaveBeenCalledWith(request, "/v1/session/refresh");
+  });
+
+  it("maps /api/analytics/events POST to /v1/analytics/events", async () => {
+    const route = await import("@/app/api/analytics/events/route");
+    const request = new Request("http://gitrank.test/api/analytics/events", { method: "POST" });
+
+    await route.POST(request);
+
+    expect(proxyGateway).toHaveBeenCalledWith(request, "/v1/analytics/events");
   });
 
   it("maps PR report route params to encoded /v1/pr/.../report path", async () => {

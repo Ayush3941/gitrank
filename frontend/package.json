@@ -24,6 +24,7 @@
     "check:main-thread": "node scripts/check-main-thread-guards.mjs",
     "check:motion-budget": "node scripts/check-motion-budget.mjs",
     "check:query-policy": "node scripts/check-query-policy.mjs",
+    "check:bff-route-contract-coverage": "node scripts/check-bff-route-contract-coverage.mjs",
     "check:pr-category-policy": "node scripts/check-pr-category-policy-boundary.mjs",
     "check:contribution-dedup-policy": "node scripts/check-contribution-dedup-boundary.mjs",
     "check:scroll-jumps": "node scripts/check-scroll-jump-apis.mjs",
@@ -33,7 +34,7 @@
     "analyze:bundle": "node scripts/analyze-bundle.mjs",
     "test:smoke": "vitest run tests/live-fixture-render.test.tsx",
     "test:a11y": "vitest run tests/accessibility.test.tsx tests/accessibility-controls.test.tsx tests/settings-form-accessibility.test.tsx",
-    "test:contracts": "vitest run tests/bff-route-contract.test.ts",
+    "test:contracts": "npm run check:bff-route-contract-coverage && vitest run tests/bff-route-contract.test.ts",
     "test:visual": "vitest run tests/visual-regression.test.tsx"
   },
   "dependencies": {
