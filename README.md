@@ -65,10 +65,12 @@ auth-service -> github-ingestor -> pr-analyzer -> scoring-engine
 
 ## Repository Layout
 
-- `gitrank/` Go backend services, packages, migrations, deployments, runbooks.
-- `frontend/` Next.js app (dashboard, contributions, badges, quests, settings, profile).
+- `frontend/` app layer (Next.js UI, BFF routes, tests, frontend scripts).
+- `gitrank/` backend workspace (Go services, shared packages, migrations, deployments, backend scripts).
+- `docs/` top-level navigation + research notes for this monorepo.
+- `scripts/` root repo-maintenance utilities.
 - `start.sh` local bootstrap for infra + backend + frontend.
-- `CONTRIBUTING.md` master implementation checklists, policy decisions, V2/ABRA tracking.
+- `CONTRIBUTING.md` master implementation checklists, policy decisions, V1/V2/ABRA tracking.
 
 ## Local Run (Recommended)
 
@@ -155,6 +157,18 @@ npm run test:a11y
 npm run build
 ```
 
+Repository navigation snapshot:
+
+```bash
+./scripts/generate-repo-tree.sh
+```
+
+Repository sync/usability audit:
+
+```bash
+./scripts/check-repo-sync.sh
+```
+
 ## Troubleshooting
 
 - OAuth callback mismatch: ensure GitHub callback URL equals `GITHUB_OAUTH_REDIRECT_URL`.
@@ -164,12 +178,16 @@ npm run build
 
 ## Key Documentation
 
+- [Repository Map](./docs/README.md)
+- [Repository Tree (Human-Friendly)](./docs/REPO_TREE.md)
 - [Backend Workspace README](./gitrank/README.md)
 - [Frontend README](./frontend/README.md)
 - [Architecture](./gitrank/docs/architecture.md)
 - [API Architecture](./gitrank/docs/api-architecture.md)
+- [System and Product Flows (Mermaid)](./gitrank/docs/mermaid-flows.md)
 - [Production Decision Register](./gitrank/docs/production-decision-register.md)
 - [Maintainer Guide](./gitrank/docs/MAINTAINER_GUIDE.md)
+- [Research Notes](./docs/research/README.md)
 - [Contributing and Checklists](./CONTRIBUTING.md)
 
 ## License

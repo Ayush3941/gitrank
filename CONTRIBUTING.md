@@ -41,7 +41,7 @@ That means GitRank must be:
 
 ## Research Baseline (GitRanking Paper)
 
-Source reviewed: `gitrank_research .pdf` (local paper copy), reviewed on May 24, 2026.
+Source reviewed: `docs/research/gitrank_research.pdf` (local paper copy), reviewed on May 24, 2026.
 
 The paper this project name is inspired by is:
 

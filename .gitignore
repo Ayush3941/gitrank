@@ -25,10 +25,13 @@ tmp/
 .gocache/
 .run/
 .logs/
+frontend/node_modules/
+frontend/.next/
+frontend/*.tsbuildinfo
 
 # OS and logs
 *.log
-gitrank_abstract.pdf
+docs/research/*.pdf
 
 # Generated V2 closeout status artifacts
 gitrank/docs/releases/v2-live-closeout-status-latest.md
