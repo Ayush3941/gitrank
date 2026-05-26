@@ -133,20 +133,17 @@ func (s *Service) Leaderboard(ctx context.Context, limit int, now time.Time) (co
 	if limit > s.cfg.Scoring.LeaderboardMaxLimit {
 		limit = s.cfg.Scoring.LeaderboardMaxLimit
 	}
-	if limit > leaderboardMaxMaterializedRows {
-		limit = leaderboardMaxMaterializedRows
-	}
 
 	season, entries, ok, err := s.store.LoadFreshLeaderboardSeason(ctx, now.UTC(), limit)
 	if err != nil {
 		return contracts.LeaderboardResponse{}, err
 	}
 	if !ok {
-		materializeLimit := limit
-		if materializeLimit < leaderboardMaxMaterializedRows {
-			materializeLimit = leaderboardMaxMaterializedRows
-		}
-		season, entries, err = s.store.MaterializeLeaderboardSeason(ctx, now.UTC(), materializeLimit)
+		season, entries, err = s.store.MaterializeLeaderboardSeason(
+			ctx,
+			now.UTC(),
+			s.cfg.Scoring.LeaderboardMaxLimit,
+		)
 		if err != nil {
 			return contracts.LeaderboardResponse{}, err
 		}
@@ -180,8 +177,11 @@ func (s *Service) Leaderboard(ctx context.Context, limit int, now time.Time) (co
 }
 
 func (s *Service) MaterializeLeaderboard(ctx context.Context, limit int, now time.Time) (contracts.LeaderboardMaterializationResponse, error) {
-	if limit <= 0 || limit > leaderboardMaxMaterializedRows {
-		limit = leaderboardMaxMaterializedRows
+	if limit <= 0 {
+		limit = s.cfg.Scoring.LeaderboardDefaultLimit
+	}
+	if limit > s.cfg.Scoring.LeaderboardMaxLimit {
+		limit = s.cfg.Scoring.LeaderboardMaxLimit
 	}
 	season, entries, err := s.store.MaterializeLeaderboardSeason(ctx, now.UTC(), limit)
 	if err != nil {
@@ -211,8 +211,11 @@ func (s *Service) BackfillLeaderboardHistory(ctx context.Context, weeks int, lim
 	if weeks > 156 {
 		weeks = 156
 	}
-	if limit <= 0 || limit > leaderboardMaxMaterializedRows {
-		limit = leaderboardMaxMaterializedRows
+	if limit <= 0 {
+		limit = s.cfg.Scoring.LeaderboardDefaultLimit
+	}
+	if limit > s.cfg.Scoring.LeaderboardMaxLimit {
+		limit = s.cfg.Scoring.LeaderboardMaxLimit
 	}
 
 	seasonKeys := make([]string, 0, weeks)

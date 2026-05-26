@@ -14,7 +14,6 @@ import (
 const (
 	leaderboardSeasonSnapshotVersion = "leaderboard-season/v1"
 	leaderboardSeasonRefreshTTL      = 5 * time.Minute
-	leaderboardMaxMaterializedRows   = 100
 )
 
 type leaderboardSeasonRecord struct {
@@ -118,8 +117,8 @@ func (s *Store) LoadFreshLeaderboardSeason(ctx context.Context, now time.Time, l
 }
 
 func (s *Store) MaterializeLeaderboardSeason(ctx context.Context, now time.Time, limit int) (leaderboardSeasonRecord, []leaderboardSeasonSnapshotRecord, error) {
-	if limit <= 0 || limit > leaderboardMaxMaterializedRows {
-		limit = leaderboardMaxMaterializedRows
+	if limit <= 0 {
+		limit = 1
 	}
 	generatedAt := now.UTC()
 	seasonKey, windowStart, windowEnd := currentLeaderboardSeason(generatedAt)

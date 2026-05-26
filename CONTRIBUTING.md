@@ -1624,7 +1624,7 @@ ABRA implementation checklist:
 - [x] Auto user-history sync is intentionally bounded through runtime policy env vars (`GITHUB_AUTHORED_PR_SYNC_LIMIT`, `GITHUB_AUTHORED_PR_SEARCH_LIMIT`, sync page sizes, and PR sync timeout bounds) and tolerates partial GitHub sub-endpoint failures (reviews/comments/files) so one unstable endpoint does not fail the full sync.
 - [x] Contribution category domain logic is backend-authoritative and centralized; frontend no longer infers categories from free text and CI blocks duplicate PR-category mapping logic outside `frontend/lib/runtime/pr-category-policy.ts`.
 - [x] Profile score-history window cap is contract-driven (`SCORING_PROFILE_SCORE_HISTORY_LIMIT` via `score_history_cap`) and frontend filtering/rendering honors backend cap instead of fixed constants.
-- [x] Leaderboard fetch limits are env-driven (`SCORING_LEADERBOARD_DEFAULT_LIMIT`, `SCORING_LEADERBOARD_MAX_LIMIT`) and no longer use fixed request caps in profile-service code.
+- [x] Leaderboard fetch/materialize/backfill limits are env-driven (`SCORING_LEADERBOARD_DEFAULT_LIMIT`, `SCORING_LEADERBOARD_MAX_LIMIT`) and no longer use fixed request caps in profile-service code.
 - [x] High-XP lane threshold is contract-driven (`SCORING_HIGH_XP_THRESHOLD` via `high_xp_threshold`) so frontend filter logic follows backend policy without fixed XP literals.
 - [x] Level progression step is env-driven (`SCORING_LEVEL_STEP_XP`) so profile level math is policy-configured instead of fixed in projection code.
 - [x] Profile cache/staleness timing is env-driven (`PROFILE_PUBLIC_CACHE_TTL`, `PROFILE_PRIVATE_CACHE_TTL`, `PROFILE_SNAPSHOT_STALE_TTL`) instead of fixed service literals.
