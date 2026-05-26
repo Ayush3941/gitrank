@@ -150,27 +150,29 @@ type AI struct {
 }
 
 type Scoring struct {
-	ScoreVersion                   string
-	BaseXP                         float64
-	MinXP                          int
-	LevelStepXP                    int
-	ProfileScoreHistoryLimit       int
-	RankTierBronzeLabel            string
-	RankTierSilverLabel            string
-	RankTierGoldLabel              string
-	RankTierPlatinumLabel          string
-	RankTierDiamondLabel           string
-	RankTierSilverMinXP            int
-	RankTierGoldMinXP              int
-	RankTierPlatinumMinXP          int
-	RankTierDiamondMinXP           int
-	LeaderboardPromotionRule       string
-	LeaderboardResetRule           string
-	LeaderboardPromotionCutoffRank int
-	LeaderboardSafetyCutoffRank    int
-	LeaderboardDefaultLimit        int
-	LeaderboardMaxLimit            int
-	HighXPThreshold                int
+	ScoreVersion                    string
+	BaseXP                          float64
+	MinXP                           int
+	LevelStepXP                     int
+	ProfileScoreHistoryLimit        int
+	RankTierBronzeLabel             string
+	RankTierSilverLabel             string
+	RankTierGoldLabel               string
+	RankTierPlatinumLabel           string
+	RankTierDiamondLabel            string
+	RankTierSilverMinXP             int
+	RankTierGoldMinXP               int
+	RankTierPlatinumMinXP           int
+	RankTierDiamondMinXP            int
+	LeaderboardPromotionRule        string
+	LeaderboardResetRule            string
+	LeaderboardPromotionCutoffRank  int
+	LeaderboardSafetyCutoffRank     int
+	LeaderboardDefaultLimit         int
+	LeaderboardMaxLimit             int
+	LeaderboardBackfillDefaultWeeks int
+	LeaderboardBackfillMaxWeeks     int
+	HighXPThreshold                 int
 
 	CategoryWeightDefault            float64
 	CategoryWeightDocumentation      float64
@@ -232,6 +234,7 @@ type Profile struct {
 	RecentReportsMaxLimit      int
 	ReportBackfillDefaultLimit int
 	ReportBackfillMaxLimit     int
+	AccountExportAuditLimit    int
 }
 
 type Observability struct {
@@ -368,27 +371,29 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			EstimatedInputTokenCostUSD: getFloat("AI_ESTIMATED_INPUT_TOKEN_COST_USD", 0.000005),
 		},
 		Scoring: Scoring{
-			ScoreVersion:                   strings.TrimSpace(getEnv("SCORING_SCORE_VERSION", "v1alpha1")),
-			BaseXP:                         getFloat("SCORING_BASE_XP", 100),
-			MinXP:                          getInt("SCORING_MIN_XP", 10),
-			LevelStepXP:                    getInt("SCORING_LEVEL_STEP_XP", 300),
-			ProfileScoreHistoryLimit:       getInt("SCORING_PROFILE_SCORE_HISTORY_LIMIT", 100),
-			RankTierBronzeLabel:            strings.TrimSpace(getEnv("SCORING_RANK_TIER_BRONZE_LABEL", "Bronze I")),
-			RankTierSilverLabel:            strings.TrimSpace(getEnv("SCORING_RANK_TIER_SILVER_LABEL", "Silver II")),
-			RankTierGoldLabel:              strings.TrimSpace(getEnv("SCORING_RANK_TIER_GOLD_LABEL", "Gold III")),
-			RankTierPlatinumLabel:          strings.TrimSpace(getEnv("SCORING_RANK_TIER_PLATINUM_LABEL", "Platinum I")),
-			RankTierDiamondLabel:           strings.TrimSpace(getEnv("SCORING_RANK_TIER_DIAMOND_LABEL", "Diamond")),
-			RankTierSilverMinXP:            getInt("SCORING_RANK_TIER_SILVER_MIN_XP", 1500),
-			RankTierGoldMinXP:              getInt("SCORING_RANK_TIER_GOLD_MIN_XP", 4000),
-			RankTierPlatinumMinXP:          getInt("SCORING_RANK_TIER_PLATINUM_MIN_XP", 9000),
-			RankTierDiamondMinXP:           getInt("SCORING_RANK_TIER_DIAMOND_MIN_XP", 15000),
-			LeaderboardPromotionRule:       strings.TrimSpace(getEnv("SCORING_LEADERBOARD_PROMOTION_RULE", "Top 25 move toward the next rank tier when the season locks.")),
-			LeaderboardResetRule:           strings.TrimSpace(getEnv("SCORING_LEADERBOARD_RESET_RULE", "Weekly XP resets after the window; total XP and score evidence are retained.")),
-			LeaderboardPromotionCutoffRank: getInt("SCORING_LEADERBOARD_PROMOTION_CUTOFF_RANK", 25),
-			LeaderboardSafetyCutoffRank:    getInt("SCORING_LEADERBOARD_SAFETY_CUTOFF_RANK", 75),
-			LeaderboardDefaultLimit:        getInt("SCORING_LEADERBOARD_DEFAULT_LIMIT", 50),
-			LeaderboardMaxLimit:            getInt("SCORING_LEADERBOARD_MAX_LIMIT", 100),
-			HighXPThreshold:                getInt("SCORING_HIGH_XP_THRESHOLD", 200),
+			ScoreVersion:                    strings.TrimSpace(getEnv("SCORING_SCORE_VERSION", "v1alpha1")),
+			BaseXP:                          getFloat("SCORING_BASE_XP", 100),
+			MinXP:                           getInt("SCORING_MIN_XP", 10),
+			LevelStepXP:                     getInt("SCORING_LEVEL_STEP_XP", 300),
+			ProfileScoreHistoryLimit:        getInt("SCORING_PROFILE_SCORE_HISTORY_LIMIT", 100),
+			RankTierBronzeLabel:             strings.TrimSpace(getEnv("SCORING_RANK_TIER_BRONZE_LABEL", "Bronze I")),
+			RankTierSilverLabel:             strings.TrimSpace(getEnv("SCORING_RANK_TIER_SILVER_LABEL", "Silver II")),
+			RankTierGoldLabel:               strings.TrimSpace(getEnv("SCORING_RANK_TIER_GOLD_LABEL", "Gold III")),
+			RankTierPlatinumLabel:           strings.TrimSpace(getEnv("SCORING_RANK_TIER_PLATINUM_LABEL", "Platinum I")),
+			RankTierDiamondLabel:            strings.TrimSpace(getEnv("SCORING_RANK_TIER_DIAMOND_LABEL", "Diamond")),
+			RankTierSilverMinXP:             getInt("SCORING_RANK_TIER_SILVER_MIN_XP", 1500),
+			RankTierGoldMinXP:               getInt("SCORING_RANK_TIER_GOLD_MIN_XP", 4000),
+			RankTierPlatinumMinXP:           getInt("SCORING_RANK_TIER_PLATINUM_MIN_XP", 9000),
+			RankTierDiamondMinXP:            getInt("SCORING_RANK_TIER_DIAMOND_MIN_XP", 15000),
+			LeaderboardPromotionRule:        strings.TrimSpace(getEnv("SCORING_LEADERBOARD_PROMOTION_RULE", "Top 25 move toward the next rank tier when the season locks.")),
+			LeaderboardResetRule:            strings.TrimSpace(getEnv("SCORING_LEADERBOARD_RESET_RULE", "Weekly XP resets after the window; total XP and score evidence are retained.")),
+			LeaderboardPromotionCutoffRank:  getInt("SCORING_LEADERBOARD_PROMOTION_CUTOFF_RANK", 25),
+			LeaderboardSafetyCutoffRank:     getInt("SCORING_LEADERBOARD_SAFETY_CUTOFF_RANK", 75),
+			LeaderboardDefaultLimit:         getInt("SCORING_LEADERBOARD_DEFAULT_LIMIT", 50),
+			LeaderboardMaxLimit:             getInt("SCORING_LEADERBOARD_MAX_LIMIT", 100),
+			LeaderboardBackfillDefaultWeeks: getInt("SCORING_LEADERBOARD_BACKFILL_DEFAULT_WEEKS", 26),
+			LeaderboardBackfillMaxWeeks:     getInt("SCORING_LEADERBOARD_BACKFILL_MAX_WEEKS", 156),
+			HighXPThreshold:                 getInt("SCORING_HIGH_XP_THRESHOLD", 200),
 
 			CategoryWeightDefault:          getFloat("SCORING_CATEGORY_WEIGHT_DEFAULT", 1.0),
 			CategoryWeightDocumentation:    getFloat("SCORING_CATEGORY_WEIGHT_DOCUMENTATION", 0.8),
@@ -455,6 +460,7 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			RecentReportsMaxLimit:      getInt("PROFILE_RECENT_REPORTS_MAX_LIMIT", 10),
 			ReportBackfillDefaultLimit: getInt("PROFILE_REPORT_BACKFILL_DEFAULT_LIMIT", 50),
 			ReportBackfillMaxLimit:     getInt("PROFILE_REPORT_BACKFILL_MAX_LIMIT", 200),
+			AccountExportAuditLimit:    getInt("PROFILE_ACCOUNT_EXPORT_AUDIT_LIMIT", 200),
 		},
 		Observability: Observability{
 			Enabled:           getBool("OTEL_ENABLED", false),
@@ -723,6 +729,12 @@ func (a App) ValidateBase() error {
 	if a.Scoring.LeaderboardMaxLimit < a.Scoring.LeaderboardDefaultLimit {
 		problems = append(problems, "SCORING_LEADERBOARD_MAX_LIMIT must be >= SCORING_LEADERBOARD_DEFAULT_LIMIT")
 	}
+	if a.Scoring.LeaderboardBackfillDefaultWeeks <= 0 || a.Scoring.LeaderboardBackfillMaxWeeks <= 0 {
+		problems = append(problems, "SCORING_LEADERBOARD_BACKFILL_DEFAULT_WEEKS and SCORING_LEADERBOARD_BACKFILL_MAX_WEEKS must be positive")
+	}
+	if a.Scoring.LeaderboardBackfillMaxWeeks < a.Scoring.LeaderboardBackfillDefaultWeeks {
+		problems = append(problems, "SCORING_LEADERBOARD_BACKFILL_MAX_WEEKS must be >= SCORING_LEADERBOARD_BACKFILL_DEFAULT_WEEKS")
+	}
 	if a.Scoring.HighXPThreshold <= 0 {
 		problems = append(problems, "SCORING_HIGH_XP_THRESHOLD must be positive")
 	}
@@ -973,6 +985,9 @@ func (a App) ValidateProfileService() error {
 	}
 	if a.Profile.ReportBackfillMaxLimit < a.Profile.ReportBackfillDefaultLimit {
 		problems = append(problems, "PROFILE_REPORT_BACKFILL_MAX_LIMIT must be >= PROFILE_REPORT_BACKFILL_DEFAULT_LIMIT")
+	}
+	if a.Profile.AccountExportAuditLimit <= 0 {
+		problems = append(problems, "PROFILE_ACCOUNT_EXPORT_AUDIT_LIMIT must be positive")
 	}
 
 	if len(problems) == 0 {

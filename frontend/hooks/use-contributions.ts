@@ -4,13 +4,18 @@ import { useQuery } from "@tanstack/react-query";
 import { getMyProfile } from "@/lib/api/profile-api";
 import { contributionDisplayConfig } from "@/lib/runtime/contribution-display-config";
 import { deduplicateContributionsByPullRequest } from "@/lib/presentation/contribution-dedup";
+import {
+  CONTRIBUTION_DEFAULT_FILTER,
+  CONTRIBUTION_DEFAULT_SORT,
+  type ContributionSortOption,
+} from "@/lib/runtime/contribution-filter-policy";
 import type { Contribution } from "@/types/gitrank";
 import type { ProfileViewData } from "@/types/gitrank";
 
 type ContributionParams = {
   filter?: string;
   search?: string;
-  sort?: "Newest" | "Highest XP" | "Highest Difficulty" | "Highest Impact";
+  sort?: ContributionSortOption;
 };
 
 type ContributionsQueryData = {
@@ -43,9 +48,9 @@ function filterContributions(
   highXPThreshold: number,
 ) {
   const deduplicatedRows = deduplicateContributionsByPullRequest(rows);
-  const normalizedFilter = (params.filter ?? "All").toLowerCase();
+  const normalizedFilter = (params.filter ?? CONTRIBUTION_DEFAULT_FILTER).toLowerCase();
   const term = (params.search ?? "").trim().toLowerCase();
-  const sort = params.sort ?? "Newest";
+  const sort = params.sort ?? CONTRIBUTION_DEFAULT_SORT;
 
   const filtered = deduplicatedRows.filter((item) => {
     const categoryMatch =

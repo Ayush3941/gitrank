@@ -1631,6 +1631,9 @@ ABRA implementation checklist:
 - [x] Profile cache/staleness timing is env-driven (`PROFILE_PUBLIC_CACHE_TTL`, `PROFILE_PRIVATE_CACHE_TTL`, `PROFILE_SNAPSHOT_STALE_TTL`) instead of fixed service literals.
 - [x] PR report feed/backfill limits are env-driven (`PROFILE_RECENT_REPORTS_DEFAULT_LIMIT`, `PROFILE_RECENT_REPORTS_MAX_LIMIT`, `PROFILE_REPORT_BACKFILL_DEFAULT_LIMIT`, `PROFILE_REPORT_BACKFILL_MAX_LIMIT`) instead of fixed report-service literals.
 - [x] Contribution deduplication logic is centralized in one frontend utility (`frontend/lib/presentation/contribution-dedup.ts`) so contribution panels and hooks cannot silently diverge.
+- [x] Leaderboard history backfill week bounds are env-driven (`SCORING_LEADERBOARD_BACKFILL_DEFAULT_WEEKS`, `SCORING_LEADERBOARD_BACKFILL_MAX_WEEKS`) instead of fixed service literals.
+- [x] Account export audit-event limits are env-driven (`PROFILE_ACCOUNT_EXPORT_AUDIT_LIMIT`) instead of fixed store defaults.
+- [x] Contribution hook default filter/sort behavior reuses shared runtime policy constants (`CONTRIBUTION_DEFAULT_FILTER`, `CONTRIBUTION_DEFAULT_SORT`) instead of duplicate literals.
 - [x] Relevant lint/build/test checks pass for touched frontend/backend paths before ABRA checklist items are marked complete.
 - [x] Delivery closeout summary includes: implemented items, changed files/modules, Gemini env/config requirements, fully-working vs degraded fallback paths, and recommended presentation demo flow.
 

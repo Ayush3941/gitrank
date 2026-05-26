@@ -570,7 +570,7 @@ func (s *Store) UpsertRepositoryVisibility(ctx context.Context, userID, fullName
 	return record, nil
 }
 
-func (s *Store) LoadAccountExport(ctx context.Context, userID string) (accountExportRecord, error) {
+func (s *Store) LoadAccountExport(ctx context.Context, userID string, auditEventLimit int) (accountExportRecord, error) {
 	user, err := s.loadAccountExportUser(ctx, userID)
 	if err != nil {
 		return accountExportRecord{}, err
@@ -583,7 +583,7 @@ func (s *Store) LoadAccountExport(ctx context.Context, userID string) (accountEx
 	if err != nil {
 		return accountExportRecord{}, err
 	}
-	auditEvents, redactions, err := s.loadAccountExportAuditEvents(ctx, userID, 200)
+	auditEvents, redactions, err := s.loadAccountExportAuditEvents(ctx, userID, auditEventLimit)
 	if err != nil {
 		return accountExportRecord{}, err
 	}

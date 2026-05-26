@@ -206,10 +206,10 @@ func (s *Service) MaterializeLeaderboard(ctx context.Context, limit int, now tim
 
 func (s *Service) BackfillLeaderboardHistory(ctx context.Context, weeks int, limit int, now time.Time) (contracts.LeaderboardHistoryBackfillResponse, error) {
 	if weeks <= 0 {
-		weeks = 26
+		weeks = s.cfg.Scoring.LeaderboardBackfillDefaultWeeks
 	}
-	if weeks > 156 {
-		weeks = 156
+	if weeks > s.cfg.Scoring.LeaderboardBackfillMaxWeeks {
+		weeks = s.cfg.Scoring.LeaderboardBackfillMaxWeeks
 	}
 	if limit <= 0 {
 		limit = s.cfg.Scoring.LeaderboardDefaultLimit
@@ -394,7 +394,11 @@ func (s *Service) AccountDataExport(ctx context.Context, sessionToken string, no
 		return contracts.AccountDataExportResponse{}, err
 	}
 
-	exportRecord, err := s.store.LoadAccountExport(ctx, principal.UserID)
+	exportRecord, err := s.store.LoadAccountExport(
+		ctx,
+		principal.UserID,
+		s.cfg.Profile.AccountExportAuditLimit,
+	)
 	if err != nil {
 		return contracts.AccountDataExportResponse{}, err
 	}
