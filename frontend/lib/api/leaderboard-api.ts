@@ -58,6 +58,8 @@ type ApiLeaderboardResponse = {
   scoring_version?: string;
   promotion_rule?: string;
   reset_rule?: string;
+  promotion_cutoff_rank?: number;
+  safety_cutoff_rank?: number;
 };
 
 type ApiErrorResponse = {
@@ -77,7 +79,13 @@ export async function getLeaderboard(tab: LeaderboardTab): Promise<LeaderboardSn
 
   const payload = (await response.json()) as ApiLeaderboardResponse;
   const season = seasonFromResponse(payload);
-  const rows = rankForTab((payload.entries ?? []).map(toLeaderboardEntry), tab, season.scoringVersion);
+  const rows = rankForTab(
+    (payload.entries ?? []).map(toLeaderboardEntry),
+    tab,
+    season.scoringVersion,
+    season.promotionCutoffRank,
+    season.safetyCutoffRank,
+  );
   return {
     season,
     rows,
@@ -138,6 +146,8 @@ function rankForTab(
   rows: LeaderboardEntry[],
   tab: LeaderboardTab,
   scoringVersion: string,
+  promotionCutoffRank: number,
+  safetyCutoffRank: number,
 ): LeaderboardEntry[] {
   const scoped =
     tab === "Global" || tab === "Weekly XP" || tab === "Rising Contributors"
@@ -159,8 +169,8 @@ function rankForTab(
       xpToNextRank: nextBetterRow
         ? Math.max(0, (nextBetterRow.seasonXp || nextBetterRow.weeklyXp) - (row.seasonXp || row.weeklyXp) + 1)
         : 0,
-      promotionZone: index < 3,
-      demotionRisk: index >= Math.max(3, sorted.length - 2),
+      promotionZone: index < promotionCutoffRank,
+      demotionRisk: index + 1 >= Math.min(Math.max(1, safetyCutoffRank), sorted.length),
       scoreFormulaVersion: scoringVersion,
     };
   });
@@ -190,6 +200,10 @@ function seasonFromResponse(payload: ApiLeaderboardResponse): LeaderboardSeason 
         scoringVersion: payload.scoring_version ?? "unknown",
         promotionRule: payload.promotion_rule ?? leaderboardSeasonPolicy.promotionRule,
         resetRule: payload.reset_rule ?? leaderboardSeasonPolicy.resetRule,
+        promotionCutoffRank:
+          payload.promotion_cutoff_rank ?? leaderboardSeasonPolicy.promotionCutoffRank,
+        safetyCutoffRank:
+          payload.safety_cutoff_rank ?? leaderboardSeasonPolicy.safetyCutoffRank,
         explanation:
           "Leaderboard rows are backed by persisted season snapshots and rank movement events.",
       };
@@ -200,6 +214,8 @@ function seasonFromResponse(payload: ApiLeaderboardResponse): LeaderboardSeason 
     payload.scoring_version,
     payload.promotion_rule,
     payload.reset_rule,
+    payload.promotion_cutoff_rank,
+    payload.safety_cutoff_rank,
   );
 }
 
@@ -208,6 +224,8 @@ function seasonFromGeneratedAt(
   scoringVersion = frontendPolicy.scoreVersionFallback,
   promotionRule?: string,
   resetRule?: string,
+  promotionCutoffRank?: number,
+  safetyCutoffRank?: number,
 ): LeaderboardSeason {
   const generated =
     !generatedAt || Number.isNaN(Date.parse(generatedAt)) ? new Date() : new Date(generatedAt);
@@ -219,6 +237,14 @@ function seasonFromGeneratedAt(
   const endsAt = new Date(startsAt);
   endsAt.setUTCDate(startsAt.getUTCDate() + 6);
   endsAt.setUTCHours(23, 59, 59, 999);
+  const resolvedPromotionCutoff =
+    typeof promotionCutoffRank === "number" && promotionCutoffRank > 0
+      ? Math.trunc(promotionCutoffRank)
+      : leaderboardSeasonPolicy.promotionCutoffRank;
+  const resolvedSafetyCutoff =
+    typeof safetyCutoffRank === "number" && safetyCutoffRank > 0
+      ? Math.max(resolvedPromotionCutoff, Math.trunc(safetyCutoffRank))
+      : Math.max(resolvedPromotionCutoff, leaderboardSeasonPolicy.safetyCutoffRank);
 
   return {
     id: `weekly-${startsAt.toISOString().slice(0, 10)}`,
@@ -230,6 +256,8 @@ function seasonFromGeneratedAt(
     scoringVersion,
     promotionRule: promotionRule ?? leaderboardSeasonPolicy.promotionRule,
     resetRule: resetRule ?? leaderboardSeasonPolicy.resetRule,
+    promotionCutoffRank: resolvedPromotionCutoff,
+    safetyCutoffRank: resolvedSafetyCutoff,
     explanation:
       "Leaderboard rows are ordered from public profile snapshots and scoped by the selected focus tab.",
   };

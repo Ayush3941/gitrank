@@ -163,6 +163,8 @@ func (s *Service) Leaderboard(ctx context.Context, limit int, now time.Time) (co
 		ScoringVersion:        season.ScoreVersion,
 		PromotionRule:         s.cfg.Scoring.LeaderboardPromotionRule,
 		ResetRule:             s.cfg.Scoring.LeaderboardResetRule,
+		PromotionCutoffRank:   s.cfg.Scoring.LeaderboardPromotionCutoffRank,
+		SafetyCutoffRank:      s.cfg.Scoring.LeaderboardSafetyCutoffRank,
 	}, nil
 }
 

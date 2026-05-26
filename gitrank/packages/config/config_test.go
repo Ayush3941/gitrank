@@ -130,6 +130,9 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.Scoring.LeaderboardPromotionRule == "" || cfg.Scoring.LeaderboardResetRule == "" {
 		t.Fatalf("Scoring leaderboard rules must not be empty")
 	}
+	if cfg.Scoring.LeaderboardPromotionCutoffRank != 25 || cfg.Scoring.LeaderboardSafetyCutoffRank != 75 {
+		t.Fatalf("Scoring leaderboard cutoffs = %d/%d, want 25/75", cfg.Scoring.LeaderboardPromotionCutoffRank, cfg.Scoring.LeaderboardSafetyCutoffRank)
+	}
 	if cfg.Scoring.LevelArchitectMinXP != 250 || cfg.Scoring.LevelMaintainerMinXP != 180 {
 		t.Fatalf("Scoring level thresholds = architect %d maintainer %d, want 250/180", cfg.Scoring.LevelArchitectMinXP, cfg.Scoring.LevelMaintainerMinXP)
 	}
@@ -209,6 +212,8 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	t.Setenv("SCORING_RANK_TIER_DIAMOND_LABEL", "Diamond")
 	t.Setenv("SCORING_LEADERBOARD_PROMOTION_RULE", "Top 20 move toward promotion review.")
 	t.Setenv("SCORING_LEADERBOARD_RESET_RULE", "Weekly XP resets; total XP remains.")
+	t.Setenv("SCORING_LEADERBOARD_PROMOTION_CUTOFF_RANK", "20")
+	t.Setenv("SCORING_LEADERBOARD_SAFETY_CUTOFF_RANK", "70")
 	t.Setenv("SCORING_CATEGORY_WEIGHT_FEATURE", "1.65")
 	t.Setenv("SCORING_REPOSITORY_WEIGHT_MAX", "1.5")
 	t.Setenv("SCORING_LEVEL_ARCHITECT_MIN_XP", "300")
@@ -341,6 +346,9 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	if cfg.Scoring.LeaderboardPromotionRule != "Top 20 move toward promotion review." ||
 		cfg.Scoring.LeaderboardResetRule != "Weekly XP resets; total XP remains." {
 		t.Fatalf("Scoring leaderboard rules override mismatch: %+v / %+v", cfg.Scoring.LeaderboardPromotionRule, cfg.Scoring.LeaderboardResetRule)
+	}
+	if cfg.Scoring.LeaderboardPromotionCutoffRank != 20 || cfg.Scoring.LeaderboardSafetyCutoffRank != 70 {
+		t.Fatalf("Scoring leaderboard cutoffs override mismatch: %d/%d", cfg.Scoring.LeaderboardPromotionCutoffRank, cfg.Scoring.LeaderboardSafetyCutoffRank)
 	}
 	if cfg.Scoring.CategoryWeightFeature != 1.65 {
 		t.Fatalf("Scoring.CategoryWeightFeature = %.2f, want 1.65", cfg.Scoring.CategoryWeightFeature)

@@ -307,6 +307,8 @@ type LeaderboardResponse struct {
 	ScoringVersion        string                 `json:"scoring_version,omitempty"`
 	PromotionRule         string                 `json:"promotion_rule,omitempty"`
 	ResetRule             string                 `json:"reset_rule,omitempty"`
+	PromotionCutoffRank   int                    `json:"promotion_cutoff_rank,omitempty"`
+	SafetyCutoffRank      int                    `json:"safety_cutoff_rank,omitempty"`
 }
 
 type LeaderboardMaterializationResponse struct {

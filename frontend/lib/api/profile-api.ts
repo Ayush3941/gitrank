@@ -331,8 +331,8 @@ function toProfileViewData(
       nextTier: nextRankTier(normalizeRankTier(response.level.rank_tier)),
       seasonXp: lastBucket?.delta_xp ?? 0,
       xpToNextTier: Math.max(0, response.level.next_level_xp - response.level.current_xp),
-      promotionCutoffRank: 25,
-      safetyCutoffRank: 75,
+      promotionCutoffRank: leaderboardSeasonPolicy.promotionCutoffRank,
+      safetyCutoffRank: leaderboardSeasonPolicy.safetyCutoffRank,
       evidenceSignals: topSkills.length
         ? topSkills.slice(0, 3).map((skill) => `${skill} evidence`)
         : ["Verified profile snapshot"],
@@ -834,6 +834,8 @@ function seasonFromRefreshedAt(refreshedAt: string, scoringVersion: string): Lea
     scoringVersion,
     promotionRule: leaderboardSeasonPolicy.promotionRule,
     resetRule: leaderboardSeasonPolicy.resetRule,
+    promotionCutoffRank: leaderboardSeasonPolicy.promotionCutoffRank,
+    safetyCutoffRank: leaderboardSeasonPolicy.safetyCutoffRank,
     explanation:
       "Season progress is derived from the latest profile snapshot and current score-event window.",
   };

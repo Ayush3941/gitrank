@@ -79,6 +79,8 @@ export interface LeaderboardSeason {
   scoringVersion: string;
   promotionRule: string;
   resetRule: string;
+  promotionCutoffRank: number;
+  safetyCutoffRank: number;
   explanation: string;
 }
 
