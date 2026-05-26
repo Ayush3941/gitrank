@@ -29,6 +29,24 @@ describe("BFF route mapping contracts", () => {
     expect(proxyGateway).toHaveBeenNthCalledWith(2, patchRequest, "/v1/me/profile");
   });
 
+  it("maps /api/profile/public/:username GET to /v1/users/:username", async () => {
+    const route = await import("@/app/api/profile/public/[username]/route");
+    const request = new Request("http://gitrank.test/api/profile/public/octocat", { method: "GET" });
+
+    await route.GET(request, { params: Promise.resolve({ username: "octocat" }) });
+
+    expect(proxyGateway).toHaveBeenCalledWith(request, "/v1/users/octocat");
+  });
+
+  it("maps /api/profile/public/:username/card GET to /v1/users/:username/card", async () => {
+    const route = await import("@/app/api/profile/public/[username]/card/route");
+    const request = new Request("http://gitrank.test/api/profile/public/octocat/card", { method: "GET" });
+
+    await route.GET(request, { params: Promise.resolve({ username: "octocat" }) });
+
+    expect(proxyGateway).toHaveBeenCalledWith(request, "/v1/users/octocat/card");
+  });
+
   it("maps /api/profile/me/quests GET to /v1/me/quests", async () => {
     const route = await import("@/app/api/profile/me/quests/route");
     const request = new Request("http://gitrank.test/api/profile/me/quests", { method: "GET" });
