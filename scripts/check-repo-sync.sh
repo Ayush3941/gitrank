@@ -155,6 +155,15 @@ PY
   fi
 }
 
+assert_backend_env_default_parity() {
+  if ! (
+    cd "$ROOT_DIR/gitrank/packages/config" \
+      && go test ./... -run 'TestLoadDefaultsMatchBackendEnvExample|TestLoadDefaultsByServiceAddressKey' -count=1 >/dev/null
+  ); then
+    fail "backend config defaults are out of sync with gitrank/.env.example"
+  fi
+}
+
 check_markdown_relative_links() {
   local missing=0
   local file dir token target clean resolved
@@ -246,6 +255,7 @@ main() {
   assert_no_placeholder_public_assets
   assert_frontend_public_assets_are_referenced
   assert_weekly_evidence_png_deduplicated
+  assert_backend_env_default_parity
 
   if ! check_markdown_relative_links; then
     fail "broken markdown relative links detected"

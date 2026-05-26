@@ -2,10 +2,89 @@ package config
 
 import (
 	"encoding/base64"
+	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
 )
+
+func loadBackendEnvExample(t *testing.T) map[string]string {
+	t.Helper()
+
+	raw, err := os.ReadFile("../../.env.example")
+	if err != nil {
+		t.Fatalf("read .env.example: %v", err)
+	}
+
+	out := make(map[string]string)
+	for _, line := range strings.Split(string(raw), "\n") {
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" || strings.HasPrefix(trimmed, "#") {
+			continue
+		}
+		key, value, ok := strings.Cut(trimmed, "=")
+		if !ok {
+			continue
+		}
+		out[strings.TrimSpace(key)] = strings.TrimSpace(value)
+	}
+	return out
+}
+
+func requireEnvString(t *testing.T, env map[string]string, key, got string) {
+	t.Helper()
+	want, ok := env[key]
+	if !ok {
+		t.Fatalf("%s missing from .env.example", key)
+	}
+	if got != want {
+		t.Fatalf("%s = %q, want %q from .env.example", key, got, want)
+	}
+}
+
+func requireEnvDuration(t *testing.T, env map[string]string, key string, got time.Duration) {
+	t.Helper()
+	wantRaw, ok := env[key]
+	if !ok {
+		t.Fatalf("%s missing from .env.example", key)
+	}
+	want, err := time.ParseDuration(wantRaw)
+	if err != nil {
+		t.Fatalf("%s invalid duration %q in .env.example: %v", key, wantRaw, err)
+	}
+	if got != want {
+		t.Fatalf("%s = %v, want %v from .env.example", key, got, want)
+	}
+}
+
+func requireEnvInt(t *testing.T, env map[string]string, key string, got int) {
+	t.Helper()
+	wantRaw, ok := env[key]
+	if !ok {
+		t.Fatalf("%s missing from .env.example", key)
+	}
+	want, err := strconv.Atoi(wantRaw)
+	if err != nil {
+		t.Fatalf("%s invalid integer %q in .env.example: %v", key, wantRaw, err)
+	}
+	if got != want {
+		t.Fatalf("%s = %d, want %d from .env.example", key, got, want)
+	}
+}
+
+func requireEnvBool(t *testing.T, env map[string]string, key string, got bool) {
+	t.Helper()
+	wantRaw, ok := env[key]
+	if !ok {
+		t.Fatalf("%s missing from .env.example", key)
+	}
+	wantRaw = strings.ToLower(strings.TrimSpace(wantRaw))
+	want := wantRaw == "1" || wantRaw == "true" || wantRaw == "yes" || wantRaw == "on"
+	if got != want {
+		t.Fatalf("%s = %t, want %t from .env.example", key, got, want)
+	}
+}
 
 func TestLoadDefaults(t *testing.T) {
 	cfg, err := Load("api-gateway", "API_GATEWAY_ADDR")
@@ -163,6 +242,105 @@ func TestLoadDefaults(t *testing.T) {
 	if len(cfg.GitHub.OAuthScopes) != 2 || cfg.GitHub.OAuthScopes[0] != "read:user" || cfg.GitHub.OAuthScopes[1] != "user:email" {
 		t.Fatalf("GitHub.OAuthScopes = %v, want read:user,user:email", cfg.GitHub.OAuthScopes)
 	}
+}
+
+func TestLoadDefaultsMatchBackendEnvExample(t *testing.T) {
+	env := loadBackendEnvExample(t)
+	cfg, err := Load("api-gateway", "API_GATEWAY_ADDR")
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+
+	requireEnvString(t, env, "GITRANK_ENV", string(cfg.Env))
+	requireEnvString(t, env, "GITRANK_PUBLIC_BASE_URL", cfg.PublicBaseURL)
+	requireEnvString(t, env, "GITRANK_API_BASE_URL", cfg.APIBaseURL)
+	requireEnvString(t, env, "API_GATEWAY_ADDR", cfg.Addr)
+	requireEnvDuration(t, env, "GITRANK_SHUTDOWN_TIMEOUT", cfg.ShutdownTimeout)
+	requireEnvString(t, env, "GITRANK_LOG_LEVEL", cfg.Log.Level)
+	requireEnvString(t, env, "GITRANK_LOG_FORMAT", cfg.Log.Format)
+
+	requireEnvString(t, env, "AUTH_SERVICE_BASE_URL", cfg.Services.AuthBaseURL)
+	requireEnvString(t, env, "GITHUB_INGESTOR_BASE_URL", cfg.Services.GitHubIngestorBaseURL)
+	requireEnvString(t, env, "PR_ANALYZER_BASE_URL", cfg.Services.PRAnalyzerBaseURL)
+	requireEnvString(t, env, "PROFILE_SERVICE_BASE_URL", cfg.Services.ProfileBaseURL)
+	requireEnvString(t, env, "SCORING_ENGINE_BASE_URL", cfg.Services.ScoringBaseURL)
+	requireEnvString(t, env, "SCHEDULER_WORKER_BASE_URL", cfg.Services.SchedulerBaseURL)
+	requireEnvDuration(t, env, "INTERNAL_API_REQUEST_TIMEOUT", cfg.Services.RequestTimeout)
+
+	requireEnvString(t, env, "DATABASE_URL", cfg.Database.URL)
+	requireEnvString(t, env, "REDIS_URL", cfg.Redis.URL)
+
+	requireEnvString(t, env, "AUTH_SESSION_COOKIE_NAME", cfg.Auth.SessionCookieName)
+	requireEnvString(t, env, "AUTH_CSRF_COOKIE_NAME", cfg.Auth.CSRFCookieName)
+	requireEnvString(t, env, "AUTH_COOKIE_DOMAIN", cfg.Auth.SessionCookieDomain)
+	requireEnvBool(t, env, "AUTH_COOKIE_SECURE", cfg.Auth.SessionCookieSecure)
+	requireEnvString(t, env, "AUTH_COOKIE_SAME_SITE", cfg.Auth.SessionCookieSameSite)
+	requireEnvDuration(t, env, "AUTH_SESSION_TTL", cfg.Auth.SessionTTL)
+	requireEnvDuration(t, env, "AUTH_SESSION_IDLE_TTL", cfg.Auth.SessionIdleTTL)
+	requireEnvDuration(t, env, "AUTH_SESSION_ROTATION_INTERVAL", cfg.Auth.SessionRotationInterval)
+	requireEnvDuration(t, env, "AUTH_OAUTH_STATE_TTL", cfg.Auth.OAuthStateTTL)
+	requireEnvDuration(t, env, "AUTH_RATE_LIMIT_WINDOW", cfg.Auth.RateLimitWindow)
+	requireEnvInt(t, env, "AUTH_RATE_LIMIT_MAX_ATTEMPTS", cfg.Auth.RateLimitMaxAttempts)
+
+	requireEnvString(t, env, "GITHUB_OAUTH_AUTHORIZE_URL", cfg.GitHub.AuthorizeURL)
+	requireEnvString(t, env, "GITHUB_OAUTH_EXCHANGE_URL", cfg.GitHub.TokenURL)
+	requireEnvString(t, env, "GITHUB_OAUTH_DEVICE_URL", cfg.GitHub.DeviceURL)
+	requireEnvString(t, env, "GITHUB_OAUTH_REDIRECT_URL", cfg.GitHub.OAuthRedirectURL)
+	requireEnvString(t, env, "GITHUB_API_BASE_URL", cfg.GitHub.APIBaseURL)
+	requireEnvString(t, env, "GITHUB_GRAPHQL_URL", cfg.GitHub.GraphQLURL)
+	requireEnvString(t, env, "GITHUB_API_VERSION", cfg.GitHub.APIVersion)
+	requireEnvString(t, env, "GITHUB_USER_AGENT", cfg.GitHub.UserAgent)
+	requireEnvDuration(t, env, "GITHUB_REQUEST_TIMEOUT", cfg.GitHub.RequestTimeout)
+	requireEnvInt(t, env, "GITHUB_MAX_PAGE_SIZE", cfg.GitHub.MaxPageSize)
+	requireEnvInt(t, env, "GITHUB_GRAPHQL_PAGE_SIZE", cfg.GitHub.GraphQLPageSize)
+	requireEnvInt(t, env, "GITHUB_REPOSITORY_SYNC_PAGE_SIZE", cfg.GitHub.RepositorySyncPageSize)
+	requireEnvInt(t, env, "GITHUB_PULL_REQUEST_REVIEW_PAGE_SIZE", cfg.GitHub.PullRequestReviewPageSize)
+	requireEnvInt(t, env, "GITHUB_COMMIT_SYNC_PAGE_SIZE", cfg.GitHub.CommitSyncPageSize)
+	requireEnvInt(t, env, "GITHUB_USER_REPOSITORY_SYNC_LIMIT", cfg.GitHub.UserRepositorySyncLimit)
+	requireEnvInt(t, env, "GITHUB_INSTALLATION_REPOSITORY_PAGE_SIZE", cfg.GitHub.InstallationRepositoryPageSize)
+	requireEnvInt(t, env, "GITHUB_INSTALLATION_REPOSITORY_MAX_PAGES", cfg.GitHub.InstallationRepositoryMaxPages)
+	requireEnvInt(t, env, "GITHUB_AUTHORED_PR_SEARCH_LIMIT", cfg.GitHub.AuthoredPRSearchLimit)
+	requireEnvInt(t, env, "GITHUB_AUTHORED_PR_SYNC_LIMIT", cfg.GitHub.AuthoredPRSyncLimit)
+	requireEnvInt(t, env, "GITHUB_SYNC_RUN_DEFAULT_LIMIT", cfg.GitHub.SyncRunDefaultLimit)
+	requireEnvInt(t, env, "GITHUB_SYNC_RUN_MAX_LIMIT", cfg.GitHub.SyncRunMaxLimit)
+	requireEnvDuration(t, env, "GITHUB_USER_PR_SYNC_TIMEOUT_DEFAULT", cfg.GitHub.UserPRSyncTimeoutDefault)
+	requireEnvDuration(t, env, "GITHUB_USER_PR_SYNC_TIMEOUT_MIN", cfg.GitHub.UserPRSyncTimeoutMin)
+	requireEnvDuration(t, env, "GITHUB_USER_PR_SYNC_TIMEOUT_MAX", cfg.GitHub.UserPRSyncTimeoutMax)
+	requireEnvInt(t, env, "GITHUB_WEBHOOK_MAX_BODY_BYTES", cfg.GitHub.MaxBodyBytes)
+	requireEnvDuration(t, env, "GITHUB_WEBHOOK_DEDUPE_TTL", cfg.GitHub.DedupeTTL)
+	requireEnvDuration(t, env, "GITHUB_FAILED_DELIVERY_LOOKBACK", cfg.GitHub.FailedLookback)
+	requireEnvDuration(t, env, "GITHUB_INSTALLATION_REFRESH_SKEW", cfg.GitHub.RefreshSkew)
+	requireEnvDuration(t, env, "GITHUB_SECONDARY_RATE_LIMIT_BACKOFF", cfg.GitHub.SecondaryBackoff)
+	requireEnvDuration(t, env, "GITHUB_REPOSITORY_CACHE_TTL", cfg.GitHub.RepositoryCacheTTL)
+	requireEnvInt(t, env, "GITHUB_MAX_CONCURRENT_REQUESTS", cfg.GitHub.MaxConcurrency)
+	requireEnvInt(t, env, "GITHUB_CIRCUIT_BREAKER_FAILURE_THRESHOLD", cfg.GitHub.CircuitBreakerFailureThreshold)
+	requireEnvDuration(t, env, "GITHUB_CIRCUIT_BREAKER_OPEN_INTERVAL", cfg.GitHub.CircuitBreakerOpenInterval)
+	requireEnvInt(t, env, "GITHUB_CIRCUIT_BREAKER_HALF_OPEN_MAX_REQUESTS", cfg.GitHub.CircuitBreakerHalfOpenMax)
+
+	requireEnvString(t, env, "AI_PROVIDER", cfg.AI.Provider)
+	requireEnvString(t, env, "GEMINI_MODEL", cfg.AI.Model)
+	requireEnvString(t, env, "GEMINI_BASE_URL", cfg.AI.BaseURL)
+	requireEnvDuration(t, env, "AI_REQUEST_TIMEOUT", cfg.AI.RequestTimeout)
+	requireEnvInt(t, env, "AI_SUMMARY_MAX_RUNES", cfg.AI.SummaryMaxRunes)
+	requireEnvInt(t, env, "AI_SUMMARY_PROMPT_FILE_PATH_LIMIT", cfg.AI.SummaryPromptFilePathLimit)
+	requireEnvInt(t, env, "AI_PR_MAX_CHANGED_FILES", cfg.AI.PRMaxChangedFiles)
+	requireEnvInt(t, env, "AI_PR_MAX_FILE_RECORDS", cfg.AI.PRMaxFileRecords)
+	requireEnvInt(t, env, "AI_PR_MAX_DIFF_LINES", cfg.AI.PRMaxDiffLines)
+	requireEnvInt(t, env, "AI_PR_MAX_INPUT_CHARS", cfg.AI.PRMaxInputChars)
+	requireEnvInt(t, env, "AI_PR_MAX_ESTIMATED_TOKENS", cfg.AI.PRMaxEstimatedTokens)
+
+	requireEnvString(t, env, "SCHEDULER_RUN_MODE", cfg.Scheduler.RunMode)
+	requireEnvString(t, env, "SCHEDULER_SYNC_CRON", cfg.Scheduler.SyncCron)
+	requireEnvInt(t, env, "JOB_MAX_ATTEMPTS", cfg.Scheduler.MaxAttempts)
+	requireEnvDuration(t, env, "JOB_RETRY_BACKOFF", cfg.Scheduler.RetryBackoff)
+	requireEnvInt(t, env, "JOB_WORKER_CONCURRENCY", cfg.Scheduler.WorkerConcurrency)
+	requireEnvDuration(t, env, "JOB_LEASE_TTL", cfg.Scheduler.LeaseTTL)
+	requireEnvDuration(t, env, "JOB_POLL_INTERVAL", cfg.Scheduler.PollInterval)
+	requireEnvString(t, env, "JOB_DEAD_LETTER_QUEUE", cfg.Scheduler.DeadLetterQueue)
+	requireEnvDuration(t, env, "JOB_PER_USER_RATE_WINDOW", cfg.Scheduler.PerUserRateWindow)
+	requireEnvInt(t, env, "JOB_PER_USER_RATE_MAX", cfg.Scheduler.PerUserRateMax)
+	requireEnvDuration(t, env, "JOB_PER_INSTALLATION_RATE_WINDOW", cfg.Scheduler.PerInstallationRateWindow)
+	requireEnvInt(t, env, "JOB_PER_INSTALLATION_RATE_MAX", cfg.Scheduler.PerInstallationRateMax)
 }
 
 func TestLoadDefaultsByServiceAddressKey(t *testing.T) {
