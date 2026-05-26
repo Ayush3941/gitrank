@@ -320,6 +320,12 @@ assert_workflow_frontend_npm_scripts() {
   fi
 }
 
+assert_frontend_script_discoverability() {
+  if ! "$ROOT_DIR/scripts/check-frontend-script-discoverability.sh" >/dev/null; then
+    fail "frontend script discoverability drifted from package/workflow/repo-sync entrypoints"
+  fi
+}
+
 assert_gitrank_script_discoverability() {
   if ! "$ROOT_DIR/scripts/check-gitrank-script-discoverability.sh" >/dev/null; then
     fail "gitrank script discoverability drifted from real entrypoints"
@@ -368,6 +374,7 @@ main() {
   assert_workflow_script_refs
   assert_workflow_make_target_refs
   assert_workflow_frontend_npm_scripts
+  assert_frontend_script_discoverability
   assert_gitrank_script_discoverability
   assert_start_script_contracts
   assert_backend_env_default_parity
