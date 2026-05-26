@@ -1,6 +1,9 @@
 import "server-only";
 
-const authBaseURL = readRequiredOrigin("GITRANK_AUTH_BASE_URL");
+const authBaseURL = readOriginWithFallback(
+  ["GITRANK_AUTH_BASE_URL", "AUTH_SERVICE_BASE_URL"],
+  "http://localhost:8081",
+);
 
 export async function proxyAuth(request: Request, path: string): Promise<Response> {
   const target = new URL(path, `${authBaseURL.replace(/\/$/, "")}/`);
@@ -59,14 +62,21 @@ function readSetCookieHeaders(headers: Headers): string[] {
   return fallback ? [fallback] : [];
 }
 
-function readRequiredOrigin(envKey: string): string {
-  const raw = process.env[envKey]?.trim();
-  if (!raw) {
-    throw new Error(`${envKey} is required`);
-  }
+function readOriginWithFallback(envKeys: readonly string[], fallback: string): string {
+  const raw = readFirstNonEmptyEnv(envKeys) || fallback;
   try {
     return new URL(raw).origin;
   } catch {
-    throw new Error(`${envKey} must be a valid absolute URL`);
+    throw new Error(`${envKeys.join(" or ")} must be a valid absolute URL`);
   }
+}
+
+function readFirstNonEmptyEnv(envKeys: readonly string[]): string {
+  for (const envKey of envKeys) {
+    const value = process.env[envKey]?.trim();
+    if (value) {
+      return value;
+    }
+  }
+  return "";
 }

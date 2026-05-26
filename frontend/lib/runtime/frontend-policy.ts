@@ -1,12 +1,9 @@
-function readRequiredString(envKey: string): string {
+function readString(envKey: string, fallback: string): string {
   const value = process.env[envKey]?.trim();
-  if (!value) {
-    throw new Error(`${envKey} is required`);
-  }
-  return value;
+  return value || fallback;
 }
 
 export const frontendPolicy = {
-  csrfCookieName: readRequiredString("NEXT_PUBLIC_GITRANK_CSRF_COOKIE_NAME"),
-  scoreVersionFallback: readRequiredString("NEXT_PUBLIC_GITRANK_SCORE_VERSION_FALLBACK"),
+  csrfCookieName: readString("NEXT_PUBLIC_GITRANK_CSRF_COOKIE_NAME", "gitrank_csrf"),
+  scoreVersionFallback: readString("NEXT_PUBLIC_GITRANK_SCORE_VERSION_FALLBACK", "v1alpha1"),
 } as const;

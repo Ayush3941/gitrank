@@ -28,7 +28,13 @@ const (
 	defaultDevGitHubClientID     = "dev-github-client-id"
 	defaultDevGitHubClientSecret = "dev-github-client-secret"
 	defaultDevTokenEncryptionKey = "Z2l0cmFuay1kZXYtdG9rZW4ta2V5LTMyYnl0ZXMhISE="
-	defaultLocalOAuthRedirectURL = "http://localhost:8081/oauth/github/callback"
+	defaultLocalOAuthRedirectURL = "http://localhost:3000/oauth/github/callback"
+	defaultGitHubAppID           = "0"
+	defaultGitHubAppSlug         = "replace-me"
+	defaultGitHubAppClientID     = "replace-me"
+	defaultGitHubAppClientSecret = "replace-me"
+	defaultGitHubAppPrivateKey   = "./secrets/github-app-private-key.pem"
+	defaultGitHubWebhookSecret   = "replace-me"
 )
 
 type App struct {
@@ -305,7 +311,7 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 		ServiceName:     getEnv("GITRANK_SERVICE_NAME", serviceName),
 		PublicBaseURL:   getEnv("GITRANK_PUBLIC_BASE_URL", "http://localhost:3000"),
 		APIBaseURL:      getEnv("GITRANK_API_BASE_URL", "http://localhost:8080"),
-		Addr:            getEnv(addrEnvKey, ":8080"),
+		Addr:            getEnv(addrEnvKey, defaultServiceAddr(addrEnvKey)),
 		ShutdownTimeout: getDuration("GITRANK_SHUTDOWN_TIMEOUT", 10*time.Second),
 		Log: Log{
 			Level:  getEnv("GITRANK_LOG_LEVEL", "info"),
@@ -353,13 +359,13 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			TokenURL:                       getEnv("GITHUB_OAUTH_EXCHANGE_URL", getEnv("GITHUB_OAUTH_TOKEN_URL", "https://github.com/login/oauth/access_token")),
 			DeviceURL:                      getEnv("GITHUB_OAUTH_DEVICE_URL", "https://github.com/login/device/code"),
 			OAuthRedirectURL:               getEnv("GITHUB_OAUTH_REDIRECT_URL", defaultLocalOAuthRedirectURL),
-			AppID:                          getEnv("GITHUB_APP_ID", ""),
-			AppSlug:                        getEnv("GITHUB_APP_SLUG", ""),
+			AppID:                          getEnv("GITHUB_APP_ID", defaultGitHubAppID),
+			AppSlug:                        getEnv("GITHUB_APP_SLUG", defaultGitHubAppSlug),
 			AppInstallURL:                  getEnv("GITHUB_APP_INSTALL_URL", ""),
-			AppClientID:                    getEnv("GITHUB_APP_CLIENT_ID", ""),
-			AppClientSecret:                getEnv("GITHUB_APP_CLIENT_SECRET", ""),
-			AppPrivateKeyPEM:               getEnv("GITHUB_APP_PRIVATE_KEY_PEM_PATH", ""),
-			WebhookSecret:                  getEnv("GITHUB_WEBHOOK_SECRET", ""),
+			AppClientID:                    getEnv("GITHUB_APP_CLIENT_ID", defaultGitHubAppClientID),
+			AppClientSecret:                getEnv("GITHUB_APP_CLIENT_SECRET", defaultGitHubAppClientSecret),
+			AppPrivateKeyPEM:               getEnv("GITHUB_APP_PRIVATE_KEY_PEM_PATH", defaultGitHubAppPrivateKey),
+			WebhookSecret:                  getEnv("GITHUB_WEBHOOK_SECRET", defaultGitHubWebhookSecret),
 			APIBaseURL:                     getEnv("GITHUB_API_BASE_URL", "https://api.github.com"),
 			GraphQLURL:                     getEnv("GITHUB_GRAPHQL_URL", "https://api.github.com/graphql"),
 			APIVersion:                     getEnv("GITHUB_API_VERSION", "2026-03-10"),
@@ -967,19 +973,19 @@ func (a App) ValidateOAuth() error {
 func (a App) ValidateGitHubApp() error {
 	var missing []string
 
-	if a.GitHub.AppID == "" || a.GitHub.AppID == "0" {
+	if normalizeConfigValue(a.GitHub.AppID) == "" || normalizeConfigValue(a.GitHub.AppID) == "0" {
 		missing = append(missing, "GITHUB_APP_ID")
 	}
-	if a.GitHub.AppClientID == "" {
+	if normalizeConfigValue(a.GitHub.AppClientID) == "" {
 		missing = append(missing, "GITHUB_APP_CLIENT_ID")
 	}
-	if a.GitHub.AppClientSecret == "" {
+	if normalizeConfigValue(a.GitHub.AppClientSecret) == "" {
 		missing = append(missing, "GITHUB_APP_CLIENT_SECRET")
 	}
-	if a.GitHub.AppPrivateKeyPEM == "" {
+	if normalizeConfigValue(a.GitHub.AppPrivateKeyPEM) == "" {
 		missing = append(missing, "GITHUB_APP_PRIVATE_KEY_PEM_PATH")
 	}
-	if a.GitHub.WebhookSecret == "" {
+	if normalizeConfigValue(a.GitHub.WebhookSecret) == "" {
 		missing = append(missing, "GITHUB_WEBHOOK_SECRET")
 	}
 
@@ -1044,10 +1050,10 @@ func (a App) ValidateAuthService() error {
 		if strings.TrimSpace(a.Auth.TokenEncryptionKey) == defaultDevTokenEncryptionKey {
 			problems = append(problems, "GITHUB_TOKEN_ENCRYPTION_KEY must be overridden in production")
 		}
-		if strings.TrimSpace(a.GitHub.ClientID) == defaultDevGitHubClientID && strings.TrimSpace(a.GitHub.AppClientID) == "" {
+		if strings.TrimSpace(a.GitHub.ClientID) == defaultDevGitHubClientID && normalizeConfigValue(a.GitHub.AppClientID) == "" {
 			problems = append(problems, "GITHUB_CLIENT_ID must be overridden in production")
 		}
-		if strings.TrimSpace(a.GitHub.ClientSecret) == defaultDevGitHubClientSecret && strings.TrimSpace(a.GitHub.AppClientSecret) == "" {
+		if strings.TrimSpace(a.GitHub.ClientSecret) == defaultDevGitHubClientSecret && normalizeConfigValue(a.GitHub.AppClientSecret) == "" {
 			problems = append(problems, "GITHUB_CLIENT_SECRET must be overridden in production")
 		}
 		if strings.TrimSpace(a.GitHub.OAuthRedirectURL) == defaultLocalOAuthRedirectURL {
@@ -1141,31 +1147,32 @@ func (a App) ValidatePRAnalyzerService() error {
 }
 
 func (a App) GitHubUserClientID() string {
-	if a.GitHub.AppClientID != "" {
-		return a.GitHub.AppClientID
+	if appClientID := normalizeConfigValue(a.GitHub.AppClientID); appClientID != "" {
+		return appClientID
 	}
-	return a.GitHub.ClientID
+	return normalizeConfigValue(a.GitHub.ClientID)
 }
 
 func (a App) GitHubUserClientSecret() string {
-	if a.GitHub.AppClientSecret != "" {
-		return a.GitHub.AppClientSecret
+	if appClientSecret := normalizeConfigValue(a.GitHub.AppClientSecret); appClientSecret != "" {
+		return appClientSecret
 	}
-	return a.GitHub.ClientSecret
+	return normalizeConfigValue(a.GitHub.ClientSecret)
 }
 
 func (a App) GitHubInstallURL() string {
-	if strings.TrimSpace(a.GitHub.AppInstallURL) != "" {
-		return strings.TrimSpace(a.GitHub.AppInstallURL)
+	if installURL := normalizeConfigValue(a.GitHub.AppInstallURL); installURL != "" {
+		return installURL
 	}
-	if strings.TrimSpace(a.GitHub.AppSlug) == "" {
+	appSlug := normalizeConfigValue(a.GitHub.AppSlug)
+	if appSlug == "" {
 		return ""
 	}
-	return fmt.Sprintf("https://github.com/apps/%s/installations/new", strings.TrimSpace(a.GitHub.AppSlug))
+	return fmt.Sprintf("https://github.com/apps/%s/installations/new", appSlug)
 }
 
 func (a App) GitHubUserClientMode() string {
-	if a.GitHub.AppClientID != "" {
+	if normalizeConfigValue(a.GitHub.AppClientID) != "" {
 		return "github_app"
 	}
 	return "oauth_app"
@@ -1224,6 +1231,18 @@ func (a App) ValidateAI() error {
 
 func (a App) IsProduction() bool {
 	return a.Env == Production
+}
+
+func normalizeConfigValue(value string) string {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" {
+		return ""
+	}
+	lower := strings.ToLower(trimmed)
+	if lower == "replace-me" || strings.HasPrefix(lower, "replace-with-") {
+		return ""
+	}
+	return trimmed
 }
 
 func (s Scoring) RankTierForXP(totalXP int) string {
@@ -1325,6 +1344,27 @@ func decodeBase64Key(value string) ([]byte, error) {
 		return nil, errors.New("decoded key must be 32 bytes")
 	}
 	return raw, nil
+}
+
+func defaultServiceAddr(addrEnvKey string) string {
+	switch strings.TrimSpace(addrEnvKey) {
+	case "API_GATEWAY_ADDR":
+		return ":8080"
+	case "AUTH_SERVICE_ADDR":
+		return ":8081"
+	case "GITHUB_INGESTOR_ADDR":
+		return ":8082"
+	case "PR_ANALYZER_ADDR":
+		return ":8083"
+	case "PROFILE_SERVICE_ADDR":
+		return ":8084"
+	case "SCORING_ENGINE_ADDR":
+		return ":8085"
+	case "SCHEDULER_WORKER_ADDR":
+		return ":8086"
+	default:
+		return ":8080"
+	}
 }
 
 func getEnv(key, fallback string) string {

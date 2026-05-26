@@ -19,6 +19,18 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.Addr != ":8080" {
 		t.Fatalf("Addr = %q, want :8080", cfg.Addr)
 	}
+	if cfg.GitHub.OAuthRedirectURL != "http://localhost:3000/oauth/github/callback" {
+		t.Fatalf("GitHub.OAuthRedirectURL = %q, want frontend callback default", cfg.GitHub.OAuthRedirectURL)
+	}
+	if cfg.GitHub.AppID != "0" {
+		t.Fatalf("GitHub.AppID = %q, want 0", cfg.GitHub.AppID)
+	}
+	if cfg.GitHub.AppClientID != "replace-me" || cfg.GitHub.AppClientSecret != "replace-me" {
+		t.Fatalf("GitHub app client placeholders = %q/%q, want replace-me/replace-me", cfg.GitHub.AppClientID, cfg.GitHub.AppClientSecret)
+	}
+	if cfg.GitHubUserClientMode() != "oauth_app" {
+		t.Fatalf("GitHubUserClientMode() = %q, want oauth_app when app values are placeholders", cfg.GitHubUserClientMode())
+	}
 	if cfg.ShutdownTimeout != 10*time.Second {
 		t.Fatalf("ShutdownTimeout = %v, want 10s", cfg.ShutdownTimeout)
 	}
@@ -150,6 +162,35 @@ func TestLoadDefaults(t *testing.T) {
 	}
 	if len(cfg.GitHub.OAuthScopes) != 2 || cfg.GitHub.OAuthScopes[0] != "read:user" || cfg.GitHub.OAuthScopes[1] != "user:email" {
 		t.Fatalf("GitHub.OAuthScopes = %v, want read:user,user:email", cfg.GitHub.OAuthScopes)
+	}
+}
+
+func TestLoadDefaultsByServiceAddressKey(t *testing.T) {
+	cases := []struct {
+		serviceName string
+		addrEnvKey  string
+		want        string
+	}{
+		{serviceName: "api-gateway", addrEnvKey: "API_GATEWAY_ADDR", want: ":8080"},
+		{serviceName: "auth-service", addrEnvKey: "AUTH_SERVICE_ADDR", want: ":8081"},
+		{serviceName: "github-ingestor", addrEnvKey: "GITHUB_INGESTOR_ADDR", want: ":8082"},
+		{serviceName: "pr-analyzer", addrEnvKey: "PR_ANALYZER_ADDR", want: ":8083"},
+		{serviceName: "profile-service", addrEnvKey: "PROFILE_SERVICE_ADDR", want: ":8084"},
+		{serviceName: "scoring-engine", addrEnvKey: "SCORING_ENGINE_ADDR", want: ":8085"},
+		{serviceName: "scheduler-worker", addrEnvKey: "SCHEDULER_WORKER_ADDR", want: ":8086"},
+	}
+
+	for _, tc := range cases {
+		tc := tc
+		t.Run(tc.addrEnvKey, func(t *testing.T) {
+			cfg, err := Load(tc.serviceName, tc.addrEnvKey)
+			if err != nil {
+				t.Fatalf("Load() error = %v", err)
+			}
+			if cfg.Addr != tc.want {
+				t.Fatalf("Addr = %q, want %q", cfg.Addr, tc.want)
+			}
+		})
 	}
 }
 
@@ -412,8 +453,8 @@ func TestValidateOAuth(t *testing.T) {
 		t.Fatalf("Load() error = %v", err)
 	}
 
-	if cfg.ValidateOAuth() == nil {
-		t.Fatal("ValidateOAuth() expected error, got nil")
+	if err := cfg.ValidateOAuth(); err != nil {
+		t.Fatalf("ValidateOAuth() error = %v, want nil defaults", err)
 	}
 }
 
@@ -475,13 +516,16 @@ func TestValidateAuthService(t *testing.T) {
 	}
 }
 
-func TestValidatePRAnalyzerServiceRequiresDatabase(t *testing.T) {
+func TestValidatePRAnalyzerServiceAllowsLocalDatabaseFallback(t *testing.T) {
 	cfg, err := Load("pr-analyzer", "PR_ANALYZER_ADDR")
 	if err != nil {
 		t.Fatalf("Load() error = %v", err)
 	}
-	if err := cfg.ValidatePRAnalyzerService(); err == nil {
-		t.Fatal("ValidatePRAnalyzerService() error = nil, want missing DATABASE_URL rejection")
+	if cfg.Database.URL != defaultLocalDatabaseURL {
+		t.Fatalf("Database.URL = %q, want %q", cfg.Database.URL, defaultLocalDatabaseURL)
+	}
+	if err := cfg.ValidatePRAnalyzerService(); err != nil {
+		t.Fatalf("ValidatePRAnalyzerService() error = %v, want nil with local fallback", err)
 	}
 
 	t.Setenv("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/gitrank?sslmode=disable")

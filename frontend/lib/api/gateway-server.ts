@@ -1,6 +1,6 @@
 import "server-only";
 
-const gatewayBaseURL = readRequiredOrigin("GITRANK_API_BASE_URL");
+const gatewayBaseURL = readOriginWithFallback(["GITRANK_API_BASE_URL"], "http://localhost:8080");
 
 export async function proxyGateway(request: Request, path: string): Promise<Response> {
   const target = buildGatewayURL(path);
@@ -64,16 +64,23 @@ function buildGatewayURL(path: string): string {
   return new URL(path, `${gatewayBaseURL.replace(/\/$/, "")}/`).toString();
 }
 
-function readRequiredOrigin(envKey: string): string {
-  const raw = process.env[envKey]?.trim();
-  if (!raw) {
-    throw new Error(`${envKey} is required`);
-  }
+function readOriginWithFallback(envKeys: readonly string[], fallback: string): string {
+  const raw = readFirstNonEmptyEnv(envKeys) || fallback;
   try {
     return new URL(raw).origin;
   } catch {
-    throw new Error(`${envKey} must be a valid absolute URL`);
+    throw new Error(`${envKeys.join(" or ")} must be a valid absolute URL`);
   }
+}
+
+function readFirstNonEmptyEnv(envKeys: readonly string[]): string {
+  for (const envKey of envKeys) {
+    const value = process.env[envKey]?.trim();
+    if (value) {
+      return value;
+    }
+  }
+  return "";
 }
 
 function copyHeaderIfPresent(headers: Headers, key: string, value: string | null) {
