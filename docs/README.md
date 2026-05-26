@@ -40,6 +40,7 @@ This top-level map keeps navigation simple without changing service runtime path
   - markdown script-path references for both repo-root and `gitrank/` workspace command contexts
   - markdown `go test/run/build/vet` path references against current repo paths
   - machine-specific absolute path leakage in primary docs (for example user-home absolute paths on Linux/macOS/Windows)
+  - runtime identity hygiene (no personal/demo identity literals in production frontend/backend code paths)
   - markdown relative-link integrity across tracked docs
 
 ## Navigation Rule

@@ -281,6 +281,15 @@ assert_markdown_portable_paths() {
   fi
 }
 
+assert_runtime_identity_hygiene() {
+  if ! (cd "$ROOT_DIR/frontend" && node scripts/check-no-hardcoded-identities.mjs >/dev/null); then
+    fail "frontend production identity guard failed"
+  fi
+  if ! "$ROOT_DIR/scripts/check-no-runtime-hardcoded-identities.sh" >/dev/null; then
+    fail "backend runtime identity guard failed"
+  fi
+}
+
 assert_clean_root_binary_clutter() {
   local pdfs
   pdfs="$(find "$ROOT_DIR" -maxdepth 1 -type f -name '*.pdf' -print || true)"
@@ -311,6 +320,7 @@ main() {
   assert_markdown_script_path_refs
   assert_markdown_go_command_path_refs
   assert_markdown_portable_paths
+  assert_runtime_identity_hygiene
   assert_backend_env_default_parity
 
   if ! check_markdown_relative_links; then
