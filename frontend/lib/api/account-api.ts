@@ -65,12 +65,14 @@ export type ApiSyncRunListResponse = {
 
 export type QueueSyncInput = {
   mode:
+    | "installation"
     | "user"
     | "repository"
     | "pull_request"
     | "review"
     | "issue"
     | "commit";
+  installationId?: number;
   user?: string;
   repository?: string;
   number?: number;
@@ -123,6 +125,7 @@ export async function queueSyncRequest(input: QueueSyncInput): Promise<ApiSyncRe
     cache: "no-store",
     body: JSON.stringify({
       mode: input.mode,
+      installation_id: input.installationId,
       user: input.user,
       repository: input.repository,
       number: input.number,

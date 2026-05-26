@@ -22,7 +22,7 @@ Scope:
 | `GET /v1/leaderboard` | `GET /api/leaderboard` | Leaderboard page, Dashboard rank context |
 | `GET /v1/pr/{owner}/{repo}/{number}/report` | `GET /api/pr/[owner]/[repo]/[number]/report` | PR battle report pages |
 | `POST /v1/analytics/events` | `POST /api/analytics/events` | Frontend analytics event emission |
-| `POST /v1/sync` | `POST /api/sync` | Queue sync actions |
+| `POST /v1/sync` | `POST /api/sync` | Settings sync queue controls (installation/user/repository/PR/review/issue/commit) |
 | `GET /v1/sync/runs` | `GET /api/sync/runs` | Settings sync activity |
 | `POST /v1/sync/user/execute` | `POST /api/sync/user` | Settings sync execution controls, auto-sync |
 | `POST /v1/sync/installation/execute` | `POST /api/sync/installation` | Settings sync execution controls |

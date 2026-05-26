@@ -45,6 +45,7 @@ import { SyncExecutionControls } from "@/features/settings/components/SyncExecut
 import { BackendCapabilityPanel } from "@/features/settings/components/BackendCapabilityPanel";
 import { useAuthSession, useRefreshAuthSession } from "@/hooks/use-auth-session";
 import { ProfileSchemaPanel } from "@/features/settings/components/ProfileSchemaPanel";
+import { SyncQueueControls } from "@/features/settings/components/SyncQueueControls";
 
 type BackedPrivacyKey =
   | "publicProfileEnabled"
@@ -464,6 +465,12 @@ export function SettingsPageClient() {
       <section className="render-opt-section" id="settings-sync-execution-panel">
         <GlowCard className="space-y-4">
           <SyncExecutionControls />
+        </GlowCard>
+      </section>
+
+      <section className="render-opt-section" id="settings-sync-queue-panel">
+        <GlowCard className="space-y-4">
+          <SyncQueueControls />
         </GlowCard>
       </section>
 
