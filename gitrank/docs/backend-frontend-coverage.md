@@ -49,6 +49,7 @@ Scope:
 | `GET /v1/session/me` | `GET /api/session/me` | Settings session identity panel |
 | `POST /v1/session/refresh` | `POST /api/session/refresh` | Settings refresh session action |
 | `POST /v1/session/logout` | `POST /api/session/logout` | Settings sign out |
+| `GET /oauth/github/install` | `GET /oauth/github/install` | GitHub App install entry |
 | `GET /oauth/github/start` | `GET /oauth/github/start` | Login/OAuth entry |
 | `GET /oauth/github/callback` | `GET /oauth/github/callback` | OAuth completion and session bootstrap |
 
