@@ -27,6 +27,7 @@ import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
+import { hasUserContributionEvidence } from "@/lib/presentation/sync-evidence";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import { Button } from "@/components/ui/button";
 
@@ -71,6 +72,16 @@ export function DashboardPageClient() {
     () => summarizeContributionStreak(user?.contributions ?? []),
     [user?.contributions],
   );
+  const hasContributionEvidence = useMemo(() => hasUserContributionEvidence(user), [user]);
+  const syncStateForDisplay = useMemo(() => {
+    if (!user) {
+      return undefined;
+    }
+    if (user.syncStatus.state === "synced" && !hasContributionEvidence) {
+      return "partially_synced" as const;
+    }
+    return user.syncStatus.state;
+  }, [hasContributionEvidence, user]);
   const abraPayload = useMemo(() => {
     if (!user) {
       return null;
@@ -196,15 +207,24 @@ export function DashboardPageClient() {
               { label: `Merged PRs ${user.mergedPrCount.toLocaleString("en-US")}` },
               { label: `Streak ${streak.currentStreakDays}d` },
               {
-                label: `Sync ${formatSyncStateLabel(user.syncStatus.state)}`,
-                tone: toneForSyncState(user.syncStatus.state),
+                label: `Sync ${formatSyncStateLabel(syncStateForDisplay)}`,
+                tone: toneForSyncState(syncStateForDisplay),
               },
             ]}
           />
         )}
         actions={(
           <div className="flex flex-wrap items-center gap-2">
-            <SnapshotFreshnessPill refreshedAt={data.refreshedAt} label="Refreshed" />
+            {syncStateForDisplay === "synced" && hasContributionEvidence ? (
+              <SnapshotFreshnessPill refreshedAt={data.refreshedAt} label="Refreshed" />
+            ) : (
+              <span
+                className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold"
+                title="No scored PR evidence has been materialized yet."
+              >
+                Evidence pending
+              </span>
+            )}
             <Button asChild variant="secondary" size="sm">
               <Link href="/dashboard/contributions" prefetch={false}>
                 View PR cards
@@ -213,11 +233,13 @@ export function DashboardPageClient() {
           </div>
         )}
       />
-      {user.syncStatus.state === "stale" ? (
+      {syncStateForDisplay === "stale" || syncStateForDisplay === "partially_synced" ? (
         <StaleState
-          message={`Your GitRank profile was refreshed ${formatRelativeDays(
-            data.refreshedAt,
-          )}.`}
+          message={
+            syncStateForDisplay === "partially_synced"
+              ? "Profile snapshot exists, but scored PR evidence is still empty. Run sync again after GitHub processing completes."
+              : `Your GitRank profile was refreshed ${formatRelativeDays(data.refreshedAt)}.`
+          }
           updatedAt={data.refreshedAt}
           onRefresh={async () => {
             try {

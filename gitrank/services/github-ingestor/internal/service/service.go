@@ -15,7 +15,11 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var ErrUnavailable = errors.New("github persistence unavailable")
+var (
+	ErrUnavailable                 = errors.New("github persistence unavailable")
+	ErrUserSyncOAuthTokenRequired  = errors.New("github oauth token unavailable for user sync; reconnect github")
+	ErrUserSyncOAuthTokenMalformed = errors.New("github oauth token unavailable for user sync; rotate token keys and reconnect github")
+)
 
 type Service struct {
 	cfg   config.App

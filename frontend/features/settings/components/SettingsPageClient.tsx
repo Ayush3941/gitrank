@@ -19,6 +19,7 @@ import {
   useDeleteMyAccount,
   useExportMyAccountData,
   useLogoutSession,
+  useRunUserSync,
   useStartAccountLink,
   useUnlinkMyAccount,
 } from "@/hooks/use-account-actions";
@@ -40,6 +41,7 @@ import {
   useTextScalePreference,
 } from "@/hooks/use-text-scale-preference";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
+import { hasUserContributionEvidence } from "@/lib/presentation/sync-evidence";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import { type ThemePreference, useThemePreference } from "@/hooks/use-theme-preference";
 import { SyncExecutionControls } from "@/features/settings/components/SyncExecutionControls";
@@ -148,6 +150,7 @@ export function SettingsPageClient() {
   const authSessionQuery = useAuthSession();
   const refreshAuthSession = useRefreshAuthSession();
   const accountLinkStart = useStartAccountLink();
+  const runUserSync = useRunUserSync();
   const { setReducedGamification } = useGamificationPreference();
   const { theme, themeSource, setTheme, clearThemePreference } = useThemePreference();
   const { textScale, setTextScale } = useTextScalePreference();
@@ -219,9 +222,10 @@ export function SettingsPageClient() {
     "settings-privacy",
   );
   const actionError = sanitizeUserFacingError(
+    (runUserSync.error as Error | null)?.message ||
     (logoutSession.error as Error | null)?.message ||
-      (refreshAuthSession.error as Error | null)?.message ||
-      (unlinkAccount.error as Error | null)?.message ||
+    (refreshAuthSession.error as Error | null)?.message ||
+    (unlinkAccount.error as Error | null)?.message ||
       (deleteAccount.error as Error | null)?.message ||
       (exportAccount.error as Error | null)?.message ||
       (accountLinkStart.error as Error | null)?.message ||
@@ -236,12 +240,14 @@ export function SettingsPageClient() {
   const isActing =
     logoutSession.isPending ||
     refreshAuthSession.isPending ||
+    runUserSync.isPending ||
     unlinkAccount.isPending ||
     deleteAccount.isPending ||
     exportAccount.isPending ||
     accountLinkStart.isPending;
   const pendingRepository = updateRepositoryVisibility.variables?.fullName ?? null;
   const hiddenRepositoryCount = data.user.repositories.filter((repository) => repository.visibility !== "Public").length;
+  const hasContributionEvidence = hasUserContributionEvidence(data.user);
   const accountActionErrorId = "settings-account-action-error";
 
   function handlePrivacyToggle(key: BackedPrivacyKey, checked: boolean) {
@@ -352,7 +358,16 @@ export function SettingsPageClient() {
         )}
         actions={(
           <div className="flex flex-wrap items-center gap-2">
-            <SnapshotFreshnessPill refreshedAt={data.refreshedAt} label="Refreshed" />
+            {data.user.syncStatus.state === "synced" && hasContributionEvidence ? (
+              <SnapshotFreshnessPill refreshedAt={data.refreshedAt} label="Refreshed" />
+            ) : (
+              <span
+                className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold"
+                title="No scored PR evidence has been materialized yet."
+              >
+                Evidence pending
+              </span>
+            )}
             <Button asChild variant="secondary" size="sm">
               <Link href={`/u/${data.user.username}`} prefetch={false}>
                 Public profile
@@ -376,11 +391,17 @@ export function SettingsPageClient() {
             className="w-full justify-center"
             disabled={isActing || isFetching}
             onClick={() => {
-              void refetch();
+              setActionNotice("");
+              runUserSync.mutate(undefined, {
+                onSuccess: () => {
+                  setActionNotice("GitHub sync completed. Snapshot is refreshing.");
+                  void refetch();
+                },
+              });
             }}
           >
             <RefreshCw className="h-4 w-4" />
-            {isFetching ? "Refreshing..." : "Refresh snapshot"}
+            {runUserSync.isPending ? "Syncing GitHub..." : isFetching ? "Refreshing..." : "Sync now"}
           </Button>
           <Button
             variant="secondary"
@@ -719,7 +740,7 @@ export function SettingsPageClient() {
             </Button>
           </div>
           <div className="space-y-2 rounded-[0.1rem] border border-rose-300/24 bg-rose-500/8 px-3 py-3">
-            <p className="text-xs text-rose-100">Delete permanently removes profile, score, badges, and session data.</p>
+            <p className="text-xs text-rose-100">Delete wipes synced PR history, score events, badges, profile state, and signs you out. Next login starts from a fresh account state.</p>
             <Button
               variant="danger"
               className="w-full justify-center"

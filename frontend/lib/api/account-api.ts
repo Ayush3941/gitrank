@@ -1,9 +1,12 @@
 import { frontendPolicy } from "@/lib/runtime/frontend-policy";
 
 const DEFAULT_CSRF_COOKIE_NAME = frontendPolicy.csrfCookieName;
-const USER_SYNC_EXECUTION_TIMEOUT_MS = parsePositiveMs(
-  process.env.NEXT_PUBLIC_GITRANK_USER_SYNC_EXECUTION_TIMEOUT_MS,
-  20_000,
+const USER_SYNC_EXECUTION_TIMEOUT_MS = Math.max(
+  parsePositiveMs(
+    process.env.NEXT_PUBLIC_GITRANK_USER_SYNC_EXECUTION_TIMEOUT_MS,
+    180_000,
+  ),
+  180_000,
 );
 
 type ApiErrorResponse = {
@@ -216,7 +219,7 @@ export async function runUserSync(user?: string): Promise<ApiSyncExecutionRespon
     );
   } catch (error) {
     if (isAbortLikeError(error)) {
-      return queueUserSyncFallback(normalizedUser);
+      throw new Error(syncRecoveryMessage("user", "GitHub took too long to respond."));
     }
     throw error;
   }
@@ -225,10 +228,6 @@ export async function runUserSync(user?: string): Promise<ApiSyncExecutionRespon
   }
 
   const parsed = await parseErrorResponse(response, "User sync failed.");
-  if (isTransientUserSyncExecutionFailure(parsed.message, response.status, parsed.code)) {
-    return queueUserSyncFallback(normalizedUser);
-  }
-
   throw new Error(
     sanitizeSyncExecutionError(parsed.message, response.status, parsed.code, "user"),
   );
@@ -458,35 +457,18 @@ function sanitizeSyncExecutionError(
     normalized.includes("unauthorized") ||
     normalized.includes("forbidden")
   ) {
-    return "GitHub authorization is blocked for this sync. Reconnect GitHub from Settings, then retry.";
+    return "GitHub user authorization is missing or expired for this sync. Reconnect GitHub from Settings, then retry.";
+  }
+  if (
+    normalized.includes("oauth token unavailable for user sync") ||
+    normalized.includes("rotate token keys and reconnect github")
+  ) {
+    return "GitHub OAuth token is unavailable for user sync. Reconnect GitHub from Settings, then retry.";
   }
   if (status >= 500 || code === "dependency_unavailable") {
     return syncRecoveryMessage(mode, "Sync services are temporarily unavailable.");
   }
   return message;
-}
-
-function isTransientUserSyncExecutionFailure(
-  message: string,
-  status: number,
-  code: string | undefined,
-): boolean {
-  const normalized = message.toLowerCase();
-  if (status >= 500) {
-    return true;
-  }
-  if (code === "dependency_unavailable" || code === "upstream_timeout") {
-    return true;
-  }
-  return (
-    normalized.includes("context deadline exceeded") ||
-    normalized.includes("client.timeout exceeded") ||
-    normalized.includes("timeout exceeded while awaiting headers") ||
-    normalized.includes("timeout awaiting response headers") ||
-    normalized.includes("i/o timeout") ||
-    normalized.includes("status 429") ||
-    normalized.includes("rate limit")
-  );
 }
 
 function syncRecoveryMessage(
@@ -511,7 +493,7 @@ function syncRecoveryMessage(
   if (mode === "commit") {
     return `${reason} Commit sync kept any available evidence. Retry soon with the same owner/repo and commit SHA.`;
   }
-  return `${reason} User sync kept any available evidence and dashboard auto-sync will retry in the background.`;
+  return `${reason} User sync did not complete. Retry sync from Settings after a short delay.`;
 }
 
 function requireCSRFToken(): string {
@@ -528,40 +510,6 @@ function requireCSRFToken(): string {
   }
 
   return decodeURIComponent(cookie.slice(DEFAULT_CSRF_COOKIE_NAME.length + 1));
-}
-
-async function queueUserSyncFallback(user: string): Promise<ApiSyncExecutionResponse> {
-  const fallbackTimestamp = new Date().toISOString();
-  try {
-    const queued = await queueSyncRequest({
-      mode: "user",
-      user: user || undefined,
-    });
-    const acceptedAt = queued.accepted_at;
-    return {
-      status: "queued",
-      mode: "user",
-      user: user || undefined,
-      correlation_id: queued.correlation_id,
-      started_at: acceptedAt,
-      finished_at: acceptedAt,
-      fetched: { fallback_queued: 1 },
-      persisted: {},
-    };
-  } catch {
-    return {
-      status: "queued",
-      mode: "user",
-      user: user || undefined,
-      started_at: fallbackTimestamp,
-      finished_at: fallbackTimestamp,
-      fetched: {
-        fallback_queued: 1,
-        fallback_queue_unavailable: 1,
-      },
-      persisted: {},
-    };
-  }
 }
 
 async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit, timeoutMs: number): Promise<Response> {

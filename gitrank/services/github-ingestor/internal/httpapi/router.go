@@ -354,6 +354,10 @@ func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQ
 			GitHubLogin: strings.TrimSpace(r.Header.Get("X-GitRank-GitHub-Login")),
 		}, httpkit.RequestIDFromContext(r.Context()), startedAt)
 		if err != nil {
+			if errors.Is(err, service.ErrUserSyncOAuthTokenRequired) || errors.Is(err, service.ErrUserSyncOAuthTokenMalformed) {
+				httpkit.WriteError(w, http.StatusUnauthorized, "github_user_oauth_required", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+				return
+			}
 			httpkit.WriteError(w, http.StatusBadGateway, "github_user_sync_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}

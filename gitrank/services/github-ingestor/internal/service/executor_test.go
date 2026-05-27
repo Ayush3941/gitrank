@@ -170,6 +170,181 @@ func TestIsRecoverableUserSyncSelectionError(t *testing.T) {
 	}
 }
 
+func TestShouldAdvanceAuthoredPRLastSynced(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name             string
+		fetched          map[string]int
+		searchIncomplete bool
+		searchOverflow   bool
+		want             bool
+	}{
+		{
+			name:             "advances on clean sync",
+			fetched:          map[string]int{"authored_pull_requests_selected": 8},
+			searchIncomplete: false,
+			searchOverflow:   false,
+			want:             true,
+		},
+		{
+			name:             "holds cursor when search is incomplete",
+			fetched:          map[string]int{"authored_pull_requests_selected": 8},
+			searchIncomplete: true,
+			searchOverflow:   false,
+			want:             false,
+		},
+		{
+			name:             "holds cursor when search overflow is detected",
+			fetched:          map[string]int{"authored_pull_requests_selected": 8},
+			searchIncomplete: false,
+			searchOverflow:   true,
+			want:             false,
+		},
+		{
+			name:             "holds cursor when selection search failed",
+			fetched:          map[string]int{"authored_pull_request_search_failed": 1},
+			searchIncomplete: false,
+			searchOverflow:   false,
+			want:             false,
+		},
+		{
+			name:             "holds cursor when retryable hydration failures exist",
+			fetched:          map[string]int{"authored_pull_requests_retryable": 2},
+			searchIncomplete: false,
+			searchOverflow:   false,
+			want:             false,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := shouldAdvanceAuthoredPRLastSynced(test.fetched, test.searchIncomplete, test.searchOverflow)
+			if got != test.want {
+				t.Fatalf(
+					"shouldAdvanceAuthoredPRLastSynced(%v, incomplete=%v, overflow=%v) = %v, want %v",
+					test.fetched,
+					test.searchIncomplete,
+					test.searchOverflow,
+					got,
+					test.want,
+				)
+			}
+		})
+	}
+}
+
+func TestUserSyncExecutionStatus(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		fetched map[string]int
+		want    string
+	}{
+		{
+			name:    "completed on clean metrics",
+			fetched: map[string]int{"authored_pull_requests_selected": 10},
+			want:    "completed",
+		},
+		{
+			name:    "partial when search incomplete",
+			fetched: map[string]int{"authored_pull_request_search_incomplete": 1},
+			want:    "partial",
+		},
+		{
+			name:    "partial when retryable pulls skipped",
+			fetched: map[string]int{"authored_pull_requests_retryable": 2},
+			want:    "partial",
+		},
+		{
+			name:    "partial when pull request hydration failed",
+			fetched: map[string]int{"authored_pull_requests_failed": 1},
+			want:    "partial",
+		},
+		{
+			name:    "partial when credential scope is limited",
+			fetched: map[string]int{"authored_pull_request_scope_limited": 1},
+			want:    "partial",
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := userSyncExecutionStatus(test.fetched)
+			if got != test.want {
+				t.Fatalf("userSyncExecutionStatus(%v) = %q, want %q", test.fetched, got, test.want)
+			}
+		})
+	}
+}
+
+func TestShouldForceAuthoredPRBootstrap(t *testing.T) {
+	t.Parallel()
+
+	now := time.Date(2026, 5, 27, 10, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name           string
+		cursor         authoredPRHistoryCursor
+		selectedTarget int
+		persistedCount int
+		want           bool
+	}{
+		{
+			name: "forces bootstrap when cursor exists and both selected and persisted are empty",
+			cursor: authoredPRHistoryCursor{
+				LastSyncedAt: &now,
+			},
+			selectedTarget: 0,
+			persistedCount: 0,
+			want:           true,
+		},
+		{
+			name:           "does not force bootstrap on fresh cursor with no evidence",
+			cursor:         authoredPRHistoryCursor{},
+			selectedTarget: 0,
+			persistedCount: 0,
+			want:           false,
+		},
+		{
+			name: "does not force bootstrap when targets were selected",
+			cursor: authoredPRHistoryCursor{
+				BootstrapComplete: true,
+			},
+			selectedTarget: 2,
+			persistedCount: 0,
+			want:           false,
+		},
+		{
+			name: "does not force bootstrap when persisted evidence exists",
+			cursor: authoredPRHistoryCursor{
+				BootstrapComplete: true,
+			},
+			selectedTarget: 0,
+			persistedCount: 3,
+			want:           false,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			got := shouldForceAuthoredPRBootstrap(test.cursor, test.selectedTarget, test.persistedCount)
+			if got != test.want {
+				t.Fatalf("shouldForceAuthoredPRBootstrap(%+v, %d, %d) = %v, want %v", test.cursor, test.selectedTarget, test.persistedCount, got, test.want)
+			}
+		})
+	}
+}
+
 func TestSyncFailureFetchedMetrics(t *testing.T) {
 	t.Parallel()
 
@@ -223,9 +398,9 @@ func TestSyncFailureFetchedMetrics(t *testing.T) {
 func TestBoundedUserPRSyncTimeout(t *testing.T) {
 	t.Parallel()
 
-	defaultTimeout := 20 * time.Second
-	minTimeout := 10 * time.Second
-	maxTimeout := 60 * time.Second
+	defaultTimeout := 45 * time.Second
+	minTimeout := 20 * time.Second
+	maxTimeout := 90 * time.Second
 
 	tests := []struct {
 		name string
@@ -244,11 +419,10 @@ func TestBoundedUserPRSyncTimeout(t *testing.T) {
 			want: defaultTimeout,
 		},
 		{
-			name: "uses minimum bound when timeout is too short",
+			name: "uses minimum bound when default timeout is too short",
 			cfg: config.App{
 				GitHub: config.GitHub{
-					RequestTimeout:           5 * time.Second,
-					UserPRSyncTimeoutDefault: defaultTimeout,
+					UserPRSyncTimeoutDefault: 5 * time.Second,
 					UserPRSyncTimeoutMin:     minTimeout,
 					UserPRSyncTimeoutMax:     maxTimeout,
 				},
@@ -256,23 +430,21 @@ func TestBoundedUserPRSyncTimeout(t *testing.T) {
 			want: minTimeout,
 		},
 		{
-			name: "uses configured timeout when within bounds",
+			name: "uses default timeout when within bounds",
 			cfg: config.App{
 				GitHub: config.GitHub{
-					RequestTimeout:           25 * time.Second,
-					UserPRSyncTimeoutDefault: defaultTimeout,
+					UserPRSyncTimeoutDefault: 55 * time.Second,
 					UserPRSyncTimeoutMin:     minTimeout,
 					UserPRSyncTimeoutMax:     maxTimeout,
 				},
 			},
-			want: 25 * time.Second,
+			want: 55 * time.Second,
 		},
 		{
-			name: "uses maximum bound when timeout is too high",
+			name: "uses maximum bound when default timeout is too high",
 			cfg: config.App{
 				GitHub: config.GitHub{
-					RequestTimeout:           90 * time.Second,
-					UserPRSyncTimeoutDefault: defaultTimeout,
+					UserPRSyncTimeoutDefault: 120 * time.Second,
 					UserPRSyncTimeoutMin:     minTimeout,
 					UserPRSyncTimeoutMax:     maxTimeout,
 				},
@@ -300,14 +472,53 @@ func TestBoundedAuthoredPRSyncLimit(t *testing.T) {
 		AuthoredPRSearchLimit: 100,
 	}
 
-	if got := boundedAuthoredPRSyncLimit(cfg, 0); got != 15 {
-		t.Fatalf("boundedAuthoredPRSyncLimit(default) = %d, want 15", got)
+	if got := boundedAuthoredPRSyncLimit(cfg, 0); got != 40 {
+		t.Fatalf("boundedAuthoredPRSyncLimit(default) = %d, want 40", got)
 	}
 	if got := boundedAuthoredPRSyncLimit(cfg, 55); got != 55 {
 		t.Fatalf("boundedAuthoredPRSyncLimit(55) = %d, want 55", got)
 	}
 	if got := boundedAuthoredPRSyncLimit(cfg, 120); got != 100 {
 		t.Fatalf("boundedAuthoredPRSyncLimit(120) = %d, want 100", got)
+	}
+}
+
+func TestPrioritizeAuthoredPullRequestTargetsBootstrapInProgressIncludesHistoricTargets(t *testing.T) {
+	targets := []authoredPullRequestTarget{
+		{Repository: "owner/repo", Number: 101},
+		{Repository: "owner/repo", Number: 102},
+		{Repository: "owner/repo", Number: 103},
+		{Repository: "owner/repo", Number: 104},
+		{Repository: "owner/repo", Number: 201},
+		{Repository: "owner/repo", Number: 202},
+	}
+
+	planned := prioritizeAuthoredPullRequestTargets(targets, 3, false)
+	if len(planned) != 3 {
+		t.Fatalf("len(planned) = %d, want 3", len(planned))
+	}
+	if planned[0].Number != 101 {
+		t.Fatalf("planned[0] = #%d, want most recent #101", planned[0].Number)
+	}
+	if planned[2].Number != 202 {
+		t.Fatalf("planned[2] = #%d, want historic tail #202 to guarantee backfill progress", planned[2].Number)
+	}
+}
+
+func TestPrioritizeAuthoredPullRequestTargetsBootstrapCompleteUsesNewestOnly(t *testing.T) {
+	targets := []authoredPullRequestTarget{
+		{Repository: "owner/repo", Number: 1},
+		{Repository: "owner/repo", Number: 2},
+		{Repository: "owner/repo", Number: 3},
+		{Repository: "owner/repo", Number: 4},
+	}
+
+	planned := prioritizeAuthoredPullRequestTargets(targets, 2, true)
+	if len(planned) != 2 {
+		t.Fatalf("len(planned) = %d, want 2", len(planned))
+	}
+	if planned[0].Number != 1 || planned[1].Number != 2 {
+		t.Fatalf("planned = %+v, want first two newest targets", planned)
 	}
 }
 
@@ -444,13 +655,189 @@ func TestExecutorForActorFallsBackOnRestClientFactoryError(t *testing.T) {
 	}
 }
 
+func TestExecutorForActorPrefersInstallationClientWhenAvailable(t *testing.T) {
+	t.Parallel()
+
+	baseClient := &githubapi.RESTClient{}
+	installationClient := &githubapi.RESTClient{}
+	executor := &Executor{
+		client: baseClient,
+		actorInstallation: func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
+			return installationClient, true, nil
+		},
+		graphqlTokenSource: func(context.Context, SyncRequestActor, time.Time) (githubapi.TokenSource, bool, error) {
+			return githubapi.StaticTokenSource("ghu_fallback_token"), true, nil
+		},
+		restClientFactory: func(githubapi.TokenSource) (*githubapi.RESTClient, error) {
+			return &githubapi.RESTClient{}, nil
+		},
+	}
+
+	runtime, err := executor.executorForActor(context.Background(), SyncRequestActor{GitHubLogin: "octocat"}, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("executorForActor() error = %v", err)
+	}
+	if runtime == executor {
+		t.Fatalf("executorForActor() runtime = %p, want cloned executor with installation client", runtime)
+	}
+	if runtime.client != installationClient {
+		t.Fatalf("runtime.client = %p, want installation client %p", runtime.client, installationClient)
+	}
+}
+
+func TestExecutorForUserSyncActorPrefersOAuthClientWhenAvailable(t *testing.T) {
+	t.Parallel()
+
+	baseClient := &githubapi.RESTClient{}
+	oauthClient := &githubapi.RESTClient{}
+	installationClient := &githubapi.RESTClient{}
+	executor := &Executor{
+		client: baseClient,
+		actorInstallation: func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
+			return installationClient, true, nil
+		},
+		graphqlTokenSource: func(context.Context, SyncRequestActor, time.Time) (githubapi.TokenSource, bool, error) {
+			return githubapi.StaticTokenSource("ghu_oauth_token"), true, nil
+		},
+		restClientFactory: func(githubapi.TokenSource) (*githubapi.RESTClient, error) {
+			return oauthClient, nil
+		},
+	}
+
+	runtime, source, err := executor.executorForUserSyncActor(context.Background(), SyncRequestActor{GitHubLogin: "octocat"}, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("executorForUserSyncActor() error = %v", err)
+	}
+	if source != "oauth" {
+		t.Fatalf("credential source = %q, want oauth", source)
+	}
+	if runtime == executor {
+		t.Fatalf("executorForUserSyncActor() runtime = %p, want cloned executor", runtime)
+	}
+	if runtime.client != oauthClient {
+		t.Fatalf("runtime.client = %p, want OAuth client %p", runtime.client, oauthClient)
+	}
+}
+
+func TestExecutorForUserSyncActorReturnsErrorWhenOAuthUnavailable(t *testing.T) {
+	t.Parallel()
+
+	baseClient := &githubapi.RESTClient{}
+	installationClient := &githubapi.RESTClient{}
+	executor := &Executor{
+		client: baseClient,
+		actorInstallation: func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
+			return installationClient, true, nil
+		},
+		graphqlTokenSource: func(context.Context, SyncRequestActor, time.Time) (githubapi.TokenSource, bool, error) {
+			return nil, false, nil
+		},
+		restClientFactory: func(githubapi.TokenSource) (*githubapi.RESTClient, error) {
+			return nil, errors.New("oauth unavailable")
+		},
+	}
+
+	runtime, source, err := executor.executorForUserSyncActor(context.Background(), SyncRequestActor{GitHubLogin: "octocat"}, time.Now().UTC())
+	if err == nil {
+		t.Fatalf("executorForUserSyncActor() error = nil, want oauth-required error")
+	}
+	if !errors.Is(err, ErrUserSyncOAuthTokenRequired) {
+		t.Fatalf("executorForUserSyncActor() error = %v, want ErrUserSyncOAuthTokenRequired", err)
+	}
+	if runtime != nil {
+		t.Fatalf("executorForUserSyncActor() runtime = %p, want nil on oauth failure", runtime)
+	}
+	if source != "" {
+		t.Fatalf("credential source = %q, want empty source on oauth failure", source)
+	}
+}
+
+func TestExecutorForUserSyncActorReturnsErrorWhenOAuthTokenMissing(t *testing.T) {
+	t.Parallel()
+
+	baseClient := &githubapi.RESTClient{}
+	executor := &Executor{
+		client: baseClient,
+		actorInstallation: func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
+			return nil, false, nil
+		},
+		graphqlTokenSource: func(context.Context, SyncRequestActor, time.Time) (githubapi.TokenSource, bool, error) {
+			return nil, false, nil
+		},
+		restClientFactory: func(githubapi.TokenSource) (*githubapi.RESTClient, error) {
+			return nil, errors.New("oauth unavailable")
+		},
+	}
+
+	runtime, source, err := executor.executorForUserSyncActor(context.Background(), SyncRequestActor{GitHubLogin: "octocat"}, time.Now().UTC())
+	if err == nil {
+		t.Fatalf("executorForUserSyncActor() error = nil, want oauth-required error")
+	}
+	if !errors.Is(err, ErrUserSyncOAuthTokenRequired) {
+		t.Fatalf("executorForUserSyncActor() error = %v, want ErrUserSyncOAuthTokenRequired", err)
+	}
+	if runtime != nil {
+		t.Fatalf("executorForUserSyncActor() runtime = %p, want nil on oauth failure", runtime)
+	}
+	if source != "" {
+		t.Fatalf("credential source = %q, want empty source on oauth failure", source)
+	}
+}
+
+func TestExecutorForUserSyncActorReturnsErrorWhenGitHubLoginMissing(t *testing.T) {
+	t.Parallel()
+
+	executor := &Executor{client: &githubapi.RESTClient{}}
+	runtime, source, err := executor.executorForUserSyncActor(context.Background(), SyncRequestActor{}, time.Now().UTC())
+	if err == nil {
+		t.Fatalf("executorForUserSyncActor() error = nil, want oauth-required error")
+	}
+	if !errors.Is(err, ErrUserSyncOAuthTokenRequired) {
+		t.Fatalf("executorForUserSyncActor() error = %v, want ErrUserSyncOAuthTokenRequired", err)
+	}
+	if runtime != nil {
+		t.Fatalf("executorForUserSyncActor() runtime = %p, want nil when login missing", runtime)
+	}
+	if source != "" {
+		t.Fatalf("credential source = %q, want empty source when login missing", source)
+	}
+}
+
+func TestExecutorForUserSyncActorReturnsErrorWhenOAuthDecryptFails(t *testing.T) {
+	t.Parallel()
+
+	executor := &Executor{
+		client: &githubapi.RESTClient{},
+		graphqlTokenSource: func(context.Context, SyncRequestActor, time.Time) (githubapi.TokenSource, bool, error) {
+			return nil, false, errors.New("secret could not be decrypted")
+		},
+		restClientFactory: func(githubapi.TokenSource) (*githubapi.RESTClient, error) {
+			return &githubapi.RESTClient{}, nil
+		},
+	}
+
+	runtime, source, err := executor.executorForUserSyncActor(context.Background(), SyncRequestActor{GitHubLogin: "octocat"}, time.Now().UTC())
+	if err == nil {
+		t.Fatalf("executorForUserSyncActor() error = nil, want oauth-malformed error")
+	}
+	if !errors.Is(err, ErrUserSyncOAuthTokenMalformed) {
+		t.Fatalf("executorForUserSyncActor() error = %v, want ErrUserSyncOAuthTokenMalformed", err)
+	}
+	if runtime != nil {
+		t.Fatalf("executorForUserSyncActor() runtime = %p, want nil on oauth decrypt failure", runtime)
+	}
+	if source != "" {
+		t.Fatalf("credential source = %q, want empty source on oauth decrypt failure", source)
+	}
+}
+
 func TestExecutorFetchPullRequestFilesUsesBoundedRESTEndpoint(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/repos/octo/repo/pulls/7/files" {
 			t.Fatalf("path = %q, want /repos/octo/repo/pulls/7/files", r.URL.Path)
 		}
-		if r.URL.Query().Get("per_page") != "7" {
-			t.Fatalf("per_page = %q, want 7", r.URL.Query().Get("per_page"))
+		if r.URL.Query().Get("per_page") != "100" {
+			t.Fatalf("per_page = %q, want 100", r.URL.Query().Get("per_page"))
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode([]map[string]any{
@@ -496,29 +883,109 @@ func TestExecutorFetchPullRequestFilesUsesBoundedRESTEndpoint(t *testing.T) {
 	}
 }
 
+func TestExecutorFetchPullRequestFilesPaginatesUsingLinkHeaders(t *testing.T) {
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/repos/octo/repo/pulls/9/files" {
+			t.Fatalf("path = %q, want /repos/octo/repo/pulls/9/files", r.URL.Path)
+		}
+		if r.URL.Query().Get("per_page") != "100" {
+			t.Fatalf("per_page = %q, want 100", r.URL.Query().Get("per_page"))
+		}
+
+		requests++
+		w.Header().Set("Content-Type", "application/json")
+		switch r.URL.Query().Get("page") {
+		case "1":
+			w.Header().Set("Link", `<https://api.github.test/repos/octo/repo/pulls/9/files?page=2>; rel="next"`)
+			_ = json.NewEncoder(w).Encode([]map[string]any{
+				{"filename": "first.go", "status": "modified", "changes": 1},
+			})
+		case "2":
+			_ = json.NewEncoder(w).Encode([]map[string]any{
+				{"filename": "second.go", "status": "added", "changes": 4},
+			})
+		default:
+			t.Fatalf("unexpected page = %q", r.URL.Query().Get("page"))
+		}
+	}))
+	defer server.Close()
+
+	client, err := githubapi.NewRESTClient(githubapi.ClientConfig{
+		BaseURL:          server.URL,
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		HTTPClient:       server.Client(),
+		SecondaryBackoff: time.Millisecond,
+		MaxConcurrency:   1,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	executor := NewExecutor(config.App{
+		GitHub: config.GitHub{
+			MaxPageSize: 100,
+		},
+	}, nil, client)
+
+	files, err := executor.fetchPullRequestFiles(context.Background(), "octo", "repo", 9)
+	if err != nil {
+		t.Fatalf("fetchPullRequestFiles() error = %v", err)
+	}
+	if requests != 2 {
+		t.Fatalf("requests = %d, want 2", requests)
+	}
+	if len(files) != 2 {
+		t.Fatalf("files len = %d, want 2", len(files))
+	}
+	if stringValue(files[0]["filename"]) != "first.go" || stringValue(files[1]["filename"]) != "second.go" {
+		t.Fatalf("filenames = %#v, want [first.go second.go]", []string{stringValue(files[0]["filename"]), stringValue(files[1]["filename"])})
+	}
+}
+
 func TestExecutorFetchAuthoredPullRequestTargetsUsesGitHubSearch(t *testing.T) {
+	requestsBySort := map[string]int{}
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/search/issues" {
 			t.Fatalf("path = %q, want /search/issues", r.URL.Path)
 		}
 		query := r.URL.Query()
-		if got := query.Get("q"); got != "author:alice type:pr archived:false" {
-			t.Fatalf("q = %q, want authored PR search", got)
+		if got := query.Get("q"); !strings.Contains(got, "author:alice type:pr archived:false") {
+			t.Fatalf("q = %q, want authored PR search query", got)
 		}
-		if query.Get("sort") != "updated" || query.Get("order") != "desc" {
-			t.Fatalf("sort/order = %q/%q, want updated/desc", query.Get("sort"), query.Get("order"))
+		sort := query.Get("sort")
+		if sort != "updated" && sort != "created" {
+			t.Fatalf("sort = %q, want updated or created", sort)
 		}
-		if query.Get("per_page") != "9" {
-			t.Fatalf("per_page = %q, want 9", query.Get("per_page"))
+		if query.Get("order") != "desc" {
+			t.Fatalf("order = %q, want desc", query.Get("order"))
 		}
+		if query.Get("per_page") != "100" {
+			t.Fatalf("per_page = %q, want 100", query.Get("per_page"))
+		}
+		if query.Get("page") != "1" {
+			t.Fatalf("page = %q, want 1", query.Get("page"))
+		}
+		requestsBySort[sort]++
 
 		w.Header().Set("Content-Type", "application/json")
+		if sort == "created" {
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"total_count":        0,
+				"incomplete_results": false,
+				"items":              []map[string]any{},
+			})
+			return
+		}
 		_ = json.NewEncoder(w).Encode(map[string]any{
 			"total_count":        5,
-			"incomplete_results": true,
+			"incomplete_results": false,
 			"items": []map[string]any{
 				{
-					"number": 12,
+					"number":     12,
+					"created_at": "2026-03-12T10:00:00Z",
+					"updated_at": "2026-05-12T10:00:00Z",
 					"pull_request": map[string]any{
 						"url": "https://api.github.com/repos/octo/external/pulls/12",
 					},
@@ -529,6 +996,8 @@ func TestExecutorFetchAuthoredPullRequestTargetsUsesGitHubSearch(t *testing.T) {
 				},
 				{
 					"number":         12,
+					"created_at":     "2026-03-12T10:00:00Z",
+					"updated_at":     "2026-05-12T10:00:00Z",
 					"repository_url": "https://api.github.com/repos/octo/external",
 					"pull_request": map[string]any{
 						"url": "https://api.github.com/repos/octo/external/pulls/12",
@@ -536,6 +1005,8 @@ func TestExecutorFetchAuthoredPullRequestTargetsUsesGitHubSearch(t *testing.T) {
 				},
 				{
 					"number":         7,
+					"created_at":     "2026-03-01T09:00:00Z",
+					"updated_at":     "2026-05-11T09:00:00Z",
 					"repository_url": "https://api.github.com/repos/team/utility",
 					"pull_request": map[string]any{
 						"url": "https://api.github.com/repos/team/utility/pulls/7",
@@ -546,7 +1017,9 @@ func TestExecutorFetchAuthoredPullRequestTargetsUsesGitHubSearch(t *testing.T) {
 					"repository_url": "https://api.github.com/repos/team/issue-only",
 				},
 				{
-					"number": 8,
+					"number":     8,
+					"created_at": "2026-01-01T09:00:00Z",
+					"updated_at": "2026-01-01T09:00:00Z",
 					"pull_request": map[string]any{
 						"url": "https://api.github.com/repos/private/repo/pulls/8",
 					},
@@ -579,21 +1052,48 @@ func TestExecutorFetchAuthoredPullRequestTargetsUsesGitHubSearch(t *testing.T) {
 		},
 	}, nil, client)
 
-	targets, incomplete, err := executor.fetchAuthoredPullRequestTargets(context.Background(), "alice", 10)
+	selection, err := executor.fetchAuthoredPullRequestTargets(
+		context.Background(),
+		"alice",
+		10,
+		authoredPRHistoryCursor{},
+		time.Date(2026, time.May, 20, 12, 0, 0, 0, time.UTC),
+	)
 	if err != nil {
 		t.Fatalf("fetchAuthoredPullRequestTargets() error = %v", err)
 	}
-	if !incomplete {
-		t.Fatal("incomplete = false, want GitHub search incompleteness surfaced")
+	if selection.SearchIncomplete {
+		t.Fatal("SearchIncomplete = true, want false for complete response")
 	}
-	if len(targets) != 2 {
-		t.Fatalf("targets len = %d, want 2 after dedupe and filtering: %+v", len(targets), targets)
+	if len(selection.Targets) != 2 {
+		t.Fatalf("targets len = %d, want 2 after dedupe and filtering: %+v", len(selection.Targets), selection.Targets)
 	}
-	if targets[0] != (authoredPullRequestTarget{Repository: "octo/external", Number: 12}) {
-		t.Fatalf("first target = %+v, want octo/external#12", targets[0])
+	if selection.Targets[0] != (authoredPullRequestTarget{Repository: "octo/external", Number: 12}) {
+		t.Fatalf("first target = %+v, want octo/external#12", selection.Targets[0])
 	}
-	if targets[1] != (authoredPullRequestTarget{Repository: "team/utility", Number: 7}) {
-		t.Fatalf("second target = %+v, want team/utility#7", targets[1])
+	if selection.Targets[1] != (authoredPullRequestTarget{Repository: "team/utility", Number: 7}) {
+		t.Fatalf("second target = %+v, want team/utility#7", selection.Targets[1])
+	}
+	if selection.NextCursor.LastSyncedAt == nil || selection.NextCursor.LastSyncedAt.IsZero() {
+		t.Fatal("NextCursor.LastSyncedAt is missing")
+	}
+	if selection.NextCursor.BackfillBeforeAt == nil || selection.NextCursor.BackfillBeforeAt.IsZero() {
+		t.Fatal("NextCursor.BackfillBeforeAt is missing")
+	}
+	if selection.NextCursor.BootstrapComplete {
+		t.Fatal("NextCursor.BootstrapComplete = true, want false while backfill remains in progress")
+	}
+	if requestsBySort["updated"] != 1 {
+		t.Fatalf("updated requests = %d, want 1", requestsBySort["updated"])
+	}
+	if requestsBySort["created"] == 0 {
+		t.Fatal("created requests = 0, want at least one backfill discovery window")
+	}
+	if selection.Fetched["authored_pull_request_discovery_windows"] < 2 {
+		t.Fatalf("discovery windows = %d, want >= 2", selection.Fetched["authored_pull_request_discovery_windows"])
+	}
+	if selection.Fetched["authored_pull_request_backfill_empty_windows"] == 0 {
+		t.Fatalf("backfill empty windows = %d, want > 0 for empty created windows", selection.Fetched["authored_pull_request_backfill_empty_windows"])
 	}
 }
 

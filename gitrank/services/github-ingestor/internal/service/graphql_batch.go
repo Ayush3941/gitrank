@@ -147,12 +147,13 @@ func decodeOptionalOAuthTokenKeys(cfg config.App) [][]byte {
 
 func newGitHubGraphQLClientFactory(cfg config.App) githubGraphQLClientFactory {
 	return func(tokenSource githubapi.TokenSource) (*githubapi.GraphQLClient, error) {
+		timeout := boundedGitHubHTTPTimeout(cfg.GitHub.RequestTimeout)
 		return githubapi.NewGraphQLClient(githubapi.ClientConfig{
 			BaseURL:                        cfg.GitHub.GraphQLURL,
 			APIVersion:                     cfg.GitHub.APIVersion,
 			UserAgent:                      cfg.GitHub.UserAgent,
 			TokenSource:                    tokenSource,
-			HTTPClient:                     &http.Client{Timeout: cfg.GitHub.RequestTimeout},
+			HTTPClient:                     &http.Client{Timeout: timeout},
 			SecondaryBackoff:               cfg.GitHub.SecondaryBackoff,
 			MaxConcurrency:                 cfg.GitHub.MaxConcurrency,
 			CircuitBreakerFailureThreshold: cfg.GitHub.CircuitBreakerFailureThreshold,
@@ -164,12 +165,13 @@ func newGitHubGraphQLClientFactory(cfg config.App) githubGraphQLClientFactory {
 
 func newGitHubRESTClientFactory(cfg config.App) githubRESTClientFactory {
 	return func(tokenSource githubapi.TokenSource) (*githubapi.RESTClient, error) {
+		timeout := boundedGitHubHTTPTimeout(cfg.GitHub.RequestTimeout)
 		return githubapi.NewRESTClient(githubapi.ClientConfig{
 			BaseURL:                        cfg.GitHub.APIBaseURL,
 			APIVersion:                     cfg.GitHub.APIVersion,
 			UserAgent:                      cfg.GitHub.UserAgent,
 			TokenSource:                    tokenSource,
-			HTTPClient:                     &http.Client{Timeout: cfg.GitHub.RequestTimeout},
+			HTTPClient:                     &http.Client{Timeout: timeout},
 			SecondaryBackoff:               cfg.GitHub.SecondaryBackoff,
 			MaxConcurrency:                 cfg.GitHub.MaxConcurrency,
 			CircuitBreakerFailureThreshold: cfg.GitHub.CircuitBreakerFailureThreshold,
@@ -177,6 +179,14 @@ func newGitHubRESTClientFactory(cfg config.App) githubRESTClientFactory {
 			CircuitBreakerHalfOpenMax:      cfg.GitHub.CircuitBreakerHalfOpenMax,
 		})
 	}
+}
+
+func boundedGitHubHTTPTimeout(timeout time.Duration) time.Duration {
+	const minimum = 45 * time.Second
+	if timeout <= 0 || timeout < minimum {
+		return minimum
+	}
+	return timeout
 }
 
 func (e *Executor) graphQLTokenSourceForActor(ctx context.Context, actor SyncRequestActor, now time.Time) (githubapi.TokenSource, bool, error) {
@@ -233,9 +243,46 @@ func (e *Executor) restClientForActor(ctx context.Context, actor SyncRequestActo
 	return client, true, nil
 }
 
+func (e *Executor) installationClientForActor(ctx context.Context, actor SyncRequestActor) (*githubapi.RESTClient, bool, error) {
+	if e == nil || e.installationClient == nil || e.store == nil || e.store.pool == nil {
+		return nil, false, nil
+	}
+	githubLogin := strings.TrimSpace(actor.GitHubLogin)
+	if githubLogin == "" {
+		return nil, false, nil
+	}
+
+	installationIDs, err := e.store.ActiveInstallationIDsByAccountLogin(ctx, githubLogin)
+	if err != nil {
+		return nil, false, err
+	}
+	if len(installationIDs) == 0 {
+		return nil, false, nil
+	}
+
+	for _, installationID := range installationIDs {
+		client, enabled, clientErr := e.installationClient(ctx, installationID)
+		if clientErr != nil {
+			continue
+		}
+		if enabled && client != nil {
+			return client, true, nil
+		}
+	}
+	return nil, false, nil
+}
+
 func (e *Executor) executorForActor(ctx context.Context, actor SyncRequestActor, now time.Time) (*Executor, error) {
 	if e == nil {
 		return nil, nil
+	}
+	if e.actorInstallation != nil {
+		installationClient, enabled, installErr := e.actorInstallation(ctx, actor)
+		if installErr == nil && enabled && installationClient != nil {
+			clone := *e
+			clone.client = installationClient
+			return &clone, nil
+		}
 	}
 	client, ok, err := e.restClientForActor(ctx, actor, now)
 	if err != nil {
@@ -249,6 +296,29 @@ func (e *Executor) executorForActor(ctx context.Context, actor SyncRequestActor,
 	clone := *e
 	clone.client = client
 	return &clone, nil
+}
+
+func (e *Executor) executorForUserSyncActor(ctx context.Context, actor SyncRequestActor, now time.Time) (*Executor, string, error) {
+	if e == nil {
+		return nil, "", nil
+	}
+	if strings.TrimSpace(actor.GitHubLogin) == "" {
+		return nil, "", ErrUserSyncOAuthTokenRequired
+	}
+
+	// User sync aims to project a contributor's full authored history. Prefer
+	// user-scoped OAuth credentials over installation credentials so discovery is
+	// not limited to repositories where a GitHub App is installed.
+	client, ok, err := e.restClientForActor(ctx, actor, now)
+	if err != nil {
+		return nil, "", fmt.Errorf("%w: %v", ErrUserSyncOAuthTokenMalformed, err)
+	}
+	if !ok || client == nil {
+		return nil, "", ErrUserSyncOAuthTokenRequired
+	}
+	clone := *e
+	clone.client = client
+	return &clone, "oauth", nil
 }
 
 func (e *Executor) fetchPullRequestsGraphQL(

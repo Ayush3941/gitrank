@@ -9,6 +9,7 @@ import type {
   ProfileRepositorySummary,
   ProfileViewData,
   RepositoryVisibility,
+  SyncStatus,
   SkillCategory,
   SkillNode,
   UserProfile,
@@ -310,6 +311,8 @@ function toProfileViewData(
   const lastBucket = timelinePoints[timelinePoints.length - 1];
   const activeBuckets = timelinePoints.filter((point) => point.delta_xp > 0).length;
   const totalBuckets = Math.max(1, timelinePoints.length);
+  const hasEvidence = hasProfileEvidence(response);
+  const syncState = deriveProfileSyncState(response.staleness, hasEvidence);
 
   const user: UserProfile = {
     username: response.summary.handle,
@@ -360,12 +363,14 @@ function toProfileViewData(
       xp: point.total_xp,
     })),
     syncStatus: {
-      state: response.staleness.is_stale ? "stale" : "synced",
+      state: syncState,
       lastSyncedAt: response.staleness.refreshed_at,
-      currentStep: response.staleness.is_stale
+      currentStep: syncState === "stale"
         ? "Profile snapshot is older than the refresh window"
-        : "Profile snapshot is current",
-      progress: 100,
+        : syncState === "partially_synced"
+          ? "Profile snapshot refreshed but scored PR evidence is still empty"
+          : "Profile snapshot is current",
+      progress: syncState === "partially_synced" ? 75 : 100,
       partialProfileAvailable: response.staleness.partial_profile_available,
     },
     weeklyXp: lastBucket?.delta_xp ?? 0,
@@ -941,6 +946,45 @@ function mergedEvidenceState(
   if (left === "stale" || right === "stale") return "stale";
   if (left === "partial" || right === "partial") return "partial";
   return "fresh";
+}
+
+function hasProfileEvidence(response: ApiPublicProfileResponse | ApiPrivateProfileResponse): boolean {
+  if ((response.summary.merged_pull_requests ?? 0) > 0) {
+    return true;
+  }
+  if ((response.score_history?.some((entry) => {
+    if (!entry.pull_request) {
+      return false;
+    }
+    if ((entry.pull_request.number ?? 0) <= 0) {
+      return false;
+    }
+    return entry.delta_xp !== 0 || (entry.category ?? "").trim().length > 0;
+  }) ?? false)) {
+    return true;
+  }
+  if ((response.top_repositories?.some((repository) => (
+    repository.merged_pull_requests > 0
+  )) ?? false)) {
+    return true;
+  }
+  if ("recent_pr_reports" in response && (response.recent_pr_reports?.length ?? 0) > 0) {
+    return true;
+  }
+  return false;
+}
+
+function deriveProfileSyncState(
+  staleness: ApiStaleness,
+  hasEvidence: boolean,
+): SyncStatus["state"] {
+  if (staleness.is_stale) {
+    return "stale";
+  }
+  if (!hasEvidence) {
+    return "partially_synced";
+  }
+  return "synced";
 }
 
 function normalizeVisibility(value: string): RepositoryVisibility["visibility"] {
