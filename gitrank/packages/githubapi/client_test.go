@@ -274,8 +274,30 @@ func TestRESTClientRetriesSecondaryRateLimitBeforeSuccess(t *testing.T) {
 
 func TestRESTClientBackoffDelayHonorsRetryAfterHeader(t *testing.T) {
 	client := &RESTClient{secondaryBackoff: time.Hour}
-	if got := client.backoffDelay(2, "7"); got != 7*time.Second {
+	if got := client.backoffDelay(2, RateLimitStatus{RetryAfter: "7"}); got != 7*time.Second {
 		t.Fatalf("backoffDelay() = %v, want Retry-After value", got)
+	}
+}
+
+func TestRESTClientBackoffDelayUsesRateLimitResetWhenRemainingIsZero(t *testing.T) {
+	client := &RESTClient{secondaryBackoff: time.Hour}
+	delay := client.backoffDelay(0, RateLimitStatus{
+		Remaining: 0,
+		ResetAt:   time.Now().Add(4 * time.Second),
+	})
+	if delay < 3*time.Second || delay > 4*time.Second {
+		t.Fatalf("backoffDelay() = %v, want about 4s from x-ratelimit-reset", delay)
+	}
+}
+
+func TestGraphQLClientBackoffDelayUsesRateLimitResetWhenRemainingIsZero(t *testing.T) {
+	client := &GraphQLClient{secondaryBackoff: time.Hour}
+	delay := client.backoffDelay(0, RateLimitStatus{
+		Remaining: 0,
+		ResetAt:   time.Now().Add(5 * time.Second),
+	})
+	if delay < 4*time.Second || delay > 5*time.Second {
+		t.Fatalf("backoffDelay() = %v, want about 5s from x-ratelimit-reset", delay)
 	}
 }
 

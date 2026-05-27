@@ -195,7 +195,7 @@ func (c *RESTClient) do(
 		if attempt >= 2 {
 			break
 		}
-		if sleepErr := sleepWithContext(ctx, c.backoffDelay(attempt, meta.RateLimit.RetryAfter)); sleepErr != nil {
+		if sleepErr := sleepWithContext(ctx, c.backoffDelay(attempt, meta.RateLimit)); sleepErr != nil {
 			return nil, lastMeta, sleepErr
 		}
 	}
@@ -290,8 +290,12 @@ func (c *RESTClient) once(
 	return nil, meta, retry, fmt.Errorf("GitHub API %s %s failed with status %d", method, target.String(), response.StatusCode)
 }
 
-func (c *RESTClient) backoffDelay(attempt int, retryAfter string) time.Duration {
-	if delay := ParseRetryAfter(retryAfter, time.Now()); delay > 0 {
+func (c *RESTClient) backoffDelay(attempt int, rateLimit RateLimitStatus) time.Duration {
+	now := time.Now()
+	if delay := ParseRetryAfter(rateLimit.RetryAfter, now); delay > 0 {
+		return delay
+	}
+	if delay := rateLimitResetDelay(rateLimit, now); delay > 0 {
 		return delay
 	}
 	base := c.secondaryBackoff
@@ -439,7 +443,7 @@ func (c *GraphQLClient) QueryJSON(
 		if attempt >= 2 {
 			break
 		}
-		if sleepErr := sleepWithContext(ctx, c.backoffDelay(attempt, meta.RateLimit.RetryAfter)); sleepErr != nil {
+		if sleepErr := sleepWithContext(ctx, c.backoffDelay(attempt, meta.RateLimit)); sleepErr != nil {
 			return lastMeta, sleepErr
 		}
 	}
@@ -509,8 +513,12 @@ func (c *GraphQLClient) once(
 	return nil, meta, retry, fmt.Errorf("GitHub GraphQL request failed with status %d", response.StatusCode)
 }
 
-func (c *GraphQLClient) backoffDelay(attempt int, retryAfter string) time.Duration {
-	if delay := ParseRetryAfter(retryAfter, time.Now()); delay > 0 {
+func (c *GraphQLClient) backoffDelay(attempt int, rateLimit RateLimitStatus) time.Duration {
+	now := time.Now()
+	if delay := ParseRetryAfter(rateLimit.RetryAfter, now); delay > 0 {
+		return delay
+	}
+	if delay := rateLimitResetDelay(rateLimit, now); delay > 0 {
 		return delay
 	}
 	base := c.secondaryBackoff
@@ -562,6 +570,17 @@ func parseUnixHeader(value string) time.Time {
 		return time.Time{}
 	}
 	return time.Unix(epoch, 0).UTC()
+}
+
+func rateLimitResetDelay(rateLimit RateLimitStatus, now time.Time) time.Duration {
+	if rateLimit.Remaining > 0 || rateLimit.ResetAt.IsZero() {
+		return 0
+	}
+	delay := rateLimit.ResetAt.Sub(now)
+	if delay <= 0 {
+		return 0
+	}
+	return delay
 }
 
 func sleepWithContext(ctx context.Context, duration time.Duration) error {
