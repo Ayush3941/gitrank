@@ -17,6 +17,15 @@ export type SyncRunDiagnostic = {
 };
 
 export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic {
+  const metrics = run.metrics;
+  if (metrics && metricCount(metrics, "superseded_by_terminal_correlation") > 0) {
+    return {
+      code: "superseded_active_row",
+      message:
+        "A stale in-progress run row was superseded by a newer terminal run for the same correlation.",
+    };
+  }
+
   const normalizedLastError = (run.last_error ?? "").toLowerCase();
   if (normalizedLastError.includes("superseded by a newer terminal run")) {
     return {
@@ -26,7 +35,6 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
     };
   }
 
-  const metrics = run.metrics;
   if (!metrics) {
     return {
       code: "none",

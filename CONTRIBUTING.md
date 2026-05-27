@@ -298,6 +298,7 @@ Recent no-slowdown refinement (May 27, 2026):
 - Profile freshness derivation is now centralized in `frontend/hooks/use-profile-sync-state.ts` and reused by Dashboard, Contributions, Badges, Quests, Leaderboard, and Settings to keep sync-state chips/pills behavior consistent across tabs.
 - GitHub ingestor sync-run normalization now marks stale in-progress rows as failed when a newer terminal row exists for the same correlation scope, reducing contradictory `running + completed` activity rows in Settings.
 - Added `scripts/check-no-tracked-secrets.sh` and wired it into `scripts/check-repo-sync.sh` so local quality gates fail fast when high-signal token/private-key patterns are committed in tracked files.
+- Sync-run supersession diagnostics now use a deterministic metric marker (`superseded_by_terminal_correlation=1`) emitted by backend normalization, reducing fragile frontend dependence on free-form error strings.
 
 ## Frontend Excellence Checklist (No-Slowdown Backlog)
 

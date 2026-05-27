@@ -386,6 +386,10 @@ func supersedeInProgressRunsWithTerminalCorrelation(runs []contracts.GitHubSyncR
 		if strings.TrimSpace(run.LastError) == "" {
 			run.LastError = "sync execution was superseded by a newer terminal run for the same correlation"
 		}
+		if run.Metrics == nil {
+			run.Metrics = map[string]int{}
+		}
+		run.Metrics["superseded_by_terminal_correlation"] = 1
 	}
 }
 

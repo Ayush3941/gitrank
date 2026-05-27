@@ -15,6 +15,16 @@ function run(metrics?: Record<string, number>): ApiSyncRunRecord {
 }
 
 describe("describeSyncRunOutcome", () => {
+  it("returns superseded-active-row from deterministic metric marker", () => {
+    const outcome = describeSyncRunOutcome(
+      run({
+        superseded_by_terminal_correlation: 1,
+      }),
+    );
+    expect(outcome.code).toBe("superseded_active_row");
+    expect(outcome.message).toContain("superseded");
+  });
+
   it("returns superseded-active-row when failed row is superseded by terminal correlation", () => {
     const outcome = describeSyncRunOutcome({
       ...run(undefined),

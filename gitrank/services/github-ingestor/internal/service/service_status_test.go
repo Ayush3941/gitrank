@@ -140,8 +140,14 @@ func TestNormalizeSyncRunViewsSupersedesOlderActiveRowsWithTerminalCorrelation(t
 	if normalized[1].LastError == "" {
 		t.Fatal("normalized[1].LastError = empty, want superseded-correlation reason")
 	}
+	if normalized[1].Metrics["superseded_by_terminal_correlation"] != 1 {
+		t.Fatalf("normalized[1].Metrics[superseded_by_terminal_correlation] = %d, want 1", normalized[1].Metrics["superseded_by_terminal_correlation"])
+	}
 	if normalized[2].Status != "running" {
 		t.Fatalf("normalized[2].Status = %q, want running (newer than terminal)", normalized[2].Status)
+	}
+	if normalized[2].Metrics != nil && normalized[2].Metrics["superseded_by_terminal_correlation"] > 0 {
+		t.Fatalf("normalized[2] should not be tagged as superseded")
 	}
 	if normalized[3].Status != "running" {
 		t.Fatalf("normalized[3].Status = %q, want running (different correlation)", normalized[3].Status)
