@@ -42,6 +42,7 @@ import {
 } from "@/hooks/use-text-scale-preference";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
 import { deriveEffectiveSyncState, shouldShowSyncRefreshPill } from "@/lib/presentation/sync-evidence";
+import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import { type ThemePreference, useThemePreference } from "@/hooks/use-theme-preference";
@@ -152,6 +153,7 @@ export function SettingsPageClient() {
   const refreshAuthSession = useRefreshAuthSession();
   const accountLinkStart = useStartAccountLink();
   const runUserSync = useRunUserSync();
+  const syncRunsQuery = useSyncRuns(15);
   const { setReducedGamification } = useGamificationPreference();
   const { theme, themeSource, setTheme, clearThemePreference } = useThemePreference();
   const { textScale, setTextScale } = useTextScalePreference();
@@ -248,8 +250,13 @@ export function SettingsPageClient() {
     accountLinkStart.isPending;
   const pendingRepository = updateRepositoryVisibility.variables?.fullName ?? null;
   const hiddenRepositoryCount = data.user.repositories.filter((repository) => repository.visibility !== "Public").length;
-  const syncStateForDisplay = deriveEffectiveSyncState(data.user);
-  const showRefreshPill = shouldShowSyncRefreshPill(data.user);
+  const syncRunStatuses = syncRunsQuery.data?.runs?.map((run) => run.status) ?? [];
+  const syncStateForDisplay = deriveEffectiveSyncState(data.user, syncRunStatuses);
+  const showRefreshPill = shouldShowSyncRefreshPill(data.user, syncRunStatuses);
+  const syncRunsError = sanitizeUserFacingError(
+    (syncRunsQuery.error as Error | null)?.message || "",
+    "settings-sync-runs",
+  );
   const accountActionErrorId = "settings-account-action-error";
 
   function handlePrivacyToggle(key: BackedPrivacyKey, checked: boolean) {
@@ -404,6 +411,7 @@ export function SettingsPageClient() {
                 onSuccess: (result) => {
                   setActionNotice(buildUserSyncRefreshFeedback(result).message);
                   void refetch();
+                  void syncRunsQuery.refetch();
                 },
               });
             }}
@@ -490,7 +498,17 @@ export function SettingsPageClient() {
       </section>
 
       <section className="render-opt-section" id="settings-sync-activity-panel">
-        <SettingsSyncActivitySection />
+        <SettingsSyncActivitySection
+          runs={syncRunsQuery.data?.runs ?? []}
+          lastUpdatedAt={syncRunsQuery.data?.last_updated_at}
+          isLoading={syncRunsQuery.isLoading}
+          isRefreshing={syncRunsQuery.isFetching}
+          isError={syncRunsQuery.isError}
+          errorMessage={syncRunsError}
+          onRefresh={() => {
+            void syncRunsQuery.refetch();
+          }}
+        />
       </section>
 
       <section className="render-opt-section" id="settings-sync-execution-panel">
@@ -765,26 +783,33 @@ export function SettingsPageClient() {
   );
 }
 
-function SettingsSyncActivitySection() {
-  const syncRunsQuery = useSyncRuns(15);
-  const syncRunsError = sanitizeUserFacingError(
-    (syncRunsQuery.error as Error | null)?.message || "",
-    "settings-sync-runs",
-  );
-  const runs = syncRunsQuery.data?.runs ?? [];
-
+function SettingsSyncActivitySection({
+  runs,
+  lastUpdatedAt,
+  isLoading,
+  isRefreshing,
+  isError,
+  errorMessage,
+  onRefresh,
+}: {
+  runs: ApiSyncRunRecord[];
+  lastUpdatedAt: string | undefined;
+  isLoading: boolean;
+  isRefreshing: boolean;
+  isError: boolean;
+  errorMessage: string;
+  onRefresh: () => void;
+}) {
   return (
     <GlowCard className="space-y-4">
       <SyncRunActivityPanel
         runs={runs}
-        lastUpdatedAt={syncRunsQuery.data?.last_updated_at}
-        isLoading={syncRunsQuery.isLoading}
-        isRefreshing={syncRunsQuery.isFetching}
-        isError={syncRunsQuery.isError}
-        errorMessage={syncRunsError}
-        onRefresh={() => {
-          void syncRunsQuery.refetch();
-        }}
+        lastUpdatedAt={lastUpdatedAt}
+        isLoading={isLoading}
+        isRefreshing={isRefreshing}
+        isError={isError}
+        errorMessage={errorMessage}
+        onRefresh={onRefresh}
       />
     </GlowCard>
   );

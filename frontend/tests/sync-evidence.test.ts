@@ -155,6 +155,34 @@ describe("deriveEffectiveSyncState", () => {
     });
     expect(deriveEffectiveSyncState(user)).toBe("synced");
   });
+
+  it("returns syncing when a running sync run is present", () => {
+    const user = buildUser({
+      mergedPrCount: 2,
+      syncStatus: {
+        state: "synced",
+        lastSyncedAt: "2026-05-27T00:00:00Z",
+        currentStep: "Profile snapshot is current",
+        progress: 100,
+        partialProfileAvailable: false,
+      },
+    });
+    expect(deriveEffectiveSyncState(user, ["running"])).toBe("syncing");
+  });
+
+  it("returns syncing when a queued sync run is present", () => {
+    const user = buildUser({
+      mergedPrCount: 2,
+      syncStatus: {
+        state: "synced",
+        lastSyncedAt: "2026-05-27T00:00:00Z",
+        currentStep: "Profile snapshot is current",
+        progress: 100,
+        partialProfileAvailable: false,
+      },
+    });
+    expect(deriveEffectiveSyncState(user, ["queued"])).toBe("syncing");
+  });
 });
 
 describe("shouldShowSyncRefreshPill", () => {
@@ -185,5 +213,19 @@ describe("shouldShowSyncRefreshPill", () => {
       },
     });
     expect(shouldShowSyncRefreshPill(user)).toBe(true);
+  });
+
+  it("returns false when sync runs are still active", () => {
+    const user = buildUser({
+      mergedPrCount: 2,
+      syncStatus: {
+        state: "synced",
+        lastSyncedAt: "2026-05-27T00:00:00Z",
+        currentStep: "Profile snapshot is current",
+        progress: 100,
+        partialProfileAvailable: false,
+      },
+    });
+    expect(shouldShowSyncRefreshPill(user, ["running"])).toBe(false);
   });
 });

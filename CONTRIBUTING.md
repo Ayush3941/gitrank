@@ -269,6 +269,7 @@ Recent no-slowdown refinement (May 27, 2026):
 - Guard checks `npm run check:sync-copy-policy` and `npm run check:copy-tone` are required after copy-only sync UX edits to prevent regressions.
 - Sync refresh feedback now reports explicit outcomes for completed runs with zero discovered authored PRs and includes count-aware success copy when PR targets are actually synced.
 - `scripts/check-start-sh-contracts.sh` now enforces `gitrank/.env` as the only `start.sh` runtime env source to prevent accidental frontend or secondary `.env` drift.
+- Settings page sync state now incorporates live sync-run statuses (`running` / `queued` -> `syncing`) so chips and freshness pills do not present stale “Synced” states while background sync is still active.
 
 ## Frontend Excellence Checklist (No-Slowdown Backlog)
 
