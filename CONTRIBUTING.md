@@ -1636,6 +1636,7 @@ ABRA implementation checklist:
 - [x] Sync-run listing normalizes stale active states (`running`/`in_progress`/`syncing`) to `failed` after a bounded active window so Settings does not show zombie runs indefinitely.
 - [x] User-sync refresh messaging now explicitly distinguishes bounded PR-window runs (`authored_pull_requests_capped`) from full-history completions so UI does not over-claim coverage.
 - [x] User-sync execution now deduplicates concurrent runs for the same GitHub login in-process and returns a conflict response (`github_user_sync_in_progress`) with actionable frontend copy.
+- [x] User-sync execution also acquires a PostgreSQL advisory lease by GitHub login so concurrent sync attempts remain deduplicated across multiple backend instances, not just within one process.
 - [x] Contribution category domain logic is backend-authoritative and centralized; frontend no longer infers categories from free text and CI blocks duplicate PR-category mapping logic outside `frontend/lib/runtime/pr-category-policy.ts`.
 - [x] Profile score-history window cap is contract-driven (`SCORING_PROFILE_SCORE_HISTORY_LIMIT` via `score_history_cap`) and frontend filtering/rendering honors backend cap instead of fixed constants.
 - [x] Leaderboard fetch/materialize/backfill limits are env-driven (`SCORING_LEADERBOARD_DEFAULT_LIMIT`, `SCORING_LEADERBOARD_MAX_LIMIT`) and no longer use fixed request caps in profile-service code.

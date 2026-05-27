@@ -328,6 +328,15 @@ func (e *Executor) SyncUser(
 		return response, ErrUserSyncInProgress
 	}
 	defer e.releaseUserSync(user)
+	releaseLease, leaseAcquired, leaseErr := e.store.TryAcquireUserSyncLease(ctx, user)
+	if leaseErr != nil {
+		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, leaseErr, PersistResult{})
+		return response, leaseErr
+	}
+	if !leaseAcquired {
+		return response, ErrUserSyncInProgress
+	}
+	defer releaseLease()
 	runtime, credentialSource, err := e.executorForUserSyncActor(ctx, actor, startedAt)
 	if err != nil {
 		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, PersistResult{})

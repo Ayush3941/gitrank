@@ -140,6 +140,7 @@ Frontend runtime also reads its server env from this same `gitrank/.env` export 
 - Sync-run history auto-normalizes stale active statuses to prevent indefinite `running` rows in Settings when an upstream execution exceeded its active window.
 - When user sync reports `authored_pull_requests_capped`, UI now shows a bounded-window notice instead of implying full-history completion.
 - Concurrent user sync requests for the same login are deduplicated in-process; overlapping executions return a conflict response instead of running duplicated heavy sync loops.
+- Concurrent user sync requests are also deduplicated with a PostgreSQL advisory lease keyed by GitHub login, so multi-instance deployments avoid duplicate heavy sync execution for the same user.
 - Deterministic score math is runtime-configurable through `SCORING_*` env policy values; AI summaries never directly assign XP.
 - Profile/report pages are snapshot-backed and may show partial/stale states.
 - Upstream failures are surfaced as explicit sync/evidence states.
