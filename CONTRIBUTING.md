@@ -302,6 +302,9 @@ Recent no-slowdown refinement (May 27, 2026):
 - Dashboard-route pages (Dashboard, Contributions, Badges, Quests, Leaderboard) now share `useProfileSyncRuns(limit)` for profile freshness polling, removing username-key churn from per-page `useSyncRuns(..., { user })` usage and keeping sync-state derivation consistent.
 - Quests page hook ordering was fixed so `useQuests()` is initialized before any profile sync-run wiring, preventing a runtime `data used before declaration` failure in the quests route.
 - Profile sync-run filtering now normalizes GitHub login tokens with optional leading `@` before matching `requested_user`, so active user sync runs are still recognized when upstream identifiers include handle-style prefixes.
+- GitHub ingestor sync-run filter normalization now canonicalizes `run_type`, `status`, `repository`, `user`, and `requested_by_github_login` to lowercase (and strips leading `@` from GitHub logins) before listing runs, reducing false-empty activity lists caused by case/handle-format mismatches.
+- `Store.ListSyncRuns` now applies case-insensitive matching for `run_type`, `status`, `requested_repository_full_name`, `requested_user_login`, and `requested_by_github_login` filters, so settings diagnostics remain stable even when callers send mixed-case values.
+- Frontend sync-run list requests now canonicalize filter params (`run_type`, `status`, `repository`, `user`) and strip `@` from user handles before calling `/api/sync/runs`, keeping client and backend filter semantics aligned.
 
 ## Frontend Excellence Checklist (No-Slowdown Backlog)
 

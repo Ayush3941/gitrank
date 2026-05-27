@@ -165,19 +165,19 @@ export async function listMySyncRuns(
   const params = new URLSearchParams();
   const normalizedLimit = Number.isFinite(limit) ? Math.max(1, Math.min(200, Math.floor(limit))) : 25;
   params.set("limit", String(normalizedLimit));
-  const runType = options.runType?.trim();
+  const runType = normalizeSyncRunFilterToken(options.runType);
   if (runType) {
     params.set("run_type", runType);
   }
-  const status = options.status?.trim();
+  const status = normalizeSyncRunFilterToken(options.status);
   if (status) {
     params.set("status", status);
   }
-  const user = options.user?.trim();
+  const user = normalizeSyncRunFilterUser(options.user);
   if (user) {
     params.set("user", user);
   }
-  const repository = options.repository?.trim();
+  const repository = normalizeSyncRunFilterRepository(options.repository);
   if (repository) {
     params.set("repository", repository);
   }
@@ -710,4 +710,23 @@ function parseISOEpochMs(value: string | undefined): number | null {
     return null;
   }
   return parsed;
+}
+
+function normalizeSyncRunFilterToken(value: string | undefined): string {
+  if (!value) {
+    return "";
+  }
+  return value.trim().toLowerCase();
+}
+
+function normalizeSyncRunFilterUser(value: string | undefined): string {
+  const normalized = normalizeSyncRunFilterToken(value);
+  if (!normalized) {
+    return "";
+  }
+  return normalized.replace(/^@+/, "");
+}
+
+function normalizeSyncRunFilterRepository(value: string | undefined): string {
+  return normalizeSyncRunFilterToken(value);
 }

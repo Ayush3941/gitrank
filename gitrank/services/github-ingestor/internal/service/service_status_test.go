@@ -185,3 +185,35 @@ func TestSyncRunQueuedWindow(t *testing.T) {
 		t.Fatalf("syncRunQueuedWindow(normal) = %s, want 4m", got)
 	}
 }
+
+func TestNormalizeSyncRunFilterCanonicalizesCaseAndHandlePrefixes(t *testing.T) {
+	t.Parallel()
+
+	filter := normalizeSyncRunFilter(contracts.GitHubSyncRunFilter{
+		RunType:                " User ",
+		Status:                 " Completed ",
+		Repository:             " Octo/Repo ",
+		User:                   " @Ayush3941 ",
+		RequestedByGitHubLogin: " @@Ayush3941 ",
+		Limit:                  0,
+	}, 25, 100)
+
+	if filter.RunType != "user" {
+		t.Fatalf("RunType = %q, want user", filter.RunType)
+	}
+	if filter.Status != "completed" {
+		t.Fatalf("Status = %q, want completed", filter.Status)
+	}
+	if filter.Repository != "octo/repo" {
+		t.Fatalf("Repository = %q, want octo/repo", filter.Repository)
+	}
+	if filter.User != "ayush3941" {
+		t.Fatalf("User = %q, want ayush3941", filter.User)
+	}
+	if filter.RequestedByGitHubLogin != "ayush3941" {
+		t.Fatalf("RequestedByGitHubLogin = %q, want ayush3941", filter.RequestedByGitHubLogin)
+	}
+	if filter.Limit != 25 {
+		t.Fatalf("Limit = %d, want default 25", filter.Limit)
+	}
+}

@@ -1308,13 +1308,13 @@ func (s *Store) ListSyncRuns(ctx context.Context, filter contracts.GitHubSyncRun
 		conditions = append(conditions, fmt.Sprintf(condition, len(args)))
 	}
 
-	add("runs.run_type = $%d", filter.RunType)
-	add("runs.status = $%d", filter.Status)
+	add("lower(runs.run_type) = $%d", filter.RunType)
+	add("lower(runs.status) = $%d", filter.Status)
 	add("runs.subject = $%d", filter.Subject)
-	add("runs.requested_repository_full_name = $%d", filter.Repository)
-	add("runs.requested_user_login = $%d", filter.User)
+	add("lower(runs.requested_repository_full_name) = $%d", filter.Repository)
+	add("lower(runs.requested_user_login) = $%d", filter.User)
 	add("runs.requested_by_subject = $%d", filter.RequestedBySubject)
-	add("runs.requested_by_github_login = $%d", filter.RequestedByGitHubLogin)
+	add("lower(runs.requested_by_github_login) = $%d", filter.RequestedByGitHubLogin)
 	add("runs.correlation_id = $%d", filter.CorrelationID)
 	add("runs.github_delivery_id = $%d", filter.DeliveryID)
 

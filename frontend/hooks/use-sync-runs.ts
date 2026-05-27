@@ -14,8 +14,8 @@ type SyncRunsQueryFilter = Pick<ListSyncRunsOptions, "runType" | "user">;
 
 export function useSyncRuns(limit = 25, filter?: SyncRunsQueryFilter) {
   const constrainedNetwork = useNetworkConstraintPreference();
-  const runType = filter?.runType?.trim() ?? "";
-  const user = filter?.user?.trim() ?? "";
+  const runType = normalizeToken(filter?.runType);
+  const user = normalizeGitHubHandle(filter?.user);
 
   return useQuery({
     queryKey: ["sync", "runs", limit, runType, user],
@@ -40,6 +40,21 @@ export function useSyncRuns(limit = 25, filter?: SyncRunsQueryFilter) {
           : syncPollingPolicy.syncRunsIdleRefetchIntervalMs,
     refetchIntervalInBackground: false,
   });
+}
+
+function normalizeToken(value?: string | null): string {
+  if (!value) {
+    return "";
+  }
+  return value.trim().toLowerCase();
+}
+
+function normalizeGitHubHandle(value?: string | null): string {
+  const normalized = normalizeToken(value);
+  if (!normalized) {
+    return "";
+  }
+  return normalized.replace(/^@+/, "");
 }
 
 function hasActiveSyncRuns(payload?: ApiSyncRunListResponse): boolean {

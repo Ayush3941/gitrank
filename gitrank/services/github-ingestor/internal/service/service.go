@@ -473,13 +473,13 @@ func (r PersistResult) Summary() string {
 }
 
 func normalizeSyncRunFilter(filter contracts.GitHubSyncRunFilter, defaultLimit int, maxLimit int) contracts.GitHubSyncRunFilter {
-	filter.RunType = strings.TrimSpace(filter.RunType)
-	filter.Status = strings.TrimSpace(filter.Status)
+	filter.RunType = strings.ToLower(strings.TrimSpace(filter.RunType))
+	filter.Status = strings.ToLower(strings.TrimSpace(filter.Status))
 	filter.Subject = strings.TrimSpace(filter.Subject)
-	filter.Repository = strings.TrimSpace(filter.Repository)
-	filter.User = strings.TrimSpace(filter.User)
+	filter.Repository = strings.ToLower(strings.TrimSpace(filter.Repository))
+	filter.User = strings.TrimLeft(strings.ToLower(strings.TrimSpace(filter.User)), "@")
 	filter.RequestedBySubject = strings.TrimSpace(filter.RequestedBySubject)
-	filter.RequestedByGitHubLogin = strings.TrimSpace(filter.RequestedByGitHubLogin)
+	filter.RequestedByGitHubLogin = strings.TrimLeft(strings.ToLower(strings.TrimSpace(filter.RequestedByGitHubLogin)), "@")
 	filter.CorrelationID = strings.TrimSpace(filter.CorrelationID)
 	filter.DeliveryID = strings.TrimSpace(filter.DeliveryID)
 	if defaultLimit <= 0 {

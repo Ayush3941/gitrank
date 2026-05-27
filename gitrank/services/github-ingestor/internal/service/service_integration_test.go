@@ -224,6 +224,17 @@ func TestPersistWebhookNormalizesEntitiesIdempotently(t *testing.T) {
 		t.Fatalf("RequestedRepository = %q, want %q", runs.Runs[0].RequestedRepository, repositoryFullName)
 	}
 
+	requesterRuns, err := svc.ListSyncRuns(ctx, contracts.GitHubSyncRunFilter{
+		RequestedByGitHubLogin: strings.ToUpper("@" + fmt.Sprintf("ingestor-%d", suffix)),
+		Limit:                  10,
+	})
+	if err != nil {
+		t.Fatalf("ListSyncRuns(requested_by_github_login) error = %v", err)
+	}
+	if len(requesterRuns.Runs) == 0 {
+		t.Fatal("ListSyncRuns(requested_by_github_login) returned no runs, want at least one")
+	}
+
 	assertCount(t, ctx, pool, "github_installations", "SELECT COUNT(*) FROM github_installations WHERE github_installation_id = 12001", 1)
 	assertCount(t, ctx, pool, "repositories", "SELECT COUNT(*) FROM repositories WHERE github_repository_id = 22001", 1)
 	assertCount(t, ctx, pool, "pull_requests", "SELECT COUNT(*) FROM pull_requests WHERE github_pull_request_id = 33001", 1)
