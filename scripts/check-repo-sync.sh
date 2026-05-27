@@ -290,6 +290,12 @@ assert_runtime_identity_hygiene() {
   fi
 }
 
+assert_no_tracked_secret_leaks() {
+  if ! "$ROOT_DIR/scripts/check-no-tracked-secrets.sh" >/dev/null; then
+    fail "tracked secret leak guard failed"
+  fi
+}
+
 assert_markdown_env_var_refs() {
   if ! "$ROOT_DIR/scripts/check-doc-env-var-refs.sh" >/dev/null; then
     fail "markdown env variable references drifted from env examples/scripts"
@@ -393,6 +399,7 @@ main() {
   assert_markdown_go_command_path_refs
   assert_markdown_portable_paths
   assert_runtime_identity_hygiene
+  assert_no_tracked_secret_leaks
   assert_markdown_env_var_refs
   assert_makefile_script_refs
   assert_workflow_script_refs
