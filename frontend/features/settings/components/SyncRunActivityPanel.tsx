@@ -10,6 +10,7 @@ import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { formatDateTime, formatRelativeDays } from "@/lib/formatters";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import { syncRunStatusLabel } from "@/features/settings/lib/sync-run-status";
+import { describeSyncRunOutcome, metricCount } from "@/features/settings/lib/sync-run-diagnostics";
 
 const SYNC_RUN_STATUS_FILTERS = ["All", "Completed", "Queued", "Running", "Failed"] as const;
 type SyncRunStatusFilter = (typeof SYNC_RUN_STATUS_FILTERS)[number];
@@ -280,7 +281,7 @@ export function SyncRunActivityPanel({
               const safeLastError = sanitizeSyncRunErrorMessage(run.last_error);
               const metricsSummary = summarizeRunMetrics(run.metrics);
               const partial = hasPartialRunMetrics(run.metrics);
-              const outcomeInsight = runOutcomeInsight(run);
+              const outcomeInsight = describeSyncRunOutcome(run).message;
               return (
                 <li key={`${run.id}-${index}`}>
                   <article className="render-opt-card neon-surface space-y-2 px-4 py-3">
@@ -511,21 +512,6 @@ function pushMetricSegment(
   segments.push(`${label} ${persisted}`);
 }
 
-function metricCount(metrics: Record<string, number>, ...keys: string[]): number {
-  let count = 0;
-  for (const key of keys) {
-    const value = metrics[key];
-    if (!Number.isFinite(value)) {
-      continue;
-    }
-    const rounded = Math.max(0, Math.floor(value));
-    if (rounded > count) {
-      count = rounded;
-    }
-  }
-  return count;
-}
-
 function metricSumBySuffix(metrics: Record<string, number>, suffix: string): number {
   let total = 0;
   for (const [key, value] of Object.entries(metrics)) {
@@ -577,51 +563,4 @@ function sanitizeSyncRunErrorMessage(value?: string): string | null {
     return "GitHub timed out while fetching some metadata. Existing evidence was kept and a background retry can fill remaining gaps.";
   }
   return sanitizeUserFacingError(value, "settings-sync-runs");
-}
-
-function runOutcomeInsight(run: ApiSyncRunRecord): string {
-  const metrics = run.metrics;
-  if (!metrics) {
-    return "";
-  }
-
-  const scopeLimited = metricCount(metrics, "authored_pull_request_scope_limited") > 0;
-  const discoveryEmpty = metricCount(metrics, "authored_pull_request_discovery_empty") > 0;
-  const persistedExisting = metricCount(metrics, "authored_pull_request_persisted_existing") > 0;
-  const zeroDiscoveryWithHistory =
-    metricCount(metrics, "authored_pull_request_zero_discovery_with_history") > 0 ||
-    (discoveryEmpty && persistedExisting);
-  const backfillIncomplete = metricCount(metrics, "authored_pull_request_backfill_incomplete") > 0;
-  const searchIncomplete = metricCount(metrics, "authored_pull_request_search_incomplete") > 0;
-  const searchOverflow = metricCount(metrics, "authored_pull_request_search_overflow") > 0;
-  const retryable = metricCount(metrics, "authored_pull_requests_retryable") > 0;
-  const timeout = metricCount(metrics, "authored_pull_requests_timeouts", "fetched_timeout_errors", "timeout_errors") > 0;
-  const snapshotRefreshPending = metricCount(metrics, "post_sync_refresh_failed") > 0;
-  const selectedAuthoredPRs = metricCount(metrics, "authored_pull_requests_selected");
-
-  if (zeroDiscoveryWithHistory) {
-    return "No authored PRs were discovered in this run even though historical PR evidence already exists. Reconnect GitHub if scope changed, then retry.";
-  }
-  if (scopeLimited) {
-    return "GitHub returned limited authorization scope for authored PR discovery. Reconnect GitHub to expand accessible PR evidence.";
-  }
-  if (discoveryEmpty) {
-    return "No authored PRs were discovered for the current sync window yet.";
-  }
-  if (searchIncomplete || searchOverflow) {
-    return "GitHub search limits were hit during authored PR discovery. GitRank will continue bounded backfill on later runs.";
-  }
-  if (retryable || timeout) {
-    return "Some authored PR surfaces were retryable or timed out. Existing evidence was kept and later sync runs can fill missing rows.";
-  }
-  if (backfillIncomplete) {
-    return "Recent PR evidence is synced. Historical authored PR backfill is still in progress.";
-  }
-  if (snapshotRefreshPending) {
-    return "Sync completed, but profile snapshot refresh is still finishing.";
-  }
-  if (selectedAuthoredPRs > 0) {
-    return `Synced ${selectedAuthoredPRs} authored PR target${selectedAuthoredPRs === 1 ? "" : "s"} in this run.`;
-  }
-  return "";
 }
