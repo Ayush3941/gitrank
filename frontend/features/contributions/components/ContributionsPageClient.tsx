@@ -34,6 +34,10 @@ import { formatRelativeDays } from "@/lib/formatters";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { deduplicateContributionsByPullRequest } from "@/lib/presentation/contribution-dedup";
+import {
+  deriveEffectiveSyncState,
+  shouldShowSyncRefreshPill,
+} from "@/lib/presentation/sync-evidence";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import { contributionDisplayConfig } from "@/lib/runtime/contribution-display-config";
 import {
@@ -143,6 +147,8 @@ export function ContributionsPageClient() {
     () => summarizeContributionStreak(profile?.user.contributions ?? []),
     [profile?.user.contributions],
   );
+  const syncStateForDisplay = deriveEffectiveSyncState(profile?.user);
+  const showRefreshPill = shouldShowSyncRefreshPill(profile?.user);
   const abraContributionSample = useMemo(
     () => filteredRows.slice(0, contributionDisplayConfig.abraSampleLimit),
     [filteredRows],
@@ -279,7 +285,16 @@ export function ContributionsPageClient() {
         )}
         actions={(
           <div className="flex flex-wrap gap-2">
-            <SnapshotFreshnessPill refreshedAt={profile?.refreshedAt} label="Refreshed" />
+            {showRefreshPill ? (
+              <SnapshotFreshnessPill refreshedAt={profile?.refreshedAt} label="Refreshed" />
+            ) : (
+              <span
+                className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold"
+                title="No scored PR evidence has been materialized yet."
+              >
+                Evidence pending
+              </span>
+            )}
             {!useLiteCards ? (
               <Button
                 type="button"
@@ -335,11 +350,15 @@ export function ContributionsPageClient() {
         }}
         dismissLabel="Dismiss export status"
       />
-      {profile?.user.syncStatus.state === "stale" ? (
+      {syncStateForDisplay === "stale" || syncStateForDisplay === "partially_synced" ? (
         <StaleState
-          message={`Contribution evidence refreshed ${formatRelativeDays(
-            profile.refreshedAt,
-          )}. New PR rows can appear after the next sync.`}
+          message={
+            syncStateForDisplay === "partially_synced"
+              ? "Contribution snapshot exists, but scored PR evidence is still empty. Run sync again after GitHub processing completes."
+              : `Contribution evidence refreshed ${formatRelativeDays(
+                  profile.refreshedAt,
+                )}. New PR rows can appear after the next sync.`
+          }
           updatedAt={profile.refreshedAt}
           onRefresh={async () => {
             try {

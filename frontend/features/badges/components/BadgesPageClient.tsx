@@ -38,6 +38,10 @@ import {
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
+import {
+  deriveEffectiveSyncState,
+  shouldShowSyncRefreshPill,
+} from "@/lib/presentation/sync-evidence";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import type { BadgeRarity } from "@/types/gitrank";
 const BADGES_EARNED_REGION_ID = "badges-earned-region";
@@ -108,6 +112,8 @@ export function BadgesPageClient() {
       return rarityMatch && visibilityMatch;
     });
   const profile = data?.profile;
+  const syncStateForDisplay = deriveEffectiveSyncState(profile?.user);
+  const showRefreshPill = shouldShowSyncRefreshPill(profile?.user);
   const lockedBadges = allBadges.filter((badge) => !badge.unlocked);
   const lockedBadgesSorted = [...lockedBadges].sort((left, right) => {
     const progressDelta = (right.progress ?? 0) - (left.progress ?? 0);
@@ -273,7 +279,16 @@ export function BadgesPageClient() {
         )}
         actions={(
           <div className="flex flex-wrap items-center gap-2">
-            <SnapshotFreshnessPill refreshedAt={profile?.refreshedAt} label="Refreshed" />
+            {showRefreshPill ? (
+              <SnapshotFreshnessPill refreshedAt={profile?.refreshedAt} label="Refreshed" />
+            ) : (
+              <span
+                className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold"
+                title="No scored PR evidence has been materialized yet."
+              >
+                Evidence pending
+              </span>
+            )}
             <Button asChild variant="secondary" size="sm">
               <Link href="/dashboard/contributions" prefetch={false}>
                 Contributions
@@ -283,11 +298,15 @@ export function BadgesPageClient() {
         )}
       />
       <section className="render-opt-section space-y-4">
-        {profile?.user.syncStatus.state === "stale" ? (
+        {syncStateForDisplay === "stale" || syncStateForDisplay === "partially_synced" ? (
           <StaleState
-            message={`Badge snapshot refreshed ${formatRelativeDays(
-              profile.refreshedAt,
-            )}. New unlocks can appear after the next completed sync.`}
+            message={
+              syncStateForDisplay === "partially_synced"
+                ? "Badge snapshot exists, but scored PR evidence is still empty. Run sync again after GitHub processing completes."
+                : `Badge snapshot refreshed ${formatRelativeDays(
+                    profile.refreshedAt,
+                  )}. New unlocks can appear after the next completed sync.`
+            }
             updatedAt={profile.refreshedAt}
             onRefresh={async () => {
               try {

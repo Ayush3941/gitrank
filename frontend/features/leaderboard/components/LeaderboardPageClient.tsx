@@ -29,6 +29,10 @@ import { useNetworkConstraintPreference } from "@/hooks/use-gamification-prefere
 import { useMyProfile } from "@/hooks/use-profile";
 import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
 import { formatRelativeDays } from "@/lib/formatters";
+import {
+  deriveEffectiveSyncState,
+  shouldShowSyncRefreshPill,
+} from "@/lib/presentation/sync-evidence";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 
@@ -118,6 +122,8 @@ export function LeaderboardPageClient() {
         currentUser: rows.find((row) => row.isCurrentUser),
       }
     : null;
+  const syncStateForDisplay = deriveEffectiveSyncState(myProfile?.user);
+  const showRefreshPill = shouldShowSyncRefreshPill(myProfile?.user);
   const safeVisibleRowCount = Math.min(rows.length, visibleRowCount);
   const hasMoreRows = rows.length > safeVisibleRowCount;
   const remainingRows = Math.max(0, rows.length - safeVisibleRowCount);
@@ -167,15 +173,24 @@ export function LeaderboardPageClient() {
               { label: `Rows ${rows.length}` },
               { label: effectiveMode === "nearby" ? "View Nearby" : `Showing ${safeVisibleRowCount}` },
               {
-                label: `Sync ${formatSyncStateLabel(myProfile?.user.syncStatus.state)}`,
-                tone: toneForSyncState(myProfile?.user.syncStatus.state),
+                label: `Sync ${formatSyncStateLabel(syncStateForDisplay)}`,
+                tone: toneForSyncState(syncStateForDisplay),
               },
             ]}
           />
         )}
         actions={(
           <div className="flex flex-wrap items-center gap-2">
-            <SnapshotFreshnessPill refreshedAt={myProfile?.refreshedAt} label="Refreshed" />
+            {showRefreshPill ? (
+              <SnapshotFreshnessPill refreshedAt={myProfile?.refreshedAt} label="Refreshed" />
+            ) : (
+              <span
+                className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold"
+                title="No scored PR evidence has been materialized yet."
+              >
+                Evidence pending
+              </span>
+            )}
             <Button asChild variant="secondary" size="sm">
               <Link href="/dashboard/quests" prefetch={false}>
                 Quests
@@ -184,11 +199,15 @@ export function LeaderboardPageClient() {
           </div>
         )}
       />
-      {myProfile?.user.syncStatus.state === "stale" ? (
+      {syncStateForDisplay === "stale" || syncStateForDisplay === "partially_synced" ? (
         <StaleState
-          message={`Leaderboard context refreshed ${formatRelativeDays(
-            myProfile.refreshedAt,
-          )}. Rank updates can lag until sync completes.`}
+          message={
+            syncStateForDisplay === "partially_synced"
+              ? "Leaderboard profile snapshot exists, but scored PR evidence is still empty. Run sync again after GitHub processing completes."
+              : `Leaderboard context refreshed ${formatRelativeDays(
+                  myProfile.refreshedAt,
+                )}. Rank updates can lag until sync completes.`
+          }
           updatedAt={myProfile.refreshedAt}
           onRefresh={async () => {
             try {
