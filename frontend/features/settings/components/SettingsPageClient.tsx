@@ -249,6 +249,10 @@ export function SettingsPageClient() {
   const pendingRepository = updateRepositoryVisibility.variables?.fullName ?? null;
   const hiddenRepositoryCount = data.user.repositories.filter((repository) => repository.visibility !== "Public").length;
   const hasContributionEvidence = hasUserContributionEvidence(data.user);
+  const syncStateForDisplay =
+    data.user.syncStatus.state === "synced" && !hasContributionEvidence
+      ? "partially_synced"
+      : data.user.syncStatus.state;
   const accountActionErrorId = "settings-account-action-error";
 
   function handlePrivacyToggle(key: BackedPrivacyKey, checked: boolean) {
@@ -351,15 +355,15 @@ export function SettingsPageClient() {
               { label: `Repos ${data.user.repositories.length}` },
               { label: `Hidden ${hiddenRepositoryCount}` },
               {
-                label: `Sync ${formatSyncStateLabel(data.user.syncStatus.state)}`,
-                tone: toneForSyncState(data.user.syncStatus.state),
+                label: `Sync ${formatSyncStateLabel(syncStateForDisplay)}`,
+                tone: toneForSyncState(syncStateForDisplay),
               },
             ]}
           />
         )}
         actions={(
           <div className="flex flex-wrap items-center gap-2">
-            {data.user.syncStatus.state === "synced" && hasContributionEvidence ? (
+            {syncStateForDisplay === "synced" && hasContributionEvidence ? (
               <SnapshotFreshnessPill refreshedAt={data.refreshedAt} label="Refreshed" />
             ) : (
               <span
@@ -384,7 +388,13 @@ export function SettingsPageClient() {
             <p className="text-xs font-medium text-primary">GitHub account</p>
             <h2 className="mt-2 text-xl font-semibold text-white">@{data.user.username}</h2>
           </div>
-          <SyncStatusPill status={data.user.syncStatus} />
+          <SyncStatusPill
+            status={
+              syncStateForDisplay === data.user.syncStatus.state
+                ? data.user.syncStatus
+                : { ...data.user.syncStatus, state: syncStateForDisplay }
+            }
+          />
         </div>
         <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
           <Button

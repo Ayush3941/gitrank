@@ -325,6 +325,7 @@ func (e *Executor) SyncUser(
 		return response, fmt.Errorf("user must be a GitHub login")
 	}
 	if !e.tryAcquireUserSync(user) {
+		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, ErrUserSyncInProgress, PersistResult{})
 		return response, ErrUserSyncInProgress
 	}
 	defer e.releaseUserSync(user)
@@ -334,6 +335,7 @@ func (e *Executor) SyncUser(
 		return response, leaseErr
 	}
 	if !leaseAcquired {
+		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, ErrUserSyncInProgress, PersistResult{})
 		return response, ErrUserSyncInProgress
 	}
 	defer releaseLease()
@@ -2165,7 +2167,25 @@ func shouldAdvanceAuthoredPRLastSynced(fetched map[string]int, searchIncomplete,
 	if fetched["authored_pull_request_search_failed"] > 0 {
 		return false
 	}
-	return fetched["authored_pull_requests_retryable"] <= 0
+	if fetched["authored_pull_requests_retryable"] <= 0 {
+		return true
+	}
+
+	// Do not pin the authored PR cursor forever when a run is only partially
+	// retryable. If at least one selected PR was hydrated successfully, advance
+	// with overlap and allow failed PRs to be retried on future incremental runs.
+	selected := fetched["authored_pull_requests_selected"]
+	if selected <= 0 {
+		return false
+	}
+	skipped := fetched["authored_pull_requests_skipped"]
+	if skipped < 0 {
+		skipped = 0
+	}
+	if skipped >= selected {
+		return false
+	}
+	return true
 }
 
 func userSyncExecutionStatus(fetched map[string]int) string {
@@ -2212,6 +2232,11 @@ func syncFailureFetchedMetrics(err error) map[string]int {
 		"failed": 1,
 	}
 	if err == nil {
+		return metrics
+	}
+	if errors.Is(err, ErrUserSyncInProgress) {
+		metrics["user_sync_in_progress"] = 1
+		metrics["lease_conflicts"] = 1
 		return metrics
 	}
 	if isSkippableGitHubTimeoutError(err) {

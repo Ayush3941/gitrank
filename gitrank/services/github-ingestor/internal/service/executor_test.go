@@ -209,8 +209,23 @@ func TestShouldAdvanceAuthoredPRLastSynced(t *testing.T) {
 			want:             false,
 		},
 		{
-			name:             "holds cursor when retryable hydration failures exist",
-			fetched:          map[string]int{"authored_pull_requests_retryable": 2},
+			name: "advances cursor on partial retryable hydration failures",
+			fetched: map[string]int{
+				"authored_pull_requests_selected":  10,
+				"authored_pull_requests_skipped":   2,
+				"authored_pull_requests_retryable": 2,
+			},
+			searchIncomplete: false,
+			searchOverflow:   false,
+			want:             true,
+		},
+		{
+			name: "holds cursor when all selected PR hydrations are retryable",
+			fetched: map[string]int{
+				"authored_pull_requests_selected":  10,
+				"authored_pull_requests_skipped":   10,
+				"authored_pull_requests_retryable": 10,
+			},
 			searchIncomplete: false,
 			searchOverflow:   false,
 			want:             false,
@@ -377,6 +392,11 @@ func TestSyncFailureFetchedMetrics(t *testing.T) {
 			name:     "generic request tagged",
 			err:      errors.New("invalid request payload"),
 			wantKeys: []string{"failed", "request_errors"},
+		},
+		{
+			name:     "user sync conflict tagged",
+			err:      ErrUserSyncInProgress,
+			wantKeys: []string{"failed", "user_sync_in_progress", "lease_conflicts"},
 		},
 	}
 
