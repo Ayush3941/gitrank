@@ -279,6 +279,69 @@ func TestRESTClientBackoffDelayHonorsRetryAfterHeader(t *testing.T) {
 	}
 }
 
+func TestRESTClientOnceRespectsContextWhileWaitingForSemaphore(t *testing.T) {
+	client, err := NewRESTClient(ClientConfig{
+		BaseURL:          "https://api.github.com/",
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		SecondaryBackoff: time.Millisecond,
+		MaxConcurrency:   1,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	client.sem <- struct{}{}
+	defer func() { <-client.sem }()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	_, _, retry, err := client.once(ctx, http.MethodGet, "/repos/octo/repo", nil, ConditionalRequest{}, nil)
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("once() error = %v, want context.Canceled", err)
+	}
+	if retry {
+		t.Fatal("once() retry = true, want false on context cancellation")
+	}
+}
+
+func TestRESTClientRetryBackoffRespectsContextCancellation(t *testing.T) {
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		requests++
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Retry-After", "600")
+		w.WriteHeader(http.StatusForbidden)
+		_ = json.NewEncoder(w).Encode(map[string]string{
+			"message": "You have exceeded a secondary rate limit. Please retry later.",
+		})
+	}))
+	defer server.Close()
+
+	client, err := NewRESTClient(ClientConfig{
+		BaseURL:          server.URL + "/",
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		HTTPClient:       server.Client(),
+		SecondaryBackoff: time.Hour,
+		MaxConcurrency:   1,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Millisecond)
+	defer cancel()
+	_, err = client.GetJSON(ctx, "/repos/octo/repo", nil, ConditionalRequest{}, nil)
+	if !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("GetJSON() error = %v, want context.DeadlineExceeded", err)
+	}
+	if requests != 1 {
+		t.Fatalf("server requests = %d, want 1 due to canceled retry backoff", requests)
+	}
+}
+
 func TestGraphQLClientCircuitBreakerOpensAfterProviderFailures(t *testing.T) {
 	requests := 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
@@ -485,5 +548,75 @@ func TestGraphQLClientRetriesSecondaryRateLimitBeforeSuccess(t *testing.T) {
 	}
 	if meta.RateLimit.Remaining != 4988 {
 		t.Fatalf("remaining = %d, want final response rate-limit metadata", meta.RateLimit.Remaining)
+	}
+}
+
+func TestGraphQLClientOnceRespectsContextWhileWaitingForSemaphore(t *testing.T) {
+	client, err := NewGraphQLClient(ClientConfig{
+		BaseURL:          "https://api.github.com/graphql",
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		SecondaryBackoff: time.Millisecond,
+		MaxConcurrency:   1,
+	})
+	if err != nil {
+		t.Fatalf("NewGraphQLClient() error = %v", err)
+	}
+
+	client.sem <- struct{}{}
+	defer func() { <-client.sem }()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	_, _, retry, err := client.once(ctx, []byte(`{"query":"query { viewer { login } }"}`))
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("once() error = %v, want context.Canceled", err)
+	}
+	if retry {
+		t.Fatal("once() retry = true, want false on context cancellation")
+	}
+}
+
+func TestGraphQLClientRetryBackoffRespectsContextCancellation(t *testing.T) {
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		requests++
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Retry-After", "600")
+		_ = json.NewEncoder(w).Encode(GraphQLResponse[map[string]any]{
+			Errors: []GraphQLError{{
+				Message: "You have exceeded a secondary rate limit. Please retry later.",
+			}},
+		})
+	}))
+	defer server.Close()
+
+	client, err := NewGraphQLClient(ClientConfig{
+		BaseURL:          server.URL,
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		HTTPClient:       server.Client(),
+		SecondaryBackoff: time.Hour,
+		MaxConcurrency:   1,
+	})
+	if err != nil {
+		t.Fatalf("NewGraphQLClient() error = %v", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Millisecond)
+	defer cancel()
+
+	var out GraphQLResponse[struct {
+		Viewer struct {
+			Login string `json:"login"`
+		} `json:"viewer"`
+	}]
+	_, err = client.QueryJSON(ctx, "query { viewer { login } }", nil, &out)
+	if !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("QueryJSON() error = %v, want context.DeadlineExceeded", err)
+	}
+	if requests != 1 {
+		t.Fatalf("server requests = %d, want 1 due to canceled retry backoff", requests)
 	}
 }

@@ -192,7 +192,12 @@ func (c *RESTClient) do(
 			c.observeCircuitResult(meta)
 			return nil, meta, err
 		}
-		time.Sleep(c.backoffDelay(attempt, meta.RateLimit.RetryAfter))
+		if attempt >= 2 {
+			break
+		}
+		if sleepErr := sleepWithContext(ctx, c.backoffDelay(attempt, meta.RateLimit.RetryAfter)); sleepErr != nil {
+			return nil, lastMeta, sleepErr
+		}
 	}
 	c.observeCircuitResult(lastMeta)
 	return nil, lastMeta, lastErr
@@ -216,8 +221,12 @@ func (c *RESTClient) once(
 	conditional ConditionalRequest,
 	payload []byte,
 ) ([]byte, ResponseMetadata, bool, error) {
-	c.sem <- struct{}{}
-	defer func() { <-c.sem }()
+	select {
+	case c.sem <- struct{}{}:
+		defer func() { <-c.sem }()
+	case <-ctx.Done():
+		return nil, ResponseMetadata{}, false, ctx.Err()
+	}
 
 	target, err := c.baseURL.Parse(strings.TrimLeft(path, "/"))
 	if err != nil {
@@ -427,7 +436,12 @@ func (c *GraphQLClient) QueryJSON(
 				return meta, err
 			}
 		}
-		time.Sleep(c.backoffDelay(attempt, meta.RateLimit.RetryAfter))
+		if attempt >= 2 {
+			break
+		}
+		if sleepErr := sleepWithContext(ctx, c.backoffDelay(attempt, meta.RateLimit.RetryAfter)); sleepErr != nil {
+			return lastMeta, sleepErr
+		}
 	}
 
 	c.observeCircuitResult(lastMeta)
@@ -452,8 +466,12 @@ func (c *GraphQLClient) once(
 	ctx context.Context,
 	payload []byte,
 ) ([]byte, ResponseMetadata, bool, error) {
-	c.sem <- struct{}{}
-	defer func() { <-c.sem }()
+	select {
+	case c.sem <- struct{}{}:
+		defer func() { <-c.sem }()
+	case <-ctx.Done():
+		return nil, ResponseMetadata{}, false, ctx.Err()
+	}
 
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, c.endpoint, bytes.NewReader(payload))
 	if err != nil {
@@ -544,6 +562,25 @@ func parseUnixHeader(value string) time.Time {
 		return time.Time{}
 	}
 	return time.Unix(epoch, 0).UTC()
+}
+
+func sleepWithContext(ctx context.Context, duration time.Duration) error {
+	if duration <= 0 {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+			return nil
+		}
+	}
+	timer := time.NewTimer(duration)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-timer.C:
+		return nil
+	}
 }
 
 func isSecondaryRateLimited(status int, body []byte) bool {
