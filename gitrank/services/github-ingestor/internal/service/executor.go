@@ -1391,7 +1391,38 @@ func (e *Executor) fetchAuthoredPullRequestTargets(
 	selection.SearchOverflow = selection.SearchOverflow || incrementalStats.overflow
 	selection.Fetched["authored_pull_request_search_queries"] += incrementalStats.searchQueries
 	selection.Fetched["authored_pull_request_discovery_windows"]++
+	selection.Fetched["authored_pull_request_incremental_updated_windows"]++
 	combinedStats := incrementalStats
+
+	incrementalCreatedLimit := min(maxTargets-len(selection.Targets), max(limit, maxTargets/3))
+	if incrementalCreatedLimit > 0 {
+		incrementalCreatedWindow := authoredPullRequestWindow{
+			Qualifier: "created",
+			Start:     incrementalStart,
+			End:       now,
+		}
+		incrementalCreatedTargets, incrementalCreatedStats, createdErr := e.discoverAuthoredPullRequestTargetsInWindow(
+			ctx,
+			user,
+			incrementalCreatedWindow,
+			perPage,
+			0,
+			incrementalCreatedLimit,
+		)
+		if createdErr != nil {
+			return authoredPullRequestSelection{}, createdErr
+		}
+		selection.Targets = appendUniqueAuthoredPullRequestTargets(selection.Targets, incrementalCreatedTargets, seenTargets, maxTargets)
+		selection.SearchIncomplete = selection.SearchIncomplete || incrementalCreatedStats.incomplete
+		selection.SearchOverflow = selection.SearchOverflow || incrementalCreatedStats.overflow
+		selection.Fetched["authored_pull_request_search_queries"] += incrementalCreatedStats.searchQueries
+		selection.Fetched["authored_pull_request_discovery_windows"]++
+		selection.Fetched["authored_pull_request_incremental_created_windows"]++
+		combinedStats = mergeAuthoredPullRequestDiscoveryStats(combinedStats, incrementalCreatedStats)
+		if len(incrementalCreatedTargets) == 0 {
+			selection.Fetched["authored_pull_request_incremental_created_empty"]++
+		}
+	}
 
 	backfillBefore := authoredPRBackfillBoundary(cursor, incrementalStats, now)
 	bootstrapComplete := cursor.BootstrapComplete

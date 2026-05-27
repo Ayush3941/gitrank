@@ -1174,6 +1174,12 @@ func TestExecutorFetchAuthoredPullRequestTargetsUsesGitHubSearch(t *testing.T) {
 	if selection.Fetched["authored_pull_request_discovery_windows"] < 2 {
 		t.Fatalf("discovery windows = %d, want >= 2", selection.Fetched["authored_pull_request_discovery_windows"])
 	}
+	if selection.Fetched["authored_pull_request_incremental_updated_windows"] == 0 {
+		t.Fatalf("incremental updated windows = %d, want at least 1", selection.Fetched["authored_pull_request_incremental_updated_windows"])
+	}
+	if selection.Fetched["authored_pull_request_incremental_created_windows"] == 0 {
+		t.Fatalf("incremental created windows = %d, want at least 1", selection.Fetched["authored_pull_request_incremental_created_windows"])
+	}
 	if selection.Fetched["authored_pull_request_backfill_empty_windows"] == 0 {
 		t.Fatalf("backfill empty windows = %d, want > 0 for empty created windows", selection.Fetched["authored_pull_request_backfill_empty_windows"])
 	}
