@@ -1642,6 +1642,7 @@ ABRA implementation checklist:
 - [x] Effective sync-state presentation (`synced` vs `partially_synced` when evidence is empty) is centralized in `frontend/lib/presentation/sync-evidence.ts` and reused by Dashboard, Settings, Contributions, Badges, Quests, and Leaderboard to prevent status drift.
 - [x] Frontend user-sync execution deduplicates concurrent requests per user/login key in `frontend/lib/api/account-api.ts`, preventing multi-component or multi-click stampedes against `/api/sync/user`.
 - [x] User-sync status remains `partial` while authored-PR backfill is still incomplete (`authored_pull_request_backfill_incomplete`), so UI sync badges do not over-claim full-history completion.
+- [x] User-sync refresh feedback now distinguishes backfill-in-progress partials from scope-limited partials, so users see progress guidance instead of generic reconnect errors when history backfill is still advancing.
 - [x] Contribution category domain logic is backend-authoritative and centralized; frontend no longer infers categories from free text and CI blocks duplicate PR-category mapping logic outside `frontend/lib/runtime/pr-category-policy.ts`.
 - [x] Profile score-history window cap is contract-driven (`SCORING_PROFILE_SCORE_HISTORY_LIMIT` via `score_history_cap`) and frontend filtering/rendering honors backend cap instead of fixed constants.
 - [x] Leaderboard fetch/materialize/backfill limits are env-driven (`SCORING_LEADERBOARD_DEFAULT_LIMIT`, `SCORING_LEADERBOARD_MAX_LIMIT`) and no longer use fixed request caps in profile-service code.

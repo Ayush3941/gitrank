@@ -32,6 +32,33 @@ describe("buildUserSyncRefreshFeedback", () => {
     expect(feedback.message).toContain("only partial");
   });
 
+  it("returns progressive backfill copy when history backfill is incomplete", () => {
+    const feedback = buildUserSyncRefreshFeedback(
+      execution({
+        status: "partial",
+        fetched: {
+          authored_pull_request_backfill_incomplete: 1,
+          authored_pull_requests_selected: 10,
+        },
+      }),
+    );
+    expect(feedback.tone).toBe("warning");
+    expect(feedback.message).toContain("Historical backfill is still in progress");
+  });
+
+  it("returns reconnect guidance when sync scope is limited", () => {
+    const feedback = buildUserSyncRefreshFeedback(
+      execution({
+        status: "partial",
+        fetched: {
+          authored_pull_request_scope_limited: 1,
+        },
+      }),
+    );
+    expect(feedback.tone).toBe("warning");
+    expect(feedback.message).toContain("Reconnect GitHub");
+  });
+
   it("returns warning when authored PR window was capped", () => {
     const feedback = buildUserSyncRefreshFeedback(
       execution({ fetched: { authored_pull_requests_capped: 1 } }),
