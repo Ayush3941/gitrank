@@ -29,6 +29,10 @@ import { useNetworkConstraintPreference } from "@/hooks/use-gamification-prefere
 import { useQuests } from "@/hooks/use-quests";
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
+import {
+  deriveEffectiveSyncState,
+  shouldShowSyncRefreshPill,
+} from "@/lib/presentation/sync-evidence";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import type { Quest } from "@/types/gitrank";
 
@@ -73,6 +77,10 @@ export function QuestsPageClient() {
   const { data, isLoading, isError, refetch } = useQuests();
   const quests = data?.quests ?? [];
   const profile = data?.profile;
+  const syncStateForDisplay = deriveEffectiveSyncState(profile?.user);
+  const showRefreshPill = shouldShowSyncRefreshPill(profile?.user);
+  const questSnapshotRefreshedAt =
+    data?.staleness?.refreshedAt ?? profile?.refreshedAt ?? new Date().toISOString();
   const contributionRows = profile?.user.contributions ?? [];
   const streak = summarizeContributionStreak(contributionRows);
   const dayOfYear = dayOfYearUTC(new Date());
@@ -125,10 +133,19 @@ export function QuestsPageClient() {
         )}
         actions={(
           <div className="flex flex-wrap items-center gap-2">
-            <SnapshotFreshnessPill
-              refreshedAt={data?.staleness?.refreshedAt}
-              label="Refreshed"
-            />
+            {showRefreshPill ? (
+              <SnapshotFreshnessPill
+                refreshedAt={questSnapshotRefreshedAt}
+                label="Refreshed"
+              />
+            ) : (
+              <span
+                className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold"
+                title="No scored PR evidence has been materialized yet."
+              >
+                Evidence pending
+              </span>
+            )}
             <Button asChild variant="secondary" size="sm">
               <Link href="/dashboard/contributions" prefetch={false}>
                 Contributions
@@ -225,12 +242,16 @@ export function QuestsPageClient() {
           </div>
         </section>
       ) : null}
-      {data?.staleness?.isStale ? (
+      {syncStateForDisplay === "stale" || syncStateForDisplay === "partially_synced" ? (
         <StaleState
-          message={`Quest snapshot refreshed ${formatRelativeDays(
-            data.staleness.refreshedAt,
-          )}. Live quest signals may lag until the next sync completes.`}
-          updatedAt={data.staleness.refreshedAt}
+          message={
+            syncStateForDisplay === "partially_synced"
+              ? "Quest snapshot exists, but scored PR evidence is still empty. Run sync again after GitHub processing completes."
+              : `Quest snapshot refreshed ${formatRelativeDays(
+                  questSnapshotRefreshedAt,
+                )}. Live quest signals may lag until the next sync completes.`
+          }
+          updatedAt={questSnapshotRefreshedAt}
           onRefresh={async () => {
             try {
               const result = await runUserSync.mutateAsync();
