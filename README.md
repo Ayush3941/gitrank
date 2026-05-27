@@ -139,6 +139,7 @@ Frontend runtime also reads its server env from this same `gitrank/.env` export 
 - User sync execution no longer enforces a hidden floor for authored-PR count; `GITHUB_AUTHORED_PR_SYNC_LIMIT` is applied directly (default `10`) and then capped only by `GITHUB_AUTHORED_PR_SEARCH_LIMIT`.
 - Sync-run history auto-normalizes stale active statuses to prevent indefinite `running` rows in Settings when an upstream execution exceeded its active window.
 - When user sync reports `authored_pull_requests_capped`, UI now shows a bounded-window notice instead of implying full-history completion.
+- Concurrent user sync requests for the same login are deduplicated in-process; overlapping executions return a conflict response instead of running duplicated heavy sync loops.
 - Deterministic score math is runtime-configurable through `SCORING_*` env policy values; AI summaries never directly assign XP.
 - Profile/report pages are snapshot-backed and may show partial/stale states.
 - Upstream failures are surfaced as explicit sync/evidence states.

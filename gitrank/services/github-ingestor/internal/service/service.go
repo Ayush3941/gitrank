@@ -19,6 +19,7 @@ var (
 	ErrUnavailable                 = errors.New("github persistence unavailable")
 	ErrUserSyncOAuthTokenRequired  = errors.New("github oauth token unavailable for user sync; reconnect github")
 	ErrUserSyncOAuthTokenMalformed = errors.New("github oauth token unavailable for user sync; rotate token keys and reconnect github")
+	ErrUserSyncInProgress          = errors.New("user sync already in progress; wait for current run to finish")
 )
 
 type Service struct {

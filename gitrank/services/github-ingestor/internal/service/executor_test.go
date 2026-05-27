@@ -495,6 +495,22 @@ func TestBoundedAuthoredPRSyncLimit(t *testing.T) {
 	}
 }
 
+func TestExecutorUserSyncLock(t *testing.T) {
+	t.Parallel()
+
+	executor := &Executor{}
+	if ok := executor.tryAcquireUserSync("OctoCat"); !ok {
+		t.Fatal("tryAcquireUserSync(first) = false, want true")
+	}
+	if ok := executor.tryAcquireUserSync("octocat"); ok {
+		t.Fatal("tryAcquireUserSync(second same user) = true, want false")
+	}
+	executor.releaseUserSync("octocat")
+	if ok := executor.tryAcquireUserSync("octocat"); !ok {
+		t.Fatal("tryAcquireUserSync(after release) = false, want true")
+	}
+}
+
 func TestPrioritizeAuthoredPullRequestTargetsBootstrapInProgressIncludesHistoricTargets(t *testing.T) {
 	targets := []authoredPullRequestTarget{
 		{Repository: "owner/repo", Number: 101},

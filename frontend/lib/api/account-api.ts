@@ -464,6 +464,9 @@ function sanitizeSyncExecutionError(
   ) {
     return "GitHub OAuth token is unavailable for user sync. Reconnect GitHub from Settings, then retry.";
   }
+  if (normalized.includes("sync already in progress")) {
+    return "A GitHub sync for this account is already running. Wait for it to finish, then refresh.";
+  }
   if (status >= 500 || code === "dependency_unavailable") {
     return syncRecoveryMessage(mode, "Sync services are temporarily unavailable.");
   }

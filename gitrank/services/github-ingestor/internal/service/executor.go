@@ -82,6 +82,8 @@ type Executor struct {
 	graphqlTokenSource   githubGraphQLTokenSource
 	installationClient   githubInstallationClientFactory
 	actorInstallation    githubActorInstallationClientFactory
+	userSyncLockMu       sync.Mutex
+	activeUserSync       map[string]struct{}
 }
 
 func NewExecutor(cfg config.App, pool *pgxpool.Pool, client *githubapi.RESTClient) *Executor {
@@ -94,6 +96,7 @@ func NewExecutor(cfg config.App, pool *pgxpool.Pool, client *githubapi.RESTClien
 		restClientFactory:    newGitHubRESTClientFactory(cfg),
 		graphqlClientFactory: newGitHubGraphQLClientFactory(cfg),
 		installationClient:   newGitHubInstallationClientFactory(cfg),
+		activeUserSync:       map[string]struct{}{},
 	}
 	executor.graphqlTokenSource = executor.graphQLTokenSourceForActor
 	executor.actorInstallation = executor.installationClientForActor
@@ -321,6 +324,10 @@ func (e *Executor) SyncUser(
 	if !isValidGitHubLogin(user) {
 		return response, fmt.Errorf("user must be a GitHub login")
 	}
+	if !e.tryAcquireUserSync(user) {
+		return response, ErrUserSyncInProgress
+	}
+	defer e.releaseUserSync(user)
 	runtime, credentialSource, err := e.executorForUserSyncActor(ctx, actor, startedAt)
 	if err != nil {
 		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, PersistResult{})
@@ -1994,6 +2001,41 @@ func (e *Executor) fetchIssues(ctx context.Context, owner, name string) ([]map[s
 		filtered = append(filtered, issue)
 	}
 	return filtered, nil
+}
+
+func (e *Executor) tryAcquireUserSync(user string) bool {
+	if e == nil {
+		return false
+	}
+	key := strings.ToLower(strings.TrimSpace(user))
+	if key == "" {
+		return false
+	}
+
+	e.userSyncLockMu.Lock()
+	defer e.userSyncLockMu.Unlock()
+	if e.activeUserSync == nil {
+		e.activeUserSync = make(map[string]struct{})
+	}
+	if _, exists := e.activeUserSync[key]; exists {
+		return false
+	}
+	e.activeUserSync[key] = struct{}{}
+	return true
+}
+
+func (e *Executor) releaseUserSync(user string) {
+	if e == nil {
+		return
+	}
+	key := strings.ToLower(strings.TrimSpace(user))
+	if key == "" {
+		return
+	}
+
+	e.userSyncLockMu.Lock()
+	defer e.userSyncLockMu.Unlock()
+	delete(e.activeUserSync, key)
 }
 
 func (e *Executor) fetchCommits(ctx context.Context, owner, name string) ([]map[string]any, error) {
