@@ -267,6 +267,7 @@ Recent no-slowdown refinement (May 27, 2026):
 - Unified stale/partial sync messaging across Dashboard, Contributions, Badges, Quests, and Leaderboard to avoid manual "run sync" language and align with auto-sync behavior.
 - Settings account action copy now uses "Refresh snapshot" instead of "Sync now" to keep user-facing actions consistent with the background sync model.
 - Guard checks `npm run check:sync-copy-policy` and `npm run check:copy-tone` are required after copy-only sync UX edits to prevent regressions.
+- Sync refresh feedback now reports explicit outcomes for completed runs with zero discovered authored PRs and includes count-aware success copy when PR targets are actually synced.
 
 ## Frontend Excellence Checklist (No-Slowdown Backlog)
 

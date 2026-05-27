@@ -5,6 +5,8 @@ export function buildUserSyncRefreshFeedback(
   result: ApiSyncExecutionResponse,
 ): RefreshFeedback {
   const fetched = result.fetched ?? {};
+  const selectedAuthoredPullRequests = Math.max(0, fetched.authored_pull_requests_selected ?? 0);
+  const discoveryEmpty = (fetched.authored_pull_request_discovery_empty ?? 0) > 0;
   if (fetched.fallback_queue_unavailable === 1) {
     return {
       tone: "warning",
@@ -71,9 +73,26 @@ export function buildUserSyncRefreshFeedback(
     };
   }
 
+  if (result.status === "completed" && discoveryEmpty && selectedAuthoredPullRequests === 0) {
+    return {
+      tone: "warning",
+      message:
+        "Refresh finished but GitHub returned no authored PRs for this window. Reconnect GitHub if scope changed, or retry after GitHub indexing catches up.",
+    };
+  }
+
+  if (result.status === "completed" && selectedAuthoredPullRequests > 0) {
+    return {
+      tone: "success",
+      message: `Refresh completed. Synced ${selectedAuthoredPullRequests} authored PR target${
+        selectedAuthoredPullRequests === 1 ? "" : "s"
+      }.`,
+    };
+  }
+
   return {
     tone: "success",
     message:
-      "Refresh started. Keep this page open while GitRank updates your profile snapshot.",
+      "Refresh completed. Keep this page open while GitRank applies the latest snapshot updates.",
   };
 }

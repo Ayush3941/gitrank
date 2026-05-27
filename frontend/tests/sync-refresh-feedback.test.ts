@@ -78,6 +78,31 @@ describe("buildUserSyncRefreshFeedback", () => {
   it("returns default success for completed sync", () => {
     const feedback = buildUserSyncRefreshFeedback(execution());
     expect(feedback.tone).toBe("success");
-    expect(feedback.message).toContain("Refresh started");
+    expect(feedback.message).toContain("Refresh completed");
+  });
+
+  it("returns warning when refresh completes with no authored pull requests discovered", () => {
+    const feedback = buildUserSyncRefreshFeedback(
+      execution({
+        fetched: {
+          authored_pull_request_discovery_empty: 1,
+          authored_pull_requests_selected: 0,
+        },
+      }),
+    );
+    expect(feedback.tone).toBe("warning");
+    expect(feedback.message).toContain("returned no authored PRs");
+  });
+
+  it("returns count-aware success when authored pull requests were synced", () => {
+    const feedback = buildUserSyncRefreshFeedback(
+      execution({
+        fetched: {
+          authored_pull_requests_selected: 7,
+        },
+      }),
+    );
+    expect(feedback.tone).toBe("success");
+    expect(feedback.message).toContain("Synced 7 authored PR targets");
   });
 });
