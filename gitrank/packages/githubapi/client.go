@@ -286,7 +286,8 @@ func (c *RESTClient) once(
 		return responseBody, meta, false, nil
 	}
 
-	retry := isRetryableRateLimit(response.StatusCode, response.Header, responseBody)
+	retry := isRetryableRateLimit(response.StatusCode, response.Header, responseBody) ||
+		isRetryableTransientRESTError(method, response.StatusCode)
 	return nil, meta, retry, fmt.Errorf("GitHub API %s %s failed with status %d", method, target.String(), response.StatusCode)
 }
 
@@ -509,7 +510,8 @@ func (c *GraphQLClient) once(
 		return body, meta, false, nil
 	}
 
-	retry := isRetryableRateLimit(response.StatusCode, response.Header, body)
+	retry := isRetryableRateLimit(response.StatusCode, response.Header, body) ||
+		isRetryableTransientServerError(response.StatusCode)
 	return nil, meta, retry, fmt.Errorf("GitHub GraphQL request failed with status %d", response.StatusCode)
 }
 
@@ -616,6 +618,23 @@ func isRetryableRateLimit(status int, headers http.Header, body []byte) bool {
 	return strings.Contains(message, "secondary rate limit") ||
 		strings.Contains(message, "rate limit") ||
 		strings.Contains(message, "abuse detection")
+}
+
+func isRetryableTransientRESTError(method string, status int) bool {
+	normalized := strings.ToUpper(strings.TrimSpace(method))
+	if normalized != http.MethodGet && normalized != http.MethodHead {
+		return false
+	}
+	return isRetryableTransientServerError(status)
+}
+
+func isRetryableTransientServerError(status int) bool {
+	switch status {
+	case http.StatusInternalServerError, http.StatusBadGateway, http.StatusServiceUnavailable, http.StatusGatewayTimeout:
+		return true
+	default:
+		return false
+	}
 }
 
 func parseIntHeaderPresence(value string) (int, bool) {

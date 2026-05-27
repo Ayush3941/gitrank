@@ -149,8 +149,8 @@ func TestRESTClientCircuitBreakerOpensAfterProviderFailures(t *testing.T) {
 	if _, err := client.GetJSON(context.Background(), "/repos/octo/repo", nil, ConditionalRequest{}, nil); !errors.Is(err, ErrCircuitOpen) {
 		t.Fatalf("GetJSON() error = %v, want ErrCircuitOpen", err)
 	}
-	if requests != 2 {
-		t.Fatalf("server requests = %d, want 2 before circuit opened", requests)
+	if requests != 6 {
+		t.Fatalf("server requests = %d, want 6 (two failed calls with three retry attempts each) before circuit opened", requests)
 	}
 }
 
@@ -174,7 +174,7 @@ func TestRESTClientCircuitBreakerClosesAfterReachableHalfOpenResponse(t *testing
 	requests := 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		requests++
-		if requests == 1 {
+		if requests <= 3 {
 			w.WriteHeader(http.StatusBadGateway)
 			_ = json.NewEncoder(w).Encode(map[string]string{"message": "github unavailable"})
 			return
@@ -213,8 +213,8 @@ func TestRESTClientCircuitBreakerClosesAfterReachableHalfOpenResponse(t *testing
 	if _, err := client.GetJSON(context.Background(), "/repos/octo/repo", nil, ConditionalRequest{}, nil); errors.Is(err, ErrCircuitOpen) {
 		t.Fatalf("GetJSON() error = %v, want circuit to remain closed after reachable response", err)
 	}
-	if requests != 3 {
-		t.Fatalf("server requests = %d, want 3", requests)
+	if requests != 5 {
+		t.Fatalf("server requests = %d, want 5 with transient retries before circuit reopens/closes", requests)
 	}
 }
 
@@ -344,6 +344,102 @@ func TestRESTClientRetriesPrimaryRateLimitFromHeadersBeforeSuccess(t *testing.T)
 	}
 }
 
+func TestRESTClientRetriesTransientServerErrorsForSafeMethods(t *testing.T) {
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests++
+		if r.Method != http.MethodGet {
+			t.Fatalf("method = %q, want GET", r.Method)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		if requests < 3 {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			_ = json.NewEncoder(w).Encode(map[string]string{
+				"message": "server error",
+			})
+			return
+		}
+		_ = json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+	}))
+	defer server.Close()
+
+	client, err := NewRESTClient(ClientConfig{
+		BaseURL:                        server.URL + "/",
+		APIVersion:                     "2026-03-10",
+		UserAgent:                      "GitRank/test",
+		HTTPClient:                     server.Client(),
+		SecondaryBackoff:               time.Millisecond,
+		MaxConcurrency:                 1,
+		CircuitBreakerFailureThreshold: 3,
+		CircuitBreakerOpenInterval:     time.Hour,
+		CircuitBreakerHalfOpenMax:      1,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	var payload struct {
+		Status string `json:"status"`
+	}
+	_, err = client.GetJSON(context.Background(), "/repos/octo/repo", nil, ConditionalRequest{}, &payload)
+	if err != nil {
+		t.Fatalf("GetJSON() error = %v", err)
+	}
+	if payload.Status != "ok" {
+		t.Fatalf("payload status = %q, want ok", payload.Status)
+	}
+	if requests != 3 {
+		t.Fatalf("server requests = %d, want 3", requests)
+	}
+}
+
+func TestRESTClientDoesNotRetryTransientServerErrorsForUnsafeMethods(t *testing.T) {
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests++
+		if r.Method != http.MethodPost {
+			t.Fatalf("method = %q, want POST", r.Method)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusServiceUnavailable)
+		_ = json.NewEncoder(w).Encode(map[string]string{
+			"message": "server error",
+		})
+	}))
+	defer server.Close()
+
+	client, err := NewRESTClient(ClientConfig{
+		BaseURL:                        server.URL + "/",
+		APIVersion:                     "2026-03-10",
+		UserAgent:                      "GitRank/test",
+		HTTPClient:                     server.Client(),
+		SecondaryBackoff:               time.Millisecond,
+		MaxConcurrency:                 1,
+		CircuitBreakerFailureThreshold: 3,
+		CircuitBreakerOpenInterval:     time.Hour,
+		CircuitBreakerHalfOpenMax:      1,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	_, err = client.DoJSON(
+		context.Background(),
+		http.MethodPost,
+		"/repos/octo/repo/installations/1/access_tokens",
+		nil,
+		ConditionalRequest{},
+		map[string]any{"repositories": []string{"octo/repo"}},
+		nil,
+	)
+	if err == nil {
+		t.Fatal("DoJSON() error = nil, want upstream error")
+	}
+	if requests != 1 {
+		t.Fatalf("server requests = %d, want 1 without retries for unsafe method", requests)
+	}
+}
+
 func TestRESTClientBackoffDelayHonorsRetryAfterHeader(t *testing.T) {
 	client := &RESTClient{secondaryBackoff: time.Hour}
 	if got := client.backoffDelay(2, RateLimitStatus{RetryAfter: "7"}); got != 7*time.Second {
@@ -469,8 +565,8 @@ func TestGraphQLClientCircuitBreakerOpensAfterProviderFailures(t *testing.T) {
 	if _, err := client.QueryJSON(context.Background(), "query { viewer { login } }", nil, nil); !errors.Is(err, ErrCircuitOpen) {
 		t.Fatalf("QueryJSON() error = %v, want ErrCircuitOpen", err)
 	}
-	if requests != 2 {
-		t.Fatalf("server requests = %d, want 2 before circuit opened", requests)
+	if requests != 6 {
+		t.Fatalf("server requests = %d, want 6 (two failed calls with three retry attempts each) before circuit opened", requests)
 	}
 }
 
@@ -642,6 +738,68 @@ func TestGraphQLClientRetriesSecondaryRateLimitBeforeSuccess(t *testing.T) {
 	}
 	if meta.RateLimit.Remaining != 4988 {
 		t.Fatalf("remaining = %d, want final response rate-limit metadata", meta.RateLimit.Remaining)
+	}
+}
+
+func TestGraphQLClientRetriesTransientServerErrorsBeforeSuccess(t *testing.T) {
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		requests++
+		w.Header().Set("Content-Type", "application/json")
+		if requests < 3 {
+			w.WriteHeader(http.StatusBadGateway)
+			_ = json.NewEncoder(w).Encode(map[string]string{
+				"message": "server error",
+			})
+			return
+		}
+		_ = json.NewEncoder(w).Encode(GraphQLResponse[struct {
+			Viewer struct {
+				Login string `json:"login"`
+			} `json:"viewer"`
+		}]{
+			Data: struct {
+				Viewer struct {
+					Login string `json:"login"`
+				} `json:"viewer"`
+			}{
+				Viewer: struct {
+					Login string `json:"login"`
+				}{Login: "octocat"},
+			},
+		})
+	}))
+	defer server.Close()
+
+	client, err := NewGraphQLClient(ClientConfig{
+		BaseURL:                        server.URL,
+		APIVersion:                     "2026-03-10",
+		UserAgent:                      "GitRank/test",
+		HTTPClient:                     server.Client(),
+		SecondaryBackoff:               time.Millisecond,
+		MaxConcurrency:                 1,
+		CircuitBreakerFailureThreshold: 3,
+		CircuitBreakerOpenInterval:     time.Hour,
+		CircuitBreakerHalfOpenMax:      1,
+	})
+	if err != nil {
+		t.Fatalf("NewGraphQLClient() error = %v", err)
+	}
+
+	var response GraphQLResponse[struct {
+		Viewer struct {
+			Login string `json:"login"`
+		} `json:"viewer"`
+	}]
+	_, err = client.QueryJSON(context.Background(), "query { viewer { login } }", nil, &response)
+	if err != nil {
+		t.Fatalf("QueryJSON() error = %v", err)
+	}
+	if response.Data.Viewer.Login != "octocat" {
+		t.Fatalf("viewer login = %q, want octocat", response.Data.Viewer.Login)
+	}
+	if requests != 3 {
+		t.Fatalf("server requests = %d, want 3", requests)
 	}
 }
 
