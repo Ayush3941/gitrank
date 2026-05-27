@@ -30,6 +30,7 @@ import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useBadges } from "@/hooks/use-badges";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
+import { useSyncRuns } from "@/hooks/use-sync-runs";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import {
   deriveDeterministicArchetype,
@@ -78,6 +79,7 @@ const BadgeGrid = dynamic(
 export function BadgesPageClient() {
   const { data, isLoading, isError, refetch } = useBadges();
   const runUserSync = useRunUserSync();
+  const syncRunsQuery = useSyncRuns(10);
   const constrainedNetwork = useNetworkConstraintPreference();
   const lockedBadgePageSize = constrainedNetwork
     ? LOCKED_BADGE_PAGE_SIZE_CONSTRAINED
@@ -112,8 +114,9 @@ export function BadgesPageClient() {
       return rarityMatch && visibilityMatch;
     });
   const profile = data?.profile;
-  const syncStateForDisplay = deriveEffectiveSyncState(profile?.user);
-  const showRefreshPill = shouldShowSyncRefreshPill(profile?.user);
+  const syncRunStatuses = syncRunsQuery.data?.runs?.map((run) => run.status) ?? [];
+  const syncStateForDisplay = deriveEffectiveSyncState(profile?.user, syncRunStatuses);
+  const showRefreshPill = shouldShowSyncRefreshPill(profile?.user, syncRunStatuses);
   const lockedBadges = allBadges.filter((badge) => !badge.unlocked);
   const lockedBadgesSorted = [...lockedBadges].sort((left, right) => {
     const progressDelta = (right.progress ?? 0) - (left.progress ?? 0);

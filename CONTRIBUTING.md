@@ -279,6 +279,7 @@ Recent no-slowdown refinement (May 27, 2026):
 - `github_sync_runs` writes now finalize existing in-flight rows (`queued/pending/running`) by correlation + run type + subject before inserting new rows, reducing duplicate lifecycle rows and improving sync-run timeline reliability.
 - Sync executors now transition matching queued rows to `running` when execution actually starts, so run timelines reflect real lifecycle state (`queued -> running -> completed/failed`) instead of remaining queued until terminal write.
 - Settings sync activity status taxonomy now treats backend `partial` runs as a first-class UI state (separate from `completed`) so degraded sync outcomes are visible in filters and chips.
+- Contributions, Badges, Quests, and Leaderboard now derive sync freshness from live sync-run statuses (same pattern as Dashboard/Settings) so active queue/running work consistently renders as `Syncing` across all dashboard tabs.
 
 ## Frontend Excellence Checklist (No-Slowdown Backlog)
 

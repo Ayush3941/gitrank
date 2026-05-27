@@ -27,6 +27,7 @@ import { Progress } from "@/components/ui/progress";
 import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { useQuests } from "@/hooks/use-quests";
+import { useSyncRuns } from "@/hooks/use-sync-runs";
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import {
@@ -61,6 +62,7 @@ const QuestCard = dynamic(
 export function QuestsPageClient() {
   const constrainedNetwork = useNetworkConstraintPreference();
   const runUserSync = useRunUserSync();
+  const syncRunsQuery = useSyncRuns(10);
   const questGroupPageSize = constrainedNetwork
     ? QUEST_GROUP_PAGE_SIZE_CONSTRAINED
     : QUEST_GROUP_PAGE_SIZE_DEFAULT;
@@ -77,8 +79,9 @@ export function QuestsPageClient() {
   const { data, isLoading, isError, refetch } = useQuests();
   const quests = data?.quests ?? [];
   const profile = data?.profile;
-  const syncStateForDisplay = deriveEffectiveSyncState(profile?.user);
-  const showRefreshPill = shouldShowSyncRefreshPill(profile?.user);
+  const syncRunStatuses = syncRunsQuery.data?.runs?.map((run) => run.status) ?? [];
+  const syncStateForDisplay = deriveEffectiveSyncState(profile?.user, syncRunStatuses);
+  const showRefreshPill = shouldShowSyncRefreshPill(profile?.user, syncRunStatuses);
   const questSnapshotRefreshedAt =
     data?.staleness?.refreshedAt ?? profile?.refreshedAt ?? new Date().toISOString();
   const contributionRows = profile?.user.contributions ?? [];

@@ -17,6 +17,7 @@ import { ContributionFilters } from "@/features/contributions/components/Contrib
 import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useContributions } from "@/hooks/use-contributions";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
+import { useSyncRuns } from "@/hooks/use-sync-runs";
 import {
   useNetworkConstraintPreference,
   useReducedGamification,
@@ -87,6 +88,7 @@ export function ContributionsPageClient() {
     search: deferredSearch,
     sort: deferredSort,
   });
+  const syncRunsQuery = useSyncRuns(10);
   const runUserSync = useRunUserSync();
   const profile = data?.profile;
   const contributionUniverse = useMemo(
@@ -147,8 +149,9 @@ export function ContributionsPageClient() {
     () => summarizeContributionStreak(profile?.user.contributions ?? []),
     [profile?.user.contributions],
   );
-  const syncStateForDisplay = deriveEffectiveSyncState(profile?.user);
-  const showRefreshPill = shouldShowSyncRefreshPill(profile?.user);
+  const syncRunStatuses = syncRunsQuery.data?.runs?.map((run) => run.status) ?? [];
+  const syncStateForDisplay = deriveEffectiveSyncState(profile?.user, syncRunStatuses);
+  const showRefreshPill = shouldShowSyncRefreshPill(profile?.user, syncRunStatuses);
   const abraContributionSample = useMemo(
     () => filteredRows.slice(0, contributionDisplayConfig.abraSampleLimit),
     [filteredRows],

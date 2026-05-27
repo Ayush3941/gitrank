@@ -27,6 +27,7 @@ import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useLeaderboard } from "@/hooks/use-leaderboard";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { useMyProfile } from "@/hooks/use-profile";
+import { useSyncRuns } from "@/hooks/use-sync-runs";
 import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
 import { formatRelativeDays } from "@/lib/formatters";
 import {
@@ -93,6 +94,7 @@ export function LeaderboardPageClient() {
   const searchParams = useSearchParams();
   const constrainedNetwork = useNetworkConstraintPreference();
   const runUserSync = useRunUserSync();
+  const syncRunsQuery = useSyncRuns(10);
   const rowPageSize = constrainedNetwork
     ? LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED
     : LEADERBOARD_ROW_PAGE_SIZE_DEFAULT;
@@ -122,8 +124,9 @@ export function LeaderboardPageClient() {
         currentUser: rows.find((row) => row.isCurrentUser),
       }
     : null;
-  const syncStateForDisplay = deriveEffectiveSyncState(myProfile?.user);
-  const showRefreshPill = shouldShowSyncRefreshPill(myProfile?.user);
+  const syncRunStatuses = syncRunsQuery.data?.runs?.map((run) => run.status) ?? [];
+  const syncStateForDisplay = deriveEffectiveSyncState(myProfile?.user, syncRunStatuses);
+  const showRefreshPill = shouldShowSyncRefreshPill(myProfile?.user, syncRunStatuses);
   const safeVisibleRowCount = Math.min(rows.length, visibleRowCount);
   const hasMoreRows = rows.length > safeVisibleRowCount;
   const remainingRows = Math.max(0, rows.length - safeVisibleRowCount);
