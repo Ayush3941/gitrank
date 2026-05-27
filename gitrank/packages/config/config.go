@@ -18,6 +18,8 @@ const (
 	Development Environment = "development"
 	Staging     Environment = "staging"
 	Production  Environment = "production"
+
+	maxGitHubAPIRuntimeConcurrency = 100
 )
 
 const (
@@ -724,6 +726,8 @@ func (a App) ValidateBase() error {
 	}
 	if a.GitHub.MaxConcurrency <= 0 {
 		problems = append(problems, "GITHUB_MAX_CONCURRENT_REQUESTS must be positive")
+	} else if a.GitHub.MaxConcurrency > maxGitHubAPIRuntimeConcurrency {
+		problems = append(problems, "GITHUB_MAX_CONCURRENT_REQUESTS must be <= 100")
 	}
 	if a.GitHub.CircuitBreakerFailureThreshold <= 0 {
 		problems = append(problems, "GITHUB_CIRCUIT_BREAKER_FAILURE_THRESHOLD must be positive")

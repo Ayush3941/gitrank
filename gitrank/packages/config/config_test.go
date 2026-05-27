@@ -636,6 +636,18 @@ func TestLoadRejectsInvalidSchedulerRunMode(t *testing.T) {
 	}
 }
 
+func TestLoadRejectsExcessiveGitHubConcurrency(t *testing.T) {
+	t.Setenv("GITHUB_MAX_CONCURRENT_REQUESTS", "101")
+
+	_, err := Load("github-ingestor", "GITHUB_INGESTOR_ADDR")
+	if err == nil {
+		t.Fatal("Load() error = nil, want concurrency bound rejection")
+	}
+	if !strings.Contains(err.Error(), "GITHUB_MAX_CONCURRENT_REQUESTS") {
+		t.Fatalf("Load() error = %q, want GITHUB_MAX_CONCURRENT_REQUESTS validation", err.Error())
+	}
+}
+
 func TestLoadRejectsUnsafeHTTPURLs(t *testing.T) {
 	t.Setenv("GITHUB_API_BASE_URL", "file://metadata/latest")
 
