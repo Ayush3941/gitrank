@@ -275,6 +275,115 @@ export function PRBattleReportPageClient({
         </div>
         </GlowCard>
       </section>
+      <section className="render-opt-section">
+        <GlowCard className="space-y-4">
+          <div>
+            <p className="text-xs font-medium text-primary">Deterministic metrics ledger</p>
+            <h2 className="mt-2 text-sm font-semibold text-white">Persisted PR scoring inputs and outputs</h2>
+            <p className="mt-2 text-xs text-muted">
+              This card only shows metrics that participate in deterministic scoring math.
+            </p>
+          </div>
+          <div className="space-y-4">
+            <LedgerSection
+              title="Score outputs"
+              description="Final deterministic output and formula identity."
+              metrics={[
+                {
+                  id: "xp_earned",
+                  label: "XP earned",
+                  value: data.contribution.xpEarned.toLocaleString("en-US"),
+                  description: "Final deterministic XP after multipliers, penalties, and anti-spam rules.",
+                },
+                {
+                  id: "score_version",
+                  label: "Score version",
+                  value: data.scoreVersion || "unknown",
+                  description: "Formula version that produced this deterministic XP result.",
+                },
+              ]}
+            />
+            <LedgerSection
+              title="Core scoring signals"
+              description="Primary normalized inputs used directly by deterministic score math."
+              metrics={[
+                {
+                  id: "status",
+                  label: "Status",
+                  value: formatContributionStatusLabel(data.contribution.status),
+                  description: "PR lifecycle state used for outcome weighting.",
+                },
+                {
+                  id: "category",
+                  label: "Category",
+                  value: data.contribution.category,
+                  description: "Contribution class selected by deterministic classification.",
+                },
+                {
+                  id: "difficulty_score",
+                  label: "Difficulty score",
+                  value: String(data.contribution.difficultyScore),
+                  description: "Complexity signal from volume, spread, and technical depth.",
+                },
+                {
+                  id: "impact_score",
+                  label: "Impact score",
+                  value: String(data.contribution.impactScore),
+                  description: "Projected contribution effect on repository and code surface.",
+                },
+                {
+                  id: "review_depth",
+                  label: "Review depth",
+                  value: String(data.contribution.reviewDepthScore),
+                  description: "Review-strength signal from review activity and outcomes.",
+                },
+                {
+                  id: "test_signal",
+                  label: "Test signal",
+                  value: String(data.contribution.testSignalScore),
+                  description: "Regression-evidence signal from test-related changes.",
+                },
+                {
+                  id: "repo_weight",
+                  label: "Repo weight",
+                  value: data.contribution.repoWeight.toFixed(2),
+                  description: "Repository-context multiplier applied in final XP math.",
+                },
+                {
+                  id: "anti_spam_multiplier",
+                  label: "Anti-spam multiplier",
+                  value: `${data.contribution.antiSpamMultiplier.toFixed(2)}x`,
+                  description: "Anti-gaming modifier for repeated shallow contribution patterns.",
+                },
+              ]}
+            />
+            <LedgerSection
+              title="Change-volume inputs"
+              description="Raw PR change-size inputs that feed deterministic analyzer and scoring signals."
+              metrics={[
+                {
+                  id: "changed_files",
+                  label: "Changed files",
+                  value: data.contribution.changedFilesCount.toLocaleString("en-US"),
+                  description: "Total files changed in this PR evidence set.",
+                },
+                {
+                  id: "additions",
+                  label: "Additions",
+                  value: data.contribution.additions.toLocaleString("en-US"),
+                  description: "Inserted lines counted in deterministic depth/volume inputs.",
+                },
+                {
+                  id: "deletions",
+                  label: "Deletions",
+                  value: data.contribution.deletions.toLocaleString("en-US"),
+                  description: "Removed lines counted in deterministic depth/volume inputs.",
+                },
+              ]}
+            />
+          </div>
+        </GlowCard>
+      </section>
       {reportStateGuidance ? (
         <section className="render-opt-section">
           <GlowCard className="space-y-3">
@@ -316,7 +425,7 @@ export function PRBattleReportPageClient({
           </div>
           {fallbackDetail ? (
             <p className="rounded-full border border-amber-400/24 bg-amber-400/10 px-3 py-1.5 text-xs text-amber-100">
-              Gemini unavailable ({fallbackDetail}); showing deterministic summary.
+              ChatGPT unavailable ({fallbackDetail}); showing deterministic summary.
             </p>
           ) : null}
           <ExpandableText
@@ -512,7 +621,7 @@ function buildSummarySectionLabel({
   if (deterministicOnly || status === "deterministic_only") {
     return "Impact summary (deterministic)";
   }
-  return "Impact summary (Gemini)";
+  return "Impact summary (ChatGPT)";
 }
 
 function extractFallbackReason(signals: string[]): string | null {
@@ -561,11 +670,11 @@ function formatAnalysisSource(
     }
     return "processing";
   }
-  if (normalized === "hybrid" || (normalized.includes("gemini") && normalized.includes("deterministic"))) {
-    return "gemini + deterministic";
+  if (normalized === "hybrid" || ((normalized.includes("gemini") || normalized.includes("openai")) && normalized.includes("deterministic"))) {
+    return "chatgpt + deterministic";
   }
-  if (normalized.includes("gemini") || normalized.includes("ai_assisted")) {
-    return "gemini";
+  if (normalized.includes("openai") || normalized.includes("gemini") || normalized.includes("ai_assisted")) {
+    return "chatgpt";
   }
   if (normalized.includes("deterministic")) {
     return fallbackDetail
@@ -607,7 +716,7 @@ function normalizeEvidenceReason(
   if (normalized.includes("analysis: unknown") || normalized.includes("missing analysis")) {
     return evidenceReady
       ? "Deterministic evidence is available now."
-      : "Gemini analysis is still processing.";
+      : "AI analysis is still processing.";
   }
   if (normalized.includes("analysis is deterministic-only; no ai enrichment is attached")) {
     return "Deterministic report is available now.";
@@ -615,7 +724,7 @@ function normalizeEvidenceReason(
   if (normalized.includes("analysis has not been persisted")) {
     return evidenceReady
       ? "Deterministic evidence is available now."
-      : "Gemini analysis is still processing.";
+      : "AI analysis is still processing.";
   }
   if (normalized.includes("report is stale until analysis and scoring both complete")) {
     return evidenceReady ? null : "Report refresh is pending the next scoring replay.";
@@ -657,7 +766,7 @@ function buildReportStateGuidance({
       tone: "warning",
       label: "Rate limited",
       message:
-        "Gemini enrichment is temporarily rate limited. The deterministic score remains valid and this report will enrich after retry.",
+        "ChatGPT enrichment is temporarily rate limited. The deterministic score remains valid and this report will enrich after retry.",
       cta: "Open settings",
       href: "/dashboard/settings",
     };
@@ -668,8 +777,8 @@ function buildReportStateGuidance({
       tone: "warning",
       label: "Deterministic fallback",
       message: fallbackDetail
-        ? `Gemini response was unavailable (${fallbackDetail}). Deterministic evidence is still serving this report.`
-        : "Gemini response was unavailable. Deterministic evidence is still serving this report.",
+        ? `ChatGPT response was unavailable (${fallbackDetail}). Deterministic evidence is still serving this report.`
+        : "ChatGPT response was unavailable. Deterministic evidence is still serving this report.",
       cta: "Open settings",
       href: "/dashboard/settings",
     };
@@ -691,7 +800,7 @@ function buildReportStateGuidance({
       tone: "info",
       label: "Deterministic mode",
       message:
-        "This report is currently deterministic-only. Scoring evidence is valid, and Gemini enrichment may appear after background processing completes.",
+        "This report is currently deterministic-only. Scoring evidence is valid, and ChatGPT enrichment may appear after background processing completes.",
       cta: "View contributions",
       href: "/dashboard/contributions",
     };
@@ -774,5 +883,54 @@ function TechnicalPanelPlaceholder({ label }: { label: string }) {
       <div className="neon-skeleton h-10 w-1/2" />
       <div className="neon-skeleton h-24 w-full" />
     </GlowCard>
+  );
+}
+
+type LedgerMetric = {
+  id: string;
+  label: string;
+  value: string;
+  description: string;
+};
+
+function LedgerSection({
+  title,
+  description,
+  metrics,
+}: {
+  title: string;
+  description: string;
+  metrics: LedgerMetric[];
+}) {
+  return (
+    <section className="space-y-3 rounded-[1.4rem] border border-white/10 bg-black/20 p-3 sm:p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">{title}</h3>
+        <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-muted">
+          {metrics.length} metrics
+        </span>
+      </div>
+      <p className="text-xs text-muted">{description}</p>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {metrics.map((metric) => (
+          <MetricCell
+            key={metric.id}
+            label={metric.label}
+            value={metric.value}
+            description={metric.description}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function MetricCell({ label, value, description }: { label: string; value: string; description: string }) {
+  return (
+    <div className="neon-surface rounded-[1.2rem] px-4 py-3">
+      <p className="text-xs text-muted">{label}</p>
+      <p className="break-anywhere mt-1 text-sm font-semibold text-white">{value}</p>
+      <p className="break-anywhere mt-2 text-xs leading-5 text-muted">{description}</p>
+    </div>
   );
 }
