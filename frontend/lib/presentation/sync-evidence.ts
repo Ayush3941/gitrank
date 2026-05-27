@@ -26,6 +26,26 @@ export function hasUserContributionEvidence(user: UserProfile | null | undefined
   });
 }
 
+export function hasUserRepositoryEvidence(user: UserProfile | null | undefined): boolean {
+  if (!user) {
+    return false;
+  }
+  return user.repositories.some((repository) => {
+    const name = repository.name?.trim();
+    if (!name || !repository.tracked) {
+      return false;
+    }
+    if (name === "owner/repository" || name === "unknown/repo") {
+      return false;
+    }
+    return name.includes("/");
+  });
+}
+
+export function hasUserMaterializedSyncEvidence(user: UserProfile | null | undefined): boolean {
+  return hasUserContributionEvidence(user) || hasUserRepositoryEvidence(user);
+}
+
 export function deriveEffectiveSyncState(
   user: UserProfile | null | undefined,
   syncRunStatuses?: readonly string[],
@@ -43,7 +63,7 @@ export function deriveEffectiveSyncState(
   if (latestStatus && FAILED_SYNC_RUN_STATUSES.has(latestStatus)) {
     return "failed";
   }
-  if (user.syncStatus.state === "synced" && !hasUserContributionEvidence(user)) {
+  if (user.syncStatus.state === "synced" && !hasUserMaterializedSyncEvidence(user)) {
     return "partially_synced";
   }
   return user.syncStatus.state;
@@ -56,7 +76,7 @@ export function shouldShowSyncRefreshPill(
   if (!user) {
     return false;
   }
-  return deriveEffectiveSyncState(user, syncRunStatuses) === "synced" && hasUserContributionEvidence(user);
+  return deriveEffectiveSyncState(user, syncRunStatuses) === "synced" && hasUserMaterializedSyncEvidence(user);
 }
 
 function hasPendingSyncRunStatuses(syncRunStatuses: readonly string[] | undefined): boolean {

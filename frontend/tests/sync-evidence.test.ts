@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   deriveEffectiveSyncState,
   hasUserContributionEvidence,
+  hasUserMaterializedSyncEvidence,
+  hasUserRepositoryEvidence,
   shouldShowSyncRefreshPill,
 } from "@/lib/presentation/sync-evidence";
 import type { UserProfile } from "@/types/gitrank";
@@ -142,6 +144,29 @@ describe("deriveEffectiveSyncState", () => {
     expect(deriveEffectiveSyncState(user)).toBe("partially_synced");
   });
 
+  it("returns synced when repository evidence exists even without merged PR evidence", () => {
+    const user = buildUser({
+      mergedPrCount: 0,
+      contributions: [],
+      repositories: [
+        {
+          name: "octo/repo",
+          tracked: true,
+          visibility: "Public",
+          reason: "tracked",
+        },
+      ],
+      syncStatus: {
+        state: "synced",
+        lastSyncedAt: "2026-05-27T00:00:00Z",
+        currentStep: "Profile snapshot is current",
+        progress: 100,
+        partialProfileAvailable: false,
+      },
+    });
+    expect(deriveEffectiveSyncState(user)).toBe("synced");
+  });
+
   it("keeps synced when concrete PR evidence exists", () => {
     const user = buildUser({
       mergedPrCount: 1,
@@ -213,6 +238,31 @@ describe("deriveEffectiveSyncState", () => {
   });
 });
 
+describe("repository/materialized sync evidence helpers", () => {
+  it("returns false for empty repository evidence", () => {
+    const user = buildUser({
+      repositories: [],
+    });
+    expect(hasUserRepositoryEvidence(user)).toBe(false);
+    expect(hasUserMaterializedSyncEvidence(user)).toBe(false);
+  });
+
+  it("returns true for tracked owner/repo entries", () => {
+    const user = buildUser({
+      repositories: [
+        {
+          name: "octo/repo",
+          tracked: true,
+          visibility: "Public",
+          reason: "tracked",
+        },
+      ],
+    });
+    expect(hasUserRepositoryEvidence(user)).toBe(true);
+    expect(hasUserMaterializedSyncEvidence(user)).toBe(true);
+  });
+});
+
 describe("shouldShowSyncRefreshPill", () => {
   it("returns false without contribution evidence", () => {
     const user = buildUser({
@@ -232,6 +282,29 @@ describe("shouldShowSyncRefreshPill", () => {
   it("returns true for synced users with contribution evidence", () => {
     const user = buildUser({
       mergedPrCount: 2,
+      syncStatus: {
+        state: "synced",
+        lastSyncedAt: "2026-05-27T00:00:00Z",
+        currentStep: "Profile snapshot is current",
+        progress: 100,
+        partialProfileAvailable: false,
+      },
+    });
+    expect(shouldShowSyncRefreshPill(user)).toBe(true);
+  });
+
+  it("returns true for synced users with repository evidence only", () => {
+    const user = buildUser({
+      mergedPrCount: 0,
+      contributions: [],
+      repositories: [
+        {
+          name: "octo/repo",
+          tracked: true,
+          visibility: "Public",
+          reason: "tracked",
+        },
+      ],
       syncStatus: {
         state: "synced",
         lastSyncedAt: "2026-05-27T00:00:00Z",
