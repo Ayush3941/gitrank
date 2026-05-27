@@ -298,6 +298,13 @@ func TestUserSyncExecutionStatus(t *testing.T) {
 			},
 			want: "partial",
 		},
+		{
+			name: "partial when zero-discovery-with-history marker is set",
+			fetched: map[string]int{
+				"authored_pull_request_zero_discovery_with_history": 1,
+			},
+			want: "partial",
+		},
 	}
 
 	for _, test := range tests {

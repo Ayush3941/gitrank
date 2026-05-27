@@ -39,6 +39,47 @@ const failedRun = {
   last_error: "context deadline exceeded (Client.Timeout exceeded while awaiting headers)",
 };
 
+const conflictRun = {
+  id: "run_conflict_1",
+  run_type: "user",
+  status: "failed",
+  subject: "octocat",
+  started_at: "2026-05-25T00:03:00Z",
+  finished_at: "2026-05-25T00:03:01Z",
+  metrics: {
+    failed: 1,
+    user_sync_in_progress: 1,
+    lease_conflicts: 1,
+  },
+  last_error: "user sync already in progress; wait for current run to finish",
+};
+
+const zeroDiscoveryWithHistoryRun = {
+  id: "run_zero_discovery_1",
+  run_type: "user",
+  status: "partial",
+  subject: "octocat",
+  started_at: "2026-05-25T00:04:00Z",
+  finished_at: "2026-05-25T00:04:12Z",
+  metrics: {
+    authored_pull_request_discovery_empty: 1,
+    authored_pull_request_persisted_existing: 1,
+    authored_pull_request_persisted_known: 12,
+  },
+};
+
+const syncedTargetsRun = {
+  id: "run_synced_targets_1",
+  run_type: "user",
+  status: "completed",
+  subject: "octocat",
+  started_at: "2026-05-25T00:06:00Z",
+  finished_at: "2026-05-25T00:06:08Z",
+  metrics: {
+    authored_pull_requests_selected: 7,
+  },
+};
+
 describe("SyncRunActivityPanel", () => {
   it("keeps summary-first filters and reset flow consistent", () => {
     render(
@@ -103,5 +144,54 @@ describe("SyncRunActivityPanel", () => {
 
     expect(screen.getByText("Failures 1 · Timeout 1")).toBeTruthy();
     expect(screen.getByText(/Last error:/)).toBeTruthy();
+  });
+
+  it("surfaces user-sync contention telemetry when conflicts are recorded", () => {
+    render(
+      <SyncRunActivityPanel
+        runs={[conflictRun]}
+        lastUpdatedAt="2026-05-25T00:05:00Z"
+        isLoading={false}
+        isRefreshing={false}
+        isError={false}
+        onRefresh={() => undefined}
+      />,
+    );
+
+    expect(screen.getByText("Failures 1 · In-progress conflicts 1")).toBeTruthy();
+  });
+
+  it("shows deterministic zero-discovery insight when history exists", () => {
+    render(
+      <SyncRunActivityPanel
+        runs={[zeroDiscoveryWithHistoryRun]}
+        lastUpdatedAt="2026-05-25T00:05:00Z"
+        isLoading={false}
+        isRefreshing={false}
+        isError={false}
+        onRefresh={() => undefined}
+      />,
+    );
+
+    expect(
+      screen.getByText(
+        "No authored PRs were discovered in this run even though historical PR evidence already exists. Reconnect GitHub if scope changed, then retry.",
+      ),
+    ).toBeTruthy();
+  });
+
+  it("shows authored target count insight for completed runs", () => {
+    render(
+      <SyncRunActivityPanel
+        runs={[syncedTargetsRun]}
+        lastUpdatedAt="2026-05-25T00:05:00Z"
+        isLoading={false}
+        isRefreshing={false}
+        isError={false}
+        onRefresh={() => undefined}
+      />,
+    );
+
+    expect(screen.getByText("Synced 7 authored PR targets in this run.")).toBeTruthy();
   });
 });

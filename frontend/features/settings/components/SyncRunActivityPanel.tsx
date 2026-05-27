@@ -11,7 +11,7 @@ import { formatDateTime, formatRelativeDays } from "@/lib/formatters";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import { syncRunStatusLabel } from "@/features/settings/lib/sync-run-status";
 
-const SYNC_RUN_STATUS_FILTERS = ["All", "Completed", "Running", "Failed"] as const;
+const SYNC_RUN_STATUS_FILTERS = ["All", "Completed", "Queued", "Running", "Failed"] as const;
 type SyncRunStatusFilter = (typeof SYNC_RUN_STATUS_FILTERS)[number];
 
 export function SyncRunActivityPanel({
@@ -44,6 +44,7 @@ export function SyncRunActivityPanel({
     const next = {
       all: runs.length,
       completed: 0,
+      queued: 0,
       running: 0,
       failed: 0,
     };
@@ -51,6 +52,8 @@ export function SyncRunActivityPanel({
       const status = syncRunStatusLabel(run.status);
       if (status === "Completed") {
         next.completed += 1;
+      } else if (status === "Queued") {
+        next.queued += 1;
       } else if (status === "Running") {
         next.running += 1;
       } else if (status === "Failed") {
@@ -158,6 +161,8 @@ export function SyncRunActivityPanel({
                     ? statusCounts.all
                     : status === "Completed"
                       ? statusCounts.completed
+                      : status === "Queued"
+                        ? statusCounts.queued
                       : status === "Running"
                         ? statusCounts.running
                         : statusCounts.failed;
@@ -166,6 +171,8 @@ export function SyncRunActivityPanel({
                     ? Search
                     : status === "Completed"
                       ? CheckCircle2
+                      : status === "Queued"
+                        ? Clock3
                       : status === "Running"
                         ? Clock3
                         : XCircle;
@@ -273,6 +280,7 @@ export function SyncRunActivityPanel({
               const safeLastError = sanitizeSyncRunErrorMessage(run.last_error);
               const metricsSummary = summarizeRunMetrics(run.metrics);
               const partial = hasPartialRunMetrics(run.metrics);
+              const outcomeInsight = runOutcomeInsight(run);
               return (
                 <li key={`${run.id}-${index}`}>
                   <article className="render-opt-card neon-surface space-y-2 px-4 py-3">
@@ -300,6 +308,9 @@ export function SyncRunActivityPanel({
                     </div>
                     {metricsSummary ? (
                       <p className="break-anywhere text-xs text-muted">{metricsSummary}</p>
+                    ) : null}
+                    {outcomeInsight ? (
+                      <p className="break-anywhere text-xs text-cyan-100">{outcomeInsight}</p>
                     ) : null}
                     {safeLastError ? (
                       <p className="break-anywhere text-xs text-rose-100">
@@ -340,6 +351,14 @@ function StatusChip({ status, partial = false }: { status: string; partial?: boo
       <span className="neon-chip inline-flex items-center gap-1.5 rounded-full border-rose-300/30 bg-rose-500/12 px-2.5 py-1 text-xs font-semibold text-rose-100">
         <XCircle className="h-3.5 w-3.5" />
         Failed
+      </span>
+    );
+  }
+  if (normalized === "Queued") {
+    return (
+      <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold">
+        <Clock3 className="h-3.5 w-3.5" />
+        Queued
       </span>
     );
   }
@@ -445,6 +464,24 @@ function summarizeRunMetrics(metrics?: Record<string, number>): string {
   if (upstreamErrors > 0) {
     segments.push(`Upstream ${upstreamErrors}`);
   }
+  const scopeLimited = metricCount(metrics, "authored_pull_request_scope_limited");
+  if (scopeLimited > 0) {
+    segments.push("Scope limited");
+  }
+  const refreshFailed = metricCount(metrics, "post_sync_refresh_failed");
+  if (refreshFailed > 0) {
+    segments.push("Refresh pending");
+  }
+  const inProgressConflicts = metricCount(
+    metrics,
+    "fetched_user_sync_in_progress",
+    "user_sync_in_progress",
+    "fetched_lease_conflicts",
+    "lease_conflicts",
+  );
+  if (inProgressConflicts > 0) {
+    segments.push(`In-progress conflicts ${inProgressConflicts}`);
+  }
 
   const skipped = metricSumBySuffix(metrics, "_skipped");
   if (skipped > 0) {
@@ -504,7 +541,15 @@ function hasPartialRunMetrics(metrics?: Record<string, number>): boolean {
   if (!metrics) {
     return false;
   }
-  return metricSumBySuffix(metrics, "_skipped") > 0 || metricSumBySuffix(metrics, "_fetch_errors") > 0;
+  return (
+    metricSumBySuffix(metrics, "_skipped") > 0 ||
+    metricSumBySuffix(metrics, "_fetch_errors") > 0 ||
+    metricCount(metrics, "authored_pull_request_scope_limited") > 0 ||
+    metricCount(metrics, "authored_pull_request_search_incomplete") > 0 ||
+    metricCount(metrics, "authored_pull_request_search_overflow") > 0 ||
+    metricCount(metrics, "authored_pull_requests_retryable") > 0 ||
+    metricCount(metrics, "post_sync_refresh_failed") > 0
+  );
 }
 
 function toNormalizedDateTime(value?: string): string | null {
@@ -532,4 +577,51 @@ function sanitizeSyncRunErrorMessage(value?: string): string | null {
     return "GitHub timed out while fetching some metadata. Existing evidence was kept and a background retry can fill remaining gaps.";
   }
   return sanitizeUserFacingError(value, "settings-sync-runs");
+}
+
+function runOutcomeInsight(run: ApiSyncRunRecord): string {
+  const metrics = run.metrics;
+  if (!metrics) {
+    return "";
+  }
+
+  const scopeLimited = metricCount(metrics, "authored_pull_request_scope_limited") > 0;
+  const discoveryEmpty = metricCount(metrics, "authored_pull_request_discovery_empty") > 0;
+  const persistedExisting = metricCount(metrics, "authored_pull_request_persisted_existing") > 0;
+  const zeroDiscoveryWithHistory =
+    metricCount(metrics, "authored_pull_request_zero_discovery_with_history") > 0 ||
+    (discoveryEmpty && persistedExisting);
+  const backfillIncomplete = metricCount(metrics, "authored_pull_request_backfill_incomplete") > 0;
+  const searchIncomplete = metricCount(metrics, "authored_pull_request_search_incomplete") > 0;
+  const searchOverflow = metricCount(metrics, "authored_pull_request_search_overflow") > 0;
+  const retryable = metricCount(metrics, "authored_pull_requests_retryable") > 0;
+  const timeout = metricCount(metrics, "authored_pull_requests_timeouts", "fetched_timeout_errors", "timeout_errors") > 0;
+  const snapshotRefreshPending = metricCount(metrics, "post_sync_refresh_failed") > 0;
+  const selectedAuthoredPRs = metricCount(metrics, "authored_pull_requests_selected");
+
+  if (zeroDiscoveryWithHistory) {
+    return "No authored PRs were discovered in this run even though historical PR evidence already exists. Reconnect GitHub if scope changed, then retry.";
+  }
+  if (scopeLimited) {
+    return "GitHub returned limited authorization scope for authored PR discovery. Reconnect GitHub to expand accessible PR evidence.";
+  }
+  if (discoveryEmpty) {
+    return "No authored PRs were discovered for the current sync window yet.";
+  }
+  if (searchIncomplete || searchOverflow) {
+    return "GitHub search limits were hit during authored PR discovery. GitRank will continue bounded backfill on later runs.";
+  }
+  if (retryable || timeout) {
+    return "Some authored PR surfaces were retryable or timed out. Existing evidence was kept and later sync runs can fill missing rows.";
+  }
+  if (backfillIncomplete) {
+    return "Recent PR evidence is synced. Historical authored PR backfill is still in progress.";
+  }
+  if (snapshotRefreshPending) {
+    return "Sync completed, but profile snapshot refresh is still finishing.";
+  }
+  if (selectedAuthoredPRs > 0) {
+    return `Synced ${selectedAuthoredPRs} authored PR target${selectedAuthoredPRs === 1 ? "" : "s"} in this run.`;
+  }
+  return "";
 }
