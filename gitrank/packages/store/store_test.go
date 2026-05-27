@@ -94,6 +94,9 @@ func TestBuildSyncJobsRepository(t *testing.T) {
 	if jobs[0].DedupeKey != "repository:octo/repo" {
 		t.Fatalf("dedupe key = %q, want %q", jobs[0].DedupeKey, "repository:octo/repo")
 	}
+	if jobs[0].Subject != "octo/repo" {
+		t.Fatalf("subject = %q, want %q", jobs[0].Subject, "octo/repo")
+	}
 }
 
 func TestBuildSyncJobsScoreReplayUser(t *testing.T) {

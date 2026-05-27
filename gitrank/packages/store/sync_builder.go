@@ -63,6 +63,7 @@ func BuildSyncJobs(req contracts.SyncRequest, queueName, correlationID string, m
 			Type:          SyncRepositoryJob,
 			CorrelationID: correlationID,
 			Repository:    req.Repository,
+			Subject:       req.Repository,
 			DedupeKey:     "repository:" + req.Repository,
 			MaxAttempts:   maxAttempts,
 			Payload: map[string]string{
