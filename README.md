@@ -103,6 +103,7 @@ ChatGPT path:
 - optional `OPENAI_MODEL` (default `gpt-4o-mini`)
 
 Frontend runtime also reads its server env from this same `gitrank/.env` export path.
+There is no separate runtime `.env` for `frontend/`; keep all runtime vars in `gitrank/.env`.
 
 ### 3) Start stack
 

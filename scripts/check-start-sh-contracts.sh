@@ -91,4 +91,16 @@ for required_path in \
   fi
 done
 
+if ! rg -q '^BACKEND_ENV_FILE="\$BACKEND_DIR/\.env"$' "$START_SCRIPT"; then
+  fail "start.sh must bind BACKEND_ENV_FILE to gitrank/.env"
+fi
+
+if ! rg -q '^source "\$BACKEND_ENV_FILE"$' "$START_SCRIPT"; then
+  fail "start.sh must source BACKEND_ENV_FILE directly"
+fi
+
+if rg -q 'frontend/\.env|FRONTEND_ENV_FILE|\.env\.local' "$START_SCRIPT"; then
+  fail "start.sh must not source frontend or secondary runtime env files"
+fi
+
 printf 'start.sh contract check passed\n'
