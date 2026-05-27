@@ -10,12 +10,22 @@ export type SyncRunDiagnostic = {
     | "backfill_incomplete"
     | "snapshot_refresh_pending"
     | "discovery_empty"
+    | "superseded_active_row"
     | "synced_targets"
     | "none";
   message: string;
 };
 
 export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic {
+  const normalizedLastError = (run.last_error ?? "").toLowerCase();
+  if (normalizedLastError.includes("superseded by a newer terminal run")) {
+    return {
+      code: "superseded_active_row",
+      message:
+        "A stale in-progress run row was superseded by a newer terminal run for the same correlation.",
+    };
+  }
+
   const metrics = run.metrics;
   if (!metrics) {
     return {

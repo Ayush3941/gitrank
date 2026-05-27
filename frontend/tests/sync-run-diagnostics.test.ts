@@ -15,6 +15,16 @@ function run(metrics?: Record<string, number>): ApiSyncRunRecord {
 }
 
 describe("describeSyncRunOutcome", () => {
+  it("returns superseded-active-row when failed row is superseded by terminal correlation", () => {
+    const outcome = describeSyncRunOutcome({
+      ...run(undefined),
+      status: "failed",
+      last_error: "sync execution was superseded by a newer terminal run for the same correlation",
+    });
+    expect(outcome.code).toBe("superseded_active_row");
+    expect(outcome.message).toContain("superseded");
+  });
+
   it("returns zero-discovery-with-history when marker is present", () => {
     const outcome = describeSyncRunOutcome(
       run({

@@ -92,6 +92,62 @@ func TestNormalizeSyncRunViews(t *testing.T) {
 	}
 }
 
+func TestNormalizeSyncRunViewsSupersedesOlderActiveRowsWithTerminalCorrelation(t *testing.T) {
+	t.Parallel()
+
+	now := time.Date(2026, 5, 27, 20, 0, 0, 0, time.UTC)
+	finishedAt := now.Add(-time.Minute)
+	runs := []contracts.GitHubSyncRunView{
+		{
+			ID:            "terminal-user-run",
+			RunType:       "user",
+			CorrelationID: "corr-1",
+			Status:        "completed",
+			StartedAt:     now.Add(-2 * time.Minute),
+			FinishedAt:    &finishedAt,
+		},
+		{
+			ID:            "older-running-row",
+			RunType:       "user",
+			CorrelationID: "corr-1",
+			Status:        "running",
+			StartedAt:     now.Add(-3 * time.Minute),
+		},
+		{
+			ID:            "newer-running-row",
+			RunType:       "user",
+			CorrelationID: "corr-1",
+			Status:        "running",
+			StartedAt:     now.Add(-30 * time.Second),
+		},
+		{
+			ID:            "other-correlation-running",
+			RunType:       "user",
+			CorrelationID: "corr-2",
+			Status:        "running",
+			StartedAt:     now.Add(-3 * time.Minute),
+		},
+	}
+
+	normalized := normalizeSyncRunViews(runs, now, 10*time.Minute)
+
+	if normalized[0].Status != "completed" {
+		t.Fatalf("normalized[0].Status = %q, want completed", normalized[0].Status)
+	}
+	if normalized[1].Status != "failed" {
+		t.Fatalf("normalized[1].Status = %q, want failed", normalized[1].Status)
+	}
+	if normalized[1].LastError == "" {
+		t.Fatal("normalized[1].LastError = empty, want superseded-correlation reason")
+	}
+	if normalized[2].Status != "running" {
+		t.Fatalf("normalized[2].Status = %q, want running (newer than terminal)", normalized[2].Status)
+	}
+	if normalized[3].Status != "running" {
+		t.Fatalf("normalized[3].Status = %q, want running (different correlation)", normalized[3].Status)
+	}
+}
+
 func TestSyncRunActiveWindow(t *testing.T) {
 	t.Parallel()
 

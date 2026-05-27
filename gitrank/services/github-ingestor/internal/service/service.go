@@ -337,7 +337,84 @@ func normalizeSyncRunViews(
 			run.Status = status
 		}
 	}
+
+	supersedeInProgressRunsWithTerminalCorrelation(runs)
 	return runs
+}
+
+func supersedeInProgressRunsWithTerminalCorrelation(runs []contracts.GitHubSyncRunView) {
+	if len(runs) == 0 {
+		return
+	}
+	latestTerminalByScope := make(map[string]time.Time, len(runs))
+	for _, run := range runs {
+		scope := syncRunCorrelationScope(run)
+		if scope == "" {
+			continue
+		}
+		status := strings.ToLower(strings.TrimSpace(run.Status))
+		if !isTerminalSyncRunStatus(status) {
+			continue
+		}
+		terminalAt := syncRunTerminalTimestamp(run)
+		if previous, exists := latestTerminalByScope[scope]; !exists || terminalAt.After(previous) {
+			latestTerminalByScope[scope] = terminalAt
+		}
+	}
+	if len(latestTerminalByScope) == 0 {
+		return
+	}
+
+	for index := range runs {
+		run := &runs[index]
+		status := strings.ToLower(strings.TrimSpace(run.Status))
+		if status != "running" && status != "queued" {
+			continue
+		}
+		scope := syncRunCorrelationScope(*run)
+		if scope == "" {
+			continue
+		}
+		terminalAt, ok := latestTerminalByScope[scope]
+		if !ok {
+			continue
+		}
+		if !run.StartedAt.IsZero() && run.StartedAt.After(terminalAt) {
+			continue
+		}
+		run.Status = "failed"
+		if strings.TrimSpace(run.LastError) == "" {
+			run.LastError = "sync execution was superseded by a newer terminal run for the same correlation"
+		}
+	}
+}
+
+func syncRunCorrelationScope(run contracts.GitHubSyncRunView) string {
+	correlationID := strings.TrimSpace(run.CorrelationID)
+	if correlationID == "" {
+		return ""
+	}
+	runType := strings.ToLower(strings.TrimSpace(run.RunType))
+	return runType + "|" + correlationID
+}
+
+func isTerminalSyncRunStatus(status string) bool {
+	switch status {
+	case "completed", "partial", "failed":
+		return true
+	default:
+		return false
+	}
+}
+
+func syncRunTerminalTimestamp(run contracts.GitHubSyncRunView) time.Time {
+	if run.FinishedAt != nil && !run.FinishedAt.IsZero() {
+		return run.FinishedAt.UTC()
+	}
+	if !run.StartedAt.IsZero() {
+		return run.StartedAt.UTC()
+	}
+	return time.Time{}
 }
 
 func syncRunActiveWindow(cfg config.GitHub) time.Duration {

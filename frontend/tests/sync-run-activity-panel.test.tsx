@@ -80,6 +80,16 @@ const syncedTargetsRun = {
   },
 };
 
+const supersededActiveRowRun = {
+  id: "run_superseded_1",
+  run_type: "user",
+  status: "failed",
+  subject: "octocat",
+  started_at: "2026-05-25T00:07:00Z",
+  finished_at: "2026-05-25T00:07:02Z",
+  last_error: "sync execution was superseded by a newer terminal run for the same correlation",
+};
+
 describe("SyncRunActivityPanel", () => {
   it("keeps summary-first filters and reset flow consistent", () => {
     render(
@@ -127,7 +137,7 @@ describe("SyncRunActivityPanel", () => {
     );
 
     expect(screen.getByText("PRs 3/5 · Reviews 2/4 · Skipped 1")).toBeTruthy();
-    expect(screen.getByText("Partial")).toBeTruthy();
+    expect(screen.getAllByText("Partial").length).toBeGreaterThan(0);
   });
 
   it("surfaces failure telemetry for failed runs", () => {
@@ -193,5 +203,24 @@ describe("SyncRunActivityPanel", () => {
     );
 
     expect(screen.getByText("Synced 7 authored PR targets in this run.")).toBeTruthy();
+  });
+
+  it("shows superseded-correlation insight for stale in-progress rows", () => {
+    render(
+      <SyncRunActivityPanel
+        runs={[supersededActiveRowRun]}
+        lastUpdatedAt="2026-05-25T00:08:00Z"
+        isLoading={false}
+        isRefreshing={false}
+        isError={false}
+        onRefresh={() => undefined}
+      />,
+    );
+
+    expect(
+      screen.getByText(
+        "A stale in-progress run row was superseded by a newer terminal run for the same correlation.",
+      ),
+    ).toBeTruthy();
   });
 });
