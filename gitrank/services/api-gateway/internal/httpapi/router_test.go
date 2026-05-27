@@ -997,6 +997,43 @@ func TestSyncRunsRoutePreservesExplicitUserFilter(t *testing.T) {
 	}
 }
 
+func TestSyncRunsRouteDoesNotInjectUserForNonUserRunType(t *testing.T) {
+	auth := stubAuthServer()
+	defer auth.Close()
+
+	var observedRunType string
+	var observedUser string
+	ingestor := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		observedRunType = r.URL.Query().Get("run_type")
+		observedUser = r.URL.Query().Get("user")
+		_ = json.NewEncoder(w).Encode(contracts.GitHubSyncRunListResponse{
+			LastUpdatedAt: time.Date(2026, 5, 8, 9, 2, 0, 0, time.UTC),
+		})
+	}))
+	defer ingestor.Close()
+
+	router := NewRouter(testConfig(stubProfileServer().URL, auth.URL, ingestor.URL), testLogger(), "test")
+	request := httptest.NewRequest(
+		http.MethodGet,
+		"/v1/sync/runs?limit=10&run_type=repository",
+		nil,
+	)
+	request.Header.Set("Cookie", "gitrank_session=session-original; gitrank_csrf=csrf-original")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusOK, response.Body.String())
+	}
+	if observedRunType != "repository" {
+		t.Fatalf("run_type = %q, want %q", observedRunType, "repository")
+	}
+	if observedUser != "" {
+		t.Fatalf("user = %q, want empty for non-user run_type", observedUser)
+	}
+}
+
 func TestSyncRouteAcceptsPreviousSessionSecretCSRF(t *testing.T) {
 	profile := stubProfileServer()
 	defer profile.Close()

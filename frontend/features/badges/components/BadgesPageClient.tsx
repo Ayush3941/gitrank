@@ -30,6 +30,7 @@ import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useBadges } from "@/hooks/use-badges";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
+import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import { useSyncRuns } from "@/hooks/use-sync-runs";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import {
@@ -39,11 +40,6 @@ import {
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
-import {
-  deriveEffectiveSyncState,
-  selectProfileSyncRunStatuses,
-  shouldShowSyncRefreshPill,
-} from "@/lib/presentation/sync-evidence";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import type { BadgeRarity } from "@/types/gitrank";
 const BADGES_EARNED_REGION_ID = "badges-earned-region";
@@ -118,9 +114,10 @@ export function BadgesPageClient() {
       return rarityMatch && visibilityMatch;
     });
   const profile = data?.profile;
-  const syncRunStatuses = selectProfileSyncRunStatuses(syncRunsQuery.data?.runs, profile?.user);
-  const syncStateForDisplay = deriveEffectiveSyncState(profile?.user, syncRunStatuses);
-  const showRefreshPill = shouldShowSyncRefreshPill(profile?.user, syncRunStatuses);
+  const { syncStateForDisplay, showRefreshPill } = useProfileSyncState(
+    profile?.user,
+    syncRunsQuery.data?.runs,
+  );
   const lockedBadges = allBadges.filter((badge) => !badge.unlocked);
   const lockedBadgesSorted = [...lockedBadges].sort((left, right) => {
     const progressDelta = (right.progress ?? 0) - (left.progress ?? 0);

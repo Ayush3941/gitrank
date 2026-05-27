@@ -26,15 +26,11 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
+import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import { useQuests } from "@/hooks/use-quests";
 import { useSyncRuns } from "@/hooks/use-sync-runs";
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
-import {
-  deriveEffectiveSyncState,
-  selectProfileSyncRunStatuses,
-  shouldShowSyncRefreshPill,
-} from "@/lib/presentation/sync-evidence";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import type { Quest } from "@/types/gitrank";
 
@@ -83,9 +79,10 @@ export function QuestsPageClient() {
   const { data, isLoading, isError, refetch } = useQuests();
   const quests = data?.quests ?? [];
   const profile = data?.profile;
-  const syncRunStatuses = selectProfileSyncRunStatuses(syncRunsQuery.data?.runs, profile?.user);
-  const syncStateForDisplay = deriveEffectiveSyncState(profile?.user, syncRunStatuses);
-  const showRefreshPill = shouldShowSyncRefreshPill(profile?.user, syncRunStatuses);
+  const { syncStateForDisplay, showRefreshPill } = useProfileSyncState(
+    profile?.user,
+    syncRunsQuery.data?.runs,
+  );
   const questSnapshotRefreshedAt =
     data?.staleness?.refreshedAt ?? profile?.refreshedAt ?? new Date().toISOString();
   const contributionRows = profile?.user.contributions ?? [];

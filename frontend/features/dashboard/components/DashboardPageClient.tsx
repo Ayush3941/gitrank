@@ -10,6 +10,7 @@ import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
+import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import { useSyncRuns } from "@/hooks/use-sync-runs";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
@@ -28,11 +29,6 @@ import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
-import {
-  deriveEffectiveSyncState,
-  selectProfileSyncRunStatuses,
-  shouldShowSyncRefreshPill,
-} from "@/lib/presentation/sync-evidence";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import { Button } from "@/components/ui/button";
 
@@ -74,21 +70,13 @@ export function DashboardPageClient() {
   const scoreExplanationEventSent = useRef(false);
   const user = data?.user;
   const recentReports = data?.recentReports ?? [];
-  const syncRunStatuses = useMemo(
-    () => selectProfileSyncRunStatuses(syncRunsQuery.data?.runs, user),
-    [syncRunsQuery.data?.runs, user],
+  const { syncStateForDisplay, showRefreshPill } = useProfileSyncState(
+    user,
+    syncRunsQuery.data?.runs,
   );
   const streak = useMemo(
     () => summarizeContributionStreak(user?.contributions ?? []),
     [user?.contributions],
-  );
-  const syncStateForDisplay = useMemo(
-    () => deriveEffectiveSyncState(user, syncRunStatuses),
-    [syncRunStatuses, user],
-  );
-  const showRefreshPill = useMemo(
-    () => shouldShowSyncRefreshPill(user, syncRunStatuses),
-    [syncRunStatuses, user],
   );
   const abraPayload = useMemo(() => {
     if (!user) {

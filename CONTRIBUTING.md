@@ -295,6 +295,7 @@ Recent no-slowdown refinement (May 27, 2026):
 - GitHub API clients now retry transient upstream server failures (`500/502/503/504`) for safe REST methods (`GET`/`HEAD`) and GraphQL queries, while leaving unsafe REST mutations non-retryable to avoid accidental duplicate side effects.
 - Dashboard sync freshness now derives from profile-relevant sync runs only (`run_type=user` with matching requested user when present), so PR/review/repository sub-run noise cannot override top-level profile sync state chips.
 - Frontend sync-run polling now requests `run_type=user` for dashboard route freshness checks, and api-gateway auto-fills `user=<authenticated github_login>` for that mode when omitted, reducing cross-target run noise and payload size while preserving explicit user overrides.
+- Profile freshness derivation is now centralized in `frontend/hooks/use-profile-sync-state.ts` and reused by Dashboard, Contributions, Badges, Quests, Leaderboard, and Settings to keep sync-state chips/pills behavior consistent across tabs.
 
 ## Frontend Excellence Checklist (No-Slowdown Backlog)
 

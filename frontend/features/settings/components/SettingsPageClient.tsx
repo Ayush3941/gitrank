@@ -36,16 +36,12 @@ import {
 import {
   useDisplayShortcutsEnabled,
 } from "@/hooks/use-display-shortcuts-enabled";
+import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import {
   type TextScalePreference,
   useTextScalePreference,
 } from "@/hooks/use-text-scale-preference";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
-import {
-  deriveEffectiveSyncState,
-  selectProfileSyncRunStatuses,
-  shouldShowSyncRefreshPill,
-} from "@/lib/presentation/sync-evidence";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
@@ -168,7 +164,12 @@ export function SettingsPageClient() {
   const [actionNotice, setActionNotice] = useState("");
   const [displayNotice, setDisplayNotice] = useState("");
   const [showDisplayTuning, setShowDisplayTuning] = useState(false);
+  const profileUser = data?.user;
   const currentSettings = data?.user.privacy ?? null;
+  const { syncStateForDisplay, showRefreshPill } = useProfileSyncState(
+    profileUser,
+    syncRunsQuery.data?.runs,
+  );
   const activeTheme = THEME_OPTIONS.find((option) => option.value === theme) ?? THEME_OPTIONS[0];
   const activeTextScale = TEXT_SCALE_OPTIONS.find((option) => option.value === textScale) ?? TEXT_SCALE_OPTIONS[0];
 
@@ -255,9 +256,6 @@ export function SettingsPageClient() {
     accountLinkStart.isPending;
   const pendingRepository = updateRepositoryVisibility.variables?.fullName ?? null;
   const hiddenRepositoryCount = data.user.repositories.filter((repository) => repository.visibility !== "Public").length;
-  const syncRunStatuses = selectProfileSyncRunStatuses(syncRunsQuery.data?.runs, data.user);
-  const syncStateForDisplay = deriveEffectiveSyncState(data.user, syncRunStatuses);
-  const showRefreshPill = shouldShowSyncRefreshPill(data.user, syncRunStatuses);
   const latestSyncRun = syncRunsQuery.data?.runs?.[0];
   const latestSyncOutcome = latestSyncRun ? describeSyncRunOutcome(latestSyncRun) : null;
   const syncRunsError = sanitizeUserFacingError(

@@ -18,6 +18,7 @@ import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useContributions } from "@/hooks/use-contributions";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useSyncRuns } from "@/hooks/use-sync-runs";
+import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import {
   useNetworkConstraintPreference,
   useReducedGamification,
@@ -35,11 +36,6 @@ import { formatRelativeDays } from "@/lib/formatters";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { deduplicateContributionsByPullRequest } from "@/lib/presentation/contribution-dedup";
-import {
-  deriveEffectiveSyncState,
-  selectProfileSyncRunStatuses,
-  shouldShowSyncRefreshPill,
-} from "@/lib/presentation/sync-evidence";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import { contributionDisplayConfig } from "@/lib/runtime/contribution-display-config";
 import {
@@ -153,9 +149,10 @@ export function ContributionsPageClient() {
     () => summarizeContributionStreak(profile?.user.contributions ?? []),
     [profile?.user.contributions],
   );
-  const syncRunStatuses = selectProfileSyncRunStatuses(syncRunsQuery.data?.runs, profile?.user);
-  const syncStateForDisplay = deriveEffectiveSyncState(profile?.user, syncRunStatuses);
-  const showRefreshPill = shouldShowSyncRefreshPill(profile?.user, syncRunStatuses);
+  const { syncStateForDisplay, showRefreshPill } = useProfileSyncState(
+    profile?.user,
+    syncRunsQuery.data?.runs,
+  );
   const abraContributionSample = useMemo(
     () => filteredRows.slice(0, contributionDisplayConfig.abraSampleLimit),
     [filteredRows],
