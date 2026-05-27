@@ -10,6 +10,7 @@ import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
+import { useSyncRuns } from "@/hooks/use-sync-runs";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -68,15 +69,26 @@ export function DashboardPageClient() {
   const constrainedNetwork = useNetworkConstraintPreference();
   const { data, isLoading, isError, refetch } = useDashboard();
   const runUserSync = useRunUserSync();
+  const syncRunsQuery = useSyncRuns(10);
   const scoreExplanationEventSent = useRef(false);
   const user = data?.user;
   const recentReports = data?.recentReports ?? [];
+  const syncRunStatuses = useMemo(
+    () => syncRunsQuery.data?.runs.map((run) => run.status).filter(Boolean) ?? [],
+    [syncRunsQuery.data?.runs],
+  );
   const streak = useMemo(
     () => summarizeContributionStreak(user?.contributions ?? []),
     [user?.contributions],
   );
-  const syncStateForDisplay = useMemo(() => deriveEffectiveSyncState(user), [user]);
-  const showRefreshPill = useMemo(() => shouldShowSyncRefreshPill(user), [user]);
+  const syncStateForDisplay = useMemo(
+    () => deriveEffectiveSyncState(user, syncRunStatuses),
+    [syncRunStatuses, user],
+  );
+  const showRefreshPill = useMemo(
+    () => shouldShowSyncRefreshPill(user, syncRunStatuses),
+    [syncRunStatuses, user],
+  );
   const abraPayload = useMemo(() => {
     if (!user) {
       return null;

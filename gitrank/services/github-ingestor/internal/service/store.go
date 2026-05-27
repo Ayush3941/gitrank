@@ -989,6 +989,34 @@ func (s *TxStore) UpsertCommits(payload map[string]any, repositoryID string, now
 func (s *TxStore) InsertSyncRun(input payloadSyncRunInput) error {
 	metricsJSON := encodeJSON(composeSyncRunMetrics(input.Result.EntityCounts(), input.Fetched))
 	status := defaultString(strings.TrimSpace(input.Status), "completed")
+	subject := strings.TrimSpace(input.Subject)
+	eventType := strings.TrimSpace(input.EventType)
+	correlationID := strings.TrimSpace(input.CorrelationID)
+
+	if shouldFinalizeExistingSyncRun(status, input.FinishedAt) {
+		updated, err := s.finalizeExistingSyncRun(payloadSyncRunInput{
+			CorrelationID:               correlationID,
+			EventType:                   eventType,
+			Status:                      status,
+			LastError:                   input.LastError,
+			Subject:                     subject,
+			InstallationID:              input.InstallationID,
+			RepositoryID:                input.RepositoryID,
+			DeliveryID:                  input.DeliveryID,
+			RequestedUserLogin:          input.RequestedUserLogin,
+			RequestedRepositoryFullName: input.RequestedRepositoryFullName,
+			RequestedBySubject:          input.RequestedBySubject,
+			RequestedByGitHubLogin:      input.RequestedByGitHubLogin,
+			FinishedAt:                  input.FinishedAt,
+		}, metricsJSON)
+		if err != nil {
+			return err
+		}
+		if updated {
+			return nil
+		}
+	}
+
 	_, err := s.tx.Exec(s.context(), `
 		INSERT INTO github_sync_runs (
 			run_type,
@@ -1024,9 +1052,9 @@ func (s *TxStore) InsertSyncRun(input payloadSyncRunInput) error {
 			$15::jsonb
 		)
 	`,
-		input.EventType,
+		eventType,
 		status,
-		strings.TrimSpace(input.Subject),
+		subject,
 		input.InstallationID,
 		input.RepositoryID,
 		input.DeliveryID,
@@ -1041,6 +1069,86 @@ func (s *TxStore) InsertSyncRun(input payloadSyncRunInput) error {
 		metricsJSON,
 	)
 	return err
+}
+
+func (s *TxStore) finalizeExistingSyncRun(input payloadSyncRunInput, metricsJSON string) (bool, error) {
+	if strings.TrimSpace(input.CorrelationID) == "" || strings.TrimSpace(input.EventType) == "" || strings.TrimSpace(input.Subject) == "" {
+		return false, nil
+	}
+
+	finishedAt := nullableTime(input.FinishedAt)
+	var updatedID string
+	err := s.tx.QueryRow(s.context(), `
+		WITH candidate AS (
+			SELECT id
+			FROM github_sync_runs
+			WHERE
+				correlation_id = $1
+				AND run_type = $2
+				AND subject = $3
+				AND finished_at IS NULL
+				AND lower(status) IN ('queued', 'pending', 'running', 'syncing', 'in_progress')
+			ORDER BY started_at DESC
+			LIMIT 1
+		)
+		UPDATE github_sync_runs AS runs
+		SET
+			status = $4,
+			installation_id = COALESCE(NULLIF($5, '')::uuid, runs.installation_id),
+			repository_id = COALESCE(NULLIF($6, '')::uuid, runs.repository_id),
+			github_delivery_id = CASE WHEN btrim($7) = '' THEN runs.github_delivery_id ELSE $7 END,
+			requested_user_login = CASE WHEN btrim($8) = '' THEN runs.requested_user_login ELSE $8 END,
+			requested_repository_full_name = CASE WHEN btrim($9) = '' THEN runs.requested_repository_full_name ELSE $9 END,
+			requested_by_subject = CASE WHEN btrim($10) = '' THEN runs.requested_by_subject ELSE $10 END,
+			requested_by_github_login = CASE WHEN btrim($11) = '' THEN runs.requested_by_github_login ELSE $11 END,
+			finished_at = COALESCE($12::timestamptz, runs.finished_at, NOW()),
+			last_error = CASE
+				WHEN btrim($13) <> '' THEN $13
+				WHEN lower($4) = 'failed' AND btrim(runs.last_error) = '' THEN 'sync execution failed without explicit error details'
+				ELSE runs.last_error
+			END,
+			metrics_jsonb = CASE
+				WHEN $14::jsonb = '{}'::jsonb THEN runs.metrics_jsonb
+				ELSE $14::jsonb
+			END
+		FROM candidate
+		WHERE runs.id = candidate.id
+		RETURNING runs.id
+	`,
+		strings.TrimSpace(input.CorrelationID),
+		strings.TrimSpace(input.EventType),
+		strings.TrimSpace(input.Subject),
+		defaultString(strings.TrimSpace(input.Status), "completed"),
+		strings.TrimSpace(input.InstallationID),
+		strings.TrimSpace(input.RepositoryID),
+		strings.TrimSpace(input.DeliveryID),
+		strings.TrimSpace(input.RequestedUserLogin),
+		strings.TrimSpace(input.RequestedRepositoryFullName),
+		strings.TrimSpace(input.RequestedBySubject),
+		strings.TrimSpace(input.RequestedByGitHubLogin),
+		finishedAt,
+		strings.TrimSpace(input.LastError),
+		metricsJSON,
+	).Scan(&updatedID)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return strings.TrimSpace(updatedID) != "", nil
+}
+
+func shouldFinalizeExistingSyncRun(status string, finishedAt *time.Time) bool {
+	if finishedAt == nil {
+		return false
+	}
+	switch strings.ToLower(strings.TrimSpace(status)) {
+	case "queued", "pending", "running", "syncing", "in_progress":
+		return false
+	default:
+		return true
+	}
 }
 
 func composeSyncRunMetrics(persisted map[string]int, fetched map[string]int) map[string]int {
