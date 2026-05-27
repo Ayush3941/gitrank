@@ -145,10 +145,18 @@ func (s *Store) LoadReplayCandidatesFiltered(ctx context.Context, userID string,
 				COALESCE(pr.merged_at, pr.closed_at_source, pr.updated_at_source, pr.created_at_source) AS occurred_at
 			FROM pull_requests pr
 			INNER JOIN repositories r ON r.id = pr.repository_id
-			INNER JOIN github_accounts ga ON ga.id = pr.author_github_account_id
-			WHERE ga.user_id = $1::uuid
-			  AND ga.link_status = 'linked'
-			  AND r.is_private = FALSE
+			LEFT JOIN github_accounts ga_author ON ga_author.id = pr.author_github_account_id
+			WHERE r.is_private = FALSE
+			  AND (
+				(ga_author.user_id = $1::uuid AND COALESCE(ga_author.link_status, 'linked') = 'linked')
+				OR EXISTS (
+					SELECT 1
+					FROM github_accounts ga_login
+					WHERE ga_login.user_id = $1::uuid
+					  AND COALESCE(ga_login.link_status, 'linked') = 'linked'
+					  AND LOWER(ga_login.login) = LOWER(COALESCE(pr.payload_jsonb #>> '{user,login}', ''))
+				)
+			  )
 			  AND ($2 = '' OR LOWER(r.full_name) = LOWER($2))
 			  AND ($3::timestamptz IS NULL OR COALESCE(pr.merged_at, pr.closed_at_source, pr.updated_at_source, pr.created_at_source) >= $3::timestamptz)
 			  AND ($4::timestamptz IS NULL OR COALESCE(pr.merged_at, pr.closed_at_source, pr.updated_at_source, pr.created_at_source) <= $4::timestamptz)

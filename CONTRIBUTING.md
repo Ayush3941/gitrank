@@ -284,6 +284,7 @@ Recent no-slowdown refinement (May 27, 2026):
 - Frontend sync-run normalization now preserves backend terminal `partial` and `failed` statuses when `finished_at` is present (instead of collapsing all finished runs to `completed`), so degraded outcomes remain visible across settings diagnostics and sync-state derivation.
 - Effective sync-state derivation now interprets latest terminal run outcomes (`partial` -> `partially_synced`, `failed` -> `failed`) after pending-run checks, preventing stale success chips during degraded or failed terminal sync outcomes.
 - Sync truthiness now requires materialized profile evidence (`PR contribution evidence` or tracked `owner/repo` repository evidence) before rendering healthy synced freshness chips, reducing false "Synced/Refreshed" states on empty snapshots.
+- Scoring replay candidate loading now falls back to linked-account login matching when `author_github_account_id` is missing on synced PR rows, preventing zero-event replays caused by incomplete PR author-account linkage.
 
 ## Frontend Excellence Checklist (No-Slowdown Backlog)
 

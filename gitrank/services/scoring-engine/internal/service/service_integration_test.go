@@ -239,6 +239,125 @@ func TestReplayUserPersistsLedgerAndSnapshot(t *testing.T) {
 	assertCount(t, ctx, pool, "user_badges", "SELECT COUNT(*) FROM user_badges WHERE user_id = $1::uuid AND badge_key = 'first_merged_pr'", userID, 1)
 }
 
+func TestReplayUserIncludesPullRequestsByLinkedLoginWhenAuthorAccountIDMissing(t *testing.T) {
+	databaseURL := strings.TrimSpace(os.Getenv("GITRANK_SCORING_DATABASE_URL"))
+	if databaseURL == "" {
+		t.Skip("GITRANK_SCORING_DATABASE_URL is not set")
+	}
+
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, databaseURL)
+	if err != nil {
+		t.Fatalf("pgxpool.New() error = %v", err)
+	}
+	defer pool.Close()
+
+	svc, err := New(config.App{ServiceName: "scoring-engine"}, pool, testLogger())
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+
+	now := time.Now().UTC()
+	suffix := now.UnixNano()
+
+	var userID string
+	if err := pool.QueryRow(ctx, `
+		INSERT INTO users (display_name, public_handle, avatar_url)
+		VALUES ($1, $2, $3)
+		RETURNING id::text
+	`, fmt.Sprintf("Fallback Replay User %d", suffix), fmt.Sprintf("fallback-%d", suffix), "https://avatars.example.test/u/19").Scan(&userID); err != nil {
+		t.Fatalf("insert user: %v", err)
+	}
+
+	login := fmt.Sprintf("linked-login-%d", suffix)
+	if err := pool.QueryRow(ctx, `
+		INSERT INTO github_accounts (
+			user_id,
+			github_user_id,
+			login,
+			node_id,
+			access_mode,
+			oauth_scopes,
+			linked_at,
+			link_status
+		) VALUES (
+			$1::uuid, $2, $3, $4, 'oauth', ARRAY['read:user','user:email']::text[], $5, 'linked'
+		)
+		RETURNING id::text
+	`, userID, 880000+suffix%100000, login, fmt.Sprintf("node-fallback-%d", suffix), now).Scan(new(string)); err != nil {
+		t.Fatalf("insert github account: %v", err)
+	}
+
+	var repositoryID string
+	repositoryOwner := fmt.Sprintf("owner-fallback-%d", suffix)
+	repositoryFullName := fmt.Sprintf("%s/replay-repo", repositoryOwner)
+	if err := pool.QueryRow(ctx, `
+		INSERT INTO repositories (
+			github_repository_id,
+			owner_login,
+			name,
+			full_name,
+			is_private,
+			primary_language,
+			default_branch,
+			stars_count
+		) VALUES (
+			$1, $2, $3, $4, FALSE, 'Go', 'main', 250
+		)
+		RETURNING id::text
+	`, 990000+suffix%100000, repositoryOwner, "replay-repo", repositoryFullName).Scan(&repositoryID); err != nil {
+		t.Fatalf("insert repository: %v", err)
+	}
+
+	var pullRequestID string
+	occurredAt := now.Add(-6 * time.Hour)
+	payload := fmt.Sprintf(`{"user":{"login":"%s"},"body":"fallback login replay candidate"}`, login)
+	if err := pool.QueryRow(ctx, `
+		INSERT INTO pull_requests (
+			github_pull_request_id,
+			repository_id,
+			author_github_account_id,
+			number,
+			title,
+			state,
+			merged,
+			merged_at,
+			created_at_source,
+			updated_at_source,
+			base_branch,
+			head_branch,
+			changed_files,
+			additions,
+			deletions,
+			commits,
+			payload_jsonb
+		) VALUES (
+			$1, $2::uuid, NULL, 44, 'Replay fallback by linked login', 'closed', TRUE, $3, $3, $3, 'main', 'feature/fallback', 1, 14, 2, 1, $4::jsonb
+		)
+		RETURNING id::text
+	`, 995000+suffix%100000, repositoryID, occurredAt, payload).Scan(&pullRequestID); err != nil {
+		t.Fatalf("insert pull request: %v", err)
+	}
+
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO pull_request_files (pull_request_id, path, status, additions, deletions, changes)
+		VALUES ($1::uuid, 'internal/service/sync.go', 'modified', 14, 2, 16)
+	`, pullRequestID); err != nil {
+		t.Fatalf("insert pull request file: %v", err)
+	}
+
+	replay, err := svc.ReplayUser(ctx, userID, contracts.ReplayUserScoresRequest{TriggerType: "replay"}, now)
+	if err != nil {
+		t.Fatalf("ReplayUser() error = %v", err)
+	}
+	if replay.Events != 1 {
+		t.Fatalf("ReplayUser() events = %d, want 1", replay.Events)
+	}
+	if replay.Snapshot.TotalXP <= 0 {
+		t.Fatalf("ReplayUser() total_xp = %d, want positive", replay.Snapshot.TotalXP)
+	}
+}
+
 func assertCount(t *testing.T, ctx context.Context, pool *pgxpool.Pool, name, query, userID string, want int) {
 	t.Helper()
 
