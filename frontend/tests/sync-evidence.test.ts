@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { hasUserContributionEvidence } from "@/lib/presentation/sync-evidence";
+import {
+  deriveEffectiveSyncState,
+  hasUserContributionEvidence,
+  shouldShowSyncRefreshPill,
+} from "@/lib/presentation/sync-evidence";
 import type { UserProfile } from "@/types/gitrank";
 
 function buildUser(overrides: Partial<UserProfile> = {}): UserProfile {
@@ -119,5 +123,67 @@ describe("hasUserContributionEvidence", () => {
       ],
     });
     expect(hasUserContributionEvidence(user)).toBe(true);
+  });
+});
+
+describe("deriveEffectiveSyncState", () => {
+  it("returns partially_synced when backend says synced but evidence is absent", () => {
+    const user = buildUser({
+      syncStatus: {
+        state: "synced",
+        lastSyncedAt: "2026-05-27T00:00:00Z",
+        currentStep: "Profile snapshot is current",
+        progress: 100,
+        partialProfileAvailable: true,
+      },
+      mergedPrCount: 0,
+      contributions: [],
+    });
+    expect(deriveEffectiveSyncState(user)).toBe("partially_synced");
+  });
+
+  it("keeps synced when concrete PR evidence exists", () => {
+    const user = buildUser({
+      mergedPrCount: 1,
+      syncStatus: {
+        state: "synced",
+        lastSyncedAt: "2026-05-27T00:00:00Z",
+        currentStep: "Profile snapshot is current",
+        progress: 100,
+        partialProfileAvailable: false,
+      },
+    });
+    expect(deriveEffectiveSyncState(user)).toBe("synced");
+  });
+});
+
+describe("shouldShowSyncRefreshPill", () => {
+  it("returns false without contribution evidence", () => {
+    const user = buildUser({
+      mergedPrCount: 0,
+      contributions: [],
+      syncStatus: {
+        state: "synced",
+        lastSyncedAt: "2026-05-27T00:00:00Z",
+        currentStep: "Profile snapshot is current",
+        progress: 100,
+        partialProfileAvailable: true,
+      },
+    });
+    expect(shouldShowSyncRefreshPill(user)).toBe(false);
+  });
+
+  it("returns true for synced users with contribution evidence", () => {
+    const user = buildUser({
+      mergedPrCount: 2,
+      syncStatus: {
+        state: "synced",
+        lastSyncedAt: "2026-05-27T00:00:00Z",
+        currentStep: "Profile snapshot is current",
+        progress: 100,
+        partialProfileAvailable: false,
+      },
+    });
+    expect(shouldShowSyncRefreshPill(user)).toBe(true);
   });
 });

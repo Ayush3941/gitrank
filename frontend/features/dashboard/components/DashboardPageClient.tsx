@@ -27,7 +27,10 @@ import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
-import { hasUserContributionEvidence } from "@/lib/presentation/sync-evidence";
+import {
+  deriveEffectiveSyncState,
+  shouldShowSyncRefreshPill,
+} from "@/lib/presentation/sync-evidence";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import { Button } from "@/components/ui/button";
 
@@ -72,16 +75,8 @@ export function DashboardPageClient() {
     () => summarizeContributionStreak(user?.contributions ?? []),
     [user?.contributions],
   );
-  const hasContributionEvidence = useMemo(() => hasUserContributionEvidence(user), [user]);
-  const syncStateForDisplay = useMemo(() => {
-    if (!user) {
-      return undefined;
-    }
-    if (user.syncStatus.state === "synced" && !hasContributionEvidence) {
-      return "partially_synced" as const;
-    }
-    return user.syncStatus.state;
-  }, [hasContributionEvidence, user]);
+  const syncStateForDisplay = useMemo(() => deriveEffectiveSyncState(user), [user]);
+  const showRefreshPill = useMemo(() => shouldShowSyncRefreshPill(user), [user]);
   const abraPayload = useMemo(() => {
     if (!user) {
       return null;
@@ -215,7 +210,7 @@ export function DashboardPageClient() {
         )}
         actions={(
           <div className="flex flex-wrap items-center gap-2">
-            {syncStateForDisplay === "synced" && hasContributionEvidence ? (
+            {showRefreshPill ? (
               <SnapshotFreshnessPill refreshedAt={data.refreshedAt} label="Refreshed" />
             ) : (
               <span

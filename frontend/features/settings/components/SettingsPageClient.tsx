@@ -41,7 +41,7 @@ import {
   useTextScalePreference,
 } from "@/hooks/use-text-scale-preference";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
-import { hasUserContributionEvidence } from "@/lib/presentation/sync-evidence";
+import { deriveEffectiveSyncState, shouldShowSyncRefreshPill } from "@/lib/presentation/sync-evidence";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import { type ThemePreference, useThemePreference } from "@/hooks/use-theme-preference";
@@ -248,11 +248,8 @@ export function SettingsPageClient() {
     accountLinkStart.isPending;
   const pendingRepository = updateRepositoryVisibility.variables?.fullName ?? null;
   const hiddenRepositoryCount = data.user.repositories.filter((repository) => repository.visibility !== "Public").length;
-  const hasContributionEvidence = hasUserContributionEvidence(data.user);
-  const syncStateForDisplay =
-    data.user.syncStatus.state === "synced" && !hasContributionEvidence
-      ? "partially_synced"
-      : data.user.syncStatus.state;
+  const syncStateForDisplay = deriveEffectiveSyncState(data.user);
+  const showRefreshPill = shouldShowSyncRefreshPill(data.user);
   const accountActionErrorId = "settings-account-action-error";
 
   function handlePrivacyToggle(key: BackedPrivacyKey, checked: boolean) {
@@ -363,7 +360,7 @@ export function SettingsPageClient() {
         )}
         actions={(
           <div className="flex flex-wrap items-center gap-2">
-            {syncStateForDisplay === "synced" && hasContributionEvidence ? (
+            {showRefreshPill ? (
               <SnapshotFreshnessPill refreshedAt={data.refreshedAt} label="Refreshed" />
             ) : (
               <span
