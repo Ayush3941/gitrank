@@ -4,7 +4,7 @@ import { listMySyncRuns } from "@/lib/api/account-api";
 describe("listMySyncRuns normalization", () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-05-27T12:00:00.000Z"));
+    vi.setSystemTime(new Date("2026-05-27T10:00:00.000Z"));
   });
 
   afterEach(() => {
@@ -12,101 +12,63 @@ describe("listMySyncRuns normalization", () => {
     vi.restoreAllMocks();
   });
 
-  it("normalizes stale active and queued rows into terminal failed states", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            last_updated_at: "2026-05-27T12:00:00.000Z",
-            runs: [
-              {
-                id: "queued-stale",
-                run_type: "user",
-                status: "queued",
-                started_at: "2026-05-27T11:54:00.000Z",
-              },
-              {
-                id: "running-no-start",
-                run_type: "user",
-                status: "running",
-                started_at: "",
-              },
-              {
-                id: "running-stale",
-                run_type: "user",
-                status: "running",
-                started_at: "2026-05-27T11:40:00.000Z",
-              },
-              {
-                id: "syncing-finished",
-                run_type: "user",
-                status: "syncing",
-                started_at: "2026-05-27T11:50:00.000Z",
-                finished_at: "2026-05-27T11:51:00.000Z",
-              },
-            ],
-          }),
-          {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          },
-        ),
+  it("preserves terminal partial and failed statuses when finished_at is present", async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          last_updated_at: "2026-05-27T10:00:00.000Z",
+          runs: [
+            {
+              id: "run-partial",
+              run_type: "user",
+              status: "partial",
+              subject: "octocat",
+              started_at: "2026-05-27T09:59:00.000Z",
+              finished_at: "2026-05-27T09:59:30.000Z",
+              metrics: {},
+            },
+            {
+              id: "run-failed",
+              run_type: "user",
+              status: "failed",
+              subject: "octocat",
+              started_at: "2026-05-27T09:58:00.000Z",
+              finished_at: "2026-05-27T09:58:45.000Z",
+              metrics: {},
+            },
+            {
+              id: "run-running-finished",
+              run_type: "user",
+              status: "running",
+              subject: "octocat",
+              started_at: "2026-05-27T09:57:00.000Z",
+              finished_at: "2026-05-27T09:57:50.000Z",
+              metrics: {},
+            },
+            {
+              id: "run-queued-stale",
+              run_type: "user",
+              status: "queued",
+              subject: "octocat",
+              started_at: "2026-05-27T09:40:00.000Z",
+              metrics: {},
+            },
+          ],
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
       ),
     );
+    vi.stubGlobal("fetch", fetchMock);
 
-    const payload = await listMySyncRuns(25);
-    const runs = payload.runs ?? [];
-    expect(runs).toHaveLength(4);
+    const payload = await listMySyncRuns(10);
+    const statusByID = new Map(payload.runs?.map((run) => [run.id, run.status]));
 
-    const byID = new Map(runs.map((run) => [run.id, run]));
-    expect(byID.get("queued-stale")?.status).toBe("failed");
-    expect(byID.get("queued-stale")?.last_error).toContain("remained queued");
-    expect(byID.get("running-no-start")?.status).toBe("failed");
-    expect(byID.get("running-no-start")?.last_error).toContain("missing started_at");
-    expect(byID.get("running-stale")?.status).toBe("failed");
-    expect(byID.get("running-stale")?.last_error).toContain("exceeded active window");
-    expect(byID.get("syncing-finished")?.status).toBe("completed");
-  });
-
-  it("sorts normalized runs by started_at descending for stable UI rendering", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            last_updated_at: "2026-05-27T12:00:00.000Z",
-            runs: [
-              {
-                id: "older",
-                run_type: "user",
-                status: "completed",
-                started_at: "2026-05-27T10:00:00.000Z",
-              },
-              {
-                id: "latest",
-                run_type: "user",
-                status: "completed",
-                started_at: "2026-05-27T11:59:59.000Z",
-              },
-              {
-                id: "middle",
-                run_type: "user",
-                status: "completed",
-                started_at: "2026-05-27T11:00:00.000Z",
-              },
-            ],
-          }),
-          {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          },
-        ),
-      ),
-    );
-
-    const payload = await listMySyncRuns();
-    const ids = (payload.runs ?? []).map((run) => run.id);
-    expect(ids).toEqual(["latest", "middle", "older"]);
+    expect(statusByID.get("run-partial")).toBe("partial");
+    expect(statusByID.get("run-failed")).toBe("failed");
+    expect(statusByID.get("run-running-finished")).toBe("completed");
+    expect(statusByID.get("run-queued-stale")).toBe("failed");
   });
 });

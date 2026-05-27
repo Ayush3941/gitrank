@@ -183,6 +183,34 @@ describe("deriveEffectiveSyncState", () => {
     });
     expect(deriveEffectiveSyncState(user, ["queued"])).toBe("syncing");
   });
+
+  it("returns partially_synced when latest terminal sync run is partial", () => {
+    const user = buildUser({
+      mergedPrCount: 2,
+      syncStatus: {
+        state: "synced",
+        lastSyncedAt: "2026-05-27T00:00:00Z",
+        currentStep: "Profile snapshot is current",
+        progress: 100,
+        partialProfileAvailable: false,
+      },
+    });
+    expect(deriveEffectiveSyncState(user, ["partial"])).toBe("partially_synced");
+  });
+
+  it("returns failed when latest terminal sync run is failed", () => {
+    const user = buildUser({
+      mergedPrCount: 2,
+      syncStatus: {
+        state: "synced",
+        lastSyncedAt: "2026-05-27T00:00:00Z",
+        currentStep: "Profile snapshot is current",
+        progress: 100,
+        partialProfileAvailable: false,
+      },
+    });
+    expect(deriveEffectiveSyncState(user, ["failed"])).toBe("failed");
+  });
 });
 
 describe("shouldShowSyncRefreshPill", () => {
@@ -227,5 +255,19 @@ describe("shouldShowSyncRefreshPill", () => {
       },
     });
     expect(shouldShowSyncRefreshPill(user, ["running"])).toBe(false);
+  });
+
+  it("returns false when latest terminal sync status is partial", () => {
+    const user = buildUser({
+      mergedPrCount: 2,
+      syncStatus: {
+        state: "synced",
+        lastSyncedAt: "2026-05-27T00:00:00Z",
+        currentStep: "Profile snapshot is current",
+        progress: 100,
+        partialProfileAvailable: false,
+      },
+    });
+    expect(shouldShowSyncRefreshPill(user, ["partial"])).toBe(false);
   });
 });

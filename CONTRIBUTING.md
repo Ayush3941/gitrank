@@ -280,6 +280,8 @@ Recent no-slowdown refinement (May 27, 2026):
 - Sync executors now transition matching queued rows to `running` when execution actually starts, so run timelines reflect real lifecycle state (`queued -> running -> completed/failed`) instead of remaining queued until terminal write.
 - Settings sync activity status taxonomy now treats backend `partial` runs as a first-class UI state (separate from `completed`) so degraded sync outcomes are visible in filters and chips.
 - Contributions, Badges, Quests, and Leaderboard now derive sync freshness from live sync-run statuses (same pattern as Dashboard/Settings) so active queue/running work consistently renders as `Syncing` across all dashboard tabs.
+- Frontend sync-run normalization now preserves backend terminal `partial` and `failed` statuses when `finished_at` is present (instead of collapsing all finished runs to `completed`), so degraded outcomes remain visible across settings diagnostics and sync-state derivation.
+- Effective sync-state derivation now interprets latest terminal run outcomes (`partial` -> `partially_synced`, `failed` -> `failed`) after pending-run checks, preventing stale success chips during degraded or failed terminal sync outcomes.
 
 ## Frontend Excellence Checklist (No-Slowdown Backlog)
 

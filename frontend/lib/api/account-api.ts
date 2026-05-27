@@ -11,6 +11,9 @@ const SYNC_RUN_ACTIVE_WINDOW_MS = Math.max(120_000, USER_SYNC_EXECUTION_TIMEOUT_
 const SYNC_RUN_QUEUED_WINDOW_MS = Math.max(180_000, SYNC_RUN_ACTIVE_WINDOW_MS * 2);
 const USER_SYNC_SELF_KEY = "__self__";
 const inFlightUserSyncRequests = new Map<string, Promise<ApiSyncExecutionResponse>>();
+const COMPLETED_SYNC_RUN_STATUSES = new Set(["completed", "succeeded", "success", "done"]);
+const PARTIAL_SYNC_RUN_STATUSES = new Set(["partial"]);
+const FAILED_SYNC_RUN_STATUSES = new Set(["failed", "cancelled", "canceled", "timed_out", "timeout"]);
 const ACTIVE_SYNC_RUN_STATUSES = new Set(["running", "syncing", "in_progress"]);
 const QUEUED_SYNC_RUN_STATUSES = new Set(["queued", "pending"]);
 
@@ -485,7 +488,17 @@ function normalizeSyncRunRecord(run: ApiSyncRunRecord, nowMs: number): ApiSyncRu
   let lastError = run.last_error;
 
   if (finishedMs !== null) {
-    normalized = "completed";
+    if (!normalized) {
+      normalized = "completed";
+    } else if (PARTIAL_SYNC_RUN_STATUSES.has(normalized)) {
+      normalized = "partial";
+    } else if (FAILED_SYNC_RUN_STATUSES.has(normalized)) {
+      normalized = "failed";
+    } else if (ACTIVE_SYNC_RUN_STATUSES.has(normalized) || QUEUED_SYNC_RUN_STATUSES.has(normalized)) {
+      normalized = "completed";
+    } else if (COMPLETED_SYNC_RUN_STATUSES.has(normalized)) {
+      normalized = "completed";
+    }
   } else if (!normalized) {
     if (startedMs === null) {
       normalized = "queued";

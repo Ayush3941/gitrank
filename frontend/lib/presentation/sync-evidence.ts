@@ -2,6 +2,8 @@ import type { UserProfile } from "@/types/gitrank";
 
 const ACTIVE_SYNC_RUN_STATUSES = new Set(["running", "syncing", "in_progress"]);
 const QUEUED_SYNC_RUN_STATUSES = new Set(["queued", "pending"]);
+const FAILED_SYNC_RUN_STATUSES = new Set(["failed", "cancelled", "canceled", "timed_out", "timeout"]);
+const PARTIAL_SYNC_RUN_STATUSES = new Set(["partial"]);
 
 export function hasUserContributionEvidence(user: UserProfile | null | undefined): boolean {
   if (!user) {
@@ -34,6 +36,13 @@ export function deriveEffectiveSyncState(
   if (hasPendingSyncRunStatuses(syncRunStatuses)) {
     return "syncing";
   }
+  const latestStatus = latestTerminalSyncRunStatus(syncRunStatuses);
+  if (latestStatus && PARTIAL_SYNC_RUN_STATUSES.has(latestStatus)) {
+    return "partially_synced";
+  }
+  if (latestStatus && FAILED_SYNC_RUN_STATUSES.has(latestStatus)) {
+    return "failed";
+  }
   if (user.syncStatus.state === "synced" && !hasUserContributionEvidence(user)) {
     return "partially_synced";
   }
@@ -64,4 +73,21 @@ function hasPendingSyncRunStatuses(syncRunStatuses: readonly string[] | undefine
     }
   }
   return false;
+}
+
+function latestTerminalSyncRunStatus(syncRunStatuses: readonly string[] | undefined): string | null {
+  if (!syncRunStatuses || syncRunStatuses.length === 0) {
+    return null;
+  }
+  for (const rawStatus of syncRunStatuses) {
+    const normalized = rawStatus.trim().toLowerCase();
+    if (!normalized) {
+      continue;
+    }
+    if (ACTIVE_SYNC_RUN_STATUSES.has(normalized) || QUEUED_SYNC_RUN_STATUSES.has(normalized)) {
+      continue;
+    }
+    return normalized;
+  }
+  return null;
 }
