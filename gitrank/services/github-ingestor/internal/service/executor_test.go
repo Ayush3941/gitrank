@@ -291,6 +291,11 @@ func TestUserSyncExecutionStatus(t *testing.T) {
 			want:    "partial",
 		},
 		{
+			name:    "partial when discovery window returns zero authored pull requests",
+			fetched: map[string]int{"authored_pull_request_discovery_empty": 1},
+			want:    "partial",
+		},
+		{
 			name: "partial when discovery is empty despite previously persisted authored pull requests",
 			fetched: map[string]int{
 				"authored_pull_request_discovery_empty": 1,
