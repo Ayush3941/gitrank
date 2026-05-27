@@ -356,6 +356,9 @@ func (e *Executor) SyncUser(
 	}
 
 	authoredPRSyncLimit := boundedAuthoredPRSyncLimit(e.cfg.GitHub, e.cfg.GitHub.AuthoredPRSyncLimit)
+	response.Fetched["authored_pull_request_sync_limit"] = authoredPRSyncLimit
+	response.Fetched["authored_pull_request_search_limit"] = boundedAuthoredPRSearchLimit(e.cfg.GitHub)
+	response.Fetched["authored_pull_request_timeout_seconds"] = int(boundedUserPRSyncTimeout(e.cfg).Seconds())
 	cursor, cursorErr := e.store.LoadAuthoredPRHistoryCursor(ctx, user)
 	if cursorErr != nil {
 		response.Fetched["authored_pull_request_cursor_load_failed"] = 1
@@ -2335,6 +2338,17 @@ func boundedAuthoredPRSyncLimit(cfg config.GitHub, limit int) int {
 		maxLimit = authoredPRSearchHardLimit
 	}
 	return min(limit, maxLimit)
+}
+
+func boundedAuthoredPRSearchLimit(cfg config.GitHub) int {
+	limit := cfg.AuthoredPRSearchLimit
+	if limit <= 0 {
+		return authoredPRSearchHardLimit
+	}
+	if limit > authoredPRSearchHardLimit {
+		return authoredPRSearchHardLimit
+	}
+	return limit
 }
 
 func gitHubStatusCodeFromError(err error) (int, bool) {

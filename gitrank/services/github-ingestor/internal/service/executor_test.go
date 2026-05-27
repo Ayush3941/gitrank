@@ -520,6 +520,20 @@ func TestBoundedAuthoredPRSyncLimit(t *testing.T) {
 	}
 }
 
+func TestBoundedAuthoredPRSearchLimit(t *testing.T) {
+	t.Parallel()
+
+	if got := boundedAuthoredPRSearchLimit(config.GitHub{}); got != authoredPRSearchHardLimit {
+		t.Fatalf("boundedAuthoredPRSearchLimit(empty) = %d, want %d", got, authoredPRSearchHardLimit)
+	}
+	if got := boundedAuthoredPRSearchLimit(config.GitHub{AuthoredPRSearchLimit: 150}); got != 150 {
+		t.Fatalf("boundedAuthoredPRSearchLimit(150) = %d, want 150", got)
+	}
+	if got := boundedAuthoredPRSearchLimit(config.GitHub{AuthoredPRSearchLimit: authoredPRSearchHardLimit + 250}); got != authoredPRSearchHardLimit {
+		t.Fatalf("boundedAuthoredPRSearchLimit(hard-cap) = %d, want %d", got, authoredPRSearchHardLimit)
+	}
+}
+
 func TestExecutorUserSyncLock(t *testing.T) {
 	t.Parallel()
 
