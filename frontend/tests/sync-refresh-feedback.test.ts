@@ -67,6 +67,21 @@ describe("buildUserSyncRefreshFeedback", () => {
     expect(feedback.message).toContain("bounded recent PR window");
   });
 
+  it("returns warning when PR sync targets exist but score replay produced zero events", () => {
+    const feedback = buildUserSyncRefreshFeedback(
+      execution({
+        status: "partial",
+        fetched: {
+          authored_pull_requests_selected: 5,
+          post_sync_score_replay_mismatch: 1,
+          post_sync_score_replay_events: 0,
+        },
+      }),
+    );
+    expect(feedback.tone).toBe("warning");
+    expect(feedback.message).toContain("produced no events yet");
+  });
+
   it("returns success when sync is queued", () => {
     const feedback = buildUserSyncRefreshFeedback(
       execution({ status: "queued" }),

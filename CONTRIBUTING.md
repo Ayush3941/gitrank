@@ -285,6 +285,7 @@ Recent no-slowdown refinement (May 27, 2026):
 - Effective sync-state derivation now interprets latest terminal run outcomes (`partial` -> `partially_synced`, `failed` -> `failed`) after pending-run checks, preventing stale success chips during degraded or failed terminal sync outcomes.
 - Sync truthiness now requires materialized profile evidence (`PR contribution evidence` or tracked `owner/repo` repository evidence) before rendering healthy synced freshness chips, reducing false "Synced/Refreshed" states on empty snapshots.
 - Scoring replay candidate loading now falls back to linked-account login matching when `author_github_account_id` is missing on synced PR rows, preventing zero-event replays caused by incomplete PR author-account linkage.
+- User sync execute now emits post-refresh diagnostics from score replay (`post_sync_score_replay_events`, `post_sync_score_replay_total_xp`, mismatch flags) and downgrades execute responses to `partial` when authored PR targets were discovered but replay produced zero events, so "sync completed" cannot silently mask empty score snapshots.
 
 ## Frontend Excellence Checklist (No-Slowdown Backlog)
 

@@ -113,12 +113,15 @@ func handleRepositorySyncExecution(w http.ResponseWriter, r *http.Request, clien
 
 func handleUserSyncExecution(w http.ResponseWriter, r *http.Request, client *http.Client, ingestorBaseURL, scoringBaseURL, profileBaseURL string) {
 	handleModeSyncExecution(w, r, client, ingestorBaseURL, "user", "/v1/sync/user/execute", func(ctx context.Context, principal authkit.Principal, execution *contracts.GitHubSyncExecutionResponse) error {
-		if err := refreshUserDashboardEvidence(ctx, client, principal.Subject, scoringBaseURL, profileBaseURL); err != nil {
+		if err := refreshUserDashboardEvidence(ctx, client, principal.Subject, scoringBaseURL, profileBaseURL, execution); err != nil {
 			if execution.Fetched == nil {
 				execution.Fetched = map[string]int{}
 			}
 			execution.Fetched["post_sync_refresh_failed"] = 1
 			return err
+		}
+		if execution.Fetched["post_sync_score_replay_mismatch"] > 0 && strings.EqualFold(strings.TrimSpace(execution.Status), "completed") {
+			execution.Status = "partial"
 		}
 		return nil
 	})
@@ -184,7 +187,13 @@ func handleModeSyncExecution(
 				return 0, nil, nil, fmt.Errorf("invalid github-ingestor execution contract")
 			}
 			if postProcessor != nil {
-				_ = postProcessor(r.Context(), principal, &execution)
+				if err := postProcessor(r.Context(), principal, &execution); err != nil {
+					if execution.Fetched == nil {
+						execution.Fetched = map[string]int{}
+					}
+					execution.Fetched["post_sync_refresh_failed"] = 1
+					execution.Status = "partial"
+				}
 			}
 			encoded, err := json.Marshal(execution)
 			if err != nil {
@@ -267,68 +276,84 @@ func allowRateLimit(w http.ResponseWriter, r *http.Request, limiter *rateLimiter
 	return false
 }
 
-func refreshUserDashboardEvidence(ctx context.Context, client *http.Client, subject, scoringBaseURL, profileBaseURL string) error {
+func refreshUserDashboardEvidence(
+	ctx context.Context,
+	client *http.Client,
+	subject, scoringBaseURL, profileBaseURL string,
+	execution *contracts.GitHubSyncExecutionResponse,
+) error {
 	userID, err := contracts.NormalizeUUID(subject, "subject")
 	if err != nil {
 		return fmt.Errorf("invalid authenticated subject: %w", err)
 	}
 
-	steps := []struct {
-		name       string
-		baseURL    string
-		path       string
-		request    any
-		expectCode int
-	}{
-		{
-			name:       "score replay",
-			baseURL:    scoringBaseURL,
-			path:       "/v1/score/users/" + userID + "/replay",
-			request:    contracts.ReplayUserScoresRequest{TriggerType: "live"},
-			expectCode: http.StatusAccepted,
-		},
-		{
-			name:       "profile refresh",
-			baseURL:    profileBaseURL,
-			path:       "/v1/profile/users/" + userID + "/refresh",
-			expectCode: http.StatusAccepted,
-		},
-		{
-			name:       "pr report backfill",
-			baseURL:    profileBaseURL,
-			path:       "/v1/profile/users/" + userID + "/pr-reports/backfill",
-			expectCode: http.StatusAccepted,
-		},
-		{
-			name:       "quest backfill",
-			baseURL:    profileBaseURL,
-			path:       "/v1/profile/users/" + userID + "/quests/backfill",
-			expectCode: http.StatusAccepted,
-		},
+	if execution != nil && execution.Fetched == nil {
+		execution.Fetched = map[string]int{}
 	}
 
-	for _, step := range steps {
-		if strings.TrimSpace(step.baseURL) == "" {
-			return fmt.Errorf("%s failed: missing upstream base URL", step.name)
+	scoreReplayPayload, err := postInternalJSON(
+		ctx,
+		client,
+		scoringBaseURL,
+		"/v1/score/users/"+userID+"/replay",
+		contracts.ReplayUserScoresRequest{TriggerType: "live"},
+		http.StatusAccepted,
+	)
+	if err != nil {
+		return fmt.Errorf("score replay failed: %w", err)
+	}
+	if execution != nil {
+		var replay contracts.ReplayUserScoresResponse
+		if len(scoreReplayPayload) > 0 && json.Unmarshal(scoreReplayPayload, &replay) == nil {
+			execution.Fetched["post_sync_score_replay_events"] = max(0, replay.Events)
+			execution.Fetched["post_sync_score_replay_total_xp"] = max(0, replay.Snapshot.TotalXP)
+			execution.Fetched["post_sync_score_replay_badges"] = len(replay.Badges)
+			if replay.Events == 0 {
+				execution.Fetched["post_sync_score_replay_empty"] = 1
+				if execution.Fetched["authored_pull_requests_selected"] > 0 {
+					execution.Fetched["post_sync_score_replay_mismatch"] = 1
+				}
+			}
 		}
-		if err := postInternalJSON(ctx, client, step.baseURL, step.path, step.request, step.expectCode); err != nil {
+	}
+
+	type profileStep struct {
+		name       string
+		path       string
+		expectCode int
+	}
+	for _, step := range []profileStep{
+		{name: "profile refresh", path: "/v1/profile/users/" + userID + "/refresh", expectCode: http.StatusAccepted},
+		{name: "pr report backfill", path: "/v1/profile/users/" + userID + "/pr-reports/backfill", expectCode: http.StatusAccepted},
+		{name: "quest backfill", path: "/v1/profile/users/" + userID + "/quests/backfill", expectCode: http.StatusAccepted},
+	} {
+		if _, err := postInternalJSON(ctx, client, profileBaseURL, step.path, nil, step.expectCode); err != nil {
 			return fmt.Errorf("%s failed: %w", step.name, err)
 		}
 	}
 	return nil
 }
 
-func postInternalJSON(ctx context.Context, client *http.Client, baseURL, path string, requestBody any, expectedStatus int) error {
+func postInternalJSON(
+	ctx context.Context,
+	client *http.Client,
+	baseURL, path string,
+	requestBody any,
+	expectedStatus int,
+) ([]byte, error) {
+	if strings.TrimSpace(baseURL) == "" {
+		return nil, errors.New("missing upstream base URL")
+	}
 	target, err := buildProxyURL(baseURL, path, "")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var body io.Reader
 	if requestBody != nil {
 		encoded, err := json.Marshal(requestBody)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		body = bytes.NewReader(encoded)
 	}
@@ -338,19 +363,23 @@ func postInternalJSON(ctx context.Context, client *http.Client, baseURL, path st
 
 	request, err := http.NewRequestWithContext(callCtx, http.MethodPost, target, body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	request.Header.Set("Content-Type", "application/json")
 	httpkit.InjectTraceContext(callCtx, request.Header)
 
 	response, err := client.Do(request)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer response.Body.Close()
 
 	if response.StatusCode == expectedStatus {
-		return nil
+		payload, readErr := io.ReadAll(io.LimitReader(response.Body, 128<<10))
+		if readErr != nil {
+			return nil, readErr
+		}
+		return payload, nil
 	}
 
 	payload, _ := io.ReadAll(io.LimitReader(response.Body, 8<<10))
@@ -358,14 +387,14 @@ func postInternalJSON(ctx context.Context, client *http.Client, baseURL, path st
 	if err := json.Unmarshal(payload, &contractError); err == nil {
 		message := strings.TrimSpace(contractError.Error.Message)
 		if message != "" {
-			return fmt.Errorf("status %d: %s", response.StatusCode, message)
+			return nil, fmt.Errorf("status %d: %s", response.StatusCode, message)
 		}
 	}
 	trimmedPayload := strings.TrimSpace(string(payload))
 	if trimmedPayload == "" {
-		return fmt.Errorf("status %d", response.StatusCode)
+		return nil, fmt.Errorf("status %d", response.StatusCode)
 	}
-	return fmt.Errorf("status %d: %s", response.StatusCode, trimmedPayload)
+	return nil, fmt.Errorf("status %d: %s", response.StatusCode, trimmedPayload)
 }
 
 func internalPostTimeout(path string) time.Duration {

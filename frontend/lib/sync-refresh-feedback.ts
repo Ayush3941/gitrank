@@ -23,6 +23,14 @@ export function buildUserSyncRefreshFeedback(
     };
   }
 
+  if ((fetched.post_sync_score_replay_mismatch ?? 0) > 0) {
+    return {
+      tone: "warning",
+      message:
+        "GitHub PR sync found new targets, but score replay produced no events yet. Keep this page open and refresh after processing catches up.",
+    };
+  }
+
   if ((fetched.authored_pull_request_backfill_incomplete ?? 0) > 0) {
     if ((fetched.authored_pull_request_discovery_empty ?? 0) > 0) {
       return {
