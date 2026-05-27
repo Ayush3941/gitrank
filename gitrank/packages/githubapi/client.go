@@ -286,7 +286,7 @@ func (c *RESTClient) once(
 		return responseBody, meta, false, nil
 	}
 
-	retry := isSecondaryRateLimited(response.StatusCode, responseBody)
+	retry := isRetryableRateLimit(response.StatusCode, response.Header, responseBody)
 	return nil, meta, retry, fmt.Errorf("GitHub API %s %s failed with status %d", method, target.String(), response.StatusCode)
 }
 
@@ -509,7 +509,7 @@ func (c *GraphQLClient) once(
 		return body, meta, false, nil
 	}
 
-	retry := isSecondaryRateLimited(response.StatusCode, body)
+	retry := isRetryableRateLimit(response.StatusCode, response.Header, body)
 	return nil, meta, retry, fmt.Errorf("GitHub GraphQL request failed with status %d", response.StatusCode)
 }
 
@@ -602,12 +602,30 @@ func sleepWithContext(ctx context.Context, duration time.Duration) error {
 	}
 }
 
-func isSecondaryRateLimited(status int, body []byte) bool {
+func isRetryableRateLimit(status int, headers http.Header, body []byte) bool {
 	if status != http.StatusForbidden && status != http.StatusTooManyRequests {
 		return false
 	}
+	if ParseRetryAfter(headers.Get("Retry-After"), time.Now()) > 0 {
+		return true
+	}
+	if remaining, ok := parseIntHeaderPresence(headers.Get("X-RateLimit-Remaining")); ok && remaining <= 0 {
+		return true
+	}
 	message := strings.ToLower(string(body))
-	return strings.Contains(message, "secondary rate limit")
+	return strings.Contains(message, "secondary rate limit") ||
+		strings.Contains(message, "rate limit") ||
+		strings.Contains(message, "abuse detection")
+}
+
+func parseIntHeaderPresence(value string) (int, bool) {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return 0, false
+	}
+	var parsed int
+	_, _ = fmt.Sscanf(value, "%d", &parsed)
+	return parsed, true
 }
 
 func isGraphQLRateLimit(errors []GraphQLError) bool {

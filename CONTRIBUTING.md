@@ -291,6 +291,7 @@ Recent no-slowdown refinement (May 27, 2026):
 - Authored PR discovery now performs a bounded one-year `created` rescan when normal incremental/backfill windows return zero targets, so cursor drift or sparse windows do not strand active users at empty sync snapshots.
 - User sync execution status now reports `partial` whenever authored PR discovery is empty (even without prior persisted history), preventing false `completed` runs when a refresh produced zero PR evidence.
 - Dashboard hero next-action logic now uses the same derived effective sync state used by top-level sync chips, preventing conflicting “synced” vs “refresh evidence” cues inside the same dashboard render.
+- GitHub API retry logic now treats documented rate-limit signals (`Retry-After`, `X-RateLimit-Remaining=0`, and rate-limit/abuse messages on 403/429) as retryable for both REST and GraphQL, reducing avoidable sync failures during primary and secondary throttling windows.
 
 ## Frontend Excellence Checklist (No-Slowdown Backlog)
 

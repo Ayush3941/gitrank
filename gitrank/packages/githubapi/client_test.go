@@ -272,6 +272,78 @@ func TestRESTClientRetriesSecondaryRateLimitBeforeSuccess(t *testing.T) {
 	}
 }
 
+func TestIsRetryableRateLimitUsesHeaderSignals(t *testing.T) {
+	headers := make(http.Header)
+	headers.Set("X-RateLimit-Remaining", "0")
+	if !isRetryableRateLimit(http.StatusTooManyRequests, headers, []byte(`{"message":"slow down"}`)) {
+		t.Fatal("isRetryableRateLimit() = false, want true when remaining is zero")
+	}
+
+	headers = make(http.Header)
+	headers.Set("Retry-After", "3")
+	if !isRetryableRateLimit(http.StatusForbidden, headers, []byte(`{"message":"forbidden"}`)) {
+		t.Fatal("isRetryableRateLimit() = false, want true when Retry-After is present")
+	}
+
+	headers = make(http.Header)
+	if isRetryableRateLimit(http.StatusForbidden, headers, []byte(`{"message":"bad credentials"}`)) {
+		t.Fatal("isRetryableRateLimit() = true, want false for non-rate-limit forbidden response")
+	}
+}
+
+func TestRESTClientRetriesPrimaryRateLimitFromHeadersBeforeSuccess(t *testing.T) {
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		requests++
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("X-RateLimit-Limit", "5000")
+		if requests < 3 {
+			w.Header().Set("X-RateLimit-Remaining", "0")
+			w.Header().Set("X-RateLimit-Reset", "1")
+			w.WriteHeader(http.StatusTooManyRequests)
+			_ = json.NewEncoder(w).Encode(map[string]string{
+				"message": "API rate limit exceeded",
+			})
+			return
+		}
+		w.Header().Set("X-RateLimit-Remaining", "4987")
+		_ = json.NewEncoder(w).Encode(map[string]string{"status": "recovered"})
+	}))
+	defer server.Close()
+
+	client, err := NewRESTClient(ClientConfig{
+		BaseURL:                        server.URL + "/",
+		APIVersion:                     "2026-03-10",
+		UserAgent:                      "GitRank/test",
+		HTTPClient:                     server.Client(),
+		SecondaryBackoff:               time.Millisecond,
+		MaxConcurrency:                 1,
+		CircuitBreakerFailureThreshold: 2,
+		CircuitBreakerOpenInterval:     time.Hour,
+		CircuitBreakerHalfOpenMax:      1,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	var payload struct {
+		Status string `json:"status"`
+	}
+	meta, err := client.GetJSON(context.Background(), "/repos/octo/repo", nil, ConditionalRequest{}, &payload)
+	if err != nil {
+		t.Fatalf("GetJSON() error = %v", err)
+	}
+	if payload.Status != "recovered" {
+		t.Fatalf("payload status = %q, want recovered", payload.Status)
+	}
+	if requests != 3 {
+		t.Fatalf("server requests = %d, want two retries then success", requests)
+	}
+	if meta.RateLimit.Remaining != 4987 {
+		t.Fatalf("remaining = %d, want final response rate-limit metadata", meta.RateLimit.Remaining)
+	}
+}
+
 func TestRESTClientBackoffDelayHonorsRetryAfterHeader(t *testing.T) {
 	client := &RESTClient{secondaryBackoff: time.Hour}
 	if got := client.backoffDelay(2, RateLimitStatus{RetryAfter: "7"}); got != 7*time.Second {
