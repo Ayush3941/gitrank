@@ -249,11 +249,67 @@ func (s *Service) ListSyncRuns(ctx context.Context, filter contracts.GitHubSyncR
 	if err != nil {
 		return contracts.GitHubSyncRunListResponse{}, err
 	}
+	runs = normalizeSyncRunViews(runs, time.Now().UTC(), syncRunActiveWindow(s.cfg.GitHub))
 	return contracts.GitHubSyncRunListResponse{
 		Runs:          runs,
 		AppliedFilter: normalized,
 		LastUpdatedAt: time.Now().UTC(),
 	}, nil
+}
+
+func normalizeSyncRunViews(
+	runs []contracts.GitHubSyncRunView,
+	now time.Time,
+	activeWindow time.Duration,
+) []contracts.GitHubSyncRunView {
+	if len(runs) == 0 {
+		return runs
+	}
+	if activeWindow <= 0 {
+		activeWindow = 2 * time.Minute
+	}
+
+	for index := range runs {
+		run := &runs[index]
+		status := strings.ToLower(strings.TrimSpace(run.Status))
+		switch status {
+		case "":
+			if run.FinishedAt != nil && !run.FinishedAt.IsZero() {
+				run.Status = "completed"
+			} else {
+				run.Status = "running"
+			}
+		case "running", "syncing", "in_progress":
+			if run.FinishedAt != nil && !run.FinishedAt.IsZero() {
+				run.Status = "completed"
+				continue
+			}
+			run.Status = "running"
+			if !run.StartedAt.IsZero() && now.Sub(run.StartedAt) > activeWindow {
+				run.Status = "failed"
+				if strings.TrimSpace(run.LastError) == "" {
+					run.LastError = "sync execution exceeded active window and was marked failed"
+				}
+			}
+		default:
+			run.Status = status
+		}
+	}
+	return runs
+}
+
+func syncRunActiveWindow(cfg config.GitHub) time.Duration {
+	window := cfg.UserPRSyncTimeoutMax
+	if window <= 0 {
+		window = cfg.UserPRSyncTimeoutDefault
+	}
+	if window <= 0 {
+		window = 2 * time.Minute
+	}
+	if window < time.Minute {
+		window = time.Minute
+	}
+	return window + 30*time.Second
 }
 
 func (r PersistResult) EntityCounts() map[string]int {
