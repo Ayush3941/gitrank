@@ -37,6 +37,7 @@ import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { deduplicateContributionsByPullRequest } from "@/lib/presentation/contribution-dedup";
 import {
   deriveEffectiveSyncState,
+  selectProfileSyncRunStatuses,
   shouldShowSyncRefreshPill,
 } from "@/lib/presentation/sync-evidence";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
@@ -149,7 +150,7 @@ export function ContributionsPageClient() {
     () => summarizeContributionStreak(profile?.user.contributions ?? []),
     [profile?.user.contributions],
   );
-  const syncRunStatuses = syncRunsQuery.data?.runs?.map((run) => run.status) ?? [];
+  const syncRunStatuses = selectProfileSyncRunStatuses(syncRunsQuery.data?.runs, profile?.user);
   const syncStateForDisplay = deriveEffectiveSyncState(profile?.user, syncRunStatuses);
   const showRefreshPill = shouldShowSyncRefreshPill(profile?.user, syncRunStatuses);
   const abraContributionSample = useMemo(

@@ -4,6 +4,13 @@ const ACTIVE_SYNC_RUN_STATUSES = new Set(["running", "syncing", "in_progress"]);
 const QUEUED_SYNC_RUN_STATUSES = new Set(["queued", "pending"]);
 const FAILED_SYNC_RUN_STATUSES = new Set(["failed", "cancelled", "canceled", "timed_out", "timeout"]);
 const PARTIAL_SYNC_RUN_STATUSES = new Set(["partial"]);
+const PROFILE_SYNC_RUN_TYPES = new Set(["", "user"]);
+
+export type ProfileSyncRunStatusSource = {
+  status?: string | null;
+  run_type?: string | null;
+  requested_user?: string | null;
+};
 
 export function hasUserContributionEvidence(user: UserProfile | null | undefined): boolean {
   if (!user) {
@@ -79,6 +86,28 @@ export function shouldShowSyncRefreshPill(
   return deriveEffectiveSyncState(user, syncRunStatuses) === "synced" && hasUserMaterializedSyncEvidence(user);
 }
 
+export function selectProfileSyncRunStatuses(
+  runs: readonly ProfileSyncRunStatusSource[] | null | undefined,
+  user: UserProfile | null | undefined,
+): string[] {
+  if (!runs || runs.length === 0) {
+    return [];
+  }
+  const normalizedUser = normalizeRunToken(user?.username);
+  const statuses: string[] = [];
+  for (const run of runs) {
+    const status = normalizeRunToken(run.status);
+    if (!status) {
+      continue;
+    }
+    if (!isProfileSyncRun(run, normalizedUser)) {
+      continue;
+    }
+    statuses.push(status);
+  }
+  return statuses;
+}
+
 function hasPendingSyncRunStatuses(syncRunStatuses: readonly string[] | undefined): boolean {
   if (!syncRunStatuses || syncRunStatuses.length === 0) {
     return false;
@@ -110,4 +139,26 @@ function latestTerminalSyncRunStatus(syncRunStatuses: readonly string[] | undefi
     return normalized;
   }
   return null;
+}
+
+function isProfileSyncRun(run: ProfileSyncRunStatusSource, normalizedUser: string): boolean {
+  const runType = normalizeRunToken(run.run_type);
+  if (!PROFILE_SYNC_RUN_TYPES.has(runType)) {
+    return false;
+  }
+  if (!normalizedUser) {
+    return true;
+  }
+  const requestedUser = normalizeRunToken(run.requested_user);
+  if (!requestedUser) {
+    return true;
+  }
+  return requestedUser === normalizedUser;
+}
+
+function normalizeRunToken(value: string | null | undefined): string {
+  if (typeof value !== "string") {
+    return "";
+  }
+  return value.trim().toLowerCase();
 }

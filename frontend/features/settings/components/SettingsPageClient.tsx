@@ -41,7 +41,11 @@ import {
   useTextScalePreference,
 } from "@/hooks/use-text-scale-preference";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
-import { deriveEffectiveSyncState, shouldShowSyncRefreshPill } from "@/lib/presentation/sync-evidence";
+import {
+  deriveEffectiveSyncState,
+  selectProfileSyncRunStatuses,
+  shouldShowSyncRefreshPill,
+} from "@/lib/presentation/sync-evidence";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
@@ -251,7 +255,7 @@ export function SettingsPageClient() {
     accountLinkStart.isPending;
   const pendingRepository = updateRepositoryVisibility.variables?.fullName ?? null;
   const hiddenRepositoryCount = data.user.repositories.filter((repository) => repository.visibility !== "Public").length;
-  const syncRunStatuses = syncRunsQuery.data?.runs?.map((run) => run.status) ?? [];
+  const syncRunStatuses = selectProfileSyncRunStatuses(syncRunsQuery.data?.runs, data.user);
   const syncStateForDisplay = deriveEffectiveSyncState(data.user, syncRunStatuses);
   const showRefreshPill = shouldShowSyncRefreshPill(data.user, syncRunStatuses);
   const latestSyncRun = syncRunsQuery.data?.runs?.[0];

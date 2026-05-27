@@ -4,6 +4,7 @@ import {
   hasUserContributionEvidence,
   hasUserMaterializedSyncEvidence,
   hasUserRepositoryEvidence,
+  selectProfileSyncRunStatuses,
   shouldShowSyncRefreshPill,
 } from "@/lib/presentation/sync-evidence";
 import type { UserProfile } from "@/types/gitrank";
@@ -342,5 +343,34 @@ describe("shouldShowSyncRefreshPill", () => {
       },
     });
     expect(shouldShowSyncRefreshPill(user, ["partial"])).toBe(false);
+  });
+});
+
+describe("selectProfileSyncRunStatuses", () => {
+  it("keeps only user-scope runs for the active profile", () => {
+    const user = buildUser({ username: "Ayush3941" });
+    const statuses = selectProfileSyncRunStatuses(
+      [
+        { status: "running", run_type: "user", requested_user: "Ayush3941" },
+        { status: "partial", run_type: "pull_request", requested_user: "Ayush3941" },
+        { status: "failed", run_type: "user", requested_user: "octocat" },
+        { status: "completed", run_type: "user" },
+      ],
+      user,
+    );
+    expect(statuses).toStrictEqual(["running", "completed"]);
+  });
+
+  it("ignores runs without status or with non-user run type", () => {
+    const user = buildUser({ username: "octocat" });
+    const statuses = selectProfileSyncRunStatuses(
+      [
+        { status: "", run_type: "user", requested_user: "octocat" },
+        { status: "queued", run_type: "repository", requested_user: "octocat" },
+        { status: "partial", run_type: "user", requested_user: "octocat" },
+      ],
+      user,
+    );
+    expect(statuses).toStrictEqual(["partial"]);
   });
 });

@@ -30,6 +30,7 @@ import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
 import {
   deriveEffectiveSyncState,
+  selectProfileSyncRunStatuses,
   shouldShowSyncRefreshPill,
 } from "@/lib/presentation/sync-evidence";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
@@ -74,8 +75,8 @@ export function DashboardPageClient() {
   const user = data?.user;
   const recentReports = data?.recentReports ?? [];
   const syncRunStatuses = useMemo(
-    () => syncRunsQuery.data?.runs.map((run) => run.status).filter(Boolean) ?? [],
-    [syncRunsQuery.data?.runs],
+    () => selectProfileSyncRunStatuses(syncRunsQuery.data?.runs, user),
+    [syncRunsQuery.data?.runs, user],
   );
   const streak = useMemo(
     () => summarizeContributionStreak(user?.contributions ?? []),

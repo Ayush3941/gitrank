@@ -32,6 +32,7 @@ import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
 import { formatRelativeDays } from "@/lib/formatters";
 import {
   deriveEffectiveSyncState,
+  selectProfileSyncRunStatuses,
   shouldShowSyncRefreshPill,
 } from "@/lib/presentation/sync-evidence";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
@@ -124,7 +125,7 @@ export function LeaderboardPageClient() {
         currentUser: rows.find((row) => row.isCurrentUser),
       }
     : null;
-  const syncRunStatuses = syncRunsQuery.data?.runs?.map((run) => run.status) ?? [];
+  const syncRunStatuses = selectProfileSyncRunStatuses(syncRunsQuery.data?.runs, myProfile?.user);
   const syncStateForDisplay = deriveEffectiveSyncState(myProfile?.user, syncRunStatuses);
   const showRefreshPill = shouldShowSyncRefreshPill(myProfile?.user, syncRunStatuses);
   const safeVisibleRowCount = Math.min(rows.length, visibleRowCount);

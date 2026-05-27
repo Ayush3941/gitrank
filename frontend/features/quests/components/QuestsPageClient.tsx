@@ -32,6 +32,7 @@ import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import {
   deriveEffectiveSyncState,
+  selectProfileSyncRunStatuses,
   shouldShowSyncRefreshPill,
 } from "@/lib/presentation/sync-evidence";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
@@ -79,7 +80,7 @@ export function QuestsPageClient() {
   const { data, isLoading, isError, refetch } = useQuests();
   const quests = data?.quests ?? [];
   const profile = data?.profile;
-  const syncRunStatuses = syncRunsQuery.data?.runs?.map((run) => run.status) ?? [];
+  const syncRunStatuses = selectProfileSyncRunStatuses(syncRunsQuery.data?.runs, profile?.user);
   const syncStateForDisplay = deriveEffectiveSyncState(profile?.user, syncRunStatuses);
   const showRefreshPill = shouldShowSyncRefreshPill(profile?.user, syncRunStatuses);
   const questSnapshotRefreshedAt =
