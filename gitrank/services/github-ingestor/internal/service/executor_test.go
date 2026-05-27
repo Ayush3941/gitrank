@@ -290,6 +290,14 @@ func TestUserSyncExecutionStatus(t *testing.T) {
 			fetched: map[string]int{"authored_pull_request_scope_limited": 1},
 			want:    "partial",
 		},
+		{
+			name: "partial when discovery is empty despite previously persisted authored pull requests",
+			fetched: map[string]int{
+				"authored_pull_request_discovery_empty": 1,
+				"authored_pull_request_persisted_existing": 1,
+			},
+			want: "partial",
+		},
 	}
 
 	for _, test := range tests {

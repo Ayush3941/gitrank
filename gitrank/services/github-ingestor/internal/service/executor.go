@@ -379,21 +379,27 @@ func (e *Executor) SyncUser(
 		persistedCount, countErr := e.store.CountAuthoredPullRequestsByLogin(ctx, user)
 		if countErr != nil {
 			response.Fetched["authored_pull_request_persisted_count_failed"] = 1
-		} else if shouldForceAuthoredPRBootstrap(cursor, len(selection.Targets), persistedCount) {
-			retrySelection, retryErr := runtime.fetchAuthoredPullRequestTargets(ctx, user, authoredPRSyncLimit, authoredPRHistoryCursor{}, startedAt)
-			if retryErr != nil {
-				response.Fetched["authored_pull_request_bootstrap_retry_failed"] = 1
-				response.Fetched["authored_pull_request_search_failed"] = 1
-				if isRecoverableUserSyncSelectionError(retryErr) {
-					response.Fetched["authored_pull_request_search_retryable"] = 1
-				} else {
-					response.Fetched["authored_pull_request_search_unclassified"] = 1
-				}
-				_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, retryErr, PersistResult{})
-				return response, retryErr
+		} else {
+			response.Fetched["authored_pull_request_persisted_known"] = persistedCount
+			if persistedCount > 0 {
+				response.Fetched["authored_pull_request_persisted_existing"] = 1
 			}
-			selection = retrySelection
-			response.Fetched["authored_pull_request_cursor_bootstrap_replayed"] = 1
+			if shouldForceAuthoredPRBootstrap(cursor, len(selection.Targets), persistedCount) {
+				retrySelection, retryErr := runtime.fetchAuthoredPullRequestTargets(ctx, user, authoredPRSyncLimit, authoredPRHistoryCursor{}, startedAt)
+				if retryErr != nil {
+					response.Fetched["authored_pull_request_bootstrap_retry_failed"] = 1
+					response.Fetched["authored_pull_request_search_failed"] = 1
+					if isRecoverableUserSyncSelectionError(retryErr) {
+						response.Fetched["authored_pull_request_search_retryable"] = 1
+					} else {
+						response.Fetched["authored_pull_request_search_unclassified"] = 1
+					}
+					_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, retryErr, PersistResult{})
+					return response, retryErr
+				}
+				selection = retrySelection
+				response.Fetched["authored_pull_request_cursor_bootstrap_replayed"] = 1
+			}
 		}
 	}
 	authoredPullRequests := selection.Targets
@@ -2204,6 +2210,7 @@ func userSyncExecutionStatus(fetched map[string]int) string {
 	if fetched["authored_pull_request_search_incomplete"] > 0 ||
 		fetched["authored_pull_request_search_overflow"] > 0 ||
 		fetched["authored_pull_request_backfill_incomplete"] > 0 ||
+		(fetched["authored_pull_request_discovery_empty"] > 0 && fetched["authored_pull_request_persisted_existing"] > 0) ||
 		fetched["authored_pull_requests_retryable"] > 0 ||
 		fetched["authored_pull_requests_skipped"] > 0 ||
 		fetched["authored_pull_requests_failed"] > 0 ||
