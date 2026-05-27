@@ -268,6 +268,7 @@ export function DashboardPageClient() {
           archetype={abraInsights.data?.archetype ?? fallbackArchetype}
           identitySummary={abraInsights.data?.identitySummary ?? fallbackIdentitySummary}
           aiMode={abraInsights.data?.generatedBy ?? "deterministic"}
+          effectiveSyncState={syncStateForDisplay}
         />
       </section>
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-12">

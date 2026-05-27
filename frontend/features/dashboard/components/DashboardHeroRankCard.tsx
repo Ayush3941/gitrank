@@ -16,15 +16,18 @@ export function DashboardHeroRankCard({
   archetype,
   identitySummary,
   aiMode,
+  effectiveSyncState,
 }: {
   user: UserProfile;
   archetype?: string;
   identitySummary?: string;
-  aiMode?: "gemini" | "deterministic";
+  aiMode?: "openai" | "deterministic";
+  effectiveSyncState?: UserProfile["syncStatus"]["state"];
 }) {
   const strongestSignals = uniqueDisplayValues(user.strongestSignals, 4);
+  const syncState = effectiveSyncState ?? user.syncStatus.state;
   const nextAction =
-    user.syncStatus.state !== "synced" || user.mergedPrCount === 0
+    syncState !== "synced" || user.mergedPrCount === 0
       ? {
           title: "Refresh contribution evidence",
           description: "Open sync settings to refresh PR evidence before rank progression.",
@@ -132,7 +135,7 @@ export function DashboardHeroRankCard({
         <div className="rounded-[1.75rem] border border-cyan-300/20 bg-cyan-400/8 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs font-medium text-cyan-200">
-              Identity brief ({aiMode === "gemini" ? "Gemini" : "Deterministic"})
+              Identity brief ({aiMode === "openai" ? "ChatGPT" : "Deterministic"})
             </p>
             <CopyTextButton
               text={identitySummary}

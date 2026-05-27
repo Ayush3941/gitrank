@@ -1185,6 +1185,100 @@ func TestExecutorFetchAuthoredPullRequestTargetsUsesGitHubSearch(t *testing.T) {
 	}
 }
 
+func TestExecutorFetchAuthoredPullRequestTargetsRescansWhenIncrementalIsEmpty(t *testing.T) {
+	requests := 0
+	rescanRequests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/search/issues" {
+			t.Fatalf("path = %q, want /search/issues", r.URL.Path)
+		}
+		if r.URL.Query().Get("per_page") != "100" {
+			t.Fatalf("per_page = %q, want 100", r.URL.Query().Get("per_page"))
+		}
+		requests++
+		query := r.URL.Query().Get("q")
+		w.Header().Set("Content-Type", "application/json")
+		if strings.Contains(query, "created:2025-05-20T12:00:00Z..2026-05-20T12:00:00Z") {
+			rescanRequests++
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"total_count":        1,
+				"incomplete_results": false,
+				"items": []map[string]any{
+					{
+						"number":     1480,
+						"created_at": "2025-08-20T10:00:00Z",
+						"updated_at": "2026-05-19T21:30:00Z",
+						"pull_request": map[string]any{
+							"url": "https://api.github.com/repos/hyperledger-labs/fabric-smart-client/pulls/1480",
+						},
+						"repository": map[string]any{
+							"full_name": "hyperledger-labs/fabric-smart-client",
+							"private":   false,
+						},
+					},
+				},
+			})
+			return
+		}
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"total_count":        0,
+			"incomplete_results": false,
+			"items":              []map[string]any{},
+		})
+	}))
+	defer server.Close()
+
+	client, err := githubapi.NewRESTClient(githubapi.ClientConfig{
+		BaseURL:          server.URL,
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		HTTPClient:       server.Client(),
+		SecondaryBackoff: time.Millisecond,
+		MaxConcurrency:   1,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	executor := NewExecutor(config.App{
+		GitHub: config.GitHub{
+			MaxPageSize:           100,
+			AuthoredPRSearchLimit: 100,
+		},
+	}, nil, client)
+
+	now := time.Date(2026, time.May, 20, 12, 0, 0, 0, time.UTC)
+	lastSynced := now.Add(-20 * time.Minute)
+	selection, err := executor.fetchAuthoredPullRequestTargets(
+		context.Background(),
+		"Ayush3941",
+		10,
+		authoredPRHistoryCursor{
+			LastSyncedAt:     &lastSynced,
+			BootstrapComplete: true,
+		},
+		now,
+	)
+	if err != nil {
+		t.Fatalf("fetchAuthoredPullRequestTargets() error = %v", err)
+	}
+	if requests < 3 {
+		t.Fatalf("requests = %d, want at least 3 queries (updated, created, rescan)", requests)
+	}
+	if rescanRequests != 1 {
+		t.Fatalf("rescan requests = %d, want 1", rescanRequests)
+	}
+	if selection.Fetched["authored_pull_request_rescan_windows"] != 1 {
+		t.Fatalf("rescan windows = %d, want 1", selection.Fetched["authored_pull_request_rescan_windows"])
+	}
+	if len(selection.Targets) != 1 {
+		t.Fatalf("targets len = %d, want 1 after rescan", len(selection.Targets))
+	}
+	if selection.Targets[0] != (authoredPullRequestTarget{Repository: "hyperledger-labs/fabric-smart-client", Number: 1480}) {
+		t.Fatalf("target = %+v, want hyperledger-labs/fabric-smart-client#1480", selection.Targets[0])
+	}
+}
+
 func TestExecutorFetchLiveInstallationRepositoryTargetsUsesPaginationAndFilters(t *testing.T) {
 	requests := 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

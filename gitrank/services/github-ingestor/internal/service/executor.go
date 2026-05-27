@@ -28,6 +28,7 @@ const (
 
 	authoredPRBootstrapLookback = 30 * 24 * time.Hour
 	authoredPRBackfillWindow    = 90 * 24 * time.Hour
+	authoredPRRescanLookback    = 365 * 24 * time.Hour
 	authoredPRMinWindowSpan     = time.Hour
 
 	pullRequestFilesMaxPages          = 30
@@ -1479,6 +1480,39 @@ func (e *Executor) fetchAuthoredPullRequestTargets(
 		backfillBefore = backfillStart.Add(-time.Second).UTC()
 		selection.NextCursor.BackfillBeforeAt = &backfillBefore
 		bootstrapComplete = false
+	}
+
+	if len(selection.Targets) == 0 {
+		rescanStart := now.Add(-authoredPRRescanLookback).UTC()
+		if rescanStart.Before(gitHubSearchEpoch()) {
+			rescanStart = gitHubSearchEpoch()
+		}
+		rescanWindow := authoredPullRequestWindow{
+			Qualifier: "created",
+			Start:     rescanStart,
+			End:       now,
+		}
+		rescanTargets, rescanStats, rescanErr := e.discoverAuthoredPullRequestTargetsInWindow(
+			ctx,
+			user,
+			rescanWindow,
+			perPage,
+			0,
+			maxTargets-len(selection.Targets),
+		)
+		if rescanErr != nil {
+			return authoredPullRequestSelection{}, rescanErr
+		}
+		selection.Targets = appendUniqueAuthoredPullRequestTargets(selection.Targets, rescanTargets, seenTargets, maxTargets)
+		selection.SearchIncomplete = selection.SearchIncomplete || rescanStats.incomplete
+		selection.SearchOverflow = selection.SearchOverflow || rescanStats.overflow
+		selection.Fetched["authored_pull_request_search_queries"] += rescanStats.searchQueries
+		selection.Fetched["authored_pull_request_discovery_windows"]++
+		selection.Fetched["authored_pull_request_rescan_windows"]++
+		if len(rescanTargets) == 0 {
+			selection.Fetched["authored_pull_request_rescan_empty"]++
+		}
+		combinedStats = mergeAuthoredPullRequestDiscoveryStats(combinedStats, rescanStats)
 	}
 
 	selection.Fetched["authored_pull_request_discovery_targets"] = len(selection.Targets)
