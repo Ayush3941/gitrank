@@ -42,6 +42,19 @@ describe("describeSyncRunOutcome", () => {
     expect(outcome.code).toBe("search_limited");
   });
 
+  it("returns score-replay-mismatch when replay emits zero events after target selection", () => {
+    const outcome = describeSyncRunOutcome(
+      run({
+        authored_pull_requests_selected: 5,
+        post_sync_score_replay_mismatch: 1,
+        post_sync_score_replay_events: 0,
+      }),
+    );
+    expect(outcome.code).toBe("score_replay_mismatch");
+    expect(outcome.message).toContain("selected 5 targets");
+    expect(outcome.message).toContain("emitted 0 events");
+  });
+
   it("returns synced-targets when authored PRs were selected", () => {
     const outcome = describeSyncRunOutcome(
       run({

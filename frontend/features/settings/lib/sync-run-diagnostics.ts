@@ -4,6 +4,7 @@ export type SyncRunDiagnostic = {
   code:
     | "zero_discovery_with_history"
     | "scope_limited"
+    | "score_replay_mismatch"
     | "search_limited"
     | "retryable_or_timeout"
     | "backfill_incomplete"
@@ -35,6 +36,8 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
   const retryable = metricCount(metrics, "authored_pull_requests_retryable") > 0;
   const timeout = metricCount(metrics, "authored_pull_requests_timeouts", "fetched_timeout_errors", "timeout_errors") > 0;
   const snapshotRefreshPending = metricCount(metrics, "post_sync_refresh_failed") > 0;
+  const scoreReplayMismatch = metricCount(metrics, "post_sync_score_replay_mismatch") > 0;
+  const scoreReplayEvents = metricCount(metrics, "post_sync_score_replay_events");
   const selectedAuthoredPRs = metricCount(metrics, "authored_pull_requests_selected");
 
   if (zeroDiscoveryWithHistory) {
@@ -49,6 +52,14 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
       code: "scope_limited",
       message:
         "GitHub returned limited authorization scope for authored PR discovery. Reconnect GitHub to expand accessible PR evidence.",
+    };
+  }
+  if (scoreReplayMismatch) {
+    const selectedTargets = selectedAuthoredPRs > 0 ? selectedAuthoredPRs : "new";
+    return {
+      code: "score_replay_mismatch",
+      message:
+        `Authored PR sync selected ${selectedTargets} target${selectedAuthoredPRs === 1 ? "" : "s"}, but score replay emitted ${scoreReplayEvents} events. Keep auto-sync active and refresh after replay catches up.`,
     };
   }
   if (discoveryEmpty) {
