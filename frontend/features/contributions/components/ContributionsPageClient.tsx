@@ -354,7 +354,7 @@ export function ContributionsPageClient() {
         <StaleState
           message={
             syncStateForDisplay === "partially_synced"
-              ? "Contribution snapshot exists, but scored PR evidence is still empty. Run sync again after GitHub processing completes."
+              ? "Contribution snapshot exists, but scored PR evidence is still empty. Keep auto-sync active and refresh after GitHub processing completes."
               : `Contribution evidence refreshed ${formatRelativeDays(
                   profile.refreshedAt,
                 )}. New PR rows can appear after the next sync.`

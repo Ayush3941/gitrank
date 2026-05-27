@@ -232,7 +232,7 @@ export function DashboardPageClient() {
         <StaleState
           message={
             syncStateForDisplay === "partially_synced"
-              ? "Profile snapshot exists, but scored PR evidence is still empty. Run sync again after GitHub processing completes."
+              ? "Profile snapshot exists, but scored PR evidence is still empty. Keep auto-sync active and refresh after GitHub processing completes."
               : `Your GitRank profile was refreshed ${formatRelativeDays(data.refreshedAt)}.`
           }
           updatedAt={data.refreshedAt}

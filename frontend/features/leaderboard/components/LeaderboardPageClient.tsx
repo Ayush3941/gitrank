@@ -203,7 +203,7 @@ export function LeaderboardPageClient() {
         <StaleState
           message={
             syncStateForDisplay === "partially_synced"
-              ? "Leaderboard profile snapshot exists, but scored PR evidence is still empty. Run sync again after GitHub processing completes."
+              ? "Leaderboard profile snapshot exists, but scored PR evidence is still empty. Keep auto-sync active and refresh after GitHub processing completes."
               : `Leaderboard context refreshed ${formatRelativeDays(
                   myProfile.refreshedAt,
                 )}. Rank updates can lag until sync completes.`

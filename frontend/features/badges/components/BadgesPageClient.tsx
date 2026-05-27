@@ -302,7 +302,7 @@ export function BadgesPageClient() {
           <StaleState
             message={
               syncStateForDisplay === "partially_synced"
-                ? "Badge snapshot exists, but scored PR evidence is still empty. Run sync again after GitHub processing completes."
+                ? "Badge snapshot exists, but scored PR evidence is still empty. Keep auto-sync active and refresh after GitHub processing completes."
                 : `Badge snapshot refreshed ${formatRelativeDays(
                     profile.refreshedAt,
                   )}. New unlocks can appear after the next completed sync.`

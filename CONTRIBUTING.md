@@ -262,6 +262,12 @@ Recent no-slowdown refinement (May 24, 2026):
 - Background image visibility was increased with softer dark overlays and lower shell-glow opacity to keep text readable while preserving the cyberpunk visual layer.
 - Added `npm run check:jsx-ids` and fixed duplicate region IDs in the badges locked-lane panel to prevent section-control and accessibility collisions.
 
+Recent no-slowdown refinement (May 27, 2026):
+
+- Unified stale/partial sync messaging across Dashboard, Contributions, Badges, Quests, and Leaderboard to avoid manual "run sync" language and align with auto-sync behavior.
+- Settings account action copy now uses "Refresh snapshot" instead of "Sync now" to keep user-facing actions consistent with the background sync model.
+- Guard checks `npm run check:sync-copy-policy` and `npm run check:copy-tone` are required after copy-only sync UX edits to prevent regressions.
+
 ## Frontend Excellence Checklist (No-Slowdown Backlog)
 
 Use this as the master frontend refinement backlog. Keep improvements aligned
