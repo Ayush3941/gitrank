@@ -70,7 +70,7 @@ export function DashboardPageClient() {
   const constrainedNetwork = useNetworkConstraintPreference();
   const { data, isLoading, isError, refetch } = useDashboard();
   const runUserSync = useRunUserSync();
-  const syncRunsQuery = useSyncRuns(10);
+  const syncRunsQuery = useSyncRuns(10, { runType: "user", user: data?.user?.username });
   const scoreExplanationEventSent = useRef(false);
   const user = data?.user;
   const recentReports = data?.recentReports ?? [];

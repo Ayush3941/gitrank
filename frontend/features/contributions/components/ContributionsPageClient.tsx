@@ -89,7 +89,10 @@ export function ContributionsPageClient() {
     search: deferredSearch,
     sort: deferredSort,
   });
-  const syncRunsQuery = useSyncRuns(10);
+  const syncRunsQuery = useSyncRuns(10, {
+    runType: "user",
+    user: data?.profile?.user?.username,
+  });
   const runUserSync = useRunUserSync();
   const profile = data?.profile;
   const contributionUniverse = useMemo(

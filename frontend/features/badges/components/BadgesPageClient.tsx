@@ -80,7 +80,10 @@ const BadgeGrid = dynamic(
 export function BadgesPageClient() {
   const { data, isLoading, isError, refetch } = useBadges();
   const runUserSync = useRunUserSync();
-  const syncRunsQuery = useSyncRuns(10);
+  const syncRunsQuery = useSyncRuns(10, {
+    runType: "user",
+    user: data?.profile?.user?.username,
+  });
   const constrainedNetwork = useNetworkConstraintPreference();
   const lockedBadgePageSize = constrainedNetwork
     ? LOCKED_BADGE_PAGE_SIZE_CONSTRAINED

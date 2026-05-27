@@ -901,11 +901,15 @@ func TestSyncRunsRouteFiltersByAuthenticatedActor(t *testing.T) {
 	defer auth.Close()
 
 	var observedPath string
+	var observedRunType string
+	var observedUser string
 	var observedRequestedBySubject string
 	var observedRequestedByGitHubLogin string
 	var observedLimit string
 	ingestor := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		observedPath = r.URL.Path
+		observedRunType = r.URL.Query().Get("run_type")
+		observedUser = r.URL.Query().Get("user")
 		observedRequestedBySubject = r.URL.Query().Get("requested_by_subject")
 		observedRequestedByGitHubLogin = r.URL.Query().Get("requested_by_github_login")
 		observedLimit = r.URL.Query().Get("limit")
@@ -932,7 +936,7 @@ func TestSyncRunsRouteFiltersByAuthenticatedActor(t *testing.T) {
 	defer ingestor.Close()
 
 	router := NewRouter(testConfig(stubProfileServer().URL, auth.URL, ingestor.URL), testLogger(), "test")
-	request := httptest.NewRequest(http.MethodGet, "/v1/sync/runs?limit=10", nil)
+	request := httptest.NewRequest(http.MethodGet, "/v1/sync/runs?limit=10&run_type=user", nil)
 	request.Header.Set("Cookie", "gitrank_session=session-original; gitrank_csrf=csrf-original")
 	response := httptest.NewRecorder()
 
@@ -944,6 +948,12 @@ func TestSyncRunsRouteFiltersByAuthenticatedActor(t *testing.T) {
 	if observedPath != "/v1/sync/runs" {
 		t.Fatalf("path = %q, want %q", observedPath, "/v1/sync/runs")
 	}
+	if observedRunType != "user" {
+		t.Fatalf("run_type = %q, want %q", observedRunType, "user")
+	}
+	if observedUser != "octocat" {
+		t.Fatalf("user = %q, want %q", observedUser, "octocat")
+	}
 	if observedRequestedBySubject != "user-1" {
 		t.Fatalf("requested_by_subject = %q, want %q", observedRequestedBySubject, "user-1")
 	}
@@ -952,6 +962,38 @@ func TestSyncRunsRouteFiltersByAuthenticatedActor(t *testing.T) {
 	}
 	if observedLimit != "10" {
 		t.Fatalf("limit = %q, want %q", observedLimit, "10")
+	}
+}
+
+func TestSyncRunsRoutePreservesExplicitUserFilter(t *testing.T) {
+	auth := stubAuthServer()
+	defer auth.Close()
+
+	var observedUser string
+	ingestor := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		observedUser = r.URL.Query().Get("user")
+		_ = json.NewEncoder(w).Encode(contracts.GitHubSyncRunListResponse{
+			LastUpdatedAt: time.Date(2026, 5, 8, 9, 2, 0, 0, time.UTC),
+		})
+	}))
+	defer ingestor.Close()
+
+	router := NewRouter(testConfig(stubProfileServer().URL, auth.URL, ingestor.URL), testLogger(), "test")
+	request := httptest.NewRequest(
+		http.MethodGet,
+		"/v1/sync/runs?limit=10&run_type=user&user=octocat-alt",
+		nil,
+	)
+	request.Header.Set("Cookie", "gitrank_session=session-original; gitrank_csrf=csrf-original")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusOK, response.Body.String())
+	}
+	if observedUser != "octocat-alt" {
+		t.Fatalf("user = %q, want %q", observedUser, "octocat-alt")
 	}
 }
 

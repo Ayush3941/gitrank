@@ -93,6 +93,11 @@ func handleSyncRunList(w http.ResponseWriter, r *http.Request, client *http.Clie
 	if strings.TrimSpace(query.Get("requested_by_github_login")) == "" {
 		query.Set("requested_by_github_login", strings.TrimSpace(principal.GitHubLogin))
 	}
+	if strings.EqualFold(strings.TrimSpace(query.Get("run_type")), "user") &&
+		strings.TrimSpace(query.Get("user")) == "" &&
+		strings.TrimSpace(principal.GitHubLogin) != "" {
+		query.Set("user", strings.TrimSpace(principal.GitHubLogin))
+	}
 	if strings.TrimSpace(query.Get("limit")) == "" {
 		query.Set("limit", "25")
 	}

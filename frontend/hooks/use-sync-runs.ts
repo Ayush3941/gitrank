@@ -1,18 +1,30 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { listMySyncRuns, type ApiSyncRunListResponse } from "@/lib/api/account-api";
+import {
+  listMySyncRuns,
+  type ApiSyncRunListResponse,
+  type ListSyncRunsOptions,
+} from "@/lib/api/account-api";
 import { isActiveSyncRunStatus } from "@/features/settings/lib/sync-run-status";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { syncPollingPolicy } from "@/lib/runtime/sync-polling-policy";
 
-export function useSyncRuns(limit = 25) {
+type SyncRunsQueryFilter = Pick<ListSyncRunsOptions, "runType" | "user">;
+
+export function useSyncRuns(limit = 25, filter?: SyncRunsQueryFilter) {
   const constrainedNetwork = useNetworkConstraintPreference();
+  const runType = filter?.runType?.trim() ?? "";
+  const user = filter?.user?.trim() ?? "";
 
   return useQuery({
-    queryKey: ["sync", "runs", limit],
+    queryKey: ["sync", "runs", limit, runType, user],
     retry: false,
-    queryFn: () => listMySyncRuns(limit),
+    queryFn: () =>
+      listMySyncRuns(limit, {
+        runType: runType || undefined,
+        user: user || undefined,
+      }),
     staleTime: constrainedNetwork
       ? syncPollingPolicy.syncRunsStaleTimeConstrainedMs
       : syncPollingPolicy.syncRunsStaleTimeMs,

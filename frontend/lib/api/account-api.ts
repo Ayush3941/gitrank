@@ -78,6 +78,14 @@ export type ApiSyncRunListResponse = {
   last_updated_at: string;
 };
 
+export type ListSyncRunsOptions = {
+  runType?: string;
+  status?: string;
+  user?: string;
+  repository?: string;
+  correlationId?: string;
+};
+
 export type QueueSyncInput = {
   mode:
     | "installation"
@@ -150,10 +158,33 @@ export async function queueSyncRequest(input: QueueSyncInput): Promise<ApiSyncRe
   return adaptJSON<ApiSyncResponse>(response, "Sync request failed.");
 }
 
-export async function listMySyncRuns(limit = 25): Promise<ApiSyncRunListResponse> {
+export async function listMySyncRuns(
+  limit = 25,
+  options: ListSyncRunsOptions = {},
+): Promise<ApiSyncRunListResponse> {
   const params = new URLSearchParams();
   const normalizedLimit = Number.isFinite(limit) ? Math.max(1, Math.min(200, Math.floor(limit))) : 25;
   params.set("limit", String(normalizedLimit));
+  const runType = options.runType?.trim();
+  if (runType) {
+    params.set("run_type", runType);
+  }
+  const status = options.status?.trim();
+  if (status) {
+    params.set("status", status);
+  }
+  const user = options.user?.trim();
+  if (user) {
+    params.set("user", user);
+  }
+  const repository = options.repository?.trim();
+  if (repository) {
+    params.set("repository", repository);
+  }
+  const correlationID = options.correlationId?.trim();
+  if (correlationID) {
+    params.set("correlation_id", correlationID);
+  }
 
   const response = await fetch(`/api/sync/runs?${params.toString()}`, {
     method: "GET",

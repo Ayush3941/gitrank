@@ -63,7 +63,10 @@ const QuestCard = dynamic(
 export function QuestsPageClient() {
   const constrainedNetwork = useNetworkConstraintPreference();
   const runUserSync = useRunUserSync();
-  const syncRunsQuery = useSyncRuns(10);
+  const syncRunsQuery = useSyncRuns(10, {
+    runType: "user",
+    user: data?.profile?.user?.username,
+  });
   const questGroupPageSize = constrainedNetwork
     ? QUEST_GROUP_PAGE_SIZE_CONSTRAINED
     : QUEST_GROUP_PAGE_SIZE_DEFAULT;

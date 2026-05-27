@@ -71,4 +71,31 @@ describe("listMySyncRuns normalization", () => {
     expect(statusByID.get("run-running-finished")).toBe("completed");
     expect(statusByID.get("run-queued-stale")).toBe("failed");
   });
+
+  it("forwards optional sync-run filters in query params", async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          last_updated_at: "2026-05-27T10:00:00.000Z",
+          runs: [],
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await listMySyncRuns(25, {
+      runType: "user",
+      user: "Ayush3941",
+    });
+
+    const call = fetchMock.mock.calls[0]?.[0];
+    expect(typeof call).toBe("string");
+    expect(call).toContain("/api/sync/runs?");
+    expect(call).toContain("run_type=user");
+    expect(call).toContain("user=Ayush3941");
+  });
 });
