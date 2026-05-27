@@ -93,7 +93,7 @@ export function selectProfileSyncRunStatuses(
   if (!runs || runs.length === 0) {
     return [];
   }
-  const normalizedUser = normalizeRunToken(user?.username);
+  const normalizedUser = normalizeGitHubLoginToken(user?.username);
   const statuses: string[] = [];
   for (const run of runs) {
     const status = normalizeRunToken(run.status);
@@ -149,7 +149,7 @@ function isProfileSyncRun(run: ProfileSyncRunStatusSource, normalizedUser: strin
   if (!normalizedUser) {
     return true;
   }
-  const requestedUser = normalizeRunToken(run.requested_user);
+  const requestedUser = normalizeGitHubLoginToken(run.requested_user);
   if (!requestedUser) {
     return true;
   }
@@ -161,4 +161,12 @@ function normalizeRunToken(value: string | null | undefined): string {
     return "";
   }
   return value.trim().toLowerCase();
+}
+
+function normalizeGitHubLoginToken(value: string | null | undefined): string {
+  const normalized = normalizeRunToken(value);
+  if (!normalized) {
+    return "";
+  }
+  return normalized.replace(/^@+/, "");
 }

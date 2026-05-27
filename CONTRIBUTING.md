@@ -299,6 +299,9 @@ Recent no-slowdown refinement (May 27, 2026):
 - GitHub ingestor sync-run normalization now marks stale in-progress rows as failed when a newer terminal row exists for the same correlation scope, reducing contradictory `running + completed` activity rows in Settings.
 - Added `scripts/check-no-tracked-secrets.sh` and wired it into `scripts/check-repo-sync.sh` so local quality gates fail fast when high-signal token/private-key patterns are committed in tracked files.
 - Sync-run supersession diagnostics now use a deterministic metric marker (`superseded_by_terminal_correlation=1`) emitted by backend normalization, reducing fragile frontend dependence on free-form error strings.
+- Dashboard-route pages (Dashboard, Contributions, Badges, Quests, Leaderboard) now share `useProfileSyncRuns(limit)` for profile freshness polling, removing username-key churn from per-page `useSyncRuns(..., { user })` usage and keeping sync-state derivation consistent.
+- Quests page hook ordering was fixed so `useQuests()` is initialized before any profile sync-run wiring, preventing a runtime `data used before declaration` failure in the quests route.
+- Profile sync-run filtering now normalizes GitHub login tokens with optional leading `@` before matching `requested_user`, so active user sync runs are still recognized when upstream identifiers include handle-style prefixes.
 
 ## Frontend Excellence Checklist (No-Slowdown Backlog)
 

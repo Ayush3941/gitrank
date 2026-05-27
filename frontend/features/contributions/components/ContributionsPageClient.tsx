@@ -17,7 +17,7 @@ import { ContributionFilters } from "@/features/contributions/components/Contrib
 import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useContributions } from "@/hooks/use-contributions";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
-import { useSyncRuns } from "@/hooks/use-sync-runs";
+import { useProfileSyncRuns } from "@/hooks/use-profile-sync-runs";
 import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import {
   useNetworkConstraintPreference,
@@ -85,10 +85,7 @@ export function ContributionsPageClient() {
     search: deferredSearch,
     sort: deferredSort,
   });
-  const syncRunsQuery = useSyncRuns(10, {
-    runType: "user",
-    user: data?.profile?.user?.username,
-  });
+  const syncRunsQuery = useProfileSyncRuns(10);
   const runUserSync = useRunUserSync();
   const profile = data?.profile;
   const contributionUniverse = useMemo(

@@ -373,4 +373,16 @@ describe("selectProfileSyncRunStatuses", () => {
     );
     expect(statuses).toStrictEqual(["partial"]);
   });
+
+  it("matches user sync runs when requested_user includes @ prefix", () => {
+    const user = buildUser({ username: "Ayush3941" });
+    const statuses = selectProfileSyncRunStatuses(
+      [
+        { status: "running", run_type: "user", requested_user: "@Ayush3941" },
+        { status: "completed", run_type: "user", requested_user: "@someone-else" },
+      ],
+      user,
+    );
+    expect(statuses).toStrictEqual(["running"]);
+  });
 });

@@ -30,8 +30,8 @@ import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useBadges } from "@/hooks/use-badges";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
+import { useProfileSyncRuns } from "@/hooks/use-profile-sync-runs";
 import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
-import { useSyncRuns } from "@/hooks/use-sync-runs";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import {
   deriveDeterministicArchetype,
@@ -76,10 +76,7 @@ const BadgeGrid = dynamic(
 export function BadgesPageClient() {
   const { data, isLoading, isError, refetch } = useBadges();
   const runUserSync = useRunUserSync();
-  const syncRunsQuery = useSyncRuns(10, {
-    runType: "user",
-    user: data?.profile?.user?.username,
-  });
+  const syncRunsQuery = useProfileSyncRuns(10);
   const constrainedNetwork = useNetworkConstraintPreference();
   const lockedBadgePageSize = constrainedNetwork
     ? LOCKED_BADGE_PAGE_SIZE_CONSTRAINED

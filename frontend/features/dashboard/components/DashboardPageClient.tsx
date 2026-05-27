@@ -10,8 +10,8 @@ import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
+import { useProfileSyncRuns } from "@/hooks/use-profile-sync-runs";
 import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
-import { useSyncRuns } from "@/hooks/use-sync-runs";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -66,7 +66,7 @@ export function DashboardPageClient() {
   const constrainedNetwork = useNetworkConstraintPreference();
   const { data, isLoading, isError, refetch } = useDashboard();
   const runUserSync = useRunUserSync();
-  const syncRunsQuery = useSyncRuns(10, { runType: "user", user: data?.user?.username });
+  const syncRunsQuery = useProfileSyncRuns(10);
   const scoreExplanationEventSent = useRef(false);
   const user = data?.user;
   const recentReports = data?.recentReports ?? [];

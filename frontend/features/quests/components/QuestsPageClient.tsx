@@ -26,9 +26,9 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
+import { useProfileSyncRuns } from "@/hooks/use-profile-sync-runs";
 import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import { useQuests } from "@/hooks/use-quests";
-import { useSyncRuns } from "@/hooks/use-sync-runs";
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
@@ -59,10 +59,8 @@ const QuestCard = dynamic(
 export function QuestsPageClient() {
   const constrainedNetwork = useNetworkConstraintPreference();
   const runUserSync = useRunUserSync();
-  const syncRunsQuery = useSyncRuns(10, {
-    runType: "user",
-    user: data?.profile?.user?.username,
-  });
+  const { data, isLoading, isError, refetch } = useQuests();
+  const syncRunsQuery = useProfileSyncRuns(10);
   const questGroupPageSize = constrainedNetwork
     ? QUEST_GROUP_PAGE_SIZE_CONSTRAINED
     : QUEST_GROUP_PAGE_SIZE_DEFAULT;
@@ -76,7 +74,6 @@ export function QuestsPageClient() {
   }));
   const [cadenceFilter, setCadenceFilter] = useState<"All" | Quest["cadence"]>("All");
   const deferredCadenceFilter = useDeferredValue(cadenceFilter);
-  const { data, isLoading, isError, refetch } = useQuests();
   const quests = data?.quests ?? [];
   const profile = data?.profile;
   const { syncStateForDisplay, showRefreshPill } = useProfileSyncState(

@@ -26,9 +26,9 @@ import { laneParamToTab, tabToLaneParam } from "@/features/leaderboard/lib/lane-
 import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useLeaderboard } from "@/hooks/use-leaderboard";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
+import { useProfileSyncRuns } from "@/hooks/use-profile-sync-runs";
 import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import { useMyProfile } from "@/hooks/use-profile";
-import { useSyncRuns } from "@/hooks/use-sync-runs";
 import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
 import { formatRelativeDays } from "@/lib/formatters";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
@@ -91,7 +91,7 @@ export function LeaderboardPageClient() {
   const searchParams = useSearchParams();
   const constrainedNetwork = useNetworkConstraintPreference();
   const runUserSync = useRunUserSync();
-  const syncRunsQuery = useSyncRuns(10, { runType: "user" });
+  const syncRunsQuery = useProfileSyncRuns(10);
   const rowPageSize = constrainedNetwork
     ? LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED
     : LEADERBOARD_ROW_PAGE_SIZE_DEFAULT;
