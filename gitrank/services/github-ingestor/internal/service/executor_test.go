@@ -271,6 +271,11 @@ func TestUserSyncExecutionStatus(t *testing.T) {
 			want:    "partial",
 		},
 		{
+			name:    "partial when authored PR backfill is still incomplete",
+			fetched: map[string]int{"authored_pull_request_backfill_incomplete": 1},
+			want:    "partial",
+		},
+		{
 			name:    "partial when retryable pulls skipped",
 			fetched: map[string]int{"authored_pull_requests_retryable": 2},
 			want:    "partial",

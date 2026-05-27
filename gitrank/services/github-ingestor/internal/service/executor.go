@@ -406,6 +406,12 @@ func (e *Executor) SyncUser(
 	aggregatePersisted := PersistResult{}
 	response.Fetched["repositories_selected"] = uniqueRepositoryCountFromAuthoredTargets(authoredPullRequests)
 	response.Fetched["authored_pull_requests_selected"] = len(authoredPullRequests)
+	if len(authoredPullRequests) == 0 {
+		response.Fetched["authored_pull_request_discovery_empty"] = 1
+		if !selection.NextCursor.BootstrapComplete {
+			response.Fetched["authored_pull_request_backfill_incomplete"] = 1
+		}
+	}
 	if selection.SearchIncomplete {
 		response.Fetched["authored_pull_request_search_incomplete"] = 1
 	}
@@ -2194,6 +2200,7 @@ func userSyncExecutionStatus(fetched map[string]int) string {
 	}
 	if fetched["authored_pull_request_search_incomplete"] > 0 ||
 		fetched["authored_pull_request_search_overflow"] > 0 ||
+		fetched["authored_pull_request_backfill_incomplete"] > 0 ||
 		fetched["authored_pull_requests_retryable"] > 0 ||
 		fetched["authored_pull_requests_skipped"] > 0 ||
 		fetched["authored_pull_requests_failed"] > 0 ||
