@@ -245,16 +245,27 @@ func (s *Service) ListSyncRuns(ctx context.Context, filter contracts.GitHubSyncR
 	if s == nil || s.store == nil || s.store.pool == nil {
 		return contracts.GitHubSyncRunListResponse{}, ErrUnavailable
 	}
+	now := time.Now().UTC()
+	activeWindow := syncRunActiveWindow(s.cfg.GitHub)
+	queuedWindow := syncRunQueuedWindow(activeWindow)
+	if err := s.store.MarkStaleSyncRunsFailed(
+		ctx,
+		now,
+		now.Add(-activeWindow),
+		now.Add(-queuedWindow),
+	); err != nil {
+		return contracts.GitHubSyncRunListResponse{}, err
+	}
 	normalized := normalizeSyncRunFilter(filter, s.cfg.GitHub.SyncRunDefaultLimit, s.cfg.GitHub.SyncRunMaxLimit)
 	runs, err := s.store.ListSyncRuns(ctx, normalized)
 	if err != nil {
 		return contracts.GitHubSyncRunListResponse{}, err
 	}
-	runs = normalizeSyncRunViews(runs, time.Now().UTC(), syncRunActiveWindow(s.cfg.GitHub))
+	runs = normalizeSyncRunViews(runs, now, activeWindow)
 	return contracts.GitHubSyncRunListResponse{
 		Runs:          runs,
 		AppliedFilter: normalized,
-		LastUpdatedAt: time.Now().UTC(),
+		LastUpdatedAt: now,
 	}, nil
 }
 
@@ -307,22 +318,19 @@ func normalizeSyncRunViews(
 					run.LastError = "sync execution exceeded active window and was marked failed"
 				}
 			}
-		case "queued", "pending":
-			if run.FinishedAt != nil && !run.FinishedAt.IsZero() {
-				run.Status = "completed"
-				continue
-			}
-			run.Status = "queued"
-			if !run.StartedAt.IsZero() {
-				queuedFailureWindow := activeWindow * 2
-				if queuedFailureWindow < time.Minute {
-					queuedFailureWindow = time.Minute
+			case "queued", "pending":
+				if run.FinishedAt != nil && !run.FinishedAt.IsZero() {
+					run.Status = "completed"
+					continue
 				}
-				if now.Sub(run.StartedAt) > queuedFailureWindow {
-					run.Status = "failed"
-					if strings.TrimSpace(run.LastError) == "" {
-						run.LastError = "sync execution remained queued beyond safe window and was marked failed"
-					}
+				run.Status = "queued"
+				if !run.StartedAt.IsZero() {
+					queuedFailureWindow := syncRunQueuedWindow(activeWindow)
+					if now.Sub(run.StartedAt) > queuedFailureWindow {
+						run.Status = "failed"
+						if strings.TrimSpace(run.LastError) == "" {
+							run.LastError = "sync execution remained queued beyond safe window and was marked failed"
+						}
 				}
 			}
 		default:
@@ -344,6 +352,14 @@ func syncRunActiveWindow(cfg config.GitHub) time.Duration {
 		window = time.Minute
 	}
 	return window + 30*time.Second
+}
+
+func syncRunQueuedWindow(activeWindow time.Duration) time.Duration {
+	queuedFailureWindow := activeWindow * 2
+	if queuedFailureWindow < time.Minute {
+		queuedFailureWindow = time.Minute
+	}
+	return queuedFailureWindow
 }
 
 func (r PersistResult) EntityCounts() map[string]int {

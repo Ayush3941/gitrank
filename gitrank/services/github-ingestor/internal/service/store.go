@@ -24,6 +24,21 @@ type TxStore struct {
 
 const maxStoredPullRequestFilePatchBytes = 12000
 
+const (
+	syncCursorScopeGitHubUserLogin             = "github_user_login"
+	authoredPRCursorResourceLastSyncedAt       = "authored_pr_last_synced_at"
+	authoredPRCursorResourceOldestSeenAt       = "authored_pr_oldest_seen_at"
+	authoredPRCursorResourceBackfillBeforeAt   = "authored_pr_backfill_before_at"
+	authoredPRCursorResourceBootstrapCompleted = "authored_pr_bootstrap_completed"
+)
+
+type authoredPRHistoryCursor struct {
+	LastSyncedAt      *time.Time
+	OldestSeenAt      *time.Time
+	BackfillBeforeAt  *time.Time
+	BootstrapComplete bool
+}
+
 type payloadSyncRunInput struct {
 	CorrelationID               string
 	DeliveryID                  string
@@ -134,6 +149,49 @@ func (s *Store) ActiveInstallationRepositories(ctx context.Context, githubInstal
 	return installationID, repositories, nil
 }
 
+func (s *Store) ActiveInstallationIDsByAccountLogin(ctx context.Context, githubLogin string) ([]int64, error) {
+	if s == nil || s.pool == nil {
+		return nil, ErrUnavailable
+	}
+	githubLogin = strings.TrimSpace(githubLogin)
+	if githubLogin == "" {
+		return nil, errors.New("github login is required")
+	}
+
+	rows, err := s.pool.Query(ctx, `
+		SELECT github_installation_id
+		FROM github_installations
+		WHERE LOWER(account_login) = LOWER($1)
+		  AND suspended_at_source IS NULL
+		ORDER BY updated_at_source DESC NULLS LAST, updated_at DESC
+	`, githubLogin)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	installationIDs := make([]int64, 0)
+	seen := make(map[int64]struct{})
+	for rows.Next() {
+		var installationID int64
+		if err := rows.Scan(&installationID); err != nil {
+			return nil, err
+		}
+		if installationID <= 0 {
+			continue
+		}
+		if _, ok := seen[installationID]; ok {
+			continue
+		}
+		seen[installationID] = struct{}{}
+		installationIDs = append(installationIDs, installationID)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return installationIDs, nil
+}
+
 func (s *Store) ActiveGitHubAccessTokenByLogin(ctx context.Context, githubLogin string, validAfter time.Time) (string, bool, error) {
 	if s == nil || s.pool == nil {
 		return "", false, ErrUnavailable
@@ -163,6 +221,159 @@ func (s *Store) ActiveGitHubAccessTokenByLogin(ctx context.Context, githubLogin 
 		return "", false, err
 	}
 	return encryptedToken, true, nil
+}
+
+func (s *Store) CountAuthoredPullRequestsByLogin(ctx context.Context, githubLogin string) (int, error) {
+	if s == nil || s.pool == nil {
+		return 0, ErrUnavailable
+	}
+	githubLogin = strings.TrimSpace(githubLogin)
+	if githubLogin == "" {
+		return 0, errors.New("github login is required")
+	}
+
+	var count int
+	err := s.pool.QueryRow(ctx, `
+		SELECT COUNT(*)
+		FROM pull_requests pr
+		INNER JOIN github_accounts ga ON ga.id = pr.author_github_account_id
+		WHERE LOWER(ga.login) = LOWER($1)
+		  AND COALESCE(ga.link_status, 'linked') = 'linked'
+	`, githubLogin).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (s *Store) LoadAuthoredPRHistoryCursor(ctx context.Context, githubLogin string) (authoredPRHistoryCursor, error) {
+	if s == nil || s.pool == nil {
+		return authoredPRHistoryCursor{}, ErrUnavailable
+	}
+	githubLogin = strings.TrimSpace(githubLogin)
+	if githubLogin == "" {
+		return authoredPRHistoryCursor{}, errors.New("github login is required")
+	}
+
+	rows, err := s.pool.Query(ctx, `
+		SELECT resource_name, cursor_value
+		FROM github_sync_cursors
+		WHERE scope_type = $1
+		  AND scope_id = LOWER($2)
+		  AND resource_name = ANY($3::text[])
+	`, syncCursorScopeGitHubUserLogin, githubLogin, []string{
+		authoredPRCursorResourceLastSyncedAt,
+		authoredPRCursorResourceOldestSeenAt,
+		authoredPRCursorResourceBackfillBeforeAt,
+		authoredPRCursorResourceBootstrapCompleted,
+	})
+	if err != nil {
+		return authoredPRHistoryCursor{}, err
+	}
+	defer rows.Close()
+
+	cursor := authoredPRHistoryCursor{}
+	for rows.Next() {
+		var resourceName string
+		var cursorValue string
+		if err := rows.Scan(&resourceName, &cursorValue); err != nil {
+			return authoredPRHistoryCursor{}, err
+		}
+
+		resourceName = strings.TrimSpace(resourceName)
+		cursorValue = strings.TrimSpace(cursorValue)
+		if cursorValue == "" {
+			continue
+		}
+
+		switch resourceName {
+		case authoredPRCursorResourceLastSyncedAt:
+			timestamp, ok := parseRFC3339CursorTime(cursorValue)
+			if ok {
+				cursor.LastSyncedAt = &timestamp
+			}
+		case authoredPRCursorResourceOldestSeenAt:
+			timestamp, ok := parseRFC3339CursorTime(cursorValue)
+			if ok {
+				cursor.OldestSeenAt = &timestamp
+			}
+		case authoredPRCursorResourceBackfillBeforeAt:
+			timestamp, ok := parseRFC3339CursorTime(cursorValue)
+			if ok {
+				cursor.BackfillBeforeAt = &timestamp
+			}
+		case authoredPRCursorResourceBootstrapCompleted:
+			cursor.BootstrapComplete = cursorValue == "1" || strings.EqualFold(cursorValue, "true")
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return authoredPRHistoryCursor{}, err
+	}
+	return cursor, nil
+}
+
+func (s *Store) UpsertAuthoredPRHistoryCursor(ctx context.Context, githubLogin string, cursor authoredPRHistoryCursor, now time.Time) error {
+	if s == nil || s.pool == nil {
+		return ErrUnavailable
+	}
+	githubLogin = strings.TrimSpace(strings.ToLower(githubLogin))
+	if githubLogin == "" {
+		return errors.New("github login is required")
+	}
+	if now.IsZero() {
+		now = time.Now().UTC()
+	}
+
+	entries := make(map[string]string, 4)
+	if cursor.LastSyncedAt != nil && !cursor.LastSyncedAt.IsZero() {
+		entries[authoredPRCursorResourceLastSyncedAt] = cursor.LastSyncedAt.UTC().Format(time.RFC3339)
+	}
+	if cursor.OldestSeenAt != nil && !cursor.OldestSeenAt.IsZero() {
+		entries[authoredPRCursorResourceOldestSeenAt] = cursor.OldestSeenAt.UTC().Format(time.RFC3339)
+	}
+	if cursor.BackfillBeforeAt != nil && !cursor.BackfillBeforeAt.IsZero() {
+		entries[authoredPRCursorResourceBackfillBeforeAt] = cursor.BackfillBeforeAt.UTC().Format(time.RFC3339)
+	}
+	if cursor.BootstrapComplete {
+		entries[authoredPRCursorResourceBootstrapCompleted] = "true"
+	} else {
+		entries[authoredPRCursorResourceBootstrapCompleted] = "false"
+	}
+
+	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	for resourceName, cursorValue := range entries {
+		if _, err := tx.Exec(ctx, `
+			INSERT INTO github_sync_cursors (
+				scope_type,
+				scope_id,
+				resource_name,
+				cursor_value,
+				synced_at
+			) VALUES (
+				$1, $2, $3, $4, $5
+			)
+			ON CONFLICT (scope_type, scope_id, resource_name) DO UPDATE SET
+				cursor_value = EXCLUDED.cursor_value,
+				synced_at = EXCLUDED.synced_at
+		`, syncCursorScopeGitHubUserLogin, githubLogin, resourceName, cursorValue, now.UTC()); err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit(ctx)
+}
+
+func parseRFC3339CursorTime(raw string) (time.Time, bool) {
+	parsed, err := time.Parse(time.RFC3339, strings.TrimSpace(raw))
+	if err != nil {
+		return time.Time{}, false
+	}
+	return parsed.UTC(), true
 }
 
 func (s *TxStore) UpsertInstallation(payload map[string]any, now time.Time) (string, bool, error) {
@@ -856,6 +1067,53 @@ func composeSyncRunMetrics(persisted map[string]int, fetched map[string]int) map
 	}
 
 	return metrics
+}
+
+func (s *Store) MarkStaleSyncRunsFailed(
+	ctx context.Context,
+	now time.Time,
+	activeCutoff time.Time,
+	queuedCutoff time.Time,
+) error {
+	if s == nil || s.pool == nil {
+		return ErrUnavailable
+	}
+
+	if _, err := s.pool.Exec(ctx, `
+		UPDATE github_sync_runs
+		SET
+			status = 'failed',
+			finished_at = COALESCE(finished_at, $1),
+			last_error = CASE
+				WHEN btrim(last_error) = '' THEN 'sync execution exceeded active window and was marked failed'
+				ELSE last_error
+			END
+		WHERE
+			finished_at IS NULL
+			AND lower(status) IN ('running', 'syncing', 'in_progress')
+			AND started_at <= $2
+	`, now.UTC(), activeCutoff.UTC()); err != nil {
+		return err
+	}
+
+	if _, err := s.pool.Exec(ctx, `
+		UPDATE github_sync_runs
+		SET
+			status = 'failed',
+			finished_at = COALESCE(finished_at, $1),
+			last_error = CASE
+				WHEN btrim(last_error) = '' THEN 'sync execution remained queued beyond safe window and was marked failed'
+				ELSE last_error
+			END
+		WHERE
+			finished_at IS NULL
+			AND lower(status) IN ('queued', 'pending')
+			AND started_at <= $2
+	`, now.UTC(), queuedCutoff.UTC()); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *Store) ListSyncRuns(ctx context.Context, filter contracts.GitHubSyncRunFilter) ([]contracts.GitHubSyncRunView, error) {

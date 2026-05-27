@@ -111,3 +111,15 @@ func TestSyncRunActiveWindow(t *testing.T) {
 		t.Fatalf("syncRunActiveWindow(long) = %s, want 15m30s", got)
 	}
 }
+
+func TestSyncRunQueuedWindow(t *testing.T) {
+	t.Parallel()
+
+	if got := syncRunQueuedWindow(10 * time.Second); got != time.Minute {
+		t.Fatalf("syncRunQueuedWindow(short) = %s, want 1m", got)
+	}
+
+	if got := syncRunQueuedWindow(2 * time.Minute); got != 4*time.Minute {
+		t.Fatalf("syncRunQueuedWindow(normal) = %s, want 4m", got)
+	}
+}

@@ -274,6 +274,7 @@ Recent no-slowdown refinement (May 27, 2026):
 - Settings sync activity cards now render deterministic run-outcome insights from persisted sync metrics (scope-limited auth, zero-discovery with prior history, search-limit pressure, retryable timeouts, backfill-in-progress, and synced-target counts) so users can diagnose why PR evidence is missing without reading raw counters.
 - Backend now emits `authored_pull_request_zero_discovery_with_history=1` when authored PR discovery returns empty while persisted authored evidence exists, and this marker is treated as `partial` execution status for safer sync trust semantics.
 - Sync-run diagnostics are centralized in `frontend/features/settings/lib/sync-run-diagnostics.ts` and reused by both Settings account summary and Sync Activity cards to prevent drift between per-run and top-level sync explanations.
+- `ListSyncRuns` now performs stale-run timeout materialization in storage (`MarkStaleSyncRunsFailed`) before listing, so long-stuck `running/syncing/queued` rows are persisted as `failed` with deterministic reasons instead of being re-inferred on every frontend poll.
 
 ## Frontend Excellence Checklist (No-Slowdown Backlog)
 
