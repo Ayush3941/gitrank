@@ -7,6 +7,8 @@ const USER_SYNC_EXECUTION_TIMEOUT_MS = parseBoundedPositiveMs(
   15_000,
   600_000,
 );
+const USER_SYNC_SELF_KEY = "__self__";
+const inFlightUserSyncRequests = new Map<string, Promise<ApiSyncExecutionResponse>>();
 
 type ApiErrorResponse = {
   error?: {
@@ -196,40 +198,55 @@ export async function runRepositorySync(
 }
 
 export async function runUserSync(user?: string): Promise<ApiSyncExecutionResponse> {
-  const csrfToken = requireCSRFToken();
   const normalizedUser = typeof user === "string" ? user.trim() : "";
-  let response: Response;
-  try {
-    response = await fetchWithTimeout(
-      "/api/sync/user",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": csrfToken,
-        },
-        credentials: "same-origin",
-        cache: "no-store",
-        body: JSON.stringify({
-          user: normalizedUser || undefined,
-        }),
-      },
-      USER_SYNC_EXECUTION_TIMEOUT_MS,
-    );
-  } catch (error) {
-    if (isAbortLikeError(error)) {
-      throw new Error(syncRecoveryMessage("user", "GitHub took too long to respond."));
-    }
-    throw error;
-  }
-  if (response.ok) {
-    return (await response.json()) as ApiSyncExecutionResponse;
+  const dedupeKey = normalizedUser || USER_SYNC_SELF_KEY;
+  const inFlight = inFlightUserSyncRequests.get(dedupeKey);
+  if (inFlight) {
+    return inFlight;
   }
 
-  const parsed = await parseErrorResponse(response, "User sync failed.");
-  throw new Error(
-    sanitizeSyncExecutionError(parsed.message, response.status, parsed.code, "user"),
-  );
+  const request = (async (): Promise<ApiSyncExecutionResponse> => {
+    const csrfToken = requireCSRFToken();
+    let response: Response;
+    try {
+      response = await fetchWithTimeout(
+        "/api/sync/user",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": csrfToken,
+          },
+          credentials: "same-origin",
+          cache: "no-store",
+          body: JSON.stringify({
+            user: normalizedUser || undefined,
+          }),
+        },
+        USER_SYNC_EXECUTION_TIMEOUT_MS,
+      );
+    } catch (error) {
+      if (isAbortLikeError(error)) {
+        throw new Error(syncRecoveryMessage("user", "GitHub took too long to respond."));
+      }
+      throw error;
+    }
+    if (response.ok) {
+      return (await response.json()) as ApiSyncExecutionResponse;
+    }
+
+    const parsed = await parseErrorResponse(response, "User sync failed.");
+    throw new Error(
+      sanitizeSyncExecutionError(parsed.message, response.status, parsed.code, "user"),
+    );
+  })();
+
+  inFlightUserSyncRequests.set(dedupeKey, request);
+  try {
+    return await request;
+  } finally {
+    inFlightUserSyncRequests.delete(dedupeKey);
+  }
 }
 
 export async function runInstallationSync(
