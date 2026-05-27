@@ -487,6 +487,12 @@ func TestBoundedAuthoredPRSyncLimit(t *testing.T) {
 	if got := boundedAuthoredPRSyncLimit(config.GitHub{}, 0); got != 1 {
 		t.Fatalf("boundedAuthoredPRSyncLimit(empty) = %d, want 1", got)
 	}
+	if got := boundedAuthoredPRSyncLimit(config.GitHub{}, authoredPRSearchHardLimit+500); got != authoredPRSearchHardLimit {
+		t.Fatalf("boundedAuthoredPRSyncLimit(hard-cap) = %d, want %d", got, authoredPRSearchHardLimit)
+	}
+	if got := boundedAuthoredPRSyncLimit(config.GitHub{AuthoredPRSearchLimit: authoredPRSearchHardLimit + 50}, authoredPRSearchHardLimit+10); got != authoredPRSearchHardLimit {
+		t.Fatalf("boundedAuthoredPRSyncLimit(search-hard-cap) = %d, want %d", got, authoredPRSearchHardLimit)
+	}
 }
 
 func TestPrioritizeAuthoredPullRequestTargetsBootstrapInProgressIncludesHistoricTargets(t *testing.T) {

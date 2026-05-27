@@ -2241,9 +2241,15 @@ func boundedAuthoredPRSyncLimit(cfg config.GitHub, limit int) int {
 	if limit <= 0 {
 		limit = 1
 	}
+	if limit > authoredPRSearchHardLimit {
+		limit = authoredPRSearchHardLimit
+	}
 	maxLimit := cfg.AuthoredPRSearchLimit
 	if maxLimit <= 0 {
 		return limit
+	}
+	if maxLimit > authoredPRSearchHardLimit {
+		maxLimit = authoredPRSearchHardLimit
 	}
 	return min(limit, maxLimit)
 }

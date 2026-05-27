@@ -42,6 +42,7 @@ import {
 } from "@/hooks/use-text-scale-preference";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
 import { hasUserContributionEvidence } from "@/lib/presentation/sync-evidence";
+import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import { type ThemePreference, useThemePreference } from "@/hooks/use-theme-preference";
 import { SyncExecutionControls } from "@/features/settings/components/SyncExecutionControls";
@@ -393,8 +394,8 @@ export function SettingsPageClient() {
             onClick={() => {
               setActionNotice("");
               runUserSync.mutate(undefined, {
-                onSuccess: () => {
-                  setActionNotice("GitHub sync completed. Snapshot is refreshing.");
+                onSuccess: (result) => {
+                  setActionNotice(buildUserSyncRefreshFeedback(result).message);
                   void refetch();
                 },
               });
