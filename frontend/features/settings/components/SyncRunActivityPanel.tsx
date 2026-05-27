@@ -12,7 +12,7 @@ import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import { syncRunStatusLabel } from "@/features/settings/lib/sync-run-status";
 import { describeSyncRunOutcome, metricCount } from "@/features/settings/lib/sync-run-diagnostics";
 
-const SYNC_RUN_STATUS_FILTERS = ["All", "Completed", "Queued", "Running", "Failed"] as const;
+const SYNC_RUN_STATUS_FILTERS = ["All", "Completed", "Partial", "Queued", "Running", "Failed"] as const;
 type SyncRunStatusFilter = (typeof SYNC_RUN_STATUS_FILTERS)[number];
 
 export function SyncRunActivityPanel({
@@ -45,6 +45,7 @@ export function SyncRunActivityPanel({
     const next = {
       all: runs.length,
       completed: 0,
+      partial: 0,
       queued: 0,
       running: 0,
       failed: 0,
@@ -53,6 +54,8 @@ export function SyncRunActivityPanel({
       const status = syncRunStatusLabel(run.status);
       if (status === "Completed") {
         next.completed += 1;
+      } else if (status === "Partial") {
+        next.partial += 1;
       } else if (status === "Queued") {
         next.queued += 1;
       } else if (status === "Running") {
@@ -162,6 +165,8 @@ export function SyncRunActivityPanel({
                     ? statusCounts.all
                     : status === "Completed"
                       ? statusCounts.completed
+                      : status === "Partial"
+                        ? statusCounts.partial
                       : status === "Queued"
                         ? statusCounts.queued
                       : status === "Running"
@@ -172,6 +177,8 @@ export function SyncRunActivityPanel({
                     ? Search
                     : status === "Completed"
                       ? CheckCircle2
+                      : status === "Partial"
+                        ? AlertTriangle
                       : status === "Queued"
                         ? Clock3
                       : status === "Running"
@@ -331,6 +338,14 @@ export function SyncRunActivityPanel({
 
 function StatusChip({ status, partial = false }: { status: string; partial?: boolean }) {
   const normalized = syncRunStatusLabel(status);
+  if (normalized === "Partial") {
+    return (
+      <span className="neon-chip neon-chip-warning inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold">
+        <AlertTriangle className="h-3.5 w-3.5" />
+        Partial
+      </span>
+    );
+  }
   if (normalized === "Completed") {
     if (partial) {
       return (

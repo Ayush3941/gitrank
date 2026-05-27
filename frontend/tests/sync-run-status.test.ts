@@ -2,16 +2,17 @@ import { describe, expect, it } from "vitest";
 import { isActiveSyncRunStatus, syncRunStatusLabel } from "@/features/settings/lib/sync-run-status";
 
 describe("syncRunStatusLabel", () => {
-  it("maps active queue and running statuses to Running", () => {
-    expect(syncRunStatusLabel("queued")).toBe("Running");
-    expect(syncRunStatusLabel("pending")).toBe("Running");
+  it("maps queue statuses to Queued and active execution statuses to Running", () => {
+    expect(syncRunStatusLabel("queued")).toBe("Queued");
+    expect(syncRunStatusLabel("pending")).toBe("Queued");
     expect(syncRunStatusLabel("running")).toBe("Running");
     expect(syncRunStatusLabel("syncing")).toBe("Running");
     expect(syncRunStatusLabel("in_progress")).toBe("Running");
   });
 
-  it("maps terminal success statuses to Completed", () => {
+  it("maps terminal success statuses to Completed and partial to Partial", () => {
     expect(syncRunStatusLabel("completed")).toBe("Completed");
+    expect(syncRunStatusLabel("partial")).toBe("Partial");
     expect(syncRunStatusLabel("succeeded")).toBe("Completed");
     expect(syncRunStatusLabel("success")).toBe("Completed");
     expect(syncRunStatusLabel("done")).toBe("Completed");
@@ -32,10 +33,10 @@ describe("syncRunStatusLabel", () => {
 });
 
 describe("isActiveSyncRunStatus", () => {
-  it("returns true only for active statuses", () => {
-    expect(isActiveSyncRunStatus("queued")).toBe(true);
+  it("returns true only for actively running statuses", () => {
+    expect(isActiveSyncRunStatus("queued")).toBe(false);
     expect(isActiveSyncRunStatus("in_progress")).toBe(true);
-    expect(isActiveSyncRunStatus("pending")).toBe(true);
+    expect(isActiveSyncRunStatus("pending")).toBe(false);
     expect(isActiveSyncRunStatus("completed")).toBe(false);
     expect(isActiveSyncRunStatus("failed")).toBe(false);
   });
