@@ -277,19 +277,52 @@ func normalizeSyncRunViews(
 		case "":
 			if run.FinishedAt != nil && !run.FinishedAt.IsZero() {
 				run.Status = "completed"
+			} else if run.StartedAt.IsZero() {
+				run.Status = "queued"
 			} else {
 				run.Status = "running"
+				if now.Sub(run.StartedAt) > activeWindow {
+					run.Status = "failed"
+					if strings.TrimSpace(run.LastError) == "" {
+						run.LastError = "sync execution exceeded active window and was marked failed"
+					}
+				}
 			}
 		case "running", "syncing", "in_progress":
 			if run.FinishedAt != nil && !run.FinishedAt.IsZero() {
 				run.Status = "completed"
 				continue
 			}
+			if run.StartedAt.IsZero() {
+				run.Status = "failed"
+				if strings.TrimSpace(run.LastError) == "" {
+					run.LastError = "sync execution is missing started_at and was marked failed"
+				}
+				continue
+			}
 			run.Status = "running"
-			if !run.StartedAt.IsZero() && now.Sub(run.StartedAt) > activeWindow {
+			if now.Sub(run.StartedAt) > activeWindow {
 				run.Status = "failed"
 				if strings.TrimSpace(run.LastError) == "" {
 					run.LastError = "sync execution exceeded active window and was marked failed"
+				}
+			}
+		case "queued", "pending":
+			if run.FinishedAt != nil && !run.FinishedAt.IsZero() {
+				run.Status = "completed"
+				continue
+			}
+			run.Status = "queued"
+			if !run.StartedAt.IsZero() {
+				queuedFailureWindow := activeWindow * 2
+				if queuedFailureWindow < time.Minute {
+					queuedFailureWindow = time.Minute
+				}
+				if now.Sub(run.StartedAt) > queuedFailureWindow {
+					run.Status = "failed"
+					if strings.TrimSpace(run.LastError) == "" {
+						run.LastError = "sync execution remained queued beyond safe window and was marked failed"
+					}
 				}
 			}
 		default:

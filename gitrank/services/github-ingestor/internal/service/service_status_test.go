@@ -26,9 +26,17 @@ func TestNormalizeSyncRunViews(t *testing.T) {
 			FinishedAt: &finishedAt,
 		},
 		{
+			ID:     "missing-status-no-start",
+			Status: "",
+		},
+		{
 			ID:        "stale-running",
 			Status:    "running",
 			StartedAt: now.Add(-10 * time.Minute),
+		},
+		{
+			ID:     "running-no-start",
+			Status: "running",
 		},
 		{
 			ID:        "fresh-running",
@@ -41,6 +49,11 @@ func TestNormalizeSyncRunViews(t *testing.T) {
 			StartedAt:  now.Add(-2 * time.Minute),
 			FinishedAt: &finishedAt,
 		},
+		{
+			ID:        "stale-queued",
+			Status:    "queued",
+			StartedAt: now.Add(-5 * time.Minute),
+		},
 	}
 
 	normalized := normalizeSyncRunViews(runs, now, 2*time.Minute)
@@ -50,17 +63,32 @@ func TestNormalizeSyncRunViews(t *testing.T) {
 	if normalized[1].Status != "completed" {
 		t.Fatalf("normalized[1].Status = %q, want completed", normalized[1].Status)
 	}
-	if normalized[2].Status != "failed" {
-		t.Fatalf("normalized[2].Status = %q, want failed", normalized[2].Status)
+	if normalized[2].Status != "queued" {
+		t.Fatalf("normalized[2].Status = %q, want queued", normalized[2].Status)
 	}
-	if normalized[2].LastError == "" {
-		t.Fatal("normalized[2].LastError = empty, want generated stale-running error")
+	if normalized[3].Status != "failed" {
+		t.Fatalf("normalized[3].Status = %q, want failed", normalized[3].Status)
 	}
-	if normalized[3].Status != "running" {
-		t.Fatalf("normalized[3].Status = %q, want running", normalized[3].Status)
+	if normalized[3].LastError == "" {
+		t.Fatal("normalized[3].LastError = empty, want generated stale-running error")
 	}
-	if normalized[4].Status != "completed" {
-		t.Fatalf("normalized[4].Status = %q, want completed", normalized[4].Status)
+	if normalized[4].Status != "failed" {
+		t.Fatalf("normalized[4].Status = %q, want failed", normalized[4].Status)
+	}
+	if normalized[4].LastError == "" {
+		t.Fatal("normalized[4].LastError = empty, want generated missing-start error")
+	}
+	if normalized[5].Status != "running" {
+		t.Fatalf("normalized[5].Status = %q, want running", normalized[5].Status)
+	}
+	if normalized[6].Status != "completed" {
+		t.Fatalf("normalized[6].Status = %q, want completed", normalized[6].Status)
+	}
+	if normalized[7].Status != "failed" {
+		t.Fatalf("normalized[7].Status = %q, want failed", normalized[7].Status)
+	}
+	if normalized[7].LastError == "" {
+		t.Fatal("normalized[7].LastError = empty, want generated stale-queued error")
 	}
 }
 

@@ -137,7 +137,7 @@ Frontend runtime also reads its server env from this same `gitrank/.env` export 
 
 - User sync limits are runtime-configurable (`GITHUB_AUTHORED_PR_SYNC_LIMIT`, `GITHUB_AUTHORED_PR_SEARCH_LIMIT`, page-size and timeout policy env vars).
 - User sync execution no longer enforces a hidden floor for authored-PR count; `GITHUB_AUTHORED_PR_SYNC_LIMIT` is applied directly (default `10`) and then capped only by `GITHUB_AUTHORED_PR_SEARCH_LIMIT`.
-- Sync-run history auto-normalizes stale active statuses to prevent indefinite `running` rows in Settings when an upstream execution exceeded its active window.
+- Sync-run history auto-normalizes stale active statuses and stale queued rows to prevent indefinite `running`/`queued` rows in Settings; malformed rows missing `started_at` are marked failed with explicit diagnostics.
 - When user sync reports `authored_pull_requests_capped`, UI now shows a bounded-window notice instead of implying full-history completion.
 - User-sync cursor progression no longer stays pinned on mixed-result runs; if at least one selected PR hydrated successfully, the cursor advances with overlap so newer PRs can enter subsequent bounded windows.
 - User-sync execution marks authored-PR backfill as partial when discovery is still incomplete (`authored_pull_request_backfill_incomplete`), avoiding false "fully synced" states while history backfill is still in progress.

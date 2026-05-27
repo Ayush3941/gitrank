@@ -7,8 +7,12 @@ const USER_SYNC_EXECUTION_TIMEOUT_MS = parseBoundedPositiveMs(
   15_000,
   600_000,
 );
+const SYNC_RUN_ACTIVE_WINDOW_MS = Math.max(120_000, USER_SYNC_EXECUTION_TIMEOUT_MS + 30_000);
+const SYNC_RUN_QUEUED_WINDOW_MS = Math.max(180_000, SYNC_RUN_ACTIVE_WINDOW_MS * 2);
 const USER_SYNC_SELF_KEY = "__self__";
 const inFlightUserSyncRequests = new Map<string, Promise<ApiSyncExecutionResponse>>();
+const ACTIVE_SYNC_RUN_STATUSES = new Set(["running", "syncing", "in_progress"]);
+const QUEUED_SYNC_RUN_STATUSES = new Set(["queued", "pending"]);
 
 type ApiErrorResponse = {
   error?: {
@@ -153,7 +157,8 @@ export async function listMySyncRuns(limit = 25): Promise<ApiSyncRunListResponse
     credentials: "same-origin",
     cache: "no-store",
   });
-  return adaptJSON<ApiSyncRunListResponse>(response, "Sync activity request failed.");
+  const payload = await adaptJSON<ApiSyncRunListResponse>(response, "Sync activity request failed.");
+  return normalizeSyncRunListResponse(payload, Date.now());
 }
 
 export async function startAccountLink(
@@ -454,6 +459,77 @@ async function parseErrorResponse(
   }
 }
 
+function normalizeSyncRunListResponse(payload: ApiSyncRunListResponse, nowMs: number): ApiSyncRunListResponse {
+  const runs = Array.isArray(payload.runs) ? payload.runs : [];
+  const normalizedRuns = runs
+    .map((run) => normalizeSyncRunRecord(run, nowMs))
+    .sort((left, right) => {
+      const leftStarted = parseISOEpochMs(left.started_at) ?? 0;
+      const rightStarted = parseISOEpochMs(right.started_at) ?? 0;
+      if (leftStarted !== rightStarted) {
+        return rightStarted - leftStarted;
+      }
+      return left.id.localeCompare(right.id);
+    });
+  return {
+    ...payload,
+    runs: normalizedRuns,
+  };
+}
+
+function normalizeSyncRunRecord(run: ApiSyncRunRecord, nowMs: number): ApiSyncRunRecord {
+  const finishedMs = parseISOEpochMs(run.finished_at);
+  const startedMs = parseISOEpochMs(run.started_at);
+  const normalizedStatus = run.status.trim().toLowerCase();
+  let normalized = normalizedStatus;
+  let lastError = run.last_error;
+
+  if (finishedMs !== null) {
+    normalized = "completed";
+  } else if (!normalized) {
+    if (startedMs === null) {
+      normalized = "queued";
+    } else if (nowMs - startedMs > SYNC_RUN_ACTIVE_WINDOW_MS) {
+      normalized = "failed";
+      if (!lastError?.trim()) {
+        lastError = "sync execution exceeded active window and was marked failed";
+      }
+    } else {
+      normalized = "running";
+    }
+  } else if (ACTIVE_SYNC_RUN_STATUSES.has(normalized)) {
+    if (startedMs === null || nowMs - startedMs > SYNC_RUN_ACTIVE_WINDOW_MS) {
+      normalized = "failed";
+      if (!lastError?.trim()) {
+        lastError =
+          startedMs === null
+            ? "sync execution is missing started_at and was marked failed"
+            : "sync execution exceeded active window and was marked failed";
+      }
+    } else {
+      normalized = "running";
+    }
+  } else if (QUEUED_SYNC_RUN_STATUSES.has(normalized)) {
+    normalized = "queued";
+    if (startedMs !== null && nowMs - startedMs > SYNC_RUN_QUEUED_WINDOW_MS) {
+      normalized = "failed";
+      if (!lastError?.trim()) {
+        lastError = "sync execution remained queued beyond safe window and was marked failed";
+      }
+    }
+  }
+
+  if (normalized === normalizedStatus && lastError === run.last_error) {
+    return run;
+  }
+
+  return {
+    ...run,
+    status: normalized || run.status,
+    last_error: lastError,
+  };
+}
+
 function sanitizeSyncExecutionError(
   message: string,
   status: number,
@@ -577,6 +653,17 @@ function parseBoundedPositiveMs(
   }
   if (parsed > max) {
     return max;
+  }
+  return parsed;
+}
+
+function parseISOEpochMs(value: string | undefined): number | null {
+  if (!value || !value.trim()) {
+    return null;
+  }
+  const parsed = Date.parse(value);
+  if (!Number.isFinite(parsed)) {
+    return null;
   }
   return parsed;
 }
