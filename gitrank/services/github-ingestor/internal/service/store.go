@@ -1224,6 +1224,69 @@ func (s *Store) MarkStaleSyncRunsFailed(
 	return nil
 }
 
+func (s *Store) MarkSyncRunRunning(
+	ctx context.Context,
+	correlationID string,
+	runType string,
+	subject string,
+	startedAt time.Time,
+) (bool, error) {
+	if s == nil || s.pool == nil {
+		return false, ErrUnavailable
+	}
+
+	correlationID = strings.TrimSpace(correlationID)
+	runType = strings.TrimSpace(runType)
+	subject = strings.TrimSpace(subject)
+	if correlationID == "" || runType == "" || subject == "" {
+		return false, nil
+	}
+
+	if startedAt.IsZero() {
+		startedAt = time.Now().UTC()
+	}
+	startedAt = startedAt.UTC()
+
+	var updatedID string
+	err := s.pool.QueryRow(ctx, `
+		WITH candidate AS (
+			SELECT id
+			FROM github_sync_runs
+			WHERE
+				correlation_id = $1
+				AND run_type = $2
+				AND subject = $3
+				AND finished_at IS NULL
+				AND lower(status) IN ('queued', 'pending')
+			ORDER BY started_at DESC
+			LIMIT 1
+		)
+		UPDATE github_sync_runs AS runs
+		SET
+			status = 'running',
+			started_at = $4,
+			last_error = CASE
+				WHEN lower(runs.status) IN ('queued', 'pending') THEN ''
+				ELSE runs.last_error
+			END
+		FROM candidate
+		WHERE runs.id = candidate.id
+		RETURNING runs.id
+	`,
+		correlationID,
+		runType,
+		subject,
+		startedAt,
+	).Scan(&updatedID)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return strings.TrimSpace(updatedID) != "", nil
+}
+
 func (s *Store) ListSyncRuns(ctx context.Context, filter contracts.GitHubSyncRunFilter) ([]contracts.GitHubSyncRunView, error) {
 	if s == nil || s.pool == nil {
 		return nil, ErrUnavailable

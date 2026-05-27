@@ -133,6 +133,7 @@ func (e *Executor) SyncRepository(
 	if strings.TrimSpace(req.Repository) == "" {
 		return response, fmt.Errorf("repository is required")
 	}
+	e.markQueuedSyncRunRunning(ctx, correlationID, "repository", strings.TrimSpace(req.Repository), startedAt)
 	owner, name, err := splitRepositoryFullName(req.Repository)
 	if err != nil {
 		return response, err
@@ -324,6 +325,7 @@ func (e *Executor) SyncUser(
 	if !isValidGitHubLogin(user) {
 		return response, fmt.Errorf("user must be a GitHub login")
 	}
+	e.markQueuedSyncRunRunning(ctx, correlationID, "user", user, startedAt)
 	if !e.tryAcquireUserSync(user) {
 		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, ErrUserSyncInProgress, PersistResult{})
 		return response, ErrUserSyncInProgress
@@ -535,6 +537,7 @@ func (e *Executor) SyncInstallation(
 	if req.InstallationID <= 0 {
 		return response, fmt.Errorf("installation_id is required")
 	}
+	e.markQueuedSyncRunRunning(ctx, correlationID, "installation", fmt.Sprintf("%d", req.InstallationID), startedAt)
 
 	installationID, persistedRepositories, err := e.store.ActiveInstallationRepositories(ctx, req.InstallationID)
 	if err != nil {
@@ -670,6 +673,13 @@ func (e *Executor) syncPullRequestSurface(
 	if strings.TrimSpace(req.Repository) == "" || req.Number <= 0 {
 		return response, fmt.Errorf("repository and number are required")
 	}
+	e.markQueuedSyncRunRunning(
+		ctx,
+		correlationID,
+		mode,
+		fmt.Sprintf("%s#%d", strings.TrimSpace(req.Repository), req.Number),
+		startedAt,
+	)
 
 	owner, name, err := splitRepositoryFullName(req.Repository)
 	if err != nil {
@@ -871,6 +881,13 @@ func (e *Executor) SyncIssue(
 	if strings.TrimSpace(req.Repository) == "" || req.Number <= 0 {
 		return response, fmt.Errorf("repository and number are required")
 	}
+	e.markQueuedSyncRunRunning(
+		ctx,
+		correlationID,
+		"issue",
+		fmt.Sprintf("%s#%d", strings.TrimSpace(req.Repository), req.Number),
+		startedAt,
+	)
 
 	owner, name, err := splitRepositoryFullName(req.Repository)
 	if err != nil {
@@ -972,6 +989,13 @@ func (e *Executor) SyncCommit(
 	if strings.TrimSpace(req.Repository) == "" || strings.TrimSpace(req.SHA) == "" {
 		return response, fmt.Errorf("repository and sha are required")
 	}
+	e.markQueuedSyncRunRunning(
+		ctx,
+		correlationID,
+		"commit",
+		fmt.Sprintf("%s@%s", strings.TrimSpace(req.Repository), strings.TrimSpace(req.SHA)),
+		startedAt,
+	)
 
 	owner, name, err := splitRepositoryFullName(req.Repository)
 	if err != nil {
@@ -1043,6 +1067,25 @@ func (e *Executor) SyncCommit(
 	response.Persisted = persisted.EntityCounts()
 	response.Fetched = fetchedCounts
 	return response, nil
+}
+
+func (e *Executor) markQueuedSyncRunRunning(
+	ctx context.Context,
+	correlationID string,
+	runType string,
+	subject string,
+	startedAt time.Time,
+) {
+	if e == nil || e.store == nil || e.store.pool == nil {
+		return
+	}
+	_, _ = e.store.MarkSyncRunRunning(
+		context.WithoutCancel(ctx),
+		strings.TrimSpace(correlationID),
+		strings.TrimSpace(runType),
+		strings.TrimSpace(subject),
+		startedAt.UTC(),
+	)
 }
 
 func (e *Executor) recordFailedSyncRun(
