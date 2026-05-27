@@ -306,6 +306,13 @@ type Scheduler struct {
 }
 
 func Load(serviceName, addrEnvKey string) (App, error) {
+	aiProvider := normalizeAIProvider(getEnv("AI_PROVIDER", "openai"))
+	aiAPIKey := resolveAIEnv(aiProvider, "API_KEY", "")
+	aiModel := resolveAIEnv(aiProvider, "MODEL", defaultAIModel(aiProvider))
+	aiBaseURL := resolveAIEnv(aiProvider, "BASE_URL", defaultAIBaseURL(aiProvider))
+	aiModerationModel := resolveAIEnv(aiProvider, "MODERATION_MODEL", defaultAIModerationModel(aiProvider))
+	aiEmbeddingModel := resolveAIEnv(aiProvider, "EMBEDDING_MODEL", defaultAIEmbeddingModel(aiProvider))
+
 	cfg := App{
 		Env:             Environment(getEnv("GITRANK_ENV", string(Development))),
 		ServiceName:     getEnv("GITRANK_SERVICE_NAME", serviceName),
@@ -384,9 +391,9 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			AuthoredPRSyncLimit:            getInt("GITHUB_AUTHORED_PR_SYNC_LIMIT", 10),
 			SyncRunDefaultLimit:            getInt("GITHUB_SYNC_RUN_DEFAULT_LIMIT", 50),
 			SyncRunMaxLimit:                getInt("GITHUB_SYNC_RUN_MAX_LIMIT", 200),
-			UserPRSyncTimeoutDefault:       getDuration("GITHUB_USER_PR_SYNC_TIMEOUT_DEFAULT", 20*time.Second),
-			UserPRSyncTimeoutMin:           getDuration("GITHUB_USER_PR_SYNC_TIMEOUT_MIN", 10*time.Second),
-			UserPRSyncTimeoutMax:           getDuration("GITHUB_USER_PR_SYNC_TIMEOUT_MAX", 60*time.Second),
+			UserPRSyncTimeoutDefault:       getDuration("GITHUB_USER_PR_SYNC_TIMEOUT_DEFAULT", 45*time.Second),
+			UserPRSyncTimeoutMin:           getDuration("GITHUB_USER_PR_SYNC_TIMEOUT_MIN", 20*time.Second),
+			UserPRSyncTimeoutMax:           getDuration("GITHUB_USER_PR_SYNC_TIMEOUT_MAX", 90*time.Second),
 			MaxBodyBytes:                   getInt("GITHUB_WEBHOOK_MAX_BODY_BYTES", 1<<20),
 			DedupeTTL:                      getDuration("GITHUB_WEBHOOK_DEDUPE_TTL", 7*24*time.Hour),
 			FailedLookback:                 getDuration("GITHUB_FAILED_DELIVERY_LOOKBACK", 72*time.Hour),
@@ -399,16 +406,16 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			CircuitBreakerHalfOpenMax:      getInt("GITHUB_CIRCUIT_BREAKER_HALF_OPEN_MAX_REQUESTS", 1),
 		},
 		AI: AI{
-			Provider:                   getEnv("AI_PROVIDER", "gemini"),
-			APIKey:                     getEnv("GEMINI_API_KEY", ""),
-			Model:                      getEnv("GEMINI_MODEL", "gemini-2.5-flash"),
-			BaseURL:                    getEnv("GEMINI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai"),
+			Provider:                   aiProvider,
+			APIKey:                     aiAPIKey,
+			Model:                      aiModel,
+			BaseURL:                    aiBaseURL,
 			RequestTimeout:             getDuration("AI_REQUEST_TIMEOUT", 20*time.Second),
 			SummaryMaxRunes:            getInt("AI_SUMMARY_MAX_RUNES", 320),
 			SummaryPromptFilePathLimit: getInt("AI_SUMMARY_PROMPT_FILE_PATH_LIMIT", 12),
 			AnalyzerPolicyJSON:         getEnv("AI_ANALYZER_POLICY_JSON", ""),
-			ModerationModel:            getEnv("GEMINI_MODERATION_MODEL", ""),
-			EmbeddingModel:             getEnv("GEMINI_EMBEDDING_MODEL", "text-embedding-004"),
+			ModerationModel:            aiModerationModel,
+			EmbeddingModel:             aiEmbeddingModel,
 			PRMaxChangedFiles:          getInt("AI_PR_MAX_CHANGED_FILES", 100),
 			PRMaxFileRecords:           getInt("AI_PR_MAX_FILE_RECORDS", 100),
 			PRMaxDiffLines:             getInt("AI_PR_MAX_DIFF_LINES", 5000),
@@ -973,8 +980,8 @@ func (a App) ValidateOAuth() error {
 func (a App) ValidateGitHubApp() error {
 	var missing []string
 
-	if normalizeConfigValue(a.GitHub.AppID) == "" || normalizeConfigValue(a.GitHub.AppID) == "0" {
-		missing = append(missing, "GITHUB_APP_ID")
+	if a.GitHubAppJWTIssuer() == "" {
+		missing = append(missing, "GITHUB_APP_ID or GITHUB_APP_CLIENT_ID")
 	}
 	if normalizeConfigValue(a.GitHub.AppClientID) == "" {
 		missing = append(missing, "GITHUB_APP_CLIENT_ID")
@@ -1153,6 +1160,16 @@ func (a App) GitHubUserClientID() string {
 	return normalizeConfigValue(a.GitHub.ClientID)
 }
 
+func (a App) GitHubAppJWTIssuer() string {
+	if appID := normalizeConfigValue(a.GitHub.AppID); appID != "" && appID != "0" {
+		return appID
+	}
+	if appClientID := normalizeConfigValue(a.GitHub.AppClientID); appClientID != "" {
+		return appClientID
+	}
+	return ""
+}
+
 func (a App) GitHubUserClientSecret() string {
 	if appClientSecret := normalizeConfigValue(a.GitHub.AppClientSecret); appClientSecret != "" {
 		return appClientSecret
@@ -1221,9 +1238,15 @@ func (a App) ValidateAI() error {
 		return errors.New("AI provider is required")
 	}
 	if a.AI.APIKey == "" {
+		if normalizeAIProvider(a.AI.Provider) == "openai" {
+			return errors.New("OPENAI_API_KEY is required for AI integration")
+		}
 		return errors.New("GEMINI_API_KEY is required for AI integration")
 	}
 	if a.AI.Model == "" {
+		if normalizeAIProvider(a.AI.Provider) == "openai" {
+			return errors.New("OPENAI_MODEL is required for AI integration")
+		}
 		return errors.New("GEMINI_MODEL is required for AI integration")
 	}
 	return nil
@@ -1373,6 +1396,75 @@ func getEnv(key, fallback string) string {
 		if trimmed != "" {
 			return trimmed
 		}
+	}
+	return fallback
+}
+
+func normalizeAIProvider(value string) string {
+	normalized := strings.ToLower(strings.TrimSpace(value))
+	switch normalized {
+	case "", "openai":
+		return "openai"
+	case "gemini":
+		return "gemini"
+	default:
+		return normalized
+	}
+}
+
+func defaultAIModel(provider string) string {
+	switch normalizeAIProvider(provider) {
+	case "gemini":
+		return "gemini-2.5-flash"
+	default:
+		return "gpt-4o-mini"
+	}
+}
+
+func defaultAIBaseURL(provider string) string {
+	switch normalizeAIProvider(provider) {
+	case "gemini":
+		return "https://generativelanguage.googleapis.com/v1beta/openai"
+	default:
+		return "https://api.openai.com/v1"
+	}
+}
+
+func defaultAIModerationModel(provider string) string {
+	switch normalizeAIProvider(provider) {
+	case "gemini":
+		return ""
+	default:
+		return "omni-moderation-latest"
+	}
+}
+
+func defaultAIEmbeddingModel(provider string) string {
+	switch normalizeAIProvider(provider) {
+	case "gemini":
+		return "text-embedding-004"
+	default:
+		return "text-embedding-3-small"
+	}
+}
+
+func resolveAIEnv(provider, suffix, fallback string) string {
+	if value := strings.TrimSpace(os.Getenv("AI_" + suffix)); value != "" {
+		return value
+	}
+
+	primaryPrefix := "OPENAI"
+	secondaryPrefix := "GEMINI"
+	if normalizeAIProvider(provider) == "gemini" {
+		primaryPrefix = "GEMINI"
+		secondaryPrefix = "OPENAI"
+	}
+
+	if value := strings.TrimSpace(os.Getenv(primaryPrefix + "_" + suffix)); value != "" {
+		return value
+	}
+	if value := strings.TrimSpace(os.Getenv(secondaryPrefix + "_" + suffix)); value != "" {
+		return value
 	}
 	return fallback
 }

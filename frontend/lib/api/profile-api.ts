@@ -953,22 +953,30 @@ function hasProfileEvidence(response: ApiPublicProfileResponse | ApiPrivateProfi
     return true;
   }
   if ((response.score_history?.some((entry) => {
-    if (!entry.pull_request) {
+    if (!entry.pull_request || (entry.pull_request.number ?? 0) <= 0) {
       return false;
     }
-    if ((entry.pull_request.number ?? 0) <= 0) {
+    const eventType = (entry.event_type ?? "").trim().toLowerCase();
+    if (eventType !== "score.computed") {
       return false;
     }
-    return entry.delta_xp !== 0 || (entry.category ?? "").trim().length > 0;
+    return entry.delta_xp > 0;
   }) ?? false)) {
     return true;
   }
   if ((response.top_repositories?.some((repository) => (
-    repository.merged_pull_requests > 0
+    repository.merged_pull_requests > 0 ||
+    (repository.contribution_count > 0 && repository.total_xp > 0)
   )) ?? false)) {
     return true;
   }
-  if ("recent_pr_reports" in response && (response.recent_pr_reports?.length ?? 0) > 0) {
+  if (
+    "recent_pr_reports" in response &&
+    (response.recent_pr_reports?.some((report) => (
+      (report.contribution?.number ?? 0) > 0 &&
+      (report.contribution?.xp_earned ?? 0) > 0
+    )) ?? false)
+  ) {
     return true;
   }
   return false;

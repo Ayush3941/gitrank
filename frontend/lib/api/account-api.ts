@@ -1,12 +1,11 @@
 import { frontendPolicy } from "@/lib/runtime/frontend-policy";
 
 const DEFAULT_CSRF_COOKIE_NAME = frontendPolicy.csrfCookieName;
-const USER_SYNC_EXECUTION_TIMEOUT_MS = Math.max(
-  parsePositiveMs(
-    process.env.NEXT_PUBLIC_GITRANK_USER_SYNC_EXECUTION_TIMEOUT_MS,
-    180_000,
-  ),
-  180_000,
+const USER_SYNC_EXECUTION_TIMEOUT_MS = parseBoundedPositiveMs(
+  process.env.NEXT_PUBLIC_GITRANK_USER_SYNC_EXECUTION_TIMEOUT_MS,
+  65_000,
+  15_000,
+  600_000,
 );
 
 type ApiErrorResponse = {
@@ -542,6 +541,22 @@ function parsePositiveMs(value: string | undefined, fallback: number): number {
   const parsed = Number.parseInt(value.trim(), 10);
   if (!Number.isFinite(parsed) || parsed <= 0) {
     return fallback;
+  }
+  return parsed;
+}
+
+function parseBoundedPositiveMs(
+  value: string | undefined,
+  fallback: number,
+  min: number,
+  max: number,
+): number {
+  const parsed = parsePositiveMs(value, fallback);
+  if (parsed < min) {
+    return min;
+  }
+  if (parsed > max) {
+    return max;
   }
   return parsed;
 }

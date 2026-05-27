@@ -472,14 +472,20 @@ func TestBoundedAuthoredPRSyncLimit(t *testing.T) {
 		AuthoredPRSearchLimit: 100,
 	}
 
-	if got := boundedAuthoredPRSyncLimit(cfg, 0); got != 40 {
-		t.Fatalf("boundedAuthoredPRSyncLimit(default) = %d, want 40", got)
+	if got := boundedAuthoredPRSyncLimit(cfg, 0); got != 15 {
+		t.Fatalf("boundedAuthoredPRSyncLimit(default) = %d, want 15", got)
+	}
+	if got := boundedAuthoredPRSyncLimit(cfg, -4); got != 15 {
+		t.Fatalf("boundedAuthoredPRSyncLimit(-4) = %d, want 15", got)
 	}
 	if got := boundedAuthoredPRSyncLimit(cfg, 55); got != 55 {
 		t.Fatalf("boundedAuthoredPRSyncLimit(55) = %d, want 55", got)
 	}
 	if got := boundedAuthoredPRSyncLimit(cfg, 120); got != 100 {
 		t.Fatalf("boundedAuthoredPRSyncLimit(120) = %d, want 100", got)
+	}
+	if got := boundedAuthoredPRSyncLimit(config.GitHub{}, 0); got != 1 {
+		t.Fatalf("boundedAuthoredPRSyncLimit(empty) = %d, want 1", got)
 	}
 }
 

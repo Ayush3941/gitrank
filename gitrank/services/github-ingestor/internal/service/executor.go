@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -19,7 +20,19 @@ import (
 )
 
 const (
-	defaultFallbackPageSize = 20
+	defaultFallbackPageSize      = 20
+	authoredPRSearchHardLimit    = 1000
+	authoredPRSearchMaxPages     = 10
+	authoredPRSearchMaxDepth     = 10
+	authoredPRBackfillMaxWindows = 3
+
+	authoredPRBootstrapLookback = 30 * 24 * time.Hour
+	authoredPRBackfillWindow    = 90 * 24 * time.Hour
+	authoredPRMinWindowSpan     = time.Hour
+
+	pullRequestFilesMaxPages          = 30
+	pullRequestReviewsMaxPages        = 10
+	pullRequestReviewCommentsMaxPages = 10
 )
 
 var gitHubStatusCodePattern = regexp.MustCompile(`status (\d{3})`)
@@ -29,10 +42,34 @@ type authoredPullRequestTarget struct {
 	Number     int
 }
 
+type authoredPullRequestSelection struct {
+	Targets          []authoredPullRequestTarget
+	SearchIncomplete bool
+	SearchOverflow   bool
+	NextCursor       authoredPRHistoryCursor
+	Fetched          map[string]int
+}
+
+type authoredPullRequestWindow struct {
+	Qualifier string
+	Start     time.Time
+	End       time.Time
+}
+
+type authoredPullRequestDiscoveryStats struct {
+	oldestSeenAt  *time.Time
+	newestSeenAt  *time.Time
+	incomplete    bool
+	overflow      bool
+	searchQueries int
+}
+
 type pullRequestSyncOptions struct {
 	skipReviews        bool
 	skipReviewComments bool
 }
+
+type githubActorInstallationClientFactory func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error)
 
 type Executor struct {
 	cfg                  config.App
@@ -44,6 +81,7 @@ type Executor struct {
 	graphqlClientFactory githubGraphQLClientFactory
 	graphqlTokenSource   githubGraphQLTokenSource
 	installationClient   githubInstallationClientFactory
+	actorInstallation    githubActorInstallationClientFactory
 }
 
 func NewExecutor(cfg config.App, pool *pgxpool.Pool, client *githubapi.RESTClient) *Executor {
@@ -58,6 +96,7 @@ func NewExecutor(cfg config.App, pool *pgxpool.Pool, client *githubapi.RESTClien
 		installationClient:   newGitHubInstallationClientFactory(cfg),
 	}
 	executor.graphqlTokenSource = executor.graphQLTokenSourceForActor
+	executor.actorInstallation = executor.installationClientForActor
 	return executor
 }
 
@@ -282,31 +321,78 @@ func (e *Executor) SyncUser(
 	if !isValidGitHubLogin(user) {
 		return response, fmt.Errorf("user must be a GitHub login")
 	}
-	runtime, err := e.executorForActor(ctx, actor, startedAt)
+	runtime, credentialSource, err := e.executorForUserSyncActor(ctx, actor, startedAt)
 	if err != nil {
 		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, PersistResult{})
 		return response, err
 	}
+	switch credentialSource {
+	case "oauth":
+		response.Fetched["authored_pull_request_auth_oauth"] = 1
+	case "installation":
+		response.Fetched["authored_pull_request_auth_installation"] = 1
+		response.Fetched["authored_pull_request_scope_limited"] = 1
+	default:
+		response.Fetched["authored_pull_request_auth_shared"] = 1
+		response.Fetched["authored_pull_request_scope_limited"] = 1
+	}
 
 	authoredPRSyncLimit := boundedAuthoredPRSyncLimit(e.cfg.GitHub, e.cfg.GitHub.AuthoredPRSyncLimit)
-	authoredPullRequests, authoredSearchIncomplete, err := runtime.fetchAuthoredPullRequestTargets(ctx, user, authoredPRSyncLimit)
+	cursor, cursorErr := e.store.LoadAuthoredPRHistoryCursor(ctx, user)
+	if cursorErr != nil {
+		response.Fetched["authored_pull_request_cursor_load_failed"] = 1
+		cursor = authoredPRHistoryCursor{}
+	}
+	selection, err := runtime.fetchAuthoredPullRequestTargets(ctx, user, authoredPRSyncLimit, cursor, startedAt)
 	if err != nil {
 		response.Fetched["authored_pull_request_search_failed"] = 1
-		authoredPullRequests = nil
-		authoredSearchIncomplete = true
-		if !isRecoverableUserSyncSelectionError(err) {
+		if isRecoverableUserSyncSelectionError(err) {
+			response.Fetched["authored_pull_request_search_retryable"] = 1
+		} else {
 			response.Fetched["authored_pull_request_search_unclassified"] = 1
 		}
+		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, PersistResult{})
+		return response, err
 	}
+	if len(selection.Targets) == 0 {
+		persistedCount, countErr := e.store.CountAuthoredPullRequestsByLogin(ctx, user)
+		if countErr != nil {
+			response.Fetched["authored_pull_request_persisted_count_failed"] = 1
+		} else if shouldForceAuthoredPRBootstrap(cursor, len(selection.Targets), persistedCount) {
+			retrySelection, retryErr := runtime.fetchAuthoredPullRequestTargets(ctx, user, authoredPRSyncLimit, authoredPRHistoryCursor{}, startedAt)
+			if retryErr != nil {
+				response.Fetched["authored_pull_request_bootstrap_retry_failed"] = 1
+				response.Fetched["authored_pull_request_search_failed"] = 1
+				if isRecoverableUserSyncSelectionError(retryErr) {
+					response.Fetched["authored_pull_request_search_retryable"] = 1
+				} else {
+					response.Fetched["authored_pull_request_search_unclassified"] = 1
+				}
+				_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, retryErr, PersistResult{})
+				return response, retryErr
+			}
+			selection = retrySelection
+			response.Fetched["authored_pull_request_cursor_bootstrap_replayed"] = 1
+		}
+	}
+	authoredPullRequests := selection.Targets
+	response.Fetched = mergeCountMaps(response.Fetched, selection.Fetched)
 	if len(authoredPullRequests) > authoredPRSyncLimit {
-		authoredPullRequests = authoredPullRequests[:authoredPRSyncLimit]
+		authoredPullRequests = prioritizeAuthoredPullRequestTargets(
+			authoredPullRequests,
+			authoredPRSyncLimit,
+			selection.NextCursor.BootstrapComplete,
+		)
 		response.Fetched["authored_pull_requests_capped"] = 1
 	}
 	aggregatePersisted := PersistResult{}
 	response.Fetched["repositories_selected"] = uniqueRepositoryCountFromAuthoredTargets(authoredPullRequests)
 	response.Fetched["authored_pull_requests_selected"] = len(authoredPullRequests)
-	if authoredSearchIncomplete {
+	if selection.SearchIncomplete {
 		response.Fetched["authored_pull_request_search_incomplete"] = 1
+	}
+	if selection.SearchOverflow {
+		response.Fetched["authored_pull_request_search_overflow"] = 1
 	}
 	baseCorrelationID := strings.TrimSpace(correlationID)
 	if baseCorrelationID == "" {
@@ -329,8 +415,13 @@ func (e *Executor) SyncUser(
 		cancel()
 		if err != nil {
 			response.Fetched["authored_pull_requests_skipped"]++
+			if isSkippableGitHubTimeoutError(err) {
+				response.Fetched["authored_pull_requests_timeouts"]++
+				response.Fetched["authored_pull_requests_retryable"]++
+			}
 			if !isSkippableGitHubSyncError(err) {
 				response.Fetched["authored_pull_requests_failed"]++
+				response.Fetched["authored_pull_requests_retryable"]++
 			}
 			continue
 		}
@@ -339,13 +430,30 @@ func (e *Executor) SyncUser(
 		aggregatePersisted = addPersistResult(aggregatePersisted, persistResultFromCountMap(child.Persisted))
 	}
 
+	if !shouldAdvanceAuthoredPRLastSynced(response.Fetched, selection.SearchIncomplete, selection.SearchOverflow) {
+		response.Fetched["authored_pull_request_cursor_held_for_retry"] = 1
+		if cursor.LastSyncedAt != nil && !cursor.LastSyncedAt.IsZero() {
+			held := cursor.LastSyncedAt.UTC()
+			selection.NextCursor.LastSyncedAt = &held
+		} else {
+			selection.NextCursor.LastSyncedAt = nil
+		}
+	}
+
 	finishedAt := time.Now().UTC()
 	persistCtx := context.WithoutCancel(ctx)
+	executionStatus := userSyncExecutionStatus(response.Fetched)
+	if err := e.store.UpsertAuthoredPRHistoryCursor(persistCtx, user, selection.NextCursor, finishedAt); err != nil {
+		response.Fetched["authored_pull_request_cursor_persist_failed"] = 1
+		executionStatus = "partial"
+	} else {
+		response.Fetched["authored_pull_request_cursor_persisted"] = 1
+	}
 	_, err = e.store.WithTx(persistCtx, func(tx *TxStore) (PersistResult, error) {
 		return aggregatePersisted, tx.InsertSyncRun(payloadSyncRunInput{
 			CorrelationID:          strings.TrimSpace(correlationID),
 			EventType:              "user",
-			Status:                 "completed",
+			Status:                 executionStatus,
 			Subject:                user,
 			RequestedUserLogin:     user,
 			RequestedBySubject:     actor.Subject,
@@ -361,7 +469,7 @@ func (e *Executor) SyncUser(
 		return response, err
 	}
 
-	response.Status = "completed"
+	response.Status = executionStatus
 	response.FinishedAt = finishedAt
 	return response, nil
 }
@@ -1140,36 +1248,486 @@ func (e *Executor) fetchUserRepositories(ctx context.Context, user string) ([]ma
 	return filtered, nil
 }
 
-func (e *Executor) fetchAuthoredPullRequestTargets(ctx context.Context, user string, limit int) ([]authoredPullRequestTarget, bool, error) {
-	perPage := min(
-		boundedPageSize(e.cfg.GitHub.MaxPageSize, e.cfg.GitHub.AuthoredPRSearchLimit),
-		boundedAuthoredPRSyncLimit(e.cfg.GitHub, limit),
-	)
-	result, _, err := githubapi.SearchIssuesAndPullRequests(ctx, e.client, githubapi.IssueSearchRequest{
-		Query:   fmt.Sprintf("author:%s type:pr archived:false", user),
-		Sort:    "updated",
-		Order:   "desc",
-		PerPage: perPage,
-	})
-	if err != nil {
-		return nil, false, err
+func (e *Executor) fetchAuthoredPullRequestTargets(
+	ctx context.Context,
+	user string,
+	limit int,
+	cursor authoredPRHistoryCursor,
+	now time.Time,
+) (authoredPullRequestSelection, error) {
+	user = strings.TrimSpace(user)
+	if user == "" {
+		return authoredPullRequestSelection{}, errors.New("user is required")
+	}
+	if now.IsZero() {
+		now = time.Now().UTC()
+	}
+	now = now.UTC()
+
+	perPage := 100
+	maxTargets := max(60, limit*6)
+	if e.cfg.GitHub.AuthoredPRSearchLimit > 0 {
+		maxTargets = min(maxTargets, e.cfg.GitHub.AuthoredPRSearchLimit)
+	}
+	incrementalTargetLimit := maxTargets
+	if shouldReserveAuthoredPRBackfill(cursor) && maxTargets > 1 {
+		incrementalTargetLimit = max(limit*2, maxTargets/2)
+		if incrementalTargetLimit >= maxTargets {
+			incrementalTargetLimit = maxTargets - 1
+		}
 	}
 
-	targets := make([]authoredPullRequestTarget, 0, len(result.Items))
-	seen := make(map[string]struct{}, len(result.Items))
-	for _, item := range result.Items {
-		target, ok := authoredPullRequestTargetFromSearchItem(item)
-		if !ok {
+	selection := authoredPullRequestSelection{
+		Targets:    make([]authoredPullRequestTarget, 0, min(maxTargets, authoredPRSearchMaxPages*perPage)),
+		NextCursor: cursor,
+		Fetched:    map[string]int{},
+	}
+	seenTargets := make(map[string]struct{}, maxTargets)
+
+	incrementalStart := now.Add(-authoredPRBootstrapLookback).UTC()
+	if cursor.LastSyncedAt != nil && !cursor.LastSyncedAt.IsZero() {
+		incrementalStart = cursor.LastSyncedAt.UTC().Add(-2 * time.Minute)
+	}
+	if incrementalStart.After(now) {
+		incrementalStart = now.Add(-15 * time.Minute).UTC()
+	}
+	incrementalWindow := authoredPullRequestWindow{
+		Qualifier: "updated",
+		Start:     incrementalStart,
+		End:       now,
+	}
+	incrementalTargets, incrementalStats, err := e.discoverAuthoredPullRequestTargetsInWindow(
+		ctx,
+		user,
+		incrementalWindow,
+		perPage,
+		0,
+		incrementalTargetLimit,
+	)
+	if err != nil {
+		return authoredPullRequestSelection{}, err
+	}
+	selection.Targets = appendUniqueAuthoredPullRequestTargets(selection.Targets, incrementalTargets, seenTargets, maxTargets)
+	selection.SearchIncomplete = selection.SearchIncomplete || incrementalStats.incomplete
+	selection.SearchOverflow = selection.SearchOverflow || incrementalStats.overflow
+	selection.Fetched["authored_pull_request_search_queries"] += incrementalStats.searchQueries
+	selection.Fetched["authored_pull_request_discovery_windows"]++
+	combinedStats := incrementalStats
+
+	backfillBefore := authoredPRBackfillBoundary(cursor, incrementalStats, now)
+	bootstrapComplete := cursor.BootstrapComplete
+	for windowCount := 0; windowCount < authoredPRBackfillMaxWindows && len(selection.Targets) < maxTargets; windowCount++ {
+		if backfillBefore.IsZero() || backfillBefore.Before(gitHubSearchEpoch()) {
+			selection.Fetched["authored_pull_request_backfill_exhausted"] = 1
+			bootstrapComplete = true
+			break
+		}
+
+		backfillStart := backfillBefore.Add(-authoredPRBackfillWindow).UTC()
+		if backfillStart.Before(gitHubSearchEpoch()) {
+			backfillStart = gitHubSearchEpoch()
+		}
+		if backfillStart.After(backfillBefore) {
+			selection.Fetched["authored_pull_request_backfill_exhausted"] = 1
+			bootstrapComplete = true
+			break
+		}
+
+		backfillWindow := authoredPullRequestWindow{
+			Qualifier: "created",
+			Start:     backfillStart,
+			End:       backfillBefore,
+		}
+		backfillTargets, backfillStats, backfillErr := e.discoverAuthoredPullRequestTargetsInWindow(
+			ctx,
+			user,
+			backfillWindow,
+			perPage,
+			0,
+			maxTargets-len(selection.Targets),
+		)
+		if backfillErr != nil {
+			return authoredPullRequestSelection{}, backfillErr
+		}
+		selection.Targets = appendUniqueAuthoredPullRequestTargets(selection.Targets, backfillTargets, seenTargets, maxTargets)
+		selection.SearchIncomplete = selection.SearchIncomplete || backfillStats.incomplete
+		selection.SearchOverflow = selection.SearchOverflow || backfillStats.overflow
+		selection.Fetched["authored_pull_request_search_queries"] += backfillStats.searchQueries
+		selection.Fetched["authored_pull_request_discovery_windows"]++
+		combinedStats = mergeAuthoredPullRequestDiscoveryStats(combinedStats, backfillStats)
+
+		if backfillStats.oldestSeenAt != nil {
+			backfillBefore = backfillStats.oldestSeenAt.UTC().Add(-time.Second)
+			selection.NextCursor.BackfillBeforeAt = &backfillBefore
+			bootstrapComplete = false
 			continue
 		}
-		key := strings.ToLower(fmt.Sprintf("%s#%d", target.Repository, target.Number))
+
+		// No authored PRs were found in this window. Move the cursor backward so
+		// sparse history gaps do not stall backfill progress on future runs.
+		selection.Fetched["authored_pull_request_backfill_empty_windows"]++
+		backfillBefore = backfillStart.Add(-time.Second).UTC()
+		selection.NextCursor.BackfillBeforeAt = &backfillBefore
+		bootstrapComplete = false
+	}
+
+	selection.Fetched["authored_pull_request_discovery_targets"] = len(selection.Targets)
+	if combinedStats.oldestSeenAt != nil {
+		selection.NextCursor.OldestSeenAt = minAuthoredTimestamp(cursor.OldestSeenAt, combinedStats.oldestSeenAt)
+	}
+	if selection.NextCursor.BackfillBeforeAt == nil && selection.NextCursor.OldestSeenAt != nil {
+		nextBefore := selection.NextCursor.OldestSeenAt.UTC().Add(-time.Second)
+		selection.NextCursor.BackfillBeforeAt = &nextBefore
+	}
+	if selection.NextCursor.BackfillBeforeAt != nil && !selection.NextCursor.BackfillBeforeAt.IsZero() {
+		if selection.NextCursor.BackfillBeforeAt.Before(gitHubSearchEpoch()) {
+			bootstrapComplete = true
+		}
+	}
+	lastSyncedAt := now.UTC()
+	selection.NextCursor.LastSyncedAt = &lastSyncedAt
+	selection.NextCursor.BootstrapComplete = bootstrapComplete
+	return selection, nil
+}
+
+func (e *Executor) discoverAuthoredPullRequestTargetsInWindow(
+	ctx context.Context,
+	user string,
+	window authoredPullRequestWindow,
+	perPage int,
+	depth int,
+	targetLimit int,
+) ([]authoredPullRequestTarget, authoredPullRequestDiscoveryStats, error) {
+	stats := authoredPullRequestDiscoveryStats{}
+	if targetLimit <= 0 {
+		return []authoredPullRequestTarget{}, stats, nil
+	}
+	if window.End.Before(window.Start) {
+		return []authoredPullRequestTarget{}, stats, nil
+	}
+
+	searchQuery := authoredPRSearchQuery(user, window.Qualifier, window.Start, window.End)
+	result, meta, err := githubapi.SearchIssuesAndPullRequests(ctx, e.client, githubapi.IssueSearchRequest{
+		Query:   searchQuery,
+		Sort:    window.Qualifier,
+		Order:   "desc",
+		PerPage: perPage,
+		Page:    1,
+	})
+	stats.searchQueries = 1
+	if err != nil {
+		return nil, stats, err
+	}
+	stats.incomplete = result.IncompleteResults
+
+	if shouldSplitAuthoredSearchWindow(result.TotalCount, result.IncompleteResults, window.Start, window.End, depth) {
+		midpoint := window.Start.Add(window.End.Sub(window.Start) / 2).UTC()
+		if midpoint.After(window.Start) && midpoint.Before(window.End) {
+			recentStart := midpoint.Add(time.Second).UTC()
+			recentWindow := authoredPullRequestWindow{
+				Qualifier: window.Qualifier,
+				Start:     recentStart,
+				End:       window.End,
+			}
+			recentTargets, recentStats, recentErr := e.discoverAuthoredPullRequestTargetsInWindow(
+				ctx,
+				user,
+				recentWindow,
+				perPage,
+				depth+1,
+				targetLimit,
+			)
+			stats = mergeAuthoredPullRequestDiscoveryStats(stats, recentStats)
+			if recentErr != nil {
+				return nil, stats, recentErr
+			}
+			if len(recentTargets) >= targetLimit {
+				return recentTargets[:targetLimit], stats, nil
+			}
+
+			olderWindow := authoredPullRequestWindow{
+				Qualifier: window.Qualifier,
+				Start:     window.Start,
+				End:       midpoint,
+			}
+			olderTargets, olderStats, olderErr := e.discoverAuthoredPullRequestTargetsInWindow(
+				ctx,
+				user,
+				olderWindow,
+				perPage,
+				depth+1,
+				targetLimit-len(recentTargets),
+			)
+			stats = mergeAuthoredPullRequestDiscoveryStats(stats, olderStats)
+			if olderErr != nil {
+				return nil, stats, olderErr
+			}
+			return append(recentTargets, olderTargets...), stats, nil
+		}
+		stats.overflow = true
+	}
+
+	targets := make([]authoredPullRequestTarget, 0, min(targetLimit, authoredPRSearchMaxPages*perPage))
+	seen := make(map[string]struct{}, cap(targets))
+	appendItems := func(items []githubapi.IssueSearchResultItem) {
+		for _, item := range items {
+			target, ok := authoredPullRequestTargetFromSearchItem(item)
+			if !ok {
+				continue
+			}
+			key := strings.ToLower(fmt.Sprintf("%s#%d", target.Repository, target.Number))
+			if _, exists := seen[key]; exists {
+				continue
+			}
+			seen[key] = struct{}{}
+			targets = append(targets, target)
+			stats = updateAuthoredPullRequestDiscoveryStats(stats, item)
+			if len(targets) >= targetLimit {
+				return
+			}
+		}
+	}
+
+	appendItems(result.Items)
+	currentResult := result
+	currentMeta := meta
+	currentPage := 1
+	for len(targets) < targetLimit && currentPage < authoredPRSearchMaxPages {
+		nextPage, ok := nextSearchPageFromLink(currentMeta.Links["next"])
+		if !ok || nextPage <= currentPage {
+			break
+		}
+		currentPage = nextPage
+		nextResult, nextMeta, nextErr := githubapi.SearchIssuesAndPullRequests(ctx, e.client, githubapi.IssueSearchRequest{
+			Query:   searchQuery,
+			Sort:    window.Qualifier,
+			Order:   "desc",
+			PerPage: perPage,
+			Page:    currentPage,
+		})
+		stats.searchQueries++
+		if nextErr != nil {
+			return targets, stats, nextErr
+		}
+		if nextResult.IncompleteResults {
+			stats.incomplete = true
+		}
+		currentResult = nextResult
+		currentMeta = nextMeta
+		appendItems(currentResult.Items)
+		if len(currentResult.Items) == 0 {
+			break
+		}
+	}
+	if result.TotalCount >= authoredPRSearchHardLimit {
+		stats.overflow = true
+	}
+	return targets, stats, nil
+}
+
+func authoredPRSearchQuery(user, qualifier string, start, end time.Time) string {
+	return fmt.Sprintf(
+		"author:%s type:pr archived:false %s:%s..%s",
+		strings.TrimSpace(user),
+		strings.TrimSpace(qualifier),
+		gitHubSearchTimestamp(start),
+		gitHubSearchTimestamp(end),
+	)
+}
+
+func shouldSplitAuthoredSearchWindow(totalCount int, incomplete bool, start, end time.Time, depth int) bool {
+	if depth >= authoredPRSearchMaxDepth {
+		return false
+	}
+	if !incomplete && totalCount < authoredPRSearchHardLimit {
+		return false
+	}
+	if !end.After(start) {
+		return false
+	}
+	return end.Sub(start) >= authoredPRMinWindowSpan
+}
+
+func nextSearchPageFromLink(link string) (int, bool) {
+	parsed, err := url.Parse(strings.TrimSpace(link))
+	if err != nil {
+		return 0, false
+	}
+	pageValue := strings.TrimSpace(parsed.Query().Get("page"))
+	if pageValue == "" {
+		return 0, false
+	}
+	page, convErr := strconv.Atoi(pageValue)
+	if convErr != nil || page <= 0 {
+		return 0, false
+	}
+	return page, true
+}
+
+func gitHubSearchTimestamp(value time.Time) string {
+	if value.IsZero() {
+		return "1970-01-01T00:00:00Z"
+	}
+	return value.UTC().Format(time.RFC3339)
+}
+
+func updateAuthoredPullRequestDiscoveryStats(
+	stats authoredPullRequestDiscoveryStats,
+	item githubapi.IssueSearchResultItem,
+) authoredPullRequestDiscoveryStats {
+	createdAt, hasCreatedAt := parseGitHubSearchItemTimestamp(item.CreatedAt)
+	updatedAt, hasUpdatedAt := parseGitHubSearchItemTimestamp(item.UpdatedAt)
+	if hasCreatedAt {
+		stats.oldestSeenAt = minAuthoredTimestamp(stats.oldestSeenAt, &createdAt)
+	}
+	if hasUpdatedAt {
+		if stats.newestSeenAt == nil || updatedAt.After(stats.newestSeenAt.UTC()) {
+			updatedAt = updatedAt.UTC()
+			stats.newestSeenAt = &updatedAt
+		}
+	}
+	return stats
+}
+
+func parseGitHubSearchItemTimestamp(raw string) (time.Time, bool) {
+	parsed, err := time.Parse(time.RFC3339, strings.TrimSpace(raw))
+	if err != nil {
+		return time.Time{}, false
+	}
+	return parsed.UTC(), true
+}
+
+func minAuthoredTimestamp(existing, candidate *time.Time) *time.Time {
+	if candidate == nil || candidate.IsZero() {
+		return existing
+	}
+	if existing == nil || existing.IsZero() {
+		next := candidate.UTC()
+		return &next
+	}
+	if candidate.UTC().Before(existing.UTC()) {
+		next := candidate.UTC()
+		return &next
+	}
+	return existing
+}
+
+func mergeAuthoredPullRequestDiscoveryStats(
+	base authoredPullRequestDiscoveryStats,
+	next authoredPullRequestDiscoveryStats,
+) authoredPullRequestDiscoveryStats {
+	base.searchQueries += next.searchQueries
+	base.incomplete = base.incomplete || next.incomplete
+	base.overflow = base.overflow || next.overflow
+	base.oldestSeenAt = minAuthoredTimestamp(base.oldestSeenAt, next.oldestSeenAt)
+	if next.newestSeenAt != nil && (base.newestSeenAt == nil || next.newestSeenAt.After(base.newestSeenAt.UTC())) {
+		timestamp := next.newestSeenAt.UTC()
+		base.newestSeenAt = &timestamp
+	}
+	return base
+}
+
+func authoredPRBackfillBoundary(cursor authoredPRHistoryCursor, stats authoredPullRequestDiscoveryStats, now time.Time) time.Time {
+	if cursor.BackfillBeforeAt != nil && !cursor.BackfillBeforeAt.IsZero() {
+		if cursor.BackfillBeforeAt.UTC().After(gitHubSearchEpoch()) {
+			return cursor.BackfillBeforeAt.UTC()
+		}
+	}
+	if cursor.BootstrapComplete {
+		return gitHubSearchEpoch().Add(-time.Second)
+	}
+	if cursor.BackfillBeforeAt != nil && !cursor.BackfillBeforeAt.IsZero() {
+		return cursor.BackfillBeforeAt.UTC()
+	}
+	if stats.oldestSeenAt != nil && !stats.oldestSeenAt.IsZero() {
+		return stats.oldestSeenAt.UTC().Add(-time.Second)
+	}
+	if cursor.OldestSeenAt != nil && !cursor.OldestSeenAt.IsZero() {
+		return cursor.OldestSeenAt.UTC().Add(-time.Second)
+	}
+	return now.Add(-authoredPRBootstrapLookback).UTC()
+}
+
+func shouldReserveAuthoredPRBackfill(cursor authoredPRHistoryCursor) bool {
+	if cursor.BackfillBeforeAt != nil && !cursor.BackfillBeforeAt.IsZero() {
+		return cursor.BackfillBeforeAt.UTC().After(gitHubSearchEpoch())
+	}
+	if cursor.BootstrapComplete {
+		return false
+	}
+	if cursor.OldestSeenAt != nil && !cursor.OldestSeenAt.IsZero() {
+		return cursor.OldestSeenAt.UTC().After(gitHubSearchEpoch())
+	}
+	return true
+}
+
+func appendUniqueAuthoredPullRequestTargets(
+	base []authoredPullRequestTarget,
+	next []authoredPullRequestTarget,
+	seen map[string]struct{},
+	limit int,
+) []authoredPullRequestTarget {
+	for _, target := range next {
+		if len(base) >= limit {
+			return base
+		}
+		key := strings.ToLower(fmt.Sprintf("%s#%d", strings.TrimSpace(target.Repository), target.Number))
 		if _, exists := seen[key]; exists {
 			continue
 		}
 		seen[key] = struct{}{}
-		targets = append(targets, target)
+		base = append(base, target)
 	}
-	return targets, result.IncompleteResults, nil
+	return base
+}
+
+func prioritizeAuthoredPullRequestTargets(
+	targets []authoredPullRequestTarget,
+	limit int,
+	bootstrapComplete bool,
+) []authoredPullRequestTarget {
+	if limit <= 0 || len(targets) <= limit {
+		return targets
+	}
+	if bootstrapComplete {
+		return targets[:limit]
+	}
+
+	recentQuota := limit - max(1, limit/3)
+	if recentQuota < 1 {
+		recentQuota = 1
+	}
+	historicQuota := max(1, limit-recentQuota)
+
+	out := make([]authoredPullRequestTarget, 0, limit)
+	seen := make(map[string]struct{}, limit)
+	appendTarget := func(target authoredPullRequestTarget) {
+		if len(out) >= limit {
+			return
+		}
+		key := strings.ToLower(fmt.Sprintf("%s#%d", strings.TrimSpace(target.Repository), target.Number))
+		if _, exists := seen[key]; exists {
+			return
+		}
+		seen[key] = struct{}{}
+		out = append(out, target)
+	}
+
+	for index := 0; index < len(targets) && len(out) < recentQuota; index++ {
+		appendTarget(targets[index])
+	}
+	for index := len(targets) - 1; index >= 0 && len(out) < recentQuota+historicQuota; index-- {
+		appendTarget(targets[index])
+	}
+	for index := 0; index < len(targets) && len(out) < limit; index++ {
+		appendTarget(targets[index])
+	}
+
+	return out
+}
+
+func gitHubSearchEpoch() time.Time {
+	return time.Date(2008, 1, 1, 0, 0, 0, 0, time.UTC)
 }
 
 func authoredPullRequestTargetFromSearchItem(item githubapi.IssueSearchResultItem) (authoredPullRequestTarget, bool) {
@@ -1227,39 +1785,30 @@ func (e *Executor) fetchPullRequest(ctx context.Context, owner, name string, num
 }
 
 func (e *Executor) fetchPullRequestReviews(ctx context.Context, owner, name string, number int) ([]map[string]any, error) {
-	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, e.cfg.GitHub.PullRequestReviewPageSize)
-	var reviews []map[string]any
-	_, err := e.client.GetJSON(ctx, fmt.Sprintf("/repos/%s/%s/pulls/%d/reviews", owner, name, number), url.Values{
-		"per_page": []string{fmt.Sprintf("%d", perPage)},
-	}, githubapi.ConditionalRequest{}, &reviews)
-	if err != nil {
-		return nil, err
-	}
-	return reviews, nil
+	return e.fetchPaginatedResourceRows(
+		ctx,
+		fmt.Sprintf("/repos/%s/%s/pulls/%d/reviews", owner, name, number),
+		nil,
+		pullRequestReviewsMaxPages,
+	)
 }
 
 func (e *Executor) fetchPullRequestReviewComments(ctx context.Context, owner, name string, number int) ([]map[string]any, error) {
-	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, e.cfg.GitHub.RepositorySyncPageSize)
-	var comments []map[string]any
-	_, err := e.client.GetJSON(ctx, fmt.Sprintf("/repos/%s/%s/pulls/%d/comments", owner, name, number), url.Values{
-		"per_page": []string{fmt.Sprintf("%d", perPage)},
-	}, githubapi.ConditionalRequest{}, &comments)
-	if err != nil {
-		return nil, err
-	}
-	return comments, nil
+	return e.fetchPaginatedResourceRows(
+		ctx,
+		fmt.Sprintf("/repos/%s/%s/pulls/%d/comments", owner, name, number),
+		nil,
+		pullRequestReviewCommentsMaxPages,
+	)
 }
 
 func (e *Executor) fetchPullRequestFiles(ctx context.Context, owner, name string, number int) ([]map[string]any, error) {
-	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, e.cfg.GitHub.RepositorySyncPageSize)
-	var files []map[string]any
-	_, err := e.client.GetJSON(ctx, fmt.Sprintf("/repos/%s/%s/pulls/%d/files", owner, name, number), url.Values{
-		"per_page": []string{fmt.Sprintf("%d", perPage)},
-	}, githubapi.ConditionalRequest{}, &files)
-	if err != nil {
-		return nil, err
-	}
-	return files, nil
+	return e.fetchPaginatedResourceRows(
+		ctx,
+		fmt.Sprintf("/repos/%s/%s/pulls/%d/files", owner, name, number),
+		nil,
+		pullRequestFilesMaxPages,
+	)
 }
 
 func (e *Executor) fetchIssue(ctx context.Context, owner, name string, number int) (map[string]any, error) {
@@ -1281,6 +1830,57 @@ func (e *Executor) fetchCommit(ctx context.Context, owner, name, sha string) (ma
 		return nil, err
 	}
 	return commit, nil
+}
+
+func (e *Executor) fetchPaginatedResourceRows(
+	ctx context.Context,
+	path string,
+	baseQuery url.Values,
+	maxPages int,
+) ([]map[string]any, error) {
+	if maxPages <= 0 {
+		maxPages = 1
+	}
+	perPage := 100
+
+	rows := make([]map[string]any, 0, perPage)
+	page := 1
+	for pageIndex := 0; pageIndex < maxPages; pageIndex++ {
+		query := cloneURLValues(baseQuery)
+		query.Set("per_page", fmt.Sprintf("%d", perPage))
+		query.Set("page", fmt.Sprintf("%d", page))
+
+		var current []map[string]any
+		meta, err := e.client.GetJSON(ctx, path, query, githubapi.ConditionalRequest{}, &current)
+		if err != nil {
+			return nil, err
+		}
+		rows = append(rows, current...)
+		if len(current) == 0 {
+			break
+		}
+
+		nextPage, ok := nextSearchPageFromLink(meta.Links["next"])
+		if !ok || nextPage <= page {
+			break
+		}
+		page = nextPage
+	}
+	return rows, nil
+}
+
+func cloneURLValues(values url.Values) url.Values {
+	cloned := make(url.Values)
+	for key, items := range values {
+		if len(items) == 0 {
+			cloned[key] = nil
+			continue
+		}
+		next := make([]string, len(items))
+		copy(next, items)
+		cloned[key] = next
+	}
+	return cloned
 }
 
 func (e *Executor) fetchRepository(ctx context.Context, owner, name string) (map[string]any, error) {
@@ -1504,6 +2104,58 @@ func isRecoverableUserSyncSelectionError(err error) bool {
 	return statusCode >= http.StatusInternalServerError
 }
 
+func shouldAdvanceAuthoredPRLastSynced(fetched map[string]int, searchIncomplete, searchOverflow bool) bool {
+	if searchIncomplete || searchOverflow {
+		return false
+	}
+	if fetched == nil {
+		return true
+	}
+	if fetched["authored_pull_request_search_failed"] > 0 {
+		return false
+	}
+	return fetched["authored_pull_requests_retryable"] <= 0
+}
+
+func userSyncExecutionStatus(fetched map[string]int) string {
+	if fetched == nil {
+		return "completed"
+	}
+	if fetched["authored_pull_request_search_incomplete"] > 0 ||
+		fetched["authored_pull_request_search_overflow"] > 0 ||
+		fetched["authored_pull_requests_retryable"] > 0 ||
+		fetched["authored_pull_requests_skipped"] > 0 ||
+		fetched["authored_pull_requests_failed"] > 0 ||
+		fetched["authored_pull_requests_timeouts"] > 0 ||
+		fetched["authored_pull_request_scope_limited"] > 0 {
+		return "partial"
+	}
+	return "completed"
+}
+
+func shouldForceAuthoredPRBootstrap(cursor authoredPRHistoryCursor, selectedTargets int, persistedCount int) bool {
+	if selectedTargets > 0 || persistedCount > 0 {
+		return false
+	}
+	return hasAuthoredPRCursorState(cursor)
+}
+
+func hasAuthoredPRCursorState(cursor authoredPRHistoryCursor) bool {
+	if cursor.BootstrapComplete {
+		return true
+	}
+	if cursor.LastSyncedAt != nil && !cursor.LastSyncedAt.IsZero() {
+		return true
+	}
+	if cursor.OldestSeenAt != nil && !cursor.OldestSeenAt.IsZero() {
+		return true
+	}
+	if cursor.BackfillBeforeAt != nil && !cursor.BackfillBeforeAt.IsZero() {
+		return true
+	}
+	return false
+}
+
 func syncFailureFetchedMetrics(err error) map[string]int {
 	metrics := map[string]int{
 		"failed": 1,
@@ -1558,14 +2210,20 @@ func isSkippableGitHubTimeoutError(err error) bool {
 }
 
 func boundedUserPRSyncTimeout(cfg config.App) time.Duration {
-	timeout := cfg.GitHub.RequestTimeout
-	if timeout <= 0 {
-		timeout = cfg.GitHub.UserPRSyncTimeoutDefault
-	}
+	timeout := cfg.GitHub.UserPRSyncTimeoutDefault
 	minTimeout := cfg.GitHub.UserPRSyncTimeoutMin
 	maxTimeout := cfg.GitHub.UserPRSyncTimeoutMax
-	if minTimeout <= 0 || maxTimeout <= 0 || maxTimeout < minTimeout {
-		return timeout
+	if minTimeout <= 0 {
+		minTimeout = 10 * time.Second
+	}
+	if maxTimeout <= 0 {
+		maxTimeout = 2 * time.Minute
+	}
+	if maxTimeout < minTimeout {
+		maxTimeout = minTimeout
+	}
+	if timeout <= 0 {
+		timeout = minTimeout
 	}
 	if timeout < minTimeout {
 		return minTimeout
@@ -1579,6 +2237,9 @@ func boundedUserPRSyncTimeout(cfg config.App) time.Duration {
 func boundedAuthoredPRSyncLimit(cfg config.GitHub, limit int) int {
 	if limit <= 0 {
 		limit = cfg.AuthoredPRSyncLimit
+	}
+	if limit <= 0 {
+		limit = 1
 	}
 	maxLimit := cfg.AuthoredPRSearchLimit
 	if maxLimit <= 0 {

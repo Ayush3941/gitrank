@@ -6,8 +6,8 @@ public profile signals without fake production users or mock leaderboard identit
 
 ## Status
 
-Current baseline is a working local MVP with live GitHub OAuth + sync, deterministic
-scoring, profile rendering, and optional Gemini narrative enrichment.
+Current baseline is a working local MVP with live GitHub OAuth sign-in, PR sync,
+deterministic scoring, profile rendering, and optional ChatGPT narrative enrichment.
 
 This repo is optimized for:
 
@@ -24,10 +24,10 @@ This repo is optimized for:
 - Every score claim must be traceable to persisted evidence.
 - AI output never writes final score values.
 
-### AI role (Gemini)
+### AI role (ChatGPT)
 
-- Gemini provides explanation copy, impact narratives, and profile storytelling.
-- If Gemini is missing/rate-limited/fails, the product degrades to deterministic
+- ChatGPT provides explanation copy, impact narratives, and profile storytelling.
+- If ChatGPT is missing/rate-limited/fails, the product degrades to deterministic
   fallback text and still remains usable.
 - Evidence state is shown instead of silently hiding degraded AI conditions.
 
@@ -46,9 +46,9 @@ This keeps ranking reproducible, auditable, and harder to game.
 ## Architecture
 
 ```text
-GitHub OAuth + GitHub API
-        |
-        v
+GitHub OAuth (identity/linking) + GitHub App installation tokens (preferred sync auth)
+                           |
+                           v
 auth-service -> github-ingestor -> pr-analyzer -> scoring-engine
       |               |                |               |
       +---------------+----------------+---------------+
@@ -96,11 +96,11 @@ cp -n gitrank/.env.example gitrank/.env
 - `GITRANK_JWT_SIGNING_KEY`
 - `GITHUB_TOKEN_ENCRYPTION_KEY`
 
-Gemini path:
+ChatGPT path:
 
-- `AI_PROVIDER=gemini`
-- `GEMINI_API_KEY`
-- optional `GEMINI_MODEL` (default `gemini-2.5-flash`)
+- `AI_PROVIDER=openai`
+- `OPENAI_API_KEY`
+- optional `OPENAI_MODEL` (default `gpt-4o-mini`)
 
 Frontend runtime also reads its server env from this same `gitrank/.env` export path.
 
@@ -128,13 +128,15 @@ Frontend runtime also reads its server env from this same `gitrank/.env` export 
 
 1. Sign in with GitHub OAuth.
 2. Backend auto-sync fetches bounded PR evidence.
-3. Deterministic scoring computes XP/rank/badges.
-4. Dashboard + Contributions + PR reports render evidence-backed results.
-5. Gemini enriches explanations when configured and available.
+3. GitHub ingestor prefers GitHub App installation tokens for PR/repo sync when installation context exists, and safely falls back to linked OAuth user token when it does not.
+4. Deterministic scoring computes XP/rank/badges.
+5. Dashboard + Contributions + PR reports render evidence-backed results.
+6. ChatGPT enriches explanations when configured and available.
 
 ## Evidence and Sync Notes
 
 - User sync limits are runtime-configurable (`GITHUB_AUTHORED_PR_SYNC_LIMIT`, `GITHUB_AUTHORED_PR_SEARCH_LIMIT`, page-size and timeout policy env vars).
+- User sync execution no longer enforces a hidden floor for authored-PR count; `GITHUB_AUTHORED_PR_SYNC_LIMIT` is applied directly (default `10`) and then capped only by `GITHUB_AUTHORED_PR_SEARCH_LIMIT`.
 - Deterministic score math is runtime-configurable through `SCORING_*` env policy values; AI summaries never directly assign XP.
 - Profile/report pages are snapshot-backed and may show partial/stale states.
 - Upstream failures are surfaced as explicit sync/evidence states.

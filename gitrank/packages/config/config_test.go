@@ -170,14 +170,14 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.GitHub.InstallationRepositoryMaxPages != 10 {
 		t.Fatalf("GitHub.InstallationRepositoryMaxPages = %d, want 10", cfg.GitHub.InstallationRepositoryMaxPages)
 	}
-	if cfg.GitHub.UserPRSyncTimeoutDefault != 20*time.Second {
-		t.Fatalf("GitHub.UserPRSyncTimeoutDefault = %v, want 20s", cfg.GitHub.UserPRSyncTimeoutDefault)
+	if cfg.GitHub.UserPRSyncTimeoutDefault != 45*time.Second {
+		t.Fatalf("GitHub.UserPRSyncTimeoutDefault = %v, want 45s", cfg.GitHub.UserPRSyncTimeoutDefault)
 	}
-	if cfg.GitHub.UserPRSyncTimeoutMin != 10*time.Second {
-		t.Fatalf("GitHub.UserPRSyncTimeoutMin = %v, want 10s", cfg.GitHub.UserPRSyncTimeoutMin)
+	if cfg.GitHub.UserPRSyncTimeoutMin != 20*time.Second {
+		t.Fatalf("GitHub.UserPRSyncTimeoutMin = %v, want 20s", cfg.GitHub.UserPRSyncTimeoutMin)
 	}
-	if cfg.GitHub.UserPRSyncTimeoutMax != 60*time.Second {
-		t.Fatalf("GitHub.UserPRSyncTimeoutMax = %v, want 60s", cfg.GitHub.UserPRSyncTimeoutMax)
+	if cfg.GitHub.UserPRSyncTimeoutMax != 90*time.Second {
+		t.Fatalf("GitHub.UserPRSyncTimeoutMax = %v, want 90s", cfg.GitHub.UserPRSyncTimeoutMax)
 	}
 	if cfg.GitHub.RepositoryCacheTTL != 10*time.Minute {
 		t.Fatalf("GitHub.RepositoryCacheTTL = %v, want 10m", cfg.GitHub.RepositoryCacheTTL)
@@ -227,14 +227,14 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.Scoring.LevelArchitectMinXP != 250 || cfg.Scoring.LevelMaintainerMinXP != 180 {
 		t.Fatalf("Scoring level thresholds = architect %d maintainer %d, want 250/180", cfg.Scoring.LevelArchitectMinXP, cfg.Scoring.LevelMaintainerMinXP)
 	}
-	if cfg.AI.Provider != "gemini" {
-		t.Fatalf("AI.Provider = %q, want gemini", cfg.AI.Provider)
+	if cfg.AI.Provider != "openai" {
+		t.Fatalf("AI.Provider = %q, want openai", cfg.AI.Provider)
 	}
-	if cfg.AI.Model != "gemini-2.5-flash" {
-		t.Fatalf("AI.Model = %q, want gemini-2.5-flash", cfg.AI.Model)
+	if cfg.AI.Model != "gpt-4o-mini" {
+		t.Fatalf("AI.Model = %q, want gpt-4o-mini", cfg.AI.Model)
 	}
-	if cfg.AI.BaseURL != "https://generativelanguage.googleapis.com/v1beta/openai" {
-		t.Fatalf("AI.BaseURL = %q, want Gemini OpenAI-compatible endpoint", cfg.AI.BaseURL)
+	if cfg.AI.BaseURL != "https://api.openai.com/v1" {
+		t.Fatalf("AI.BaseURL = %q, want OpenAI API endpoint", cfg.AI.BaseURL)
 	}
 	if cfg.Auth.SessionCookieName != "gitrank_session" {
 		t.Fatalf("Auth.SessionCookieName = %q, want gitrank_session", cfg.Auth.SessionCookieName)
@@ -318,8 +318,8 @@ func TestLoadDefaultsMatchBackendEnvExample(t *testing.T) {
 	requireEnvInt(t, env, "GITHUB_CIRCUIT_BREAKER_HALF_OPEN_MAX_REQUESTS", cfg.GitHub.CircuitBreakerHalfOpenMax)
 
 	requireEnvString(t, env, "AI_PROVIDER", cfg.AI.Provider)
-	requireEnvString(t, env, "GEMINI_MODEL", cfg.AI.Model)
-	requireEnvString(t, env, "GEMINI_BASE_URL", cfg.AI.BaseURL)
+	requireEnvString(t, env, "OPENAI_MODEL", cfg.AI.Model)
+	requireEnvString(t, env, "OPENAI_BASE_URL", cfg.AI.BaseURL)
 	requireEnvDuration(t, env, "AI_REQUEST_TIMEOUT", cfg.AI.RequestTimeout)
 	requireEnvInt(t, env, "AI_SUMMARY_MAX_RUNES", cfg.AI.SummaryMaxRunes)
 	requireEnvInt(t, env, "AI_SUMMARY_PROMPT_FILE_PATH_LIMIT", cfg.AI.SummaryPromptFilePathLimit)
