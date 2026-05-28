@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { Activity, Flame, Medal } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { DashboardHeroRankCard } from "@/features/dashboard/components/DashboardHeroRankCard";
+import { buildDashboardStaleNotice } from "@/features/dashboard/lib/stale-notice";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useDashboard } from "@/hooks/use-dashboard";
@@ -24,10 +25,10 @@ import {
   deriveDeterministicArchetype,
   shouldRequestAbraInsights,
 } from "@/lib/ai/deterministic-identity-summary";
-import { formatRelativeDays } from "@/lib/formatters";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
+import { describeSyncRunOutcome } from "@/lib/presentation/sync-run-diagnostics";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import { Button } from "@/components/ui/button";
@@ -74,6 +75,13 @@ export function DashboardPageClient() {
     user,
     syncRunsQuery.data?.runs,
   );
+  const latestSyncOutcome = useMemo(() => {
+    const latestRun = syncRunsQuery.data?.runs?.[0];
+    if (!latestRun) {
+      return null;
+    }
+    return describeSyncRunOutcome(latestRun);
+  }, [syncRunsQuery.data?.runs]);
   const streak = useMemo(
     () => summarizeContributionStreak(user?.contributions ?? []),
     [user?.contributions],
@@ -190,6 +198,11 @@ export function DashboardPageClient() {
     );
   }
 
+  const staleNotice =
+    syncStateForDisplay === "stale" || syncStateForDisplay === "partially_synced"
+      ? buildDashboardStaleNotice(syncStateForDisplay, data.refreshedAt, latestSyncOutcome)
+      : null;
+
   return (
     <div className="stable-scroll-scope space-y-6">
       <PageHeader
@@ -229,13 +242,10 @@ export function DashboardPageClient() {
           </div>
         )}
       />
-      {syncStateForDisplay === "stale" || syncStateForDisplay === "partially_synced" ? (
+      {staleNotice ? (
         <StaleState
-          message={
-            syncStateForDisplay === "partially_synced"
-              ? "Profile snapshot exists, but scored PR evidence is still empty. Keep auto-sync active and refresh after GitHub processing completes."
-              : `Your GitRank profile was refreshed ${formatRelativeDays(data.refreshedAt)}.`
-          }
+          message={staleNotice.message}
+          reasonMessage={staleNotice.reasonMessage}
           updatedAt={data.refreshedAt}
           onRefresh={async () => {
             try {

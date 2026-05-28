@@ -56,4 +56,18 @@ describe("StaleState", () => {
       ).toBeTruthy();
     });
   });
+
+  it("renders optional sync reason copy when provided", () => {
+    render(
+      <StaleState
+        message="Profile data is stale."
+        reasonMessage="Latest sync was partial because historical backfill is still in progress."
+        updatedAt="2026-05-17T18:10:00.000Z"
+      />,
+    );
+
+    expect(
+      screen.getByText("Latest sync was partial because historical backfill is still in progress."),
+    ).toBeTruthy();
+  });
 });

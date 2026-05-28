@@ -12,6 +12,7 @@ import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 
 export function StaleState({
   message,
+  reasonMessage,
   updatedAt,
   actionLabel = "Open sync settings",
   actionHref = "/dashboard/settings",
@@ -21,6 +22,7 @@ export function StaleState({
   analyticsTarget,
 }: {
   message: string;
+  reasonMessage?: string;
   updatedAt?: string;
   actionLabel?: string;
   actionHref?: string;
@@ -91,6 +93,7 @@ export function StaleState({
           <div className="space-y-1">
             <p className="font-medium text-amber-100">{message}</p>
             <p className="text-sm text-amber-100">Latest verified data stays visible while sync refreshes.</p>
+            {reasonMessage ? <p className="text-sm text-amber-100">{reasonMessage}</p> : null}
             {verifiedDateTime ? (
               <p className="text-xs text-amber-100">
                 Last verified at{" "}

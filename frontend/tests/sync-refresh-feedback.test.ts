@@ -67,6 +67,19 @@ describe("buildUserSyncRefreshFeedback", () => {
     expect(feedback.message).toContain("bounded recent PR window");
   });
 
+  it("returns broad-fallback success copy when fallback discovery recovers targets", () => {
+    const feedback = buildUserSyncRefreshFeedback(
+      execution({
+        fetched: {
+          authored_pull_request_broad_fallback_targets: 2,
+        },
+      }),
+    );
+    expect(feedback.tone).toBe("success");
+    expect(feedback.message).toContain("broad fallback");
+    expect(feedback.message).toContain("2 authored PR targets");
+  });
+
   it("returns warning when PR sync targets exist but score replay produced zero events", () => {
     const feedback = buildUserSyncRefreshFeedback(
       execution({

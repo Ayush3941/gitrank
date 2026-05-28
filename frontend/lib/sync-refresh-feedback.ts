@@ -54,6 +54,17 @@ export function buildUserSyncRefreshFeedback(
     };
   }
 
+  const broadFallbackTargets = Math.max(0, fetched.authored_pull_request_broad_fallback_targets ?? 0);
+  if (broadFallbackTargets > 0) {
+    return {
+      tone: "success",
+      message:
+        `Refresh completed via broad fallback discovery and recovered ${broadFallbackTargets} authored PR target${
+          broadFallbackTargets === 1 ? "" : "s"
+        }.`,
+    };
+  }
+
   if (
     result.status === "partial" ||
     fetched.authored_pull_request_search_failed === 1 ||

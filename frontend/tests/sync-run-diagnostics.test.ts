@@ -25,6 +25,16 @@ describe("describeSyncRunOutcome", () => {
     expect(outcome.message).toContain("superseded");
   });
 
+  it("returns superseded-active-row when logical-scope supersession metric is present", () => {
+    const outcome = describeSyncRunOutcome(
+      run({
+        superseded_by_terminal_logical_scope: 1,
+      }),
+    );
+    expect(outcome.code).toBe("superseded_active_row");
+    expect(outcome.message).toContain("superseded");
+  });
+
   it("returns superseded-active-row when failed row is superseded by terminal correlation", () => {
     const outcome = describeSyncRunOutcome({
       ...run(undefined),
@@ -93,6 +103,17 @@ describe("describeSyncRunOutcome", () => {
     );
     expect(outcome.code).toBe("recent_seed_empty");
     expect(outcome.message).toContain("newest seeded window");
+  });
+
+  it("returns broad-fallback when fallback discovery recovers authored PR targets", () => {
+    const outcome = describeSyncRunOutcome(
+      run({
+        authored_pull_request_broad_fallback_targets: 3,
+      }),
+    );
+    expect(outcome.code).toBe("broad_fallback");
+    expect(outcome.message).toContain("broad authored-PR fallback");
+    expect(outcome.message).toContain("3 targets");
   });
 
   it("returns synced-targets when authored PRs were selected", () => {
