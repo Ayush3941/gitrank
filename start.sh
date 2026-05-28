@@ -142,12 +142,6 @@ if [[ ! -f "$BACKEND_ENV_FILE" ]]; then
   cp "$BACKEND_DIR/.env.example" "$BACKEND_ENV_FILE"
 fi
 
-for extra_env in "$ROOT_DIR/.env" "$FRONTEND_DIR"/.env*; do
-  if [[ -f "$extra_env" ]]; then
-    log "notice: found $extra_env but local runtime reads only $BACKEND_ENV_FILE"
-  fi
-done
-
 set -a
 source "$BACKEND_ENV_FILE"
 set +a
