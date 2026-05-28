@@ -45,8 +45,8 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 			{Name: "pr-analyzer", Kind: "internal_http", BaseURL: cfg.Services.PRAnalyzerBaseURL, Purpose: "PR classification and technical signal extraction", Auth: "service_to_service", Critical: true, Status: "configured"},
 			{Name: "profile-service", Kind: "internal_http", BaseURL: cfg.Services.ProfileBaseURL, Purpose: "Profile read models", Auth: "service_to_service", Critical: true, Status: "configured"},
 			{Name: "scoring-engine", Kind: "internal_http", BaseURL: cfg.Services.ScoringBaseURL, Purpose: "Contribution scoring and explainability", Auth: "service_to_service", Critical: true, Status: "configured"},
-			{Name: "GitHub REST API", Kind: "external_http", BaseURL: cfg.GitHub.APIBaseURL, Purpose: "Pull request, review, repo, and identity data", Auth: "OAuth or App token", Critical: true, Status: "configured"},
-			{Name: "GitHub GraphQL API", Kind: "external_http", BaseURL: cfg.GitHub.GraphQLURL, Purpose: "Efficient PR and repository queries", Auth: "OAuth or App token", Critical: true, Status: "configured"},
+			{Name: "GitHub REST API", Kind: "external_http", BaseURL: cfg.GitHub.APIBaseURL, Purpose: "Pull request, review, repo, and identity data", Auth: "GitHub App installation token for sync, OAuth user token only for identity/login", Critical: true, Status: "configured"},
+			{Name: "GitHub GraphQL API", Kind: "external_http", BaseURL: cfg.GitHub.GraphQLURL, Purpose: "Efficient PR and repository queries", Auth: "GitHub App installation token for sync, OAuth user token only for identity/login", Critical: true, Status: "configured"},
 			{Name: "AI chat completions API", Kind: "external_http", BaseURL: cfg.AI.BaseURL, Purpose: "AI enrichment for contribution analysis", Auth: "API key", Critical: false, Status: "configured"},
 		},
 	}

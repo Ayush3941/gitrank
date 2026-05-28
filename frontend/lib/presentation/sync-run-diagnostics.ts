@@ -90,6 +90,8 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
     metricCount(metrics, "unsupported_api_version", "authored_pull_requests_unsupported_api_version") > 0;
   const appInstallationRequired = metricCount(metrics, "app_installation_required") > 0;
   const appInstallationUnavailable = metricCount(metrics, "app_installation_unavailable") > 0;
+  const appInstallationBootstrapOAuthRequired = metricCount(metrics, "app_installation_bootstrap_oauth_required") > 0;
+  const appInstallationBootstrapOAuthMalformed = metricCount(metrics, "app_installation_bootstrap_oauth_malformed") > 0;
   const recentSeedEmpty = metricCount(metrics, "authored_pull_request_recent_seed_empty") > 0;
   const broadFallbackTargets = metricCount(metrics, "authored_pull_request_broad_fallback_targets");
   const syncCapped = metricCount(metrics, "authored_pull_requests_capped") > 0;
@@ -121,6 +123,20 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
     };
   }
   if (appInstallationRequired) {
+    if (appInstallationBootstrapOAuthRequired) {
+      return {
+        code: "app_installation_required",
+        message:
+          "GitRank could not discover your GitHub App installations because your login session token is missing or expired. Refresh session, then retry sync.",
+      };
+    }
+    if (appInstallationBootstrapOAuthMalformed) {
+      return {
+        code: "app_installation_required",
+        message:
+          "GitRank could not read your stored GitHub login token while discovering app installations. Reconnect GitHub, then retry sync.",
+      };
+    }
     return {
       code: "app_installation_required",
       message:
@@ -138,14 +154,14 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
     return {
       code: "oauth_token_required",
       message:
-        "GitHub OAuth token is missing or expired for this account. Refresh session or reconnect GitHub, then retry sync.",
+        "GitHub login token is missing or expired for installation discovery. Refresh session or reconnect GitHub, then retry sync.",
     };
   }
   if (oauthTokenMalformed) {
     return {
       code: "oauth_token_malformed",
       message:
-        "Stored GitHub OAuth token could not be decrypted. Reconnect GitHub to reissue credentials, then retry sync.",
+        "Stored GitHub login token could not be decrypted for installation discovery. Reconnect GitHub, then retry sync.",
     };
   }
   if (scoreReplayMismatch) {

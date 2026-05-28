@@ -234,7 +234,7 @@ describe("SyncRunActivityPanel", () => {
     expect(screen.getByText("Failures 1 · OAuth token required")).toBeTruthy();
     expect(
       screen.getByText(
-        "GitHub OAuth token is missing or expired for this account. Refresh session or reconnect GitHub, then retry sync.",
+        "GitHub login token is missing or expired for installation discovery. Refresh session or reconnect GitHub, then retry sync.",
       ),
     ).toBeTruthy();
   });

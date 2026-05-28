@@ -46,7 +46,7 @@ This keeps ranking reproducible, auditable, and harder to game.
 ## Architecture
 
 ```text
-GitHub OAuth (identity/linking) + GitHub App installation tokens (preferred sync auth)
+GitHub OAuth (identity/linking only) + GitHub App installation tokens (required PR/repo sync auth)
                            |
                            v
 auth-service -> github-ingestor -> pr-analyzer -> scoring-engine
@@ -131,7 +131,7 @@ If `GITRANK_ENV_FILE` is unset, frontend runtime falls back to `../gitrank/.env`
 
 1. Sign in with GitHub OAuth.
 2. Backend auto-sync fetches bounded PR evidence.
-3. GitHub ingestor prefers GitHub App installation tokens for PR/repo sync when installation context exists, and safely falls back to linked OAuth user token when it does not.
+3. GitHub ingestor uses GitHub App installation tokens for PR/repo sync and does not extract PRs with OAuth tokens.
 4. Deterministic scoring computes XP/rank/badges.
 5. Dashboard + Contributions + PR reports render evidence-backed results.
 6. ChatGPT enriches explanations when configured and available.
@@ -151,7 +151,7 @@ If `GITRANK_ENV_FILE` is unset, frontend runtime falls back to `../gitrank/.env`
 - Authored-PR discovery queries now use `is:pull-request` qualifiers for both bounded windows and broad fallback discovery.
 - Dashboard stale-state UI now surfaces the latest sync diagnostic reason (when available) so partial/empty evidence states are explicit instead of generic.
 - Sync failures now classify unsupported GitHub API-version responses and surface a direct `GITHUB_API_VERSION` remediation message in sync diagnostics.
-- User sync now prefers OAuth actor credentials, automatically refreshes expired OAuth access tokens from stored refresh tokens during sync, and falls back to GitHub App installation credentials when OAuth is unavailable.
+- User sync now enforces GitHub App credentials for PR extraction. OAuth tokens are only used to discover user installations (`/user/installations`) and refresh login session continuity.
 - Authored-PR hydration skip metrics are now classified by cause (timeout, rate-limit, auth/scope, not-found masking, conflict, upstream), improving partial-sync diagnostics and cursor-hold behavior for auth/scope gaps.
 - When user sync reports `authored_pull_requests_capped`, UI now shows a bounded-window notice instead of implying full-history completion.
 - User-sync cursor progression no longer stays pinned on mixed-result runs; if at least one selected PR hydrated successfully, the cursor advances with overlap so newer PRs can enter subsequent bounded windows.

@@ -675,7 +675,7 @@ function sanitizeSyncExecutionError(
     normalized.includes("oauth token unavailable for user sync") ||
     normalized.includes("rotate token keys and reconnect github")
   ) {
-    return "GitHub OAuth token is unavailable for user sync. Reconnect GitHub from Settings, then retry.";
+    return "GitHub login token is unavailable for installation discovery. Reconnect GitHub from Settings, then retry.";
   }
   if (
     normalized.includes("github app installation is required for user sync") ||

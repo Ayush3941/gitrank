@@ -374,14 +374,13 @@ func (e *Executor) SyncUser(
 		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, PersistResult{})
 		return response, err
 	}
-	switch credentialSource {
-	case "oauth":
-		response.Fetched["authored_pull_request_auth_oauth"] = 1
-	case "installation":
-		response.Fetched["authored_pull_request_auth_installation"] = 1
-	default:
-		response.Fetched["authored_pull_request_auth_shared"] = 1
+	if credentialSource != "installation" {
+		response.Fetched["authored_pull_request_auth_unexpected"] = 1
+		err := fmt.Errorf("%w: unexpected credential source %q", ErrUserSyncGitHubAppUnavailable, credentialSource)
+		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, PersistResult{})
+		return response, err
 	}
+	response.Fetched["authored_pull_request_auth_installation"] = 1
 
 	authoredPRSyncLimit := boundedAuthoredPRSyncLimit(e.cfg.GitHub, e.cfg.GitHub.AuthoredPRSyncLimit)
 	response.Fetched["authored_pull_request_sync_limit"] = authoredPRSyncLimit

@@ -204,7 +204,7 @@ describe("account sync error messaging", () => {
     expect(String(fetchMock.mock.calls[2][0])).toContain("/api/sync/user");
   });
 
-  it("surfaces oauth-required recovery guidance when session refresh cannot recover token", async () => {
+  it("surfaces installation-bootstrap login-token recovery guidance when session refresh cannot recover token", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const target = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
       if (target.includes("/api/sync/user")) {
@@ -237,7 +237,7 @@ describe("account sync error messaging", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await expect(runUserSync("octocat")).rejects.toThrow(
-      "GitHub OAuth token is unavailable for user sync. Reconnect GitHub from Settings, then retry.",
+      "GitHub login token is unavailable for installation discovery. Reconnect GitHub from Settings, then retry.",
     );
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });

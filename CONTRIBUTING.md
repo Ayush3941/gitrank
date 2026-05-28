@@ -284,6 +284,8 @@ Recent sync-auth refinement (May 28, 2026):
 - User sync execution is now strict GitHub App for PR extraction. OAuth remains identity/bootstrap only.
 - `github-ingestor` now bootstraps user installation records via `GET /user/installations` when no installation mapping exists, then retries sync with installation credentials.
 - Sync telemetry now exposes installation bootstrap lookup/attempt/success/failure counters so false “synced” states can be traced in run metadata.
+- User sync execution now fails closed if any non-installation credential source is returned, preventing silent reintroduction of OAuth/shared PR extraction paths.
+- Service dependency manifests now explicitly document auth split: GitHub App installation tokens are required for sync extraction, OAuth is identity/login and installation-discovery support only.
 - Frontend `next.config.ts` now loads missing env keys from `../gitrank/.env` before config evaluation, so standalone `frontend/` dev/build commands follow the same single-env-file contract without requiring a second frontend env file.
 - User-mode sync queue jobs now canonicalize login casing in `subject`/dedupe identity, and sync-run lifecycle reconciliation now matches user subjects case-insensitively so queued/running rows cannot drift when request casing differs.
 - Settings page sync state now incorporates live sync-run statuses (`running` / `queued` -> `syncing`) so chips and freshness pills do not present stale “Synced” states while background sync is still active.
