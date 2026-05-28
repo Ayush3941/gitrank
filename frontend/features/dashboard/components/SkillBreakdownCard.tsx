@@ -13,7 +13,7 @@ export function SkillBreakdownCard({
 }: {
   user: UserProfile;
   skillInsights?: Record<string, SkillInsight>;
-  aiMode?: "gemini" | "deterministic";
+  aiMode?: "openai" | "deterministic";
 }) {
   const skillTree = deduplicateSkillTree(user.skillTree);
   const rankedSkills = [...skillTree].sort((left, right) => right.score - left.score);
@@ -27,9 +27,9 @@ export function SkillBreakdownCard({
           <p className="text-xs font-medium text-primary">Skill breakdown</p>
           <h2 className="mt-2 text-2xl font-semibold text-white">Signal by skill</h2>
           <p className="mt-2 text-sm text-muted">
-            {aiMode === "gemini"
-              ? "Gemini summary from synced PR evidence."
-              : "Deterministic summary until Gemini is available."}
+            {aiMode === "openai"
+              ? "ChatGPT summary from synced PR evidence."
+              : "Deterministic summary until ChatGPT is available."}
           </p>
         </div>
         <div className="neon-tile cyber-sheen rounded-3xl p-3 text-primary">

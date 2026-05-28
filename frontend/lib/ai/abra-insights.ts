@@ -11,29 +11,28 @@ import type {
   SkillInsight,
 } from "@/lib/ai/abra-insights-types";
 
-const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models";
-const DEFAULT_GEMINI_MODEL = "gemini-2.5-flash";
+const DEFAULT_OPENAI_BASE_URL = "https://api.openai.com/v1";
+const DEFAULT_OPENAI_MODEL = "gpt-4o-mini";
 const CACHE_TTL_MS = 20 * 60 * 1000;
 const MAX_CONTRIBUTIONS = 8;
 const MAX_BADGES = 8;
 
 const insightCache = new Map<string, { expiresAt: number; value: AbraInsightsResponse }>();
 
-type GeminiCandidatePart = {
+type OpenAIContentPart = {
+  type?: string;
   text?: string;
 };
 
-type GeminiCandidate = {
-  content?: {
-    parts?: GeminiCandidatePart[];
-  };
+type OpenAIChatCompletionResponse = {
+  choices?: Array<{
+    message?: {
+      content?: string | OpenAIContentPart[];
+    };
+  }>;
 };
 
-type GeminiResponsePayload = {
-  candidates?: GeminiCandidate[];
-};
-
-type GeminiInsightsShape = {
+type AIInsightsShape = {
   archetype?: unknown;
   identity_summary?: unknown;
   contributions?: unknown;
@@ -41,7 +40,7 @@ type GeminiInsightsShape = {
   skill_assessment?: unknown;
 };
 
-type GeminiContributionItem = {
+type AIContributionItem = {
   id?: unknown;
   what?: unknown;
   why?: unknown;
@@ -49,18 +48,37 @@ type GeminiContributionItem = {
   pitch?: unknown;
 };
 
-type GeminiBadgeItem = {
+type AIBadgeItem = {
   id?: unknown;
   story?: unknown;
   trigger?: unknown;
   next_focus?: unknown;
 };
 
-type GeminiSkillItem = {
+type AISkillItem = {
   discipline?: unknown;
   summary?: unknown;
   evidence?: unknown;
   confidence?: unknown;
+};
+
+type OpenAIResponseFormatSchema = {
+  name: string;
+  strict: boolean;
+  schema: ReturnType<typeof abraResponseSchema>;
+};
+
+type OpenAIChatCompletionRequest = {
+  model: string;
+  temperature: number;
+  messages: Array<{
+    role: "system" | "user";
+    content: string;
+  }>;
+  response_format: {
+    type: "json_schema";
+    json_schema: OpenAIResponseFormatSchema;
+  };
 };
 
 export async function buildAbraInsights(
@@ -74,13 +92,13 @@ export async function buildAbraInsights(
   }
 
   const fallback = deterministicInsights(normalized);
-  const apiKey = process.env.GEMINI_API_KEY?.trim();
+  const apiKey = process.env.OPENAI_API_KEY?.trim() || process.env.GEMINI_API_KEY?.trim();
   if (!apiKey) {
     return cacheResult(cacheKey, fallback);
   }
 
   try {
-    const generated = await generateGeminiInsights(normalized, apiKey);
+    const generated = await generateOpenAIInsights(normalized, apiKey);
     const merged = mergeInsights(fallback, generated);
     return cacheResult(cacheKey, merged);
   } catch {
@@ -244,54 +262,83 @@ function fallbackSkillInsights(input: AbraInsightsRequest): Record<string, Skill
   return out;
 }
 
-async function generateGeminiInsights(
+async function generateOpenAIInsights(
   input: AbraInsightsRequest,
   apiKey: string,
 ): Promise<AbraInsightsResponse> {
-  const model = process.env.GEMINI_MODEL?.trim() || DEFAULT_GEMINI_MODEL;
-  const endpoint = `${GEMINI_ENDPOINT}/${encodeURIComponent(model)}:generateContent`;
+  const model =
+    process.env.OPENAI_MODEL?.trim() ||
+    process.env.GEMINI_MODEL?.trim() ||
+    DEFAULT_OPENAI_MODEL;
+  const baseURL =
+    process.env.OPENAI_BASE_URL?.trim() ||
+    process.env.GEMINI_BASE_URL?.trim() ||
+    DEFAULT_OPENAI_BASE_URL;
+  const endpoint = `${baseURL.replace(/\/+$/, "")}/chat/completions`;
 
-  const prompt = buildGeminiPrompt(input);
-  const requestBody = {
-    contents: [
+  const prompt = buildAIPrompt(input);
+  const requestBody: OpenAIChatCompletionRequest = {
+    model,
+    temperature: 0.35,
+    messages: [
+      {
+        role: "system",
+        content:
+          "You write gamified but factual contributor intelligence copy. Use only provided evidence.",
+      },
       {
         role: "user",
-        parts: [{ text: prompt }],
+        content: prompt,
       },
     ],
-    generationConfig: {
-      temperature: 0.35,
-      topP: 0.9,
-      responseMimeType: "application/json",
-      responseJsonSchema: abraResponseSchema(),
+    response_format: {
+      type: "json_schema",
+      json_schema: {
+        name: "abra_insights",
+        strict: true,
+        schema: abraResponseSchema(),
+      },
     },
   };
 
   const response = await fetch(endpoint, {
     method: "POST",
     headers: {
+      Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
-      "x-goog-api-key": apiKey,
     },
     body: JSON.stringify(requestBody),
     cache: "no-store",
   });
 
   if (!response.ok) {
-    throw new Error(`Gemini request failed with status ${response.status}`);
+    throw new Error(`OpenAI request failed with status ${response.status}`);
   }
 
-  const payload = (await response.json()) as GeminiResponsePayload;
-  const text = payload.candidates?.[0]?.content?.parts?.map((part) => part.text ?? "").join("").trim();
+  const payload = (await response.json()) as OpenAIChatCompletionResponse;
+  const text = extractOpenAIResponseText(payload.choices?.[0]?.message?.content);
   if (!text) {
-    throw new Error("Gemini response did not include generated text");
+    throw new Error("OpenAI response did not include generated text");
   }
 
-  const parsed = JSON.parse(text) as GeminiInsightsShape;
-  return normalizeGeminiResponse(parsed);
+  const parsed = JSON.parse(text) as AIInsightsShape;
+  return normalizeAIResponse(parsed);
 }
 
-function buildGeminiPrompt(input: AbraInsightsRequest): string {
+function extractOpenAIResponseText(content: string | OpenAIContentPart[] | undefined): string {
+  if (typeof content === "string") {
+    return content.trim();
+  }
+  if (!Array.isArray(content)) {
+    return "";
+  }
+  return content
+    .map((part) => (typeof part?.text === "string" ? part.text : ""))
+    .join("")
+    .trim();
+}
+
+function buildAIPrompt(input: AbraInsightsRequest): string {
   return [
     "You are writing gamified but accurate contributor intelligence copy for GitRank.",
     "Do not invent facts. Use only the provided structured data.",
@@ -369,7 +416,7 @@ function abraResponseSchema() {
   };
 }
 
-function normalizeGeminiResponse(input: GeminiInsightsShape): AbraInsightsResponse {
+function normalizeAIResponse(input: AIInsightsShape): AbraInsightsResponse {
   const archetype = nonEmptyString(input.archetype) || "Systems Builder";
   const identitySummary =
     nonEmptyString(input.identity_summary) ||
@@ -378,7 +425,7 @@ function normalizeGeminiResponse(input: GeminiInsightsShape): AbraInsightsRespon
   const contributionNarratives: Record<string, ContributionNarrative> = {};
   if (Array.isArray(input.contributions)) {
     for (const item of input.contributions) {
-      const row = item as GeminiContributionItem;
+      const row = item as AIContributionItem;
       const id = nonEmptyString(row.id);
       if (!id) continue;
       contributionNarratives[id] = {
@@ -393,7 +440,7 @@ function normalizeGeminiResponse(input: GeminiInsightsShape): AbraInsightsRespon
   const badgeStories: Record<string, BadgeStory> = {};
   if (Array.isArray(input.badges)) {
     for (const item of input.badges) {
-      const row = item as GeminiBadgeItem;
+      const row = item as AIBadgeItem;
       const id = nonEmptyString(row.id);
       if (!id) continue;
       badgeStories[id] = {
@@ -407,7 +454,7 @@ function normalizeGeminiResponse(input: GeminiInsightsShape): AbraInsightsRespon
   const skillInsights: Record<string, SkillInsight> = {};
   if (Array.isArray(input.skill_assessment)) {
     for (const item of input.skill_assessment) {
-      const row = item as GeminiSkillItem;
+      const row = item as AISkillItem;
       const discipline = nonEmptyString(row.discipline);
       const key = normalizeDisciplineKey(discipline);
       if (!key) continue;
@@ -426,7 +473,7 @@ function normalizeGeminiResponse(input: GeminiInsightsShape): AbraInsightsRespon
   }
 
   return {
-    generatedBy: "gemini",
+    generatedBy: "openai",
     archetype,
     identitySummary,
     contributionNarratives,

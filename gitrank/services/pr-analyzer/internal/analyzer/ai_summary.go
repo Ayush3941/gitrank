@@ -15,7 +15,7 @@ import (
 	"github.com/gitrank/gitrank/packages/contracts"
 )
 
-type geminiSummaryClient struct {
+type aiSummaryClient struct {
 	httpClient          *http.Client
 	endpoint            string
 	apiKey              string
@@ -62,8 +62,8 @@ func (e *aiSummaryError) Unwrap() error {
 	return e.err
 }
 
-func newGeminiSummaryClient(cfg AIConfig) *geminiSummaryClient {
-	if !supportsGeminiProvider(cfg.Provider) {
+func newGeminiSummaryClient(cfg AIConfig) *aiSummaryClient {
+	if !supportsAIProvider(cfg.Provider) {
 		return nil
 	}
 
@@ -96,7 +96,7 @@ func newGeminiSummaryClient(cfg AIConfig) *geminiSummaryClient {
 		return nil
 	}
 
-	return &geminiSummaryClient{
+	return &aiSummaryClient{
 		httpClient:          &http.Client{Timeout: timeout},
 		endpoint:            parsedBase.String(),
 		apiKey:              apiKey,
@@ -106,13 +106,13 @@ func newGeminiSummaryClient(cfg AIConfig) *geminiSummaryClient {
 	}
 }
 
-func (c *geminiSummaryClient) Summarize(
+func (c *aiSummaryClient) Summarize(
 	ctx context.Context,
 	req contracts.PullRequestAnalysisRequest,
 	baseline contracts.PullRequestAnalysisResponse,
 ) (string, error) {
 	if c == nil {
-		return "", errors.New("gemini summary client is not configured")
+		return "", errors.New("ai summary client is not configured")
 	}
 
 	body, err := json.Marshal(chatCompletionRequest{
@@ -155,7 +155,7 @@ func (c *geminiSummaryClient) Summarize(
 		bodyPreview, _ := io.ReadAll(io.LimitReader(response.Body, 2048))
 		return "", &aiSummaryError{
 			reason: classifyAIHTTPFailure(response.StatusCode, string(bodyPreview)),
-			err:    fmt.Errorf("gemini chat completion failed with status %d", response.StatusCode),
+			err:    fmt.Errorf("ai chat completion failed with status %d", response.StatusCode),
 		}
 	}
 
@@ -166,7 +166,7 @@ func (c *geminiSummaryClient) Summarize(
 	if len(completion.Choices) == 0 {
 		return "", &aiSummaryError{
 			reason: "ai_empty_response",
-			err:    errors.New("gemini chat completion returned no choices"),
+			err:    errors.New("ai chat completion returned no choices"),
 		}
 	}
 
@@ -175,15 +175,15 @@ func (c *geminiSummaryClient) Summarize(
 	if summary == "" {
 		return "", &aiSummaryError{
 			reason: "ai_empty_summary",
-			err:    errors.New("gemini chat completion returned empty summary"),
+			err:    errors.New("ai chat completion returned empty summary"),
 		}
 	}
 	return summary, nil
 }
 
-func supportsGeminiProvider(provider string) bool {
+func supportsAIProvider(provider string) bool {
 	normalized := strings.ToLower(strings.TrimSpace(provider))
-	return normalized == "" || normalized == "gemini"
+	return normalized == "" || normalized == "gemini" || normalized == "openai"
 }
 
 func extractCompletionText(content any) string {

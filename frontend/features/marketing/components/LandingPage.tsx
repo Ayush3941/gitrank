@@ -75,7 +75,7 @@ export function LandingPage() {
             <div className="space-y-2">
               <TrustPill text="Live production users only." />
               <TrustPill text="Deterministic scoring owns rank authority." />
-              <TrustPill text="Gemini only enriches explanations." />
+              <TrustPill text="ChatGPT only enriches explanations." />
             </div>
           </GlowCard>
         </div>

@@ -103,6 +103,8 @@ func TestBuildScoreHistoryIncludesEvidenceLinks(t *testing.T) {
 			Repository:     "octo/repo",
 			PRNumber:       42,
 			PRTitle:        "Persist score history evidence",
+			PRState:        "open",
+			PRMerged:       false,
 			Explanation:    []string{"Linked persisted score evidence."},
 		},
 		{
@@ -123,6 +125,8 @@ func TestBuildScoreHistoryIncludesEvidenceLinks(t *testing.T) {
 			Repository:            "octo/repo",
 			PRNumber:              42,
 			PRTitle:               "Persist score history evidence",
+			PRState:               "closed",
+			PRMerged:              true,
 			CreatedAt:             now.Add(-2 * time.Hour),
 		},
 	}, 100)
@@ -143,6 +147,9 @@ func TestBuildScoreHistoryIncludesEvidenceLinks(t *testing.T) {
 	if linked.PullRequest == nil || linked.PullRequest.Repository != "octo/repo" || linked.PullRequest.Number != 42 {
 		t.Fatalf("pull request reference = %+v, want octo/repo#42", linked.PullRequest)
 	}
+	if linked.PullRequest.State != "open" || linked.PullRequest.Merged {
+		t.Fatalf("pull request lifecycle = state:%q merged:%v, want open/false", linked.PullRequest.State, linked.PullRequest.Merged)
+	}
 
 	legacy := history[1]
 	if legacy.EvidenceState != "partial" {
@@ -158,6 +165,9 @@ func TestBuildScoreHistoryIncludesEvidenceLinks(t *testing.T) {
 	}
 	if questReward.EvidenceState != "complete" || len(questReward.EvidenceMissing) != 0 {
 		t.Fatalf("quest reward evidence = %q missing %+v, want complete", questReward.EvidenceState, questReward.EvidenceMissing)
+	}
+	if questReward.PullRequest == nil || questReward.PullRequest.State != "closed" || !questReward.PullRequest.Merged {
+		t.Fatalf("quest reward pull request lifecycle = %+v, want closed/merged", questReward.PullRequest)
 	}
 }
 

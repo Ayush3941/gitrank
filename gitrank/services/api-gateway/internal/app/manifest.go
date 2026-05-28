@@ -47,7 +47,7 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 			{Name: "scoring-engine", Kind: "internal_http", BaseURL: cfg.Services.ScoringBaseURL, Purpose: "Contribution scoring and explainability", Auth: "service_to_service", Critical: true, Status: "configured"},
 			{Name: "GitHub REST API", Kind: "external_http", BaseURL: cfg.GitHub.APIBaseURL, Purpose: "Pull request, review, repo, and identity data", Auth: "OAuth or App token", Critical: true, Status: "configured"},
 			{Name: "GitHub GraphQL API", Kind: "external_http", BaseURL: cfg.GitHub.GraphQLURL, Purpose: "Efficient PR and repository queries", Auth: "OAuth or App token", Critical: true, Status: "configured"},
-			{Name: "Gemini API (OpenAI-compatible)", Kind: "external_http", BaseURL: cfg.AI.BaseURL, Purpose: "AI enrichment for contribution analysis", Auth: "API key", Critical: false, Status: "configured"},
+			{Name: "AI chat completions API", Kind: "external_http", BaseURL: cfg.AI.BaseURL, Purpose: "AI enrichment for contribution analysis", Auth: "API key", Critical: false, Status: "configured"},
 		},
 	}
 }

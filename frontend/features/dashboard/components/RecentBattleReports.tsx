@@ -136,8 +136,8 @@ function reportEvidencePill(report: PullRequestAnalysis): { label: string; class
   const state = report.evidenceState;
   if (state.status === "complete") {
     const source = (state.analysisSource ?? "").toLowerCase();
-    if (source.includes("gemini") || source.includes("ai") || source.includes("hybrid")) {
-      return { label: "Gemini ready", className: "neon-chip-success" };
+    if (source.includes("gemini") || source.includes("openai") || source.includes("ai") || source.includes("hybrid")) {
+      return { label: "AI ready", className: "neon-chip-success" };
     }
     return { label: "Deterministic ready", className: "neon-chip-info" };
   }

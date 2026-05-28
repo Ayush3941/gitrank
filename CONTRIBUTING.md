@@ -321,6 +321,9 @@ Recent no-slowdown refinement (May 27, 2026):
 - Frontend effective sync-state derivation now treats any visible `running`/`queued` profile sync row as `syncing` regardless terminal-row ordering, reducing false “Synced/Refreshed” chips while active work is still in flight.
 - GitHub search client now forwards the requested `page` parameter for authored-PR discovery calls, preventing repeated page-1 windows during bounded multi-page PR target selection.
 - Frontend metadata icon URLs were corrected to rooted public asset paths (`/assets/logo.png`) so icon resolution works consistently across dashboard and public routes.
+- PR analyzer AI summary client now accepts both `openai` and `gemini` provider modes through the same OpenAI-compatible chat-completions contract, keeping deterministic scoring authority unchanged while allowing provider swaps via env.
+- Frontend AI/evidence labels are now provider-neutral (`AI ready`/`AI fallback`) and public/profile skill-copy now references ChatGPT when OpenAI-backed insights are active.
+- Route-level visual regression snapshots were refreshed for the current dashboard/leaderboard shells after UI text/tab refinements, and `npm run test:visual` remains required when these route shells change.
 - Frontend sync-run list requests now canonicalize filter params (`run_type`, `status`, `repository`, `user`) and strip `@` from user handles before calling `/api/sync/runs`, keeping client and backend filter semantics aligned.
 - `ListSyncRuns` now publishes both `last_attempted_at` and `last_successful_at` watermarks in addition to `last_updated_at`, so UI surfaces can separate recent failed attempts from the last successful evidence materialization.
 - Settings sync activity header now renders distinct "Last attempted" and "Last successful" indicators from backend watermarks, reducing false confidence when the newest run failed or was partial.

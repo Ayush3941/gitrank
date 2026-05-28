@@ -26,7 +26,7 @@ export function PublicProfileHero({
   shareHeadline: string;
   archetype?: string;
   identitySummary?: string;
-  identitySummaryMode?: "gemini" | "deterministic";
+  identitySummaryMode?: "openai" | "deterministic";
 }) {
   const topSkills = uniqueDisplayValues(user.topSkills, 4);
 
@@ -74,7 +74,7 @@ export function PublicProfileHero({
             <div className="neon-callout rounded-2xl px-4 py-3 text-sm text-muted">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="cyber-readout text-xs font-medium text-cyan-200">
-                  Identity summary ({identitySummaryMode === "gemini" ? "Gemini" : "Deterministic"})
+                  Identity summary ({identitySummaryMode === "openai" ? "ChatGPT" : "Deterministic"})
                 </p>
                 <CopyTextButton
                   text={identitySummary}

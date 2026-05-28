@@ -512,6 +512,8 @@ export function SettingsPageClient() {
         <SettingsSyncActivitySection
           runs={syncRunsQuery.data?.runs ?? []}
           lastUpdatedAt={syncRunsQuery.data?.last_updated_at}
+          lastAttemptedAt={syncRunsQuery.data?.last_attempted_at}
+          lastSuccessfulAt={syncRunsQuery.data?.last_successful_at}
           isLoading={syncRunsQuery.isLoading}
           isRefreshing={syncRunsQuery.isFetching}
           isError={syncRunsQuery.isError}
@@ -797,6 +799,8 @@ export function SettingsPageClient() {
 function SettingsSyncActivitySection({
   runs,
   lastUpdatedAt,
+  lastAttemptedAt,
+  lastSuccessfulAt,
   isLoading,
   isRefreshing,
   isError,
@@ -805,6 +809,8 @@ function SettingsSyncActivitySection({
 }: {
   runs: ApiSyncRunRecord[];
   lastUpdatedAt: string | undefined;
+  lastAttemptedAt: string | undefined;
+  lastSuccessfulAt: string | undefined;
   isLoading: boolean;
   isRefreshing: boolean;
   isError: boolean;
@@ -816,6 +822,8 @@ function SettingsSyncActivitySection({
       <SyncRunActivityPanel
         runs={runs}
         lastUpdatedAt={lastUpdatedAt}
+        lastAttemptedAt={lastAttemptedAt}
+        lastSuccessfulAt={lastSuccessfulAt}
         isLoading={isLoading}
         isRefreshing={isRefreshing}
         isError={isError}

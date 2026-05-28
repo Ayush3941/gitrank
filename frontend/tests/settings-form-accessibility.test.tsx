@@ -93,6 +93,56 @@ async function settingsFetch(input: RequestInfo | URL, init?: RequestInit): Prom
       offset: 0,
     });
   }
+  if (path === "/api/session/me" && method === "GET") {
+    const nowISO = new Date().toISOString();
+    return jsonResponse({
+      session: {
+        subject: "11111111-1111-1111-1111-111111111111",
+        display_name: "Live Fixture Maintainer",
+        github_login: "live-maintainer",
+        github_authorization_status: "active",
+        session_expires_at: nowISO,
+        session_idle_expires_at: nowISO,
+        session_rotated_at: nowISO,
+        linked_account: {
+          github_user_id: 42,
+          login: "live-maintainer",
+          status: "linked",
+          linked_at: nowISO,
+        },
+      },
+      csrf_header: "X-CSRF-Token",
+      csrf_hint: "gitrank_csrf",
+    });
+  }
+  if (path === "/api/profile/schema" && method === "GET") {
+    return jsonResponse({
+      sections: [
+        { key: "summary", summary: "Overall rank, XP, strengths, and freshness", status: "implemented" },
+      ],
+      generated_at: new Date().toISOString(),
+    });
+  }
+  if (path === "/api/meta/manifest" && method === "GET") {
+    return jsonResponse({
+      service: "gitrank-local",
+      version: "dev",
+      routes: [],
+      dependencies: [],
+    });
+  }
+  if (path === "/api/meta/dependencies" && method === "GET") {
+    return jsonResponse({
+      generated_at: new Date().toISOString(),
+      dependencies: [],
+    });
+  }
+  if (path === "/api/meta/services" && method === "GET") {
+    return jsonResponse({
+      generated_at: new Date().toISOString(),
+      services: [],
+    });
+  }
   return jsonResponse({ error: { message: `Unhandled route: ${path}` } }, 404);
 }
 

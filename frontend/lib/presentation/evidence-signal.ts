@@ -36,9 +36,9 @@ export function formatEvidenceSignal(signal: string): string | null {
   if (lower.startsWith("fallback_reason=")) {
     const reason = value.slice("fallback_reason=".length).trim();
     if (!reason) {
-      return "Gemini fallback";
+      return "AI fallback";
     }
-    return `Gemini fallback: ${humanizeToken(reason)}`;
+    return `AI fallback: ${humanizeToken(reason)}`;
   }
 
   if (lower.startsWith("score_version=")) {

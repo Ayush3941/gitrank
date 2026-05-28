@@ -12,7 +12,7 @@ import (
 )
 
 const analyzerVersion = "deterministic.v1"
-const aiSummaryPromptVersion = "gemini.summary.v1"
+const aiSummaryPromptVersion = "ai.summary.v1"
 
 type AIConfig struct {
 	Provider            string
@@ -26,7 +26,7 @@ type AIConfig struct {
 }
 
 type Service struct {
-	summaryClient *geminiSummaryClient
+	summaryClient *aiSummaryClient
 	policy        AnalyzerPolicy
 }
 

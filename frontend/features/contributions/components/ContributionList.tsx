@@ -166,8 +166,8 @@ function contributionReportState(
   const status = item.reportEvidenceStatus;
   if (status === "complete") {
     const analysisSource = (item.reportAnalysisSource ?? "").toLowerCase();
-    if (analysisSource.includes("ai") || analysisSource.includes("gemini") || analysisSource.includes("hybrid")) {
-      return { label: "Gemini ready", className: "neon-chip-success" };
+    if (analysisSource.includes("ai") || analysisSource.includes("gemini") || analysisSource.includes("openai") || analysisSource.includes("hybrid")) {
+      return { label: "AI ready", className: "neon-chip-success" };
     }
     return { label: "Deterministic ready", className: "neon-chip-info" };
   }

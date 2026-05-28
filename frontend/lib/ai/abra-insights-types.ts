@@ -65,7 +65,7 @@ export type SkillInsight = {
 };
 
 export type AbraInsightsResponse = {
-  generatedBy: "gemini" | "deterministic";
+  generatedBy: "openai" | "deterministic";
   archetype: string;
   identitySummary: string;
   contributionNarratives: Record<string, ContributionNarrative>;
