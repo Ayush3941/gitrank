@@ -350,14 +350,10 @@ func (e *Executor) SyncUser(
 		return response, err
 	}
 	switch credentialSource {
-	case "oauth":
-		response.Fetched["authored_pull_request_auth_oauth"] = 1
 	case "installation":
 		response.Fetched["authored_pull_request_auth_installation"] = 1
-		response.Fetched["authored_pull_request_scope_limited"] = 1
 	default:
 		response.Fetched["authored_pull_request_auth_shared"] = 1
-		response.Fetched["authored_pull_request_scope_limited"] = 1
 	}
 
 	authoredPRSyncLimit := boundedAuthoredPRSyncLimit(e.cfg.GitHub, e.cfg.GitHub.AuthoredPRSyncLimit)
@@ -2593,14 +2589,14 @@ func syncFailureFetchedMetrics(err error) map[string]int {
 		metrics["lease_conflicts"] = 1
 		return metrics
 	}
-	if errors.Is(err, ErrUserSyncOAuthTokenRequired) {
+	if errors.Is(err, ErrUserSyncGitHubAppInstallationRequired) {
 		metrics["auth_errors"] = 1
-		metrics["oauth_token_required"] = 1
+		metrics["app_installation_required"] = 1
 		return metrics
 	}
-	if errors.Is(err, ErrUserSyncOAuthTokenMalformed) {
-		metrics["auth_errors"] = 1
-		metrics["oauth_token_malformed"] = 1
+	if errors.Is(err, ErrUserSyncGitHubAppUnavailable) {
+		metrics["request_errors"] = 1
+		metrics["app_installation_unavailable"] = 1
 		return metrics
 	}
 	if isSkippableGitHubTimeoutError(err) {
@@ -2615,6 +2611,8 @@ func syncFailureFetchedMetrics(err error) map[string]int {
 	switch {
 	case statusCode == http.StatusTooManyRequests:
 		metrics["rate_limited"] = 1
+	case statusCode == http.StatusBadRequest && isUnsupportedGitHubAPIVersionError(err):
+		metrics["unsupported_api_version"] = 1
 	case statusCode == http.StatusForbidden || statusCode == http.StatusUnauthorized:
 		metrics["auth_errors"] = 1
 	case statusCode >= http.StatusInternalServerError:
@@ -2650,6 +2648,8 @@ func classifyAuthoredPullRequestHydrationError(fetched map[string]int, err error
 	case statusCode == http.StatusTooManyRequests:
 		fetched["authored_pull_requests_rate_limited"]++
 		fetched["authored_pull_requests_retryable"]++
+	case statusCode == http.StatusBadRequest && isUnsupportedGitHubAPIVersionError(err):
+		fetched["authored_pull_requests_unsupported_api_version"]++
 	case statusCode == http.StatusForbidden || statusCode == http.StatusUnauthorized:
 		fetched["authored_pull_requests_auth_errors"]++
 	case statusCode == http.StatusNotFound:
@@ -2664,6 +2664,21 @@ func classifyAuthoredPullRequestHydrationError(fetched map[string]int, err error
 		fetched["authored_pull_requests_failed"]++
 		fetched["authored_pull_requests_retryable"]++
 	}
+}
+
+func isUnsupportedGitHubAPIVersionError(err error) bool {
+	if err == nil {
+		return false
+	}
+	message := strings.ToLower(strings.TrimSpace(err.Error()))
+	if message == "" {
+		return false
+	}
+	if !strings.Contains(message, "version") {
+		return false
+	}
+	return strings.Contains(message, "not a supported version") ||
+		strings.Contains(message, "version is not supported")
 }
 
 func isSkippableGitHubTimeoutError(err error) bool {

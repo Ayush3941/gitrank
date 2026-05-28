@@ -63,6 +63,36 @@ describe("describeSyncRunOutcome", () => {
     expect(outcome.code).toBe("scope_limited");
   });
 
+  it("returns unsupported-api-version when backend metrics flag unsupported API version", () => {
+    const outcome = describeSyncRunOutcome(
+      run({
+        unsupported_api_version: 1,
+      }),
+    );
+    expect(outcome.code).toBe("unsupported_api_version");
+    expect(outcome.message).toContain("GITHUB_API_VERSION");
+  });
+
+  it("returns app-installation-required when backend requires app installation for user sync", () => {
+    const outcome = describeSyncRunOutcome(
+      run({
+        app_installation_required: 1,
+      }),
+    );
+    expect(outcome.code).toBe("app_installation_required");
+    expect(outcome.message).toContain("GitHub App installation is required");
+  });
+
+  it("returns app-installation-unavailable when app token minting fails", () => {
+    const outcome = describeSyncRunOutcome(
+      run({
+        app_installation_unavailable: 1,
+      }),
+    );
+    expect(outcome.code).toBe("app_installation_unavailable");
+    expect(outcome.message).toContain("installation token is unavailable");
+  });
+
   it("returns oauth-token-required when credential is missing/expired", () => {
     const outcome = describeSyncRunOutcome(
       run({

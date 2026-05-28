@@ -677,6 +677,24 @@ function sanitizeSyncExecutionError(
   ) {
     return "GitHub OAuth token is unavailable for user sync. Reconnect GitHub from Settings, then retry.";
   }
+  if (
+    normalized.includes("github app installation is required for user sync") ||
+    code === "github_app_installation_required"
+  ) {
+    return "GitHub App installation is required for PR sync. Install GitRank GitHub App for your account and retry.";
+  }
+  if (
+    normalized.includes("github app installation token unavailable for user sync") ||
+    code === "github_app_installation_unavailable"
+  ) {
+    return "GitHub App installation token is unavailable. Verify GitHub App credentials/private key and installation state, then retry sync.";
+  }
+  if (
+    normalized.includes("not a supported version") ||
+    normalized.includes("version is not supported")
+  ) {
+    return "GitHub API version is not supported by GitHub. Update backend GITHUB_API_VERSION and retry sync.";
+  }
   if (normalized.includes("sync already in progress")) {
     return "A GitHub sync for this account is already running. Wait for it to finish, then refresh.";
   }

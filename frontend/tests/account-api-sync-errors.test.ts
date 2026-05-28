@@ -263,6 +263,69 @@ describe("account sync error messaging", () => {
     );
   });
 
+  it("maps unsupported GitHub API version failures to actionable copy", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => {
+      return new Response(
+        JSON.stringify({
+          error: {
+            code: "invalid_request",
+            message: "GitHub API request failed with status 400: Not a supported version",
+          },
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }));
+
+    await expect(runUserSync("octocat")).rejects.toThrow(
+      "GitHub API version is not supported by GitHub. Update backend GITHUB_API_VERSION and retry sync.",
+    );
+  });
+
+  it("maps GitHub App installation required failures to actionable copy", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => {
+      return new Response(
+        JSON.stringify({
+          error: {
+            code: "github_app_installation_required",
+            message: "github app installation is required for user sync; install app and retry",
+          },
+        }),
+        {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }));
+
+    await expect(runUserSync("octocat")).rejects.toThrow(
+      "GitHub App installation is required for PR sync. Install GitRank GitHub App for your account and retry.",
+    );
+  });
+
+  it("maps GitHub App installation token failures to actionable copy", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => {
+      return new Response(
+        JSON.stringify({
+          error: {
+            code: "github_app_installation_unavailable",
+            message: "github app installation token unavailable for user sync; verify app credentials and installation",
+          },
+        }),
+        {
+          status: 503,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }));
+
+    await expect(runUserSync("octocat")).rejects.toThrow(
+      "GitHub App installation token is unavailable. Verify GitHub App credentials/private key and installation state, then retry sync.",
+    );
+  });
+
   it("maps upstream pull-request sync timeouts to actionable copy", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => {
       return new Response(

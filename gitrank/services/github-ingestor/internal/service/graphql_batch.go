@@ -260,19 +260,24 @@ func (e *Executor) installationClientForActor(ctx context.Context, actor SyncReq
 		return nil, false, nil
 	}
 
+	var lastError error
 	for _, installationID := range installationIDs {
 		client, enabled, clientErr := e.installationClient(ctx, installationID)
 		if clientErr != nil {
+			lastError = clientErr
 			continue
 		}
 		if enabled && client != nil {
 			return client, true, nil
 		}
 	}
+	if lastError != nil {
+		return nil, false, lastError
+	}
 	return nil, false, nil
 }
 
-func (e *Executor) executorForActor(ctx context.Context, actor SyncRequestActor, now time.Time) (*Executor, error) {
+func (e *Executor) executorForActor(ctx context.Context, actor SyncRequestActor, _ time.Time) (*Executor, error) {
 	if e == nil {
 		return nil, nil
 	}
@@ -283,42 +288,34 @@ func (e *Executor) executorForActor(ctx context.Context, actor SyncRequestActor,
 			clone.client = installationClient
 			return &clone, nil
 		}
+		if installErr != nil {
+			return e, nil
+		}
 	}
-	client, ok, err := e.restClientForActor(ctx, actor, now)
-	if err != nil {
-		// Token-source failures (for example stale/decrypt-mismatched local OAuth keys)
-		// should not hard-fail sync execution; fallback to the baseline shared client.
-		return e, nil
-	}
-	if !ok || client == nil {
-		return e, nil
-	}
-	clone := *e
-	clone.client = client
-	return &clone, nil
+	return e, nil
 }
 
-func (e *Executor) executorForUserSyncActor(ctx context.Context, actor SyncRequestActor, now time.Time) (*Executor, string, error) {
+func (e *Executor) executorForUserSyncActor(ctx context.Context, actor SyncRequestActor, _ time.Time) (*Executor, string, error) {
 	if e == nil {
 		return nil, "", nil
 	}
 	if strings.TrimSpace(actor.GitHubLogin) == "" {
-		return nil, "", ErrUserSyncOAuthTokenRequired
+		return nil, "", ErrUserSyncGitHubAppInstallationRequired
+	}
+	if e.actorInstallation == nil {
+		return nil, "", ErrUserSyncGitHubAppUnavailable
+	}
+	client, enabled, err := e.actorInstallation(ctx, actor)
+	if err != nil {
+		return nil, "", fmt.Errorf("%w: %v", ErrUserSyncGitHubAppUnavailable, err)
+	}
+	if !enabled || client == nil {
+		return nil, "", ErrUserSyncGitHubAppInstallationRequired
 	}
 
-	// User sync aims to project a contributor's full authored history. Prefer
-	// user-scoped OAuth credentials over installation credentials so discovery is
-	// not limited to repositories where a GitHub App is installed.
-	client, ok, err := e.restClientForActor(ctx, actor, now)
-	if err != nil {
-		return nil, "", fmt.Errorf("%w: %v", ErrUserSyncOAuthTokenMalformed, err)
-	}
-	if !ok || client == nil {
-		return nil, "", ErrUserSyncOAuthTokenRequired
-	}
 	clone := *e
 	clone.client = client
-	return &clone, "oauth", nil
+	return &clone, "installation", nil
 }
 
 func (e *Executor) fetchPullRequestsGraphQL(

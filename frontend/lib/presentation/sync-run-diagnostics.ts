@@ -5,6 +5,9 @@ export type SyncRunDiagnostic = {
   code:
     | "zero_discovery_with_history"
     | "scope_limited"
+    | "unsupported_api_version"
+    | "app_installation_required"
+    | "app_installation_unavailable"
     | "oauth_token_required"
     | "oauth_token_malformed"
     | "score_replay_mismatch"
@@ -83,6 +86,10 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
   const questBackfillFailed = metricCount(metrics, "post_sync_quests_backfill_failed") > 0;
   const oauthTokenRequired = metricCount(metrics, "oauth_token_required") > 0;
   const oauthTokenMalformed = metricCount(metrics, "oauth_token_malformed") > 0;
+  const unsupportedAPIVersion =
+    metricCount(metrics, "unsupported_api_version", "authored_pull_requests_unsupported_api_version") > 0;
+  const appInstallationRequired = metricCount(metrics, "app_installation_required") > 0;
+  const appInstallationUnavailable = metricCount(metrics, "app_installation_unavailable") > 0;
   const recentSeedEmpty = metricCount(metrics, "authored_pull_request_recent_seed_empty") > 0;
   const broadFallbackTargets = metricCount(metrics, "authored_pull_request_broad_fallback_targets");
   const syncCapped = metricCount(metrics, "authored_pull_requests_capped") > 0;
@@ -104,6 +111,27 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
       code: "scope_limited",
       message:
         "GitHub returned limited authorization scope for authored PR discovery. Reconnect GitHub to expand accessible PR evidence.",
+    };
+  }
+  if (unsupportedAPIVersion) {
+    return {
+      code: "unsupported_api_version",
+      message:
+        "GitHub API version in backend config is unsupported. Set GITHUB_API_VERSION to a supported value and retry sync.",
+    };
+  }
+  if (appInstallationRequired) {
+    return {
+      code: "app_installation_required",
+      message:
+        "GitHub App installation is required for PR sync. Install GitRank GitHub App for your account and retry sync.",
+    };
+  }
+  if (appInstallationUnavailable) {
+    return {
+      code: "app_installation_unavailable",
+      message:
+        "GitHub App installation token is unavailable. Verify app credentials and installation state, then retry sync.",
     };
   }
   if (oauthTokenRequired) {
