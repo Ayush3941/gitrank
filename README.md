@@ -139,7 +139,7 @@ If `GITRANK_ENV_FILE` is unset, frontend runtime falls back to `../gitrank/.env`
 ## Evidence and Sync Notes
 
 - User sync limits are runtime-configurable (`GITHUB_AUTHORED_PR_SYNC_LIMIT`, `GITHUB_AUTHORED_PR_SEARCH_LIMIT`, page-size and timeout policy env vars).
-- User sync execution no longer enforces a hidden floor for authored-PR count; `GITHUB_AUTHORED_PR_SYNC_LIMIT` is applied directly (default `10`) and then capped only by `GITHUB_AUTHORED_PR_SEARCH_LIMIT`.
+- User sync execution no longer enforces a hidden floor for authored-PR count; `GITHUB_AUTHORED_PR_SYNC_LIMIT` is applied directly (default `25`) and then capped only by `GITHUB_AUTHORED_PR_SEARCH_LIMIT`.
 - User-sync telemetry now includes explicit authored-PR sync bounds (`authored_pull_request_sync_limit`, `authored_pull_request_search_limit`) plus timeout budget seconds (`authored_pull_request_timeout_seconds`) so Settings/diagnostics show the real runtime window.
 - GitHub REST/GraphQL retry logic now honors `retry-after`, then `x-ratelimit-reset` when remaining budget is zero, and exits early on canceled contexts instead of sleeping through full backoff windows.
 - Sync-run history auto-normalizes stale active statuses and stale queued rows to prevent indefinite `running`/`queued` rows in Settings; malformed rows missing `started_at` are marked failed with explicit diagnostics.
@@ -148,11 +148,13 @@ If `GITRANK_ENV_FILE` is unset, frontend runtime falls back to `../gitrank/.env`
 - Sync-run normalization now marks contradictory rows (`finished_at` present while status is still active/queued) as failed instead of completed, preventing false "Synced" signals from inconsistent run-state records.
 - In-progress sync rows are superseded by newer terminal runs using both correlation ID and logical target scope (run type + requested user/repository), reducing persistent ghost `running` entries after repeated retries.
 - User sync now includes a broad authored-PR fallback query when recent-window discovery returns empty, reducing false-empty sync outcomes caused by cursor/window edge cases.
+- Authored-PR discovery queries now use `is:pull-request` qualifiers for both bounded windows and broad fallback discovery.
 - Dashboard stale-state UI now surfaces the latest sync diagnostic reason (when available) so partial/empty evidence states are explicit instead of generic.
 - Authored-PR hydration skip metrics are now classified by cause (timeout, rate-limit, auth/scope, not-found masking, conflict, upstream), improving partial-sync diagnostics and cursor-hold behavior for auth/scope gaps.
 - When user sync reports `authored_pull_requests_capped`, UI now shows a bounded-window notice instead of implying full-history completion.
 - User-sync cursor progression no longer stays pinned on mixed-result runs; if at least one selected PR hydrated successfully, the cursor advances with overlap so newer PRs can enter subsequent bounded windows.
 - User-sync execution marks authored-PR backfill as partial when discovery is still incomplete (`authored_pull_request_backfill_incomplete`), avoiding false "fully synced" states while history backfill is still in progress.
+- User-sync execution also treats all-unmerged selected target windows (`authored_pull_requests_selected_unmerged_only`) as partial-state outcomes so sync status does not over-claim score-ready completion.
 - Refresh feedback explicitly differentiates "history backfill still in progress" from credential-scope failures, so users are not prompted to reconnect GitHub during normal backfill progression.
 - Concurrent user sync requests for the same login are deduplicated in-process; overlapping executions return a conflict response instead of running duplicated heavy sync loops.
 - Concurrent user sync requests are also deduplicated with a PostgreSQL advisory lease keyed by GitHub login, so multi-instance deployments avoid duplicate heavy sync execution for the same user.

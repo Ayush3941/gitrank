@@ -146,8 +146,8 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.GitHub.CircuitBreakerHalfOpenMax != 1 {
 		t.Fatalf("GitHub.CircuitBreakerHalfOpenMax = %d, want 1", cfg.GitHub.CircuitBreakerHalfOpenMax)
 	}
-	if cfg.GitHub.AuthoredPRSyncLimit != 10 {
-		t.Fatalf("GitHub.AuthoredPRSyncLimit = %d, want 10", cfg.GitHub.AuthoredPRSyncLimit)
+	if cfg.GitHub.AuthoredPRSyncLimit != 25 {
+		t.Fatalf("GitHub.AuthoredPRSyncLimit = %d, want 25", cfg.GitHub.AuthoredPRSyncLimit)
 	}
 	if cfg.GitHub.AuthoredPRSearchLimit != 100 {
 		t.Fatalf("GitHub.AuthoredPRSearchLimit = %d, want 100", cfg.GitHub.AuthoredPRSearchLimit)

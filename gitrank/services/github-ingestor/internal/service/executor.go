@@ -1751,7 +1751,7 @@ func (e *Executor) discoverAuthoredPullRequestTargetsBroad(
 		return []authoredPullRequestTarget{}, stats, nil
 	}
 
-	searchQuery := fmt.Sprintf("author:%s type:pr archived:false", strings.TrimSpace(user))
+	searchQuery := fmt.Sprintf("author:%s is:pull-request archived:false", strings.TrimSpace(user))
 	result, meta, err := githubapi.SearchIssuesAndPullRequests(ctx, e.client, githubapi.IssueSearchRequest{
 		Query:   searchQuery,
 		Sort:    "updated",
@@ -1825,7 +1825,7 @@ func (e *Executor) discoverAuthoredPullRequestTargetsBroad(
 
 func authoredPRSearchQuery(user, qualifier string, start, end time.Time) string {
 	return fmt.Sprintf(
-		"author:%s type:pr archived:false %s:%s..%s",
+		"author:%s is:pull-request archived:false %s:%s..%s",
 		strings.TrimSpace(user),
 		strings.TrimSpace(qualifier),
 		gitHubSearchTimestamp(start),
@@ -2532,6 +2532,7 @@ func shouldMarkUserSyncRunPartial(fetched map[string]int) bool {
 		fetched["authored_pull_requests_skipped"] > 0 ||
 		fetched["authored_pull_requests_failed"] > 0 ||
 		fetched["authored_pull_requests_timeouts"] > 0 ||
+		fetched["authored_pull_requests_selected_unmerged_only"] > 0 ||
 		fetched["authored_pull_request_scope_limited"] > 0 {
 		return true
 	}
@@ -2544,6 +2545,11 @@ func annotateAuthoredPullRequestSelectionMetrics(fetched map[string]int) {
 	}
 	selectedTargets := fetched["authored_pull_requests_selected"]
 	if selectedTargets > 0 {
+		selectedMergedTargets := fetched["authored_pull_requests_selected_merged"]
+		selectedUnmergedTargets := fetched["authored_pull_requests_selected_unmerged"]
+		if selectedMergedTargets <= 0 && selectedUnmergedTargets >= selectedTargets {
+			fetched["authored_pull_requests_selected_unmerged_only"] = 1
+		}
 		return
 	}
 	fetched["authored_pull_request_discovery_empty"] = 1

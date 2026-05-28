@@ -201,6 +201,16 @@ describe("describeSyncRunOutcome", () => {
     expect(outcome.message).toContain("all are currently unmerged");
   });
 
+  it("returns selected-unmerged-only when unmerged-only marker is present", () => {
+    const outcome = describeSyncRunOutcome(
+      run({
+        authored_pull_requests_selected_unmerged_only: 1,
+      }),
+    );
+    expect(outcome.code).toBe("selected_unmerged_only");
+    expect(outcome.message).toContain("currently unmerged");
+  });
+
   it("returns profile-refresh-failed when post-sync profile refresh fails", () => {
     const outcome = describeSyncRunOutcome(
       run({

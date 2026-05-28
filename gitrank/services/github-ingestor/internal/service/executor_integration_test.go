@@ -271,7 +271,7 @@ func TestExecutorSyncUserFetchesOwnedRepositoriesAndAuthoredPullRequests(t *test
 			})
 		case "/search/issues":
 			query := r.URL.Query()
-			if got := query.Get("q"); !strings.Contains(got, "author:octocat type:pr archived:false") {
+			if got := query.Get("q"); !strings.Contains(got, "author:octocat is:pull-request archived:false") {
 				t.Fatalf("q = %q, want authored PR search query", got)
 			}
 			sort := query.Get("sort")

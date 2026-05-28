@@ -8,6 +8,7 @@ const PARTIAL_SYNC_RUN_METRIC_KEYS = [
   "authored_pull_requests_skipped",
   "authored_pull_requests_failed",
   "authored_pull_requests_timeouts",
+  "authored_pull_requests_selected_unmerged_only",
   "authored_pull_request_scope_limited",
   "post_sync_refresh_failed",
   "post_sync_score_replay_failed",
@@ -42,4 +43,3 @@ export function hasPartialSyncRunMetrics(metrics?: Record<string, number>): bool
   }
   return false;
 }
-

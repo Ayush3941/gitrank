@@ -302,6 +302,16 @@ func TestUserSyncExecutionStatus(t *testing.T) {
 			want:    "partial",
 		},
 		{
+			name: "partial when selected authored targets are all unmerged",
+			fetched: map[string]int{
+				"authored_pull_requests_selected":               6,
+				"authored_pull_requests_selected_merged":        0,
+				"authored_pull_requests_selected_unmerged":      6,
+				"authored_pull_requests_selected_unmerged_only": 1,
+			},
+			want: "partial",
+		},
+		{
 			name:    "partial when discovery window returns zero authored pull requests",
 			fetched: map[string]int{"authored_pull_request_discovery_empty": 1},
 			want:    "partial",
@@ -333,6 +343,23 @@ func TestUserSyncExecutionStatus(t *testing.T) {
 				t.Fatalf("userSyncExecutionStatus(%v) = %q, want %q", test.fetched, got, test.want)
 			}
 		})
+	}
+}
+
+func TestAnnotateAuthoredPullRequestSelectionMetricsMarksUnmergedOnlySelection(t *testing.T) {
+	t.Parallel()
+
+	fetched := map[string]int{
+		"authored_pull_requests_selected":          4,
+		"authored_pull_requests_selected_merged":   0,
+		"authored_pull_requests_selected_unmerged": 4,
+	}
+	annotateAuthoredPullRequestSelectionMetrics(fetched)
+	if fetched["authored_pull_requests_selected_unmerged_only"] != 1 {
+		t.Fatalf(
+			"fetched[authored_pull_requests_selected_unmerged_only] = %d, want 1",
+			fetched["authored_pull_requests_selected_unmerged_only"],
+		)
 	}
 }
 
@@ -1345,7 +1372,7 @@ func TestExecutorFetchAuthoredPullRequestTargetsUsesGitHubSearch(t *testing.T) {
 			t.Fatalf("path = %q, want /search/issues", r.URL.Path)
 		}
 		query := r.URL.Query()
-		if got := query.Get("q"); !strings.Contains(got, "author:alice type:pr archived:false") {
+		if got := query.Get("q"); !strings.Contains(got, "author:alice is:pull-request archived:false") {
 			t.Fatalf("q = %q, want authored PR search query", got)
 		}
 		sort := query.Get("sort")
@@ -1611,7 +1638,7 @@ func TestExecutorFetchAuthoredPullRequestTargetsUsesBroadFallbackWhenWindowedQue
 		query := r.URL.Query().Get("q")
 		w.Header().Set("Content-Type", "application/json")
 
-		if strings.Contains(query, "author:Ayush3941 type:pr archived:false") &&
+		if strings.Contains(query, "author:Ayush3941 is:pull-request archived:false") &&
 			!strings.Contains(query, "created:") &&
 			!strings.Contains(query, "updated:") {
 			broadRequests++

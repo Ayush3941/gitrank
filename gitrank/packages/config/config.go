@@ -390,7 +390,7 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			InstallationRepositoryPageSize: getInt("GITHUB_INSTALLATION_REPOSITORY_PAGE_SIZE", 50),
 			InstallationRepositoryMaxPages: getInt("GITHUB_INSTALLATION_REPOSITORY_MAX_PAGES", 10),
 			AuthoredPRSearchLimit:          getInt("GITHUB_AUTHORED_PR_SEARCH_LIMIT", 100),
-			AuthoredPRSyncLimit:            getInt("GITHUB_AUTHORED_PR_SYNC_LIMIT", 10),
+			AuthoredPRSyncLimit:            getInt("GITHUB_AUTHORED_PR_SYNC_LIMIT", 25),
 			SyncRunDefaultLimit:            getInt("GITHUB_SYNC_RUN_DEFAULT_LIMIT", 50),
 			SyncRunMaxLimit:                getInt("GITHUB_SYNC_RUN_MAX_LIMIT", 200),
 			UserPRSyncTimeoutDefault:       getDuration("GITHUB_USER_PR_SYNC_TIMEOUT_DEFAULT", 45*time.Second),

@@ -13,6 +13,7 @@ describe("sync-run-metrics-policy", () => {
     expect(hasPartialSyncRunMetrics({ authored_pull_request_backfill_incomplete: 1 })).toBe(true);
     expect(hasPartialSyncRunMetrics({ authored_pull_request_scope_limited: 1 })).toBe(true);
     expect(hasPartialSyncRunMetrics({ authored_pull_requests_retryable: 2 })).toBe(true);
+    expect(hasPartialSyncRunMetrics({ authored_pull_requests_selected_unmerged_only: 1 })).toBe(true);
     expect(hasPartialSyncRunMetrics({ post_sync_score_replay_failed: 1 })).toBe(true);
   });
 
@@ -22,4 +23,3 @@ describe("sync-run-metrics-policy", () => {
     expect(hasPartialSyncRunMetrics(undefined)).toBe(false);
   });
 });
-

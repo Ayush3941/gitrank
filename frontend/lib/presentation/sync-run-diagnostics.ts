@@ -90,6 +90,7 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
   const selectedAuthoredPRs = metricCount(metrics, "authored_pull_requests_selected");
   const selectedMergedPRs = metricCount(metrics, "authored_pull_requests_selected_merged");
   const selectedUnmergedPRs = metricCount(metrics, "authored_pull_requests_selected_unmerged");
+  const selectedUnmergedOnly = metricCount(metrics, "authored_pull_requests_selected_unmerged_only") > 0;
 
   if (zeroDiscoveryWithHistory) {
     return {
@@ -230,15 +231,21 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
     };
   }
   if (
+    selectedUnmergedOnly ||
     selectedAuthoredPRs > 0 &&
     selectedMergedPRs == 0 &&
     selectedUnmergedPRs == selectedAuthoredPRs &&
     scoreReplayEvents == 0
   ) {
+    const unmergedOnlyTargetCount = selectedAuthoredPRs > 0 ? selectedAuthoredPRs : selectedUnmergedPRs;
+    const targetSummary =
+      unmergedOnlyTargetCount > 0
+        ? `${unmergedOnlyTargetCount} authored PR target${unmergedOnlyTargetCount === 1 ? "" : "s"}`
+        : "the selected authored PR targets";
     return {
       code: "selected_unmerged_only",
       message:
-        `Synced ${selectedAuthoredPRs} authored PR target${selectedAuthoredPRs === 1 ? "" : "s"}, but all are currently unmerged. XP and score movement start after merge events are observed.`,
+        `Synced ${targetSummary}, but all are currently unmerged. XP and score movement start after merge events are observed.`,
     };
   }
   if (syncCapped && selectedAuthoredPRs > 0) {
