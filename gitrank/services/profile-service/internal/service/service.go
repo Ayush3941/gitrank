@@ -622,12 +622,13 @@ func visibilityMap(records []repositoryVisibilityRecord) map[string]repositoryVi
 }
 
 func snapshotStaleness(snapshot snapshotRecord, now time.Time) contracts.ProfileStaleness {
+	partialProfileAvailable := snapshot.ID != "" && !snapshotHasScoreEvidence(snapshot)
 	return contracts.ProfileStaleness{
 		RefreshedAt:             snapshot.RefreshedAt.UTC(),
 		StaleAfter:              snapshot.StaleAfter.UTC(),
 		SourceWatermark:         snapshot.SourceWatermark.UTC(),
 		IsStale:                 now.UTC().After(snapshot.StaleAfter.UTC()),
-		PartialProfileAvailable: snapshot.ID != "",
+		PartialProfileAvailable: partialProfileAvailable,
 	}
 }
 
@@ -635,10 +636,31 @@ func skillEvidenceStateFromStaleness(staleness contracts.ProfileStaleness) strin
 	if staleness.IsStale {
 		return "stale"
 	}
-	if staleness.PartialProfileAvailable && staleness.SourceWatermark.IsZero() {
+	if staleness.PartialProfileAvailable {
 		return "partial"
 	}
 	return "fresh"
+}
+
+func snapshotHasScoreEvidence(snapshot snapshotRecord) bool {
+	if snapshot.TotalXP > 0 || snapshot.Summary.TotalXP > 0 {
+		return true
+	}
+	if snapshot.Summary.MergedPullRequests > 0 {
+		return true
+	}
+	if len(snapshot.ScoreHistory) > 0 {
+		return true
+	}
+	for _, repository := range snapshot.Repositories {
+		if repository.MergedPullRequests > 0 {
+			return true
+		}
+		if repository.ContributionCount > 0 && repository.TotalXP > 0 {
+			return true
+		}
+	}
+	return false
 }
 
 func skillAreasWithEvidenceState(skills []contracts.SkillAreaView, state string) []contracts.SkillAreaView {

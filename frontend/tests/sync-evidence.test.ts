@@ -145,7 +145,7 @@ describe("deriveEffectiveSyncState", () => {
     expect(deriveEffectiveSyncState(user)).toBe("partially_synced");
   });
 
-  it("returns synced when repository evidence exists even without merged PR evidence", () => {
+  it("returns partially_synced when only repository rows exist without PR contribution evidence", () => {
     const user = buildUser({
       mergedPrCount: 0,
       contributions: [],
@@ -165,7 +165,7 @@ describe("deriveEffectiveSyncState", () => {
         partialProfileAvailable: false,
       },
     });
-    expect(deriveEffectiveSyncState(user)).toBe("synced");
+    expect(deriveEffectiveSyncState(user)).toBe("partially_synced");
   });
 
   it("keeps synced when concrete PR evidence exists", () => {
@@ -302,7 +302,7 @@ describe("repository/materialized sync evidence helpers", () => {
       ],
     });
     expect(hasUserRepositoryEvidence(user)).toBe(true);
-    expect(hasUserMaterializedSyncEvidence(user)).toBe(true);
+    expect(hasUserMaterializedSyncEvidence(user)).toBe(false);
   });
 });
 
@@ -336,7 +336,7 @@ describe("shouldShowSyncRefreshPill", () => {
     expect(shouldShowSyncRefreshPill(user)).toBe(true);
   });
 
-  it("returns true for synced users with repository evidence only", () => {
+  it("returns false for repository-only rows without contribution evidence", () => {
     const user = buildUser({
       mergedPrCount: 0,
       contributions: [],
@@ -356,7 +356,7 @@ describe("shouldShowSyncRefreshPill", () => {
         partialProfileAvailable: false,
       },
     });
-    expect(shouldShowSyncRefreshPill(user)).toBe(true);
+    expect(shouldShowSyncRefreshPill(user)).toBe(false);
   });
 
   it("returns false when sync runs are still active", () => {

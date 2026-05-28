@@ -307,6 +307,9 @@ Recent no-slowdown refinement (May 27, 2026):
 - Dashboard sync freshness now derives from profile-relevant sync runs only (`run_type=user` with matching requested user when present), so PR/review/repository sub-run noise cannot override top-level profile sync state chips.
 - Frontend sync-run polling now requests `run_type=user` for dashboard route freshness checks, and api-gateway auto-fills `user=<authenticated github_login>` for that mode when omitted, reducing cross-target run noise and payload size while preserving explicit user overrides.
 - Profile freshness derivation is now centralized in `frontend/hooks/use-profile-sync-state.ts` and reused by Dashboard, Contributions, Badges, Quests, Leaderboard, and Settings to keep sync-state chips/pills behavior consistent across tabs.
+- Effective synced-state truthiness now requires PR contribution evidence (not repository rows alone), so profiles with repo-only metadata cannot surface as fully synced before scored PR evidence materializes.
+- Private-profile sync-state adaptation now treats backend `partial_profile_available` as a hint (only forcing partial when score evidence is still absent or source watermark is unusable), preventing false partial loops when evidence is already present.
+- Dashboard auto-sync coordinator no longer force-triggers refresh solely because merged PR count is zero; it now relies on bootstrap, stale state, and staleness age, reducing repeated low-signal sync churn.
 - GitHub ingestor sync-run normalization now marks stale in-progress rows as failed when a newer terminal row exists for the same correlation scope, reducing contradictory `running + completed` activity rows in Settings.
 - Added `scripts/check-no-tracked-secrets.sh` and wired it into `scripts/check-repo-sync.sh` so local quality gates fail fast when high-signal token/private-key patterns are committed in tracked files.
 - Sync-run supersession diagnostics now use a deterministic metric marker (`superseded_by_terminal_correlation=1`) emitted by backend normalization, reducing fragile frontend dependence on free-form error strings.
@@ -344,6 +347,7 @@ Recent no-slowdown refinement (May 27, 2026):
 - Frontend direct user-sync execution timeout policy now defaults to a safer `120s` with a `90s` minimum clamp for `NEXT_PUBLIC_GITRANK_USER_SYNC_EXECUTION_TIMEOUT_MS`, preventing common false client aborts on bounded multi-PR sync runs.
 - Sync-run polling now keeps `refetchOnReconnect` disabled in `useSyncRuns` (polling remains active) to avoid redundant reconnect fetch bursts and reduce duplicate `/api/sync/runs` calls during normal dashboard rendering and fixture smoke runs.
 - Live fixture smoke assertions now explicitly include profile-sync activity fetches (`/api/sync/runs`) on dashboard tabs that consume profile freshness state, aligning smoke coverage with the real runtime sync-state contract.
+- Profile projection tests now lock PR lifecycle propagation (`pull_request.state`, `pull_request.merged`) in score history entries, preventing regressions where contribution status rendering could silently collapse back to merged-only assumptions.
 
 ## Frontend Excellence Checklist (No-Slowdown Backlog)
 

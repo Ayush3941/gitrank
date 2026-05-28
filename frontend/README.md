@@ -111,6 +111,8 @@ Authenticated dashboard routes now use background auto-sync instead of manual sy
 - dashboard layout triggers bounded `POST /api/sync/user` execution when authenticated profile state is stale
 - sync success invalidates profile-derived dashboard caches (`dashboard`, `contributions`, `badges`, `quests`, `leaderboard`) so tabs refresh without a hard reload
 - sync failures are surfaced through stale/partial state messaging and retried opportunistically while the user stays in authenticated routes
+- "Synced" presentation now requires PR contribution evidence (not repository rows alone), preventing false-green freshness when only repo metadata is available
+- auto-sync no longer force-retries only because merged PR count is zero; retries now key off bootstrap/stale-age signals to avoid unnecessary refresh churn
 
 The settings page has live authenticated account actions:
 
@@ -177,17 +179,19 @@ NEXT_PUBLIC_GITRANK_ABRA_CONTRIBUTION_SAMPLE_LIMIT=24
 NEXT_PUBLIC_GITRANK_HIGH_XP_THRESHOLD=200
 ```
 
-## Optional Gemini ABRA Insights
+## Optional ChatGPT ABRA Insights
 
 ABRA insight generation (contribution impact explanation, badge story, identity summary) runs through the frontend server route `POST /api/ai/abra-insights`.
 
-PR XP and rank progression are not AI-authored: deterministic backend scoring is finalized before this route runs, and Gemini receives read-only scored evidence for explanation only.
+PR XP and rank progression are not AI-authored: deterministic backend scoring is finalized before this route runs, and ChatGPT receives read-only scored evidence for explanation only.
 
 Set these in `gitrank/.env`:
 
 ```bash
-GEMINI_API_KEY=your-key
-GEMINI_MODEL=gemini-2.5-flash
+OPENAI_API_KEY=your-key
+OPENAI_MODEL=gpt-4o-mini
+# optional override
+# OPENAI_BASE_URL=https://api.openai.com/v1
 ```
 
-If `GEMINI_API_KEY` is not set or request generation fails, GitRank automatically falls back to deterministic insight copy so demo flows remain stable.
+If `OPENAI_API_KEY` is not set or request generation fails, GitRank automatically falls back to deterministic insight copy so demo flows remain stable.

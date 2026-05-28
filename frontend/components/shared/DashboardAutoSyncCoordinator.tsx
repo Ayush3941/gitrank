@@ -36,7 +36,6 @@ export function DashboardAutoSyncCoordinator() {
     const syncAgeMs = Number.isNaN(lastSyncedAt) ? Number.POSITIVE_INFINITY : now - lastSyncedAt;
     const staleSnapshot = syncState.state !== "synced";
     const staleByAge = syncAgeMs >= syncPollingPolicy.autoSyncStaleAgeMs;
-    const emptyEvidence = data.user.mergedPrCount === 0;
     const usernameKey = data.user.username.toLowerCase();
     const sessionFingerprint = readSessionFingerprint();
     const bootstrapSessionKey = `${AUTO_SYNC_SESSION_BOOTSTRAP_KEY_PREFIX}${usernameKey}:${sessionFingerprint}`;
@@ -45,7 +44,7 @@ export function DashboardAutoSyncCoordinator() {
       window.sessionStorage.getItem(bootstrapSessionKey) === "1";
     const shouldBootstrapSessionSync =
       syncPollingPolicy.autoSyncSessionBootstrapEnabled && !hasSessionBootstrapAttempt;
-    const shouldAutoSync = shouldBootstrapSessionSync || staleSnapshot || staleByAge || emptyEvidence;
+    const shouldAutoSync = shouldBootstrapSessionSync || staleSnapshot || staleByAge;
 
     if (!shouldAutoSync || syncState.state === "syncing" || isUserSyncPending) {
       return;

@@ -1007,13 +1007,25 @@ function deriveProfileSyncState(
   if (staleness.is_stale) {
     return "stale";
   }
-  if (staleness.partial_profile_available) {
-    return "partially_synced";
-  }
   if (!hasEvidence) {
     return "partially_synced";
   }
+  if (staleness.partial_profile_available && !hasUsableSourceWatermark(staleness.source_watermark)) {
+    return "partially_synced";
+  }
   return "synced";
+}
+
+function hasUsableSourceWatermark(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return false;
+  }
+  const parsed = Date.parse(trimmed);
+  if (!Number.isFinite(parsed)) {
+    return false;
+  }
+  return parsed > 0;
 }
 
 function normalizeVisibility(value: string): RepositoryVisibility["visibility"] {

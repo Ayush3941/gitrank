@@ -76,8 +76,21 @@ describe("profile API sync-state adaptation", () => {
     vi.restoreAllMocks();
   });
 
-  it("marks sync state as partially_synced when backend reports partial_profile_available", async () => {
+  it("marks sync state as partially_synced when scored PR evidence is still absent", async () => {
     const payload = buildPrivateProfileResponse({
+      summary: {
+        handle: "ayush3941",
+        display_name: "Ayush Kumar Gaur",
+        avatar_url: "",
+        bio: "",
+        total_xp: 0,
+        strength_summary: "Backend momentum",
+        top_skills: ["Backend"],
+        badges_earned: 1,
+        merged_pull_requests: 0,
+        updated_at: "2026-05-27T12:00:00Z",
+      },
+      top_repositories: [],
       staleness: {
         refreshed_at: "2026-05-27T12:00:00Z",
         stale_after: "2026-05-27T14:00:00Z",
@@ -94,6 +107,26 @@ describe("profile API sync-state adaptation", () => {
 
     const adapted = await getMyProfile();
     expect(adapted.user.syncStatus.state).toBe("partially_synced");
+  });
+
+  it("keeps sync state as synced when evidence exists even if backend partial hint is set", async () => {
+    const payload = buildPrivateProfileResponse({
+      staleness: {
+        refreshed_at: "2026-05-27T12:00:00Z",
+        stale_after: "2026-05-27T14:00:00Z",
+        source_watermark: "2026-05-27T12:00:00Z",
+        is_stale: false,
+        partial_profile_available: true,
+      },
+    });
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify(payload), { status: 200 })),
+    );
+
+    const adapted = await getMyProfile();
+    expect(adapted.user.syncStatus.state).toBe("synced");
   });
 
   it("maps contribution status from PR lifecycle fields", async () => {
