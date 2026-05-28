@@ -123,14 +123,21 @@ function hasPendingSyncRunStatuses(syncRunStatuses: readonly string[] | undefine
   if (!syncRunStatuses || syncRunStatuses.length === 0) {
     return false;
   }
+  let sawTerminalStatus = false;
   for (const rawStatus of syncRunStatuses) {
     const normalized = rawStatus.trim().toLowerCase();
     if (!normalized) {
       continue;
     }
     if (ACTIVE_SYNC_RUN_STATUSES.has(normalized) || QUEUED_SYNC_RUN_STATUSES.has(normalized)) {
-      return true;
+      // Only treat pending status as active when it appears before any terminal
+      // status in the reverse-chronological run list.
+      if (!sawTerminalStatus) {
+        return true;
+      }
+      continue;
     }
+    sawTerminalStatus = true;
   }
   return false;
 }

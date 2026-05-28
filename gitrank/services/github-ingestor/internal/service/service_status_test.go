@@ -310,8 +310,8 @@ func TestSummarizeSyncRunWatermarks(t *testing.T) {
 	if lastAttemptedAt == nil {
 		t.Fatal("lastAttemptedAt = nil, want timestamp")
 	}
-	if !lastAttemptedAt.Equal(attemptThree.Add(15 * time.Second)) {
-		t.Fatalf("lastAttemptedAt = %s, want %s", lastAttemptedAt.UTC(), attemptThree.Add(15*time.Second))
+	if !lastAttemptedAt.Equal(successThree) {
+		t.Fatalf("lastAttemptedAt = %s, want %s", lastAttemptedAt.UTC(), successThree)
 	}
 	if lastSuccessfulAt == nil {
 		t.Fatal("lastSuccessfulAt = nil, want timestamp")

@@ -210,6 +210,48 @@ describe("deriveEffectiveSyncState", () => {
     expect(deriveEffectiveSyncState(user, ["queued"])).toBe("syncing");
   });
 
+  it("ignores stale running rows once a newer terminal run exists", () => {
+    const user = buildUser({
+      mergedPrCount: 2,
+      syncStatus: {
+        state: "synced",
+        lastSyncedAt: "2026-05-27T00:00:00Z",
+        currentStep: "Profile snapshot is current",
+        progress: 100,
+        partialProfileAvailable: false,
+      },
+    });
+    expect(deriveEffectiveSyncState(user, ["completed", "running"])).toBe("synced");
+  });
+
+  it("keeps syncing when the newest run is still active even if older runs completed", () => {
+    const user = buildUser({
+      mergedPrCount: 2,
+      syncStatus: {
+        state: "synced",
+        lastSyncedAt: "2026-05-27T00:00:00Z",
+        currentStep: "Profile snapshot is current",
+        progress: 100,
+        partialProfileAvailable: false,
+      },
+    });
+    expect(deriveEffectiveSyncState(user, ["running", "completed"])).toBe("syncing");
+  });
+
+  it("preserves partial state from the newest terminal run despite older active rows", () => {
+    const user = buildUser({
+      mergedPrCount: 2,
+      syncStatus: {
+        state: "synced",
+        lastSyncedAt: "2026-05-27T00:00:00Z",
+        currentStep: "Profile snapshot is current",
+        progress: 100,
+        partialProfileAvailable: false,
+      },
+    });
+    expect(deriveEffectiveSyncState(user, ["partial", "running"])).toBe("partially_synced");
+  });
+
   it("returns partially_synced when latest terminal sync run is partial", () => {
     const user = buildUser({
       mergedPrCount: 2,
