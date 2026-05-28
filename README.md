@@ -143,6 +143,7 @@ There is no separate runtime `.env` for `frontend/`; keep all runtime vars in `g
 - Sync-run history auto-normalizes stale active statuses and stale queued rows to prevent indefinite `running`/`queued` rows in Settings; malformed rows missing `started_at` are marked failed with explicit diagnostics.
 - Sync-run normalization now marks contradictory rows (`finished_at` present while status is still active/queued) as failed instead of completed, preventing false "Synced" signals from inconsistent run-state records.
 - In-progress sync rows are superseded by newer terminal runs using both correlation ID and logical target scope (run type + requested user/repository), reducing persistent ghost `running` entries after repeated retries.
+- User sync now includes a broad authored-PR fallback query when recent-window discovery returns empty, reducing false-empty sync outcomes caused by cursor/window edge cases.
 - When user sync reports `authored_pull_requests_capped`, UI now shows a bounded-window notice instead of implying full-history completion.
 - User-sync cursor progression no longer stays pinned on mixed-result runs; if at least one selected PR hydrated successfully, the cursor advances with overlap so newer PRs can enter subsequent bounded windows.
 - User-sync execution marks authored-PR backfill as partial when discovery is still incomplete (`authored_pull_request_backfill_incomplete`), avoiding false "fully synced" states while history backfill is still in progress.

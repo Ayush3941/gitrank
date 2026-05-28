@@ -1563,6 +1563,29 @@ func (e *Executor) fetchAuthoredPullRequestTargets(
 		combinedStats = mergeAuthoredPullRequestDiscoveryStats(combinedStats, rescanStats)
 	}
 
+	if len(selection.Targets) == 0 {
+		broadTargets, broadStats, broadErr := e.discoverAuthoredPullRequestTargetsBroad(
+			ctx,
+			user,
+			perPage,
+			maxTargets-len(selection.Targets),
+		)
+		if broadErr != nil {
+			return authoredPullRequestSelection{}, broadErr
+		}
+		selection.Targets = appendUniqueAuthoredPullRequestTargets(selection.Targets, broadTargets, seenTargets, maxTargets)
+		selection.SearchIncomplete = selection.SearchIncomplete || broadStats.incomplete
+		selection.SearchOverflow = selection.SearchOverflow || broadStats.overflow
+		selection.Fetched["authored_pull_request_search_queries"] += broadStats.searchQueries
+		selection.Fetched["authored_pull_request_discovery_windows"]++
+		selection.Fetched["authored_pull_request_broad_fallback_windows"]++
+		selection.Fetched["authored_pull_request_broad_fallback_targets"] = len(broadTargets)
+		if len(broadTargets) == 0 {
+			selection.Fetched["authored_pull_request_broad_fallback_empty"]++
+		}
+		combinedStats = mergeAuthoredPullRequestDiscoveryStats(combinedStats, broadStats)
+	}
+
 	selection.Fetched["authored_pull_request_discovery_targets"] = len(selection.Targets)
 	if combinedStats.oldestSeenAt != nil {
 		selection.NextCursor.OldestSeenAt = minAuthoredTimestamp(cursor.OldestSeenAt, combinedStats.oldestSeenAt)
@@ -1693,6 +1716,89 @@ func (e *Executor) discoverAuthoredPullRequestTargetsInWindow(
 		nextResult, nextMeta, nextErr := githubapi.SearchIssuesAndPullRequests(ctx, e.client, githubapi.IssueSearchRequest{
 			Query:   searchQuery,
 			Sort:    window.Qualifier,
+			Order:   "desc",
+			PerPage: perPage,
+			Page:    currentPage,
+		})
+		stats.searchQueries++
+		if nextErr != nil {
+			return targets, stats, nextErr
+		}
+		if nextResult.IncompleteResults {
+			stats.incomplete = true
+		}
+		currentResult = nextResult
+		currentMeta = nextMeta
+		appendItems(currentResult.Items)
+		if len(currentResult.Items) == 0 {
+			break
+		}
+	}
+	if result.TotalCount >= authoredPRSearchHardLimit {
+		stats.overflow = true
+	}
+	return targets, stats, nil
+}
+
+func (e *Executor) discoverAuthoredPullRequestTargetsBroad(
+	ctx context.Context,
+	user string,
+	perPage int,
+	targetLimit int,
+) ([]authoredPullRequestTarget, authoredPullRequestDiscoveryStats, error) {
+	stats := authoredPullRequestDiscoveryStats{}
+	if targetLimit <= 0 {
+		return []authoredPullRequestTarget{}, stats, nil
+	}
+
+	searchQuery := fmt.Sprintf("author:%s type:pr archived:false", strings.TrimSpace(user))
+	result, meta, err := githubapi.SearchIssuesAndPullRequests(ctx, e.client, githubapi.IssueSearchRequest{
+		Query:   searchQuery,
+		Sort:    "updated",
+		Order:   "desc",
+		PerPage: perPage,
+		Page:    1,
+	})
+	stats.searchQueries = 1
+	if err != nil {
+		return nil, stats, err
+	}
+	stats.incomplete = result.IncompleteResults
+
+	targets := make([]authoredPullRequestTarget, 0, min(targetLimit, authoredPRSearchMaxPages*perPage))
+	seen := make(map[string]struct{}, cap(targets))
+	appendItems := func(items []githubapi.IssueSearchResultItem) {
+		for _, item := range items {
+			target, ok := authoredPullRequestTargetFromSearchItem(item)
+			if !ok {
+				continue
+			}
+			key := strings.ToLower(fmt.Sprintf("%s#%d", target.Repository, target.Number))
+			if _, exists := seen[key]; exists {
+				continue
+			}
+			seen[key] = struct{}{}
+			targets = append(targets, target)
+			stats = updateAuthoredPullRequestDiscoveryStats(stats, item)
+			if len(targets) >= targetLimit {
+				return
+			}
+		}
+	}
+
+	appendItems(result.Items)
+	currentResult := result
+	currentMeta := meta
+	currentPage := 1
+	for len(targets) < targetLimit && currentPage < authoredPRSearchMaxPages {
+		nextPage, ok := nextSearchPageFromLink(currentMeta.Links["next"])
+		if !ok || nextPage <= currentPage {
+			break
+		}
+		currentPage = nextPage
+		nextResult, nextMeta, nextErr := githubapi.SearchIssuesAndPullRequests(ctx, e.client, githubapi.IssueSearchRequest{
+			Query:   searchQuery,
+			Sort:    "updated",
 			Order:   "desc",
 			PerPage: perPage,
 			Page:    currentPage,

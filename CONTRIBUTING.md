@@ -263,6 +263,7 @@ Recent sync-state integrity refinement (May 27, 2026):
 
 - Sync-run normalization now treats contradictory run rows (`finished_at` present while status remains `running`/`queued`) as `failed`, not `completed`, so dashboard/settings cannot show false-success runs.
 - Older in-progress rows are now superseded by newer terminal rows using both correlation scope and logical target scope (run type + requested user/repository), reducing stuck `running` rows after repeated refresh cycles.
+- User sync now performs a broad authored-PR fallback query when all windowed discovery passes are empty, reducing false-empty profile refresh outcomes on cursor/window edge cases.
 - Dashboard nav rails use thin visible scrollbars (instead of hidden scrollbars) to improve discoverability of horizontal navigation overflow.
 - Background image visibility was increased with softer dark overlays and lower shell-glow opacity to keep text readable while preserving the cyberpunk visual layer.
 - Added `npm run check:jsx-ids` and fixed duplicate region IDs in the badges locked-lane panel to prevent section-control and accessibility collisions.
