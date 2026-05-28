@@ -46,6 +46,17 @@ describe("listMySyncRuns normalization", () => {
               metrics: {},
             },
             {
+              id: "run-completed-with-partial-metrics",
+              run_type: "user",
+              status: "completed",
+              subject: "octocat",
+              started_at: "2026-05-27T09:56:00.000Z",
+              finished_at: "2026-05-27T09:56:45.000Z",
+              metrics: {
+                authored_pull_request_discovery_empty: 1,
+              },
+            },
+            {
               id: "run-queued-stale",
               run_type: "user",
               status: "queued",
@@ -68,7 +79,8 @@ describe("listMySyncRuns normalization", () => {
 
     expect(statusByID.get("run-partial")).toBe("partial");
     expect(statusByID.get("run-failed")).toBe("failed");
-    expect(statusByID.get("run-running-finished")).toBe("completed");
+    expect(statusByID.get("run-running-finished")).toBe("failed");
+    expect(statusByID.get("run-completed-with-partial-metrics")).toBe("partial");
     expect(statusByID.get("run-queued-stale")).toBe("failed");
   });
 
@@ -96,6 +108,6 @@ describe("listMySyncRuns normalization", () => {
     expect(typeof call).toBe("string");
     expect(call).toContain("/api/sync/runs?");
     expect(call).toContain("run_type=user");
-    expect(call).toContain("user=Ayush3941");
+    expect(call).toContain("user=ayush3941");
   });
 });

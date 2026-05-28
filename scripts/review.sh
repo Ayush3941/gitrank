@@ -9,7 +9,10 @@ printf '[review.sh] running repo sync checks\n'
 printf '[review.sh] running targeted frontend sync-state tests\n'
 (
   cd "$ROOT_DIR/frontend"
-  npx vitest run tests/sync-evidence.test.ts tests/sync-runs-filter-normalization.test.ts
+  npx vitest run \
+    tests/sync-evidence.test.ts \
+    tests/sync-runs-filter-normalization.test.ts \
+    tests/account-api-sync-runs-normalization.test.ts
 )
 
 printf '[review.sh] done\n'

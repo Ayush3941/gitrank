@@ -362,6 +362,8 @@ Recent no-slowdown refinement (May 27, 2026):
 - Contribution lifecycle fallback no longer defaults unknown PR state to `merged`; unknown lifecycle now resolves to `open`, preventing false merged evidence from sparse payloads.
 - Sync evidence truthiness now requires persisted PR identity (`score_event_id`/`pull_request_id`/report evidence status) before treating zero-XP rows as materialized contribution evidence, reducing false “Synced” states from placeholder rows.
 - GitHub ingestor sync-run list normalization now downgrades legacy `completed` user runs to `partial` when persisted authored-PR metrics indicate incomplete discovery/backfill/scope-limited outcomes, preserving truthful sync-state UX for historical rows.
+- Frontend sync-run normalization now mirrors this guard by downgrading `completed` user runs to `partial` when authored-PR metrics indicate incomplete discovery/scope/backfill, keeping UI truthful even if older backend rows predate normalization.
+- `scripts/review.sh` now includes `tests/account-api-sync-runs-normalization.test.ts` so sync-run normalization/filter regressions are caught in the default lightweight review gate.
 
 ## Frontend Excellence Checklist (No-Slowdown Backlog)
 

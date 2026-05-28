@@ -621,6 +621,17 @@ function normalizeSyncRunRecord(run: ApiSyncRunRecord, nowMs: number): ApiSyncRu
     }
   }
 
+  if (
+    normalized === "completed" &&
+    normalizeSyncRunFilterToken(run.run_type) === "user" &&
+    shouldMarkUserSyncRunPartialByMetrics(run.metrics)
+  ) {
+    normalized = "partial";
+    if (!lastError?.trim()) {
+      lastError = "sync execution was normalized to partial because authored PR discovery remained incomplete";
+    }
+  }
+
   if (normalized === normalizedStatus && lastError === run.last_error) {
     return run;
   }
@@ -630,6 +641,37 @@ function normalizeSyncRunRecord(run: ApiSyncRunRecord, nowMs: number): ApiSyncRu
     status: normalized || run.status,
     last_error: lastError,
   };
+}
+
+function shouldMarkUserSyncRunPartialByMetrics(
+  metrics?: Record<string, number>,
+): boolean {
+  if (!metrics) {
+    return false;
+  }
+  return (
+    metricCount(metrics, "authored_pull_request_search_incomplete") > 0 ||
+    metricCount(metrics, "authored_pull_request_search_overflow") > 0 ||
+    metricCount(metrics, "authored_pull_request_backfill_incomplete") > 0 ||
+    metricCount(metrics, "authored_pull_request_discovery_empty") > 0 ||
+    metricCount(metrics, "authored_pull_request_zero_discovery_with_history") > 0 ||
+    metricCount(metrics, "authored_pull_requests_retryable") > 0 ||
+    metricCount(metrics, "authored_pull_requests_skipped") > 0 ||
+    metricCount(metrics, "authored_pull_requests_failed") > 0 ||
+    metricCount(metrics, "authored_pull_requests_timeouts") > 0 ||
+    metricCount(metrics, "authored_pull_request_scope_limited") > 0
+  );
+}
+
+function metricCount(
+  metrics: Record<string, number>,
+  key: string,
+): number {
+  const value = metrics[key];
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return 0;
+  }
+  return Math.max(0, Math.floor(value));
 }
 
 function sanitizeSyncExecutionError(
