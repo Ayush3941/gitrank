@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { formatDateTime, formatRelativeDays } from "@/lib/formatters";
+import { hasPartialSyncRunMetrics } from "@/lib/sync/sync-run-metrics-policy";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import { syncRunStatusLabel } from "@/features/settings/lib/sync-run-status";
 import { describeSyncRunOutcome, metricCount } from "@/features/settings/lib/sync-run-diagnostics";
@@ -319,7 +320,7 @@ export function SyncRunActivityPanel({
             {filteredRuns.map((run, index) => {
               const safeLastError = sanitizeSyncRunErrorMessage(run.last_error);
               const metricsSummary = summarizeRunMetrics(run.metrics);
-              const partial = hasPartialRunMetrics(run.metrics);
+              const partial = hasPartialSyncRunMetrics(run.metrics);
               const outcomeInsight = describeSyncRunOutcome(run).message;
               return (
                 <li key={`${run.id}-${index}`}>
@@ -516,6 +517,14 @@ function summarizeRunMetrics(metrics?: Record<string, number>): string {
   if (scopeLimited > 0) {
     segments.push("Scope limited");
   }
+  const oauthTokenRequired = metricCount(metrics, "oauth_token_required");
+  if (oauthTokenRequired > 0) {
+    segments.push("OAuth token required");
+  }
+  const oauthTokenMalformed = metricCount(metrics, "oauth_token_malformed");
+  if (oauthTokenMalformed > 0) {
+    segments.push("OAuth token malformed");
+  }
   const scoreReplayFailed = metricCount(metrics, "post_sync_score_replay_failed");
   if (scoreReplayFailed > 0) {
     segments.push("Score replay failed");
@@ -592,25 +601,6 @@ function metricSumBySuffix(metrics: Record<string, number>, suffix: string): num
     total += Math.floor(value);
   }
   return total;
-}
-
-function hasPartialRunMetrics(metrics?: Record<string, number>): boolean {
-  if (!metrics) {
-    return false;
-  }
-  return (
-    metricSumBySuffix(metrics, "_skipped") > 0 ||
-    metricSumBySuffix(metrics, "_fetch_errors") > 0 ||
-    metricCount(metrics, "authored_pull_request_scope_limited") > 0 ||
-    metricCount(metrics, "authored_pull_request_search_incomplete") > 0 ||
-    metricCount(metrics, "authored_pull_request_search_overflow") > 0 ||
-    metricCount(metrics, "authored_pull_requests_retryable") > 0 ||
-    metricCount(metrics, "post_sync_refresh_failed") > 0 ||
-    metricCount(metrics, "post_sync_score_replay_failed") > 0 ||
-    metricCount(metrics, "post_sync_profile_refresh_failed") > 0 ||
-    metricCount(metrics, "post_sync_pr_reports_backfill_failed") > 0 ||
-    metricCount(metrics, "post_sync_quests_backfill_failed") > 0
-  );
 }
 
 function toNormalizedDateTime(value?: string): string | null {

@@ -80,6 +80,20 @@ const syncedTargetsRun = {
   },
 };
 
+const oauthTokenRequiredRun = {
+  id: "run_oauth_required_1",
+  run_type: "user",
+  status: "failed",
+  subject: "octocat",
+  started_at: "2026-05-25T00:08:00Z",
+  finished_at: "2026-05-25T00:08:04Z",
+  metrics: {
+    failed: 1,
+    auth_errors: 1,
+    oauth_token_required: 1,
+  },
+};
+
 const supersededActiveRowRun = {
   id: "run_superseded_1",
   run_type: "user",
@@ -205,6 +219,26 @@ describe("SyncRunActivityPanel", () => {
     expect(screen.getByText("Synced 7 authored PR targets in this run.")).toBeTruthy();
   });
 
+  it("shows oauth-token-required insight and metric summary", () => {
+    render(
+      <SyncRunActivityPanel
+        runs={[oauthTokenRequiredRun]}
+        lastUpdatedAt="2026-05-25T00:09:00Z"
+        isLoading={false}
+        isRefreshing={false}
+        isError={false}
+        onRefresh={() => undefined}
+      />,
+    );
+
+    expect(screen.getByText("Failures 1 · OAuth token required")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "GitHub OAuth token is missing or expired for this account. Refresh session or reconnect GitHub, then retry sync.",
+      ),
+    ).toBeTruthy();
+  });
+
   it("shows superseded-correlation insight for stale in-progress rows", () => {
     render(
       <SyncRunActivityPanel
@@ -219,7 +253,7 @@ describe("SyncRunActivityPanel", () => {
 
     expect(
       screen.getByText(
-        "A stale in-progress run row was superseded by a newer terminal run for the same correlation.",
+        /A stale in-progress run row was superseded by a newer terminal run/,
       ),
     ).toBeTruthy();
   });

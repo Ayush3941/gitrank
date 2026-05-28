@@ -364,6 +364,11 @@ Recent no-slowdown refinement (May 27, 2026):
 - GitHub ingestor sync-run list normalization now downgrades legacy `completed` user runs to `partial` when persisted authored-PR metrics indicate incomplete discovery/backfill/scope-limited outcomes, preserving truthful sync-state UX for historical rows.
 - Frontend sync-run normalization now mirrors this guard by downgrading `completed` user runs to `partial` when authored-PR metrics indicate incomplete discovery/scope/backfill, keeping UI truthful even if older backend rows predate normalization.
 - `scripts/review.sh` now includes `tests/account-api-sync-runs-normalization.test.ts` so sync-run normalization/filter regressions are caught in the default lightweight review gate.
+- Partial-sync metric criteria are now centralized in `frontend/lib/sync/sync-run-metrics-policy.ts` and reused by API normalization plus Settings status rendering, removing duplicated condition lists and preventing frontend drift in partial/completed semantics.
+- `scripts/review.sh` also includes `tests/sync-run-metrics-policy.test.ts` to lock the shared partial-sync metric contract.
+- `scripts/review.sh` now also runs `tests/sync-run-diagnostics.test.ts` so sync outcome explanation ordering/phrasing regressions are caught in the lightweight local gate.
+- Backend sync-failure metrics now classify OAuth token failure causes explicitly (`oauth_token_required`, `oauth_token_malformed`) instead of collapsing them into generic request errors, so Settings diagnostics can provide deterministic reconnect/recovery guidance.
+- `scripts/review.sh` now also runs targeted backend sync-state unit checks (`TestSyncFailureFetchedMetrics`, `TestUserSyncExecutionStatus`) before frontend sync-state tests to keep backend/frontend sync semantics aligned.
 
 ## Frontend Excellence Checklist (No-Slowdown Backlog)
 

@@ -1,9 +1,12 @@
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
+import { metricCount } from "@/lib/sync/sync-run-metrics-policy";
 
 export type SyncRunDiagnostic = {
   code:
     | "zero_discovery_with_history"
     | "scope_limited"
+    | "oauth_token_required"
+    | "oauth_token_malformed"
     | "score_replay_mismatch"
     | "score_replay_failed"
     | "profile_refresh_failed"
@@ -78,6 +81,8 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
   const profileRefreshFailed = metricCount(metrics, "post_sync_profile_refresh_failed") > 0;
   const reportBackfillFailed = metricCount(metrics, "post_sync_pr_reports_backfill_failed") > 0;
   const questBackfillFailed = metricCount(metrics, "post_sync_quests_backfill_failed") > 0;
+  const oauthTokenRequired = metricCount(metrics, "oauth_token_required") > 0;
+  const oauthTokenMalformed = metricCount(metrics, "oauth_token_malformed") > 0;
   const recentSeedEmpty = metricCount(metrics, "authored_pull_request_recent_seed_empty") > 0;
   const broadFallbackTargets = metricCount(metrics, "authored_pull_request_broad_fallback_targets");
   const syncCapped = metricCount(metrics, "authored_pull_requests_capped") > 0;
@@ -98,6 +103,20 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
       code: "scope_limited",
       message:
         "GitHub returned limited authorization scope for authored PR discovery. Reconnect GitHub to expand accessible PR evidence.",
+    };
+  }
+  if (oauthTokenRequired) {
+    return {
+      code: "oauth_token_required",
+      message:
+        "GitHub OAuth token is missing or expired for this account. Refresh session or reconnect GitHub, then retry sync.",
+    };
+  }
+  if (oauthTokenMalformed) {
+    return {
+      code: "oauth_token_malformed",
+      message:
+        "Stored GitHub OAuth token could not be decrypted. Reconnect GitHub to reissue credentials, then retry sync.",
     };
   }
   if (scoreReplayMismatch) {
@@ -241,17 +260,4 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
   };
 }
 
-export function metricCount(metrics: Record<string, number>, ...keys: string[]): number {
-  let count = 0;
-  for (const key of keys) {
-    const value = metrics[key];
-    if (!Number.isFinite(value)) {
-      continue;
-    }
-    const rounded = Math.max(0, Math.floor(value));
-    if (rounded > count) {
-      count = rounded;
-    }
-  }
-  return count;
-}
+export { metricCount };

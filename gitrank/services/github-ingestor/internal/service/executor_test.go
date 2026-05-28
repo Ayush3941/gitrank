@@ -548,6 +548,16 @@ func TestSyncFailureFetchedMetrics(t *testing.T) {
 			err:      ErrUserSyncInProgress,
 			wantKeys: []string{"failed", "user_sync_in_progress", "lease_conflicts"},
 		},
+		{
+			name:     "oauth token required tagged",
+			err:      ErrUserSyncOAuthTokenRequired,
+			wantKeys: []string{"failed", "auth_errors", "oauth_token_required"},
+		},
+		{
+			name:     "oauth token malformed tagged",
+			err:      ErrUserSyncOAuthTokenMalformed,
+			wantKeys: []string{"failed", "auth_errors", "oauth_token_malformed"},
+		},
 	}
 
 	for _, test := range tests {

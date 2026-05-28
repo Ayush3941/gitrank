@@ -63,6 +63,26 @@ describe("describeSyncRunOutcome", () => {
     expect(outcome.code).toBe("scope_limited");
   });
 
+  it("returns oauth-token-required when credential is missing/expired", () => {
+    const outcome = describeSyncRunOutcome(
+      run({
+        oauth_token_required: 1,
+      }),
+    );
+    expect(outcome.code).toBe("oauth_token_required");
+    expect(outcome.message).toContain("missing or expired");
+  });
+
+  it("returns oauth-token-malformed when credential cannot be decrypted", () => {
+    const outcome = describeSyncRunOutcome(
+      run({
+        oauth_token_malformed: 1,
+      }),
+    );
+    expect(outcome.code).toBe("oauth_token_malformed");
+    expect(outcome.message).toContain("could not be decrypted");
+  });
+
   it("returns search-limited when search is incomplete", () => {
     const outcome = describeSyncRunOutcome(
       run({

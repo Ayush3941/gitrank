@@ -1,4 +1,5 @@
 import { frontendPolicy } from "@/lib/runtime/frontend-policy";
+import { hasPartialSyncRunMetrics } from "@/lib/sync/sync-run-metrics-policy";
 
 const DEFAULT_CSRF_COOKIE_NAME = frontendPolicy.csrfCookieName;
 const USER_SYNC_EXECUTION_TIMEOUT_MS = parseBoundedPositiveMs(
@@ -646,32 +647,7 @@ function normalizeSyncRunRecord(run: ApiSyncRunRecord, nowMs: number): ApiSyncRu
 function shouldMarkUserSyncRunPartialByMetrics(
   metrics?: Record<string, number>,
 ): boolean {
-  if (!metrics) {
-    return false;
-  }
-  return (
-    metricCount(metrics, "authored_pull_request_search_incomplete") > 0 ||
-    metricCount(metrics, "authored_pull_request_search_overflow") > 0 ||
-    metricCount(metrics, "authored_pull_request_backfill_incomplete") > 0 ||
-    metricCount(metrics, "authored_pull_request_discovery_empty") > 0 ||
-    metricCount(metrics, "authored_pull_request_zero_discovery_with_history") > 0 ||
-    metricCount(metrics, "authored_pull_requests_retryable") > 0 ||
-    metricCount(metrics, "authored_pull_requests_skipped") > 0 ||
-    metricCount(metrics, "authored_pull_requests_failed") > 0 ||
-    metricCount(metrics, "authored_pull_requests_timeouts") > 0 ||
-    metricCount(metrics, "authored_pull_request_scope_limited") > 0
-  );
-}
-
-function metricCount(
-  metrics: Record<string, number>,
-  key: string,
-): number {
-  const value = metrics[key];
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    return 0;
-  }
-  return Math.max(0, Math.floor(value));
+  return hasPartialSyncRunMetrics(metrics);
 }
 
 function sanitizeSyncExecutionError(
