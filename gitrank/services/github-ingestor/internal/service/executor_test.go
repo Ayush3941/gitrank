@@ -1270,6 +1270,54 @@ func TestExecutorForStrictAppSyncRequestFailsWhenNoActorAndNoInstallation(t *tes
 	}
 }
 
+func TestFilterInstallationsForActorLoginMatchesCaseInsensitively(t *testing.T) {
+	t.Parallel()
+
+	installations := []githubapi.UserInstallationSummaryItem{
+		{
+			ID: 1,
+			Account: &githubapi.RepositoryOwner{
+				Login: "Ayush3941",
+			},
+		},
+		{
+			ID: 2,
+			Account: &githubapi.RepositoryOwner{
+				Login: "core-stack-org",
+			},
+		},
+		{
+			ID: 3,
+			Account: &githubapi.RepositoryOwner{
+				Login: "ayush3941",
+			},
+		},
+	}
+
+	filtered := filterInstallationsForActorLogin(installations, "ayush3941")
+	if len(filtered) != 2 {
+		t.Fatalf("filterInstallationsForActorLogin() count = %d, want 2", len(filtered))
+	}
+	if filtered[0].ID != 1 || filtered[1].ID != 3 {
+		t.Fatalf("filterInstallationsForActorLogin() ids = [%d, %d], want [1, 3]", filtered[0].ID, filtered[1].ID)
+	}
+}
+
+func TestFilterInstallationsForActorLoginSkipsMissingAccounts(t *testing.T) {
+	t.Parallel()
+
+	installations := []githubapi.UserInstallationSummaryItem{
+		{ID: 1, Account: nil},
+		{ID: 2, Account: &githubapi.RepositoryOwner{Login: ""}},
+		{ID: 3, Account: &githubapi.RepositoryOwner{Login: "someone-else"}},
+	}
+
+	filtered := filterInstallationsForActorLogin(installations, "ayush3941")
+	if len(filtered) != 0 {
+		t.Fatalf("filterInstallationsForActorLogin() count = %d, want 0", len(filtered))
+	}
+}
+
 func TestExecutorFetchPullRequestFilesUsesBoundedRESTEndpoint(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/repos/octo/repo/pulls/7/files" {

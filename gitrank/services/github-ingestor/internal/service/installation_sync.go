@@ -12,6 +12,7 @@ import (
 )
 
 type githubInstallationClientFactory func(context.Context, int64) (*githubapi.RESTClient, bool, error)
+type githubAppInstallationLister func(context.Context) ([]githubapi.UserInstallationSummaryItem, error)
 
 func newGitHubInstallationClientFactory(cfg config.App) githubInstallationClientFactory {
 	appJWTIssuer := cfg.GitHubAppJWTIssuer()
@@ -75,6 +76,66 @@ func newGitHubInstallationClientFactory(cfg config.App) githubInstallationClient
 			return nil, false, err
 		}
 		return client, true, nil
+	}
+}
+
+func newGitHubAppInstallationLister(cfg config.App) githubAppInstallationLister {
+	appJWTIssuer := cfg.GitHubAppJWTIssuer()
+	privateKeyPath := strings.TrimSpace(cfg.GitHub.AppPrivateKeyPEM)
+	if appJWTIssuer == "" || privateKeyPath == "" {
+		return nil
+	}
+	timeout := boundedGitHubHTTPTimeout(cfg.GitHub.RequestTimeout)
+
+	appTokenSource, err := githubapi.NewAppAuthenticator(appJWTIssuer, privateKeyPath, 9*time.Minute)
+	if err != nil {
+		return func(context.Context) ([]githubapi.UserInstallationSummaryItem, error) {
+			return nil, err
+		}
+	}
+	appClient, err := githubapi.NewRESTClient(githubapi.ClientConfig{
+		BaseURL:                        cfg.GitHub.APIBaseURL,
+		APIVersion:                     cfg.GitHub.APIVersion,
+		UserAgent:                      cfg.GitHub.UserAgent,
+		TokenSource:                    appTokenSource,
+		HTTPClient:                     &http.Client{Timeout: timeout},
+		SecondaryBackoff:               cfg.GitHub.SecondaryBackoff,
+		MaxConcurrency:                 cfg.GitHub.MaxConcurrency,
+		CircuitBreakerFailureThreshold: cfg.GitHub.CircuitBreakerFailureThreshold,
+		CircuitBreakerOpenInterval:     cfg.GitHub.CircuitBreakerOpenInterval,
+		CircuitBreakerHalfOpenMax:      cfg.GitHub.CircuitBreakerHalfOpenMax,
+	})
+	if err != nil {
+		return func(context.Context) ([]githubapi.UserInstallationSummaryItem, error) {
+			return nil, err
+		}
+	}
+
+	return func(ctx context.Context) ([]githubapi.UserInstallationSummaryItem, error) {
+		perPage := boundedPageSize(cfg.GitHub.MaxPageSize, cfg.GitHub.InstallationRepositoryPageSize)
+		maxPages := cfg.GitHub.InstallationRepositoryMaxPages
+		if maxPages <= 0 {
+			maxPages = 1
+		}
+
+		installations := make([]githubapi.UserInstallationSummaryItem, 0, perPage)
+		page := 1
+		for pageIndex := 0; pageIndex < maxPages; pageIndex++ {
+			current, meta, err := githubapi.ListAppInstallations(ctx, appClient, githubapi.AppInstallationsRequest{
+				PerPage: perPage,
+				Page:    page,
+			})
+			if err != nil {
+				return nil, err
+			}
+			installations = append(installations, current...)
+			nextPage, ok := nextSearchPageFromLink(meta.Links["next"])
+			if !ok || nextPage <= page {
+				break
+			}
+			page = nextPage
+		}
+		return installations, nil
 	}
 }
 

@@ -286,8 +286,8 @@ Recent no-slowdown refinement (May 27, 2026):
 
 Recent sync-auth refinement (May 28, 2026):
 
-- User sync execution is now strict GitHub App for PR extraction. OAuth remains identity/bootstrap only.
-- `github-ingestor` now bootstraps user installation records via `GET /user/installations` when no installation mapping exists, then retries sync with installation credentials.
+- User sync execution is now strict GitHub App for PR extraction. OAuth remains identity/session only.
+- `github-ingestor` now bootstraps user installation records via GitHub App JWT inventory (`GET /app/installations`) when no installation mapping exists, then retries sync with installation credentials.
 - Sync telemetry now exposes installation bootstrap lookup/attempt/success/failure counters so false “synced” states can be traced in run metadata.
 - User sync execution now fails closed if any non-installation credential source is returned, preventing silent reintroduction of OAuth/shared PR extraction paths.
 - Repository, pull-request, and review execute routes now use the same strict app-auth path and return explicit install/bootstrap/OAuth diagnostics instead of generic gateway failures.
@@ -296,7 +296,7 @@ Recent sync-auth refinement (May 28, 2026):
 - Scheduler queued sync payloads now preserve optional `installation_id` and user login context, and scheduler execution forwards `X-GitRank-GitHub-Login`/`X-GitRank-Subject` headers when user context exists.
 - Sync request validation now normalizes optional user-login context for repository/pull-request/review/issue/commit/report-analysis modes (trim, drop leading `@`, validate GitHub login format, lowercase), preventing malformed actor context from reaching strict app-auth extraction routes.
 - Settings sync execute and queue controls now pass optional `user`/`installation_id` context for repository/pull-request/review/issue/commit actions, reducing manual strict-auth failures in local operator workflows.
-- Service dependency manifests now explicitly document auth split: GitHub App installation tokens are required for sync extraction, OAuth is identity/login and installation-discovery support only.
+- Service dependency manifests now explicitly document auth split: GitHub App installation tokens are required for sync extraction/bootstrap, OAuth is identity/login only.
 - Frontend `next.config.ts` now loads missing env keys from `../gitrank/.env` before config evaluation, so standalone `frontend/` dev/build commands follow the same single-env-file contract without requiring a second frontend env file.
 - User-mode sync queue jobs now canonicalize login casing in `subject`/dedupe identity, and sync-run lifecycle reconciliation now matches user subjects case-insensitively so queued/running rows cannot drift when request casing differs.
 - Settings page sync state now incorporates live sync-run statuses (`running` / `queued` -> `syncing`) so chips and freshness pills do not present stale “Synced” states while background sync is still active.
@@ -351,7 +351,7 @@ Recent sync-auth refinement (May 28, 2026):
 - Default authored-PR sync breadth was raised from `10` to `25` (`GITHUB_AUTHORED_PR_SYNC_LIMIT`) so fresh sync runs include a wider evidence slice without requiring local env overrides.
 - User sync now marks `authored_pull_requests_selected_unmerged_only` as partial-state evidence, preventing false “completed/synced” trust when selected PR targets are all unmerged and score-bearing evidence is expectedly zero.
 - GitHub sync failure metrics now explicitly classify unsupported API-version errors (`unsupported_api_version` and `authored_pull_requests_unsupported_api_version`), and frontend diagnostics map these to a direct `GITHUB_API_VERSION` remediation hint.
-- User sync credential flow is strict GitHub App for PR extraction; OAuth user tokens are only used for installation bootstrap/discovery and session continuity.
+- User sync credential flow is strict GitHub App for PR extraction and installation bootstrap; OAuth user tokens are only used for sign-in/session continuity.
 - Frontend profile sync-state matching now includes user-owned child sync runs (`pull_request`, `review`, `issue`, `commit`, `repository`, `installation`) when ownership is proven by `requested_user`, `requested_by_github_login`, or `subject=@handle`, so top-level status chips do not remain falsely "Synced" while user-linked downstream sync work is still active.
 - Sync-state precedence now treats active (`running`/`queued`) rows as blocking only when they appear before the newest terminal outcome in run history, so stale trailing active rows no longer override newer `completed`/`partial`/`failed` truth on dashboard and settings.
 - User sync now records authored-PR lifecycle counters (`authored_pull_requests_selected_merged` / `_unmerged`) from per-PR hydration, and gateway replay mismatch detection only triggers when merged targets were selected; all-unmerged selections now emit `post_sync_score_replay_expected_zero_unmerged` instead of a false mismatch.
@@ -839,7 +839,7 @@ This service is one of the highest-risk parts of the system because reliability,
 
 Must be implemented:
 
-- [x] GitHub OAuth support for sign-in/session identity and installation bootstrap only
+- [x] GitHub OAuth support for sign-in/session identity only
 - [x] GitHub App installation authentication is required for PR/repo extraction paths
 - [x] installation token lifecycle handling is implemented for strict extraction routes
 - [x] webhook receiver
@@ -1517,7 +1517,7 @@ Known v1 limitations:
 - The live PR ingestion path can persist bounded PR metadata, changed-file metadata, public patch excerpts, reviews, and review comments, and the scoring engine can now verify deterministic score replay over selected persisted evidence without writing new score state. Profile-service can now force a persisted snapshot rebuild from stored score and badge evidence, materialize an idempotent PR report snapshot from current evidence, backfill user-scoped historical PR report snapshots from persisted score evidence, backfill quest assignments and reward evidence through `POST /v1/profile/users/{user_id}/quests/backfill`, and backfill historical weekly leaderboard seasons through `POST /v1/leaderboard/materialize/history`. Scheduler-worker can now execute direct `score_history.backfill_user`, `badge.backfill_user`, `report.materialize_pull_request`, `report.backfill_user_pull_requests`, `quest.backfill_user`, `leaderboard.materialize_season`, `leaderboard.backfill_history`, and `pipeline.backfill_user_history` jobs plus the full `pipeline.grade_pull_request` chain for a known user and PR.
 - Direct live PR sync now fetches `/pulls/{number}/files` and stores bounded file metadata, public patch excerpts, and derived file/diff features without full repository files. The direct PR grading pipeline can orchestrate analysis, scoring, profile refresh, and report materialization for a known user and PR; historical or bulk PR enumeration remains pending.
 - User sync is bounded to recent public repositories owned by the requested GitHub login plus recent public authored PRs discoverable through GitHub issue/PR search. It is not yet a full historical contribution search across every public repository, fork, organization, issue, commit, review, or discussion surface where the user has participated.
-- `POST /v1/sync/user/execute` now requires GitHub App installation-backed sync credentials for PR extraction and fails closed when installation auth is unavailable. OAuth tokens are used only for installation bootstrap/discovery and explicit reconnect recovery paths.
+- `POST /v1/sync/user/execute` now requires GitHub App installation-backed sync credentials for PR extraction and fails closed when installation auth is unavailable. OAuth remains the browser identity/reconnect path and is not used for PR extraction or installation discovery.
 - Frontend sync evidence gates now treat PR-linked evidence as authoritative for synced UX; XP-only/account-level totals without concrete PR evidence render as `partially_synced` with `Evidence pending`.
 - Private repositories remain out of scope for scoring and analysis.
 - GitHub OAuth remains the browser identity path; GitHub App installation auth is required for PR/repo extraction paths, while App-driven sign-in and broader org automation remain intentionally limited.

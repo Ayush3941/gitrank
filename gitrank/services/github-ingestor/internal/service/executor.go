@@ -85,6 +85,7 @@ type Executor struct {
 	graphqlTokenSource   githubGraphQLTokenSource
 	installationClient   githubInstallationClientFactory
 	actorInstallation    githubActorInstallationClientFactory
+	appInstallationList  githubAppInstallationLister
 	userSyncLockMu       sync.Mutex
 	activeUserSync       map[string]struct{}
 }
@@ -99,6 +100,7 @@ func NewExecutor(cfg config.App, pool *pgxpool.Pool, client *githubapi.RESTClien
 		restClientFactory:    newGitHubRESTClientFactory(cfg),
 		graphqlClientFactory: newGitHubGraphQLClientFactory(cfg),
 		installationClient:   newGitHubInstallationClientFactory(cfg),
+		appInstallationList:  newGitHubAppInstallationLister(cfg),
 		activeUserSync:       map[string]struct{}{},
 	}
 	executor.graphqlTokenSource = executor.graphQLTokenSourceForActor
@@ -354,10 +356,8 @@ func (e *Executor) SyncUser(
 			bootstrapUpserted, bootstrapErr := e.bootstrapActorInstallations(ctx, actor, startedAt)
 			if bootstrapErr != nil {
 				response.Fetched["app_installation_bootstrap_failed"] = 1
-				if errors.Is(bootstrapErr, ErrUserSyncOAuthTokenRequired) {
-					response.Fetched["app_installation_bootstrap_oauth_required"] = 1
-				} else if errors.Is(bootstrapErr, ErrUserSyncOAuthTokenMalformed) {
-					response.Fetched["app_installation_bootstrap_oauth_malformed"] = 1
+				if errors.Is(bootstrapErr, ErrUserSyncGitHubAppUnavailable) {
+					response.Fetched["app_installation_bootstrap_app_unavailable"] = 1
 				}
 			} else {
 				response.Fetched["app_installation_bootstrap_upserted"] = bootstrapUpserted

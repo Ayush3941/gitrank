@@ -479,52 +479,47 @@ func (e *Executor) bootstrapActorInstallations(ctx context.Context, actor SyncRe
 	if githubLogin == "" {
 		return 0, nil
 	}
-	if e.graphqlTokenSource == nil || e.restClientFactory == nil {
+	if e.appInstallationList == nil {
 		return 0, nil
 	}
 
-	tokenSource, ok, tokenErr := e.graphqlTokenSource(ctx, actor, now)
-	if tokenErr != nil {
-		return 0, fmt.Errorf("%w: %v", ErrUserSyncOAuthTokenMalformed, tokenErr)
+	installations, listErr := e.appInstallationList(ctx)
+	if listErr != nil {
+		return 0, fmt.Errorf("%w: %v", ErrUserSyncGitHubAppUnavailable, listErr)
 	}
-	if !ok || tokenSource == nil {
-		return 0, ErrUserSyncOAuthTokenRequired
-	}
-	client, clientErr := e.restClientFactory(tokenSource)
-	if clientErr != nil {
-		return 0, fmt.Errorf("%w: %v", ErrUserSyncOAuthTokenMalformed, clientErr)
-	}
-
-	installationPageSize := e.cfg.GitHub.InstallationRepositoryPageSize
-	if installationPageSize <= 0 || installationPageSize > 100 {
-		installationPageSize = 50
-	}
-	maxPages := e.cfg.GitHub.InstallationRepositoryMaxPages
-	if maxPages <= 0 {
-		maxPages = 1
-	}
-
-	allInstallations := make([]githubapi.UserInstallationSummaryItem, 0, installationPageSize)
-	for page := 1; page <= maxPages; page++ {
-		response, _, listErr := githubapi.ListUserInstallations(ctx, client, githubapi.UserInstallationsRequest{
-			PerPage: installationPageSize,
-			Page:    page,
-		})
-		if listErr != nil {
-			return 0, listErr
-		}
-		if len(response.Installations) == 0 {
-			break
-		}
-		allInstallations = append(allInstallations, response.Installations...)
-		if len(response.Installations) < installationPageSize {
-			break
-		}
-	}
-	if len(allInstallations) == 0 {
+	if len(installations) == 0 {
 		return 0, nil
 	}
-	return e.store.UpsertUserInstallations(ctx, allInstallations, now)
+
+	filtered := filterInstallationsForActorLogin(installations, githubLogin)
+	if len(filtered) == 0 {
+		return 0, nil
+	}
+	return e.store.UpsertUserInstallations(ctx, filtered, now)
+}
+
+func filterInstallationsForActorLogin(
+	installations []githubapi.UserInstallationSummaryItem,
+	githubLogin string,
+) []githubapi.UserInstallationSummaryItem {
+	normalizedLogin := strings.TrimSpace(githubLogin)
+	if normalizedLogin == "" || len(installations) == 0 {
+		return nil
+	}
+	filtered := make([]githubapi.UserInstallationSummaryItem, 0, len(installations))
+	for _, installation := range installations {
+		if installation.Account == nil {
+			continue
+		}
+		accountLogin := strings.TrimSpace(installation.Account.Login)
+		if accountLogin == "" {
+			continue
+		}
+		if strings.EqualFold(accountLogin, normalizedLogin) {
+			filtered = append(filtered, installation)
+		}
+	}
+	return filtered
 }
 
 func (e *Executor) fetchPullRequestsGraphQL(
