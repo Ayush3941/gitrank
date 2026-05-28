@@ -262,10 +262,14 @@ func (s *Service) ListSyncRuns(ctx context.Context, filter contracts.GitHubSyncR
 		return contracts.GitHubSyncRunListResponse{}, err
 	}
 	runs = normalizeSyncRunViews(runs, now, activeWindow)
+	lastAttemptedAt, lastSuccessfulAt := summarizeSyncRunWatermarks(runs)
+	lastUpdatedAt := syncRunListUpdatedAt(runs, now)
 	return contracts.GitHubSyncRunListResponse{
-		Runs:          runs,
-		AppliedFilter: normalized,
-		LastUpdatedAt: now,
+		Runs:             runs,
+		AppliedFilter:    normalized,
+		LastUpdatedAt:    lastUpdatedAt,
+		LastAttemptedAt:  lastAttemptedAt,
+		LastSuccessfulAt: lastSuccessfulAt,
 	}, nil
 }
 
@@ -318,19 +322,19 @@ func normalizeSyncRunViews(
 					run.LastError = "sync execution exceeded active window and was marked failed"
 				}
 			}
-			case "queued", "pending":
-				if run.FinishedAt != nil && !run.FinishedAt.IsZero() {
-					run.Status = "completed"
-					continue
-				}
-				run.Status = "queued"
-				if !run.StartedAt.IsZero() {
-					queuedFailureWindow := syncRunQueuedWindow(activeWindow)
-					if now.Sub(run.StartedAt) > queuedFailureWindow {
-						run.Status = "failed"
-						if strings.TrimSpace(run.LastError) == "" {
-							run.LastError = "sync execution remained queued beyond safe window and was marked failed"
-						}
+		case "queued", "pending":
+			if run.FinishedAt != nil && !run.FinishedAt.IsZero() {
+				run.Status = "completed"
+				continue
+			}
+			run.Status = "queued"
+			if !run.StartedAt.IsZero() {
+				queuedFailureWindow := syncRunQueuedWindow(activeWindow)
+				if now.Sub(run.StartedAt) > queuedFailureWindow {
+					run.Status = "failed"
+					if strings.TrimSpace(run.LastError) == "" {
+						run.LastError = "sync execution remained queued beyond safe window and was marked failed"
+					}
 				}
 			}
 		default:
@@ -340,6 +344,65 @@ func normalizeSyncRunViews(
 
 	supersedeInProgressRunsWithTerminalCorrelation(runs)
 	return runs
+}
+
+func summarizeSyncRunWatermarks(runs []contracts.GitHubSyncRunView) (*time.Time, *time.Time) {
+	var lastAttemptedAt *time.Time
+	var lastSuccessfulAt *time.Time
+	for index := range runs {
+		run := runs[index]
+		attemptedAt := syncRunPrimaryTimestamp(run)
+		if attemptedAt != nil && (lastAttemptedAt == nil || attemptedAt.After(*lastAttemptedAt)) {
+			timestamp := attemptedAt.UTC()
+			lastAttemptedAt = &timestamp
+		}
+
+		status := strings.ToLower(strings.TrimSpace(run.Status))
+		if status != "completed" {
+			continue
+		}
+		successAt := syncRunSuccessTimestamp(run)
+		if successAt != nil && (lastSuccessfulAt == nil || successAt.After(*lastSuccessfulAt)) {
+			timestamp := successAt.UTC()
+			lastSuccessfulAt = &timestamp
+		}
+	}
+	return lastAttemptedAt, lastSuccessfulAt
+}
+
+func syncRunListUpdatedAt(runs []contracts.GitHubSyncRunView, fallback time.Time) time.Time {
+	lastUpdatedAt := fallback.UTC()
+	for index := range runs {
+		primary := syncRunPrimaryTimestamp(runs[index])
+		if primary != nil && primary.After(lastUpdatedAt) {
+			lastUpdatedAt = primary.UTC()
+		}
+	}
+	return lastUpdatedAt
+}
+
+func syncRunPrimaryTimestamp(run contracts.GitHubSyncRunView) *time.Time {
+	if !run.StartedAt.IsZero() {
+		timestamp := run.StartedAt.UTC()
+		return &timestamp
+	}
+	if run.FinishedAt != nil && !run.FinishedAt.IsZero() {
+		timestamp := run.FinishedAt.UTC()
+		return &timestamp
+	}
+	return nil
+}
+
+func syncRunSuccessTimestamp(run contracts.GitHubSyncRunView) *time.Time {
+	if run.FinishedAt != nil && !run.FinishedAt.IsZero() {
+		timestamp := run.FinishedAt.UTC()
+		return &timestamp
+	}
+	if !run.StartedAt.IsZero() {
+		timestamp := run.StartedAt.UTC()
+		return &timestamp
+	}
+	return nil
 }
 
 func supersedeInProgressRunsWithTerminalCorrelation(runs []contracts.GitHubSyncRunView) {

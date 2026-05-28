@@ -217,3 +217,88 @@ func TestNormalizeSyncRunFilterCanonicalizesCaseAndHandlePrefixes(t *testing.T) 
 		t.Fatalf("Limit = %d, want default 25", filter.Limit)
 	}
 }
+
+func TestSummarizeSyncRunWatermarks(t *testing.T) {
+	t.Parallel()
+
+	attemptOne := time.Date(2026, 5, 27, 18, 0, 0, 0, time.UTC)
+	successOne := attemptOne.Add(2 * time.Minute)
+	attemptTwo := time.Date(2026, 5, 27, 19, 0, 0, 0, time.UTC)
+	attemptThree := time.Date(2026, 5, 27, 20, 0, 0, 0, time.UTC)
+	successThree := attemptThree.Add(30 * time.Second)
+
+	lastAttemptedAt, lastSuccessfulAt := summarizeSyncRunWatermarks([]contracts.GitHubSyncRunView{
+		{
+			ID:         "completed",
+			Status:     "completed",
+			StartedAt:  attemptOne,
+			FinishedAt: &successOne,
+		},
+		{
+			ID:        "failed",
+			Status:    "failed",
+			StartedAt: attemptTwo,
+		},
+		{
+			ID:         "completed-2",
+			Status:     "completed",
+			StartedAt:  attemptThree,
+			FinishedAt: &successThree,
+		},
+		{
+			ID:        "partial",
+			Status:    "partial",
+			StartedAt: attemptThree.Add(15 * time.Second),
+		},
+	})
+
+	if lastAttemptedAt == nil {
+		t.Fatal("lastAttemptedAt = nil, want timestamp")
+	}
+	if !lastAttemptedAt.Equal(attemptThree.Add(15 * time.Second)) {
+		t.Fatalf("lastAttemptedAt = %s, want %s", lastAttemptedAt.UTC(), attemptThree.Add(15*time.Second))
+	}
+	if lastSuccessfulAt == nil {
+		t.Fatal("lastSuccessfulAt = nil, want timestamp")
+	}
+	if !lastSuccessfulAt.Equal(successThree) {
+		t.Fatalf("lastSuccessfulAt = %s, want %s", lastSuccessfulAt.UTC(), successThree)
+	}
+}
+
+func TestSyncRunListUpdatedAtUsesNewestRunTimestamp(t *testing.T) {
+	t.Parallel()
+
+	fallback := time.Date(2026, 5, 27, 21, 0, 0, 0, time.UTC)
+	started := time.Date(2026, 5, 27, 19, 0, 0, 0, time.UTC)
+	finished := started.Add(45 * time.Second)
+	newest := time.Date(2026, 5, 27, 22, 10, 0, 0, time.UTC)
+
+	got := syncRunListUpdatedAt([]contracts.GitHubSyncRunView{
+		{
+			ID:         "completed",
+			Status:     "completed",
+			StartedAt:  started,
+			FinishedAt: &finished,
+		},
+		{
+			ID:        "running",
+			Status:    "running",
+			StartedAt: newest,
+		},
+	}, fallback)
+
+	if !got.Equal(newest) {
+		t.Fatalf("syncRunListUpdatedAt() = %s, want %s", got.UTC(), newest.UTC())
+	}
+}
+
+func TestSyncRunListUpdatedAtFallsBackWhenNoRuns(t *testing.T) {
+	t.Parallel()
+
+	fallback := time.Date(2026, 5, 27, 21, 0, 0, 0, time.UTC)
+	got := syncRunListUpdatedAt(nil, fallback)
+	if !got.Equal(fallback.UTC()) {
+		t.Fatalf("syncRunListUpdatedAt(nil) = %s, want %s", got.UTC(), fallback.UTC())
+	}
+}
