@@ -369,14 +369,8 @@ func (e *Executor) SyncUser(
 			response.Fetched["app_installation_records_existing"] = len(installationIDs)
 		}
 	}
-	runtime, credentialSource, err := e.executorForUserSyncActor(ctx, actor, startedAt)
+	runtime, err := e.executorForStrictAppSyncActor(ctx, actor, startedAt)
 	if err != nil {
-		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, PersistResult{})
-		return response, err
-	}
-	if credentialSource != "installation" {
-		response.Fetched["authored_pull_request_auth_unexpected"] = 1
-		err := fmt.Errorf("%w: unexpected credential source %q", ErrUserSyncGitHubAppUnavailable, credentialSource)
 		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, PersistResult{})
 		return response, err
 	}

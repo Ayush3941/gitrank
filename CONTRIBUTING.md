@@ -1780,6 +1780,7 @@ ABRA implementation checklist:
 - [x] Synced-state evidence gating is now merged-PR only; open/unmerged PR rows (even with preliminary score artifacts) no longer count as materialized contribution evidence for top-level sync chips.
 - [x] Profile sync-run status derivation now accepts profile-scoped run rows even when ownership markers are absent, so active `running`/`queued` runs remain visible instead of being silently dropped by frontend filters.
 - [x] Direct sync execute routes for issues and commits now use the same strict GitHub App runtime selector as repository/PR/review routes (`executorForStrictAppSyncRequest`), eliminating remaining non-app extraction bypasses on those execute paths.
+- [x] User sync now also routes through the strict App-only runtime selector (`executorForStrictAppSyncActor`) rather than the looser actor-runtime helper, keeping one consistent extraction guard for authored-PR discovery and hydration.
 - [x] Frontend user-sync execution deduplicates concurrent requests per user/login key in `frontend/lib/api/account-api.ts`, preventing multi-component or multi-click stampedes against `/api/sync/user`.
 - [x] User-sync status remains `partial` while authored-PR backfill is still incomplete (`authored_pull_request_backfill_incomplete`), so UI sync badges do not over-claim full-history completion.
 - [x] User-sync refresh feedback now distinguishes backfill-in-progress partials from scope-limited partials, so users see progress guidance instead of generic reconnect errors when history backfill is still advancing.
