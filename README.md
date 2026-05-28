@@ -104,7 +104,8 @@ ChatGPT path:
 
 Frontend runtime also reads its server env from this same `gitrank/.env` export path.
 There is no separate runtime `.env` for `frontend/`; keep all runtime vars in `gitrank/.env`.
-`start.sh` now logs and ignores stray `./.env` or `frontend/.env*` files so local runtime stays single-source.
+`start.sh` exports `GITRANK_ENV_FILE=<repo>/gitrank/.env`, and frontend runtime honors that path first.
+If `GITRANK_ENV_FILE` is unset, frontend runtime falls back to `../gitrank/.env`.
 
 ### 3) Start stack
 
@@ -142,7 +143,7 @@ There is no separate runtime `.env` for `frontend/`; keep all runtime vars in `g
 - User-sync telemetry now includes explicit authored-PR sync bounds (`authored_pull_request_sync_limit`, `authored_pull_request_search_limit`) plus timeout budget seconds (`authored_pull_request_timeout_seconds`) so Settings/diagnostics show the real runtime window.
 - GitHub REST/GraphQL retry logic now honors `retry-after`, then `x-ratelimit-reset` when remaining budget is zero, and exits early on canceled contexts instead of sleeping through full backoff windows.
 - Sync-run history auto-normalizes stale active statuses and stale queued rows to prevent indefinite `running`/`queued` rows in Settings; malformed rows missing `started_at` are marked failed with explicit diagnostics.
-- Frontend boot now opportunistically loads missing env vars from `../gitrank/.env` inside `next.config.ts`, so `npm run dev` in `frontend/` still follows the single-env-file contract without requiring a second frontend `.env`.
+- Frontend boot now opportunistically loads missing env vars from `GITRANK_ENV_FILE` (or `../gitrank/.env` fallback) inside `next.config.ts`, so `npm run dev` in `frontend/` still follows the single-env-file contract without requiring a second frontend `.env`.
 - User-sync queue identity is now canonicalized case-insensitively (`user:<login-lowercase>`), and sync-run reconciliation treats user subjects case-insensitively during `queued -> running -> terminal` transitions to reduce duplicate/stuck rows when login casing differs between requests.
 - Sync-run normalization now marks contradictory rows (`finished_at` present while status is still active/queued) as failed instead of completed, preventing false "Synced" signals from inconsistent run-state records.
 - In-progress sync rows are superseded by newer terminal runs using both correlation ID and logical target scope (run type + requested user/repository), reducing persistent ghost `running` entries after repeated retries.
