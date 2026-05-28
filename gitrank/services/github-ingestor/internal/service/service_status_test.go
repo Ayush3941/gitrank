@@ -358,3 +358,24 @@ func TestSyncRunListUpdatedAtReturnsNilWhenNoRuns(t *testing.T) {
 		t.Fatalf("syncRunListUpdatedAt(nil) = %v, want nil", got.UTC())
 	}
 }
+
+func TestSyncRunPrimaryTimestampPrefersFinishedAtWhenBothPresent(t *testing.T) {
+	t.Parallel()
+
+	started := time.Date(2026, 5, 27, 22, 10, 0, 0, time.UTC)
+	finished := time.Date(2026, 5, 27, 22, 9, 30, 0, time.UTC)
+	run := contracts.GitHubSyncRunView{
+		ID:         "completed",
+		Status:     "completed",
+		StartedAt:  started,
+		FinishedAt: &finished,
+	}
+
+	got := syncRunPrimaryTimestamp(run)
+	if got == nil {
+		t.Fatal("syncRunPrimaryTimestamp() = nil, want finished timestamp")
+	}
+	if !got.Equal(finished) {
+		t.Fatalf("syncRunPrimaryTimestamp() = %s, want %s", got.UTC(), finished.UTC())
+	}
+}
