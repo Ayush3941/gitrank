@@ -237,9 +237,30 @@ describe("account sync error messaging", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await expect(runUserSync("octocat")).rejects.toThrow(
-      "GitHub user authorization is missing or expired for this sync. Refresh session or reconnect GitHub from Settings, then retry.",
+      "Session authorization is missing or expired for this sync. Refresh session, ensure GitRank GitHub App is installed, then retry.",
     );
     expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("uses App-token authorization guidance for repository sync 401/403 failures", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => {
+      return new Response(
+        JSON.stringify({
+          error: {
+            code: "forbidden",
+            message: "forbidden",
+          },
+        }),
+        {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }));
+
+    await expect(runRepositorySync("octo/repo")).rejects.toThrow(
+      "Sync authorization failed. GitRank extracts PR data through GitHub App installation tokens. Refresh session or verify app installation, then retry.",
+    );
   });
 
   it("maps rate-limit repository sync errors to actionable copy", async () => {

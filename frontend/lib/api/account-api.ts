@@ -691,7 +691,10 @@ function sanitizeSyncExecutionError(
     normalized.includes("github authorization is missing") ||
     normalized.includes("github authorization is expired")
   ) {
-    return "GitHub user authorization is missing or expired for this sync. Refresh session or reconnect GitHub from Settings, then retry.";
+    if (mode === "user") {
+      return "Session authorization is missing or expired for this sync. Refresh session, ensure GitRank GitHub App is installed, then retry.";
+    }
+    return "Sync authorization failed. GitRank extracts PR data through GitHub App installation tokens. Refresh session or verify app installation, then retry.";
   }
   if (
     normalized.includes("github app installation is required for user sync") ||
