@@ -148,6 +148,9 @@ function hasPendingSyncRunStatuses(syncRunStatuses: readonly string[] | undefine
     if (ACTIVE_SYNC_RUN_STATUSES.has(normalized) || QUEUED_SYNC_RUN_STATUSES.has(normalized)) {
       return true;
     }
+    if (PARTIAL_SYNC_RUN_STATUSES.has(normalized) || FAILED_SYNC_RUN_STATUSES.has(normalized) || normalized === "completed") {
+      return false;
+    }
   }
   return false;
 }

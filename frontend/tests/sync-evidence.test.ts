@@ -245,7 +245,7 @@ describe("deriveEffectiveSyncState", () => {
     expect(deriveEffectiveSyncState(user, ["queued"])).toBe("syncing");
   });
 
-  it("keeps syncing when any running row is still present in the sync window", () => {
+  it("ignores stale running rows once a newer terminal run exists", () => {
     const user = buildUser({
       mergedPrCount: 2,
       syncStatus: {
@@ -256,7 +256,7 @@ describe("deriveEffectiveSyncState", () => {
         partialProfileAvailable: false,
       },
     });
-    expect(deriveEffectiveSyncState(user, ["completed", "running"])).toBe("syncing");
+    expect(deriveEffectiveSyncState(user, ["completed", "running"])).toBe("synced");
   });
 
   it("keeps syncing when the newest run is still active even if older runs completed", () => {
@@ -273,7 +273,7 @@ describe("deriveEffectiveSyncState", () => {
     expect(deriveEffectiveSyncState(user, ["running", "completed"])).toBe("syncing");
   });
 
-  it("keeps syncing while a follow-up run is active even after a partial outcome", () => {
+  it("keeps the latest terminal partial state when older rows remain active", () => {
     const user = buildUser({
       mergedPrCount: 2,
       syncStatus: {
@@ -284,7 +284,7 @@ describe("deriveEffectiveSyncState", () => {
         partialProfileAvailable: false,
       },
     });
-    expect(deriveEffectiveSyncState(user, ["partial", "running"])).toBe("syncing");
+    expect(deriveEffectiveSyncState(user, ["partial", "running"])).toBe("partially_synced");
   });
 
   it("returns partially_synced when latest terminal sync run is partial", () => {
@@ -313,6 +313,20 @@ describe("deriveEffectiveSyncState", () => {
       },
     });
     expect(deriveEffectiveSyncState(user, ["failed"])).toBe("failed");
+  });
+
+  it("keeps failed when stale running rows exist after the newest failed terminal run", () => {
+    const user = buildUser({
+      mergedPrCount: 2,
+      syncStatus: {
+        state: "synced",
+        lastSyncedAt: "2026-05-27T00:00:00Z",
+        currentStep: "Profile snapshot is current",
+        progress: 100,
+        partialProfileAvailable: false,
+      },
+    });
+    expect(deriveEffectiveSyncState(user, ["failed", "running"])).toBe("failed");
   });
 });
 
