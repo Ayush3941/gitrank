@@ -296,6 +296,7 @@ func refreshUserDashboardEvidence(
 		execution.Fetched = map[string]int{}
 	}
 
+	var postSyncErrors []error
 	scoreReplayPayload, err := postInternalJSON(
 		ctx,
 		client,
@@ -305,9 +306,12 @@ func refreshUserDashboardEvidence(
 		http.StatusAccepted,
 	)
 	if err != nil {
-		return fmt.Errorf("score replay failed: %w", err)
-	}
-	if execution != nil {
+		if execution != nil {
+			execution.Fetched["post_sync_score_replay_failed"] = 1
+		}
+		postSyncErrors = append(postSyncErrors, fmt.Errorf("score replay failed: %w", err))
+	} else if execution != nil {
+		execution.Fetched["post_sync_score_replay_ok"] = 1
 		var replay contracts.ReplayUserScoresResponse
 		if len(scoreReplayPayload) > 0 && json.Unmarshal(scoreReplayPayload, &replay) == nil {
 			execution.Fetched["post_sync_score_replay_events"] = max(0, replay.Events)
@@ -324,19 +328,27 @@ func refreshUserDashboardEvidence(
 
 	type profileStep struct {
 		name       string
+		metricKey  string
 		path       string
 		expectCode int
 	}
 	for _, step := range []profileStep{
-		{name: "profile refresh", path: "/v1/profile/users/" + userID + "/refresh", expectCode: http.StatusAccepted},
-		{name: "pr report backfill", path: "/v1/profile/users/" + userID + "/pr-reports/backfill", expectCode: http.StatusAccepted},
-		{name: "quest backfill", path: "/v1/profile/users/" + userID + "/quests/backfill", expectCode: http.StatusAccepted},
+		{name: "profile refresh", metricKey: "profile_refresh", path: "/v1/profile/users/" + userID + "/refresh", expectCode: http.StatusAccepted},
+		{name: "pr report backfill", metricKey: "pr_reports_backfill", path: "/v1/profile/users/" + userID + "/pr-reports/backfill", expectCode: http.StatusAccepted},
+		{name: "quest backfill", metricKey: "quests_backfill", path: "/v1/profile/users/" + userID + "/quests/backfill", expectCode: http.StatusAccepted},
 	} {
 		if _, err := postInternalJSON(ctx, client, profileBaseURL, step.path, nil, step.expectCode); err != nil {
-			return fmt.Errorf("%s failed: %w", step.name, err)
+			if execution != nil {
+				execution.Fetched["post_sync_"+step.metricKey+"_failed"] = 1
+			}
+			postSyncErrors = append(postSyncErrors, fmt.Errorf("%s failed: %w", step.name, err))
+			continue
+		}
+		if execution != nil {
+			execution.Fetched["post_sync_"+step.metricKey+"_ok"] = 1
 		}
 	}
-	return nil
+	return errors.Join(postSyncErrors...)
 }
 
 func postInternalJSON(

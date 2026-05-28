@@ -75,6 +75,16 @@ describe("describeSyncRunOutcome", () => {
     expect(outcome.message).toContain("emitted 0 events");
   });
 
+  it("returns score-replay-failed when replay execution fails", () => {
+    const outcome = describeSyncRunOutcome(
+      run({
+        post_sync_score_replay_failed: 1,
+      }),
+    );
+    expect(outcome.code).toBe("score_replay_failed");
+    expect(outcome.message).toContain("score replay could not run");
+  });
+
   it("returns recent-seed-empty when newest seeded authored PR window is empty", () => {
     const outcome = describeSyncRunOutcome(
       run({
@@ -105,5 +115,16 @@ describe("describeSyncRunOutcome", () => {
     expect(outcome.code).toBe("sync_capped_recent");
     expect(outcome.message).toContain("newest 10 authored PR targets");
     expect(outcome.message).toContain("backfill");
+  });
+
+  it("returns profile-refresh-failed when post-sync profile refresh fails", () => {
+    const outcome = describeSyncRunOutcome(
+      run({
+        post_sync_profile_refresh_failed: 1,
+        post_sync_refresh_failed: 1,
+      }),
+    );
+    expect(outcome.code).toBe("profile_refresh_failed");
+    expect(outcome.message).toContain("profile refresh failed");
   });
 });

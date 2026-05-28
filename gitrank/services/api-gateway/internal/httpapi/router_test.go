@@ -13,6 +13,7 @@ import (
 	"github.com/gitrank/gitrank/packages/authkit"
 	"github.com/gitrank/gitrank/packages/config"
 	"github.com/gitrank/gitrank/packages/contracts"
+	"github.com/gitrank/gitrank/packages/httpkit"
 	"github.com/gitrank/gitrank/services/api-gateway/internal/app"
 )
 
@@ -750,6 +751,215 @@ func TestUserSyncExecutionMarksPartialWhenScoreReplayYieldsNoEventsAfterAuthored
 	}
 	if observed.Fetched["post_sync_score_replay_events"] != 0 {
 		t.Fatalf("Fetched[post_sync_score_replay_events] = %d, want 0", observed.Fetched["post_sync_score_replay_events"])
+	}
+}
+
+func TestUserSyncExecutionContinuesProfileStepsWhenScoreReplayFails(t *testing.T) {
+	auth := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_ = json.NewEncoder(w).Encode(contracts.SessionEnvelope{
+			Session: contracts.SessionIdentity{
+				Subject:     "00000000-0000-0000-0000-000000000001",
+				GitHubLogin: "octocat",
+				Roles:       []string{"user"},
+			},
+		})
+	}))
+	defer auth.Close()
+
+	ingestor := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_ = json.NewEncoder(w).Encode(contracts.GitHubSyncExecutionResponse{
+			Status:        "completed",
+			Mode:          "user",
+			User:          "octocat",
+			CorrelationID: "req-user-3",
+			StartedAt:     time.Date(2026, 5, 6, 10, 0, 0, 0, time.UTC),
+			FinishedAt:    time.Date(2026, 5, 6, 10, 0, 4, 0, time.UTC),
+			Fetched:       map[string]int{"authored_pull_requests_selected": 3},
+			Persisted:     map[string]int{"pull_requests": 3},
+		})
+	}))
+	defer ingestor.Close()
+
+	scoring := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		httpkit.WriteError(w, http.StatusServiceUnavailable, "dependency_unavailable", "scoring unavailable", "")
+	}))
+	defer scoring.Close()
+
+	var refreshCalls int
+	var reportBackfillCalls int
+	var questBackfillCalls int
+	profile := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case strings.Contains(r.URL.Path, "/refresh"):
+			refreshCalls++
+			w.WriteHeader(http.StatusAccepted)
+			_, _ = w.Write([]byte(`{"status":"accepted"}`))
+		case strings.Contains(r.URL.Path, "/pr-reports/backfill"):
+			reportBackfillCalls++
+			w.WriteHeader(http.StatusAccepted)
+			_, _ = w.Write([]byte(`{"status":"accepted"}`))
+		case strings.Contains(r.URL.Path, "/quests/backfill"):
+			questBackfillCalls++
+			w.WriteHeader(http.StatusAccepted)
+			_, _ = w.Write([]byte(`{"status":"accepted"}`))
+		default:
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"ok":true}`))
+		}
+	}))
+	defer profile.Close()
+
+	cfg := testConfig(profile.URL, auth.URL, ingestor.URL)
+	cfg.Services.ScoringBaseURL = scoring.URL
+	cfg.Services.ProfileBaseURL = profile.URL
+	router := NewRouter(cfg, testLogger(), "test")
+
+	request := httptest.NewRequest(http.MethodPost, "/v1/sync/user/execute", strings.NewReader(`{}`))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Cookie", "gitrank_session=session-original; gitrank_csrf=csrf-original")
+	csrfToken, err := authkit.DoubleSubmitCSRFFromToken([]byte("test-session-secret"), "session-original")
+	if err != nil {
+		t.Fatalf("csrf token: %v", err)
+	}
+	request.Header.Set("X-CSRF-Token", csrfToken)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusOK, response.Body.String())
+	}
+
+	var observed contracts.GitHubSyncExecutionResponse
+	if err := json.Unmarshal(response.Body.Bytes(), &observed); err != nil {
+		t.Fatalf("unmarshal response: %v", err)
+	}
+	if observed.Status != "partial" {
+		t.Fatalf("execution status = %q, want partial", observed.Status)
+	}
+	if observed.Fetched["post_sync_score_replay_failed"] != 1 {
+		t.Fatalf("Fetched[post_sync_score_replay_failed] = %d, want 1", observed.Fetched["post_sync_score_replay_failed"])
+	}
+	if observed.Fetched["post_sync_profile_refresh_ok"] != 1 {
+		t.Fatalf("Fetched[post_sync_profile_refresh_ok] = %d, want 1", observed.Fetched["post_sync_profile_refresh_ok"])
+	}
+	if observed.Fetched["post_sync_pr_reports_backfill_ok"] != 1 {
+		t.Fatalf("Fetched[post_sync_pr_reports_backfill_ok] = %d, want 1", observed.Fetched["post_sync_pr_reports_backfill_ok"])
+	}
+	if observed.Fetched["post_sync_quests_backfill_ok"] != 1 {
+		t.Fatalf("Fetched[post_sync_quests_backfill_ok] = %d, want 1", observed.Fetched["post_sync_quests_backfill_ok"])
+	}
+	if refreshCalls != 1 || reportBackfillCalls != 1 || questBackfillCalls != 1 {
+		t.Fatalf("profile post-sync calls = refresh:%d reports:%d quests:%d, want exactly 1 each", refreshCalls, reportBackfillCalls, questBackfillCalls)
+	}
+}
+
+func TestUserSyncExecutionAttemptsRemainingProfileStepsAfterRefreshFailure(t *testing.T) {
+	auth := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_ = json.NewEncoder(w).Encode(contracts.SessionEnvelope{
+			Session: contracts.SessionIdentity{
+				Subject:     "00000000-0000-0000-0000-000000000001",
+				GitHubLogin: "octocat",
+				Roles:       []string{"user"},
+			},
+		})
+	}))
+	defer auth.Close()
+
+	ingestor := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_ = json.NewEncoder(w).Encode(contracts.GitHubSyncExecutionResponse{
+			Status:        "completed",
+			Mode:          "user",
+			User:          "octocat",
+			CorrelationID: "req-user-4",
+			StartedAt:     time.Date(2026, 5, 6, 10, 0, 0, 0, time.UTC),
+			FinishedAt:    time.Date(2026, 5, 6, 10, 0, 4, 0, time.UTC),
+			Fetched:       map[string]int{"authored_pull_requests_selected": 2},
+			Persisted:     map[string]int{"pull_requests": 2},
+		})
+	}))
+	defer ingestor.Close()
+
+	scoring := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusAccepted)
+		_ = json.NewEncoder(w).Encode(contracts.ReplayUserScoresResponse{
+			Snapshot: contracts.UserScoreSnapshotResponse{
+				ReplayRunID:  "run-4",
+				UserID:       "00000000-0000-0000-0000-000000000001",
+				ScoreVersion: "v1alpha1",
+				TriggerType:  "live",
+				TotalXP:      15,
+				Level:        "1",
+				RankTier:     "Bronze I",
+			},
+			Badges: []contracts.BadgeView{},
+			Events: 1,
+		})
+	}))
+	defer scoring.Close()
+
+	var refreshCalls int
+	var reportBackfillCalls int
+	var questBackfillCalls int
+	profile := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case strings.Contains(r.URL.Path, "/refresh"):
+			refreshCalls++
+			httpkit.WriteError(w, http.StatusServiceUnavailable, "dependency_unavailable", "refresh unavailable", "")
+		case strings.Contains(r.URL.Path, "/pr-reports/backfill"):
+			reportBackfillCalls++
+			w.WriteHeader(http.StatusAccepted)
+			_, _ = w.Write([]byte(`{"status":"accepted"}`))
+		case strings.Contains(r.URL.Path, "/quests/backfill"):
+			questBackfillCalls++
+			w.WriteHeader(http.StatusAccepted)
+			_, _ = w.Write([]byte(`{"status":"accepted"}`))
+		default:
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"ok":true}`))
+		}
+	}))
+	defer profile.Close()
+
+	cfg := testConfig(profile.URL, auth.URL, ingestor.URL)
+	cfg.Services.ScoringBaseURL = scoring.URL
+	cfg.Services.ProfileBaseURL = profile.URL
+	router := NewRouter(cfg, testLogger(), "test")
+
+	request := httptest.NewRequest(http.MethodPost, "/v1/sync/user/execute", strings.NewReader(`{}`))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Cookie", "gitrank_session=session-original; gitrank_csrf=csrf-original")
+	csrfToken, err := authkit.DoubleSubmitCSRFFromToken([]byte("test-session-secret"), "session-original")
+	if err != nil {
+		t.Fatalf("csrf token: %v", err)
+	}
+	request.Header.Set("X-CSRF-Token", csrfToken)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusOK, response.Body.String())
+	}
+
+	var observed contracts.GitHubSyncExecutionResponse
+	if err := json.Unmarshal(response.Body.Bytes(), &observed); err != nil {
+		t.Fatalf("unmarshal response: %v", err)
+	}
+	if observed.Status != "partial" {
+		t.Fatalf("execution status = %q, want partial", observed.Status)
+	}
+	if observed.Fetched["post_sync_profile_refresh_failed"] != 1 {
+		t.Fatalf("Fetched[post_sync_profile_refresh_failed] = %d, want 1", observed.Fetched["post_sync_profile_refresh_failed"])
+	}
+	if observed.Fetched["post_sync_pr_reports_backfill_ok"] != 1 {
+		t.Fatalf("Fetched[post_sync_pr_reports_backfill_ok] = %d, want 1", observed.Fetched["post_sync_pr_reports_backfill_ok"])
+	}
+	if observed.Fetched["post_sync_quests_backfill_ok"] != 1 {
+		t.Fatalf("Fetched[post_sync_quests_backfill_ok] = %d, want 1", observed.Fetched["post_sync_quests_backfill_ok"])
+	}
+	if refreshCalls != 1 || reportBackfillCalls != 1 || questBackfillCalls != 1 {
+		t.Fatalf("profile post-sync calls = refresh:%d reports:%d quests:%d, want exactly 1 each", refreshCalls, reportBackfillCalls, questBackfillCalls)
 	}
 }
 

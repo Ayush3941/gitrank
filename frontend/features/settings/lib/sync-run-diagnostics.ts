@@ -5,6 +5,8 @@ export type SyncRunDiagnostic = {
     | "zero_discovery_with_history"
     | "scope_limited"
     | "score_replay_mismatch"
+    | "score_replay_failed"
+    | "profile_refresh_failed"
     | "search_limited"
     | "retryable_or_timeout"
     | "backfill_incomplete"
@@ -57,6 +59,8 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
   const timeout = metricCount(metrics, "authored_pull_requests_timeouts", "fetched_timeout_errors", "timeout_errors") > 0;
   const snapshotRefreshPending = metricCount(metrics, "post_sync_refresh_failed") > 0;
   const scoreReplayMismatch = metricCount(metrics, "post_sync_score_replay_mismatch") > 0;
+  const scoreReplayFailed = metricCount(metrics, "post_sync_score_replay_failed") > 0;
+  const profileRefreshFailed = metricCount(metrics, "post_sync_profile_refresh_failed") > 0;
   const recentSeedEmpty = metricCount(metrics, "authored_pull_request_recent_seed_empty") > 0;
   const syncCapped = metricCount(metrics, "authored_pull_requests_capped") > 0;
   const scoreReplayEvents = metricCount(metrics, "post_sync_score_replay_events");
@@ -82,6 +86,13 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
       code: "score_replay_mismatch",
       message:
         `Authored PR sync selected ${selectedTargets} target${selectedAuthoredPRs === 1 ? "" : "s"}, but score replay emitted ${scoreReplayEvents} events. Keep auto-sync active and refresh after replay catches up.`,
+    };
+  }
+  if (scoreReplayFailed) {
+    return {
+      code: "score_replay_failed",
+      message:
+        "GitHub sync completed, but score replay could not run right now. Existing profile evidence was preserved and will refresh on retry.",
     };
   }
   if (recentSeedEmpty) {
@@ -115,6 +126,13 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
     return {
       code: "backfill_incomplete",
       message: "Recent PR evidence is synced. Historical authored PR backfill is still in progress.",
+    };
+  }
+  if (profileRefreshFailed) {
+    return {
+      code: "profile_refresh_failed",
+      message:
+        "GitHub sync completed, but profile refresh failed in this run. Retry sync to regenerate the latest dashboard snapshot.",
     };
   }
   if (snapshotRefreshPending) {
