@@ -404,6 +404,73 @@ func (e *Executor) executorForUserSyncActor(ctx context.Context, actor SyncReque
 	return &clone, "installation", nil
 }
 
+func (e *Executor) executorForStrictAppSyncActor(ctx context.Context, actor SyncRequestActor, now time.Time) (*Executor, error) {
+	if e == nil {
+		return nil, nil
+	}
+
+	runtime, source, err := e.executorForUserSyncActor(ctx, actor, now)
+	if err == nil {
+		if source != "installation" {
+			return nil, fmt.Errorf("%w: unexpected credential source %q", ErrUserSyncGitHubAppUnavailable, source)
+		}
+		// Strict app-sync routes must not route PR extraction through OAuth GraphQL tokens.
+		runtime.graphqlTokenSource = nil
+		return runtime, nil
+	}
+	if !errors.Is(err, ErrUserSyncGitHubAppInstallationRequired) {
+		return nil, err
+	}
+
+	if _, bootstrapErr := e.bootstrapActorInstallations(ctx, actor, now); bootstrapErr != nil {
+		return nil, bootstrapErr
+	}
+
+	runtime, source, err = e.executorForUserSyncActor(ctx, actor, now)
+	if err != nil {
+		return nil, err
+	}
+	if source != "installation" {
+		return nil, fmt.Errorf("%w: unexpected credential source %q", ErrUserSyncGitHubAppUnavailable, source)
+	}
+	// Strict app-sync routes must not route PR extraction through OAuth GraphQL tokens.
+	runtime.graphqlTokenSource = nil
+	return runtime, nil
+}
+
+func (e *Executor) executorForStrictAppSyncRequest(
+	ctx context.Context,
+	actor SyncRequestActor,
+	installationID int64,
+	now time.Time,
+) (*Executor, error) {
+	if strings.TrimSpace(actor.GitHubLogin) != "" {
+		return e.executorForStrictAppSyncActor(ctx, actor, now)
+	}
+	if installationID <= 0 {
+		return nil, ErrUserSyncGitHubAppInstallationRequired
+	}
+	if e == nil || e.installationClient == nil {
+		return nil, ErrUserSyncGitHubAppUnavailable
+	}
+
+	installationClient, enabled, installationErr := e.installationClient(ctx, installationID)
+	if installationErr != nil {
+		return nil, fmt.Errorf("%w: %v", ErrUserSyncGitHubAppUnavailable, installationErr)
+	}
+	if !enabled || installationClient == nil {
+		return nil, ErrUserSyncGitHubAppInstallationRequired
+	}
+
+	clone := *e
+	clone.client = installationClient
+	clone.graphqlTokenSource = nil
+	clone.actorInstallation = func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
+		return installationClient, true, nil
+	}
+	return &clone, nil
+}
+
 func (e *Executor) bootstrapActorInstallations(ctx context.Context, actor SyncRequestActor, now time.Time) (int, error) {
 	if e == nil || e.store == nil || e.store.pool == nil {
 		return 0, nil

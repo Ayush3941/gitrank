@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"io"
 	"log/slog"
 	"net/http"
@@ -16,6 +17,7 @@ import (
 
 	"github.com/gitrank/gitrank/packages/config"
 	"github.com/gitrank/gitrank/packages/contracts"
+	"github.com/gitrank/gitrank/services/github-ingestor/internal/service"
 )
 
 func TestWebhookAcceptedAndDeduplicated(t *testing.T) {
@@ -396,6 +398,61 @@ func TestReviewSyncExecutionRequiresExecutor(t *testing.T) {
 	}
 	if out.Error.Code != "github_sync_unavailable" {
 		t.Fatalf("error code = %q, want %q", out.Error.Code, "github_sync_unavailable")
+	}
+}
+
+func TestWriteSyncExecutionErrorMapsAppAndOAuthFailures(t *testing.T) {
+	tests := []struct {
+		name       string
+		err        error
+		wantStatus int
+		wantCode   string
+	}{
+		{
+			name:       "maps app installation required",
+			err:        service.ErrUserSyncGitHubAppInstallationRequired,
+			wantStatus: http.StatusForbidden,
+			wantCode:   "github_app_installation_required",
+		},
+		{
+			name:       "maps app installation unavailable",
+			err:        service.ErrUserSyncGitHubAppUnavailable,
+			wantStatus: http.StatusServiceUnavailable,
+			wantCode:   "github_app_installation_unavailable",
+		},
+		{
+			name:       "maps oauth required",
+			err:        service.ErrUserSyncOAuthTokenRequired,
+			wantStatus: http.StatusUnauthorized,
+			wantCode:   "github_user_oauth_required",
+		},
+		{
+			name:       "falls back to provided code",
+			err:        errors.New("upstream failed"),
+			wantStatus: http.StatusBadGateway,
+			wantCode:   "github_repository_sync_failed",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			request := httptest.NewRequest(http.MethodPost, "/v1/sync/repository/execute", nil)
+			response := httptest.NewRecorder()
+
+			writeSyncExecutionError(response, request, "github_repository_sync_failed", tc.err)
+
+			if response.Code != tc.wantStatus {
+				t.Fatalf("status = %d, want %d, body=%s", response.Code, tc.wantStatus, response.Body.String())
+			}
+
+			var out contracts.ErrorResponse
+			if err := json.Unmarshal(response.Body.Bytes(), &out); err != nil {
+				t.Fatalf("unmarshal error response: %v", err)
+			}
+			if out.Error.Code != tc.wantCode {
+				t.Fatalf("error code = %q, want %q", out.Error.Code, tc.wantCode)
+			}
+		})
 	}
 }
 

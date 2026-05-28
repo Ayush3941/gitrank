@@ -324,7 +324,7 @@ func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQ
 			GitHubLogin: strings.TrimSpace(r.Header.Get("X-GitRank-GitHub-Login")),
 		}, httpkit.RequestIDFromContext(r.Context()), startedAt)
 		if err != nil {
-			httpkit.WriteError(w, http.StatusBadGateway, "github_repository_sync_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			writeSyncExecutionError(w, r, "github_repository_sync_failed", err)
 			return
 		}
 		httpkit.WriteJSON(w, http.StatusOK, response)
@@ -354,23 +354,7 @@ func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQ
 			GitHubLogin: strings.TrimSpace(r.Header.Get("X-GitRank-GitHub-Login")),
 		}, httpkit.RequestIDFromContext(r.Context()), startedAt)
 		if err != nil {
-			if errors.Is(err, service.ErrUserSyncInProgress) {
-				httpkit.WriteError(w, http.StatusConflict, "github_user_sync_in_progress", err.Error(), httpkit.RequestIDFromContext(r.Context()))
-				return
-			}
-			if errors.Is(err, service.ErrUserSyncOAuthTokenRequired) || errors.Is(err, service.ErrUserSyncOAuthTokenMalformed) {
-				httpkit.WriteError(w, http.StatusUnauthorized, "github_user_oauth_required", err.Error(), httpkit.RequestIDFromContext(r.Context()))
-				return
-			}
-			if errors.Is(err, service.ErrUserSyncGitHubAppInstallationRequired) {
-				httpkit.WriteError(w, http.StatusForbidden, "github_app_installation_required", err.Error(), httpkit.RequestIDFromContext(r.Context()))
-				return
-			}
-			if errors.Is(err, service.ErrUserSyncGitHubAppUnavailable) {
-				httpkit.WriteError(w, http.StatusServiceUnavailable, "github_app_installation_unavailable", err.Error(), httpkit.RequestIDFromContext(r.Context()))
-				return
-			}
-			httpkit.WriteError(w, http.StatusBadGateway, "github_user_sync_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			writeSyncExecutionError(w, r, "github_user_sync_failed", err)
 			return
 		}
 		httpkit.WriteJSON(w, http.StatusOK, response)
@@ -429,7 +413,7 @@ func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQ
 			GitHubLogin: strings.TrimSpace(r.Header.Get("X-GitRank-GitHub-Login")),
 		}, httpkit.RequestIDFromContext(r.Context()), startedAt)
 		if err != nil {
-			httpkit.WriteError(w, http.StatusBadGateway, "github_pull_request_sync_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			writeSyncExecutionError(w, r, "github_pull_request_sync_failed", err)
 			return
 		}
 		httpkit.WriteJSON(w, http.StatusOK, response)
@@ -459,7 +443,7 @@ func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQ
 			GitHubLogin: strings.TrimSpace(r.Header.Get("X-GitRank-GitHub-Login")),
 		}, httpkit.RequestIDFromContext(r.Context()), startedAt)
 		if err != nil {
-			httpkit.WriteError(w, http.StatusBadGateway, "github_review_sync_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			writeSyncExecutionError(w, r, "github_review_sync_failed", err)
 			return
 		}
 		httpkit.WriteJSON(w, http.StatusOK, response)
@@ -690,6 +674,22 @@ func registerSyncRoute(mux *http.ServeMux, cfg config.App, queue *store.InMemory
 		}
 		httpkit.WriteJSON(w, http.StatusAccepted, queuePreview("queued", jobs, false))
 	})))
+}
+
+func writeSyncExecutionError(w http.ResponseWriter, r *http.Request, fallbackCode string, err error) {
+	requestID := httpkit.RequestIDFromContext(r.Context())
+	switch {
+	case errors.Is(err, service.ErrUserSyncInProgress):
+		httpkit.WriteError(w, http.StatusConflict, "github_user_sync_in_progress", err.Error(), requestID)
+	case errors.Is(err, service.ErrUserSyncOAuthTokenRequired), errors.Is(err, service.ErrUserSyncOAuthTokenMalformed):
+		httpkit.WriteError(w, http.StatusUnauthorized, "github_user_oauth_required", err.Error(), requestID)
+	case errors.Is(err, service.ErrUserSyncGitHubAppInstallationRequired):
+		httpkit.WriteError(w, http.StatusForbidden, "github_app_installation_required", err.Error(), requestID)
+	case errors.Is(err, service.ErrUserSyncGitHubAppUnavailable):
+		httpkit.WriteError(w, http.StatusServiceUnavailable, "github_app_installation_unavailable", err.Error(), requestID)
+	default:
+		httpkit.WriteError(w, http.StatusBadGateway, fallbackCode, err.Error(), requestID)
+	}
 }
 
 func githubIngestorSyncMode(mode string) bool {

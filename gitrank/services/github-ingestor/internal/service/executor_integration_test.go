@@ -181,6 +181,9 @@ func TestExecutorSyncRepositoryFetchesAndPersistsBoundedRepositoryData(t *testin
 			MaxPageSize: 50,
 		},
 	}, pool, client)
+	executor.actorInstallation = func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
+		return client, true, nil
+	}
 	now := time.Now().UTC()
 
 	result, err := executor.SyncRepository(ctx, contracts.SyncRequest{
@@ -464,6 +467,9 @@ func TestExecutorSyncUserFetchesOwnedRepositoriesAndAuthoredPullRequests(t *test
 			MaxPageSize: 50,
 		},
 	}, pool, client)
+	executor.actorInstallation = func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
+		return client, true, nil
+	}
 	now := time.Now().UTC()
 
 	result, err := executor.SyncUser(ctx, contracts.SyncRequest{
@@ -838,6 +844,9 @@ func TestExecutorSyncPullRequestFetchesAndPersistsBoundedPullRequestData(t *test
 			MaxPageSize: 50,
 		},
 	}, pool, client)
+	executor.actorInstallation = func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
+		return client, true, nil
+	}
 	now := time.Now().UTC()
 
 	result, err := executor.SyncPullRequest(ctx, contracts.SyncRequest{

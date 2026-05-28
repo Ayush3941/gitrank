@@ -141,7 +141,7 @@ func (e *Executor) SyncRepository(
 	if err != nil {
 		return response, err
 	}
-	runtime, err := e.executorForActor(ctx, actor, startedAt)
+	runtime, err := e.executorForStrictAppSyncRequest(ctx, actor, req.InstallationID, startedAt)
 	if err != nil {
 		_ = e.recordFailedSyncRun(ctx, req.Repository, req, actor, correlationID, startedAt, err)
 		return response, err
@@ -606,13 +606,16 @@ func (e *Executor) SyncInstallation(
 	if repositoryClient != e.client {
 		cloned := *e
 		cloned.client = repositoryClient
+		cloned.actorInstallation = func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
+			return repositoryClient, true, nil
+		}
 		repositoryExecutor = &cloned
 	}
-
 	for index, repository := range repositories {
 		child, err := repositoryExecutor.SyncRepository(ctx, contracts.SyncRequest{
-			Mode:       "repository",
-			Repository: repository,
+			Mode:           "repository",
+			Repository:     repository,
+			InstallationID: req.InstallationID,
 		}, actor, fmt.Sprintf("%s:repo:%d", baseCorrelationID, index+1), time.Now().UTC())
 		if err != nil {
 			response.FinishedAt = time.Now().UTC()
@@ -709,14 +712,19 @@ func (e *Executor) syncPullRequestSurface(
 	if err != nil {
 		return response, err
 	}
-
-	repository, err := e.fetchRepository(ctx, owner, name)
+	runtime, err := e.executorForStrictAppSyncRequest(ctx, actor, req.InstallationID, startedAt)
 	if err != nil {
 		_ = e.recordFailedPullRequestSurfaceSyncRun(ctx, req, actor, correlationID, startedAt, mode, err)
 		return response, err
 	}
 
-	pullRequest, err := e.fetchPullRequest(ctx, owner, name, req.Number)
+	repository, err := runtime.fetchRepository(ctx, owner, name)
+	if err != nil {
+		_ = e.recordFailedPullRequestSurfaceSyncRun(ctx, req, actor, correlationID, startedAt, mode, err)
+		return response, err
+	}
+
+	pullRequest, err := runtime.fetchPullRequest(ctx, owner, name, req.Number)
 	if err != nil {
 		_ = e.recordFailedPullRequestSurfaceSyncRun(ctx, req, actor, correlationID, startedAt, mode, err)
 		return response, err
@@ -726,7 +734,7 @@ func (e *Executor) syncPullRequestSurface(
 	reviewsSkipped := options.skipReviews
 	reviewsFetchError := false
 	if !options.skipReviews {
-		reviews, err = e.fetchPullRequestReviews(ctx, owner, name, req.Number)
+		reviews, err = runtime.fetchPullRequestReviews(ctx, owner, name, req.Number)
 		if err != nil {
 			reviewsSkipped = true
 			reviewsFetchError = true
@@ -738,7 +746,7 @@ func (e *Executor) syncPullRequestSurface(
 	reviewCommentsSkipped := options.skipReviewComments
 	reviewCommentsFetchError := false
 	if !options.skipReviewComments {
-		reviewComments, err = e.fetchPullRequestReviewComments(ctx, owner, name, req.Number)
+		reviewComments, err = runtime.fetchPullRequestReviewComments(ctx, owner, name, req.Number)
 		if err != nil {
 			reviewCommentsSkipped = true
 			reviewCommentsFetchError = true
@@ -747,7 +755,7 @@ func (e *Executor) syncPullRequestSurface(
 	}
 
 	var files []map[string]any
-	files, err = e.fetchPullRequestFilesWithPageSize(ctx, owner, name, req.Number, options.filePageSize)
+	files, err = runtime.fetchPullRequestFilesWithPageSize(ctx, owner, name, req.Number, options.filePageSize)
 	filesSkipped := false
 	filesFetchError := false
 	if err != nil {

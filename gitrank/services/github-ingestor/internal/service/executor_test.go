@@ -1169,6 +1169,107 @@ func TestExecutorForUserSyncActorReturnsErrorWhenInstallationTokenUnavailable(t 
 	}
 }
 
+func TestExecutorForStrictAppSyncActorUsesInstallationWhenAvailable(t *testing.T) {
+	t.Parallel()
+
+	baseClient := &githubapi.RESTClient{}
+	installationClient := &githubapi.RESTClient{}
+	executor := &Executor{
+		client: baseClient,
+		actorInstallation: func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
+			return installationClient, true, nil
+		},
+		graphqlTokenSource: func(context.Context, SyncRequestActor, time.Time) (githubapi.TokenSource, bool, error) {
+			return githubapi.StaticTokenSource("ghu_oauth"), true, nil
+		},
+	}
+
+	runtime, err := executor.executorForStrictAppSyncActor(context.Background(), SyncRequestActor{GitHubLogin: "octocat"}, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("executorForStrictAppSyncActor() error = %v", err)
+	}
+	if runtime == executor {
+		t.Fatalf("executorForStrictAppSyncActor() runtime = %p, want cloned executor", runtime)
+	}
+	if runtime.client != installationClient {
+		t.Fatalf("runtime.client = %p, want installation client %p", runtime.client, installationClient)
+	}
+	if runtime.graphqlTokenSource != nil {
+		t.Fatal("runtime.graphqlTokenSource should be nil for strict app sync")
+	}
+}
+
+func TestExecutorForStrictAppSyncActorFailsWhenInstallationMissing(t *testing.T) {
+	t.Parallel()
+
+	executor := &Executor{
+		client: &githubapi.RESTClient{},
+		actorInstallation: func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
+			return nil, false, nil
+		},
+	}
+
+	runtime, err := executor.executorForStrictAppSyncActor(context.Background(), SyncRequestActor{GitHubLogin: "octocat"}, time.Now().UTC())
+	if err == nil {
+		t.Fatalf("executorForStrictAppSyncActor() error = nil, want app-installation-required error")
+	}
+	if !errors.Is(err, ErrUserSyncGitHubAppInstallationRequired) {
+		t.Fatalf("executorForStrictAppSyncActor() error = %v, want ErrUserSyncGitHubAppInstallationRequired", err)
+	}
+	if runtime != nil {
+		t.Fatalf("executorForStrictAppSyncActor() runtime = %p, want nil runtime", runtime)
+	}
+}
+
+func TestExecutorForStrictAppSyncRequestUsesInstallationIDWhenActorMissing(t *testing.T) {
+	t.Parallel()
+
+	baseClient := &githubapi.RESTClient{}
+	installationClient := &githubapi.RESTClient{}
+	executor := &Executor{
+		client: baseClient,
+		installationClient: func(context.Context, int64) (*githubapi.RESTClient, bool, error) {
+			return installationClient, true, nil
+		},
+		graphqlTokenSource: func(context.Context, SyncRequestActor, time.Time) (githubapi.TokenSource, bool, error) {
+			return githubapi.StaticTokenSource("ghu_oauth"), true, nil
+		},
+	}
+
+	runtime, err := executor.executorForStrictAppSyncRequest(context.Background(), SyncRequestActor{}, 12001, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("executorForStrictAppSyncRequest() error = %v", err)
+	}
+	if runtime == executor {
+		t.Fatalf("executorForStrictAppSyncRequest() runtime = %p, want cloned executor", runtime)
+	}
+	if runtime.client != installationClient {
+		t.Fatalf("runtime.client = %p, want installation client %p", runtime.client, installationClient)
+	}
+	if runtime.graphqlTokenSource != nil {
+		t.Fatal("runtime.graphqlTokenSource should be nil for strict app sync")
+	}
+}
+
+func TestExecutorForStrictAppSyncRequestFailsWhenNoActorAndNoInstallation(t *testing.T) {
+	t.Parallel()
+
+	executor := &Executor{
+		client: &githubapi.RESTClient{},
+	}
+
+	runtime, err := executor.executorForStrictAppSyncRequest(context.Background(), SyncRequestActor{}, 0, time.Now().UTC())
+	if err == nil {
+		t.Fatalf("executorForStrictAppSyncRequest() error = nil, want app-installation-required error")
+	}
+	if !errors.Is(err, ErrUserSyncGitHubAppInstallationRequired) {
+		t.Fatalf("executorForStrictAppSyncRequest() error = %v, want ErrUserSyncGitHubAppInstallationRequired", err)
+	}
+	if runtime != nil {
+		t.Fatalf("executorForStrictAppSyncRequest() runtime = %p, want nil runtime", runtime)
+	}
+}
+
 func TestExecutorFetchPullRequestFilesUsesBoundedRESTEndpoint(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/repos/octo/repo/pulls/7/files" {
