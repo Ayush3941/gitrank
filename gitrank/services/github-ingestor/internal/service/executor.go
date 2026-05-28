@@ -927,13 +927,19 @@ func (e *Executor) SyncIssue(
 		return response, err
 	}
 
-	repository, err := e.fetchRepository(ctx, owner, name)
+	runtime, err := e.executorForStrictAppSyncRequest(ctx, actor, req.InstallationID, startedAt)
 	if err != nil {
 		_ = e.recordFailedIssueSyncRun(ctx, req, actor, correlationID, startedAt, err)
 		return response, err
 	}
 
-	issue, err := e.fetchIssue(ctx, owner, name, req.Number)
+	repository, err := runtime.fetchRepository(ctx, owner, name)
+	if err != nil {
+		_ = e.recordFailedIssueSyncRun(ctx, req, actor, correlationID, startedAt, err)
+		return response, err
+	}
+
+	issue, err := runtime.fetchIssue(ctx, owner, name, req.Number)
 	if err != nil {
 		_ = e.recordFailedIssueSyncRun(ctx, req, actor, correlationID, startedAt, err)
 		return response, err
@@ -1035,13 +1041,19 @@ func (e *Executor) SyncCommit(
 		return response, err
 	}
 
-	repository, err := e.fetchRepository(ctx, owner, name)
+	runtime, err := e.executorForStrictAppSyncRequest(ctx, actor, req.InstallationID, startedAt)
 	if err != nil {
 		_ = e.recordFailedCommitSyncRun(ctx, req, actor, correlationID, startedAt, err)
 		return response, err
 	}
 
-	commit, err := e.fetchCommit(ctx, owner, name, req.SHA)
+	repository, err := runtime.fetchRepository(ctx, owner, name)
+	if err != nil {
+		_ = e.recordFailedCommitSyncRun(ctx, req, actor, correlationID, startedAt, err)
+		return response, err
+	}
+
+	commit, err := runtime.fetchCommit(ctx, owner, name, req.SHA)
 	if err != nil {
 		_ = e.recordFailedCommitSyncRun(ctx, req, actor, correlationID, startedAt, err)
 		return response, err

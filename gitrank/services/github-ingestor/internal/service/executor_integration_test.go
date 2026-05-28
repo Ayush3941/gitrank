@@ -1032,6 +1032,9 @@ func TestExecutorSyncReviewFetchesAndPersistsBoundedReviewSurface(t *testing.T) 
 			MaxPageSize: 50,
 		},
 	}, pool, client)
+	executor.actorInstallation = func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
+		return client, true, nil
+	}
 	now := time.Now().UTC()
 
 	result, err := executor.SyncReview(ctx, contracts.SyncRequest{
@@ -1139,6 +1142,9 @@ func TestExecutorSyncIssueFetchesAndPersistsBoundedIssueData(t *testing.T) {
 			MaxPageSize: 50,
 		},
 	}, pool, client)
+	executor.actorInstallation = func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
+		return client, true, nil
+	}
 	now := time.Now().UTC()
 
 	result, err := executor.SyncIssue(ctx, contracts.SyncRequest{
@@ -1250,6 +1256,9 @@ func TestExecutorSyncCommitFetchesAndPersistsBoundedCommitData(t *testing.T) {
 			MaxPageSize: 50,
 		},
 	}, pool, client)
+	executor.actorInstallation = func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
+		return client, true, nil
+	}
 	now := time.Now().UTC()
 
 	result, err := executor.SyncCommit(ctx, contracts.SyncRequest{
