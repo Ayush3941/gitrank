@@ -1,4 +1,7 @@
 import type { NextConfig } from "next";
+import { loadBackendEnvDefaultsForFrontend } from "./lib/runtime/backend-env-loader";
+
+loadBackendEnvDefaultsForFrontend(__dirname);
 
 const cspReportOnly = [
   "default-src 'self'",

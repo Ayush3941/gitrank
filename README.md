@@ -104,6 +104,7 @@ ChatGPT path:
 
 Frontend runtime also reads its server env from this same `gitrank/.env` export path.
 There is no separate runtime `.env` for `frontend/`; keep all runtime vars in `gitrank/.env`.
+`start.sh` now logs and ignores stray `./.env` or `frontend/.env*` files so local runtime stays single-source.
 
 ### 3) Start stack
 
@@ -141,6 +142,7 @@ There is no separate runtime `.env` for `frontend/`; keep all runtime vars in `g
 - User-sync telemetry now includes explicit authored-PR sync bounds (`authored_pull_request_sync_limit`, `authored_pull_request_search_limit`) plus timeout budget seconds (`authored_pull_request_timeout_seconds`) so Settings/diagnostics show the real runtime window.
 - GitHub REST/GraphQL retry logic now honors `retry-after`, then `x-ratelimit-reset` when remaining budget is zero, and exits early on canceled contexts instead of sleeping through full backoff windows.
 - Sync-run history auto-normalizes stale active statuses and stale queued rows to prevent indefinite `running`/`queued` rows in Settings; malformed rows missing `started_at` are marked failed with explicit diagnostics.
+- Frontend boot now opportunistically loads missing env vars from `../gitrank/.env` inside `next.config.ts`, so `npm run dev` in `frontend/` still follows the single-env-file contract without requiring a second frontend `.env`.
 - Sync-run normalization now marks contradictory rows (`finished_at` present while status is still active/queued) as failed instead of completed, preventing false "Synced" signals from inconsistent run-state records.
 - In-progress sync rows are superseded by newer terminal runs using both correlation ID and logical target scope (run type + requested user/repository), reducing persistent ghost `running` entries after repeated retries.
 - User sync now includes a broad authored-PR fallback query when recent-window discovery returns empty, reducing false-empty sync outcomes caused by cursor/window edge cases.

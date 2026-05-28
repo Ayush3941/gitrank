@@ -277,6 +277,8 @@ Recent no-slowdown refinement (May 27, 2026):
 - Guard checks `npm run check:sync-copy-policy` and `npm run check:copy-tone` are required after copy-only sync UX edits to prevent regressions.
 - Sync refresh feedback now reports explicit outcomes for completed runs with zero discovered authored PRs and includes count-aware success copy when PR targets are actually synced.
 - `scripts/check-start-sh-contracts.sh` now enforces `gitrank/.env` as the only `start.sh` runtime env source to prevent accidental frontend or secondary `.env` drift.
+- `start.sh` now emits an explicit notice when `./.env` or `frontend/.env*` files are present, and still uses only `gitrank/.env` for runtime export.
+- Frontend `next.config.ts` now loads missing env keys from `../gitrank/.env` before config evaluation, so standalone `frontend/` dev/build commands follow the same single-env-file contract without requiring a second frontend env file.
 - Settings page sync state now incorporates live sync-run statuses (`running` / `queued` -> `syncing`) so chips and freshness pills do not present stale “Synced” states while background sync is still active.
 - User sync execution now marks runs `partial` when authored PR discovery returns empty while persisted authored PR evidence already exists (`authored_pull_request_persisted_existing=1`), preventing false “completed” trust when refresh found no historical PR targets unexpectedly.
 - Settings sync activity cards now render deterministic run-outcome insights from persisted sync metrics (scope-limited auth, zero-discovery with prior history, search-limit pressure, retryable timeouts, backfill-in-progress, and synced-target counts) so users can diagnose why PR evidence is missing without reading raw counters.

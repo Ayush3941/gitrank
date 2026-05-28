@@ -989,6 +989,9 @@ function deriveProfileSyncState(
   if (staleness.is_stale) {
     return "stale";
   }
+  if (staleness.partial_profile_available) {
+    return "partially_synced";
+  }
   if (!hasEvidence) {
     return "partially_synced";
   }
