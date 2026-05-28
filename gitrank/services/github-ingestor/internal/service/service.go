@@ -17,8 +17,6 @@ import (
 
 var (
 	ErrUnavailable                           = errors.New("github persistence unavailable")
-	ErrUserSyncOAuthTokenRequired            = errors.New("github oauth token unavailable for user sync; reconnect github")
-	ErrUserSyncOAuthTokenMalformed           = errors.New("github oauth token unavailable for user sync; rotate token keys and reconnect github")
 	ErrUserSyncGitHubAppInstallationRequired = errors.New("github app installation is required for user sync; install app and retry")
 	ErrUserSyncGitHubAppUnavailable          = errors.New("github app installation token unavailable for user sync; verify app credentials and installation")
 	ErrUserSyncInProgress                    = errors.New("user sync already in progress; wait for current run to finish")

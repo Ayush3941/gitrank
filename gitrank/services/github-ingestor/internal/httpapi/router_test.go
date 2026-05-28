@@ -401,7 +401,7 @@ func TestReviewSyncExecutionRequiresExecutor(t *testing.T) {
 	}
 }
 
-func TestWriteSyncExecutionErrorMapsAppAndOAuthFailures(t *testing.T) {
+func TestWriteSyncExecutionErrorMapsAppFailures(t *testing.T) {
 	tests := []struct {
 		name       string
 		err        error
@@ -419,12 +419,6 @@ func TestWriteSyncExecutionErrorMapsAppAndOAuthFailures(t *testing.T) {
 			err:        service.ErrUserSyncGitHubAppUnavailable,
 			wantStatus: http.StatusServiceUnavailable,
 			wantCode:   "github_app_installation_unavailable",
-		},
-		{
-			name:       "maps oauth required",
-			err:        service.ErrUserSyncOAuthTokenRequired,
-			wantStatus: http.StatusUnauthorized,
-			wantCode:   "github_user_oauth_required",
 		},
 		{
 			name:       "falls back to provided code",

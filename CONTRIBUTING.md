@@ -392,7 +392,7 @@ Recent sync-auth refinement (May 28, 2026):
 - Partial-sync metric criteria are now centralized in `frontend/lib/sync/sync-run-metrics-policy.ts` and reused by API normalization plus Settings status rendering, removing duplicated condition lists and preventing frontend drift in partial/completed semantics.
 - `scripts/review.sh` also includes `tests/sync-run-metrics-policy.test.ts` to lock the shared partial-sync metric contract.
 - `scripts/review.sh` now also runs `tests/sync-run-diagnostics.test.ts` so sync outcome explanation ordering/phrasing regressions are caught in the lightweight local gate.
-- Backend sync-failure metrics now classify OAuth token failure causes explicitly (`oauth_token_required`, `oauth_token_malformed`) instead of collapsing them into generic request errors, so Settings diagnostics can provide deterministic reconnect/recovery guidance.
+- Backend sync-failure metrics now classify strict App-auth failure causes explicitly (`app_installation_required`, `app_installation_unavailable`) so Settings diagnostics can provide deterministic installation/remediation guidance.
 - `scripts/review.sh` now also runs targeted backend sync-state unit checks (`TestSyncFailureFetchedMetrics`, `TestUserSyncExecutionStatus`) before frontend sync-state tests to keep backend/frontend sync semantics aligned.
 - `scripts/review.sh` now includes `tests/sync-run-activity-panel.test.tsx` alongside diagnostics policy tests so rendered sync activity copy/chips remain aligned with diagnostic semantics.
 

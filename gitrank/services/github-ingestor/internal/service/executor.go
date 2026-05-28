@@ -2623,16 +2623,6 @@ func syncFailureFetchedMetrics(err error) map[string]int {
 		metrics["lease_conflicts"] = 1
 		return metrics
 	}
-	if errors.Is(err, ErrUserSyncOAuthTokenRequired) {
-		metrics["auth_errors"] = 1
-		metrics["oauth_token_required"] = 1
-		return metrics
-	}
-	if errors.Is(err, ErrUserSyncOAuthTokenMalformed) {
-		metrics["auth_errors"] = 1
-		metrics["oauth_token_malformed"] = 1
-		return metrics
-	}
 	if errors.Is(err, ErrUserSyncGitHubAppInstallationRequired) {
 		metrics["auth_errors"] = 1
 		metrics["app_installation_required"] = 1

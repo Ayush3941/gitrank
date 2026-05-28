@@ -681,8 +681,6 @@ func writeSyncExecutionError(w http.ResponseWriter, r *http.Request, fallbackCod
 	switch {
 	case errors.Is(err, service.ErrUserSyncInProgress):
 		httpkit.WriteError(w, http.StatusConflict, "github_user_sync_in_progress", err.Error(), requestID)
-	case errors.Is(err, service.ErrUserSyncOAuthTokenRequired), errors.Is(err, service.ErrUserSyncOAuthTokenMalformed):
-		httpkit.WriteError(w, http.StatusUnauthorized, "github_user_oauth_required", err.Error(), requestID)
 	case errors.Is(err, service.ErrUserSyncGitHubAppInstallationRequired):
 		httpkit.WriteError(w, http.StatusForbidden, "github_app_installation_required", err.Error(), requestID)
 	case errors.Is(err, service.ErrUserSyncGitHubAppUnavailable):
