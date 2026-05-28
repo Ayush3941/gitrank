@@ -29,7 +29,7 @@ export function useSyncRuns(limit = 25, filter?: SyncRunsQueryFilter) {
       ? syncPollingPolicy.syncRunsStaleTimeConstrainedMs
       : syncPollingPolicy.syncRunsStaleTimeMs,
     refetchOnWindowFocus: false,
-    refetchOnReconnect: true,
+    refetchOnReconnect: false,
     refetchInterval: (query) =>
       hasActiveSyncRuns(query.state.data as ApiSyncRunListResponse | undefined)
         ? constrainedNetwork

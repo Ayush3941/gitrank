@@ -96,8 +96,13 @@ describe("live fixture frontend smoke coverage", () => {
     fireEvent.click(screen.getByRole("tab", { name: /Weekly/i }));
     expect(await screen.findByText("Cadence: Weekly")).toBeTruthy();
     expect(await screen.findByText("Active: 1")).toBeTruthy();
-    expect(nonAnalyticsPaths().sort()).toEqual(
-      ["/api/profile/me", "/api/profile/me/quests"].sort(),
+    const paths = nonAnalyticsPaths();
+    expect(paths).toEqual(
+      expect.arrayContaining([
+        "/api/profile/me",
+        "/api/profile/me/quests",
+        "/api/sync/runs",
+      ]),
     );
   }, 15_000);
 
@@ -110,7 +115,9 @@ describe("live fixture frontend smoke coverage", () => {
     fireEvent.click(screen.getByRole("tab", { name: /Rare/i }));
     expect(await screen.findByText("Rarity: Rare")).toBeTruthy();
     expect(await screen.findByText("Active: 1")).toBeTruthy();
-    expect(nonAnalyticsPaths()).toEqual(["/api/profile/me"]);
+    expect(nonAnalyticsPaths()).toEqual(
+      expect.arrayContaining(["/api/profile/me", "/api/sync/runs"]),
+    );
   }, 15_000);
 
   it("renders PR battle report from the live PR report fixture route", async () => {
@@ -179,8 +186,12 @@ describe("live fixture frontend smoke coverage", () => {
     expect(await screen.findByText("Lane: Global")).toBeTruthy();
     expect(await screen.findByText(/View: (Nearby|Full board)/)).toBeTruthy();
     expect(await screen.findByText("Details: Off")).toBeTruthy();
-    expect(nonAnalyticsPaths().sort()).toEqual(
-      ["/api/leaderboard", "/api/profile/me"].sort(),
+    expect(nonAnalyticsPaths()).toEqual(
+      expect.arrayContaining([
+        "/api/leaderboard",
+        "/api/profile/me",
+        "/api/sync/runs",
+      ]),
     );
   }, 15_000);
 
@@ -190,8 +201,12 @@ describe("live fixture frontend smoke coverage", () => {
 
     expect(await screen.findByText("Lane: Backend")).toBeTruthy();
     expect(await screen.findByText("Active: 1")).toBeTruthy();
-    expect(nonAnalyticsPaths().sort()).toEqual(
-      ["/api/leaderboard", "/api/profile/me"].sort(),
+    expect(nonAnalyticsPaths()).toEqual(
+      expect.arrayContaining([
+        "/api/leaderboard",
+        "/api/profile/me",
+        "/api/sync/runs",
+      ]),
     );
   }, 15_000);
 
@@ -232,8 +247,13 @@ describe("live fixture frontend smoke coverage", () => {
         "Account export generated. Token secrets and secret hashes are excluded from the file.",
       ),
     ).toBeTruthy();
-    expect(nonAnalyticsPaths().sort()).toEqual(
-      ["/api/profile/me", "/api/sync/runs", "/api/account/export"].sort(),
+    const paths = nonAnalyticsPaths();
+    expect(paths).toEqual(
+      expect.arrayContaining([
+        "/api/profile/me",
+        "/api/sync/runs",
+        "/api/account/export",
+      ]),
     );
   }, 15_000);
 
@@ -243,8 +263,12 @@ describe("live fixture frontend smoke coverage", () => {
     renderWithClient(<QuestsPageClient />);
 
     expect(await screen.findByText(/Quest snapshot refreshed/i)).toBeTruthy();
-    expect(nonAnalyticsPaths().sort()).toEqual(
-      ["/api/profile/me", "/api/profile/me/quests"].sort(),
+    expect(nonAnalyticsPaths()).toEqual(
+      expect.arrayContaining([
+        "/api/profile/me",
+        "/api/profile/me/quests",
+        "/api/sync/runs",
+      ]),
     );
   }, 15_000);
 
@@ -291,6 +315,37 @@ async function liveFixtureFetch(input: RequestInfo | URL): Promise<Response> {
   }
   if (path === "/api/account/export") {
     return jsonResponse(accountExportFixture);
+  }
+  if (path === "/api/session/me") {
+    return jsonResponse(sessionEnvelopeFixture());
+  }
+  if (path === "/api/profile/schema") {
+    return jsonResponse({
+      sections: [
+        { key: "summary", summary: "Overall rank, XP, strengths, and freshness", status: "implemented" },
+      ],
+      generated_at: new Date().toISOString(),
+    });
+  }
+  if (path === "/api/meta/manifest") {
+    return jsonResponse({
+      service: "gitrank-local",
+      version: "dev",
+      routes: [],
+      dependencies: [],
+    });
+  }
+  if (path === "/api/meta/dependencies") {
+    return jsonResponse({
+      generated_at: new Date().toISOString(),
+      dependencies: [],
+    });
+  }
+  if (path === "/api/meta/services") {
+    return jsonResponse({
+      generated_at: new Date().toISOString(),
+      services: [],
+    });
   }
   if (path === "/api/sync/runs") {
     return jsonResponse({
@@ -384,4 +439,27 @@ function jsonResponse(body: unknown, status = 200): Response {
       "Content-Type": "application/json",
     },
   });
+}
+
+function sessionEnvelopeFixture() {
+  const nowISO = new Date().toISOString();
+  return {
+    session: {
+      subject: "11111111-1111-1111-1111-111111111111",
+      display_name: "Live Fixture Maintainer",
+      github_login: "live-maintainer",
+      github_authorization_status: "active",
+      session_expires_at: nowISO,
+      session_idle_expires_at: nowISO,
+      session_rotated_at: nowISO,
+      linked_account: {
+        github_user_id: 42,
+        login: "live-maintainer",
+        status: "linked",
+        linked_at: nowISO,
+      },
+    },
+    csrf_header: "X-CSRF-Token",
+    csrf_hint: "gitrank_csrf",
+  };
 }

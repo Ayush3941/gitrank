@@ -342,6 +342,8 @@ Recent no-slowdown refinement (May 27, 2026):
 - Profile score-history PR references now persist PR lifecycle fields (`state`, `merged`) from `pull_requests`, so frontend contribution cards can render truthful `open/closed/merged` status without hardcoded merged labels.
 - Onboarding sync surfaces now derive status from effective sync state (materialized evidence + run-state-aware) instead of raw snapshot state, reducing false "synced" reveal/analyzing states on empty evidence snapshots.
 - Frontend direct user-sync execution timeout policy now defaults to a safer `120s` with a `90s` minimum clamp for `NEXT_PUBLIC_GITRANK_USER_SYNC_EXECUTION_TIMEOUT_MS`, preventing common false client aborts on bounded multi-PR sync runs.
+- Sync-run polling now keeps `refetchOnReconnect` disabled in `useSyncRuns` (polling remains active) to avoid redundant reconnect fetch bursts and reduce duplicate `/api/sync/runs` calls during normal dashboard rendering and fixture smoke runs.
+- Live fixture smoke assertions now explicitly include profile-sync activity fetches (`/api/sync/runs`) on dashboard tabs that consume profile freshness state, aligning smoke coverage with the real runtime sync-state contract.
 
 ## Frontend Excellence Checklist (No-Slowdown Backlog)
 
