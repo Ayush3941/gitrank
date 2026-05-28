@@ -271,8 +271,23 @@ func TestExecutorSyncUserFetchesOwnedRepositoriesAndAuthoredPullRequests(t *test
 			})
 		case "/search/issues":
 			query := r.URL.Query()
-			if got := query.Get("q"); got != "author:octocat type:pr archived:false" {
-				t.Fatalf("q = %q, want authored PR search", got)
+			if got := query.Get("q"); !strings.Contains(got, "author:octocat type:pr archived:false") {
+				t.Fatalf("q = %q, want authored PR search query", got)
+			}
+			sort := query.Get("sort")
+			if sort != "updated" && sort != "created" {
+				t.Fatalf("sort = %q, want updated or created", sort)
+			}
+			if query.Get("order") != "desc" {
+				t.Fatalf("order = %q, want desc", query.Get("order"))
+			}
+			if sort == "created" {
+				_ = json.NewEncoder(w).Encode(map[string]any{
+					"total_count":        0,
+					"incomplete_results": false,
+					"items":              []map[string]any{},
+				})
+				break
 			}
 			_ = json.NewEncoder(w).Encode(map[string]any{
 				"total_count":        1,

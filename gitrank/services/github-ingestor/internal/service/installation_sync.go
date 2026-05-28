@@ -14,13 +14,14 @@ import (
 type githubInstallationClientFactory func(context.Context, int64) (*githubapi.RESTClient, bool, error)
 
 func newGitHubInstallationClientFactory(cfg config.App) githubInstallationClientFactory {
-	appID := strings.TrimSpace(cfg.GitHub.AppID)
+	appJWTIssuer := cfg.GitHubAppJWTIssuer()
 	privateKeyPath := strings.TrimSpace(cfg.GitHub.AppPrivateKeyPEM)
-	if appID == "" || appID == "0" || privateKeyPath == "" {
+	if appJWTIssuer == "" || privateKeyPath == "" {
 		return nil
 	}
+	timeout := boundedGitHubHTTPTimeout(cfg.GitHub.RequestTimeout)
 
-	appTokenSource, err := githubapi.NewAppAuthenticator(appID, privateKeyPath, 9*time.Minute)
+	appTokenSource, err := githubapi.NewAppAuthenticator(appJWTIssuer, privateKeyPath, 9*time.Minute)
 	if err != nil {
 		return func(context.Context, int64) (*githubapi.RESTClient, bool, error) {
 			return nil, true, err
@@ -31,7 +32,7 @@ func newGitHubInstallationClientFactory(cfg config.App) githubInstallationClient
 		APIVersion:                     cfg.GitHub.APIVersion,
 		UserAgent:                      cfg.GitHub.UserAgent,
 		TokenSource:                    appTokenSource,
-		HTTPClient:                     &http.Client{Timeout: cfg.GitHub.RequestTimeout},
+		HTTPClient:                     &http.Client{Timeout: timeout},
 		SecondaryBackoff:               cfg.GitHub.SecondaryBackoff,
 		MaxConcurrency:                 cfg.GitHub.MaxConcurrency,
 		CircuitBreakerFailureThreshold: cfg.GitHub.CircuitBreakerFailureThreshold,
@@ -63,7 +64,7 @@ func newGitHubInstallationClientFactory(cfg config.App) githubInstallationClient
 			APIVersion:                     cfg.GitHub.APIVersion,
 			UserAgent:                      cfg.GitHub.UserAgent,
 			TokenSource:                    installationTokenSource,
-			HTTPClient:                     &http.Client{Timeout: cfg.GitHub.RequestTimeout},
+			HTTPClient:                     &http.Client{Timeout: timeout},
 			SecondaryBackoff:               cfg.GitHub.SecondaryBackoff,
 			MaxConcurrency:                 cfg.GitHub.MaxConcurrency,
 			CircuitBreakerFailureThreshold: cfg.GitHub.CircuitBreakerFailureThreshold,

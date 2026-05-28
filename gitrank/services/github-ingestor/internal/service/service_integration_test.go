@@ -220,6 +220,12 @@ func TestPersistWebhookNormalizesEntitiesIdempotently(t *testing.T) {
 	if len(runs.Runs) == 0 {
 		t.Fatal("ListSyncRuns(repository) returned no runs, want at least one")
 	}
+	if runs.LastAttemptedAt == nil || runs.LastAttemptedAt.IsZero() {
+		t.Fatal("LastAttemptedAt = nil/zero, want populated attempt timestamp")
+	}
+	if runs.LastSuccessfulAt == nil || runs.LastSuccessfulAt.IsZero() {
+		t.Fatal("LastSuccessfulAt = nil/zero, want populated success timestamp")
+	}
 	if runs.Runs[0].RequestedRepository != repositoryFullName {
 		t.Fatalf("RequestedRepository = %q, want %q", runs.Runs[0].RequestedRepository, repositoryFullName)
 	}

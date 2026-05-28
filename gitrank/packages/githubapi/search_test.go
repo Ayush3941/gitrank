@@ -24,6 +24,9 @@ func TestSearchIssuesAndPullRequestsBuildsBoundedQuery(t *testing.T) {
 		if query.Get("per_page") != "11" {
 			t.Fatalf("per_page = %q, want 11", query.Get("per_page"))
 		}
+		if query.Get("page") != "3" {
+			t.Fatalf("page = %q, want 3", query.Get("page"))
+		}
 
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(map[string]any{
@@ -62,6 +65,7 @@ func TestSearchIssuesAndPullRequestsBuildsBoundedQuery(t *testing.T) {
 		Sort:    "updated",
 		Order:   "desc",
 		PerPage: 11,
+		Page:    3,
 	})
 	if err != nil {
 		t.Fatalf("SearchIssuesAndPullRequests() error = %v", err)

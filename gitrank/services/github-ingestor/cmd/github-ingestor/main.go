@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/gitrank/gitrank/packages/config"
 	"github.com/gitrank/gitrank/packages/githubapi"
@@ -44,7 +45,7 @@ func main() {
 		BaseURL:                        cfg.GitHub.APIBaseURL,
 		APIVersion:                     cfg.GitHub.APIVersion,
 		UserAgent:                      cfg.GitHub.UserAgent,
-		HTTPClient:                     &http.Client{Timeout: cfg.GitHub.RequestTimeout},
+		HTTPClient:                     &http.Client{Timeout: boundedGitHubHTTPTimeout(cfg.GitHub.RequestTimeout)},
 		SecondaryBackoff:               cfg.GitHub.SecondaryBackoff,
 		MaxConcurrency:                 cfg.GitHub.MaxConcurrency,
 		CircuitBreakerFailureThreshold: cfg.GitHub.CircuitBreakerFailureThreshold,
@@ -71,4 +72,12 @@ func main() {
 		log.Error("server exited", "error", err)
 		os.Exit(1)
 	}
+}
+
+func boundedGitHubHTTPTimeout(timeout time.Duration) time.Duration {
+	const minimum = 45 * time.Second
+	if timeout <= 0 || timeout < minimum {
+		return minimum
+	}
+	return timeout
 }

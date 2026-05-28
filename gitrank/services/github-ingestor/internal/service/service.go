@@ -392,12 +392,12 @@ func syncRunListUpdatedAt(runs []contracts.GitHubSyncRunView) *time.Time {
 }
 
 func syncRunPrimaryTimestamp(run contracts.GitHubSyncRunView) *time.Time {
-	if !run.StartedAt.IsZero() {
-		timestamp := run.StartedAt.UTC()
-		return &timestamp
-	}
 	if run.FinishedAt != nil && !run.FinishedAt.IsZero() {
 		timestamp := run.FinishedAt.UTC()
+		return &timestamp
+	}
+	if !run.StartedAt.IsZero() {
+		timestamp := run.StartedAt.UTC()
 		return &timestamp
 	}
 	return nil

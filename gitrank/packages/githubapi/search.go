@@ -13,6 +13,7 @@ type IssueSearchRequest struct {
 	Sort    string
 	Order   string
 	PerPage int
+	Page    int
 }
 
 type IssueSearchResult struct {
@@ -26,6 +27,8 @@ type IssueSearchResultItem struct {
 	URL           string             `json:"url"`
 	HTMLURL       string             `json:"html_url"`
 	RepositoryURL string             `json:"repository_url"`
+	CreatedAt     string             `json:"created_at"`
+	UpdatedAt     string             `json:"updated_at"`
 	PullRequest   *PullRequestLinks  `json:"pull_request,omitempty"`
 	Repository    *RepositorySummary `json:"repository,omitempty"`
 }
@@ -75,6 +78,9 @@ func SearchIssuesAndPullRequests(
 	}
 	if req.PerPage > 0 {
 		params.Set("per_page", fmt.Sprintf("%d", req.PerPage))
+	}
+	if req.Page > 0 {
+		params.Set("page", fmt.Sprintf("%d", req.Page))
 	}
 
 	var result IssueSearchResult
