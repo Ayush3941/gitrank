@@ -152,6 +152,7 @@ If `GITRANK_ENV_FILE` is unset, frontend runtime falls back to `../gitrank/.env`
 - Dashboard stale-state UI now surfaces the latest sync diagnostic reason (when available) so partial/empty evidence states are explicit instead of generic.
 - Sync failures now classify unsupported GitHub API-version responses and surface a direct `GITHUB_API_VERSION` remediation message in sync diagnostics.
 - User sync now enforces GitHub App credentials for PR extraction. Installation bootstrap/discovery also runs through GitHub App credentials (`/app/installations`), while OAuth remains login/session-only.
+- If no direct user-owned installation mapping exists, sync now probes persisted active App installations with a bounded authored-PR search and selects the first installation that can see the actor’s PR evidence, keeping org-repo PR extraction App-only without OAuth token discovery.
 - Repository, pull-request, and review execute routes now follow the same fail-closed rule: they require GitHub App installation credentials and return explicit app/OAuth/bootstrap errors instead of generic sync failures.
 - Scheduler/webhook-triggered repository/PR/review sync still works without user-login headers by using explicit `installation_id` app-token resolution.
 - Scheduler sync job payloads now preserve optional `installation_id` and `user` context, and scheduler execution forwards `X-GitRank-GitHub-Login`/`X-GitRank-Subject` when user context is present.

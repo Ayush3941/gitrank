@@ -341,11 +341,20 @@ func (e *Executor) installationClientForActor(ctx context.Context, actor SyncReq
 	if err != nil {
 		return nil, false, err
 	}
+	probeAllInstallations := false
 	if len(installationIDs) == 0 {
-		return nil, false, nil
+		installationIDs, err = e.store.ActiveInstallationIDs(ctx)
+		if err != nil {
+			return nil, false, err
+		}
+		if len(installationIDs) == 0 {
+			return nil, false, nil
+		}
+		probeAllInstallations = true
 	}
 
 	var lastError error
+	var fallbackClient *githubapi.RESTClient
 	for _, installationID := range installationIDs {
 		client, enabled, clientErr := e.installationClient(ctx, installationID)
 		if clientErr != nil {
@@ -353,13 +362,61 @@ func (e *Executor) installationClientForActor(ctx context.Context, actor SyncReq
 			continue
 		}
 		if enabled && client != nil {
-			return client, true, nil
+			if !probeAllInstallations {
+				return client, true, nil
+			}
+			matches, probeErr := e.installationClientSupportsAuthoredPullRequests(ctx, client, githubLogin)
+			if probeErr != nil {
+				lastError = probeErr
+				if fallbackClient == nil {
+					fallbackClient = client
+				}
+				continue
+			}
+			if matches {
+				return client, true, nil
+			}
+			if fallbackClient == nil {
+				fallbackClient = client
+			}
+			continue
 		}
+	}
+	if probeAllInstallations && fallbackClient != nil {
+		return fallbackClient, true, nil
 	}
 	if lastError != nil {
 		return nil, false, lastError
 	}
 	return nil, false, nil
+}
+
+func (e *Executor) installationClientSupportsAuthoredPullRequests(
+	ctx context.Context,
+	client *githubapi.RESTClient,
+	githubLogin string,
+) (bool, error) {
+	if client == nil {
+		return false, nil
+	}
+	query := fmt.Sprintf("author:%s is:pull-request archived:false", strings.TrimSpace(githubLogin))
+	result, _, err := githubapi.SearchIssuesAndPullRequests(ctx, client, githubapi.IssueSearchRequest{
+		Query:   query,
+		Sort:    "updated",
+		Order:   "desc",
+		PerPage: 1,
+		Page:    1,
+	})
+	if err != nil {
+		return false, err
+	}
+	if len(result.Items) > 0 {
+		return true, nil
+	}
+	if result.TotalCount > 0 {
+		return true, nil
+	}
+	return false, nil
 }
 
 func (e *Executor) executorForActor(ctx context.Context, actor SyncRequestActor, now time.Time) (*Executor, error) {
@@ -490,36 +547,7 @@ func (e *Executor) bootstrapActorInstallations(ctx context.Context, actor SyncRe
 	if len(installations) == 0 {
 		return 0, nil
 	}
-
-	filtered := filterInstallationsForActorLogin(installations, githubLogin)
-	if len(filtered) == 0 {
-		return 0, nil
-	}
-	return e.store.UpsertUserInstallations(ctx, filtered, now)
-}
-
-func filterInstallationsForActorLogin(
-	installations []githubapi.UserInstallationSummaryItem,
-	githubLogin string,
-) []githubapi.UserInstallationSummaryItem {
-	normalizedLogin := strings.TrimSpace(githubLogin)
-	if normalizedLogin == "" || len(installations) == 0 {
-		return nil
-	}
-	filtered := make([]githubapi.UserInstallationSummaryItem, 0, len(installations))
-	for _, installation := range installations {
-		if installation.Account == nil {
-			continue
-		}
-		accountLogin := strings.TrimSpace(installation.Account.Login)
-		if accountLogin == "" {
-			continue
-		}
-		if strings.EqualFold(accountLogin, normalizedLogin) {
-			filtered = append(filtered, installation)
-		}
-	}
-	return filtered
+	return e.store.UpsertUserInstallations(ctx, installations, now)
 }
 
 func (e *Executor) fetchPullRequestsGraphQL(

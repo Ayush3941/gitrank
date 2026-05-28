@@ -83,6 +83,66 @@ func TestListAppInstallationsBuildsBoundedRequest(t *testing.T) {
 	}
 }
 
+func TestListAppInstallationsSupportsWrappedResponseShape(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"total_count": 1,
+			"installations": []map[string]any{
+				{
+					"id":                   99,
+					"app_id":               3731623,
+					"app_slug":             "gitrank-local-app",
+					"target_type":          "Organization",
+					"repository_selection": "selected",
+					"permissions": map[string]any{
+						"metadata":      "read",
+						"pull_requests": "read",
+					},
+					"events":     []string{"pull_request"},
+					"created_at": "2026-05-28T00:00:00Z",
+					"account": map[string]any{
+						"id":    2,
+						"login": "example-org",
+						"type":  "Organization",
+					},
+				},
+			},
+		})
+	}))
+	defer server.Close()
+
+	client, err := NewRESTClient(ClientConfig{
+		BaseURL:          server.URL,
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		TokenSource:      StaticTokenSource("app-jwt-token"),
+		HTTPClient:       server.Client(),
+		SecondaryBackoff: time.Millisecond,
+		MaxConcurrency:   1,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	installations, _, err := ListAppInstallations(context.Background(), client, AppInstallationsRequest{
+		PerPage: 10,
+		Page:    1,
+	})
+	if err != nil {
+		t.Fatalf("ListAppInstallations() error = %v", err)
+	}
+	if len(installations) != 1 {
+		t.Fatalf("installation count = %d, want 1", len(installations))
+	}
+	if installations[0].ID != 99 {
+		t.Fatalf("installation id = %d, want 99", installations[0].ID)
+	}
+	if installations[0].Account == nil || installations[0].Account.Login != "example-org" {
+		t.Fatalf("installation account = %+v, want example-org", installations[0].Account)
+	}
+}
+
 func TestListAppInstallationsValidatesBounds(t *testing.T) {
 	client, err := NewRESTClient(ClientConfig{
 		BaseURL:          "https://api.github.test",

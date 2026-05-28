@@ -2,6 +2,7 @@ package githubapi
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
@@ -10,6 +11,24 @@ import (
 type AppInstallationsRequest struct {
 	PerPage int
 	Page    int
+}
+
+type appInstallationsResult []UserInstallationSummaryItem
+
+func (r *appInstallationsResult) UnmarshalJSON(data []byte) error {
+	var direct []UserInstallationSummaryItem
+	if err := json.Unmarshal(data, &direct); err == nil {
+		*r = direct
+		return nil
+	}
+	var wrapped struct {
+		Installations []UserInstallationSummaryItem `json:"installations"`
+	}
+	if err := json.Unmarshal(data, &wrapped); err != nil {
+		return err
+	}
+	*r = wrapped.Installations
+	return nil
 }
 
 func ListAppInstallations(
@@ -35,7 +54,7 @@ func ListAppInstallations(
 		query.Set("page", fmt.Sprintf("%d", req.Page))
 	}
 
-	var response []UserInstallationSummaryItem
+	var response appInstallationsResult
 	meta, err := client.GetJSON(ctx, "/app/installations", query, ConditionalRequest{}, &response)
-	return response, meta, err
+	return []UserInstallationSummaryItem(response), meta, err
 }

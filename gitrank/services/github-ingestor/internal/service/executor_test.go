@@ -1270,51 +1270,87 @@ func TestExecutorForStrictAppSyncRequestFailsWhenNoActorAndNoInstallation(t *tes
 	}
 }
 
-func TestFilterInstallationsForActorLoginMatchesCaseInsensitively(t *testing.T) {
+func TestInstallationClientSupportsAuthoredPullRequestsTrueWhenSearchHasHits(t *testing.T) {
 	t.Parallel()
 
-	installations := []githubapi.UserInstallationSummaryItem{
-		{
-			ID: 1,
-			Account: &githubapi.RepositoryOwner{
-				Login: "Ayush3941",
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/search/issues" {
+			t.Fatalf("path = %q, want /search/issues", r.URL.Path)
+		}
+		if !strings.Contains(r.URL.Query().Get("q"), "author:ayush3941 is:pull-request") {
+			t.Fatalf("query = %q, expected authored pull-request search", r.URL.Query().Get("q"))
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"total_count":        1,
+			"incomplete_results": false,
+			"items": []map[string]any{
+				{
+					"number":         1,
+					"repository_url": "https://api.github.com/repos/octo/repo",
+					"pull_request": map[string]any{
+						"url": "https://api.github.com/repos/octo/repo/pulls/1",
+					},
+				},
 			},
-		},
-		{
-			ID: 2,
-			Account: &githubapi.RepositoryOwner{
-				Login: "core-stack-org",
-			},
-		},
-		{
-			ID: 3,
-			Account: &githubapi.RepositoryOwner{
-				Login: "ayush3941",
-			},
-		},
+		})
+	}))
+	defer server.Close()
+
+	client, err := githubapi.NewRESTClient(githubapi.ClientConfig{
+		BaseURL:          server.URL,
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		HTTPClient:       server.Client(),
+		SecondaryBackoff: time.Millisecond,
+		MaxConcurrency:   1,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
 	}
 
-	filtered := filterInstallationsForActorLogin(installations, "ayush3941")
-	if len(filtered) != 2 {
-		t.Fatalf("filterInstallationsForActorLogin() count = %d, want 2", len(filtered))
+	executor := &Executor{}
+	supported, err := executor.installationClientSupportsAuthoredPullRequests(context.Background(), client, "ayush3941")
+	if err != nil {
+		t.Fatalf("installationClientSupportsAuthoredPullRequests() error = %v", err)
 	}
-	if filtered[0].ID != 1 || filtered[1].ID != 3 {
-		t.Fatalf("filterInstallationsForActorLogin() ids = [%d, %d], want [1, 3]", filtered[0].ID, filtered[1].ID)
+	if !supported {
+		t.Fatal("installationClientSupportsAuthoredPullRequests() = false, want true")
 	}
 }
 
-func TestFilterInstallationsForActorLoginSkipsMissingAccounts(t *testing.T) {
+func TestInstallationClientSupportsAuthoredPullRequestsFalseWhenSearchEmpty(t *testing.T) {
 	t.Parallel()
 
-	installations := []githubapi.UserInstallationSummaryItem{
-		{ID: 1, Account: nil},
-		{ID: 2, Account: &githubapi.RepositoryOwner{Login: ""}},
-		{ID: 3, Account: &githubapi.RepositoryOwner{Login: "someone-else"}},
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"total_count":        0,
+			"incomplete_results": false,
+			"items":              []map[string]any{},
+		})
+	}))
+	defer server.Close()
+
+	client, err := githubapi.NewRESTClient(githubapi.ClientConfig{
+		BaseURL:          server.URL,
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		HTTPClient:       server.Client(),
+		SecondaryBackoff: time.Millisecond,
+		MaxConcurrency:   1,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
 	}
 
-	filtered := filterInstallationsForActorLogin(installations, "ayush3941")
-	if len(filtered) != 0 {
-		t.Fatalf("filterInstallationsForActorLogin() count = %d, want 0", len(filtered))
+	executor := &Executor{}
+	supported, err := executor.installationClientSupportsAuthoredPullRequests(context.Background(), client, "ayush3941")
+	if err != nil {
+		t.Fatalf("installationClientSupportsAuthoredPullRequests() error = %v", err)
+	}
+	if supported {
+		t.Fatal("installationClientSupportsAuthoredPullRequests() = true, want false")
 	}
 }
 

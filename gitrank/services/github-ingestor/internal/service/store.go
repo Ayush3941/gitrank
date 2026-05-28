@@ -204,6 +204,44 @@ func (s *Store) ActiveInstallationIDsByAccountLogin(ctx context.Context, githubL
 	return installationIDs, nil
 }
 
+func (s *Store) ActiveInstallationIDs(ctx context.Context) ([]int64, error) {
+	if s == nil || s.pool == nil {
+		return nil, ErrUnavailable
+	}
+
+	rows, err := s.pool.Query(ctx, `
+		SELECT github_installation_id
+		FROM github_installations
+		WHERE suspended_at_source IS NULL
+		ORDER BY updated_at_source DESC NULLS LAST, updated_at DESC
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	installationIDs := make([]int64, 0)
+	seen := make(map[int64]struct{})
+	for rows.Next() {
+		var installationID int64
+		if err := rows.Scan(&installationID); err != nil {
+			return nil, err
+		}
+		if installationID <= 0 {
+			continue
+		}
+		if _, ok := seen[installationID]; ok {
+			continue
+		}
+		seen[installationID] = struct{}{}
+		installationIDs = append(installationIDs, installationID)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return installationIDs, nil
+}
+
 func (s *Store) UpsertUserInstallations(ctx context.Context, installations []githubapi.UserInstallationSummaryItem, now time.Time) (int, error) {
 	if s == nil || s.pool == nil {
 		return 0, ErrUnavailable

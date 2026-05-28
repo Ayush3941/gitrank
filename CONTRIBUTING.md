@@ -288,6 +288,7 @@ Recent sync-auth refinement (May 28, 2026):
 
 - User sync execution is now strict GitHub App for PR extraction. OAuth remains identity/session only.
 - `github-ingestor` now bootstraps user installation records via GitHub App JWT inventory (`GET /app/installations`) when no installation mapping exists, then retries sync with installation credentials.
+- When account-login installation mapping is missing, actor installation resolution now probes persisted active App installations with a bounded authored-PR search and picks the first installation that can see the actor’s PR evidence, keeping org installation discovery App-only.
 - Sync telemetry now exposes installation bootstrap lookup/attempt/success/failure counters so false “synced” states can be traced in run metadata.
 - User sync execution now fails closed if any non-installation credential source is returned, preventing silent reintroduction of OAuth/shared PR extraction paths.
 - Repository, pull-request, and review execute routes now use the same strict app-auth path and return explicit install/bootstrap/OAuth diagnostics instead of generic gateway failures.
