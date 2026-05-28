@@ -106,6 +106,15 @@ export function SyncExecutionControls() {
     return normalized;
   }
 
+  function optionalUser(): string | undefined {
+    const normalized = userLogin.trim();
+    return normalized || undefined;
+  }
+
+  function optionalInstallationID(): number | undefined {
+    return parsePositiveInt(installationID) ?? undefined;
+  }
+
   return (
     <div className="space-y-4">
       <div>
@@ -164,7 +173,11 @@ export function SyncExecutionControls() {
               return;
             }
             setNotice("");
-            runRepositorySync.mutate(normalizedRepository, {
+            runRepositorySync.mutate({
+              repository: normalizedRepository,
+              user: optionalUser(),
+              installationId: optionalInstallationID(),
+            }, {
               onSuccess: (result) => writeResult(result, "Repository sync"),
             });
           }}
@@ -216,7 +229,12 @@ export function SyncExecutionControls() {
               return;
             }
             setNotice("");
-            runPullRequestSync.mutate({ repository: normalizedRepository, number }, {
+            runPullRequestSync.mutate({
+              repository: normalizedRepository,
+              number,
+              user: optionalUser(),
+              installationId: optionalInstallationID(),
+            }, {
               onSuccess: (result) => writeResult(result, "Pull request sync"),
             });
           }}
@@ -235,7 +253,12 @@ export function SyncExecutionControls() {
               return;
             }
             setNotice("");
-            runReviewSync.mutate({ repository: normalizedRepository, number }, {
+            runReviewSync.mutate({
+              repository: normalizedRepository,
+              number,
+              user: optionalUser(),
+              installationId: optionalInstallationID(),
+            }, {
               onSuccess: (result) => writeResult(result, "Review sync"),
             });
           }}
@@ -254,7 +277,12 @@ export function SyncExecutionControls() {
               return;
             }
             setNotice("");
-            runIssueSync.mutate({ repository: normalizedRepository, number }, {
+            runIssueSync.mutate({
+              repository: normalizedRepository,
+              number,
+              user: optionalUser(),
+              installationId: optionalInstallationID(),
+            }, {
               onSuccess: (result) => writeResult(result, "Issue sync"),
             });
           }}
@@ -273,7 +301,12 @@ export function SyncExecutionControls() {
               return;
             }
             setNotice("");
-            runCommitSync.mutate({ repository: normalizedRepository, sha }, {
+            runCommitSync.mutate({
+              repository: normalizedRepository,
+              sha,
+              user: optionalUser(),
+              installationId: optionalInstallationID(),
+            }, {
               onSuccess: (result) => writeResult(result, "Commit sync"),
             });
           }}

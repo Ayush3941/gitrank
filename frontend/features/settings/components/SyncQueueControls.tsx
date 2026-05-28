@@ -68,6 +68,8 @@ export function SyncQueueControls() {
         return;
       }
       payload.repository = normalizedRepository;
+      payload.user = normalizedUser || undefined;
+      payload.installationId = parsedInstallationID || undefined;
     }
 
     if (mode === "pull_request" || mode === "review" || mode === "issue") {

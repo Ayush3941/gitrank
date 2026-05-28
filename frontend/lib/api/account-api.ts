@@ -130,6 +130,11 @@ export type QueueSyncInput = {
   sha?: string;
 };
 
+type SyncExecutionAuthContext = {
+  user?: string;
+  installationId?: number;
+};
+
 type ApiAccountUnlinkResponse = {
   status: string;
   logged_out: boolean;
@@ -244,7 +249,9 @@ export async function startAccountLink(
 
 export async function runRepositorySync(
   repository: string,
+  context?: SyncExecutionAuthContext,
 ): Promise<ApiSyncExecutionResponse> {
+  const syncContext = normalizeSyncExecutionContext(context);
   const csrfToken = requireCSRFToken();
   const response = await fetch("/api/sync/repository", {
     method: "POST",
@@ -256,6 +263,7 @@ export async function runRepositorySync(
     cache: "no-store",
     body: JSON.stringify({
       repository,
+      ...syncContext,
     }),
   });
   return adaptJSON<ApiSyncExecutionResponse>(response, "Repository sync failed.", {
@@ -369,7 +377,9 @@ export async function runInstallationSync(
 export async function runPullRequestSync(
   repository: string,
   number: number,
+  context?: SyncExecutionAuthContext,
 ): Promise<ApiSyncExecutionResponse> {
+  const syncContext = normalizeSyncExecutionContext(context);
   const csrfToken = requireCSRFToken();
   const response = await fetch("/api/sync/pull-request", {
     method: "POST",
@@ -382,6 +392,7 @@ export async function runPullRequestSync(
     body: JSON.stringify({
       repository,
       number,
+      ...syncContext,
     }),
   });
   return adaptJSON<ApiSyncExecutionResponse>(response, "Pull request sync failed.", {
@@ -393,7 +404,9 @@ export async function runPullRequestSync(
 export async function runReviewSync(
   repository: string,
   number: number,
+  context?: SyncExecutionAuthContext,
 ): Promise<ApiSyncExecutionResponse> {
+  const syncContext = normalizeSyncExecutionContext(context);
   const csrfToken = requireCSRFToken();
   const response = await fetch("/api/sync/review", {
     method: "POST",
@@ -406,6 +419,7 @@ export async function runReviewSync(
     body: JSON.stringify({
       repository,
       number,
+      ...syncContext,
     }),
   });
   return adaptJSON<ApiSyncExecutionResponse>(response, "Review sync failed.", {
@@ -417,7 +431,9 @@ export async function runReviewSync(
 export async function runIssueSync(
   repository: string,
   number: number,
+  context?: SyncExecutionAuthContext,
 ): Promise<ApiSyncExecutionResponse> {
+  const syncContext = normalizeSyncExecutionContext(context);
   const csrfToken = requireCSRFToken();
   const response = await fetch("/api/sync/issue", {
     method: "POST",
@@ -430,6 +446,7 @@ export async function runIssueSync(
     body: JSON.stringify({
       repository,
       number,
+      ...syncContext,
     }),
   });
   return adaptJSON<ApiSyncExecutionResponse>(response, "Issue sync failed.", {
@@ -441,7 +458,9 @@ export async function runIssueSync(
 export async function runCommitSync(
   repository: string,
   sha: string,
+  context?: SyncExecutionAuthContext,
 ): Promise<ApiSyncExecutionResponse> {
+  const syncContext = normalizeSyncExecutionContext(context);
   const csrfToken = requireCSRFToken();
   const response = await fetch("/api/sync/commit", {
     method: "POST",
@@ -454,6 +473,7 @@ export async function runCommitSync(
     body: JSON.stringify({
       repository,
       sha,
+      ...syncContext,
     }),
   });
   return adaptJSON<ApiSyncExecutionResponse>(response, "Commit sync failed.", {
@@ -782,6 +802,23 @@ function requireCSRFToken(): string {
   }
 
   return decodeURIComponent(cookie.slice(DEFAULT_CSRF_COOKIE_NAME.length + 1));
+}
+
+function normalizeSyncExecutionContext(context?: SyncExecutionAuthContext): {
+  user?: string;
+  installation_id?: number;
+} {
+  const user = context?.user?.trim();
+  const installationId = context?.installationId;
+  const normalizedInstallationID =
+    typeof installationId === "number" && Number.isFinite(installationId) && installationId > 0
+      ? Math.trunc(installationId)
+      : undefined;
+
+  return {
+    user: user || undefined,
+    installation_id: normalizedInstallationID,
+  };
 }
 
 async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit, timeoutMs: number): Promise<Response> {
