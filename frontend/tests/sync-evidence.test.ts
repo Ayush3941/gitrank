@@ -347,31 +347,32 @@ describe("shouldShowSyncRefreshPill", () => {
 });
 
 describe("selectProfileSyncRunStatuses", () => {
-  it("keeps only user-scope runs for the active profile", () => {
+  it("keeps user-scoped runs for the active profile including child run types", () => {
     const user = buildUser({ username: "Ayush3941" });
     const statuses = selectProfileSyncRunStatuses(
       [
-        { status: "running", run_type: "user", requested_user: "Ayush3941" },
+        { status: "running", run_type: "user", requested_user: "Ayush3941", requested_by_github_login: "Ayush3941" },
         { status: "partial", run_type: "pull_request", requested_user: "Ayush3941" },
-        { status: "failed", run_type: "user", requested_user: "octocat" },
+        { status: "failed", run_type: "review", requested_user: "octocat", requested_by_github_login: "octocat" },
         { status: "completed", run_type: "user" },
       ],
       user,
     );
-    expect(statuses).toStrictEqual(["running", "completed"]);
+    expect(statuses).toStrictEqual(["running", "partial", "completed"]);
   });
 
-  it("ignores runs without status or with non-user run type", () => {
+  it("ignores runs without status or without profile ownership signal", () => {
     const user = buildUser({ username: "octocat" });
     const statuses = selectProfileSyncRunStatuses(
       [
         { status: "", run_type: "user", requested_user: "octocat" },
-        { status: "queued", run_type: "repository", requested_user: "octocat" },
+        { status: "queued", run_type: "repository", requested_by_github_login: "someone-else" },
         { status: "partial", run_type: "user", requested_user: "octocat" },
+        { status: "running", run_type: "repository", requested_by_github_login: "octocat" },
       ],
       user,
     );
-    expect(statuses).toStrictEqual(["partial"]);
+    expect(statuses).toStrictEqual(["partial", "running"]);
   });
 
   it("matches user sync runs when requested_user includes @ prefix", () => {
@@ -380,6 +381,18 @@ describe("selectProfileSyncRunStatuses", () => {
       [
         { status: "running", run_type: "user", requested_user: "@Ayush3941" },
         { status: "completed", run_type: "user", requested_user: "@someone-else" },
+      ],
+      user,
+    );
+    expect(statuses).toStrictEqual(["running"]);
+  });
+
+  it("matches user sync runs when subject handle is available", () => {
+    const user = buildUser({ username: "Ayush3941" });
+    const statuses = selectProfileSyncRunStatuses(
+      [
+        { status: "running", run_type: "user", subject: "@Ayush3941" },
+        { status: "failed", run_type: "user", subject: "@octocat" },
       ],
       user,
     );

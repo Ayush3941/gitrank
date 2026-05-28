@@ -187,6 +187,7 @@ check_markdown_relative_links() {
   local missing=0
   local file dir token target clean resolved
   while IFS= read -r file; do
+    [[ -f "$ROOT_DIR/$file" ]] || continue
     dir="$(dirname "$file")"
     while IFS= read -r token; do
       target="$token"

@@ -4,12 +4,23 @@ const ACTIVE_SYNC_RUN_STATUSES = new Set(["running", "syncing", "in_progress"]);
 const QUEUED_SYNC_RUN_STATUSES = new Set(["queued", "pending"]);
 const FAILED_SYNC_RUN_STATUSES = new Set(["failed", "cancelled", "canceled", "timed_out", "timeout"]);
 const PARTIAL_SYNC_RUN_STATUSES = new Set(["partial"]);
-const PROFILE_SYNC_RUN_TYPES = new Set(["", "user"]);
+const PROFILE_SYNC_RUN_TYPES = new Set([
+  "",
+  "user",
+  "repository",
+  "pull_request",
+  "review",
+  "issue",
+  "commit",
+  "installation",
+]);
 
 export type ProfileSyncRunStatusSource = {
   status?: string | null;
   run_type?: string | null;
+  subject?: string | null;
   requested_user?: string | null;
+  requested_by_github_login?: string | null;
 };
 
 export function hasUserContributionEvidence(user: UserProfile | null | undefined): boolean {
@@ -150,10 +161,21 @@ function isProfileSyncRun(run: ProfileSyncRunStatusSource, normalizedUser: strin
     return true;
   }
   const requestedUser = normalizeGitHubLoginToken(run.requested_user);
-  if (!requestedUser) {
+  if (requestedUser) {
+    return requestedUser === normalizedUser;
+  }
+  const requestedByGitHubLogin = normalizeGitHubLoginToken(run.requested_by_github_login);
+  if (requestedByGitHubLogin) {
+    return requestedByGitHubLogin === normalizedUser;
+  }
+  const subjectUser = normalizeSubjectGitHubLogin(run.subject);
+  if (subjectUser) {
+    return subjectUser === normalizedUser;
+  }
+  if (runType == "user") {
     return true;
   }
-  return requestedUser === normalizedUser;
+  return false;
 }
 
 function normalizeRunToken(value: string | null | undefined): string {
@@ -166,6 +188,17 @@ function normalizeRunToken(value: string | null | undefined): string {
 function normalizeGitHubLoginToken(value: string | null | undefined): string {
   const normalized = normalizeRunToken(value);
   if (!normalized) {
+    return "";
+  }
+  return normalized.replace(/^@+/, "");
+}
+
+function normalizeSubjectGitHubLogin(value: string | null | undefined): string {
+  const normalized = normalizeRunToken(value);
+  if (!normalized) {
+    return "";
+  }
+  if (!normalized.startsWith("@")) {
     return "";
   }
   return normalized.replace(/^@+/, "");

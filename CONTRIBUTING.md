@@ -305,6 +305,11 @@ Recent no-slowdown refinement (May 27, 2026):
 - GitHub ingestor sync-run filter normalization now canonicalizes `run_type`, `status`, `repository`, `user`, and `requested_by_github_login` to lowercase (and strips leading `@` from GitHub logins) before listing runs, reducing false-empty activity lists caused by case/handle-format mismatches.
 - `Store.ListSyncRuns` now applies case-insensitive matching for `run_type`, `status`, `requested_repository_full_name`, `requested_user_login`, and `requested_by_github_login` filters, so settings diagnostics remain stable even when callers send mixed-case values.
 - Frontend sync-run list requests now canonicalize filter params (`run_type`, `status`, `repository`, `user`) and strip `@` from user handles before calling `/api/sync/runs`, keeping client and backend filter semantics aligned.
+- `ListSyncRuns` now publishes both `last_attempted_at` and `last_successful_at` watermarks in addition to `last_updated_at`, so UI surfaces can separate recent failed attempts from the last successful evidence materialization.
+- Settings sync activity header now renders distinct "Last attempted" and "Last successful" indicators from backend watermarks, reducing false confidence when the newest run failed or was partial.
+- Frontend profile sync-state matching now includes user-owned child sync runs (`pull_request`, `review`, `issue`, `commit`, `repository`, `installation`) when ownership is proven by `requested_user`, `requested_by_github_login`, or `subject=@handle`, so top-level status chips do not remain falsely "Synced" while user-linked downstream sync work is still active.
+- Added `scripts/review.sh` as a single local review entrypoint (repo-sync checks + targeted sync-state tests) and kept it alarm-free by design.
+- Root-level research PDF assets are now expected under `docs/research/` so repository quality checks and tree documentation stay deterministic.
 
 ## Frontend Excellence Checklist (No-Slowdown Backlog)
 
