@@ -89,6 +89,8 @@ type PullRequestReference struct {
 	Repository string `json:"repository"`
 	Number     int    `json:"number"`
 	Title      string `json:"title,omitempty"`
+	State      string `json:"state,omitempty"`
+	Merged     bool   `json:"merged,omitempty"`
 }
 
 type ScoreHistoryEntry struct {

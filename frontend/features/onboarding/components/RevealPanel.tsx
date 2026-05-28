@@ -9,6 +9,7 @@ import { OnboardingStepper } from "@/features/onboarding/components/OnboardingSt
 import { uniqueDisplayValues } from "@/lib/display-values";
 import { formatRelativeDays } from "@/lib/formatters";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
+import { deriveEffectiveSyncState } from "@/lib/presentation/sync-evidence";
 import { formatSyncStateLabel } from "@/lib/presentation/status-tone";
 import type { UserProfile } from "@/types/gitrank";
 
@@ -21,7 +22,7 @@ export function RevealPanel({
   user: UserProfile;
   archetype?: string;
   identitySummary?: string;
-  aiMode?: "gemini" | "deterministic";
+  aiMode?: "openai" | "deterministic";
 }) {
   const strongestSignals = uniqueDisplayValues(user.strongestSignals, 4);
   const strongestSignalSummary =
@@ -30,14 +31,15 @@ export function RevealPanel({
     .filter((badge) => badge.unlocked)
     .slice(0, 3);
   const evidenceRows = user.contributions.length;
+  const effectiveSyncState = deriveEffectiveSyncState(user);
   const needsSyncRecovery =
     evidenceRows === 0 ||
-    user.syncStatus.state === "never_synced" ||
-    user.syncStatus.state === "partially_synced" ||
-    user.syncStatus.state === "failed" ||
-    user.syncStatus.state === "rate_limited";
+    effectiveSyncState === "never_synced" ||
+    effectiveSyncState === "partially_synced" ||
+    effectiveSyncState === "failed" ||
+    effectiveSyncState === "rate_limited";
   const recoveryActionLabel =
-    user.syncStatus.state === "failed" || user.syncStatus.state === "rate_limited"
+    effectiveSyncState === "failed" || effectiveSyncState === "rate_limited"
       ? "Retry sync analysis"
       : "Continue sync analysis";
   const nextActions =
@@ -81,7 +83,7 @@ export function RevealPanel({
             <div className="mx-auto max-w-3xl rounded-2xl border border-primary/24 bg-primary/10 px-4 py-3 text-left text-sm text-foreground">
               <p className="text-xs font-medium text-primary">Snapshot state</p>
               <p className="mt-2 leading-6">
-                Sync status is <span className="font-semibold text-white">{formatSyncStateLabel(user.syncStatus.state)}</span>.
+                Sync status is <span className="font-semibold text-white">{formatSyncStateLabel(effectiveSyncState)}</span>.
                 {" "}
                 {user.syncStatus.lastSyncedAt ? `Last sync ${formatRelativeDays(user.syncStatus.lastSyncedAt)}.` : ""}
                 {evidenceRows > 0
@@ -91,7 +93,7 @@ export function RevealPanel({
             </div>
           {identitySummary ? (
             <div className="mx-auto max-w-3xl rounded-2xl border border-fuchsia-300/25 bg-fuchsia-400/9 px-4 py-3 text-left text-sm text-foreground">
-              <p className="text-xs font-medium text-fuchsia-100">Identity summary ({aiMode === "gemini" ? "Gemini" : "Deterministic"})</p>
+              <p className="text-xs font-medium text-fuchsia-100">Identity summary ({aiMode === "openai" ? "ChatGPT" : "Deterministic"})</p>
               <p className="mt-2 leading-6">{identitySummary}</p>
             </div>
           ) : null}

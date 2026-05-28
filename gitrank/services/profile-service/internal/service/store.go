@@ -73,6 +73,7 @@ type scoreRow struct {
 	Name                  string
 	PRNumber              int
 	PRTitle               string
+	PRState               string
 	PRMerged              bool
 	AnalysisSource        string
 	AnalysisConfidence    float64
@@ -243,7 +244,8 @@ func (s *Store) LoadScoreRows(ctx context.Context, userID string, selection scor
 			se.event_type,
 			COALESCE(
 				NULLIF(se.metadata_jsonb->>'category', ''),
-				NULLIF(ca.category, ''),
+				NULLIF(ca.classification, ''),
+				NULLIF(ca.signals_jsonb->>'category', ''),
 				''
 			),
 			se.delta_total_xp,
@@ -286,6 +288,7 @@ func (s *Store) LoadScoreRows(ctx context.Context, userID string, selection scor
 			COALESCE(r.name, ''),
 			COALESCE(pr.number, 0),
 			COALESCE(pr.title, ''),
+			COALESCE(pr.state, ''),
 			COALESCE(pr.merged, FALSE),
 			COALESCE(NULLIF(se.metadata_jsonb->>'analysis_source', ''), ca.analysis_source, ''),
 			COALESCE((NULLIF(se.metadata_jsonb->>'confidence', ''))::double precision, ca.confidence::double precision, 0)
@@ -358,6 +361,7 @@ func (s *Store) LoadScoreRows(ctx context.Context, userID string, selection scor
 			&record.Name,
 			&record.PRNumber,
 			&record.PRTitle,
+			&record.PRState,
 			&record.PRMerged,
 			&record.AnalysisSource,
 			&record.AnalysisConfidence,

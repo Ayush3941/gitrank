@@ -95,4 +95,70 @@ describe("profile API sync-state adaptation", () => {
     const adapted = await getMyProfile();
     expect(adapted.user.syncStatus.state).toBe("partially_synced");
   });
+
+  it("maps contribution status from PR lifecycle fields", async () => {
+    const payload = buildPrivateProfileResponse({
+      score_history: [
+        {
+          event_id: "score-open",
+          event_type: "score.computed",
+          delta_xp: 42,
+          created_at: "2026-05-27T12:00:00Z",
+          score_version: "v1alpha1",
+          formula_version: "v1alpha1",
+          pull_request_id: "pr-open",
+          pull_request: {
+            repository: "owner/repo-open",
+            number: 11,
+            title: "open change",
+            state: "open",
+            merged: false,
+          },
+        },
+        {
+          event_id: "score-closed",
+          event_type: "score.computed",
+          delta_xp: 15,
+          created_at: "2026-05-27T12:05:00Z",
+          score_version: "v1alpha1",
+          formula_version: "v1alpha1",
+          pull_request_id: "pr-closed",
+          pull_request: {
+            repository: "owner/repo-closed",
+            number: 12,
+            title: "closed change",
+            state: "closed",
+            merged: false,
+          },
+        },
+        {
+          event_id: "score-merged",
+          event_type: "score.computed",
+          delta_xp: 120,
+          created_at: "2026-05-27T12:10:00Z",
+          score_version: "v1alpha1",
+          formula_version: "v1alpha1",
+          pull_request_id: "pr-merged",
+          pull_request: {
+            repository: "owner/repo-merged",
+            number: 13,
+            title: "merged change",
+            state: "closed",
+            merged: true,
+          },
+        },
+      ],
+    });
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify(payload), { status: 200 })),
+    );
+
+    const adapted = await getMyProfile();
+    const byRepo = new Map(adapted.user.contributions.map((row) => [row.repo, row.status]));
+    expect(byRepo.get("repo-open")).toBe("open");
+    expect(byRepo.get("repo-closed")).toBe("closed");
+    expect(byRepo.get("repo-merged")).toBe("merged");
+  });
 });

@@ -12,6 +12,7 @@ import { useRequestProfileSync } from "@/hooks/use-account-actions";
 import { useMyProfile } from "@/hooks/use-profile";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { formatRelativeDays } from "@/lib/formatters";
+import { deriveEffectiveSyncState } from "@/lib/presentation/sync-evidence";
 import { formatSyncStateLabel } from "@/lib/presentation/status-tone";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 
@@ -47,7 +48,7 @@ export function SyncPipeline() {
   const previousSyncStateRef = useRef<string>("stale");
   const syncPollingAttemptRef = useRef(0);
   const isSyncedRef = useRef(false);
-  const syncState = data?.user.syncStatus.state ?? "stale";
+  const syncState = data?.user ? deriveEffectiveSyncState(data.user) : "stale";
   const isSynced = syncState === "synced";
 
   useEffect(() => {
@@ -59,10 +60,10 @@ export function SyncPipeline() {
       return;
     }
     autoRequestedRef.current = true;
-    if (data.user.syncStatus.state === "synced") {
+    if (syncState === "synced") {
       return;
     }
-    if (data.user.syncStatus.state === "syncing") {
+    if (syncState === "syncing") {
       return;
     }
     userSync.mutate(undefined, {
@@ -77,7 +78,7 @@ export function SyncPipeline() {
         }
       },
     });
-  }, [data, isError, isLoading, userSync]);
+  }, [data, isError, isLoading, syncState, userSync]);
 
   useEffect(() => {
     if (!syncStartedAt || isSynced) {
@@ -208,7 +209,7 @@ export function SyncPipeline() {
           </p>
           {data ? (
             <p className="text-sm text-muted">
-              Sync · {formatSyncStateLabel(data.user.syncStatus.state)} • last refresh{" "}
+              Sync · {formatSyncStateLabel(syncState)} • last refresh{" "}
               {formatRelativeDays(data.refreshedAt)}
             </p>
           ) : null}

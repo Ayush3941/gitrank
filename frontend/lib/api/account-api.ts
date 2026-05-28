@@ -3,8 +3,8 @@ import { frontendPolicy } from "@/lib/runtime/frontend-policy";
 const DEFAULT_CSRF_COOKIE_NAME = frontendPolicy.csrfCookieName;
 const USER_SYNC_EXECUTION_TIMEOUT_MS = parseBoundedPositiveMs(
   process.env.NEXT_PUBLIC_GITRANK_USER_SYNC_EXECUTION_TIMEOUT_MS,
-  65_000,
-  15_000,
+  120_000,
+  90_000,
   600_000,
 );
 const USER_SYNC_RETRY_MAX_ATTEMPTS = parseBoundedPositiveInt(

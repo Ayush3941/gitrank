@@ -335,6 +335,8 @@ func buildScoreHistory(scoreRows []scoreRow, limit int) []contracts.ScoreHistory
 				Repository: row.Repository,
 				Number:     row.PRNumber,
 				Title:      row.PRTitle,
+				State:      strings.ToLower(strings.TrimSpace(row.PRState)),
+				Merged:     row.PRMerged,
 			}
 		}
 		out = append(out, entry)

@@ -339,6 +339,9 @@ Recent no-slowdown refinement (May 27, 2026):
 - User-history PR hydration now uses a bounded PR-file page-size override (`GITHUB_REPOSITORY_SYNC_PAGE_SIZE`) instead of hard-coded wide pages during child PR syncs, reducing timeout risk on large PR file listings while keeping repository/pull-request direct sync surfaces unchanged.
 - Dashboard-route sync-state polling now uses a configurable user-sync run lookback limit (`NEXT_PUBLIC_GITRANK_PROFILE_SYNC_RUN_LOOKBACK_LIMIT`, default `50`) so active user runs are less likely to be dropped from freshness derivation when run history is dense.
 - Added focused regression tests for the new sync guards: backend caps PR-file page-size overrides at `100`, frontend policy parsing validates sync-run lookback bounds, and `useProfileSyncRuns` keeps run-type/user lookback defaults wired through policy.
+- Profile score-history PR references now persist PR lifecycle fields (`state`, `merged`) from `pull_requests`, so frontend contribution cards can render truthful `open/closed/merged` status without hardcoded merged labels.
+- Onboarding sync surfaces now derive status from effective sync state (materialized evidence + run-state-aware) instead of raw snapshot state, reducing false "synced" reveal/analyzing states on empty evidence snapshots.
+- Frontend direct user-sync execution timeout policy now defaults to a safer `120s` with a `90s` minimum clamp for `NEXT_PUBLIC_GITRANK_USER_SYNC_EXECUTION_TIMEOUT_MS`, preventing common false client aborts on bounded multi-PR sync runs.
 
 ## Frontend Excellence Checklist (No-Slowdown Backlog)
 

@@ -90,6 +90,8 @@ type ApiPullRequestReference = {
   repository: string;
   number: number;
   title?: string;
+  state?: string;
+  merged?: boolean;
 };
 
 type ApiScoreHistoryEntry = {
@@ -481,7 +483,7 @@ function toFeaturedContributions(
         repo,
         number: entry.pull_request?.number ?? 0,
         title: entry.pull_request?.title || "Contribution",
-        status: "merged",
+        status: deriveContributionStatus(entry.pull_request),
         summary:
           showAiSummaries
             ? bestExplanationLine(entry.explanation) ||
@@ -514,7 +516,7 @@ function toContributions(
         repo,
         number: entry.pull_request?.number ?? 0,
         title: entry.pull_request?.title || "Contribution",
-        status: "merged",
+        status: deriveContributionStatus(entry.pull_request),
         category: normalizePRCategory(entry.category ?? ""),
         difficultyScore: 0,
         impactScore: 0,
@@ -699,6 +701,22 @@ function mergeUniqueStrings(base?: string[], next?: string[]): string[] {
 function bestExplanationLine(lines?: string[]): string {
   const candidate = lines?.find((line) => line.trim().length > 0) ?? "";
   return sanitizeExplanationLine(candidate);
+}
+
+function deriveContributionStatus(
+  pullRequest: ApiPullRequestReference | undefined,
+): Contribution["status"] {
+  if (pullRequest?.merged) {
+    return "merged";
+  }
+  const state = (pullRequest?.state ?? "").trim().toLowerCase();
+  if (state === "open") {
+    return "open";
+  }
+  if (state === "closed") {
+    return "closed";
+  }
+  return "merged";
 }
 
 function sanitizeExplanationLine(line: string): string {
