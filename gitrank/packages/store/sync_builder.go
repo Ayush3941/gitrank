@@ -60,18 +60,26 @@ func BuildSyncJobs(req contracts.SyncRequest, queueName, correlationID string, m
 		if req.Repository == "" {
 			return nil, errors.New("repository is required when mode=repository")
 		}
+		payload := map[string]any{
+			"repository": req.Repository,
+			"mode":       "repository",
+		}
+		if req.User != "" {
+			payload["user"] = req.User
+		}
+		if req.InstallationID > 0 {
+			payload["installation_id"] = req.InstallationID
+		}
 		job, err := NewQueueJob(QueueJobInput{
-			QueueName:     queueName,
-			Type:          SyncRepositoryJob,
-			CorrelationID: correlationID,
-			Repository:    req.Repository,
-			Subject:       req.Repository,
-			DedupeKey:     "repository:" + req.Repository,
-			MaxAttempts:   maxAttempts,
-			Payload: map[string]string{
-				"repository": req.Repository,
-				"mode":       "repository",
-			},
+			QueueName:      queueName,
+			Type:           SyncRepositoryJob,
+			CorrelationID:  correlationID,
+			InstallationID: req.InstallationID,
+			Repository:     req.Repository,
+			Subject:        req.Repository,
+			DedupeKey:      "repository:" + req.Repository,
+			MaxAttempts:    maxAttempts,
+			Payload:        payload,
 		})
 		if err != nil {
 			return nil, err
@@ -81,32 +89,32 @@ func BuildSyncJobs(req contracts.SyncRequest, queueName, correlationID string, m
 		if req.Repository == "" || req.Number <= 0 {
 			return nil, errors.New("repository and number are required when mode=pull_request")
 		}
-		return resourceJobs(queueName, correlationID, SyncPullRequestJob, req.Repository, req.Number, "", "pull_request", maxAttempts)
+		return resourceJobs(queueName, correlationID, SyncPullRequestJob, req.Repository, req.Number, "", "pull_request", req.User, req.InstallationID, maxAttempts)
 	case "review":
 		if req.Repository == "" || req.Number <= 0 {
 			return nil, errors.New("repository and number are required when mode=review")
 		}
-		return resourceJobs(queueName, correlationID, SyncReviewJob, req.Repository, req.Number, "", "review", maxAttempts)
+		return resourceJobs(queueName, correlationID, SyncReviewJob, req.Repository, req.Number, "", "review", req.User, req.InstallationID, maxAttempts)
 	case "issue":
 		if req.Repository == "" || req.Number <= 0 {
 			return nil, errors.New("repository and number are required when mode=issue")
 		}
-		return resourceJobs(queueName, correlationID, SyncIssueJob, req.Repository, req.Number, "", "issue", maxAttempts)
+		return resourceJobs(queueName, correlationID, SyncIssueJob, req.Repository, req.Number, "", "issue", req.User, req.InstallationID, maxAttempts)
 	case "commit":
 		if req.Repository == "" || req.SHA == "" {
 			return nil, errors.New("repository and sha are required when mode=commit")
 		}
-		return resourceJobs(queueName, correlationID, SyncCommitJob, req.Repository, 0, req.SHA, "commit", maxAttempts)
+		return resourceJobs(queueName, correlationID, SyncCommitJob, req.Repository, 0, req.SHA, "commit", req.User, req.InstallationID, maxAttempts)
 	case "analysis_pull_request":
 		if req.Repository == "" || req.Number <= 0 {
 			return nil, errors.New("repository and number are required when mode=analysis_pull_request")
 		}
-		return resourceJobs(queueName, correlationID, AnalysisPullRequestJob, req.Repository, req.Number, "", "analysis_pull_request", maxAttempts)
+		return resourceJobs(queueName, correlationID, AnalysisPullRequestJob, req.Repository, req.Number, "", "analysis_pull_request", req.User, req.InstallationID, maxAttempts)
 	case "report_materialize_pull_request":
 		if req.Repository == "" || req.Number <= 0 {
 			return nil, errors.New("repository and number are required when mode=report_materialize_pull_request")
 		}
-		return resourceJobs(queueName, correlationID, ReportMaterializePRJob, req.Repository, req.Number, "", "report_materialize_pull_request", maxAttempts)
+		return resourceJobs(queueName, correlationID, ReportMaterializePRJob, req.Repository, req.Number, "", "report_materialize_pull_request", req.User, req.InstallationID, maxAttempts)
 	case "report_backfill_user_pull_requests":
 		if req.UserID == "" {
 			return nil, errors.New("user_id is required when mode=report_backfill_user_pull_requests")
@@ -316,12 +324,20 @@ func resourceJobs(
 	number int,
 	sha string,
 	mode string,
+	user string,
+	installationID int64,
 	maxAttempts int,
 ) ([]QueueJob, error) {
 	subject := repository
 	payload := map[string]any{
 		"repository": repository,
 		"mode":       mode,
+	}
+	if user != "" {
+		payload["user"] = user
+	}
+	if installationID > 0 {
+		payload["installation_id"] = installationID
 	}
 	dedupeKey := mode + ":" + repository
 	if number > 0 {
@@ -336,14 +352,15 @@ func resourceJobs(
 	}
 
 	job, err := NewQueueJob(QueueJobInput{
-		QueueName:     queueName,
-		Type:          jobType,
-		CorrelationID: correlationID,
-		Repository:    repository,
-		Subject:       subject,
-		DedupeKey:     dedupeKey,
-		MaxAttempts:   maxAttempts,
-		Payload:       payload,
+		QueueName:      queueName,
+		Type:           jobType,
+		CorrelationID:  correlationID,
+		InstallationID: installationID,
+		Repository:     repository,
+		Subject:        subject,
+		DedupeKey:      dedupeKey,
+		MaxAttempts:    maxAttempts,
+		Payload:        payload,
 	})
 	if err != nil {
 		return nil, err

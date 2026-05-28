@@ -154,6 +154,7 @@ If `GITRANK_ENV_FILE` is unset, frontend runtime falls back to `../gitrank/.env`
 - User sync now enforces GitHub App credentials for PR extraction. OAuth tokens are only used to discover user installations (`/user/installations`) and refresh login session continuity.
 - Repository, pull-request, and review execute routes now follow the same fail-closed rule: they require GitHub App installation credentials and return explicit app/OAuth/bootstrap errors instead of generic sync failures.
 - Scheduler/webhook-triggered repository/PR/review sync still works without user-login headers by using explicit `installation_id` app-token resolution.
+- Scheduler sync job payloads now preserve optional `installation_id` and `user` context, and scheduler execution forwards `X-GitRank-GitHub-Login`/`X-GitRank-Subject` when user context is present.
 - Authored-PR hydration skip metrics are now classified by cause (timeout, rate-limit, auth/scope, not-found masking, conflict, upstream), improving partial-sync diagnostics and cursor-hold behavior for auth/scope gaps.
 - When user sync reports `authored_pull_requests_capped`, UI now shows a bounded-window notice instead of implying full-history completion.
 - User-sync cursor progression no longer stays pinned on mixed-result runs; if at least one selected PR hydrated successfully, the cursor advances with overlap so newer PRs can enter subsequent bounded windows.

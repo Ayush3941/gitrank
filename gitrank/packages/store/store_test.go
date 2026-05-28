@@ -1,6 +1,7 @@
 package store
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -99,6 +100,36 @@ func TestBuildSyncJobsRepository(t *testing.T) {
 	}
 }
 
+func TestBuildSyncJobsRepositoryCarriesOptionalAuthContext(t *testing.T) {
+	jobs, err := BuildSyncJobs(contracts.SyncRequest{
+		Mode:           "repository",
+		Repository:     "octo/repo",
+		User:           "octocat",
+		InstallationID: 42,
+	}, "github-sync", "req-ctx", 5)
+	if err != nil {
+		t.Fatalf("BuildSyncJobs() error = %v", err)
+	}
+	if len(jobs) != 1 {
+		t.Fatalf("jobs len = %d, want 1", len(jobs))
+	}
+	if jobs[0].InstallationID != 42 {
+		t.Fatalf("installation_id = %d, want 42", jobs[0].InstallationID)
+	}
+	payload := map[string]any{}
+	if err := json.Unmarshal(jobs[0].Payload, &payload); err != nil {
+		t.Fatalf("unmarshal payload: %v", err)
+	}
+	user, ok := payload["user"].(string)
+	if !ok || user != "octocat" {
+		t.Fatalf("payload user = %v, want octocat", payload["user"])
+	}
+	installationID, ok := payload["installation_id"].(float64)
+	if !ok || int64(installationID) != 42 {
+		t.Fatalf("payload installation_id = %v, want 42", payload["installation_id"])
+	}
+}
+
 func TestBuildSyncJobsUserCanonicalizesSubjectAndDedupeKey(t *testing.T) {
 	jobs, err := BuildSyncJobs(contracts.SyncRequest{
 		Mode: "user",
@@ -189,6 +220,32 @@ func TestBuildSyncJobsGradePullRequest(t *testing.T) {
 	}
 	if jobs[0].DedupeKey != "grade_pull_request:"+userID+":octo/repo#17" {
 		t.Fatalf("dedupe key = %q, want grade_pull_request:%s:octo/repo#17", jobs[0].DedupeKey, userID)
+	}
+}
+
+func TestBuildSyncJobsPullRequestCarriesInstallationID(t *testing.T) {
+	jobs, err := BuildSyncJobs(contracts.SyncRequest{
+		Mode:           "pull_request",
+		Repository:     "octo/repo",
+		Number:         17,
+		InstallationID: 12001,
+	}, "github-sync", "pr-correlation", 5)
+	if err != nil {
+		t.Fatalf("BuildSyncJobs() error = %v", err)
+	}
+	if len(jobs) != 1 {
+		t.Fatalf("jobs len = %d, want 1", len(jobs))
+	}
+	if jobs[0].InstallationID != 12001 {
+		t.Fatalf("installation_id = %d, want 12001", jobs[0].InstallationID)
+	}
+	payload := map[string]any{}
+	if err := json.Unmarshal(jobs[0].Payload, &payload); err != nil {
+		t.Fatalf("unmarshal payload: %v", err)
+	}
+	installationID, ok := payload["installation_id"].(float64)
+	if !ok || int64(installationID) != 12001 {
+		t.Fatalf("payload installation_id = %v, want 12001", payload["installation_id"])
 	}
 }
 

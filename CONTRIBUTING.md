@@ -288,6 +288,7 @@ Recent sync-auth refinement (May 28, 2026):
 - Repository, pull-request, and review execute routes now use the same strict app-auth path and return explicit install/bootstrap/OAuth diagnostics instead of generic gateway failures.
 - Strict app-auth sync runtime now disables OAuth GraphQL token usage in those routes, so PR extraction remains installation-token-only end to end.
 - Scheduler/webhook sync paths can satisfy the same strict requirement without user-login headers by resolving app auth from explicit `installation_id` when present.
+- Scheduler queued sync payloads now preserve optional `installation_id` and user login context, and scheduler execution forwards `X-GitRank-GitHub-Login`/`X-GitRank-Subject` headers when user context exists.
 - Service dependency manifests now explicitly document auth split: GitHub App installation tokens are required for sync extraction, OAuth is identity/login and installation-discovery support only.
 - Frontend `next.config.ts` now loads missing env keys from `../gitrank/.env` before config evaluation, so standalone `frontend/` dev/build commands follow the same single-env-file contract without requiring a second frontend env file.
 - User-mode sync queue jobs now canonicalize login casing in `subject`/dedupe identity, and sync-run lifecycle reconciliation now matches user subjects case-insensitively so queued/running rows cannot drift when request casing differs.
@@ -831,9 +832,9 @@ This service is one of the highest-risk parts of the system because reliability,
 
 Must be implemented:
 
-- [x] GitHub OAuth user token support for the v1 public-data baseline
-- [x] optional GitHub App authentication path exists as future-upgrade scaffolding
-- [x] installation token lifecycle handling for the optional future App path
+- [x] GitHub OAuth support for sign-in/session identity and installation bootstrap only
+- [x] GitHub App installation authentication is required for PR/repo extraction paths
+- [x] installation token lifecycle handling is implemented for strict extraction routes
 - [x] webhook receiver
 - [x] webhook signature validation
 - [x] webhook replay protection
@@ -1425,7 +1426,7 @@ GitRank must assume users will try to optimize for score.
 
 Answered scope decisions:
 
-- GitRank uses GitHub OAuth for sign-in and account linking, with optional GitHub App installation permissions for installation-scoped ingestion in V2.
+- GitRank uses GitHub OAuth for sign-in/account linking only; PR/repo extraction uses GitHub App installation tokens in strict mode.
 - Private repositories are not supported for scoring in v1.
 - Public organization-owned repositories are supported and treated normally.
 - GitRank stores derived features by default, may use bounded public diff excerpts when needed, and does not store full repository file contents in v1.
@@ -1512,7 +1513,7 @@ Known v1 limitations:
 - `POST /v1/sync/user/execute` now requires GitHub App installation-backed sync credentials for PR extraction and fails closed when installation auth is unavailable. OAuth tokens are used only for installation bootstrap/discovery and explicit reconnect recovery paths.
 - Frontend sync evidence gates now treat PR-linked evidence as authoritative for synced UX; XP-only/account-level totals without concrete PR evidence render as `partially_synced` with `Evidence pending`.
 - Private repositories remain out of scope for scoring and analysis.
-- GitHub OAuth remains the browser identity path; GitHub App installation support now exists for opt-in installation-scoped ingestion, but App-driven sign-in and broader org ingestion automation are still intentionally limited.
+- GitHub OAuth remains the browser identity path; GitHub App installation auth is required for PR/repo extraction paths, while App-driven sign-in and broader org automation remain intentionally limited.
 - Scheduler execution is still bounded to the committed scheduler service, but Kubernetes now separates scheduler HTTP control-plane pods from `scheduler-job-worker` pods that lease durable sync, analysis, scoring, profile, PR-report, leaderboard, and quest materialization jobs. Live traffic proof and historical backfill coverage beyond PR-report, quest, and leaderboard season materialization are still pending.
 - Leaderboard season metadata and rank-progression presentation now read backend-generated weekly season windows, and profile-service materializes public leaderboard rows into authoritative season snapshots plus rank movement events. Historical season archives can now be materialized through the new history backfill route, while promotion/demotion automation remains pending.
 - Reduced gamification is now part of the authenticated profile privacy settings and the dashboard/settings/reveal flows apply it from the live profile response. Anonymous public/marketing pages still use local browser preference only.
@@ -1541,7 +1542,7 @@ V2 ingestion and coverage checklist:
 
 - [x] Replace owned-repository-only user sync with a bounded authored-PR discovery strategy for public repositories where GitHub APIs expose the user's contributions. User sync now runs a bounded `author:<login> type:pr archived:false` GitHub Search query, dedupes `owner/repo#number` targets, skips private/archived/disabled repository results when exposed by the API, sends each concrete PR through the persisted direct PR sync path, and is covered by the Docker-backed critical-path flow test script.
 - [x] Add GitHub App support for installation-scoped repository sync, organization-scale webhooks, and more reliable repository inventory. `sync.installation` now uses live `GET /installation/repositories` inventory with installation access tokens when App credentials are configured, while retaining persisted-installation fallback when App auth is unavailable.
-- [x] Keep OAuth for sign-in and account linking while using GitHub App installation permissions for scalable ingestion where users or organizations opt in. OAuth remains the browser identity path and App installation auth is used only for opt-in installation sync inventory and repository execution.
+- [x] Keep OAuth for sign-in/account linking while using GitHub App installation permissions for scalable ingestion. OAuth remains the browser identity path and App installation auth is required for extraction execution paths.
 - [x] Add direct PR file-list fetching for live PR sync and store only approved bounded metadata or public diff excerpts.
 - [x] Add retry, idempotency, and dedupe keys that cover each analysis and scoring step in the PR grading pipeline. Analyzer persistence uses a database advisory lock plus latest-artifact update for the same PR/analyzer/source key, `analysis.pull_request` has scheduler retry/dead-letter/dedupe coverage, score replay has a real `score.replay_user` scheduler job with a `score_replay:{user_id}` dedupe key, profile refresh has a real `profile.refresh_user` scheduler job with a `profile_refresh:{user_id}` dedupe key, PR report materialization has a real `report.materialize_pull_request` scheduler job plus `pull_request_report_snapshots.idempotency_key`, user-scoped PR report backfill has a real `report.backfill_user_pull_requests` scheduler job with a `report_backfill_user_pull_requests:{user_id}` dedupe key, user-history pipeline backfill has a real `pipeline.backfill_user_history` scheduler job with a `backfill_user_history:{user_id}` dedupe key, leaderboard materialization has a real `leaderboard.materialize_season` scheduler job plus weekly season/rank movement keys, quest reward writes use assignment/grant keys plus live score-event idempotency, the bounded `pipeline.grade_pull_request` chain has a user-plus-PR dedupe key, and Kubernetes now provides a separate `scheduler-job-worker` execution deployment.
 - [x] Add backfill jobs for historical badges and score history. Historical score replay can now be queued through `mode=score_replay`, profile snapshots can now be rebuilt through `mode=profile_refresh`, user-scoped historical score-history rebuild can now be queued through `mode=score_history_backfill_user`, user-scoped historical badge-evidence rebuild can now be queued through `mode=badge_backfill_user`, individual PR report snapshots can be materialized through `mode=report_materialize_pull_request`, user-scoped PR report enumeration can now be queued through `mode=report_backfill_user_pull_requests`, user-scoped quest board and reward evidence backfill can now be queued through `mode=quest_backfill_user`, user-history chained replay/refresh/quest/report/leaderboard backfill can now be queued through `mode=backfill_user_history`, the current weekly leaderboard can be refreshed through `mode=leaderboard_materialize_season`, and historical weekly leaderboard seasons can now be backfilled through `mode=leaderboard_backfill_history`.

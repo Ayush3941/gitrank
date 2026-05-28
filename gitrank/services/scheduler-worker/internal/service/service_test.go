@@ -516,10 +516,14 @@ func TestRunNextExecutesRepositoryJobAndCompletes(t *testing.T) {
 	var observed contracts.SyncRequest
 	var observedRequestID string
 	var observedTraceParent string
+	var observedGitHubLogin string
+	var observedSubject string
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		observedRequestID = r.Header.Get("X-Request-ID")
 		observedTraceParent = r.Header.Get("traceparent")
+		observedGitHubLogin = r.Header.Get("X-GitRank-GitHub-Login")
+		observedSubject = r.Header.Get("X-GitRank-Subject")
 		if r.URL.Path != "/v1/sync/repository/execute" {
 			t.Fatalf("path = %q, want %q", r.URL.Path, "/v1/sync/repository/execute")
 		}
@@ -544,7 +548,11 @@ func TestRunNextExecutesRepositoryJobAndCompletes(t *testing.T) {
 	cfg.Services.RequestTimeout = time.Second
 	scheduler := New(cfg)
 
-	enqueue, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "repository", Repository: "octo/repo"}, "repo-correlation", now)
+	enqueue, err := scheduler.EnqueueSync(contracts.SyncRequest{
+		Mode:       "repository",
+		Repository: "octo/repo",
+		User:       "octocat",
+	}, "repo-correlation", now)
 	if err != nil {
 		t.Fatalf("EnqueueSync() error = %v", err)
 	}
@@ -574,6 +582,12 @@ func TestRunNextExecutesRepositoryJobAndCompletes(t *testing.T) {
 	if observedTraceParent == "" {
 		t.Fatal("observed traceparent header missing")
 	}
+	if observedGitHubLogin != "octocat" {
+		t.Fatalf("observed github login header = %q, want octocat", observedGitHubLogin)
+	}
+	if observedSubject != "@octocat" {
+		t.Fatalf("observed subject header = %q, want @octocat", observedSubject)
+	}
 
 	queue := scheduler.QueueStatus(now, contracts.SchedulerJobFilter{})
 	if queue.QueueDepth != 0 {
@@ -586,10 +600,14 @@ func TestRunNextExecutesUserJobAndCompletes(t *testing.T) {
 	var observed contracts.SyncRequest
 	var observedPath string
 	var observedRequestID string
+	var observedGitHubLogin string
+	var observedSubject string
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		observedPath = r.URL.Path
 		observedRequestID = r.Header.Get("X-Request-ID")
+		observedGitHubLogin = r.Header.Get("X-GitRank-GitHub-Login")
+		observedSubject = r.Header.Get("X-GitRank-Subject")
 		if err := json.NewDecoder(r.Body).Decode(&observed); err != nil {
 			t.Fatalf("decode request: %v", err)
 		}
@@ -634,6 +652,12 @@ func TestRunNextExecutesUserJobAndCompletes(t *testing.T) {
 	}
 	if observedRequestID != "user-correlation" {
 		t.Fatalf("observed request id = %q, want %q", observedRequestID, "user-correlation")
+	}
+	if observedGitHubLogin != "octocat" {
+		t.Fatalf("observed github login header = %q, want octocat", observedGitHubLogin)
+	}
+	if observedSubject != "@octocat" {
+		t.Fatalf("observed subject header = %q, want @octocat", observedSubject)
 	}
 	if run.Job == nil || run.Job.ID != enqueue.JobIDs[0] {
 		t.Fatalf("run job = %+v, want executed job id %q", run.Job, enqueue.JobIDs[0])
@@ -728,7 +752,12 @@ func TestRunNextExecutesPullRequestJobAndCompletes(t *testing.T) {
 	cfg.Services.RequestTimeout = time.Second
 	scheduler := New(cfg)
 
-	enqueue, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "pull_request", Repository: "octo/repo", Number: 7}, "pr-correlation", now)
+	enqueue, err := scheduler.EnqueueSync(contracts.SyncRequest{
+		Mode:           "pull_request",
+		Repository:     "octo/repo",
+		Number:         7,
+		InstallationID: 42,
+	}, "pr-correlation", now)
 	if err != nil {
 		t.Fatalf("EnqueueSync() error = %v", err)
 	}
@@ -748,6 +777,9 @@ func TestRunNextExecutesPullRequestJobAndCompletes(t *testing.T) {
 	}
 	if observed.Repository != "octo/repo" || observed.Number != 7 || observed.Mode != "pull_request" {
 		t.Fatalf("observed request = %+v, want repo octo/repo number 7", observed)
+	}
+	if observed.InstallationID != 42 {
+		t.Fatalf("observed installation_id = %d, want 42", observed.InstallationID)
 	}
 	if run.Job == nil || run.Job.ID != enqueue.JobIDs[0] {
 		t.Fatalf("run job = %+v, want executed job id %q", run.Job, enqueue.JobIDs[0])

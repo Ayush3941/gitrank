@@ -756,6 +756,14 @@ func (e *httpBoundedSyncExecutor) execute(ctx context.Context, req contracts.Syn
 	if strings.TrimSpace(correlationID) != "" {
 		request.Header.Set("X-Request-ID", strings.TrimSpace(correlationID))
 	}
+	githubLogin := strings.TrimSpace(req.User)
+	for strings.HasPrefix(githubLogin, "@") {
+		githubLogin = strings.TrimPrefix(githubLogin, "@")
+	}
+	if githubLogin != "" {
+		request.Header.Set("X-GitRank-GitHub-Login", githubLogin)
+		request.Header.Set("X-GitRank-Subject", "@"+githubLogin)
+	}
 	httpkit.InjectTraceContext(ctx, request.Header)
 
 	response, err := e.client.Do(request)
@@ -1459,6 +1467,9 @@ func syncRequestFromJob(job store.QueueJob) (contracts.SyncRequest, error) {
 		if strings.TrimSpace(req.Repository) == "" {
 			req.Repository = strings.TrimSpace(job.Repository)
 		}
+		if req.InstallationID <= 0 {
+			req.InstallationID = job.InstallationID
+		}
 		req.Mode = "repository"
 		req.Repository = strings.TrimSpace(req.Repository)
 		if req.Repository == "" {
@@ -1477,6 +1488,9 @@ func syncRequestFromJob(job store.QueueJob) (contracts.SyncRequest, error) {
 		if strings.TrimSpace(req.Repository) == "" {
 			req.Repository = strings.TrimSpace(job.Repository)
 		}
+		if req.InstallationID <= 0 {
+			req.InstallationID = job.InstallationID
+		}
 		req.Mode = "pull_request"
 		req.Repository = strings.TrimSpace(req.Repository)
 		if req.Repository == "" || req.Number <= 0 {
@@ -1485,6 +1499,9 @@ func syncRequestFromJob(job store.QueueJob) (contracts.SyncRequest, error) {
 	case store.SyncReviewJob:
 		if strings.TrimSpace(req.Repository) == "" {
 			req.Repository = strings.TrimSpace(job.Repository)
+		}
+		if req.InstallationID <= 0 {
+			req.InstallationID = job.InstallationID
 		}
 		req.Mode = "review"
 		req.Repository = strings.TrimSpace(req.Repository)
@@ -1495,6 +1512,9 @@ func syncRequestFromJob(job store.QueueJob) (contracts.SyncRequest, error) {
 		if strings.TrimSpace(req.Repository) == "" {
 			req.Repository = strings.TrimSpace(job.Repository)
 		}
+		if req.InstallationID <= 0 {
+			req.InstallationID = job.InstallationID
+		}
 		req.Mode = "issue"
 		req.Repository = strings.TrimSpace(req.Repository)
 		if req.Repository == "" || req.Number <= 0 {
@@ -1503,6 +1523,9 @@ func syncRequestFromJob(job store.QueueJob) (contracts.SyncRequest, error) {
 	case store.SyncCommitJob:
 		if strings.TrimSpace(req.Repository) == "" {
 			req.Repository = strings.TrimSpace(job.Repository)
+		}
+		if req.InstallationID <= 0 {
+			req.InstallationID = job.InstallationID
 		}
 		if strings.TrimSpace(req.SHA) == "" {
 			req.SHA = strings.TrimSpace(job.Subject)
