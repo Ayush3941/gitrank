@@ -14,6 +14,18 @@ function run(metrics?: Record<string, number>): ApiSyncRunRecord {
   };
 }
 
+function runFor(
+  runType: string,
+  status: string,
+  metrics?: Record<string, number>,
+): ApiSyncRunRecord {
+  return {
+    ...run(metrics),
+    run_type: runType,
+    status,
+  };
+}
+
 describe("describeSyncRunOutcome", () => {
   it("returns superseded-active-row from deterministic metric marker", () => {
     const outcome = describeSyncRunOutcome(
@@ -61,6 +73,44 @@ describe("describeSyncRunOutcome", () => {
       }),
     );
     expect(outcome.code).toBe("scope_limited");
+  });
+
+  it("returns repository-partial-subfetch for repository partial runs with skipped sub-fetch metrics", () => {
+    const outcome = describeSyncRunOutcome(
+      runFor("repository", "partial", {
+        pull_requests_skipped: 1,
+      }),
+    );
+    expect(outcome.code).toBe("repository_partial_subfetch");
+    expect(outcome.message).toContain("Repository sync completed with partial evidence");
+  });
+
+  it("returns pull-request-partial-subfetch for PR surface partial runs with degraded fetch metrics", () => {
+    const outcome = describeSyncRunOutcome(
+      runFor("pull_request", "partial", {
+        pull_request_files_fetch_errors: 1,
+      }),
+    );
+    expect(outcome.code).toBe("pull_request_partial_subfetch");
+    expect(outcome.message).toContain("PR surface sync completed with partial evidence");
+  });
+
+  it("returns installation-partial-child for installation partial runs with child partial metrics", () => {
+    const outcome = describeSyncRunOutcome(
+      runFor("installation", "partial", {
+        repository_sync_partial: 2,
+      }),
+    );
+    expect(outcome.code).toBe("installation_partial_child");
+    expect(outcome.message).toContain("repository child sync runs were partial");
+  });
+
+  it("returns generic-partial when status is partial without specific metrics", () => {
+    const outcome = describeSyncRunOutcome(
+      runFor("repository", "partial"),
+    );
+    expect(outcome.code).toBe("generic_partial");
+    expect(outcome.message).toContain("partial evidence");
   });
 
   it("returns unsupported-api-version when backend metrics flag unsupported API version", () => {

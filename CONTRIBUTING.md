@@ -1784,6 +1784,7 @@ ABRA implementation checklist:
 - [x] Repository sync now persists `partial` status when PR/issue/commit sub-fetches are skipped due bounded recoverable upstream failures, instead of over-reporting those runs as fully completed.
 - [x] PR/review surface sync now persists `partial` status when review/comment/file sub-fetches fail, while keeping intentionally policy-skipped lanes distinct from error-driven degradation.
 - [x] Installation sync now bubbles child repository partial outcomes into a top-level `partial` run status so installation-level telemetry remains operationally truthful.
+- [x] Frontend sync-run diagnostics now explains repository, PR surface, and installation partial outcomes using mode-specific metrics (`pull_requests_skipped`, `issues_skipped`, `commits_skipped`, `*_fetch_errors`, `repository_sync_partial`) instead of showing empty/no-op status text for partial runs.
 - [x] Frontend user-sync execution deduplicates concurrent requests per user/login key in `frontend/lib/api/account-api.ts`, preventing multi-component or multi-click stampedes against `/api/sync/user`.
 - [x] User-sync status remains `partial` while authored-PR backfill is still incomplete (`authored_pull_request_backfill_incomplete`), so UI sync badges do not over-claim full-history completion.
 - [x] User-sync refresh feedback now distinguishes backfill-in-progress partials from scope-limited partials, so users see progress guidance instead of generic reconnect errors when history backfill is still advancing.

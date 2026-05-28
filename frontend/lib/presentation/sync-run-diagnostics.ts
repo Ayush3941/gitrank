@@ -28,6 +28,10 @@ export type SyncRunDiagnostic = {
     | "sync_capped_recent"
     | "superseded_active_row"
     | "synced_targets"
+    | "repository_partial_subfetch"
+    | "pull_request_partial_subfetch"
+    | "installation_partial_child"
+    | "generic_partial"
     | "none";
   message: string;
 };
@@ -54,7 +58,17 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
     };
   }
 
+  const normalizedRunType = run.run_type.trim().toLowerCase();
+  const normalizedStatus = run.status.trim().toLowerCase();
+
   if (!metrics) {
+    if (normalizedStatus === "partial") {
+      return {
+        code: "generic_partial",
+        message:
+          "Sync completed with partial evidence due to bounded upstream degradation. Existing data was preserved and later runs can fill missing rows.",
+      };
+    }
     return {
       code: "none",
       message: "",
@@ -94,6 +108,16 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
   const selectedMergedPRs = metricCount(metrics, "authored_pull_requests_selected_merged");
   const selectedUnmergedPRs = metricCount(metrics, "authored_pull_requests_selected_unmerged");
   const selectedUnmergedOnly = metricCount(metrics, "authored_pull_requests_selected_unmerged_only") > 0;
+  const repositorySubfetchSkipped =
+    metricCount(metrics, "pull_requests_skipped", "issues_skipped", "commits_skipped") > 0;
+  const pullRequestSurfaceFetchErrors =
+    metricCount(
+      metrics,
+      "reviews_fetch_errors",
+      "review_comments_fetch_errors",
+      "pull_request_files_fetch_errors",
+    ) > 0;
+  const installationChildPartial = metricCount(metrics, "repository_sync_partial") > 0;
 
   if (zeroDiscoveryWithHistory) {
     return {
@@ -107,6 +131,30 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
       code: "scope_limited",
       message:
         "GitHub returned limited authorization scope for authored PR discovery. Reconnect GitHub to expand accessible PR evidence.",
+    };
+  }
+  if (normalizedRunType === "repository" && repositorySubfetchSkipped) {
+    return {
+      code: "repository_partial_subfetch",
+      message:
+        "Repository sync completed with partial evidence: one or more PR/issue/commit sub-fetches were skipped after recoverable GitHub errors.",
+    };
+  }
+  if (
+    (normalizedRunType === "pull_request" || normalizedRunType === "review") &&
+    pullRequestSurfaceFetchErrors
+  ) {
+    return {
+      code: "pull_request_partial_subfetch",
+      message:
+        "PR surface sync completed with partial evidence: review, comment, or file sub-fetches degraded and will retry in later runs.",
+    };
+  }
+  if (normalizedRunType === "installation" && installationChildPartial) {
+    return {
+      code: "installation_partial_child",
+      message:
+        "Installation sync completed with partial evidence because one or more repository child sync runs were partial.",
     };
   }
   if (unsupportedAPIVersion) {
@@ -269,6 +317,13 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
     return {
       code: "synced_targets",
       message: `Synced ${selectedAuthoredPRs} authored PR target${selectedAuthoredPRs === 1 ? "" : "s"} in this run.`,
+    };
+  }
+  if (normalizedStatus === "partial") {
+    return {
+      code: "generic_partial",
+      message:
+        "Sync completed with partial evidence due to bounded upstream degradation. Existing data was preserved and later runs can fill missing rows.",
     };
   }
   return {
