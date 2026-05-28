@@ -1,9 +1,13 @@
 import type { UserProfile } from "@/types/gitrank";
+import {
+  ACTIVE_SYNC_RUN_STATUSES,
+  COMPLETED_SYNC_RUN_STATUSES,
+  FAILED_SYNC_RUN_STATUSES,
+  PARTIAL_SYNC_RUN_STATUSES,
+  QUEUED_SYNC_RUN_STATUSES,
+  normalizeSyncRunStatusToken,
+} from "@/lib/sync/sync-run-status-policy";
 
-const ACTIVE_SYNC_RUN_STATUSES = new Set(["running", "syncing", "in_progress"]);
-const QUEUED_SYNC_RUN_STATUSES = new Set(["queued", "pending"]);
-const FAILED_SYNC_RUN_STATUSES = new Set(["failed", "cancelled", "canceled", "timed_out", "timeout"]);
-const PARTIAL_SYNC_RUN_STATUSES = new Set(["partial"]);
 const PROFILE_SYNC_RUN_TYPES = new Set([
   "",
   "user",
@@ -142,14 +146,18 @@ function hasPendingSyncRunStatuses(syncRunStatuses: readonly string[] | undefine
     return false;
   }
   for (const rawStatus of syncRunStatuses) {
-    const normalized = rawStatus.trim().toLowerCase();
+    const normalized = normalizeSyncRunStatusToken(rawStatus);
     if (!normalized) {
       continue;
     }
     if (ACTIVE_SYNC_RUN_STATUSES.has(normalized) || QUEUED_SYNC_RUN_STATUSES.has(normalized)) {
       return true;
     }
-    if (PARTIAL_SYNC_RUN_STATUSES.has(normalized) || FAILED_SYNC_RUN_STATUSES.has(normalized) || normalized === "completed") {
+    if (
+      PARTIAL_SYNC_RUN_STATUSES.has(normalized) ||
+      FAILED_SYNC_RUN_STATUSES.has(normalized) ||
+      COMPLETED_SYNC_RUN_STATUSES.has(normalized)
+    ) {
       return false;
     }
   }
@@ -161,7 +169,7 @@ function latestTerminalSyncRunStatus(syncRunStatuses: readonly string[] | undefi
     return null;
   }
   for (const rawStatus of syncRunStatuses) {
-    const normalized = rawStatus.trim().toLowerCase();
+    const normalized = normalizeSyncRunStatusToken(rawStatus);
     if (!normalized) {
       continue;
     }
@@ -200,7 +208,7 @@ function normalizeRunToken(value: string | null | undefined): string {
   if (typeof value !== "string") {
     return "";
   }
-  return value.trim().toLowerCase();
+  return normalizeSyncRunStatusToken(value);
 }
 
 function normalizeGitHubLoginToken(value: string | null | undefined): string {
