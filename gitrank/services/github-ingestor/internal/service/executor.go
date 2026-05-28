@@ -460,6 +460,13 @@ func (e *Executor) SyncUser(
 			classifyAuthoredPullRequestHydrationError(response.Fetched, err)
 			continue
 		}
+		if child.Fetched["pull_requests_merged"] > 0 {
+			response.Fetched["authored_pull_requests_selected_merged"]++
+		} else if child.Fetched["pull_requests_unmerged"] > 0 {
+			response.Fetched["authored_pull_requests_selected_unmerged"]++
+		} else {
+			response.Fetched["authored_pull_requests_selected_lifecycle_unknown"]++
+		}
 		response.Fetched = mergeCountMaps(response.Fetched, child.Fetched)
 		response.Persisted = mergeCountMaps(response.Persisted, child.Persisted)
 		aggregatePersisted = addPersistResult(aggregatePersisted, persistResultFromCountMap(child.Persisted))
@@ -735,6 +742,7 @@ func (e *Executor) syncPullRequestSurface(
 		"reviews":            len(reviews),
 		"review_comments":    len(reviewComments),
 	}
+	fetchedCounts = mergeCountMaps(fetchedCounts, pullRequestLifecycleFetchedCounts(pullRequest))
 	if reviewsSkipped {
 		fetchedCounts["reviews_skipped"] = 1
 		if options.skipReviews {
@@ -2816,6 +2824,36 @@ func normalizePullRequest(pullRequest map[string]any) map[string]any {
 		pullRequest["merged"] = stringValue(pullRequest["merged_at"]) != ""
 	}
 	return pullRequest
+}
+
+func pullRequestLifecycleFetchedCounts(pullRequest map[string]any) map[string]int {
+	counts := map[string]int{}
+	if pullRequest == nil {
+		counts["pull_requests_state_unknown"] = 1
+		counts["pull_requests_unmerged"] = 1
+		return counts
+	}
+
+	state := strings.ToLower(stringValue(pullRequest["state"]))
+	switch state {
+	case "open":
+		counts["pull_requests_state_open"] = 1
+	case "closed":
+		counts["pull_requests_state_closed"] = 1
+	default:
+		counts["pull_requests_state_unknown"] = 1
+	}
+
+	merged := boolValue(pullRequest["merged"])
+	if !merged {
+		merged = stringValue(pullRequest["merged_at"]) != ""
+	}
+	if merged {
+		counts["pull_requests_merged"] = 1
+	} else {
+		counts["pull_requests_unmerged"] = 1
+	}
+	return counts
 }
 
 func normalizeCommits(commits []map[string]any) []map[string]any {

@@ -6,6 +6,8 @@ export function buildUserSyncRefreshFeedback(
 ): RefreshFeedback {
   const fetched = result.fetched ?? {};
   const selectedAuthoredPullRequests = Math.max(0, fetched.authored_pull_requests_selected ?? 0);
+  const selectedMergedPullRequests = Math.max(0, fetched.authored_pull_requests_selected_merged ?? 0);
+  const selectedUnmergedPullRequests = Math.max(0, fetched.authored_pull_requests_selected_unmerged ?? 0);
   const discoveryEmpty = (fetched.authored_pull_request_discovery_empty ?? 0) > 0;
   if (fetched.fallback_queue_unavailable === 1) {
     return {
@@ -28,6 +30,18 @@ export function buildUserSyncRefreshFeedback(
       tone: "warning",
       message:
         "GitHub PR sync found new targets, but score replay produced no events yet. Keep this page open and refresh after processing catches up.",
+    };
+  }
+  if ((fetched.post_sync_score_replay_expected_zero_unmerged ?? 0) > 0 || (
+    selectedAuthoredPullRequests > 0 &&
+    selectedMergedPullRequests == 0 &&
+    selectedUnmergedPullRequests == selectedAuthoredPullRequests &&
+    (fetched.post_sync_score_replay_events ?? 0) == 0
+  )) {
+    return {
+      tone: "warning",
+      message:
+        "GitHub PR sync completed, but current selected PR targets are still unmerged. XP and score movement begin after merge evidence lands.",
     };
   }
 

@@ -675,8 +675,12 @@ func TestUserSyncExecutionMarksPartialWhenScoreReplayYieldsNoEventsAfterAuthored
 			CorrelationID: "req-user-2",
 			StartedAt:     time.Date(2026, 5, 6, 10, 0, 0, 0, time.UTC),
 			FinishedAt:    time.Date(2026, 5, 6, 10, 0, 4, 0, time.UTC),
-			Fetched:       map[string]int{"authored_pull_requests_selected": 5},
-			Persisted:     map[string]int{"pull_requests": 5},
+			Fetched: map[string]int{
+				"authored_pull_requests_selected":          5,
+				"authored_pull_requests_selected_merged":   2,
+				"authored_pull_requests_selected_unmerged": 3,
+			},
+			Persisted: map[string]int{"pull_requests": 5},
 		})
 	}))
 	defer ingestor.Close()
@@ -749,11 +753,123 @@ func TestUserSyncExecutionMarksPartialWhenScoreReplayYieldsNoEventsAfterAuthored
 	if observed.Fetched["post_sync_score_replay_mismatch"] != 1 {
 		t.Fatalf("Fetched[post_sync_score_replay_mismatch] = %d, want 1", observed.Fetched["post_sync_score_replay_mismatch"])
 	}
+	if observed.Fetched["post_sync_score_replay_expected_zero_unmerged"] != 0 {
+		t.Fatalf(
+			"Fetched[post_sync_score_replay_expected_zero_unmerged] = %d, want 0",
+			observed.Fetched["post_sync_score_replay_expected_zero_unmerged"],
+		)
+	}
 	if observed.Fetched["post_sync_score_replay_events"] != 0 {
 		t.Fatalf("Fetched[post_sync_score_replay_events] = %d, want 0", observed.Fetched["post_sync_score_replay_events"])
 	}
 	if observed.Fetched["post_sync_refresh_ok"] != 1 {
 		t.Fatalf("Fetched[post_sync_refresh_ok] = %d, want 1", observed.Fetched["post_sync_refresh_ok"])
+	}
+}
+
+func TestUserSyncExecutionDoesNotMarkMismatchWhenOnlyUnmergedTargetsWereSelected(t *testing.T) {
+	auth := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_ = json.NewEncoder(w).Encode(contracts.SessionEnvelope{
+			Session: contracts.SessionIdentity{
+				Subject:     "00000000-0000-0000-0000-000000000001",
+				GitHubLogin: "octocat",
+				Roles:       []string{"user"},
+			},
+		})
+	}))
+	defer auth.Close()
+
+	ingestor := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_ = json.NewEncoder(w).Encode(contracts.GitHubSyncExecutionResponse{
+			Status:        "completed",
+			Mode:          "user",
+			User:          "octocat",
+			CorrelationID: "req-user-unmerged",
+			StartedAt:     time.Date(2026, 5, 6, 10, 0, 0, 0, time.UTC),
+			FinishedAt:    time.Date(2026, 5, 6, 10, 0, 4, 0, time.UTC),
+			Fetched: map[string]int{
+				"authored_pull_requests_selected":          4,
+				"authored_pull_requests_selected_merged":   0,
+				"authored_pull_requests_selected_unmerged": 4,
+			},
+			Persisted: map[string]int{"pull_requests": 4},
+		})
+	}))
+	defer ingestor.Close()
+
+	scoring := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !strings.HasPrefix(r.URL.Path, "/v1/score/users/") {
+			t.Fatalf("path = %q, want score replay route", r.URL.Path)
+		}
+		w.WriteHeader(http.StatusAccepted)
+		_ = json.NewEncoder(w).Encode(contracts.ReplayUserScoresResponse{
+			Snapshot: contracts.UserScoreSnapshotResponse{
+				ReplayRunID:  "run-unmerged",
+				UserID:       "00000000-0000-0000-0000-000000000001",
+				ScoreVersion: "v1alpha1",
+				TriggerType:  "live",
+				TotalXP:      0,
+				Level:        "1",
+				RankTier:     "Bronze I",
+			},
+			Badges: []contracts.BadgeView{},
+			Events: 0,
+		})
+	}))
+	defer scoring.Close()
+
+	profile := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case strings.Contains(r.URL.Path, "/refresh"),
+			strings.Contains(r.URL.Path, "/pr-reports/backfill"),
+			strings.Contains(r.URL.Path, "/quests/backfill"):
+			w.WriteHeader(http.StatusAccepted)
+			_, _ = w.Write([]byte(`{"status":"accepted"}`))
+		default:
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"ok":true}`))
+		}
+	}))
+	defer profile.Close()
+
+	cfg := testConfig(profile.URL, auth.URL, ingestor.URL)
+	cfg.Services.ScoringBaseURL = scoring.URL
+	cfg.Services.ProfileBaseURL = profile.URL
+	router := NewRouter(cfg, testLogger(), "test")
+
+	request := httptest.NewRequest(http.MethodPost, "/v1/sync/user/execute", strings.NewReader(`{}`))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Cookie", "gitrank_session=session-unmerged; gitrank_csrf=csrf-unmerged")
+	csrfToken, err := authkit.DoubleSubmitCSRFFromToken([]byte("test-session-secret"), "session-unmerged")
+	if err != nil {
+		t.Fatalf("csrf token: %v", err)
+	}
+	request.Header.Set("X-CSRF-Token", csrfToken)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusOK, response.Body.String())
+	}
+	var observed contracts.GitHubSyncExecutionResponse
+	if err := json.Unmarshal(response.Body.Bytes(), &observed); err != nil {
+		t.Fatalf("unmarshal response: %v", err)
+	}
+	if observed.Status != "completed" {
+		t.Fatalf("execution status = %q, want completed", observed.Status)
+	}
+	if observed.Fetched["post_sync_score_replay_empty"] != 1 {
+		t.Fatalf("Fetched[post_sync_score_replay_empty] = %d, want 1", observed.Fetched["post_sync_score_replay_empty"])
+	}
+	if observed.Fetched["post_sync_score_replay_mismatch"] != 0 {
+		t.Fatalf("Fetched[post_sync_score_replay_mismatch] = %d, want 0", observed.Fetched["post_sync_score_replay_mismatch"])
+	}
+	if observed.Fetched["post_sync_score_replay_expected_zero_unmerged"] != 1 {
+		t.Fatalf(
+			"Fetched[post_sync_score_replay_expected_zero_unmerged] = %d, want 1",
+			observed.Fetched["post_sync_score_replay_expected_zero_unmerged"],
+		)
 	}
 }
 

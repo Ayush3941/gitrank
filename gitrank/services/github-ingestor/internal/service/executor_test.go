@@ -336,6 +336,67 @@ func TestUserSyncExecutionStatus(t *testing.T) {
 	}
 }
 
+func TestPullRequestLifecycleFetchedCounts(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name        string
+		pullRequest map[string]any
+		wantMerged  int
+		wantOpen    int
+		wantClosed  int
+	}{
+		{
+			name: "open and unmerged pull request",
+			pullRequest: map[string]any{
+				"state":  "open",
+				"merged": false,
+			},
+			wantMerged: 0,
+			wantOpen:   1,
+			wantClosed: 0,
+		},
+		{
+			name: "closed and merged pull request",
+			pullRequest: map[string]any{
+				"state":     "closed",
+				"merged":    true,
+				"merged_at": "2026-05-27T00:00:00Z",
+			},
+			wantMerged: 1,
+			wantOpen:   0,
+			wantClosed: 1,
+		},
+		{
+			name: "closed merged_at fallback when merged bool is absent",
+			pullRequest: map[string]any{
+				"state":     "closed",
+				"merged_at": "2026-05-27T00:00:00Z",
+			},
+			wantMerged: 1,
+			wantOpen:   0,
+			wantClosed: 1,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			got := pullRequestLifecycleFetchedCounts(test.pullRequest)
+			if got["pull_requests_merged"] != test.wantMerged {
+				t.Fatalf("pull_requests_merged = %d, want %d", got["pull_requests_merged"], test.wantMerged)
+			}
+			if got["pull_requests_state_open"] != test.wantOpen {
+				t.Fatalf("pull_requests_state_open = %d, want %d", got["pull_requests_state_open"], test.wantOpen)
+			}
+			if got["pull_requests_state_closed"] != test.wantClosed {
+				t.Fatalf("pull_requests_state_closed = %d, want %d", got["pull_requests_state_closed"], test.wantClosed)
+			}
+		})
+	}
+}
+
 func TestShouldForceAuthoredPRBootstrap(t *testing.T) {
 	t.Parallel()
 

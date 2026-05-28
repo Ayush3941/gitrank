@@ -20,6 +20,7 @@ export type SyncRunDiagnostic = {
     | "recent_seed_empty"
     | "broad_fallback"
     | "discovery_empty"
+    | "selected_unmerged_only"
     | "sync_capped_recent"
     | "superseded_active_row"
     | "synced_targets"
@@ -82,6 +83,8 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
   const syncCapped = metricCount(metrics, "authored_pull_requests_capped") > 0;
   const scoreReplayEvents = metricCount(metrics, "post_sync_score_replay_events");
   const selectedAuthoredPRs = metricCount(metrics, "authored_pull_requests_selected");
+  const selectedMergedPRs = metricCount(metrics, "authored_pull_requests_selected_merged");
+  const selectedUnmergedPRs = metricCount(metrics, "authored_pull_requests_selected_unmerged");
 
   if (zeroDiscoveryWithHistory) {
     return {
@@ -205,6 +208,18 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
     return {
       code: "snapshot_refresh_pending",
       message: "Sync completed, but profile snapshot refresh is still finishing.",
+    };
+  }
+  if (
+    selectedAuthoredPRs > 0 &&
+    selectedMergedPRs == 0 &&
+    selectedUnmergedPRs == selectedAuthoredPRs &&
+    scoreReplayEvents == 0
+  ) {
+    return {
+      code: "selected_unmerged_only",
+      message:
+        `Synced ${selectedAuthoredPRs} authored PR target${selectedAuthoredPRs === 1 ? "" : "s"}, but all are currently unmerged. XP and score movement start after merge events are observed.`,
     };
   }
   if (syncCapped && selectedAuthoredPRs > 0) {

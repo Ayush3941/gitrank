@@ -168,6 +168,19 @@ describe("describeSyncRunOutcome", () => {
     expect(outcome.message).toContain("backfill");
   });
 
+  it("returns selected-unmerged-only when selected targets are all unmerged and replay emits zero events", () => {
+    const outcome = describeSyncRunOutcome(
+      run({
+        authored_pull_requests_selected: 4,
+        authored_pull_requests_selected_merged: 0,
+        authored_pull_requests_selected_unmerged: 4,
+        post_sync_score_replay_events: 0,
+      }),
+    );
+    expect(outcome.code).toBe("selected_unmerged_only");
+    expect(outcome.message).toContain("all are currently unmerged");
+  });
+
   it("returns profile-refresh-failed when post-sync profile refresh fails", () => {
     const outcome = describeSyncRunOutcome(
       run({

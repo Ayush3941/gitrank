@@ -131,6 +131,23 @@ describe("buildUserSyncRefreshFeedback", () => {
     expect(feedback.message).toContain("produced no events yet");
   });
 
+  it("returns warning when selected targets are all unmerged and replay is expected to stay zero", () => {
+    const feedback = buildUserSyncRefreshFeedback(
+      execution({
+        status: "completed",
+        fetched: {
+          authored_pull_requests_selected: 4,
+          authored_pull_requests_selected_merged: 0,
+          authored_pull_requests_selected_unmerged: 4,
+          post_sync_score_replay_events: 0,
+          post_sync_score_replay_expected_zero_unmerged: 1,
+        },
+      }),
+    );
+    expect(feedback.tone).toBe("warning");
+    expect(feedback.message).toContain("still unmerged");
+  });
+
   it("returns success when sync is queued", () => {
     const feedback = buildUserSyncRefreshFeedback(
       execution({ status: "queued" }),

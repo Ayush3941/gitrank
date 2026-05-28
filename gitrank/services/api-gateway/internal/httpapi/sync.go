@@ -323,8 +323,13 @@ func refreshUserDashboardEvidence(
 			execution.Fetched["post_sync_score_replay_badges"] = len(replay.Badges)
 			if replay.Events == 0 {
 				execution.Fetched["post_sync_score_replay_empty"] = 1
-				if execution.Fetched["authored_pull_requests_selected"] > 0 {
+				selectedTargets := max(0, execution.Fetched["authored_pull_requests_selected"])
+				selectedMergedTargets := max(0, execution.Fetched["authored_pull_requests_selected_merged"])
+				selectedUnmergedTargets := max(0, execution.Fetched["authored_pull_requests_selected_unmerged"])
+				if selectedTargets > 0 && selectedMergedTargets > 0 {
 					execution.Fetched["post_sync_score_replay_mismatch"] = 1
+				} else if selectedTargets > 0 && selectedUnmergedTargets == selectedTargets {
+					execution.Fetched["post_sync_score_replay_expected_zero_unmerged"] = 1
 				}
 			}
 		}
