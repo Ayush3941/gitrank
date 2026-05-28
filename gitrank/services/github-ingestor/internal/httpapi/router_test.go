@@ -426,6 +426,24 @@ func TestWriteSyncExecutionErrorMapsAppFailures(t *testing.T) {
 			wantStatus: http.StatusBadGateway,
 			wantCode:   "github_repository_sync_failed",
 		},
+		{
+			name:       "falls back to installation sync code",
+			err:        errors.New("upstream failed"),
+			wantStatus: http.StatusBadGateway,
+			wantCode:   "github_installation_sync_failed",
+		},
+		{
+			name:       "falls back to issue sync code",
+			err:        errors.New("upstream failed"),
+			wantStatus: http.StatusBadGateway,
+			wantCode:   "github_issue_sync_failed",
+		},
+		{
+			name:       "falls back to commit sync code",
+			err:        errors.New("upstream failed"),
+			wantStatus: http.StatusBadGateway,
+			wantCode:   "github_commit_sync_failed",
+		},
 	}
 
 	for _, tc := range tests {
@@ -433,7 +451,7 @@ func TestWriteSyncExecutionErrorMapsAppFailures(t *testing.T) {
 			request := httptest.NewRequest(http.MethodPost, "/v1/sync/repository/execute", nil)
 			response := httptest.NewRecorder()
 
-			writeSyncExecutionError(response, request, "github_repository_sync_failed", tc.err)
+			writeSyncExecutionError(response, request, tc.wantCode, tc.err)
 
 			if response.Code != tc.wantStatus {
 				t.Fatalf("status = %d, want %d, body=%s", response.Code, tc.wantStatus, response.Body.String())

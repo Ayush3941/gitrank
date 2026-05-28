@@ -383,7 +383,7 @@ func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQ
 			GitHubLogin: strings.TrimSpace(r.Header.Get("X-GitRank-GitHub-Login")),
 		}, httpkit.RequestIDFromContext(r.Context()), startedAt)
 		if err != nil {
-			httpkit.WriteError(w, http.StatusBadGateway, "github_installation_sync_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			writeSyncExecutionError(w, r, "github_installation_sync_failed", err)
 			return
 		}
 		httpkit.WriteJSON(w, http.StatusOK, response)
@@ -473,7 +473,7 @@ func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQ
 			GitHubLogin: strings.TrimSpace(r.Header.Get("X-GitRank-GitHub-Login")),
 		}, httpkit.RequestIDFromContext(r.Context()), startedAt)
 		if err != nil {
-			httpkit.WriteError(w, http.StatusBadGateway, "github_issue_sync_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			writeSyncExecutionError(w, r, "github_issue_sync_failed", err)
 			return
 		}
 		httpkit.WriteJSON(w, http.StatusOK, response)
@@ -504,7 +504,7 @@ func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQ
 			GitHubLogin: strings.TrimSpace(r.Header.Get("X-GitRank-GitHub-Login")),
 		}, httpkit.RequestIDFromContext(r.Context()), startedAt)
 		if err != nil {
-			httpkit.WriteError(w, http.StatusBadGateway, "github_commit_sync_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			writeSyncExecutionError(w, r, "github_commit_sync_failed", err)
 			return
 		}
 		httpkit.WriteJSON(w, http.StatusOK, response)
