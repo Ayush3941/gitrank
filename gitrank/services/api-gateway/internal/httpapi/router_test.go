@@ -687,13 +687,13 @@ func TestUserSyncExecutionMarksPartialWhenScoreReplayYieldsNoEventsAfterAuthored
 		w.WriteHeader(http.StatusAccepted)
 		_ = json.NewEncoder(w).Encode(contracts.ReplayUserScoresResponse{
 			Snapshot: contracts.UserScoreSnapshotResponse{
-				ReplayRunID: "run-1",
-				UserID:      "00000000-0000-0000-0000-000000000001",
+				ReplayRunID:  "run-1",
+				UserID:       "00000000-0000-0000-0000-000000000001",
 				ScoreVersion: "v1alpha1",
-				TriggerType: "live",
-				TotalXP:     0,
-				Level:       "1",
-				RankTier:    "Bronze I",
+				TriggerType:  "live",
+				TotalXP:      0,
+				Level:        "1",
+				RankTier:     "Bronze I",
 			},
 			Badges: []contracts.BadgeView{},
 			Events: 0,
@@ -930,7 +930,7 @@ func TestSyncRunsRouteFiltersByAuthenticatedActor(t *testing.T) {
 				RequestedByGitHubLogin: "octocat",
 				Limit:                  10,
 			},
-			LastUpdatedAt: time.Date(2026, 5, 8, 9, 2, 0, 0, time.UTC),
+			LastUpdatedAt: timePointer(time.Date(2026, 5, 8, 9, 2, 0, 0, time.UTC)),
 		})
 	}))
 	defer ingestor.Close()
@@ -973,7 +973,7 @@ func TestSyncRunsRoutePreservesExplicitUserFilter(t *testing.T) {
 	ingestor := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		observedUser = r.URL.Query().Get("user")
 		_ = json.NewEncoder(w).Encode(contracts.GitHubSyncRunListResponse{
-			LastUpdatedAt: time.Date(2026, 5, 8, 9, 2, 0, 0, time.UTC),
+			LastUpdatedAt: timePointer(time.Date(2026, 5, 8, 9, 2, 0, 0, time.UTC)),
 		})
 	}))
 	defer ingestor.Close()
@@ -1007,7 +1007,7 @@ func TestSyncRunsRouteDoesNotInjectUserForNonUserRunType(t *testing.T) {
 		observedRunType = r.URL.Query().Get("run_type")
 		observedUser = r.URL.Query().Get("user")
 		_ = json.NewEncoder(w).Encode(contracts.GitHubSyncRunListResponse{
-			LastUpdatedAt: time.Date(2026, 5, 8, 9, 2, 0, 0, time.UTC),
+			LastUpdatedAt: timePointer(time.Date(2026, 5, 8, 9, 2, 0, 0, time.UTC)),
 		})
 	}))
 	defer ingestor.Close()
@@ -1230,6 +1230,11 @@ func testConfig(profileBaseURL, authBaseURL, ingestorBaseURL string) config.App 
 			RetryBackoff: time.Second,
 		},
 	}
+}
+
+func timePointer(value time.Time) *time.Time {
+	timestamp := value.UTC()
+	return &timestamp
 }
 
 func testLogger() *slog.Logger {

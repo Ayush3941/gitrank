@@ -263,7 +263,7 @@ func (s *Service) ListSyncRuns(ctx context.Context, filter contracts.GitHubSyncR
 	}
 	runs = normalizeSyncRunViews(runs, now, activeWindow)
 	lastAttemptedAt, lastSuccessfulAt := summarizeSyncRunWatermarks(runs)
-	lastUpdatedAt := syncRunListUpdatedAt(runs, now)
+	lastUpdatedAt := syncRunListUpdatedAt(runs)
 	return contracts.GitHubSyncRunListResponse{
 		Runs:             runs,
 		AppliedFilter:    normalized,
@@ -370,12 +370,16 @@ func summarizeSyncRunWatermarks(runs []contracts.GitHubSyncRunView) (*time.Time,
 	return lastAttemptedAt, lastSuccessfulAt
 }
 
-func syncRunListUpdatedAt(runs []contracts.GitHubSyncRunView, fallback time.Time) time.Time {
-	lastUpdatedAt := fallback.UTC()
+func syncRunListUpdatedAt(runs []contracts.GitHubSyncRunView) *time.Time {
+	var lastUpdatedAt *time.Time
 	for index := range runs {
 		primary := syncRunPrimaryTimestamp(runs[index])
-		if primary != nil && primary.After(lastUpdatedAt) {
-			lastUpdatedAt = primary.UTC()
+		if primary == nil {
+			continue
+		}
+		if lastUpdatedAt == nil || primary.After(*lastUpdatedAt) {
+			timestamp := primary.UTC()
+			lastUpdatedAt = &timestamp
 		}
 	}
 	return lastUpdatedAt

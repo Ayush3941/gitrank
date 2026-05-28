@@ -269,7 +269,6 @@ func TestSummarizeSyncRunWatermarks(t *testing.T) {
 func TestSyncRunListUpdatedAtUsesNewestRunTimestamp(t *testing.T) {
 	t.Parallel()
 
-	fallback := time.Date(2026, 5, 27, 21, 0, 0, 0, time.UTC)
 	started := time.Date(2026, 5, 27, 19, 0, 0, 0, time.UTC)
 	finished := started.Add(45 * time.Second)
 	newest := time.Date(2026, 5, 27, 22, 10, 0, 0, time.UTC)
@@ -286,19 +285,21 @@ func TestSyncRunListUpdatedAtUsesNewestRunTimestamp(t *testing.T) {
 			Status:    "running",
 			StartedAt: newest,
 		},
-	}, fallback)
+	})
 
+	if got == nil {
+		t.Fatal("syncRunListUpdatedAt() = nil, want timestamp")
+	}
 	if !got.Equal(newest) {
 		t.Fatalf("syncRunListUpdatedAt() = %s, want %s", got.UTC(), newest.UTC())
 	}
 }
 
-func TestSyncRunListUpdatedAtFallsBackWhenNoRuns(t *testing.T) {
+func TestSyncRunListUpdatedAtReturnsNilWhenNoRuns(t *testing.T) {
 	t.Parallel()
 
-	fallback := time.Date(2026, 5, 27, 21, 0, 0, 0, time.UTC)
-	got := syncRunListUpdatedAt(nil, fallback)
-	if !got.Equal(fallback.UTC()) {
-		t.Fatalf("syncRunListUpdatedAt(nil) = %s, want %s", got.UTC(), fallback.UTC())
+	got := syncRunListUpdatedAt(nil)
+	if got != nil {
+		t.Fatalf("syncRunListUpdatedAt(nil) = %v, want nil", got.UTC())
 	}
 }

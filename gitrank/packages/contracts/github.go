@@ -58,9 +58,11 @@ type GitHubSyncRunView struct {
 }
 
 type GitHubSyncRunListResponse struct {
-	Runs          []GitHubSyncRunView `json:"runs,omitempty"`
-	AppliedFilter GitHubSyncRunFilter `json:"applied_filter,omitempty"`
-	LastUpdatedAt time.Time           `json:"last_updated_at"`
+	Runs             []GitHubSyncRunView `json:"runs,omitempty"`
+	AppliedFilter    GitHubSyncRunFilter `json:"applied_filter,omitempty"`
+	LastUpdatedAt    *time.Time          `json:"last_updated_at,omitempty"`
+	LastAttemptedAt  *time.Time          `json:"last_attempted_at,omitempty"`
+	LastSuccessfulAt *time.Time          `json:"last_successful_at,omitempty"`
 }
 
 type GitHubSyncExecutionResponse struct {

@@ -75,7 +75,9 @@ export type ApiSyncRunRecord = {
 
 export type ApiSyncRunListResponse = {
   runs?: ApiSyncRunRecord[];
-  last_updated_at: string;
+  last_updated_at?: string;
+  last_attempted_at?: string;
+  last_successful_at?: string;
 };
 
 export type ListSyncRunsOptions = {

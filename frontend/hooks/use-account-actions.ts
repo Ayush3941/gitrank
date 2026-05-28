@@ -14,7 +14,6 @@ import {
   runReviewSync,
   runUserSync,
   startAccountLink,
-  requestProfileSync,
   type QueueSyncInput,
   unlinkMyAccount,
 } from "@/lib/api/account-api";
@@ -29,18 +28,20 @@ const derivedProfileQueryKeys = [
   ["leaderboard"],
   ["profile", "public"],
 ] as const;
+const syncRunsQueryKeyPrefix = ["sync", "runs"] as const;
 
 function invalidateProfileDerivedQueries(queryClient: QueryClient) {
   for (const queryKey of derivedProfileQueryKeys) {
     void queryClient.invalidateQueries({ queryKey });
   }
+  void queryClient.invalidateQueries({ queryKey: syncRunsQueryKeyPrefix });
 }
 
 export function useRequestProfileSync() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: requestProfileSync,
+    mutationFn: () => runUserSync(),
     onSuccess: () => {
       invalidateProfileDerivedQueries(queryClient);
     },
