@@ -413,6 +413,7 @@ func (e *Executor) SyncUser(
 			authoredPullRequests,
 			authoredPRSyncLimit,
 			selection.NextCursor.BootstrapComplete,
+			selection.Fetched["authored_pull_request_recent_seed_targets"],
 		)
 		response.Fetched["authored_pull_requests_capped"] = 1
 	}
@@ -1391,14 +1392,16 @@ func (e *Executor) fetchAuthoredPullRequestTargets(
 		if recentSeedErr != nil {
 			return authoredPullRequestSelection{}, recentSeedErr
 		}
+		beforeRecentAppend := len(selection.Targets)
 		selection.Targets = appendUniqueAuthoredPullRequestTargets(selection.Targets, recentSeedTargets, seenTargets, maxTargets)
+		recentSeedAdded := len(selection.Targets) - beforeRecentAppend
 		selection.SearchIncomplete = selection.SearchIncomplete || recentSeedStats.incomplete
 		selection.SearchOverflow = selection.SearchOverflow || recentSeedStats.overflow
 		selection.Fetched["authored_pull_request_search_queries"] += recentSeedStats.searchQueries
 		selection.Fetched["authored_pull_request_discovery_windows"]++
 		selection.Fetched["authored_pull_request_recent_seed_windows"]++
-		selection.Fetched["authored_pull_request_recent_seed_targets"] = len(recentSeedTargets)
-		if len(recentSeedTargets) == 0 {
+		selection.Fetched["authored_pull_request_recent_seed_targets"] = recentSeedAdded
+		if recentSeedAdded == 0 {
 			selection.Fetched["authored_pull_request_recent_seed_empty"]++
 		}
 		combinedStats = mergeAuthoredPullRequestDiscoveryStats(combinedStats, recentSeedStats)
@@ -1874,6 +1877,7 @@ func prioritizeAuthoredPullRequestTargets(
 	targets []authoredPullRequestTarget,
 	limit int,
 	bootstrapComplete bool,
+	recentSeedTargets int,
 ) []authoredPullRequestTarget {
 	if limit <= 0 || len(targets) <= limit {
 		return targets
@@ -1881,10 +1885,22 @@ func prioritizeAuthoredPullRequestTargets(
 	if bootstrapComplete {
 		return targets[:limit]
 	}
+	if recentSeedTargets >= limit {
+		return targets[:limit]
+	}
+	if recentSeedTargets < 0 {
+		recentSeedTargets = 0
+	}
 
 	recentQuota := limit - max(1, limit/3)
 	if recentQuota < 1 {
 		recentQuota = 1
+	}
+	if recentSeedTargets > recentQuota {
+		recentQuota = recentSeedTargets
+	}
+	if recentQuota > limit {
+		recentQuota = limit
 	}
 	historicQuota := max(1, limit-recentQuota)
 

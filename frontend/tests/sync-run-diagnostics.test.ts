@@ -94,4 +94,16 @@ describe("describeSyncRunOutcome", () => {
     expect(outcome.code).toBe("synced_targets");
     expect(outcome.message).toContain("Synced 4 authored PR targets");
   });
+
+  it("returns sync-capped-recent when target selection is intentionally bounded", () => {
+    const outcome = describeSyncRunOutcome(
+      run({
+        authored_pull_requests_selected: 10,
+        authored_pull_requests_capped: 1,
+      }),
+    );
+    expect(outcome.code).toBe("sync_capped_recent");
+    expect(outcome.message).toContain("newest 10 authored PR targets");
+    expect(outcome.message).toContain("backfill");
+  });
 });

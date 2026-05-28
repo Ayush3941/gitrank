@@ -580,7 +580,7 @@ func TestPrioritizeAuthoredPullRequestTargetsBootstrapInProgressIncludesHistoric
 		{Repository: "owner/repo", Number: 202},
 	}
 
-	planned := prioritizeAuthoredPullRequestTargets(targets, 3, false)
+	planned := prioritizeAuthoredPullRequestTargets(targets, 3, false, 1)
 	if len(planned) != 3 {
 		t.Fatalf("len(planned) = %d, want 3", len(planned))
 	}
@@ -600,12 +600,30 @@ func TestPrioritizeAuthoredPullRequestTargetsBootstrapCompleteUsesNewestOnly(t *
 		{Repository: "owner/repo", Number: 4},
 	}
 
-	planned := prioritizeAuthoredPullRequestTargets(targets, 2, true)
+	planned := prioritizeAuthoredPullRequestTargets(targets, 2, true, 0)
 	if len(planned) != 2 {
 		t.Fatalf("len(planned) = %d, want 2", len(planned))
 	}
 	if planned[0].Number != 1 || planned[1].Number != 2 {
 		t.Fatalf("planned = %+v, want first two newest targets", planned)
+	}
+}
+
+func TestPrioritizeAuthoredPullRequestTargetsKeepsNewestWhenRecentSeedCoversLimit(t *testing.T) {
+	targets := []authoredPullRequestTarget{
+		{Repository: "owner/repo", Number: 11},
+		{Repository: "owner/repo", Number: 12},
+		{Repository: "owner/repo", Number: 13},
+		{Repository: "owner/repo", Number: 99},
+		{Repository: "owner/repo", Number: 100},
+	}
+
+	planned := prioritizeAuthoredPullRequestTargets(targets, 3, false, 3)
+	if len(planned) != 3 {
+		t.Fatalf("len(planned) = %d, want 3", len(planned))
+	}
+	if planned[0].Number != 11 || planned[1].Number != 12 || planned[2].Number != 13 {
+		t.Fatalf("planned = %+v, want newest first slice when recent seed already covers limit", planned)
 	}
 }
 

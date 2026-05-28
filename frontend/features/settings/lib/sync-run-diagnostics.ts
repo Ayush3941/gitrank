@@ -11,6 +11,7 @@ export type SyncRunDiagnostic = {
     | "snapshot_refresh_pending"
     | "recent_seed_empty"
     | "discovery_empty"
+    | "sync_capped_recent"
     | "superseded_active_row"
     | "synced_targets"
     | "none";
@@ -57,6 +58,7 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
   const snapshotRefreshPending = metricCount(metrics, "post_sync_refresh_failed") > 0;
   const scoreReplayMismatch = metricCount(metrics, "post_sync_score_replay_mismatch") > 0;
   const recentSeedEmpty = metricCount(metrics, "authored_pull_request_recent_seed_empty") > 0;
+  const syncCapped = metricCount(metrics, "authored_pull_requests_capped") > 0;
   const scoreReplayEvents = metricCount(metrics, "post_sync_score_replay_events");
   const selectedAuthoredPRs = metricCount(metrics, "authored_pull_requests_selected");
 
@@ -119,6 +121,13 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
     return {
       code: "snapshot_refresh_pending",
       message: "Sync completed, but profile snapshot refresh is still finishing.",
+    };
+  }
+  if (syncCapped && selectedAuthoredPRs > 0) {
+    return {
+      code: "sync_capped_recent",
+      message:
+        `Synced the newest ${selectedAuthoredPRs} authored PR target${selectedAuthoredPRs === 1 ? "" : "s"} in this bounded run. Older history continues through later backfill runs.`,
     };
   }
   if (selectedAuthoredPRs > 0) {

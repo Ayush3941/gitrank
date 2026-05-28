@@ -314,6 +314,7 @@ Recent no-slowdown refinement (May 27, 2026):
 - Sync-run `last_updated_at` now reflects the newest persisted run activity timestamp (from run data) instead of request-time `now`, so Settings no longer reports misleading "Updated just now" timestamps when no new sync activity occurred.
 - Sync-run list responses now omit `last_updated_at` when there are no persisted run timestamps, preventing empty accounts from rendering synthetic "Updated just now" sync-activity headers.
 - Frontend account sync actions now invalidate the `["sync","runs"]` query key on success, so Settings sync activity reflects new runs immediately instead of waiting for the next polling interval.
+- Settings sync diagnostics now emit an explicit bounded-sync message when `authored_pull_requests_capped=1`, clarifying that the newest PR slice was synced intentionally and older authored history will continue in later backfill runs.
 - Added `scripts/review.sh` as a single local review entrypoint (repo-sync checks + targeted sync-state tests) and kept it alarm-free by design.
 - Root-level research PDF assets are now expected under `docs/research/` so repository quality checks and tree documentation stay deterministic.
 
