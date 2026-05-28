@@ -990,6 +990,7 @@ func (s *TxStore) InsertSyncRun(input payloadSyncRunInput) error {
 	metricsJSON := encodeJSON(composeSyncRunMetrics(input.Result.EntityCounts(), input.Fetched))
 	status := defaultString(strings.TrimSpace(input.Status), "completed")
 	subject := canonicalSyncRunSubject(input.EventType, input.Subject)
+	requestedBySubject := canonicalRequestedBySubject(input.RequestedBySubject)
 	eventType := strings.TrimSpace(input.EventType)
 	correlationID := strings.TrimSpace(input.CorrelationID)
 
@@ -1005,7 +1006,7 @@ func (s *TxStore) InsertSyncRun(input payloadSyncRunInput) error {
 			DeliveryID:                  input.DeliveryID,
 			RequestedUserLogin:          input.RequestedUserLogin,
 			RequestedRepositoryFullName: input.RequestedRepositoryFullName,
-			RequestedBySubject:          input.RequestedBySubject,
+			RequestedBySubject:          requestedBySubject,
 			RequestedByGitHubLogin:      input.RequestedByGitHubLogin,
 			FinishedAt:                  input.FinishedAt,
 		}, metricsJSON)
@@ -1060,7 +1061,7 @@ func (s *TxStore) InsertSyncRun(input payloadSyncRunInput) error {
 		input.DeliveryID,
 		strings.TrimSpace(input.RequestedUserLogin),
 		strings.TrimSpace(input.RequestedRepositoryFullName),
-		strings.TrimSpace(input.RequestedBySubject),
+		requestedBySubject,
 		strings.TrimSpace(input.RequestedByGitHubLogin),
 		input.CorrelationID,
 		input.StartedAt.UTC(),
@@ -1078,6 +1079,7 @@ func (s *TxStore) finalizeExistingSyncRun(input payloadSyncRunInput, metricsJSON
 
 	finishedAt := nullableTime(input.FinishedAt)
 	subject := canonicalSyncRunSubject(input.EventType, input.Subject)
+	requestedBySubject := canonicalRequestedBySubject(input.RequestedBySubject)
 	var updatedID string
 	err := s.tx.QueryRow(s.context(), `
 		WITH candidate AS (
@@ -1128,7 +1130,7 @@ func (s *TxStore) finalizeExistingSyncRun(input payloadSyncRunInput, metricsJSON
 		strings.TrimSpace(input.DeliveryID),
 		strings.TrimSpace(input.RequestedUserLogin),
 		strings.TrimSpace(input.RequestedRepositoryFullName),
-		strings.TrimSpace(input.RequestedBySubject),
+		requestedBySubject,
 		strings.TrimSpace(input.RequestedByGitHubLogin),
 		finishedAt,
 		strings.TrimSpace(input.LastError),
@@ -1161,6 +1163,17 @@ func canonicalSyncRunSubject(runType string, subject string) string {
 		return strings.ToLower(normalizedSubject)
 	}
 	return normalizedSubject
+}
+
+func canonicalRequestedBySubject(subject string) string {
+	normalized := strings.TrimSpace(subject)
+	if normalized == "" {
+		return ""
+	}
+	if canonical, err := contracts.NormalizeUUID(normalized, "requested_by_subject"); err == nil {
+		return canonical
+	}
+	return normalized
 }
 
 func composeSyncRunMetrics(persisted map[string]int, fetched map[string]int) map[string]int {
@@ -1328,7 +1341,7 @@ func (s *Store) ListSyncRuns(ctx context.Context, filter contracts.GitHubSyncRun
 	add("lower(runs.subject) = lower($%d)", filter.Subject)
 	add("lower(runs.requested_repository_full_name) = $%d", filter.Repository)
 	add("lower(runs.requested_user_login) = $%d", filter.User)
-	add("runs.requested_by_subject = $%d", filter.RequestedBySubject)
+	add("lower(runs.requested_by_subject) = lower($%d)", canonicalRequestedBySubject(filter.RequestedBySubject))
 	add("lower(runs.requested_by_github_login) = $%d", filter.RequestedByGitHubLogin)
 	add("runs.correlation_id = $%d", filter.CorrelationID)
 	add("runs.github_delivery_id = $%d", filter.DeliveryID)

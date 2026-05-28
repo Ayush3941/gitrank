@@ -277,7 +277,7 @@ Recent no-slowdown refinement (May 27, 2026):
 - Guard checks `npm run check:sync-copy-policy` and `npm run check:copy-tone` are required after copy-only sync UX edits to prevent regressions.
 - Sync refresh feedback now reports explicit outcomes for completed runs with zero discovered authored PRs and includes count-aware success copy when PR targets are actually synced.
 - `scripts/check-start-sh-contracts.sh` now enforces `gitrank/.env` as the only `start.sh` runtime env source to prevent accidental frontend or secondary `.env` drift.
-- `start.sh` now emits an explicit notice when `./.env` or `frontend/.env*` files are present, and still uses only `gitrank/.env` for runtime export.
+- `start.sh` now treats `gitrank/.env` as the sole local runtime env source and no longer scans root/frontend `.env*` files.
 - Frontend `next.config.ts` now loads missing env keys from `../gitrank/.env` before config evaluation, so standalone `frontend/` dev/build commands follow the same single-env-file contract without requiring a second frontend env file.
 - User-mode sync queue jobs now canonicalize login casing in `subject`/dedupe identity, and sync-run lifecycle reconciliation now matches user subjects case-insensitively so queued/running rows cannot drift when request casing differs.
 - Settings page sync state now incorporates live sync-run statuses (`running` / `queued` -> `syncing`) so chips and freshness pills do not present stale “Synced” states while background sync is still active.
@@ -331,6 +331,8 @@ Recent no-slowdown refinement (May 27, 2026):
 - Settings sync activity metric summaries now include explicit post-sync step failure hints (score replay, profile refresh, PR report backfill, quest backfill) plus a “Refresh settled” marker when post-sync reconciliation completed cleanly.
 - Added `scripts/review.sh` as a single local review entrypoint (repo-sync checks + targeted sync-state tests) and kept it alarm-free by design.
 - Root-level research PDF assets are now expected under `docs/research/` so repository quality checks and tree documentation stay deterministic.
+- Frontend backend-env loader now supports inline comments in unquoted values (for example `KEY=value # note`) while preserving quoted `#` literals, keeping `gitrank/.env` parsing consistent with real shell-style env files.
+- Sync-run persistence/filtering now canonicalizes `requested_by_subject` UUID casing on both write and filter paths, reducing false misses when the same UUID appears with mixed case across services.
 
 ## Frontend Excellence Checklist (No-Slowdown Backlog)
 

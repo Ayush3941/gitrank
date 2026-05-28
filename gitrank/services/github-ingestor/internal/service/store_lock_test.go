@@ -51,3 +51,14 @@ func TestCanonicalSyncRunSubject(t *testing.T) {
 		t.Fatalf("canonicalSyncRunSubject(repository) = %q, want Owner/Repo", got)
 	}
 }
+
+func TestCanonicalRequestedBySubject(t *testing.T) {
+	t.Parallel()
+
+	if got := canonicalRequestedBySubject("8F0C38C9-671F-499D-A1B7-1F9F4F57CBB4"); got != "8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4" {
+		t.Fatalf("canonicalRequestedBySubject(uuid) = %q, want lowercase uuid", got)
+	}
+	if got := canonicalRequestedBySubject("service-account"); got != "service-account" {
+		t.Fatalf("canonicalRequestedBySubject(non-uuid) = %q, want service-account", got)
+	}
+}

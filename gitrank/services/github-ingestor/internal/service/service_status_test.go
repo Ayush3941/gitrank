@@ -245,6 +245,7 @@ func TestNormalizeSyncRunFilterCanonicalizesCaseAndHandlePrefixes(t *testing.T) 
 		Status:                 " Completed ",
 		Repository:             " Octo/Repo ",
 		User:                   " @Ayush3941 ",
+		RequestedBySubject:     " 8F0C38C9-671F-499D-A1B7-1F9F4F57CBB4 ",
 		RequestedByGitHubLogin: " @@Ayush3941 ",
 		Limit:                  0,
 	}, 25, 100)
@@ -260,6 +261,9 @@ func TestNormalizeSyncRunFilterCanonicalizesCaseAndHandlePrefixes(t *testing.T) 
 	}
 	if filter.User != "ayush3941" {
 		t.Fatalf("User = %q, want ayush3941", filter.User)
+	}
+	if filter.RequestedBySubject != "8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4" {
+		t.Fatalf("RequestedBySubject = %q, want canonical lowercase uuid", filter.RequestedBySubject)
 	}
 	if filter.RequestedByGitHubLogin != "ayush3941" {
 		t.Fatalf("RequestedByGitHubLogin = %q, want ayush3941", filter.RequestedByGitHubLogin)

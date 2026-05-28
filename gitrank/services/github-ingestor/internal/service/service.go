@@ -596,7 +596,7 @@ func normalizeSyncRunFilter(filter contracts.GitHubSyncRunFilter, defaultLimit i
 	filter.Subject = strings.TrimSpace(filter.Subject)
 	filter.Repository = strings.ToLower(strings.TrimSpace(filter.Repository))
 	filter.User = strings.TrimLeft(strings.ToLower(strings.TrimSpace(filter.User)), "@")
-	filter.RequestedBySubject = strings.TrimSpace(filter.RequestedBySubject)
+	filter.RequestedBySubject = canonicalRequestedBySubject(filter.RequestedBySubject)
 	filter.RequestedByGitHubLogin = strings.TrimLeft(strings.ToLower(strings.TrimSpace(filter.RequestedByGitHubLogin)), "@")
 	filter.CorrelationID = strings.TrimSpace(filter.CorrelationID)
 	filter.DeliveryID = strings.TrimSpace(filter.DeliveryID)

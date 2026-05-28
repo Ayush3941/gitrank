@@ -73,14 +73,20 @@ function parseBackendEnvLine(line: string): ParsedBackendEnvLine | null {
 
 function unquoteBackendEnvValue(value: string): string {
   if (value.length < 2) {
-    return value;
-  }
-  const quote = value[0];
-  if ((quote !== "\"" && quote !== "'") || value[value.length - 1] !== quote) {
-    return value;
+    return stripUnquotedInlineComment(value);
   }
 
-  const inner = value.slice(1, -1);
+  const quote = value[0];
+  if (quote !== "\"" && quote !== "'") {
+    return stripUnquotedInlineComment(value);
+  }
+
+  const closingQuoteIndex = findClosingQuoteIndex(value, quote);
+  if (closingQuoteIndex <= 0) {
+    return stripUnquotedInlineComment(value);
+  }
+
+  const inner = value.slice(1, closingQuoteIndex);
   if (quote === "'") {
     return inner;
   }
@@ -90,4 +96,30 @@ function unquoteBackendEnvValue(value: string): string {
     .replace(/\\t/g, "\t")
     .replace(/\\"/g, "\"")
     .replace(/\\\\/g, "\\");
+}
+
+function findClosingQuoteIndex(value: string, quote: string): number {
+  for (let index = 1; index < value.length; index += 1) {
+    if (value[index] !== quote) {
+      continue;
+    }
+    if (quote === "\"" && value[index - 1] === "\\") {
+      continue;
+    }
+    return index;
+  }
+  return -1;
+}
+
+function stripUnquotedInlineComment(value: string): string {
+  const input = value.trimEnd();
+  for (let index = 0; index < input.length; index += 1) {
+    if (input[index] !== "#") {
+      continue;
+    }
+    if (index === 0 || /\s/.test(input[index - 1] ?? "")) {
+      return input.slice(0, index).trimEnd();
+    }
+  }
+  return input;
 }

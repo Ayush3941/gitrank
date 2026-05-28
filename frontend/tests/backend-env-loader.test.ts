@@ -80,4 +80,28 @@ describe("loadBackendEnvDefaultsForFrontend", () => {
     expect(result.exists).toBe(false);
     expect(result.loadedCount).toBe(0);
   });
+
+  it("strips inline comments for unquoted values and preserves quoted hashes", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), TMP_DIR_PREFIX));
+    tmpRoots.push(root);
+
+    const frontendDir = path.join(root, "frontend");
+    const backendDir = path.join(root, "gitrank");
+    fs.mkdirSync(frontendDir, { recursive: true });
+    fs.mkdirSync(backendDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(backendDir, ".env"),
+      [
+        "GITRANK_TEST_RUNTIME_A=enabled # local toggle",
+        "NEXT_PUBLIC_GITRANK_TEST_RUNTIME_B=\"value#kept\" # trailing comment",
+      ].join("\n"),
+      "utf8",
+    );
+
+    const result = loadBackendEnvDefaultsForFrontend(frontendDir);
+    expect(result.exists).toBe(true);
+    expect(result.loadedCount).toBe(2);
+    expect(process.env.GITRANK_TEST_RUNTIME_A).toBe("enabled");
+    expect(process.env.NEXT_PUBLIC_GITRANK_TEST_RUNTIME_B).toBe("value#kept");
+  });
 });
