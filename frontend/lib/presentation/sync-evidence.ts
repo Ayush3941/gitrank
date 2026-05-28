@@ -47,9 +47,6 @@ export function hasUserContributionEvidence(user: UserProfile | null | undefined
     if (!hasPersistedEvidenceIdentity) {
       return false;
     }
-    if (row.xpEarned !== 0) {
-      return true;
-    }
     if (row.status !== "merged") {
       return false;
     }
@@ -196,10 +193,7 @@ function isProfileSyncRun(run: ProfileSyncRunStatusSource, normalizedUser: strin
   if (subjectUser) {
     return subjectUser === normalizedUser;
   }
-  if (runType == "user") {
-    return true;
-  }
-  return false;
+  return true;
 }
 
 function normalizeRunToken(value: string | null | undefined): string {

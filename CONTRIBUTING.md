@@ -1777,6 +1777,8 @@ ABRA implementation checklist:
 - [x] User-sync conflict attempts are persisted as sync-run telemetry (`user_sync_in_progress`, `lease_conflicts`) so contention remains observable in Settings and run diagnostics.
 - [x] User-sync authored-PR cursor now advances when a run is partially successful (some PR hydrations succeed, some retryable failures remain), preventing the same bounded PR window from getting pinned indefinitely on every retry cycle.
 - [x] Effective sync-state presentation (`synced` vs `partially_synced` when evidence is empty) is centralized in `frontend/lib/presentation/sync-evidence.ts` and reused by Dashboard, Settings, Contributions, Badges, Quests, and Leaderboard to prevent status drift.
+- [x] Synced-state evidence gating is now merged-PR only; open/unmerged PR rows (even with preliminary score artifacts) no longer count as materialized contribution evidence for top-level sync chips.
+- [x] Profile sync-run status derivation now accepts profile-scoped run rows even when ownership markers are absent, so active `running`/`queued` runs remain visible instead of being silently dropped by frontend filters.
 - [x] Frontend user-sync execution deduplicates concurrent requests per user/login key in `frontend/lib/api/account-api.ts`, preventing multi-component or multi-click stampedes against `/api/sync/user`.
 - [x] User-sync status remains `partial` while authored-PR backfill is still incomplete (`authored_pull_request_backfill_incomplete`), so UI sync badges do not over-claim full-history completion.
 - [x] User-sync refresh feedback now distinguishes backfill-in-progress partials from scope-limited partials, so users see progress guidance instead of generic reconnect errors when history backfill is still advancing.

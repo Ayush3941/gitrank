@@ -129,6 +129,41 @@ describe("hasUserContributionEvidence", () => {
     expect(hasUserContributionEvidence(user)).toBe(true);
   });
 
+  it("returns false when persisted evidence exists but PR is not merged", () => {
+    const user = buildUser({
+      mergedPrCount: 0,
+      contributions: [
+        {
+          id: "score-open-1",
+          scoreEventId: "score-event-open-1",
+          owner: "octo",
+          repo: "gitrank",
+          number: 31,
+          title: "Open PR with preliminary score",
+          status: "open",
+          category: "Feature",
+          difficultyScore: 1,
+          impactScore: 1,
+          reviewDepthScore: 1,
+          testSignalScore: 1,
+          repoWeight: 1,
+          antiSpamMultiplier: 1,
+          xpEarned: 42,
+          additions: 40,
+          deletions: 5,
+          changedFilesCount: 2,
+          mergedAt: "",
+          maintainerReviewed: false,
+          linkedIssue: true,
+          ciPassed: true,
+          aiSummary: "Open feature branch",
+          evidenceSignals: [],
+        },
+      ],
+    });
+    expect(hasUserContributionEvidence(user)).toBe(false);
+  });
+
   it("returns false for placeholder rows without persisted evidence identity", () => {
     const user = buildUser({
       mergedPrCount: 0,
