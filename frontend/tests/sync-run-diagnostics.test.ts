@@ -127,4 +127,26 @@ describe("describeSyncRunOutcome", () => {
     expect(outcome.code).toBe("profile_refresh_failed");
     expect(outcome.message).toContain("profile refresh failed");
   });
+
+  it("returns pr-reports-backfill-failed when report backfill fails", () => {
+    const outcome = describeSyncRunOutcome(
+      run({
+        post_sync_pr_reports_backfill_failed: 1,
+        post_sync_refresh_failed: 1,
+      }),
+    );
+    expect(outcome.code).toBe("pr_reports_backfill_failed");
+    expect(outcome.message).toContain("report backfill failed");
+  });
+
+  it("returns quests-backfill-failed when quest backfill fails", () => {
+    const outcome = describeSyncRunOutcome(
+      run({
+        post_sync_quests_backfill_failed: 1,
+        post_sync_refresh_failed: 1,
+      }),
+    );
+    expect(outcome.code).toBe("quests_backfill_failed");
+    expect(outcome.message).toContain("quest backfill failed");
+  });
 });

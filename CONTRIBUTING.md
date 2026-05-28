@@ -317,6 +317,7 @@ Recent no-slowdown refinement (May 27, 2026):
 - Settings sync diagnostics now emit an explicit bounded-sync message when `authored_pull_requests_capped=1`, clarifying that the newest PR slice was synced intentionally and older authored history will continue in later backfill runs.
 - Post-sync user-sync reconciliation now executes score replay and each profile refresh/backfill step independently, records per-step `post_sync_*_{ok|failed}` metrics, and keeps processing remaining steps after intermediate failures to maximize useful evidence refresh.
 - Settings sync diagnostics now surface step-specific degradation signals (`post_sync_score_replay_failed`, `post_sync_profile_refresh_failed`) so users can distinguish replay outages from profile-refresh failures.
+- Settings sync activity metric summaries now include explicit post-sync step failure hints (score replay, profile refresh, PR report backfill, quest backfill) plus a “Refresh settled” marker when post-sync reconciliation completed cleanly.
 - Added `scripts/review.sh` as a single local review entrypoint (repo-sync checks + targeted sync-state tests) and kept it alarm-free by design.
 - Root-level research PDF assets are now expected under `docs/research/` so repository quality checks and tree documentation stay deterministic.
 

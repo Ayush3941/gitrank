@@ -7,6 +7,8 @@ export type SyncRunDiagnostic = {
     | "score_replay_mismatch"
     | "score_replay_failed"
     | "profile_refresh_failed"
+    | "pr_reports_backfill_failed"
+    | "quests_backfill_failed"
     | "search_limited"
     | "retryable_or_timeout"
     | "backfill_incomplete"
@@ -61,6 +63,8 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
   const scoreReplayMismatch = metricCount(metrics, "post_sync_score_replay_mismatch") > 0;
   const scoreReplayFailed = metricCount(metrics, "post_sync_score_replay_failed") > 0;
   const profileRefreshFailed = metricCount(metrics, "post_sync_profile_refresh_failed") > 0;
+  const reportBackfillFailed = metricCount(metrics, "post_sync_pr_reports_backfill_failed") > 0;
+  const questBackfillFailed = metricCount(metrics, "post_sync_quests_backfill_failed") > 0;
   const recentSeedEmpty = metricCount(metrics, "authored_pull_request_recent_seed_empty") > 0;
   const syncCapped = metricCount(metrics, "authored_pull_requests_capped") > 0;
   const scoreReplayEvents = metricCount(metrics, "post_sync_score_replay_events");
@@ -133,6 +137,20 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
       code: "profile_refresh_failed",
       message:
         "GitHub sync completed, but profile refresh failed in this run. Retry sync to regenerate the latest dashboard snapshot.",
+    };
+  }
+  if (reportBackfillFailed) {
+    return {
+      code: "pr_reports_backfill_failed",
+      message:
+        "GitHub sync completed, but PR report backfill failed in this run. Existing profile data is preserved; retry to refresh battle reports.",
+    };
+  }
+  if (questBackfillFailed) {
+    return {
+      code: "quests_backfill_failed",
+      message:
+        "GitHub sync completed, but quest backfill failed in this run. Retry sync to restore quest recommendations from latest evidence.",
     };
   }
   if (snapshotRefreshPending) {

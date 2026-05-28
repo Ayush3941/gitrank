@@ -752,6 +752,9 @@ func TestUserSyncExecutionMarksPartialWhenScoreReplayYieldsNoEventsAfterAuthored
 	if observed.Fetched["post_sync_score_replay_events"] != 0 {
 		t.Fatalf("Fetched[post_sync_score_replay_events] = %d, want 0", observed.Fetched["post_sync_score_replay_events"])
 	}
+	if observed.Fetched["post_sync_refresh_ok"] != 1 {
+		t.Fatalf("Fetched[post_sync_refresh_ok] = %d, want 1", observed.Fetched["post_sync_refresh_ok"])
+	}
 }
 
 func TestUserSyncExecutionContinuesProfileStepsWhenScoreReplayFails(t *testing.T) {

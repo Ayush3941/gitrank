@@ -18,6 +18,8 @@ type SyncRunStatusFilter = (typeof SYNC_RUN_STATUS_FILTERS)[number];
 export function SyncRunActivityPanel({
   runs,
   lastUpdatedAt,
+  lastAttemptedAt,
+  lastSuccessfulAt,
   isLoading,
   isRefreshing,
   isError,
@@ -26,6 +28,8 @@ export function SyncRunActivityPanel({
 }: {
   runs: ApiSyncRunRecord[];
   lastUpdatedAt?: string;
+  lastAttemptedAt?: string;
+  lastSuccessfulAt?: string;
   isLoading: boolean;
   isRefreshing: boolean;
   isError: boolean;
@@ -125,6 +129,34 @@ export function SyncRunActivityPanel({
             {isRefreshing ? "Refreshing..." : "Refresh log"}
           </Button>
         </div>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold">
+          Last attempted{" "}
+          {lastAttemptedAt ? (
+            <time
+              dateTime={toNormalizedDateTime(lastAttemptedAt) ?? undefined}
+              title={formatDateTime(lastAttemptedAt)}
+            >
+              {formatRelativeDays(lastAttemptedAt)}
+            </time>
+          ) : (
+            "never"
+          )}
+        </span>
+        <span className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold">
+          Last successful{" "}
+          {lastSuccessfulAt ? (
+            <time
+              dateTime={toNormalizedDateTime(lastSuccessfulAt) ?? undefined}
+              title={formatDateTime(lastSuccessfulAt)}
+            >
+              {formatRelativeDays(lastSuccessfulAt)}
+            </time>
+          ) : (
+            "none yet"
+          )}
+        </span>
       </div>
       <div className="space-y-3">
         <p id={filterStatusId} role="status" aria-live="polite" className="sr-only">
@@ -484,9 +516,33 @@ function summarizeRunMetrics(metrics?: Record<string, number>): string {
   if (scopeLimited > 0) {
     segments.push("Scope limited");
   }
+  const scoreReplayFailed = metricCount(metrics, "post_sync_score_replay_failed");
+  if (scoreReplayFailed > 0) {
+    segments.push("Score replay failed");
+  }
+  const profileRefreshFailed = metricCount(metrics, "post_sync_profile_refresh_failed");
+  if (profileRefreshFailed > 0) {
+    segments.push("Profile refresh failed");
+  }
+  const reportBackfillFailed = metricCount(metrics, "post_sync_pr_reports_backfill_failed");
+  if (reportBackfillFailed > 0) {
+    segments.push("Report backfill failed");
+  }
+  const questBackfillFailed = metricCount(metrics, "post_sync_quests_backfill_failed");
+  if (questBackfillFailed > 0) {
+    segments.push("Quest backfill failed");
+  }
   const refreshFailed = metricCount(metrics, "post_sync_refresh_failed");
   if (refreshFailed > 0) {
     segments.push("Refresh pending");
+  } else if (
+    metricCount(metrics, "post_sync_refresh_ok") > 0 &&
+    scoreReplayFailed == 0 &&
+    profileRefreshFailed == 0 &&
+    reportBackfillFailed == 0 &&
+    questBackfillFailed == 0
+  ) {
+    segments.push("Refresh settled");
   }
   const inProgressConflicts = metricCount(
     metrics,
@@ -549,7 +605,11 @@ function hasPartialRunMetrics(metrics?: Record<string, number>): boolean {
     metricCount(metrics, "authored_pull_request_search_incomplete") > 0 ||
     metricCount(metrics, "authored_pull_request_search_overflow") > 0 ||
     metricCount(metrics, "authored_pull_requests_retryable") > 0 ||
-    metricCount(metrics, "post_sync_refresh_failed") > 0
+    metricCount(metrics, "post_sync_refresh_failed") > 0 ||
+    metricCount(metrics, "post_sync_score_replay_failed") > 0 ||
+    metricCount(metrics, "post_sync_profile_refresh_failed") > 0 ||
+    metricCount(metrics, "post_sync_pr_reports_backfill_failed") > 0 ||
+    metricCount(metrics, "post_sync_quests_backfill_failed") > 0
   );
 }
 
