@@ -81,8 +81,11 @@ func TestNormalizeSyncRunViews(t *testing.T) {
 	if normalized[5].Status != "running" {
 		t.Fatalf("normalized[5].Status = %q, want running", normalized[5].Status)
 	}
-	if normalized[6].Status != "completed" {
-		t.Fatalf("normalized[6].Status = %q, want completed", normalized[6].Status)
+	if normalized[6].Status != "failed" {
+		t.Fatalf("normalized[6].Status = %q, want failed", normalized[6].Status)
+	}
+	if normalized[6].LastError == "" {
+		t.Fatal("normalized[6].LastError = empty, want generated finished-running inconsistency error")
 	}
 	if normalized[7].Status != "failed" {
 		t.Fatalf("normalized[7].Status = %q, want failed", normalized[7].Status)
@@ -151,6 +154,54 @@ func TestNormalizeSyncRunViewsSupersedesOlderActiveRowsWithTerminalCorrelation(t
 	}
 	if normalized[3].Status != "running" {
 		t.Fatalf("normalized[3].Status = %q, want running (different correlation)", normalized[3].Status)
+	}
+}
+
+func TestNormalizeSyncRunViewsSupersedesOlderActiveRowsWithLogicalScope(t *testing.T) {
+	t.Parallel()
+
+	now := time.Date(2026, 5, 27, 20, 0, 0, 0, time.UTC)
+	finishedAt := now.Add(-time.Minute)
+	runs := []contracts.GitHubSyncRunView{
+		{
+			ID:                     "terminal-user-run",
+			RunType:                "user",
+			CorrelationID:          "corr-new",
+			Status:                 "completed",
+			RequestedUser:          "Ayush3941",
+			RequestedBySubject:     "user-1",
+			RequestedByGitHubLogin: "ayush3941",
+			StartedAt:              now.Add(-2 * time.Minute),
+			FinishedAt:             &finishedAt,
+		},
+		{
+			ID:            "older-running-row-different-correlation",
+			RunType:       "user",
+			CorrelationID: "corr-old",
+			Status:        "running",
+			RequestedUser: "ayush3941",
+			StartedAt:     now.Add(-5 * time.Minute),
+		},
+		{
+			ID:            "running-different-target",
+			RunType:       "user",
+			CorrelationID: "corr-other",
+			Status:        "running",
+			RequestedUser: "octocat",
+			StartedAt:     now.Add(-5 * time.Minute),
+		},
+	}
+
+	normalized := normalizeSyncRunViews(runs, now, 10*time.Minute)
+
+	if normalized[1].Status != "failed" {
+		t.Fatalf("normalized[1].Status = %q, want failed due to logical scope supersession", normalized[1].Status)
+	}
+	if normalized[1].Metrics["superseded_by_terminal_logical_scope"] != 1 {
+		t.Fatalf("normalized[1].Metrics[superseded_by_terminal_logical_scope] = %d, want 1", normalized[1].Metrics["superseded_by_terminal_logical_scope"])
+	}
+	if normalized[2].Status != "running" {
+		t.Fatalf("normalized[2].Status = %q, want running (different logical target)", normalized[2].Status)
 	}
 }
 

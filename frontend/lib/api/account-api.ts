@@ -528,7 +528,10 @@ function normalizeSyncRunRecord(run: ApiSyncRunRecord, nowMs: number): ApiSyncRu
     } else if (FAILED_SYNC_RUN_STATUSES.has(normalized)) {
       normalized = "failed";
     } else if (ACTIVE_SYNC_RUN_STATUSES.has(normalized) || QUEUED_SYNC_RUN_STATUSES.has(normalized)) {
-      normalized = "completed";
+      normalized = "failed";
+      if (!lastError?.trim()) {
+        lastError = "sync execution finished with a non-terminal status and was marked failed";
+      }
     } else if (COMPLETED_SYNC_RUN_STATUSES.has(normalized)) {
       normalized = "completed";
     }

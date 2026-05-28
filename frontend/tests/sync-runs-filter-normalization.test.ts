@@ -36,4 +36,61 @@ describe("sync-run list filter normalization", () => {
     expect(requestURL).toContain("user=ayush3941");
     expect(requestURL).toContain("repository=octo%2Frepo");
   });
+
+  it("preserves sync-run watermark timestamps from API payload", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            runs: [],
+            last_updated_at: "2026-05-27T00:00:00Z",
+            last_attempted_at: "2026-05-27T00:05:00Z",
+            last_successful_at: "2026-05-27T00:03:00Z",
+          }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          },
+        ),
+      ),
+    );
+
+    const payload = await listMySyncRuns(5, { runType: "user" });
+    expect(payload.last_attempted_at).toBe("2026-05-27T00:05:00Z");
+    expect(payload.last_successful_at).toBe("2026-05-27T00:03:00Z");
+  });
+
+  it("marks finished active-status runs as failed instead of completed", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            runs: [
+              {
+                id: "run-1",
+                run_type: "user",
+                status: "running",
+                subject: "@Ayush3941",
+                requested_user: "Ayush3941",
+                started_at: "2026-05-27T00:00:00Z",
+                finished_at: "2026-05-27T00:00:30Z",
+                metrics: {},
+              },
+            ],
+          }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          },
+        ),
+      ),
+    );
+
+    const payload = await listMySyncRuns(5, { runType: "user" });
+    const run = payload.runs?.[0];
+    expect(run?.status).toBe("failed");
+    expect(run?.last_error).toContain("non-terminal status");
+  });
 });

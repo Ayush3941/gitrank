@@ -305,7 +305,10 @@ func normalizeSyncRunViews(
 			}
 		case "running", "syncing", "in_progress":
 			if run.FinishedAt != nil && !run.FinishedAt.IsZero() {
-				run.Status = "completed"
+				run.Status = "failed"
+				if strings.TrimSpace(run.LastError) == "" {
+					run.LastError = "sync execution finished with a non-terminal running state and was marked failed"
+				}
 				continue
 			}
 			if run.StartedAt.IsZero() {
@@ -324,7 +327,10 @@ func normalizeSyncRunViews(
 			}
 		case "queued", "pending":
 			if run.FinishedAt != nil && !run.FinishedAt.IsZero() {
-				run.Status = "completed"
+				run.Status = "failed"
+				if strings.TrimSpace(run.LastError) == "" {
+					run.LastError = "sync execution finished with a queued state and was marked failed"
+				}
 				continue
 			}
 			run.Status = "queued"
@@ -414,21 +420,27 @@ func supersedeInProgressRunsWithTerminalCorrelation(runs []contracts.GitHubSyncR
 		return
 	}
 	latestTerminalByScope := make(map[string]time.Time, len(runs))
+	latestTerminalByLogicalScope := make(map[string]time.Time, len(runs))
 	for _, run := range runs {
 		scope := syncRunCorrelationScope(run)
-		if scope == "" {
-			continue
-		}
 		status := strings.ToLower(strings.TrimSpace(run.Status))
 		if !isTerminalSyncRunStatus(status) {
 			continue
 		}
 		terminalAt := syncRunTerminalTimestamp(run)
-		if previous, exists := latestTerminalByScope[scope]; !exists || terminalAt.After(previous) {
-			latestTerminalByScope[scope] = terminalAt
+		if scope != "" {
+			if previous, exists := latestTerminalByScope[scope]; !exists || terminalAt.After(previous) {
+				latestTerminalByScope[scope] = terminalAt
+			}
+		}
+		logicalScope := syncRunLogicalScope(run)
+		if logicalScope != "" {
+			if previous, exists := latestTerminalByLogicalScope[logicalScope]; !exists || terminalAt.After(previous) {
+				latestTerminalByLogicalScope[logicalScope] = terminalAt
+			}
 		}
 	}
-	if len(latestTerminalByScope) == 0 {
+	if len(latestTerminalByScope) == 0 && len(latestTerminalByLogicalScope) == 0 {
 		return
 	}
 
@@ -438,12 +450,8 @@ func supersedeInProgressRunsWithTerminalCorrelation(runs []contracts.GitHubSyncR
 		if status != "running" && status != "queued" {
 			continue
 		}
-		scope := syncRunCorrelationScope(*run)
-		if scope == "" {
-			continue
-		}
-		terminalAt, ok := latestTerminalByScope[scope]
-		if !ok {
+		terminalAt, matched, reason := latestTerminalForRun(*run, latestTerminalByScope, latestTerminalByLogicalScope)
+		if !matched {
 			continue
 		}
 		if !run.StartedAt.IsZero() && run.StartedAt.After(terminalAt) {
@@ -457,6 +465,9 @@ func supersedeInProgressRunsWithTerminalCorrelation(runs []contracts.GitHubSyncR
 			run.Metrics = map[string]int{}
 		}
 		run.Metrics["superseded_by_terminal_correlation"] = 1
+		if reason == "logical_scope" {
+			run.Metrics["superseded_by_terminal_logical_scope"] = 1
+		}
 	}
 }
 
@@ -467,6 +478,46 @@ func syncRunCorrelationScope(run contracts.GitHubSyncRunView) string {
 	}
 	runType := strings.ToLower(strings.TrimSpace(run.RunType))
 	return runType + "|" + correlationID
+}
+
+func latestTerminalForRun(
+	run contracts.GitHubSyncRunView,
+	latestTerminalByScope map[string]time.Time,
+	latestTerminalByLogicalScope map[string]time.Time,
+) (time.Time, bool, string) {
+	scope := syncRunCorrelationScope(run)
+	if scope != "" {
+		if terminalAt, ok := latestTerminalByScope[scope]; ok {
+			return terminalAt, true, "correlation"
+		}
+	}
+
+	logicalScope := syncRunLogicalScope(run)
+	if logicalScope != "" {
+		if terminalAt, ok := latestTerminalByLogicalScope[logicalScope]; ok {
+			return terminalAt, true, "logical_scope"
+		}
+	}
+	return time.Time{}, false, ""
+}
+
+func syncRunLogicalScope(run contracts.GitHubSyncRunView) string {
+	runType := strings.ToLower(strings.TrimSpace(run.RunType))
+	if runType == "" {
+		return ""
+	}
+
+	target := strings.ToLower(strings.TrimSpace(run.RequestedRepository))
+	if target == "" {
+		target = strings.TrimLeft(strings.ToLower(strings.TrimSpace(run.RequestedUser)), "@")
+	}
+	if target == "" {
+		target = strings.ToLower(strings.TrimSpace(run.Subject))
+	}
+	if target == "" {
+		return ""
+	}
+	return runType + "|" + target
 }
 
 func isTerminalSyncRunStatus(status string) bool {
