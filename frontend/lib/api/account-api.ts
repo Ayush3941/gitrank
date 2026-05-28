@@ -1,5 +1,13 @@
 import { frontendPolicy } from "@/lib/runtime/frontend-policy";
 import { hasPartialSyncRunMetrics } from "@/lib/sync/sync-run-metrics-policy";
+import {
+  ACTIVE_SYNC_RUN_STATUSES,
+  COMPLETED_SYNC_RUN_STATUSES,
+  FAILED_SYNC_RUN_STATUSES,
+  PARTIAL_SYNC_RUN_STATUSES,
+  QUEUED_SYNC_RUN_STATUSES,
+  normalizeSyncRunStatusToken,
+} from "@/lib/sync/sync-run-status-policy";
 
 const DEFAULT_CSRF_COOKIE_NAME = frontendPolicy.csrfCookieName;
 const USER_SYNC_EXECUTION_TIMEOUT_MS = parseBoundedPositiveMs(
@@ -37,11 +45,6 @@ const SYNC_RUN_QUEUED_WINDOW_MS = Math.max(180_000, SYNC_RUN_ACTIVE_WINDOW_MS * 
 const USER_SYNC_SELF_KEY = "__self__";
 const inFlightUserSyncRequests = new Map<string, Promise<ApiSyncExecutionResponse>>();
 const USER_SYNC_RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503, 504]);
-const COMPLETED_SYNC_RUN_STATUSES = new Set(["completed", "succeeded", "success", "done"]);
-const PARTIAL_SYNC_RUN_STATUSES = new Set(["partial"]);
-const FAILED_SYNC_RUN_STATUSES = new Set(["failed", "cancelled", "canceled", "timed_out", "timeout"]);
-const ACTIVE_SYNC_RUN_STATUSES = new Set(["running", "syncing", "in_progress"]);
-const QUEUED_SYNC_RUN_STATUSES = new Set(["queued", "pending"]);
 
 type ApiErrorResponse = {
   error?: {
@@ -590,7 +593,7 @@ function normalizeSyncRunListResponse(payload: ApiSyncRunListResponse, nowMs: nu
 function normalizeSyncRunRecord(run: ApiSyncRunRecord, nowMs: number): ApiSyncRunRecord {
   const finishedMs = parseISOEpochMs(run.finished_at);
   const startedMs = parseISOEpochMs(run.started_at);
-  const normalizedStatus = run.status.trim().toLowerCase();
+  const normalizedStatus = normalizeSyncRunStatusToken(run.status);
   let normalized = normalizedStatus;
   let lastError = run.last_error;
 
