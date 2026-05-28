@@ -60,7 +60,7 @@ export function QuestsPageClient() {
   const constrainedNetwork = useNetworkConstraintPreference();
   const runUserSync = useRunUserSync();
   const { data, isLoading, isError, refetch } = useQuests();
-  const syncRunsQuery = useProfileSyncRuns(10);
+  const syncRunsQuery = useProfileSyncRuns();
   const questGroupPageSize = constrainedNetwork
     ? QUEST_GROUP_PAGE_SIZE_CONSTRAINED
     : QUEST_GROUP_PAGE_SIZE_DEFAULT;

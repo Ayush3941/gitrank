@@ -69,6 +69,7 @@ type authoredPullRequestDiscoveryStats struct {
 type pullRequestSyncOptions struct {
 	skipReviews        bool
 	skipReviewComments bool
+	filePageSize       int
 }
 
 type githubActorInstallationClientFactory func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error)
@@ -452,6 +453,7 @@ func (e *Executor) SyncUser(
 		}, actor, fmt.Sprintf("%s:authored-pr:%d", baseCorrelationID, index+1), time.Now().UTC(), "pull_request", pullRequestSyncOptions{
 			skipReviews:        true,
 			skipReviewComments: true,
+			filePageSize:       boundedPageSize(e.cfg.GitHub.MaxPageSize, e.cfg.GitHub.RepositorySyncPageSize),
 		})
 		cancel()
 		if err != nil {
@@ -718,7 +720,7 @@ func (e *Executor) syncPullRequestSurface(
 	}
 
 	var files []map[string]any
-	files, err = e.fetchPullRequestFiles(ctx, owner, name, req.Number)
+	files, err = e.fetchPullRequestFilesWithPageSize(ctx, owner, name, req.Number, options.filePageSize)
 	filesSkipped := false
 	filesFetchError := false
 	if err != nil {
@@ -2093,6 +2095,7 @@ func (e *Executor) fetchPullRequestReviews(ctx context.Context, owner, name stri
 		fmt.Sprintf("/repos/%s/%s/pulls/%d/reviews", owner, name, number),
 		nil,
 		pullRequestReviewsMaxPages,
+		100,
 	)
 }
 
@@ -2102,15 +2105,31 @@ func (e *Executor) fetchPullRequestReviewComments(ctx context.Context, owner, na
 		fmt.Sprintf("/repos/%s/%s/pulls/%d/comments", owner, name, number),
 		nil,
 		pullRequestReviewCommentsMaxPages,
+		100,
 	)
 }
 
 func (e *Executor) fetchPullRequestFiles(ctx context.Context, owner, name string, number int) ([]map[string]any, error) {
+	return e.fetchPullRequestFilesWithPageSize(ctx, owner, name, number, 0)
+}
+
+func (e *Executor) fetchPullRequestFilesWithPageSize(
+	ctx context.Context,
+	owner string,
+	name string,
+	number int,
+	perPageOverride int,
+) ([]map[string]any, error) {
+	perPage := perPageOverride
+	if perPage <= 0 {
+		perPage = 100
+	}
 	return e.fetchPaginatedResourceRows(
 		ctx,
 		fmt.Sprintf("/repos/%s/%s/pulls/%d/files", owner, name, number),
 		nil,
 		pullRequestFilesMaxPages,
+		perPage,
 	)
 }
 
@@ -2140,11 +2159,17 @@ func (e *Executor) fetchPaginatedResourceRows(
 	path string,
 	baseQuery url.Values,
 	maxPages int,
+	perPage int,
 ) ([]map[string]any, error) {
 	if maxPages <= 0 {
 		maxPages = 1
 	}
-	perPage := 100
+	if perPage <= 0 {
+		perPage = 100
+	}
+	if perPage > 100 {
+		perPage = 100
+	}
 
 	rows := make([]map[string]any, 0, perPage)
 	page := 1

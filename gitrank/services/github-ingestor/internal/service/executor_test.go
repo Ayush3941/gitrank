@@ -1128,6 +1128,52 @@ func TestExecutorFetchPullRequestFilesPaginatesUsingLinkHeaders(t *testing.T) {
 	}
 }
 
+func TestExecutorFetchPullRequestFilesWithPageSizeOverride(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/repos/octo/repo/pulls/13/files" {
+			t.Fatalf("path = %q, want /repos/octo/repo/pulls/13/files", r.URL.Path)
+		}
+		if r.URL.Query().Get("per_page") != "25" {
+			t.Fatalf("per_page = %q, want 25 override", r.URL.Query().Get("per_page"))
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode([]map[string]any{
+			{
+				"filename":  "cmd/main.go",
+				"status":    "modified",
+				"additions": 8,
+				"deletions": 2,
+			},
+		})
+	}))
+	defer server.Close()
+
+	client, err := githubapi.NewRESTClient(githubapi.ClientConfig{
+		BaseURL:          server.URL,
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		HTTPClient:       server.Client(),
+		SecondaryBackoff: time.Millisecond,
+		MaxConcurrency:   1,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	executor := NewExecutor(config.App{GitHub: config.GitHub{MaxPageSize: 100}}, nil, client)
+
+	files, err := executor.fetchPullRequestFilesWithPageSize(context.Background(), "octo", "repo", 13, 25)
+	if err != nil {
+		t.Fatalf("fetchPullRequestFilesWithPageSize() error = %v", err)
+	}
+	if len(files) != 1 {
+		t.Fatalf("files len = %d, want 1", len(files))
+	}
+	if path := stringValue(files[0]["filename"]); path != "cmd/main.go" {
+		t.Fatalf("filename = %q, want cmd/main.go", path)
+	}
+}
+
 func TestExecutorFetchAuthoredPullRequestTargetsUsesGitHubSearch(t *testing.T) {
 	requestsBySort := map[string]int{}
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

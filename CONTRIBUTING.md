@@ -333,6 +333,8 @@ Recent no-slowdown refinement (May 27, 2026):
 - Root-level research PDF assets are now expected under `docs/research/` so repository quality checks and tree documentation stay deterministic.
 - Frontend backend-env loader now supports inline comments in unquoted values (for example `KEY=value # note`) while preserving quoted `#` literals, keeping `gitrank/.env` parsing consistent with real shell-style env files.
 - Sync-run persistence/filtering now canonicalizes `requested_by_subject` UUID casing on both write and filter paths, reducing false misses when the same UUID appears with mixed case across services.
+- User-history PR hydration now uses a bounded PR-file page-size override (`GITHUB_REPOSITORY_SYNC_PAGE_SIZE`) instead of hard-coded wide pages during child PR syncs, reducing timeout risk on large PR file listings while keeping repository/pull-request direct sync surfaces unchanged.
+- Dashboard-route sync-state polling now uses a configurable user-sync run lookback limit (`NEXT_PUBLIC_GITRANK_PROFILE_SYNC_RUN_LOOKBACK_LIMIT`, default `50`) so active user runs are less likely to be dropped from freshness derivation when run history is dense.
 
 ## Frontend Excellence Checklist (No-Slowdown Backlog)
 

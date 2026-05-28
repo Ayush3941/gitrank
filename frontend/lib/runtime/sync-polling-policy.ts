@@ -15,6 +15,23 @@ function parsePositiveMs(
   return integer;
 }
 
+function parsePositiveCount(
+  raw: string | undefined,
+  fallback: number,
+  min: number,
+  max: number,
+): number {
+  const value = Number(raw);
+  if (!Number.isFinite(value)) {
+    return fallback;
+  }
+  const integer = Math.trunc(value);
+  if (integer < min || integer > max) {
+    return fallback;
+  }
+  return integer;
+}
+
 function parseBoolean(raw: string | undefined, fallback: boolean): boolean {
   if (typeof raw !== "string") {
     return fallback;
@@ -142,6 +159,13 @@ const SYNC_RUNS_STALE_TIME_CONSTRAINED_MS = parsePositiveMs(
   MAX_INTERVAL_MS,
 );
 
+const PROFILE_SYNC_RUN_LOOKBACK_LIMIT = parsePositiveCount(
+  process.env.NEXT_PUBLIC_GITRANK_PROFILE_SYNC_RUN_LOOKBACK_LIMIT,
+  50,
+  10,
+  200,
+);
+
 export const syncPollingPolicy = {
   autoSyncRetryIntervalMs: AUTO_SYNC_RETRY_INTERVAL_MS,
   autoSyncStaleAgeMs: AUTO_SYNC_STALE_AGE_MS,
@@ -159,4 +183,5 @@ export const syncPollingPolicy = {
   syncRunsActiveRefetchIntervalConstrainedMs: SYNC_RUNS_ACTIVE_REFETCH_INTERVAL_CONSTRAINED_MS,
   syncRunsStaleTimeMs: SYNC_RUNS_STALE_TIME_MS,
   syncRunsStaleTimeConstrainedMs: SYNC_RUNS_STALE_TIME_CONSTRAINED_MS,
+  profileSyncRunLookbackLimit: PROFILE_SYNC_RUN_LOOKBACK_LIMIT,
 } as const;

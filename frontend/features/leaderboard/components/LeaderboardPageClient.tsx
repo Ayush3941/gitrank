@@ -91,7 +91,7 @@ export function LeaderboardPageClient() {
   const searchParams = useSearchParams();
   const constrainedNetwork = useNetworkConstraintPreference();
   const runUserSync = useRunUserSync();
-  const syncRunsQuery = useProfileSyncRuns(10);
+  const syncRunsQuery = useProfileSyncRuns();
   const rowPageSize = constrainedNetwork
     ? LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED
     : LEADERBOARD_ROW_PAGE_SIZE_DEFAULT;
