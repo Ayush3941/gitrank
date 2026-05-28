@@ -455,15 +455,7 @@ func (e *Executor) SyncUser(
 		})
 		cancel()
 		if err != nil {
-			response.Fetched["authored_pull_requests_skipped"]++
-			if isSkippableGitHubTimeoutError(err) {
-				response.Fetched["authored_pull_requests_timeouts"]++
-				response.Fetched["authored_pull_requests_retryable"]++
-			}
-			if !isSkippableGitHubSyncError(err) {
-				response.Fetched["authored_pull_requests_failed"]++
-				response.Fetched["authored_pull_requests_retryable"]++
-			}
+			classifyAuthoredPullRequestHydrationError(response.Fetched, err)
 			continue
 		}
 		response.Fetched = mergeCountMaps(response.Fetched, child.Fetched)
@@ -2460,6 +2452,15 @@ func shouldAdvanceAuthoredPRLastSynced(fetched map[string]int, searchIncomplete,
 	if fetched["authored_pull_request_search_failed"] > 0 {
 		return false
 	}
+	selected := fetched["authored_pull_requests_selected"]
+	if selected <= 0 {
+		return false
+	}
+	if fetched["authored_pull_requests_auth_errors"] > 0 || fetched["authored_pull_requests_not_found"] > 0 {
+		// Authorization/scope gaps should keep overlap in place so repaired auth can
+		// recover rows without waiting for deep history backfill.
+		return false
+	}
 	if fetched["authored_pull_requests_retryable"] <= 0 {
 		return true
 	}
@@ -2467,14 +2468,12 @@ func shouldAdvanceAuthoredPRLastSynced(fetched map[string]int, searchIncomplete,
 	// Do not pin the authored PR cursor forever when a run is only partially
 	// retryable. If at least one selected PR was hydrated successfully, advance
 	// with overlap and allow failed PRs to be retried on future incremental runs.
-	selected := fetched["authored_pull_requests_selected"]
-	if selected <= 0 {
-		return false
-	}
 	skipped := fetched["authored_pull_requests_skipped"]
 	if skipped < 0 {
 		skipped = 0
 	}
+	// If every selected authored PR hydration was skipped, hold cursor progression
+	// regardless of retryability classification to avoid silently skipping gaps.
 	if skipped >= selected {
 		return false
 	}
@@ -2556,6 +2555,47 @@ func syncFailureFetchedMetrics(err error) map[string]int {
 		metrics["request_errors"] = 1
 	}
 	return metrics
+}
+
+func classifyAuthoredPullRequestHydrationError(fetched map[string]int, err error) {
+	if fetched == nil {
+		return
+	}
+	fetched["authored_pull_requests_skipped"]++
+	if err == nil {
+		return
+	}
+	if isSkippableGitHubTimeoutError(err) {
+		fetched["authored_pull_requests_timeouts"]++
+		fetched["authored_pull_requests_retryable"]++
+		return
+	}
+
+	statusCode, ok := gitHubStatusCodeFromError(err)
+	if !ok {
+		fetched["authored_pull_requests_failed"]++
+		fetched["authored_pull_requests_retryable"]++
+		return
+	}
+
+	switch {
+	case statusCode == http.StatusTooManyRequests:
+		fetched["authored_pull_requests_rate_limited"]++
+		fetched["authored_pull_requests_retryable"]++
+	case statusCode == http.StatusForbidden || statusCode == http.StatusUnauthorized:
+		fetched["authored_pull_requests_auth_errors"]++
+	case statusCode == http.StatusNotFound:
+		// GitHub often masks private/unauthorized resource access as 404.
+		fetched["authored_pull_requests_not_found"]++
+	case statusCode == http.StatusConflict:
+		fetched["authored_pull_requests_conflicts"]++
+	case statusCode >= http.StatusInternalServerError:
+		fetched["authored_pull_requests_upstream_errors"]++
+		fetched["authored_pull_requests_retryable"]++
+	default:
+		fetched["authored_pull_requests_failed"]++
+		fetched["authored_pull_requests_retryable"]++
+	}
 }
 
 func isSkippableGitHubTimeoutError(err error) bool {

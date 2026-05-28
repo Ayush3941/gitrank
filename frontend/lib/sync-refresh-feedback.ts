@@ -65,6 +65,30 @@ export function buildUserSyncRefreshFeedback(
     };
   }
 
+  if ((fetched.authored_pull_requests_rate_limited ?? 0) > 0) {
+    return {
+      tone: "warning",
+      message:
+        "Refresh was partially rate limited while hydrating authored PR details. Existing evidence was kept and later runs will retry.",
+    };
+  }
+
+  if ((fetched.authored_pull_requests_auth_errors ?? 0) > 0 || (fetched.authored_pull_requests_not_found ?? 0) > 0) {
+    return {
+      tone: "warning",
+      message:
+        "Refresh was partially blocked by GitHub authorization scope while hydrating authored PR details. Reconnect GitHub and retry.",
+    };
+  }
+
+  if ((fetched.authored_pull_requests_upstream_errors ?? 0) > 0) {
+    return {
+      tone: "warning",
+      message:
+        "Refresh hit upstream GitHub errors while hydrating authored PR details. Retry shortly to complete evidence hydration.",
+    };
+  }
+
   if (
     result.status === "partial" ||
     fetched.authored_pull_request_search_failed === 1 ||

@@ -80,6 +80,42 @@ describe("buildUserSyncRefreshFeedback", () => {
     expect(feedback.message).toContain("2 authored PR targets");
   });
 
+  it("returns warning when authored PR hydration is rate limited", () => {
+    const feedback = buildUserSyncRefreshFeedback(
+      execution({
+        fetched: {
+          authored_pull_requests_rate_limited: 1,
+        },
+      }),
+    );
+    expect(feedback.tone).toBe("warning");
+    expect(feedback.message).toContain("rate limited");
+  });
+
+  it("returns warning when authored PR hydration is auth/scope blocked", () => {
+    const feedback = buildUserSyncRefreshFeedback(
+      execution({
+        fetched: {
+          authored_pull_requests_not_found: 1,
+        },
+      }),
+    );
+    expect(feedback.tone).toBe("warning");
+    expect(feedback.message).toContain("authorization scope");
+  });
+
+  it("returns warning when authored PR hydration has upstream failures", () => {
+    const feedback = buildUserSyncRefreshFeedback(
+      execution({
+        fetched: {
+          authored_pull_requests_upstream_errors: 1,
+        },
+      }),
+    );
+    expect(feedback.tone).toBe("warning");
+    expect(feedback.message).toContain("upstream GitHub errors");
+  });
+
   it("returns warning when PR sync targets exist but score replay produced zero events", () => {
     const feedback = buildUserSyncRefreshFeedback(
       execution({

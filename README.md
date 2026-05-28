@@ -145,6 +145,7 @@ There is no separate runtime `.env` for `frontend/`; keep all runtime vars in `g
 - In-progress sync rows are superseded by newer terminal runs using both correlation ID and logical target scope (run type + requested user/repository), reducing persistent ghost `running` entries after repeated retries.
 - User sync now includes a broad authored-PR fallback query when recent-window discovery returns empty, reducing false-empty sync outcomes caused by cursor/window edge cases.
 - Dashboard stale-state UI now surfaces the latest sync diagnostic reason (when available) so partial/empty evidence states are explicit instead of generic.
+- Authored-PR hydration skip metrics are now classified by cause (timeout, rate-limit, auth/scope, not-found masking, conflict, upstream), improving partial-sync diagnostics and cursor-hold behavior for auth/scope gaps.
 - When user sync reports `authored_pull_requests_capped`, UI now shows a bounded-window notice instead of implying full-history completion.
 - User-sync cursor progression no longer stays pinned on mixed-result runs; if at least one selected PR hydrated successfully, the cursor advances with overlap so newer PRs can enter subsequent bounded windows.
 - User-sync execution marks authored-PR backfill as partial when discovery is still incomplete (`authored_pull_request_backfill_incomplete`), avoiding false "fully synced" states while history backfill is still in progress.

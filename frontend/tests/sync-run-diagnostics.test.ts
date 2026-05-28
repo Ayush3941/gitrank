@@ -72,6 +72,36 @@ describe("describeSyncRunOutcome", () => {
     expect(outcome.code).toBe("search_limited");
   });
 
+  it("returns rate-limited-hydration when authored PR hydration is rate limited", () => {
+    const outcome = describeSyncRunOutcome(
+      run({
+        authored_pull_requests_rate_limited: 1,
+      }),
+    );
+    expect(outcome.code).toBe("rate_limited_hydration");
+    expect(outcome.message).toContain("rate limited");
+  });
+
+  it("returns auth-hydration when authored PR hydration is blocked by scope/auth", () => {
+    const outcome = describeSyncRunOutcome(
+      run({
+        authored_pull_requests_not_found: 1,
+      }),
+    );
+    expect(outcome.code).toBe("auth_hydration");
+    expect(outcome.message).toContain("scope limits");
+  });
+
+  it("returns upstream-hydration when authored PR hydration gets upstream failures", () => {
+    const outcome = describeSyncRunOutcome(
+      run({
+        authored_pull_requests_upstream_errors: 1,
+      }),
+    );
+    expect(outcome.code).toBe("upstream_hydration");
+    expect(outcome.message).toContain("upstream GitHub service errors");
+  });
+
   it("returns score-replay-mismatch when replay emits zero events after target selection", () => {
     const outcome = describeSyncRunOutcome(
       run({

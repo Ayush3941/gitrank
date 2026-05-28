@@ -10,6 +10,10 @@ export type SyncRunDiagnostic = {
     | "pr_reports_backfill_failed"
     | "quests_backfill_failed"
     | "search_limited"
+    | "rate_limited_hydration"
+    | "auth_hydration"
+    | "upstream_hydration"
+    | "conflict_hydration"
     | "retryable_or_timeout"
     | "backfill_incomplete"
     | "snapshot_refresh_pending"
@@ -63,6 +67,10 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
   const searchOverflow = metricCount(metrics, "authored_pull_request_search_overflow") > 0;
   const retryable = metricCount(metrics, "authored_pull_requests_retryable") > 0;
   const timeout = metricCount(metrics, "authored_pull_requests_timeouts", "fetched_timeout_errors", "timeout_errors") > 0;
+  const rateLimitedHydration = metricCount(metrics, "authored_pull_requests_rate_limited") > 0;
+  const authHydration = metricCount(metrics, "authored_pull_requests_auth_errors", "authored_pull_requests_not_found") > 0;
+  const upstreamHydration = metricCount(metrics, "authored_pull_requests_upstream_errors") > 0;
+  const conflictHydration = metricCount(metrics, "authored_pull_requests_conflicts") > 0;
   const snapshotRefreshPending = metricCount(metrics, "post_sync_refresh_failed") > 0;
   const scoreReplayMismatch = metricCount(metrics, "post_sync_score_replay_mismatch") > 0;
   const scoreReplayFailed = metricCount(metrics, "post_sync_score_replay_failed") > 0;
@@ -129,6 +137,34 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
       code: "search_limited",
       message:
         "GitHub search limits were hit during authored PR discovery. GitRank will continue bounded backfill on later runs.",
+    };
+  }
+  if (rateLimitedHydration) {
+    return {
+      code: "rate_limited_hydration",
+      message:
+        "Some authored PR hydration calls were rate limited by GitHub. GitRank kept existing evidence and will retry in later sync runs.",
+    };
+  }
+  if (authHydration) {
+    return {
+      code: "auth_hydration",
+      message:
+        "Some authored PR hydration calls were blocked by authorization or scope limits. Reconnect GitHub to restore full PR evidence coverage.",
+    };
+  }
+  if (upstreamHydration) {
+    return {
+      code: "upstream_hydration",
+      message:
+        "Some authored PR hydration calls failed due to upstream GitHub service errors. Retry later to complete evidence hydration.",
+    };
+  }
+  if (conflictHydration) {
+    return {
+      code: "conflict_hydration",
+      message:
+        "Some authored PR hydration calls returned conflict responses. GitRank preserved current evidence and will continue on later runs.",
     };
   }
   if (retryable || timeout) {

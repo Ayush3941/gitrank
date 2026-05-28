@@ -230,6 +230,17 @@ func TestShouldAdvanceAuthoredPRLastSynced(t *testing.T) {
 			searchOverflow:   false,
 			want:             false,
 		},
+		{
+			name: "holds cursor when auth errors were observed during authored PR hydration",
+			fetched: map[string]int{
+				"authored_pull_requests_selected":    10,
+				"authored_pull_requests_skipped":     2,
+				"authored_pull_requests_auth_errors": 1,
+			},
+			searchIncomplete: false,
+			searchOverflow:   false,
+			want:             false,
+		},
 	}
 
 	for _, test := range tests {
@@ -434,6 +445,74 @@ func TestSyncFailureFetchedMetrics(t *testing.T) {
 			for _, key := range test.wantKeys {
 				if metrics[key] != 1 {
 					t.Fatalf("syncFailureFetchedMetrics(%v)[%q] = %d, want 1", test.err, key, metrics[key])
+				}
+			}
+		})
+	}
+}
+
+func TestClassifyAuthoredPullRequestHydrationError(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		err      error
+		wantKeys []string
+	}{
+		{
+			name: "timeout is retryable",
+			err:  context.DeadlineExceeded,
+			wantKeys: []string{
+				"authored_pull_requests_skipped",
+				"authored_pull_requests_timeouts",
+				"authored_pull_requests_retryable",
+			},
+		},
+		{
+			name: "rate limit is retryable",
+			err:  errors.New("GitHub API GET https://api.github.com/repos/octo/repo/pulls/7 failed with status 429"),
+			wantKeys: []string{
+				"authored_pull_requests_skipped",
+				"authored_pull_requests_rate_limited",
+				"authored_pull_requests_retryable",
+			},
+		},
+		{
+			name: "auth is tagged",
+			err:  errors.New("GitHub API GET https://api.github.com/repos/octo/repo/pulls/7 failed with status 403"),
+			wantKeys: []string{
+				"authored_pull_requests_skipped",
+				"authored_pull_requests_auth_errors",
+			},
+		},
+		{
+			name: "not found is tagged",
+			err:  errors.New("GitHub API GET https://api.github.com/repos/octo/repo/pulls/7 failed with status 404"),
+			wantKeys: []string{
+				"authored_pull_requests_skipped",
+				"authored_pull_requests_not_found",
+			},
+		},
+		{
+			name: "upstream is retryable",
+			err:  errors.New("GitHub API GET https://api.github.com/repos/octo/repo/pulls/7 failed with status 502"),
+			wantKeys: []string{
+				"authored_pull_requests_skipped",
+				"authored_pull_requests_upstream_errors",
+				"authored_pull_requests_retryable",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			fetched := map[string]int{}
+			classifyAuthoredPullRequestHydrationError(fetched, test.err)
+			for _, key := range test.wantKeys {
+				if fetched[key] != 1 {
+					t.Fatalf("classifyAuthoredPullRequestHydrationError(%v)[%q] = %d, want 1", test.err, key, fetched[key])
 				}
 			}
 		})
