@@ -358,6 +358,10 @@ func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQ
 				httpkit.WriteError(w, http.StatusConflict, "github_user_sync_in_progress", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 				return
 			}
+			if errors.Is(err, service.ErrUserSyncOAuthTokenRequired) || errors.Is(err, service.ErrUserSyncOAuthTokenMalformed) {
+				httpkit.WriteError(w, http.StatusUnauthorized, "github_user_oauth_required", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+				return
+			}
 			if errors.Is(err, service.ErrUserSyncGitHubAppInstallationRequired) {
 				httpkit.WriteError(w, http.StatusForbidden, "github_app_installation_required", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 				return

@@ -199,18 +199,118 @@ func (e *Executor) graphQLTokenSourceForActor(ctx context.Context, actor SyncReq
 	}
 
 	encryptedToken, ok, err := e.store.ActiveGitHubAccessTokenByLogin(ctx, githubLogin, now.UTC().Add(e.cfg.GitHub.RefreshSkew))
-	if err != nil || !ok {
-		return nil, false, err
-	}
-	accessToken, _, err := authkit.DecryptSecretAny(e.oauthTokenKeys, encryptedToken)
 	if err != nil {
 		return nil, false, err
 	}
-	accessToken = strings.TrimSpace(accessToken)
-	if accessToken == "" {
+	if !ok {
+		refreshedToken, refreshed, refreshErr := e.refreshOAuthAccessTokenForActor(ctx, githubLogin, now)
+		if refreshErr != nil {
+			return nil, false, refreshErr
+		}
+		if !refreshed {
+			return nil, false, nil
+		}
+		return githubapi.StaticTokenSource(refreshedToken), true, nil
+	}
+	accessToken, err := e.decryptOAuthAccessToken(encryptedToken)
+	if err != nil {
+		return nil, false, err
+	}
+	if strings.TrimSpace(accessToken) == "" {
 		return nil, false, nil
 	}
 	return githubapi.StaticTokenSource(accessToken), true, nil
+}
+
+func (e *Executor) decryptOAuthAccessToken(encryptedToken string) (string, error) {
+	accessToken, _, err := authkit.DecryptSecretAny(e.oauthTokenKeys, encryptedToken)
+	if err != nil {
+		return "", err
+	}
+	accessToken = strings.TrimSpace(accessToken)
+	if accessToken == "" {
+		return "", nil
+	}
+	return accessToken, nil
+}
+
+func (e *Executor) refreshOAuthAccessTokenForActor(ctx context.Context, githubLogin string, now time.Time) (string, bool, error) {
+	if e == nil || e.store == nil || e.store.pool == nil || len(e.oauthTokenKeys) == 0 {
+		return "", false, nil
+	}
+	record, ok, err := e.store.GitHubOAuthTokenByLogin(ctx, githubLogin)
+	if err != nil || !ok {
+		return "", false, err
+	}
+	if record.RevokedAt != nil {
+		return "", false, nil
+	}
+	refreshEncrypted := strings.TrimSpace(record.RefreshTokenEncrypted)
+	if refreshEncrypted == "" {
+		return "", false, nil
+	}
+	if record.RefreshTokenExpiresAt != nil && !record.RefreshTokenExpiresAt.After(now.UTC()) {
+		return "", false, nil
+	}
+	refreshToken, matchedKeyIndex, err := authkit.DecryptSecretAny(e.oauthTokenKeys, refreshEncrypted)
+	if err != nil {
+		return "", false, err
+	}
+	refreshToken = strings.TrimSpace(refreshToken)
+	if refreshToken == "" {
+		return "", false, nil
+	}
+
+	refreshed, err := githubapi.RefreshUserAccessToken(
+		ctx,
+		&http.Client{Timeout: boundedGitHubHTTPTimeout(e.cfg.GitHub.RequestTimeout)},
+		e.cfg.GitHub.TokenURL,
+		e.cfg.GitHubUserClientID(),
+		e.cfg.GitHubUserClientSecret(),
+		refreshToken,
+	)
+	if err != nil {
+		return "", false, err
+	}
+	accessToken := strings.TrimSpace(refreshed.AccessToken)
+	if accessToken == "" {
+		return "", false, errors.New("github refresh returned empty access token")
+	}
+
+	accessEncrypted, err := authkit.EncryptSecret(e.oauthTokenKeys[0], accessToken)
+	if err != nil {
+		return "", false, err
+	}
+	nextRefreshEncrypted := refreshEncrypted
+	if strings.TrimSpace(refreshed.RefreshToken) != "" {
+		nextRefreshEncrypted, err = authkit.EncryptSecret(e.oauthTokenKeys[0], strings.TrimSpace(refreshed.RefreshToken))
+		if err != nil {
+			return "", false, err
+		}
+	} else if matchedKeyIndex > 0 {
+		nextRefreshEncrypted, err = authkit.EncryptSecret(e.oauthTokenKeys[0], refreshToken)
+		if err != nil {
+			return "", false, err
+		}
+	}
+
+	accessExpiresAt := oauthTokenDeadline(now, refreshed.ExpiresIn)
+	refreshExpiresAt := oauthTokenDeadline(now, refreshed.RefreshTokenExpiresIn)
+	if refreshExpiresAt == nil {
+		refreshExpiresAt = record.RefreshTokenExpiresAt
+	}
+	if err := e.store.StoreRefreshedGitHubToken(ctx, record.GitHubAccountID, refreshed, accessEncrypted, nextRefreshEncrypted, accessExpiresAt, refreshExpiresAt, now); err != nil {
+		return "", false, err
+	}
+	return accessToken, true, nil
+}
+
+func oauthTokenDeadline(now time.Time, ttl time.Duration) *time.Time {
+	if ttl <= 0 {
+		return nil
+	}
+	deadline := now.UTC().Add(ttl)
+	return &deadline
 }
 
 func (e *Executor) graphQLClientForActor(ctx context.Context, actor SyncRequestActor, now time.Time) (*githubapi.GraphQLClient, bool, error) {
@@ -277,7 +377,7 @@ func (e *Executor) installationClientForActor(ctx context.Context, actor SyncReq
 	return nil, false, nil
 }
 
-func (e *Executor) executorForActor(ctx context.Context, actor SyncRequestActor, _ time.Time) (*Executor, error) {
+func (e *Executor) executorForActor(ctx context.Context, actor SyncRequestActor, now time.Time) (*Executor, error) {
 	if e == nil {
 		return nil, nil
 	}
@@ -292,30 +392,60 @@ func (e *Executor) executorForActor(ctx context.Context, actor SyncRequestActor,
 			return e, nil
 		}
 	}
-	return e, nil
+	client, ok, err := e.restClientForActor(ctx, actor, now)
+	if err != nil {
+		// Token-source failures (for example stale/decrypt-mismatched local OAuth keys)
+		// should not hard-fail sync execution; fallback to the baseline shared client.
+		return e, nil
+	}
+	if !ok || client == nil {
+		return e, nil
+	}
+	clone := *e
+	clone.client = client
+	return &clone, nil
 }
 
-func (e *Executor) executorForUserSyncActor(ctx context.Context, actor SyncRequestActor, _ time.Time) (*Executor, string, error) {
+func (e *Executor) executorForUserSyncActor(ctx context.Context, actor SyncRequestActor, now time.Time) (*Executor, string, error) {
 	if e == nil {
 		return nil, "", nil
 	}
 	if strings.TrimSpace(actor.GitHubLogin) == "" {
-		return nil, "", ErrUserSyncGitHubAppInstallationRequired
-	}
-	if e.actorInstallation == nil {
-		return nil, "", ErrUserSyncGitHubAppUnavailable
-	}
-	client, enabled, err := e.actorInstallation(ctx, actor)
-	if err != nil {
-		return nil, "", fmt.Errorf("%w: %v", ErrUserSyncGitHubAppUnavailable, err)
-	}
-	if !enabled || client == nil {
-		return nil, "", ErrUserSyncGitHubAppInstallationRequired
+		return nil, "", ErrUserSyncOAuthTokenRequired
 	}
 
-	clone := *e
-	clone.client = client
-	return &clone, "installation", nil
+	// OAuth user token remains the primary authored-PR discovery source.
+	// It can project authored PRs beyond repositories where the GitHub App is
+	// installed. If unavailable, fallback to installation credentials.
+	userClient, userClientEnabled, userClientErr := e.restClientForActor(ctx, actor, now)
+	if userClientErr == nil && userClientEnabled && userClient != nil {
+		clone := *e
+		clone.client = userClient
+		return &clone, "oauth", nil
+	}
+
+	if e.actorInstallation != nil {
+		installationClient, installationEnabled, installationErr := e.actorInstallation(ctx, actor)
+		if installationErr == nil && installationEnabled && installationClient != nil {
+			clone := *e
+			clone.client = installationClient
+			return &clone, "installation", nil
+		}
+		if userClientErr == nil && !userClientEnabled {
+			if installationErr != nil {
+				return nil, "", fmt.Errorf("%w: %v", ErrUserSyncGitHubAppUnavailable, installationErr)
+			}
+			if !installationEnabled || installationClient == nil {
+				return nil, "", ErrUserSyncOAuthTokenRequired
+			}
+		}
+	}
+
+	if userClientErr != nil {
+		return nil, "", fmt.Errorf("%w: %v", ErrUserSyncOAuthTokenMalformed, userClientErr)
+	}
+
+	return nil, "", ErrUserSyncOAuthTokenRequired
 }
 
 func (e *Executor) fetchPullRequestsGraphQL(

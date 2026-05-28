@@ -581,6 +581,16 @@ func TestSyncFailureFetchedMetrics(t *testing.T) {
 			wantKeys: []string{"failed", "user_sync_in_progress", "lease_conflicts"},
 		},
 		{
+			name:     "oauth token required tagged",
+			err:      ErrUserSyncOAuthTokenRequired,
+			wantKeys: []string{"failed", "auth_errors", "oauth_token_required"},
+		},
+		{
+			name:     "oauth token malformed tagged",
+			err:      ErrUserSyncOAuthTokenMalformed,
+			wantKeys: []string{"failed", "auth_errors", "oauth_token_malformed"},
+		},
+		{
 			name:     "app installation required tagged",
 			err:      ErrUserSyncGitHubAppInstallationRequired,
 			wantKeys: []string{"failed", "auth_errors", "app_installation_required"},
@@ -1047,7 +1057,41 @@ func TestExecutorForActorPrefersInstallationClientWhenAvailable(t *testing.T) {
 	}
 }
 
-func TestExecutorForUserSyncActorUsesInstallationClientWhenAvailable(t *testing.T) {
+func TestExecutorForUserSyncActorPrefersOAuthWhenAvailable(t *testing.T) {
+	t.Parallel()
+
+	baseClient := &githubapi.RESTClient{}
+	oauthClient := &githubapi.RESTClient{}
+	installationClient := &githubapi.RESTClient{}
+	executor := &Executor{
+		client: baseClient,
+		actorInstallation: func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
+			return installationClient, true, nil
+		},
+		graphqlTokenSource: func(context.Context, SyncRequestActor, time.Time) (githubapi.TokenSource, bool, error) {
+			return githubapi.StaticTokenSource("ghu_oauth_token"), true, nil
+		},
+		restClientFactory: func(githubapi.TokenSource) (*githubapi.RESTClient, error) {
+			return oauthClient, nil
+		},
+	}
+
+	runtime, source, err := executor.executorForUserSyncActor(context.Background(), SyncRequestActor{GitHubLogin: "octocat"}, time.Now().UTC())
+	if err != nil {
+		t.Fatalf("executorForUserSyncActor() error = %v", err)
+	}
+	if source != "oauth" {
+		t.Fatalf("credential source = %q, want oauth", source)
+	}
+	if runtime == executor {
+		t.Fatalf("executorForUserSyncActor() runtime = %p, want cloned executor", runtime)
+	}
+	if runtime.client != oauthClient {
+		t.Fatalf("runtime.client = %p, want oauth client %p", runtime.client, oauthClient)
+	}
+}
+
+func TestExecutorForUserSyncActorFallsBackToInstallationWhenOAuthUnavailable(t *testing.T) {
 	t.Parallel()
 
 	baseClient := &githubapi.RESTClient{}
@@ -1086,16 +1130,16 @@ func TestExecutorForUserSyncActorReturnsErrorWhenInstallationMissing(t *testing.
 
 	runtime, source, err := executor.executorForUserSyncActor(context.Background(), SyncRequestActor{GitHubLogin: "octocat"}, time.Now().UTC())
 	if err == nil {
-		t.Fatalf("executorForUserSyncActor() error = nil, want installation-required error")
+		t.Fatalf("executorForUserSyncActor() error = nil, want oauth-required error")
 	}
-	if !errors.Is(err, ErrUserSyncGitHubAppInstallationRequired) {
-		t.Fatalf("executorForUserSyncActor() error = %v, want ErrUserSyncGitHubAppInstallationRequired", err)
+	if !errors.Is(err, ErrUserSyncOAuthTokenRequired) {
+		t.Fatalf("executorForUserSyncActor() error = %v, want ErrUserSyncOAuthTokenRequired", err)
 	}
 	if runtime != nil {
-		t.Fatalf("executorForUserSyncActor() runtime = %p, want nil when installation is missing", runtime)
+		t.Fatalf("executorForUserSyncActor() runtime = %p, want nil when oauth and installation are missing", runtime)
 	}
 	if source != "" {
-		t.Fatalf("credential source = %q, want empty source when installation is missing", source)
+		t.Fatalf("credential source = %q, want empty source when oauth and installation are missing", source)
 	}
 }
 
@@ -1105,16 +1149,44 @@ func TestExecutorForUserSyncActorReturnsErrorWhenGitHubLoginMissing(t *testing.T
 	executor := &Executor{client: &githubapi.RESTClient{}}
 	runtime, source, err := executor.executorForUserSyncActor(context.Background(), SyncRequestActor{}, time.Now().UTC())
 	if err == nil {
-		t.Fatalf("executorForUserSyncActor() error = nil, want installation-required error")
+		t.Fatalf("executorForUserSyncActor() error = nil, want oauth-required error")
 	}
-	if !errors.Is(err, ErrUserSyncGitHubAppInstallationRequired) {
-		t.Fatalf("executorForUserSyncActor() error = %v, want ErrUserSyncGitHubAppInstallationRequired", err)
+	if !errors.Is(err, ErrUserSyncOAuthTokenRequired) {
+		t.Fatalf("executorForUserSyncActor() error = %v, want ErrUserSyncOAuthTokenRequired", err)
 	}
 	if runtime != nil {
 		t.Fatalf("executorForUserSyncActor() runtime = %p, want nil when login missing", runtime)
 	}
 	if source != "" {
 		t.Fatalf("credential source = %q, want empty source when login missing", source)
+	}
+}
+
+func TestExecutorForUserSyncActorReturnsErrorWhenOAuthDecryptFails(t *testing.T) {
+	t.Parallel()
+
+	executor := &Executor{
+		client: &githubapi.RESTClient{},
+		graphqlTokenSource: func(context.Context, SyncRequestActor, time.Time) (githubapi.TokenSource, bool, error) {
+			return nil, false, errors.New("secret could not be decrypted")
+		},
+		restClientFactory: func(githubapi.TokenSource) (*githubapi.RESTClient, error) {
+			return &githubapi.RESTClient{}, nil
+		},
+	}
+
+	runtime, source, err := executor.executorForUserSyncActor(context.Background(), SyncRequestActor{GitHubLogin: "octocat"}, time.Now().UTC())
+	if err == nil {
+		t.Fatalf("executorForUserSyncActor() error = nil, want oauth-malformed error")
+	}
+	if !errors.Is(err, ErrUserSyncOAuthTokenMalformed) {
+		t.Fatalf("executorForUserSyncActor() error = %v, want ErrUserSyncOAuthTokenMalformed", err)
+	}
+	if runtime != nil {
+		t.Fatalf("executorForUserSyncActor() runtime = %p, want nil when oauth decrypt fails", runtime)
+	}
+	if source != "" {
+		t.Fatalf("credential source = %q, want empty source when oauth decrypt fails", source)
 	}
 }
 

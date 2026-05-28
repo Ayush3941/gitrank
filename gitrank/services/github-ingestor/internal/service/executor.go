@@ -350,6 +350,8 @@ func (e *Executor) SyncUser(
 		return response, err
 	}
 	switch credentialSource {
+	case "oauth":
+		response.Fetched["authored_pull_request_auth_oauth"] = 1
 	case "installation":
 		response.Fetched["authored_pull_request_auth_installation"] = 1
 	default:
@@ -2587,6 +2589,16 @@ func syncFailureFetchedMetrics(err error) map[string]int {
 	if errors.Is(err, ErrUserSyncInProgress) {
 		metrics["user_sync_in_progress"] = 1
 		metrics["lease_conflicts"] = 1
+		return metrics
+	}
+	if errors.Is(err, ErrUserSyncOAuthTokenRequired) {
+		metrics["auth_errors"] = 1
+		metrics["oauth_token_required"] = 1
+		return metrics
+	}
+	if errors.Is(err, ErrUserSyncOAuthTokenMalformed) {
+		metrics["auth_errors"] = 1
+		metrics["oauth_token_malformed"] = 1
 		return metrics
 	}
 	if errors.Is(err, ErrUserSyncGitHubAppInstallationRequired) {
