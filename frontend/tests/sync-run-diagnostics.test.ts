@@ -75,6 +75,16 @@ describe("describeSyncRunOutcome", () => {
     expect(outcome.message).toContain("emitted 0 events");
   });
 
+  it("returns recent-seed-empty when newest seeded authored PR window is empty", () => {
+    const outcome = describeSyncRunOutcome(
+      run({
+        authored_pull_request_recent_seed_empty: 1,
+      }),
+    );
+    expect(outcome.code).toBe("recent_seed_empty");
+    expect(outcome.message).toContain("newest seeded window");
+  });
+
   it("returns synced-targets when authored PRs were selected", () => {
     const outcome = describeSyncRunOutcome(
       run({

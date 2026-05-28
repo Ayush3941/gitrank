@@ -298,7 +298,7 @@ func TestUserSyncExecutionStatus(t *testing.T) {
 		{
 			name: "partial when discovery is empty despite previously persisted authored pull requests",
 			fetched: map[string]int{
-				"authored_pull_request_discovery_empty": 1,
+				"authored_pull_request_discovery_empty":    1,
 				"authored_pull_request_persisted_existing": 1,
 			},
 			want: "partial",
@@ -1174,7 +1174,10 @@ func TestExecutorFetchAuthoredPullRequestTargetsUsesGitHubSearch(t *testing.T) {
 		t.Fatalf("updated requests = %d, want 1", requestsBySort["updated"])
 	}
 	if requestsBySort["created"] == 0 {
-		t.Fatal("created requests = 0, want at least one backfill discovery window")
+		t.Fatal("created requests = 0, want at least one recent-seed or backfill discovery window")
+	}
+	if selection.Fetched["authored_pull_request_recent_seed_windows"] != 1 {
+		t.Fatalf("recent seed windows = %d, want 1", selection.Fetched["authored_pull_request_recent_seed_windows"])
 	}
 	if selection.Fetched["authored_pull_request_discovery_windows"] < 2 {
 		t.Fatalf("discovery windows = %d, want >= 2", selection.Fetched["authored_pull_request_discovery_windows"])
@@ -1259,7 +1262,7 @@ func TestExecutorFetchAuthoredPullRequestTargetsRescansWhenIncrementalIsEmpty(t 
 		"Ayush3941",
 		10,
 		authoredPRHistoryCursor{
-			LastSyncedAt:     &lastSynced,
+			LastSyncedAt:      &lastSynced,
 			BootstrapComplete: true,
 		},
 		now,
@@ -1267,11 +1270,14 @@ func TestExecutorFetchAuthoredPullRequestTargetsRescansWhenIncrementalIsEmpty(t 
 	if err != nil {
 		t.Fatalf("fetchAuthoredPullRequestTargets() error = %v", err)
 	}
-	if requests < 3 {
-		t.Fatalf("requests = %d, want at least 3 queries (updated, created, rescan)", requests)
+	if requests < 4 {
+		t.Fatalf("requests = %d, want at least 4 queries (recent-seed, updated, created, rescan)", requests)
 	}
 	if rescanRequests != 1 {
 		t.Fatalf("rescan requests = %d, want 1", rescanRequests)
+	}
+	if selection.Fetched["authored_pull_request_recent_seed_windows"] != 1 {
+		t.Fatalf("recent seed windows = %d, want 1", selection.Fetched["authored_pull_request_recent_seed_windows"])
 	}
 	if selection.Fetched["authored_pull_request_rescan_windows"] != 1 {
 		t.Fatalf("rescan windows = %d, want 1", selection.Fetched["authored_pull_request_rescan_windows"])

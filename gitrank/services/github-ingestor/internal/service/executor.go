@@ -26,10 +26,11 @@ const (
 	authoredPRSearchMaxDepth     = 10
 	authoredPRBackfillMaxWindows = 3
 
-	authoredPRBootstrapLookback = 30 * 24 * time.Hour
-	authoredPRBackfillWindow    = 90 * 24 * time.Hour
-	authoredPRRescanLookback    = 365 * 24 * time.Hour
-	authoredPRMinWindowSpan     = time.Hour
+	authoredPRBootstrapLookback  = 30 * 24 * time.Hour
+	authoredPRRecentSeedLookback = 120 * 24 * time.Hour
+	authoredPRBackfillWindow     = 90 * 24 * time.Hour
+	authoredPRRescanLookback     = 365 * 24 * time.Hour
+	authoredPRMinWindowSpan      = time.Hour
 
 	pullRequestFilesMaxPages          = 30
 	pullRequestReviewsMaxPages        = 10
@@ -1363,6 +1364,45 @@ func (e *Executor) fetchAuthoredPullRequestTargets(
 		Fetched:    map[string]int{},
 	}
 	seenTargets := make(map[string]struct{}, maxTargets)
+	combinedStats := authoredPullRequestDiscoveryStats{}
+
+	// Fresh-first discovery guardrail:
+	// always sample newest authored PRs by created date before incremental
+	// windows, so new PRs are not starved by noisy updated-sorted history.
+	recentSeedStart := now.Add(-authoredPRRecentSeedLookback).UTC()
+	if recentSeedStart.Before(gitHubSearchEpoch()) {
+		recentSeedStart = gitHubSearchEpoch()
+	}
+	recentSeedLimit := min(maxTargets, max(limit*2, 12))
+	if recentSeedLimit > 0 {
+		recentSeedWindow := authoredPullRequestWindow{
+			Qualifier: "created",
+			Start:     recentSeedStart,
+			End:       now,
+		}
+		recentSeedTargets, recentSeedStats, recentSeedErr := e.discoverAuthoredPullRequestTargetsInWindow(
+			ctx,
+			user,
+			recentSeedWindow,
+			perPage,
+			0,
+			recentSeedLimit,
+		)
+		if recentSeedErr != nil {
+			return authoredPullRequestSelection{}, recentSeedErr
+		}
+		selection.Targets = appendUniqueAuthoredPullRequestTargets(selection.Targets, recentSeedTargets, seenTargets, maxTargets)
+		selection.SearchIncomplete = selection.SearchIncomplete || recentSeedStats.incomplete
+		selection.SearchOverflow = selection.SearchOverflow || recentSeedStats.overflow
+		selection.Fetched["authored_pull_request_search_queries"] += recentSeedStats.searchQueries
+		selection.Fetched["authored_pull_request_discovery_windows"]++
+		selection.Fetched["authored_pull_request_recent_seed_windows"]++
+		selection.Fetched["authored_pull_request_recent_seed_targets"] = len(recentSeedTargets)
+		if len(recentSeedTargets) == 0 {
+			selection.Fetched["authored_pull_request_recent_seed_empty"]++
+		}
+		combinedStats = mergeAuthoredPullRequestDiscoveryStats(combinedStats, recentSeedStats)
+	}
 
 	incrementalStart := now.Add(-authoredPRBootstrapLookback).UTC()
 	if cursor.LastSyncedAt != nil && !cursor.LastSyncedAt.IsZero() {
@@ -1376,24 +1416,29 @@ func (e *Executor) fetchAuthoredPullRequestTargets(
 		Start:     incrementalStart,
 		End:       now,
 	}
-	incrementalTargets, incrementalStats, err := e.discoverAuthoredPullRequestTargetsInWindow(
-		ctx,
-		user,
-		incrementalWindow,
-		perPage,
-		0,
-		incrementalTargetLimit,
-	)
-	if err != nil {
-		return authoredPullRequestSelection{}, err
+	incrementalStats := authoredPullRequestDiscoveryStats{}
+	incrementalTargetLimit = min(incrementalTargetLimit, max(0, maxTargets-len(selection.Targets)))
+	if incrementalTargetLimit > 0 {
+		incrementalTargets, nextIncrementalStats, err := e.discoverAuthoredPullRequestTargetsInWindow(
+			ctx,
+			user,
+			incrementalWindow,
+			perPage,
+			0,
+			incrementalTargetLimit,
+		)
+		if err != nil {
+			return authoredPullRequestSelection{}, err
+		}
+		incrementalStats = nextIncrementalStats
+		selection.Targets = appendUniqueAuthoredPullRequestTargets(selection.Targets, incrementalTargets, seenTargets, maxTargets)
+		selection.SearchIncomplete = selection.SearchIncomplete || incrementalStats.incomplete
+		selection.SearchOverflow = selection.SearchOverflow || incrementalStats.overflow
+		selection.Fetched["authored_pull_request_search_queries"] += incrementalStats.searchQueries
+		selection.Fetched["authored_pull_request_discovery_windows"]++
+		selection.Fetched["authored_pull_request_incremental_updated_windows"]++
+		combinedStats = mergeAuthoredPullRequestDiscoveryStats(combinedStats, incrementalStats)
 	}
-	selection.Targets = appendUniqueAuthoredPullRequestTargets(selection.Targets, incrementalTargets, seenTargets, maxTargets)
-	selection.SearchIncomplete = selection.SearchIncomplete || incrementalStats.incomplete
-	selection.SearchOverflow = selection.SearchOverflow || incrementalStats.overflow
-	selection.Fetched["authored_pull_request_search_queries"] += incrementalStats.searchQueries
-	selection.Fetched["authored_pull_request_discovery_windows"]++
-	selection.Fetched["authored_pull_request_incremental_updated_windows"]++
-	combinedStats := incrementalStats
 
 	incrementalCreatedLimit := min(maxTargets-len(selection.Targets), max(limit, maxTargets/3))
 	if incrementalCreatedLimit > 0 {
@@ -1425,7 +1470,7 @@ func (e *Executor) fetchAuthoredPullRequestTargets(
 		}
 	}
 
-	backfillBefore := authoredPRBackfillBoundary(cursor, incrementalStats, now)
+	backfillBefore := authoredPRBackfillBoundary(cursor, combinedStats, now)
 	bootstrapComplete := cursor.BootstrapComplete
 	for windowCount := 0; windowCount < authoredPRBackfillMaxWindows && len(selection.Targets) < maxTargets; windowCount++ {
 		if backfillBefore.IsZero() || backfillBefore.Before(gitHubSearchEpoch()) {

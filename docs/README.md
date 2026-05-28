@@ -31,6 +31,7 @@ This top-level map keeps navigation simple without changing service runtime path
 ## Repo Sync Audit
 
 - Run `./scripts/check-repo-sync.sh` before finalizing structural/doc changes.
+- Use `./scripts/review.sh` for a lightweight local refinement pass (repo-sync + focused sync-state tests).
 - It verifies:
   - no tracked runtime/generated clutter files (including cache trees such as `.tmp`, `.gocache`, `node_modules`, and `.next`)
   - no stale research filename references

@@ -9,6 +9,7 @@ export type SyncRunDiagnostic = {
     | "retryable_or_timeout"
     | "backfill_incomplete"
     | "snapshot_refresh_pending"
+    | "recent_seed_empty"
     | "discovery_empty"
     | "superseded_active_row"
     | "synced_targets"
@@ -55,6 +56,7 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
   const timeout = metricCount(metrics, "authored_pull_requests_timeouts", "fetched_timeout_errors", "timeout_errors") > 0;
   const snapshotRefreshPending = metricCount(metrics, "post_sync_refresh_failed") > 0;
   const scoreReplayMismatch = metricCount(metrics, "post_sync_score_replay_mismatch") > 0;
+  const recentSeedEmpty = metricCount(metrics, "authored_pull_request_recent_seed_empty") > 0;
   const scoreReplayEvents = metricCount(metrics, "post_sync_score_replay_events");
   const selectedAuthoredPRs = metricCount(metrics, "authored_pull_requests_selected");
 
@@ -78,6 +80,13 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
       code: "score_replay_mismatch",
       message:
         `Authored PR sync selected ${selectedTargets} target${selectedAuthoredPRs === 1 ? "" : "s"}, but score replay emitted ${scoreReplayEvents} events. Keep auto-sync active and refresh after replay catches up.`,
+    };
+  }
+  if (recentSeedEmpty) {
+    return {
+      code: "recent_seed_empty",
+      message:
+        "No authored PRs were discovered in the newest seeded window yet. GitRank is still continuing broader bounded discovery.",
     };
   }
   if (discoveryEmpty) {
