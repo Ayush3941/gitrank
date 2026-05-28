@@ -369,6 +369,7 @@ Recent no-slowdown refinement (May 27, 2026):
 - `scripts/review.sh` now also runs `tests/sync-run-diagnostics.test.ts` so sync outcome explanation ordering/phrasing regressions are caught in the lightweight local gate.
 - Backend sync-failure metrics now classify OAuth token failure causes explicitly (`oauth_token_required`, `oauth_token_malformed`) instead of collapsing them into generic request errors, so Settings diagnostics can provide deterministic reconnect/recovery guidance.
 - `scripts/review.sh` now also runs targeted backend sync-state unit checks (`TestSyncFailureFetchedMetrics`, `TestUserSyncExecutionStatus`) before frontend sync-state tests to keep backend/frontend sync semantics aligned.
+- `scripts/review.sh` now includes `tests/sync-run-activity-panel.test.tsx` alongside diagnostics policy tests so rendered sync activity copy/chips remain aligned with diagnostic semantics.
 
 ## Frontend Excellence Checklist (No-Slowdown Backlog)
 

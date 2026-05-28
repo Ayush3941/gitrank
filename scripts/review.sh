@@ -20,7 +20,8 @@ printf '[review.sh] running targeted frontend sync-state tests\n'
     tests/sync-runs-filter-normalization.test.ts \
     tests/account-api-sync-runs-normalization.test.ts \
     tests/sync-run-metrics-policy.test.ts \
-    tests/sync-run-diagnostics.test.ts
+    tests/sync-run-diagnostics.test.ts \
+    tests/sync-run-activity-panel.test.tsx
 )
 
 printf '[review.sh] done\n'
