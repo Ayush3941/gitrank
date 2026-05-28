@@ -336,6 +336,59 @@ func TestUserSyncExecutionStatus(t *testing.T) {
 	}
 }
 
+func TestAnnotateAuthoredPullRequestSelectionMetrics(t *testing.T) {
+	t.Parallel()
+
+	t.Run("marks discovery empty when selected target count is zero", func(t *testing.T) {
+		t.Parallel()
+		fetched := map[string]int{
+			"authored_pull_requests_selected": 0,
+		}
+
+		annotateAuthoredPullRequestSelectionMetrics(fetched)
+
+		if fetched["authored_pull_request_discovery_empty"] != 1 {
+			t.Fatalf("discovery_empty = %d, want 1", fetched["authored_pull_request_discovery_empty"])
+		}
+		if fetched["authored_pull_request_zero_discovery_with_history"] != 0 {
+			t.Fatalf("zero_discovery_with_history = %d, want 0", fetched["authored_pull_request_zero_discovery_with_history"])
+		}
+	})
+
+	t.Run("marks zero-discovery-with-history when persisted evidence exists", func(t *testing.T) {
+		t.Parallel()
+		fetched := map[string]int{
+			"authored_pull_requests_selected":          0,
+			"authored_pull_request_persisted_existing": 1,
+		}
+
+		annotateAuthoredPullRequestSelectionMetrics(fetched)
+
+		if fetched["authored_pull_request_discovery_empty"] != 1 {
+			t.Fatalf("discovery_empty = %d, want 1", fetched["authored_pull_request_discovery_empty"])
+		}
+		if fetched["authored_pull_request_zero_discovery_with_history"] != 1 {
+			t.Fatalf("zero_discovery_with_history = %d, want 1", fetched["authored_pull_request_zero_discovery_with_history"])
+		}
+	})
+
+	t.Run("leaves metrics unchanged when selected target count is positive", func(t *testing.T) {
+		t.Parallel()
+		fetched := map[string]int{
+			"authored_pull_requests_selected": 5,
+		}
+
+		annotateAuthoredPullRequestSelectionMetrics(fetched)
+
+		if fetched["authored_pull_request_discovery_empty"] != 0 {
+			t.Fatalf("discovery_empty = %d, want 0", fetched["authored_pull_request_discovery_empty"])
+		}
+		if fetched["authored_pull_request_zero_discovery_with_history"] != 0 {
+			t.Fatalf("zero_discovery_with_history = %d, want 0", fetched["authored_pull_request_zero_discovery_with_history"])
+		}
+	})
+}
+
 func TestPullRequestLifecycleFetchedCounts(t *testing.T) {
 	t.Parallel()
 

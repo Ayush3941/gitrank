@@ -426,10 +426,8 @@ func (e *Executor) SyncUser(
 	}
 	if len(authoredPullRequests) == 0 {
 		response.Fetched["authored_pull_request_discovery_empty"] = 1
-		if response.Fetched["authored_pull_request_persisted_existing"] > 0 {
-			response.Fetched["authored_pull_request_zero_discovery_with_history"] = 1
-		}
 	}
+	annotateAuthoredPullRequestSelectionMetrics(response.Fetched)
 	if selection.SearchIncomplete {
 		response.Fetched["authored_pull_request_search_incomplete"] = 1
 	}
@@ -2531,6 +2529,20 @@ func userSyncExecutionStatus(fetched map[string]int) string {
 		return "partial"
 	}
 	return "completed"
+}
+
+func annotateAuthoredPullRequestSelectionMetrics(fetched map[string]int) {
+	if fetched == nil {
+		return
+	}
+	selectedTargets := fetched["authored_pull_requests_selected"]
+	if selectedTargets > 0 {
+		return
+	}
+	fetched["authored_pull_request_discovery_empty"] = 1
+	if fetched["authored_pull_request_persisted_existing"] > 0 {
+		fetched["authored_pull_request_zero_discovery_with_history"] = 1
+	}
 }
 
 func shouldForceAuthoredPRBootstrap(cursor authoredPRHistoryCursor, selectedTargets int, persistedCount int) bool {

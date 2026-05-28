@@ -142,6 +142,106 @@ describe("account sync error messaging", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it("refreshes session once and retries user sync when OAuth token is expired", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const target = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+      if (target.includes("/api/sync/user")) {
+        if (fetchMock.mock.calls.filter((call) => String(call[0]).includes("/api/sync/user")).length === 1) {
+          return new Response(
+            JSON.stringify({
+              error: {
+                code: "github_user_oauth_required",
+                message: "github oauth token unavailable for user sync; reconnect github",
+              },
+            }),
+            {
+              status: 401,
+              headers: { "Content-Type": "application/json" },
+            },
+          );
+        }
+        return new Response(
+          JSON.stringify({
+            status: "completed",
+            mode: "user",
+            user: "octocat",
+            correlation_id: "session-refresh-retry-ok",
+            started_at: "2026-05-27T00:00:00Z",
+            finished_at: "2026-05-27T00:00:03Z",
+            fetched: {},
+            persisted: {},
+          }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }
+      if (target.includes("/api/session/refresh")) {
+        return new Response(
+          JSON.stringify({
+            session: {
+              subject: "user-1",
+            },
+            csrf_header: "X-CSRF-Token",
+            csrf_hint: "gitrank_csrf",
+          }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }
+      throw new Error(`unexpected fetch target: ${target}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const response = await runUserSync("octocat");
+    expect(response.correlation_id).toBe("session-refresh-retry-ok");
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(String(fetchMock.mock.calls[0][0])).toContain("/api/sync/user");
+    expect(String(fetchMock.mock.calls[1][0])).toContain("/api/session/refresh");
+    expect(String(fetchMock.mock.calls[2][0])).toContain("/api/sync/user");
+  });
+
+  it("surfaces oauth-required recovery guidance when session refresh cannot recover token", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const target = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+      if (target.includes("/api/sync/user")) {
+        return new Response(
+          JSON.stringify({
+            error: {
+              code: "github_user_oauth_required",
+              message: "github oauth token unavailable for user sync; reconnect github",
+            },
+          }),
+          {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }
+      if (target.includes("/api/session/refresh")) {
+        return new Response(
+          JSON.stringify({
+            error: { message: "session refresh failed" },
+          }),
+          {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }
+      throw new Error(`unexpected fetch target: ${target}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(runUserSync("octocat")).rejects.toThrow(
+      "GitHub OAuth token is unavailable for user sync. Reconnect GitHub from Settings, then retry.",
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it("maps rate-limit repository sync errors to actionable copy", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => {
       return new Response(

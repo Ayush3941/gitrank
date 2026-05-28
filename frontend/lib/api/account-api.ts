@@ -273,6 +273,7 @@ export async function runUserSync(user?: string): Promise<ApiSyncExecutionRespon
 
   const request = (async (): Promise<ApiSyncExecutionResponse> => {
     const csrfToken = requireCSRFToken();
+    let attemptedSessionRefreshRecovery = false;
     for (let attempt = 1; attempt <= USER_SYNC_RETRY_MAX_ATTEMPTS; attempt += 1) {
       let response: Response;
       try {
@@ -310,6 +311,16 @@ export async function runUserSync(user?: string): Promise<ApiSyncExecutionRespon
       }
 
       const parsed = await parseErrorResponse(response, "User sync failed.");
+      if (
+        !attemptedSessionRefreshRecovery &&
+        isGitHubOAuthRecoveryFailure(response.status, parsed.code, parsed.message)
+      ) {
+        attemptedSessionRefreshRecovery = true;
+        const refreshed = await tryRefreshSessionForUserSync(csrfToken);
+        if (refreshed) {
+          continue;
+        }
+      }
       if (
         attempt < USER_SYNC_RETRY_MAX_ATTEMPTS &&
         isRetryableUserSyncUpstreamFailure(response.status, parsed.code, parsed.message)
@@ -640,7 +651,7 @@ function sanitizeSyncExecutionError(
     normalized.includes("unauthorized") ||
     normalized.includes("forbidden")
   ) {
-    return "GitHub user authorization is missing or expired for this sync. Reconnect GitHub from Settings, then retry.";
+    return "GitHub user authorization is missing or expired for this sync. Refresh session or reconnect GitHub from Settings, then retry.";
   }
   if (
     normalized.includes("oauth token unavailable for user sync") ||
@@ -680,6 +691,45 @@ function syncRecoveryMessage(
     return `${reason} Commit sync kept any available evidence. Retry soon with the same owner/repo and commit SHA.`;
   }
   return `${reason} User sync did not complete. Retry sync from Settings after a short delay.`;
+}
+
+function isGitHubOAuthRecoveryFailure(status: number, code: string | undefined, message: string): boolean {
+  if (status !== 401 && status !== 403) {
+    return false;
+  }
+  const normalizedCode = (code ?? "").trim().toLowerCase();
+  if (
+    normalizedCode === "github_user_oauth_required" ||
+    normalizedCode === "unauthorized" ||
+    normalizedCode === "forbidden"
+  ) {
+    return true;
+  }
+  const normalizedMessage = message.toLowerCase();
+  return (
+    normalizedMessage.includes("oauth token unavailable for user sync") ||
+    normalizedMessage.includes("rotate token keys and reconnect github") ||
+    normalizedMessage.includes("github authorization is missing") ||
+    normalizedMessage.includes("github authorization is expired")
+  );
+}
+
+async function tryRefreshSessionForUserSync(csrfToken: string): Promise<boolean> {
+  try {
+    const response = await fetch("/api/session/refresh", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrfToken,
+      },
+      credentials: "same-origin",
+      cache: "no-store",
+      body: JSON.stringify({}),
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
 }
 
 function requireCSRFToken(): string {
