@@ -213,6 +213,10 @@ func (e *Executor) SyncRepository(
 	}
 
 	finishedAt := time.Now().UTC()
+	executionStatus := "completed"
+	if repositorySyncDegraded(pullRequestsSkipped, issuesSkipped, commitsSkipped) {
+		executionStatus = "partial"
+	}
 	persisted, err := e.store.WithTx(ctx, func(tx *TxStore) (PersistResult, error) {
 		result := PersistResult{}
 
@@ -273,7 +277,7 @@ func (e *Executor) SyncRepository(
 		if err := tx.InsertSyncRun(payloadSyncRunInput{
 			CorrelationID:               strings.TrimSpace(correlationID),
 			EventType:                   "repository",
-			Status:                      "completed",
+			Status:                      executionStatus,
 			Subject:                     strings.TrimSpace(req.Repository),
 			RepositoryID:                repositoryID,
 			RequestedRepositoryFullName: req.Repository,
@@ -294,7 +298,7 @@ func (e *Executor) SyncRepository(
 		return response, err
 	}
 
-	response.Status = "completed"
+	response.Status = executionStatus
 	response.FinishedAt = finishedAt
 	response.Persisted = persisted.EntityCounts()
 	response.Fetched = fetchedCounts
@@ -619,14 +623,21 @@ func (e *Executor) SyncInstallation(
 		response.Fetched = mergeCountMaps(response.Fetched, child.Fetched)
 		response.Persisted = mergeCountMaps(response.Persisted, child.Persisted)
 		aggregatePersisted = addPersistResult(aggregatePersisted, persistResultFromCountMap(child.Persisted))
+		if child.Status == "partial" {
+			response.Fetched["repository_sync_partial"]++
+		}
 	}
 
 	finishedAt := time.Now().UTC()
+	executionStatus := "completed"
+	if response.Fetched["repository_sync_partial"] > 0 {
+		executionStatus = "partial"
+	}
 	_, err = e.store.WithTx(ctx, func(tx *TxStore) (PersistResult, error) {
 		return aggregatePersisted, tx.InsertSyncRun(payloadSyncRunInput{
 			CorrelationID:          strings.TrimSpace(correlationID),
 			EventType:              "installation",
-			Status:                 "completed",
+			Status:                 executionStatus,
 			Subject:                fmt.Sprintf("%d", req.InstallationID),
 			InstallationID:         installationID,
 			InstallationSourceID:   req.InstallationID,
@@ -643,7 +654,7 @@ func (e *Executor) SyncInstallation(
 		return response, err
 	}
 
-	response.Status = "completed"
+	response.Status = executionStatus
 	response.FinishedAt = finishedAt
 	return response, nil
 }
@@ -791,6 +802,10 @@ func (e *Executor) syncPullRequestSurface(
 	}
 
 	finishedAt := time.Now().UTC()
+	executionStatus := "completed"
+	if pullRequestSurfaceSyncDegraded(reviewsFetchError, reviewCommentsFetchError, filesFetchError) {
+		executionStatus = "partial"
+	}
 	persisted, err := e.store.WithTx(ctx, func(tx *TxStore) (PersistResult, error) {
 		result := PersistResult{}
 
@@ -856,7 +871,7 @@ func (e *Executor) syncPullRequestSurface(
 		if err := tx.InsertSyncRun(payloadSyncRunInput{
 			CorrelationID:               strings.TrimSpace(correlationID),
 			EventType:                   mode,
-			Status:                      "completed",
+			Status:                      executionStatus,
 			Subject:                     fmt.Sprintf("%s#%d", strings.TrimSpace(req.Repository), req.Number),
 			RepositoryID:                repositoryID,
 			RequestedRepositoryFullName: req.Repository,
@@ -877,7 +892,7 @@ func (e *Executor) syncPullRequestSurface(
 		return response, err
 	}
 
-	response.Status = "completed"
+	response.Status = executionStatus
 	response.FinishedAt = finishedAt
 	response.Persisted = persisted.EntityCounts()
 	response.Fetched = fetchedCounts
@@ -2975,6 +2990,14 @@ func countReviewMaps(reviewsByNumber map[int][]map[string]any) int {
 		total += len(reviews)
 	}
 	return total
+}
+
+func repositorySyncDegraded(pullRequestsSkipped, issuesSkipped, commitsSkipped bool) bool {
+	return pullRequestsSkipped || issuesSkipped || commitsSkipped
+}
+
+func pullRequestSurfaceSyncDegraded(reviewsFetchError, reviewCommentsFetchError, filesFetchError bool) bool {
+	return reviewsFetchError || reviewCommentsFetchError || filesFetchError
 }
 
 func mergeCountMaps(dst, src map[string]int) map[string]int {

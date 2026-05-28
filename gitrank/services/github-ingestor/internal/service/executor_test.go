@@ -124,6 +124,114 @@ func TestIsSkippableGitHubSyncError(t *testing.T) {
 	}
 }
 
+func TestRepositorySyncDegraded(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name                string
+		pullRequestsSkipped bool
+		issuesSkipped       bool
+		commitsSkipped      bool
+		want                bool
+	}{
+		{
+			name:                "all fetches complete",
+			pullRequestsSkipped: false,
+			issuesSkipped:       false,
+			commitsSkipped:      false,
+			want:                false,
+		},
+		{
+			name:                "pull requests skipped",
+			pullRequestsSkipped: true,
+			issuesSkipped:       false,
+			commitsSkipped:      false,
+			want:                true,
+		},
+		{
+			name:                "issues skipped",
+			pullRequestsSkipped: false,
+			issuesSkipped:       true,
+			commitsSkipped:      false,
+			want:                true,
+		},
+		{
+			name:                "commits skipped",
+			pullRequestsSkipped: false,
+			issuesSkipped:       false,
+			commitsSkipped:      true,
+			want:                true,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			got := repositorySyncDegraded(test.pullRequestsSkipped, test.issuesSkipped, test.commitsSkipped)
+			if got != test.want {
+				t.Fatalf("repositorySyncDegraded() = %v, want %v", got, test.want)
+			}
+		})
+	}
+}
+
+func TestPullRequestSurfaceSyncDegraded(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name                     string
+		reviewsFetchError        bool
+		reviewCommentsFetchError bool
+		filesFetchError          bool
+		want                     bool
+	}{
+		{
+			name:                     "all pull request surfaces fetched",
+			reviewsFetchError:        false,
+			reviewCommentsFetchError: false,
+			filesFetchError:          false,
+			want:                     false,
+		},
+		{
+			name:                     "reviews fetch degraded",
+			reviewsFetchError:        true,
+			reviewCommentsFetchError: false,
+			filesFetchError:          false,
+			want:                     true,
+		},
+		{
+			name:                     "review comments fetch degraded",
+			reviewsFetchError:        false,
+			reviewCommentsFetchError: true,
+			filesFetchError:          false,
+			want:                     true,
+		},
+		{
+			name:                     "files fetch degraded",
+			reviewsFetchError:        false,
+			reviewCommentsFetchError: false,
+			filesFetchError:          true,
+			want:                     true,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			got := pullRequestSurfaceSyncDegraded(
+				test.reviewsFetchError,
+				test.reviewCommentsFetchError,
+				test.filesFetchError,
+			)
+			if got != test.want {
+				t.Fatalf("pullRequestSurfaceSyncDegraded() = %v, want %v", got, test.want)
+			}
+		})
+	}
+}
+
 func TestIsRecoverableUserSyncSelectionError(t *testing.T) {
 	t.Parallel()
 
