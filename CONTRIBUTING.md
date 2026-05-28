@@ -291,7 +291,8 @@ Recent sync-auth refinement (May 28, 2026):
 - When account-login installation mapping is missing, actor installation resolution now probes persisted active App installations with a bounded authored-PR search and picks the first installation that can see the actor’s PR evidence, keeping org installation discovery App-only.
 - Sync telemetry now exposes installation bootstrap lookup/attempt/success/failure counters so false “synced” states can be traced in run metadata.
 - User sync execution now fails closed if any non-installation credential source is returned, preventing silent reintroduction of OAuth/shared PR extraction paths.
-- Repository, pull-request, and review execute routes now use the same strict app-auth path and return explicit install/bootstrap/OAuth diagnostics instead of generic gateway failures.
+- Repository, pull-request, and review execute routes now use the same strict app-auth path and return explicit install/bootstrap diagnostics instead of generic gateway failures.
+- OAuth-required extraction diagnostics (`github_user_oauth_required`, `oauth_token_required`, `oauth_token_malformed`) were removed from ingestor error mappings and frontend sync diagnostics so extraction failures now resolve only through strict App-installation signals.
 - Strict app-auth sync runtime now disables OAuth GraphQL token usage in those routes, so PR extraction remains installation-token-only end to end.
 - Scheduler/webhook sync paths can satisfy the same strict requirement without user-login headers by resolving app auth from explicit `installation_id` when present.
 - Scheduler queued sync payloads now preserve optional `installation_id` and user login context, and scheduler execution forwards `X-GitRank-GitHub-Login`/`X-GitRank-Subject` headers when user context exists.

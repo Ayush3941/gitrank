@@ -83,17 +83,6 @@ describe("describeSyncRunOutcome", () => {
     expect(outcome.message).toContain("GitHub App installation is required");
   });
 
-  it("prioritizes bootstrap oauth-required guidance when installation discovery token is missing", () => {
-    const outcome = describeSyncRunOutcome(
-      run({
-        app_installation_required: 1,
-        app_installation_bootstrap_oauth_required: 1,
-      }),
-    );
-    expect(outcome.code).toBe("app_installation_required");
-    expect(outcome.message).toContain("discover your GitHub App installations");
-  });
-
   it("returns app-installation-unavailable when app token minting fails", () => {
     const outcome = describeSyncRunOutcome(
       run({
@@ -102,26 +91,6 @@ describe("describeSyncRunOutcome", () => {
     );
     expect(outcome.code).toBe("app_installation_unavailable");
     expect(outcome.message).toContain("installation token is unavailable");
-  });
-
-  it("returns oauth-token-required when credential is missing/expired", () => {
-    const outcome = describeSyncRunOutcome(
-      run({
-        oauth_token_required: 1,
-      }),
-    );
-    expect(outcome.code).toBe("oauth_token_required");
-    expect(outcome.message).toContain("installation discovery");
-  });
-
-  it("returns oauth-token-malformed when credential cannot be decrypted", () => {
-    const outcome = describeSyncRunOutcome(
-      run({
-        oauth_token_malformed: 1,
-      }),
-    );
-    expect(outcome.code).toBe("oauth_token_malformed");
-    expect(outcome.message).toContain("installation discovery");
   });
 
   it("returns search-limited when search is incomplete", () => {

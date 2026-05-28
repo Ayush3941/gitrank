@@ -517,14 +517,6 @@ function summarizeRunMetrics(metrics?: Record<string, number>): string {
   if (scopeLimited > 0) {
     segments.push("Scope limited");
   }
-  const oauthTokenRequired = metricCount(metrics, "oauth_token_required");
-  if (oauthTokenRequired > 0) {
-    segments.push("OAuth token required");
-  }
-  const oauthTokenMalformed = metricCount(metrics, "oauth_token_malformed");
-  if (oauthTokenMalformed > 0) {
-    segments.push("OAuth token malformed");
-  }
   const scoreReplayFailed = metricCount(metrics, "post_sync_score_replay_failed");
   if (scoreReplayFailed > 0) {
     segments.push("Score replay failed");

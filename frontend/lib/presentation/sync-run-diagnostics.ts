@@ -8,8 +8,6 @@ export type SyncRunDiagnostic = {
     | "unsupported_api_version"
     | "app_installation_required"
     | "app_installation_unavailable"
-    | "oauth_token_required"
-    | "oauth_token_malformed"
     | "score_replay_mismatch"
     | "score_replay_failed"
     | "profile_refresh_failed"
@@ -84,14 +82,10 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
   const profileRefreshFailed = metricCount(metrics, "post_sync_profile_refresh_failed") > 0;
   const reportBackfillFailed = metricCount(metrics, "post_sync_pr_reports_backfill_failed") > 0;
   const questBackfillFailed = metricCount(metrics, "post_sync_quests_backfill_failed") > 0;
-  const oauthTokenRequired = metricCount(metrics, "oauth_token_required") > 0;
-  const oauthTokenMalformed = metricCount(metrics, "oauth_token_malformed") > 0;
   const unsupportedAPIVersion =
     metricCount(metrics, "unsupported_api_version", "authored_pull_requests_unsupported_api_version") > 0;
   const appInstallationRequired = metricCount(metrics, "app_installation_required") > 0;
   const appInstallationUnavailable = metricCount(metrics, "app_installation_unavailable") > 0;
-  const appInstallationBootstrapOAuthRequired = metricCount(metrics, "app_installation_bootstrap_oauth_required") > 0;
-  const appInstallationBootstrapOAuthMalformed = metricCount(metrics, "app_installation_bootstrap_oauth_malformed") > 0;
   const recentSeedEmpty = metricCount(metrics, "authored_pull_request_recent_seed_empty") > 0;
   const broadFallbackTargets = metricCount(metrics, "authored_pull_request_broad_fallback_targets");
   const syncCapped = metricCount(metrics, "authored_pull_requests_capped") > 0;
@@ -123,20 +117,6 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
     };
   }
   if (appInstallationRequired) {
-    if (appInstallationBootstrapOAuthRequired) {
-      return {
-        code: "app_installation_required",
-        message:
-          "GitRank could not discover your GitHub App installations because your login session token is missing or expired. Refresh session, then retry sync.",
-      };
-    }
-    if (appInstallationBootstrapOAuthMalformed) {
-      return {
-        code: "app_installation_required",
-        message:
-          "GitRank could not read your stored GitHub login token while discovering app installations. Reconnect GitHub, then retry sync.",
-      };
-    }
     return {
       code: "app_installation_required",
       message:
@@ -148,20 +128,6 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
       code: "app_installation_unavailable",
       message:
         "GitHub App installation token is unavailable. Verify app credentials and installation state, then retry sync.",
-    };
-  }
-  if (oauthTokenRequired) {
-    return {
-      code: "oauth_token_required",
-      message:
-        "GitHub login token is missing or expired for installation discovery. Refresh session or reconnect GitHub, then retry sync.",
-    };
-  }
-  if (oauthTokenMalformed) {
-    return {
-      code: "oauth_token_malformed",
-      message:
-        "Stored GitHub login token could not be decrypted for installation discovery. Reconnect GitHub, then retry sync.",
     };
   }
   if (scoreReplayMismatch) {

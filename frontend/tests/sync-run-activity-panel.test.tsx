@@ -80,8 +80,8 @@ const syncedTargetsRun = {
   },
 };
 
-const oauthTokenRequiredRun = {
-  id: "run_oauth_required_1",
+const appInstallationRequiredRun = {
+  id: "run_app_required_1",
   run_type: "user",
   status: "failed",
   subject: "octocat",
@@ -90,7 +90,7 @@ const oauthTokenRequiredRun = {
   metrics: {
     failed: 1,
     auth_errors: 1,
-    oauth_token_required: 1,
+    app_installation_required: 1,
   },
 };
 
@@ -219,10 +219,10 @@ describe("SyncRunActivityPanel", () => {
     expect(screen.getByText("Synced 7 authored PR targets in this run.")).toBeTruthy();
   });
 
-  it("shows oauth-token-required insight and metric summary", () => {
+  it("shows app-installation-required insight and metric summary", () => {
     render(
       <SyncRunActivityPanel
-        runs={[oauthTokenRequiredRun]}
+        runs={[appInstallationRequiredRun]}
         lastUpdatedAt="2026-05-25T00:09:00Z"
         isLoading={false}
         isRefreshing={false}
@@ -231,10 +231,10 @@ describe("SyncRunActivityPanel", () => {
       />,
     );
 
-    expect(screen.getByText("Failures 1 · OAuth token required")).toBeTruthy();
+    expect(screen.getByText("Failures 1")).toBeTruthy();
     expect(
       screen.getByText(
-        "GitHub login token is missing or expired for installation discovery. Refresh session or reconnect GitHub, then retry sync.",
+        "GitHub App installation is required for PR sync. Install GitRank GitHub App for your account and retry sync.",
       ),
     ).toBeTruthy();
   });

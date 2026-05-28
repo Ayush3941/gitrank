@@ -142,7 +142,7 @@ describe("account sync error messaging", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
-  it("refreshes session once and retries user sync when OAuth token is expired", async () => {
+  it("refreshes session once and retries user sync when session authorization is expired", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const target = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
       if (target.includes("/api/sync/user")) {
@@ -150,8 +150,8 @@ describe("account sync error messaging", () => {
           return new Response(
             JSON.stringify({
               error: {
-                code: "github_user_oauth_required",
-                message: "github oauth token unavailable for user sync; reconnect github",
+                code: "unauthorized",
+                message: "github authorization is expired",
               },
             }),
             {
@@ -204,15 +204,15 @@ describe("account sync error messaging", () => {
     expect(String(fetchMock.mock.calls[2][0])).toContain("/api/sync/user");
   });
 
-  it("surfaces installation-bootstrap login-token recovery guidance when session refresh cannot recover token", async () => {
+  it("surfaces authorization recovery guidance when session refresh cannot recover sync authorization", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const target = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
       if (target.includes("/api/sync/user")) {
         return new Response(
           JSON.stringify({
             error: {
-              code: "github_user_oauth_required",
-              message: "github oauth token unavailable for user sync; reconnect github",
+              code: "unauthorized",
+              message: "github authorization is missing",
             },
           }),
           {
@@ -237,7 +237,7 @@ describe("account sync error messaging", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await expect(runUserSync("octocat")).rejects.toThrow(
-      "GitHub login token is unavailable for installation discovery. Reconnect GitHub from Settings, then retry.",
+      "GitHub user authorization is missing or expired for this sync. Refresh session or reconnect GitHub from Settings, then retry.",
     );
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });

@@ -322,7 +322,7 @@ export async function runUserSync(user?: string): Promise<ApiSyncExecutionRespon
       const parsed = await parseErrorResponse(response, "User sync failed.");
       if (
         !attemptedSessionRefreshRecovery &&
-        isGitHubOAuthRecoveryFailure(response.status, parsed.code, parsed.message)
+        isGitHubSessionRecoveryFailure(response.status, parsed.code, parsed.message)
       ) {
         attemptedSessionRefreshRecovery = true;
         const refreshed = await tryRefreshSessionForUserSync(csrfToken);
@@ -687,15 +687,11 @@ function sanitizeSyncExecutionError(
     normalized.includes("status 401") ||
     normalized.includes("status 403") ||
     normalized.includes("unauthorized") ||
-    normalized.includes("forbidden")
+    normalized.includes("forbidden") ||
+    normalized.includes("github authorization is missing") ||
+    normalized.includes("github authorization is expired")
   ) {
     return "GitHub user authorization is missing or expired for this sync. Refresh session or reconnect GitHub from Settings, then retry.";
-  }
-  if (
-    normalized.includes("oauth token unavailable for user sync") ||
-    normalized.includes("rotate token keys and reconnect github")
-  ) {
-    return "GitHub login token is unavailable for installation discovery. Reconnect GitHub from Settings, then retry.";
   }
   if (
     normalized.includes("github app installation is required for user sync") ||
@@ -749,13 +745,12 @@ function syncRecoveryMessage(
   return `${reason} User sync did not complete. Retry sync from Settings after a short delay.`;
 }
 
-function isGitHubOAuthRecoveryFailure(status: number, code: string | undefined, message: string): boolean {
+function isGitHubSessionRecoveryFailure(status: number, code: string | undefined, message: string): boolean {
   if (status !== 401 && status !== 403) {
     return false;
   }
   const normalizedCode = (code ?? "").trim().toLowerCase();
   if (
-    normalizedCode === "github_user_oauth_required" ||
     normalizedCode === "unauthorized" ||
     normalizedCode === "forbidden"
   ) {
@@ -763,8 +758,6 @@ function isGitHubOAuthRecoveryFailure(status: number, code: string | undefined, 
   }
   const normalizedMessage = message.toLowerCase();
   return (
-    normalizedMessage.includes("oauth token unavailable for user sync") ||
-    normalizedMessage.includes("rotate token keys and reconnect github") ||
     normalizedMessage.includes("github authorization is missing") ||
     normalizedMessage.includes("github authorization is expired")
   );
