@@ -40,7 +40,21 @@ export function hasUserContributionEvidence(user: UserProfile | null | undefined
     if (!row.repo || row.repo === "repo") {
       return false;
     }
-    return row.xpEarned !== 0 || row.status === "merged";
+    const hasPersistedEvidenceIdentity =
+      row.scoreEventId?.trim().length ||
+      row.pullRequestId?.trim().length ||
+      row.reportEvidenceStatus?.trim().length;
+    if (!hasPersistedEvidenceIdentity) {
+      return false;
+    }
+    if (row.xpEarned !== 0) {
+      return true;
+    }
+    if (row.status !== "merged") {
+      return false;
+    }
+    const mergedAtMillis = Date.parse(row.mergedAt);
+    return Number.isFinite(mergedAtMillis) && mergedAtMillis > 0;
   });
 }
 

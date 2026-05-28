@@ -2512,8 +2512,15 @@ func shouldAdvanceAuthoredPRLastSynced(fetched map[string]int, searchIncomplete,
 }
 
 func userSyncExecutionStatus(fetched map[string]int) string {
+	if shouldMarkUserSyncRunPartial(fetched) {
+		return "partial"
+	}
+	return "completed"
+}
+
+func shouldMarkUserSyncRunPartial(fetched map[string]int) bool {
 	if fetched == nil {
-		return "completed"
+		return false
 	}
 	if fetched["authored_pull_request_search_incomplete"] > 0 ||
 		fetched["authored_pull_request_search_overflow"] > 0 ||
@@ -2526,9 +2533,9 @@ func userSyncExecutionStatus(fetched map[string]int) string {
 		fetched["authored_pull_requests_failed"] > 0 ||
 		fetched["authored_pull_requests_timeouts"] > 0 ||
 		fetched["authored_pull_request_scope_limited"] > 0 {
-		return "partial"
+		return true
 	}
-	return "completed"
+	return false
 }
 
 func annotateAuthoredPullRequestSelectionMetrics(fetched map[string]int) {

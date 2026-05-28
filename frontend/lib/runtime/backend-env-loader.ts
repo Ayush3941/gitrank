@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const DEFAULT_BACKEND_ENV_RELATIVE_PATH = path.join("..", "gitrank", ".env");
+const BACKEND_ENV_FILE_ENV_KEY = "GITRANK_ENV_FILE";
 
 export type BackendEnvLoadResult = {
   envFilePath: string;
@@ -11,7 +12,7 @@ export type BackendEnvLoadResult = {
 };
 
 export function loadBackendEnvDefaultsForFrontend(configDir: string = process.cwd()): BackendEnvLoadResult {
-  const envFilePath = path.resolve(configDir, DEFAULT_BACKEND_ENV_RELATIVE_PATH);
+  const envFilePath = resolveBackendEnvFilePath(configDir);
   if (!fs.existsSync(envFilePath)) {
     return {
       envFilePath,
@@ -122,4 +123,15 @@ function stripUnquotedInlineComment(value: string): string {
     }
   }
   return input;
+}
+
+function resolveBackendEnvFilePath(configDir: string): string {
+  const configured = process.env[BACKEND_ENV_FILE_ENV_KEY]?.trim();
+  if (configured) {
+    if (path.isAbsolute(configured)) {
+      return configured;
+    }
+    return path.resolve(configDir, configured);
+  }
+  return path.resolve(configDir, DEFAULT_BACKEND_ENV_RELATIVE_PATH);
 }

@@ -165,6 +165,22 @@ describe("profile API sync-state adaptation", () => {
           },
         },
         {
+          event_id: "score-unknown",
+          event_type: "score.computed",
+          delta_xp: 7,
+          created_at: "2026-05-27T12:07:00Z",
+          score_version: "v1alpha1",
+          formula_version: "v1alpha1",
+          pull_request_id: "pr-unknown",
+          pull_request: {
+            repository: "owner/repo-unknown",
+            number: 121,
+            title: "unknown lifecycle payload",
+            state: "",
+            merged: false,
+          },
+        },
+        {
           event_id: "score-merged",
           event_type: "score.computed",
           delta_xp: 120,
@@ -192,6 +208,7 @@ describe("profile API sync-state adaptation", () => {
     const byRepo = new Map(adapted.user.contributions.map((row) => [row.repo, row.status]));
     expect(byRepo.get("repo-open")).toBe("open");
     expect(byRepo.get("repo-closed")).toBe("closed");
+    expect(byRepo.get("repo-unknown")).toBe("open");
     expect(byRepo.get("repo-merged")).toBe("merged");
   });
 });

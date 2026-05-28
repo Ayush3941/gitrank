@@ -346,10 +346,28 @@ func normalizeSyncRunViews(
 		default:
 			run.Status = status
 		}
+
+		if strings.EqualFold(run.Status, "completed") && shouldNormalizeCompletedUserSyncRunToPartial(*run) {
+			run.Status = "partial"
+			if run.Metrics == nil {
+				run.Metrics = map[string]int{}
+			}
+			run.Metrics["normalized_completed_to_partial"] = 1
+			if strings.TrimSpace(run.LastError) == "" {
+				run.LastError = "sync run was normalized to partial because authored PR discovery remained incomplete"
+			}
+		}
 	}
 
 	supersedeInProgressRunsWithTerminalCorrelation(runs)
 	return runs
+}
+
+func shouldNormalizeCompletedUserSyncRunToPartial(run contracts.GitHubSyncRunView) bool {
+	if strings.ToLower(strings.TrimSpace(run.RunType)) != "user" {
+		return false
+	}
+	return shouldMarkUserSyncRunPartial(run.Metrics)
 }
 
 func summarizeSyncRunWatermarks(runs []contracts.GitHubSyncRunView) (*time.Time, *time.Time) {

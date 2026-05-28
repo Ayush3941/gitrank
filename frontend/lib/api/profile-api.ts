@@ -716,7 +716,8 @@ function deriveContributionStatus(
   if (state === "closed") {
     return "closed";
   }
-  return "merged";
+  // Unknown lifecycle metadata must not imply merged evidence.
+  return "open";
 }
 
 function sanitizeExplanationLine(line: string): string {

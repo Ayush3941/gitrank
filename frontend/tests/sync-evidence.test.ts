@@ -100,6 +100,7 @@ describe("hasUserContributionEvidence", () => {
       contributions: [
         {
           id: "score-1",
+          scoreEventId: "score-event-1",
           owner: "octo",
           repo: "gitrank",
           number: 17,
@@ -126,6 +127,40 @@ describe("hasUserContributionEvidence", () => {
       ],
     });
     expect(hasUserContributionEvidence(user)).toBe(true);
+  });
+
+  it("returns false for placeholder rows without persisted evidence identity", () => {
+    const user = buildUser({
+      mergedPrCount: 0,
+      contributions: [
+        {
+          id: "placeholder-1",
+          owner: "octo",
+          repo: "gitrank",
+          number: 24,
+          title: "placeholder contribution",
+          status: "merged",
+          category: "Testing",
+          difficultyScore: 0,
+          impactScore: 0,
+          reviewDepthScore: 0,
+          testSignalScore: 0,
+          repoWeight: 1,
+          antiSpamMultiplier: 1,
+          xpEarned: 0,
+          additions: 0,
+          deletions: 0,
+          changedFilesCount: 0,
+          mergedAt: "",
+          maintainerReviewed: false,
+          linkedIssue: false,
+          ciPassed: false,
+          aiSummary: "",
+          evidenceSignals: [],
+        },
+      ],
+    });
+    expect(hasUserContributionEvidence(user)).toBe(false);
   });
 });
 

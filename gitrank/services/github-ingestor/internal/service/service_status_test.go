@@ -205,6 +205,50 @@ func TestNormalizeSyncRunViewsSupersedesOlderActiveRowsWithLogicalScope(t *testi
 	}
 }
 
+func TestNormalizeSyncRunViewsDowngradesLegacyCompletedUserRunsToPartialWhenMetricsRequireIt(t *testing.T) {
+	t.Parallel()
+
+	now := time.Date(2026, 5, 27, 20, 0, 0, 0, time.UTC)
+	finishedAt := now.Add(-30 * time.Second)
+	runs := []contracts.GitHubSyncRunView{
+		{
+			ID:         "legacy-completed-user",
+			RunType:    "user",
+			Status:     "completed",
+			StartedAt:  now.Add(-2 * time.Minute),
+			FinishedAt: &finishedAt,
+			Metrics: map[string]int{
+				"authored_pull_request_discovery_empty": 1,
+			},
+		},
+		{
+			ID:         "completed-repository",
+			RunType:    "repository",
+			Status:     "completed",
+			StartedAt:  now.Add(-90 * time.Second),
+			FinishedAt: &finishedAt,
+			Metrics: map[string]int{
+				"authored_pull_request_discovery_empty": 1,
+			},
+		},
+	}
+
+	normalized := normalizeSyncRunViews(runs, now, 10*time.Minute)
+
+	if normalized[0].Status != "partial" {
+		t.Fatalf("normalized[0].Status = %q, want partial", normalized[0].Status)
+	}
+	if normalized[0].Metrics["normalized_completed_to_partial"] != 1 {
+		t.Fatalf("normalized[0].Metrics[normalized_completed_to_partial] = %d, want 1", normalized[0].Metrics["normalized_completed_to_partial"])
+	}
+	if normalized[0].LastError == "" {
+		t.Fatal("normalized[0].LastError = empty, want normalization reason")
+	}
+	if normalized[1].Status != "completed" {
+		t.Fatalf("normalized[1].Status = %q, want completed", normalized[1].Status)
+	}
+}
+
 func TestSyncRunActiveWindow(t *testing.T) {
 	t.Parallel()
 
