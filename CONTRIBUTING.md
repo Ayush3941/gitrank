@@ -335,6 +335,7 @@ Recent no-slowdown refinement (May 27, 2026):
 - Sync-run persistence/filtering now canonicalizes `requested_by_subject` UUID casing on both write and filter paths, reducing false misses when the same UUID appears with mixed case across services.
 - User-history PR hydration now uses a bounded PR-file page-size override (`GITHUB_REPOSITORY_SYNC_PAGE_SIZE`) instead of hard-coded wide pages during child PR syncs, reducing timeout risk on large PR file listings while keeping repository/pull-request direct sync surfaces unchanged.
 - Dashboard-route sync-state polling now uses a configurable user-sync run lookback limit (`NEXT_PUBLIC_GITRANK_PROFILE_SYNC_RUN_LOOKBACK_LIMIT`, default `50`) so active user runs are less likely to be dropped from freshness derivation when run history is dense.
+- Added focused regression tests for the new sync guards: backend caps PR-file page-size overrides at `100`, frontend policy parsing validates sync-run lookback bounds, and `useProfileSyncRuns` keeps run-type/user lookback defaults wired through policy.
 
 ## Frontend Excellence Checklist (No-Slowdown Backlog)
 
