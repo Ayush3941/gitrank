@@ -727,9 +727,13 @@ func TestRunNextExecutesPullRequestJobAndCompletes(t *testing.T) {
 	now := time.Now().UTC().Add(45 * time.Second).Truncate(time.Second)
 	var observed contracts.SyncRequest
 	var observedPath string
+	var observedGitHubLogin string
+	var observedSubject string
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		observedPath = r.URL.Path
+		observedGitHubLogin = r.Header.Get("X-GitRank-GitHub-Login")
+		observedSubject = r.Header.Get("X-GitRank-Subject")
 		if err := json.NewDecoder(r.Body).Decode(&observed); err != nil {
 			t.Fatalf("decode request: %v", err)
 		}
@@ -756,6 +760,7 @@ func TestRunNextExecutesPullRequestJobAndCompletes(t *testing.T) {
 		Mode:           "pull_request",
 		Repository:     "octo/repo",
 		Number:         7,
+		User:           "octocat",
 		InstallationID: 42,
 	}, "pr-correlation", now)
 	if err != nil {
@@ -780,6 +785,12 @@ func TestRunNextExecutesPullRequestJobAndCompletes(t *testing.T) {
 	}
 	if observed.InstallationID != 42 {
 		t.Fatalf("observed installation_id = %d, want 42", observed.InstallationID)
+	}
+	if observedGitHubLogin != "octocat" {
+		t.Fatalf("observed github login header = %q, want octocat", observedGitHubLogin)
+	}
+	if observedSubject != "@octocat" {
+		t.Fatalf("observed subject header = %q, want @octocat", observedSubject)
 	}
 	if run.Job == nil || run.Job.ID != enqueue.JobIDs[0] {
 		t.Fatalf("run job = %+v, want executed job id %q", run.Job, enqueue.JobIDs[0])
