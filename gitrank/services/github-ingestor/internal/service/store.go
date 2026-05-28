@@ -204,6 +204,80 @@ func (s *Store) ActiveInstallationIDsByAccountLogin(ctx context.Context, githubL
 	return installationIDs, nil
 }
 
+func (s *Store) UpsertUserInstallations(ctx context.Context, installations []githubapi.UserInstallationSummaryItem, now time.Time) (int, error) {
+	if s == nil || s.pool == nil {
+		return 0, ErrUnavailable
+	}
+	if len(installations) == 0 {
+		return 0, nil
+	}
+
+	unique := make(map[int64]githubapi.UserInstallationSummaryItem, len(installations))
+	for _, installation := range installations {
+		if installation.ID <= 0 {
+			continue
+		}
+		unique[installation.ID] = installation
+	}
+	if len(unique) == 0 {
+		return 0, nil
+	}
+
+	count := 0
+	_, err := s.WithTx(ctx, func(tx *TxStore) (PersistResult, error) {
+		for _, installation := range unique {
+			payload := map[string]any{
+				"installation": map[string]any{
+					"id":                   installation.ID,
+					"app_id":               installation.AppID,
+					"app_slug":             installation.AppSlug,
+					"target_type":          installation.TargetType,
+					"repository_selection": installation.RepositorySelection,
+					"permissions":          installation.Permissions,
+					"events":               installation.Events,
+					"suspended_at":         installation.SuspendedAt,
+					"created_at":           installation.CreatedAt,
+				},
+			}
+			if installation.Account != nil {
+				payloadInstallation := payload["installation"].(map[string]any)
+				payloadInstallation["account"] = map[string]any{
+					"login": installation.Account.Login,
+					"type":  installation.Account.Type,
+				}
+			}
+			if len(installation.Repositories) > 0 {
+				repositories := make([]any, 0, len(installation.Repositories))
+				for _, repository := range installation.Repositories {
+					ownerPayload := map[string]any{}
+					if repository.Owner != nil {
+						ownerPayload["id"] = repository.Owner.ID
+						ownerPayload["login"] = repository.Owner.Login
+						ownerPayload["type"] = repository.Owner.Type
+					}
+					repositories = append(repositories, map[string]any{
+						"id":        repository.ID,
+						"name":      repository.Name,
+						"full_name": repository.FullName,
+						"private":   repository.Private,
+						"archived":  repository.Archived,
+						"disabled":  repository.Disabled,
+						"owner":     ownerPayload,
+					})
+				}
+				payload["repositories"] = repositories
+			}
+			if _, touched, err := tx.UpsertInstallation(payload, now.UTC()); err != nil {
+				return PersistResult{}, err
+			} else if touched {
+				count++
+			}
+		}
+		return PersistResult{}, nil
+	})
+	return count, err
+}
+
 func (s *Store) ActiveGitHubAccessTokenByLogin(ctx context.Context, githubLogin string, validAfter time.Time) (string, bool, error) {
 	if s == nil || s.pool == nil {
 		return "", false, ErrUnavailable

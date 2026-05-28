@@ -328,21 +328,6 @@ func (e *Executor) graphQLClientForActor(ctx context.Context, actor SyncRequestA
 	return client, true, nil
 }
 
-func (e *Executor) restClientForActor(ctx context.Context, actor SyncRequestActor, now time.Time) (*githubapi.RESTClient, bool, error) {
-	if e == nil || e.graphqlTokenSource == nil || e.restClientFactory == nil {
-		return nil, false, nil
-	}
-	tokenSource, ok, err := e.graphqlTokenSource(ctx, actor, now)
-	if err != nil || !ok {
-		return nil, false, err
-	}
-	client, err := e.restClientFactory(tokenSource)
-	if err != nil {
-		return nil, false, err
-	}
-	return client, true, nil
-}
-
 func (e *Executor) installationClientForActor(ctx context.Context, actor SyncRequestActor) (*githubapi.RESTClient, bool, error) {
 	if e == nil || e.installationClient == nil || e.store == nil || e.store.pool == nil {
 		return nil, false, nil
@@ -392,18 +377,7 @@ func (e *Executor) executorForActor(ctx context.Context, actor SyncRequestActor,
 			return e, nil
 		}
 	}
-	client, ok, err := e.restClientForActor(ctx, actor, now)
-	if err != nil {
-		// Token-source failures (for example stale/decrypt-mismatched local OAuth keys)
-		// should not hard-fail sync execution; fallback to the baseline shared client.
-		return e, nil
-	}
-	if !ok || client == nil {
-		return e, nil
-	}
-	clone := *e
-	clone.client = client
-	return &clone, nil
+	return e, nil
 }
 
 func (e *Executor) executorForUserSyncActor(ctx context.Context, actor SyncRequestActor, now time.Time) (*Executor, string, error) {
@@ -411,41 +385,79 @@ func (e *Executor) executorForUserSyncActor(ctx context.Context, actor SyncReque
 		return nil, "", nil
 	}
 	if strings.TrimSpace(actor.GitHubLogin) == "" {
-		return nil, "", ErrUserSyncOAuthTokenRequired
+		return nil, "", ErrUserSyncGitHubAppInstallationRequired
+	}
+	if e.actorInstallation == nil {
+		return nil, "", ErrUserSyncGitHubAppUnavailable
 	}
 
-	// OAuth user token remains the primary authored-PR discovery source.
-	// It can project authored PRs beyond repositories where the GitHub App is
-	// installed. If unavailable, fallback to installation credentials.
-	userClient, userClientEnabled, userClientErr := e.restClientForActor(ctx, actor, now)
-	if userClientErr == nil && userClientEnabled && userClient != nil {
-		clone := *e
-		clone.client = userClient
-		return &clone, "oauth", nil
+	installationClient, installationEnabled, installationErr := e.actorInstallation(ctx, actor)
+	if installationErr != nil {
+		return nil, "", fmt.Errorf("%w: %v", ErrUserSyncGitHubAppUnavailable, installationErr)
+	}
+	if !installationEnabled || installationClient == nil {
+		return nil, "", ErrUserSyncGitHubAppInstallationRequired
 	}
 
-	if e.actorInstallation != nil {
-		installationClient, installationEnabled, installationErr := e.actorInstallation(ctx, actor)
-		if installationErr == nil && installationEnabled && installationClient != nil {
-			clone := *e
-			clone.client = installationClient
-			return &clone, "installation", nil
+	clone := *e
+	clone.client = installationClient
+	return &clone, "installation", nil
+}
+
+func (e *Executor) bootstrapActorInstallations(ctx context.Context, actor SyncRequestActor, now time.Time) (int, error) {
+	if e == nil || e.store == nil || e.store.pool == nil {
+		return 0, nil
+	}
+	githubLogin := strings.TrimSpace(actor.GitHubLogin)
+	if githubLogin == "" {
+		return 0, nil
+	}
+	if e.graphqlTokenSource == nil || e.restClientFactory == nil {
+		return 0, nil
+	}
+
+	tokenSource, ok, tokenErr := e.graphqlTokenSource(ctx, actor, now)
+	if tokenErr != nil {
+		return 0, fmt.Errorf("%w: %v", ErrUserSyncOAuthTokenMalformed, tokenErr)
+	}
+	if !ok || tokenSource == nil {
+		return 0, ErrUserSyncOAuthTokenRequired
+	}
+	client, clientErr := e.restClientFactory(tokenSource)
+	if clientErr != nil {
+		return 0, fmt.Errorf("%w: %v", ErrUserSyncOAuthTokenMalformed, clientErr)
+	}
+
+	installationPageSize := e.cfg.GitHub.InstallationRepositoryPageSize
+	if installationPageSize <= 0 || installationPageSize > 100 {
+		installationPageSize = 50
+	}
+	maxPages := e.cfg.GitHub.InstallationRepositoryMaxPages
+	if maxPages <= 0 {
+		maxPages = 1
+	}
+
+	allInstallations := make([]githubapi.UserInstallationSummaryItem, 0, installationPageSize)
+	for page := 1; page <= maxPages; page++ {
+		response, _, listErr := githubapi.ListUserInstallations(ctx, client, githubapi.UserInstallationsRequest{
+			PerPage: installationPageSize,
+			Page:    page,
+		})
+		if listErr != nil {
+			return 0, listErr
 		}
-		if userClientErr == nil && !userClientEnabled {
-			if installationErr != nil {
-				return nil, "", fmt.Errorf("%w: %v", ErrUserSyncGitHubAppUnavailable, installationErr)
-			}
-			if !installationEnabled || installationClient == nil {
-				return nil, "", ErrUserSyncOAuthTokenRequired
-			}
+		if len(response.Installations) == 0 {
+			break
+		}
+		allInstallations = append(allInstallations, response.Installations...)
+		if len(response.Installations) < installationPageSize {
+			break
 		}
 	}
-
-	if userClientErr != nil {
-		return nil, "", fmt.Errorf("%w: %v", ErrUserSyncOAuthTokenMalformed, userClientErr)
+	if len(allInstallations) == 0 {
+		return 0, nil
 	}
-
-	return nil, "", ErrUserSyncOAuthTokenRequired
+	return e.store.UpsertUserInstallations(ctx, allInstallations, now)
 }
 
 func (e *Executor) fetchPullRequestsGraphQL(

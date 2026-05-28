@@ -344,6 +344,31 @@ func (e *Executor) SyncUser(
 		return response, ErrUserSyncInProgress
 	}
 	defer releaseLease()
+	if strings.TrimSpace(actor.GitHubLogin) != "" {
+		response.Fetched["app_installation_records_lookup_attempted"] = 1
+		installationIDs, installationLookupErr := e.store.ActiveInstallationIDsByAccountLogin(ctx, actor.GitHubLogin)
+		if installationLookupErr != nil {
+			response.Fetched["app_installation_records_lookup_failed"] = 1
+		} else if len(installationIDs) == 0 {
+			response.Fetched["app_installation_bootstrap_attempted"] = 1
+			bootstrapUpserted, bootstrapErr := e.bootstrapActorInstallations(ctx, actor, startedAt)
+			if bootstrapErr != nil {
+				response.Fetched["app_installation_bootstrap_failed"] = 1
+				if errors.Is(bootstrapErr, ErrUserSyncOAuthTokenRequired) {
+					response.Fetched["app_installation_bootstrap_oauth_required"] = 1
+				} else if errors.Is(bootstrapErr, ErrUserSyncOAuthTokenMalformed) {
+					response.Fetched["app_installation_bootstrap_oauth_malformed"] = 1
+				}
+			} else {
+				response.Fetched["app_installation_bootstrap_upserted"] = bootstrapUpserted
+				if bootstrapUpserted > 0 {
+					response.Fetched["app_installation_bootstrap_changed"] = 1
+				}
+			}
+		} else {
+			response.Fetched["app_installation_records_existing"] = len(installationIDs)
+		}
+	}
 	runtime, credentialSource, err := e.executorForUserSyncActor(ctx, actor, startedAt)
 	if err != nil {
 		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, PersistResult{})
