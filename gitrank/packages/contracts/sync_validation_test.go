@@ -15,6 +15,32 @@ func TestSyncRequestNormalizeAcceptsSafeRepositoryTargets(t *testing.T) {
 	}
 }
 
+func TestSyncRequestNormalizeCanonicalizesOptionalUserForRepositoryTarget(t *testing.T) {
+	req := SyncRequest{
+		Mode:       "repository",
+		Repository: "octo/repo",
+		User:       " @Ayush3941 ",
+	}
+	if err := req.Normalize(); err != nil {
+		t.Fatalf("Normalize() error = %v", err)
+	}
+	if req.User != "ayush3941" {
+		t.Fatalf("User = %q, want ayush3941", req.User)
+	}
+}
+
+func TestSyncRequestNormalizeRejectsInvalidOptionalUserForPullRequestTarget(t *testing.T) {
+	req := SyncRequest{
+		Mode:       "pull_request",
+		Repository: "octo/repo",
+		Number:     7,
+		User:       "bad user",
+	}
+	if err := req.Normalize(); err == nil {
+		t.Fatal("Normalize() error = nil, want invalid user rejection")
+	}
+}
+
 func TestSyncRequestNormalizeRejectsUnsafeRepositoryTargets(t *testing.T) {
 	cases := []string{
 		"https://github.com/octo/repo",

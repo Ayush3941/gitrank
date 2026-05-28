@@ -289,6 +289,7 @@ Recent sync-auth refinement (May 28, 2026):
 - Strict app-auth sync runtime now disables OAuth GraphQL token usage in those routes, so PR extraction remains installation-token-only end to end.
 - Scheduler/webhook sync paths can satisfy the same strict requirement without user-login headers by resolving app auth from explicit `installation_id` when present.
 - Scheduler queued sync payloads now preserve optional `installation_id` and user login context, and scheduler execution forwards `X-GitRank-GitHub-Login`/`X-GitRank-Subject` headers when user context exists.
+- Sync request validation now normalizes optional user-login context for repository/pull-request/review/issue/commit/report-analysis modes (trim, drop leading `@`, validate GitHub login format, lowercase), preventing malformed actor context from reaching strict app-auth extraction routes.
 - Service dependency manifests now explicitly document auth split: GitHub App installation tokens are required for sync extraction, OAuth is identity/login and installation-discovery support only.
 - Frontend `next.config.ts` now loads missing env keys from `../gitrank/.env` before config evaluation, so standalone `frontend/` dev/build commands follow the same single-env-file contract without requiring a second frontend env file.
 - User-mode sync queue jobs now canonicalize login casing in `subject`/dedupe identity, and sync-run lifecycle reconciliation now matches user subjects case-insensitively so queued/running rows cannot drift when request casing differs.

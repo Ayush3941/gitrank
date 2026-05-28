@@ -96,7 +96,12 @@ func (req *SyncRequest) Normalize() error {
 		if err != nil {
 			return err
 		}
+		user, err := normalizeOptionalSyncUser(req.User)
+		if err != nil {
+			return fmt.Errorf("user: %w", err)
+		}
 		req.Repository = repository
+		req.User = user
 	case "pull_request", "review", "issue", "analysis_pull_request", "report_materialize_pull_request":
 		repository, err := NormalizeGitHubRepository(req.Repository)
 		if err != nil {
@@ -105,7 +110,12 @@ func (req *SyncRequest) Normalize() error {
 		if req.Number <= 0 {
 			return errors.New("repository and number are required for pull_request, review, issue, analysis_pull_request, and report_materialize_pull_request modes")
 		}
+		user, err := normalizeOptionalSyncUser(req.User)
+		if err != nil {
+			return fmt.Errorf("user: %w", err)
+		}
 		req.Repository = repository
+		req.User = user
 	case "grade_pull_request":
 		repository, err := NormalizeGitHubRepository(req.Repository)
 		if err != nil {
@@ -129,8 +139,13 @@ func (req *SyncRequest) Normalize() error {
 		if err != nil {
 			return err
 		}
+		user, err := normalizeOptionalSyncUser(req.User)
+		if err != nil {
+			return fmt.Errorf("user: %w", err)
+		}
 		req.Repository = repository
 		req.SHA = sha
+		req.User = user
 	case "score_replay", "profile_refresh", "report_backfill_user_pull_requests", "backfill_user_history", "quest_backfill_user", "score_history_backfill_user", "badge_backfill_user":
 		userID, err := NormalizeUUID(req.UserID, "user_id")
 		if err != nil {
@@ -142,4 +157,22 @@ func (req *SyncRequest) Normalize() error {
 		return errors.New("unsupported sync mode")
 	}
 	return nil
+}
+
+func normalizeOptionalSyncUser(value string) (string, error) {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" {
+		return "", nil
+	}
+	for strings.HasPrefix(trimmed, "@") {
+		trimmed = strings.TrimPrefix(trimmed, "@")
+	}
+	if trimmed == "" {
+		return "", errors.New("GitHub login is required")
+	}
+	login, err := NormalizeGitHubLogin(trimmed)
+	if err != nil {
+		return "", err
+	}
+	return strings.ToLower(login), nil
 }
