@@ -105,7 +105,7 @@ const supersededActiveRowRun = {
 };
 
 describe("SyncRunActivityPanel", () => {
-  it("keeps summary-first filters and reset flow consistent", () => {
+  it("keeps filter reset flow consistent with minimal controls", () => {
     render(
       <SyncRunActivityPanel
         runs={[sampleRun]}
@@ -117,7 +117,7 @@ describe("SyncRunActivityPanel", () => {
       />,
     );
 
-    expect(screen.getByText("View: All")).toBeTruthy();
+    expect(screen.queryByText("View: All")).toBeNull();
     expect(screen.queryByText(/Active:/)).toBeNull();
     expect(screen.queryByText(/Search:/)).toBeNull();
 
@@ -125,17 +125,14 @@ describe("SyncRunActivityPanel", () => {
       target: { value: "missing-run" },
     });
 
-    expect(screen.getByText("Search: missing-run")).toBeTruthy();
-    expect(screen.getByText("Active: 1")).toBeTruthy();
     expect(screen.getAllByRole("button", { name: "Reset filters" }).length).toBeGreaterThan(0);
     expect(screen.getByText("No sync runs match the current search or status filter.")).toBeTruthy();
-    expect(screen.getAllByRole("button", { name: "Reset filters" }).length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getAllByRole("button", { name: "Reset filters" })[0]);
 
     const searchBox = screen.getByRole("textbox", { name: "Search sync runs" }) as HTMLInputElement;
     expect(searchBox.value).toBe("");
-    expect(screen.queryByText("Search: missing-run")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Reset filters" })).toBeNull();
   });
 
   it("renders compact fetched/persisted metrics summaries when run metrics exist", () => {

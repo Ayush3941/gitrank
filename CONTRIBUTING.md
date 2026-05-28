@@ -284,6 +284,11 @@ Recent no-slowdown refinement (May 27, 2026):
 - `scripts/check-start-sh-contracts.sh` now enforces `gitrank/.env` as the only `start.sh` runtime env source to prevent accidental frontend or secondary `.env` drift.
 - `start.sh` now treats `gitrank/.env` as the sole local runtime env source and no longer scans root/frontend `.env*` files.
 
+Recent slop-reduction refinement (May 28, 2026):
+
+- Settings sync activity filters no longer duplicate state in extra summary chips (`Active`, `View`, `Search`). The panel now keeps one source of truth: search input + status tabs + optional reset action.
+- Post-sync replay status handling now marks user sync as `partial` only for true replay mismatch (`merged targets selected` + `zero replay events`), while `all selected targets unmerged` stays `completed` with explicit zero-expected metrics.
+
 Recent sync-auth refinement (May 28, 2026):
 
 - User sync execution is now strict GitHub App for PR extraction. OAuth remains identity/session only.

@@ -856,8 +856,8 @@ func TestUserSyncExecutionDoesNotMarkMismatchWhenOnlyUnmergedTargetsWereSelected
 	if err := json.Unmarshal(response.Body.Bytes(), &observed); err != nil {
 		t.Fatalf("unmarshal response: %v", err)
 	}
-	if observed.Status != "partial" {
-		t.Fatalf("execution status = %q, want partial", observed.Status)
+	if observed.Status != "completed" {
+		t.Fatalf("execution status = %q, want completed", observed.Status)
 	}
 	if observed.Fetched["post_sync_score_replay_empty"] != 1 {
 		t.Fatalf("Fetched[post_sync_score_replay_empty] = %d, want 1", observed.Fetched["post_sync_score_replay_empty"])

@@ -129,7 +129,7 @@ func handleUserSyncExecution(w http.ResponseWriter, r *http.Request, client *htt
 			execution.Fetched = map[string]int{}
 		}
 		execution.Fetched["post_sync_refresh_ok"] = 1
-		if (execution.Fetched["post_sync_score_replay_mismatch"] > 0 || execution.Fetched["post_sync_score_replay_expected_zero_unmerged"] > 0) &&
+		if execution.Fetched["post_sync_score_replay_mismatch"] > 0 &&
 			strings.EqualFold(strings.TrimSpace(execution.Status), "completed") {
 			execution.Status = "partial"
 		}

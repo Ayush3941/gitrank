@@ -41,9 +41,6 @@ export function SyncRunActivityPanel({
   const [statusFilter, setStatusFilter] = useState<SyncRunStatusFilter>("All");
   const canReset = search.trim().length > 0 || statusFilter !== "All";
   const trimmedSearch = search.trim();
-  const compactSearch = trimmedSearch.length > 28 ? `${trimmedSearch.slice(0, 28)}…` : trimmedSearch;
-  const activeFilterCount =
-    (statusFilter !== "All" ? 1 : 0) + (trimmedSearch.length > 0 ? 1 : 0);
   const filterStatusId = "settings-sync-filter-status";
   const syncRunsRegionId = "settings-sync-runs-region";
   const statusCounts = useMemo(() => {
@@ -234,29 +231,8 @@ export function SyncRunActivityPanel({
               wrap
             />
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {activeFilterCount > 0 ? (
-              <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-                Active: {activeFilterCount}
-              </span>
-            ) : null}
-            <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-              View: {statusFilter}
-            </span>
-            {trimmedSearch.length > 0 ? (
-              <button
-                type="button"
-                className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
-                onClick={handleClearSearch}
-                aria-label={`Remove Search · ${compactSearch} filter`}
-                aria-controls={syncRunsRegionId}
-                title="Clear search filter"
-              >
-                Search: {compactSearch}
-                <X className="h-3.5 w-3.5" />
-              </button>
-            ) : null}
-            {canReset ? (
+          {canReset ? (
+            <div className="flex justify-end">
               <Button
                 type="button"
                 size="sm"
@@ -267,8 +243,8 @@ export function SyncRunActivityPanel({
               >
                 Reset filters
               </Button>
-            ) : null}
-          </div>
+            </div>
+          ) : null}
         </div>
       </div>
 
