@@ -989,7 +989,7 @@ func (s *TxStore) UpsertCommits(payload map[string]any, repositoryID string, now
 func (s *TxStore) InsertSyncRun(input payloadSyncRunInput) error {
 	metricsJSON := encodeJSON(composeSyncRunMetrics(input.Result.EntityCounts(), input.Fetched))
 	status := defaultString(strings.TrimSpace(input.Status), "completed")
-	subject := strings.TrimSpace(input.Subject)
+	subject := canonicalSyncRunSubject(input.EventType, input.Subject)
 	eventType := strings.TrimSpace(input.EventType)
 	correlationID := strings.TrimSpace(input.CorrelationID)
 
@@ -1077,6 +1077,7 @@ func (s *TxStore) finalizeExistingSyncRun(input payloadSyncRunInput, metricsJSON
 	}
 
 	finishedAt := nullableTime(input.FinishedAt)
+	subject := canonicalSyncRunSubject(input.EventType, input.Subject)
 	var updatedID string
 	err := s.tx.QueryRow(s.context(), `
 		WITH candidate AS (
@@ -1085,7 +1086,10 @@ func (s *TxStore) finalizeExistingSyncRun(input payloadSyncRunInput, metricsJSON
 			WHERE
 				correlation_id = $1
 				AND run_type = $2
-				AND subject = $3
+				AND (
+					(lower($2) = 'user' AND lower(subject) = lower($3))
+					OR (lower($2) <> 'user' AND subject = $3)
+				)
 				AND finished_at IS NULL
 				AND lower(status) IN ('queued', 'pending', 'running', 'syncing', 'in_progress')
 			ORDER BY started_at DESC
@@ -1117,7 +1121,7 @@ func (s *TxStore) finalizeExistingSyncRun(input payloadSyncRunInput, metricsJSON
 	`,
 		strings.TrimSpace(input.CorrelationID),
 		strings.TrimSpace(input.EventType),
-		strings.TrimSpace(input.Subject),
+		subject,
 		defaultString(strings.TrimSpace(input.Status), "completed"),
 		strings.TrimSpace(input.InstallationID),
 		strings.TrimSpace(input.RepositoryID),
@@ -1149,6 +1153,14 @@ func shouldFinalizeExistingSyncRun(status string, finishedAt *time.Time) bool {
 	default:
 		return true
 	}
+}
+
+func canonicalSyncRunSubject(runType string, subject string) string {
+	normalizedSubject := strings.TrimSpace(subject)
+	if strings.EqualFold(strings.TrimSpace(runType), "user") {
+		return strings.ToLower(normalizedSubject)
+	}
+	return normalizedSubject
 }
 
 func composeSyncRunMetrics(persisted map[string]int, fetched map[string]int) map[string]int {
@@ -1237,7 +1249,7 @@ func (s *Store) MarkSyncRunRunning(
 
 	correlationID = strings.TrimSpace(correlationID)
 	runType = strings.TrimSpace(runType)
-	subject = strings.TrimSpace(subject)
+	subject = canonicalSyncRunSubject(runType, subject)
 	if correlationID == "" || runType == "" || subject == "" {
 		return false, nil
 	}
@@ -1255,7 +1267,10 @@ func (s *Store) MarkSyncRunRunning(
 			WHERE
 				correlation_id = $1
 				AND run_type = $2
-				AND subject = $3
+				AND (
+					(lower($2) = 'user' AND lower(subject) = lower($3))
+					OR (lower($2) <> 'user' AND subject = $3)
+				)
 				AND finished_at IS NULL
 				AND lower(status) IN ('queued', 'pending')
 			ORDER BY started_at DESC
@@ -1310,7 +1325,7 @@ func (s *Store) ListSyncRuns(ctx context.Context, filter contracts.GitHubSyncRun
 
 	add("lower(runs.run_type) = $%d", filter.RunType)
 	add("lower(runs.status) = $%d", filter.Status)
-	add("runs.subject = $%d", filter.Subject)
+	add("lower(runs.subject) = lower($%d)", filter.Subject)
 	add("lower(runs.requested_repository_full_name) = $%d", filter.Repository)
 	add("lower(runs.requested_user_login) = $%d", filter.User)
 	add("runs.requested_by_subject = $%d", filter.RequestedBySubject)

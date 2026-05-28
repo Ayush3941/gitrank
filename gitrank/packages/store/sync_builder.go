@@ -3,6 +3,7 @@ package store
 import (
 	"errors"
 	"strconv"
+	"strings"
 
 	"github.com/gitrank/gitrank/packages/contracts"
 )
@@ -38,12 +39,13 @@ func BuildSyncJobs(req contracts.SyncRequest, queueName, correlationID string, m
 		if req.User == "" {
 			return nil, errors.New("user is required when mode=user")
 		}
+		userKey := strings.ToLower(req.User)
 		job, err := NewQueueJob(QueueJobInput{
 			QueueName:     queueName,
 			Type:          SyncUserHistoryJob,
 			CorrelationID: correlationID,
-			Subject:       req.User,
-			DedupeKey:     "user:" + req.User,
+			Subject:       userKey,
+			DedupeKey:     "user:" + userKey,
 			MaxAttempts:   maxAttempts,
 			Payload: map[string]string{
 				"user": req.User,

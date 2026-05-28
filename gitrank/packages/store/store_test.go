@@ -99,6 +99,28 @@ func TestBuildSyncJobsRepository(t *testing.T) {
 	}
 }
 
+func TestBuildSyncJobsUserCanonicalizesSubjectAndDedupeKey(t *testing.T) {
+	jobs, err := BuildSyncJobs(contracts.SyncRequest{
+		Mode: "user",
+		User: "Ayush3941",
+	}, "github-sync", "req-user", 5)
+	if err != nil {
+		t.Fatalf("BuildSyncJobs() error = %v", err)
+	}
+	if len(jobs) != 1 {
+		t.Fatalf("jobs len = %d, want 1", len(jobs))
+	}
+	if jobs[0].Type != SyncUserHistoryJob {
+		t.Fatalf("job type = %q, want %q", jobs[0].Type, SyncUserHistoryJob)
+	}
+	if jobs[0].Subject != "ayush3941" {
+		t.Fatalf("subject = %q, want ayush3941", jobs[0].Subject)
+	}
+	if jobs[0].DedupeKey != "user:ayush3941" {
+		t.Fatalf("dedupe key = %q, want user:ayush3941", jobs[0].DedupeKey)
+	}
+}
+
 func TestBuildSyncJobsScoreReplayUser(t *testing.T) {
 	const userID = "8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4"
 	jobs, err := BuildSyncJobs(contracts.SyncRequest{

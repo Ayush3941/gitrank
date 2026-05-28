@@ -40,3 +40,14 @@ func TestMarkSyncRunRunningRequiresPool(t *testing.T) {
 		t.Fatalf("MarkSyncRunRunning() error = %v, want ErrUnavailable", err)
 	}
 }
+
+func TestCanonicalSyncRunSubject(t *testing.T) {
+	t.Parallel()
+
+	if got := canonicalSyncRunSubject("user", " Ayush3941 "); got != "ayush3941" {
+		t.Fatalf("canonicalSyncRunSubject(user) = %q, want ayush3941", got)
+	}
+	if got := canonicalSyncRunSubject("repository", " Owner/Repo "); got != "Owner/Repo" {
+		t.Fatalf("canonicalSyncRunSubject(repository) = %q, want Owner/Repo", got)
+	}
+}
