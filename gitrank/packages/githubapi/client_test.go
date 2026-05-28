@@ -4,12 +4,18 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strings"
 	"testing"
 	"time"
 )
+
+type flakyTransport struct {
+	attempts int
+}
 
 func TestParseLinkHeader(t *testing.T) {
 	links := ParseLinkHeader(`<https://api.github.com/repositories/1/issues?page=2>; rel="next", <https://api.github.com/repositories/1/issues?page=4>; rel="last"`)
@@ -341,6 +347,70 @@ func TestRESTClientRetriesPrimaryRateLimitFromHeadersBeforeSuccess(t *testing.T)
 	}
 	if meta.RateLimit.Remaining != 4987 {
 		t.Fatalf("remaining = %d, want final response rate-limit metadata", meta.RateLimit.Remaining)
+	}
+}
+
+func TestRESTClientRetriesTransientTransportErrorsForSafeMethods(t *testing.T) {
+	transport := &flakyTransport{}
+
+	client, err := NewRESTClient(ClientConfig{
+		BaseURL:          "https://api.github.com/",
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		HTTPClient:       &http.Client{Transport: roundTripperFunc(transport.roundTrip)},
+		SecondaryBackoff: time.Millisecond,
+		MaxConcurrency:   1,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	var payload struct {
+		Status string `json:"status"`
+	}
+	_, err = client.GetJSON(context.Background(), "/repos/octo/repo", nil, ConditionalRequest{}, &payload)
+	if err != nil {
+		t.Fatalf("GetJSON() error = %v, want eventual success after transient transport retries", err)
+	}
+	if payload.Status != "ok" {
+		t.Fatalf("payload.Status = %q, want ok", payload.Status)
+	}
+	if transport.attempts != 3 {
+		t.Fatalf("transport attempts = %d, want 3 (2 transient failures + 1 success)", transport.attempts)
+	}
+}
+
+func TestRESTClientDoesNotRetryTransientTransportErrorsForUnsafeMethods(t *testing.T) {
+	attempts := 0
+	client, err := NewRESTClient(ClientConfig{
+		BaseURL:    "https://api.github.com/",
+		APIVersion: "2026-03-10",
+		UserAgent:  "GitRank/test",
+		HTTPClient: &http.Client{Transport: roundTripperFunc(func(req *http.Request) (*http.Response, error) {
+			attempts++
+			return nil, &url.Error{Op: req.Method, URL: req.URL.String(), Err: io.EOF}
+		})},
+		SecondaryBackoff: time.Millisecond,
+		MaxConcurrency:   1,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	_, err = client.DoJSON(
+		context.Background(),
+		http.MethodPost,
+		"/repos/octo/repo/issues",
+		nil,
+		ConditionalRequest{},
+		map[string]any{"title": "x"},
+		nil,
+	)
+	if err == nil {
+		t.Fatal("DoJSON() error = nil, want transient transport failure for unsafe method without retries")
+	}
+	if attempts != 1 {
+		t.Fatalf("transport attempts = %d, want 1 for unsafe method", attempts)
 	}
 }
 
@@ -871,4 +941,69 @@ func TestGraphQLClientRetryBackoffRespectsContextCancellation(t *testing.T) {
 	if requests != 1 {
 		t.Fatalf("server requests = %d, want 1 due to canceled retry backoff", requests)
 	}
+}
+
+func TestGraphQLClientRetriesTransientTransportErrorsBeforeSuccess(t *testing.T) {
+	attempts := 0
+	client, err := NewGraphQLClient(ClientConfig{
+		BaseURL:    "https://api.github.com/graphql",
+		APIVersion: "2026-03-10",
+		UserAgent:  "GitRank/test",
+		HTTPClient: &http.Client{Transport: roundTripperFunc(func(req *http.Request) (*http.Response, error) {
+			attempts++
+			if attempts < 3 {
+				return nil, &url.Error{Op: req.Method, URL: req.URL.String(), Err: io.EOF}
+			}
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Header:     http.Header{"Content-Type": []string{"application/json"}},
+				Body: io.NopCloser(strings.NewReader(
+					`{"data":{"viewer":{"login":"octocat"}}}`,
+				)),
+				Request: req,
+			}, nil
+		})},
+		SecondaryBackoff: time.Millisecond,
+		MaxConcurrency:   1,
+	})
+	if err != nil {
+		t.Fatalf("NewGraphQLClient() error = %v", err)
+	}
+
+	var out GraphQLResponse[struct {
+		Viewer struct {
+			Login string `json:"login"`
+		} `json:"viewer"`
+	}]
+	_, err = client.QueryJSON(context.Background(), "query { viewer { login } }", nil, &out)
+	if err != nil {
+		t.Fatalf("QueryJSON() error = %v, want eventual success after transient transport retries", err)
+	}
+	if out.Data.Viewer.Login != "octocat" {
+		t.Fatalf("viewer login = %q, want octocat", out.Data.Viewer.Login)
+	}
+	if attempts != 3 {
+		t.Fatalf("transport attempts = %d, want 3 (2 transient failures + 1 success)", attempts)
+	}
+}
+
+type roundTripperFunc func(*http.Request) (*http.Response, error)
+
+func (f roundTripperFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+	return f(req)
+}
+
+func (f *flakyTransport) roundTrip(req *http.Request) (*http.Response, error) {
+	f.attempts++
+	if f.attempts < 3 {
+		return nil, &url.Error{Op: req.Method, URL: req.URL.String(), Err: io.EOF}
+	}
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Header:     http.Header{"Content-Type": []string{"application/json"}},
+		Body: io.NopCloser(strings.NewReader(
+			`{"status":"ok"}`,
+		)),
+		Request: req,
+	}, nil
 }

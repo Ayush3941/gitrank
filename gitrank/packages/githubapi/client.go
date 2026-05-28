@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"math/rand"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -267,7 +268,8 @@ func (c *RESTClient) once(
 
 	response, err := c.httpClient.Do(request)
 	if err != nil {
-		return nil, ResponseMetadata{}, false, err
+		retry := isSafeRetryableHTTPMethod(method) && isRetryableTransportError(err)
+		return nil, ResponseMetadata{}, retry, err
 	}
 	defer response.Body.Close()
 
@@ -497,7 +499,7 @@ func (c *GraphQLClient) once(
 
 	response, err := c.httpClient.Do(request)
 	if err != nil {
-		return nil, ResponseMetadata{}, false, err
+		return nil, ResponseMetadata{}, isRetryableTransportError(err), err
 	}
 	defer response.Body.Close()
 
@@ -621,11 +623,15 @@ func isRetryableRateLimit(status int, headers http.Header, body []byte) bool {
 }
 
 func isRetryableTransientRESTError(method string, status int) bool {
-	normalized := strings.ToUpper(strings.TrimSpace(method))
-	if normalized != http.MethodGet && normalized != http.MethodHead {
+	if !isSafeRetryableHTTPMethod(method) {
 		return false
 	}
 	return isRetryableTransientServerError(status)
+}
+
+func isSafeRetryableHTTPMethod(method string) bool {
+	normalized := strings.ToUpper(strings.TrimSpace(method))
+	return normalized == http.MethodGet || normalized == http.MethodHead
 }
 
 func isRetryableTransientServerError(status int) bool {
@@ -635,6 +641,40 @@ func isRetryableTransientServerError(status int) bool {
 	default:
 		return false
 	}
+}
+
+func isRetryableTransportError(err error) bool {
+	if err == nil {
+		return false
+	}
+	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+		return false
+	}
+
+	var netErr net.Error
+	if errors.As(err, &netErr) {
+		if netErr.Timeout() {
+			return true
+		}
+		type temporary interface {
+			Temporary() bool
+		}
+		if tmp, ok := any(netErr).(temporary); ok && tmp.Temporary() {
+			return true
+		}
+	}
+
+	if errors.Is(err, io.EOF) {
+		return true
+	}
+
+	message := strings.ToLower(err.Error())
+	return strings.Contains(message, "connection reset by peer") ||
+		strings.Contains(message, "broken pipe") ||
+		strings.Contains(message, "unexpected eof") ||
+		strings.Contains(message, "server closed idle connection") ||
+		strings.Contains(message, "client connection lost") ||
+		strings.Contains(message, "tls handshake timeout")
 }
 
 func parseIntHeaderPresence(value string) (int, bool) {
