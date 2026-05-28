@@ -72,12 +72,23 @@ describe("runUserSync deduplication", () => {
           { status: 503, headers: { "Content-Type": "application/json" } },
         ),
       )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            error: {
+              code: "dependency_unavailable",
+              message: "sync backend unavailable",
+            },
+          }),
+          { status: 503, headers: { "Content-Type": "application/json" } },
+        ),
+      )
       .mockResolvedValueOnce(buildUserSyncResponse({ correlation_id: "sync-retry" }));
     vi.stubGlobal("fetch", fetchMock);
 
     await expect(runUserSync("octocat")).rejects.toThrow();
     const retry = await runUserSync("octocat");
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
     expect(retry.correlation_id).toBe("sync-retry");
   });
 });

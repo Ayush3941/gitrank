@@ -7,10 +7,35 @@ const USER_SYNC_EXECUTION_TIMEOUT_MS = parseBoundedPositiveMs(
   15_000,
   600_000,
 );
+const USER_SYNC_RETRY_MAX_ATTEMPTS = parseBoundedPositiveInt(
+  process.env.NEXT_PUBLIC_GITRANK_USER_SYNC_RETRY_MAX_ATTEMPTS,
+  2,
+  1,
+  4,
+);
+const USER_SYNC_RETRY_BASE_DELAY_MS = parseBoundedPositiveMs(
+  process.env.NEXT_PUBLIC_GITRANK_USER_SYNC_RETRY_BASE_DELAY_MS,
+  700,
+  100,
+  10_000,
+);
+const USER_SYNC_RETRY_JITTER_MS = parseBoundedPositiveMs(
+  process.env.NEXT_PUBLIC_GITRANK_USER_SYNC_RETRY_JITTER_MS,
+  250,
+  0,
+  2_000,
+);
+const USER_SYNC_RETRY_MAX_DELAY_MS = parseBoundedPositiveMs(
+  process.env.NEXT_PUBLIC_GITRANK_USER_SYNC_RETRY_MAX_DELAY_MS,
+  8_000,
+  500,
+  60_000,
+);
 const SYNC_RUN_ACTIVE_WINDOW_MS = Math.max(120_000, USER_SYNC_EXECUTION_TIMEOUT_MS + 30_000);
 const SYNC_RUN_QUEUED_WINDOW_MS = Math.max(180_000, SYNC_RUN_ACTIVE_WINDOW_MS * 2);
 const USER_SYNC_SELF_KEY = "__self__";
 const inFlightUserSyncRequests = new Map<string, Promise<ApiSyncExecutionResponse>>();
+const USER_SYNC_RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503, 504]);
 const COMPLETED_SYNC_RUN_STATUSES = new Set(["completed", "succeeded", "success", "done"]);
 const PARTIAL_SYNC_RUN_STATUSES = new Set(["partial"]);
 const FAILED_SYNC_RUN_STATUSES = new Set(["failed", "cancelled", "canceled", "timed_out", "timeout"]);
@@ -248,38 +273,55 @@ export async function runUserSync(user?: string): Promise<ApiSyncExecutionRespon
 
   const request = (async (): Promise<ApiSyncExecutionResponse> => {
     const csrfToken = requireCSRFToken();
-    let response: Response;
-    try {
-      response = await fetchWithTimeout(
-        "/api/sync/user",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-Token": csrfToken,
+    for (let attempt = 1; attempt <= USER_SYNC_RETRY_MAX_ATTEMPTS; attempt += 1) {
+      let response: Response;
+      try {
+        response = await fetchWithTimeout(
+          "/api/sync/user",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRF-Token": csrfToken,
+            },
+            credentials: "same-origin",
+            cache: "no-store",
+            body: JSON.stringify({
+              user: normalizedUser || undefined,
+            }),
           },
-          credentials: "same-origin",
-          cache: "no-store",
-          body: JSON.stringify({
-            user: normalizedUser || undefined,
-          }),
-        },
-        USER_SYNC_EXECUTION_TIMEOUT_MS,
-      );
-    } catch (error) {
-      if (isAbortLikeError(error)) {
-        throw new Error(syncRecoveryMessage("user", "GitHub took too long to respond."));
+          USER_SYNC_EXECUTION_TIMEOUT_MS,
+        );
+      } catch (error) {
+        if (
+          attempt < USER_SYNC_RETRY_MAX_ATTEMPTS &&
+          isRetryableUserSyncTransportError(error)
+        ) {
+          await sleep(userSyncRetryDelayMs(attempt));
+          continue;
+        }
+        if (isAbortLikeError(error)) {
+          throw new Error(syncRecoveryMessage("user", "GitHub took too long to respond."));
+        }
+        throw error;
       }
-      throw error;
-    }
-    if (response.ok) {
-      return (await response.json()) as ApiSyncExecutionResponse;
-    }
+      if (response.ok) {
+        return (await response.json()) as ApiSyncExecutionResponse;
+      }
 
-    const parsed = await parseErrorResponse(response, "User sync failed.");
-    throw new Error(
-      sanitizeSyncExecutionError(parsed.message, response.status, parsed.code, "user"),
-    );
+      const parsed = await parseErrorResponse(response, "User sync failed.");
+      if (
+        attempt < USER_SYNC_RETRY_MAX_ATTEMPTS &&
+        isRetryableUserSyncUpstreamFailure(response.status, parsed.code, parsed.message)
+      ) {
+        await sleep(userSyncRetryDelayMs(attempt, response.headers.get("Retry-After")));
+        continue;
+      }
+      throw new Error(
+        sanitizeSyncExecutionError(parsed.message, response.status, parsed.code, "user"),
+      );
+    }
+    throw new Error(syncRecoveryMessage("user", "Sync services are temporarily unavailable."));
   })();
 
   inFlightUserSyncRequests.set(dedupeKey, request);
@@ -679,6 +721,89 @@ function isAbortLikeError(error: unknown): boolean {
   return error.name === "AbortError" || message.includes("timed out") || message.includes("aborted");
 }
 
+function isRetryableUserSyncTransportError(error: unknown): boolean {
+  if (isAbortLikeError(error)) {
+    return true;
+  }
+  if (!(error instanceof Error)) {
+    return false;
+  }
+  const normalized = error.message.toLowerCase();
+  if (error.name === "TypeError") {
+    return true;
+  }
+  return normalized.includes("failed to fetch") || normalized.includes("networkerror");
+}
+
+function isRetryableUserSyncUpstreamFailure(status: number, code: string | undefined, message: string): boolean {
+  if (USER_SYNC_RETRYABLE_STATUS_CODES.has(status)) {
+    return true;
+  }
+  const normalizedCode = (code ?? "").trim().toLowerCase();
+  if (
+    normalizedCode === "upstream_timeout" ||
+    normalizedCode === "github_rate_limited" ||
+    normalizedCode === "dependency_unavailable"
+  ) {
+    return true;
+  }
+  const normalizedMessage = message.toLowerCase();
+  if (
+    normalizedMessage.includes("context deadline exceeded") ||
+    normalizedMessage.includes("client.timeout exceeded") ||
+    normalizedMessage.includes("rate limit")
+  ) {
+    return true;
+  }
+  return false;
+}
+
+function userSyncRetryDelayMs(attempt: number, retryAfterHeader?: string | null): number {
+  const retryAfterDelay = parseRetryAfterMs(retryAfterHeader);
+  if (retryAfterDelay !== null) {
+    return clampRetryDelay(retryAfterDelay);
+  }
+  const safeAttempt = Math.max(1, Math.floor(attempt));
+  const backoff = USER_SYNC_RETRY_BASE_DELAY_MS * 2 ** (safeAttempt - 1);
+  const jitter = USER_SYNC_RETRY_JITTER_MS > 0
+    ? Math.floor(Math.random() * (USER_SYNC_RETRY_JITTER_MS + 1))
+    : 0;
+  return clampRetryDelay(backoff + jitter);
+}
+
+function clampRetryDelay(value: number): number {
+  if (!Number.isFinite(value) || value < 0) {
+    return USER_SYNC_RETRY_BASE_DELAY_MS;
+  }
+  return Math.min(USER_SYNC_RETRY_MAX_DELAY_MS, Math.max(0, Math.floor(value)));
+}
+
+function parseRetryAfterMs(value?: string | null): number | null {
+  const normalized = (value ?? "").trim();
+  if (!normalized) {
+    return null;
+  }
+  const seconds = Number.parseInt(normalized, 10);
+  if (Number.isFinite(seconds) && seconds >= 0) {
+    return seconds * 1_000;
+  }
+  const timestamp = Date.parse(normalized);
+  if (!Number.isFinite(timestamp)) {
+    return null;
+  }
+  const delta = timestamp - Date.now();
+  if (delta <= 0) {
+    return 0;
+  }
+  return delta;
+}
+
+async function sleep(durationMs: number): Promise<void> {
+  await new Promise<void>((resolve) => {
+    setTimeout(resolve, Math.max(0, Math.floor(durationMs)));
+  });
+}
+
 function parsePositiveMs(value: string | undefined, fallback: number): number {
   if (!value) {
     return fallback;
@@ -686,6 +811,33 @@ function parsePositiveMs(value: string | undefined, fallback: number): number {
   const parsed = Number.parseInt(value.trim(), 10);
   if (!Number.isFinite(parsed) || parsed <= 0) {
     return fallback;
+  }
+  return parsed;
+}
+
+function parsePositiveInt(value: string | undefined, fallback: number): number {
+  if (!value) {
+    return fallback;
+  }
+  const parsed = Number.parseInt(value.trim(), 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return fallback;
+  }
+  return parsed;
+}
+
+function parseBoundedPositiveInt(
+  value: string | undefined,
+  fallback: number,
+  min: number,
+  max: number,
+): number {
+  const parsed = parsePositiveInt(value, fallback);
+  if (parsed < min) {
+    return min;
+  }
+  if (parsed > max) {
+    return max;
   }
   return parsed;
 }
