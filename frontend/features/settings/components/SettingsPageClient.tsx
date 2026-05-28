@@ -47,12 +47,7 @@ import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import { type ThemePreference, useThemePreference } from "@/hooks/use-theme-preference";
 import { describeSyncRunOutcome } from "@/features/settings/lib/sync-run-diagnostics";
-import { SyncExecutionControls } from "@/features/settings/components/SyncExecutionControls";
-import { BackendCapabilityPanel } from "@/features/settings/components/BackendCapabilityPanel";
 import { useAuthSession, useRefreshAuthSession } from "@/hooks/use-auth-session";
-import { ProfileSchemaPanel } from "@/features/settings/components/ProfileSchemaPanel";
-import { SyncQueueControls } from "@/features/settings/components/SyncQueueControls";
-import { ServiceManifestPanel } from "@/features/settings/components/ServiceManifestPanel";
 
 type BackedPrivacyKey =
   | "publicProfileEnabled"
@@ -522,36 +517,6 @@ export function SettingsPageClient() {
             void syncRunsQuery.refetch();
           }}
         />
-      </section>
-
-      <section className="render-opt-section" id="settings-sync-execution-panel">
-        <GlowCard className="space-y-4">
-          <SyncExecutionControls />
-        </GlowCard>
-      </section>
-
-      <section className="render-opt-section" id="settings-sync-queue-panel">
-        <GlowCard className="space-y-4">
-          <SyncQueueControls />
-        </GlowCard>
-      </section>
-
-      <section className="render-opt-section" id="settings-backend-capability-panel">
-        <GlowCard className="space-y-4">
-          <BackendCapabilityPanel />
-        </GlowCard>
-      </section>
-
-      <section className="render-opt-section" id="settings-profile-schema-panel">
-        <GlowCard className="space-y-4">
-          <ProfileSchemaPanel />
-        </GlowCard>
-      </section>
-
-      <section className="render-opt-section" id="settings-service-manifests-panel">
-        <GlowCard className="space-y-4">
-          <ServiceManifestPanel />
-        </GlowCard>
       </section>
 
       <section className="render-opt-section">

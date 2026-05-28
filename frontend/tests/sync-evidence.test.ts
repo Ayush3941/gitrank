@@ -301,6 +301,21 @@ describe("deriveEffectiveSyncState", () => {
     expect(deriveEffectiveSyncState(user, ["partial"])).toBe("partially_synced");
   });
 
+  it("returns partially_synced when latest terminal sync run completed but PR evidence is still empty", () => {
+    const user = buildUser({
+      mergedPrCount: 0,
+      contributions: [],
+      syncStatus: {
+        state: "syncing",
+        lastSyncedAt: "2026-05-27T00:00:00Z",
+        currentStep: "Profile snapshot is current",
+        progress: 100,
+        partialProfileAvailable: true,
+      },
+    });
+    expect(deriveEffectiveSyncState(user, ["completed"])).toBe("partially_synced");
+  });
+
   it("returns failed when latest terminal sync run is failed", () => {
     const user = buildUser({
       mergedPrCount: 2,

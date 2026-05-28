@@ -259,6 +259,11 @@ Recent no-slowdown refinement (May 24, 2026):
 - `SegmentedTablist` now avoids viewport-restoration scroll calls entirely, and `npm run check:scroll-jumps` prevents direct scroll-jump APIs from being reintroduced in product routes.
 - Header meta chips on small screens are now horizontal rails instead of multi-line wraps, reducing header bloat and preserving actionable content density.
 
+Recent no-slowdown refinement (May 28, 2026):
+
+- Settings now shows only real end-user controls (account, sync activity, privacy, display, repository visibility, data controls).
+- Debug/operator-only panels (manual execute/queue controls, backend capability manifests, schema probes) were removed from the product settings surface to reduce UI noise and avoid dead admin-style UX in normal contributor flow.
+
 Recent sync-state integrity refinement (May 27, 2026):
 
 - Sync-run normalization now treats contradictory run rows (`finished_at` present while status remains `running`/`queued`) as `failed`, not `completed`, so dashboard/settings cannot show false-success runs.

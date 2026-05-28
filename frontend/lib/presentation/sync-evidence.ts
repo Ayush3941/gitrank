@@ -98,7 +98,11 @@ export function deriveEffectiveSyncState(
   if (latestStatus && FAILED_SYNC_RUN_STATUSES.has(latestStatus)) {
     return "failed";
   }
-  if (user.syncStatus.state === "synced" && !hasUserMaterializedSyncEvidence(user)) {
+  const hasMaterializedEvidence = hasUserMaterializedSyncEvidence(user);
+  if (!hasMaterializedEvidence && latestStatus === "completed") {
+    return "partially_synced";
+  }
+  if (user.syncStatus.state === "synced" && !hasMaterializedEvidence) {
     return "partially_synced";
   }
   return user.syncStatus.state;
