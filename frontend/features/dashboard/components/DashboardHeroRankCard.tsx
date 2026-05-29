@@ -29,7 +29,7 @@ export function DashboardHeroRankCard({
   const nextAction =
     syncState !== "synced" || user.mergedPrCount === 0
       ? {
-          description: "Open sync settings to refresh PR evidence before rank progression.",
+          description: "Sync recent PR evidence to unlock rank progression.",
           href: "/dashboard/settings",
           cta: "Open sync settings",
         }

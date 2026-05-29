@@ -213,7 +213,7 @@ export function ContributionFilters({
       </div>
       <div id="contribution-mobile-controls">
         <div className="space-y-2">
-          <p className="text-xs font-medium text-primary">Status lane</p>
+          <p className="text-xs font-medium text-primary">Status</p>
           <SegmentedTablist
             options={contributionStatusFilters.map((filter) => {
               const Icon = statusIconByValue[filter];
@@ -235,7 +235,7 @@ export function ContributionFilters({
           </div>
         <div className="grid gap-3">
           <div className="space-y-2">
-            <p className="text-xs font-medium text-primary">Focus lane</p>
+            <p className="text-xs font-medium text-primary">Category</p>
             <SegmentedTablist
               options={contributionFocusFilters.map((filter) => {
                 const Icon = focusIconByValue[filter];
@@ -255,7 +255,7 @@ export function ContributionFilters({
               tabIdPrefix="contribution-focus-tab"
               wrap
             />
-            <p className="text-xs text-muted">Use Status for PR state and Focus for the kind of work it was.</p>
+            <p className="text-xs text-muted">Status filters PR lifecycle. Category filters contribution type.</p>
           </div>
           <div className="relative">
             <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted" />

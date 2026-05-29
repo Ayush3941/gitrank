@@ -96,7 +96,7 @@ export function PublicProfileHero({
           ) : null}
           <p className="text-xs font-medium text-primary">Top signals (public evidence)</p>
           <p className="text-xs text-muted">
-            These lanes show what your recent public PRs are signaling today.
+            These signals summarize what your recent public PRs show today.
           </p>
           <ul role="list" className="flex flex-wrap gap-2">
             {topSkills.map((skill, index) => (

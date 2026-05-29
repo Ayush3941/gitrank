@@ -346,10 +346,10 @@ export function ContributionsPageClient() {
         <StaleState
           message={
             syncStateForDisplay === "partially_synced"
-              ? "Contribution snapshot exists, but scored PR evidence is still empty. Keep auto-sync active and refresh after GitHub processing completes."
+              ? "Profile exists, but scored PR evidence is still empty. Keep auto-sync on and retry."
               : `Contribution evidence refreshed ${formatRelativeDays(
                   profile.refreshedAt,
-                )}. New PR rows can appear after the next sync.`
+                )}. New PR rows appear after sync completes.`
           }
           updatedAt={profile.refreshedAt}
           onRefresh={async () => {
@@ -411,7 +411,7 @@ export function ContributionsPageClient() {
           onClearSearch={handleClearSearchFilter}
           statusCounts={statusCounts}
           focusCounts={focusCounts}
-          contextNote="Use these filters to read your recent PR patterns; they are signals, not permanent labels."
+          contextNote="Categories summarize recent PR topics and evidence, not permanent expertise."
         />
       </section>
       {isLoading ? <LoadingState message="Loading contributions..." /> : null}
@@ -438,7 +438,7 @@ export function ContributionsPageClient() {
           description={
             isFilteredNoResults
               ? "Reset filters or widen search."
-              : "Open sync settings to refresh GitHub evidence for scored PR cards."
+              : "Open sync settings and run a user sync to load recent PR evidence."
           }
           actionLabel={isFilteredNoResults ? "Reset filters" : "Open sync settings"}
           actionHref={isFilteredNoResults ? undefined : "/dashboard/settings"}

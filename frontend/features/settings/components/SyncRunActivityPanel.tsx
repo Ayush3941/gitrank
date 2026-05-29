@@ -40,7 +40,6 @@ export function SyncRunActivityPanel({
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<SyncRunStatusFilter>("All");
   const canReset = search.trim().length > 0 || statusFilter !== "All";
-  const trimmedSearch = search.trim();
   const filterStatusId = "settings-sync-filter-status";
   const syncRunsRegionId = "settings-sync-runs-region";
   const statusCounts = useMemo(() => {
@@ -269,7 +268,7 @@ export function SyncRunActivityPanel({
           </div>
         ) : runs.length === 0 ? (
           <div className={`neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}>
-            <p>No sync runs recorded for this account yet. Open dashboard and GitRank will enqueue background sync automatically.</p>
+            <p>No sync runs yet. Open dashboard to trigger auto-sync.</p>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" variant="secondary">
                 <Link href="/dashboard" prefetch={false}>Open dashboard</Link>

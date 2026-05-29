@@ -26,7 +26,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
       <ul role="list" className="grid gap-3">
         {sortedReports.length === 0 ? (
           <li className="list-none neon-surface space-y-3 rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
-            <p>No reports yet. Merge PRs and GitRank will attach battle reports automatically.</p>
+            <p>No reports yet. Run sync after your next merged PR.</p>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" variant="secondary">
                 <Link href="/dashboard/contributions" prefetch={false}>Inspect contributions</Link>

@@ -1,7 +1,6 @@
 import type { UserProfile } from "@/types/gitrank";
 import {
   ACTIVE_SYNC_RUN_STATUSES,
-  COMPLETED_SYNC_RUN_STATUSES,
   FAILED_SYNC_RUN_STATUSES,
   PARTIAL_SYNC_RUN_STATUSES,
   QUEUED_SYNC_RUN_STATUSES,
@@ -152,13 +151,6 @@ function hasPendingSyncRunStatuses(syncRunStatuses: readonly string[] | undefine
     }
     if (ACTIVE_SYNC_RUN_STATUSES.has(normalized) || QUEUED_SYNC_RUN_STATUSES.has(normalized)) {
       return true;
-    }
-    if (
-      PARTIAL_SYNC_RUN_STATUSES.has(normalized) ||
-      FAILED_SYNC_RUN_STATUSES.has(normalized) ||
-      COMPLETED_SYNC_RUN_STATUSES.has(normalized)
-    ) {
-      return false;
     }
   }
   return false;

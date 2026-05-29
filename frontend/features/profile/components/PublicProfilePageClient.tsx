@@ -233,7 +233,7 @@ export function PublicProfilePageClient({
           <StatCard label="Consistency" value={`${data.user.consistencyScore}%`} detail={data.trendWindowLabel} icon={<CheckCircle2 className="h-5 w-5 text-primary" />} />
         </div>
       </section>
-      <section className="render-opt-section space-y-4" aria-label="Badge and skill lanes">
+      <section className="render-opt-section space-y-4" aria-label="Badges and skills">
         <div className="grid gap-6 xl:grid-cols-[1fr,1fr]">
           <GlowCard className="space-y-5">
             <div>
@@ -274,7 +274,7 @@ export function PublicProfilePageClient({
               <p className="text-xs font-medium text-primary">Skills</p>
               <h2 className="mt-2 text-xl font-semibold text-white">Skill map</h2>
               <p className="mt-1 text-sm text-muted">
-                Think of this as a live map of what your visible PR history is signaling right now.
+                Live view of what your visible PR history signals right now.
               </p>
             </div>
             {skillTree.length === 0 ? (

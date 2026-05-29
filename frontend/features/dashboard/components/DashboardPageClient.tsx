@@ -208,7 +208,7 @@ export function DashboardPageClient() {
       <PageHeader
         eyebrow="Dashboard"
         title="Dashboard"
-        description="Identity, progression, and report lanes."
+        description="Identity, rank progress, and recent reports."
         meta={(
           <HeaderMetaChips
             items={[
@@ -267,7 +267,7 @@ export function DashboardPageClient() {
           valueClassName="text-4xl"
           label="GitRank score"
           value={user.gitRankScore}
-          detail="Impact-weighted score from merged evidence."
+          detail="Impact-weighted from merged PR evidence."
           icon={<Medal className="h-5 w-5 text-primary" />}
         />
         <GlowCard className="xl:col-span-3 space-y-4">
@@ -288,7 +288,7 @@ export function DashboardPageClient() {
           className="xl:col-span-3"
           label="Merged PRs"
           value={user.mergedPrCount}
-          detail="Merged work is the primary ranking evidence."
+          detail="Primary input for rank progression."
           icon={<Activity className="h-5 w-5 text-primary" />}
         />
       </section>

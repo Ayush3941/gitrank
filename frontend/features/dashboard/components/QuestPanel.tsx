@@ -21,7 +21,7 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
       <div className="space-y-3">
         {quests.length === 0 ? (
           <div className="neon-surface space-y-3 rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
-            <p>No quests yet. Sync evidence to generate missions.</p>
+            <p>No quests yet. Sync scored PR evidence to generate missions.</p>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" variant="secondary">
                 <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>

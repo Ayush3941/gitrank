@@ -279,105 +279,105 @@ export function PRBattleReportPageClient({
         <GlowCard className="space-y-4">
           <div>
             <p className="text-xs font-medium text-primary">Deterministic metrics ledger</p>
-            <h2 className="mt-2 text-sm font-semibold text-white">Persisted PR scoring inputs and outputs</h2>
+            <h2 className="mt-2 text-sm font-semibold text-white">Deterministic scoring inputs and outputs</h2>
             <p className="mt-2 text-xs text-muted">
-              This card only shows metrics that participate in deterministic scoring math.
+              Only metrics used directly by the deterministic score formula are shown here.
             </p>
           </div>
           <div className="space-y-4">
             <LedgerSection
               title="Score outputs"
-              description="Final deterministic output and formula identity."
+              description="Final output from deterministic scoring."
               metrics={[
                 {
                   id: "xp_earned",
                   label: "XP earned",
                   value: data.contribution.xpEarned.toLocaleString("en-US"),
-                  description: "Final deterministic XP after multipliers, penalties, and anti-spam rules.",
+                  description: "Final deterministic XP after multipliers and penalties.",
                 },
                 {
                   id: "score_version",
                   label: "Score version",
                   value: data.scoreVersion || "unknown",
-                  description: "Formula version that produced this deterministic XP result.",
+                  description: "Scoring formula revision used for this result.",
                 },
               ]}
             />
             <LedgerSection
               title="Core scoring signals"
-              description="Primary normalized inputs used directly by deterministic score math."
+              description="Primary inputs used directly by scoring."
               metrics={[
                 {
                   id: "status",
                   label: "Status",
                   value: formatContributionStatusLabel(data.contribution.status),
-                  description: "PR lifecycle state used for outcome weighting.",
+                  description: "PR state used by the outcome weight.",
                 },
                 {
                   id: "category",
                   label: "Category",
                   value: data.contribution.category,
-                  description: "Contribution class selected by deterministic classification.",
+                  description: "Detected contribution type.",
                 },
                 {
                   id: "difficulty_score",
                   label: "Difficulty score",
                   value: String(data.contribution.difficultyScore),
-                  description: "Complexity signal from volume, spread, and technical depth.",
+                  description: "Complexity signal from size and code surface.",
                 },
                 {
                   id: "impact_score",
                   label: "Impact score",
                   value: String(data.contribution.impactScore),
-                  description: "Projected contribution effect on repository and code surface.",
+                  description: "Projected contribution effect.",
                 },
                 {
                   id: "review_depth",
                   label: "Review depth",
                   value: String(data.contribution.reviewDepthScore),
-                  description: "Review-strength signal from review activity and outcomes.",
+                  description: "Reviewer activity signal.",
                 },
                 {
                   id: "test_signal",
                   label: "Test signal",
                   value: String(data.contribution.testSignalScore),
-                  description: "Regression-evidence signal from test-related changes.",
+                  description: "Regression test evidence signal.",
                 },
                 {
                   id: "repo_weight",
                   label: "Repo weight",
                   value: data.contribution.repoWeight.toFixed(2),
-                  description: "Repository-context multiplier applied in final XP math.",
+                  description: "Repository multiplier in XP math.",
                 },
                 {
                   id: "anti_spam_multiplier",
                   label: "Anti-spam multiplier",
                   value: `${data.contribution.antiSpamMultiplier.toFixed(2)}x`,
-                  description: "Anti-gaming modifier for repeated shallow contribution patterns.",
+                  description: "Caps repeated low-signal contribution patterns.",
                 },
               ]}
             />
             <LedgerSection
               title="Change-volume inputs"
-              description="Raw PR change-size inputs that feed deterministic analyzer and scoring signals."
+              description="Raw change-size inputs used by deterministic analysis."
               metrics={[
                 {
                   id: "changed_files",
                   label: "Changed files",
                   value: data.contribution.changedFilesCount.toLocaleString("en-US"),
-                  description: "Total files changed in this PR evidence set.",
+                  description: "File count input.",
                 },
                 {
                   id: "additions",
                   label: "Additions",
                   value: data.contribution.additions.toLocaleString("en-US"),
-                  description: "Inserted lines counted in deterministic depth/volume inputs.",
+                  description: "Added line-count input.",
                 },
                 {
                   id: "deletions",
                   label: "Deletions",
                   value: data.contribution.deletions.toLocaleString("en-US"),
-                  description: "Removed lines counted in deterministic depth/volume inputs.",
+                  description: "Deleted line-count input.",
                 },
               ]}
             />
@@ -425,7 +425,7 @@ export function PRBattleReportPageClient({
           </div>
           {fallbackDetail ? (
             <p className="rounded-full border border-amber-400/24 bg-amber-400/10 px-3 py-1.5 text-xs text-amber-100">
-              ChatGPT unavailable ({fallbackDetail}); showing deterministic summary.
+              ChatGPT unavailable ({fallbackDetail}). Showing deterministic summary.
             </p>
           ) : null}
           <ExpandableText
@@ -538,7 +538,7 @@ export function PRBattleReportPageClient({
               </div>
             </div>
             <p className="text-xs text-muted">
-              Expand technical breakdown to inspect XP component math, evidence signals, and badge rewards.
+              Open details for full math, evidence signals, and badge rewards.
             </p>
           </GlowCard>
           )}
@@ -766,7 +766,7 @@ function buildReportStateGuidance({
       tone: "warning",
       label: "Rate limited",
       message:
-        "ChatGPT enrichment is temporarily rate limited. The deterministic score remains valid and this report will enrich after retry.",
+        "ChatGPT hit provider limits. Deterministic scoring is still valid; retry later for enriched text.",
       cta: "Open settings",
       href: "/dashboard/settings",
     };
@@ -777,8 +777,8 @@ function buildReportStateGuidance({
       tone: "warning",
       label: "Deterministic fallback",
       message: fallbackDetail
-        ? `ChatGPT response was unavailable (${fallbackDetail}). Deterministic evidence is still serving this report.`
-        : "ChatGPT response was unavailable. Deterministic evidence is still serving this report.",
+        ? `ChatGPT response failed (${fallbackDetail}). Deterministic evidence is serving this report.`
+        : "ChatGPT response failed. Deterministic evidence is serving this report.",
       cta: "Open settings",
       href: "/dashboard/settings",
     };
@@ -789,7 +789,7 @@ function buildReportStateGuidance({
       tone: "warning",
       label: "Refresh pending",
       message:
-        "This report snapshot is waiting for the latest sync or scoring replay. Trigger a refresh to pull the newest PR evidence.",
+        "This report is behind the latest sync. Run sync and reopen this report.",
       cta: "Open settings",
       href: "/dashboard/settings",
     };
@@ -800,7 +800,7 @@ function buildReportStateGuidance({
       tone: "info",
       label: "Deterministic mode",
       message:
-        "This report is currently deterministic-only. Scoring evidence is valid, and ChatGPT enrichment may appear after background processing completes.",
+        "Only deterministic analysis is available right now. ChatGPT enrichment may appear after retries.",
       cta: "View contributions",
       href: "/dashboard/contributions",
     };
@@ -810,7 +810,7 @@ function buildReportStateGuidance({
     tone: "warning",
     label: "Processing",
     message:
-      "Report evidence is still processing. Reopen this report after sync and scoring jobs complete.",
+      "Report data is still processing. Reopen after sync and scoring complete.",
     cta: "Open settings",
     href: "/dashboard/settings",
   };

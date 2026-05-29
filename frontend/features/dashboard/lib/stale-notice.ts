@@ -16,13 +16,13 @@ export function buildDashboardStaleNotice(
   if (syncState === "partially_synced") {
     return {
       message:
-        "Profile snapshot exists, but scored PR evidence is still empty. Keep auto-sync active and refresh after GitHub processing completes.",
+        "Profile refreshed, but scored PR evidence is still incomplete. Keep the page open or retry sync.",
       reasonMessage,
     };
   }
 
   return {
-    message: `Your GitRank profile was refreshed ${formatRelativeDays(refreshedAt)}.`,
+    message: `Profile refreshed ${formatRelativeDays(refreshedAt)}. Latest verified data remains visible while sync runs.`,
     reasonMessage,
   };
 }

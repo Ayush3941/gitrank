@@ -351,7 +351,7 @@ export function SettingsPageClient() {
       <PageHeader
         eyebrow="Settings"
         title="Settings"
-        description="Privacy, sync, and display controls."
+        description="Privacy, sync, and display."
         meta={(
           <HeaderMetaChips
             items={[
@@ -408,7 +408,7 @@ export function SettingsPageClient() {
             }}
           >
             <RefreshCw className="h-4 w-4" />
-            {runUserSync.isPending ? "Syncing GitHub..." : isFetching ? "Refreshing..." : "Refresh snapshot"}
+            {runUserSync.isPending ? "Syncing GitHub..." : isFetching ? "Refreshing..." : "Sync now"}
           </Button>
           <Button
             variant="secondary"
