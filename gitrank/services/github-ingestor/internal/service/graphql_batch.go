@@ -64,11 +64,8 @@ query GitRankRepositoryPullRequestBatch($owner: String!, $name: String!, $first:
 }
 `
 
-type githubGraphQLClientFactory func(githubapi.TokenSource) (*githubapi.GraphQLClient, error)
-
 type githubRESTClientFactory func(githubapi.TokenSource) (*githubapi.RESTClient, error)
 
-type githubGraphQLTokenSource func(context.Context, SyncRequestActor, time.Time) (githubapi.TokenSource, bool, error)
 type githubInstallationClientResolver func(int64) (*githubapi.RESTClient, bool, error)
 type githubActorInstallationMatcher func(*githubapi.RESTClient) (bool, error)
 
@@ -138,24 +135,6 @@ type githubGraphQLReview struct {
 	AuthorAssociation string              `json:"authorAssociation"`
 }
 
-func newGitHubGraphQLClientFactory(cfg config.App) githubGraphQLClientFactory {
-	return func(tokenSource githubapi.TokenSource) (*githubapi.GraphQLClient, error) {
-		timeout := boundedGitHubHTTPTimeout(cfg.GitHub.RequestTimeout)
-		return githubapi.NewGraphQLClient(githubapi.ClientConfig{
-			BaseURL:                        cfg.GitHub.GraphQLURL,
-			APIVersion:                     cfg.GitHub.APIVersion,
-			UserAgent:                      cfg.GitHub.UserAgent,
-			TokenSource:                    tokenSource,
-			HTTPClient:                     &http.Client{Timeout: timeout},
-			SecondaryBackoff:               cfg.GitHub.SecondaryBackoff,
-			MaxConcurrency:                 cfg.GitHub.MaxConcurrency,
-			CircuitBreakerFailureThreshold: cfg.GitHub.CircuitBreakerFailureThreshold,
-			CircuitBreakerOpenInterval:     cfg.GitHub.CircuitBreakerOpenInterval,
-			CircuitBreakerHalfOpenMax:      cfg.GitHub.CircuitBreakerHalfOpenMax,
-		})
-	}
-}
-
 func newGitHubRESTClientFactory(cfg config.App) githubRESTClientFactory {
 	return func(tokenSource githubapi.TokenSource) (*githubapi.RESTClient, error) {
 		timeout := boundedGitHubHTTPTimeout(cfg.GitHub.RequestTimeout)
@@ -180,21 +159,6 @@ func boundedGitHubHTTPTimeout(timeout time.Duration) time.Duration {
 		return minimum
 	}
 	return timeout
-}
-
-func (e *Executor) graphQLClientForActor(ctx context.Context, actor SyncRequestActor, now time.Time) (*githubapi.GraphQLClient, bool, error) {
-	if e == nil || e.graphqlTokenSource == nil || e.graphqlClientFactory == nil {
-		return nil, false, nil
-	}
-	tokenSource, ok, err := e.graphqlTokenSource(ctx, actor, now)
-	if err != nil || !ok {
-		return nil, false, err
-	}
-	client, err := e.graphqlClientFactory(tokenSource)
-	if err != nil {
-		return nil, false, err
-	}
-	return client, true, nil
 }
 
 func (e *Executor) installationClientForActor(ctx context.Context, actor SyncRequestActor) (*githubapi.RESTClient, bool, error) {
@@ -330,8 +294,6 @@ func (e *Executor) executorForStrictAppSyncActor(ctx context.Context, actor Sync
 		if source != "installation" {
 			return nil, fmt.Errorf("%w: unexpected credential source %q", ErrUserSyncGitHubAppUnavailable, source)
 		}
-		// Strict app-sync routes must not route PR extraction through OAuth GraphQL tokens.
-		runtime.graphqlTokenSource = nil
 		return runtime, nil
 	}
 	if !errors.Is(err, ErrUserSyncGitHubAppInstallationRequired) {
@@ -349,8 +311,6 @@ func (e *Executor) executorForStrictAppSyncActor(ctx context.Context, actor Sync
 	if source != "installation" {
 		return nil, fmt.Errorf("%w: unexpected credential source %q", ErrUserSyncGitHubAppUnavailable, source)
 	}
-	// Strict app-sync routes must not route PR extraction through OAuth GraphQL tokens.
-	runtime.graphqlTokenSource = nil
 	return runtime, nil
 }
 
@@ -380,7 +340,6 @@ func (e *Executor) executorForStrictAppSyncRequest(
 
 	clone := *e
 	clone.client = installationClient
-	clone.graphqlTokenSource = nil
 	clone.actorInstallation = func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
 		return installationClient, true, nil
 	}

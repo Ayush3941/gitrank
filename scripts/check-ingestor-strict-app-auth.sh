@@ -13,20 +13,20 @@ fail() {
 [[ -d "$SERVICE_DIR" ]] || fail "missing github-ingestor service directory"
 [[ -f "$EXECUTOR_FILE" ]] || fail "missing executor.go"
 
-if (cd "$ROOT_DIR" && rg -n "oauth" "$SERVICE_DIR" --glob "!**/*_test.go" >/dev/null); then
+if (cd "$ROOT_DIR" && rg -n -i "oauth" "$SERVICE_DIR" --glob "!**/*_test.go" >/dev/null); then
   fail "non-test ingestor service code still contains OAuth extraction references"
 fi
 
-if ! rg -q 'executor\.graphqlTokenSource = nil' "$EXECUTOR_FILE"; then
-  fail "executor default must disable GraphQL token source for strict app-only sync extraction"
-fi
-
-if (cd "$ROOT_DIR" && rg -n 'graphQLTokenSourceForActor\(' "$SERVICE_DIR" --glob "!**/*_test.go" >/dev/null); then
-  fail "legacy OAuth-derived GraphQL token source helper is still present in non-test ingestor service code"
+if (cd "$ROOT_DIR" && rg -n 'graphqlTokenSource|graphQLClientForActor|graphqlClientFactory' "$SERVICE_DIR" --glob "!**/*_test.go" >/dev/null); then
+  fail "legacy GraphQL actor-token wiring is still present in non-test ingestor service code"
 fi
 
 if (cd "$ROOT_DIR" && rg -n 'probeAllInstallations && fallbackClient' "$SERVICE_DIR" --glob "!**/*_test.go" >/dev/null); then
   fail "actor installation resolution still allows arbitrary global-installation fallback"
+fi
+
+if (cd "$ROOT_DIR" && rg -n 'fetchPullRequests\([^)]*SyncRequestActor' "$SERVICE_DIR" --glob "!**/*_test.go" >/dev/null); then
+  fail "fetchPullRequests still accepts actor-scoped credentials instead of strict app client flow"
 fi
 
 if ! rg -q 'executorForStrictAppSyncActor\(' "$EXECUTOR_FILE"; then

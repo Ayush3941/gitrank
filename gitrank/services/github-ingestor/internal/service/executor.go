@@ -80,8 +80,6 @@ type Executor struct {
 	client               *githubapi.RESTClient
 	repositoryCache      *repositoryMetadataCache
 	restClientFactory    githubRESTClientFactory
-	graphqlClientFactory githubGraphQLClientFactory
-	graphqlTokenSource   githubGraphQLTokenSource
 	installationClient   githubInstallationClientFactory
 	actorInstallation    githubActorInstallationClientFactory
 	appInstallationList  githubAppInstallationLister
@@ -96,14 +94,10 @@ func NewExecutor(cfg config.App, pool *pgxpool.Pool, client *githubapi.RESTClien
 		client:               client,
 		repositoryCache:      newRepositoryMetadataCache(cfg.GitHub.RepositoryCacheTTL),
 		restClientFactory:    newGitHubRESTClientFactory(cfg),
-		graphqlClientFactory: newGitHubGraphQLClientFactory(cfg),
 		installationClient:   newGitHubInstallationClientFactory(cfg),
 		appInstallationList:  newGitHubAppInstallationLister(cfg),
 		activeUserSync:       map[string]struct{}{},
 	}
-	// PR extraction is GitHub-App-only. OAuth user tokens are login/session-only
-	// and must never drive ingestion-time GraphQL queries.
-	executor.graphqlTokenSource = nil
 	executor.actorInstallation = executor.installationClientForActor
 	return executor
 }
@@ -158,7 +152,7 @@ func (e *Executor) SyncRepository(
 	pullRequests := []map[string]any{}
 	reviewsByNumber := map[int][]map[string]any{}
 	pullRequestsSkipped := false
-	pullRequests, reviewsByNumber, err = runtime.fetchPullRequests(ctx, owner, name, actor)
+	pullRequests, reviewsByNumber, err = runtime.fetchPullRequests(ctx, owner, name)
 	if err != nil {
 		if isSkippableGitHubSyncError(err) {
 			pullRequestsSkipped = true
@@ -2284,28 +2278,14 @@ func (e *Executor) fetchRepository(ctx context.Context, owner, name string) (map
 	return repository, err
 }
 
-func (e *Executor) fetchPullRequests(ctx context.Context, owner, name string, actor SyncRequestActor) ([]map[string]any, map[int][]map[string]any, error) {
-	graphqlClient, useGraphQL, err := e.graphQLClientForActor(ctx, actor, time.Now().UTC())
-	if err != nil {
-		return nil, nil, err
-	}
-
+func (e *Executor) fetchPullRequests(ctx context.Context, owner, name string) ([]map[string]any, map[int][]map[string]any, error) {
 	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, e.cfg.GitHub.RepositorySyncPageSize)
-	if useGraphQL {
-		perPage = min(perPage, boundedPageSize(e.cfg.GitHub.GraphQLPageSize, e.cfg.GitHub.RepositorySyncPageSize))
-	}
 	summaries, err := e.fetchPullRequestSummaries(ctx, owner, name, perPage)
 	if err != nil {
 		return nil, nil, err
 	}
 	if len(summaries) == 0 {
 		return []map[string]any{}, map[int][]map[string]any{}, nil
-	}
-	if useGraphQL {
-		pullRequests, reviewsByNumber, gqlErr := e.fetchPullRequestsGraphQL(ctx, graphqlClient, owner, name, summaries, perPage)
-		if gqlErr == nil {
-			return pullRequests, reviewsByNumber, nil
-		}
 	}
 	return e.fetchPullRequestsRESTDetails(ctx, owner, name, summaries, perPage)
 }
