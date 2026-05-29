@@ -189,6 +189,12 @@ assert_ingestor_strict_app_auth() {
   fi
 }
 
+assert_api_gateway_sync_guard() {
+  if ! "$ROOT_DIR/scripts/check-api-gateway-sync-guard.sh" >/dev/null; then
+    fail "api-gateway sync guard drifted from strict GitHub App requirements"
+  fi
+}
+
 check_markdown_relative_links() {
   local missing=0
   local file dir token target clean resolved
@@ -421,6 +427,7 @@ main() {
   assert_start_script_contracts
   assert_backend_env_default_parity
   assert_ingestor_strict_app_auth
+  assert_api_gateway_sync_guard
 
   if ! check_markdown_relative_links; then
     fail "broken markdown relative links detected"
