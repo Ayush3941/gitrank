@@ -4,8 +4,9 @@ This document describes the current external and internal API surface for GitRan
 
 V1 production policy note:
 
-- GitHub OAuth is the required auth path
-- GitHub App installation auth remains optional and is currently used only for installation-scoped ingestion in the V2 path
+- GitHub OAuth is the required sign-in and account-linking path
+- GitHub App installation auth is required for sync extraction (PR/review/issue/commit/repository)
+- OAuth user tokens are not an allowed extraction fallback
 
 ## External APIs
 
@@ -43,7 +44,7 @@ Used by:
 
 Status:
 
-- optional in v1, actively used by the V2 installation-sync path when App credentials are configured
+- required for sync extraction routes in current runtime
 
 Purpose:
 

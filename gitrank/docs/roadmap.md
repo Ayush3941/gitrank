@@ -34,7 +34,7 @@ Exit criteria:
 
 Goal: ingest reliable contribution data.
 
-- OAuth-linked public GitHub data sync
+- GitHub App installation-token sync for public GitHub data extraction
 - webhook endpoint and signature validation
 - repository sync
 - PR sync

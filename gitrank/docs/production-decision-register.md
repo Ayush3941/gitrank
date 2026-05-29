@@ -1,6 +1,6 @@
 # GitRank Production Decision Register
 
-Last reviewed: May 5, 2026
+Last reviewed: May 29, 2026
 
 This register freezes the non-autonomous production decisions that unblock the next implementation wave.
 
@@ -11,7 +11,7 @@ This register freezes the non-autonomous production decisions that unblock the n
 | 1 | 🔒 Frozen | Contributor governance | DCO, no CLA, maintainer guide required |
 | 2 | 🔒 Frozen | Repository admin controls | Protect `main`, require PRs and CI, no mandatory CODEOWNERS approval in v1 |
 | 3 | 🔒 Frozen | Admin surface policy | No generic admin API or dashboard in v1 |
-| 4 | 🔒 Frozen | GitHub auth model | GitHub OAuth only in v1; GitHub App remains a future upgrade |
+| 4 | 🔒 Frozen | GitHub auth model | OAuth for sign-in only; GitHub App installation tokens required for sync extraction |
 | 5 | 🔒 Frozen | Persistence semantics | Evidence-first storage, recomputed aggregates, GitHub-ID idempotent upserts, no manual score overrides |
 | 6 | 🔒 Frozen | Database operations | Daily backups, PITR where supported, quarterly restore drills, no v1 partitioning |
 | 7 | 🔒 Frozen | Privacy and legal posture | Public profiles and leaderboard participation enabled by default for signed-in users, with deletion and visibility controls |
@@ -53,10 +53,10 @@ Required repository settings:
 
 ### 4. GitHub Auth Model
 
-- GitHub OAuth is the v1 auth model
-- sign-in and account linking use OAuth
-- GitHub App installation is not required for v1
-- GitHub App support may return later for deeper org-scale ingestion
+- sign-in and account linking use GitHub OAuth
+- pull-request, review, issue, commit, and repository sync extraction use GitHub App installation tokens
+- sync extraction must fail closed when installation auth is unavailable
+- OAuth user tokens are not an allowed fallback for sync extraction
 
 ### 5. Persistence Semantics
 
