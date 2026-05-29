@@ -1800,6 +1800,7 @@ ABRA implementation checklist:
 - [x] Profile sync-run status derivation now accepts profile-scoped run rows even when ownership markers are absent, so active `running`/`queued` runs remain visible instead of being silently dropped by frontend filters.
 - [x] Direct sync execute routes for issues and commits now use the same strict GitHub App runtime selector as repository/PR/review routes (`executorForStrictAppSyncRequest`), eliminating remaining non-app extraction bypasses on those execute paths.
 - [x] User sync now also routes through the strict App-only runtime selector (`executorForStrictAppSyncActor`) rather than the looser actor-runtime helper, keeping one consistent extraction guard for authored-PR discovery and hydration.
+- [x] API gateway sync trigger/execute routes now fail fast with `sync_config_unavailable` when required GitHub App config is missing, preventing ambiguous sync failures and ensuring PR extraction cannot proceed without App credentials.
 - [x] Repository sync now persists `partial` status when PR/issue/commit sub-fetches are skipped due bounded recoverable upstream failures, instead of over-reporting those runs as fully completed.
 - [x] PR/review surface sync now persists `partial` status when review/comment/file sub-fetches fail, while keeping intentionally policy-skipped lanes distinct from error-driven degradation.
 - [x] Installation sync now bubbles child repository partial outcomes into a top-level `partial` run status so installation-level telemetry remains operationally truthful.

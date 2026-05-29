@@ -347,6 +347,27 @@ describe("account sync error messaging", () => {
     );
   });
 
+  it("maps missing backend GitHub App sync config failures to actionable copy", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => {
+      return new Response(
+        JSON.stringify({
+          error: {
+            code: "sync_config_unavailable",
+            message: "GitHub App sync configuration is incomplete. Configure GitHub App credentials and restart backend services before running sync.",
+          },
+        }),
+        {
+          status: 503,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }));
+
+    await expect(runUserSync("octocat")).rejects.toThrow(
+      "Backend GitHub App sync config is incomplete. Set required GITHUB_APP_* credentials and restart services before retrying sync.",
+    );
+  });
+
   it("maps upstream pull-request sync timeouts to actionable copy", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => {
       return new Response(

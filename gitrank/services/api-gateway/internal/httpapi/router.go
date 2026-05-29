@@ -26,6 +26,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 	scoringBaseURL := strings.TrimRight(cfg.Services.ScoringBaseURL, "/")
 	client := &http.Client{Timeout: cfg.Services.RequestTimeout}
 	syncExecutionClient := &http.Client{Timeout: maxDuration(cfg.Services.RequestTimeout, 10*time.Minute)}
+	syncConfigError := cfg.ValidateGitHubApp()
 	sessionSecrets := cfg.SessionSecretRing()
 
 	sessionAuth := newSessionAuthenticator(client, authBaseURL, cfg.Auth.SessionCookieName, cfg.Auth.CSRFCookieName)
@@ -273,7 +274,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		})
 	})))
 
-	mux.Handle("/v1/sync", sessionAuth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mux.Handle("/v1/sync", sessionAuth.Middleware(withSyncRuntimeGuard(syncConfigError, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			writeMethodNotAllowed(w, r)
 			return
@@ -286,7 +287,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			return
 		}
 		handleSyncRequest(w, r, client, ingestorBaseURL, analytics)
-	})))
+	}))))
 
 	mux.Handle("/v1/sync/runs", sessionAuth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -306,7 +307,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		handleAnalyticsEvent(w, r, analytics)
 	})))
 
-	mux.Handle("/v1/sync/repository/execute", sessionAuth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mux.Handle("/v1/sync/repository/execute", sessionAuth.Middleware(withSyncRuntimeGuard(syncConfigError, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			writeMethodNotAllowed(w, r)
 			return
@@ -319,9 +320,9 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			return
 		}
 		handleRepositorySyncExecution(w, r, syncExecutionClient, ingestorBaseURL)
-	})))
+	}))))
 
-	mux.Handle("/v1/sync/user/execute", sessionAuth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mux.Handle("/v1/sync/user/execute", sessionAuth.Middleware(withSyncRuntimeGuard(syncConfigError, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			writeMethodNotAllowed(w, r)
 			return
@@ -334,9 +335,9 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			return
 		}
 		handleUserSyncExecution(w, r, syncExecutionClient, ingestorBaseURL, scoringBaseURL, profileBaseURL)
-	})))
+	}))))
 
-	mux.Handle("/v1/sync/installation/execute", sessionAuth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mux.Handle("/v1/sync/installation/execute", sessionAuth.Middleware(withSyncRuntimeGuard(syncConfigError, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			writeMethodNotAllowed(w, r)
 			return
@@ -349,9 +350,9 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			return
 		}
 		handleInstallationSyncExecution(w, r, syncExecutionClient, ingestorBaseURL)
-	})))
+	}))))
 
-	mux.Handle("/v1/sync/pull-request/execute", sessionAuth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mux.Handle("/v1/sync/pull-request/execute", sessionAuth.Middleware(withSyncRuntimeGuard(syncConfigError, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			writeMethodNotAllowed(w, r)
 			return
@@ -364,9 +365,9 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			return
 		}
 		handleModeSyncExecution(w, r, syncExecutionClient, ingestorBaseURL, "pull_request", "/v1/sync/pull-request/execute", nil)
-	})))
+	}))))
 
-	mux.Handle("/v1/sync/review/execute", sessionAuth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mux.Handle("/v1/sync/review/execute", sessionAuth.Middleware(withSyncRuntimeGuard(syncConfigError, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			writeMethodNotAllowed(w, r)
 			return
@@ -379,9 +380,9 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			return
 		}
 		handleModeSyncExecution(w, r, syncExecutionClient, ingestorBaseURL, "review", "/v1/sync/review/execute", nil)
-	})))
+	}))))
 
-	mux.Handle("/v1/sync/issue/execute", sessionAuth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mux.Handle("/v1/sync/issue/execute", sessionAuth.Middleware(withSyncRuntimeGuard(syncConfigError, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			writeMethodNotAllowed(w, r)
 			return
@@ -394,9 +395,9 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			return
 		}
 		handleModeSyncExecution(w, r, syncExecutionClient, ingestorBaseURL, "issue", "/v1/sync/issue/execute", nil)
-	})))
+	}))))
 
-	mux.Handle("/v1/sync/commit/execute", sessionAuth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mux.Handle("/v1/sync/commit/execute", sessionAuth.Middleware(withSyncRuntimeGuard(syncConfigError, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			writeMethodNotAllowed(w, r)
 			return
@@ -409,7 +410,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 			return
 		}
 		handleModeSyncExecution(w, r, syncExecutionClient, ingestorBaseURL, "commit", "/v1/sync/commit/execute", nil)
-	})))
+	}))))
 
 	return httpkit.Chain(
 		mux,
@@ -467,4 +468,19 @@ func maxDuration(left, right time.Duration) time.Duration {
 		return left
 	}
 	return right
+}
+
+func withSyncRuntimeGuard(syncConfigError error, next http.Handler) http.Handler {
+	if syncConfigError == nil {
+		return next
+	}
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		httpkit.WriteError(
+			w,
+			http.StatusServiceUnavailable,
+			"sync_config_unavailable",
+			"GitHub App sync configuration is incomplete. Configure GitHub App credentials and restart backend services before running sync.",
+			httpkit.RequestIDFromContext(r.Context()),
+		)
+	})
 }

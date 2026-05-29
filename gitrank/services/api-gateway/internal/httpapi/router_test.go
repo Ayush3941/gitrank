@@ -524,6 +524,74 @@ func TestSyncRouteDefaultsToAuthenticatedGitHubLogin(t *testing.T) {
 	}
 }
 
+func TestSyncRouteRejectsWhenGitHubAppSyncConfigMissing(t *testing.T) {
+	auth := stubAuthServer()
+	defer auth.Close()
+
+	ingestorInvoked := false
+	ingestor := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		ingestorInvoked = true
+		w.WriteHeader(http.StatusAccepted)
+		_, _ = w.Write([]byte(`{"status":"queued"}`))
+	}))
+	defer ingestor.Close()
+
+	cfg := testConfig(stubProfileServer().URL, auth.URL, ingestor.URL)
+	cfg.GitHub.AppClientSecret = ""
+	router := NewRouter(cfg, testLogger(), "test")
+
+	request := httptest.NewRequest(http.MethodPost, "/v1/sync", strings.NewReader(`{}`))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Cookie", "gitrank_session=session-original; gitrank_csrf=csrf-original")
+	csrfToken, err := authkit.DoubleSubmitCSRFFromToken([]byte("test-session-secret"), "session-original")
+	if err != nil {
+		t.Fatalf("csrf token: %v", err)
+	}
+	request.Header.Set("X-CSRF-Token", csrfToken)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusServiceUnavailable {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusServiceUnavailable, response.Body.String())
+	}
+	if ingestorInvoked {
+		t.Fatal("ingestor invoked with missing GitHub App sync config")
+	}
+
+	var envelope contracts.ErrorResponse
+	if err := json.Unmarshal(response.Body.Bytes(), &envelope); err != nil {
+		t.Fatalf("unmarshal error envelope: %v", err)
+	}
+	if envelope.Error.Code != "sync_config_unavailable" {
+		t.Fatalf("error code = %q, want %q", envelope.Error.Code, "sync_config_unavailable")
+	}
+}
+
+func TestSyncRunsRouteRemainsAvailableWhenGitHubAppSyncConfigMissing(t *testing.T) {
+	auth := stubAuthServer()
+	defer auth.Close()
+
+	ingestor := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(`{"runs":[]}`))
+	}))
+	defer ingestor.Close()
+
+	cfg := testConfig(stubProfileServer().URL, auth.URL, ingestor.URL)
+	cfg.GitHub.AppPrivateKeyPEM = ""
+	router := NewRouter(cfg, testLogger(), "test")
+
+	request := httptest.NewRequest(http.MethodGet, "/v1/sync/runs?limit=5&run_type=user", nil)
+	request.Header.Set("Cookie", "gitrank_session=session-original; gitrank_csrf=csrf-original")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusOK, response.Body.String())
+	}
+}
+
 func TestRepositorySyncExecutionRouteProxiesExecutionContract(t *testing.T) {
 	auth := stubAuthServer()
 	defer auth.Close()
@@ -1541,14 +1609,19 @@ func testConfig(profileBaseURL, authBaseURL, ingestorBaseURL string) config.App 
 			SessionSecret:     "test-session-secret",
 		},
 		GitHub: config.GitHub{
-			AuthorizeURL:    "https://github.com/login/oauth/authorize",
-			TokenURL:        "https://github.com/login/oauth/access_token",
-			DeviceURL:       "https://github.com/login/device/code",
-			APIBaseURL:      "https://api.github.com",
-			GraphQLURL:      "https://api.github.com/graphql",
-			RequestTimeout:  time.Second,
-			MaxPageSize:     100,
-			GraphQLPageSize: 100,
+			AuthorizeURL:     "https://github.com/login/oauth/authorize",
+			TokenURL:         "https://github.com/login/oauth/access_token",
+			DeviceURL:        "https://github.com/login/device/code",
+			AppID:            "12345",
+			AppClientID:      "Iv1.test-client-id",
+			AppClientSecret:  "test-client-secret",
+			AppPrivateKeyPEM: "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----",
+			WebhookSecret:    "test-webhook-secret",
+			APIBaseURL:       "https://api.github.com",
+			GraphQLURL:       "https://api.github.com/graphql",
+			RequestTimeout:   time.Second,
+			MaxPageSize:      100,
+			GraphQLPageSize:  100,
 		},
 		AI: config.AI{
 			BaseURL:        "https://api.openai.com/v1",

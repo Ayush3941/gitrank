@@ -712,6 +712,13 @@ function sanitizeSyncExecutionError(
     return "GitHub App installation token is unavailable. Verify GitHub App credentials/private key and installation state, then retry sync.";
   }
   if (
+    normalized.includes("sync_config_unavailable") ||
+    normalized.includes("github app sync configuration is incomplete") ||
+    code === "sync_config_unavailable"
+  ) {
+    return "Backend GitHub App sync config is incomplete. Set required GITHUB_APP_* credentials and restart services before retrying sync.";
+  }
+  if (
     normalized.includes("not a supported version") ||
     normalized.includes("version is not supported")
   ) {
