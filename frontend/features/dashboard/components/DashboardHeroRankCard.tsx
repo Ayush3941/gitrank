@@ -157,9 +157,6 @@ export function DashboardHeroRankCard({
       ) : null}
       <div className="space-y-3">
         <p className="text-xs font-medium text-primary">Top signals (latest evidence)</p>
-        <p className="text-xs text-muted">
-          This is a quick read of where your recent PRs are landing right now.
-        </p>
         <ul role="list" className="flex flex-wrap gap-2">
           {strongestSignals.map((signal, index) => (
             <li key={`${signal}-${index}`} className="list-none">

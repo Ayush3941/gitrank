@@ -103,7 +103,9 @@ func NewExecutor(cfg config.App, pool *pgxpool.Pool, client *githubapi.RESTClien
 		appInstallationList:  newGitHubAppInstallationLister(cfg),
 		activeUserSync:       map[string]struct{}{},
 	}
-	executor.graphqlTokenSource = executor.graphQLTokenSourceForActor
+	// PR extraction is GitHub-App-only. OAuth user tokens are login/session-only
+	// and must never drive ingestion-time GraphQL queries.
+	executor.graphqlTokenSource = nil
 	executor.actorInstallation = executor.installationClientForActor
 	return executor
 }

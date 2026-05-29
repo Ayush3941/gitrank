@@ -419,24 +419,6 @@ func (e *Executor) installationClientSupportsAuthoredPullRequests(
 	return false, nil
 }
 
-func (e *Executor) executorForActor(ctx context.Context, actor SyncRequestActor, now time.Time) (*Executor, error) {
-	if e == nil {
-		return nil, nil
-	}
-	if e.actorInstallation != nil {
-		installationClient, enabled, installErr := e.actorInstallation(ctx, actor)
-		if installErr == nil && enabled && installationClient != nil {
-			clone := *e
-			clone.client = installationClient
-			return &clone, nil
-		}
-		if installErr != nil {
-			return e, nil
-		}
-	}
-	return e, nil
-}
-
 func (e *Executor) executorForUserSyncActor(ctx context.Context, actor SyncRequestActor, now time.Time) (*Executor, string, error) {
 	if e == nil {
 		return nil, "", nil

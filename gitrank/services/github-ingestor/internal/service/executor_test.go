@@ -1079,73 +1079,12 @@ func TestDecodeOptionalOAuthTokenKeysIncludesPreviousKeys(t *testing.T) {
 	}
 }
 
-func TestExecutorForActorFallsBackWhenInstallationUnavailable(t *testing.T) {
+func TestNewExecutorDisablesOAuthGraphQLTokenSourceByDefault(t *testing.T) {
 	t.Parallel()
 
-	baseClient := &githubapi.RESTClient{}
-	executor := &Executor{
-		client: baseClient,
-		actorInstallation: func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
-			return nil, false, nil
-		},
-	}
-
-	runtime, err := executor.executorForActor(context.Background(), SyncRequestActor{GitHubLogin: "octocat"}, time.Now().UTC())
-	if err != nil {
-		t.Fatalf("executorForActor() error = %v", err)
-	}
-	if runtime != executor {
-		t.Fatalf("executorForActor() runtime = %p, want fallback executor %p", runtime, executor)
-	}
-}
-
-func TestExecutorForActorFallsBackWhenInstallationErrors(t *testing.T) {
-	t.Parallel()
-
-	baseClient := &githubapi.RESTClient{}
-	executor := &Executor{
-		client: baseClient,
-		actorInstallation: func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
-			return nil, false, errors.New("installation lookup failed")
-		},
-	}
-
-	runtime, err := executor.executorForActor(context.Background(), SyncRequestActor{GitHubLogin: "octocat"}, time.Now().UTC())
-	if err != nil {
-		t.Fatalf("executorForActor() error = %v", err)
-	}
-	if runtime != executor {
-		t.Fatalf("executorForActor() runtime = %p, want fallback executor %p", runtime, executor)
-	}
-}
-
-func TestExecutorForActorPrefersInstallationClientWhenAvailable(t *testing.T) {
-	t.Parallel()
-
-	baseClient := &githubapi.RESTClient{}
-	installationClient := &githubapi.RESTClient{}
-	executor := &Executor{
-		client: baseClient,
-		actorInstallation: func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
-			return installationClient, true, nil
-		},
-		graphqlTokenSource: func(context.Context, SyncRequestActor, time.Time) (githubapi.TokenSource, bool, error) {
-			return githubapi.StaticTokenSource("ghu_fallback_token"), true, nil
-		},
-		restClientFactory: func(githubapi.TokenSource) (*githubapi.RESTClient, error) {
-			return &githubapi.RESTClient{}, nil
-		},
-	}
-
-	runtime, err := executor.executorForActor(context.Background(), SyncRequestActor{GitHubLogin: "octocat"}, time.Now().UTC())
-	if err != nil {
-		t.Fatalf("executorForActor() error = %v", err)
-	}
-	if runtime == executor {
-		t.Fatalf("executorForActor() runtime = %p, want cloned executor with installation client", runtime)
-	}
-	if runtime.client != installationClient {
-		t.Fatalf("runtime.client = %p, want installation client %p", runtime.client, installationClient)
+	executor := NewExecutor(config.App{}, nil, &githubapi.RESTClient{})
+	if executor.graphqlTokenSource != nil {
+		t.Fatal("NewExecutor() should disable OAuth GraphQL token source by default for strict app-only sync extraction")
 	}
 }
 

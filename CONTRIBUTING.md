@@ -288,6 +288,7 @@ Recent slop-reduction refinement (May 28, 2026):
 
 - Settings sync activity filters no longer duplicate state in extra summary chips (`Active`, `View`, `Search`). The panel now keeps one source of truth: search input + status tabs + optional reset action.
 - Post-sync replay status handling now marks user sync as `partial` only for true replay mismatch (`merged targets selected` + `zero replay events`), while `all selected targets unmerged` stays `completed` with explicit zero-expected metrics.
+- Dashboard hero signal lane removed redundant explanatory filler copy so the card stays evidence-first.
 
 Recent sync-auth refinement (May 28, 2026):
 
@@ -305,6 +306,8 @@ Recent sync-auth refinement (May 28, 2026):
 - Settings sync execute and queue controls now pass optional `user`/`installation_id` context for repository/pull-request/review/issue/commit actions, reducing manual strict-auth failures in local operator workflows.
 - Service dependency manifests now explicitly document auth split: GitHub App installation tokens are required for sync extraction/bootstrap, OAuth is identity/login only.
 - Frontend `next.config.ts` now loads missing env keys from `../gitrank/.env` before config evaluation, so standalone `frontend/` dev/build commands follow the same single-env-file contract without requiring a second frontend env file.
+- GitHub ingestor executor now disables OAuth-backed GraphQL token sourcing by default in `NewExecutor`; sync extraction paths must use installation-auth clients only.
+- Removed the dead non-strict actor runtime selector (`executorForActor`) from ingestor service code/tests to reduce ambiguity around OAuth-shaped extraction fallbacks.
 - User-mode sync queue jobs now canonicalize login casing in `subject`/dedupe identity, and sync-run lifecycle reconciliation now matches user subjects case-insensitively so queued/running rows cannot drift when request casing differs.
 - Settings page sync state now incorporates live sync-run statuses (`running` / `queued` -> `syncing`) so chips and freshness pills do not present stale “Synced” states while background sync is still active.
 - User sync execution now marks runs `partial` when authored PR discovery returns empty while persisted authored PR evidence already exists (`authored_pull_request_persisted_existing=1`), preventing false “completed” trust when refresh found no historical PR targets unexpectedly.
