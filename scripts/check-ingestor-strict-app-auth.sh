@@ -25,6 +25,10 @@ if (cd "$ROOT_DIR" && rg -n 'graphQLTokenSourceForActor\(' "$SERVICE_DIR" --glob
   fail "legacy OAuth-derived GraphQL token source helper is still present in non-test ingestor service code"
 fi
 
+if (cd "$ROOT_DIR" && rg -n 'probeAllInstallations && fallbackClient' "$SERVICE_DIR" --glob "!**/*_test.go" >/dev/null); then
+  fail "actor installation resolution still allows arbitrary global-installation fallback"
+fi
+
 if ! rg -q 'executorForStrictAppSyncActor\(' "$EXECUTOR_FILE"; then
   fail "strict app actor selector missing from executor sync paths"
 fi

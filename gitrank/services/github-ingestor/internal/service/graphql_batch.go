@@ -221,7 +221,6 @@ func (e *Executor) installationClientForActor(ctx context.Context, actor SyncReq
 	}
 
 	var lastError error
-	var fallbackClient *githubapi.RESTClient
 	for _, installationID := range installationIDs {
 		client, enabled, clientErr := e.installationClient(ctx, installationID)
 		if clientErr != nil {
@@ -235,22 +234,22 @@ func (e *Executor) installationClientForActor(ctx context.Context, actor SyncReq
 			matches, probeErr := e.installationClientSupportsAuthoredPullRequests(ctx, client, githubLogin)
 			if probeErr != nil {
 				lastError = probeErr
-				if fallbackClient == nil {
-					fallbackClient = client
-				}
 				continue
 			}
 			if matches {
 				return client, true, nil
 			}
-			if fallbackClient == nil {
-				fallbackClient = client
-			}
 			continue
 		}
 	}
-	if probeAllInstallations && fallbackClient != nil {
-		return fallbackClient, true, nil
+	// When probing global installation inventory, never fall back to an arbitrary
+	// installation. Strict sync extraction should fail closed if no installation
+	// can prove authored PR visibility for this actor.
+	if probeAllInstallations {
+		if lastError != nil {
+			return nil, false, lastError
+		}
+		return nil, false, nil
 	}
 	if lastError != nil {
 		return nil, false, lastError
