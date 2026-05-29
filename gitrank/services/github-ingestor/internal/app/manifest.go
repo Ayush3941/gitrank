@@ -6,6 +6,7 @@ import (
 )
 
 func Manifest(cfg config.App, version string) contracts.ServiceManifest {
+	githubSyncStatus := dependencyStatusFromError(cfg.ValidateGitHubApp())
 	return contracts.ServiceManifest{
 		Service:     cfg.ServiceName,
 		Description: "GitHub webhook intake and sync orchestration service.",
@@ -35,10 +36,17 @@ func Manifest(cfg config.App, version string) contracts.ServiceManifest {
 			{Method: "POST", Path: "/v1/sync/commit", Summary: "Queue a commit sync", Status: "implemented"},
 		},
 		Dependencies: []contracts.DependencySpec{
-			{Name: "GitHub REST API", Kind: "external_http", BaseURL: cfg.GitHub.APIBaseURL, Purpose: "Repository and PR synchronization", Auth: "GitHub App installation token for sync, OAuth user token only for sign-in/session identity", Critical: true, Status: "configured"},
+			{Name: "GitHub REST API", Kind: "external_http", BaseURL: cfg.GitHub.APIBaseURL, Purpose: "Repository and PR synchronization", Auth: "GitHub App installation token for sync, OAuth user token only for sign-in/session identity", Critical: true, Status: githubSyncStatus},
 			{Name: "In-memory queue preview", Kind: "queue", Purpose: "Pending jobs and delivery deduplication during local development", Critical: true, Status: "implemented"},
 			{Name: "Redis", Kind: "queue", Purpose: "Pending jobs and delivery deduplication", Critical: true, Status: "planned"},
 			{Name: "PostgreSQL", Kind: "database", Purpose: "Durable webhook delivery deduplication and normalized GitHub data persistence", Critical: true, Status: "implemented"},
 		},
 	}
+}
+
+func dependencyStatusFromError(err error) string {
+	if err != nil {
+		return "misconfigured"
+	}
+	return "configured"
 }

@@ -1802,6 +1802,7 @@ ABRA implementation checklist:
 - [x] User sync now also routes through the strict App-only runtime selector (`executorForStrictAppSyncActor`) rather than the looser actor-runtime helper, keeping one consistent extraction guard for authored-PR discovery and hydration.
 - [x] API gateway sync trigger/execute routes now fail fast with `sync_config_unavailable` when required GitHub App config is missing, preventing ambiguous sync failures and ensuring PR extraction cannot proceed without App credentials.
 - [x] Repo sync quality gates now include `scripts/check-api-gateway-sync-guard.sh` to prevent regressions where sync trigger/execute routes lose strict GitHub App guard coverage.
+- [x] Repo sync quality gates now include `scripts/check-github-app-sync-policy.sh` to enforce manifest-level auth policy wording and GitHub App config status derivation for sync dependencies.
 - [x] Repository sync now persists `partial` status when PR/issue/commit sub-fetches are skipped due bounded recoverable upstream failures, instead of over-reporting those runs as fully completed.
 - [x] PR/review surface sync now persists `partial` status when review/comment/file sub-fetches fail, while keeping intentionally policy-skipped lanes distinct from error-driven degradation.
 - [x] Installation sync now bubbles child repository partial outcomes into a top-level `partial` run status so installation-level telemetry remains operationally truthful.

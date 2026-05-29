@@ -195,6 +195,12 @@ assert_api_gateway_sync_guard() {
   fi
 }
 
+assert_github_app_sync_policy() {
+  if ! "$ROOT_DIR/scripts/check-github-app-sync-policy.sh" >/dev/null; then
+    fail "github app sync auth policy drifted across backend manifests"
+  fi
+}
+
 check_markdown_relative_links() {
   local missing=0
   local file dir token target clean resolved
@@ -428,6 +434,7 @@ main() {
   assert_backend_env_default_parity
   assert_ingestor_strict_app_auth
   assert_api_gateway_sync_guard
+  assert_github_app_sync_policy
 
   if ! check_markdown_relative_links; then
     fail "broken markdown relative links detected"
