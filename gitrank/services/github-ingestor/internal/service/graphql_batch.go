@@ -69,6 +69,8 @@ type githubGraphQLClientFactory func(githubapi.TokenSource) (*githubapi.GraphQLC
 type githubRESTClientFactory func(githubapi.TokenSource) (*githubapi.RESTClient, error)
 
 type githubGraphQLTokenSource func(context.Context, SyncRequestActor, time.Time) (githubapi.TokenSource, bool, error)
+type githubInstallationClientResolver func(int64) (*githubapi.RESTClient, bool, error)
+type githubActorInstallationMatcher func(*githubapi.RESTClient) (bool, error)
 
 type githubGraphQLPullRequestBatchData struct {
 	Repository *githubGraphQLRepository `json:"repository"`
@@ -220,36 +222,45 @@ func (e *Executor) installationClientForActor(ctx context.Context, actor SyncReq
 		probeAllInstallations = true
 	}
 
+	return selectActorInstallationClient(
+		installationIDs,
+		probeAllInstallations,
+		func(installationID int64) (*githubapi.RESTClient, bool, error) {
+			return e.installationClient(ctx, installationID)
+		},
+		func(client *githubapi.RESTClient) (bool, error) {
+			return e.installationClientSupportsAuthoredPullRequests(ctx, client, githubLogin)
+		},
+	)
+}
+
+func selectActorInstallationClient(
+	installationIDs []int64,
+	probeAllInstallations bool,
+	resolveClient githubInstallationClientResolver,
+	matchesAuthoredPR githubActorInstallationMatcher,
+) (*githubapi.RESTClient, bool, error) {
 	var lastError error
 	for _, installationID := range installationIDs {
-		client, enabled, clientErr := e.installationClient(ctx, installationID)
-		if clientErr != nil {
-			lastError = clientErr
+		client, enabled, resolveErr := resolveClient(installationID)
+		if resolveErr != nil {
+			lastError = resolveErr
 			continue
 		}
-		if enabled && client != nil {
-			if !probeAllInstallations {
-				return client, true, nil
-			}
-			matches, probeErr := e.installationClientSupportsAuthoredPullRequests(ctx, client, githubLogin)
-			if probeErr != nil {
-				lastError = probeErr
-				continue
-			}
-			if matches {
-				return client, true, nil
-			}
+		if !enabled || client == nil {
 			continue
 		}
-	}
-	// When probing global installation inventory, never fall back to an arbitrary
-	// installation. Strict sync extraction should fail closed if no installation
-	// can prove authored PR visibility for this actor.
-	if probeAllInstallations {
-		if lastError != nil {
-			return nil, false, lastError
+		if !probeAllInstallations {
+			return client, true, nil
 		}
-		return nil, false, nil
+		matches, matchErr := matchesAuthoredPR(client)
+		if matchErr != nil {
+			lastError = matchErr
+			continue
+		}
+		if matches {
+			return client, true, nil
+		}
 	}
 	if lastError != nil {
 		return nil, false, lastError

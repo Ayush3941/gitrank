@@ -1282,6 +1282,137 @@ func TestExecutorForStrictAppSyncRequestFailsWhenNoActorAndNoInstallation(t *tes
 	}
 }
 
+func TestSelectActorInstallationClientReturnsFirstEnabledForAccountScopedInstallations(t *testing.T) {
+	t.Parallel()
+
+	firstClient := &githubapi.RESTClient{}
+	secondClient := &githubapi.RESTClient{}
+	matchCalls := 0
+
+	client, enabled, err := selectActorInstallationClient(
+		[]int64{101, 202},
+		false,
+		func(installationID int64) (*githubapi.RESTClient, bool, error) {
+			switch installationID {
+			case 101:
+				return firstClient, true, nil
+			case 202:
+				return secondClient, true, nil
+			default:
+				return nil, false, nil
+			}
+		},
+		func(*githubapi.RESTClient) (bool, error) {
+			matchCalls++
+			return true, nil
+		},
+	)
+	if err != nil {
+		t.Fatalf("selectActorInstallationClient() error = %v", err)
+	}
+	if !enabled {
+		t.Fatal("selectActorInstallationClient() enabled = false, want true")
+	}
+	if client != firstClient {
+		t.Fatalf("selectActorInstallationClient() client = %p, want first account-scoped installation client %p", client, firstClient)
+	}
+	if matchCalls != 0 {
+		t.Fatalf("matchCalls = %d, want 0 for account-scoped selection", matchCalls)
+	}
+}
+
+func TestSelectActorInstallationClientReturnsMatchedClientWhenProbingGlobalInstallations(t *testing.T) {
+	t.Parallel()
+
+	firstClient := &githubapi.RESTClient{}
+	secondClient := &githubapi.RESTClient{}
+	matchCalls := 0
+
+	client, enabled, err := selectActorInstallationClient(
+		[]int64{10, 20},
+		true,
+		func(installationID int64) (*githubapi.RESTClient, bool, error) {
+			if installationID == 10 {
+				return firstClient, true, nil
+			}
+			if installationID == 20 {
+				return secondClient, true, nil
+			}
+			return nil, false, nil
+		},
+		func(current *githubapi.RESTClient) (bool, error) {
+			matchCalls++
+			return current == secondClient, nil
+		},
+	)
+	if err != nil {
+		t.Fatalf("selectActorInstallationClient() error = %v", err)
+	}
+	if !enabled {
+		t.Fatal("selectActorInstallationClient() enabled = false, want true")
+	}
+	if client != secondClient {
+		t.Fatalf("selectActorInstallationClient() client = %p, want matched installation client %p", client, secondClient)
+	}
+	if matchCalls != 2 {
+		t.Fatalf("matchCalls = %d, want 2 while probing global installations", matchCalls)
+	}
+}
+
+func TestSelectActorInstallationClientFailsClosedWhenNoGlobalInstallationMatches(t *testing.T) {
+	t.Parallel()
+
+	client, enabled, err := selectActorInstallationClient(
+		[]int64{11, 22},
+		true,
+		func(int64) (*githubapi.RESTClient, bool, error) {
+			return &githubapi.RESTClient{}, true, nil
+		},
+		func(*githubapi.RESTClient) (bool, error) {
+			return false, nil
+		},
+	)
+	if err != nil {
+		t.Fatalf("selectActorInstallationClient() error = %v", err)
+	}
+	if enabled {
+		t.Fatal("selectActorInstallationClient() enabled = true, want false when no installation matches actor visibility")
+	}
+	if client != nil {
+		t.Fatalf("selectActorInstallationClient() client = %p, want nil when no installation matches actor visibility", client)
+	}
+}
+
+func TestSelectActorInstallationClientReturnsLastErrorWhenGlobalProbeFails(t *testing.T) {
+	t.Parallel()
+
+	client, enabled, err := selectActorInstallationClient(
+		[]int64{31, 32},
+		true,
+		func(installationID int64) (*githubapi.RESTClient, bool, error) {
+			if installationID == 31 {
+				return nil, false, errors.New("mint token failed for installation 31")
+			}
+			return nil, false, errors.New("mint token failed for installation 32")
+		},
+		func(*githubapi.RESTClient) (bool, error) {
+			return false, nil
+		},
+	)
+	if err == nil {
+		t.Fatal("selectActorInstallationClient() error = nil, want last resolver error")
+	}
+	if !strings.Contains(err.Error(), "installation 32") {
+		t.Fatalf("selectActorInstallationClient() error = %v, want last resolver error", err)
+	}
+	if enabled {
+		t.Fatal("selectActorInstallationClient() enabled = true, want false on resolver errors")
+	}
+	if client != nil {
+		t.Fatalf("selectActorInstallationClient() client = %p, want nil on resolver errors", client)
+	}
+}
+
 func TestInstallationClientSupportsAuthoredPullRequestsTrueWhenSearchHasHits(t *testing.T) {
 	t.Parallel()
 
