@@ -40,17 +40,6 @@ type authoredPRHistoryCursor struct {
 	BootstrapComplete bool
 }
 
-type githubOAuthTokenRecord struct {
-	GitHubAccountID        string
-	AccessTokenEncrypted   string
-	RefreshTokenEncrypted  string
-	Scope                  string
-	ExpiresAt              *time.Time
-	RefreshTokenExpiresAt  *time.Time
-	RevokedAt              *time.Time
-	LastRefreshErrorReason string
-}
-
 type payloadSyncRunInput struct {
 	CorrelationID               string
 	DeliveryID                  string
@@ -314,125 +303,6 @@ func (s *Store) UpsertUserInstallations(ctx context.Context, installations []git
 		return PersistResult{}, nil
 	})
 	return count, err
-}
-
-func (s *Store) ActiveGitHubAccessTokenByLogin(ctx context.Context, githubLogin string, validAfter time.Time) (string, bool, error) {
-	if s == nil || s.pool == nil {
-		return "", false, ErrUnavailable
-	}
-	githubLogin = strings.TrimSpace(githubLogin)
-	if githubLogin == "" {
-		return "", false, nil
-	}
-
-	var encryptedToken string
-	err := s.pool.QueryRow(ctx, `
-		SELECT gut.access_token_encrypted
-		FROM github_accounts ga
-		JOIN github_user_tokens gut ON gut.github_account_id = ga.id
-		WHERE LOWER(ga.login) = LOWER($1)
-		  AND COALESCE(ga.link_status, 'linked') = 'linked'
-		  AND gut.access_token_encrypted <> ''
-		  AND gut.revoked_at IS NULL
-		  AND (gut.expires_at IS NULL OR gut.expires_at > $2)
-		ORDER BY ga.linked_at DESC
-		LIMIT 1
-	`, githubLogin, validAfter.UTC()).Scan(&encryptedToken)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return "", false, nil
-		}
-		return "", false, err
-	}
-	return encryptedToken, true, nil
-}
-
-func (s *Store) GitHubOAuthTokenByLogin(ctx context.Context, githubLogin string) (githubOAuthTokenRecord, bool, error) {
-	if s == nil || s.pool == nil {
-		return githubOAuthTokenRecord{}, false, ErrUnavailable
-	}
-	githubLogin = strings.TrimSpace(githubLogin)
-	if githubLogin == "" {
-		return githubOAuthTokenRecord{}, false, nil
-	}
-
-	var (
-		record                        githubOAuthTokenRecord
-		expiresAt, refreshExpiresAt   time.Time
-		revokedAt                     time.Time
-		expiresSet, refreshExpiresSet bool
-		revokedSet                    bool
-	)
-	err := s.pool.QueryRow(ctx, `
-		SELECT
-			ga.id::text,
-			gut.access_token_encrypted,
-			gut.refresh_token_encrypted,
-			gut.scope,
-			COALESCE(gut.expires_at, TIMESTAMPTZ 'epoch'),
-			gut.expires_at IS NOT NULL,
-			COALESCE(gut.refresh_token_expires_at, TIMESTAMPTZ 'epoch'),
-			gut.refresh_token_expires_at IS NOT NULL,
-			COALESCE(gut.revoked_at, TIMESTAMPTZ 'epoch'),
-			gut.revoked_at IS NOT NULL,
-			gut.last_refresh_error
-		FROM github_accounts ga
-		JOIN github_user_tokens gut ON gut.github_account_id = ga.id
-		WHERE LOWER(ga.login) = LOWER($1)
-		  AND COALESCE(ga.link_status, 'linked') = 'linked'
-		  AND gut.access_token_encrypted <> ''
-		ORDER BY ga.linked_at DESC
-		LIMIT 1
-	`, githubLogin).Scan(
-		&record.GitHubAccountID,
-		&record.AccessTokenEncrypted,
-		&record.RefreshTokenEncrypted,
-		&record.Scope,
-		&expiresAt,
-		&expiresSet,
-		&refreshExpiresAt,
-		&refreshExpiresSet,
-		&revokedAt,
-		&revokedSet,
-		&record.LastRefreshErrorReason,
-	)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return githubOAuthTokenRecord{}, false, nil
-		}
-		return githubOAuthTokenRecord{}, false, err
-	}
-
-	record.ExpiresAt = optionalTime(expiresSet, expiresAt)
-	record.RefreshTokenExpiresAt = optionalTime(refreshExpiresSet, refreshExpiresAt)
-	record.RevokedAt = optionalTime(revokedSet, revokedAt)
-	return record, true, nil
-}
-
-func (s *Store) StoreRefreshedGitHubToken(ctx context.Context, githubAccountID string, token githubapi.UserAccessToken, accessTokenEncrypted, refreshTokenEncrypted string, accessExpiresAt, refreshExpiresAt *time.Time, now time.Time) error {
-	if s == nil || s.pool == nil {
-		return ErrUnavailable
-	}
-	githubAccountID = strings.TrimSpace(githubAccountID)
-	if githubAccountID == "" {
-		return errors.New("github account id is required")
-	}
-	_, err := s.pool.Exec(ctx, `
-		UPDATE github_user_tokens
-		SET access_token_encrypted = $2,
-			refresh_token_encrypted = $3,
-			token_type = $4,
-			scope = $5,
-			expires_at = $6,
-			refresh_token_expires_at = $7,
-			last_used_at = $8,
-			last_refreshed_at = $8,
-			last_refresh_error = '',
-			revoked_at = NULL,
-			revoked_reason = ''
-		WHERE github_account_id = $1::uuid
-	`, githubAccountID, accessTokenEncrypted, refreshTokenEncrypted, token.TokenType, token.Scope, accessExpiresAt, refreshExpiresAt, now.UTC())
-	return err
 }
 
 func (s *Store) CountAuthoredPullRequestsByLogin(ctx context.Context, githubLogin string) (int, error) {
@@ -2176,14 +2046,6 @@ func (s *TxStore) lookupInstallationIDByGitHubID(githubInstallationID int64) (st
 
 func nullableTime(value *time.Time) *time.Time {
 	if value == nil {
-		return nil
-	}
-	utc := value.UTC()
-	return &utc
-}
-
-func optionalTime(enabled bool, value time.Time) *time.Time {
-	if !enabled {
 		return nil
 	}
 	utc := value.UTC()

@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gitrank/gitrank/packages/authkit"
 	"github.com/gitrank/gitrank/packages/config"
 	"github.com/gitrank/gitrank/packages/githubapi"
 )
@@ -137,14 +136,6 @@ type githubGraphQLReview struct {
 	AuthorAssociation string              `json:"authorAssociation"`
 }
 
-func decodeOptionalOAuthTokenKeys(cfg config.App) [][]byte {
-	keys, err := cfg.TokenEncryptionKeyRing()
-	if err != nil {
-		return nil
-	}
-	return keys
-}
-
 func newGitHubGraphQLClientFactory(cfg config.App) githubGraphQLClientFactory {
 	return func(tokenSource githubapi.TokenSource) (*githubapi.GraphQLClient, error) {
 		timeout := boundedGitHubHTTPTimeout(cfg.GitHub.RequestTimeout)
@@ -187,130 +178,6 @@ func boundedGitHubHTTPTimeout(timeout time.Duration) time.Duration {
 		return minimum
 	}
 	return timeout
-}
-
-func (e *Executor) graphQLTokenSourceForActor(ctx context.Context, actor SyncRequestActor, now time.Time) (githubapi.TokenSource, bool, error) {
-	if e == nil || e.store == nil || e.store.pool == nil || len(e.oauthTokenKeys) == 0 {
-		return nil, false, nil
-	}
-	githubLogin := strings.TrimSpace(actor.GitHubLogin)
-	if githubLogin == "" {
-		return nil, false, nil
-	}
-
-	encryptedToken, ok, err := e.store.ActiveGitHubAccessTokenByLogin(ctx, githubLogin, now.UTC().Add(e.cfg.GitHub.RefreshSkew))
-	if err != nil {
-		return nil, false, err
-	}
-	if !ok {
-		refreshedToken, refreshed, refreshErr := e.refreshOAuthAccessTokenForActor(ctx, githubLogin, now)
-		if refreshErr != nil {
-			return nil, false, refreshErr
-		}
-		if !refreshed {
-			return nil, false, nil
-		}
-		return githubapi.StaticTokenSource(refreshedToken), true, nil
-	}
-	accessToken, err := e.decryptOAuthAccessToken(encryptedToken)
-	if err != nil {
-		return nil, false, err
-	}
-	if strings.TrimSpace(accessToken) == "" {
-		return nil, false, nil
-	}
-	return githubapi.StaticTokenSource(accessToken), true, nil
-}
-
-func (e *Executor) decryptOAuthAccessToken(encryptedToken string) (string, error) {
-	accessToken, _, err := authkit.DecryptSecretAny(e.oauthTokenKeys, encryptedToken)
-	if err != nil {
-		return "", err
-	}
-	accessToken = strings.TrimSpace(accessToken)
-	if accessToken == "" {
-		return "", nil
-	}
-	return accessToken, nil
-}
-
-func (e *Executor) refreshOAuthAccessTokenForActor(ctx context.Context, githubLogin string, now time.Time) (string, bool, error) {
-	if e == nil || e.store == nil || e.store.pool == nil || len(e.oauthTokenKeys) == 0 {
-		return "", false, nil
-	}
-	record, ok, err := e.store.GitHubOAuthTokenByLogin(ctx, githubLogin)
-	if err != nil || !ok {
-		return "", false, err
-	}
-	if record.RevokedAt != nil {
-		return "", false, nil
-	}
-	refreshEncrypted := strings.TrimSpace(record.RefreshTokenEncrypted)
-	if refreshEncrypted == "" {
-		return "", false, nil
-	}
-	if record.RefreshTokenExpiresAt != nil && !record.RefreshTokenExpiresAt.After(now.UTC()) {
-		return "", false, nil
-	}
-	refreshToken, matchedKeyIndex, err := authkit.DecryptSecretAny(e.oauthTokenKeys, refreshEncrypted)
-	if err != nil {
-		return "", false, err
-	}
-	refreshToken = strings.TrimSpace(refreshToken)
-	if refreshToken == "" {
-		return "", false, nil
-	}
-
-	refreshed, err := githubapi.RefreshUserAccessToken(
-		ctx,
-		&http.Client{Timeout: boundedGitHubHTTPTimeout(e.cfg.GitHub.RequestTimeout)},
-		e.cfg.GitHub.TokenURL,
-		e.cfg.GitHubUserClientID(),
-		e.cfg.GitHubUserClientSecret(),
-		refreshToken,
-	)
-	if err != nil {
-		return "", false, err
-	}
-	accessToken := strings.TrimSpace(refreshed.AccessToken)
-	if accessToken == "" {
-		return "", false, errors.New("github refresh returned empty access token")
-	}
-
-	accessEncrypted, err := authkit.EncryptSecret(e.oauthTokenKeys[0], accessToken)
-	if err != nil {
-		return "", false, err
-	}
-	nextRefreshEncrypted := refreshEncrypted
-	if strings.TrimSpace(refreshed.RefreshToken) != "" {
-		nextRefreshEncrypted, err = authkit.EncryptSecret(e.oauthTokenKeys[0], strings.TrimSpace(refreshed.RefreshToken))
-		if err != nil {
-			return "", false, err
-		}
-	} else if matchedKeyIndex > 0 {
-		nextRefreshEncrypted, err = authkit.EncryptSecret(e.oauthTokenKeys[0], refreshToken)
-		if err != nil {
-			return "", false, err
-		}
-	}
-
-	accessExpiresAt := oauthTokenDeadline(now, refreshed.ExpiresIn)
-	refreshExpiresAt := oauthTokenDeadline(now, refreshed.RefreshTokenExpiresIn)
-	if refreshExpiresAt == nil {
-		refreshExpiresAt = record.RefreshTokenExpiresAt
-	}
-	if err := e.store.StoreRefreshedGitHubToken(ctx, record.GitHubAccountID, refreshed, accessEncrypted, nextRefreshEncrypted, accessExpiresAt, refreshExpiresAt, now); err != nil {
-		return "", false, err
-	}
-	return accessToken, true, nil
-}
-
-func oauthTokenDeadline(now time.Time, ttl time.Duration) *time.Time {
-	if ttl <= 0 {
-		return nil
-	}
-	deadline := now.UTC().Add(ttl)
-	return &deadline
 }
 
 func (e *Executor) graphQLClientForActor(ctx context.Context, actor SyncRequestActor, now time.Time) (*githubapi.GraphQLClient, bool, error) {

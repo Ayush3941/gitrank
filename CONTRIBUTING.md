@@ -308,6 +308,8 @@ Recent sync-auth refinement (May 28, 2026):
 - Frontend `next.config.ts` now loads missing env keys from `../gitrank/.env` before config evaluation, so standalone `frontend/` dev/build commands follow the same single-env-file contract without requiring a second frontend env file.
 - GitHub ingestor executor now disables OAuth-backed GraphQL token sourcing by default in `NewExecutor`; sync extraction paths must use installation-auth clients only.
 - Removed the dead non-strict actor runtime selector (`executorForActor`) from ingestor service code/tests to reduce ambiguity around OAuth-shaped extraction fallbacks.
+- Removed unused OAuth-token extraction/refresh helpers from `github-ingestor` service persistence/runtime paths, keeping OAuth strictly login/session-only in extraction-related service code.
+- Added `scripts/check-ingestor-strict-app-auth.sh` and wired it into `scripts/check-repo-sync.sh` so repo sync gates fail if OAuth extraction wiring reappears in non-test ingestor service code.
 - User-mode sync queue jobs now canonicalize login casing in `subject`/dedupe identity, and sync-run lifecycle reconciliation now matches user subjects case-insensitively so queued/running rows cannot drift when request casing differs.
 - Settings page sync state now incorporates live sync-run statuses (`running` / `queued` -> `syncing`) so chips and freshness pills do not present stale “Synced” states while background sync is still active.
 - User sync execution now marks runs `partial` when authored PR discovery returns empty while persisted authored PR evidence already exists (`authored_pull_request_persisted_existing=1`), preventing false “completed” trust when refresh found no historical PR targets unexpectedly.
