@@ -289,6 +289,8 @@ Recent slop-reduction refinement (May 28, 2026):
 - Settings sync activity filters no longer duplicate state in extra summary chips (`Active`, `View`, `Search`). The panel now keeps one source of truth: search input + status tabs + optional reset action.
 - Post-sync replay status handling now marks user sync as `partial` only for true replay mismatch (`merged targets selected` + `zero replay events`), while `all selected targets unmerged` stays `completed` with explicit zero-expected metrics.
 - Dashboard hero signal lane removed redundant explanatory filler copy so the card stays evidence-first.
+- Header freshness UI is now shared through `ProfileEvidenceStateChip` across Dashboard, Contributions, Badges, Quests, Leaderboard, and Settings to remove repeated inline JSX blocks and keep one consistent evidence-pending pattern.
+- Dashboard hero action config no longer carries unused `title` fields, reducing dead presentation data in the rank card flow.
 
 Recent sync-auth refinement (May 28, 2026):
 

@@ -18,8 +18,8 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
 import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
-import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { StaleState } from "@/components/shared/StaleState";
 import { Button } from "@/components/ui/button";
 import { laneParamToTab, tabToLaneParam } from "@/features/leaderboard/lib/lane-param";
@@ -182,16 +182,7 @@ export function LeaderboardPageClient() {
         )}
         actions={(
           <div className="flex flex-wrap items-center gap-2">
-            {showRefreshPill ? (
-              <SnapshotFreshnessPill refreshedAt={myProfile?.refreshedAt} label="Refreshed" />
-            ) : (
-              <span
-                className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold"
-                title="No scored PR evidence has been materialized yet."
-              >
-                Evidence pending
-              </span>
-            )}
+            <ProfileEvidenceStateChip showFreshness={showRefreshPill} refreshedAt={myProfile?.refreshedAt} />
             <Button asChild variant="secondary" size="sm">
               <Link href="/dashboard/quests" prefetch={false}>
                 Quests

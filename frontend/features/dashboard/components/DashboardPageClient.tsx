@@ -17,7 +17,7 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
+import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
 import {
@@ -224,16 +224,7 @@ export function DashboardPageClient() {
         )}
         actions={(
           <div className="flex flex-wrap items-center gap-2">
-            {showRefreshPill ? (
-              <SnapshotFreshnessPill refreshedAt={data.refreshedAt} label="Refreshed" />
-            ) : (
-              <span
-                className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold"
-                title="No scored PR evidence has been materialized yet."
-              >
-                Evidence pending
-              </span>
-            )}
+            <ProfileEvidenceStateChip showFreshness={showRefreshPill} refreshedAt={data.refreshedAt} />
             <Button asChild variant="secondary" size="sm">
               <Link href="/dashboard/contributions" prefetch={false}>
                 View PR cards

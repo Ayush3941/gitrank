@@ -11,7 +11,7 @@ import { InlineNotice } from "@/components/shared/InlineNotice";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ContributionPulseStrip } from "@/components/shared/ContributionPulseStrip";
-import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
+import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
 import { StaleState } from "@/components/shared/StaleState";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
 import { useRunUserSync } from "@/hooks/use-account-actions";
@@ -286,16 +286,7 @@ export function ContributionsPageClient() {
         )}
         actions={(
           <div className="flex flex-wrap gap-2">
-            {showRefreshPill ? (
-              <SnapshotFreshnessPill refreshedAt={profile?.refreshedAt} label="Refreshed" />
-            ) : (
-              <span
-                className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold"
-                title="No scored PR evidence has been materialized yet."
-              >
-                Evidence pending
-              </span>
-            )}
+            <ProfileEvidenceStateChip showFreshness={showRefreshPill} refreshedAt={profile?.refreshedAt} />
             {!useLiteCards ? (
               <Button
                 type="button"

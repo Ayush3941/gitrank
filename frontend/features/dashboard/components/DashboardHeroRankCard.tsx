@@ -29,20 +29,17 @@ export function DashboardHeroRankCard({
   const nextAction =
     syncState !== "synced" || user.mergedPrCount === 0
       ? {
-          title: "Refresh contribution evidence",
           description: "Open sync settings to refresh PR evidence before rank progression.",
           href: "/dashboard/settings",
           cta: "Open sync settings",
         }
       : user.quests.length > 0
         ? {
-            title: "Continue active quest",
             description: "Quest completion is the fastest path to rank movement this cycle.",
             href: "/dashboard/quests",
             cta: "Open quests",
           }
         : {
-            title: "Inspect contribution cards",
             description: "Review high-impact PR cards and keep evidence quality moving upward.",
             href: "/dashboard/contributions",
             cta: "Open contributions",
