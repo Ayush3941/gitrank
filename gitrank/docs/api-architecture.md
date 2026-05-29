@@ -74,7 +74,7 @@ Config:
 
 Used by:
 
-- `github-ingestor`
+- no active sync extraction path in current runtime (reserved for future bounded read optimizations)
 
 Config:
 
@@ -84,8 +84,8 @@ Config:
 
 Usage rules:
 
-- prefer REST for straightforward resource sync and webhook-driven fetches
-- use GraphQL only where it materially reduces round-trips for public data hydration
+- current sync extraction is REST-only and GitHub-App-installation-token-authenticated
+- keep GraphQL disabled in extraction paths unless a future slice proves measurable latency savings and preserves strict app-only auth boundaries
 
 ### GitHub Webhooks
 

@@ -301,6 +301,8 @@ Recent sync-auth refinement (May 28, 2026):
 - User sync execution now fails closed if any non-installation credential source is returned, preventing silent reintroduction of OAuth/shared PR extraction paths.
 - Repository PR hydration now runs REST-only inside ingestor execution paths, removing the dormant GraphQL actor-token branch and reducing ambiguity around credential source during strict app sync.
 - `scripts/check-ingestor-strict-app-auth.sh` now enforces case-insensitive OAuth detection and bans legacy actor-token GraphQL wiring symbols (`graphqlTokenSource`, `graphQLClientForActor`, `graphqlClientFactory`) in non-test ingestor service code.
+- Removed dead GraphQL batch conversion/query code from `github-ingestor/internal/service/graphql_batch.go` after strict extraction moved to REST-only hydration, reducing unused runtime paths and maintenance surface.
+- Service manifests now reflect the active runtime dependency set: GitHub REST remains a strict sync dependency while GraphQL is no longer reported as an active extraction dependency in api-gateway/github-ingestor manifests.
 - Repository, pull-request, and review execute routes now use the same strict app-auth path and return explicit install/bootstrap diagnostics instead of generic gateway failures.
 - OAuth-required extraction diagnostics (`github_user_oauth_required`, `oauth_token_required`, `oauth_token_malformed`) were removed from ingestor error mappings and frontend sync diagnostics so extraction failures now resolve only through strict App-installation signals.
 - Strict app-auth sync runtime now disables OAuth GraphQL token usage in those routes, so PR extraction remains installation-token-only end to end.
