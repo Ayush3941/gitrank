@@ -75,28 +75,28 @@ type pullRequestSyncOptions struct {
 type githubActorInstallationClientFactory func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error)
 
 type Executor struct {
-	cfg                  config.App
-	store                *Store
-	client               *githubapi.RESTClient
-	repositoryCache      *repositoryMetadataCache
-	restClientFactory    githubRESTClientFactory
-	installationClient   githubInstallationClientFactory
-	actorInstallation    githubActorInstallationClientFactory
-	appInstallationList  githubAppInstallationLister
-	userSyncLockMu       sync.Mutex
-	activeUserSync       map[string]struct{}
+	cfg                 config.App
+	store               *Store
+	client              *githubapi.RESTClient
+	repositoryCache     *repositoryMetadataCache
+	restClientFactory   githubRESTClientFactory
+	installationClient  githubInstallationClientFactory
+	actorInstallation   githubActorInstallationClientFactory
+	appInstallationList githubAppInstallationLister
+	userSyncLockMu      sync.Mutex
+	activeUserSync      map[string]struct{}
 }
 
 func NewExecutor(cfg config.App, pool *pgxpool.Pool, client *githubapi.RESTClient) *Executor {
 	executor := &Executor{
-		cfg:                  cfg,
-		store:                NewStore(pool),
-		client:               client,
-		repositoryCache:      newRepositoryMetadataCache(cfg.GitHub.RepositoryCacheTTL),
-		restClientFactory:    newGitHubRESTClientFactory(cfg),
-		installationClient:   newGitHubInstallationClientFactory(cfg),
-		appInstallationList:  newGitHubAppInstallationLister(cfg),
-		activeUserSync:       map[string]struct{}{},
+		cfg:                 cfg,
+		store:               NewStore(pool),
+		client:              client,
+		repositoryCache:     newRepositoryMetadataCache(cfg.GitHub.RepositoryCacheTTL),
+		restClientFactory:   newGitHubRESTClientFactory(cfg),
+		installationClient:  newGitHubInstallationClientFactory(cfg),
+		appInstallationList: newGitHubAppInstallationLister(cfg),
+		activeUserSync:      map[string]struct{}{},
 	}
 	executor.actorInstallation = executor.installationClientForActor
 	return executor
@@ -562,28 +562,49 @@ func (e *Executor) SyncInstallation(
 	}
 	persistedRepositories = normalizeRepositoryTargets(persistedRepositories)
 
+	if e.installationClient == nil {
+		_ = e.recordFailedInstallationSyncRun(
+			ctx,
+			req,
+			actor,
+			correlationID,
+			startedAt,
+			installationID,
+			ErrUserSyncGitHubAppUnavailable,
+			PersistResult{},
+		)
+		return response, ErrUserSyncGitHubAppUnavailable
+	}
+	installationClient, enabled, clientErr := e.installationClient(ctx, req.InstallationID)
+	if clientErr != nil {
+		_ = e.recordFailedInstallationSyncRun(ctx, req, actor, correlationID, startedAt, installationID, clientErr, PersistResult{})
+		return response, clientErr
+	}
+	if !enabled || installationClient == nil {
+		_ = e.recordFailedInstallationSyncRun(
+			ctx,
+			req,
+			actor,
+			correlationID,
+			startedAt,
+			installationID,
+			ErrUserSyncGitHubAppInstallationRequired,
+			PersistResult{},
+		)
+		return response, ErrUserSyncGitHubAppInstallationRequired
+	}
+
 	repositories := persistedRepositories
-	repositoryClient := e.client
-	if e.installationClient != nil {
-		installationClient, enabled, clientErr := e.installationClient(ctx, req.InstallationID)
-		if clientErr != nil {
-			_ = e.recordFailedInstallationSyncRun(ctx, req, actor, correlationID, startedAt, installationID, clientErr, PersistResult{})
-			return response, clientErr
-		}
-		if enabled && installationClient != nil {
-			repositoryClient = installationClient
-			liveRepositories, inventoryIncomplete, liveErr := e.fetchLiveInstallationRepositoryTargets(ctx, installationClient)
-			if liveErr != nil {
-				_ = e.recordFailedInstallationSyncRun(ctx, req, actor, correlationID, startedAt, installationID, liveErr, PersistResult{})
-				return response, liveErr
-			}
-			repositories = liveRepositories
-			response.Fetched["installation_repository_inventory_live"] = 1
-			response.Fetched["repositories_selected_live"] = len(liveRepositories)
-			if inventoryIncomplete {
-				response.Fetched["installation_repository_inventory_incomplete"] = 1
-			}
-		}
+	liveRepositories, inventoryIncomplete, liveErr := e.fetchLiveInstallationRepositoryTargets(ctx, installationClient)
+	if liveErr != nil {
+		_ = e.recordFailedInstallationSyncRun(ctx, req, actor, correlationID, startedAt, installationID, liveErr, PersistResult{})
+		return response, liveErr
+	}
+	repositories = liveRepositories
+	response.Fetched["installation_repository_inventory_live"] = 1
+	response.Fetched["repositories_selected_live"] = len(liveRepositories)
+	if inventoryIncomplete {
+		response.Fetched["installation_repository_inventory_incomplete"] = 1
 	}
 
 	aggregatePersisted := PersistResult{}
@@ -594,15 +615,12 @@ func (e *Executor) SyncInstallation(
 		baseCorrelationID = "sync-installation:" + fmt.Sprintf("%d", req.InstallationID)
 	}
 
-	repositoryExecutor := e
-	if repositoryClient != e.client {
-		cloned := *e
-		cloned.client = repositoryClient
-		cloned.actorInstallation = func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
-			return repositoryClient, true, nil
-		}
-		repositoryExecutor = &cloned
+	cloned := *e
+	cloned.client = installationClient
+	cloned.actorInstallation = func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
+		return installationClient, true, nil
 	}
+	repositoryExecutor := &cloned
 	for index, repository := range repositories {
 		child, err := repositoryExecutor.SyncRepository(ctx, contracts.SyncRequest{
 			Mode:           "repository",

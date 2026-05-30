@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -664,6 +665,9 @@ func TestExecutorSyncInstallationReplaysPersistedInstallationRepositories(t *tes
 			MaxPageSize: 50,
 		},
 	}, pool, client)
+	executor.installationClient = func(context.Context, int64) (*githubapi.RESTClient, bool, error) {
+		return client, true, nil
+	}
 
 	result, err := executor.SyncInstallation(ctx, contracts.SyncRequest{
 		Mode:           "installation",
@@ -704,6 +708,95 @@ func TestExecutorSyncInstallationReplaysPersistedInstallationRepositories(t *tes
 	}
 	if requestedInstallation != 12001 {
 		t.Fatalf("github_installation_id = %d, want 12001", requestedInstallation)
+	}
+}
+
+func TestExecutorSyncInstallationRequiresGitHubAppInstallationClient(t *testing.T) {
+	databaseURL := strings.TrimSpace(os.Getenv("GITRANK_INGESTOR_DATABASE_URL"))
+	if databaseURL == "" {
+		t.Skip("GITRANK_INGESTOR_DATABASE_URL is not set")
+	}
+
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, databaseURL)
+	if err != nil {
+		t.Fatalf("pgxpool.New() error = %v", err)
+	}
+	defer pool.Close()
+
+	now := time.Now().UTC()
+	persistence := NewStore(pool)
+	_, err = persistence.WithTx(ctx, func(tx *TxStore) (PersistResult, error) {
+		_, _, upsertErr := tx.UpsertInstallation(map[string]any{
+			"installation": map[string]any{
+				"id":                   12002,
+				"app_id":               0,
+				"app_slug":             "",
+				"target_type":          "Organization",
+				"repository_selection": "selected",
+				"account": map[string]any{
+					"login": "octo",
+					"type":  "Organization",
+				},
+			},
+			"repositories": []map[string]any{
+				{
+					"id":                401,
+					"name":              "repo-three",
+					"full_name":         "octo/repo-three",
+					"private":           false,
+					"fork":              false,
+					"language":          "Go",
+					"default_branch":    "main",
+					"stargazers_count":  2,
+					"forks_count":       1,
+					"open_issues_count": 0,
+					"archived":          false,
+					"disabled":          false,
+					"owner": map[string]any{
+						"login": "octo",
+						"type":  "Organization",
+					},
+				},
+			},
+		}, now)
+		return PersistResult{}, upsertErr
+	})
+	if err != nil {
+		t.Fatalf("persist installation fixture: %v", err)
+	}
+
+	client, err := githubapi.NewRESTClient(githubapi.ClientConfig{
+		BaseURL:          "https://api.github.com",
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		HTTPClient:       &http.Client{Timeout: time.Second},
+		SecondaryBackoff: time.Second,
+		MaxConcurrency:   4,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	executor := NewExecutor(config.App{
+		GitHub: config.GitHub{
+			MaxPageSize: 50,
+		},
+	}, pool, client)
+	executor.installationClient = nil
+
+	response, err := executor.SyncInstallation(ctx, contracts.SyncRequest{
+		Mode:           "installation",
+		InstallationID: 12002,
+	}, SyncRequestActor{
+		Subject:     "installation-sync-executor",
+		GitHubLogin: "octocat",
+	}, "sync-installation-executor-strict-app-required", now)
+	if !errors.Is(err, ErrUserSyncGitHubAppUnavailable) {
+		t.Fatalf("SyncInstallation() error = %v, want ErrUserSyncGitHubAppUnavailable", err)
+	}
+	if response.Status != "failed" {
+		t.Fatalf("Status = %q, want failed", response.Status)
 	}
 }
 

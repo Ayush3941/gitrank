@@ -29,6 +29,10 @@ if (cd "$ROOT_DIR" && rg -n 'fetchPullRequests\([^)]*SyncRequestActor' "$SERVICE
   fail "fetchPullRequests still accepts actor-scoped credentials instead of strict app client flow"
 fi
 
+if (cd "$ROOT_DIR" && rg -n 'repositoryClient := e\.client' "$SERVICE_DIR/executor.go" --glob "!**/*_test.go" >/dev/null); then
+  fail "installation sync still falls back to base executor client instead of requiring GitHub App installation client"
+fi
+
 if ! rg -q 'executorForStrictAppSyncActor\(' "$EXECUTOR_FILE"; then
   fail "strict app actor selector missing from executor sync paths"
 fi
