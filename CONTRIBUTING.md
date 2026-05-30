@@ -1845,6 +1845,7 @@ ABRA implementation checklist:
 - [x] Settings sync-run diagnostics now recognizes `github_app_runtime_required` / `strict_app_runtime_required`, so strict-runtime guard failures appear as explicit App-runtime remediation instead of generic failed-run noise.
 - [x] Scheduler worker now treats `github_app_runtime_required` as an immediate dead-letter condition (same non-retryable class as other strict App-auth config/install failures), preventing futile retry loops when extraction runtime policy is violated.
 - [x] Dashboard/settings/contributions copy is kept action-first and concise (auto-sync language, refresh CTA naming, and redundant explanatory text removed from shared pulse/sync panels).
+- [x] Settings account action copy no longer uses manual `Sync now` wording; it now uses `Refresh profile` to stay aligned with the auto-sync-first model.
 - [x] Settings and Contributions slop-reduction pass is live: account settings no longer shows session-debug identity/refresh controls, and the contributions page no longer duplicates dashboard momentum content.
 - [x] Product copy now explicitly separates login vs extraction responsibilities: OAuth/sign-in language is scoped to identity flows, and sync/report copy references GitHub App-backed extraction.
 - [x] GitHub REST/GraphQL retry backoff now respects request-context cancellation and semaphore-acquire waits are context-aware, so canceled sync paths exit promptly instead of sleeping/blocking until full backoff windows elapse.

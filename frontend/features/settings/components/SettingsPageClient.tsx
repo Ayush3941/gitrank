@@ -396,7 +396,7 @@ export function SettingsPageClient() {
             }}
           >
             <RefreshCw className="h-4 w-4" />
-            {runUserSync.isPending ? "Syncing GitHub..." : isFetching ? "Refreshing..." : "Sync now"}
+            {runUserSync.isPending ? "Refreshing profile..." : isFetching ? "Refreshing..." : "Refresh profile"}
           </Button>
           <Button
             variant="secondary"
