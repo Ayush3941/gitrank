@@ -265,6 +265,12 @@ Recent no-slop refinement (May 29, 2026):
 - Sync activity cards no longer surface correlation IDs in the default list view; the panel now prioritizes user-actionable run state and outcomes.
 - Contribution filter helper copy was tightened to one clear sentence: categories reflect recent PR work and help choose the next lane.
 
+Recent strict app-auth refinement (May 30, 2026):
+
+- `github-ingestor` request-level strict auth now prioritizes explicit `installation_id` for repository/PR/review/issue/commit execution, then falls back to actor-linked installation discovery only when installation ID is absent.
+- Executor strict-app cloning is now shared through a single helper, reducing duplicate per-call client wiring and drift risk in app-token-only sync paths.
+- Profile sync-state observers now query the full authenticated sync-run stream (not only `run_type=user`) so active child runs keep dashboard/settings state in `syncing` until terminal.
+
 Recent no-slowdown refinement (May 28, 2026):
 
 - Settings now shows only real end-user controls (account, sync activity, privacy, display, repository visibility, data controls).

@@ -20,11 +20,12 @@ import (
 )
 
 const (
-	defaultFallbackPageSize      = 20
-	authoredPRSearchHardLimit    = 1000
-	authoredPRSearchMaxPages     = 10
-	authoredPRSearchMaxDepth     = 10
-	authoredPRBackfillMaxWindows = 3
+	defaultFallbackPageSize             = 20
+	fetchedMetricAuthInstallationClient = "auth_installation_client"
+	authoredPRSearchHardLimit           = 1000
+	authoredPRSearchMaxPages            = 10
+	authoredPRSearchMaxDepth            = 10
+	authoredPRBackfillMaxWindows        = 3
 
 	authoredPRBootstrapLookback  = 30 * 24 * time.Hour
 	authoredPRRecentSeedLookback = 120 * 24 * time.Hour
@@ -190,12 +191,12 @@ func (e *Executor) SyncRepository(
 		}
 	}
 	fetchedCounts := map[string]int{
-		"auth_installation_client": 1,
-		"repositories":  1,
-		"pull_requests": len(pullRequests),
-		"reviews":       countReviewMaps(reviewsByNumber),
-		"issues":        len(issues),
-		"commits":       len(commits),
+		fetchedMetricAuthInstallationClient: 1,
+		"repositories":                      1,
+		"pull_requests":                     len(pullRequests),
+		"reviews":                           countReviewMaps(reviewsByNumber),
+		"issues":                            len(issues),
+		"commits":                           len(commits),
 	}
 	if pullRequestsSkipped {
 		fetchedCounts["pull_requests_skipped"] = 1
@@ -373,7 +374,7 @@ func (e *Executor) SyncUser(
 		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, PersistResult{})
 		return response, err
 	}
-	response.Fetched["auth_installation_client"] = 1
+	markAuthInstallationClient(response.Fetched)
 	response.Fetched["authored_pull_request_auth_installation"] = 1
 
 	authoredPRSyncLimit := boundedAuthoredPRSyncLimit(e.cfg.GitHub, e.cfg.GitHub.AuthoredPRSyncLimit)
@@ -603,7 +604,7 @@ func (e *Executor) SyncInstallation(
 		return response, liveErr
 	}
 	repositories = liveRepositories
-	response.Fetched["auth_installation_client"] = 1
+	markAuthInstallationClient(response.Fetched)
 	response.Fetched["installation_repository_inventory_live"] = 1
 	response.Fetched["repositories_selected_live"] = len(liveRepositories)
 	if inventoryIncomplete {
@@ -618,12 +619,7 @@ func (e *Executor) SyncInstallation(
 		baseCorrelationID = "sync-installation:" + fmt.Sprintf("%d", req.InstallationID)
 	}
 
-	cloned := *e
-	cloned.client = installationClient
-	cloned.actorInstallation = func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
-		return installationClient, true, nil
-	}
-	repositoryExecutor := &cloned
+	repositoryExecutor := e.cloneWithStrictAppClient(installationClient)
 	for index, repository := range repositories {
 		child, err := repositoryExecutor.SyncRepository(ctx, contracts.SyncRequest{
 			Mode:           "repository",
@@ -784,12 +780,12 @@ func (e *Executor) syncPullRequestSurface(
 		files = nil
 	}
 	fetchedCounts := map[string]int{
-		"auth_installation_client": 1,
-		"repositories":       1,
-		"pull_requests":      1,
-		"pull_request_files": len(files),
-		"reviews":            len(reviews),
-		"review_comments":    len(reviewComments),
+		fetchedMetricAuthInstallationClient: 1,
+		"repositories":                      1,
+		"pull_requests":                     1,
+		"pull_request_files":                len(files),
+		"reviews":                           len(reviews),
+		"review_comments":                   len(reviewComments),
 	}
 	fetchedCounts = mergeCountMaps(fetchedCounts, pullRequestLifecycleFetchedCounts(pullRequest))
 	if reviewsSkipped {
@@ -970,9 +966,9 @@ func (e *Executor) SyncIssue(
 		return response, err
 	}
 	fetchedCounts := map[string]int{
-		"auth_installation_client": 1,
-		"repositories": 1,
-		"issues":       1,
+		fetchedMetricAuthInstallationClient: 1,
+		"repositories":                      1,
+		"issues":                            1,
 	}
 
 	finishedAt := time.Now().UTC()
@@ -1085,9 +1081,9 @@ func (e *Executor) SyncCommit(
 		return response, err
 	}
 	fetchedCounts := map[string]int{
-		"auth_installation_client": 1,
-		"repositories": 1,
-		"commits":      1,
+		fetchedMetricAuthInstallationClient: 1,
+		"repositories":                      1,
+		"commits":                           1,
 	}
 
 	finishedAt := time.Now().UTC()
@@ -1368,35 +1364,6 @@ func (e *Executor) recordFailedCommitSyncRun(
 		})
 	})
 	return err
-}
-
-func (e *Executor) fetchUserRepositories(ctx context.Context, user string) ([]map[string]any, error) {
-	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, e.cfg.GitHub.UserRepositorySyncLimit)
-	var repositories []map[string]any
-	_, err := e.client.GetJSON(ctx, fmt.Sprintf("/users/%s/repos", url.PathEscape(user)), url.Values{
-		"type":      []string{"owner"},
-		"sort":      []string{"updated"},
-		"direction": []string{"desc"},
-		"per_page":  []string{fmt.Sprintf("%d", perPage)},
-	}, githubapi.ConditionalRequest{}, &repositories)
-	if err != nil {
-		return nil, err
-	}
-
-	filtered := make([]map[string]any, 0, len(repositories))
-	for _, repository := range repositories {
-		if repository == nil {
-			continue
-		}
-		if boolValue(repository["archived"]) || boolValue(repository["disabled"]) {
-			continue
-		}
-		if strings.TrimSpace(stringValue(repository["full_name"])) == "" {
-			continue
-		}
-		filtered = append(filtered, repository)
-	}
-	return filtered, nil
 }
 
 func (e *Executor) fetchAuthoredPullRequestTargets(
@@ -2489,6 +2456,13 @@ func uniqueRepositoryCountFromAuthoredTargets(targets []authoredPullRequestTarge
 		seen[repository] = struct{}{}
 	}
 	return len(seen)
+}
+
+func markAuthInstallationClient(fetched map[string]int) {
+	if fetched == nil {
+		return
+	}
+	fetched[fetchedMetricAuthInstallationClient] = 1
 }
 
 func isSkippableGitHubSyncError(err error) bool {

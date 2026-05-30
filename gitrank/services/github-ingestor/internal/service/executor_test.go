@@ -1242,6 +1242,41 @@ func TestExecutorForStrictAppSyncRequestUsesInstallationIDWhenActorMissing(t *te
 	}
 }
 
+func TestExecutorForStrictAppSyncRequestPrefersExplicitInstallationID(t *testing.T) {
+	t.Parallel()
+
+	baseClient := &githubapi.RESTClient{}
+	explicitInstallationClient := &githubapi.RESTClient{}
+	executor := &Executor{
+		client: baseClient,
+		actorInstallation: func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
+			return nil, false, nil
+		},
+		installationClient: func(_ context.Context, installationID int64) (*githubapi.RESTClient, bool, error) {
+			if installationID == 12001 {
+				return explicitInstallationClient, true, nil
+			}
+			return nil, false, nil
+		},
+	}
+
+	runtime, err := executor.executorForStrictAppSyncRequest(
+		context.Background(),
+		SyncRequestActor{GitHubLogin: "octocat"},
+		12001,
+		time.Now().UTC(),
+	)
+	if err != nil {
+		t.Fatalf("executorForStrictAppSyncRequest() error = %v", err)
+	}
+	if runtime == executor {
+		t.Fatalf("executorForStrictAppSyncRequest() runtime = %p, want cloned executor", runtime)
+	}
+	if runtime.client != explicitInstallationClient {
+		t.Fatalf("runtime.client = %p, want explicit installation client %p", runtime.client, explicitInstallationClient)
+	}
+}
+
 func TestExecutorForStrictAppSyncRequestFailsWhenNoActorAndNoInstallation(t *testing.T) {
 	t.Parallel()
 

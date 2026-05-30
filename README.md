@@ -155,6 +155,7 @@ If `GITRANK_ENV_FILE` is unset, frontend runtime falls back to `../gitrank/.env`
 - If no direct user-owned installation mapping exists, sync now probes persisted active App installations with a bounded authored-PR search and selects the first installation that can see the actor’s PR evidence, keeping org-repo PR extraction App-only without OAuth token discovery.
 - Sync extraction error contracts now expose only strict App-installation signals (`github_app_installation_required`, `github_app_installation_unavailable`); OAuth-required extraction error codes were removed from ingestor and frontend diagnostics.
 - Repository, pull-request, and review execute routes now follow the same fail-closed rule: they require GitHub App installation credentials and return explicit app/bootstrap errors instead of generic sync failures.
+- Strict request-level app-auth now prioritizes explicit `installation_id` when provided; actor-login installation matching is only used when no installation ID is supplied.
 - Scheduler/webhook-triggered repository/PR/review sync still works without user-login headers by using explicit `installation_id` app-token resolution.
 - Scheduler sync job payloads now preserve optional `installation_id` and `user` context, and scheduler execution forwards `X-GitRank-GitHub-Login`/`X-GitRank-Subject` when user context is present.
 - Settings sync execute/queue controls now forward optional `user` and `installation_id` context for repository/PR/review/issue/commit sync actions, improving strict app-auth resolution from manual execution paths.
@@ -164,6 +165,7 @@ If `GITRANK_ENV_FILE` is unset, frontend runtime falls back to `../gitrank/.env`
 - User-sync execution marks authored-PR backfill as partial when discovery is still incomplete (`authored_pull_request_backfill_incomplete`), avoiding false "fully synced" states while history backfill is still in progress.
 - User-sync execution also treats all-unmerged selected target windows (`authored_pull_requests_selected_unmerged_only`) as partial-state outcomes so sync status does not over-claim score-ready completion.
 - Refresh feedback explicitly differentiates "history backfill still in progress" from credential-scope failures, so users are not prompted to reconnect GitHub during normal backfill progression.
+- Dashboard/profile sync-state pills now evaluate the full authenticated sync-run stream (not only `run_type=user`) so active child PR/repository runs keep the UI in `syncing` until terminal.
 - Concurrent user sync requests for the same login are deduplicated in-process; overlapping executions return a conflict response instead of running duplicated heavy sync loops.
 - Concurrent user sync requests are also deduplicated with a PostgreSQL advisory lease keyed by GitHub login, so multi-instance deployments avoid duplicate heavy sync execution for the same user.
 - Conflict attempts are persisted in sync-run telemetry with explicit `user_sync_in_progress` / `lease_conflicts` metrics so contention is visible in Settings and diagnostics.

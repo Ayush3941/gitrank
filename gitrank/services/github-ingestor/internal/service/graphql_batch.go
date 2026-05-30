@@ -161,9 +161,7 @@ func (e *Executor) executorForUserSyncActor(ctx context.Context, actor SyncReque
 		return nil, "", ErrUserSyncGitHubAppInstallationRequired
 	}
 
-	clone := *e
-	clone.client = installationClient
-	return &clone, "installation", nil
+	return e.cloneWithStrictAppClient(installationClient), "installation", nil
 }
 
 func (e *Executor) executorForStrictAppSyncActor(ctx context.Context, actor SyncRequestActor, now time.Time) (*Executor, error) {
@@ -202,30 +200,22 @@ func (e *Executor) executorForStrictAppSyncRequest(
 	installationID int64,
 	now time.Time,
 ) (*Executor, error) {
-	if strings.TrimSpace(actor.GitHubLogin) != "" {
-		return e.executorForStrictAppSyncActor(ctx, actor, now)
-	}
-	if installationID <= 0 {
-		return nil, ErrUserSyncGitHubAppInstallationRequired
-	}
-	if e == nil || e.installationClient == nil {
-		return nil, ErrUserSyncGitHubAppUnavailable
+	if installationID > 0 {
+		if e == nil || e.installationClient == nil {
+			return nil, ErrUserSyncGitHubAppUnavailable
+		}
+
+		installationClient, enabled, installationErr := e.installationClient(ctx, installationID)
+		if installationErr != nil {
+			return nil, fmt.Errorf("%w: %v", ErrUserSyncGitHubAppUnavailable, installationErr)
+		}
+		if !enabled || installationClient == nil {
+			return nil, ErrUserSyncGitHubAppInstallationRequired
+		}
+		return e.cloneWithStrictAppClient(installationClient), nil
 	}
 
-	installationClient, enabled, installationErr := e.installationClient(ctx, installationID)
-	if installationErr != nil {
-		return nil, fmt.Errorf("%w: %v", ErrUserSyncGitHubAppUnavailable, installationErr)
-	}
-	if !enabled || installationClient == nil {
-		return nil, ErrUserSyncGitHubAppInstallationRequired
-	}
-
-	clone := *e
-	clone.client = installationClient
-	clone.actorInstallation = func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
-		return installationClient, true, nil
-	}
-	return &clone, nil
+	return e.executorForStrictAppSyncActor(ctx, actor, now)
 }
 
 func (e *Executor) bootstrapActorInstallations(ctx context.Context, actor SyncRequestActor, now time.Time) (int, error) {
@@ -248,4 +238,16 @@ func (e *Executor) bootstrapActorInstallations(ctx context.Context, actor SyncRe
 		return 0, nil
 	}
 	return e.store.UpsertUserInstallations(ctx, installations, now)
+}
+
+func (e *Executor) cloneWithStrictAppClient(installationClient *githubapi.RESTClient) *Executor {
+	if e == nil {
+		return nil
+	}
+	clone := *e
+	clone.client = installationClient
+	clone.actorInstallation = func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
+		return installationClient, true, nil
+	}
+	return &clone
 }
