@@ -270,6 +270,7 @@ Recent strict app-auth refinement (May 30, 2026):
 - `github-ingestor` request-level strict auth now prioritizes explicit `installation_id` for repository/PR/review/issue/commit execution, then falls back to actor-linked installation discovery only when installation ID is absent.
 - Executor strict-app cloning is now shared through a single helper, reducing duplicate per-call client wiring and drift risk in app-token-only sync paths.
 - Profile sync-state observers now query the full authenticated sync-run stream (not only `run_type=user`) so active child runs keep dashboard/settings state in `syncing` until terminal.
+- API-gateway user sync queue/execute routes now hard-bind `user` mode to the authenticated GitHub login, preventing cross-user payload overrides while keeping OAuth strictly in login/session scope.
 
 Recent no-slowdown refinement (May 28, 2026):
 

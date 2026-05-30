@@ -524,6 +524,48 @@ func TestSyncRouteDefaultsToAuthenticatedGitHubLogin(t *testing.T) {
 	}
 }
 
+func TestSyncRouteUserModeOverridesProvidedUserWithAuthenticatedLogin(t *testing.T) {
+	auth := stubAuthServer()
+	defer auth.Close()
+
+	var observedBody contracts.SyncRequest
+	ingestor := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_ = json.NewDecoder(r.Body).Decode(&observedBody)
+		w.WriteHeader(http.StatusAccepted)
+		_ = json.NewEncoder(w).Encode(contracts.GitHubQueuePreview{
+			Status:        "queued",
+			JobIDs:        []string{"job-2"},
+			QueueName:     "github-sync",
+			CorrelationID: "sync-user-login-boundary",
+			AcceptedAt:    time.Date(2026, 5, 5, 15, 5, 0, 0, time.UTC),
+		})
+	}))
+	defer ingestor.Close()
+
+	router := NewRouter(testConfig(stubProfileServer().URL, auth.URL, ingestor.URL), testLogger(), "test")
+	request := httptest.NewRequest(http.MethodPost, "/v1/sync", strings.NewReader(`{"mode":"user","user":"someone-else"}`))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Cookie", "gitrank_session=session-original; gitrank_csrf=csrf-original")
+	csrfToken, err := authkit.DoubleSubmitCSRFFromToken([]byte("test-session-secret"), "session-original")
+	if err != nil {
+		t.Fatalf("csrf token: %v", err)
+	}
+	request.Header.Set("X-CSRF-Token", csrfToken)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusAccepted {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusAccepted, response.Body.String())
+	}
+	if observedBody.Mode != "user" {
+		t.Fatalf("mode = %q, want %q", observedBody.Mode, "user")
+	}
+	if observedBody.User != "octocat" {
+		t.Fatalf("user = %q, want authenticated login %q", observedBody.User, "octocat")
+	}
+}
+
 func TestSyncRouteRejectsWhenGitHubAppSyncConfigMissing(t *testing.T) {
 	auth := stubAuthServer()
 	defer auth.Close()
@@ -720,6 +762,85 @@ func TestUserSyncExecutionReturnsPartialContractWhenPostSyncRefreshFails(t *test
 	}
 	if observed.Fetched["post_sync_refresh_failed"] != 1 {
 		t.Fatalf("Fetched[post_sync_refresh_failed] = %d, want 1", observed.Fetched["post_sync_refresh_failed"])
+	}
+}
+
+func TestUserSyncExecutionOverridesProvidedUserWithAuthenticatedLogin(t *testing.T) {
+	auth := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_ = json.NewEncoder(w).Encode(contracts.SessionEnvelope{
+			Session: contracts.SessionIdentity{
+				Subject:     "00000000-0000-0000-0000-000000000001",
+				GitHubLogin: "octocat",
+				Roles:       []string{"user"},
+			},
+		})
+	}))
+	defer auth.Close()
+
+	var observedBody contracts.SyncRequest
+	ingestor := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_ = json.NewDecoder(r.Body).Decode(&observedBody)
+		_ = json.NewEncoder(w).Encode(contracts.GitHubSyncExecutionResponse{
+			Status:        "completed",
+			Mode:          "user",
+			User:          "octocat",
+			CorrelationID: "req-user-override",
+			StartedAt:     time.Date(2026, 5, 6, 10, 0, 0, 0, time.UTC),
+			FinishedAt:    time.Date(2026, 5, 6, 10, 0, 1, 0, time.UTC),
+			Fetched:       map[string]int{"authored_pull_requests_selected": 1},
+			Persisted:     map[string]int{"pull_requests": 1},
+		})
+	}))
+	defer ingestor.Close()
+
+	scoring := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusAccepted)
+		_ = json.NewEncoder(w).Encode(contracts.ReplayUserScoresResponse{
+			Snapshot: contracts.UserScoreSnapshotResponse{
+				UserID:          "00000000-0000-0000-0000-000000000001",
+				ScoreVersion:    "v1alpha1",
+				TriggerType:     "live",
+				Level:           "Bronze I",
+				RankTier:        "Bronze I",
+				SourceWatermark: time.Date(2026, 5, 6, 10, 0, 0, 0, time.UTC),
+				ComputedAt:      time.Date(2026, 5, 6, 10, 0, 1, 0, time.UTC),
+			},
+			Events: 1,
+		})
+	}))
+	defer scoring.Close()
+
+	profile := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusAccepted)
+		_, _ = w.Write([]byte(`{"status":"accepted"}`))
+	}))
+	defer profile.Close()
+
+	cfg := testConfig(profile.URL, auth.URL, ingestor.URL)
+	cfg.Services.ScoringBaseURL = scoring.URL
+	cfg.Services.ProfileBaseURL = profile.URL
+	router := NewRouter(cfg, testLogger(), "test")
+
+	request := httptest.NewRequest(http.MethodPost, "/v1/sync/user/execute", strings.NewReader(`{"user":"someone-else"}`))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Cookie", "gitrank_session=session-original; gitrank_csrf=csrf-original")
+	csrfToken, err := authkit.DoubleSubmitCSRFFromToken([]byte("test-session-secret"), "session-original")
+	if err != nil {
+		t.Fatalf("csrf token: %v", err)
+	}
+	request.Header.Set("X-CSRF-Token", csrfToken)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusOK, response.Body.String())
+	}
+	if observedBody.Mode != "user" {
+		t.Fatalf("mode = %q, want %q", observedBody.Mode, "user")
+	}
+	if observedBody.User != "octocat" {
+		t.Fatalf("user = %q, want authenticated login %q", observedBody.User, "octocat")
 	}
 }
 

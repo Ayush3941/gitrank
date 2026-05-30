@@ -163,8 +163,13 @@ func handleModeSyncExecution(
 	req.User = strings.TrimSpace(req.User)
 	req.Repository = strings.TrimSpace(req.Repository)
 	req.SHA = strings.TrimSpace(req.SHA)
-	if req.Mode == "user" && req.User == "" {
-		req.User = strings.TrimSpace(principal.GitHubLogin)
+	if req.Mode == "user" {
+		normalizedLogin := strings.TrimSpace(principal.GitHubLogin)
+		if normalizedLogin == "" {
+			httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", "authenticated github login is required for user sync", httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		req.User = normalizedLogin
 	}
 	if err := req.Normalize(); err != nil {
 		httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
@@ -225,8 +230,12 @@ func normalizeSyncRequest(req *contracts.SyncRequest, principal authkit.Principa
 	if req.Mode == "" {
 		req.Mode = "user"
 	}
-	if req.Mode == "user" && req.User == "" {
-		req.User = strings.TrimSpace(principal.GitHubLogin)
+	if req.Mode == "user" {
+		normalizedLogin := strings.TrimSpace(principal.GitHubLogin)
+		if normalizedLogin == "" {
+			return errors.New("authenticated github login is required for user sync")
+		}
+		req.User = normalizedLogin
 	}
 
 	return req.Normalize()
