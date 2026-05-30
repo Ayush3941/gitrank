@@ -28,6 +28,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 
 func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQueue *store.InMemoryJobQueue, persistence *service.Service, executor *service.Executor, log *slog.Logger, version string) http.Handler {
 	manifest := app.Manifest(cfg, version)
+	syncConfigError := cfg.ValidateGitHubApp()
 	mux := http.NewServeMux()
 	metrics := httpkit.NewMetrics(cfg.ServiceName)
 	queueMetrics := queueMetricsSource{
@@ -510,13 +511,13 @@ func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQ
 		httpkit.WriteJSON(w, http.StatusOK, response)
 	})))
 
-	registerSyncRoute(mux, cfg, jobQueue, persistence, syncMetrics, "/v1/sync/installation", "installation")
-	registerSyncRoute(mux, cfg, jobQueue, persistence, syncMetrics, "/v1/sync/user", "user")
-	registerSyncRoute(mux, cfg, jobQueue, persistence, syncMetrics, "/v1/sync/repository", "repository")
-	registerSyncRoute(mux, cfg, jobQueue, persistence, syncMetrics, "/v1/sync/pull-request", "pull_request")
-	registerSyncRoute(mux, cfg, jobQueue, persistence, syncMetrics, "/v1/sync/review", "review")
-	registerSyncRoute(mux, cfg, jobQueue, persistence, syncMetrics, "/v1/sync/issue", "issue")
-	registerSyncRoute(mux, cfg, jobQueue, persistence, syncMetrics, "/v1/sync/commit", "commit")
+	registerSyncRoute(mux, cfg, syncConfigError, jobQueue, persistence, syncMetrics, "/v1/sync/installation", "installation")
+	registerSyncRoute(mux, cfg, syncConfigError, jobQueue, persistence, syncMetrics, "/v1/sync/user", "user")
+	registerSyncRoute(mux, cfg, syncConfigError, jobQueue, persistence, syncMetrics, "/v1/sync/repository", "repository")
+	registerSyncRoute(mux, cfg, syncConfigError, jobQueue, persistence, syncMetrics, "/v1/sync/pull-request", "pull_request")
+	registerSyncRoute(mux, cfg, syncConfigError, jobQueue, persistence, syncMetrics, "/v1/sync/review", "review")
+	registerSyncRoute(mux, cfg, syncConfigError, jobQueue, persistence, syncMetrics, "/v1/sync/issue", "issue")
+	registerSyncRoute(mux, cfg, syncConfigError, jobQueue, persistence, syncMetrics, "/v1/sync/commit", "commit")
 
 	return httpkit.Chain(mux, httpkit.RequestID, httpkit.Instrument(metrics), httpkit.AccessLog(log), httpkit.Recoverer(log))
 }
@@ -634,13 +635,19 @@ func webhookJobs(cfg config.App, envelope githubapi.WebhookEnvelope, correlation
 	return []store.QueueJob{job}, nil
 }
 
-func registerSyncRoute(mux *http.ServeMux, cfg config.App, queue *store.InMemoryJobQueue, persistence *service.Service, syncMetrics *syncMetricsSource, path, mode string) {
+func registerSyncRoute(mux *http.ServeMux, cfg config.App, syncConfigError error, queue *store.InMemoryJobQueue, persistence *service.Service, syncMetrics *syncMetricsSource, path, mode string) {
 	mux.Handle(path, httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		status := "queued"
 		defer func() {
 			syncMetrics.Observe(mode, status, time.Since(start))
 		}()
+
+		if syncModeRequiresGitHubApp(mode) && syncConfigError != nil {
+			status = "sync_config_unavailable"
+			writeSyncConfigUnavailable(w, r)
+			return
+		}
 
 		var req contracts.SyncRequest
 		if err := httpkit.DecodeJSON(r, &req, 1<<20); err != nil {
@@ -674,6 +681,25 @@ func registerSyncRoute(mux *http.ServeMux, cfg config.App, queue *store.InMemory
 		}
 		httpkit.WriteJSON(w, http.StatusAccepted, queuePreview("queued", jobs, false))
 	})))
+}
+
+func syncModeRequiresGitHubApp(mode string) bool {
+	switch mode {
+	case "installation", "user", "repository", "pull_request", "review", "issue", "commit":
+		return true
+	default:
+		return false
+	}
+}
+
+func writeSyncConfigUnavailable(w http.ResponseWriter, r *http.Request) {
+	httpkit.WriteError(
+		w,
+		http.StatusServiceUnavailable,
+		"sync_config_unavailable",
+		"GitHub App sync configuration is incomplete. Configure GitHub App credentials and restart backend services before running sync.",
+		httpkit.RequestIDFromContext(r.Context()),
+	)
 }
 
 func writeSyncExecutionError(w http.ResponseWriter, r *http.Request, fallbackCode string, err error) {

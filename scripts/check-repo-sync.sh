@@ -189,6 +189,12 @@ assert_ingestor_strict_app_auth() {
   fi
 }
 
+assert_ingestor_sync_guard() {
+  if ! "$ROOT_DIR/scripts/check-ingestor-sync-guard.sh" >/dev/null; then
+    fail "github-ingestor sync route guard drifted from strict GitHub App requirements"
+  fi
+}
+
 assert_api_gateway_sync_guard() {
   if ! "$ROOT_DIR/scripts/check-api-gateway-sync-guard.sh" >/dev/null; then
     fail "api-gateway sync guard drifted from strict GitHub App requirements"
@@ -433,6 +439,7 @@ main() {
   assert_start_script_contracts
   assert_backend_env_default_parity
   assert_ingestor_strict_app_auth
+  assert_ingestor_sync_guard
   assert_api_gateway_sync_guard
   assert_github_app_sync_policy
 

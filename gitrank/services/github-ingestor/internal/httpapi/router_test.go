@@ -263,6 +263,29 @@ func TestSyncCommitRouteAccepts(t *testing.T) {
 	}
 }
 
+func TestSyncQueueRouteRejectsWhenGitHubAppSyncConfigMissing(t *testing.T) {
+	cfg := testConfig()
+	cfg.GitHub.AppClientSecret = ""
+	router := NewRouter(cfg, testLogger(), "test")
+	request := httptest.NewRequest(http.MethodPost, "/v1/sync/user", bytes.NewReader([]byte(`{"user":"octocat"}`)))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusServiceUnavailable {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusServiceUnavailable, response.Body.String())
+	}
+
+	var out contracts.ErrorResponse
+	if err := json.Unmarshal(response.Body.Bytes(), &out); err != nil {
+		t.Fatalf("unmarshal error response: %v", err)
+	}
+	if out.Error.Code != "sync_config_unavailable" {
+		t.Fatalf("error code = %q, want %q", out.Error.Code, "sync_config_unavailable")
+	}
+}
+
 func TestSyncRepositoryRouteRejectsUnsafeRepository(t *testing.T) {
 	router := NewRouter(testConfig(), testLogger(), "test")
 	request := httptest.NewRequest(http.MethodPost, "/v1/sync/repository", bytes.NewReader([]byte(`{"repository":"octo/repo/extra"}`)))
@@ -521,10 +544,14 @@ func testConfig() config.App {
 		},
 		ShutdownTimeout: time.Second,
 		GitHub: config.GitHub{
-			WebhookSecret:  "webhook-secret",
-			MaxBodyBytes:   1 << 20,
-			DedupeTTL:      time.Hour,
-			RequestTimeout: time.Second,
+			AppID:            "12345",
+			AppClientID:      "Iv1.test-client-id",
+			AppClientSecret:  "test-client-secret",
+			AppPrivateKeyPEM: "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----",
+			WebhookSecret:    "webhook-secret",
+			MaxBodyBytes:     1 << 20,
+			DedupeTTL:        time.Hour,
+			RequestTimeout:   time.Second,
 		},
 		Scheduler: config.Scheduler{
 			MaxAttempts: 3,
