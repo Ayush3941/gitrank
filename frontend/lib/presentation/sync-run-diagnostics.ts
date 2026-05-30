@@ -39,6 +39,29 @@ export type SyncRunDiagnostic = {
   message: string;
 };
 
+type AppSyncFailureCode =
+  | "app_installation_required"
+  | "app_installation_unavailable"
+  | "app_runtime_required"
+  | "sync_config_unavailable"
+  | "user_sync_actor_mismatch";
+
+const SUPERSEDED_ACTIVE_ROW_MESSAGE =
+  "A stale in-progress run row was superseded by a newer terminal run for the same sync target.";
+
+const APP_SYNC_FAILURE_MESSAGES: Record<AppSyncFailureCode, string> = {
+  app_installation_required:
+    "GitHub App installation is required for PR sync. Install GitRank GitHub App for your account and retry sync.",
+  app_installation_unavailable:
+    "GitHub App installation token is unavailable. Verify app credentials and installation state, then retry sync.",
+  app_runtime_required:
+    "Backend sync runtime rejected a non-App extraction path. Restart services and retry so sync runs through GitHub App installation tokens only.",
+  sync_config_unavailable:
+    "Backend GitHub App sync config is incomplete. Set required GITHUB_APP_* credentials and restart services before retrying sync.",
+  user_sync_actor_mismatch:
+    "Sync request user does not match the signed-in GitHub account. Reconnect GitHub and retry.",
+};
+
 export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic {
   const metrics = run.metrics;
   const normalizedLastError = (run.last_error ?? "").toLowerCase();
@@ -50,54 +73,19 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
   ) {
     return {
       code: "superseded_active_row",
-      message:
-        "A stale in-progress run row was superseded by a newer terminal run for the same sync target.",
+      message: SUPERSEDED_ACTIVE_ROW_MESSAGE,
     };
   }
 
   if (normalizedLastError.includes("superseded by a newer terminal run")) {
     return {
       code: "superseded_active_row",
-      message:
-        "A stale in-progress run row was superseded by a newer terminal run for the same sync target.",
+      message: SUPERSEDED_ACTIVE_ROW_MESSAGE,
     };
   }
 
-  if (appSyncFailureCode === "app_installation_required") {
-    return {
-      code: "app_installation_required",
-      message:
-        "GitHub App installation is required for PR sync. Install GitRank GitHub App for your account and retry sync.",
-    };
-  }
-
-  if (appSyncFailureCode === "app_installation_unavailable") {
-    return {
-      code: "app_installation_unavailable",
-      message:
-        "GitHub App installation token is unavailable. Verify app credentials and installation state, then retry sync.",
-    };
-  }
-  if (appSyncFailureCode === "app_runtime_required") {
-    return {
-      code: "app_runtime_required",
-      message:
-        "Backend sync runtime rejected a non-App extraction path. Restart services and retry so sync runs through GitHub App installation tokens only.",
-    };
-  }
-  if (appSyncFailureCode === "sync_config_unavailable") {
-    return {
-      code: "sync_config_unavailable",
-      message:
-        "Backend GitHub App sync config is incomplete. Set required GITHUB_APP_* credentials and restart services before retrying sync.",
-    };
-  }
-  if (appSyncFailureCode === "user_sync_actor_mismatch") {
-    return {
-      code: "user_sync_actor_mismatch",
-      message:
-        "Sync request user does not match the signed-in GitHub account. Reconnect GitHub and retry.",
-    };
+  if (appSyncFailureCode) {
+    return appSyncFailureDiagnostic(appSyncFailureCode);
   }
 
   const normalizedRunType = run.run_type.trim().toLowerCase();
@@ -140,10 +128,7 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
   const questBackfillFailed = metricCount(metrics, "post_sync_quests_backfill_failed") > 0;
   const unsupportedAPIVersion =
     metricCount(metrics, "unsupported_api_version", "authored_pull_requests_unsupported_api_version") > 0;
-  const appInstallationRequired = metricCount(metrics, "app_installation_required") > 0;
-  const appInstallationUnavailable = metricCount(metrics, "app_installation_unavailable") > 0;
-  const appRuntimeRequired = metricCount(metrics, "strict_app_runtime_required") > 0;
-  const userSyncActorMismatch = metricCount(metrics, "user_sync_actor_mismatch") > 0;
+  const appSyncFailureFromMetrics = deriveAppSyncFailureCodeFromMetrics(metrics);
   const recentSeedEmpty = metricCount(metrics, "authored_pull_request_recent_seed_empty") > 0;
   const broadFallbackTargets = metricCount(metrics, "authored_pull_request_broad_fallback_targets");
   const syncCapped = metricCount(metrics, "authored_pull_requests_capped") > 0;
@@ -208,33 +193,8 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
         "GitHub API version in backend config is unsupported. Set GITHUB_API_VERSION to a supported value and retry sync.",
     };
   }
-  if (appInstallationRequired) {
-    return {
-      code: "app_installation_required",
-      message:
-        "GitHub App installation is required for PR sync. Install GitRank GitHub App for your account and retry sync.",
-    };
-  }
-  if (appInstallationUnavailable) {
-    return {
-      code: "app_installation_unavailable",
-      message:
-        "GitHub App installation token is unavailable. Verify app credentials and installation state, then retry sync.",
-    };
-  }
-  if (appRuntimeRequired) {
-    return {
-      code: "app_runtime_required",
-      message:
-        "Backend sync runtime rejected a non-App extraction path. Restart services and retry so sync runs through GitHub App installation tokens only.",
-    };
-  }
-  if (userSyncActorMismatch) {
-    return {
-      code: "user_sync_actor_mismatch",
-      message:
-        "Sync request user does not match the signed-in GitHub account. Reconnect GitHub and retry.",
-    };
+  if (appSyncFailureFromMetrics) {
+    return appSyncFailureDiagnostic(appSyncFailureFromMetrics);
   }
   if (scoreReplayMismatch) {
     const selectedTargets = selectedAuthoredPRs > 0 ? selectedAuthoredPRs : "new";
@@ -394,7 +354,7 @@ export { metricCount };
 
 function deriveAppSyncFailureCode(
   normalizedLastError: string,
-): "app_installation_required" | "app_installation_unavailable" | "app_runtime_required" | "sync_config_unavailable" | "user_sync_actor_mismatch" | null {
+): AppSyncFailureCode | null {
   if (!normalizedLastError) {
     return null;
   }
@@ -426,4 +386,32 @@ function deriveAppSyncFailureCode(
     return "user_sync_actor_mismatch";
   }
   return null;
+}
+
+function deriveAppSyncFailureCodeFromMetrics(
+  metrics: Record<string, number>,
+): AppSyncFailureCode | null {
+  if (metricCount(metrics, "app_installation_required") > 0) {
+    return "app_installation_required";
+  }
+  if (metricCount(metrics, "app_installation_unavailable") > 0) {
+    return "app_installation_unavailable";
+  }
+  if (metricCount(metrics, "strict_app_runtime_required") > 0) {
+    return "app_runtime_required";
+  }
+  if (metricCount(metrics, "sync_config_unavailable") > 0) {
+    return "sync_config_unavailable";
+  }
+  if (metricCount(metrics, "user_sync_actor_mismatch") > 0) {
+    return "user_sync_actor_mismatch";
+  }
+  return null;
+}
+
+function appSyncFailureDiagnostic(code: AppSyncFailureCode): SyncRunDiagnostic {
+  return {
+    code,
+    message: APP_SYNC_FAILURE_MESSAGES[code],
+  };
 }
