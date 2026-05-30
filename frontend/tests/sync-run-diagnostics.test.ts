@@ -165,6 +165,27 @@ describe("describeSyncRunOutcome", () => {
     expect(outcome.message).toContain("installation token is unavailable");
   });
 
+  it("returns user-sync-actor-mismatch from last_error when user identity guard fails", () => {
+    const outcome = describeSyncRunOutcome({
+      ...run(undefined),
+      status: "failed",
+      last_error:
+        "github-ingestor user sync failed [user_sync_actor_mismatch]: requested user must match authenticated github login for user sync",
+    });
+    expect(outcome.code).toBe("user_sync_actor_mismatch");
+    expect(outcome.message).toContain("does not match");
+  });
+
+  it("returns user-sync-actor-mismatch when backend metrics include mismatch marker", () => {
+    const outcome = describeSyncRunOutcome(
+      run({
+        user_sync_actor_mismatch: 1,
+      }),
+    );
+    expect(outcome.code).toBe("user_sync_actor_mismatch");
+    expect(outcome.message).toContain("Reconnect GitHub");
+  });
+
   it("returns search-limited when search is incomplete", () => {
     const outcome = describeSyncRunOutcome(
       run({

@@ -330,14 +330,13 @@ func (e *Executor) SyncUser(
 	if !isValidGitHubLogin(user) {
 		return response, fmt.Errorf("user must be a GitHub login")
 	}
+	e.markQueuedSyncRunRunning(ctx, correlationID, "user", user, startedAt)
 	actorGitHubLogin := strings.TrimSpace(actor.GitHubLogin)
 	if actorGitHubLogin != "" && !strings.EqualFold(actorGitHubLogin, user) {
 		mismatchErr := ErrUserSyncActorMismatch
-		e.markQueuedSyncRunRunning(ctx, correlationID, "user", user, startedAt)
 		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, mismatchErr, PersistResult{})
 		return response, mismatchErr
 	}
-	e.markQueuedSyncRunRunning(ctx, correlationID, "user", user, startedAt)
 	if !e.tryAcquireUserSync(user) {
 		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, ErrUserSyncInProgress, PersistResult{})
 		return response, ErrUserSyncInProgress

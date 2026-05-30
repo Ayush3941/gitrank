@@ -8,6 +8,7 @@ export type SyncRunDiagnostic = {
     | "unsupported_api_version"
     | "app_installation_required"
     | "app_installation_unavailable"
+    | "user_sync_actor_mismatch"
     | "score_replay_mismatch"
     | "score_replay_failed"
     | "profile_refresh_failed"
@@ -75,6 +76,13 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
         "GitHub App installation token is unavailable. Verify app credentials and installation state, then retry sync.",
     };
   }
+  if (appSyncFailureCode === "user_sync_actor_mismatch") {
+    return {
+      code: "user_sync_actor_mismatch",
+      message:
+        "Sync request user does not match the signed-in GitHub account. Reconnect GitHub and retry.",
+    };
+  }
 
   const normalizedRunType = run.run_type.trim().toLowerCase();
   const normalizedStatus = run.status.trim().toLowerCase();
@@ -118,6 +126,7 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
     metricCount(metrics, "unsupported_api_version", "authored_pull_requests_unsupported_api_version") > 0;
   const appInstallationRequired = metricCount(metrics, "app_installation_required") > 0;
   const appInstallationUnavailable = metricCount(metrics, "app_installation_unavailable") > 0;
+  const userSyncActorMismatch = metricCount(metrics, "user_sync_actor_mismatch") > 0;
   const recentSeedEmpty = metricCount(metrics, "authored_pull_request_recent_seed_empty") > 0;
   const broadFallbackTargets = metricCount(metrics, "authored_pull_request_broad_fallback_targets");
   const syncCapped = metricCount(metrics, "authored_pull_requests_capped") > 0;
@@ -194,6 +203,13 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
       code: "app_installation_unavailable",
       message:
         "GitHub App installation token is unavailable. Verify app credentials and installation state, then retry sync.",
+    };
+  }
+  if (userSyncActorMismatch) {
+    return {
+      code: "user_sync_actor_mismatch",
+      message:
+        "Sync request user does not match the signed-in GitHub account. Reconnect GitHub and retry.",
     };
   }
   if (scoreReplayMismatch) {
@@ -354,7 +370,7 @@ export { metricCount };
 
 function deriveAppSyncFailureCode(
   normalizedLastError: string,
-): "app_installation_required" | "app_installation_unavailable" | null {
+): "app_installation_required" | "app_installation_unavailable" | "user_sync_actor_mismatch" | null {
   if (!normalizedLastError) {
     return null;
   }
@@ -370,6 +386,12 @@ function deriveAppSyncFailureCode(
     normalizedLastError.includes("app_installation_unavailable")
   ) {
     return "app_installation_unavailable";
+  }
+  if (
+    normalizedLastError.includes("user_sync_actor_mismatch") ||
+    normalizedLastError.includes("requested user must match authenticated github login for user sync")
+  ) {
+    return "user_sync_actor_mismatch";
   }
   return null;
 }
