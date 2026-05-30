@@ -46,7 +46,6 @@ import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import { type ThemePreference, useThemePreference } from "@/hooks/use-theme-preference";
-import { describeSyncRunOutcome } from "@/features/settings/lib/sync-run-diagnostics";
 import { useAuthSession, useRefreshAuthSession } from "@/hooks/use-auth-session";
 
 type BackedPrivacyKey =
@@ -251,8 +250,6 @@ export function SettingsPageClient() {
     accountLinkStart.isPending;
   const pendingRepository = updateRepositoryVisibility.variables?.fullName ?? null;
   const hiddenRepositoryCount = data.user.repositories.filter((repository) => repository.visibility !== "Public").length;
-  const latestSyncRun = syncRunsQuery.data?.runs?.[0];
-  const latestSyncOutcome = latestSyncRun ? describeSyncRunOutcome(latestSyncRun) : null;
   const syncRunsError = sanitizeUserFacingError(
     (syncRunsQuery.error as Error | null)?.message || "",
     "settings-sync-runs",
@@ -467,12 +464,6 @@ export function SettingsPageClient() {
             dismissLabel="Dismiss account status"
           />
         )}
-        {latestSyncOutcome?.message ? (
-          <div className="neon-surface rounded-[0.8rem] px-3 py-2 text-sm">
-            <p className="text-xs text-muted">Latest sync outcome</p>
-            <p className="text-cyan-100">{latestSyncOutcome.message}</p>
-          </div>
-        ) : null}
         <div className="neon-surface rounded-[0.8rem] px-3 py-2 text-sm">
           <p className="text-xs text-muted">Session identity</p>
           {authSessionQuery.isLoading ? (

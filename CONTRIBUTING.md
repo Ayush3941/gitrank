@@ -259,6 +259,12 @@ Recent no-slowdown refinement (May 24, 2026):
 - `SegmentedTablist` now avoids viewport-restoration scroll calls entirely, and `npm run check:scroll-jumps` prevents direct scroll-jump APIs from being reintroduced in product routes.
 - Header meta chips on small screens are now horizontal rails instead of multi-line wraps, reducing header bloat and preserving actionable content density.
 
+Recent no-slop refinement (May 29, 2026):
+
+- Settings removed the redundant `Latest sync outcome` panel; sync run details stay in one place (`Sync activity`) to reduce duplicate status noise.
+- Sync activity cards no longer surface correlation IDs in the default list view; the panel now prioritizes user-actionable run state and outcomes.
+- Contribution filter helper copy was tightened to one clear sentence: categories reflect recent PR work and help choose the next lane.
+
 Recent no-slowdown refinement (May 28, 2026):
 
 - Settings now shows only real end-user controls (account, sync activity, privacy, display, repository visibility, data controls).

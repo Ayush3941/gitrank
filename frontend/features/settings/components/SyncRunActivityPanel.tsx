@@ -318,9 +318,6 @@ export function SyncRunActivityPanel({
                       {run.finished_at ? (
                         <span>Duration {runDuration(run.started_at, run.finished_at)}</span>
                       ) : null}
-                      {run.correlation_id ? (
-                        <span className="break-anywhere">Correlation {run.correlation_id}</span>
-                      ) : null}
                     </div>
                     {metricsSummary ? (
                       <p className="break-anywhere text-xs text-muted">{metricsSummary}</p>

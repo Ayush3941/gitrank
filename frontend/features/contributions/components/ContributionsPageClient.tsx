@@ -411,7 +411,7 @@ export function ContributionsPageClient() {
           onClearSearch={handleClearSearchFilter}
           statusCounts={statusCounts}
           focusCounts={focusCounts}
-          contextNote="Categories summarize recent PR topics and evidence, not permanent expertise."
+          contextNote="Categories reflect your recent PR work and help choose the next lane."
         />
       </section>
       {isLoading ? <LoadingState message="Loading contributions..." /> : null}
