@@ -88,7 +88,7 @@ export function deriveEffectiveSyncState(
   if (!user) {
     return "never_synced";
   }
-  if (hasPendingSyncRunStatuses(syncRunStatuses)) {
+  if (hasLeadingPendingSyncRunStatus(syncRunStatuses)) {
     return "syncing";
   }
   const latestStatus = latestTerminalSyncRunStatus(syncRunStatuses);
@@ -140,20 +140,14 @@ export function selectProfileSyncRunStatuses(
   return statuses;
 }
 
-function hasPendingSyncRunStatuses(syncRunStatuses: readonly string[] | undefined): boolean {
-  if (!syncRunStatuses || syncRunStatuses.length === 0) {
+function hasLeadingPendingSyncRunStatus(
+  syncRunStatuses: readonly string[] | undefined,
+): boolean {
+  const leadingStatus = leadingSyncRunStatus(syncRunStatuses);
+  if (!leadingStatus) {
     return false;
   }
-  for (const rawStatus of syncRunStatuses) {
-    const normalized = normalizeSyncRunStatusToken(rawStatus);
-    if (!normalized) {
-      continue;
-    }
-    if (ACTIVE_SYNC_RUN_STATUSES.has(normalized) || QUEUED_SYNC_RUN_STATUSES.has(normalized)) {
-      return true;
-    }
-  }
-  return false;
+  return ACTIVE_SYNC_RUN_STATUSES.has(leadingStatus) || QUEUED_SYNC_RUN_STATUSES.has(leadingStatus);
 }
 
 function latestTerminalSyncRunStatus(syncRunStatuses: readonly string[] | undefined): string | null {
@@ -166,6 +160,20 @@ function latestTerminalSyncRunStatus(syncRunStatuses: readonly string[] | undefi
       continue;
     }
     if (ACTIVE_SYNC_RUN_STATUSES.has(normalized) || QUEUED_SYNC_RUN_STATUSES.has(normalized)) {
+      continue;
+    }
+    return normalized;
+  }
+  return null;
+}
+
+function leadingSyncRunStatus(syncRunStatuses: readonly string[] | undefined): string | null {
+  if (!syncRunStatuses || syncRunStatuses.length === 0) {
+    return null;
+  }
+  for (const rawStatus of syncRunStatuses) {
+    const normalized = normalizeSyncRunStatusToken(rawStatus);
+    if (!normalized) {
       continue;
     }
     return normalized;
