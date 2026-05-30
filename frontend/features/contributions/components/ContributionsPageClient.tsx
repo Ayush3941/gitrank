@@ -438,7 +438,7 @@ export function ContributionsPageClient() {
           description={
             isFilteredNoResults
               ? "Reset filters or widen search."
-              : "Open sync settings and run a user sync to load recent PR evidence."
+              : "Keep this page open while auto-sync loads recent PR evidence."
           }
           actionLabel={isFilteredNoResults ? "Reset filters" : "Open sync settings"}
           actionHref={isFilteredNoResults ? undefined : "/dashboard/settings"}

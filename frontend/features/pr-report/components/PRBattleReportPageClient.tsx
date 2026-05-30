@@ -789,7 +789,7 @@ function buildReportStateGuidance({
       tone: "warning",
       label: "Refresh pending",
       message:
-        "This report is behind the latest sync. Run sync and reopen this report.",
+        "This report is behind the latest sync. Reopen it after sync settles.",
       cta: "Open settings",
       href: "/dashboard/settings",
     };

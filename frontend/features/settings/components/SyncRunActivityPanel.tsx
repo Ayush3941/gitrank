@@ -268,7 +268,7 @@ export function SyncRunActivityPanel({
           </div>
         ) : runs.length === 0 ? (
           <div className={`neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}>
-            <p>No sync runs yet. Open dashboard to trigger auto-sync.</p>
+            <p>No sync runs yet. Open dashboard to start auto-sync.</p>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" variant="secondary">
                 <Link href="/dashboard" prefetch={false}>Open dashboard</Link>
@@ -277,7 +277,7 @@ export function SyncRunActivityPanel({
           </div>
         ) : filteredRuns.length === 0 ? (
           <div className={`neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}>
-            <p>No sync runs match the current search or status filter.</p>
+            <p>No sync runs match this filter.</p>
             <div className="flex flex-wrap gap-2">
               <Button
                 type="button"

@@ -38,6 +38,9 @@ export type SyncRunDiagnostic = {
 
 export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic {
   const metrics = run.metrics;
+  const normalizedLastError = (run.last_error ?? "").toLowerCase();
+  const appSyncFailureCode = deriveAppSyncFailureCode(normalizedLastError);
+
   if (
     metrics &&
     metricCount(metrics, "superseded_by_terminal_correlation", "superseded_by_terminal_logical_scope") > 0
@@ -49,12 +52,27 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
     };
   }
 
-  const normalizedLastError = (run.last_error ?? "").toLowerCase();
   if (normalizedLastError.includes("superseded by a newer terminal run")) {
     return {
       code: "superseded_active_row",
       message:
         "A stale in-progress run row was superseded by a newer terminal run for the same sync target.",
+    };
+  }
+
+  if (appSyncFailureCode === "app_installation_required") {
+    return {
+      code: "app_installation_required",
+      message:
+        "GitHub App installation is required for PR sync. Install GitRank GitHub App for your account and retry sync.",
+    };
+  }
+
+  if (appSyncFailureCode === "app_installation_unavailable") {
+    return {
+      code: "app_installation_unavailable",
+      message:
+        "GitHub App installation token is unavailable. Verify app credentials and installation state, then retry sync.",
     };
   }
 
@@ -333,3 +351,25 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
 }
 
 export { metricCount };
+
+function deriveAppSyncFailureCode(
+  normalizedLastError: string,
+): "app_installation_required" | "app_installation_unavailable" | null {
+  if (!normalizedLastError) {
+    return null;
+  }
+  if (
+    normalizedLastError.includes("github_app_installation_required") ||
+    normalizedLastError.includes("app_installation_required")
+  ) {
+    return "app_installation_required";
+  }
+  if (
+    normalizedLastError.includes("sync_config_unavailable") ||
+    normalizedLastError.includes("github_app_installation_unavailable") ||
+    normalizedLastError.includes("app_installation_unavailable")
+  ) {
+    return "app_installation_unavailable";
+  }
+  return null;
+}

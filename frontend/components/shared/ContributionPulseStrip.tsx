@@ -36,9 +36,6 @@ export function ContributionPulseStrip({
           </li>
         ))}
       </ol>
-      <p className="mt-2 text-xs text-muted">
-        Each tile represents one day of evidence-backed contribution activity.
-      </p>
     </div>
   );
 }

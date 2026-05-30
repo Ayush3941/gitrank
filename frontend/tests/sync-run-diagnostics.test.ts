@@ -143,6 +143,28 @@ describe("describeSyncRunOutcome", () => {
     expect(outcome.message).toContain("installation token is unavailable");
   });
 
+  it("returns app-installation-required from last_error when metrics are missing", () => {
+    const outcome = describeSyncRunOutcome({
+      ...run(undefined),
+      status: "failed",
+      last_error:
+        "github-ingestor user sync failed [github_app_installation_required]: install app first",
+    });
+    expect(outcome.code).toBe("app_installation_required");
+    expect(outcome.message).toContain("installation is required");
+  });
+
+  it("returns app-installation-unavailable from sync_config_unavailable last_error", () => {
+    const outcome = describeSyncRunOutcome({
+      ...run(undefined),
+      status: "failed",
+      last_error:
+        "github-ingestor user sync failed [sync_config_unavailable]: github app credentials missing",
+    });
+    expect(outcome.code).toBe("app_installation_unavailable");
+    expect(outcome.message).toContain("installation token is unavailable");
+  });
+
   it("returns search-limited when search is incomplete", () => {
     const outcome = describeSyncRunOutcome(
       run({
