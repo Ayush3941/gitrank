@@ -33,6 +33,13 @@ if (cd "$ROOT_DIR" && rg -n 'repositoryClient := e\.client' "$SERVICE_DIR/execut
   fail "installation sync still falls back to base executor client instead of requiring GitHub App installation client"
 fi
 
+auth_metric_hits="$(
+  cd "$ROOT_DIR" && rg -n '"auth_installation_client"' "$SERVICE_DIR/executor.go" --glob "!**/*_test.go" | wc -l | tr -d ' '
+)"
+if [[ -z "$auth_metric_hits" || "$auth_metric_hits" -lt 6 ]]; then
+  fail "strict app-auth telemetry marker auth_installation_client is missing from one or more sync execution paths"
+fi
+
 if ! rg -q 'executorForStrictAppSyncActor\(' "$EXECUTOR_FILE"; then
   fail "strict app actor selector missing from executor sync paths"
 fi

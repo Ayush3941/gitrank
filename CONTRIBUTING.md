@@ -1804,6 +1804,7 @@ ABRA implementation checklist:
 - [x] Repo sync quality gates now include `scripts/check-api-gateway-sync-guard.sh` to prevent regressions where sync trigger/execute routes lose strict GitHub App guard coverage.
 - [x] Repo sync quality gates now include `scripts/check-github-app-sync-policy.sh` to enforce manifest-level auth policy wording and GitHub App config status derivation for sync dependencies.
 - [x] Repo sync quality gates now include `scripts/check-ingestor-sync-guard.sh` to ensure ingestor queue sync routes fail fast with `sync_config_unavailable` when GitHub App config is missing.
+- [x] Repo sync quality gates now include stricter `scripts/check-ingestor-strict-app-auth.sh` telemetry coverage for `auth_installation_client`, preventing silent regressions where sync execution stops proving installation-token auth at runtime.
 - [x] Installation sync no longer falls back to the base executor client; it now requires a GitHub App installation client and fails with explicit app-installation errors when missing.
 - [x] Repository sync now persists `partial` status when PR/issue/commit sub-fetches are skipped due bounded recoverable upstream failures, instead of over-reporting those runs as fully completed.
 - [x] PR/review surface sync now persists `partial` status when review/comment/file sub-fetches fail, while keeping intentionally policy-skipped lanes distinct from error-driven degradation.
