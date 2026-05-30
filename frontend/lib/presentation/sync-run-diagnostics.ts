@@ -1,5 +1,11 @@
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { metricCount } from "@/lib/sync/sync-run-metrics-policy";
+import {
+  appSyncFailureMessage,
+  deriveAppSyncFailureCodeFromLastError,
+  deriveAppSyncFailureCodeFromMetrics,
+  type AppSyncFailureCode,
+} from "@/lib/sync/app-sync-failure";
 
 export type SyncRunDiagnostic = {
   code:
@@ -39,33 +45,13 @@ export type SyncRunDiagnostic = {
   message: string;
 };
 
-type AppSyncFailureCode =
-  | "app_installation_required"
-  | "app_installation_unavailable"
-  | "app_runtime_required"
-  | "sync_config_unavailable"
-  | "user_sync_actor_mismatch";
-
 const SUPERSEDED_ACTIVE_ROW_MESSAGE =
   "A stale in-progress run row was superseded by a newer terminal run for the same sync target.";
-
-const APP_SYNC_FAILURE_MESSAGES: Record<AppSyncFailureCode, string> = {
-  app_installation_required:
-    "GitHub App installation is required for PR sync. Install GitRank GitHub App for your account and retry sync.",
-  app_installation_unavailable:
-    "GitHub App installation token is unavailable. Verify app credentials and installation state, then retry sync.",
-  app_runtime_required:
-    "Backend sync runtime rejected a non-App extraction path. Restart services and retry so sync runs through GitHub App installation tokens only.",
-  sync_config_unavailable:
-    "Backend GitHub App sync config is incomplete. Set required GITHUB_APP_* credentials and restart services before retrying sync.",
-  user_sync_actor_mismatch:
-    "Sync request user does not match the signed-in GitHub account. Reconnect GitHub and retry.",
-};
 
 export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic {
   const metrics = run.metrics;
   const normalizedLastError = (run.last_error ?? "").toLowerCase();
-  const appSyncFailureCode = deriveAppSyncFailureCode(normalizedLastError);
+  const appSyncFailureCode = deriveAppSyncFailureCodeFromLastError(normalizedLastError);
 
   if (
     metrics &&
@@ -352,66 +338,9 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
 
 export { metricCount };
 
-function deriveAppSyncFailureCode(
-  normalizedLastError: string,
-): AppSyncFailureCode | null {
-  if (!normalizedLastError) {
-    return null;
-  }
-  if (
-    normalizedLastError.includes("github_app_installation_required") ||
-    normalizedLastError.includes("app_installation_required")
-  ) {
-    return "app_installation_required";
-  }
-  if (
-    normalizedLastError.includes("github_app_installation_unavailable") ||
-    normalizedLastError.includes("app_installation_unavailable")
-  ) {
-    return "app_installation_unavailable";
-  }
-  if (
-    normalizedLastError.includes("github_app_runtime_required") ||
-    normalizedLastError.includes("strict github app sync runtime is required")
-  ) {
-    return "app_runtime_required";
-  }
-  if (normalizedLastError.includes("sync_config_unavailable")) {
-    return "sync_config_unavailable";
-  }
-  if (
-    normalizedLastError.includes("user_sync_actor_mismatch") ||
-    normalizedLastError.includes("requested user must match authenticated github login for user sync")
-  ) {
-    return "user_sync_actor_mismatch";
-  }
-  return null;
-}
-
-function deriveAppSyncFailureCodeFromMetrics(
-  metrics: Record<string, number>,
-): AppSyncFailureCode | null {
-  if (metricCount(metrics, "app_installation_required") > 0) {
-    return "app_installation_required";
-  }
-  if (metricCount(metrics, "app_installation_unavailable") > 0) {
-    return "app_installation_unavailable";
-  }
-  if (metricCount(metrics, "strict_app_runtime_required") > 0) {
-    return "app_runtime_required";
-  }
-  if (metricCount(metrics, "sync_config_unavailable") > 0) {
-    return "sync_config_unavailable";
-  }
-  if (metricCount(metrics, "user_sync_actor_mismatch") > 0) {
-    return "user_sync_actor_mismatch";
-  }
-  return null;
-}
-
 function appSyncFailureDiagnostic(code: AppSyncFailureCode): SyncRunDiagnostic {
   return {
     code,
-    message: APP_SYNC_FAILURE_MESSAGES[code],
+    message: appSyncFailureMessage(code),
   };
 }

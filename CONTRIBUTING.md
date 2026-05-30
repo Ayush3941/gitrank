@@ -1849,6 +1849,7 @@ ABRA implementation checklist:
 - [x] Settings account action copy no longer uses manual `Sync now` wording; it now uses `Refresh profile` to stay aligned with the auto-sync-first model.
 - [x] Settings and Contributions slop-reduction pass is live: account settings no longer shows session-debug identity/refresh controls, and the contributions page no longer duplicates dashboard momentum content.
 - [x] Sync-run diagnostics now use a centralized strict-App failure message map for metric- and last-error-driven outcomes, eliminating duplicate remediation text and preventing copy drift across the same failure codes.
+- [x] Account API sync error sanitation now reuses the same strict-App failure-code policy module as run diagnostics, so API error payload interpretation and remediation messages stay synchronized across frontend surfaces.
 - [x] Product copy now explicitly separates login vs extraction responsibilities: OAuth/sign-in language is scoped to identity flows, and sync/report copy references GitHub App-backed extraction.
 - [x] GitHub REST/GraphQL retry backoff now respects request-context cancellation and semaphore-acquire waits are context-aware, so canceled sync paths exit promptly instead of sleeping/blocking until full backoff windows elapse.
 - [x] GitHub REST/GraphQL retry backoff now honors `x-ratelimit-reset` when `x-ratelimit-remaining=0`, matching GitHub API guidance and avoiding premature retries during primary-limit exhaustion.

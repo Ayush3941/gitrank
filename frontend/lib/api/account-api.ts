@@ -1,6 +1,10 @@
 import { frontendPolicy } from "@/lib/runtime/frontend-policy";
 import { hasPartialSyncRunMetrics } from "@/lib/sync/sync-run-metrics-policy";
 import {
+  appSyncFailureMessage,
+  deriveAppSyncFailureCodeFromApiError,
+} from "@/lib/sync/app-sync-failure";
+import {
   ACTIVE_SYNC_RUN_STATUSES,
   COMPLETED_SYNC_RUN_STATUSES,
   FAILED_SYNC_RUN_STATUSES,
@@ -699,36 +703,13 @@ function sanitizeSyncExecutionError(
     }
     return "Sync authorization failed. GitRank extracts PR data through GitHub App installation tokens. Refresh session or verify app installation, then retry.";
   }
-  if (
-    normalized.includes("github app installation is required for user sync") ||
-    code === "github_app_installation_required"
-  ) {
-    return "GitHub App installation is required for PR sync. Install GitRank GitHub App for your account and retry.";
-  }
-  if (
-    normalized.includes("requested user must match authenticated github login for user sync") ||
-    code === "user_sync_actor_mismatch"
-  ) {
-    return "Sync request user does not match your signed-in GitHub account. Reconnect GitHub and retry.";
-  }
-  if (
-    normalized.includes("github app installation token unavailable for user sync") ||
-    code === "github_app_installation_unavailable"
-  ) {
-    return "GitHub App installation token is unavailable. Verify GitHub App credentials/private key and installation state, then retry sync.";
-  }
-  if (
-    normalized.includes("strict github app sync runtime is required") ||
-    code === "github_app_runtime_required"
-  ) {
-    return "Backend sync runtime rejected a non-App extraction path. Restart services and retry so sync runs through GitHub App installation tokens only.";
-  }
-  if (
-    normalized.includes("sync_config_unavailable") ||
-    normalized.includes("github app sync configuration is incomplete") ||
-    code === "sync_config_unavailable"
-  ) {
-    return "Backend GitHub App sync config is incomplete. Set required GITHUB_APP_* credentials and restart services before retrying sync.";
+  const appSyncFailureCode = deriveAppSyncFailureCodeFromApiError(message, code);
+  if (appSyncFailureCode) {
+    // Preserve account-action wording that references session identity.
+    if (appSyncFailureCode === "user_sync_actor_mismatch") {
+      return "Sync request user does not match your signed-in GitHub account. Reconnect GitHub and retry.";
+    }
+    return appSyncFailureMessage(appSyncFailureCode);
   }
   if (
     normalized.includes("not a supported version") ||
