@@ -33,12 +33,12 @@ describe("sync polling policy", () => {
     process.env[LOOKBACK_KEY] = "5";
     vi.resetModules();
 
-    let module = await import("@/lib/runtime/sync-polling-policy");
-    expect(module.syncPollingPolicy.profileSyncRunLookbackLimit).toBe(50);
+    let syncPollingModule = await import("@/lib/runtime/sync-polling-policy");
+    expect(syncPollingModule.syncPollingPolicy.profileSyncRunLookbackLimit).toBe(50);
 
     process.env[LOOKBACK_KEY] = "500";
     vi.resetModules();
-    module = await import("@/lib/runtime/sync-polling-policy");
-    expect(module.syncPollingPolicy.profileSyncRunLookbackLimit).toBe(50);
+    syncPollingModule = await import("@/lib/runtime/sync-polling-policy");
+    expect(syncPollingModule.syncPollingPolicy.profileSyncRunLookbackLimit).toBe(50);
   });
 });

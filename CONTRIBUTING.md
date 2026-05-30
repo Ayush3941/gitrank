@@ -1830,6 +1830,7 @@ ABRA implementation checklist:
 - [x] Account export audit-event limits are env-driven (`PROFILE_ACCOUNT_EXPORT_AUDIT_LIMIT`) instead of fixed store defaults.
 - [x] Contribution hook default filter/sort behavior reuses shared runtime policy constants (`CONTRIBUTION_DEFAULT_FILTER`, `CONTRIBUTION_DEFAULT_SORT`) instead of duplicate literals.
 - [x] Dashboard, Contributions, Settings, PR Report, and public profile copy was tightened to concise, action-first wording; redundant jargon and verbose fallback text were removed to keep UI intent clear.
+- [x] Dead frontend slop is pruned: unused dashboard lane modules (`BadgeShelf`, `ContributionTimelineCard`, `ScoreExplanationCard`, `SkillBreakdownCard`) and unused diagnostics hooks (`use-profile-schema`, `use-service-manifest`, `use-service-manifest-probes`) were removed.
 - [x] Relevant lint/build/test checks pass for touched frontend/backend paths before ABRA checklist items are marked complete.
 - [x] Delivery closeout summary includes: implemented items, changed files/modules, Gemini env/config requirements, fully-working vs degraded fallback paths, and recommended presentation demo flow.
 
