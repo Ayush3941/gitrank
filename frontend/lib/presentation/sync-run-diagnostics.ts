@@ -8,6 +8,7 @@ export type SyncRunDiagnostic = {
     | "unsupported_api_version"
     | "app_installation_required"
     | "app_installation_unavailable"
+    | "sync_config_unavailable"
     | "user_sync_actor_mismatch"
     | "score_replay_mismatch"
     | "score_replay_failed"
@@ -74,6 +75,13 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
       code: "app_installation_unavailable",
       message:
         "GitHub App installation token is unavailable. Verify app credentials and installation state, then retry sync.",
+    };
+  }
+  if (appSyncFailureCode === "sync_config_unavailable") {
+    return {
+      code: "sync_config_unavailable",
+      message:
+        "Backend GitHub App sync config is incomplete. Set required GITHUB_APP_* credentials and restart services before retrying sync.",
     };
   }
   if (appSyncFailureCode === "user_sync_actor_mismatch") {
@@ -370,7 +378,7 @@ export { metricCount };
 
 function deriveAppSyncFailureCode(
   normalizedLastError: string,
-): "app_installation_required" | "app_installation_unavailable" | "user_sync_actor_mismatch" | null {
+): "app_installation_required" | "app_installation_unavailable" | "sync_config_unavailable" | "user_sync_actor_mismatch" | null {
   if (!normalizedLastError) {
     return null;
   }
@@ -381,11 +389,13 @@ function deriveAppSyncFailureCode(
     return "app_installation_required";
   }
   if (
-    normalizedLastError.includes("sync_config_unavailable") ||
     normalizedLastError.includes("github_app_installation_unavailable") ||
     normalizedLastError.includes("app_installation_unavailable")
   ) {
     return "app_installation_unavailable";
+  }
+  if (normalizedLastError.includes("sync_config_unavailable")) {
+    return "sync_config_unavailable";
   }
   if (
     normalizedLastError.includes("user_sync_actor_mismatch") ||

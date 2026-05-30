@@ -154,15 +154,16 @@ describe("describeSyncRunOutcome", () => {
     expect(outcome.message).toContain("installation is required");
   });
 
-  it("returns app-installation-unavailable from sync_config_unavailable last_error", () => {
+  it("returns sync-config-unavailable from sync_config_unavailable last_error", () => {
     const outcome = describeSyncRunOutcome({
       ...run(undefined),
       status: "failed",
       last_error:
         "github-ingestor user sync failed [sync_config_unavailable]: github app credentials missing",
     });
-    expect(outcome.code).toBe("app_installation_unavailable");
-    expect(outcome.message).toContain("installation token is unavailable");
+    expect(outcome.code).toBe("sync_config_unavailable");
+    expect(outcome.message).toContain("config is incomplete");
+    expect(outcome.message).toContain("GITHUB_APP_*");
   });
 
   it("returns user-sync-actor-mismatch from last_error when user identity guard fails", () => {
