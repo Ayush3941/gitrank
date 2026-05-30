@@ -271,6 +271,7 @@ Recent strict app-auth refinement (May 30, 2026):
 - Executor strict-app cloning is now shared through a single helper, reducing duplicate per-call client wiring and drift risk in app-token-only sync paths.
 - Profile sync-state observers now query the full authenticated sync-run stream (not only `run_type=user`) so active child runs keep dashboard/settings state in `syncing` until terminal.
 - API-gateway user sync queue/execute routes now hard-bind `user` mode to the authenticated GitHub login, preventing cross-user payload overrides while keeping OAuth strictly in login/session scope.
+- Ingestor user sync queue/execute routes now apply the same actor-login binding (`X-GitRank-GitHub-Login` wins when present) so internal requests cannot drift into cross-user sync payloads.
 
 Recent no-slowdown refinement (May 28, 2026):
 

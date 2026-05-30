@@ -337,23 +337,25 @@ func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQ
 			return
 		}
 
+		actor := service.SyncRequestActor{
+			Subject:     strings.TrimSpace(r.Header.Get("X-GitRank-Subject")),
+			GitHubLogin: strings.TrimSpace(r.Header.Get("X-GitRank-GitHub-Login")),
+		}
+
 		var req contracts.SyncRequest
 		if err := httpkit.DecodeJSON(r, &req, 1<<20); err != nil {
 			httpkit.WriteError(w, http.StatusBadRequest, "invalid_json", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
 		req.Mode = "user"
-		req.User = strings.TrimSpace(req.User)
+		req.User = normalizeUserSyncLogin(req.User, actor.GitHubLogin)
 		if err := req.Normalize(); err != nil {
 			httpkit.WriteError(w, http.StatusBadRequest, "invalid_sync_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
 
 		startedAt := time.Now().UTC()
-		response, err := executor.SyncUser(r.Context(), req, service.SyncRequestActor{
-			Subject:     strings.TrimSpace(r.Header.Get("X-GitRank-Subject")),
-			GitHubLogin: strings.TrimSpace(r.Header.Get("X-GitRank-GitHub-Login")),
-		}, httpkit.RequestIDFromContext(r.Context()), startedAt)
+		response, err := executor.SyncUser(r.Context(), req, actor, httpkit.RequestIDFromContext(r.Context()), startedAt)
 		if err != nil {
 			writeSyncExecutionError(w, r, "github_user_sync_failed", err)
 			return
@@ -656,6 +658,13 @@ func registerSyncRoute(mux *http.ServeMux, cfg config.App, syncConfigError error
 			return
 		}
 		req.Mode = mode
+		actor := service.SyncRequestActor{
+			Subject:     strings.TrimSpace(r.Header.Get("X-GitRank-Subject")),
+			GitHubLogin: strings.TrimSpace(r.Header.Get("X-GitRank-GitHub-Login")),
+		}
+		if mode == "user" {
+			req.User = normalizeUserSyncLogin(req.User, actor.GitHubLogin)
+		}
 
 		jobs, err := store.BuildSyncJobs(req, githubSyncQueueName, httpkit.RequestIDFromContext(r.Context()), cfg.Scheduler.MaxAttempts)
 		if err != nil {
@@ -669,10 +678,6 @@ func registerSyncRoute(mux *http.ServeMux, cfg config.App, syncConfigError error
 			return
 		}
 		if persistence != nil {
-			actor := service.SyncRequestActor{
-				Subject:     strings.TrimSpace(r.Header.Get("X-GitRank-Subject")),
-				GitHubLogin: strings.TrimSpace(r.Header.Get("X-GitRank-GitHub-Login")),
-			}
 			if err := persistence.RecordQueuedSyncRequest(r.Context(), req, actor, jobs, httpkit.RequestIDFromContext(r.Context()), start.UTC()); err != nil {
 				status = "traceability_failed"
 				httpkit.WriteError(w, http.StatusInternalServerError, "sync_traceability_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
@@ -723,6 +728,14 @@ func githubIngestorSyncMode(mode string) bool {
 	default:
 		return false
 	}
+}
+
+func normalizeUserSyncLogin(requestedUser, actorGitHubLogin string) string {
+	actorLogin := strings.TrimSpace(actorGitHubLogin)
+	if actorLogin != "" {
+		return actorLogin
+	}
+	return strings.TrimSpace(requestedUser)
 }
 
 func webhookSubject(envelope githubapi.WebhookEnvelope) string {

@@ -17,6 +17,7 @@ import (
 
 	"github.com/gitrank/gitrank/packages/config"
 	"github.com/gitrank/gitrank/packages/contracts"
+	"github.com/gitrank/gitrank/packages/store"
 	"github.com/gitrank/gitrank/services/github-ingestor/internal/service"
 )
 
@@ -286,6 +287,49 @@ func TestSyncQueueRouteRejectsWhenGitHubAppSyncConfigMissing(t *testing.T) {
 	}
 }
 
+func TestSyncUserQueueRouteUsesActorLoginWhenProvided(t *testing.T) {
+	cfg := testConfig()
+	queue := store.NewInMemoryJobQueue()
+	router := NewRouterWithStores(
+		cfg,
+		store.NewInMemoryDeliveryStore(cfg.GitHub.DedupeTTL),
+		queue,
+		nil,
+		nil,
+		testLogger(),
+		"test",
+	)
+	request := httptest.NewRequest(http.MethodPost, "/v1/sync/user", bytes.NewReader([]byte(`{"user":"someone-else"}`)))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("X-GitRank-GitHub-Login", "octocat")
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusAccepted {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusAccepted, response.Body.String())
+	}
+	jobs := queue.Jobs()
+	if len(jobs) != 1 {
+		t.Fatalf("jobs len = %d, want 1", len(jobs))
+	}
+	var payload map[string]any
+	if err := json.Unmarshal(jobs[0].Payload, &payload); err != nil {
+		t.Fatalf("unmarshal job payload: %v", err)
+	}
+	rawUser, ok := payload["user"]
+	if !ok {
+		t.Fatalf("payload user missing: %+v", payload)
+	}
+	user, ok := rawUser.(string)
+	if !ok {
+		t.Fatalf("payload user type = %T, want string", rawUser)
+	}
+	if user != "octocat" {
+		t.Fatalf("payload user = %q, want %q", user, "octocat")
+	}
+}
+
 func TestSyncRepositoryRouteRejectsUnsafeRepository(t *testing.T) {
 	router := NewRouter(testConfig(), testLogger(), "test")
 	request := httptest.NewRequest(http.MethodPost, "/v1/sync/repository", bytes.NewReader([]byte(`{"repository":"octo/repo/extra"}`)))
@@ -488,6 +532,20 @@ func TestWriteSyncExecutionErrorMapsAppFailures(t *testing.T) {
 				t.Fatalf("error code = %q, want %q", out.Error.Code, tc.wantCode)
 			}
 		})
+	}
+}
+
+func TestNormalizeUserSyncLoginPrefersActorLogin(t *testing.T) {
+	got := normalizeUserSyncLogin("someone-else", "octocat")
+	if got != "octocat" {
+		t.Fatalf("normalizeUserSyncLogin() = %q, want %q", got, "octocat")
+	}
+}
+
+func TestNormalizeUserSyncLoginFallsBackToRequestedUser(t *testing.T) {
+	got := normalizeUserSyncLogin("octocat", "")
+	if got != "octocat" {
+		t.Fatalf("normalizeUserSyncLogin() = %q, want %q", got, "octocat")
 	}
 }
 

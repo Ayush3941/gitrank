@@ -157,6 +157,7 @@ If `GITRANK_ENV_FILE` is unset, frontend runtime falls back to `../gitrank/.env`
 - Repository, pull-request, and review execute routes now follow the same fail-closed rule: they require GitHub App installation credentials and return explicit app/bootstrap errors instead of generic sync failures.
 - Strict request-level app-auth now prioritizes explicit `installation_id` when provided; actor-login installation matching is only used when no installation ID is supplied.
 - Gateway user-sync routes now enforce authenticated-login ownership (`req.user` is normalized to the current session GitHub login), preventing cross-user sync payload overrides.
+- Ingestor queue/execute user-sync routes also normalize `user` to `X-GitRank-GitHub-Login` when present, adding defense-in-depth against cross-user payload overrides on internal hops.
 - Scheduler/webhook-triggered repository/PR/review sync still works without user-login headers by using explicit `installation_id` app-token resolution.
 - Scheduler sync job payloads now preserve optional `installation_id` and `user` context, and scheduler execution forwards `X-GitRank-GitHub-Login`/`X-GitRank-Subject` when user context is present.
 - Settings sync execute/queue controls now forward optional `user` and `installation_id` context for repository/PR/review/issue/commit sync actions, improving strict app-auth resolution from manual execution paths.
