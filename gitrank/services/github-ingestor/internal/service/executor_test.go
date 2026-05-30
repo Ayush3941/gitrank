@@ -1100,6 +1100,192 @@ func TestExecutorFetchRepositoryRejectsNonStrictRuntime(t *testing.T) {
 	}
 }
 
+func TestExecutorExtractionFetchesRejectNonStrictRuntime(t *testing.T) {
+	t.Parallel()
+
+	newNonStrictExecutor := func(t *testing.T) (*Executor, *int) {
+		t.Helper()
+
+		requests := 0
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			requests++
+			w.Header().Set("Content-Type", "application/json")
+			_ = json.NewEncoder(w).Encode(map[string]any{})
+		}))
+		t.Cleanup(server.Close)
+
+		client, err := githubapi.NewRESTClient(githubapi.ClientConfig{
+			BaseURL:          server.URL,
+			APIVersion:       "2026-03-10",
+			UserAgent:        "GitRank/test",
+			HTTPClient:       server.Client(),
+			SecondaryBackoff: time.Millisecond,
+			MaxConcurrency:   1,
+		})
+		if err != nil {
+			t.Fatalf("NewRESTClient() error = %v", err)
+		}
+
+		return NewExecutor(config.App{}, nil, client), &requests
+	}
+
+	tests := []struct {
+		name string
+		call func(context.Context, *Executor) error
+	}{
+		{
+			name: "fetchPullRequest",
+			call: func(ctx context.Context, executor *Executor) error {
+				_, err := executor.fetchPullRequest(ctx, "octo", "repo", 1)
+				return err
+			},
+		},
+		{
+			name: "fetchPullRequestReviews",
+			call: func(ctx context.Context, executor *Executor) error {
+				_, err := executor.fetchPullRequestReviews(ctx, "octo", "repo", 1)
+				return err
+			},
+		},
+		{
+			name: "fetchPullRequestReviewComments",
+			call: func(ctx context.Context, executor *Executor) error {
+				_, err := executor.fetchPullRequestReviewComments(ctx, "octo", "repo", 1)
+				return err
+			},
+		},
+		{
+			name: "fetchPullRequestFilesWithPageSize",
+			call: func(ctx context.Context, executor *Executor) error {
+				_, err := executor.fetchPullRequestFilesWithPageSize(ctx, "octo", "repo", 1, 30)
+				return err
+			},
+		},
+		{
+			name: "fetchIssue",
+			call: func(ctx context.Context, executor *Executor) error {
+				_, err := executor.fetchIssue(ctx, "octo", "repo", 1)
+				return err
+			},
+		},
+		{
+			name: "fetchCommit",
+			call: func(ctx context.Context, executor *Executor) error {
+				_, err := executor.fetchCommit(ctx, "octo", "repo", "deadbeef")
+				return err
+			},
+		},
+		{
+			name: "fetchPaginatedResourceRows",
+			call: func(ctx context.Context, executor *Executor) error {
+				_, err := executor.fetchPaginatedResourceRows(ctx, "/repos/octo/repo/pulls", nil, 1, 20)
+				return err
+			},
+		},
+		{
+			name: "fetchRepository",
+			call: func(ctx context.Context, executor *Executor) error {
+				_, err := executor.fetchRepository(ctx, "octo", "repo")
+				return err
+			},
+		},
+		{
+			name: "fetchPullRequestSummaries",
+			call: func(ctx context.Context, executor *Executor) error {
+				_, err := executor.fetchPullRequestSummaries(ctx, "octo", "repo", 20)
+				return err
+			},
+		},
+		{
+			name: "fetchPullRequestsRESTDetails",
+			call: func(ctx context.Context, executor *Executor) error {
+				_, _, err := executor.fetchPullRequestsRESTDetails(
+					ctx,
+					"octo",
+					"repo",
+					[]map[string]any{{"number": 1}},
+					20,
+				)
+				return err
+			},
+		},
+		{
+			name: "fetchPullRequests",
+			call: func(ctx context.Context, executor *Executor) error {
+				_, _, err := executor.fetchPullRequests(ctx, "octo", "repo")
+				return err
+			},
+		},
+		{
+			name: "fetchIssues",
+			call: func(ctx context.Context, executor *Executor) error {
+				_, err := executor.fetchIssues(ctx, "octo", "repo")
+				return err
+			},
+		},
+		{
+			name: "fetchCommits",
+			call: func(ctx context.Context, executor *Executor) error {
+				_, err := executor.fetchCommits(ctx, "octo", "repo")
+				return err
+			},
+		},
+		{
+			name: "fetchAuthoredPullRequestTargets",
+			call: func(ctx context.Context, executor *Executor) error {
+				_, err := executor.fetchAuthoredPullRequestTargets(
+					ctx,
+					"octocat",
+					10,
+					authoredPRHistoryCursor{},
+					time.Now().UTC(),
+				)
+				return err
+			},
+		},
+		{
+			name: "discoverAuthoredPullRequestTargetsInWindow",
+			call: func(ctx context.Context, executor *Executor) error {
+				_, _, err := executor.discoverAuthoredPullRequestTargetsInWindow(
+					ctx,
+					"octocat",
+					authoredPullRequestWindow{
+						Qualifier: "updated",
+						Start:     time.Now().Add(-2 * time.Hour).UTC(),
+						End:       time.Now().UTC(),
+					},
+					100,
+					0,
+					10,
+				)
+				return err
+			},
+		},
+		{
+			name: "discoverAuthoredPullRequestTargetsBroad",
+			call: func(ctx context.Context, executor *Executor) error {
+				_, _, err := executor.discoverAuthoredPullRequestTargetsBroad(ctx, "octocat", 100, 10)
+				return err
+			},
+		},
+	}
+
+	ctx := context.Background()
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			executor, requests := newNonStrictExecutor(t)
+			err := test.call(ctx, executor)
+			if !errors.Is(err, ErrStrictGitHubAppRuntimeRequired) {
+				t.Fatalf("%s error = %v, want ErrStrictGitHubAppRuntimeRequired", test.name, err)
+			}
+			if *requests != 0 {
+				t.Fatalf("%s requests = %d, want 0 when strict runtime guard rejects non-strict extractor", test.name, *requests)
+			}
+		})
+	}
+}
+
 func TestExecutorForUserSyncActorUsesInstallationWhenAvailable(t *testing.T) {
 	t.Parallel()
 

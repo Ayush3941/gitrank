@@ -80,6 +80,28 @@ if [[ -z "$strict_runtime_guard_hits" || "$strict_runtime_guard_hits" -lt 8 ]]; 
   fail "strict-app runtime guard must be enforced across GitHub extraction fetch paths"
 fi
 
+strict_discovery_window_line="$(
+  cd "$ROOT_DIR" && rg -n 'func \(e \*Executor\) discoverAuthoredPullRequestTargetsInWindow\(' "$SERVICE_DIR/executor.go" --glob "!**/*_test.go" | head -n 1 | cut -d: -f1
+)"
+if [[ -z "$strict_discovery_window_line" ]]; then
+  fail "discoverAuthoredPullRequestTargetsInWindow() is missing"
+fi
+if ! sed -n "${strict_discovery_window_line},$((strict_discovery_window_line + 20))p" "$SERVICE_DIR/executor.go" \
+  | rg -q 'if err := e\.ensureStrictGitHubAppRuntime\(\); err != nil'; then
+  fail "discoverAuthoredPullRequestTargetsInWindow() must enforce strict app runtime before GitHub search calls"
+fi
+
+strict_discovery_broad_line="$(
+  cd "$ROOT_DIR" && rg -n 'func \(e \*Executor\) discoverAuthoredPullRequestTargetsBroad\(' "$SERVICE_DIR/executor.go" --glob "!**/*_test.go" | head -n 1 | cut -d: -f1
+)"
+if [[ -z "$strict_discovery_broad_line" ]]; then
+  fail "discoverAuthoredPullRequestTargetsBroad() is missing"
+fi
+if ! sed -n "${strict_discovery_broad_line},$((strict_discovery_broad_line + 20))p" "$SERVICE_DIR/executor.go" \
+  | rg -q 'if err := e\.ensureStrictGitHubAppRuntime\(\); err != nil'; then
+  fail "discoverAuthoredPullRequestTargetsBroad() must enforce strict app runtime before GitHub search calls"
+fi
+
 if ! rg -q 'func \(e \*Executor\) executorForUserSyncActor\(ctx context.Context, actor SyncRequestActor\) \(\*Executor, error\)' "$GRAPHQL_BATCH_FILE"; then
   fail "user sync actor selector must return strict installation runtime only (no credential-source fallback)"
 fi

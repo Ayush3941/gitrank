@@ -1670,6 +1670,9 @@ func (e *Executor) discoverAuthoredPullRequestTargetsInWindow(
 	targetLimit int,
 ) ([]authoredPullRequestTarget, authoredPullRequestDiscoveryStats, error) {
 	stats := authoredPullRequestDiscoveryStats{}
+	if err := e.ensureStrictGitHubAppRuntime(); err != nil {
+		return nil, stats, err
+	}
 	if targetLimit <= 0 {
 		return []authoredPullRequestTarget{}, stats, nil
 	}
@@ -1803,6 +1806,9 @@ func (e *Executor) discoverAuthoredPullRequestTargetsBroad(
 	targetLimit int,
 ) ([]authoredPullRequestTarget, authoredPullRequestDiscoveryStats, error) {
 	stats := authoredPullRequestDiscoveryStats{}
+	if err := e.ensureStrictGitHubAppRuntime(); err != nil {
+		return nil, stats, err
+	}
 	if targetLimit <= 0 {
 		return []authoredPullRequestTarget{}, stats, nil
 	}
