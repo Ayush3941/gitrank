@@ -338,6 +338,8 @@ func shouldDeadLetterImmediately(errorMessage string) bool {
 		return true
 	case strings.Contains(normalized, "github_app_installation_unavailable"):
 		return true
+	case strings.Contains(normalized, "github_app_runtime_required"):
+		return true
 	default:
 		return false
 	}

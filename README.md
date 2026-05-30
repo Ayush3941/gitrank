@@ -155,6 +155,7 @@ If `GITRANK_ENV_FILE` is unset, frontend runtime falls back to `../gitrank/.env`
 - If no direct user-owned installation mapping exists, sync now probes persisted active App installations with a bounded authored-PR search and selects the first installation that can see the actor’s PR evidence, keeping org-repo PR extraction App-only without OAuth token discovery.
 - Sync extraction error contracts now expose only strict App-installation signals (`github_app_installation_required`, `github_app_installation_unavailable`); OAuth-required extraction error codes were removed from ingestor and frontend diagnostics.
 - Extraction runtime now fails closed when GitHub fetch helpers are invoked outside strict App runtime clones (`github_app_runtime_required`), preventing accidental fallback to non-App extraction paths.
+- Scheduler dead-letter policy now treats `github_app_runtime_required` as non-retryable, so strict-runtime policy violations do not burn retry budgets.
 - Repository, pull-request, and review execute routes now follow the same fail-closed rule: they require GitHub App installation credentials and return explicit app/bootstrap errors instead of generic sync failures.
 - Strict request-level app-auth now prioritizes explicit `installation_id` when provided; actor-login installation matching is only used when no installation ID is supplied.
 - Gateway user-sync routes now enforce authenticated-login ownership (`req.user` is normalized to the current session GitHub login), preventing cross-user sync payload overrides.

@@ -2168,6 +2168,58 @@ func TestRunNextDeadLettersRepositoryJobOnSyncConfigUnavailable(t *testing.T) {
 	}
 }
 
+func TestRunNextDeadLettersRepositoryJobOnStrictAppRuntimeRequired(t *testing.T) {
+	now := time.Now().UTC().Add(3 * time.Minute).Truncate(time.Second)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusServiceUnavailable)
+		_ = json.NewEncoder(w).Encode(contracts.NewErrorResponse(
+			"github_app_runtime_required",
+			"strict github app sync runtime is required before extracting github contribution data",
+			"",
+		))
+	}))
+	defer server.Close()
+
+	cfg := testServiceConfig()
+	cfg.Services.GitHubIngestorBaseURL = server.URL
+	cfg.Services.RequestTimeout = time.Second
+	cfg.Scheduler.RetryBackoff = time.Second
+	scheduler := New(cfg)
+
+	enqueue, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "repository", Repository: "octo/repo"}, "strict-runtime-no-retry", now)
+	if err != nil {
+		t.Fatalf("EnqueueSync() error = %v", err)
+	}
+
+	run, err := scheduler.RunNext(context.Background(), now)
+	if err != nil {
+		t.Fatalf("RunNext() error = %v", err)
+	}
+	if run.Status != "dead_lettered" {
+		t.Fatalf("run status = %q, want dead_lettered", run.Status)
+	}
+	if run.Job == nil {
+		t.Fatal("run job = nil, want failed job view")
+	}
+	if run.Job.ID != enqueue.JobIDs[0] {
+		t.Fatalf("run job id = %q, want %q", run.Job.ID, enqueue.JobIDs[0])
+	}
+	if run.Job.AttemptCount != cfg.Scheduler.MaxAttempts {
+		t.Fatalf("run job attempt_count = %d, want %d", run.Job.AttemptCount, cfg.Scheduler.MaxAttempts)
+	}
+
+	queue := scheduler.QueueStatus(now, contracts.SchedulerJobFilter{Repository: "octo/repo"})
+	if queue.QueueDepth != 0 {
+		t.Fatalf("queue depth = %d, want 0 after immediate dead-letter", queue.QueueDepth)
+	}
+	if queue.DeadLetters != 1 {
+		t.Fatalf("queue dead_letters = %d, want 1 after immediate dead-letter", queue.DeadLetters)
+	}
+	if len(queue.Jobs) != 1 || queue.Jobs[0].Status != string(store.JobDeadLetter) {
+		t.Fatalf("queue jobs = %+v, want one dead-lettered job", queue.Jobs)
+	}
+}
+
 func TestShouldDeadLetterImmediately(t *testing.T) {
 	t.Parallel()
 
@@ -2189,6 +2241,11 @@ func TestShouldDeadLetterImmediately(t *testing.T) {
 		{
 			name:    "installation unavailable is non-retryable",
 			message: "github-ingestor repository sync failed [github_app_installation_unavailable]: app unavailable",
+			want:    true,
+		},
+		{
+			name:    "strict app runtime required is non-retryable",
+			message: "github-ingestor repository sync failed [github_app_runtime_required]: strict github app sync runtime is required",
 			want:    true,
 		},
 		{
