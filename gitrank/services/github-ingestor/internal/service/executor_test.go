@@ -1285,25 +1285,16 @@ func TestSelectActorInstallationClientReturnsFirstEnabledForAccountScopedInstall
 	t.Parallel()
 
 	firstClient := &githubapi.RESTClient{}
-	secondClient := &githubapi.RESTClient{}
-	matchCalls := 0
 
 	client, enabled, err := selectActorInstallationClient(
 		[]int64{101, 202},
-		false,
 		func(installationID int64) (*githubapi.RESTClient, bool, error) {
 			switch installationID {
 			case 101:
 				return firstClient, true, nil
-			case 202:
-				return secondClient, true, nil
 			default:
 				return nil, false, nil
 			}
-		},
-		func(*githubapi.RESTClient) (bool, error) {
-			matchCalls++
-			return true, nil
 		},
 	)
 	if err != nil {
@@ -1315,33 +1306,23 @@ func TestSelectActorInstallationClientReturnsFirstEnabledForAccountScopedInstall
 	if client != firstClient {
 		t.Fatalf("selectActorInstallationClient() client = %p, want first account-scoped installation client %p", client, firstClient)
 	}
-	if matchCalls != 0 {
-		t.Fatalf("matchCalls = %d, want 0 for account-scoped selection", matchCalls)
-	}
 }
 
-func TestSelectActorInstallationClientReturnsMatchedClientWhenProbingGlobalInstallations(t *testing.T) {
+func TestSelectActorInstallationClientSkipsDisabledInstallations(t *testing.T) {
 	t.Parallel()
 
-	firstClient := &githubapi.RESTClient{}
 	secondClient := &githubapi.RESTClient{}
-	matchCalls := 0
 
 	client, enabled, err := selectActorInstallationClient(
 		[]int64{10, 20},
-		true,
 		func(installationID int64) (*githubapi.RESTClient, bool, error) {
 			if installationID == 10 {
-				return firstClient, true, nil
+				return nil, false, nil
 			}
 			if installationID == 20 {
 				return secondClient, true, nil
 			}
 			return nil, false, nil
-		},
-		func(current *githubapi.RESTClient) (bool, error) {
-			matchCalls++
-			return current == secondClient, nil
 		},
 	)
 	if err != nil {
@@ -1351,51 +1332,40 @@ func TestSelectActorInstallationClientReturnsMatchedClientWhenProbingGlobalInsta
 		t.Fatal("selectActorInstallationClient() enabled = false, want true")
 	}
 	if client != secondClient {
-		t.Fatalf("selectActorInstallationClient() client = %p, want matched installation client %p", client, secondClient)
-	}
-	if matchCalls != 2 {
-		t.Fatalf("matchCalls = %d, want 2 while probing global installations", matchCalls)
+		t.Fatalf("selectActorInstallationClient() client = %p, want first enabled installation client %p", client, secondClient)
 	}
 }
 
-func TestSelectActorInstallationClientFailsClosedWhenNoGlobalInstallationMatches(t *testing.T) {
+func TestSelectActorInstallationClientFailsClosedWhenNoInstallationEnabled(t *testing.T) {
 	t.Parallel()
 
 	client, enabled, err := selectActorInstallationClient(
 		[]int64{11, 22},
-		true,
 		func(int64) (*githubapi.RESTClient, bool, error) {
-			return &githubapi.RESTClient{}, true, nil
-		},
-		func(*githubapi.RESTClient) (bool, error) {
-			return false, nil
+			return nil, false, nil
 		},
 	)
 	if err != nil {
 		t.Fatalf("selectActorInstallationClient() error = %v", err)
 	}
 	if enabled {
-		t.Fatal("selectActorInstallationClient() enabled = true, want false when no installation matches actor visibility")
+		t.Fatal("selectActorInstallationClient() enabled = true, want false when no installation is enabled")
 	}
 	if client != nil {
-		t.Fatalf("selectActorInstallationClient() client = %p, want nil when no installation matches actor visibility", client)
+		t.Fatalf("selectActorInstallationClient() client = %p, want nil when no installation is enabled", client)
 	}
 }
 
-func TestSelectActorInstallationClientReturnsLastErrorWhenGlobalProbeFails(t *testing.T) {
+func TestSelectActorInstallationClientReturnsLastErrorWhenResolversFail(t *testing.T) {
 	t.Parallel()
 
 	client, enabled, err := selectActorInstallationClient(
 		[]int64{31, 32},
-		true,
 		func(installationID int64) (*githubapi.RESTClient, bool, error) {
 			if installationID == 31 {
 				return nil, false, errors.New("mint token failed for installation 31")
 			}
 			return nil, false, errors.New("mint token failed for installation 32")
-		},
-		func(*githubapi.RESTClient) (bool, error) {
-			return false, nil
 		},
 	)
 	if err == nil {
@@ -1409,90 +1379,6 @@ func TestSelectActorInstallationClientReturnsLastErrorWhenGlobalProbeFails(t *te
 	}
 	if client != nil {
 		t.Fatalf("selectActorInstallationClient() client = %p, want nil on resolver errors", client)
-	}
-}
-
-func TestInstallationClientSupportsAuthoredPullRequestsTrueWhenSearchHasHits(t *testing.T) {
-	t.Parallel()
-
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/search/issues" {
-			t.Fatalf("path = %q, want /search/issues", r.URL.Path)
-		}
-		if !strings.Contains(r.URL.Query().Get("q"), "author:ayush3941 is:pull-request") {
-			t.Fatalf("query = %q, expected authored pull-request search", r.URL.Query().Get("q"))
-		}
-		w.Header().Set("Content-Type", "application/json")
-		_ = json.NewEncoder(w).Encode(map[string]any{
-			"total_count":        1,
-			"incomplete_results": false,
-			"items": []map[string]any{
-				{
-					"number":         1,
-					"repository_url": "https://api.github.com/repos/octo/repo",
-					"pull_request": map[string]any{
-						"url": "https://api.github.com/repos/octo/repo/pulls/1",
-					},
-				},
-			},
-		})
-	}))
-	defer server.Close()
-
-	client, err := githubapi.NewRESTClient(githubapi.ClientConfig{
-		BaseURL:          server.URL,
-		APIVersion:       "2026-03-10",
-		UserAgent:        "GitRank/test",
-		HTTPClient:       server.Client(),
-		SecondaryBackoff: time.Millisecond,
-		MaxConcurrency:   1,
-	})
-	if err != nil {
-		t.Fatalf("NewRESTClient() error = %v", err)
-	}
-
-	executor := &Executor{}
-	supported, err := executor.installationClientSupportsAuthoredPullRequests(context.Background(), client, "ayush3941")
-	if err != nil {
-		t.Fatalf("installationClientSupportsAuthoredPullRequests() error = %v", err)
-	}
-	if !supported {
-		t.Fatal("installationClientSupportsAuthoredPullRequests() = false, want true")
-	}
-}
-
-func TestInstallationClientSupportsAuthoredPullRequestsFalseWhenSearchEmpty(t *testing.T) {
-	t.Parallel()
-
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_ = json.NewEncoder(w).Encode(map[string]any{
-			"total_count":        0,
-			"incomplete_results": false,
-			"items":              []map[string]any{},
-		})
-	}))
-	defer server.Close()
-
-	client, err := githubapi.NewRESTClient(githubapi.ClientConfig{
-		BaseURL:          server.URL,
-		APIVersion:       "2026-03-10",
-		UserAgent:        "GitRank/test",
-		HTTPClient:       server.Client(),
-		SecondaryBackoff: time.Millisecond,
-		MaxConcurrency:   1,
-	})
-	if err != nil {
-		t.Fatalf("NewRESTClient() error = %v", err)
-	}
-
-	executor := &Executor{}
-	supported, err := executor.installationClientSupportsAuthoredPullRequests(context.Background(), client, "ayush3941")
-	if err != nil {
-		t.Fatalf("installationClientSupportsAuthoredPullRequests() error = %v", err)
-	}
-	if supported {
-		t.Fatal("installationClientSupportsAuthoredPullRequests() = true, want false")
 	}
 }
 

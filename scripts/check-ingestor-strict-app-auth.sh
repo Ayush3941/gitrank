@@ -27,6 +27,10 @@ if (cd "$ROOT_DIR" && rg -n 'probeAllInstallations && fallbackClient' "$SERVICE_
   fail "actor installation resolution still allows arbitrary global-installation fallback"
 fi
 
+if (cd "$ROOT_DIR" && rg -n 'probeAllInstallations|installationClientSupportsAuthoredPullRequests|ActiveInstallationIDs\(' "$SERVICE_DIR/graphql_batch.go" --glob "!**/*_test.go" >/dev/null); then
+  fail "actor installation resolution must stay account-scoped without global-installation probing/search fallback"
+fi
+
 if (cd "$ROOT_DIR" && rg -n 'fetchPullRequests\([^)]*SyncRequestActor' "$SERVICE_DIR" --glob "!**/*_test.go" >/dev/null); then
   fail "fetchPullRequests still accepts actor-scoped credentials instead of strict app client flow"
 fi

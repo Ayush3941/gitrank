@@ -127,7 +127,7 @@ export function ConnectGithubPanel() {
         <div className="neon-surface rounded-[1.75rem] border-primary/22 px-4 py-4">
           <p className="text-xs font-medium text-primary">Where this goes next</p>
           <p className="mt-2 text-sm text-foreground">
-            After OAuth, GitRank redirects to <span className="font-semibold text-white">Analyzing</span> and starts sync.
+            After sign-in, GitRank redirects to <span className="font-semibold text-white">Analyzing</span> and starts GitHub App-backed sync.
           </p>
         </div>
         <div className="rounded-[1.75rem] border border-primary/18 bg-primary/8 p-4 text-sm text-muted">

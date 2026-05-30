@@ -207,7 +207,7 @@ export function LandingPage() {
             description="Scoring stays explainable. High XP requires difficulty, context, and credible review signals."
           />
           <div className="neon-tile rounded-[1.75rem] p-5">
-            <p className="text-sm text-cyan-200">Live report cards unlock after OAuth and sync.</p>
+            <p className="text-sm text-cyan-200">Live report cards unlock after GitHub sign-in and app-backed sync.</p>
             <h3 className="mt-2 text-xl font-semibold text-foreground">Report details appear once your profile sync completes.</h3>
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
               <Metric label="Difficulty" value="Scored" />

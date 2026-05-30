@@ -15,7 +15,6 @@ import (
 type githubRESTClientFactory func(githubapi.TokenSource) (*githubapi.RESTClient, error)
 
 type githubInstallationClientResolver func(int64) (*githubapi.RESTClient, bool, error)
-type githubActorInstallationMatcher func(*githubapi.RESTClient) (bool, error)
 
 func newGitHubRESTClientFactory(cfg config.App) githubRESTClientFactory {
 	return func(tokenSource githubapi.TokenSource) (*githubapi.RESTClient, error) {
@@ -56,35 +55,21 @@ func (e *Executor) installationClientForActor(ctx context.Context, actor SyncReq
 	if err != nil {
 		return nil, false, err
 	}
-	probeAllInstallations := false
 	if len(installationIDs) == 0 {
-		installationIDs, err = e.store.ActiveInstallationIDs(ctx)
-		if err != nil {
-			return nil, false, err
-		}
-		if len(installationIDs) == 0 {
-			return nil, false, nil
-		}
-		probeAllInstallations = true
+		return nil, false, nil
 	}
 
 	return selectActorInstallationClient(
 		installationIDs,
-		probeAllInstallations,
 		func(installationID int64) (*githubapi.RESTClient, bool, error) {
 			return e.installationClient(ctx, installationID)
-		},
-		func(client *githubapi.RESTClient) (bool, error) {
-			return e.installationClientSupportsAuthoredPullRequests(ctx, client, githubLogin)
 		},
 	)
 }
 
 func selectActorInstallationClient(
 	installationIDs []int64,
-	probeAllInstallations bool,
 	resolveClient githubInstallationClientResolver,
-	matchesAuthoredPR githubActorInstallationMatcher,
 ) (*githubapi.RESTClient, bool, error) {
 	var lastError error
 	for _, installationID := range installationIDs {
@@ -96,50 +81,12 @@ func selectActorInstallationClient(
 		if !enabled || client == nil {
 			continue
 		}
-		if !probeAllInstallations {
-			return client, true, nil
-		}
-		matches, matchErr := matchesAuthoredPR(client)
-		if matchErr != nil {
-			lastError = matchErr
-			continue
-		}
-		if matches {
-			return client, true, nil
-		}
+		return client, true, nil
 	}
 	if lastError != nil {
 		return nil, false, lastError
 	}
 	return nil, false, nil
-}
-
-func (e *Executor) installationClientSupportsAuthoredPullRequests(
-	ctx context.Context,
-	client *githubapi.RESTClient,
-	githubLogin string,
-) (bool, error) {
-	if client == nil {
-		return false, nil
-	}
-	query := fmt.Sprintf("author:%s is:pull-request archived:false", strings.TrimSpace(githubLogin))
-	result, _, err := githubapi.SearchIssuesAndPullRequests(ctx, client, githubapi.IssueSearchRequest{
-		Query:   query,
-		Sort:    "updated",
-		Order:   "desc",
-		PerPage: 1,
-		Page:    1,
-	})
-	if err != nil {
-		return false, err
-	}
-	if len(result.Items) > 0 {
-		return true, nil
-	}
-	if result.TotalCount > 0 {
-		return true, nil
-	}
-	return false, nil
 }
 
 func (e *Executor) executorForUserSyncActor(ctx context.Context, actor SyncRequestActor) (*Executor, error) {

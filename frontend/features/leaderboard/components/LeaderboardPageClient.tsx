@@ -329,7 +329,7 @@ export function LeaderboardPageClient() {
           <EmptyState
             eyebrow="Leaderboard participation"
             title="No leaderboard rows yet."
-            description="Rows appear after contributors complete OAuth, sync, and visibility."
+            description="Rows appear after contributors sign in, run app-backed sync, and enable visibility."
             actionLabel="Open contributions"
             actionHref="/dashboard/contributions"
             analyticsTarget="leaderboard:no-live-rows"
