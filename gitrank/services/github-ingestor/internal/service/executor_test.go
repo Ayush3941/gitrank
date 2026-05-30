@@ -697,6 +697,11 @@ func TestSyncFailureFetchedMetrics(t *testing.T) {
 			err:      ErrUserSyncGitHubAppUnavailable,
 			wantKeys: []string{"failed", "request_errors", "app_installation_unavailable"},
 		},
+		{
+			name:     "actor mismatch tagged",
+			err:      ErrUserSyncActorMismatch,
+			wantKeys: []string{"failed", "auth_errors", "user_sync_actor_mismatch"},
+		},
 	}
 
 	for _, test := range tests {

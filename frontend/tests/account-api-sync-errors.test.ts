@@ -347,6 +347,27 @@ describe("account sync error messaging", () => {
     );
   });
 
+  it("maps actor/user mismatch failures to actionable copy", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => {
+      return new Response(
+        JSON.stringify({
+          error: {
+            code: "user_sync_actor_mismatch",
+            message: "requested user must match authenticated github login for user sync",
+          },
+        }),
+        {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }));
+
+    await expect(runUserSync("octocat")).rejects.toThrow(
+      "Sync request user does not match your signed-in GitHub account. Reconnect GitHub and retry.",
+    );
+  });
+
   it("maps missing backend GitHub App sync config failures to actionable copy", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => {
       return new Response(

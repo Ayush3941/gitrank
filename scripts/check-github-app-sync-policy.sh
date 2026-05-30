@@ -49,4 +49,8 @@ if ! rg -q 'func normalizeUserSyncLogin\(' "$INGESTOR_ROUTER_FILE"; then
   fail "github-ingestor user sync login normalization helper is missing"
 fi
 
+if ! rg -q '"user_sync_actor_mismatch"' "$INGESTOR_ROUTER_FILE"; then
+  fail "github-ingestor sync execution error mapping must expose user_sync_actor_mismatch"
+fi
+
 printf 'github app sync policy check passed\n'

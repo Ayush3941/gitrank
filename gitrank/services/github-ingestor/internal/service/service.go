@@ -19,6 +19,7 @@ var (
 	ErrUnavailable                           = errors.New("github persistence unavailable")
 	ErrUserSyncGitHubAppInstallationRequired = errors.New("github app installation is required for user sync; install app and retry")
 	ErrUserSyncGitHubAppUnavailable          = errors.New("github app installation token unavailable for user sync; verify app credentials and installation")
+	ErrUserSyncActorMismatch                 = errors.New("requested user must match authenticated github login for user sync")
 	ErrUserSyncInProgress                    = errors.New("user sync already in progress; wait for current run to finish")
 )
 

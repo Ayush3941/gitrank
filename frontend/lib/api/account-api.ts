@@ -706,6 +706,12 @@ function sanitizeSyncExecutionError(
     return "GitHub App installation is required for PR sync. Install GitRank GitHub App for your account and retry.";
   }
   if (
+    normalized.includes("requested user must match authenticated github login for user sync") ||
+    code === "user_sync_actor_mismatch"
+  ) {
+    return "Sync request user does not match your signed-in GitHub account. Reconnect GitHub and retry.";
+  }
+  if (
     normalized.includes("github app installation token unavailable for user sync") ||
     code === "github_app_installation_unavailable"
   ) {

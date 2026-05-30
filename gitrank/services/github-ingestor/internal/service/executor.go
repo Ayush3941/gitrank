@@ -330,6 +330,13 @@ func (e *Executor) SyncUser(
 	if !isValidGitHubLogin(user) {
 		return response, fmt.Errorf("user must be a GitHub login")
 	}
+	actorGitHubLogin := strings.TrimSpace(actor.GitHubLogin)
+	if actorGitHubLogin != "" && !strings.EqualFold(actorGitHubLogin, user) {
+		mismatchErr := ErrUserSyncActorMismatch
+		e.markQueuedSyncRunRunning(ctx, correlationID, "user", user, startedAt)
+		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, mismatchErr, PersistResult{})
+		return response, mismatchErr
+	}
 	e.markQueuedSyncRunRunning(ctx, correlationID, "user", user, startedAt)
 	if !e.tryAcquireUserSync(user) {
 		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, ErrUserSyncInProgress, PersistResult{})
@@ -346,9 +353,9 @@ func (e *Executor) SyncUser(
 		return response, ErrUserSyncInProgress
 	}
 	defer releaseLease()
-	if strings.TrimSpace(actor.GitHubLogin) != "" {
+	if actorGitHubLogin != "" {
 		response.Fetched["app_installation_records_lookup_attempted"] = 1
-		installationIDs, installationLookupErr := e.store.ActiveInstallationIDsByAccountLogin(ctx, actor.GitHubLogin)
+		installationIDs, installationLookupErr := e.store.ActiveInstallationIDsByAccountLogin(ctx, actorGitHubLogin)
 		if installationLookupErr != nil {
 			response.Fetched["app_installation_records_lookup_failed"] = 1
 		} else if len(installationIDs) == 0 {
@@ -2630,6 +2637,11 @@ func syncFailureFetchedMetrics(err error) map[string]int {
 	if errors.Is(err, ErrUserSyncGitHubAppUnavailable) {
 		metrics["request_errors"] = 1
 		metrics["app_installation_unavailable"] = 1
+		return metrics
+	}
+	if errors.Is(err, ErrUserSyncActorMismatch) {
+		metrics["auth_errors"] = 1
+		metrics["user_sync_actor_mismatch"] = 1
 		return metrics
 	}
 	if isSkippableGitHubTimeoutError(err) {

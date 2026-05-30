@@ -527,6 +527,85 @@ func TestExecutorSyncUserFetchesOwnedRepositoriesAndAuthoredPullRequests(t *test
 	}
 }
 
+func TestExecutorSyncUserRejectsActorUserMismatch(t *testing.T) {
+	databaseURL := strings.TrimSpace(os.Getenv("GITRANK_INGESTOR_DATABASE_URL"))
+	if databaseURL == "" {
+		t.Skip("GITRANK_INGESTOR_DATABASE_URL is not set")
+	}
+
+	requestCount := 0
+	server := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		requestCount++
+	}))
+	defer server.Close()
+
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, databaseURL)
+	if err != nil {
+		t.Fatalf("pgxpool.New() error = %v", err)
+	}
+	defer pool.Close()
+
+	client, err := githubapi.NewRESTClient(githubapi.ClientConfig{
+		BaseURL:          server.URL,
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		HTTPClient:       server.Client(),
+		SecondaryBackoff: time.Second,
+		MaxConcurrency:   2,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	executor := NewExecutor(config.App{
+		GitHub: config.GitHub{MaxPageSize: 50},
+	}, pool, client)
+	executor.actorInstallation = func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
+		return client, true, nil
+	}
+
+	now := time.Now().UTC()
+	_, err = executor.SyncUser(ctx, contracts.SyncRequest{
+		Mode: "user",
+		User: "octocat",
+	}, SyncRequestActor{
+		Subject:     "user-sync-executor",
+		GitHubLogin: "different-user",
+	}, "sync-user-actor-mismatch-1", now)
+	if err == nil {
+		t.Fatal("SyncUser() error = nil, want actor mismatch error")
+	}
+	if !errors.Is(err, ErrUserSyncActorMismatch) {
+		t.Fatalf("SyncUser() error = %v, want ErrUserSyncActorMismatch", err)
+	}
+	if requestCount != 0 {
+		t.Fatalf("GitHub request count = %d, want 0 when actor/user mismatch is rejected before extraction", requestCount)
+	}
+
+	var status string
+	var requestedUser string
+	var requestedBy string
+	if err := pool.QueryRow(ctx, `
+		SELECT status, requested_user_login, requested_by_github_login
+		FROM github_sync_runs
+		WHERE correlation_id = 'sync-user-actor-mismatch-1'
+		ORDER BY started_at DESC
+		LIMIT 1
+	`).Scan(&status, &requestedUser, &requestedBy); err != nil {
+		t.Fatalf("select github_sync_runs actor mismatch row: %v", err)
+	}
+	if status != "failed" {
+		t.Fatalf("status = %q, want failed", status)
+	}
+	if requestedUser != "octocat" {
+		t.Fatalf("requested_user_login = %q, want octocat", requestedUser)
+	}
+	if requestedBy != "different-user" {
+		t.Fatalf("requested_by_github_login = %q, want different-user", requestedBy)
+	}
+}
+
 func TestExecutorSyncInstallationReplaysPersistedInstallationRepositories(t *testing.T) {
 	databaseURL := strings.TrimSpace(os.Getenv("GITRANK_INGESTOR_DATABASE_URL"))
 	if databaseURL == "" {

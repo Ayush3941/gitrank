@@ -488,6 +488,12 @@ func TestWriteSyncExecutionErrorMapsAppFailures(t *testing.T) {
 			wantCode:   "github_app_installation_unavailable",
 		},
 		{
+			name:       "maps user actor mismatch",
+			err:        service.ErrUserSyncActorMismatch,
+			wantStatus: http.StatusForbidden,
+			wantCode:   "user_sync_actor_mismatch",
+		},
+		{
 			name:       "falls back to provided code",
 			err:        errors.New("upstream failed"),
 			wantStatus: http.StatusBadGateway,
