@@ -190,6 +190,7 @@ func (e *Executor) SyncRepository(
 		}
 	}
 	fetchedCounts := map[string]int{
+		"auth_installation_client": 1,
 		"repositories":  1,
 		"pull_requests": len(pullRequests),
 		"reviews":       countReviewMaps(reviewsByNumber),
@@ -372,6 +373,7 @@ func (e *Executor) SyncUser(
 		_ = e.recordFailedUserSyncRun(ctx, user, req, actor, correlationID, startedAt, err, PersistResult{})
 		return response, err
 	}
+	response.Fetched["auth_installation_client"] = 1
 	response.Fetched["authored_pull_request_auth_installation"] = 1
 
 	authoredPRSyncLimit := boundedAuthoredPRSyncLimit(e.cfg.GitHub, e.cfg.GitHub.AuthoredPRSyncLimit)
@@ -601,6 +603,7 @@ func (e *Executor) SyncInstallation(
 		return response, liveErr
 	}
 	repositories = liveRepositories
+	response.Fetched["auth_installation_client"] = 1
 	response.Fetched["installation_repository_inventory_live"] = 1
 	response.Fetched["repositories_selected_live"] = len(liveRepositories)
 	if inventoryIncomplete {
@@ -781,6 +784,7 @@ func (e *Executor) syncPullRequestSurface(
 		files = nil
 	}
 	fetchedCounts := map[string]int{
+		"auth_installation_client": 1,
 		"repositories":       1,
 		"pull_requests":      1,
 		"pull_request_files": len(files),
@@ -966,6 +970,7 @@ func (e *Executor) SyncIssue(
 		return response, err
 	}
 	fetchedCounts := map[string]int{
+		"auth_installation_client": 1,
 		"repositories": 1,
 		"issues":       1,
 	}
@@ -1080,6 +1085,7 @@ func (e *Executor) SyncCommit(
 		return response, err
 	}
 	fetchedCounts := map[string]int{
+		"auth_installation_client": 1,
 		"repositories": 1,
 		"commits":      1,
 	}

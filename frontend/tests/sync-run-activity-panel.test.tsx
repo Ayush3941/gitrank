@@ -126,7 +126,7 @@ describe("SyncRunActivityPanel", () => {
     });
 
     expect(screen.getAllByRole("button", { name: "Reset filters" }).length).toBeGreaterThan(0);
-    expect(screen.getByText("No sync runs match the current search or status filter.")).toBeTruthy();
+    expect(screen.getByText("No sync runs match this filter.")).toBeTruthy();
 
     fireEvent.click(screen.getAllByRole("button", { name: "Reset filters" })[0]);
 
@@ -234,6 +234,31 @@ describe("SyncRunActivityPanel", () => {
         "GitHub App installation is required for PR sync. Install GitRank GitHub App for your account and retry sync.",
       ),
     ).toBeTruthy();
+  });
+
+  it("shows explicit app-token auth telemetry when strict installation auth is recorded", () => {
+    render(
+      <SyncRunActivityPanel
+        runs={[
+          {
+            ...sampleRun,
+            id: "run_auth_metric_1",
+            metrics: {
+              auth_installation_client: 1,
+              pull_requests: 1,
+              fetched_pull_requests: 1,
+            },
+          },
+        ]}
+        lastUpdatedAt="2026-05-25T00:05:00Z"
+        isLoading={false}
+        isRefreshing={false}
+        isError={false}
+        onRefresh={() => undefined}
+      />,
+    );
+
+    expect(screen.getByText("Auth App token · PRs 1/1")).toBeTruthy();
   });
 
   it("shows superseded-correlation insight for stale in-progress rows", () => {

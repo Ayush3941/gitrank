@@ -207,6 +207,9 @@ func TestExecutorSyncRepositoryFetchesAndPersistsBoundedRepositoryData(t *testin
 	if result.Fetched["pull_requests"] != 2 {
 		t.Fatalf("Fetched[pull_requests] = %d, want 2", result.Fetched["pull_requests"])
 	}
+	if result.Fetched["auth_installation_client"] != 1 {
+		t.Fatalf("Fetched[auth_installation_client] = %d, want 1", result.Fetched["auth_installation_client"])
+	}
 	if result.Persisted["pull_requests"] != 2 {
 		t.Fatalf("Persisted[pull_requests] = %d, want 2", result.Persisted["pull_requests"])
 	}
@@ -496,6 +499,9 @@ func TestExecutorSyncUserFetchesOwnedRepositoriesAndAuthoredPullRequests(t *test
 	if result.Fetched["authored_pull_requests_selected"] != 1 {
 		t.Fatalf("Fetched[authored_pull_requests_selected] = %d, want 1", result.Fetched["authored_pull_requests_selected"])
 	}
+	if result.Fetched["auth_installation_client"] != 1 {
+		t.Fatalf("Fetched[auth_installation_client] = %d, want 1", result.Fetched["auth_installation_client"])
+	}
 	if result.Persisted["repositories"] != 2 {
 		t.Fatalf("Persisted[repositories] = %d, want 2", result.Persisted["repositories"])
 	}
@@ -688,6 +694,9 @@ func TestExecutorSyncInstallationReplaysPersistedInstallationRepositories(t *tes
 	}
 	if result.Fetched["repositories_selected"] != 2 {
 		t.Fatalf("Fetched[repositories_selected] = %d, want 2", result.Fetched["repositories_selected"])
+	}
+	if result.Fetched["auth_installation_client"] != 1 {
+		t.Fatalf("Fetched[auth_installation_client] = %d, want 1", result.Fetched["auth_installation_client"])
 	}
 	if result.Persisted["repositories"] != 2 {
 		t.Fatalf("Persisted[repositories] = %d, want 2", result.Persisted["repositories"])
@@ -968,6 +977,9 @@ func TestExecutorSyncPullRequestFetchesAndPersistsBoundedPullRequestData(t *test
 	}
 	if result.Fetched["pull_request_files"] != 2 {
 		t.Fatalf("Fetched[pull_request_files] = %d, want 2", result.Fetched["pull_request_files"])
+	}
+	if result.Fetched["auth_installation_client"] != 1 {
+		t.Fatalf("Fetched[auth_installation_client] = %d, want 1", result.Fetched["auth_installation_client"])
 	}
 	if result.Persisted["pull_requests"] != 1 {
 		t.Fatalf("Persisted[pull_requests] = %d, want 1", result.Persisted["pull_requests"])
@@ -1261,6 +1273,9 @@ func TestExecutorSyncIssueFetchesAndPersistsBoundedIssueData(t *testing.T) {
 	if result.Fetched["issues"] != 1 {
 		t.Fatalf("Fetched[issues] = %d, want 1", result.Fetched["issues"])
 	}
+	if result.Fetched["auth_installation_client"] != 1 {
+		t.Fatalf("Fetched[auth_installation_client] = %d, want 1", result.Fetched["auth_installation_client"])
+	}
 	if result.Persisted["issues"] != 1 {
 		t.Fatalf("Persisted[issues] = %d, want 1", result.Persisted["issues"])
 	}
@@ -1374,6 +1389,9 @@ func TestExecutorSyncCommitFetchesAndPersistsBoundedCommitData(t *testing.T) {
 	}
 	if result.Fetched["commits"] != 1 {
 		t.Fatalf("Fetched[commits] = %d, want 1", result.Fetched["commits"])
+	}
+	if result.Fetched["auth_installation_client"] != 1 {
+		t.Fatalf("Fetched[auth_installation_client] = %d, want 1", result.Fetched["auth_installation_client"])
 	}
 	if result.Persisted["commits"] != 1 {
 		t.Fatalf("Persisted[commits] = %d, want 1", result.Persisted["commits"])

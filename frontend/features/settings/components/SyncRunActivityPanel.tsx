@@ -448,6 +448,10 @@ function summarizeRunMetrics(metrics?: Record<string, number>): string {
   }
 
   const segments: string[] = [];
+  const appTokenAuth = metricCount(metrics, "auth_installation_client");
+  if (appTokenAuth > 0) {
+    segments.push("Auth App token");
+  }
   pushMetricSegment(
     segments,
     "PRs",

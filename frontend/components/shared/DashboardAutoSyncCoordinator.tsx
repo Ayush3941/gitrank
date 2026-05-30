@@ -4,7 +4,12 @@ import { useEffect, useRef } from "react";
 import { useRequestProfileSync } from "@/hooks/use-account-actions";
 import { useAccountGamificationPreference } from "@/hooks/use-gamification-preference";
 import { useMyProfile } from "@/hooks/use-profile";
+import { useProfileSyncRuns } from "@/hooks/use-profile-sync-runs";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
+import {
+  deriveEffectiveSyncState,
+  selectProfileSyncRunStatuses,
+} from "@/lib/presentation/sync-evidence";
 import { syncPollingPolicy } from "@/lib/runtime/sync-polling-policy";
 import { frontendPolicy } from "@/lib/runtime/frontend-policy";
 
@@ -13,6 +18,7 @@ const AUTO_SYNC_SESSION_BOOTSTRAP_KEY_PREFIX = "gitrank:auto-sync:bootstrap:";
 
 export function DashboardAutoSyncCoordinator() {
   const { data, isError, isLoading } = useMyProfile();
+  const syncRunsQuery = useProfileSyncRuns();
   const { mutate: requestProfileSync, isPending: isUserSyncPending } = useRequestProfileSync();
   const autoSyncLastAttempt = useRef(0);
   const autoSyncAttempts = useRef(0);
@@ -26,15 +32,19 @@ export function DashboardAutoSyncCoordinator() {
     }
 
     const syncState = data.user.syncStatus;
-    if (lastObservedSyncState.current !== syncState.state) {
-      lastObservedSyncState.current = syncState.state;
+    const effectiveSyncState = deriveEffectiveSyncState(
+      data.user,
+      selectProfileSyncRunStatuses(syncRunsQuery.data?.runs, data.user),
+    );
+    if (lastObservedSyncState.current !== effectiveSyncState) {
+      lastObservedSyncState.current = effectiveSyncState;
       autoSyncAttempts.current = 0;
     }
 
     const now = Date.now();
     const lastSyncedAt = Date.parse(syncState.lastSyncedAt ?? "");
     const syncAgeMs = Number.isNaN(lastSyncedAt) ? Number.POSITIVE_INFINITY : now - lastSyncedAt;
-    const staleSnapshot = syncState.state !== "synced";
+    const staleSnapshot = effectiveSyncState !== "synced";
     const staleByAge = syncAgeMs >= syncPollingPolicy.autoSyncStaleAgeMs;
     const usernameKey = data.user.username.toLowerCase();
     const sessionFingerprint = readSessionFingerprint();
@@ -46,7 +56,7 @@ export function DashboardAutoSyncCoordinator() {
       syncPollingPolicy.autoSyncSessionBootstrapEnabled && !hasSessionBootstrapAttempt;
     const shouldAutoSync = shouldBootstrapSessionSync || staleSnapshot || staleByAge;
 
-    if (!shouldAutoSync || syncState.state === "syncing" || isUserSyncPending) {
+    if (!shouldAutoSync || effectiveSyncState === "syncing" || isUserSyncPending) {
       return;
     }
 
@@ -106,7 +116,14 @@ export function DashboardAutoSyncCoordinator() {
         }
       },
     });
-  }, [data, isError, isLoading, isUserSyncPending, requestProfileSync]);
+  }, [
+    data,
+    isError,
+    isLoading,
+    isUserSyncPending,
+    requestProfileSync,
+    syncRunsQuery.data?.runs,
+  ]);
 
   return null;
 }
