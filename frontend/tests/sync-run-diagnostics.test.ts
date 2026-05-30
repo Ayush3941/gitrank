@@ -143,6 +143,16 @@ describe("describeSyncRunOutcome", () => {
     expect(outcome.message).toContain("installation token is unavailable");
   });
 
+  it("returns app-runtime-required when strict App runtime guard marker is present", () => {
+    const outcome = describeSyncRunOutcome(
+      run({
+        strict_app_runtime_required: 1,
+      }),
+    );
+    expect(outcome.code).toBe("app_runtime_required");
+    expect(outcome.message).toContain("non-App extraction path");
+  });
+
   it("returns app-installation-required from last_error when metrics are missing", () => {
     const outcome = describeSyncRunOutcome({
       ...run(undefined),
@@ -164,6 +174,17 @@ describe("describeSyncRunOutcome", () => {
     expect(outcome.code).toBe("sync_config_unavailable");
     expect(outcome.message).toContain("config is incomplete");
     expect(outcome.message).toContain("GITHUB_APP_*");
+  });
+
+  it("returns app-runtime-required from last_error when strict runtime guard fails", () => {
+    const outcome = describeSyncRunOutcome({
+      ...run(undefined),
+      status: "failed",
+      last_error:
+        "github-ingestor user sync failed [github_app_runtime_required]: strict github app sync runtime is required before extracting github contribution data",
+    });
+    expect(outcome.code).toBe("app_runtime_required");
+    expect(outcome.message).toContain("GitHub App installation tokens only");
   });
 
   it("returns user-sync-actor-mismatch from last_error when user identity guard fails", () => {

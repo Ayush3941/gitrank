@@ -8,6 +8,7 @@ export type SyncRunDiagnostic = {
     | "unsupported_api_version"
     | "app_installation_required"
     | "app_installation_unavailable"
+    | "app_runtime_required"
     | "sync_config_unavailable"
     | "user_sync_actor_mismatch"
     | "score_replay_mismatch"
@@ -77,6 +78,13 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
         "GitHub App installation token is unavailable. Verify app credentials and installation state, then retry sync.",
     };
   }
+  if (appSyncFailureCode === "app_runtime_required") {
+    return {
+      code: "app_runtime_required",
+      message:
+        "Backend sync runtime rejected a non-App extraction path. Restart services and retry so sync runs through GitHub App installation tokens only.",
+    };
+  }
   if (appSyncFailureCode === "sync_config_unavailable") {
     return {
       code: "sync_config_unavailable",
@@ -134,6 +142,7 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
     metricCount(metrics, "unsupported_api_version", "authored_pull_requests_unsupported_api_version") > 0;
   const appInstallationRequired = metricCount(metrics, "app_installation_required") > 0;
   const appInstallationUnavailable = metricCount(metrics, "app_installation_unavailable") > 0;
+  const appRuntimeRequired = metricCount(metrics, "strict_app_runtime_required") > 0;
   const userSyncActorMismatch = metricCount(metrics, "user_sync_actor_mismatch") > 0;
   const recentSeedEmpty = metricCount(metrics, "authored_pull_request_recent_seed_empty") > 0;
   const broadFallbackTargets = metricCount(metrics, "authored_pull_request_broad_fallback_targets");
@@ -211,6 +220,13 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
       code: "app_installation_unavailable",
       message:
         "GitHub App installation token is unavailable. Verify app credentials and installation state, then retry sync.",
+    };
+  }
+  if (appRuntimeRequired) {
+    return {
+      code: "app_runtime_required",
+      message:
+        "Backend sync runtime rejected a non-App extraction path. Restart services and retry so sync runs through GitHub App installation tokens only.",
     };
   }
   if (userSyncActorMismatch) {
@@ -378,7 +394,7 @@ export { metricCount };
 
 function deriveAppSyncFailureCode(
   normalizedLastError: string,
-): "app_installation_required" | "app_installation_unavailable" | "sync_config_unavailable" | "user_sync_actor_mismatch" | null {
+): "app_installation_required" | "app_installation_unavailable" | "app_runtime_required" | "sync_config_unavailable" | "user_sync_actor_mismatch" | null {
   if (!normalizedLastError) {
     return null;
   }
@@ -393,6 +409,12 @@ function deriveAppSyncFailureCode(
     normalizedLastError.includes("app_installation_unavailable")
   ) {
     return "app_installation_unavailable";
+  }
+  if (
+    normalizedLastError.includes("github_app_runtime_required") ||
+    normalizedLastError.includes("strict github app sync runtime is required")
+  ) {
+    return "app_runtime_required";
   }
   if (normalizedLastError.includes("sync_config_unavailable")) {
     return "sync_config_unavailable";
