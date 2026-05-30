@@ -3,7 +3,7 @@ import { DashboardPageClient } from "@/features/dashboard/components/DashboardPa
 
 export const metadata: Metadata = {
   title: "Dashboard",
-  description: "Contribution analytics, score explanation, rank progression, and core profile health in one command center.",
+  description: "Contribution analytics, score explanation, rank progression, and profile health in one dashboard view.",
 };
 
 export default function DashboardPage() {

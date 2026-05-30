@@ -53,6 +53,9 @@ export function hasUserContributionEvidence(user: UserProfile | null | undefined
     if (row.status !== "merged") {
       return false;
     }
+    if (!(row.xpEarned > 0)) {
+      return false;
+    }
     const mergedAtMillis = Date.parse(row.mergedAt);
     return Number.isFinite(mergedAtMillis) && mergedAtMillis > 0;
   });

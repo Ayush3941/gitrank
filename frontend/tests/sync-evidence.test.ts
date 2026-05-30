@@ -197,6 +197,41 @@ describe("hasUserContributionEvidence", () => {
     });
     expect(hasUserContributionEvidence(user)).toBe(false);
   });
+
+  it("returns false for merged rows that carry no scored XP", () => {
+    const user = buildUser({
+      mergedPrCount: 0,
+      contributions: [
+        {
+          id: "score-zero-1",
+          scoreEventId: "score-event-zero-1",
+          owner: "octo",
+          repo: "gitrank",
+          number: 44,
+          title: "Merged row without scored XP",
+          status: "merged",
+          category: "Testing",
+          difficultyScore: 1,
+          impactScore: 1,
+          reviewDepthScore: 1,
+          testSignalScore: 1,
+          repoWeight: 1,
+          antiSpamMultiplier: 1,
+          xpEarned: 0,
+          additions: 8,
+          deletions: 2,
+          changedFilesCount: 1,
+          mergedAt: "2026-05-21T00:00:00Z",
+          maintainerReviewed: false,
+          linkedIssue: false,
+          ciPassed: true,
+          aiSummary: "Merged but not score-bearing",
+          evidenceSignals: [],
+        },
+      ],
+    });
+    expect(hasUserContributionEvidence(user)).toBe(false);
+  });
 });
 
 describe("deriveEffectiveSyncState", () => {

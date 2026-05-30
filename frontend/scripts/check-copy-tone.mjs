@@ -19,6 +19,13 @@ const bannedPhrases = [
   "could not load",
   "is not available in this snapshot yet",
   "has not earned a public gitrank score yet",
+  "command center",
+  "quick actions",
+  "low-cpu device mode",
+  "theme: midnight",
+  "text: large",
+  "report metadata:",
+  "snapshot-based contribution analytics",
 ];
 
 const allowList = new Set([

@@ -273,6 +273,13 @@ Recent strict app-auth refinement (May 30, 2026):
 - API-gateway user sync queue/execute routes now hard-bind `user` mode to the authenticated GitHub login, preventing cross-user payload overrides while keeping OAuth strictly in login/session scope.
 - Ingestor user sync queue/execute routes now apply the same actor-login binding (`X-GitRank-GitHub-Login` wins when present) so internal requests cannot drift into cross-user sync payloads.
 
+Recent no-slop refinement (May 30, 2026):
+
+- Sync evidence truthfulness now requires merged rows to be score-bearing (`xpEarned > 0`) before the frontend treats a profile as materially synced, reducing false `Synced` chips from zero-XP rows.
+- Added regression coverage in `frontend/tests/sync-evidence.test.ts` for merged-but-zero-XP contribution rows so this sync-state drift does not regress.
+- Copy-tone guard now blocks previously removed dashboard clutter phrases (`command center`, `quick actions`, `low-cpu device mode`, `theme: midnight`, `text: large`, and similar stale metadata phrasing).
+- Dashboard route metadata/loading copy was tightened to keep labels direct and avoid legacy “command center” wording.
+
 Recent no-slowdown refinement (May 28, 2026):
 
 - Settings now shows only real end-user controls (account, sync activity, privacy, display, repository visibility, data controls).
