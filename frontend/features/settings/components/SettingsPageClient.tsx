@@ -46,7 +46,6 @@ import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import { type ThemePreference, useThemePreference } from "@/hooks/use-theme-preference";
-import { useAuthSession, useRefreshAuthSession } from "@/hooks/use-auth-session";
 
 type BackedPrivacyKey =
   | "publicProfileEnabled"
@@ -144,8 +143,6 @@ export function SettingsPageClient() {
   const deleteAccount = useDeleteMyAccount();
   const exportAccount = useExportMyAccountData();
   const logoutSession = useLogoutSession();
-  const authSessionQuery = useAuthSession();
-  const refreshAuthSession = useRefreshAuthSession();
   const accountLinkStart = useStartAccountLink();
   const runUserSync = useRunUserSync();
   const syncRunsQuery = useSyncRuns(15);
@@ -227,7 +224,6 @@ export function SettingsPageClient() {
   const actionError = sanitizeUserFacingError(
     (runUserSync.error as Error | null)?.message ||
     (logoutSession.error as Error | null)?.message ||
-    (refreshAuthSession.error as Error | null)?.message ||
     (unlinkAccount.error as Error | null)?.message ||
       (deleteAccount.error as Error | null)?.message ||
       (exportAccount.error as Error | null)?.message ||
@@ -235,14 +231,9 @@ export function SettingsPageClient() {
       "",
     "settings-account-actions",
   );
-  const sessionError = sanitizeUserFacingError(
-    (authSessionQuery.error as Error | null)?.message || "",
-    "settings-session",
-  );
   const isSaving = updatePrivacy.isPending || updateRepositoryVisibility.isPending;
   const isActing =
     logoutSession.isPending ||
-    refreshAuthSession.isPending ||
     runUserSync.isPending ||
     unlinkAccount.isPending ||
     deleteAccount.isPending ||
@@ -405,18 +396,7 @@ export function SettingsPageClient() {
             }}
           >
             <RefreshCw className="h-4 w-4" />
-            {runUserSync.isPending ? "Syncing GitHub..." : isFetching ? "Refreshing..." : "Refresh snapshot"}
-          </Button>
-          <Button
-            variant="secondary"
-            className="w-full justify-center"
-            disabled={isActing}
-            onClick={() => {
-              refreshAuthSession.mutate();
-            }}
-          >
-            <RefreshCw className="h-4 w-4" />
-            {refreshAuthSession.isPending ? "Refreshing session..." : "Refresh session"}
+            {runUserSync.isPending ? "Syncing GitHub..." : isFetching ? "Refreshing..." : "Sync now"}
           </Button>
           <Button
             variant="secondary"
@@ -464,24 +444,6 @@ export function SettingsPageClient() {
             dismissLabel="Dismiss account status"
           />
         )}
-        <div className="neon-surface rounded-[0.8rem] px-3 py-2 text-sm">
-          <p className="text-xs text-muted">Session identity</p>
-          {authSessionQuery.isLoading ? (
-            <p className="text-white">Loading session state...</p>
-          ) : authSessionQuery.data ? (
-            <p className="text-white">
-              Expires {formatTimestamp(authSessionQuery.data.session.session_expires_at)} · idle{" "}
-              {formatTimestamp(authSessionQuery.data.session.session_idle_expires_at)} · auth{" "}
-              {authSessionQuery.data.session.github_authorization_status}
-            </p>
-          ) : sessionError ? (
-            <p role="alert" className="text-rose-200">
-              {sessionError}
-            </p>
-          ) : (
-            <p className="text-muted">Session state unavailable.</p>
-          )}
-        </div>
         </GlowCard>
       </section>
 
@@ -848,14 +810,6 @@ function toControlID(value: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
-}
-
-function formatTimestamp(value: string): string {
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return "unknown";
-  }
-  return parsed.toLocaleString();
 }
 
 function SettingsPanelPlaceholder({ label }: { label: string }) {
