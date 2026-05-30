@@ -424,6 +424,39 @@ func (q *InMemoryJobQueue) Fail(jobID string, err error, now time.Time, baseBack
 	return job, nil, nil
 }
 
+func (q *InMemoryJobQueue) FailNonRetryable(jobID string, err error, now time.Time) (QueueJob, *DeadLetterRecord, error) {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+
+	index := q.jobIndexLocked(jobID)
+	if index < 0 {
+		return QueueJob{}, nil, errors.New("job not found")
+	}
+	job := q.jobs[index]
+	if isTerminalJobStatus(job.Status) {
+		return QueueJob{}, nil, errors.New("job is already terminal")
+	}
+
+	now = now.UTC()
+	job.AttemptCount++
+	if job.AttemptCount < job.MaxAttempts {
+		job.AttemptCount = job.MaxAttempts
+	}
+	job.LastError = ""
+	if err != nil {
+		job.LastError = err.Error()
+	}
+	job.LeaseExpiresAt = time.Time{}
+	job.NotBefore = now
+	job.Status = JobDeadLetter
+
+	record := deadLetterRecordForJob(job, err, now)
+	q.jobs[index] = job
+	q.deadLetters = append(q.deadLetters, record)
+	q.failureCount++
+	return job, &record, nil
+}
+
 func (q *InMemoryJobQueue) ReplayDeadLetter(recordID, correlationID string, now time.Time) (QueueJob, bool, error) {
 	q.mu.Lock()
 	defer q.mu.Unlock()

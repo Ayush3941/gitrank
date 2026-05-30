@@ -779,6 +779,15 @@ func (e *httpBoundedSyncExecutor) execute(ctx context.Context, req contracts.Syn
 	if response.StatusCode != http.StatusOK {
 		var apiErr contracts.ErrorResponse
 		if err := json.Unmarshal(payload, &apiErr); err == nil && strings.TrimSpace(apiErr.Error.Message) != "" {
+			errorCode := strings.TrimSpace(apiErr.Error.Code)
+			if errorCode != "" {
+				return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf(
+					"github-ingestor %s sync failed [%s]: %s",
+					mode,
+					errorCode,
+					apiErr.Error.Message,
+				)
+			}
 			return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf("github-ingestor %s sync failed: %s", mode, apiErr.Error.Message)
 		}
 		return contracts.GitHubSyncExecutionResponse{}, fmt.Errorf("github-ingestor %s sync failed with status %d", mode, response.StatusCode)

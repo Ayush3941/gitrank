@@ -541,6 +541,48 @@ func TestInMemoryJobQueueFailRetriesThenDeadLetters(t *testing.T) {
 	}
 }
 
+func TestInMemoryJobQueueFailNonRetryableDeadLettersImmediately(t *testing.T) {
+	queue := NewInMemoryJobQueue()
+	job, err := NewQueueJob(QueueJobInput{
+		QueueName:   "github-sync",
+		Type:        SyncRepositoryJob,
+		Repository:  "octo/repo",
+		DedupeKey:   "repository:octo/repo",
+		MaxAttempts: 4,
+		Payload: map[string]string{
+			"repository": "octo/repo",
+		},
+	})
+	if err != nil {
+		t.Fatalf("NewQueueJob() error = %v", err)
+	}
+	if _, _, err := queue.EnqueueUnique(job); err != nil {
+		t.Fatalf("EnqueueUnique() error = %v", err)
+	}
+
+	now := time.Date(2026, 5, 5, 13, 0, 0, 0, time.UTC)
+	deadLettered, record, err := queue.FailNonRetryable(job.ID, errBoom, now)
+	if err != nil {
+		t.Fatalf("FailNonRetryable() error = %v", err)
+	}
+	if record == nil {
+		t.Fatal("dead-letter record = nil, want value")
+	}
+	if deadLettered.Status != JobDeadLetter {
+		t.Fatalf("status = %q, want %q", deadLettered.Status, JobDeadLetter)
+	}
+	if deadLettered.AttemptCount != deadLettered.MaxAttempts {
+		t.Fatalf("attempt count = %d, want max attempts %d", deadLettered.AttemptCount, deadLettered.MaxAttempts)
+	}
+	snapshot := queue.Snapshot()
+	if snapshot.Retried != 0 {
+		t.Fatalf("snapshot.Retried = %d, want 0 for non-retryable dead-letter", snapshot.Retried)
+	}
+	if snapshot.Failures != 1 {
+		t.Fatalf("snapshot.Failures = %d, want 1", snapshot.Failures)
+	}
+}
+
 func TestInMemoryJobQueueLeasePauseResumeAndReplay(t *testing.T) {
 	queue := NewInMemoryJobQueue()
 	job, err := NewQueueJob(QueueJobInput{

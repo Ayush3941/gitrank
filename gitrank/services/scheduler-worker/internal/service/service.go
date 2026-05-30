@@ -265,10 +265,20 @@ func (s *Service) Fail(jobID, errorMessage string, now time.Time) (contracts.Sch
 	if errorMessage == "" {
 		errorMessage = "job failed"
 	}
+	nonRetryable := shouldDeadLetterImmediately(errorMessage)
 	if s.stateStore != nil {
 		var response contracts.SchedulerJobActionResponse
 		err := s.withDurableMutation(context.Background(), now, func() error {
-			job, deadLetter, err := s.queue.Fail(jobID, errors.New(errorMessage), now, s.cfg.Scheduler.RetryBackoff)
+			var (
+				job        store.QueueJob
+				deadLetter *store.DeadLetterRecord
+				err        error
+			)
+			if nonRetryable {
+				job, deadLetter, err = s.queue.FailNonRetryable(jobID, errors.New(errorMessage), now)
+			} else {
+				job, deadLetter, err = s.queue.Fail(jobID, errors.New(errorMessage), now, s.cfg.Scheduler.RetryBackoff)
+			}
 			if err != nil {
 				return err
 			}
@@ -287,7 +297,16 @@ func (s *Service) Fail(jobID, errorMessage string, now time.Time) (contracts.Sch
 		return response, err
 	}
 	before := s.captureDurableState()
-	job, deadLetter, err := s.queue.Fail(jobID, errors.New(errorMessage), now, s.cfg.Scheduler.RetryBackoff)
+	var (
+		job        store.QueueJob
+		deadLetter *store.DeadLetterRecord
+		err        error
+	)
+	if nonRetryable {
+		job, deadLetter, err = s.queue.FailNonRetryable(jobID, errors.New(errorMessage), now)
+	} else {
+		job, deadLetter, err = s.queue.Fail(jobID, errors.New(errorMessage), now, s.cfg.Scheduler.RetryBackoff)
+	}
 	if err != nil {
 		return contracts.SchedulerJobActionResponse{}, err
 	}
@@ -305,6 +324,23 @@ func (s *Service) Fail(jobID, errorMessage string, now time.Time) (contracts.Sch
 		return contracts.SchedulerJobActionResponse{}, err
 	}
 	return response, nil
+}
+
+func shouldDeadLetterImmediately(errorMessage string) bool {
+	normalized := strings.ToLower(strings.TrimSpace(errorMessage))
+	if normalized == "" {
+		return false
+	}
+	switch {
+	case strings.Contains(normalized, "sync_config_unavailable"):
+		return true
+	case strings.Contains(normalized, "github_app_installation_required"):
+		return true
+	case strings.Contains(normalized, "github_app_installation_unavailable"):
+		return true
+	default:
+		return false
+	}
 }
 
 func (s *Service) Pause(jobID string, now time.Time) (contracts.SchedulerJobActionResponse, error) {
