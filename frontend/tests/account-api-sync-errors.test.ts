@@ -347,6 +347,27 @@ describe("account sync error messaging", () => {
     );
   });
 
+  it("maps strict App-runtime guard failures to actionable copy", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => {
+      return new Response(
+        JSON.stringify({
+          error: {
+            code: "github_app_runtime_required",
+            message: "strict github app sync runtime is required before extracting github contribution data",
+          },
+        }),
+        {
+          status: 503,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }));
+
+    await expect(runUserSync("octocat")).rejects.toThrow(
+      "Backend sync runtime rejected a non-App extraction path. Restart services and retry so sync runs through GitHub App installation tokens only.",
+    );
+  });
+
   it("maps actor/user mismatch failures to actionable copy", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => {
       return new Response(

@@ -718,6 +718,12 @@ function sanitizeSyncExecutionError(
     return "GitHub App installation token is unavailable. Verify GitHub App credentials/private key and installation state, then retry sync.";
   }
   if (
+    normalized.includes("strict github app sync runtime is required") ||
+    code === "github_app_runtime_required"
+  ) {
+    return "Backend sync runtime rejected a non-App extraction path. Restart services and retry so sync runs through GitHub App installation tokens only.";
+  }
+  if (
     normalized.includes("sync_config_unavailable") ||
     normalized.includes("github app sync configuration is incomplete") ||
     code === "sync_config_unavailable"

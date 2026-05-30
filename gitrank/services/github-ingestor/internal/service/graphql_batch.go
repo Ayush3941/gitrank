@@ -187,6 +187,7 @@ func (e *Executor) cloneWithStrictAppClient(installationClient *githubapi.RESTCl
 	}
 	clone := *e
 	clone.client = installationClient
+	clone.strictAppRuntime = true
 	clone.actorInstallation = func(context.Context, SyncRequestActor) (*githubapi.RESTClient, bool, error) {
 		return installationClient, true, nil
 	}

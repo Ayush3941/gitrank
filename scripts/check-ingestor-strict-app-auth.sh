@@ -65,6 +65,21 @@ if ! rg -q 'func \(e \*Executor\) executorForStrictAppSyncRequest' "$GRAPHQL_BAT
   fail "strict app request selector implementation missing"
 fi
 
+if ! rg -q 'strictAppRuntime[[:space:]]+bool' "$EXECUTOR_FILE"; then
+  fail "executor strict-app runtime marker field is missing"
+fi
+
+if ! rg -q 'func \(e \*Executor\) ensureStrictGitHubAppRuntime\(\) error' "$EXECUTOR_FILE"; then
+  fail "strict-app runtime guard helper is missing"
+fi
+
+strict_runtime_guard_hits="$(
+  cd "$ROOT_DIR" && rg -n 'ensureStrictGitHubAppRuntime\(\)' "$SERVICE_DIR/executor.go" --glob "!**/*_test.go" | wc -l | tr -d ' '
+)"
+if [[ -z "$strict_runtime_guard_hits" || "$strict_runtime_guard_hits" -lt 8 ]]; then
+  fail "strict-app runtime guard must be enforced across GitHub extraction fetch paths"
+fi
+
 if ! rg -q 'func \(e \*Executor\) executorForUserSyncActor\(ctx context.Context, actor SyncRequestActor\) \(\*Executor, error\)' "$GRAPHQL_BATCH_FILE"; then
   fail "user sync actor selector must return strict installation runtime only (no credential-source fallback)"
 fi

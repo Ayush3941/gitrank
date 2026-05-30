@@ -79,6 +79,7 @@ type Executor struct {
 	cfg                 config.App
 	store               *Store
 	client              *githubapi.RESTClient
+	strictAppRuntime    bool
 	repositoryCache     *repositoryMetadataCache
 	restClientFactory   githubRESTClientFactory
 	installationClient  githubInstallationClientFactory
@@ -101,6 +102,16 @@ func NewExecutor(cfg config.App, pool *pgxpool.Pool, client *githubapi.RESTClien
 	}
 	executor.actorInstallation = executor.installationClientForActor
 	return executor
+}
+
+func (e *Executor) ensureStrictGitHubAppRuntime() error {
+	if e == nil || e.client == nil {
+		return ErrUnavailable
+	}
+	if !e.strictAppRuntime {
+		return ErrStrictGitHubAppRuntimeRequired
+	}
+	return nil
 }
 
 func (e *Executor) Ready(ctx context.Context) error {
@@ -1379,6 +1390,9 @@ func (e *Executor) fetchAuthoredPullRequestTargets(
 	cursor authoredPRHistoryCursor,
 	now time.Time,
 ) (authoredPullRequestSelection, error) {
+	if err := e.ensureStrictGitHubAppRuntime(); err != nil {
+		return authoredPullRequestSelection{}, err
+	}
 	user = strings.TrimSpace(user)
 	if user == "" {
 		return authoredPullRequestSelection{}, errors.New("user is required")
@@ -2129,6 +2143,9 @@ func repositoryFullNameFromRepositoryURL(rawURL string) (string, bool) {
 }
 
 func (e *Executor) fetchPullRequest(ctx context.Context, owner, name string, number int) (map[string]any, error) {
+	if err := e.ensureStrictGitHubAppRuntime(); err != nil {
+		return nil, err
+	}
 	var pullRequest map[string]any
 	_, err := e.client.GetJSON(ctx, fmt.Sprintf("/repos/%s/%s/pulls/%d", owner, name, number), nil, githubapi.ConditionalRequest{}, &pullRequest)
 	if err != nil {
@@ -2182,6 +2199,9 @@ func (e *Executor) fetchPullRequestFilesWithPageSize(
 }
 
 func (e *Executor) fetchIssue(ctx context.Context, owner, name string, number int) (map[string]any, error) {
+	if err := e.ensureStrictGitHubAppRuntime(); err != nil {
+		return nil, err
+	}
 	var issue map[string]any
 	_, err := e.client.GetJSON(ctx, fmt.Sprintf("/repos/%s/%s/issues/%d", owner, name, number), nil, githubapi.ConditionalRequest{}, &issue)
 	if err != nil {
@@ -2194,6 +2214,9 @@ func (e *Executor) fetchIssue(ctx context.Context, owner, name string, number in
 }
 
 func (e *Executor) fetchCommit(ctx context.Context, owner, name, sha string) (map[string]any, error) {
+	if err := e.ensureStrictGitHubAppRuntime(); err != nil {
+		return nil, err
+	}
 	var commit map[string]any
 	_, err := e.client.GetJSON(ctx, fmt.Sprintf("/repos/%s/%s/commits/%s", owner, name, url.PathEscape(strings.TrimSpace(sha))), nil, githubapi.ConditionalRequest{}, &commit)
 	if err != nil {
@@ -2209,6 +2232,9 @@ func (e *Executor) fetchPaginatedResourceRows(
 	maxPages int,
 	perPage int,
 ) ([]map[string]any, error) {
+	if err := e.ensureStrictGitHubAppRuntime(); err != nil {
+		return nil, err
+	}
 	if maxPages <= 0 {
 		maxPages = 1
 	}
@@ -2260,6 +2286,9 @@ func cloneURLValues(values url.Values) url.Values {
 }
 
 func (e *Executor) fetchRepository(ctx context.Context, owner, name string) (map[string]any, error) {
+	if err := e.ensureStrictGitHubAppRuntime(); err != nil {
+		return nil, err
+	}
 	cacheKey := repositoryCacheKey(owner, name)
 	if e.repositoryCache != nil {
 		if repository, ok := e.repositoryCache.Get(cacheKey, time.Now()); ok {
@@ -2288,6 +2317,9 @@ func (e *Executor) fetchPullRequests(ctx context.Context, owner, name string) ([
 }
 
 func (e *Executor) fetchPullRequestSummaries(ctx context.Context, owner, name string, perPage int) ([]map[string]any, error) {
+	if err := e.ensureStrictGitHubAppRuntime(); err != nil {
+		return nil, err
+	}
 	var summaries []map[string]any
 	_, err := e.client.GetJSON(ctx, fmt.Sprintf("/repos/%s/%s/pulls", owner, name), url.Values{
 		"state":     []string{"all"},
@@ -2302,6 +2334,9 @@ func (e *Executor) fetchPullRequestSummaries(ctx context.Context, owner, name st
 }
 
 func (e *Executor) fetchPullRequestsRESTDetails(ctx context.Context, owner, name string, summaries []map[string]any, perPage int) ([]map[string]any, map[int][]map[string]any, error) {
+	if err := e.ensureStrictGitHubAppRuntime(); err != nil {
+		return nil, nil, err
+	}
 	pullRequests := make([]map[string]any, 0, len(summaries))
 	reviewsByNumber := make(map[int][]map[string]any, len(summaries))
 	reviewPerPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, e.cfg.GitHub.PullRequestReviewPageSize)
@@ -2336,6 +2371,9 @@ func (e *Executor) fetchPullRequestsRESTDetails(ctx context.Context, owner, name
 }
 
 func (e *Executor) fetchIssues(ctx context.Context, owner, name string) ([]map[string]any, error) {
+	if err := e.ensureStrictGitHubAppRuntime(); err != nil {
+		return nil, err
+	}
 	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, e.cfg.GitHub.RepositorySyncPageSize)
 	var issues []map[string]any
 	_, err := e.client.GetJSON(ctx, fmt.Sprintf("/repos/%s/%s/issues", owner, name), url.Values{
@@ -2394,6 +2432,9 @@ func (e *Executor) releaseUserSync(user string) {
 }
 
 func (e *Executor) fetchCommits(ctx context.Context, owner, name string) ([]map[string]any, error) {
+	if err := e.ensureStrictGitHubAppRuntime(); err != nil {
+		return nil, err
+	}
 	perPage := boundedPageSize(e.cfg.GitHub.MaxPageSize, e.cfg.GitHub.CommitSyncPageSize)
 	var commits []map[string]any
 	_, err := e.client.GetJSON(ctx, fmt.Sprintf("/repos/%s/%s/commits", owner, name), url.Values{
@@ -2636,6 +2677,11 @@ func syncFailureFetchedMetrics(err error) map[string]int {
 	if errors.Is(err, ErrUserSyncGitHubAppUnavailable) {
 		metrics["request_errors"] = 1
 		metrics["app_installation_unavailable"] = 1
+		return metrics
+	}
+	if errors.Is(err, ErrStrictGitHubAppRuntimeRequired) {
+		metrics["request_errors"] = 1
+		metrics["strict_app_runtime_required"] = 1
 		return metrics
 	}
 	if errors.Is(err, ErrUserSyncActorMismatch) {

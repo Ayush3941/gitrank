@@ -53,4 +53,8 @@ if ! rg -q '"user_sync_actor_mismatch"' "$INGESTOR_ROUTER_FILE"; then
   fail "github-ingestor sync execution error mapping must expose user_sync_actor_mismatch"
 fi
 
+if ! rg -q '"github_app_runtime_required"' "$INGESTOR_ROUTER_FILE"; then
+  fail "github-ingestor sync execution error mapping must expose github_app_runtime_required"
+fi
+
 printf 'github app sync policy check passed\n'

@@ -488,6 +488,12 @@ func TestWriteSyncExecutionErrorMapsAppFailures(t *testing.T) {
 			wantCode:   "github_app_installation_unavailable",
 		},
 		{
+			name:       "maps strict app runtime required",
+			err:        service.ErrStrictGitHubAppRuntimeRequired,
+			wantStatus: http.StatusServiceUnavailable,
+			wantCode:   "github_app_runtime_required",
+		},
+		{
 			name:       "maps user actor mismatch",
 			err:        service.ErrUserSyncActorMismatch,
 			wantStatus: http.StatusForbidden,

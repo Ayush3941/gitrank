@@ -716,6 +716,8 @@ func writeSyncExecutionError(w http.ResponseWriter, r *http.Request, fallbackCod
 		httpkit.WriteError(w, http.StatusForbidden, "github_app_installation_required", err.Error(), requestID)
 	case errors.Is(err, service.ErrUserSyncGitHubAppUnavailable):
 		httpkit.WriteError(w, http.StatusServiceUnavailable, "github_app_installation_unavailable", err.Error(), requestID)
+	case errors.Is(err, service.ErrStrictGitHubAppRuntimeRequired):
+		httpkit.WriteError(w, http.StatusServiceUnavailable, "github_app_runtime_required", err.Error(), requestID)
 	case errors.Is(err, service.ErrUserSyncActorMismatch):
 		httpkit.WriteError(w, http.StatusForbidden, "user_sync_actor_mismatch", err.Error(), requestID)
 	default:

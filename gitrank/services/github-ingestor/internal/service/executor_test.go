@@ -698,6 +698,11 @@ func TestSyncFailureFetchedMetrics(t *testing.T) {
 			wantKeys: []string{"failed", "request_errors", "app_installation_unavailable"},
 		},
 		{
+			name:     "strict app runtime required tagged",
+			err:      ErrStrictGitHubAppRuntimeRequired,
+			wantKeys: []string{"failed", "request_errors", "strict_app_runtime_required"},
+		},
+		{
 			name:     "actor mismatch tagged",
 			err:      ErrUserSyncActorMismatch,
 			wantKeys: []string{"failed", "auth_errors", "user_sync_actor_mismatch"},
@@ -1026,11 +1031,12 @@ func TestExecutorFetchRepositoryUsesStableMetadataCache(t *testing.T) {
 		t.Fatalf("NewRESTClient() error = %v", err)
 	}
 
-	executor := NewExecutor(config.App{
+	baseExecutor := NewExecutor(config.App{
 		GitHub: config.GitHub{
 			RepositoryCacheTTL: time.Minute,
 		},
 	}, nil, client)
+	executor := baseExecutor.cloneWithStrictAppClient(client)
 
 	first, err := executor.fetchRepository(context.Background(), "octo", "repo")
 	if err != nil {
@@ -1059,6 +1065,41 @@ func TestExecutorFetchRepositoryUsesStableMetadataCache(t *testing.T) {
 	}
 }
 
+func TestExecutorFetchRepositoryRejectsNonStrictRuntime(t *testing.T) {
+	t.Parallel()
+
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests++
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"full_name": "octo/repo",
+		})
+	}))
+	defer server.Close()
+
+	client, err := githubapi.NewRESTClient(githubapi.ClientConfig{
+		BaseURL:          server.URL,
+		APIVersion:       "2026-03-10",
+		UserAgent:        "GitRank/test",
+		HTTPClient:       server.Client(),
+		SecondaryBackoff: time.Millisecond,
+		MaxConcurrency:   1,
+	})
+	if err != nil {
+		t.Fatalf("NewRESTClient() error = %v", err)
+	}
+
+	executor := NewExecutor(config.App{}, nil, client)
+	_, err = executor.fetchRepository(context.Background(), "octo", "repo")
+	if !errors.Is(err, ErrStrictGitHubAppRuntimeRequired) {
+		t.Fatalf("fetchRepository() error = %v, want ErrStrictGitHubAppRuntimeRequired", err)
+	}
+	if requests != 0 {
+		t.Fatalf("requests = %d, want 0 when strict runtime guard rejects non-strict extractor", requests)
+	}
+}
+
 func TestExecutorForUserSyncActorUsesInstallationWhenAvailable(t *testing.T) {
 	t.Parallel()
 
@@ -1080,6 +1121,9 @@ func TestExecutorForUserSyncActorUsesInstallationWhenAvailable(t *testing.T) {
 	}
 	if runtime.client != installationClient {
 		t.Fatalf("runtime.client = %p, want installation client %p", runtime.client, installationClient)
+	}
+	if !runtime.strictAppRuntime {
+		t.Fatal("runtime.strictAppRuntime = false, want true for strict GitHub App extraction runtime")
 	}
 }
 
@@ -1687,12 +1731,13 @@ func TestExecutorFetchAuthoredPullRequestTargetsUsesGitHubSearch(t *testing.T) {
 		t.Fatalf("NewRESTClient() error = %v", err)
 	}
 
-	executor := NewExecutor(config.App{
+	baseExecutor := NewExecutor(config.App{
 		GitHub: config.GitHub{
 			MaxPageSize:           9,
 			AuthoredPRSearchLimit: 100,
 		},
 	}, nil, client)
+	executor := baseExecutor.cloneWithStrictAppClient(client)
 
 	selection, err := executor.fetchAuthoredPullRequestTargets(
 		context.Background(),
@@ -1803,12 +1848,13 @@ func TestExecutorFetchAuthoredPullRequestTargetsRescansWhenIncrementalIsEmpty(t 
 		t.Fatalf("NewRESTClient() error = %v", err)
 	}
 
-	executor := NewExecutor(config.App{
+	baseExecutor := NewExecutor(config.App{
 		GitHub: config.GitHub{
 			MaxPageSize:           100,
 			AuthoredPRSearchLimit: 100,
 		},
 	}, nil, client)
+	executor := baseExecutor.cloneWithStrictAppClient(client)
 
 	now := time.Date(2026, time.May, 20, 12, 0, 0, 0, time.UTC)
 	lastSynced := now.Add(-20 * time.Minute)
@@ -1904,12 +1950,13 @@ func TestExecutorFetchAuthoredPullRequestTargetsUsesBroadFallbackWhenWindowedQue
 		t.Fatalf("NewRESTClient() error = %v", err)
 	}
 
-	executor := NewExecutor(config.App{
+	baseExecutor := NewExecutor(config.App{
 		GitHub: config.GitHub{
 			MaxPageSize:           100,
 			AuthoredPRSearchLimit: 100,
 		},
 	}, nil, client)
+	executor := baseExecutor.cloneWithStrictAppClient(client)
 
 	now := time.Date(2026, time.May, 20, 12, 0, 0, 0, time.UTC)
 	lastSynced := now.Add(-20 * time.Minute)
