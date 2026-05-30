@@ -1814,6 +1814,7 @@ ABRA implementation checklist:
 - [x] Profile sync-run status derivation now accepts profile-scoped run rows even when ownership markers are absent, so active `running`/`queued` runs remain visible instead of being silently dropped by frontend filters.
 - [x] Direct sync execute routes for issues and commits now use the same strict GitHub App runtime selector as repository/PR/review routes (`executorForStrictAppSyncRequest`), eliminating remaining non-app extraction bypasses on those execute paths.
 - [x] User sync now also routes through the strict App-only runtime selector (`executorForStrictAppSyncActor`) rather than the looser actor-runtime helper, keeping one consistent extraction guard for authored-PR discovery and hydration.
+- [x] Strict App selector internals were simplified to one explicit installation-runtime return type (no credential-source branching), and CI guardrails now fail if credential-source fallback logic reappears.
 - [x] API gateway sync trigger/execute routes now fail fast with `sync_config_unavailable` when required GitHub App config is missing, preventing ambiguous sync failures and ensuring PR extraction cannot proceed without App credentials.
 - [x] Repo sync quality gates now include `scripts/check-api-gateway-sync-guard.sh` to prevent regressions where sync trigger/execute routes lose strict GitHub App guard coverage.
 - [x] Repo sync quality gates now include `scripts/check-github-app-sync-policy.sh` to enforce manifest-level auth policy wording and GitHub App config status derivation for sync dependencies.

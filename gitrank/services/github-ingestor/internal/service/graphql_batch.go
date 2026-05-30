@@ -142,26 +142,26 @@ func (e *Executor) installationClientSupportsAuthoredPullRequests(
 	return false, nil
 }
 
-func (e *Executor) executorForUserSyncActor(ctx context.Context, actor SyncRequestActor, now time.Time) (*Executor, string, error) {
+func (e *Executor) executorForUserSyncActor(ctx context.Context, actor SyncRequestActor) (*Executor, error) {
 	if e == nil {
-		return nil, "", nil
+		return nil, nil
 	}
 	if strings.TrimSpace(actor.GitHubLogin) == "" {
-		return nil, "", ErrUserSyncGitHubAppInstallationRequired
+		return nil, ErrUserSyncGitHubAppInstallationRequired
 	}
 	if e.actorInstallation == nil {
-		return nil, "", ErrUserSyncGitHubAppUnavailable
+		return nil, ErrUserSyncGitHubAppUnavailable
 	}
 
 	installationClient, installationEnabled, installationErr := e.actorInstallation(ctx, actor)
 	if installationErr != nil {
-		return nil, "", fmt.Errorf("%w: %v", ErrUserSyncGitHubAppUnavailable, installationErr)
+		return nil, fmt.Errorf("%w: %v", ErrUserSyncGitHubAppUnavailable, installationErr)
 	}
 	if !installationEnabled || installationClient == nil {
-		return nil, "", ErrUserSyncGitHubAppInstallationRequired
+		return nil, ErrUserSyncGitHubAppInstallationRequired
 	}
 
-	return e.cloneWithStrictAppClient(installationClient), "installation", nil
+	return e.cloneWithStrictAppClient(installationClient), nil
 }
 
 func (e *Executor) executorForStrictAppSyncActor(ctx context.Context, actor SyncRequestActor, now time.Time) (*Executor, error) {
@@ -169,11 +169,8 @@ func (e *Executor) executorForStrictAppSyncActor(ctx context.Context, actor Sync
 		return nil, nil
 	}
 
-	runtime, source, err := e.executorForUserSyncActor(ctx, actor, now)
+	runtime, err := e.executorForUserSyncActor(ctx, actor)
 	if err == nil {
-		if source != "installation" {
-			return nil, fmt.Errorf("%w: unexpected credential source %q", ErrUserSyncGitHubAppUnavailable, source)
-		}
 		return runtime, nil
 	}
 	if !errors.Is(err, ErrUserSyncGitHubAppInstallationRequired) {
@@ -184,12 +181,9 @@ func (e *Executor) executorForStrictAppSyncActor(ctx context.Context, actor Sync
 		return nil, bootstrapErr
 	}
 
-	runtime, source, err = e.executorForUserSyncActor(ctx, actor, now)
+	runtime, err = e.executorForUserSyncActor(ctx, actor)
 	if err != nil {
 		return nil, err
-	}
-	if source != "installation" {
-		return nil, fmt.Errorf("%w: unexpected credential source %q", ErrUserSyncGitHubAppUnavailable, source)
 	}
 	return runtime, nil
 }

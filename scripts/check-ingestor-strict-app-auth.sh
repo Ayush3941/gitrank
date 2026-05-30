@@ -61,6 +61,14 @@ if ! rg -q 'func \(e \*Executor\) executorForStrictAppSyncRequest' "$GRAPHQL_BAT
   fail "strict app request selector implementation missing"
 fi
 
+if ! rg -q 'func \(e \*Executor\) executorForUserSyncActor\(ctx context.Context, actor SyncRequestActor\) \(\*Executor, error\)' "$GRAPHQL_BATCH_FILE"; then
+  fail "user sync actor selector must return strict installation runtime only (no credential-source fallback)"
+fi
+
+if rg -q 'unexpected credential source' "$GRAPHQL_BATCH_FILE"; then
+  fail "credential-source fallback guard text should not exist in strict app selector implementation"
+fi
+
 if ! rg -q 'if installationID > 0' "$GRAPHQL_BATCH_FILE"; then
   fail "strict app request selector must prioritize explicit installation_id resolution"
 fi

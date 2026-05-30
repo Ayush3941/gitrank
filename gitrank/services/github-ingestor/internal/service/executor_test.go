@@ -1066,12 +1066,9 @@ func TestExecutorForUserSyncActorUsesInstallationWhenAvailable(t *testing.T) {
 		},
 	}
 
-	runtime, source, err := executor.executorForUserSyncActor(context.Background(), SyncRequestActor{GitHubLogin: "octocat"}, time.Now().UTC())
+	runtime, err := executor.executorForUserSyncActor(context.Background(), SyncRequestActor{GitHubLogin: "octocat"})
 	if err != nil {
 		t.Fatalf("executorForUserSyncActor() error = %v", err)
-	}
-	if source != "installation" {
-		t.Fatalf("credential source = %q, want installation", source)
 	}
 	if runtime == executor {
 		t.Fatalf("executorForUserSyncActor() runtime = %p, want cloned executor", runtime)
@@ -1088,7 +1085,7 @@ func TestExecutorForUserSyncActorReturnsErrorWhenActorInstallationMissing(t *tes
 		client: &githubapi.RESTClient{},
 	}
 
-	runtime, source, err := executor.executorForUserSyncActor(context.Background(), SyncRequestActor{GitHubLogin: "octocat"}, time.Now().UTC())
+	runtime, err := executor.executorForUserSyncActor(context.Background(), SyncRequestActor{GitHubLogin: "octocat"})
 	if err == nil {
 		t.Fatalf("executorForUserSyncActor() error = nil, want app-unavailable error")
 	}
@@ -1097,9 +1094,6 @@ func TestExecutorForUserSyncActorReturnsErrorWhenActorInstallationMissing(t *tes
 	}
 	if runtime != nil {
 		t.Fatalf("executorForUserSyncActor() runtime = %p, want nil when actor installation is missing", runtime)
-	}
-	if source != "" {
-		t.Fatalf("credential source = %q, want empty source when actor installation is missing", source)
 	}
 }
 
@@ -1113,7 +1107,7 @@ func TestExecutorForUserSyncActorReturnsErrorWhenInstallationMissing(t *testing.
 		},
 	}
 
-	runtime, source, err := executor.executorForUserSyncActor(context.Background(), SyncRequestActor{GitHubLogin: "octocat"}, time.Now().UTC())
+	runtime, err := executor.executorForUserSyncActor(context.Background(), SyncRequestActor{GitHubLogin: "octocat"})
 	if err == nil {
 		t.Fatalf("executorForUserSyncActor() error = nil, want app-installation-required error")
 	}
@@ -1123,16 +1117,13 @@ func TestExecutorForUserSyncActorReturnsErrorWhenInstallationMissing(t *testing.
 	if runtime != nil {
 		t.Fatalf("executorForUserSyncActor() runtime = %p, want nil when installation is missing", runtime)
 	}
-	if source != "" {
-		t.Fatalf("credential source = %q, want empty source when installation is missing", source)
-	}
 }
 
 func TestExecutorForUserSyncActorReturnsErrorWhenGitHubLoginMissing(t *testing.T) {
 	t.Parallel()
 
 	executor := &Executor{client: &githubapi.RESTClient{}}
-	runtime, source, err := executor.executorForUserSyncActor(context.Background(), SyncRequestActor{}, time.Now().UTC())
+	runtime, err := executor.executorForUserSyncActor(context.Background(), SyncRequestActor{})
 	if err == nil {
 		t.Fatalf("executorForUserSyncActor() error = nil, want app-installation-required error")
 	}
@@ -1141,9 +1132,6 @@ func TestExecutorForUserSyncActorReturnsErrorWhenGitHubLoginMissing(t *testing.T
 	}
 	if runtime != nil {
 		t.Fatalf("executorForUserSyncActor() runtime = %p, want nil when login missing", runtime)
-	}
-	if source != "" {
-		t.Fatalf("credential source = %q, want empty source when login missing", source)
 	}
 }
 
@@ -1157,7 +1145,7 @@ func TestExecutorForUserSyncActorReturnsErrorWhenInstallationTokenUnavailable(t 
 		},
 	}
 
-	runtime, source, err := executor.executorForUserSyncActor(context.Background(), SyncRequestActor{GitHubLogin: "octocat"}, time.Now().UTC())
+	runtime, err := executor.executorForUserSyncActor(context.Background(), SyncRequestActor{GitHubLogin: "octocat"})
 	if err == nil {
 		t.Fatalf("executorForUserSyncActor() error = nil, want installation-unavailable error")
 	}
@@ -1166,9 +1154,6 @@ func TestExecutorForUserSyncActorReturnsErrorWhenInstallationTokenUnavailable(t 
 	}
 	if runtime != nil {
 		t.Fatalf("executorForUserSyncActor() runtime = %p, want nil when installation token is unavailable", runtime)
-	}
-	if source != "" {
-		t.Fatalf("credential source = %q, want empty source when installation token is unavailable", source)
 	}
 }
 
