@@ -62,8 +62,8 @@ export function CurrentLeagueCard({ user }: { user: UserProfile }) {
         </p>
       </div>
       <ul role="list" className="flex flex-wrap gap-2">
-        {evidenceSignals.map((signal, index) => (
-          <li key={`${signal}-${index}`}>
+        {evidenceSignals.map((signal) => (
+          <li key={`${user.level.rankTier}-${signal}`}>
             <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
               {signal}
             </span>

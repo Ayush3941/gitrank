@@ -2053,24 +2053,30 @@ func prioritizeAuthoredPullRequestTargets(
 	if bootstrapComplete {
 		return targets[:limit]
 	}
-	if recentSeedTargets >= limit {
-		return targets[:limit]
-	}
 	if recentSeedTargets < 0 {
 		recentSeedTargets = 0
 	}
 
-	recentQuota := limit - max(1, limit/3)
+	// Keep at least one historic target while bootstrap is still in progress so
+	// merged/background evidence is not permanently starved by newer open PR churn.
+	historicQuota := max(1, limit/3)
+	if historicQuota >= limit {
+		historicQuota = limit - 1
+	}
+	recentQuota := limit - historicQuota
 	if recentQuota < 1 {
 		recentQuota = 1
+		historicQuota = limit - recentQuota
 	}
-	if recentSeedTargets > recentQuota {
+	if recentSeedTargets > 0 && recentSeedTargets < recentQuota {
+		// If the fresh seed is smaller than the recent quota, avoid over-consuming
+		// non-seeded rows in the "recent" slice.
 		recentQuota = recentSeedTargets
+		historicQuota = limit - recentQuota
 	}
-	if recentQuota > limit {
-		recentQuota = limit
+	if historicQuota < 0 {
+		historicQuota = 0
 	}
-	historicQuota := max(1, limit-recentQuota)
 
 	out := make([]authoredPullRequestTarget, 0, limit)
 	seen := make(map[string]struct{}, limit)

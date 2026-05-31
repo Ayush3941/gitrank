@@ -7,6 +7,7 @@ import {
   useNetworkConstraintPreference,
   useReducedGamification,
 } from "@/hooks/use-gamification-preference";
+import { deduplicateSkillNodes } from "@/lib/presentation/skill-normalization";
 import type { SkillNode } from "@/types/gitrank";
 
 const SkillRadarChartInner = dynamic(
@@ -36,7 +37,8 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
   const safeSkills: SkillNode[] = skills.length > 0
     ? skills
     : [{ category: "Documentation", score: 0, delta: 0, note: "No skill evidence available yet." }];
-  const sortedSkills = [...safeSkills].sort((left, right) => right.score - left.score);
+  const deduplicatedSkills = deduplicateSkillNodes(safeSkills);
+  const sortedSkills = [...deduplicatedSkills].sort((left, right) => right.score - left.score);
   const strongest = sortedSkills[0];
   const weakest = sortedSkills[sortedSkills.length - 1];
 
@@ -52,7 +54,7 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
         {useLiteRenderer ? (
           <SkillRadarLite skills={sortedSkills} />
         ) : inView ? (
-          <SkillRadarChartInner skills={safeSkills} />
+          <SkillRadarChartInner skills={deduplicatedSkills} />
         ) : (
           <SkillRadarChartFallback />
         )}
@@ -80,8 +82,8 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
           {" "}Lowest signal: {weakest.category} ({weakest.score}).
         </p>
         <ul role="list" className="mt-3 space-y-1 text-xs text-muted">
-          {sortedSkills.map((skill, index) => (
-            <li key={`${skill.category}-${index}`} className="flex items-center justify-between gap-3">
+          {sortedSkills.map((skill) => (
+            <li key={skillRowKey(skill)} className="flex items-center justify-between gap-3">
               <span>{skill.category}</span>
               <span>{skill.score}</span>
             </li>
@@ -99,8 +101,8 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
                 </tr>
               </thead>
               <tbody>
-                {sortedSkills.map((skill, index) => (
-                  <tr key={`${skill.category}-${skill.score}-${index}`} className="border-b border-white/6 last:border-b-0">
+                {sortedSkills.map((skill) => (
+                  <tr key={skillRowKey(skill)} className="border-b border-white/6 last:border-b-0">
                     <th scope="row" className="px-2 py-2 font-medium text-white">{skill.category}</th>
                     <td className="px-2 py-2">{skill.score}</td>
                     <td className="px-2 py-2">{skill.delta >= 0 ? "+" : ""}{skill.delta}</td>
@@ -129,10 +131,10 @@ function SkillRadarLite({ skills }: { skills: SkillNode[] }) {
   return (
     <div className="neon-surface h-full space-y-3 px-4 py-4">
       <div className="space-y-2">
-        {skills.map((skill, index) => {
+        {skills.map((skill) => {
           const fill = Math.max(0, Math.min(100, Math.round((skill.score / maxScore) * 100)));
           return (
-            <div key={`${skill.category}-${index}`} className="space-y-1">
+            <div key={skillRowKey(skill)} className="space-y-1">
               <div className="flex items-center justify-between gap-3 text-xs text-muted">
                 <span>{skill.category}</span>
                 <span>{skill.score}</span>
@@ -146,4 +148,8 @@ function SkillRadarLite({ skills }: { skills: SkillNode[] }) {
       </div>
     </div>
   );
+}
+
+function skillRowKey(skill: SkillNode): string {
+  return `${skill.category}-${skill.score}-${skill.delta}`;
 }

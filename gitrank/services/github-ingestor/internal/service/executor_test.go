@@ -961,8 +961,8 @@ func TestPrioritizeAuthoredPullRequestTargetsBootstrapInProgressIncludesHistoric
 	if planned[0].Number != 101 {
 		t.Fatalf("planned[0] = #%d, want most recent #101", planned[0].Number)
 	}
-	if planned[2].Number != 202 {
-		t.Fatalf("planned[2] = #%d, want historic tail #202 to guarantee backfill progress", planned[2].Number)
+	if planned[1].Number != 202 {
+		t.Fatalf("planned[1] = #%d, want historic tail #202 to guarantee backfill progress", planned[1].Number)
 	}
 }
 
@@ -983,7 +983,7 @@ func TestPrioritizeAuthoredPullRequestTargetsBootstrapCompleteUsesNewestOnly(t *
 	}
 }
 
-func TestPrioritizeAuthoredPullRequestTargetsKeepsNewestWhenRecentSeedCoversLimit(t *testing.T) {
+func TestPrioritizeAuthoredPullRequestTargetsIncludesHistoricSliceWhenRecentSeedCoversLimit(t *testing.T) {
 	targets := []authoredPullRequestTarget{
 		{Repository: "owner/repo", Number: 11},
 		{Repository: "owner/repo", Number: 12},
@@ -996,8 +996,8 @@ func TestPrioritizeAuthoredPullRequestTargetsKeepsNewestWhenRecentSeedCoversLimi
 	if len(planned) != 3 {
 		t.Fatalf("len(planned) = %d, want 3", len(planned))
 	}
-	if planned[0].Number != 11 || planned[1].Number != 12 || planned[2].Number != 13 {
-		t.Fatalf("planned = %+v, want newest first slice when recent seed already covers limit", planned)
+	if planned[0].Number != 11 || planned[1].Number != 12 || planned[2].Number != 100 {
+		t.Fatalf("planned = %+v, want recent slice plus one historic tail target", planned)
 	}
 }
 

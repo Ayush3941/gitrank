@@ -99,8 +99,8 @@ export function PublicProfileHero({
             These signals summarize what your recent public PRs show today.
           </p>
           <ul role="list" className="flex flex-wrap gap-2">
-            {topSkills.map((skill, index) => (
-              <li key={`${skill}-${index}`}>
+            {topSkills.map((skill) => (
+              <li key={`${user.username}-${skill}`}>
                 <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 text-sm text-muted">
                   {skill}
                 </span>

@@ -19,7 +19,7 @@ import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { useProfile } from "@/hooks/use-profile";
 import { PublicProfileHero } from "@/features/profile/components/PublicProfileHero";
-import type { SkillCategory, SkillNode } from "@/types/gitrank";
+import type { SkillNode } from "@/types/gitrank";
 import {
   buildDeterministicIdentitySummary,
   deriveDeterministicArchetype,
@@ -29,7 +29,7 @@ import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { formatContributionStatusLabel } from "@/lib/presentation/contribution-status";
-import { normalizeSkillCategory } from "@/lib/presentation/skill-normalization";
+import { deduplicateSkillNodes } from "@/lib/presentation/skill-normalization";
 
 const SkillRadarChart = dynamic(
   () =>
@@ -139,7 +139,7 @@ export function PublicProfilePageClient({
     [visibleBadges],
   );
   const skillTree = useMemo(
-    () => deduplicateSkillTree(data?.user.skillTree ?? []),
+    () => deduplicateSkillNodes(data?.user.skillTree ?? []),
     [data?.user.skillTree],
   );
   const fallbackIdentitySummary = useMemo(() => {
@@ -242,8 +242,8 @@ export function PublicProfilePageClient({
             </div>
             {unlockedBadges.length > 0 ? (
               <ul role="list" className="grid gap-3 sm:grid-cols-2">
-                {unlockedBadges.slice(0, 3).map((badge, index) => (
-                  <li key={`${badge.id}-${index}`} className="render-opt-card neon-surface rounded-[1.75rem] p-4">
+                {unlockedBadges.slice(0, 3).map((badge) => (
+                  <li key={badge.id} className="render-opt-card neon-surface rounded-[1.75rem] p-4">
                     <RarityBadge rarity={badge.rarity} />
                     <h3 className="mt-3 text-lg font-medium text-white">{badge.name}</h3>
                     <ExpandableText
@@ -351,7 +351,10 @@ export function PublicProfilePageClient({
               ) : (
                 <ul role="list" className="space-y-3">
                   {data.topRepositories.slice(0, 3).map((repository, index) => (
-                    <li key={`${repository.name}-${index}`} className="render-opt-card neon-surface rounded-[1.5rem] px-4 py-3">
+                    <li
+                      key={`${repository.name}-${repository.contributionCount}-${repository.totalXp}`}
+                      className="render-opt-card neon-surface rounded-[1.5rem] px-4 py-3"
+                    >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex items-start gap-3">
                           <span className="neon-chip neon-chip-muted inline-flex min-w-10 justify-center rounded-full px-2 py-1 text-xs font-semibold">
@@ -411,11 +414,11 @@ function LiteSkillSummary({ skills }: { skills: SkillNode[] }) {
         </div>
       ) : null}
       <ul role="list" className="space-y-3">
-        {topSkills.map((skill, index) => {
+        {topSkills.map((skill) => {
           const width = Math.max(8, Math.round((skill.score / maxScore) * 100));
           return (
             <li
-              key={`${skill.category}-${index}`}
+              key={`${skill.category}-${skill.score}-${skill.delta}`}
               className="neon-surface rounded-[1.3rem] px-4 py-3"
             >
               <div className="flex items-center justify-between gap-3">
@@ -521,9 +524,9 @@ function LiteBestPRSummary({
   return (
     <GlowCard className="space-y-4">
       <ul role="list" className="space-y-3">
-        {reports.slice(0, 4).map((report, index) => (
+        {reports.slice(0, 4).map((report) => (
           <li
-            key={`${report.owner}/${report.repo}#${report.number}-${index}`}
+            key={report.id}
             className="neon-surface rounded-[1.3rem] px-4 py-3"
           >
             <p className="break-anywhere text-sm font-medium text-white">{report.title}</p>
@@ -536,34 +539,6 @@ function LiteBestPRSummary({
       </ul>
     </GlowCard>
   );
-}
-
-function deduplicateSkillTree(skills: SkillNode[]): SkillNode[] {
-  const ordered: SkillNode[] = [];
-  const indexByCategory = new Map<string, number>();
-
-  for (const skill of skills) {
-    const key = normalizeSkillKey(skill.category);
-    const existingIndex = indexByCategory.get(key);
-    if (existingIndex === undefined) {
-      indexByCategory.set(key, ordered.length);
-      ordered.push(skill);
-      continue;
-    }
-    const existing = ordered[existingIndex];
-    if (skill.score > existing.score) {
-      ordered[existingIndex] = {
-        ...existing,
-        ...skill,
-      };
-    }
-  }
-
-  return ordered;
-}
-
-function normalizeSkillKey(value: SkillCategory): string {
-  return normalizeSkillCategory(value);
 }
 
 function PublicLanePlaceholder({ label }: { label: string }) {

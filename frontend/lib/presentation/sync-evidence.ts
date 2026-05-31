@@ -79,8 +79,14 @@ export function hasUserRepositoryEvidence(user: UserProfile | null | undefined):
 
 export function hasUserMaterializedSyncEvidence(user: UserProfile | null | undefined): boolean {
   // Repository rows alone can be present from lightweight sync passes without
-  // score-bearing PR evidence. Treat contribution evidence as the sync-ready
-  // source of truth for "fully synced" UX states.
+  // score-bearing PR evidence. Treat merged contribution evidence as the
+  // sync-ready source of truth for "fully synced" UX states.
+  if (!user) {
+    return false;
+  }
+  if (user.mergedPrCount <= 0) {
+    return false;
+  }
   return hasUserContributionEvidence(user);
 }
 

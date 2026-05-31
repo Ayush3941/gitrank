@@ -1,3 +1,5 @@
+import type { SkillNode } from "@/types/gitrank";
+
 export function normalizeSkillToken(value: string): string {
   const normalized = value
     .toLowerCase()
@@ -34,4 +36,28 @@ export function normalizeSkillCategory(value: string): string {
     return "infrastructure";
   }
   return normalized;
+}
+
+export function deduplicateSkillNodes(skills: SkillNode[]): SkillNode[] {
+  const ordered: SkillNode[] = [];
+  const indexByCategory = new Map<string, number>();
+
+  for (const skill of skills) {
+    const key = normalizeSkillCategory(skill.category);
+    const existingIndex = indexByCategory.get(key);
+    if (existingIndex === undefined) {
+      indexByCategory.set(key, ordered.length);
+      ordered.push(skill);
+      continue;
+    }
+    const existing = ordered[existingIndex];
+    if (skill.score > existing.score) {
+      ordered[existingIndex] = {
+        ...existing,
+        ...skill,
+      };
+    }
+  }
+
+  return ordered;
 }
