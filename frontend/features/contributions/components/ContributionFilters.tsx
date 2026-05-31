@@ -175,15 +175,14 @@ export function ContributionFilters({
       <div className="flex flex-wrap items-center gap-2">
         {activeFilterCount > 0 ? (
           <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-            Active: {activeFilterCount}
+            Active filters: {activeFilterCount}
           </span>
         ) : null}
-        <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-          View: {activeViewLabel}
-        </span>
-        <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-          Order: {sort}
-        </span>
+        {activeFilterCount > 0 ? (
+          <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+            Lane: {activeViewLabel}
+          </span>
+        ) : null}
         {trimmedSearch.length > 0 ? (
           <button
             type="button"

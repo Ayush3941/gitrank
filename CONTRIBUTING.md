@@ -265,6 +265,12 @@ Recent no-slop refinement (May 29, 2026):
 - Sync activity cards no longer surface correlation IDs in the default list view; the panel now prioritizes user-actionable run state and outcomes.
 - Contribution filter helper copy was tightened to one clear sentence: categories reflect recent PR work and help choose the next lane.
 
+Recent no-slop refinement (May 31, 2026):
+
+- `ContributionFilters` removed redundant `View` and `Order` summary chips that repeated state already visible in segmented controls.
+- Top filter rail now prioritizes only actionable context (`Active filters`, active lane, search chip, reset), reducing visual noise and scan cost on dense contribution pages.
+- Updated frontend test coverage (`frontend/tests/contribution-filters.test.tsx`) to lock this simplified control-header behavior.
+
 Recent strict app-auth refinement (May 30, 2026):
 
 - `github-ingestor` request-level strict auth now prioritizes explicit `installation_id` for repository/PR/review/issue/commit execution, then falls back to actor-linked installation discovery only when installation ID is absent.
