@@ -8,9 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { formatDateTime, formatRelativeDays } from "@/lib/formatters";
-import { hasPartialSyncRunMetrics } from "@/lib/sync/sync-run-metrics-policy";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
-import { syncRunStatusLabel } from "@/features/settings/lib/sync-run-status";
+import {
+  syncRunStatusLabel,
+  syncRunStatusLabelWithMetrics,
+  type SyncRunUiStatus,
+} from "@/features/settings/lib/sync-run-status";
 import { describeSyncRunOutcome, metricCount } from "@/features/settings/lib/sync-run-diagnostics";
 
 const SYNC_RUN_STATUS_FILTERS = ["All", "Completed", "Partial", "Queued", "Running", "Failed"] as const;
@@ -72,7 +75,7 @@ export function SyncRunActivityPanel({
       failed: 0,
     };
     for (const run of runs) {
-      const status = syncRunStatusLabel(run.status);
+      const status = syncRunStatusLabelWithMetrics(run.status, run.metrics);
       if (status === "Completed") {
         next.completed += 1;
       } else if (status === "Partial") {
@@ -90,7 +93,7 @@ export function SyncRunActivityPanel({
   const filteredRuns = useMemo(() => {
     const term = search.trim().toLowerCase();
     return runs.filter((run) => {
-      const normalizedStatus = syncRunStatusLabel(run.status);
+      const normalizedStatus = syncRunStatusLabelWithMetrics(run.status, run.metrics);
       const statusMatch =
         statusFilter === "All" || normalizedStatus === statusFilter;
       if (!statusMatch) {
@@ -293,7 +296,7 @@ export function SyncRunActivityPanel({
             {filteredRuns.map((run, index) => {
               const safeLastError = sanitizeSyncRunErrorMessage(run.last_error);
               const metricsSummary = summarizeRunMetrics(run.metrics);
-              const partial = hasPartialSyncRunMetrics(run.metrics);
+              const uiStatus = syncRunStatusLabelWithMetrics(run.status, run.metrics);
               const outcomeInsight = describeSyncRunOutcome(run).message;
               return (
                 <li key={`${run.id}-${index}`}>
@@ -307,7 +310,7 @@ export function SyncRunActivityPanel({
                           {run.subject || "No subject"} • {run.run_type}
                         </p>
                       </div>
-                      <StatusChip status={run.status} partial={partial} />
+                      <StatusChip status={run.status} uiStatus={uiStatus} />
                     </div>
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
                       <span>
@@ -339,8 +342,14 @@ export function SyncRunActivityPanel({
   );
 }
 
-function StatusChip({ status, partial = false }: { status: string; partial?: boolean }) {
-  const normalized = syncRunStatusLabel(status);
+function StatusChip({
+  status,
+  uiStatus,
+}: {
+  status: string;
+  uiStatus?: SyncRunUiStatus;
+}) {
+  const normalized = uiStatus ?? syncRunStatusLabel(status);
   if (normalized === "Partial") {
     return (
       <span className="neon-chip neon-chip-warning inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold">
@@ -350,14 +359,6 @@ function StatusChip({ status, partial = false }: { status: string; partial?: boo
     );
   }
   if (normalized === "Completed") {
-    if (partial) {
-      return (
-        <span className="neon-chip neon-chip-warning inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold">
-          <AlertTriangle className="h-3.5 w-3.5" />
-          Partial
-        </span>
-      );
-    }
     return (
       <span className="neon-chip neon-chip-success inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold">
         <CheckCircle2 className="h-3.5 w-3.5" />

@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { isActiveSyncRunStatus, syncRunStatusLabel } from "@/features/settings/lib/sync-run-status";
+import {
+  isActiveSyncRunStatus,
+  syncRunStatusLabel,
+  syncRunStatusLabelWithMetrics,
+} from "@/features/settings/lib/sync-run-status";
 
 describe("syncRunStatusLabel", () => {
   it("maps queue statuses to Queued and active execution statuses to Running", () => {
@@ -29,6 +33,19 @@ describe("syncRunStatusLabel", () => {
   it("returns Other for unknown values", () => {
     expect(syncRunStatusLabel("unknown")).toBe("Other");
     expect(syncRunStatusLabel("")).toBe("Other");
+  });
+
+  it("promotes completed runs to Partial when metrics show degraded evidence", () => {
+    expect(
+      syncRunStatusLabelWithMetrics("completed", {
+        authored_pull_request_backfill_incomplete: 1,
+      }),
+    ).toBe("Partial");
+    expect(
+      syncRunStatusLabelWithMetrics("completed", {
+        pull_requests: 4,
+      }),
+    ).toBe("Completed");
   });
 });
 

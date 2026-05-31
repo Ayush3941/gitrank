@@ -151,6 +151,34 @@ describe("SyncRunActivityPanel", () => {
     expect(screen.getAllByText("Partial").length).toBeGreaterThan(0);
   });
 
+  it("classifies completed rows with degraded metrics under the Partial filter", () => {
+    const degradedCompletedRun = {
+      ...sampleRun,
+      id: "run_completed_degraded_1",
+      metrics: {
+        authored_pull_request_backfill_incomplete: 1,
+      },
+    };
+
+    render(
+      <SyncRunActivityPanel
+        runs={[degradedCompletedRun]}
+        lastUpdatedAt="2026-05-25T00:05:00Z"
+        isLoading={false}
+        isRefreshing={false}
+        isError={false}
+        onRefresh={() => undefined}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("tab", { name: /Completed/ }));
+    expect(screen.getByText("No sync runs match this filter.")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("tab", { name: /Partial/ }));
+    expect(screen.queryByText("No sync runs match this filter.")).toBeNull();
+    expect(screen.getByText(/octocat\s*•\s*user/i)).toBeTruthy();
+  });
+
   it("surfaces failure telemetry for failed runs", () => {
     render(
       <SyncRunActivityPanel

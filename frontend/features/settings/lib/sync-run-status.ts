@@ -1,6 +1,7 @@
 import {
   canonicalizeSyncRunStatus,
 } from "@/lib/sync/sync-run-status-policy";
+import { hasPartialSyncRunMetrics } from "@/lib/sync/sync-run-metrics-policy";
 
 export type SyncRunUiStatus = "Completed" | "Partial" | "Failed" | "Queued" | "Running" | "Other";
 
@@ -26,4 +27,15 @@ export function syncRunStatusLabel(status: string): SyncRunUiStatus {
     return "Running";
   }
   return "Other";
+}
+
+export function syncRunStatusLabelWithMetrics(
+  status: string,
+  metrics?: Record<string, number>,
+): SyncRunUiStatus {
+  const normalized = syncRunStatusLabel(status);
+  if (normalized === "Completed" && hasPartialSyncRunMetrics(metrics)) {
+    return "Partial";
+  }
+  return normalized;
 }
