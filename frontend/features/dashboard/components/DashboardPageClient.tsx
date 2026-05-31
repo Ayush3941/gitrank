@@ -28,7 +28,7 @@ import {
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
-import { describeSyncRunOutcome } from "@/lib/presentation/sync-run-diagnostics";
+import { selectLatestActionableSyncRunOutcome } from "@/lib/presentation/sync-run-diagnostics";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import { Button } from "@/components/ui/button";
@@ -76,11 +76,7 @@ export function DashboardPageClient() {
     syncRunsQuery.data?.runs,
   );
   const latestSyncOutcome = useMemo(() => {
-    const latestRun = syncRunsQuery.data?.runs?.[0];
-    if (!latestRun) {
-      return null;
-    }
-    return describeSyncRunOutcome(latestRun);
+    return selectLatestActionableSyncRunOutcome(syncRunsQuery.data?.runs);
   }, [syncRunsQuery.data?.runs]);
   const streak = useMemo(
     () => summarizeContributionStreak(user?.contributions ?? []),

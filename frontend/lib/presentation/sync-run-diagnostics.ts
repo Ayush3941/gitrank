@@ -45,6 +45,40 @@ export type SyncRunDiagnostic = {
   message: string;
 };
 
+const ACTIONABLE_SYNC_CODES = new Set<SyncRunDiagnostic["code"]>([
+  "zero_discovery_with_history",
+  "scope_limited",
+  "unsupported_api_version",
+  "app_installation_required",
+  "app_installation_unavailable",
+  "app_runtime_required",
+  "sync_config_unavailable",
+  "user_sync_actor_mismatch",
+  "score_replay_mismatch",
+  "score_replay_failed",
+  "profile_refresh_failed",
+  "pr_reports_backfill_failed",
+  "quests_backfill_failed",
+  "search_limited",
+  "rate_limited_hydration",
+  "auth_hydration",
+  "upstream_hydration",
+  "conflict_hydration",
+  "retryable_or_timeout",
+  "backfill_incomplete",
+  "snapshot_refresh_pending",
+  "recent_seed_empty",
+  "broad_fallback",
+  "discovery_empty",
+  "selected_unmerged_only",
+  "sync_capped_recent",
+  "superseded_active_row",
+  "repository_partial_subfetch",
+  "pull_request_partial_subfetch",
+  "installation_partial_child",
+  "generic_partial",
+]);
+
 const SUPERSEDED_ACTIVE_ROW_MESSAGE =
   "A stale in-progress run row was superseded by a newer terminal run for the same sync target.";
 
@@ -334,6 +368,24 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
     code: "none",
     message: "",
   };
+}
+
+export function selectLatestActionableSyncRunOutcome(
+  runs: readonly ApiSyncRunRecord[] | null | undefined,
+): SyncRunDiagnostic | null {
+  if (!runs || runs.length === 0) {
+    return null;
+  }
+  for (const run of runs) {
+    const outcome = describeSyncRunOutcome(run);
+    if (outcome.code === "none") {
+      continue;
+    }
+    if (ACTIONABLE_SYNC_CODES.has(outcome.code)) {
+      return outcome;
+    }
+  }
+  return null;
 }
 
 export { metricCount };

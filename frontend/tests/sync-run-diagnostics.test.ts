@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { describeSyncRunOutcome } from "@/features/settings/lib/sync-run-diagnostics";
+import {
+  describeSyncRunOutcome,
+  selectLatestActionableSyncRunOutcome,
+} from "@/features/settings/lib/sync-run-diagnostics";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 
 function run(metrics?: Record<string, number>): ApiSyncRunRecord {
@@ -367,5 +370,41 @@ describe("describeSyncRunOutcome", () => {
     );
     expect(outcome.code).toBe("quests_backfill_failed");
     expect(outcome.message).toContain("quest backfill failed");
+  });
+
+  it("selects the latest actionable run outcome and skips non-actionable rows", () => {
+    const runs = [
+      {
+        ...run({
+          authored_pull_requests_selected: 4,
+        }),
+        id: "run_latest",
+      },
+      {
+        ...run({
+          app_installation_required: 1,
+        }),
+        id: "run_actionable",
+      },
+      {
+        ...run({
+          authored_pull_request_search_incomplete: 1,
+        }),
+        id: "run_older",
+      },
+    ] as const;
+
+    const selected = selectLatestActionableSyncRunOutcome(runs);
+    expect(selected?.code).toBe("app_installation_required");
+  });
+
+  it("returns null when there are no actionable outcomes", () => {
+    const runs = [
+      run({
+        authored_pull_requests_selected: 2,
+      }),
+    ];
+    const selected = selectLatestActionableSyncRunOutcome(runs);
+    expect(selected).toBeNull();
   });
 });

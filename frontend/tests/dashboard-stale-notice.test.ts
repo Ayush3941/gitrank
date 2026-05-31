@@ -15,8 +15,24 @@ describe("buildDashboardStaleNotice", () => {
       outcome,
     );
 
-    expect(notice.message).toContain("Profile snapshot exists");
+    expect(notice.message).toContain("Profile refreshed, but scored PR evidence is still incomplete.");
     expect(notice.reasonMessage).toContain("Historical authored PR backfill");
+  });
+
+  it("shows installation-blocked guidance for partially synced state when app access is missing", () => {
+    const outcome: SyncRunDiagnostic = {
+      code: "app_installation_required",
+      message: "GitHub App installation is required before user sync can extract PR data.",
+    };
+
+    const notice = buildDashboardStaleNotice(
+      "partially_synced",
+      "2026-05-27T10:00:00Z",
+      outcome,
+    );
+
+    expect(notice.message).toContain("Sync is blocked until GitHub App installation access is available");
+    expect(notice.reasonMessage).toContain("installation is required");
   });
 
   it("builds stale-timestamp message and omits empty reason", () => {

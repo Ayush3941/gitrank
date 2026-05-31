@@ -35,6 +35,7 @@ import { formatRelativeDays } from "@/lib/formatters";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { deduplicateContributionsByPullRequest } from "@/lib/presentation/contribution-dedup";
+import { selectLatestActionableSyncRunOutcome } from "@/lib/presentation/sync-run-diagnostics";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import { contributionDisplayConfig } from "@/lib/runtime/contribution-display-config";
 import {
@@ -148,6 +149,10 @@ export function ContributionsPageClient() {
   const { syncStateForDisplay, showRefreshPill } = useProfileSyncState(
     profile?.user,
     syncRunsQuery.data?.runs,
+  );
+  const latestSyncOutcome = useMemo(
+    () => selectLatestActionableSyncRunOutcome(syncRunsQuery.data?.runs),
+    [syncRunsQuery.data?.runs],
   );
   const abraContributionSample = useMemo(
     () => filteredRows.slice(0, contributionDisplayConfig.abraSampleLimit),
@@ -345,11 +350,16 @@ export function ContributionsPageClient() {
         <StaleState
           message={
             syncStateForDisplay === "partially_synced"
-              ? "Profile exists, but scored PR evidence is still empty. Keep auto-sync on and retry."
+              ? latestSyncOutcome?.code === "app_installation_required" ||
+                latestSyncOutcome?.code === "app_installation_unavailable" ||
+                latestSyncOutcome?.code === "app_runtime_required"
+                ? "Sync is blocked until GitHub App installation access is available for this account."
+                : "Profile exists, but scored PR evidence is still empty. Keep auto-sync on and retry."
               : `Contribution evidence refreshed ${formatRelativeDays(
                   profile.refreshedAt,
                 )}. New PR rows appear after sync completes.`
           }
+          reasonMessage={latestSyncOutcome?.message || undefined}
           updatedAt={profile.refreshedAt}
           onRefresh={async () => {
             try {
