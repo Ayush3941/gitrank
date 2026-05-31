@@ -10,6 +10,7 @@ This document is intentionally detailed.
 - Profile/dashboard skill rendering now uses shared skill deduplication from `frontend/lib/presentation/skill-normalization.ts` and stronger deterministic list keys in high-traffic cards/charts to avoid duplicate-key regressions.
 - Sync state presentation remains evidence-first: "synced" display now requires merged contribution evidence (`mergedPrCount > 0`) instead of repository-only or superficial sync artifacts.
 - Settings sync-run filtering now uses metric-aware derived status (`syncRunStatusLabelWithMetrics`) as a single source of truth, so completed rows with partial evidence markers are shown under `Partial` instead of being counted as `Completed`.
+- Settings sync-run panel now precomputes row view models and uses deferred search (`useDeferredValue`) to keep filtering responsive under larger run histories, while the results viewport exposes `role="region"` + `aria-busy`/`aria-live` semantics for clearer assistive-state updates.
 
 It serves two purposes:
 

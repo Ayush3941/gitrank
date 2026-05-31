@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, Search, X, XCircle } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,16 @@ type SyncRunStatusCounts = {
   queued: number;
   running: number;
   failed: number;
+};
+type SyncRunRow = {
+  id: string;
+  run: ApiSyncRunRecord;
+  label: string;
+  uiStatus: SyncRunUiStatus;
+  searchableText: string;
+  safeLastError: string | null;
+  metricsSummary: string;
+  outcomeInsight: string;
 };
 
 const SYNC_RUN_STATUS_META: Record<
@@ -63,53 +73,79 @@ export function SyncRunActivityPanel({
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<SyncRunStatusFilter>("All");
   const canReset = search.trim().length > 0 || statusFilter !== "All";
+  const deferredSearch = useDeferredValue(search);
   const filterStatusId = "settings-sync-filter-status";
   const syncRunsRegionId = "settings-sync-runs-region";
+  const runRows = useMemo<SyncRunRow[]>(
+    () =>
+      runs.map((run) => {
+        const uiStatus = syncRunStatusLabelWithMetrics(run.status, run.metrics);
+        const label = runLabel(run);
+        const safeLastError = sanitizeSyncRunErrorMessage(run.last_error);
+        const metricsSummary = summarizeRunMetrics(run.metrics);
+        const outcomeInsight = describeSyncRunOutcome(run).message;
+        const searchableText = [
+          label,
+          run.subject ?? "",
+          run.run_type,
+          run.requested_repository ?? "",
+          run.requested_user ?? "",
+          run.requested_by_subject ?? "",
+          run.requested_by_github_login ?? "",
+          safeLastError ?? "",
+          metricsSummary,
+          outcomeInsight,
+        ]
+          .join(" ")
+          .toLowerCase();
+        return {
+          id: run.id,
+          run,
+          label,
+          uiStatus,
+          searchableText,
+          safeLastError,
+          metricsSummary,
+          outcomeInsight,
+        };
+      }),
+    [runs],
+  );
   const statusCounts = useMemo<SyncRunStatusCounts>(() => {
     const next = {
-      all: runs.length,
+      all: runRows.length,
       completed: 0,
       partial: 0,
       queued: 0,
       running: 0,
       failed: 0,
     };
-    for (const run of runs) {
-      const status = syncRunStatusLabelWithMetrics(run.status, run.metrics);
-      if (status === "Completed") {
+    for (const row of runRows) {
+      if (row.uiStatus === "Completed") {
         next.completed += 1;
-      } else if (status === "Partial") {
+      } else if (row.uiStatus === "Partial") {
         next.partial += 1;
-      } else if (status === "Queued") {
+      } else if (row.uiStatus === "Queued") {
         next.queued += 1;
-      } else if (status === "Running") {
+      } else if (row.uiStatus === "Running") {
         next.running += 1;
-      } else if (status === "Failed") {
+      } else if (row.uiStatus === "Failed") {
         next.failed += 1;
       }
     }
     return next;
-  }, [runs]);
-  const filteredRuns = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    return runs.filter((run) => {
-      const normalizedStatus = syncRunStatusLabelWithMetrics(run.status, run.metrics);
+  }, [runRows]);
+  const filteredRows = useMemo(() => {
+    const term = deferredSearch.trim().toLowerCase();
+    return runRows.filter((row) => {
       const statusMatch =
-        statusFilter === "All" || normalizedStatus === statusFilter;
+        statusFilter === "All" || row.uiStatus === statusFilter;
       if (!statusMatch) {
         return false;
       }
-      if (term.length === 0) {
-        return true;
-      }
-      return (
-        runLabel(run).toLowerCase().includes(term) ||
-        (run.subject ?? "").toLowerCase().includes(term) ||
-        run.run_type.toLowerCase().includes(term) ||
-        (run.last_error ?? "").toLowerCase().includes(term)
-      );
+      return term.length === 0 || row.searchableText.includes(term);
     });
-  }, [search, statusFilter, runs]);
+  }, [deferredSearch, runRows, statusFilter]);
   const resultsRegionClassName = "min-h-[12rem]";
 
   function handleResetFilters() {
@@ -180,7 +216,7 @@ export function SyncRunActivityPanel({
       </div>
       <div className="space-y-3">
         <p id={filterStatusId} role="status" aria-live="polite" className="sr-only">
-          {`${filteredRuns.length} of ${statusCounts.all} runs`}
+          {`${filteredRows.length} of ${statusCounts.all} runs`}
         </p>
         <div className="space-y-3">
           <div className="relative">
@@ -261,6 +297,10 @@ export function SyncRunActivityPanel({
 
       <div
         id={syncRunsRegionId}
+        role="region"
+        aria-live="polite"
+        aria-relevant="additions text"
+        aria-busy={isLoading || isRefreshing}
         className="sync-runs-results-viewport h-[22rem] overflow-y-auto pr-1"
       >
         {isLoading ? (
@@ -276,7 +316,7 @@ export function SyncRunActivityPanel({
               </Button>
             </div>
           </div>
-        ) : filteredRuns.length === 0 ? (
+        ) : filteredRows.length === 0 ? (
           <div className={`neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}>
             <p>No sync runs match this filter.</p>
             <div className="flex flex-wrap gap-2">
@@ -293,24 +333,21 @@ export function SyncRunActivityPanel({
           </div>
         ) : (
           <ol role="list" className={`grid gap-2 ${resultsRegionClassName}`}>
-            {filteredRuns.map((run, index) => {
-              const safeLastError = sanitizeSyncRunErrorMessage(run.last_error);
-              const metricsSummary = summarizeRunMetrics(run.metrics);
-              const uiStatus = syncRunStatusLabelWithMetrics(run.status, run.metrics);
-              const outcomeInsight = describeSyncRunOutcome(run).message;
+            {filteredRows.map((row) => {
+              const run = row.run;
               return (
-                <li key={`${run.id}-${index}`}>
+                <li key={row.id}>
                   <article className="render-opt-card neon-surface space-y-2 px-4 py-3">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-0">
                         <p className="break-anywhere text-sm font-semibold text-white">
-                          {runLabel(run)}
+                          {row.label}
                         </p>
                         <p className="mt-1 break-anywhere text-xs text-muted">
                           {run.subject || "No subject"} • {run.run_type}
                         </p>
                       </div>
-                      <StatusChip status={run.status} uiStatus={uiStatus} />
+                      <StatusChip status={run.status} uiStatus={row.uiStatus} />
                     </div>
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
                       <span>
@@ -320,15 +357,15 @@ export function SyncRunActivityPanel({
                         <span>Duration {runDuration(run.started_at, run.finished_at)}</span>
                       ) : null}
                     </div>
-                    {metricsSummary ? (
-                      <p className="break-anywhere text-xs text-muted">{metricsSummary}</p>
+                    {row.metricsSummary ? (
+                      <p className="break-anywhere text-xs text-muted">{row.metricsSummary}</p>
                     ) : null}
-                    {outcomeInsight ? (
-                      <p className="break-anywhere text-xs text-cyan-100">{outcomeInsight}</p>
+                    {row.outcomeInsight ? (
+                      <p className="break-anywhere text-xs text-cyan-100">{row.outcomeInsight}</p>
                     ) : null}
-                    {safeLastError ? (
+                    {row.safeLastError ? (
                       <p className="break-anywhere text-xs text-rose-100">
-                        Last error: {safeLastError}
+                        Last error: {row.safeLastError}
                       </p>
                     ) : null}
                   </article>
