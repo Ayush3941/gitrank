@@ -289,6 +289,15 @@ describe("live fixture frontend smoke coverage", () => {
     expect(await screen.findByRole("heading", { name: "Settings" })).toBeTruthy();
     expect(await screen.findByText("Stale")).toBeTruthy();
   }, 15_000);
+
+  it("surfaces install action when latest sync run reports missing GitHub App installation", async () => {
+    requestedPaths.length = 0;
+    vi.stubGlobal("fetch", vi.fn(appInstallBlockedSettingsFixtureFetch));
+    renderWithClient(<SettingsPageClient />);
+
+    expect(await screen.findByRole("heading", { name: "Settings" })).toBeTruthy();
+    expect(await screen.findByRole("link", { name: "Install GitHub App" })).toBeTruthy();
+  }, 15_000);
 });
 
 function nonAnalyticsPaths(): string[] {
@@ -415,6 +424,42 @@ async function staleProfileFixtureFetch(input: RequestInfo | URL): Promise<Respo
   }
   if (path === "/api/account/export") {
     return jsonResponse(accountExportFixture);
+  }
+  if (path === "/api/analytics/events") {
+    return jsonResponse({ status: "accepted" }, 202);
+  }
+  return liveFixtureFetch(input);
+}
+
+async function appInstallBlockedSettingsFixtureFetch(input: RequestInfo | URL): Promise<Response> {
+  const path = requestPath(input);
+  if (path === "/api/profile/me") {
+    return jsonResponse(privateProfileFixtureStale);
+  }
+  if (path === "/api/sync/runs") {
+    return jsonResponse({
+      runs: [
+        {
+          id: "run_install_required",
+          run_type: "user",
+          status: "failed",
+          subject: "@live-maintainer",
+          requested_user: "live-maintainer",
+          requested_by_github_login: "live-maintainer",
+          started_at: "2026-05-31T10:00:00.000Z",
+          finished_at: "2026-05-31T10:00:03.000Z",
+          metrics: {
+            app_installation_required: 1,
+          },
+          last_error:
+            "github app installation is required for user sync; install app and retry",
+        },
+      ],
+      total: 1,
+      limit: 12,
+      offset: 0,
+      last_updated_at: new Date().toISOString(),
+    });
   }
   if (path === "/api/analytics/events") {
     return jsonResponse({ status: "accepted" }, 202);

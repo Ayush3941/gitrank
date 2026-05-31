@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, Download, FolderGit2, LogOut, Palette, RefreshCw, Trash2 } from "lucide-react";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -41,6 +41,7 @@ import {
   type TextScalePreference,
   useTextScalePreference,
 } from "@/hooks/use-text-scale-preference";
+import { selectLatestActionableSyncRunOutcome } from "@/features/settings/lib/sync-run-diagnostics";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
@@ -161,6 +162,14 @@ export function SettingsPageClient() {
     profileUser,
     syncRunsQuery.data?.runs,
   );
+  const latestSyncOutcome = useMemo(
+    () => selectLatestActionableSyncRunOutcome(syncRunsQuery.data?.runs),
+    [syncRunsQuery.data?.runs],
+  );
+  const appInstallationBlocked =
+    latestSyncOutcome?.code === "app_installation_required" ||
+    latestSyncOutcome?.code === "app_installation_unavailable" ||
+    latestSyncOutcome?.code === "app_runtime_required";
   const activeTheme = THEME_OPTIONS.find((option) => option.value === theme) ?? THEME_OPTIONS[0];
   const activeTextScale = TEXT_SCALE_OPTIONS.find((option) => option.value === textScale) ?? TEXT_SCALE_OPTIONS[0];
 
@@ -379,7 +388,7 @@ export function SettingsPageClient() {
             }
           />
         </div>
-        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+        <div className={`grid gap-2 sm:grid-cols-2 ${appInstallationBlocked ? "xl:grid-cols-5" : "xl:grid-cols-4"}`}>
           <Button
             variant="secondary"
             className="w-full justify-center"
@@ -407,6 +416,13 @@ export function SettingsPageClient() {
             <FolderGit2 className="h-4 w-4" />
             {accountLinkStart.isPending ? "Starting relink..." : "Reconnect GitHub"}
           </Button>
+          {appInstallationBlocked ? (
+            <Button asChild variant="secondary" className="w-full justify-center" disabled={isActing}>
+              <Link href="/oauth/github/install" prefetch={false}>
+                Install GitHub App
+              </Link>
+            </Button>
+          ) : null}
           <Button
             variant="secondary"
             className="w-full justify-center"

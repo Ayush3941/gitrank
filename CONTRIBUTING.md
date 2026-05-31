@@ -1892,6 +1892,7 @@ ABRA implementation checklist:
 - [x] Sync-state slop is reduced: dashboard/settings status now treat only the newest sync-run status as authoritative for `syncing`, so stale older `running` rows no longer override newer terminal outcomes (`completed`, `partial`, `failed`).
 - [x] Dashboard and Contributions stale banners now derive guidance from the latest actionable sync-run diagnostic (not only the newest row), so GitHub App installation/runtime blockers surface even when newer non-blocking rows exist.
 - [x] Stale messaging now explicitly distinguishes GitHub App installation/runtime blocking from generic partial sync, reducing false “refreshed” confidence when PR extraction is blocked upstream.
+- [x] Settings now shows an explicit `Install GitHub App` recovery action whenever latest sync diagnostics report app-installation/runtime blocking, so failed sync loops can be resolved without manual route discovery.
 - [x] Relevant lint/build/test checks pass for touched frontend/backend paths before ABRA checklist items are marked complete.
 - [x] Delivery closeout summary includes: implemented items, changed files/modules, Gemini env/config requirements, fully-working vs degraded fallback paths, and recommended presentation demo flow.
 
