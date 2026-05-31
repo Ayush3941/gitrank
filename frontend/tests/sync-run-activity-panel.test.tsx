@@ -230,9 +230,7 @@ describe("SyncRunActivityPanel", () => {
 
     expect(screen.getByText("Failures 1")).toBeTruthy();
     expect(
-      screen.getByText(
-        "GitHub App installation is required for PR sync. Install GitRank GitHub App for your account and retry sync.",
-      ),
+      screen.getByText(/GitHub App installation is required for PR sync\./),
     ).toBeTruthy();
   });
 

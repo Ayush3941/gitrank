@@ -15,6 +15,26 @@ import { describeSyncRunOutcome, metricCount } from "@/features/settings/lib/syn
 
 const SYNC_RUN_STATUS_FILTERS = ["All", "Completed", "Partial", "Queued", "Running", "Failed"] as const;
 type SyncRunStatusFilter = (typeof SYNC_RUN_STATUS_FILTERS)[number];
+type SyncRunStatusCounts = {
+  all: number;
+  completed: number;
+  partial: number;
+  queued: number;
+  running: number;
+  failed: number;
+};
+
+const SYNC_RUN_STATUS_META: Record<
+  SyncRunStatusFilter,
+  { countKey: keyof SyncRunStatusCounts; icon: typeof Search }
+> = {
+  All: { countKey: "all", icon: Search },
+  Completed: { countKey: "completed", icon: CheckCircle2 },
+  Partial: { countKey: "partial", icon: AlertTriangle },
+  Queued: { countKey: "queued", icon: Clock3 },
+  Running: { countKey: "running", icon: Clock3 },
+  Failed: { countKey: "failed", icon: XCircle },
+};
 
 export function SyncRunActivityPanel({
   runs,
@@ -42,7 +62,7 @@ export function SyncRunActivityPanel({
   const canReset = search.trim().length > 0 || statusFilter !== "All";
   const filterStatusId = "settings-sync-filter-status";
   const syncRunsRegionId = "settings-sync-runs-region";
-  const statusCounts = useMemo(() => {
+  const statusCounts = useMemo<SyncRunStatusCounts>(() => {
     const next = {
       all: runs.length,
       completed: 0,
@@ -189,35 +209,13 @@ export function SyncRunActivityPanel({
             <p className="text-xs font-medium text-primary">Run status</p>
             <SegmentedTablist
               options={SYNC_RUN_STATUS_FILTERS.map((status) => {
-                const count =
-                  status === "All"
-                    ? statusCounts.all
-                    : status === "Completed"
-                      ? statusCounts.completed
-                      : status === "Partial"
-                        ? statusCounts.partial
-                      : status === "Queued"
-                        ? statusCounts.queued
-                      : status === "Running"
-                        ? statusCounts.running
-                        : statusCounts.failed;
-                const Icon =
-                  status === "All"
-                    ? Search
-                    : status === "Completed"
-                      ? CheckCircle2
-                      : status === "Partial"
-                        ? AlertTriangle
-                      : status === "Queued"
-                        ? Clock3
-                      : status === "Running"
-                        ? Clock3
-                        : XCircle;
+                const meta = SYNC_RUN_STATUS_META[status];
+                const Icon = meta.icon;
                 return {
                   value: status,
                   label: status,
                   icon: <Icon className="h-4 w-4" />,
-                  count,
+                  count: statusCounts[meta.countKey],
                   minWidthClassName: "min-w-[6.75rem] sm:min-w-[8rem]",
                 };
               })}
