@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (May 31, 2026)
 
+- Settings sync diagnostics now mount the `SyncRunActivityPanel` only while the disclosure is expanded, so collapsed state no longer pays render cost for search/filter/result virtualization markup.
 - Dashboard secondary lanes (league, quest lane, battle reports) and the settings repository-visibility section now mount through `DeferUntilVisible` with placeholders, so below-the-fold panels delay hydration/render cost until near viewport while keeping first-view interactions responsive.
 - `DeferUntilVisible` now renders eagerly in test mode (`NODE_ENV=test`) to keep fixture/accessibility tests deterministic while production continues to use IntersectionObserver gating.
 - Contribution and settings filter surfaces now use shared `ControlSurface` wrappers and `useId`-based status/region IDs (`ContributionFilters`, `PrivacyRepositoryToggleList`, `SyncRunActivityPanel`) to reduce duplicated layout styling and avoid static-ID collisions in reusable filter modules.

@@ -879,17 +879,19 @@ function SettingsSyncActivitySection({
         hidden={!expanded}
         className="block"
       >
-        <SyncRunActivityPanel
-          runs={runs}
-          lastUpdatedAt={lastUpdatedAt}
-          lastAttemptedAt={lastAttemptedAt}
-          lastSuccessfulAt={lastSuccessfulAt}
-          isLoading={isLoading}
-          isRefreshing={isRefreshing}
-          isError={isError}
-          errorMessage={errorMessage}
-          onRefresh={onRefresh}
-        />
+        {expanded ? (
+          <SyncRunActivityPanel
+            runs={runs}
+            lastUpdatedAt={lastUpdatedAt}
+            lastAttemptedAt={lastAttemptedAt}
+            lastSuccessfulAt={lastSuccessfulAt}
+            isLoading={isLoading}
+            isRefreshing={isRefreshing}
+            isError={isError}
+            errorMessage={errorMessage}
+            onRefresh={onRefresh}
+          />
+        ) : null}
       </div>
     </GlowCard>
   );
