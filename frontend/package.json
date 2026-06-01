@@ -13,6 +13,7 @@
     "check:sync-copy-policy": "node scripts/check-sync-copy-policy.mjs",
     "check:onboarding-prefetch-policy": "node scripts/check-onboarding-prefetch-policy.mjs",
     "check:oauth-prefetch-policy": "node scripts/check-oauth-prefetch-policy.mjs",
+    "check:dashboard-route-copy-policy": "node scripts/check-dashboard-route-copy-policy.mjs",
     "check:client-env-safety": "node scripts/check-client-env-safety.mjs",
     "check:env-example-coverage": "node scripts/check-env-example-coverage.mjs ../gitrank/.env.example",
     "check:server-boundaries": "node scripts/check-server-boundaries.mjs",

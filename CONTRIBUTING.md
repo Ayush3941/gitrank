@@ -1940,6 +1940,7 @@ ABRA implementation checklist:
 - [x] Dashboard top navigation now includes a concise active-lane context strip (label + one-line purpose), improving “where am I / what is this lane for” orientation without adding extra motion or extra requests.
 - [x] Dashboard nav landmark label now uses purpose wording (`Dashboard routes`), and each route link now exposes the lane description through `aria-describedby`, improving screen-reader context while keeping visible nav compact.
 - [x] Frontend now enforces OAuth-start prefetch safety with `npm run check:oauth-prefetch-policy`: links targeting `/oauth/github/start` must explicitly disable prefetch (`IntentPrefetchLink prefetchMode="never"` or `Link prefetch={false}`).
+- [x] Frontend now enforces dashboard metadata single-source policy with `npm run check:dashboard-route-copy-policy`, ensuring nav-backed route pages keep titles/descriptions sourced from `dashboardNavByHref`.
 
 ABRA closeout artifact:
 
