@@ -79,8 +79,23 @@ const ACTIONABLE_SYNC_CODES = new Set<SyncRunDiagnostic["code"]>([
   "generic_partial",
 ]);
 
+const APP_INSTALLATION_BLOCK_CODES = new Set<SyncRunDiagnostic["code"]>([
+  "app_installation_required",
+  "app_installation_unavailable",
+  "app_runtime_required",
+]);
+
 const SUPERSEDED_ACTIVE_ROW_MESSAGE =
   "A stale in-progress run row was superseded by a newer terminal run for the same sync target.";
+
+export function isGitHubAppInstallationBlocked(
+  diagnostic: SyncRunDiagnostic | null | undefined,
+): boolean {
+  if (!diagnostic) {
+    return false;
+  }
+  return APP_INSTALLATION_BLOCK_CODES.has(diagnostic.code);
+}
 
 export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic {
   const metrics = run.metrics;

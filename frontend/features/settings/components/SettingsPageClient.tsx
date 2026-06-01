@@ -6,6 +6,7 @@ import { ChevronDown, ChevronUp, Download, FolderGit2, LogOut, Palette, RefreshC
 import { BrandLogo } from "@/components/shared/BrandLogo";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
@@ -42,7 +43,10 @@ import {
   type TextScalePreference,
   useTextScalePreference,
 } from "@/hooks/use-text-scale-preference";
-import { selectLatestActionableSyncRunOutcome } from "@/features/settings/lib/sync-run-diagnostics";
+import {
+  isGitHubAppInstallationBlocked,
+  selectLatestActionableSyncRunOutcome,
+} from "@/features/settings/lib/sync-run-diagnostics";
 import { syncRunStatusLabelWithMetrics } from "@/features/settings/lib/sync-run-status";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
@@ -188,10 +192,7 @@ export function SettingsPageClient() {
       );
     });
   }, [syncRuns, syncRunsQuery.isError]);
-  const appInstallationBlocked =
-    latestSyncOutcome?.code === "app_installation_required" ||
-    latestSyncOutcome?.code === "app_installation_unavailable" ||
-    latestSyncOutcome?.code === "app_runtime_required";
+  const appInstallationBlocked = isGitHubAppInstallationBlocked(latestSyncOutcome);
   const displaySyncState = appInstallationBlocked ? "failed" : syncStateForDisplay;
   const activeTheme = THEME_OPTIONS.find((option) => option.value === theme) ?? THEME_OPTIONS[0];
   const activeTextScale = TEXT_SCALE_OPTIONS.find((option) => option.value === textScale) ?? TEXT_SCALE_OPTIONS[0];
@@ -467,11 +468,7 @@ export function SettingsPageClient() {
             {unlinkAccount.isPending ? "Disconnecting..." : "Disconnect GitHub"}
           </Button>
         </div>
-        {appInstallationBlocked ? (
-          <div className="rounded-[0.1rem] border border-amber-300/24 bg-amber-400/10 px-3 py-2 text-sm text-amber-100">
-            GitHub App installation is required for PR sync. Install the app on your GitHub account, then refresh profile.
-          </div>
-        ) : null}
+        {appInstallationBlocked ? <GitHubAppSyncBlockNotice message={latestSyncOutcome?.message} /> : null}
         {actionError ? (
           <div className="min-h-6">
             <p id={accountActionErrorId} role="alert" className="inline-flex items-center rounded-[0.1rem] border border-rose-300/26 bg-rose-500/10 px-3 py-1.5 text-sm text-rose-100">

@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { startTransition, useDeferredValue, useId, useMemo, useState } from "react";
 import {
@@ -15,9 +14,11 @@ import {
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
+import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { ControlSurface } from "@/components/shared/ControlSurface";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
+import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
@@ -33,7 +34,10 @@ import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import { useStaleSyncRefresh } from "@/hooks/use-stale-sync-refresh";
 import { useMyProfile } from "@/hooks/use-profile";
 import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
-import { selectLatestActionableSyncRunOutcome } from "@/lib/presentation/sync-run-diagnostics";
+import {
+  isGitHubAppInstallationBlocked,
+  selectLatestActionableSyncRunOutcome,
+} from "@/lib/presentation/sync-run-diagnostics";
 import { buildStaleSyncNotice } from "@/lib/presentation/stale-sync-notice";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
 
@@ -132,6 +136,8 @@ export function LeaderboardPageClient() {
     () => selectLatestActionableSyncRunOutcome(syncRunsQuery.data?.runs),
     [syncRunsQuery.data?.runs],
   );
+  const appInstallationBlocked = isGitHubAppInstallationBlocked(latestSyncOutcome);
+  const displaySyncState = appInstallationBlocked ? "failed" : syncStateForDisplay;
   const staleSyncRefresh = useStaleSyncRefresh({
     runs: syncRunsQuery.data?.runs,
     isSyncPending: runUserSync.isPending,
@@ -143,7 +149,7 @@ export function LeaderboardPageClient() {
   const staleNotice = useMemo(
     () =>
       buildStaleSyncNotice({
-        syncState: syncStateForDisplay === "partially_synced" ? "partially_synced" : "stale",
+        syncState: displaySyncState === "partially_synced" ? "partially_synced" : "stale",
         refreshedAt: myProfile?.refreshedAt ?? new Date().toISOString(),
         latestSyncOutcome,
         snapshotLabel: "Leaderboard context",
@@ -152,7 +158,7 @@ export function LeaderboardPageClient() {
         staleFallback:
           "Rank updates can lag until sync completes.",
       }),
-    [latestSyncOutcome, myProfile?.refreshedAt, syncStateForDisplay],
+    [displaySyncState, latestSyncOutcome, myProfile?.refreshedAt],
   );
   const safeVisibleRowCount = Math.min(rows.length, visibleRowCount);
   const hasMoreRows = rows.length > safeVisibleRowCount;
@@ -203,8 +209,8 @@ export function LeaderboardPageClient() {
               { label: `Rows ${rows.length}` },
               { label: effectiveMode === "nearby" ? "View Nearby" : `Showing ${safeVisibleRowCount}` },
               {
-                label: `Sync ${formatSyncStateLabel(syncStateForDisplay)}`,
-                tone: toneForSyncState(syncStateForDisplay),
+                label: `Sync ${formatSyncStateLabel(displaySyncState)}`,
+                tone: toneForSyncState(displaySyncState),
               },
             ]}
           />
@@ -214,17 +220,20 @@ export function LeaderboardPageClient() {
             <ProfileEvidenceStateChip
               showFreshness={showRefreshPill}
               refreshedAt={myProfile?.refreshedAt}
-              syncState={syncStateForDisplay}
+              syncState={displaySyncState}
             />
             <Button asChild variant="secondary" size="sm">
-              <Link href="/dashboard/quests" prefetch={false}>
+              <IntentPrefetchLink href="/dashboard/quests">
                 Quests
-              </Link>
+              </IntentPrefetchLink>
             </Button>
           </div>
         )}
       />
-      {syncStateForDisplay === "stale" || syncStateForDisplay === "partially_synced" ? (
+      {appInstallationBlocked ? (
+        <GitHubAppSyncBlockNotice message={latestSyncOutcome?.message} />
+      ) : null}
+      {displaySyncState === "stale" || displaySyncState === "partially_synced" ? (
         <StaleState
           message={staleNotice.message}
           reasonMessage={staleNotice.reasonMessage}
@@ -386,14 +395,14 @@ export function LeaderboardPageClient() {
             ) : null}
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" variant="secondary">
-                <Link href="/dashboard/contributions" prefetch={false}>
+                <IntentPrefetchLink href="/dashboard/contributions">
                   Open contributions
-                </Link>
+                </IntentPrefetchLink>
               </Button>
               <Button asChild size="sm" variant="ghost">
-                <Link href="/dashboard/settings" prefetch={false}>
+                <IntentPrefetchLink href="/dashboard/settings">
                   Open sync settings
-                </Link>
+                </IntentPrefetchLink>
               </Button>
             </div>
           </GlowCard>

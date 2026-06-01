@@ -15,6 +15,7 @@ import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import { useStaleSyncRefresh } from "@/hooks/use-stale-sync-refresh";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
+import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -30,7 +31,10 @@ import {
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
-import { selectLatestActionableSyncRunOutcome } from "@/lib/presentation/sync-run-diagnostics";
+import {
+  isGitHubAppInstallationBlocked,
+  selectLatestActionableSyncRunOutcome,
+} from "@/lib/presentation/sync-run-diagnostics";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
 import { Button } from "@/components/ui/button";
 
@@ -79,10 +83,7 @@ export function DashboardPageClient() {
   const latestSyncOutcome = useMemo(() => {
     return selectLatestActionableSyncRunOutcome(syncRunsQuery.data?.runs);
   }, [syncRunsQuery.data?.runs]);
-  const appInstallationBlocked =
-    latestSyncOutcome?.code === "app_installation_required" ||
-    latestSyncOutcome?.code === "app_installation_unavailable" ||
-    latestSyncOutcome?.code === "app_runtime_required";
+  const appInstallationBlocked = isGitHubAppInstallationBlocked(latestSyncOutcome);
   const displaySyncState = appInstallationBlocked ? "failed" : syncStateForDisplay;
   const staleSyncRefresh = useStaleSyncRefresh({
     runs: syncRunsQuery.data?.runs,
@@ -247,6 +248,9 @@ export function DashboardPageClient() {
           </div>
         )}
       />
+      {appInstallationBlocked ? (
+        <GitHubAppSyncBlockNotice message={latestSyncOutcome?.message} />
+      ) : null}
       {staleNotice ? (
         <StaleState
           message={staleNotice.message}

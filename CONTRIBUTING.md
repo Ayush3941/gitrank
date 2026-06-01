@@ -1932,6 +1932,8 @@ ABRA implementation checklist:
 - [x] Badges and Quests stale banners now share `buildStaleSyncNotice`, so partial-sync blockers (especially GitHub App access failures) show explicit actionable messaging and synced reason text instead of generic partial-state copy.
 - [x] Leaderboard stale banners now also use `buildStaleSyncNotice`, so lane-level stale messaging includes the same GitHub App blocker detection and latest sync-outcome reason context as other dashboard surfaces.
 - [x] Dashboard and Contributions stale notice builders now also route through `buildStaleSyncNotice`, removing duplicate blocker-branching logic and keeping stale/partial fallback copy consistent under one shared policy path.
+- [x] GitHub App installation/runtime sync blockers now render through one shared frontend component (`GitHubAppSyncBlockNotice`) across Dashboard, Contributions, Badges, Quests, Leaderboard, and Settings to keep recovery UI and CTA hierarchy consistent.
+- [x] Dashboard surfaces now use one helper (`isGitHubAppInstallationBlocked`) to force effective sync state to `failed` whenever strict App-install/runtime blockers are detected, preventing mixed stale/synced chip states for the same blocking condition.
 
 ABRA closeout artifact:
 

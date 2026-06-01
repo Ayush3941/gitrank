@@ -1,5 +1,6 @@
 export {
   describeSyncRunOutcome,
+  isGitHubAppInstallationBlocked,
   metricCount,
   selectLatestActionableSyncRunOutcome,
   type SyncRunDiagnostic,

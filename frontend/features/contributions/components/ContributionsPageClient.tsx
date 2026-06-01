@@ -5,6 +5,7 @@ import { startTransition, useDeferredValue, useEffect, useId, useMemo, useState 
 import { Download, LayoutList, Rows3 } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { InlineNotice } from "@/components/shared/InlineNotice";
@@ -35,8 +36,12 @@ import {
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { deduplicateContributionsByPullRequest } from "@/lib/presentation/contribution-dedup";
-import { selectLatestActionableSyncRunOutcome } from "@/lib/presentation/sync-run-diagnostics";
+import {
+  isGitHubAppInstallationBlocked,
+  selectLatestActionableSyncRunOutcome,
+} from "@/lib/presentation/sync-run-diagnostics";
 import { buildStaleSyncNotice } from "@/lib/presentation/stale-sync-notice";
+import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
 import { contributionDisplayConfig } from "@/lib/runtime/contribution-display-config";
 import {
   buildContributionFocusCounts,
@@ -154,10 +159,12 @@ export function ContributionsPageClient() {
     () => selectLatestActionableSyncRunOutcome(syncRunsQuery.data?.runs),
     [syncRunsQuery.data?.runs],
   );
+  const appInstallationBlocked = isGitHubAppInstallationBlocked(latestSyncOutcome);
+  const displaySyncState = appInstallationBlocked ? "failed" : syncStateForDisplay;
   const staleNotice = useMemo(
     () =>
       buildStaleSyncNotice({
-        syncState: syncStateForDisplay === "partially_synced" ? "partially_synced" : "stale",
+        syncState: displaySyncState === "partially_synced" ? "partially_synced" : "stale",
         refreshedAt: profile?.refreshedAt ?? new Date().toISOString(),
         latestSyncOutcome,
         snapshotLabel: "Contribution evidence",
@@ -166,7 +173,7 @@ export function ContributionsPageClient() {
         staleFallback:
           "New PR rows appear after sync completes.",
       }),
-    [latestSyncOutcome, profile?.refreshedAt, syncStateForDisplay],
+    [displaySyncState, latestSyncOutcome, profile?.refreshedAt],
   );
   const staleSyncRefresh = useStaleSyncRefresh({
     runs: syncRunsQuery.data?.runs,
@@ -307,6 +314,10 @@ export function ContributionsPageClient() {
               { label: `Evidence rows ${filteredRows.length}` },
               { label: `Repos ${repositories.length}` },
               { label: `Streak ${streak.currentStreakDays}d` },
+              {
+                label: `Sync ${formatSyncStateLabel(displaySyncState)}`,
+                tone: toneForSyncState(displaySyncState),
+              },
             ]}
           />
         )}
@@ -315,7 +326,7 @@ export function ContributionsPageClient() {
             <ProfileEvidenceStateChip
               showFreshness={showRefreshPill}
               refreshedAt={profile?.refreshedAt}
-              syncState={syncStateForDisplay}
+              syncState={displaySyncState}
             />
             {!useLiteCards ? (
               <Button
@@ -372,7 +383,10 @@ export function ContributionsPageClient() {
         }}
         dismissLabel="Dismiss export status"
       />
-      {syncStateForDisplay === "stale" || syncStateForDisplay === "partially_synced" ? (
+      {appInstallationBlocked ? (
+        <GitHubAppSyncBlockNotice message={latestSyncOutcome?.message} />
+      ) : null}
+      {displaySyncState === "stale" || displaySyncState === "partially_synced" ? (
         <StaleState
           message={staleNotice.message}
           reasonMessage={staleNotice.reasonMessage}

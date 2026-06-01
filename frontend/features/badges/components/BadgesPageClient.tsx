@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import {
   Crown,
   Gem,
@@ -16,10 +15,12 @@ import { startTransition, type ReactNode, useDeferredValue, useEffect, useId, us
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
 import { ControlSurface } from "@/components/shared/ControlSurface";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
+import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { InlineNotice } from "@/components/shared/InlineNotice";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -42,8 +43,12 @@ import {
 } from "@/lib/ai/deterministic-identity-summary";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
-import { selectLatestActionableSyncRunOutcome } from "@/lib/presentation/sync-run-diagnostics";
+import {
+  isGitHubAppInstallationBlocked,
+  selectLatestActionableSyncRunOutcome,
+} from "@/lib/presentation/sync-run-diagnostics";
 import { buildStaleSyncNotice } from "@/lib/presentation/stale-sync-notice";
+import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
 import type { BadgeRarity } from "@/types/gitrank";
 const LOCKED_BADGE_PAGE_SIZE_DEFAULT = 8;
 const LOCKED_BADGE_PAGE_SIZE_CONSTRAINED = 4;
@@ -123,6 +128,8 @@ export function BadgesPageClient() {
     () => selectLatestActionableSyncRunOutcome(syncRunsQuery.data?.runs),
     [syncRunsQuery.data?.runs],
   );
+  const appInstallationBlocked = isGitHubAppInstallationBlocked(latestSyncOutcome);
+  const displaySyncState = appInstallationBlocked ? "failed" : syncStateForDisplay;
   const staleSyncRefresh = useStaleSyncRefresh({
     runs: syncRunsQuery.data?.runs,
     isSyncPending: runUserSync.isPending,
@@ -134,7 +141,7 @@ export function BadgesPageClient() {
   const staleNotice = useMemo(
     () =>
       buildStaleSyncNotice({
-        syncState: syncStateForDisplay === "partially_synced" ? "partially_synced" : "stale",
+        syncState: displaySyncState === "partially_synced" ? "partially_synced" : "stale",
         refreshedAt: profile?.refreshedAt ?? new Date().toISOString(),
         latestSyncOutcome,
         snapshotLabel: "Badge snapshot",
@@ -143,7 +150,7 @@ export function BadgesPageClient() {
         staleFallback:
           "New unlocks can appear after the next completed sync.",
       }),
-    [latestSyncOutcome, profile?.refreshedAt, syncStateForDisplay],
+    [displaySyncState, latestSyncOutcome, profile?.refreshedAt],
   );
   const lockedBadges = allBadges.filter((badge) => !badge.unlocked);
   const lockedBadgesSorted = [...lockedBadges].sort((left, right) => {
@@ -305,6 +312,10 @@ export function BadgesPageClient() {
                 label: `Locked ${lockedBadges.length}`,
                 tone: lockedBadges.length > 0 ? "warning" : "success",
               },
+              {
+                label: `Sync ${formatSyncStateLabel(displaySyncState)}`,
+                tone: toneForSyncState(displaySyncState),
+              },
             ]}
           />
         )}
@@ -313,18 +324,21 @@ export function BadgesPageClient() {
             <ProfileEvidenceStateChip
               showFreshness={showRefreshPill}
               refreshedAt={profile?.refreshedAt}
-              syncState={syncStateForDisplay}
+              syncState={displaySyncState}
             />
             <Button asChild variant="secondary" size="sm">
-              <Link href="/dashboard/contributions" prefetch={false}>
+              <IntentPrefetchLink href="/dashboard/contributions">
                 Contributions
-              </Link>
+              </IntentPrefetchLink>
             </Button>
           </div>
         )}
       />
       <section className="render-opt-section space-y-4">
-        {syncStateForDisplay === "stale" || syncStateForDisplay === "partially_synced" ? (
+        {appInstallationBlocked ? (
+          <GitHubAppSyncBlockNotice message={latestSyncOutcome?.message} />
+        ) : null}
+        {displaySyncState === "stale" || displaySyncState === "partially_synced" ? (
           <StaleState
             message={staleNotice.message}
             reasonMessage={staleNotice.reasonMessage}
@@ -389,9 +403,9 @@ export function BadgesPageClient() {
                       </p>
                     </div>
                     <Button asChild variant="secondary" size="sm">
-                      <Link href={unlockRecoveryHref(nextUnlockTarget.unlockCondition)} prefetch={false}>
+                      <IntentPrefetchLink href={unlockRecoveryHref(nextUnlockTarget.unlockCondition)}>
                         {unlockRecoveryLabel(nextUnlockTarget.unlockCondition)}
-                      </Link>
+                      </IntentPrefetchLink>
                     </Button>
                   </div>
                   <ExpandableText
@@ -631,7 +645,7 @@ export function BadgesPageClient() {
                           Next move: {unlockRecoveryLabel(badge.unlockCondition)}
                         </p>
                         <Button asChild variant="ghost" size="sm">
-                          <Link href={unlockRecoveryHref(badge.unlockCondition)} prefetch={false}>Open path</Link>
+                          <IntentPrefetchLink href={unlockRecoveryHref(badge.unlockCondition)}>Open path</IntentPrefetchLink>
                         </Button>
                       </div>
                     </li>

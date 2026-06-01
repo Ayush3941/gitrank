@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import {
   ArrowRight,
   CalendarClock,
@@ -16,9 +15,11 @@ import { startTransition, useDeferredValue, useId, useMemo, useState } from "rea
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
+import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { ControlSurface } from "@/components/shared/ControlSurface";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
+import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
@@ -33,8 +34,12 @@ import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import { useStaleSyncRefresh } from "@/hooks/use-stale-sync-refresh";
 import { useQuests } from "@/hooks/use-quests";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
-import { selectLatestActionableSyncRunOutcome } from "@/lib/presentation/sync-run-diagnostics";
+import {
+  isGitHubAppInstallationBlocked,
+  selectLatestActionableSyncRunOutcome,
+} from "@/lib/presentation/sync-run-diagnostics";
 import { buildStaleSyncNotice } from "@/lib/presentation/stale-sync-notice";
+import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
 import type { Quest } from "@/types/gitrank";
 
 const groups: Array<Quest["cadence"]> = ["Daily", "Weekly", "Long-term", "Skill-based"];
@@ -88,6 +93,8 @@ export function QuestsPageClient() {
     () => selectLatestActionableSyncRunOutcome(syncRunsQuery.data?.runs),
     [syncRunsQuery.data?.runs],
   );
+  const appInstallationBlocked = isGitHubAppInstallationBlocked(latestSyncOutcome);
+  const displaySyncState = appInstallationBlocked ? "failed" : syncStateForDisplay;
   const staleSyncRefresh = useStaleSyncRefresh({
     runs: syncRunsQuery.data?.runs,
     isSyncPending: runUserSync.isPending,
@@ -127,7 +134,7 @@ export function QuestsPageClient() {
   const staleNotice = useMemo(
     () =>
       buildStaleSyncNotice({
-        syncState: syncStateForDisplay === "partially_synced" ? "partially_synced" : "stale",
+        syncState: displaySyncState === "partially_synced" ? "partially_synced" : "stale",
         refreshedAt: questSnapshotRefreshedAt,
         latestSyncOutcome,
         snapshotLabel: "Quest snapshot",
@@ -136,7 +143,7 @@ export function QuestsPageClient() {
         staleFallback:
           "Live quest signals may lag until the next sync completes.",
       }),
-    [latestSyncOutcome, questSnapshotRefreshedAt, syncStateForDisplay],
+    [displaySyncState, latestSyncOutcome, questSnapshotRefreshedAt],
   );
 
   function handleCadenceFilterChange(next: "All" | Quest["cadence"]) {
@@ -158,6 +165,10 @@ export function QuestsPageClient() {
               { label: `Streak ${streak.currentStreakDays}d` },
               { label: `Day ${dayOfYear}/365` },
               { label: `Focus ${deferredCadenceFilter}` },
+              {
+                label: `Sync ${formatSyncStateLabel(displaySyncState)}`,
+                tone: toneForSyncState(displaySyncState),
+              },
             ]}
           />
         )}
@@ -166,16 +177,19 @@ export function QuestsPageClient() {
             <ProfileEvidenceStateChip
               showFreshness={showRefreshPill}
               refreshedAt={questSnapshotRefreshedAt}
-              syncState={syncStateForDisplay}
+              syncState={displaySyncState}
             />
             <Button asChild variant="secondary" size="sm">
-              <Link href="/dashboard/contributions" prefetch={false}>
+              <IntentPrefetchLink href="/dashboard/contributions">
                 Contributions
-              </Link>
+              </IntentPrefetchLink>
             </Button>
           </div>
         )}
       />
+      {appInstallationBlocked ? (
+        <GitHubAppSyncBlockNotice message={latestSyncOutcome?.message} />
+      ) : null}
       {!isLoading && !isError ? (
         <section className="space-y-3">
           <p id={questsFilterStatusId} role="status" aria-live="polite" aria-atomic="true" className="sr-only">
@@ -248,7 +262,7 @@ export function QuestsPageClient() {
           </ControlSurface>
         </section>
       ) : null}
-      {syncStateForDisplay === "stale" || syncStateForDisplay === "partially_synced" ? (
+      {displaySyncState === "stale" || displaySyncState === "partially_synced" ? (
         <StaleState
           message={staleNotice.message}
           reasonMessage={staleNotice.reasonMessage}
@@ -508,10 +522,10 @@ function MissionSpotlightCard({
           </p>
           <p className="text-sm text-muted">{emptyCopy}</p>
           <Button asChild variant="secondary" size="sm">
-            <Link href={href} prefetch={false}>
+            <IntentPrefetchLink href={href}>
               {cta}
               <ArrowRight className="h-4 w-4" />
-            </Link>
+            </IntentPrefetchLink>
           </Button>
         </div>
       </li>
@@ -551,10 +565,10 @@ function MissionSpotlightCard({
           Next move: {recoveryLabelForGroup(quest.cadence)}
         </p>
         <Button asChild variant="secondary" size="sm">
-          <Link href={recoveryHrefForGroup(quest.cadence)} prefetch={false}>
+          <IntentPrefetchLink href={recoveryHrefForGroup(quest.cadence)}>
             {recoveryLabelForGroup(quest.cadence)}
             <ArrowRight className="h-4 w-4" />
-          </Link>
+          </IntentPrefetchLink>
         </Button>
       </div>
     </li>
