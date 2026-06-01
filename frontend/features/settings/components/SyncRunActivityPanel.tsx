@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, Search, X, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, Search, XCircle } from "lucide-react";
 import { useDeferredValue, useMemo, useState } from "react";
 import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
+import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { formatDateTime, formatRelativeDays } from "@/lib/formatters";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
@@ -253,31 +253,19 @@ export function SyncRunActivityPanel({
           {`${filteredRows.length} of ${statusCounts.all} runs`}
         </p>
         <div className="space-y-3">
-          <div className="relative">
-            <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted" />
-            <Input
-              value={search}
-              onChange={(event) => {
-                setSearch(event.target.value);
-              }}
-              className="pl-11 pr-11"
-              placeholder="Search run subject, mode, or error"
-              aria-label="Search sync runs"
-              aria-describedby={filterStatusId}
-            />
-            {search.trim().length > 0 ? (
-              <button
-                type="button"
-                onClick={handleClearSearch}
-                className="focus-ring absolute top-1/2 right-3 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-cyan-100 hover:bg-primary/12 hover:text-white"
-                aria-label="Clear sync run search"
-                aria-controls={syncRunsRegionId}
-                title="Clear search"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            ) : null}
-          </div>
+          <SearchInputWithClear
+            value={search}
+            onChange={(value) => {
+              setSearch(value);
+            }}
+            onClear={handleClearSearch}
+            placeholder="Search run subject, mode, or error"
+            ariaLabel="Search sync runs"
+            ariaDescribedBy={filterStatusId}
+            ariaControls={syncRunsRegionId}
+            clearButtonLabel="Clear sync run search"
+            inputClassName="pl-11 pr-11"
+          />
           <div className="space-y-2">
             <p className="text-xs font-medium text-primary">Run status</p>
             <SegmentedTablist

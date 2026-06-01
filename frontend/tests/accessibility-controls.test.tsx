@@ -70,7 +70,7 @@ describe("accessibility control naming", () => {
 
     const reset = rendered.getByRole("button", { name: "Reset filters" });
     const syncAction = rendered.getByRole("link", { name: /Open dashboard/i });
-    const search = rendered.getByRole("textbox", { name: "Search repositories" });
+    const search = rendered.getByRole("searchbox", { name: "Search repositories" });
 
     expect(reset).toBeTruthy();
     expect(reset.hasAttribute("disabled")).toBe(true);

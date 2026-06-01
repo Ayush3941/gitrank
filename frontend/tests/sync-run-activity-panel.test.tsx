@@ -121,7 +121,7 @@ describe("SyncRunActivityPanel", () => {
     expect(screen.queryByText(/Active:/)).toBeNull();
     expect(screen.queryByText(/Search:/)).toBeNull();
 
-    fireEvent.change(screen.getByRole("textbox", { name: "Search sync runs" }), {
+    fireEvent.change(screen.getByRole("searchbox", { name: "Search sync runs" }), {
       target: { value: "missing-run" },
     });
 
@@ -130,7 +130,7 @@ describe("SyncRunActivityPanel", () => {
 
     fireEvent.click(screen.getAllByRole("button", { name: "Reset filters" })[0]);
 
-    const searchBox = screen.getByRole("textbox", { name: "Search sync runs" }) as HTMLInputElement;
+    const searchBox = screen.getByRole("searchbox", { name: "Search sync runs" }) as HTMLInputElement;
     expect(searchBox.value).toBe("");
     expect(screen.queryByRole("button", { name: "Reset filters" })).toBeNull();
   });

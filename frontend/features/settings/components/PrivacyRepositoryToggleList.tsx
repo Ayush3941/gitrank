@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Search, X } from "lucide-react";
+import { X } from "lucide-react";
 import { startTransition, useDeferredValue, useMemo, useState } from "react";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
+import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
 import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import type { RepositoryVisibility } from "@/types/gitrank";
 
@@ -105,32 +105,19 @@ export function PrivacyRepositoryToggleList({
           </div>
         </div>
         <div className="grid gap-3 md:grid-cols-[1fr,15rem]">
-          <div className="relative">
-            <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted" />
-            <Input
-              value={search}
-              onChange={(event) => {
-                const value = event.target.value;
-                startTransition(() => setSearch(value));
-              }}
-              className="pl-11 pr-11"
-              placeholder="Search repository or reason"
-              aria-label="Search repositories"
-              aria-describedby={statusId}
-            />
-            {searchTerm.length > 0 ? (
-              <button
-                type="button"
-                onClick={handleClearSearch}
-                className="focus-ring absolute top-1/2 right-3 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-cyan-100 hover:bg-primary/12 hover:text-white"
-                aria-label="Clear repository search"
-                aria-controls={repositoriesRegionId}
-                title="Clear search"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            ) : null}
-          </div>
+          <SearchInputWithClear
+            value={search}
+            onChange={(value) => {
+              startTransition(() => setSearch(value));
+            }}
+            onClear={handleClearSearch}
+            placeholder="Search repository or reason"
+            ariaLabel="Search repositories"
+            ariaDescribedBy={statusId}
+            ariaControls={repositoriesRegionId}
+            clearButtonLabel="Clear repository search"
+            inputClassName="pl-11 pr-11"
+          />
           <div className="space-y-2">
             <p className="text-xs font-medium text-primary">Visibility</p>
             <SegmentedTablist

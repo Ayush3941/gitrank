@@ -10,15 +10,14 @@ import {
   Gauge,
   GitMerge,
   LayoutGrid,
-  Search,
   ServerCog,
   ShieldCheck,
   Trophy,
   X,
 } from "lucide-react";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
+import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
 import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
-import { Input } from "@/components/ui/input";
 import {
   contributionFocusFilters,
   CONTRIBUTION_DEFAULT_FILTER,
@@ -244,30 +243,18 @@ export function ContributionFilters({
             />
             <p className="text-xs text-muted">Status filters PR lifecycle. Category filters contribution type.</p>
           </div>
-          <div className="relative">
-            <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted" />
-            <Input
-              value={search}
-              onChange={(event) => onSearchChange(event.target.value)}
-              className="pl-11 pr-11"
-              placeholder="Search repo, PR title, or owner"
-              aria-label="Search contributions"
-              aria-describedby={statusId}
-            />
-            {trimmedSearch.length > 0 ? (
-              <button
-                type="button"
-                onClick={handleClearSearch}
-                disabled={isFiltering}
-                className="focus-ring absolute top-1/2 right-3 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-cyan-100 hover:bg-primary/12 hover:text-white disabled:opacity-60"
-                aria-label="Clear contribution search"
-                aria-controls={resultsRegionId}
-                title="Clear search"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            ) : null}
-          </div>
+          <SearchInputWithClear
+            value={search}
+            onChange={onSearchChange}
+            onClear={handleClearSearch}
+            placeholder="Search repo, PR title, or owner"
+            ariaLabel="Search contributions"
+            ariaDescribedBy={statusId}
+            ariaControls={resultsRegionId}
+            clearButtonLabel="Clear contribution search"
+            clearButtonDisabled={isFiltering}
+            inputClassName="pl-11 pr-11"
+          />
           <div className="space-y-2">
             <p className="text-xs font-medium text-primary">Sort order</p>
             <SegmentedTablist

@@ -286,6 +286,8 @@ Recent no-slop refinement (May 31, 2026):
 - Live fixture smoke coverage now asserts selected tab state directly for badge/quest filters, preventing regressions back to duplicated chip state.
 - Added shared `FilterControlsHeader` (`frontend/components/shared/FilterControlsHeader.tsx`) and wired contributions, badges, and quests to it so filter-rail summary/chip/reset layout stays consistent and avoids repeated one-off JSX patterns.
 - Settings repository privacy controls now use the same shared filter header pattern and removed redundant `Visibility:` chip text (segmented tabs already encode selected state), keeping controls denser and more consistent with other dashboard filter rails.
+- Added shared `SearchInputWithClear` (`frontend/components/shared/SearchInputWithClear.tsx`) and wired contributions, settings sync-activity, and repository privacy search fields to it for consistent clear affordance, `type="search"` semantics, and keyboard `Esc`-to-clear behavior.
+- Added regression coverage in `frontend/tests/search-input-with-clear.test.tsx` and updated accessibility/sync-run tests for `searchbox` roles so search-control semantics stay stable.
 
 Recent strict app-auth refinement (May 30, 2026):
 
