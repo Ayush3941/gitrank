@@ -33,6 +33,7 @@ import { useBadges } from "@/hooks/use-badges";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { useProfileSyncRuns } from "@/hooks/use-profile-sync-runs";
 import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
+import { useStaleSyncRefresh } from "@/hooks/use-stale-sync-refresh";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import {
   deriveDeterministicArchetype,
@@ -41,11 +42,6 @@ import {
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
-import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
-import {
-  buildInFlightSyncRefreshFeedback,
-  selectLatestInFlightSyncRun,
-} from "@/lib/sync-refresh-guard";
 import type { BadgeRarity } from "@/types/gitrank";
 const BADGES_EARNED_REGION_ID = "badges-earned-region";
 const BADGES_LOCKED_REGION_ID = "badges-locked-lane";
@@ -120,10 +116,14 @@ export function BadgesPageClient() {
     profile?.user,
     syncRunsQuery.data?.runs,
   );
-  const inFlightSyncRun = useMemo(
-    () => selectLatestInFlightSyncRun(syncRunsQuery.data?.runs),
-    [syncRunsQuery.data?.runs],
-  );
+  const staleSyncRefresh = useStaleSyncRefresh({
+    runs: syncRunsQuery.data?.runs,
+    isSyncPending: runUserSync.isPending,
+    requestSync: () => runUserSync.mutateAsync(),
+    refetchAfterSync: async () => {
+      await refetch();
+    },
+  });
   const lockedBadges = allBadges.filter((badge) => !badge.unlocked);
   const lockedBadgesSorted = [...lockedBadges].sort((left, right) => {
     const progressDelta = (right.progress ?? 0) - (left.progress ?? 0);
@@ -309,18 +309,8 @@ export function BadgesPageClient() {
                   )}. New unlocks can appear after the next completed sync.`
             }
             updatedAt={profile.refreshedAt}
-            onRefresh={async () => {
-              if (inFlightSyncRun) {
-                return buildInFlightSyncRefreshFeedback(inFlightSyncRun);
-              }
-              try {
-                const result = await runUserSync.mutateAsync();
-                return buildUserSyncRefreshFeedback(result);
-              } finally {
-                await refetch();
-              }
-            }}
-            isRefreshing={runUserSync.isPending || Boolean(inFlightSyncRun)}
+            onRefresh={staleSyncRefresh.onRefresh}
+            isRefreshing={staleSyncRefresh.isRefreshing}
             actionLabel="Open sync settings"
             actionHref="/dashboard/settings"
             analyticsTarget="badges:stale"

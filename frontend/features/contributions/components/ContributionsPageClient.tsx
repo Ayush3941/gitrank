@@ -18,6 +18,7 @@ import { useContributions } from "@/hooks/use-contributions";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useProfileSyncRuns } from "@/hooks/use-profile-sync-runs";
 import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
+import { useStaleSyncRefresh } from "@/hooks/use-stale-sync-refresh";
 import {
   useNetworkConstraintPreference,
   useReducedGamification,
@@ -36,11 +37,6 @@ import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { deduplicateContributionsByPullRequest } from "@/lib/presentation/contribution-dedup";
 import { selectLatestActionableSyncRunOutcome } from "@/lib/presentation/sync-run-diagnostics";
-import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
-import {
-  buildInFlightSyncRefreshFeedback,
-  selectLatestInFlightSyncRun,
-} from "@/lib/sync-refresh-guard";
 import { contributionDisplayConfig } from "@/lib/runtime/contribution-display-config";
 import {
   buildContributionFocusCounts,
@@ -158,10 +154,14 @@ export function ContributionsPageClient() {
     () => selectLatestActionableSyncRunOutcome(syncRunsQuery.data?.runs),
     [syncRunsQuery.data?.runs],
   );
-  const inFlightSyncRun = useMemo(
-    () => selectLatestInFlightSyncRun(syncRunsQuery.data?.runs),
-    [syncRunsQuery.data?.runs],
-  );
+  const staleSyncRefresh = useStaleSyncRefresh({
+    runs: syncRunsQuery.data?.runs,
+    isSyncPending: runUserSync.isPending,
+    requestSync: () => runUserSync.mutateAsync(),
+    refetchAfterSync: async () => {
+      await refetch();
+    },
+  });
   const abraContributionSample = useMemo(
     () => filteredRows.slice(0, contributionDisplayConfig.abraSampleLimit),
     [filteredRows],
@@ -369,18 +369,8 @@ export function ContributionsPageClient() {
           }
           reasonMessage={latestSyncOutcome?.message || undefined}
           updatedAt={profile.refreshedAt}
-          onRefresh={async () => {
-            if (inFlightSyncRun) {
-              return buildInFlightSyncRefreshFeedback(inFlightSyncRun);
-            }
-            try {
-              const result = await runUserSync.mutateAsync();
-              return buildUserSyncRefreshFeedback(result);
-            } finally {
-              await refetch();
-            }
-          }}
-          isRefreshing={runUserSync.isPending || Boolean(inFlightSyncRun)}
+          onRefresh={staleSyncRefresh.onRefresh}
+          isRefreshing={staleSyncRefresh.isRefreshing}
           actionLabel="Open sync settings"
           actionHref="/dashboard/settings"
           analyticsTarget="contributions:stale"

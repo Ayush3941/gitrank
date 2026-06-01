@@ -35,9 +35,30 @@ for (const relativePath of targets) {
   assertPattern(
     source,
     relativePath,
-    /<StaleState[\s\S]*onRefresh=\{(?:async\s*)?\(\)\s*=>\s*\{[\s\S]*runUserSync\.mutateAsync\(/,
-    "stale refresh action does not trigger runUserSync.mutateAsync(...)",
+    /<StaleState/,
+    "missing StaleState usage",
   );
+
+  const hasInlineRefreshHandler = /<StaleState[\s\S]*onRefresh=\{(?:async\s*)?\(\)\s*=>\s*\{[\s\S]*runUserSync\.mutateAsync\(/.test(
+    source,
+  );
+  const hasSharedRefreshHook = /useStaleSyncRefresh/.test(source);
+  const hasSharedRefreshInitialization =
+    /const\s+staleSyncRefresh\s*=\s*useStaleSyncRefresh\(\{[\s\S]*requestSync:\s*\(\)\s*=>\s*runUserSync\.mutateAsync\(\)[\s\S]*\}\)/.test(
+      source,
+    );
+  const hasSharedRefreshWiring =
+    /<StaleState[\s\S]*onRefresh=\{staleSyncRefresh\.onRefresh\}[\s\S]*isRefreshing=\{staleSyncRefresh\.isRefreshing\}/.test(
+      source,
+    );
+
+  if (!hasInlineRefreshHandler && !(hasSharedRefreshHook && hasSharedRefreshInitialization && hasSharedRefreshWiring)) {
+    failures.push({
+      file: relativePath,
+      reason:
+        "stale refresh action does not trigger runUserSync.mutateAsync(...) via inline or shared hook wiring",
+    });
+  }
 }
 
 if (failures.length > 0) {

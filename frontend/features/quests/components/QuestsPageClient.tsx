@@ -12,7 +12,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import { startTransition, useDeferredValue, useMemo, useState } from "react";
+import { startTransition, useDeferredValue, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
@@ -29,14 +29,10 @@ import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { useProfileSyncRuns } from "@/hooks/use-profile-sync-runs";
 import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
+import { useStaleSyncRefresh } from "@/hooks/use-stale-sync-refresh";
 import { useQuests } from "@/hooks/use-quests";
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
-import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
-import {
-  buildInFlightSyncRefreshFeedback,
-  selectLatestInFlightSyncRun,
-} from "@/lib/sync-refresh-guard";
 import type { Quest } from "@/types/gitrank";
 
 const groups: Array<Quest["cadence"]> = ["Daily", "Weekly", "Long-term", "Skill-based"];
@@ -85,10 +81,14 @@ export function QuestsPageClient() {
     profile?.user,
     syncRunsQuery.data?.runs,
   );
-  const inFlightSyncRun = useMemo(
-    () => selectLatestInFlightSyncRun(syncRunsQuery.data?.runs),
-    [syncRunsQuery.data?.runs],
-  );
+  const staleSyncRefresh = useStaleSyncRefresh({
+    runs: syncRunsQuery.data?.runs,
+    isSyncPending: runUserSync.isPending,
+    requestSync: () => runUserSync.mutateAsync(),
+    refetchAfterSync: async () => {
+      await refetch();
+    },
+  });
   const questSnapshotRefreshedAt =
     data?.staleness?.refreshedAt ?? profile?.refreshedAt ?? new Date().toISOString();
   const contributionRows = profile?.user.contributions ?? [];
@@ -234,18 +234,8 @@ export function QuestsPageClient() {
                 )}. Live quest signals may lag until the next sync completes.`
           }
           updatedAt={questSnapshotRefreshedAt}
-          onRefresh={async () => {
-            if (inFlightSyncRun) {
-              return buildInFlightSyncRefreshFeedback(inFlightSyncRun);
-            }
-            try {
-              const result = await runUserSync.mutateAsync();
-              return buildUserSyncRefreshFeedback(result);
-            } finally {
-              await refetch();
-            }
-          }}
-          isRefreshing={runUserSync.isPending || Boolean(inFlightSyncRun)}
+          onRefresh={staleSyncRefresh.onRefresh}
+          isRefreshing={staleSyncRefresh.isRefreshing}
           actionLabel="Open sync settings"
           actionHref="/dashboard/settings"
           analyticsTarget="quests:stale"

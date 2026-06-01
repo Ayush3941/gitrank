@@ -13,6 +13,7 @@ import { useDashboard } from "@/hooks/use-dashboard";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { useProfileSyncRuns } from "@/hooks/use-profile-sync-runs";
 import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
+import { useStaleSyncRefresh } from "@/hooks/use-stale-sync-refresh";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -29,12 +30,7 @@ import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { selectLatestActionableSyncRunOutcome } from "@/lib/presentation/sync-run-diagnostics";
-import {
-  buildInFlightSyncRefreshFeedback,
-  selectLatestInFlightSyncRun,
-} from "@/lib/sync-refresh-guard";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
-import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import { Button } from "@/components/ui/button";
 
 const CurrentLeagueCard = dynamic(
@@ -82,10 +78,14 @@ export function DashboardPageClient() {
   const latestSyncOutcome = useMemo(() => {
     return selectLatestActionableSyncRunOutcome(syncRunsQuery.data?.runs);
   }, [syncRunsQuery.data?.runs]);
-  const inFlightSyncRun = useMemo(
-    () => selectLatestInFlightSyncRun(syncRunsQuery.data?.runs),
-    [syncRunsQuery.data?.runs],
-  );
+  const staleSyncRefresh = useStaleSyncRefresh({
+    runs: syncRunsQuery.data?.runs,
+    isSyncPending: runUserSync.isPending,
+    requestSync: () => runUserSync.mutateAsync(),
+    refetchAfterSync: async () => {
+      await refetch();
+    },
+  });
   const streak = useMemo(
     () => summarizeContributionStreak(user?.contributions ?? []),
     [user?.contributions],
@@ -242,18 +242,8 @@ export function DashboardPageClient() {
           message={staleNotice.message}
           reasonMessage={staleNotice.reasonMessage}
           updatedAt={data.refreshedAt}
-          onRefresh={async () => {
-            if (inFlightSyncRun) {
-              return buildInFlightSyncRefreshFeedback(inFlightSyncRun);
-            }
-            try {
-              const result = await runUserSync.mutateAsync();
-              return buildUserSyncRefreshFeedback(result);
-            } finally {
-              await refetch();
-            }
-          }}
-          isRefreshing={runUserSync.isPending || Boolean(inFlightSyncRun)}
+          onRefresh={staleSyncRefresh.onRefresh}
+          isRefreshing={staleSyncRefresh.isRefreshing}
           actionLabel="Open sync settings"
           actionHref="/dashboard/settings"
           analyticsTarget="dashboard:stale"
