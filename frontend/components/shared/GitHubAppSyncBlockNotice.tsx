@@ -9,7 +9,7 @@ export function GitHubAppSyncBlockNotice({
   message?: string;
 }) {
   return (
-    <GlowCard className="space-y-3 border-amber-300/28 bg-amber-400/12">
+    <GlowCard className="space-y-4 border-amber-300/28 bg-amber-400/12">
       <div className="flex items-start gap-3">
         <span className="inline-flex rounded-full border border-amber-300/30 bg-amber-300/16 p-2 text-amber-100">
           <ShieldAlert className="h-4 w-4" />
@@ -24,8 +24,12 @@ export function GitHubAppSyncBlockNotice({
           </p>
         </div>
       </div>
+      <div className="grid gap-2 rounded-[0.5rem] border border-amber-300/24 bg-black/20 px-3 py-2 text-xs text-amber-100/95 sm:grid-cols-2">
+        <p><span className="font-semibold text-amber-100">Why:</span> no active installation is mapped to this signed-in GitHub account.</p>
+        <p><span className="font-semibold text-amber-100">Fix:</span> install GitRank GitHub App, then rerun sync from Settings.</p>
+      </div>
       <div className="flex flex-wrap gap-2">
-        <Button asChild size="sm" variant="ghost">
+        <Button asChild size="sm" variant="default">
           <IntentPrefetchLink href="/oauth/github/install">Install GitHub App</IntentPrefetchLink>
         </Button>
         <Button asChild size="sm" variant="secondary">

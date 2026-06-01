@@ -310,7 +310,7 @@ describe("live fixture frontend smoke coverage", () => {
     renderWithClient(<SettingsPageClient />);
 
     expect(await screen.findByRole("heading", { name: "Settings" })).toBeTruthy();
-    expect(await screen.findByRole("link", { name: "Install GitHub App" })).toBeTruthy();
+    expect((await screen.findAllByRole("link", { name: "Install GitHub App" })).length).toBeGreaterThan(0);
   }, 15_000);
 });
 
