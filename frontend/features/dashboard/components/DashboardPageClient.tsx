@@ -17,6 +17,7 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
+import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -31,6 +32,7 @@ import {
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
+import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
 import {
   isGitHubAppInstallationBlocked,
   selectLatestActionableSyncRunOutcome,
@@ -67,6 +69,13 @@ const RecentBattleReports = dynamic(
     loading: () => <LazyLanePlaceholder label="Loading reports" />,
   },
 );
+
+const DASHBOARD_SECTION_LINKS = [
+  { id: "dashboard-identity", label: "Identity" },
+  { id: "dashboard-signals", label: "Signals" },
+  { id: "dashboard-progression", label: "Progression" },
+  { id: "dashboard-reports", label: "Reports" },
+];
 
 export function DashboardPageClient() {
   const constrainedNetwork = useNetworkConstraintPreference();
@@ -236,7 +245,7 @@ export function DashboardPageClient() {
         actions={(
           <div className="flex flex-wrap items-center gap-2">
             <ProfileEvidenceStateChip
-              showFreshness={showRefreshPill && !appInstallationBlocked && displaySyncState === "synced"}
+              showFreshness={shouldShowProfileFreshnessPill(showRefreshPill, displaySyncState, appInstallationBlocked)}
               refreshedAt={data.refreshedAt}
               syncState={displaySyncState}
             />
@@ -265,7 +274,8 @@ export function DashboardPageClient() {
           analyticsTarget="dashboard:stale"
         />
       ) : null}
-      <section>
+      <InPageSectionNav sections={DASHBOARD_SECTION_LINKS} className="render-opt-section" />
+      <section id="dashboard-identity" data-scroll-target="true">
         <DashboardHeroRankCard
           user={user}
           archetype={abraInsights.data?.archetype ?? fallbackArchetype}
@@ -274,7 +284,11 @@ export function DashboardPageClient() {
           effectiveSyncState={displaySyncState}
         />
       </section>
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-12">
+      <section
+        id="dashboard-signals"
+        data-scroll-target="true"
+        className="grid gap-4 sm:grid-cols-2 xl:grid-cols-12"
+      >
         <StatCard
           className="xl:col-span-6"
           valueClassName="text-4xl"
@@ -307,7 +321,11 @@ export function DashboardPageClient() {
       </section>
       <div className="grid gap-6 xl:grid-cols-[0.86fr,1.14fr]">
         <div className="space-y-6">
-          <section className="render-opt-section">
+          <section
+            id="dashboard-progression"
+            data-scroll-target="true"
+            className="render-opt-section"
+          >
             <DeferUntilVisible fallback={<LazyLanePlaceholder label="Loading league" />}>
               <CurrentLeagueCard user={user} />
             </DeferUntilVisible>
@@ -319,7 +337,11 @@ export function DashboardPageClient() {
           </section>
         </div>
         <div className="space-y-6">
-          <section className="render-opt-section">
+          <section
+            id="dashboard-reports"
+            data-scroll-target="true"
+            className="render-opt-section"
+          >
             <DeferUntilVisible fallback={<LazyLanePlaceholder label="Loading reports" />}>
               <RecentBattleReports reports={recentReports} />
             </DeferUntilVisible>

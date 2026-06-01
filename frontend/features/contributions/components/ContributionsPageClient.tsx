@@ -9,9 +9,10 @@ import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlock
 import { GlowCard } from "@/components/shared/GlowCard";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { InlineNotice } from "@/components/shared/InlineNotice";
-import { LoadingState } from "@/components/shared/LoadingState";
+import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
+import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
 import { StaleState } from "@/components/shared/StaleState";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
 import { useRunUserSync } from "@/hooks/use-account-actions";
@@ -36,6 +37,7 @@ import {
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { deduplicateContributionsByPullRequest } from "@/lib/presentation/contribution-dedup";
+import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
 import {
   isGitHubAppInstallationBlocked,
   selectLatestActionableSyncRunOutcome,
@@ -52,6 +54,7 @@ import {
   type ContributionSortOption,
   toContributionQueryFilter,
 } from "@/lib/runtime/contribution-filter-policy";
+import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import type { Contribution } from "@/types/gitrank";
 
 const ContributionList = dynamic(
@@ -65,6 +68,10 @@ const ContributionList = dynamic(
 );
 
 const CONTRIBUTION_SEARCH_DEBOUNCE_MS = 220;
+const CONTRIBUTIONS_SECTION_LINKS = [
+  { id: "contributions-filters", label: "Filters" },
+  { id: "contributions-cards", label: "Cards" },
+];
 
 export function ContributionsPageClient() {
   const contributionCardsRegionId = useId();
@@ -85,7 +92,7 @@ export function ContributionsPageClient() {
     ? contributionDisplayConfig.constrainedCardPageSize
     : contributionDisplayConfig.cardPageSize;
   const [visibleCardCount, setVisibleCardCount] = useState(cardPageSize);
-  const { data, isLoading, isError, refetch } = useContributions({
+  const { data, isLoading, isError, error, refetch } = useContributions({
     filter: toContributionQueryFilter(deferredFilter),
     search: deferredSearch,
     sort: deferredSort,
@@ -252,6 +259,12 @@ export function ContributionsPageClient() {
   ]);
 
   const abraInsights = useAbraInsights(abraPayload);
+  const hasCachedProfile = Boolean(data?.profile);
+  const shouldBlockOnLoading = isLoading && !hasCachedProfile;
+  const shouldBlockOnError = isError && !hasCachedProfile;
+  const backgroundRefreshError = isError && hasCachedProfile
+    ? `${sanitizeUserFacingError((error as Error | null)?.message || "", "contributions-refresh")} Showing latest verified contribution data.`
+    : "";
 
   useEffect(() => {
     if (!exportNotice) {
@@ -264,6 +277,33 @@ export function ContributionsPageClient() {
       window.clearTimeout(timer);
     };
   }, [exportNotice]);
+
+  if (shouldBlockOnLoading) {
+    return (
+      <RouteLoadingState
+        eyebrow="Contributions"
+        title="Contributions"
+        description="Scored PR cards with fast filters."
+        variant="dashboard"
+        cardCount={2}
+      />
+    );
+  }
+
+  if (shouldBlockOnError) {
+    return (
+      <ErrorState
+        title="Contribution sync failed"
+        description="Contribution data is unavailable right now. Retry or open sync settings."
+        onRetry={() => {
+          void refetch();
+        }}
+        fallbackLabel="Open sync settings"
+        fallbackHref="/dashboard/settings"
+        analyticsTarget="contributions:error"
+      />
+    );
+  }
 
   function handleFilterChange(next: ContributionFilterValue) {
     startTransition(() => {
@@ -324,7 +364,7 @@ export function ContributionsPageClient() {
         actions={(
           <div className="flex flex-wrap gap-2">
             <ProfileEvidenceStateChip
-              showFreshness={showRefreshPill}
+              showFreshness={shouldShowProfileFreshnessPill(showRefreshPill, displaySyncState, appInstallationBlocked)}
               refreshedAt={profile?.refreshedAt}
               syncState={displaySyncState}
             />
@@ -383,6 +423,13 @@ export function ContributionsPageClient() {
         }}
         dismissLabel="Dismiss export status"
       />
+      {backgroundRefreshError ? (
+        <InlineNotice
+          message={backgroundRefreshError}
+          variant="warning"
+          minHeightClassName="min-h-0"
+        />
+      ) : null}
       {appInstallationBlocked ? (
         <GitHubAppSyncBlockNotice message={latestSyncOutcome?.message} />
       ) : null}
@@ -400,7 +447,12 @@ export function ContributionsPageClient() {
           analyticsTarget="contributions:stale"
         />
       ) : null}
-      <section>
+      <InPageSectionNav sections={CONTRIBUTIONS_SECTION_LINKS} className="render-opt-section" />
+      <section
+        id="contributions-filters"
+        data-scroll-target="true"
+        className="render-opt-section"
+      >
         <ContributionFilters
           value={filter}
           onValueChange={handleFilterChange}
@@ -420,40 +472,31 @@ export function ContributionsPageClient() {
           contextNote="Categories reflect your recent PR work and help choose the next lane."
         />
       </section>
-      {isLoading ? <LoadingState message="Loading contributions..." /> : null}
-      {isError ? (
-        <ErrorState
-          title="Contribution sync failed"
-          description="Sync refresh failed. Retry or open sync settings."
-          onRetry={() => {
-            void refetch();
-          }}
-          fallbackLabel="Open sync settings"
-          fallbackHref="/dashboard/settings"
-          analyticsTarget="contributions:error"
-        />
-      ) : null}
-      {!isLoading && !isError && filteredRows.length === 0 ? (
-        <EmptyState
-          eyebrow={isFilteredNoResults ? "Filter results" : "Contribution evidence"}
-          title={
-            isFilteredNoResults
-              ? "No contributions match current filters."
-              : "No merged PRs found yet."
-          }
-          description={
-            isFilteredNoResults
-              ? "Reset filters or widen search."
-              : "Keep this page open while auto-sync loads recent PR evidence."
-          }
-          actionLabel={isFilteredNoResults ? "Reset filters" : "Open sync settings"}
-          actionHref={isFilteredNoResults ? undefined : "/dashboard/settings"}
-          onAction={isFilteredNoResults ? handleResetFilters : undefined}
-          analyticsTarget={isFilteredNoResults ? "contributions:empty-filtered" : "contributions:empty"}
-        />
-      ) : null}
-      {!isLoading && !isError && filteredRows.length ? (
-        <section className="render-opt-section space-y-4">
+      <section
+        id="contributions-cards"
+        data-scroll-target="true"
+        className="render-opt-section space-y-4"
+      >
+        {filteredRows.length === 0 ? (
+          <EmptyState
+            eyebrow={isFilteredNoResults ? "Filter results" : "Contribution evidence"}
+            title={
+              isFilteredNoResults
+                ? "No contributions match current filters."
+                : "No merged PRs found yet."
+            }
+            description={
+              isFilteredNoResults
+                ? "Reset filters or widen search."
+                : "Keep this page open while auto-sync loads recent PR evidence."
+            }
+            actionLabel={isFilteredNoResults ? "Reset filters" : "Open sync settings"}
+            actionHref={isFilteredNoResults ? undefined : "/dashboard/settings"}
+            onAction={isFilteredNoResults ? handleResetFilters : undefined}
+            analyticsTarget={isFilteredNoResults ? "contributions:empty-filtered" : "contributions:empty"}
+          />
+        ) : null}
+        {filteredRows.length ? (
           <div className="space-y-4">
             <div id={contributionCardsRegionId}>
               <ContributionList
@@ -486,8 +529,8 @@ export function ContributionsPageClient() {
               ) : null}
             </div>
           </div>
-        </section>
-      ) : null}
+        ) : null}
+      </section>
     </div>
   );
 }

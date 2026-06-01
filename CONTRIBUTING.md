@@ -53,6 +53,7 @@ This document is intentionally detailed.
 - Settings sync-activity disclosure now keeps expanded diagnostic context stable across polling refreshes (auto-open on attention, no implicit auto-collapse), reducing perceived scroll jumps while preserving manual user control.
 - Shared inline status notices now keep `role="status"` on message text only (dismiss controls remain outside the live region), improving screen-reader announcement hygiene while preserving the same compact visual style.
 - Stale-sync and GitHub-App-block banners now scope live-region announcements to message text nodes instead of whole cards with action buttons, aligning advisory announcements with ARIA live-region guidance while preserving current CTAs and layout.
+- Dashboard, Contributions, and Settings now share one in-page section-navigation pattern (`InPageSectionNav`) with stable anchor IDs + `data-scroll-target`, so dense pages stay scannable, deep-linkable, and visually consistent without adding sticky chrome or extra motion.
 
 It serves two purposes:
 

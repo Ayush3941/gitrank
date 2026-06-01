@@ -10,6 +10,7 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
+import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { InlineNotice } from "@/components/shared/InlineNotice";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -122,6 +123,15 @@ const TEXT_SCALE_OPTIONS: Array<{
     label: "Large text",
     description: "Larger body and UI text.",
   },
+];
+
+const SETTINGS_SECTION_LINKS = [
+  { id: "settings-account", label: "Account" },
+  { id: "settings-sync-activity-panel", label: "Sync log" },
+  { id: "settings-public-profile", label: "Privacy" },
+  { id: "settings-display-preferences", label: "Display" },
+  { id: "settings-repositories", label: "Repositories" },
+  { id: "settings-data-controls", label: "Data" },
 ];
 
 const PrivacyRepositoryToggleList = dynamic(
@@ -397,7 +407,8 @@ export function SettingsPageClient() {
           </div>
         )}
       />
-      <section>
+      <InPageSectionNav sections={SETTINGS_SECTION_LINKS} className="render-opt-section" />
+      <section id="settings-account" data-scroll-target="true">
         <GlowCard className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -516,7 +527,11 @@ export function SettingsPageClient() {
         </GlowCard>
       </section>
 
-      <section className="render-opt-section" id="settings-sync-activity-panel">
+      <section
+        className="render-opt-section"
+        id="settings-sync-activity-panel"
+        data-scroll-target="true"
+      >
         <SettingsSyncActivitySection
           runs={syncRuns}
           lastUpdatedAt={syncRunsQuery.data?.last_updated_at}
@@ -532,7 +547,11 @@ export function SettingsPageClient() {
         />
       </section>
 
-      <section className="render-opt-section">
+      <section
+        className="render-opt-section"
+        id="settings-public-profile"
+        data-scroll-target="true"
+      >
         <SettingSection
           title="Public profile"
           saving={isSaving}
@@ -547,7 +566,11 @@ export function SettingsPageClient() {
         />
       </section>
 
-      <section className="render-opt-section">
+      <section
+        className="render-opt-section"
+        id="settings-display-preferences"
+        data-scroll-target="true"
+      >
         <GlowCard className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="max-w-2xl">
@@ -710,7 +733,11 @@ export function SettingsPageClient() {
         </GlowCard>
       </section>
 
-      <section className="render-opt-section">
+      <section
+        className="render-opt-section"
+        id="settings-repositories"
+        data-scroll-target="true"
+      >
         <DeferUntilVisible fallback={<SettingsPanelPlaceholder label="Loading repository controls" />}>
           <GlowCard className="space-y-4">
             <div>
@@ -736,7 +763,11 @@ export function SettingsPageClient() {
         </DeferUntilVisible>
       </section>
 
-      <section className="render-opt-section">
+      <section
+        className="render-opt-section"
+        id="settings-data-controls"
+        data-scroll-target="true"
+      >
         <GlowCard className="space-y-4">
           <div>
             <p className="text-xs font-medium text-primary">Data controls</p>
