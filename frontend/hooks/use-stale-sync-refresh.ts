@@ -38,7 +38,11 @@ export function useStaleSyncRefresh({
   }
 
   return {
-    isRefreshing: isSyncPending || Boolean(inFlightSyncRun),
+    // Keep Refresh actionable when another sync is already queued/running so the
+    // user receives explicit in-flight feedback instead of a disabled control.
+    isRefreshing: isSyncPending,
+    hasInFlightSync: Boolean(inFlightSyncRun),
+    refreshLabel: inFlightSyncRun ? "Check sync status" : "Refresh",
     onRefresh,
   };
 }

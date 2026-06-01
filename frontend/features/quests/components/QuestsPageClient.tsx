@@ -250,6 +250,7 @@ export function QuestsPageClient() {
           updatedAt={questSnapshotRefreshedAt}
           onRefresh={staleSyncRefresh.onRefresh}
           isRefreshing={staleSyncRefresh.isRefreshing}
+          refreshLabel={staleSyncRefresh.refreshLabel}
           actionLabel="Open sync settings"
           actionHref="/dashboard/settings"
           analyticsTarget="quests:stale"

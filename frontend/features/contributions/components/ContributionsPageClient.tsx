@@ -375,6 +375,7 @@ export function ContributionsPageClient() {
           updatedAt={profile.refreshedAt}
           onRefresh={staleSyncRefresh.onRefresh}
           isRefreshing={staleSyncRefresh.isRefreshing}
+          refreshLabel={staleSyncRefresh.refreshLabel}
           actionLabel="Open sync settings"
           actionHref="/dashboard/settings"
           analyticsTarget="contributions:stale"

@@ -28,7 +28,9 @@ describe("useStaleSyncRefresh", () => {
       }),
     );
 
-    expect(result.current.isRefreshing).toBe(true);
+    expect(result.current.isRefreshing).toBe(false);
+    expect(result.current.hasInFlightSync).toBe(true);
+    expect(result.current.refreshLabel).toBe("Check sync status");
 
     let feedback;
     await act(async () => {
@@ -60,6 +62,8 @@ describe("useStaleSyncRefresh", () => {
     );
 
     expect(result.current.isRefreshing).toBe(false);
+    expect(result.current.hasInFlightSync).toBe(false);
+    expect(result.current.refreshLabel).toBe("Refresh");
 
     let feedback;
     await act(async () => {
@@ -69,5 +73,31 @@ describe("useStaleSyncRefresh", () => {
     expect(requestSync).toHaveBeenCalledTimes(1);
     expect(refetchAfterSync).toHaveBeenCalledTimes(1);
     expect(feedback?.message).toMatch(/refresh completed/i);
+  });
+
+  it("marks refresh as busy only while this page mutation is pending", () => {
+    const { result } = renderHook(() =>
+      useStaleSyncRefresh({
+        runs: [
+          {
+            id: "run_running",
+            run_type: "user",
+            status: "running",
+            started_at: "2026-05-30T10:00:00Z",
+          },
+        ],
+        isSyncPending: true,
+        requestSync: async () => ({
+          status: "completed",
+          mode: "user",
+          started_at: "2026-05-30T10:00:00Z",
+          finished_at: "2026-05-30T10:00:10Z",
+        }),
+        refetchAfterSync: async () => undefined,
+      }),
+    );
+
+    expect(result.current.isRefreshing).toBe(true);
+    expect(result.current.refreshLabel).toBe("Check sync status");
   });
 });

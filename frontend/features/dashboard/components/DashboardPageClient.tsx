@@ -244,6 +244,7 @@ export function DashboardPageClient() {
           updatedAt={data.refreshedAt}
           onRefresh={staleSyncRefresh.onRefresh}
           isRefreshing={staleSyncRefresh.isRefreshing}
+          refreshLabel={staleSyncRefresh.refreshLabel}
           actionLabel="Open sync settings"
           actionHref="/dashboard/settings"
           analyticsTarget="dashboard:stale"
