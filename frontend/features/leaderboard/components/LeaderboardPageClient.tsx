@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -231,44 +232,35 @@ export function LeaderboardPageClient() {
           {isBusy ? `Refreshing ${tab}...` : `Viewing ${tab}`}
         </p>
         <div className="neon-surface space-y-3 rounded-[1rem] px-3 py-3 sm:px-4 sm:py-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs font-medium text-primary">Leaderboard controls</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {activeFilterCount > 0 ? (
-              <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-                Active: {activeFilterCount}
-              </span>
-            ) : null}
-            <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-              Lane: {TAB_LABELS[tab]}
-            </span>
-            <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-              View: {effectiveMode === "nearby" ? "Nearby" : "Full board"}
-            </span>
-            <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-              Details: {showLaneDetails ? "On" : "Off"}
-            </span>
-            {canClearAllControls ? (
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                onClick={() => {
-                  startTransition(() => {
-                    setShowLaneDetails(false);
-                    setPreferNearbyMode(true);
-                    setVisibleRowCount(rowPageSize);
-                    replaceLane("Global");
-                  });
-                }}
-                aria-controls={LEADERBOARD_ROWS_REGION_ID}
-                className="h-8 px-3"
-              >
-                Reset
-              </Button>
-            ) : null}
-          </div>
+          <FilterControlsHeader
+            label="Leaderboard controls"
+            summary={isBusy ? "Updating lane..." : `${rows.length} rows`}
+            activeFilterCount={activeFilterCount}
+            activeCountLabel={`Active: ${activeFilterCount}`}
+            secondaryLabel={`Lane: ${TAB_LABELS[tab]}`}
+            extraControls={(
+              <>
+                <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+                  View: {effectiveMode === "nearby" ? "Nearby" : "Full board"}
+                </span>
+                <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+                  Details: {showLaneDetails ? "On" : "Off"}
+                </span>
+              </>
+            )}
+            resetAction={{
+              onReset: () => {
+                startTransition(() => {
+                  setShowLaneDetails(false);
+                  setPreferNearbyMode(true);
+                  setVisibleRowCount(rowPageSize);
+                  replaceLane("Global");
+                });
+              },
+              enabled: canClearAllControls,
+              ariaControls: LEADERBOARD_ROWS_REGION_ID,
+            }}
+          />
           <div className="space-y-2">
             <p className="text-xs font-medium text-primary">Lane</p>
             <SegmentedTablist
