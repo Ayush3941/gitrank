@@ -14,6 +14,7 @@ describe("StaleState", () => {
     );
 
     expect(screen.getByText(/Last verified at/i)).toBeTruthy();
+    expect(screen.getByRole("status")).toBeTruthy();
     const exactTime = screen.getByText((_content, element) => element?.tagName.toLowerCase() === "time");
     expect(exactTime.getAttribute("datetime")).toMatch(/2026-05-17T18:10:00/);
   });

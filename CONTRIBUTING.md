@@ -32,6 +32,7 @@ This document is intentionally detailed.
 - Shared stale-state banners now distinguish `Data is stale` from `Evidence pending` and use intent-prefetch navigation + polite status semantics, keeping partial-sync copy truthful without extra motion or noisy auto-focus behavior.
 - Settings sync-activity disclosure now keeps expanded diagnostic context stable across polling refreshes (auto-open on attention, no implicit auto-collapse), reducing perceived scroll jumps while preserving manual user control.
 - Shared inline status notices now keep `role="status"` on message text only (dismiss controls remain outside the live region), improving screen-reader announcement hygiene while preserving the same compact visual style.
+- Stale-sync and GitHub-App-block banners now scope live-region announcements to message text nodes instead of whole cards with action buttons, aligning advisory announcements with ARIA live-region guidance while preserving current CTAs and layout.
 
 It serves two purposes:
 

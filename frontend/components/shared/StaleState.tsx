@@ -90,7 +90,7 @@ export function StaleState({
   }
 
   return (
-    <GlowCard role="status" aria-live="polite" className="cyber-sheen space-y-3 border border-amber-400/22 bg-amber-400/8">
+    <GlowCard className="cyber-sheen space-y-3 border border-amber-400/22 bg-amber-400/8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
           <div className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-amber-300/35 bg-amber-400/14 px-2.5 py-1 text-sm font-semibold text-amber-100">
@@ -98,7 +98,9 @@ export function StaleState({
             {label}
           </div>
           <div className="space-y-1">
-            <p className="font-medium text-amber-100">{message}</p>
+            <p role="status" aria-live="polite" aria-atomic="true" className="font-medium text-amber-100">
+              {message}
+            </p>
             <p className="text-sm text-amber-100">{helper}</p>
             {reasonMessage ? <p className="text-sm text-amber-100">{reasonMessage}</p> : null}
             {verifiedDateTime ? (
