@@ -574,4 +574,26 @@ describe("selectProfileSyncRunStatuses", () => {
     );
     expect(statuses).toStrictEqual(["running"]);
   });
+
+  it("orders user-scoped statuses by started_at desc before deriving state", () => {
+    const user = buildUser({ username: "Ayush3941" });
+    const statuses = selectProfileSyncRunStatuses(
+      [
+        {
+          status: "completed",
+          run_type: "user",
+          requested_user: "Ayush3941",
+          started_at: "2026-05-26T04:22:33.000Z",
+        },
+        {
+          status: "running",
+          run_type: "user",
+          requested_user: "Ayush3941",
+          started_at: "2026-05-26T04:38:05.000Z",
+        },
+      ],
+      user,
+    );
+    expect(statuses).toStrictEqual(["running", "completed"]);
+  });
 });

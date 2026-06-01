@@ -24,6 +24,7 @@ export type ProfileSyncRunStatusSource = {
   subject?: string | null;
   requested_user?: string | null;
   requested_by_github_login?: string | null;
+  started_at?: string | null;
 };
 
 export function hasUserContributionEvidence(user: UserProfile | null | undefined): boolean {
@@ -108,10 +109,18 @@ export function deriveEffectiveSyncState(
     return "failed";
   }
   const hasMaterializedEvidence = hasUserMaterializedSyncEvidence(user);
+  if (!hasMaterializedEvidence && user.syncStatus.state === "synced") {
+    return "partially_synced";
+  }
   if (!hasMaterializedEvidence && latestStatus === "completed") {
     return "partially_synced";
   }
-  if (user.syncStatus.state === "synced" && !hasMaterializedEvidence) {
+  if (
+    !hasMaterializedEvidence &&
+    user.syncStatus.state !== "never_synced" &&
+    user.syncStatus.state !== "failed" &&
+    user.syncStatus.state !== "syncing"
+  ) {
     return "partially_synced";
   }
   return user.syncStatus.state;
@@ -135,8 +144,9 @@ export function selectProfileSyncRunStatuses(
     return [];
   }
   const normalizedUser = normalizeGitHubLoginToken(user?.username);
-  const statuses: string[] = [];
-  for (const run of runs) {
+  const statuses: Array<{ status: string; index: number; startedAtMs: number }> = [];
+  for (let index = 0; index < runs.length; index += 1) {
+    const run = runs[index];
     const status = normalizeRunToken(run.status);
     if (!status) {
       continue;
@@ -144,9 +154,19 @@ export function selectProfileSyncRunStatuses(
     if (!isProfileSyncRun(run, normalizedUser)) {
       continue;
     }
-    statuses.push(status);
+    statuses.push({
+      status,
+      index,
+      startedAtMs: parseISODateTimeMs(run.started_at),
+    });
   }
-  return statuses;
+  statuses.sort((left, right) => {
+    if (left.startedAtMs !== right.startedAtMs) {
+      return right.startedAtMs - left.startedAtMs;
+    }
+    return left.index - right.index;
+  });
+  return statuses.map((entry) => entry.status);
 }
 
 function hasLeadingPendingSyncRunStatus(
@@ -237,4 +257,15 @@ function normalizeSubjectGitHubLogin(value: string | null | undefined): string {
     return "";
   }
   return normalized.replace(/^@+/, "");
+}
+
+function parseISODateTimeMs(value: string | null | undefined): number {
+  if (typeof value !== "string") {
+    return Number.NEGATIVE_INFINITY;
+  }
+  const parsed = Date.parse(value);
+  if (!Number.isFinite(parsed)) {
+    return Number.NEGATIVE_INFINITY;
+  }
+  return parsed;
 }

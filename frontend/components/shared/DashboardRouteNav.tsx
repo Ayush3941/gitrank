@@ -5,7 +5,6 @@ import { useId } from "react";
 import {
   Award,
   LayoutDashboard,
-  Sparkles,
   Settings2,
   Swords,
   Waypoints,
@@ -26,8 +25,6 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
     quests: Swords,
     settings: Settings2,
   } as const;
-  const ActiveIcon = iconByKey[activeLane.icon];
-
   return (
     <nav
       aria-label="Dashboard routes"
@@ -36,7 +33,7 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
       <ul
         role="list"
         className={cn(
-          "dashboard-nav-track grid grid-cols-2 gap-2 p-0.5 sm:grid-cols-5 sm:p-0",
+          "dashboard-nav-track lane-rail flex gap-2 overflow-x-auto p-0.5 sm:grid sm:grid-cols-5 sm:overflow-visible sm:p-0",
         )}
       >
         {dashboardNavItems.map((item) => {
@@ -52,7 +49,7 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
                 aria-describedby={descriptionId}
                 title={item.description}
                 className={cn(
-                  "focus-ring dashboard-nav-item inline-flex min-h-11 w-full items-center justify-center px-3 py-2 text-center text-sm font-medium",
+                  "focus-ring dashboard-nav-item inline-flex min-h-11 w-full min-w-[9.5rem] items-center justify-center px-3 py-2 text-center text-sm font-medium sm:min-w-0",
                 )}
                 data-active={active ? "true" : "false"}
               >
@@ -68,18 +65,6 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
           );
         })}
       </ul>
-      <div className="dashboard-lane-caption mt-2.5 px-1.5 py-1.5" role="status" aria-live="polite" aria-atomic="true">
-        <span className="inline-flex items-center gap-2">
-          <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-          <span className="text-xs text-primary/95">Current lane</span>
-        </span>
-        <p className="mt-1.5 flex items-center gap-2 text-sm text-white">
-          <ActiveIcon className="h-4 w-4 text-primary" aria-hidden="true" />
-          <span className="font-semibold text-white">{activeLane.label}</span>
-          <span className="text-primary/70">•</span>
-          <span className="text-muted">{activeLane.description}</span>
-        </p>
-      </div>
     </nav>
   );
 }
