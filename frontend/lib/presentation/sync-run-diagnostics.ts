@@ -4,6 +4,7 @@ import {
   appSyncFailureMessage,
   deriveAppSyncFailureCodeFromLastError,
   deriveAppSyncFailureCodeFromMetrics,
+  extractGitHubAppInstallURL,
   type AppSyncFailureCode,
 } from "@/lib/sync/app-sync-failure";
 
@@ -120,7 +121,7 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
   }
 
   if (appSyncFailureCode) {
-    return appSyncFailureDiagnostic(appSyncFailureCode);
+    return appSyncFailureDiagnostic(appSyncFailureCode, run.last_error);
   }
 
   const normalizedRunType = run.run_type.trim().toLowerCase();
@@ -229,7 +230,7 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
     };
   }
   if (appSyncFailureFromMetrics) {
-    return appSyncFailureDiagnostic(appSyncFailureFromMetrics);
+    return appSyncFailureDiagnostic(appSyncFailureFromMetrics, run.last_error);
   }
   if (scoreReplayMismatch) {
     const selectedTargets = selectedAuthoredPRs > 0 ? selectedAuthoredPRs : "new";
@@ -411,9 +412,11 @@ export function selectLatestActionableSyncRunOutcome(
 
 export { metricCount };
 
-function appSyncFailureDiagnostic(code: AppSyncFailureCode): SyncRunDiagnostic {
+function appSyncFailureDiagnostic(code: AppSyncFailureCode, lastError?: string): SyncRunDiagnostic {
+  const installURL =
+    code === "app_installation_required" ? extractGitHubAppInstallURL(lastError ?? "") : undefined;
   return {
     code,
-    message: appSyncFailureMessage(code),
+    message: appSyncFailureMessage(code, installURL),
   };
 }

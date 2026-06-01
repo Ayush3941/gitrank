@@ -130,6 +130,9 @@ func (e *Executor) executorForStrictAppSyncActor(ctx context.Context, actor Sync
 
 	runtime, err = e.executorForUserSyncActor(ctx, actor)
 	if err != nil {
+		if errors.Is(err, ErrUserSyncGitHubAppInstallationRequired) {
+			return nil, e.installationRequiredWithHint(actor)
+		}
 		return nil, err
 	}
 	return runtime, nil
@@ -179,6 +182,22 @@ func (e *Executor) bootstrapActorInstallations(ctx context.Context, actor SyncRe
 		return 0, nil
 	}
 	return e.store.UpsertUserInstallations(ctx, installations, now)
+}
+
+func (e *Executor) installationRequiredWithHint(actor SyncRequestActor) error {
+	if e == nil {
+		return ErrUserSyncGitHubAppInstallationRequired
+	}
+	login := strings.TrimSpace(actor.GitHubLogin)
+	installURL := strings.TrimSpace(e.cfg.GitHubInstallURL())
+	details := "no active GitHub App installation found"
+	if login != "" {
+		details = fmt.Sprintf("%s for @%s", details, login)
+	}
+	if installURL != "" {
+		details = fmt.Sprintf("%s. Install URL: %s", details, installURL)
+	}
+	return fmt.Errorf("%w: %s", ErrUserSyncGitHubAppInstallationRequired, details)
 }
 
 func (e *Executor) cloneWithStrictAppClient(installationClient *githubapi.RESTClient) *Executor {

@@ -20,8 +20,25 @@ const APP_SYNC_FAILURE_MESSAGES: Record<AppSyncFailureCode, string> = {
     "Sync request user does not match the signed-in GitHub account. Reconnect GitHub and retry.",
 };
 
-export function appSyncFailureMessage(code: AppSyncFailureCode): string {
+const INSTALL_URL_PATTERN = /(https:\/\/github\.com\/apps\/[A-Za-z0-9-]+\/installations\/new)/i;
+
+export function appSyncFailureMessage(code: AppSyncFailureCode, installURL?: string): string {
+  if (code === "app_installation_required" && installURL?.trim()) {
+    return `GitHub App installation is required for PR sync. Install GitRank GitHub App and retry: ${installURL.trim()}`;
+  }
   return APP_SYNC_FAILURE_MESSAGES[code];
+}
+
+export function extractGitHubAppInstallURL(message: string): string {
+  const normalized = message.trim();
+  if (!normalized) {
+    return "";
+  }
+  const match = normalized.match(INSTALL_URL_PATTERN);
+  if (!match || !match[1]) {
+    return "";
+  }
+  return match[1].trim();
 }
 
 export function deriveAppSyncFailureCodeFromLastError(

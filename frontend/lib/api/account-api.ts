@@ -3,6 +3,7 @@ import { hasPartialSyncRunMetrics } from "@/lib/sync/sync-run-metrics-policy";
 import {
   appSyncFailureMessage,
   deriveAppSyncFailureCodeFromApiError,
+  extractGitHubAppInstallURL,
 } from "@/lib/sync/app-sync-failure";
 import {
   ACTIVE_SYNC_RUN_STATUSES,
@@ -709,7 +710,12 @@ function sanitizeSyncExecutionError(
     if (appSyncFailureCode === "user_sync_actor_mismatch") {
       return "Sync request user does not match your signed-in GitHub account. Reconnect GitHub and retry.";
     }
-    return appSyncFailureMessage(appSyncFailureCode);
+    return appSyncFailureMessage(
+      appSyncFailureCode,
+      appSyncFailureCode === "app_installation_required"
+        ? extractGitHubAppInstallURL(message)
+        : undefined,
+    );
   }
   if (
     normalized.includes("not a supported version") ||

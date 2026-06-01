@@ -152,6 +152,7 @@ If `GITRANK_ENV_FILE` is unset, frontend runtime falls back to `../gitrank/.env`
 - Dashboard stale-state UI now surfaces the latest sync diagnostic reason (when available) so partial/empty evidence states are explicit instead of generic.
 - Sync failures now classify unsupported GitHub API-version responses and surface a direct `GITHUB_API_VERSION` remediation message in sync diagnostics.
 - User sync now enforces GitHub App credentials for PR extraction. Installation bootstrap/discovery also runs through GitHub App credentials (`/app/installations`), while OAuth remains login/session-only.
+- When strict App sync cannot find any active installation for the authenticated GitHub login, user-sync errors now include a direct GitHub App install URL so Settings/Dashboard recovery actions are explicit instead of opaque.
 - Sync runtime validation for execute/queue flows now checks GitHub App JWT/install credentials independently from webhook-delivery secret validation, so local PR sync is not blocked by webhook-secret placeholders.
 - If no direct user-owned installation mapping exists, sync now probes persisted active App installations with a bounded authored-PR search and selects the first installation that can see the actor’s PR evidence, keeping org-repo PR extraction App-only without OAuth token discovery.
 - Sync extraction error contracts now expose only strict App-installation signals (`github_app_installation_required`, `github_app_installation_unavailable`); OAuth-required extraction error codes were removed from ingestor and frontend diagnostics.

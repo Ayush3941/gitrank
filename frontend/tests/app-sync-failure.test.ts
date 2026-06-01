@@ -4,6 +4,7 @@ import {
   deriveAppSyncFailureCodeFromApiError,
   deriveAppSyncFailureCodeFromLastError,
   deriveAppSyncFailureCodeFromMetrics,
+  extractGitHubAppInstallURL,
   type AppSyncFailureCode,
 } from "@/lib/sync/app-sync-failure";
 
@@ -96,5 +97,22 @@ describe("app-sync-failure policy", () => {
     expect(appSyncFailureMessage("app_runtime_required")).toContain("non-App extraction path");
     expect(appSyncFailureMessage("sync_config_unavailable")).toContain("GITHUB_APP_*");
     expect(appSyncFailureMessage("user_sync_actor_mismatch")).toContain("does not match");
+  });
+
+  it("extracts install URL hints from backend sync errors", () => {
+    expect(
+      extractGitHubAppInstallURL(
+        "github app installation is required for user sync; install app and retry: no active GitHub App installation found for @Ayush3941. Install URL: https://github.com/apps/gitrank-local-app/installations/new",
+      ),
+    ).toBe("https://github.com/apps/gitrank-local-app/installations/new");
+  });
+
+  it("injects install URL into installation-required remediation copy when available", () => {
+    expect(
+      appSyncFailureMessage(
+        "app_installation_required",
+        "https://github.com/apps/gitrank-local-app/installations/new",
+      ),
+    ).toContain("https://github.com/apps/gitrank-local-app/installations/new");
   });
 });
