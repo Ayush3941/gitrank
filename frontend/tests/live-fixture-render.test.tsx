@@ -189,8 +189,13 @@ describe("live fixture frontend smoke coverage", () => {
       ),
     ).toBeTruthy();
     expect(await screen.findByText("Lane: Global")).toBeTruthy();
-    expect(await screen.findByText(/View: (Nearby|Full board)/)).toBeTruthy();
-    expect(await screen.findByText("Details: Off")).toBeTruthy();
+    expect(screen.queryByText(/View: (Nearby|Full board)/)).toBeNull();
+    expect(screen.queryByText("Details: On")).toBeNull();
+    const showFullBoardButton = screen.queryByRole("button", { name: "Show full board" });
+    if (showFullBoardButton) {
+      fireEvent.click(showFullBoardButton);
+      expect(await screen.findByText("View: Full board")).toBeTruthy();
+    }
     expect(nonAnalyticsPaths()).toEqual(
       expect.arrayContaining([
         "/api/leaderboard",

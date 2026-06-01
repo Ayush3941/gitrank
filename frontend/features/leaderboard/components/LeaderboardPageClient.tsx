@@ -230,12 +230,16 @@ export function LeaderboardPageClient() {
             secondaryLabel={`Lane: ${TAB_LABELS[tab]}`}
             extraControls={(
               <>
-                <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-                  View: {effectiveMode === "nearby" ? "Nearby" : "Full board"}
-                </span>
-                <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-                  Details: {showLaneDetails ? "On" : "Off"}
-                </span>
+                {hasViewFilter ? (
+                  <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+                    View: Full board
+                  </span>
+                ) : null}
+                {showLaneDetails ? (
+                  <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+                    Details: On
+                  </span>
+                ) : null}
               </>
             )}
             resetAction={{
