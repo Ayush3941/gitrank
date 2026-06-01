@@ -22,7 +22,7 @@ export function HeaderMetaChips({
     <ul
       role="list"
       className={cn(
-        "dashboard-nav-track flex max-w-full items-center gap-2 overflow-x-auto pb-[0.12rem] text-xs sm:flex-wrap sm:overflow-visible sm:pb-0",
+        "dashboard-nav-track scroll-fade-x scroll-fade-x-sm-hide flex max-w-full items-center gap-2 overflow-x-auto pb-[0.12rem] text-xs sm:flex-wrap sm:overflow-visible sm:pb-0",
         className,
       )}
     >

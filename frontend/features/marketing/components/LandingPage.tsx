@@ -1,4 +1,14 @@
-import { ArrowRight, ChartNoAxesCombined, GitPullRequestArrow, ShieldCheck, Swords, Trophy } from "lucide-react";
+import {
+  ArrowRight,
+  ChartNoAxesCombined,
+  Gauge,
+  GitPullRequestArrow,
+  ShieldCheck,
+  Sparkles,
+  Swords,
+  Trophy,
+} from "lucide-react";
+import type { ReactNode } from "react";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { SectionHeader } from "@/components/shared/SectionHeader";
@@ -31,17 +41,11 @@ export function LandingPage() {
               <p className="cyber-copy readable-measure max-w-[72ch] text-base leading-8 sm:text-lg">
                 GitRank scores PR difficulty, review depth, tests, and project context, then converts verified evidence into XP, badges, and shareable profile signals.
               </p>
-              <ul role="list" className="grid max-w-3xl gap-2 sm:grid-cols-3">
-                <li className="list-none neon-surface px-3 py-2 text-xs text-muted">
-                  Evidence-backed score movement
-                </li>
-                <li className="list-none neon-surface px-3 py-2 text-xs text-muted">
-                  Real PR battle reports
-                </li>
-                <li className="list-none neon-surface px-3 py-2 text-xs text-muted">
-                  Share-ready contributor profile
-                </li>
-              </ul>
+              <div className="grid max-w-3xl gap-2 sm:grid-cols-3">
+                <SignalChip icon={<Gauge className="h-3.5 w-3.5" />} label="Deterministic score authority" />
+                <SignalChip icon={<ShieldCheck className="h-3.5 w-3.5" />} label="GitHub App token extraction" />
+                <SignalChip icon={<Sparkles className="h-3.5 w-3.5" />} label="AI explanation-only layer" />
+              </div>
             </div>
             <div className="flex flex-wrap gap-3">
               <Button asChild size="lg">
@@ -76,9 +80,9 @@ export function LandingPage() {
               <Metric label="Tests" value="Verified" />
             </div>
             <div className="space-y-2">
-              <TrustPill text="Live production users only." />
-              <TrustPill text="Deterministic scoring owns rank authority." />
-              <TrustPill text="ChatGPT only enriches explanations." />
+              <AssuranceRow label="Identity" value="OAuth login only" />
+              <AssuranceRow label="Extraction" value="GitHub App installation tokens" />
+              <AssuranceRow label="Scoring" value="Deterministic formula first" />
             </div>
           </GlowCard>
         </div>
@@ -285,10 +289,32 @@ function Metric({ label, value }: { label: string; value: string | number }) {
   );
 }
 
-function TrustPill({ text }: { text: string }) {
+function SignalChip({
+  icon,
+  label,
+}: {
+  icon: ReactNode;
+  label: string;
+}) {
   return (
-    <div className="neon-surface rounded-[1rem] px-3 py-2 text-xs text-muted">
-      {text}
+    <div className="neon-surface inline-flex items-center gap-2 px-3 py-2 text-xs text-muted">
+      <span className="text-primary">{icon}</span>
+      <span>{label}</span>
+    </div>
+  );
+}
+
+function AssuranceRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="neon-surface flex items-center justify-between gap-3 rounded-[1rem] px-3 py-2 text-xs">
+      <span className="font-medium text-primary">{label}</span>
+      <span className="text-muted">{value}</span>
     </div>
   );
 }

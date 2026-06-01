@@ -175,6 +175,8 @@ If `GITRANK_ENV_FILE` is unset, frontend runtime falls back to `../gitrank/.env`
 - Sync-state derivation now prioritizes account-level `run_type=user` rows ahead of child PR/repository rows, preventing false `Synced` states when the latest user sync failed but child rows completed.
 - Legacy user-sync rows that discovered zero authored PR targets are normalized as partial evidence in frontend diagnostics, preventing misleading completed-state chips on empty sync windows.
 - Freshness chips now use one shared rule across Dashboard, Contributions, Badges, Quests, Leaderboard, and Settings: `Refreshed …` appears only when effective sync state is truly `synced` and no GitHub App sync blocker is active.
+- Dashboard rails and filter/meta chip tracks now include shared mobile edge-fade overflow affordances (`scroll-fade-x`) so off-screen lanes remain discoverable without introducing extra motion.
+- Marketing hero trust messaging is explicit and scope-safe: deterministic scoring is authority, GitHub App tokens handle extraction, and AI is explanation-only.
 - Concurrent user sync requests for the same login are deduplicated in-process; overlapping executions return a conflict response instead of running duplicated heavy sync loops.
 - Concurrent user sync requests are also deduplicated with a PostgreSQL advisory lease keyed by GitHub login, so multi-instance deployments avoid duplicate heavy sync execution for the same user.
 - Conflict attempts are persisted in sync-run telemetry with explicit `user_sync_in_progress` / `lease_conflicts` metrics so contention is visible in Settings and diagnostics.
