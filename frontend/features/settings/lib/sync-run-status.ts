@@ -9,6 +9,11 @@ export function isActiveSyncRunStatus(status: string): boolean {
   return canonicalizeSyncRunStatus(status) === "running";
 }
 
+export function isInFlightSyncRunStatus(status: string): boolean {
+  const canonicalStatus = canonicalizeSyncRunStatus(status);
+  return canonicalStatus === "running" || canonicalStatus === "queued";
+}
+
 export function syncRunStatusLabel(status: string): SyncRunUiStatus {
   const canonicalStatus = canonicalizeSyncRunStatus(status);
   if (canonicalStatus === "partial") {

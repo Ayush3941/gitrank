@@ -37,6 +37,10 @@ import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { deduplicateContributionsByPullRequest } from "@/lib/presentation/contribution-dedup";
 import { selectLatestActionableSyncRunOutcome } from "@/lib/presentation/sync-run-diagnostics";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
+import {
+  buildInFlightSyncRefreshFeedback,
+  selectLatestInFlightSyncRun,
+} from "@/lib/sync-refresh-guard";
 import { contributionDisplayConfig } from "@/lib/runtime/contribution-display-config";
 import {
   buildContributionFocusCounts,
@@ -152,6 +156,10 @@ export function ContributionsPageClient() {
   );
   const latestSyncOutcome = useMemo(
     () => selectLatestActionableSyncRunOutcome(syncRunsQuery.data?.runs),
+    [syncRunsQuery.data?.runs],
+  );
+  const inFlightSyncRun = useMemo(
+    () => selectLatestInFlightSyncRun(syncRunsQuery.data?.runs),
     [syncRunsQuery.data?.runs],
   );
   const abraContributionSample = useMemo(
@@ -362,6 +370,9 @@ export function ContributionsPageClient() {
           reasonMessage={latestSyncOutcome?.message || undefined}
           updatedAt={profile.refreshedAt}
           onRefresh={async () => {
+            if (inFlightSyncRun) {
+              return buildInFlightSyncRefreshFeedback(inFlightSyncRun);
+            }
             try {
               const result = await runUserSync.mutateAsync();
               return buildUserSyncRefreshFeedback(result);
@@ -369,7 +380,7 @@ export function ContributionsPageClient() {
               await refetch();
             }
           }}
-          isRefreshing={runUserSync.isPending}
+          isRefreshing={runUserSync.isPending || Boolean(inFlightSyncRun)}
           actionLabel="Open sync settings"
           actionHref="/dashboard/settings"
           analyticsTarget="contributions:stale"

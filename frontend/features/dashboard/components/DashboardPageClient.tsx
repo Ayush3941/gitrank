@@ -29,6 +29,10 @@ import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { selectLatestActionableSyncRunOutcome } from "@/lib/presentation/sync-run-diagnostics";
+import {
+  buildInFlightSyncRefreshFeedback,
+  selectLatestInFlightSyncRun,
+} from "@/lib/sync-refresh-guard";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import { Button } from "@/components/ui/button";
@@ -78,6 +82,10 @@ export function DashboardPageClient() {
   const latestSyncOutcome = useMemo(() => {
     return selectLatestActionableSyncRunOutcome(syncRunsQuery.data?.runs);
   }, [syncRunsQuery.data?.runs]);
+  const inFlightSyncRun = useMemo(
+    () => selectLatestInFlightSyncRun(syncRunsQuery.data?.runs),
+    [syncRunsQuery.data?.runs],
+  );
   const streak = useMemo(
     () => summarizeContributionStreak(user?.contributions ?? []),
     [user?.contributions],
@@ -235,6 +243,9 @@ export function DashboardPageClient() {
           reasonMessage={staleNotice.reasonMessage}
           updatedAt={data.refreshedAt}
           onRefresh={async () => {
+            if (inFlightSyncRun) {
+              return buildInFlightSyncRefreshFeedback(inFlightSyncRun);
+            }
             try {
               const result = await runUserSync.mutateAsync();
               return buildUserSyncRefreshFeedback(result);
@@ -242,7 +253,7 @@ export function DashboardPageClient() {
               await refetch();
             }
           }}
-          isRefreshing={runUserSync.isPending}
+          isRefreshing={runUserSync.isPending || Boolean(inFlightSyncRun)}
           actionLabel="Open sync settings"
           actionHref="/dashboard/settings"
           analyticsTarget="dashboard:stale"

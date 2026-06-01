@@ -12,7 +12,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import { startTransition, useDeferredValue, useState } from "react";
+import { startTransition, useDeferredValue, useMemo, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
@@ -33,6 +33,10 @@ import { useQuests } from "@/hooks/use-quests";
 import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
+import {
+  buildInFlightSyncRefreshFeedback,
+  selectLatestInFlightSyncRun,
+} from "@/lib/sync-refresh-guard";
 import type { Quest } from "@/types/gitrank";
 
 const groups: Array<Quest["cadence"]> = ["Daily", "Weekly", "Long-term", "Skill-based"];
@@ -80,6 +84,10 @@ export function QuestsPageClient() {
   const { syncStateForDisplay, showRefreshPill } = useProfileSyncState(
     profile?.user,
     syncRunsQuery.data?.runs,
+  );
+  const inFlightSyncRun = useMemo(
+    () => selectLatestInFlightSyncRun(syncRunsQuery.data?.runs),
+    [syncRunsQuery.data?.runs],
   );
   const questSnapshotRefreshedAt =
     data?.staleness?.refreshedAt ?? profile?.refreshedAt ?? new Date().toISOString();
@@ -227,6 +235,9 @@ export function QuestsPageClient() {
           }
           updatedAt={questSnapshotRefreshedAt}
           onRefresh={async () => {
+            if (inFlightSyncRun) {
+              return buildInFlightSyncRefreshFeedback(inFlightSyncRun);
+            }
             try {
               const result = await runUserSync.mutateAsync();
               return buildUserSyncRefreshFeedback(result);
@@ -234,7 +245,7 @@ export function QuestsPageClient() {
               await refetch();
             }
           }}
-          isRefreshing={runUserSync.isPending}
+          isRefreshing={runUserSync.isPending || Boolean(inFlightSyncRun)}
           actionLabel="Open sync settings"
           actionHref="/dashboard/settings"
           analyticsTarget="quests:stale"

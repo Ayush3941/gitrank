@@ -42,6 +42,10 @@ import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
+import {
+  buildInFlightSyncRefreshFeedback,
+  selectLatestInFlightSyncRun,
+} from "@/lib/sync-refresh-guard";
 import type { BadgeRarity } from "@/types/gitrank";
 const BADGES_EARNED_REGION_ID = "badges-earned-region";
 const BADGES_LOCKED_REGION_ID = "badges-locked-lane";
@@ -115,6 +119,10 @@ export function BadgesPageClient() {
   const { syncStateForDisplay, showRefreshPill } = useProfileSyncState(
     profile?.user,
     syncRunsQuery.data?.runs,
+  );
+  const inFlightSyncRun = useMemo(
+    () => selectLatestInFlightSyncRun(syncRunsQuery.data?.runs),
+    [syncRunsQuery.data?.runs],
   );
   const lockedBadges = allBadges.filter((badge) => !badge.unlocked);
   const lockedBadgesSorted = [...lockedBadges].sort((left, right) => {
@@ -302,6 +310,9 @@ export function BadgesPageClient() {
             }
             updatedAt={profile.refreshedAt}
             onRefresh={async () => {
+              if (inFlightSyncRun) {
+                return buildInFlightSyncRefreshFeedback(inFlightSyncRun);
+              }
               try {
                 const result = await runUserSync.mutateAsync();
                 return buildUserSyncRefreshFeedback(result);
@@ -309,7 +320,7 @@ export function BadgesPageClient() {
                 await refetch();
               }
             }}
-            isRefreshing={runUserSync.isPending}
+            isRefreshing={runUserSync.isPending || Boolean(inFlightSyncRun)}
             actionLabel="Open sync settings"
             actionHref="/dashboard/settings"
             analyticsTarget="badges:stale"

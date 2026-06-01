@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { startTransition, useDeferredValue, useState } from "react";
+import { startTransition, useDeferredValue, useMemo, useState } from "react";
 import {
   BookText,
   CalendarClock,
@@ -33,6 +33,10 @@ import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
 import { formatRelativeDays } from "@/lib/formatters";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
+import {
+  buildInFlightSyncRefreshFeedback,
+  selectLatestInFlightSyncRun,
+} from "@/lib/sync-refresh-guard";
 
 const LeaderboardArena = dynamic(
   () =>
@@ -125,6 +129,10 @@ export function LeaderboardPageClient() {
     myProfile?.user,
     syncRunsQuery.data?.runs,
   );
+  const inFlightSyncRun = useMemo(
+    () => selectLatestInFlightSyncRun(syncRunsQuery.data?.runs),
+    [syncRunsQuery.data?.runs],
+  );
   const safeVisibleRowCount = Math.min(rows.length, visibleRowCount);
   const hasMoreRows = rows.length > safeVisibleRowCount;
   const remainingRows = Math.max(0, rows.length - safeVisibleRowCount);
@@ -202,6 +210,9 @@ export function LeaderboardPageClient() {
           }
           updatedAt={myProfile.refreshedAt}
           onRefresh={async () => {
+            if (inFlightSyncRun) {
+              return buildInFlightSyncRefreshFeedback(inFlightSyncRun);
+            }
             try {
               const result = await runUserSync.mutateAsync();
               return buildUserSyncRefreshFeedback(result);
@@ -209,7 +220,7 @@ export function LeaderboardPageClient() {
               await Promise.allSettled([refetchMyProfile(), refetch()]);
             }
           }}
-          isRefreshing={runUserSync.isPending}
+          isRefreshing={runUserSync.isPending || Boolean(inFlightSyncRun)}
           actionLabel="Open sync settings"
           actionHref="/dashboard/settings"
           analyticsTarget="leaderboard:stale"

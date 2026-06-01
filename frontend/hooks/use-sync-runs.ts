@@ -6,7 +6,7 @@ import {
   type ApiSyncRunListResponse,
   type ListSyncRunsOptions,
 } from "@/lib/api/account-api";
-import { isActiveSyncRunStatus } from "@/features/settings/lib/sync-run-status";
+import { isInFlightSyncRunStatus } from "@/features/settings/lib/sync-run-status";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { syncPollingPolicy } from "@/lib/runtime/sync-polling-policy";
 
@@ -61,5 +61,5 @@ function hasActiveSyncRuns(payload?: ApiSyncRunListResponse): boolean {
   if (!payload?.runs?.length) {
     return false;
   }
-  return payload.runs.some((run) => isActiveSyncRunStatus(run.status));
+  return payload.runs.some((run) => isInFlightSyncRunStatus(run.status));
 }

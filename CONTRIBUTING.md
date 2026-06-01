@@ -1908,6 +1908,7 @@ ABRA implementation checklist:
 - [x] Delivery closeout summary includes: implemented items, changed files/modules, Gemini env/config requirements, fully-working vs degraded fallback paths, and recommended presentation demo flow.
 - [x] Shared dashboard/settings search controls now preserve keyboard flow after clear actions: pointer clear no longer steals focus, and clear actions restore focus to the searchbox for fast repeated filtering.
 - [x] Segmented tab controls now expose full semantic labels to assistive tech even when compact visual labels are shown, improving screen-reader clarity across dashboard filters without changing visual density.
+- [x] Stale refresh controls now guard against duplicate sync submits when queued/running work already exists, and sync-run polling treats queued rows as in-flight to keep refresh/status UX current during queue-to-running transitions.
 
 ABRA closeout artifact:
 

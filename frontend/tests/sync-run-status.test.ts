@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   isActiveSyncRunStatus,
+  isInFlightSyncRunStatus,
   syncRunStatusLabel,
   syncRunStatusLabelWithMetrics,
 } from "@/features/settings/lib/sync-run-status";
@@ -61,5 +62,21 @@ describe("isActiveSyncRunStatus", () => {
   it("normalizes casing and whitespace", () => {
     expect(isActiveSyncRunStatus("  RUNNING  ")).toBe(true);
     expect(syncRunStatusLabel("  SUCCESS  ")).toBe("Completed");
+  });
+});
+
+describe("isInFlightSyncRunStatus", () => {
+  it("treats queued and running statuses as in-flight", () => {
+    expect(isInFlightSyncRunStatus("queued")).toBe(true);
+    expect(isInFlightSyncRunStatus("pending")).toBe(true);
+    expect(isInFlightSyncRunStatus("in_progress")).toBe(true);
+    expect(isInFlightSyncRunStatus("running")).toBe(true);
+  });
+
+  it("excludes terminal statuses", () => {
+    expect(isInFlightSyncRunStatus("completed")).toBe(false);
+    expect(isInFlightSyncRunStatus("partial")).toBe(false);
+    expect(isInFlightSyncRunStatus("failed")).toBe(false);
+    expect(isInFlightSyncRunStatus("timeout")).toBe(false);
   });
 });
