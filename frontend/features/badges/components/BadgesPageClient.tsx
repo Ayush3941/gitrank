@@ -12,7 +12,7 @@ import {
   Trophy,
   Unlock,
 } from "lucide-react";
-import { startTransition, type ReactNode, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { startTransition, type ReactNode, useDeferredValue, useEffect, useId, useMemo, useRef, useState } from "react";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -44,9 +44,6 @@ import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { selectLatestActionableSyncRunOutcome } from "@/lib/presentation/sync-run-diagnostics";
 import { buildStaleSyncNotice } from "@/lib/presentation/stale-sync-notice";
 import type { BadgeRarity } from "@/types/gitrank";
-const BADGES_EARNED_REGION_ID = "badges-earned-region";
-const BADGES_LOCKED_REGION_ID = "badges-locked-lane";
-const BADGES_LOCKED_TOGGLE_ID = "badges-locked-lane-toggle";
 const LOCKED_BADGE_PAGE_SIZE_DEFAULT = 8;
 const LOCKED_BADGE_PAGE_SIZE_CONSTRAINED = 4;
 const BADGE_SHELF_PAGE_SIZE_DEFAULT = 10;
@@ -97,11 +94,14 @@ export function BadgesPageClient() {
   const [visibleLockedCount, setVisibleLockedCount] = useState(lockedBadgePageSize);
   const [visibleBadgeCount, setVisibleBadgeCount] = useState(badgeShelfPageSize);
   const [showLockedBadges, setShowLockedBadges] = useState(false);
+  const badgesEarnedRegionId = useId();
+  const badgesLockedRegionId = useId();
+  const badgesLockedToggleId = useId();
+  const badgesFilterStatusId = useId();
   const canResetFilters = rarity !== "All" || visibility !== "All";
   const isFiltering = deferredRarity !== rarity || deferredVisibility !== visibility;
   const activeFilterCount =
     (rarity !== "All" ? 1 : 0) + (visibility !== "All" ? 1 : 0);
-  const badgesFilterStatusId = "badges-filter-status";
 
   const allBadges = useMemo(() => deduplicateBadgesByName(data?.badges ?? []), [data?.badges]);
   const filtered =
@@ -420,7 +420,7 @@ export function BadgesPageClient() {
               resetAction={{
                 onReset: handleResetFilters,
                 enabled: canResetFilters,
-                ariaControls: BADGES_EARNED_REGION_ID,
+                ariaControls: badgesEarnedRegionId,
               }}
             />
             <div className="grid gap-3">
@@ -447,7 +447,7 @@ export function BadgesPageClient() {
                   onValueChange={handleRarityChange}
                   ariaLabel="Badge rarity filters"
                   ariaDescribedBy={badgesFilterStatusId}
-                  ariaControls={BADGES_EARNED_REGION_ID}
+                  ariaControls={badgesEarnedRegionId}
                   tabIdPrefix="badge-rarity-tab"
                   wrap
                 />
@@ -475,7 +475,7 @@ export function BadgesPageClient() {
                   onValueChange={handleVisibilityChange}
                   ariaLabel="Badge visibility filters"
                   ariaDescribedBy={badgesFilterStatusId}
-                  ariaControls={BADGES_EARNED_REGION_ID}
+                  ariaControls={badgesEarnedRegionId}
                   tabIdPrefix="badge-visibility-tab"
                   wrap
                 />
@@ -483,7 +483,7 @@ export function BadgesPageClient() {
             </div>
           </div>
         </div>
-        <div id={BADGES_EARNED_REGION_ID}>
+        <div id={badgesEarnedRegionId}>
           {isLoading ? <LoadingState message="Loading badge shelf..." /> : null}
           {isError ? (
             <ErrorState
@@ -531,7 +531,7 @@ export function BadgesPageClient() {
                     type="button"
                     size="sm"
                     variant="secondary"
-                    aria-controls={BADGES_EARNED_REGION_ID}
+                    aria-controls={badgesEarnedRegionId}
                     onClick={() => {
                       startTransition(() => {
                         setVisibleBadgeCount((current) =>
@@ -558,8 +558,8 @@ export function BadgesPageClient() {
               type="button"
               size="sm"
               variant="secondary"
-              id={BADGES_LOCKED_TOGGLE_ID}
-              aria-controls={BADGES_LOCKED_REGION_ID}
+              id={badgesLockedToggleId}
+              aria-controls={badgesLockedRegionId}
               aria-expanded={showLockedBadges}
               onClick={() => {
                 setShowLockedBadges((current) => !current);
@@ -592,9 +592,9 @@ export function BadgesPageClient() {
             )
           ) : null}
           <div
-            id={BADGES_LOCKED_REGION_ID}
+            id={badgesLockedRegionId}
             role="region"
-            aria-labelledby={BADGES_LOCKED_TOGGLE_ID}
+            aria-labelledby={badgesLockedToggleId}
             hidden={!showLockedBadges}
             className="neon-surface rounded-[1.4rem] border border-fuchsia-300/24 p-3"
           >

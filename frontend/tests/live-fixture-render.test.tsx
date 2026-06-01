@@ -113,12 +113,15 @@ describe("live fixture frontend smoke coverage", () => {
 
     expect(await screen.findByRole("heading", { name: "Badges" })).toBeTruthy();
     expect(screen.queryByText("Active: 1")).toBeNull();
+    expect(screen.queryByRole("region", { name: /Hide details/i })).toBeNull();
 
     fireEvent.click(screen.getByRole("tab", { name: /Rare/i }));
     await waitFor(() =>
       expect(screen.getByRole("tab", { name: /Rare/i }).getAttribute("aria-selected")).toBe("true"),
     );
     expect(await screen.findByText("Active: 1")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /^Show details$/i }));
+    expect(await screen.findByRole("region", { name: /Hide details/i })).toBeTruthy();
     expect(nonAnalyticsPaths()).toEqual(
       expect.arrayContaining(["/api/profile/me", "/api/sync/runs"]),
     );
