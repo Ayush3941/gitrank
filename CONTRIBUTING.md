@@ -290,6 +290,7 @@ Recent no-slop refinement (May 31, 2026):
 - Added regression coverage in `frontend/tests/search-input-with-clear.test.tsx` and updated accessibility/sync-run tests for `searchbox` roles so search-control semantics stay stable.
 - Settings sync-run and repository-visibility result panes now use adaptive max-height viewport sizing (`dvh` bounded) with stable scroll gutters and contained overscroll, replacing rigid fixed-height containers for better behavior on short/mobile screens.
 - Repository privacy controls removed redundant `Public/Hidden` distribution chips because segmented visibility tabs already provide the same counts; this reduces header noise while preserving all filter signals.
+- PR report deterministic metrics ledger now uses semantic definition-list markup (`dl` with grouped `dt`/`dd`) so metric labels, values, and explanations are exposed with stronger assistive-technology relationships.
 
 Recent strict app-auth refinement (May 30, 2026):
 

@@ -125,7 +125,7 @@ describe("live fixture frontend smoke coverage", () => {
   }, 15_000);
 
   it("renders PR battle report from the live PR report fixture route", async () => {
-    renderWithClient(
+    const rendered = renderWithClient(
       <PRBattleReportPageClient owner="octo" repo="gitrank" number={42} />,
     );
 
@@ -145,6 +145,7 @@ describe("live fixture frontend smoke coverage", () => {
         /Final deterministic XP recorded by the scoring engine(?:\. Source: score_event_metadata\.)?/,
       ),
     ).toBeTruthy();
+    expect(rendered.container.querySelectorAll("dl dt").length).toBeGreaterThan(0);
     expect(await screen.findByText("Live Test Builder")).toBeTruthy();
     expect(nonAnalyticsPaths()).toEqual(["/api/pr/octo/gitrank/42/report"]);
   }, 15_000);

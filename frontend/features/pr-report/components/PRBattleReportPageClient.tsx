@@ -1022,7 +1022,7 @@ function LedgerSection({
         </span>
       </div>
       <p className="text-xs text-muted">{description}</p>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <dl className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {metrics.map((metric) => (
           <MetricCell
             key={metric.id}
@@ -1031,7 +1031,7 @@ function LedgerSection({
             description={metric.description}
           />
         ))}
-      </div>
+      </dl>
     </section>
   );
 }
@@ -1039,9 +1039,9 @@ function LedgerSection({
 function MetricCell({ label, value, description }: { label: string; value: string; description: string }) {
   return (
     <div className="neon-surface rounded-[1.2rem] px-4 py-3">
-      <p className="text-xs text-muted">{label}</p>
-      <p className="break-anywhere mt-1 text-sm font-semibold text-white">{value}</p>
-      <p className="break-anywhere mt-2 text-xs leading-5 text-muted">{description}</p>
+      <dt className="text-xs text-muted">{label}</dt>
+      <dd className="break-anywhere mt-1 text-sm font-semibold text-white">{value}</dd>
+      <dd className="break-anywhere mt-2 text-xs leading-5 text-muted">{description}</dd>
     </div>
   );
 }
