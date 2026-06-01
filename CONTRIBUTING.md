@@ -1936,6 +1936,8 @@ ABRA implementation checklist:
 - [x] Dashboard surfaces now use one helper (`isGitHubAppInstallationBlocked`) to force effective sync state to `failed` whenever strict App-install/runtime blockers are detected, preventing mixed stale/synced chip states for the same blocking condition.
 - [x] Marketing/onboarding navigation now uses the shared `IntentPrefetchLink` abstraction instead of repeated `next/link prefetch={false}` wiring, keeping link behavior consistent with dashboard route prefetch policy.
 - [x] OAuth-start CTAs (`/oauth/github/start?...`) now explicitly disable prefetch through `prefetchMode="never"` so hover/focus prefetch cannot trigger side-effect-prone auth bootstrap requests.
+- [x] Dashboard route metadata for nav-covered pages now comes from one shared route-copy source (`dashboard-nav.ts`), reducing label/description drift between top nav and browser metadata.
+- [x] Dashboard top navigation now includes a concise active-lane context strip (label + one-line purpose), improving “where am I / what is this lane for” orientation without adding extra motion or extra requests.
 
 ABRA closeout artifact:
 

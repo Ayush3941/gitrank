@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
+import { dashboardNavByHref } from "@/components/shared/dashboard-nav";
 import { BadgesPageClient } from "@/features/badges/components/BadgesPageClient";
 
+const routeCopy = dashboardNavByHref["/dashboard/badges"];
+
 export const metadata: Metadata = {
-  title: "Badges",
-  description: "Track unlocked and upcoming achievement badges, rarity tiers, and story-backed progress.",
+  title: routeCopy.label,
+  description: routeCopy.metaDescription,
 };
 
 export default function BadgesPage() {

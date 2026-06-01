@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
+import { dashboardNavByHref } from "@/components/shared/dashboard-nav";
 import { SettingsPageClient } from "@/features/settings/components/SettingsPageClient";
 
+const routeCopy = dashboardNavByHref["/dashboard/settings"];
+
 export const metadata: Metadata = {
-  title: "Settings",
-  description: "Manage profile visibility, repository privacy, account controls, and data-export actions.",
+  title: routeCopy.label,
+  description: routeCopy.metaDescription,
 };
 
 export default function SettingsPage() {

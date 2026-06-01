@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
+import { dashboardNavByHref } from "@/components/shared/dashboard-nav";
 import { QuestsPageClient } from "@/features/quests/components/QuestsPageClient";
 
+const routeCopy = dashboardNavByHref["/dashboard/quests"];
+
 export const metadata: Metadata = {
-  title: "Quests",
-  description: "Daily, weekly, long-term, and skill quests generated from contribution evidence.",
+  title: routeCopy.label,
+  description: routeCopy.metaDescription,
 };
 
 export default function QuestsPage() {
