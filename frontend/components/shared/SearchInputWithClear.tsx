@@ -1,5 +1,5 @@
 import { Search, X } from "lucide-react";
-import type { KeyboardEvent } from "react";
+import { type KeyboardEvent, useRef } from "react";
 import { Input } from "@/components/ui/input";
 
 export function SearchInputWithClear({
@@ -27,20 +27,33 @@ export function SearchInputWithClear({
   clearButtonDisabled?: boolean;
   inputClassName?: string;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
   const hasValue = value.length > 0;
+
+  function restoreInputFocus() {
+    queueMicrotask(() => {
+      inputRef.current?.focus();
+    });
+  }
+
+  function handleClear() {
+    onClear();
+    restoreInputFocus();
+  }
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
     if (event.key !== "Escape" || !hasValue) {
       return;
     }
     event.preventDefault();
-    onClear();
+    handleClear();
   }
 
   return (
     <div className="relative">
       <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted" />
       <Input
+        ref={inputRef}
         type="search"
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -53,7 +66,10 @@ export function SearchInputWithClear({
       {hasValue ? (
         <button
           type="button"
-          onClick={onClear}
+          onMouseDown={(event) => {
+            event.preventDefault();
+          }}
+          onClick={handleClear}
           disabled={clearButtonDisabled}
           className="focus-ring absolute top-1/2 right-3 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-cyan-100 hover:bg-primary/12 hover:text-white disabled:opacity-60"
           aria-label={clearButtonLabel}

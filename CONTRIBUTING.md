@@ -1906,6 +1906,7 @@ ABRA implementation checklist:
 - [x] Settings now shows an explicit `Install GitHub App` recovery action whenever latest sync diagnostics report app-installation/runtime blocking, so failed sync loops can be resolved without manual route discovery.
 - [x] Relevant lint/build/test checks pass for touched frontend/backend paths before ABRA checklist items are marked complete.
 - [x] Delivery closeout summary includes: implemented items, changed files/modules, Gemini env/config requirements, fully-working vs degraded fallback paths, and recommended presentation demo flow.
+- [x] Shared dashboard/settings search controls now preserve keyboard flow after clear actions: pointer clear no longer steals focus, and clear actions restore focus to the searchbox for fast repeated filtering.
 
 ABRA closeout artifact:
 

@@ -1,5 +1,5 @@
-import React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import React, { useState } from "react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
 
@@ -40,5 +40,32 @@ describe("SearchInputWithClear", () => {
     );
 
     expect(screen.queryByRole("button", { name: "Clear repository search" })).toBeNull();
+  });
+
+  it("returns focus to the search input after clear button click", async () => {
+    function Harness() {
+      const [value, setValue] = useState("fabric");
+      return (
+        <SearchInputWithClear
+          value={value}
+          onChange={setValue}
+          onClear={() => setValue("")}
+          placeholder="Search..."
+          ariaLabel="Search sync runs"
+          clearButtonLabel="Clear sync run search"
+        />
+      );
+    }
+
+    render(<Harness />);
+
+    const input = screen.getByRole("searchbox", { name: "Search sync runs" });
+    fireEvent.focus(input);
+    fireEvent.click(screen.getByRole("button", { name: "Clear sync run search" }));
+
+    await waitFor(() => {
+      expect(document.activeElement).toBe(input);
+    });
+    expect((input as HTMLInputElement).value).toBe("");
   });
 });
