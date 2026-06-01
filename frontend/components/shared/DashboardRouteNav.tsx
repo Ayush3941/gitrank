@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useId } from "react";
 import {
   Award,
   LayoutDashboard,
@@ -15,6 +16,7 @@ import { cn } from "@/lib/cn";
 
 export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) {
   const pathname = usePathname();
+  const navId = useId();
   const activeLane = resolveDashboardNavItem(pathname);
   const isActive = (href: string) => activeLane.href === href;
   const iconByKey = {
@@ -28,7 +30,7 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
 
   return (
     <nav
-      aria-label="Dashboard navigation"
+      aria-label="Dashboard routes"
       className={cn(embedded ? "p-0" : "dashboard-nav-shell p-1.5")}
     >
       <ul
@@ -40,12 +42,15 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
         {dashboardNavItems.map((item) => {
           const active = isActive(item.href);
           const Icon = iconByKey[item.icon];
+          const descriptionId = `${navId}-${item.icon}-description`;
           return (
             <li key={item.href} className="list-none min-w-0">
               <IntentPrefetchLink
                 href={item.href}
                 aria-current={active ? "page" : undefined}
                 aria-label={item.label}
+                aria-describedby={descriptionId}
+                title={item.description}
                 className={cn(
                   "focus-ring dashboard-nav-item inline-flex min-h-11 w-full items-center justify-center px-3 py-2 text-center text-sm font-medium",
                 )}
@@ -54,6 +59,9 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
                 <span className="inline-flex items-center gap-2 truncate">
                   <Icon className="dashboard-nav-icon h-4 w-4" aria-hidden="true" />
                   <span className="truncate">{item.label}</span>
+                </span>
+                <span id={descriptionId} className="sr-only">
+                  {item.description}
                 </span>
               </IntentPrefetchLink>
             </li>

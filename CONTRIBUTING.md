@@ -1938,6 +1938,7 @@ ABRA implementation checklist:
 - [x] OAuth-start CTAs (`/oauth/github/start?...`) now explicitly disable prefetch through `prefetchMode="never"` so hover/focus prefetch cannot trigger side-effect-prone auth bootstrap requests.
 - [x] Dashboard route metadata for nav-covered pages now comes from one shared route-copy source (`dashboard-nav.ts`), reducing label/description drift between top nav and browser metadata.
 - [x] Dashboard top navigation now includes a concise active-lane context strip (label + one-line purpose), improving “where am I / what is this lane for” orientation without adding extra motion or extra requests.
+- [x] Dashboard nav landmark label now uses purpose wording (`Dashboard routes`), and each route link now exposes the lane description through `aria-describedby`, improving screen-reader context while keeping visible nav compact.
 
 ABRA closeout artifact:
 
