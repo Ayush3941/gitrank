@@ -80,6 +80,7 @@ export function SyncRunActivityPanel({
   const canReset = search.trim().length > 0 || statusFilter !== "All";
   const deferredSearch = useDeferredValue(search);
   const filterStatusId = useId();
+  const syncRunsHeadingId = useId();
   const syncRunsRegionId = useId();
   const runRows = useMemo<SyncRunRow[]>(
     () =>
@@ -182,7 +183,9 @@ export function SyncRunActivityPanel({
   return (
     <div className="sync-runs-panel-shell space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm font-semibold text-white">Recent sync runs</p>
+        <p id={syncRunsHeadingId} className="text-sm font-semibold text-white">
+          Recent sync runs
+        </p>
         <div className="flex flex-wrap items-center gap-2">
           {lastUpdatedAt ? (
             <p className="text-xs font-medium text-cyan-200">
@@ -321,10 +324,12 @@ export function SyncRunActivityPanel({
       <div
         id={syncRunsRegionId}
         role="region"
+        aria-labelledby={syncRunsHeadingId}
         aria-live="polite"
         aria-relevant="additions text"
         aria-busy={isLoading || isRefreshing}
-        className="sync-runs-results-viewport overflow-y-auto pr-1"
+        tabIndex={0}
+        className="sync-runs-results-viewport focus-ring overflow-y-auto pr-1"
       >
         {isLoading ? (
           <div className={`neon-surface grid gap-2 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}>

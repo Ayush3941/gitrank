@@ -32,6 +32,7 @@ export function PrivacyRepositoryToggleList({
   const activeFilterCount =
     (visibilityFilter !== "All" ? 1 : 0) + (searchTerm.length > 0 ? 1 : 0);
   const statusId = useId();
+  const controlsHeadingId = useId();
   const repositoriesRegionId = useId();
   const counts = useMemo(() => {
     const publicCount = visibleItems.filter((repo) => repo.visibility === "Public").length;
@@ -75,6 +76,7 @@ export function PrivacyRepositoryToggleList({
           {`${filteredItems.length} of ${counts.total} repositories`}
         </p>
         <FilterControlsHeader
+          labelId={controlsHeadingId}
           label="Repository controls"
           summary={`${filteredItems.length} of ${counts.total} repositories`}
           activeFilterCount={activeFilterCount}
@@ -153,12 +155,15 @@ export function PrivacyRepositoryToggleList({
       </ControlSurface>
       <div
         id={repositoriesRegionId}
-        className="repository-visibility-results-viewport overflow-y-auto pr-1"
+        role="region"
+        aria-labelledby={controlsHeadingId}
+        tabIndex={0}
+        className="repository-visibility-results-viewport focus-ring overflow-y-auto pr-1"
       >
         {filteredItems.length > 0 ? (
           <ul role="list" className="grid gap-3">
-            {filteredItems.map((repo, index) => (
-              <li key={`${repo.name}-${repo.visibility}-${index}`} className="list-none">
+            {filteredItems.map((repo) => (
+              <li key={repo.name} className="list-none">
                 <div className="render-opt-card neon-surface flex flex-col gap-3 rounded-[1.75rem] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="font-medium text-white">{repo.name}</p>

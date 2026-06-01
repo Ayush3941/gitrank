@@ -11,6 +11,7 @@ type FilterResetAction = {
 
 export function FilterControlsHeader({
   label,
+  labelId,
   summary,
   activeFilterCount = 0,
   activeCountLabel,
@@ -19,6 +20,7 @@ export function FilterControlsHeader({
   resetAction,
 }: {
   label: string;
+  labelId?: string;
   summary: string;
   activeFilterCount?: number;
   activeCountLabel?: string;
@@ -31,7 +33,9 @@ export function FilterControlsHeader({
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs font-medium text-primary">{label}</p>
+        <p id={labelId} className="text-xs font-medium text-primary">
+          {label}
+        </p>
         <p className="text-xs text-muted">{summary}</p>
       </div>
       <div className="flex flex-wrap items-center gap-2">

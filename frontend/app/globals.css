@@ -1044,7 +1044,7 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 .repository-visibility-panel-shell,
 .sync-runs-results-viewport,
 .repository-visibility-results-viewport {
-  overflow-anchor: auto;
+  overflow-anchor: none;
 }
 
 .sync-runs-results-viewport {
