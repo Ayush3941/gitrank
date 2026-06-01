@@ -288,6 +288,7 @@ Recent no-slop refinement (May 31, 2026):
 - Settings repository privacy controls now use the same shared filter header pattern and removed redundant `Visibility:` chip text (segmented tabs already encode selected state), keeping controls denser and more consistent with other dashboard filter rails.
 - Added shared `SearchInputWithClear` (`frontend/components/shared/SearchInputWithClear.tsx`) and wired contributions, settings sync-activity, and repository privacy search fields to it for consistent clear affordance, `type="search"` semantics, and keyboard `Esc`-to-clear behavior.
 - Added regression coverage in `frontend/tests/search-input-with-clear.test.tsx` and updated accessibility/sync-run tests for `searchbox` roles so search-control semantics stay stable.
+- Settings sync-run and repository-visibility result panes now use adaptive max-height viewport sizing (`dvh` bounded) with stable scroll gutters and contained overscroll, replacing rigid fixed-height containers for better behavior on short/mobile screens.
 
 Recent strict app-auth refinement (May 30, 2026):
 

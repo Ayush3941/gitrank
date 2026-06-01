@@ -323,7 +323,7 @@ export function SyncRunActivityPanel({
         aria-live="polite"
         aria-relevant="additions text"
         aria-busy={isLoading || isRefreshing}
-        className="sync-runs-results-viewport h-[22rem] overflow-y-auto pr-1"
+        className="sync-runs-results-viewport overflow-y-auto pr-1"
       >
         {isLoading ? (
           <div className={`neon-surface grid gap-2 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}>
