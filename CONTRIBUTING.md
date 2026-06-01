@@ -31,6 +31,7 @@ This document is intentionally detailed.
 - Sync outcome selection now prioritizes GitHub App installation/runtime block diagnostics over newer generic partial outcomes, so dashboard/settings consistently show install-required blocking instead of falsely optimistic sync health when App access is broken.
 - Shared stale-state banners now distinguish `Data is stale` from `Evidence pending` and use intent-prefetch navigation + polite status semantics, keeping partial-sync copy truthful without extra motion or noisy auto-focus behavior.
 - Settings sync-activity disclosure now keeps expanded diagnostic context stable across polling refreshes (auto-open on attention, no implicit auto-collapse), reducing perceived scroll jumps while preserving manual user control.
+- Shared inline status notices now keep `role="status"` on message text only (dismiss controls remain outside the live region), improving screen-reader announcement hygiene while preserving the same compact visual style.
 
 It serves two purposes:
 

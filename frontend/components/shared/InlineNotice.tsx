@@ -38,27 +38,27 @@ export function InlineNotice({
 
   return (
     <div className={cn(minHeightClassName, className)}>
-      <p
-        role="status"
-        aria-live="polite"
+      <div
         className={cn(
-          "inline-flex items-center rounded-[0.1rem] border px-3 py-1.5 text-sm",
+          "inline-flex items-start rounded-[0.1rem] border px-3 py-1.5 text-sm",
           variantClassName[variant],
         )}
-        >
-        <span>{message}</span>
+      >
+        <span role="status" aria-live="polite" className="min-w-0 break-anywhere">
+          {message}
+        </span>
         {onDismiss ? (
           <button
             type="button"
             onClick={onDismiss}
-            className="focus-ring ml-3 inline-flex h-6 w-6 items-center justify-center rounded-full border border-current/35 text-sm leading-none hover:bg-black/15"
+            className="focus-ring ml-3 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-current/35 text-sm leading-none hover:bg-black/15"
             aria-label={dismissLabel}
             title="Dismiss"
           >
             ×
           </button>
         ) : null}
-      </p>
+      </div>
     </div>
   );
 }
