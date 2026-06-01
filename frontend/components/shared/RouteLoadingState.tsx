@@ -16,7 +16,7 @@ export function RouteLoadingState({
   const cards = Array.from({ length: Math.max(1, cardCount) });
 
   return (
-    <div className="space-y-6" role="status" aria-live="polite" aria-busy="true">
+    <div className="space-y-6" role="status" aria-live="polite" aria-atomic="true" aria-busy="true">
       <p className="sr-only">{`Loading ${title}. ${description}`}</p>
       <GlowCard variant="loading" className="space-y-4">
         <p className="text-xs font-medium text-primary">{eyebrow}</p>

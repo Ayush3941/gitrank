@@ -249,7 +249,7 @@ export function SyncRunActivityPanel({
         </div>
       ) : null}
       <div className="space-y-3">
-        <p id={filterStatusId} role="status" aria-live="polite" className="sr-only">
+        <p id={filterStatusId} role="status" aria-live="polite" aria-atomic="true" className="sr-only">
           {`${filteredRows.length} of ${statusCounts.all} runs`}
         </p>
         <div className="space-y-3">

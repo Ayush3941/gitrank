@@ -16,6 +16,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { ControlSurface } from "@/components/shared/ControlSurface";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -237,10 +238,10 @@ export function LeaderboardPageClient() {
         />
       ) : null}
       <section className="space-y-3">
-        <p role="status" aria-live="polite" className="sr-only">
+        <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">
           {isBusy ? `Refreshing ${tab}...` : `Viewing ${tab}`}
         </p>
-        <div className="neon-surface space-y-3 rounded-[1rem] px-3 py-3 sm:px-4 sm:py-4">
+        <ControlSurface>
           <FilterControlsHeader
             label="Leaderboard controls"
             summary={isBusy ? "Updating lane..." : `${rows.length} rows`}
@@ -325,7 +326,7 @@ export function LeaderboardPageClient() {
               </Button>
             ) : null}
           </div>
-        </div>
+        </ControlSurface>
       </section>
       {isLoading ? <LoadingState message="Loading leaderboard..." /> : null}
       {isError ? (

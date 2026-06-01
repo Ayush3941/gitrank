@@ -70,7 +70,7 @@ export function PrivacyRepositoryToggleList({
   return (
     <div className="repository-visibility-panel-shell space-y-3">
       <div className="space-y-3">
-        <p id={statusId} role="status" aria-live="polite" className="sr-only">
+        <p id={statusId} role="status" aria-live="polite" aria-atomic="true" className="sr-only">
           {`${filteredItems.length} of ${counts.total} repositories`}
         </p>
         <FilterControlsHeader

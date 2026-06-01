@@ -17,6 +17,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { ControlSurface } from "@/components/shared/ControlSurface";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -177,14 +178,14 @@ export function QuestsPageClient() {
       />
       {!isLoading && !isError ? (
         <section className="space-y-3">
-          <p id={questsFilterStatusId} role="status" aria-live="polite" className="sr-only">
+          <p id={questsFilterStatusId} role="status" aria-live="polite" aria-atomic="true" className="sr-only">
             {isFiltering
               ? "Updating missions…"
               : deferredCadenceFilter === "All"
                 ? `Showing all ${visibleQuestCount} missions`
                 : `Showing ${visibleQuestCount} ${deferredCadenceFilter.toLowerCase()} missions`}
           </p>
-          <div className="neon-surface space-y-3 rounded-[1rem] px-3 py-3 sm:px-4 sm:py-4">
+          <ControlSurface>
             <FilterControlsHeader
               label="Mission controls"
               summary={
@@ -195,14 +196,14 @@ export function QuestsPageClient() {
                     : `${visibleQuestCount} ${deferredCadenceFilter.toLowerCase()} missions`
               }
               activeFilterCount={activeFilterCount}
-                resetAction={{
-                  onReset: () => {
-                    handleCadenceFilterChange("All");
-                  },
-                  enabled: canResetCadenceFilter,
-                  ariaControls: questsMissionsRegionId,
-                }}
-              />
+              resetAction={{
+                onReset: () => {
+                  handleCadenceFilterChange("All");
+                },
+                enabled: canResetCadenceFilter,
+                ariaControls: questsMissionsRegionId,
+              }}
+            />
             <div className="space-y-2">
               <p className="text-xs font-medium text-primary">Cadence lane</p>
               <SegmentedTablist
@@ -244,7 +245,7 @@ export function QuestsPageClient() {
                 wrap
               />
             </div>
-          </div>
+          </ControlSurface>
         </section>
       ) : null}
       {syncStateForDisplay === "stale" || syncStateForDisplay === "partially_synced" ? (

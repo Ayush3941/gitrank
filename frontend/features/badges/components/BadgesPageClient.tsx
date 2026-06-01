@@ -18,6 +18,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
+import { ControlSurface } from "@/components/shared/ControlSurface";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { InlineNotice } from "@/components/shared/InlineNotice";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -409,10 +410,10 @@ export function BadgesPageClient() {
       </section>
       <section className="render-opt-section space-y-4">
         <div className="space-y-3">
-          <p id={badgesFilterStatusId} role="status" aria-live="polite" className="sr-only">
+          <p id={badgesFilterStatusId} role="status" aria-live="polite" aria-atomic="true" className="sr-only">
             Showing {filtered.length} of {totalCount} badges
           </p>
-          <div className="neon-surface space-y-3 rounded-[1rem] px-3 py-3 sm:px-4 sm:py-4">
+          <ControlSurface>
             <FilterControlsHeader
               label="Badge controls"
               summary={isFiltering ? "Updating shelf..." : `${filtered.length} of ${totalCount} badges`}
@@ -481,7 +482,7 @@ export function BadgesPageClient() {
                 />
               </div>
             </div>
-          </div>
+          </ControlSurface>
         </div>
         <div id={badgesEarnedRegionId}>
           {isLoading ? <LoadingState message="Loading badge shelf..." /> : null}
