@@ -571,6 +571,7 @@ export function SettingsPageClient() {
                     type="button"
                     size="sm"
                     variant="secondary"
+                    id="display-tuning-toggle"
                     aria-expanded={showDisplayTuning}
                     aria-controls="display-tuning-controls"
                     onClick={() => {
@@ -591,7 +592,13 @@ export function SettingsPageClient() {
                   </Button>
                 </div>
               </div>
-              <div id="display-tuning-controls" className={showDisplayTuning ? "space-y-4" : "hidden"}>
+              <div
+                id="display-tuning-controls"
+                role="region"
+                aria-labelledby="display-tuning-toggle"
+                hidden={!showDisplayTuning}
+                className="space-y-4"
+              >
                 <div className="space-y-3">
                   <p className="text-xs font-medium text-primary">Visual theme</p>
                   <div className="grid gap-2 sm:grid-cols-2">
@@ -817,6 +824,7 @@ function SettingsSyncActivitySection({
           type="button"
           size="sm"
           variant="secondary"
+          id="settings-sync-activity-toggle"
           aria-expanded={expanded}
           aria-controls="settings-sync-activity-details"
           onClick={() => {
@@ -857,7 +865,13 @@ function SettingsSyncActivitySection({
           {attentionLabel}
         </span>
       </div>
-      <div id="settings-sync-activity-details" className={expanded ? "block" : "hidden"}>
+      <div
+        id="settings-sync-activity-details"
+        role="region"
+        aria-labelledby="settings-sync-activity-toggle"
+        hidden={!expanded}
+        className="block"
+      >
         <SyncRunActivityPanel
           runs={runs}
           lastUpdatedAt={lastUpdatedAt}

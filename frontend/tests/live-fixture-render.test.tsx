@@ -139,6 +139,7 @@ describe("live fixture frontend smoke coverage", () => {
       (await screen.findAllByText("Backed by live PR report evidence.")).length,
     ).toBeTruthy();
     fireEvent.click(await screen.findByRole("button", { name: "Show details" }));
+    expect(await screen.findByRole("region", { name: /Hide details/i })).toBeTruthy();
     expect(await screen.findByText("Persisted scorer components")).toBeTruthy();
     expect(
       await screen.findByText(

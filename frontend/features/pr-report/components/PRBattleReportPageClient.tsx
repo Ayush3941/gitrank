@@ -506,6 +506,7 @@ export function PRBattleReportPageClient({
             type="button"
             size="sm"
             variant="ghost"
+            id="pr-report-technical-toggle"
             onClick={() => {
               setShowTechnicalBreakdown((current) => !current);
             }}
@@ -515,7 +516,11 @@ export function PRBattleReportPageClient({
             {showTechnicalBreakdown ? "Hide details" : "Show details"}
           </Button>
         </div>
-        <div id="pr-report-technical-panels">
+        <div
+          id="pr-report-technical-panels"
+          role="region"
+          aria-labelledby="pr-report-technical-toggle"
+        >
           {showTechnicalBreakdown ? (
           <div className="space-y-6">
             <section className="render-opt-section">

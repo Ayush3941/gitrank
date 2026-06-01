@@ -14,6 +14,7 @@ This document is intentionally detailed.
 - Shared stale-state refresh controls now stay actionable during existing queued/running sync work and switch label text to `Check sync status`, so users get immediate in-flight diagnostics instead of a disabled control across Dashboard, Contributions, Badges, Quests, and Leaderboard.
 - Shared profile-evidence chips now read the effective sync state and show truthful labels (`Syncing evidence`, `Partially synced`, `Sync failed`, etc.) across Dashboard, Contributions, Badges, Quests, Leaderboard, and Settings instead of collapsing all non-fresh states into a generic pending label.
 - Settings now uses progressive disclosure for sync diagnostics: a compact `Sync activity` summary remains visible by default, while detailed run logs are collapsed in healthy states and auto-expanded when active/partial/failed runs need attention.
+- Disclosure controls now expose stronger ARIA wiring (`aria-controls` + `role="region"` + `aria-labelledby`) across Settings diagnostics, display tuning, chart data-table toggles, and PR technical breakdown so expanded content has an explicit accessible relationship to its trigger.
 
 It serves two purposes:
 

@@ -24,6 +24,7 @@ const TimelineChartInner = dynamic(
 export function TimelineChart({ data }: { data: Array<{ label: string; xp: number }> }) {
   const summaryId = useId();
   const tableRegionId = useId();
+  const tableToggleId = useId();
   const { ref: viewportRef, inView } = useLazyInView();
   const constrainedNetwork = useNetworkConstraintPreference();
   const reducedGamification = useReducedGamification();
@@ -73,6 +74,7 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
           </div>
           <button
             type="button"
+            id={tableToggleId}
             className="focus-ring neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs font-semibold"
             onClick={() => {
               setShowDataTable((current) => !current);
@@ -100,7 +102,12 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
         ))}
       </ul>
         {showDataTable ? (
-          <div id={tableRegionId} className="mt-3 overflow-x-auto">
+          <div
+            id={tableRegionId}
+            role="region"
+            aria-labelledby={tableToggleId}
+            className="mt-3 overflow-x-auto"
+          >
             <table className="w-full min-w-[22rem] text-left text-xs text-muted">
               <caption className="sr-only">Timeline XP values by window label.</caption>
               <thead>

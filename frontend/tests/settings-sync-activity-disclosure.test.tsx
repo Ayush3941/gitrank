@@ -18,6 +18,7 @@ describe("settings sync activity disclosure", () => {
     await screen.findByRole("heading", { name: "Settings" });
 
     expect(await screen.findByRole("button", { name: /Show details/i })).toBeTruthy();
+    expect(screen.queryByRole("region", { name: /Show details/i })).toBeNull();
     expect(screen.queryByText("Recent sync runs")).toBeNull();
   }, 10_000);
 
@@ -28,6 +29,7 @@ describe("settings sync activity disclosure", () => {
     await screen.findByRole("heading", { name: "Settings" });
 
     expect(await screen.findByRole("button", { name: /Hide details/i })).toBeTruthy();
+    expect(await screen.findByRole("region", { name: /Hide details/i })).toBeTruthy();
     expect(await screen.findByText("Recent sync runs")).toBeTruthy();
     expect(await screen.findByText("1 failed")).toBeTruthy();
   }, 10_000);

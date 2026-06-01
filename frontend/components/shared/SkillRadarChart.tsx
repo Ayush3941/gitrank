@@ -29,6 +29,7 @@ const SkillRadarChartInner = dynamic(
 export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
   const summaryId = useId();
   const tableRegionId = useId();
+  const tableToggleId = useId();
   const { ref: viewportRef, inView } = useLazyInView();
   const constrainedNetwork = useNetworkConstraintPreference();
   const reducedGamification = useReducedGamification();
@@ -67,6 +68,7 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
           <p className="text-xs font-medium text-primary">Skill signal summary</p>
           <button
             type="button"
+            id={tableToggleId}
             className="focus-ring neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs font-semibold"
             onClick={() => {
               setShowDataTable((current) => !current);
@@ -90,7 +92,12 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
           ))}
         </ul>
         {showDataTable ? (
-          <div id={tableRegionId} className="mt-3 overflow-x-auto">
+          <div
+            id={tableRegionId}
+            role="region"
+            aria-labelledby={tableToggleId}
+            className="mt-3 overflow-x-auto"
+          >
             <table className="w-full min-w-[24rem] text-left text-xs text-muted">
               <caption className="sr-only">Skill lane scores and delta values.</caption>
               <thead>

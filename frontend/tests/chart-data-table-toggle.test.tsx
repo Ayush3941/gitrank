@@ -28,6 +28,8 @@ describe("chart data-table toggles", () => {
 
     const toggle = screen.getByRole("button", { name: "View data table" });
     fireEvent.click(toggle);
+    const region = screen.getByRole("region", { name: /data table/i });
+    expect(region).toBeTruthy();
     const table = screen.getByRole("table");
     expect(table).toBeTruthy();
     const tableScope = within(table);
@@ -35,6 +37,7 @@ describe("chart data-table toggles", () => {
     expect(tableScope.getByText("Backend")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Hide data table" }));
+    expect(screen.queryByRole("region", { name: /data table/i })).toBeNull();
     expect(screen.queryByRole("table")).toBeNull();
   });
 
@@ -50,6 +53,8 @@ describe("chart data-table toggles", () => {
 
     const toggle = screen.getByRole("button", { name: "View data table" });
     fireEvent.click(toggle);
+    const region = screen.getByRole("region", { name: /data table/i });
+    expect(region).toBeTruthy();
     const table = screen.getByRole("table");
     expect(table).toBeTruthy();
     const tableScope = within(table);
@@ -57,6 +62,7 @@ describe("chart data-table toggles", () => {
     expect(tableScope.getByText("May")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Hide data table" }));
+    expect(screen.queryByRole("region", { name: /data table/i })).toBeNull();
     expect(screen.queryByRole("table")).toBeNull();
   });
 });
