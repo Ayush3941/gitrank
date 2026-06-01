@@ -148,7 +148,7 @@ describe("SyncRunActivityPanel", () => {
     );
 
     expect(screen.getByText("PRs 3/5 · Reviews 2/4 · Skipped 1")).toBeTruthy();
-    expect(screen.getAllByText("Partial").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Completed").length).toBeGreaterThan(0);
   });
 
   it("classifies completed rows with degraded metrics under the Partial filter", () => {
@@ -171,10 +171,14 @@ describe("SyncRunActivityPanel", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("tab", { name: /Completed/ }));
+    fireEvent.change(screen.getByRole("combobox", { name: "Sync run status filter" }), {
+      target: { value: "Completed" },
+    });
     expect(screen.getByText("No sync runs match this filter.")).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("tab", { name: /Partial/ }));
+    fireEvent.change(screen.getByRole("combobox", { name: "Sync run status filter" }), {
+      target: { value: "Partial" },
+    });
     expect(screen.queryByText("No sync runs match this filter.")).toBeNull();
     expect(screen.getByText(/octocat\s*•\s*user/i)).toBeTruthy();
   });
@@ -241,6 +245,7 @@ describe("SyncRunActivityPanel", () => {
       />,
     );
 
+    fireEvent.click(screen.getByRole("button", { name: "Details" }));
     expect(screen.getByText("Synced 7 authored PR targets in this run.")).toBeTruthy();
   });
 

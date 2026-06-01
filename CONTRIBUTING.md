@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (May 31, 2026)
 
+- Sync-run rows now use per-row disclosure controls for verbose diagnostics: concise metrics stay visible, while long outcome/error/correlation details are revealed on demand with `aria-expanded`/`aria-controls` wiring aligned to WAI-ARIA disclosure guidance.
 - Contributions filters now use progressive disclosure: status and search stay visible by default, while category/sort controls live behind an explicit `Advanced filters` toggle to reduce first-view noise without removing any filtering capability.
 - Dashboard lane navigation now renders through a single shared shell (`DashboardLayout` + `DashboardRouteNav`) instead of stacked wrapper chrome, reducing duplicate borders and keeping lane hierarchy visually consistent across all dashboard routes.
 - Settings sync diagnostics now open collapsed by default with compact health chips (`Healthy` / `active` / `partial` / `failed`) and explicit `Open log` disclosure, reducing first-view clutter and avoiding auto-expand layout jumps while preserving full run diagnostics on demand.

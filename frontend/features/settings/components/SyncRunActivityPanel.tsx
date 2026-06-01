@@ -1,11 +1,10 @@
 "use client";
 
-import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, Search, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Clock3, RefreshCw, XCircle } from "lucide-react";
 import { useDeferredValue, useId, useMemo, useState } from "react";
 import { ControlSurface } from "@/components/shared/ControlSurface";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { ScrollableRegion } from "@/components/shared/ScrollableRegion";
-import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
 import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
 import { Button } from "@/components/ui/button";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
@@ -43,16 +42,13 @@ type SyncRunRow = {
   outcomeInsight: string;
 };
 
-const SYNC_RUN_STATUS_META: Record<
-  SyncRunStatusFilter,
-  { countKey: keyof SyncRunStatusCounts; icon: typeof Search }
-> = {
-  All: { countKey: "all", icon: Search },
-  Completed: { countKey: "completed", icon: CheckCircle2 },
-  Partial: { countKey: "partial", icon: AlertTriangle },
-  Queued: { countKey: "queued", icon: Clock3 },
-  Running: { countKey: "running", icon: Clock3 },
-  Failed: { countKey: "failed", icon: XCircle },
+const SYNC_RUN_STATUS_META: Record<SyncRunStatusFilter, { countKey: keyof SyncRunStatusCounts }> = {
+  All: { countKey: "all" },
+  Completed: { countKey: "completed" },
+  Partial: { countKey: "partial" },
+  Queued: { countKey: "queued" },
+  Running: { countKey: "running" },
+  Failed: { countKey: "failed" },
 };
 
 export function SyncRunActivityPanel({
@@ -78,6 +74,7 @@ export function SyncRunActivityPanel({
 }) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<SyncRunStatusFilter>("All");
+  const [detailsExpandedByRunID, setDetailsExpandedByRunID] = useState<Record<string, boolean>>({});
   const canReset = search.trim().length > 0 || statusFilter !== "All";
   const deferredSearch = useDeferredValue(search);
   const filterStatusId = useId();
@@ -181,6 +178,13 @@ export function SyncRunActivityPanel({
     setSearch("");
   }
 
+  function toggleRunDetails(runID: string) {
+    setDetailsExpandedByRunID((current) => ({
+      ...current,
+      [runID]: !(current[runID] ?? false),
+    }));
+  }
+
   return (
     <div className="sync-runs-panel-shell space-y-4" style={{ overflowAnchor: "none" }}>
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -273,26 +277,28 @@ export function SyncRunActivityPanel({
           />
           <div className="space-y-2">
             <p className="text-xs font-medium text-primary">Run status</p>
-            <SegmentedTablist
-              options={SYNC_RUN_STATUS_FILTERS.map((status) => {
-                const meta = SYNC_RUN_STATUS_META[status];
-                const Icon = meta.icon;
-                return {
-                  value: status,
-                  label: status,
-                  icon: <Icon className="h-4 w-4" />,
-                  count: statusCounts[meta.countKey],
-                  minWidthClassName: "min-w-[6.75rem] sm:min-w-[8rem]",
-                };
-              })}
+            <label className="sr-only" htmlFor="sync-run-status-filter-select">
+              Sync run status filter
+            </label>
+            <select
+              id="sync-run-status-filter-select"
               value={statusFilter}
-              onValueChange={setStatusFilter}
-              ariaLabel="Sync run status filters"
-              ariaDescribedBy={filterStatusId}
-              ariaControls={syncRunsRegionId}
-              tabIdPrefix="sync-run-status-filter"
-              wrap
-            />
+              aria-describedby={filterStatusId}
+              aria-controls={syncRunsRegionId}
+              onChange={(event) => {
+                setStatusFilter(event.target.value as SyncRunStatusFilter);
+              }}
+              className="focus-ring h-10 w-full rounded-[0.1rem] border border-primary/24 bg-slate-950/60 px-3 text-sm text-white"
+            >
+              {SYNC_RUN_STATUS_FILTERS.map((status) => {
+                const meta = SYNC_RUN_STATUS_META[status];
+                return (
+                  <option key={status} value={status}>
+                    {status} ({statusCounts[meta.countKey]})
+                  </option>
+                );
+              })}
+            </select>
           </div>
           {canReset ? (
             <div className="flex justify-end">
@@ -362,6 +368,16 @@ export function SyncRunActivityPanel({
           <ol role="list" className={`grid gap-2 ${resultsRegionClassName}`}>
             {filteredRows.map((row) => {
               const run = row.run;
+              const detailsAvailable = Boolean(
+                row.outcomeInsight || row.safeLastError || run.correlation_id,
+              );
+              const defaultDetailsExpanded =
+                row.uiStatus === "Failed" || row.uiStatus === "Partial";
+              const detailsExpanded = detailsAvailable
+                ? (detailsExpandedByRunID[row.id] ?? defaultDetailsExpanded)
+                : false;
+              const detailsRegionID = `${syncRunsRegionId}-${row.id}-details`;
+              const detailsButtonID = `${syncRunsRegionId}-${row.id}-details-button`;
               return (
                 <li key={row.id}>
                   <article className="render-opt-card neon-surface space-y-2 px-4 py-3">
@@ -387,13 +403,52 @@ export function SyncRunActivityPanel({
                     {row.metricsSummary ? (
                       <p className="break-anywhere text-xs text-muted">{row.metricsSummary}</p>
                     ) : null}
-                    {row.outcomeInsight ? (
-                      <p className="break-anywhere text-xs text-cyan-100">{row.outcomeInsight}</p>
-                    ) : null}
-                    {row.safeLastError ? (
-                      <p className="break-anywhere text-xs text-rose-100">
-                        Last error: {row.safeLastError}
-                      </p>
+                    {detailsAvailable ? (
+                      <div className="space-y-2">
+                        <button
+                          type="button"
+                          id={detailsButtonID}
+                          className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
+                          aria-expanded={detailsExpanded}
+                          aria-controls={detailsRegionID}
+                          onClick={() => {
+                            toggleRunDetails(row.id);
+                          }}
+                        >
+                          {detailsExpanded ? (
+                            <>
+                              Hide details
+                              <ChevronUp className="h-3.5 w-3.5" />
+                            </>
+                          ) : (
+                            <>
+                              Details
+                              <ChevronDown className="h-3.5 w-3.5" />
+                            </>
+                          )}
+                        </button>
+                        <div
+                          id={detailsRegionID}
+                          role="region"
+                          aria-labelledby={detailsButtonID}
+                          hidden={!detailsExpanded}
+                          className="space-y-2"
+                        >
+                          {row.outcomeInsight ? (
+                            <p className="break-anywhere text-xs text-cyan-100">{row.outcomeInsight}</p>
+                          ) : null}
+                          {row.safeLastError ? (
+                            <p className="break-anywhere text-xs text-rose-100">
+                              Last error: {row.safeLastError}
+                            </p>
+                          ) : null}
+                          {run.correlation_id ? (
+                            <p className="break-anywhere text-xs text-muted">
+                              Correlation {run.correlation_id}
+                            </p>
+                          ) : null}
+                        </div>
+                      </div>
                     ) : null}
                   </article>
                 </li>
