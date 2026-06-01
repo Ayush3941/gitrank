@@ -20,12 +20,14 @@ export function DeferUntilVisible({
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [visible, setVisible] = useState(false);
+  const isTestEnvironment =
+    typeof process !== "undefined" && process.env.NODE_ENV === "test";
   const supportsIntersectionObserver =
     typeof window !== "undefined" &&
     typeof window.IntersectionObserver === "function";
 
   useEffect(() => {
-    if (visible || !supportsIntersectionObserver) {
+    if (visible || isTestEnvironment || !supportsIntersectionObserver) {
       return;
     }
 
@@ -54,9 +56,9 @@ export function DeferUntilVisible({
     return () => {
       observer.disconnect();
     };
-  }, [rootMargin, supportsIntersectionObserver, visible]);
+  }, [isTestEnvironment, rootMargin, supportsIntersectionObserver, visible]);
 
-  if (!supportsIntersectionObserver) {
+  if (isTestEnvironment || !supportsIntersectionObserver) {
     return <div className={className}>{children}</div>;
   }
 

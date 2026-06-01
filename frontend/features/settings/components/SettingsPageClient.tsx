@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useId, useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, Download, FolderGit2, LogOut, Palette, RefreshCw, Trash2 } from "lucide-react";
 import { BrandLogo } from "@/components/shared/BrandLogo";
+import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
@@ -696,27 +697,29 @@ export function SettingsPageClient() {
       </section>
 
       <section className="render-opt-section">
-        <GlowCard className="space-y-4">
-          <div>
-            <p className="text-xs font-medium text-primary">Repository privacy</p>
-            <h2 className="mt-2 text-xl font-semibold text-white">Repository visibility</h2>
-          </div>
-          <p className="text-sm text-muted">
-            {data.user.repositories.length} repositories{hiddenRepositoryCount > 0 ? ` · ${hiddenRepositoryCount} hidden` : ""}
-          </p>
-          <PrivacyRepositoryToggleList
-            repositories={data.user.repositories}
-            pendingRepository={pendingRepository}
-            onToggle={
-              (repository, checked) =>
-                updateRepositoryVisibility.mutate({
-                  fullName: repository.name,
-                  visibility: checked ? "Public" : "Hidden",
-                  reason: repository.reason,
-                })
-            }
-          />
-        </GlowCard>
+        <DeferUntilVisible fallback={<SettingsPanelPlaceholder label="Loading repository controls" />}>
+          <GlowCard className="space-y-4">
+            <div>
+              <p className="text-xs font-medium text-primary">Repository privacy</p>
+              <h2 className="mt-2 text-xl font-semibold text-white">Repository visibility</h2>
+            </div>
+            <p className="text-sm text-muted">
+              {data.user.repositories.length} repositories{hiddenRepositoryCount > 0 ? ` · ${hiddenRepositoryCount} hidden` : ""}
+            </p>
+            <PrivacyRepositoryToggleList
+              repositories={data.user.repositories}
+              pendingRepository={pendingRepository}
+              onToggle={
+                (repository, checked) =>
+                  updateRepositoryVisibility.mutate({
+                    fullName: repository.name,
+                    visibility: checked ? "Public" : "Hidden",
+                    reason: repository.reason,
+                  })
+              }
+            />
+          </GlowCard>
+        </DeferUntilVisible>
       </section>
 
       <section className="render-opt-section">

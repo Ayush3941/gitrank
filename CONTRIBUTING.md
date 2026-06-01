@@ -6,6 +6,8 @@ This document is intentionally detailed.
 
 ## Session Notes (May 31, 2026)
 
+- Dashboard secondary lanes (league, quest lane, battle reports) and the settings repository-visibility section now mount through `DeferUntilVisible` with placeholders, so below-the-fold panels delay hydration/render cost until near viewport while keeping first-view interactions responsive.
+- `DeferUntilVisible` now renders eagerly in test mode (`NODE_ENV=test`) to keep fixture/accessibility tests deterministic while production continues to use IntersectionObserver gating.
 - Contribution and settings filter surfaces now use shared `ControlSurface` wrappers and `useId`-based status/region IDs (`ContributionFilters`, `PrivacyRepositoryToggleList`, `SyncRunActivityPanel`) to reduce duplicated layout styling and avoid static-ID collisions in reusable filter modules.
 - Accessibility control tests were updated to validate semantic status linkage (search input `aria-describedby` points to a real `role="status"` region) without assuming fixed literal IDs, preserving test robustness after `useId` adoption.
 - Dashboard filter-control shells now use a shared `ControlSurface` component (`neon-surface` spacing/radius/padding contract) across Badges, Quests, and Leaderboard to reduce duplicated styling and keep control density consistent.

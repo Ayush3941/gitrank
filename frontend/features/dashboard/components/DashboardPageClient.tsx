@@ -15,6 +15,7 @@ import { useProfileSyncRuns } from "@/hooks/use-profile-sync-runs";
 import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import { useStaleSyncRefresh } from "@/hooks/use-stale-sync-refresh";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -297,15 +298,21 @@ export function DashboardPageClient() {
       <div className="grid gap-6 xl:grid-cols-[0.86fr,1.14fr]">
         <div className="space-y-6">
           <section className="render-opt-section">
-            <CurrentLeagueCard user={user} />
+            <DeferUntilVisible fallback={<LazyLanePlaceholder label="Loading league" />}>
+              <CurrentLeagueCard user={user} />
+            </DeferUntilVisible>
           </section>
           <section className="render-opt-section">
-            <QuestPanel quests={user.quests} />
+            <DeferUntilVisible fallback={<LazyLanePlaceholder label="Loading quests" />}>
+              <QuestPanel quests={user.quests} />
+            </DeferUntilVisible>
           </section>
         </div>
         <div className="space-y-6">
           <section className="render-opt-section">
-            <RecentBattleReports reports={recentReports} />
+            <DeferUntilVisible fallback={<LazyLanePlaceholder label="Loading reports" />}>
+              <RecentBattleReports reports={recentReports} />
+            </DeferUntilVisible>
           </section>
         </div>
       </div>
