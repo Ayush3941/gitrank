@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Search, X } from "lucide-react";
 import { startTransition, useDeferredValue, useMemo, useState } from "react";
+import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
 import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,13 +70,34 @@ export function PrivacyRepositoryToggleList({
   return (
     <div className="repository-visibility-panel-shell space-y-3">
       <div className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p id={statusId} role="status" aria-live="polite" className="sr-only">
-            {`${filteredItems.length} of ${counts.total} repositories`}
-          </p>
-          <p className="text-xs font-medium text-primary">Repository controls</p>
-          <p className="text-xs text-muted">{`${filteredItems.length} of ${counts.total} repositories`}</p>
-        </div>
+        <p id={statusId} role="status" aria-live="polite" className="sr-only">
+          {`${filteredItems.length} of ${counts.total} repositories`}
+        </p>
+        <FilterControlsHeader
+          label="Repository controls"
+          summary={`${filteredItems.length} of ${counts.total} repositories`}
+          activeFilterCount={activeFilterCount}
+          extraControls={
+            searchTerm.length > 0 ? (
+              <button
+                type="button"
+                className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
+                onClick={handleClearSearch}
+                aria-label={`Remove Search · ${compactSearch} filter`}
+                aria-controls={repositoriesRegionId}
+                title="Clear search filter"
+              >
+                Search: {compactSearch}
+                <X className="h-3.5 w-3.5" />
+              </button>
+            ) : null
+          }
+          resetAction={{
+            onReset: handleReset,
+            enabled: canReset,
+            ariaControls: repositoriesRegionId,
+          }}
+        />
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap gap-2">
             <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">Public {counts.public}</span>
@@ -145,41 +167,6 @@ export function PrivacyRepositoryToggleList({
               wrap
             />
           </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {activeFilterCount > 0 ? (
-            <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-              Active: {activeFilterCount}
-            </span>
-          ) : null}
-          <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-            Visibility: {visibilityFilter}
-          </span>
-          {searchTerm.length > 0 ? (
-            <button
-              type="button"
-              className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
-              onClick={handleClearSearch}
-              aria-label={`Remove Search · ${compactSearch} filter`}
-              aria-controls={repositoriesRegionId}
-              title="Clear search filter"
-            >
-              Search: {compactSearch}
-              <X className="h-3.5 w-3.5" />
-            </button>
-          ) : null}
-          {canReset ? (
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={handleReset}
-              aria-controls={repositoriesRegionId}
-              className="h-8 px-3"
-            >
-              Reset
-            </Button>
-          ) : null}
         </div>
       </div>
       <div
