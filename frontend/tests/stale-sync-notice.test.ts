@@ -35,4 +35,24 @@ describe("buildStaleSyncNotice", () => {
     expect(notice.message).toContain("Live quest signals may lag until the next sync completes.");
     expect(notice.reasonMessage).toBeUndefined();
   });
+
+  it("returns blocker-aware stale messaging when app access is unavailable", () => {
+    const notice = buildStaleSyncNotice({
+      syncState: "stale",
+      refreshedAt: "2026-05-31T21:00:00Z",
+      latestSyncOutcome: {
+        code: "app_runtime_required",
+        message: "Strict GitHub App runtime is required before extracting contribution data.",
+      },
+      snapshotLabel: "Leaderboard context",
+      partialFallback: "partial fallback",
+      staleFallback: "stale fallback",
+    });
+
+    expect(notice.message).toContain("Leaderboard context refreshed");
+    expect(notice.message).toContain("blocked until GitHub App access is restored");
+    expect(notice.reasonMessage).toBe(
+      "Strict GitHub App runtime is required before extracting contribution data.",
+    );
+  });
 });

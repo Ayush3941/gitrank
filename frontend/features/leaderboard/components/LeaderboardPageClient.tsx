@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { startTransition, useDeferredValue, useState } from "react";
+import { startTransition, useDeferredValue, useMemo, useState } from "react";
 import {
   BookText,
   CalendarClock,
@@ -32,7 +32,8 @@ import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import { useStaleSyncRefresh } from "@/hooks/use-stale-sync-refresh";
 import { useMyProfile } from "@/hooks/use-profile";
 import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
-import { formatRelativeDays } from "@/lib/formatters";
+import { selectLatestActionableSyncRunOutcome } from "@/lib/presentation/sync-run-diagnostics";
+import { buildStaleSyncNotice } from "@/lib/presentation/stale-sync-notice";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
 
 const LeaderboardArena = dynamic(
@@ -126,6 +127,10 @@ export function LeaderboardPageClient() {
     myProfile?.user,
     syncRunsQuery.data?.runs,
   );
+  const latestSyncOutcome = useMemo(
+    () => selectLatestActionableSyncRunOutcome(syncRunsQuery.data?.runs),
+    [syncRunsQuery.data?.runs],
+  );
   const staleSyncRefresh = useStaleSyncRefresh({
     runs: syncRunsQuery.data?.runs,
     isSyncPending: runUserSync.isPending,
@@ -134,6 +139,20 @@ export function LeaderboardPageClient() {
       await Promise.allSettled([refetchMyProfile(), refetch()]);
     },
   });
+  const staleNotice = useMemo(
+    () =>
+      buildStaleSyncNotice({
+        syncState: syncStateForDisplay === "partially_synced" ? "partially_synced" : "stale",
+        refreshedAt: myProfile?.refreshedAt ?? new Date().toISOString(),
+        latestSyncOutcome,
+        snapshotLabel: "Leaderboard context",
+        partialFallback:
+          "Leaderboard profile snapshot exists, but scored PR evidence is still empty. Keep auto-sync active and refresh after GitHub processing completes.",
+        staleFallback:
+          "Rank updates can lag until sync completes.",
+      }),
+    [latestSyncOutcome, myProfile?.refreshedAt, syncStateForDisplay],
+  );
   const safeVisibleRowCount = Math.min(rows.length, visibleRowCount);
   const hasMoreRows = rows.length > safeVisibleRowCount;
   const remainingRows = Math.max(0, rows.length - safeVisibleRowCount);
@@ -202,13 +221,8 @@ export function LeaderboardPageClient() {
       />
       {syncStateForDisplay === "stale" || syncStateForDisplay === "partially_synced" ? (
         <StaleState
-          message={
-            syncStateForDisplay === "partially_synced"
-              ? "Leaderboard profile snapshot exists, but scored PR evidence is still empty. Keep auto-sync active and refresh after GitHub processing completes."
-              : `Leaderboard context refreshed ${formatRelativeDays(
-                  myProfile.refreshedAt,
-                )}. Rank updates can lag until sync completes.`
-          }
+          message={staleNotice.message}
+          reasonMessage={staleNotice.reasonMessage}
           updatedAt={myProfile.refreshedAt}
           onRefresh={staleSyncRefresh.onRefresh}
           isRefreshing={staleSyncRefresh.isRefreshing}
