@@ -1,10 +1,12 @@
 import type { ApiSyncExecutionResponse } from "@/lib/api/account-api";
 import type { RefreshFeedback } from "@/lib/refresh-feedback";
+import { canonicalizeSyncRunStatus } from "@/lib/sync/sync-run-status-policy";
 
 export function buildUserSyncRefreshFeedback(
   result: ApiSyncExecutionResponse,
 ): RefreshFeedback {
   const fetched = result.fetched ?? {};
+  const canonicalStatus = canonicalizeSyncRunStatus(result.status);
   const selectedAuthoredPullRequests = Math.max(0, fetched.authored_pull_requests_selected ?? 0);
   const selectedMergedPullRequests = Math.max(0, fetched.authored_pull_requests_selected_merged ?? 0);
   const selectedUnmergedPullRequests = Math.max(0, fetched.authored_pull_requests_selected_unmerged ?? 0);
@@ -103,8 +105,37 @@ export function buildUserSyncRefreshFeedback(
     };
   }
 
+  if (canonicalStatus === "failed") {
+    if ((fetched.app_installation_required ?? 0) > 0) {
+      return {
+        tone: "warning",
+        message:
+          "Refresh failed because GitHub App installation is missing. Install GitRank on your account repositories, then retry.",
+      };
+    }
+    if ((fetched.app_installation_unavailable ?? 0) > 0 || (fetched.strict_app_runtime_required ?? 0) > 0) {
+      return {
+        tone: "warning",
+        message:
+          "Refresh failed because GitHub App installation credentials are unavailable. Verify App ID/private key and installation, then retry.",
+      };
+    }
+    if ((fetched.user_sync_in_progress ?? 0) > 0 || (fetched.lease_conflicts ?? 0) > 0) {
+      return {
+        tone: "warning",
+        message:
+          "Refresh skipped because another user sync is already running. Keep this page open and retry after it finishes.",
+      };
+    }
+    return {
+      tone: "warning",
+      message:
+        "Refresh failed before PR evidence could be hydrated. Reconnect GitHub or verify GitHub App installation, then retry.",
+    };
+  }
+
   if (
-    result.status === "partial" ||
+    canonicalStatus === "partial" ||
     fetched.authored_pull_request_search_failed === 1 ||
     fetched.authored_pull_requests_retryable > 0
   ) {
@@ -122,7 +153,7 @@ export function buildUserSyncRefreshFeedback(
     };
   }
 
-  if (result.status === "queued" || fetched.fallback_queued === 1) {
+  if (canonicalStatus === "queued" || fetched.fallback_queued === 1) {
     return {
       tone: "success",
       message:
@@ -130,7 +161,7 @@ export function buildUserSyncRefreshFeedback(
     };
   }
 
-  if (result.status === "completed" && discoveryEmpty && selectedAuthoredPullRequests === 0) {
+  if (canonicalStatus === "completed" && discoveryEmpty && selectedAuthoredPullRequests === 0) {
     return {
       tone: "warning",
       message:
@@ -138,7 +169,7 @@ export function buildUserSyncRefreshFeedback(
     };
   }
 
-  if (result.status === "completed" && selectedAuthoredPullRequests > 0) {
+  if (canonicalStatus === "completed" && selectedAuthoredPullRequests > 0) {
     return {
       tone: "success",
       message: `Refresh completed. Synced ${selectedAuthoredPullRequests} authored PR target${

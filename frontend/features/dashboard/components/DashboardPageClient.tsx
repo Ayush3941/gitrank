@@ -236,7 +236,7 @@ export function DashboardPageClient() {
         actions={(
           <div className="flex flex-wrap items-center gap-2">
             <ProfileEvidenceStateChip
-              showFreshness={showRefreshPill}
+              showFreshness={showRefreshPill && !appInstallationBlocked && displaySyncState === "synced"}
               refreshedAt={data.refreshedAt}
               syncState={displaySyncState}
             />

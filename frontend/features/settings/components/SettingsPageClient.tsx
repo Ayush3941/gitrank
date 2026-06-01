@@ -160,6 +160,7 @@ export function SettingsPageClient() {
     useDisplayShortcutsEnabled();
   useAccountGamificationPreference(data);
   const [actionNotice, setActionNotice] = useState("");
+  const [actionNoticeVariant, setActionNoticeVariant] = useState<"info" | "success" | "warning" | "error">("info");
   const [displayNotice, setDisplayNotice] = useState("");
   const [showDisplayTuning, setShowDisplayTuning] = useState(false);
   const displayTuningToggleId = useId();
@@ -295,6 +296,7 @@ export function SettingsPageClient() {
       return;
     }
     setActionNotice("");
+    setActionNoticeVariant("info");
     unlinkAccount.mutate(undefined, {
       onSuccess: () => {
         window.location.assign("/login");
@@ -307,10 +309,12 @@ export function SettingsPageClient() {
       return;
     }
     setActionNotice("");
+    setActionNoticeVariant("info");
     accountLinkStart.mutate("/dashboard/settings", {
       onSuccess: (result) => {
         if (!result.authorize_url) {
           setActionNotice("Account relink response is missing authorize_url.");
+          setActionNoticeVariant("warning");
           return;
         }
         window.location.assign(result.authorize_url);
@@ -323,6 +327,7 @@ export function SettingsPageClient() {
       return;
     }
     setActionNotice("");
+    setActionNoticeVariant("info");
     logoutSession.mutate(undefined, {
       onSuccess: () => {
         window.location.assign("/login");
@@ -342,6 +347,7 @@ export function SettingsPageClient() {
       return;
     }
     setActionNotice("");
+    setActionNoticeVariant("info");
     deleteAccount.mutate(undefined, {
       onSuccess: () => {
         window.location.assign("/");
@@ -354,6 +360,7 @@ export function SettingsPageClient() {
       return;
     }
     setActionNotice("");
+    setActionNoticeVariant("info");
     exportAccount.mutate(undefined, {
       onSuccess: (payload) => {
         const generatedAt = new Date(payload.generated_at);
@@ -363,6 +370,7 @@ export function SettingsPageClient() {
         const handle = data?.user.username || payload.user.public_handle || "account";
         downloadJSON(payload, `gitrank-account-export-${handle}-${exportDate}.json`);
         setActionNotice("Account export generated. Token secrets and secret hashes are excluded from the file.");
+        setActionNoticeVariant("success");
       },
     });
   }
@@ -389,7 +397,7 @@ export function SettingsPageClient() {
         actions={(
           <div className="flex flex-wrap items-center gap-2">
             <ProfileEvidenceStateChip
-              showFreshness={showRefreshPill}
+              showFreshness={showRefreshPill && !appInstallationBlocked && displaySyncState === "synced"}
               refreshedAt={data.refreshedAt}
               syncState={displaySyncState}
             />
@@ -423,9 +431,18 @@ export function SettingsPageClient() {
             disabled={isActing || isFetching}
             onClick={() => {
               setActionNotice("");
+              setActionNoticeVariant("info");
               runUserSync.mutate(undefined, {
                 onSuccess: (result) => {
-                  setActionNotice(buildUserSyncRefreshFeedback(result).message);
+                  const feedback = buildUserSyncRefreshFeedback(result);
+                  setActionNotice(feedback.message);
+                  setActionNoticeVariant(
+                    feedback.tone === "success"
+                      ? "success"
+                      : feedback.tone === "error"
+                        ? "error"
+                        : "warning",
+                  );
                   void refetch();
                   void syncRunsQuery.refetch();
                 },
@@ -479,10 +496,11 @@ export function SettingsPageClient() {
           <InlineNotice
             message={actionNotice}
             placeholder="Account action status"
-            variant="info"
+            variant={actionNoticeVariant}
             minHeightClassName="min-h-7"
             onDismiss={() => {
               setActionNotice("");
+              setActionNoticeVariant("info");
             }}
             dismissLabel="Dismiss account status"
           />

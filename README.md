@@ -152,6 +152,7 @@ If `GITRANK_ENV_FILE` is unset, frontend runtime falls back to `../gitrank/.env`
 - Dashboard stale-state UI now surfaces the latest sync diagnostic reason (when available) so partial/empty evidence states are explicit instead of generic.
 - Sync failures now classify unsupported GitHub API-version responses and surface a direct `GITHUB_API_VERSION` remediation message in sync diagnostics.
 - User sync now enforces GitHub App credentials for PR extraction. Installation bootstrap/discovery also runs through GitHub App credentials (`/app/installations`), while OAuth remains login/session-only.
+- Sync runtime validation for execute/queue flows now checks GitHub App JWT/install credentials independently from webhook-delivery secret validation, so local PR sync is not blocked by webhook-secret placeholders.
 - If no direct user-owned installation mapping exists, sync now probes persisted active App installations with a bounded authored-PR search and selects the first installation that can see the actor’s PR evidence, keeping org-repo PR extraction App-only without OAuth token discovery.
 - Sync extraction error contracts now expose only strict App-installation signals (`github_app_installation_required`, `github_app_installation_unavailable`); OAuth-required extraction error codes were removed from ingestor and frontend diagnostics.
 - Extraction runtime now fails closed when GitHub fetch helpers are invoked outside strict App runtime clones (`github_app_runtime_required`), preventing accidental fallback to non-App extraction paths.
@@ -169,6 +170,7 @@ If `GITRANK_ENV_FILE` is unset, frontend runtime falls back to `../gitrank/.env`
 - User-sync execution marks authored-PR backfill as partial when discovery is still incomplete (`authored_pull_request_backfill_incomplete`), avoiding false "fully synced" states while history backfill is still in progress.
 - User-sync execution also treats all-unmerged selected target windows (`authored_pull_requests_selected_unmerged_only`) as partial-state outcomes so sync status does not over-claim score-ready completion.
 - Refresh feedback explicitly differentiates "history backfill still in progress" from credential-scope failures, so users are not prompted to reconnect GitHub during normal backfill progression.
+- Refresh feedback now treats terminal `failed` user-sync executions as warning outcomes (including explicit App-installation/runtime blockers) so UI cannot present failed refreshes as success states.
 - Dashboard/profile sync-state pills now evaluate the full authenticated sync-run stream (not only `run_type=user`) so active child PR/repository runs keep the UI in `syncing` until terminal.
 - Concurrent user sync requests for the same login are deduplicated in-process; overlapping executions return a conflict response instead of running duplicated heavy sync loops.
 - Concurrent user sync requests are also deduplicated with a PostgreSQL advisory lease keyed by GitHub login, so multi-instance deployments avoid duplicate heavy sync execution for the same user.

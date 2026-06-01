@@ -6,6 +6,14 @@ This document is intentionally detailed.
 
 ## Session Notes (May 31, 2026)
 
+- Refresh-feedback truthfulness is now fail-safe: `buildUserSyncRefreshFeedback` classifies terminal `failed` sync executions (including app-installation-required/runtime-unavailable and in-progress conflict metrics) as warning outcomes, so UI never reports a success-like refresh message for failed PR extraction runs.
+- Dashboard/Settings profile freshness pills now suppress `Refreshed …` badges whenever effective sync state is not `synced` or App-installation blockers are active, preventing false “fresh” signals during blocked sync states.
+- Settings account-action notice rendering now maps refresh outcome tone (`success`/`warning`/`error`) into `InlineNotice` variants, so sync recovery states are visually distinct from normal success responses.
+- Repository visibility list keys now include deterministic compound identity fields to avoid duplicate-key instability in settings list rendering and satisfy JSX key stability guards.
+- GitHub App sync runtime validation is now separated from webhook-delivery validation: execute/queue sync routes and dependency manifests require App JWT/install credentials only, while webhook secret remains a webhook-only requirement.
+- Auth install preview/health signals now report App sync-runtime readiness (not webhook-secret presence), reducing false "app misconfigured" states during local PR-sync setup.
+- Settings sync activity status filtering now uses a single compact dropdown instead of segmented tab buttons, reducing interaction overhead and eliminating tab-triggered scroll/focus jitter in long settings pages.
+- Contributions now uses stale-while-revalidate rendering rules: it blocks only on first-load/no-cache failures and keeps cached evidence visible with an inline refresh warning when background refetch fails.
 - Dashboard and settings now use shared `IntentPrefetchLink` navigation on high-traffic internal actions (lane nav, hero CTAs, quest/report empty states, and account actions), so route prefetching is intent-driven (hover/focus/touch) and automatically suppressed on constrained networks.
 - Settings account controls now always expose a GitHub App install/manage action and show an explicit install-required warning when strict App sync is blocked, keeping sync recovery obvious instead of relying on hidden diagnostics.
 - Dashboard lane styling was tightened for readability consistency (higher contrast nav tokens and clearer active-state hierarchy) without reintroducing heavy motion or blur effects.

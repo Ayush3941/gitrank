@@ -162,7 +162,7 @@ export function PrivacyRepositoryToggleList({
         {filteredItems.length > 0 ? (
           <ul role="list" className="grid gap-3">
             {filteredItems.map((repo) => (
-              <li key={repo.name} className="list-none">
+              <li key={`${repo.name}:${repo.visibility}:${repo.tracked ? "tracked" : "untracked"}`} className="list-none">
                 <div className="render-opt-card neon-surface flex flex-col gap-3 rounded-[1.75rem] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="font-medium text-white">{repo.name}</p>

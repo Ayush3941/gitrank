@@ -116,6 +116,55 @@ describe("buildUserSyncRefreshFeedback", () => {
     expect(feedback.message).toContain("upstream GitHub errors");
   });
 
+  it("returns warning when sync fails due to missing GitHub App installation", () => {
+    const feedback = buildUserSyncRefreshFeedback(
+      execution({
+        status: "failed",
+        fetched: {
+          app_installation_required: 1,
+        },
+      }),
+    );
+    expect(feedback.tone).toBe("warning");
+    expect(feedback.message).toContain("installation is missing");
+  });
+
+  it("returns warning when sync fails due to unavailable GitHub App credentials", () => {
+    const feedback = buildUserSyncRefreshFeedback(
+      execution({
+        status: "failed",
+        fetched: {
+          app_installation_unavailable: 1,
+        },
+      }),
+    );
+    expect(feedback.tone).toBe("warning");
+    expect(feedback.message).toContain("credentials are unavailable");
+  });
+
+  it("returns warning when sync fails because another sync is already running", () => {
+    const feedback = buildUserSyncRefreshFeedback(
+      execution({
+        status: "failed",
+        fetched: {
+          user_sync_in_progress: 1,
+        },
+      }),
+    );
+    expect(feedback.tone).toBe("warning");
+    expect(feedback.message).toContain("already running");
+  });
+
+  it("returns generic warning when sync fails without classified metrics", () => {
+    const feedback = buildUserSyncRefreshFeedback(
+      execution({
+        status: "failed",
+      }),
+    );
+    expect(feedback.tone).toBe("warning");
+    expect(feedback.message).toContain("Refresh failed");
+  });
+
   it("returns warning when PR sync targets exist but score replay produced zero events", () => {
     const feedback = buildUserSyncRefreshFeedback(
       execution({
