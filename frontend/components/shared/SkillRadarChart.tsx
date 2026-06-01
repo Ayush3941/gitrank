@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useId, useState } from "react";
 import { useLazyInView } from "@/hooks/use-lazy-in-view";
+import { ScrollableRegion } from "@/components/shared/ScrollableRegion";
 import {
   useNetworkConstraintPreference,
   useReducedGamification,
@@ -92,10 +93,9 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
           ))}
         </ul>
         {showDataTable ? (
-          <div
+          <ScrollableRegion
             id={tableRegionId}
-            role="region"
-            aria-labelledby={tableToggleId}
+            labelledById={tableToggleId}
             className="mt-3 overflow-x-auto"
           >
             <table className="w-full min-w-[24rem] text-left text-xs text-muted">
@@ -117,7 +117,7 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollableRegion>
         ) : null}
       </div>
     </div>

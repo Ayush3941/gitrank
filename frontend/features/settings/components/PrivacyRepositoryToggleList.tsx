@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { startTransition, useDeferredValue, useId, useMemo, useState } from "react";
 import { ControlSurface } from "@/components/shared/ControlSurface";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
+import { ScrollableRegion } from "@/components/shared/ScrollableRegion";
 import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
 import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
 import { Button } from "@/components/ui/button";
@@ -153,12 +154,10 @@ export function PrivacyRepositoryToggleList({
           </div>
         </div>
       </ControlSurface>
-      <div
+      <ScrollableRegion
         id={repositoriesRegionId}
-        role="region"
-        aria-labelledby={controlsHeadingId}
-        tabIndex={0}
-        className="repository-visibility-results-viewport focus-ring overflow-y-auto pr-1"
+        labelledById={controlsHeadingId}
+        className="repository-visibility-results-viewport overflow-y-auto pr-1"
       >
         {filteredItems.length > 0 ? (
           <ul role="list" className="grid gap-3">
@@ -233,7 +232,7 @@ export function PrivacyRepositoryToggleList({
             </div>
           </div>
         )}
-      </div>
+      </ScrollableRegion>
     </div>
   );
 }

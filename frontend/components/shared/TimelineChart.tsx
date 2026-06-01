@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useId, useState } from "react";
+import { ScrollableRegion } from "@/components/shared/ScrollableRegion";
 import { useLazyInView } from "@/hooks/use-lazy-in-view";
 import {
   useNetworkConstraintPreference,
@@ -102,10 +103,9 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
         ))}
       </ul>
         {showDataTable ? (
-          <div
+          <ScrollableRegion
             id={tableRegionId}
-            role="region"
-            aria-labelledby={tableToggleId}
+            labelledById={tableToggleId}
             className="mt-3 overflow-x-auto"
           >
             <table className="w-full min-w-[22rem] text-left text-xs text-muted">
@@ -131,7 +131,7 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
                 })}
               </tbody>
             </table>
-          </div>
+          </ScrollableRegion>
         ) : null}
       </div>
     </div>

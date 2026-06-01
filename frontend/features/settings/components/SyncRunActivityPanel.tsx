@@ -4,6 +4,7 @@ import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, Search, XCircle } from 
 import { useDeferredValue, useId, useMemo, useState } from "react";
 import { ControlSurface } from "@/components/shared/ControlSurface";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
+import { ScrollableRegion } from "@/components/shared/ScrollableRegion";
 import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
 import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
 import { Button } from "@/components/ui/button";
@@ -321,15 +322,13 @@ export function SyncRunActivityPanel({
         </div>
       ) : null}
 
-      <div
+      <ScrollableRegion
         id={syncRunsRegionId}
-        role="region"
-        aria-labelledby={syncRunsHeadingId}
+        labelledById={syncRunsHeadingId}
         aria-live="polite"
         aria-relevant="additions text"
         aria-busy={isLoading || isRefreshing}
-        tabIndex={0}
-        className="sync-runs-results-viewport focus-ring overflow-y-auto pr-1"
+        className="sync-runs-results-viewport overflow-y-auto pr-1"
       >
         {isLoading ? (
           <div className={`neon-surface grid gap-2 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}>
@@ -402,7 +401,7 @@ export function SyncRunActivityPanel({
             })}
           </ol>
         )}
-      </div>
+      </ScrollableRegion>
     </div>
   );
 }
