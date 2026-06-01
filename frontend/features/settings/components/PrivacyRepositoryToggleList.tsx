@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { X } from "lucide-react";
-import { startTransition, useDeferredValue, useMemo, useState } from "react";
+import { startTransition, useDeferredValue, useId, useMemo, useState } from "react";
+import { ControlSurface } from "@/components/shared/ControlSurface";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
 import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
 import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
@@ -30,8 +31,8 @@ export function PrivacyRepositoryToggleList({
   const canReset = searchTerm.length > 0 || visibilityFilter !== "All";
   const activeFilterCount =
     (visibilityFilter !== "All" ? 1 : 0) + (searchTerm.length > 0 ? 1 : 0);
-  const statusId = "settings-repositories-filter-status";
-  const repositoriesRegionId = "settings-repositories-visibility-region";
+  const statusId = useId();
+  const repositoriesRegionId = useId();
   const counts = useMemo(() => {
     const publicCount = visibleItems.filter((repo) => repo.visibility === "Public").length;
     return {
@@ -69,7 +70,7 @@ export function PrivacyRepositoryToggleList({
 
   return (
     <div className="repository-visibility-panel-shell space-y-3">
-      <div className="space-y-3">
+      <ControlSurface as="section">
         <p id={statusId} role="status" aria-live="polite" aria-atomic="true" className="sr-only">
           {`${filteredItems.length} of ${counts.total} repositories`}
         </p>
@@ -149,7 +150,7 @@ export function PrivacyRepositoryToggleList({
             />
           </div>
         </div>
-      </div>
+      </ControlSurface>
       <div
         id={repositoriesRegionId}
         className="repository-visibility-results-viewport overflow-y-auto pr-1"

@@ -76,6 +76,15 @@ describe("accessibility control naming", () => {
     expect(reset.hasAttribute("disabled")).toBe(true);
     expect(syncAction).toBeTruthy();
     expect(syncAction.getAttribute("href")).toBe("/dashboard");
-    expect(search.getAttribute("aria-describedby")).toBe("settings-repositories-filter-status");
+    const describedById = search.getAttribute("aria-describedby");
+    expect(describedById).toBeTruthy();
+    const escapedId = describedById
+      ? describedById.replace(/([ !"#$%&'()*+,./:;<=>?@[\\\]^`{|}~])/g, "\\$1")
+      : "";
+    const statusNode = describedById
+      ? rendered.container.querySelector(`#${escapedId}`)
+      : null;
+    expect(statusNode).toBeTruthy();
+    expect(statusNode?.getAttribute("role")).toBe("status");
   });
 });

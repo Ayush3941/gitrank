@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, Search, XCircle } from "lucide-react";
-import { useDeferredValue, useMemo, useState } from "react";
+import { useDeferredValue, useId, useMemo, useState } from "react";
+import { ControlSurface } from "@/components/shared/ControlSurface";
 import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
 import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
 import { Button } from "@/components/ui/button";
@@ -78,8 +79,8 @@ export function SyncRunActivityPanel({
   const [statusFilter, setStatusFilter] = useState<SyncRunStatusFilter>("All");
   const canReset = search.trim().length > 0 || statusFilter !== "All";
   const deferredSearch = useDeferredValue(search);
-  const filterStatusId = "settings-sync-filter-status";
-  const syncRunsRegionId = "settings-sync-runs-region";
+  const filterStatusId = useId();
+  const syncRunsRegionId = useId();
   const runRows = useMemo<SyncRunRow[]>(
     () =>
       runs.map((run) => {
@@ -248,7 +249,7 @@ export function SyncRunActivityPanel({
           ) : null}
         </div>
       ) : null}
-      <div className="space-y-3">
+      <ControlSurface as="section">
         <p id={filterStatusId} role="status" aria-live="polite" aria-atomic="true" className="sr-only">
           {`${filteredRows.length} of ${statusCounts.all} runs`}
         </p>
@@ -304,7 +305,7 @@ export function SyncRunActivityPanel({
             </div>
           ) : null}
         </div>
-      </div>
+      </ControlSurface>
 
       {isError ? (
         <div role="alert" className="neon-surface space-y-3 border-rose-300/28 px-4 py-3 text-sm text-rose-100">

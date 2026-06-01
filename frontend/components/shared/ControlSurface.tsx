@@ -2,12 +2,14 @@ import type { HTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 
 export function ControlSurface({
+  as = "div",
   className,
   children,
   ...props
-}: HTMLAttributes<HTMLDivElement>) {
+}: HTMLAttributes<HTMLElement> & { as?: "div" | "section" }) {
+  const Component = as;
   return (
-    <div
+    <Component
       className={cn(
         "neon-surface space-y-3 rounded-[1rem] px-3 py-3 sm:px-4 sm:py-4",
         className,
@@ -15,6 +17,6 @@ export function ControlSurface({
       {...props}
     >
       {children}
-    </div>
+    </Component>
   );
 }

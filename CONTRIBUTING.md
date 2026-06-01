@@ -6,6 +6,8 @@ This document is intentionally detailed.
 
 ## Session Notes (May 31, 2026)
 
+- Contribution and settings filter surfaces now use shared `ControlSurface` wrappers and `useId`-based status/region IDs (`ContributionFilters`, `PrivacyRepositoryToggleList`, `SyncRunActivityPanel`) to reduce duplicated layout styling and avoid static-ID collisions in reusable filter modules.
+- Accessibility control tests were updated to validate semantic status linkage (search input `aria-describedby` points to a real `role="status"` region) without assuming fixed literal IDs, preserving test robustness after `useId` adoption.
 - Dashboard filter-control shells now use a shared `ControlSurface` component (`neon-surface` spacing/radius/padding contract) across Badges, Quests, and Leaderboard to reduce duplicated styling and keep control density consistent.
 - Dashboard lane navigation now uses a deterministic grid layout (`2` columns on narrow viewports, `5` on larger screens) instead of mixed flex/min-width behavior, removing small-screen overflow pressure while keeping all primary lanes visible.
 - Contributions, Quests, and Leaderboard now generate per-instance disclosure/status region IDs via React `useId` instead of static constants, preventing duplicate-ID collisions when sections are reused while preserving ARIA control/link semantics.

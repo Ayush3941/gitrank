@@ -15,6 +15,8 @@ import {
   Trophy,
   X,
 } from "lucide-react";
+import { useId } from "react";
+import { ControlSurface } from "@/components/shared/ControlSurface";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
 import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
 import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
@@ -110,7 +112,8 @@ export function ContributionFilters({
   focusCounts?: Partial<Record<ContributionFocusFilter, number>>;
   contextNote?: string;
 }) {
-  const statusId = "contribution-filter-status";
+  const statusId = useId();
+  const mobileControlsId = useId();
   const activeStatus = resolveContributionStatusFilter(value);
   const activeFocus = resolveContributionFocusFilter(value);
 
@@ -150,15 +153,17 @@ export function ContributionFilters({
   }
 
   return (
-    <section
+    <ControlSurface
+      as="section"
       aria-label="Contribution filters"
       data-compact={compact ? "true" : "false"}
-      className="neon-surface space-y-4 rounded-[1rem] px-3 py-3 sm:px-4 sm:py-4"
+      className="space-y-4"
     >
       <p
         id={statusId}
         role="status"
         aria-live="polite"
+        aria-atomic="true"
         className="sr-only"
       >
         {isFiltering
@@ -197,7 +202,7 @@ export function ContributionFilters({
             : undefined
         }
       />
-      <div id="contribution-mobile-controls">
+      <div id={mobileControlsId}>
         <div className="space-y-2">
           <p className="text-xs font-medium text-primary">Status</p>
           <SegmentedTablist
@@ -285,6 +290,6 @@ export function ContributionFilters({
           {contextNote ? <p className="text-xs text-muted">{contextNote}</p> : null}
         </div>
       </div>
-    </section>
+    </ControlSurface>
   );
 }
