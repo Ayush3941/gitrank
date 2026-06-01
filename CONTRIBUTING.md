@@ -6,6 +6,8 @@ This document is intentionally detailed.
 
 ## Session Notes (May 31, 2026)
 
+- Dashboard lane navigation now renders through a single shared shell (`DashboardLayout` + `DashboardRouteNav`) instead of stacked wrapper chrome, reducing duplicate borders and keeping lane hierarchy visually consistent across all dashboard routes.
+- Settings sync diagnostics now open collapsed by default with compact health chips (`Healthy` / `active` / `partial` / `failed`) and explicit `Open log` disclosure, reducing first-view clutter and avoiding auto-expand layout jumps while preserving full run diagnostics on demand.
 - Horizontal overflow affordances are now explicit across dashboard rails (`DashboardRouteNav`, `SegmentedTablist`, and `HeaderMetaChips`) via shared `scroll-fade-x` edge fades, improving mobile discoverability of off-screen lanes without adding animation-heavy cues.
 - Marketing hero trust blocks were tightened to explicit authority lanes (`deterministic scoring`, `GitHub App extraction`, `AI explanation-only`) and section header/action alignment was normalized through shared header primitives (`PageHeader`, `SectionHeader`) for cleaner cross-route hierarchy.
 - Freshness-pill rendering is now centralized through `shouldShowProfileFreshnessPill` (`frontend/lib/presentation/sync-evidence.ts`) and reused by Dashboard, Contributions, Badges, Quests, Leaderboard, and Settings to prevent route-specific drift.

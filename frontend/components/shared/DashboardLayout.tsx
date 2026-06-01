@@ -7,10 +7,8 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
   return (
     <AppShell>
       <DashboardAutoSyncCoordinator />
-      <div className="min-w-0 space-y-5">
-        <section className="dashboard-chrome px-2.5 py-2 sm:px-3 sm:py-2.5">
-          <DashboardRouteNav embedded />
-        </section>
+      <div className="min-w-0 space-y-4">
+        <DashboardRouteNav />
         {children}
       </div>
     </AppShell>

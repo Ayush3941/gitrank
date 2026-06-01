@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, Download, FolderGit2, LogOut, Palette, RefreshCw, Trash2 } from "lucide-react";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
@@ -180,20 +180,6 @@ export function SettingsPageClient() {
     () => selectLatestActionableSyncRunOutcome(syncRuns),
     [syncRuns],
   );
-  const syncActivityNeedsAttention = useMemo(() => {
-    if (syncRunsQuery.isError) {
-      return true;
-    }
-    return syncRuns.some((run) => {
-      const status = syncRunStatusLabelWithMetrics(run.status, run.metrics);
-      return (
-        status === "Running" ||
-        status === "Queued" ||
-        status === "Partial" ||
-        status === "Failed"
-      );
-    });
-  }, [syncRuns, syncRunsQuery.isError]);
   const appInstallationBlocked = isGitHubAppInstallationBlocked(latestSyncOutcome);
   const displaySyncState = appInstallationBlocked ? "failed" : syncStateForDisplay;
   const activeTheme = THEME_OPTIONS.find((option) => option.value === theme) ?? THEME_OPTIONS[0];
@@ -539,7 +525,6 @@ export function SettingsPageClient() {
           isRefreshing={syncRunsQuery.isFetching}
           isError={syncRunsQuery.isError}
           errorMessage={syncRunsError}
-          defaultExpanded={syncActivityNeedsAttention}
           onRefresh={() => {
             void syncRunsQuery.refetch();
           }}
@@ -806,7 +791,6 @@ function SettingsSyncActivitySection({
   isRefreshing,
   isError,
   errorMessage,
-  defaultExpanded,
   onRefresh,
 }: {
   runs: ApiSyncRunRecord[];
@@ -817,19 +801,11 @@ function SettingsSyncActivitySection({
   isRefreshing: boolean;
   isError: boolean;
   errorMessage: string;
-  defaultExpanded: boolean;
   onRefresh: () => void;
 }) {
-  const [expanded, setExpanded] = useState(defaultExpanded);
-  const userToggledRef = useRef(false);
+  const [expanded, setExpanded] = useState(false);
   const syncActivityToggleId = useId();
   const syncActivityDetailsId = useId();
-
-  useEffect(() => {
-    if (defaultExpanded && !expanded && !userToggledRef.current) {
-      setExpanded(true);
-    }
-  }, [defaultExpanded, expanded]);
 
   const summary = useMemo(() => {
     let completed = 0;
@@ -867,51 +843,64 @@ function SettingsSyncActivitySection({
     <GlowCard className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-medium text-primary">Advanced diagnostics</p>
+          <p className="text-xs font-medium text-primary">Sync history</p>
           <h2 className="mt-2 text-xl font-semibold text-white">Sync activity</h2>
           <p className="mt-2 text-sm text-muted">
-            Run history and failure details for debugging sync behavior.
+            Review recent runs, errors, and GitHub fetch outcomes.
           </p>
         </div>
-        <Button
-          type="button"
-          size="sm"
-          variant="secondary"
-          id={syncActivityToggleId}
-          aria-expanded={expanded}
-          aria-controls={syncActivityDetailsId}
-          onClick={() => {
-            userToggledRef.current = true;
-            setExpanded((current) => !current);
-          }}
-        >
-          {expanded ? (
-            <>
-              Hide details
-              <ChevronUp className="h-4 w-4" />
-            </>
-          ) : (
-            <>
-              Show details
-              <ChevronDown className="h-4 w-4" />
-            </>
-          )}
-        </Button>
+        <div className="flex items-center gap-2">
+          <span
+            className={
+              summary.failed > 0 || summary.partial > 0
+                ? "neon-chip neon-chip-warning inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
+                : summary.running > 0 || summary.queued > 0
+                  ? "neon-chip neon-chip-info inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
+                  : "neon-chip neon-chip-success inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
+            }
+          >
+            {attentionLabel}
+          </span>
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            id={syncActivityToggleId}
+            aria-expanded={expanded}
+            aria-controls={syncActivityDetailsId}
+            onClick={() => {
+              setExpanded((current) => !current);
+            }}
+          >
+            {expanded ? (
+              <>
+                Hide log
+                <ChevronUp className="h-4 w-4" />
+              </>
+            ) : (
+              <>
+                Open log
+                <ChevronDown className="h-4 w-4" />
+              </>
+            )}
+          </Button>
+        </div>
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
           Runs {runs.length}
         </span>
-        <span
-          className={
-            summary.failed > 0 || summary.partial > 0
-              ? "neon-chip neon-chip-warning inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
-              : summary.running > 0 || summary.queued > 0
-                ? "neon-chip neon-chip-info inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
-                : "neon-chip neon-chip-success inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
-          }
-        >
-          {attentionLabel}
+        <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+          Completed {summary.completed}
+        </span>
+        <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+          Active {summary.running + summary.queued}
+        </span>
+        <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+          Partial {summary.partial}
+        </span>
+        <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+          Failed {summary.failed}
         </span>
       </div>
       <div

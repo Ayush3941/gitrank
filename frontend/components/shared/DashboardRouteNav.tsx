@@ -12,8 +12,7 @@ import {
 import { dashboardNavItems, resolveDashboardNavItem } from "@/components/shared/dashboard-nav";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { cn } from "@/lib/cn";
-
-export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) {
+export function DashboardRouteNav() {
   const pathname = usePathname();
   const navId = useId();
   const activeLane = resolveDashboardNavItem(pathname);
@@ -28,13 +27,11 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
   return (
     <nav
       aria-label="Dashboard routes"
-      className={cn(embedded ? "p-0" : "dashboard-nav-shell p-1.5")}
+      className="dashboard-nav-shell p-1.5"
     >
       <ul
         role="list"
-        className={cn(
-          "dashboard-nav-track scroll-fade-x scroll-fade-x-sm-hide lane-rail flex gap-2 overflow-x-auto p-0.5 sm:grid sm:grid-cols-5 sm:overflow-visible sm:p-0",
-        )}
+        className="dashboard-nav-track scroll-fade-x scroll-fade-x-sm-hide lane-rail flex gap-2 overflow-x-auto p-0.5 sm:grid sm:grid-cols-5 sm:overflow-visible sm:p-0"
       >
         {dashboardNavItems.map((item) => {
           const active = isActive(item.href);
