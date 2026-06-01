@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { CopyTextButton } from "@/components/shared/CopyTextButton";
+import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { InlineNotice } from "@/components/shared/InlineNotice";
@@ -326,19 +327,16 @@ export function PRBattleReportPageClient({
                 Only metrics used directly by the deterministic score formula are shown here.
               </p>
             </div>
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
+            <DisclosureToggle
               id={ledgerToggleId}
-              aria-expanded={showLedgerNotes}
-              aria-controls={ledgerRegionId}
-              onClick={() => {
+              controlsId={ledgerRegionId}
+              expanded={showLedgerNotes}
+              onToggle={() => {
                 setShowLedgerNotes((current) => !current);
               }}
-            >
-              {showLedgerNotes ? "Hide metric notes" : "Show metric notes"}
-            </Button>
+              collapsedLabel="Show metric notes"
+              expandedLabel="Hide metric notes"
+            />
           </div>
           <div id={ledgerRegionId} role="region" aria-labelledby={ledgerToggleId} className="space-y-4">
             <LedgerSection
@@ -525,19 +523,16 @@ export function PRBattleReportPageClient({
       <section className="render-opt-section space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-sm font-semibold text-white">Technical breakdown</h2>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
+          <DisclosureToggle
             id={technicalToggleId}
-            onClick={() => {
+            controlsId={technicalPanelsId}
+            expanded={showTechnicalBreakdown}
+            onToggle={() => {
               setShowTechnicalBreakdown((current) => !current);
             }}
-            aria-expanded={showTechnicalBreakdown}
-            aria-controls={technicalPanelsId}
-          >
-            {showTechnicalBreakdown ? "Hide details" : "Show details"}
-          </Button>
+            collapsedLabel="Show details"
+            expandedLabel="Hide details"
+          />
         </div>
         <div
           id={technicalPanelsId}

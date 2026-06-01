@@ -596,19 +596,16 @@ export function BadgesPageClient() {
             <h2 className="text-sm font-semibold text-white">
               Locked paths ({lockedBadges.length})
             </h2>
-            <Button
-              type="button"
-              size="sm"
-              variant="secondary"
+            <DisclosureToggle
               id={badgesLockedToggleId}
-              aria-controls={badgesLockedRegionId}
-              aria-expanded={showLockedBadges}
-              onClick={() => {
+              controlsId={badgesLockedRegionId}
+              expanded={showLockedBadges}
+              onToggle={() => {
                 setShowLockedBadges((current) => !current);
               }}
-            >
-              {showLockedBadges ? "Hide details" : "Show details"}
-            </Button>
+              collapsedLabel="Show details"
+              expandedLabel="Hide details"
+            />
           </div>
           {!showLockedBadges ? (
             lockedBadgePreview.length > 0 ? (

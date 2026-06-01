@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useId, useState } from "react";
+import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { useLazyInView } from "@/hooks/use-lazy-in-view";
 import { ScrollableRegion } from "@/components/shared/ScrollableRegion";
 import {
@@ -67,18 +68,16 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
       <div className="neon-surface px-4 py-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs font-medium text-primary">Skill signal summary</p>
-          <button
-            type="button"
+          <DisclosureToggle
             id={tableToggleId}
-            className="focus-ring neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs font-semibold"
-            onClick={() => {
+            controlsId={tableRegionId}
+            expanded={showDataTable}
+            onToggle={() => {
               setShowDataTable((current) => !current);
             }}
-            aria-expanded={showDataTable}
-            aria-controls={tableRegionId}
-          >
-            {showDataTable ? "Hide data table" : "View data table"}
-          </button>
+            collapsedLabel="View data table"
+            expandedLabel="Hide data table"
+          />
         </div>
         <p id={summaryId} className="mt-2 text-sm text-muted">
           Strongest signal: {strongest.category} ({strongest.score}).

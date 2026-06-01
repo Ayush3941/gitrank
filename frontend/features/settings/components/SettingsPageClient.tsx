@@ -2,9 +2,10 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useId, useMemo, useState } from "react";
-import { ChevronDown, ChevronUp, Download, FolderGit2, LogOut, Palette, RefreshCw, Trash2 } from "lucide-react";
+import { Download, FolderGit2, LogOut, Palette, RefreshCw, Trash2 } from "lucide-react";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
+import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -595,29 +596,17 @@ export function SettingsPageClient() {
                   <p className="text-sm text-muted">
                     {activeTheme.label} · {activeTextScale.label} · {themeSource === "system" ? "System" : "Manual"}
                   </p>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="secondary"
+                  <DisclosureToggle
                     id={displayTuningToggleId}
-                    aria-expanded={showDisplayTuning}
-                    aria-controls={displayTuningPanelId}
-                    onClick={() => {
+                    controlsId={displayTuningPanelId}
+                    expanded={showDisplayTuning}
+                    onToggle={() => {
                       setShowDisplayTuning((current) => !current);
                     }}
-                  >
-                    {showDisplayTuning ? (
-                      <>
-                        Hide tuning
-                        <ChevronUp className="h-4 w-4" />
-                      </>
-                    ) : (
-                      <>
-                        Display tuning
-                        <ChevronDown className="h-4 w-4" />
-                      </>
-                    )}
-                  </Button>
+                    collapsedLabel="Display tuning"
+                    expandedLabel="Hide tuning"
+                    iconClassName="h-4 w-4"
+                  />
                 </div>
               </div>
               <div
@@ -804,6 +793,7 @@ function SettingsSyncActivitySection({
   onRefresh: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [autoExpandedFromAttention, setAutoExpandedFromAttention] = useState(false);
   const syncActivityToggleId = useId();
   const syncActivityDetailsId = useId();
 
@@ -838,6 +828,20 @@ function SettingsSyncActivitySection({
         : summary.running > 0 || summary.queued > 0
           ? `${summary.running + summary.queued} active`
           : "Healthy";
+  const hasAttention = summary.failed > 0 || summary.partial > 0;
+
+  useEffect(() => {
+    if (!hasAttention || autoExpandedFromAttention) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setExpanded(true);
+      setAutoExpandedFromAttention(true);
+    }, 0);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [autoExpandedFromAttention, hasAttention]);
 
   return (
     <GlowCard className="space-y-4">
@@ -861,29 +865,17 @@ function SettingsSyncActivitySection({
           >
             {attentionLabel}
           </span>
-          <Button
-            type="button"
-            size="sm"
-            variant="secondary"
+          <DisclosureToggle
             id={syncActivityToggleId}
-            aria-expanded={expanded}
-            aria-controls={syncActivityDetailsId}
-            onClick={() => {
+            controlsId={syncActivityDetailsId}
+            expanded={expanded}
+            onToggle={() => {
               setExpanded((current) => !current);
             }}
-          >
-            {expanded ? (
-              <>
-                Hide log
-                <ChevronUp className="h-4 w-4" />
-              </>
-            ) : (
-              <>
-                Open log
-                <ChevronDown className="h-4 w-4" />
-              </>
-            )}
-          </Button>
+            collapsedLabel="Show details"
+            expandedLabel="Hide details"
+            iconClassName="h-4 w-4"
+          />
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-2">

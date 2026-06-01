@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useId, useState } from "react";
+import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { ScrollableRegion } from "@/components/shared/ScrollableRegion";
 import { useLazyInView } from "@/hooks/use-lazy-in-view";
 import {
@@ -73,18 +74,16 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
               Momentum {momentumLabel}
             </span>
           </div>
-          <button
-            type="button"
+          <DisclosureToggle
             id={tableToggleId}
-            className="focus-ring neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs font-semibold"
-            onClick={() => {
+            controlsId={tableRegionId}
+            expanded={showDataTable}
+            onToggle={() => {
               setShowDataTable((current) => !current);
             }}
-            aria-expanded={showDataTable}
-            aria-controls={tableRegionId}
-          >
-            {showDataTable ? "Hide data table" : "View data table"}
-          </button>
+            collapsedLabel="View data table"
+            expandedLabel="Hide data table"
+          />
         </div>
         <p id={summaryId} className="mt-2 text-sm text-muted">
           Start {firstPoint.label}: {firstPoint.xp} XP. Latest {lastPoint.label}: {lastPoint.xp} XP.

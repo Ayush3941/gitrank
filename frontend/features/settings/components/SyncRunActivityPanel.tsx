@@ -1,8 +1,9 @@
 "use client";
 
-import { AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Clock3, RefreshCw, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, XCircle } from "lucide-react";
 import { useDeferredValue, useId, useMemo, useState } from "react";
 import { ControlSurface } from "@/components/shared/ControlSurface";
+import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { ScrollableRegion } from "@/components/shared/ScrollableRegion";
 import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
@@ -405,28 +406,16 @@ export function SyncRunActivityPanel({
                     ) : null}
                     {detailsAvailable ? (
                       <div className="space-y-2">
-                        <button
-                          type="button"
+                        <DisclosureToggle
                           id={detailsButtonID}
-                          className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
-                          aria-expanded={detailsExpanded}
-                          aria-controls={detailsRegionID}
-                          onClick={() => {
+                          controlsId={detailsRegionID}
+                          expanded={detailsExpanded}
+                          onToggle={() => {
                             toggleRunDetails(row.id);
                           }}
-                        >
-                          {detailsExpanded ? (
-                            <>
-                              Hide details
-                              <ChevronUp className="h-3.5 w-3.5" />
-                            </>
-                          ) : (
-                            <>
-                              Details
-                              <ChevronDown className="h-3.5 w-3.5" />
-                            </>
-                          )}
-                        </button>
+                          collapsedLabel="Details"
+                          expandedLabel="Hide run details"
+                        />
                         <div
                           id={detailsRegionID}
                           role="region"
