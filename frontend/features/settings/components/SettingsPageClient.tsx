@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, Download, FolderGit2, LogOut, Palette, RefreshCw, Trash2 } from "lucide-react";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -157,6 +157,8 @@ export function SettingsPageClient() {
   const [actionNotice, setActionNotice] = useState("");
   const [displayNotice, setDisplayNotice] = useState("");
   const [showDisplayTuning, setShowDisplayTuning] = useState(false);
+  const displayTuningToggleId = useId();
+  const displayTuningPanelId = useId();
   const profileUser = data?.user;
   const currentSettings = data?.user.privacy ?? null;
   const syncRuns = useMemo(
@@ -571,9 +573,9 @@ export function SettingsPageClient() {
                     type="button"
                     size="sm"
                     variant="secondary"
-                    id="display-tuning-toggle"
+                    id={displayTuningToggleId}
                     aria-expanded={showDisplayTuning}
-                    aria-controls="display-tuning-controls"
+                    aria-controls={displayTuningPanelId}
                     onClick={() => {
                       setShowDisplayTuning((current) => !current);
                     }}
@@ -593,9 +595,9 @@ export function SettingsPageClient() {
                 </div>
               </div>
               <div
-                id="display-tuning-controls"
+                id={displayTuningPanelId}
                 role="region"
-                aria-labelledby="display-tuning-toggle"
+                aria-labelledby={displayTuningToggleId}
                 hidden={!showDisplayTuning}
                 className="space-y-4"
               >
@@ -777,6 +779,8 @@ function SettingsSyncActivitySection({
 }) {
   const [manualExpanded, setManualExpanded] = useState<boolean | null>(null);
   const expanded = manualExpanded ?? defaultExpanded;
+  const syncActivityToggleId = useId();
+  const syncActivityDetailsId = useId();
 
   const summary = useMemo(() => {
     let completed = 0;
@@ -824,9 +828,9 @@ function SettingsSyncActivitySection({
           type="button"
           size="sm"
           variant="secondary"
-          id="settings-sync-activity-toggle"
+          id={syncActivityToggleId}
           aria-expanded={expanded}
-          aria-controls="settings-sync-activity-details"
+          aria-controls={syncActivityDetailsId}
           onClick={() => {
             setManualExpanded((current) => {
               if (current === null) {
@@ -866,9 +870,9 @@ function SettingsSyncActivitySection({
         </span>
       </div>
       <div
-        id="settings-sync-activity-details"
+        id={syncActivityDetailsId}
         role="region"
-        aria-labelledby="settings-sync-activity-toggle"
+        aria-labelledby={syncActivityToggleId}
         hidden={!expanded}
         className="block"
       >

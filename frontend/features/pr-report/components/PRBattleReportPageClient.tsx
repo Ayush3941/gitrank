@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { AlertTriangle, ArrowRight, Award, ExternalLink, ShieldCheck, Swords } from "lucide-react";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { ExpandableText } from "@/components/shared/ExpandableText";
@@ -73,6 +73,8 @@ export function PRBattleReportPageClient({
   const { data, isLoading, isError, refetch } = usePrReport(owner, repo, number);
   const runPullRequestSync = useRunPullRequestSync();
   const [showTechnicalBreakdown, setShowTechnicalBreakdown] = useState(false);
+  const technicalPanelsId = useId();
+  const technicalToggleId = useId();
   const [retryNotice, setRetryNotice] = useState<{
     tone: "success" | "warning" | "error";
     message: string;
@@ -506,20 +508,20 @@ export function PRBattleReportPageClient({
             type="button"
             size="sm"
             variant="ghost"
-            id="pr-report-technical-toggle"
+            id={technicalToggleId}
             onClick={() => {
               setShowTechnicalBreakdown((current) => !current);
             }}
             aria-expanded={showTechnicalBreakdown}
-            aria-controls="pr-report-technical-panels"
+            aria-controls={technicalPanelsId}
           >
             {showTechnicalBreakdown ? "Hide details" : "Show details"}
           </Button>
         </div>
         <div
-          id="pr-report-technical-panels"
+          id={technicalPanelsId}
           role="region"
-          aria-labelledby="pr-report-technical-toggle"
+          aria-labelledby={technicalToggleId}
         >
           {showTechnicalBreakdown ? (
           <div className="space-y-6">

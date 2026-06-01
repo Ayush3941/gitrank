@@ -15,6 +15,7 @@ This document is intentionally detailed.
 - Shared profile-evidence chips now read the effective sync state and show truthful labels (`Syncing evidence`, `Partially synced`, `Sync failed`, etc.) across Dashboard, Contributions, Badges, Quests, Leaderboard, and Settings instead of collapsing all non-fresh states into a generic pending label.
 - Settings now uses progressive disclosure for sync diagnostics: a compact `Sync activity` summary remains visible by default, while detailed run logs are collapsed in healthy states and auto-expanded when active/partial/failed runs need attention.
 - Disclosure controls now expose stronger ARIA wiring (`aria-controls` + `role="region"` + `aria-labelledby`) across Settings diagnostics, display tuning, chart data-table toggles, and PR technical breakdown so expanded content has an explicit accessible relationship to its trigger.
+- Disclosure panels now use React `useId` for trigger/content IDs (instead of fixed strings), preventing accidental ID collisions when components are reused or rendered more than once on a page.
 
 It serves two purposes:
 
