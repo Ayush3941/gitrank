@@ -4,8 +4,6 @@ import {
   BarChart3,
   BookText,
   Bug,
-  ChevronDown,
-  ChevronUp,
   CircleDot,
   Clock3,
   FlaskConical,
@@ -19,6 +17,7 @@ import {
 } from "lucide-react";
 import { useId, useState } from "react";
 import { ControlSurface } from "@/components/shared/ControlSurface";
+import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
 import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
 import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
@@ -247,28 +246,16 @@ export function ContributionFilters({
           <p className="text-xs text-muted">
             Use status + search first. Open advanced filters for category and ordering.
           </p>
-          <button
-            type="button"
+          <DisclosureToggle
             id={advancedToggleId}
-            className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
-            aria-expanded={showAdvanced}
-            aria-controls={advancedRegionId}
-            onClick={() => {
+            controlsId={advancedRegionId}
+            expanded={showAdvanced}
+            onToggle={() => {
               setShowAdvanced((current) => !current);
             }}
-          >
-            {showAdvanced ? (
-              <>
-                Hide advanced
-                <ChevronUp className="h-3.5 w-3.5" />
-              </>
-            ) : (
-              <>
-                Advanced filters
-                <ChevronDown className="h-3.5 w-3.5" />
-              </>
-            )}
-          </button>
+            collapsedLabel="Advanced filters"
+            expandedLabel="Hide advanced"
+          />
         </div>
         <div
           id={advancedRegionId}

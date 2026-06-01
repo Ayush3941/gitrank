@@ -6,13 +6,12 @@ import { startTransition, useDeferredValue, useId, useMemo, useState } from "rea
 import {
   BookText,
   CalendarClock,
-  ChevronDown,
-  ChevronUp,
   Cpu,
   FlaskConical,
   Globe2,
   TrendingUp,
 } from "lucide-react";
+import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
@@ -314,28 +313,16 @@ export function LeaderboardPageClient() {
             />
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
+            <DisclosureToggle
               id={leaderboardViewOptionsToggleId}
-              className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
-              aria-expanded={showViewOptions}
-              aria-controls={leaderboardViewOptionsRegionId}
-              onClick={() => {
+              controlsId={leaderboardViewOptionsRegionId}
+              expanded={showViewOptions}
+              onToggle={() => {
                 setShowViewOptions((current) => !current);
               }}
-            >
-              {showViewOptions ? (
-                <>
-                  Hide view options
-                  <ChevronUp className="h-3.5 w-3.5" />
-                </>
-              ) : (
-                <>
-                  View options
-                  <ChevronDown className="h-3.5 w-3.5" />
-                </>
-              )}
-            </button>
+              collapsedLabel="View options"
+              expandedLabel="Hide view options"
+            />
           </div>
           <div
             id={leaderboardViewOptionsRegionId}

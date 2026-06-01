@@ -1977,6 +1977,7 @@ ABRA implementation checklist:
 - [x] User-sync app-installation blocking now carries explicit install hints end-to-end: backend emits account-scoped “no active installation” detail with install URL, and frontend diagnostics/rendered error copy preserves that URL for direct recovery action.
 - [x] Settings account actions now remove duplicate GitHub App install CTAs during blocked sync states, and PR report deterministic metric ledger now uses progressive disclosure (`Show metric notes`) to reduce visual clutter while keeping metric-level explanations accessible.
 - [x] Badges filters now use progressive disclosure: primary `State` lanes stay visible, while `Rarity` lanes are behind `Advanced filters` to keep default layout cleaner and reduce control noise without losing filter capability.
+- [x] Progressive disclosure toggle behavior is now centralized in a shared `DisclosureToggle` primitive and reused across Contributions filters, Badges filters, and Leaderboard view controls so chips, labels, icons, and ARIA expansion semantics stay visually and behaviorally consistent.
 
 ABRA closeout artifact:
 

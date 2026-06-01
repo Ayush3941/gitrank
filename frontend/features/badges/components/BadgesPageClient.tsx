@@ -2,8 +2,6 @@
 
 import dynamic from "next/dynamic";
 import {
-  ChevronDown,
-  ChevronUp,
   Crown,
   Gem,
   Lock,
@@ -17,6 +15,7 @@ import { startTransition, type ReactNode, useDeferredValue, useEffect, useId, us
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
@@ -478,28 +477,16 @@ export function BadgesPageClient() {
                 <p className="text-xs text-muted">
                   Use state first. Open advanced filters for rarity lanes.
                 </p>
-                <button
-                  type="button"
+                <DisclosureToggle
                   id={badgesAdvancedFiltersToggleId}
-                  className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
-                  aria-expanded={showAdvancedFilters}
-                  aria-controls={badgesAdvancedFiltersRegionId}
-                  onClick={() => {
+                  controlsId={badgesAdvancedFiltersRegionId}
+                  expanded={showAdvancedFilters}
+                  onToggle={() => {
                     setShowAdvancedFilters((current) => !current);
                   }}
-                >
-                  {showAdvancedFilters ? (
-                    <>
-                      Hide advanced
-                      <ChevronUp className="h-3.5 w-3.5" />
-                    </>
-                  ) : (
-                    <>
-                      Advanced filters
-                      <ChevronDown className="h-3.5 w-3.5" />
-                    </>
-                  )}
-                </button>
+                  collapsedLabel="Advanced filters"
+                  expandedLabel="Hide advanced"
+                />
               </div>
               <div
                 id={badgesAdvancedFiltersRegionId}
