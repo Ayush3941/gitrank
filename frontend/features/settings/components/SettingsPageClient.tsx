@@ -42,6 +42,7 @@ import {
   useTextScalePreference,
 } from "@/hooks/use-text-scale-preference";
 import { selectLatestActionableSyncRunOutcome } from "@/features/settings/lib/sync-run-diagnostics";
+import { syncRunStatusLabelWithMetrics } from "@/features/settings/lib/sync-run-status";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
@@ -158,14 +159,32 @@ export function SettingsPageClient() {
   const [showDisplayTuning, setShowDisplayTuning] = useState(false);
   const profileUser = data?.user;
   const currentSettings = data?.user.privacy ?? null;
-  const { syncStateForDisplay, showRefreshPill } = useProfileSyncState(
-    profileUser,
-    syncRunsQuery.data?.runs,
-  );
-  const latestSyncOutcome = useMemo(
-    () => selectLatestActionableSyncRunOutcome(syncRunsQuery.data?.runs),
+  const syncRuns = useMemo(
+    () => syncRunsQuery.data?.runs ?? [],
     [syncRunsQuery.data?.runs],
   );
+  const { syncStateForDisplay, showRefreshPill } = useProfileSyncState(
+    profileUser,
+    syncRuns,
+  );
+  const latestSyncOutcome = useMemo(
+    () => selectLatestActionableSyncRunOutcome(syncRuns),
+    [syncRuns],
+  );
+  const syncActivityNeedsAttention = useMemo(() => {
+    if (syncRunsQuery.isError) {
+      return true;
+    }
+    return syncRuns.some((run) => {
+      const status = syncRunStatusLabelWithMetrics(run.status, run.metrics);
+      return (
+        status === "Running" ||
+        status === "Queued" ||
+        status === "Partial" ||
+        status === "Failed"
+      );
+    });
+  }, [syncRuns, syncRunsQuery.isError]);
   const appInstallationBlocked =
     latestSyncOutcome?.code === "app_installation_required" ||
     latestSyncOutcome?.code === "app_installation_unavailable" ||
@@ -469,7 +488,7 @@ export function SettingsPageClient() {
 
       <section className="render-opt-section" id="settings-sync-activity-panel">
         <SettingsSyncActivitySection
-          runs={syncRunsQuery.data?.runs ?? []}
+          runs={syncRuns}
           lastUpdatedAt={syncRunsQuery.data?.last_updated_at}
           lastAttemptedAt={syncRunsQuery.data?.last_attempted_at}
           lastSuccessfulAt={syncRunsQuery.data?.last_successful_at}
@@ -477,6 +496,7 @@ export function SettingsPageClient() {
           isRefreshing={syncRunsQuery.isFetching}
           isError={syncRunsQuery.isError}
           errorMessage={syncRunsError}
+          defaultExpanded={syncActivityNeedsAttention}
           onRefresh={() => {
             void syncRunsQuery.refetch();
           }}
@@ -734,6 +754,7 @@ function SettingsSyncActivitySection({
   isRefreshing,
   isError,
   errorMessage,
+  defaultExpanded,
   onRefresh,
 }: {
   runs: ApiSyncRunRecord[];
@@ -744,21 +765,111 @@ function SettingsSyncActivitySection({
   isRefreshing: boolean;
   isError: boolean;
   errorMessage: string;
+  defaultExpanded: boolean;
   onRefresh: () => void;
 }) {
+  const [manualExpanded, setManualExpanded] = useState<boolean | null>(null);
+  const expanded = manualExpanded ?? defaultExpanded;
+
+  const summary = useMemo(() => {
+    let completed = 0;
+    let running = 0;
+    let queued = 0;
+    let partial = 0;
+    let failed = 0;
+    for (const run of runs) {
+      const status = syncRunStatusLabelWithMetrics(run.status, run.metrics);
+      if (status === "Completed") {
+        completed += 1;
+      } else if (status === "Running") {
+        running += 1;
+      } else if (status === "Queued") {
+        queued += 1;
+      } else if (status === "Partial") {
+        partial += 1;
+      } else if (status === "Failed") {
+        failed += 1;
+      }
+    }
+    return { completed, running, queued, partial, failed };
+  }, [runs]);
+
+  const attentionLabel =
+    summary.failed > 0
+      ? `${summary.failed} failed`
+      : summary.partial > 0
+        ? `${summary.partial} partial`
+        : summary.running > 0 || summary.queued > 0
+          ? `${summary.running + summary.queued} active`
+          : "Healthy";
+
   return (
     <GlowCard className="space-y-4">
-      <SyncRunActivityPanel
-        runs={runs}
-        lastUpdatedAt={lastUpdatedAt}
-        lastAttemptedAt={lastAttemptedAt}
-        lastSuccessfulAt={lastSuccessfulAt}
-        isLoading={isLoading}
-        isRefreshing={isRefreshing}
-        isError={isError}
-        errorMessage={errorMessage}
-        onRefresh={onRefresh}
-      />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-medium text-primary">Advanced diagnostics</p>
+          <h2 className="mt-2 text-xl font-semibold text-white">Sync activity</h2>
+          <p className="mt-2 text-sm text-muted">
+            Run history and failure details for debugging sync behavior.
+          </p>
+        </div>
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          aria-expanded={expanded}
+          aria-controls="settings-sync-activity-details"
+          onClick={() => {
+            setManualExpanded((current) => {
+              if (current === null) {
+                return !defaultExpanded;
+              }
+              return !current;
+            });
+          }}
+        >
+          {expanded ? (
+            <>
+              Hide details
+              <ChevronUp className="h-4 w-4" />
+            </>
+          ) : (
+            <>
+              Show details
+              <ChevronDown className="h-4 w-4" />
+            </>
+          )}
+        </Button>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
+          Runs {runs.length}
+        </span>
+        <span
+          className={
+            summary.failed > 0 || summary.partial > 0
+              ? "neon-chip neon-chip-warning inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
+              : summary.running > 0 || summary.queued > 0
+                ? "neon-chip neon-chip-info inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
+                : "neon-chip neon-chip-success inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
+          }
+        >
+          {attentionLabel}
+        </span>
+      </div>
+      <div id="settings-sync-activity-details" className={expanded ? "block" : "hidden"}>
+        <SyncRunActivityPanel
+          runs={runs}
+          lastUpdatedAt={lastUpdatedAt}
+          lastAttemptedAt={lastAttemptedAt}
+          lastSuccessfulAt={lastSuccessfulAt}
+          isLoading={isLoading}
+          isRefreshing={isRefreshing}
+          isError={isError}
+          errorMessage={errorMessage}
+          onRefresh={onRefresh}
+        />
+      </div>
     </GlowCard>
   );
 }

@@ -13,6 +13,7 @@ This document is intentionally detailed.
 - Settings sync-run panel now precomputes row view models and uses deferred search (`useDeferredValue`) to keep filtering responsive under larger run histories, while the results viewport exposes `role="region"` + `aria-busy`/`aria-live` semantics for clearer assistive-state updates.
 - Shared stale-state refresh controls now stay actionable during existing queued/running sync work and switch label text to `Check sync status`, so users get immediate in-flight diagnostics instead of a disabled control across Dashboard, Contributions, Badges, Quests, and Leaderboard.
 - Shared profile-evidence chips now read the effective sync state and show truthful labels (`Syncing evidence`, `Partially synced`, `Sync failed`, etc.) across Dashboard, Contributions, Badges, Quests, Leaderboard, and Settings instead of collapsing all non-fresh states into a generic pending label.
+- Settings now uses progressive disclosure for sync diagnostics: a compact `Sync activity` summary remains visible by default, while detailed run logs are collapsed in healthy states and auto-expanded when active/partial/failed runs need attention.
 
 It serves two purposes:
 
