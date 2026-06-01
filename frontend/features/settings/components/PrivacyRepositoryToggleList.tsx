@@ -98,12 +98,6 @@ export function PrivacyRepositoryToggleList({
             ariaControls: repositoriesRegionId,
           }}
         />
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap gap-2">
-            <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">Public {counts.public}</span>
-            <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">Hidden {counts.hidden}</span>
-          </div>
-        </div>
         <div className="grid gap-3 md:grid-cols-[1fr,15rem]">
           <SearchInputWithClear
             value={search}
