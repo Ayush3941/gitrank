@@ -46,6 +46,7 @@ import { buildStaleSyncNotice } from "@/lib/presentation/stale-sync-notice";
 import type { BadgeRarity } from "@/types/gitrank";
 const BADGES_EARNED_REGION_ID = "badges-earned-region";
 const BADGES_LOCKED_REGION_ID = "badges-locked-lane";
+const BADGES_LOCKED_TOGGLE_ID = "badges-locked-lane-toggle";
 const LOCKED_BADGE_PAGE_SIZE_DEFAULT = 8;
 const LOCKED_BADGE_PAGE_SIZE_CONSTRAINED = 4;
 const BADGE_SHELF_PAGE_SIZE_DEFAULT = 10;
@@ -557,98 +558,104 @@ export function BadgesPageClient() {
               type="button"
               size="sm"
               variant="secondary"
+              id={BADGES_LOCKED_TOGGLE_ID}
               aria-controls={BADGES_LOCKED_REGION_ID}
               aria-expanded={showLockedBadges}
               onClick={() => {
                 setShowLockedBadges((current) => !current);
               }}
             >
-              {showLockedBadges ? "Hide" : "Show"}
+              {showLockedBadges ? "Hide details" : "Show details"}
             </Button>
           </div>
+          {!showLockedBadges ? (
+            lockedBadgePreview.length > 0 ? (
+              <div className="neon-surface rounded-[1.4rem] border border-fuchsia-300/18 px-4 py-4">
+                <p className="text-xs font-medium text-fuchsia-200">Upcoming unlock queue</p>
+                <ul role="list" className="mt-3 grid gap-2 md:grid-cols-3">
+                  {lockedBadgePreview.map((badge) => (
+                    <li key={`${badge.id}-preview`} className="list-none rounded-[0.8rem] border border-fuchsia-300/20 bg-fuchsia-400/6 px-3 py-2">
+                      <p className="text-sm font-semibold text-white">{badge.name}</p>
+                      <p className="mt-1 text-xs text-muted">{badge.rarity}</p>
+                      <p className="mt-1 text-xs text-cyan-100">{badge.progress ?? 0}% complete</p>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-3 text-xs text-muted">
+                  Expand to view full unlock conditions and path links.
+                </p>
+              </div>
+            ) : (
+              <div className="neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4 text-sm text-muted">
+                No locked badge definitions are returned by this snapshot.
+              </div>
+            )
+          ) : null}
           <div
             id={BADGES_LOCKED_REGION_ID}
+            role="region"
+            aria-labelledby={BADGES_LOCKED_TOGGLE_ID}
+            hidden={!showLockedBadges}
+            className="neon-surface rounded-[1.4rem] border border-fuchsia-300/24 p-3"
           >
-            {!showLockedBadges ? (
-              lockedBadgePreview.length > 0 ? (
-                <div className="neon-surface rounded-[1.4rem] border border-fuchsia-300/18 px-4 py-4">
-                  <p className="text-xs font-medium text-fuchsia-200">Upcoming unlock queue</p>
-                  <ul role="list" className="mt-3 grid gap-2 md:grid-cols-3">
-                    {lockedBadgePreview.map((badge, index) => (
-                      <li key={`${badge.id}-preview-${index}`} className="list-none rounded-[0.8rem] border border-fuchsia-300/20 bg-fuchsia-400/6 px-3 py-2">
-                        <p className="text-sm font-semibold text-white">{badge.name}</p>
-                        <p className="mt-1 text-xs text-muted">{badge.rarity}</p>
-                        <p className="mt-1 text-xs text-cyan-100">{badge.progress ?? 0}% complete</p>
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="mt-3 text-xs text-muted">
-                    Expand to view full unlock conditions and path links.
-                  </p>
-                </div>
-              ) : (
-                <div className="neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4 text-sm text-muted">
-                  No locked badge definitions are returned by this snapshot.
-                </div>
-              )
-            ) : lockedBadges.length > 0 ? (
-              <div className="neon-surface rounded-[1.4rem] border border-fuchsia-300/24 p-3">
-              <ul role="list" className="grid gap-3 md:grid-cols-3">
-                {visibleLockedBadges.map((badge, index) => (
-                  <li key={`${badge.id}-${index}`} className="render-opt-card neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-xs font-medium text-fuchsia-200">{badge.rarity}</p>
-                      <span className="neon-chip neon-chip-info rounded-full px-2.5 py-1 text-xs font-semibold">
-                        {badge.progress ?? 0}% complete
-                      </span>
-                    </div>
-                    <h3 className="mt-2 text-base font-semibold text-white">{badge.name}</h3>
-                    <ExpandableText
-                      text={badge.unlockCondition}
-                      lines={3}
-                      minLengthForToggle={120}
-                      className="mt-2"
-                      textClassName="text-sm text-muted"
-                      showMoreLabel="Expand condition"
-                      showLessLabel="Collapse condition"
-                    />
-                    <div className="mt-3 space-y-1">
-                      <Progress value={badge.progress ?? 0} />
-                      <p className="text-xs text-muted">
-                        {badge.progress ?? 0}% verified progress • {Math.max(0, 100 - (badge.progress ?? 0))}% remaining
-                      </p>
-                    </div>
-                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-xs text-cyan-100">
-                        Next move: {unlockRecoveryLabel(badge.unlockCondition)}
-                      </p>
-                      <Button asChild variant="ghost" size="sm">
-                        <Link href={unlockRecoveryHref(badge.unlockCondition)} prefetch={false}>Open path</Link>
-                      </Button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              {hasMoreLockedBadges ? (
-                <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-xs text-muted">{remainingLockedBadges} locked paths remaining</p>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => {
-                      startTransition(() => {
-                        setVisibleLockedCount((current) =>
-                          Math.min(lockedBadgesSorted.length, current + lockedBadgePageSize),
-                        );
-                      });
-                    }}
-                  >
-                    Show more locked paths
-                  </Button>
-                </div>
-              ) : null}
-              </div>
+            {lockedBadges.length > 0 ? (
+              <>
+                <ul role="list" className="grid gap-3 md:grid-cols-3">
+                  {visibleLockedBadges.map((badge) => (
+                    <li key={badge.id} className="render-opt-card neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-xs font-medium text-fuchsia-200">{badge.rarity}</p>
+                        <span className="neon-chip neon-chip-info rounded-full px-2.5 py-1 text-xs font-semibold">
+                          {badge.progress ?? 0}% complete
+                        </span>
+                      </div>
+                      <h3 className="mt-2 text-base font-semibold text-white">{badge.name}</h3>
+                      <ExpandableText
+                        text={badge.unlockCondition}
+                        lines={3}
+                        minLengthForToggle={120}
+                        className="mt-2"
+                        textClassName="text-sm text-muted"
+                        showMoreLabel="Expand condition"
+                        showLessLabel="Collapse condition"
+                      />
+                      <div className="mt-3 space-y-1">
+                        <Progress value={badge.progress ?? 0} />
+                        <p className="text-xs text-muted">
+                          {badge.progress ?? 0}% verified progress • {Math.max(0, 100 - (badge.progress ?? 0))}% remaining
+                        </p>
+                      </div>
+                      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-xs text-cyan-100">
+                          Next move: {unlockRecoveryLabel(badge.unlockCondition)}
+                        </p>
+                        <Button asChild variant="ghost" size="sm">
+                          <Link href={unlockRecoveryHref(badge.unlockCondition)} prefetch={false}>Open path</Link>
+                        </Button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                {hasMoreLockedBadges ? (
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-xs text-muted">{remainingLockedBadges} locked paths remaining</p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => {
+                        startTransition(() => {
+                          setVisibleLockedCount((current) =>
+                            Math.min(lockedBadgesSorted.length, current + lockedBadgePageSize),
+                          );
+                        });
+                      }}
+                    >
+                      Show more locked paths
+                    </Button>
+                  </div>
+                ) : null}
+              </>
             ) : (
               <div className="neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4 text-sm text-muted">
                 No locked badge definitions are returned by this snapshot.
