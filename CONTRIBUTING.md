@@ -280,6 +280,8 @@ Recent no-slop refinement (May 31, 2026):
 - Updated frontend test coverage (`frontend/tests/contribution-filters.test.tsx`) to lock this simplified control-header behavior.
 - `SyncRunActivityPanel` status-tab option mapping is now declarative (`SYNC_RUN_STATUS_META`) instead of nested ternary branches, reducing drift risk between counts/icons and improving reviewability.
 - `frontend/tests/sync-run-activity-panel.test.tsx` app-installation insight assertion now uses a stable phrase-level matcher instead of brittle full-string matching.
+- PR battle reports now expose an in-place `Retry AI summary` action when evidence is `rate_limited`, `ai_fallback`, or `deterministic_only`; it executes pull-request sync for that PR directly and keeps deterministic score output visible while enrichment retries.
+- Added focused regression coverage in `frontend/tests/pr-report-retry-ai-summary.test.tsx` to lock retry-action visibility and pull-request sync invocation wiring.
 
 Recent strict app-auth refinement (May 30, 2026):
 

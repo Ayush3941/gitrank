@@ -14,7 +14,11 @@ import {
   syncRunStatusLabelWithMetrics,
   type SyncRunUiStatus,
 } from "@/features/settings/lib/sync-run-status";
-import { describeSyncRunOutcome, metricCount } from "@/features/settings/lib/sync-run-diagnostics";
+import {
+  describeSyncRunOutcome,
+  metricCount,
+  selectLatestActionableSyncRunOutcome,
+} from "@/features/settings/lib/sync-run-diagnostics";
 
 const SYNC_RUN_STATUS_FILTERS = ["All", "Completed", "Partial", "Queued", "Running", "Failed"] as const;
 type SyncRunStatusFilter = (typeof SYNC_RUN_STATUS_FILTERS)[number];
@@ -135,6 +139,23 @@ export function SyncRunActivityPanel({
     }
     return next;
   }, [runRows]);
+  const latestActionableOutcome = useMemo(
+    () => selectLatestActionableSyncRunOutcome(runs),
+    [runs],
+  );
+  const topRunOutcomeInsight = runRows[0]?.outcomeInsight ?? "";
+  const showLatestSummaryInsight =
+    !!latestActionableOutcome &&
+    latestActionableOutcome.code !== "none" &&
+    latestActionableOutcome.message !== topRunOutcomeInsight;
+  const healthSummaryLabel =
+    statusCounts.failed > 0
+      ? "Sync health: attention needed"
+      : statusCounts.running > 0 || statusCounts.queued > 0
+        ? "Sync health: in progress"
+        : statusCounts.partial > 0
+          ? "Sync health: partial"
+          : "Sync health: stable";
   const filteredRows = useMemo(() => {
     const term = deferredSearch.trim().toLowerCase();
     return runRows.filter((row) => {
@@ -214,6 +235,19 @@ export function SyncRunActivityPanel({
           )}
         </span>
       </div>
+      {runs.length > 0 ? (
+        <div className="neon-surface space-y-2 px-4 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xs font-semibold text-white">{healthSummaryLabel}</p>
+            <p className="text-xs text-muted">
+              Completed {statusCounts.completed} · Partial {statusCounts.partial} · Running {statusCounts.running} · Failed {statusCounts.failed}
+            </p>
+          </div>
+          {showLatestSummaryInsight ? (
+            <p className="text-xs leading-5 text-cyan-100">{latestActionableOutcome.message}</p>
+          ) : null}
+        </div>
+      ) : null}
       <div className="space-y-3">
         <p id={filterStatusId} role="status" aria-live="polite" className="sr-only">
           {`${filteredRows.length} of ${statusCounts.all} runs`}

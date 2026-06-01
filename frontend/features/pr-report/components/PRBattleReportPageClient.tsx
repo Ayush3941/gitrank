@@ -10,10 +10,12 @@ import { ExpandableText } from "@/components/shared/ExpandableText";
 import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
+import { InlineNotice } from "@/components/shared/InlineNotice";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { Button } from "@/components/ui/button";
+import { useRunPullRequestSync } from "@/hooks/use-account-actions";
 import { usePrReport } from "@/hooks/use-pr-report";
 import {
   formatContributionStatusLabel,
@@ -26,6 +28,8 @@ import {
 } from "@/lib/presentation/deterministic-impact-summary";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import { formatEvidenceStatusLabel, toneForEvidenceStatus } from "@/lib/presentation/status-tone";
+import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
+import type { ApiSyncExecutionResponse } from "@/lib/api/account-api";
 
 const ScoreMatrixCard = dynamic(
   () =>
@@ -67,7 +71,12 @@ export function PRBattleReportPageClient({
   number: number;
 }) {
   const { data, isLoading, isError, refetch } = usePrReport(owner, repo, number);
+  const runPullRequestSync = useRunPullRequestSync();
   const [showTechnicalBreakdown, setShowTechnicalBreakdown] = useState(false);
+  const [retryNotice, setRetryNotice] = useState<{
+    tone: "success" | "warning" | "error";
+    message: string;
+  } | null>(null);
 
   if (isLoading) {
     return <LoadingState message="Loading report..." />;
@@ -130,6 +139,12 @@ export function PRBattleReportPageClient({
     hasPersistedScoreEvidence,
     fallbackDetail,
   });
+  const canRetryAiSummary = shouldShowAiSummaryRetry({
+    status: evidenceState.status,
+    deterministicOnly: evidenceState.deterministicOnly,
+    aiFallback: evidenceState.aiFallback,
+    rateLimited: evidenceState.rateLimited,
+  });
   const showEvidenceReasonSummary =
     Boolean(evidenceReasonSummary) &&
     (!evidenceAnchored ||
@@ -140,6 +155,27 @@ export function PRBattleReportPageClient({
       : data.contribution.xpEarned >= 100
         ? "Medium signal"
         : "Early signal";
+
+  async function handleRetryAiSummary() {
+    setRetryNotice(null);
+    try {
+      const result = await runPullRequestSync.mutateAsync({
+        repository: `${data.contribution.owner}/${data.contribution.repo}`,
+        number: data.contribution.number,
+      });
+      setRetryNotice(buildRetryAiSummaryNotice(result));
+      await refetch();
+    } catch (error) {
+      const message = sanitizeUserFacingError(
+        (error as Error | null)?.message || "",
+        "pr-report:retry-ai-summary",
+      );
+      setRetryNotice({
+        tone: "error",
+        message: message || "Retry failed. Try again from Settings after a short delay.",
+      });
+    }
+  }
 
   return (
     <div className="stable-scroll-scope space-y-6">
@@ -401,12 +437,39 @@ export function PRBattleReportPageClient({
             </div>
             <p className="text-sm leading-6 text-muted">{reportStateGuidance.message}</p>
             <div className="flex flex-wrap gap-2">
+              {canRetryAiSummary ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  disabled={runPullRequestSync.isPending}
+                  onClick={() => {
+                    void handleRetryAiSummary();
+                  }}
+                >
+                  {runPullRequestSync.isPending ? "Retrying..." : "Retry AI summary"}
+                </Button>
+              ) : null}
               <Button asChild size="sm" variant="secondary">
                 <Link href={reportStateGuidance.href} prefetch={false}>
                   {reportStateGuidance.cta}
                 </Link>
               </Button>
             </div>
+            <InlineNotice
+              message={retryNotice?.message}
+              variant={retryNotice?.tone ?? "info"}
+              placeholder="AI retry status"
+              minHeightClassName="min-h-7"
+              onDismiss={
+                retryNotice
+                  ? () => {
+                      setRetryNotice(null);
+                    }
+                  : undefined
+              }
+              dismissLabel="Dismiss retry status"
+            />
           </GlowCard>
         </section>
       ) : null}
@@ -736,6 +799,54 @@ function normalizeEvidenceReason(
     return null;
   }
   return reason;
+}
+
+function shouldShowAiSummaryRetry({
+  status,
+  deterministicOnly,
+  aiFallback,
+  rateLimited,
+}: {
+  status: string;
+  deterministicOnly: boolean;
+  aiFallback: boolean;
+  rateLimited: boolean;
+}): boolean {
+  if (rateLimited || aiFallback || deterministicOnly) {
+    return true;
+  }
+  const normalizedStatus = status.trim().toLowerCase();
+  return (
+    normalizedStatus === "rate_limited" ||
+    normalizedStatus === "ai_fallback" ||
+    normalizedStatus === "deterministic_only"
+  );
+}
+
+function buildRetryAiSummaryNotice(result: ApiSyncExecutionResponse): {
+  tone: "success" | "warning";
+  message: string;
+} {
+  const status = result.status.trim().toLowerCase();
+  if (status === "partial") {
+    return {
+      tone: "warning",
+      message:
+        "Retry executed with partial upstream data. Deterministic score stays active while AI enrichment retries.",
+    };
+  }
+  if (status === "queued") {
+    return {
+      tone: "success",
+      message:
+        "Retry queued. Keep this report open for a moment while enrichment catches up.",
+    };
+  }
+  return {
+    tone: "success",
+    message:
+      "Retry executed. This report will refresh with AI text after scoring and persistence settle.",
+  };
 }
 
 function buildReportStateGuidance({
