@@ -6,6 +6,9 @@ This document is intentionally detailed.
 
 ## Session Notes (May 31, 2026)
 
+- Dashboard and settings now use shared `IntentPrefetchLink` navigation on high-traffic internal actions (lane nav, hero CTAs, quest/report empty states, and account actions), so route prefetching is intent-driven (hover/focus/touch) and automatically suppressed on constrained networks.
+- Settings account controls now always expose a GitHub App install/manage action and show an explicit install-required warning when strict App sync is blocked, keeping sync recovery obvious instead of relying on hidden diagnostics.
+- Dashboard lane styling was tightened for readability consistency (higher contrast nav tokens and clearer active-state hierarchy) without reintroducing heavy motion or blur effects.
 - Settings sync diagnostics now mount the `SyncRunActivityPanel` only while the disclosure is expanded, so collapsed state no longer pays render cost for search/filter/result virtualization markup.
 - Dashboard secondary lanes (league, quest lane, battle reports) and the settings repository-visibility section now mount through `DeferUntilVisible` with placeholders, so below-the-fold panels delay hydration/render cost until near viewport while keeping first-view interactions responsive.
 - `DeferUntilVisible` now renders eagerly in test mode (`NODE_ENV=test`) to keep fixture/accessibility tests deterministic while production continues to use IntersectionObserver gating.

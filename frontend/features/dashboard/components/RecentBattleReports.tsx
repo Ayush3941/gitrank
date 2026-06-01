@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { ClampedText } from "@/components/shared/ClampedText";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { Button } from "@/components/ui/button";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import type { PullRequestAnalysis } from "@/types/gitrank";
@@ -17,10 +17,10 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-xl font-semibold text-white">Battle reports</h2>
         <Button asChild size="sm" variant="secondary">
-          <Link href="/dashboard/contributions" prefetch={false}>
+          <IntentPrefetchLink href="/dashboard/contributions">
             View all
             <ArrowRight className="h-4 w-4" />
-          </Link>
+          </IntentPrefetchLink>
         </Button>
       </div>
       <ul role="list" className="grid gap-3">
@@ -29,10 +29,10 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
             <p>No reports yet. New merged PRs appear here after auto-sync settles.</p>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" variant="secondary">
-                <Link href="/dashboard/contributions" prefetch={false}>Inspect contributions</Link>
+                <IntentPrefetchLink href="/dashboard/contributions">Inspect contributions</IntentPrefetchLink>
               </Button>
               <Button asChild size="sm" variant="ghost">
-                <Link href="/dashboard/settings" prefetch={false}>Open sync settings</Link>
+                <IntentPrefetchLink href="/dashboard/settings">Open sync settings</IntentPrefetchLink>
               </Button>
             </div>
           </li>
@@ -79,10 +79,10 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
               </div>
               <div className="mt-4 flex justify-end">
                 <Button asChild variant="secondary" size="sm">
-                  <Link href={`/pr/${report.contribution.owner}/${report.contribution.repo}/${report.contribution.number}`} prefetch={false}>
+                  <IntentPrefetchLink href={`/pr/${report.contribution.owner}/${report.contribution.repo}/${report.contribution.number}`}>
                     View report
                     <ArrowRight className="h-4 w-4" />
-                  </Link>
+                  </IntentPrefetchLink>
                 </Button>
               </div>
             </li>

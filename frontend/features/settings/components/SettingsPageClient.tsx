@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { useEffect, useId, useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, Download, FolderGit2, LogOut, Palette, RefreshCw, Trash2 } from "lucide-react";
 import { BrandLogo } from "@/components/shared/BrandLogo";
@@ -9,6 +8,7 @@ import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
+import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { InlineNotice } from "@/components/shared/InlineNotice";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -192,6 +192,7 @@ export function SettingsPageClient() {
     latestSyncOutcome?.code === "app_installation_required" ||
     latestSyncOutcome?.code === "app_installation_unavailable" ||
     latestSyncOutcome?.code === "app_runtime_required";
+  const displaySyncState = appInstallationBlocked ? "failed" : syncStateForDisplay;
   const activeTheme = THEME_OPTIONS.find((option) => option.value === theme) ?? THEME_OPTIONS[0];
   const activeTextScale = TEXT_SCALE_OPTIONS.find((option) => option.value === textScale) ?? TEXT_SCALE_OPTIONS[0];
 
@@ -378,8 +379,8 @@ export function SettingsPageClient() {
               { label: `Repos ${data.user.repositories.length}` },
               { label: `Hidden ${hiddenRepositoryCount}` },
               {
-                label: `Sync ${formatSyncStateLabel(syncStateForDisplay)}`,
-                tone: toneForSyncState(syncStateForDisplay),
+                label: `Sync ${formatSyncStateLabel(displaySyncState)}`,
+                tone: toneForSyncState(displaySyncState),
               },
             ]}
           />
@@ -389,12 +390,12 @@ export function SettingsPageClient() {
             <ProfileEvidenceStateChip
               showFreshness={showRefreshPill}
               refreshedAt={data.refreshedAt}
-              syncState={syncStateForDisplay}
+              syncState={displaySyncState}
             />
             <Button asChild variant="secondary" size="sm">
-              <Link href={`/u/${data.user.username}`} prefetch={false}>
+              <IntentPrefetchLink href={`/u/${data.user.username}`}>
                 Public profile
-              </Link>
+              </IntentPrefetchLink>
             </Button>
           </div>
         )}
@@ -408,9 +409,9 @@ export function SettingsPageClient() {
           </div>
           <SyncStatusPill
             status={
-              syncStateForDisplay === data.user.syncStatus.state
+              displaySyncState === data.user.syncStatus.state
                 ? data.user.syncStatus
-                : { ...data.user.syncStatus, state: syncStateForDisplay }
+                : { ...data.user.syncStatus, state: displaySyncState }
             }
           />
         </div>
@@ -442,13 +443,11 @@ export function SettingsPageClient() {
             <FolderGit2 className="h-4 w-4" />
             {accountLinkStart.isPending ? "Starting relink..." : "Reconnect GitHub"}
           </Button>
-          {appInstallationBlocked ? (
-            <Button asChild variant="secondary" className="w-full justify-center" disabled={isActing}>
-              <Link href="/oauth/github/install" prefetch={false}>
-                Install GitHub App
-              </Link>
-            </Button>
-          ) : null}
+          <Button asChild variant="secondary" className="w-full justify-center" disabled={isActing}>
+            <IntentPrefetchLink href="/oauth/github/install">
+              {appInstallationBlocked ? "Install GitHub App" : "Manage GitHub App"}
+            </IntentPrefetchLink>
+          </Button>
           <Button
             variant="secondary"
             className="w-full justify-center"
@@ -468,6 +467,11 @@ export function SettingsPageClient() {
             {unlinkAccount.isPending ? "Disconnecting..." : "Disconnect GitHub"}
           </Button>
         </div>
+        {appInstallationBlocked ? (
+          <div className="rounded-[0.1rem] border border-amber-300/24 bg-amber-400/10 px-3 py-2 text-sm text-amber-100">
+            GitHub App installation is required for PR sync. Install the app on your GitHub account, then refresh profile.
+          </div>
+        ) : null}
         {actionError ? (
           <div className="min-h-6">
             <p id={accountActionErrorId} role="alert" className="inline-flex items-center rounded-[0.1rem] border border-rose-300/26 bg-rose-500/10 px-3 py-1.5 text-sm text-rose-100">

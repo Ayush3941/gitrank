@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { useEffect, useMemo, useRef } from "react";
 import { Activity, Flame, Medal } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -17,6 +16,7 @@ import { useStaleSyncRefresh } from "@/hooks/use-stale-sync-refresh";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
+import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
@@ -79,6 +79,11 @@ export function DashboardPageClient() {
   const latestSyncOutcome = useMemo(() => {
     return selectLatestActionableSyncRunOutcome(syncRunsQuery.data?.runs);
   }, [syncRunsQuery.data?.runs]);
+  const appInstallationBlocked =
+    latestSyncOutcome?.code === "app_installation_required" ||
+    latestSyncOutcome?.code === "app_installation_unavailable" ||
+    latestSyncOutcome?.code === "app_runtime_required";
+  const displaySyncState = appInstallationBlocked ? "failed" : syncStateForDisplay;
   const staleSyncRefresh = useStaleSyncRefresh({
     runs: syncRunsQuery.data?.runs,
     isSyncPending: runUserSync.isPending,
@@ -204,8 +209,8 @@ export function DashboardPageClient() {
   }
 
   const staleNotice =
-    syncStateForDisplay === "stale" || syncStateForDisplay === "partially_synced"
-      ? buildDashboardStaleNotice(syncStateForDisplay, data.refreshedAt, latestSyncOutcome)
+    displaySyncState === "stale" || displaySyncState === "partially_synced"
+      ? buildDashboardStaleNotice(displaySyncState, data.refreshedAt, latestSyncOutcome)
       : null;
 
   return (
@@ -221,8 +226,8 @@ export function DashboardPageClient() {
               { label: `Merged PRs ${user.mergedPrCount.toLocaleString("en-US")}` },
               { label: `Streak ${streak.currentStreakDays}d` },
               {
-                label: `Sync ${formatSyncStateLabel(syncStateForDisplay)}`,
-                tone: toneForSyncState(syncStateForDisplay),
+                label: `Sync ${formatSyncStateLabel(displaySyncState)}`,
+                tone: toneForSyncState(displaySyncState),
               },
             ]}
           />
@@ -232,12 +237,12 @@ export function DashboardPageClient() {
             <ProfileEvidenceStateChip
               showFreshness={showRefreshPill}
               refreshedAt={data.refreshedAt}
-              syncState={syncStateForDisplay}
+              syncState={displaySyncState}
             />
             <Button asChild variant="secondary" size="sm">
-              <Link href="/dashboard/contributions" prefetch={false}>
+              <IntentPrefetchLink href="/dashboard/contributions">
                 View PR cards
-              </Link>
+              </IntentPrefetchLink>
             </Button>
           </div>
         )}
@@ -261,7 +266,7 @@ export function DashboardPageClient() {
           archetype={abraInsights.data?.archetype ?? fallbackArchetype}
           identitySummary={abraInsights.data?.identitySummary ?? fallbackIdentitySummary}
           aiMode={abraInsights.data?.generatedBy ?? "deterministic"}
-          effectiveSyncState={syncStateForDisplay}
+          effectiveSyncState={displaySyncState}
         />
       </section>
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-12">

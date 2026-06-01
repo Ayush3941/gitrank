@@ -1091,12 +1091,12 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 
 .dashboard-nav-shell {
   position: relative;
-  border: 1px solid rgb(var(--primary) / 0.12);
+  border: 1px solid rgb(var(--primary) / 0.18);
   background:
-    linear-gradient(155deg, rgb(var(--primary) / 0.02), rgb(var(--primary-2) / 0.014)),
+    linear-gradient(155deg, rgb(var(--primary) / 0.05), rgb(var(--primary-2) / 0.028)),
     rgb(var(--card) / 0.92);
   box-shadow:
-    0 4px 10px rgb(1 5 20 / 0.1),
+    0 8px 18px rgb(1 5 20 / 0.14),
     inset 0 1px 0 rgb(255 255 255 / 0.04);
 }
 
@@ -1167,29 +1167,33 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 }
 
 .dashboard-nav-item {
-  border: 1px solid rgb(var(--primary) / 0.14);
+  border: 1px solid rgb(var(--primary) / 0.2);
   background:
-    linear-gradient(150deg, rgb(var(--primary) / 0.03), rgb(var(--primary-2) / 0.022)),
+    linear-gradient(150deg, rgb(var(--primary) / 0.06), rgb(var(--primary-2) / 0.038)),
     rgb(var(--card) / 0.93);
-  color: rgb(var(--text-body));
+  color: rgb(var(--text-strong));
   transition:
     border-color 120ms linear,
     color 120ms linear,
-    background-color 120ms linear;
+    background-color 120ms linear,
+    box-shadow 120ms linear;
 }
 
 .dashboard-nav-item:hover {
-  border-color: rgb(var(--primary) / 0.4);
+  border-color: rgb(var(--primary) / 0.5);
   color: rgb(var(--text-strong));
+  box-shadow: 0 0 0 1px rgb(var(--primary) / 0.16);
 }
 
 .dashboard-nav-item[data-active="true"] {
   border-color: rgb(var(--primary) / 0.5);
   background:
-    linear-gradient(148deg, rgb(var(--primary) / 0.16), rgb(var(--primary-2) / 0.11)),
+    linear-gradient(148deg, rgb(var(--primary) / 0.22), rgb(var(--primary-2) / 0.15)),
     rgb(var(--card-2) / 0.95);
   color: rgb(var(--text-strong));
-  box-shadow: 0 0 0 1px rgb(var(--primary) / 0.16);
+  box-shadow:
+    0 0 0 1px rgb(var(--primary) / 0.2),
+    0 10px 22px rgb(var(--primary) / 0.16);
 }
 
 .dashboard-nav-icon {

@@ -1,10 +1,10 @@
 import Image from "next/image";
-import Link from "next/link";
 import { ArrowRight, Sparkles, Star } from "lucide-react";
 import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { ContributionPulseStrip } from "@/components/shared/ContributionPulseStrip";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { XPProgress } from "@/components/shared/XPProgress";
 import { Button } from "@/components/ui/button";
@@ -74,10 +74,10 @@ export function DashboardHeroRankCard({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button asChild variant="secondary">
-            <Link href={`/u/${user.username}`} prefetch={false}>
+            <IntentPrefetchLink href={`/u/${user.username}`}>
               Public profile
               <ArrowRight className="h-4 w-4" />
-            </Link>
+            </IntentPrefetchLink>
           </Button>
         </div>
       </div>
@@ -121,10 +121,10 @@ export function DashboardHeroRankCard({
             <p className="text-sm leading-6 text-muted">{nextAction.description}</p>
           </div>
           <Button asChild variant="secondary" size="sm">
-            <Link href={nextAction.href} prefetch={false}>
+            <IntentPrefetchLink href={nextAction.href}>
               {nextAction.cta}
               <ArrowRight className="h-4 w-4" />
-            </Link>
+            </IntentPrefetchLink>
           </Button>
         </div>
       </div>

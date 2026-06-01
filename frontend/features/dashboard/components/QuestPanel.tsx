@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { Link2, Target } from "lucide-react";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { buildEvidenceSignalChips } from "@/lib/presentation/evidence-signal";
@@ -24,10 +24,10 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
             <p>No quests yet. Sync scored PR evidence to generate missions.</p>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" variant="secondary">
-                <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
+                <IntentPrefetchLink href="/dashboard/contributions">Open contributions</IntentPrefetchLink>
               </Button>
               <Button asChild size="sm" variant="ghost">
-                <Link href="/dashboard/settings" prefetch={false}>Open sync settings</Link>
+                <IntentPrefetchLink href="/dashboard/settings">Open sync settings</IntentPrefetchLink>
               </Button>
             </div>
           </div>

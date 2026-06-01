@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 
 export function EmptyState({
@@ -59,7 +59,7 @@ export function EmptyState({
         <div className="flex w-full flex-col items-start gap-2 sm:w-auto sm:flex-row sm:items-center">
           {actionLabel && actionHref ? (
             <Button asChild className="w-full justify-center sm:w-auto">
-              <Link href={actionHref} prefetch={false}>{actionLabel}</Link>
+              <IntentPrefetchLink href={actionHref}>{actionLabel}</IntentPrefetchLink>
             </Button>
           ) : null}
           {actionLabel && !actionHref && onAction ? (
@@ -69,7 +69,7 @@ export function EmptyState({
           ) : null}
           {secondaryActionLabel && secondaryActionHref ? (
             <Button asChild variant="secondary" size="sm" className="w-full justify-center sm:w-auto">
-              <Link href={secondaryActionHref} prefetch={false}>{secondaryActionLabel}</Link>
+              <IntentPrefetchLink href={secondaryActionHref}>{secondaryActionLabel}</IntentPrefetchLink>
             </Button>
           ) : null}
           {secondaryActionLabel && !secondaryActionHref && onSecondaryAction ? (

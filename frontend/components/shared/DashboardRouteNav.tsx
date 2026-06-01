@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Award,
@@ -10,6 +9,7 @@ import {
   Waypoints,
 } from "lucide-react";
 import { dashboardNavItems } from "@/components/shared/dashboard-nav";
+import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { cn } from "@/lib/cn";
 
 export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) {
@@ -40,7 +40,7 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
           const Icon = iconByKey[item.icon];
           return (
             <li key={item.href} className="list-none min-w-0">
-              <Link
+              <IntentPrefetchLink
                 href={item.href}
                 aria-current={active ? "page" : undefined}
                 aria-label={item.label}
@@ -53,7 +53,7 @@ export function DashboardRouteNav({ embedded = false }: { embedded?: boolean }) 
                   <Icon className="dashboard-nav-icon h-4 w-4" aria-hidden="true" />
                   <span className="truncate">{item.label}</span>
                 </span>
-              </Link>
+              </IntentPrefetchLink>
             </li>
           );
         })}
