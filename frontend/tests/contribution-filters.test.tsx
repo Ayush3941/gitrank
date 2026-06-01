@@ -20,8 +20,8 @@ describe("ContributionFilters", () => {
     expect(screen.queryByText(/Active:/)).toBeNull();
     expect(screen.getByRole("tablist", { name: "Contribution status filters" })).toBeTruthy();
     expect(screen.getByRole("tab", { name: "All" })).toBeTruthy();
-    expect(screen.getByRole("tablist", { name: "Contribution sort options" })).toBeTruthy();
-    expect(screen.getByRole("tab", { name: "Newest" })).toBeTruthy();
+    expect(screen.queryByRole("tablist", { name: "Contribution sort options" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Advanced filters" })).toBeTruthy();
   }, 15_000);
 
   it("renders active-filter summary with removable search chip", () => {
@@ -43,6 +43,7 @@ describe("ContributionFilters", () => {
     expect(screen.getByText("Lane: Docs")).toBeTruthy();
     expect(screen.queryByText(/Order:/)).toBeNull();
     expect(screen.getByText("Search: very-specific-repo-name")).toBeTruthy();
+    expect(screen.getByRole("tablist", { name: "Contribution sort options" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: /Remove Focus · Docs filter/i })).toBeNull();
     expect(screen.queryByRole("button", { name: /Remove Sort · Highest XP filter/i })).toBeNull();
 

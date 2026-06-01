@@ -4,6 +4,8 @@ import {
   BarChart3,
   BookText,
   Bug,
+  ChevronDown,
+  ChevronUp,
   CircleDot,
   Clock3,
   FlaskConical,
@@ -15,7 +17,7 @@ import {
   Trophy,
   X,
 } from "lucide-react";
-import { useId } from "react";
+import { useId, useState } from "react";
 import { ControlSurface } from "@/components/shared/ControlSurface";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
 import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
@@ -114,8 +116,13 @@ export function ContributionFilters({
 }) {
   const statusId = useId();
   const mobileControlsId = useId();
+  const advancedToggleId = useId();
+  const advancedRegionId = useId();
   const activeStatus = resolveContributionStatusFilter(value);
   const activeFocus = resolveContributionFocusFilter(value);
+  const hasAdvancedSelection =
+    activeFocus !== "Any" || sort !== CONTRIBUTION_DEFAULT_SORT;
+  const [showAdvanced, setShowAdvanced] = useState(hasAdvancedSelection);
 
   const activeViewLabel =
     activeStatus !== "All" ? activeStatus : activeFocus !== "Any" ? activeFocus : "All";
@@ -202,29 +209,74 @@ export function ContributionFilters({
             : undefined
         }
       />
-      <div id={mobileControlsId}>
+      <div id={mobileControlsId} className="grid gap-3">
         <div className="space-y-2">
           <p className="text-xs font-medium text-primary">Status</p>
           <SegmentedTablist
             options={contributionStatusFilters.map((filter) => {
               const Icon = statusIconByValue[filter];
-                return {
-                  value: filter,
-                  label: filter,
-                  icon: <Icon className="h-4 w-4" />,
-                  count: statusCounts?.[filter],
-                  minWidthClassName: "min-w-[6.75rem] sm:min-w-[8rem]",
-                };
-              })}
-              value={activeStatus}
-              onValueChange={handleStatusChange}
-              ariaLabel="Contribution status filters"
-              ariaControls={resultsRegionId}
-              tabIdPrefix="contribution-status-tab"
-              wrap
-            />
-          </div>
-        <div className="grid gap-3">
+              return {
+                value: filter,
+                label: filter,
+                icon: <Icon className="h-4 w-4" />,
+                count: statusCounts?.[filter],
+                minWidthClassName: "min-w-[6.75rem] sm:min-w-[8rem]",
+              };
+            })}
+            value={activeStatus}
+            onValueChange={handleStatusChange}
+            ariaLabel="Contribution status filters"
+            ariaControls={resultsRegionId}
+            tabIdPrefix="contribution-status-tab"
+            wrap
+          />
+        </div>
+        <SearchInputWithClear
+          value={search}
+          onChange={onSearchChange}
+          onClear={handleClearSearch}
+          placeholder="Search repo, PR title, or owner"
+          ariaLabel="Search contributions"
+          ariaDescribedBy={statusId}
+          ariaControls={resultsRegionId}
+          clearButtonLabel="Clear contribution search"
+          clearButtonDisabled={isFiltering}
+          inputClassName="pl-11 pr-11"
+        />
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs text-muted">
+            Use status + search first. Open advanced filters for category and ordering.
+          </p>
+          <button
+            type="button"
+            id={advancedToggleId}
+            className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
+            aria-expanded={showAdvanced}
+            aria-controls={advancedRegionId}
+            onClick={() => {
+              setShowAdvanced((current) => !current);
+            }}
+          >
+            {showAdvanced ? (
+              <>
+                Hide advanced
+                <ChevronUp className="h-3.5 w-3.5" />
+              </>
+            ) : (
+              <>
+                Advanced filters
+                <ChevronDown className="h-3.5 w-3.5" />
+              </>
+            )}
+          </button>
+        </div>
+        <div
+          id={advancedRegionId}
+          role="region"
+          aria-labelledby={advancedToggleId}
+          hidden={!showAdvanced}
+          className="space-y-3"
+        >
           <div className="space-y-2">
             <p className="text-xs font-medium text-primary">Category</p>
             <SegmentedTablist
@@ -246,20 +298,8 @@ export function ContributionFilters({
               tabIdPrefix="contribution-focus-tab"
               wrap
             />
-            <p className="text-xs text-muted">Status filters PR lifecycle. Category filters contribution type.</p>
+            <p className="text-xs text-muted">Category filters contribution type.</p>
           </div>
-          <SearchInputWithClear
-            value={search}
-            onChange={onSearchChange}
-            onClear={handleClearSearch}
-            placeholder="Search repo, PR title, or owner"
-            ariaLabel="Search contributions"
-            ariaDescribedBy={statusId}
-            ariaControls={resultsRegionId}
-            clearButtonLabel="Clear contribution search"
-            clearButtonDisabled={isFiltering}
-            inputClassName="pl-11 pr-11"
-          />
           <div className="space-y-2">
             <p className="text-xs font-medium text-primary">Sort order</p>
             <SegmentedTablist
