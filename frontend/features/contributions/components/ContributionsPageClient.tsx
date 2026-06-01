@@ -32,11 +32,11 @@ import {
   summarizeContributionStreak,
   summarizeRepositories,
 } from "@/lib/metrics/contribution-metrics";
-import { formatRelativeDays } from "@/lib/formatters";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { deduplicateContributionsByPullRequest } from "@/lib/presentation/contribution-dedup";
 import { selectLatestActionableSyncRunOutcome } from "@/lib/presentation/sync-run-diagnostics";
+import { buildStaleSyncNotice } from "@/lib/presentation/stale-sync-notice";
 import { contributionDisplayConfig } from "@/lib/runtime/contribution-display-config";
 import {
   buildContributionFocusCounts,
@@ -153,6 +153,20 @@ export function ContributionsPageClient() {
   const latestSyncOutcome = useMemo(
     () => selectLatestActionableSyncRunOutcome(syncRunsQuery.data?.runs),
     [syncRunsQuery.data?.runs],
+  );
+  const staleNotice = useMemo(
+    () =>
+      buildStaleSyncNotice({
+        syncState: syncStateForDisplay === "partially_synced" ? "partially_synced" : "stale",
+        refreshedAt: profile?.refreshedAt ?? new Date().toISOString(),
+        latestSyncOutcome,
+        snapshotLabel: "Contribution evidence",
+        partialFallback:
+          "Profile exists, but scored PR evidence is still empty. Keep auto-sync on and retry.",
+        staleFallback:
+          "New PR rows appear after sync completes.",
+      }),
+    [latestSyncOutcome, profile?.refreshedAt, syncStateForDisplay],
   );
   const staleSyncRefresh = useStaleSyncRefresh({
     runs: syncRunsQuery.data?.runs,
@@ -356,18 +370,8 @@ export function ContributionsPageClient() {
       />
       {syncStateForDisplay === "stale" || syncStateForDisplay === "partially_synced" ? (
         <StaleState
-          message={
-            syncStateForDisplay === "partially_synced"
-              ? latestSyncOutcome?.code === "app_installation_required" ||
-                latestSyncOutcome?.code === "app_installation_unavailable" ||
-                latestSyncOutcome?.code === "app_runtime_required"
-                ? "Sync is blocked until GitHub App installation access is available for this account."
-                : "Profile exists, but scored PR evidence is still empty. Keep auto-sync on and retry."
-              : `Contribution evidence refreshed ${formatRelativeDays(
-                  profile.refreshedAt,
-                )}. New PR rows appear after sync completes.`
-          }
-          reasonMessage={latestSyncOutcome?.message || undefined}
+          message={staleNotice.message}
+          reasonMessage={staleNotice.reasonMessage}
           updatedAt={profile.refreshedAt}
           onRefresh={staleSyncRefresh.onRefresh}
           isRefreshing={staleSyncRefresh.isRefreshing}
