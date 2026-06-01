@@ -39,9 +39,10 @@ import {
   deriveDeterministicArchetype,
   shouldRequestAbraInsights,
 } from "@/lib/ai/deterministic-identity-summary";
-import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
+import { selectLatestActionableSyncRunOutcome } from "@/lib/presentation/sync-run-diagnostics";
+import { buildStaleSyncNotice } from "@/lib/presentation/stale-sync-notice";
 import type { BadgeRarity } from "@/types/gitrank";
 const BADGES_EARNED_REGION_ID = "badges-earned-region";
 const BADGES_LOCKED_REGION_ID = "badges-locked-lane";
@@ -116,6 +117,10 @@ export function BadgesPageClient() {
     profile?.user,
     syncRunsQuery.data?.runs,
   );
+  const latestSyncOutcome = useMemo(
+    () => selectLatestActionableSyncRunOutcome(syncRunsQuery.data?.runs),
+    [syncRunsQuery.data?.runs],
+  );
   const staleSyncRefresh = useStaleSyncRefresh({
     runs: syncRunsQuery.data?.runs,
     isSyncPending: runUserSync.isPending,
@@ -124,6 +129,20 @@ export function BadgesPageClient() {
       await refetch();
     },
   });
+  const staleNotice = useMemo(
+    () =>
+      buildStaleSyncNotice({
+        syncState: syncStateForDisplay === "partially_synced" ? "partially_synced" : "stale",
+        refreshedAt: profile?.refreshedAt ?? new Date().toISOString(),
+        latestSyncOutcome,
+        snapshotLabel: "Badge snapshot",
+        partialFallback:
+          "Badge snapshot exists, but scored PR evidence is still empty. Keep auto-sync active and refresh after GitHub processing completes.",
+        staleFallback:
+          "New unlocks can appear after the next completed sync.",
+      }),
+    [latestSyncOutcome, profile?.refreshedAt, syncStateForDisplay],
+  );
   const lockedBadges = allBadges.filter((badge) => !badge.unlocked);
   const lockedBadgesSorted = [...lockedBadges].sort((left, right) => {
     const progressDelta = (right.progress ?? 0) - (left.progress ?? 0);
@@ -301,13 +320,8 @@ export function BadgesPageClient() {
       <section className="render-opt-section space-y-4">
         {syncStateForDisplay === "stale" || syncStateForDisplay === "partially_synced" ? (
           <StaleState
-            message={
-              syncStateForDisplay === "partially_synced"
-                ? "Badge snapshot exists, but scored PR evidence is still empty. Keep auto-sync active and refresh after GitHub processing completes."
-                : `Badge snapshot refreshed ${formatRelativeDays(
-                    profile.refreshedAt,
-                  )}. New unlocks can appear after the next completed sync.`
-            }
+            message={staleNotice.message}
+            reasonMessage={staleNotice.reasonMessage}
             updatedAt={profile.refreshedAt}
             onRefresh={staleSyncRefresh.onRefresh}
             isRefreshing={staleSyncRefresh.isRefreshing}

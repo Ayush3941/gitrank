@@ -1912,6 +1912,7 @@ ABRA implementation checklist:
 - [x] Leaderboard lane controls now use the shared `FilterControlsHeader` pattern used across dashboard surfaces, keeping reset/status chips and control summaries structurally consistent while preserving existing lane/view/detail semantics.
 - [x] Stale refresh orchestration for dashboard surfaces is now centralized in `useStaleSyncRefresh`, removing duplicate per-page sync-guard logic while preserving in-flight guard behavior and post-sync refetch consistency.
 - [x] Leaderboard filter chips are now active-state only (hide default `View`/`Details` badges until toggled), reducing control clutter while keeping lane visibility and reset semantics intact.
+- [x] Badges and Quests stale banners now share `buildStaleSyncNotice`, so partial-sync blockers (especially GitHub App access failures) show explicit actionable messaging and synced reason text instead of generic partial-state copy.
 
 ABRA closeout artifact:
 

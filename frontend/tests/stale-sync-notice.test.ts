@@ -1,0 +1,38 @@
+import { describe, expect, it } from "vitest";
+import { buildStaleSyncNotice } from "@/lib/presentation/stale-sync-notice";
+
+describe("buildStaleSyncNotice", () => {
+  it("returns GitHub App blocker messaging for partially synced app-installation failures", () => {
+    const notice = buildStaleSyncNotice({
+      syncState: "partially_synced",
+      refreshedAt: "2026-05-31T21:00:00Z",
+      latestSyncOutcome: {
+        code: "app_installation_required",
+        message: "GitHub App installation is required for PR sync.",
+      },
+      snapshotLabel: "Badge snapshot",
+      partialFallback: "partial fallback",
+      staleFallback: "stale fallback",
+    });
+
+    expect(notice.message).toBe(
+      "Sync is blocked until GitHub App installation access is available for this account.",
+    );
+    expect(notice.reasonMessage).toBe("GitHub App installation is required for PR sync.");
+  });
+
+  it("returns fallback stale messaging when no blocker is present", () => {
+    const notice = buildStaleSyncNotice({
+      syncState: "stale",
+      refreshedAt: "2026-05-31T21:00:00Z",
+      latestSyncOutcome: null,
+      snapshotLabel: "Quest snapshot",
+      partialFallback: "partial fallback",
+      staleFallback: "Live quest signals may lag until the next sync completes.",
+    });
+
+    expect(notice.message).toContain("Quest snapshot refreshed");
+    expect(notice.message).toContain("Live quest signals may lag until the next sync completes.");
+    expect(notice.reasonMessage).toBeUndefined();
+  });
+});

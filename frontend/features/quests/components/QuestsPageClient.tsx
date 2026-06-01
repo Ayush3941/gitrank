@@ -12,7 +12,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import { startTransition, useDeferredValue, useState } from "react";
+import { startTransition, useDeferredValue, useMemo, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
@@ -31,8 +31,9 @@ import { useProfileSyncRuns } from "@/hooks/use-profile-sync-runs";
 import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import { useStaleSyncRefresh } from "@/hooks/use-stale-sync-refresh";
 import { useQuests } from "@/hooks/use-quests";
-import { formatRelativeDays } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
+import { selectLatestActionableSyncRunOutcome } from "@/lib/presentation/sync-run-diagnostics";
+import { buildStaleSyncNotice } from "@/lib/presentation/stale-sync-notice";
 import type { Quest } from "@/types/gitrank";
 
 const groups: Array<Quest["cadence"]> = ["Daily", "Weekly", "Long-term", "Skill-based"];
@@ -81,6 +82,10 @@ export function QuestsPageClient() {
     profile?.user,
     syncRunsQuery.data?.runs,
   );
+  const latestSyncOutcome = useMemo(
+    () => selectLatestActionableSyncRunOutcome(syncRunsQuery.data?.runs),
+    [syncRunsQuery.data?.runs],
+  );
   const staleSyncRefresh = useStaleSyncRefresh({
     runs: syncRunsQuery.data?.runs,
     isSyncPending: runUserSync.isPending,
@@ -118,6 +123,20 @@ export function QuestsPageClient() {
   const activeFilterCount = canResetCadenceFilter ? 1 : 0;
   const isFiltering = deferredCadenceFilter !== cadenceFilter;
   const filterStatusId = "quests-filter-status";
+  const staleNotice = useMemo(
+    () =>
+      buildStaleSyncNotice({
+        syncState: syncStateForDisplay === "partially_synced" ? "partially_synced" : "stale",
+        refreshedAt: questSnapshotRefreshedAt,
+        latestSyncOutcome,
+        snapshotLabel: "Quest snapshot",
+        partialFallback:
+          "Quest snapshot exists, but scored PR evidence is still empty. Keep auto-sync active and refresh after GitHub processing completes.",
+        staleFallback:
+          "Live quest signals may lag until the next sync completes.",
+      }),
+    [latestSyncOutcome, questSnapshotRefreshedAt, syncStateForDisplay],
+  );
 
   function handleCadenceFilterChange(next: "All" | Quest["cadence"]) {
     startTransition(() => {
@@ -226,13 +245,8 @@ export function QuestsPageClient() {
       ) : null}
       {syncStateForDisplay === "stale" || syncStateForDisplay === "partially_synced" ? (
         <StaleState
-          message={
-            syncStateForDisplay === "partially_synced"
-              ? "Quest snapshot exists, but scored PR evidence is still empty. Keep auto-sync active and refresh after GitHub processing completes."
-              : `Quest snapshot refreshed ${formatRelativeDays(
-                  questSnapshotRefreshedAt,
-                )}. Live quest signals may lag until the next sync completes.`
-          }
+          message={staleNotice.message}
+          reasonMessage={staleNotice.reasonMessage}
           updatedAt={questSnapshotRefreshedAt}
           onRefresh={staleSyncRefresh.onRefresh}
           isRefreshing={staleSyncRefresh.isRefreshing}
