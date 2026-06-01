@@ -94,7 +94,9 @@ describe("live fixture frontend smoke coverage", () => {
     ).toBeTruthy();
     expect(screen.queryByText("Active: 1")).toBeNull();
     fireEvent.click(screen.getByRole("tab", { name: /Weekly/i }));
-    expect(await screen.findByText("Cadence: Weekly")).toBeTruthy();
+    await waitFor(() =>
+      expect(screen.getByRole("tab", { name: /Weekly/i }).getAttribute("aria-selected")).toBe("true"),
+    );
     expect(await screen.findByText("Active: 1")).toBeTruthy();
     const paths = nonAnalyticsPaths();
     expect(paths).toEqual(
@@ -113,7 +115,9 @@ describe("live fixture frontend smoke coverage", () => {
     expect(screen.queryByText("Active: 1")).toBeNull();
 
     fireEvent.click(screen.getByRole("tab", { name: /Rare/i }));
-    expect(await screen.findByText("Rarity: Rare")).toBeTruthy();
+    await waitFor(() =>
+      expect(screen.getByRole("tab", { name: /Rare/i }).getAttribute("aria-selected")).toBe("true"),
+    );
     expect(await screen.findByText("Active: 1")).toBeTruthy();
     expect(nonAnalyticsPaths()).toEqual(
       expect.arrayContaining(["/api/profile/me", "/api/sync/runs"]),

@@ -403,12 +403,6 @@ export function BadgesPageClient() {
                   Active: {activeFilterCount}
                 </span>
               ) : null}
-              <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-                Rarity: {rarity}
-              </span>
-              <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-                State: {visibility}
-              </span>
               {canResetFilters ? (
                 <Button
                   type="button"

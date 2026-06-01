@@ -282,6 +282,8 @@ Recent no-slop refinement (May 31, 2026):
 - `frontend/tests/sync-run-activity-panel.test.tsx` app-installation insight assertion now uses a stable phrase-level matcher instead of brittle full-string matching.
 - PR battle reports now expose an in-place `Retry AI summary` action when evidence is `rate_limited`, `ai_fallback`, or `deterministic_only`; it executes pull-request sync for that PR directly and keeps deterministic score output visible while enrichment retries.
 - Added focused regression coverage in `frontend/tests/pr-report-retry-ai-summary.test.tsx` to lock retry-action visibility and pull-request sync invocation wiring.
+- Badges and quests filter bars removed duplicate state chips (`Rarity`, `State`, `Cadence`) because segmented tabs already represent active state; control rails now keep only actionable context (`Active` + `Reset` when applicable).
+- Live fixture smoke coverage now asserts selected tab state directly for badge/quest filters, preventing regressions back to duplicated chip state.
 
 Recent strict app-auth refinement (May 30, 2026):
 
