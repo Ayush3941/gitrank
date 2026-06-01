@@ -66,9 +66,6 @@ export function SegmentedTablist<T extends string>({
             typeof item.compactLabel === "string" &&
             item.compactLabel.trim().length > 0 &&
             item.compactLabel !== item.label;
-          const accessibleLabel = hasDistinctCompactLabel
-            ? `${item.compactLabel} (${item.label})`
-            : item.label;
           return (
             <li
               key={item.value}
@@ -79,7 +76,7 @@ export function SegmentedTablist<T extends string>({
                 role="tab"
                 id={optionID}
                 title={item.label}
-                aria-label={accessibleLabel}
+                aria-label={item.label}
                 aria-controls={ariaControls}
                 aria-selected={active}
                 tabIndex={active ? 0 : -1}

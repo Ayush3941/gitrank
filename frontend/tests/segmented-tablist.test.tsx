@@ -84,4 +84,24 @@ describe("SegmentedTablist", () => {
     expect(scrollSpy).not.toHaveBeenCalled();
     scrollSpy.mockRestore();
   });
+
+  it("uses full labels for accessibility when compact labels are rendered", () => {
+    const onUpdate = vi.fn();
+    render(
+      <SegmentedTablist
+        options={[
+          { value: "Performance", label: "Performance", compactLabel: "Perf" },
+          { value: "Security", label: "Security", compactLabel: "Sec" },
+        ]}
+        value={"Performance"}
+        onValueChange={onUpdate}
+        ariaLabel="Contribution focus filters"
+      />,
+    );
+
+    expect(screen.getByRole("tab", { name: "Performance" })).toBeTruthy();
+    expect(screen.getByRole("tab", { name: "Security" })).toBeTruthy();
+    expect(screen.queryByRole("tab", { name: /^Perf$/ })).toBeNull();
+    expect(screen.queryByRole("tab", { name: /^Sec$/ })).toBeNull();
+  });
 });
