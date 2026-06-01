@@ -28,6 +28,7 @@ This document is intentionally detailed.
 - Disclosure controls now expose stronger ARIA wiring (`aria-controls` + `role="region"` + `aria-labelledby`) across Settings diagnostics, display tuning, chart data-table toggles, and PR technical breakdown so expanded content has an explicit accessible relationship to its trigger.
 - Disclosure panels now use React `useId` for trigger/content IDs (instead of fixed strings), preventing accidental ID collisions when components are reused or rendered more than once on a page.
 - Badge shelves now use stable badge-ID keys (no index-based keys) and locked-path disclosure now controls a true hidden details region (`Show details`/`Hide details`) with per-instance `useId` wiring while keeping a lightweight preview visible when collapsed.
+- Sync outcome selection now prioritizes GitHub App installation/runtime block diagnostics over newer generic partial outcomes, so dashboard/settings consistently show install-required blocking instead of falsely optimistic sync health when App access is broken.
 
 It serves two purposes:
 

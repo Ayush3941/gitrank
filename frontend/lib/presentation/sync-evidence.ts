@@ -85,7 +85,11 @@ export function hasUserMaterializedSyncEvidence(user: UserProfile | null | undef
   if (!user) {
     return false;
   }
-  if (user.mergedPrCount <= 0) {
+  const mergedPrCount =
+    typeof user.mergedPrCount === "number" && Number.isFinite(user.mergedPrCount)
+      ? user.mergedPrCount
+      : 0;
+  if (mergedPrCount <= 0) {
     return false;
   }
   return hasUserContributionEvidence(user);

@@ -398,6 +398,26 @@ describe("describeSyncRunOutcome", () => {
     expect(selected?.code).toBe("app_installation_required");
   });
 
+  it("prioritizes GitHub App installation blocks over newer non-blocking actionable outcomes", () => {
+    const runs = [
+      {
+        ...run({
+          authored_pull_request_search_incomplete: 1,
+        }),
+        id: "run_newer_partial",
+      },
+      {
+        ...run({
+          app_installation_required: 1,
+        }),
+        id: "run_older_install_block",
+      },
+    ] as const;
+
+    const selected = selectLatestActionableSyncRunOutcome(runs);
+    expect(selected?.code).toBe("app_installation_required");
+  });
+
   it("returns null when there are no actionable outcomes", () => {
     const runs = [
       run({

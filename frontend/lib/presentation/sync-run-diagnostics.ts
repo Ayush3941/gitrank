@@ -391,16 +391,22 @@ export function selectLatestActionableSyncRunOutcome(
   if (!runs || runs.length === 0) {
     return null;
   }
+  let fallbackActionable: SyncRunDiagnostic | null = null;
   for (const run of runs) {
     const outcome = describeSyncRunOutcome(run);
     if (outcome.code === "none") {
       continue;
     }
     if (ACTIONABLE_SYNC_CODES.has(outcome.code)) {
-      return outcome;
+      if (APP_INSTALLATION_BLOCK_CODES.has(outcome.code)) {
+        return outcome;
+      }
+      if (!fallbackActionable) {
+        fallbackActionable = outcome;
+      }
     }
   }
-  return null;
+  return fallbackActionable;
 }
 
 export { metricCount };
