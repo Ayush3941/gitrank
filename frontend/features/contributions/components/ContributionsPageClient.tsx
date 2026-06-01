@@ -312,7 +312,11 @@ export function ContributionsPageClient() {
         )}
         actions={(
           <div className="flex flex-wrap gap-2">
-            <ProfileEvidenceStateChip showFreshness={showRefreshPill} refreshedAt={profile?.refreshedAt} />
+            <ProfileEvidenceStateChip
+              showFreshness={showRefreshPill}
+              refreshedAt={profile?.refreshedAt}
+              syncState={syncStateForDisplay}
+            />
             {!useLiteCards ? (
               <Button
                 type="button"

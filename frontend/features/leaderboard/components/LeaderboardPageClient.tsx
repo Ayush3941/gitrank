@@ -210,7 +210,11 @@ export function LeaderboardPageClient() {
         )}
         actions={(
           <div className="flex flex-wrap items-center gap-2">
-            <ProfileEvidenceStateChip showFreshness={showRefreshPill} refreshedAt={myProfile?.refreshedAt} />
+            <ProfileEvidenceStateChip
+              showFreshness={showRefreshPill}
+              refreshedAt={myProfile?.refreshedAt}
+              syncState={syncStateForDisplay}
+            />
             <Button asChild variant="secondary" size="sm">
               <Link href="/dashboard/quests" prefetch={false}>
                 Quests

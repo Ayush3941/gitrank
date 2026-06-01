@@ -228,7 +228,11 @@ export function DashboardPageClient() {
         )}
         actions={(
           <div className="flex flex-wrap items-center gap-2">
-            <ProfileEvidenceStateChip showFreshness={showRefreshPill} refreshedAt={data.refreshedAt} />
+            <ProfileEvidenceStateChip
+              showFreshness={showRefreshPill}
+              refreshedAt={data.refreshedAt}
+              syncState={syncStateForDisplay}
+            />
             <Button asChild variant="secondary" size="sm">
               <Link href="/dashboard/contributions" prefetch={false}>
                 View PR cards

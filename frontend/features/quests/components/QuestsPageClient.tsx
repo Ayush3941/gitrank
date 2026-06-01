@@ -162,7 +162,11 @@ export function QuestsPageClient() {
         )}
         actions={(
           <div className="flex flex-wrap items-center gap-2">
-            <ProfileEvidenceStateChip showFreshness={showRefreshPill} refreshedAt={questSnapshotRefreshedAt} />
+            <ProfileEvidenceStateChip
+              showFreshness={showRefreshPill}
+              refreshedAt={questSnapshotRefreshedAt}
+              syncState={syncStateForDisplay}
+            />
             <Button asChild variant="secondary" size="sm">
               <Link href="/dashboard/contributions" prefetch={false}>
                 Contributions

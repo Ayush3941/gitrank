@@ -364,7 +364,11 @@ export function SettingsPageClient() {
         )}
         actions={(
           <div className="flex flex-wrap items-center gap-2">
-            <ProfileEvidenceStateChip showFreshness={showRefreshPill} refreshedAt={data.refreshedAt} />
+            <ProfileEvidenceStateChip
+              showFreshness={showRefreshPill}
+              refreshedAt={data.refreshedAt}
+              syncState={syncStateForDisplay}
+            />
             <Button asChild variant="secondary" size="sm">
               <Link href={`/u/${data.user.username}`} prefetch={false}>
                 Public profile

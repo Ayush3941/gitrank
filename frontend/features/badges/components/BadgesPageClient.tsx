@@ -308,7 +308,11 @@ export function BadgesPageClient() {
         )}
         actions={(
           <div className="flex flex-wrap items-center gap-2">
-            <ProfileEvidenceStateChip showFreshness={showRefreshPill} refreshedAt={profile?.refreshedAt} />
+            <ProfileEvidenceStateChip
+              showFreshness={showRefreshPill}
+              refreshedAt={profile?.refreshedAt}
+              syncState={syncStateForDisplay}
+            />
             <Button asChild variant="secondary" size="sm">
               <Link href="/dashboard/contributions" prefetch={false}>
                 Contributions

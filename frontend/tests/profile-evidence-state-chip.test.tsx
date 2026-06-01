@@ -9,6 +9,30 @@ describe("ProfileEvidenceStateChip", () => {
     expect(screen.getByText("Evidence pending")).not.toBeNull();
   });
 
+  it("shows state-aware pending copy for partial sync", () => {
+    render(
+      <ProfileEvidenceStateChip
+        showFreshness={false}
+        syncState="partially_synced"
+      />,
+    );
+
+    expect(screen.getByText("Partially synced")).not.toBeNull();
+  });
+
+  it("shows explicit failure copy when latest sync failed", () => {
+    render(
+      <ProfileEvidenceStateChip
+        showFreshness={false}
+        syncState="failed"
+      />,
+    );
+
+    const chip = screen.getByText("Sync failed");
+    expect(chip).not.toBeNull();
+    expect(chip.getAttribute("title")).toMatch(/latest sync failed/i);
+  });
+
   it("renders freshness pill when enabled", () => {
     withFrozenNow("2026-05-25T12:00:00.000Z", () => {
       render(
