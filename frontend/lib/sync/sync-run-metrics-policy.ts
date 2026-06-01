@@ -41,5 +41,21 @@ export function hasPartialSyncRunMetrics(metrics?: Record<string, number>): bool
       return true;
     }
   }
+  // Backward-compatibility: older user-sync runs can be marked "completed"
+  // even when authored discovery found zero targets.
+  const selectedTargets = metricValue(metrics, "authored_pull_requests_selected");
+  const discoveryTargets = metricValue(metrics, "authored_pull_request_discovery_targets");
+  const searchQueries = metricValue(metrics, "authored_pull_request_search_queries");
+  if (searchQueries > 0 && selectedTargets === 0 && discoveryTargets === 0) {
+    return true;
+  }
   return false;
+}
+
+function metricValue(metrics: Record<string, number>, key: string): number {
+  const value = metrics[key];
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+  return Math.max(0, Math.floor(value));
 }

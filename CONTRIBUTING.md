@@ -6,6 +6,10 @@ This document is intentionally detailed.
 
 ## Session Notes (May 31, 2026)
 
+- Freshness-pill rendering is now centralized through `shouldShowProfileFreshnessPill` (`frontend/lib/presentation/sync-evidence.ts`) and reused by Dashboard, Contributions, Badges, Quests, Leaderboard, and Settings to prevent route-specific drift.
+- Dashboard surfaces now only render `Refreshed …` chips when effective sync state is `synced` and no GitHub App installation/runtime blocker is active; blocked/partial states consistently show non-fresh evidence chips.
+- Dashboard/shared route chips (`dashboard-nav-item`) were visually refined for clearer hierarchy: stronger inactive/active separation, touch-safe hover behavior (`@media (hover:hover)`), and cleaner active-lane indicator rails without introducing additional animation.
+- Page-shell glow fields were smoothed with larger, longer-falloff gradients to reduce abrupt hotspot edges while preserving fixed-view background behavior and reduced-motion safeguards.
 - Refresh-feedback truthfulness is now fail-safe: `buildUserSyncRefreshFeedback` classifies terminal `failed` sync executions (including app-installation-required/runtime-unavailable and in-progress conflict metrics) as warning outcomes, so UI never reports a success-like refresh message for failed PR extraction runs.
 - Dashboard/Settings profile freshness pills now suppress `Refreshed …` badges whenever effective sync state is not `synced` or App-installation blockers are active, preventing false “fresh” signals during blocked sync states.
 - Settings account-action notice rendering now maps refresh outcome tone (`success`/`warning`/`error`) into `InlineNotice` variants, so sync recovery states are visually distinct from normal success responses.
@@ -1951,6 +1955,8 @@ ABRA implementation checklist:
 - [x] Badges and Quests stale banners now share `buildStaleSyncNotice`, so partial-sync blockers (especially GitHub App access failures) show explicit actionable messaging and synced reason text instead of generic partial-state copy.
 - [x] Leaderboard stale banners now also use `buildStaleSyncNotice`, so lane-level stale messaging includes the same GitHub App blocker detection and latest sync-outcome reason context as other dashboard surfaces.
 - [x] Dashboard and Contributions stale notice builders now also route through `buildStaleSyncNotice`, removing duplicate blocker-branching logic and keeping stale/partial fallback copy consistent under one shared policy path.
+- [x] Account sync-state derivation now prioritizes `run_type=user` rows over child PR/repository rows when computing dashboard/settings sync chips, so failed user-sync executions cannot be masked by completed child rows.
+- [x] Legacy user-sync rows that discovered zero authored PR targets are treated as partial evidence in frontend metrics policy, preventing stale completed-state badges for empty discovery windows.
 - [x] GitHub App installation/runtime sync blockers now render through one shared frontend component (`GitHubAppSyncBlockNotice`) across Dashboard, Contributions, Badges, Quests, Leaderboard, and Settings to keep recovery UI and CTA hierarchy consistent.
 - [x] Dashboard surfaces now use one helper (`isGitHubAppInstallationBlocked`) to force effective sync state to `failed` whenever strict App-install/runtime blockers are detected, preventing mixed stale/synced chip states for the same blocking condition.
 - [x] Marketing/onboarding navigation now uses the shared `IntentPrefetchLink` abstraction instead of repeated `next/link prefetch={false}` wiring, keeping link behavior consistent with dashboard route prefetch policy.

@@ -22,4 +22,14 @@ describe("sync-run-metrics-policy", () => {
     expect(hasPartialSyncRunMetrics({})).toBe(false);
     expect(hasPartialSyncRunMetrics(undefined)).toBe(false);
   });
+
+  it("treats legacy zero-target discovery runs as partial", () => {
+    expect(
+      hasPartialSyncRunMetrics({
+        authored_pull_request_search_queries: 4,
+        authored_pull_requests_selected: 0,
+        authored_pull_request_discovery_targets: 0,
+      }),
+    ).toBe(true);
+  });
 });

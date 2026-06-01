@@ -1,4 +1,4 @@
-import type { UserProfile } from "@/types/gitrank";
+import type { SyncState, UserProfile } from "@/types/gitrank";
 import {
   ACTIVE_SYNC_RUN_STATUSES,
   FAILED_SYNC_RUN_STATUSES,
@@ -140,6 +140,20 @@ export function shouldShowSyncRefreshPill(
   return deriveEffectiveSyncState(user, syncRunStatuses) === "synced" && hasUserMaterializedSyncEvidence(user);
 }
 
+export function shouldShowProfileFreshnessPill(
+  showRefreshPill: boolean,
+  syncState: SyncState | undefined,
+  appInstallationBlocked = false,
+): boolean {
+  if (!showRefreshPill) {
+    return false;
+  }
+  if (appInstallationBlocked) {
+    return false;
+  }
+  return syncState === "synced";
+}
+
 export function selectProfileSyncRunStatuses(
   runs: readonly ProfileSyncRunStatusSource[] | null | undefined,
   user: UserProfile | null | undefined,
@@ -148,7 +162,7 @@ export function selectProfileSyncRunStatuses(
     return [];
   }
   const normalizedUser = normalizeGitHubLoginToken(user?.username);
-  const statuses: Array<{ status: string; index: number; startedAtMs: number }> = [];
+  const statuses: Array<{ status: string; index: number; startedAtMs: number; userRun: boolean }> = [];
   for (let index = 0; index < runs.length; index += 1) {
     const run = runs[index];
     const status = normalizeRunToken(run.status);
@@ -162,9 +176,13 @@ export function selectProfileSyncRunStatuses(
       status,
       index,
       startedAtMs: parseISODateTimeMs(run.started_at),
+      userRun: normalizeRunToken(run.run_type) === "user",
     });
   }
   statuses.sort((left, right) => {
+    if (left.userRun !== right.userRun) {
+      return left.userRun ? -1 : 1;
+    }
     if (left.startedAtMs !== right.startedAtMs) {
       return right.startedAtMs - left.startedAtMs;
     }

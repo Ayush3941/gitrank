@@ -48,6 +48,7 @@ import {
   selectLatestActionableSyncRunOutcome,
 } from "@/features/settings/lib/sync-run-diagnostics";
 import { syncRunStatusLabelWithMetrics } from "@/features/settings/lib/sync-run-status";
+import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
@@ -397,7 +398,7 @@ export function SettingsPageClient() {
         actions={(
           <div className="flex flex-wrap items-center gap-2">
             <ProfileEvidenceStateChip
-              showFreshness={showRefreshPill && !appInstallationBlocked && displaySyncState === "synced"}
+              showFreshness={shouldShowProfileFreshnessPill(showRefreshPill, displaySyncState, appInstallationBlocked)}
               refreshedAt={data.refreshedAt}
               syncState={displaySyncState}
             />
@@ -428,7 +429,7 @@ export function SettingsPageClient() {
           <Button
             variant="secondary"
             className="w-full justify-center"
-            disabled={isActing || isFetching}
+            disabled={appInstallationBlocked || isActing || isFetching}
             onClick={() => {
               setActionNotice("");
               setActionNoticeVariant("info");
@@ -450,7 +451,13 @@ export function SettingsPageClient() {
             }}
           >
             <RefreshCw className="h-4 w-4" />
-            {runUserSync.isPending ? "Refreshing profile..." : isFetching ? "Refreshing..." : "Refresh profile"}
+            {appInstallationBlocked
+              ? "Install app to sync"
+              : runUserSync.isPending
+                ? "Refreshing profile..."
+                : isFetching
+                  ? "Refreshing..."
+                  : "Refresh profile"}
           </Button>
           <Button
             variant="secondary"
@@ -461,7 +468,12 @@ export function SettingsPageClient() {
             <FolderGit2 className="h-4 w-4" />
             {accountLinkStart.isPending ? "Starting relink..." : "Reconnect GitHub"}
           </Button>
-          <Button asChild variant="secondary" className="w-full justify-center" disabled={isActing}>
+          <Button
+            asChild
+            variant={appInstallationBlocked ? "default" : "secondary"}
+            className="w-full justify-center"
+            disabled={isActing}
+          >
             <IntentPrefetchLink href="/oauth/github/install">
               {appInstallationBlocked ? "Install GitHub App" : "Manage GitHub App"}
             </IntentPrefetchLink>
@@ -485,6 +497,11 @@ export function SettingsPageClient() {
             {unlinkAccount.isPending ? "Disconnecting..." : "Disconnect GitHub"}
           </Button>
         </div>
+        {appInstallationBlocked ? (
+          <p className="text-xs leading-5 text-rose-100">
+            PR sync requires a GitHub App installation for your account. Install the app, then run refresh.
+          </p>
+        ) : null}
         {appInstallationBlocked ? <GitHubAppSyncBlockNotice message={latestSyncOutcome?.message} /> : null}
         {actionError ? (
           <div className="min-h-6">

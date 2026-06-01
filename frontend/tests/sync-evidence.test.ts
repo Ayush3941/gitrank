@@ -5,6 +5,7 @@ import {
   hasUserMaterializedSyncEvidence,
   hasUserRepositoryEvidence,
   selectProfileSyncRunStatuses,
+  shouldShowProfileFreshnessPill,
   shouldShowSyncRefreshPill,
 } from "@/lib/presentation/sync-evidence";
 import type { UserProfile } from "@/types/gitrank";
@@ -522,8 +523,26 @@ describe("shouldShowSyncRefreshPill", () => {
   });
 });
 
+describe("shouldShowProfileFreshnessPill", () => {
+  it("returns true only when profile is synced and not app-blocked", () => {
+    expect(shouldShowProfileFreshnessPill(true, "synced", false)).toBe(true);
+  });
+
+  it("returns false when upstream sync evidence is still partial", () => {
+    expect(shouldShowProfileFreshnessPill(true, "partially_synced", false)).toBe(false);
+  });
+
+  it("returns false when app installation blockers are active", () => {
+    expect(shouldShowProfileFreshnessPill(true, "synced", true)).toBe(false);
+  });
+
+  it("returns false when refresh pill base signal is false", () => {
+    expect(shouldShowProfileFreshnessPill(false, "synced", false)).toBe(false);
+  });
+});
+
 describe("selectProfileSyncRunStatuses", () => {
-  it("keeps user-scoped runs for the active profile including child run types", () => {
+  it("keeps user-scoped runs for the active profile and prioritizes user run status lanes", () => {
     const user = buildUser({ username: "Ayush3941" });
     const statuses = selectProfileSyncRunStatuses(
       [
@@ -534,7 +553,7 @@ describe("selectProfileSyncRunStatuses", () => {
       ],
       user,
     );
-    expect(statuses).toStrictEqual(["running", "partial", "completed"]);
+    expect(statuses).toStrictEqual(["running", "completed", "partial"]);
   });
 
   it("ignores runs without status or without profile ownership signal", () => {
@@ -595,5 +614,27 @@ describe("selectProfileSyncRunStatuses", () => {
       user,
     );
     expect(statuses).toStrictEqual(["running", "completed"]);
+  });
+
+  it("prioritizes user run status over child sync run status for account state", () => {
+    const user = buildUser({ username: "Ayush3941" });
+    const statuses = selectProfileSyncRunStatuses(
+      [
+        {
+          status: "completed",
+          run_type: "pull_request",
+          requested_user: "Ayush3941",
+          started_at: "2026-05-26T05:10:00.000Z",
+        },
+        {
+          status: "failed",
+          run_type: "user",
+          requested_user: "Ayush3941",
+          started_at: "2026-05-26T05:00:00.000Z",
+        },
+      ],
+      user,
+    );
+    expect(statuses).toStrictEqual(["failed", "completed"]);
   });
 });

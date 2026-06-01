@@ -172,6 +172,9 @@ If `GITRANK_ENV_FILE` is unset, frontend runtime falls back to `../gitrank/.env`
 - Refresh feedback explicitly differentiates "history backfill still in progress" from credential-scope failures, so users are not prompted to reconnect GitHub during normal backfill progression.
 - Refresh feedback now treats terminal `failed` user-sync executions as warning outcomes (including explicit App-installation/runtime blockers) so UI cannot present failed refreshes as success states.
 - Dashboard/profile sync-state pills now evaluate the full authenticated sync-run stream (not only `run_type=user`) so active child PR/repository runs keep the UI in `syncing` until terminal.
+- Sync-state derivation now prioritizes account-level `run_type=user` rows ahead of child PR/repository rows, preventing false `Synced` states when the latest user sync failed but child rows completed.
+- Legacy user-sync rows that discovered zero authored PR targets are normalized as partial evidence in frontend diagnostics, preventing misleading completed-state chips on empty sync windows.
+- Freshness chips now use one shared rule across Dashboard, Contributions, Badges, Quests, Leaderboard, and Settings: `Refreshed …` appears only when effective sync state is truly `synced` and no GitHub App sync blocker is active.
 - Concurrent user sync requests for the same login are deduplicated in-process; overlapping executions return a conflict response instead of running duplicated heavy sync loops.
 - Concurrent user sync requests are also deduplicated with a PostgreSQL advisory lease keyed by GitHub login, so multi-instance deployments avoid duplicate heavy sync execution for the same user.
 - Conflict attempts are persisted in sync-run telemetry with explicit `user_sync_in_progress` / `lease_conflicts` metrics so contention is visible in Settings and diagnostics.
