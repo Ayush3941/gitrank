@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 
 export function GitHubAppSyncBlockNotice({
   message = "GitHub App installation is required for PR sync.",
+  showSettingsLink = true,
 }: {
   message?: string;
+  showSettingsLink?: boolean;
 }) {
   return (
     <GlowCard className="space-y-4 border-amber-300/28 bg-amber-400/12">
@@ -32,9 +34,11 @@ export function GitHubAppSyncBlockNotice({
         <Button asChild size="sm" variant="default">
           <IntentPrefetchLink href="/oauth/github/install">Install GitHub App</IntentPrefetchLink>
         </Button>
-        <Button asChild size="sm" variant="secondary">
-          <IntentPrefetchLink href="/dashboard/settings">Open sync settings</IntentPrefetchLink>
-        </Button>
+        {showSettingsLink ? (
+          <Button asChild size="sm" variant="secondary">
+            <IntentPrefetchLink href="/dashboard/settings">Open sync settings</IntentPrefetchLink>
+          </Button>
+        ) : null}
       </div>
     </GlowCard>
   );

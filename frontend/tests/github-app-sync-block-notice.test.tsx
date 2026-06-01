@@ -11,4 +11,16 @@ describe("GitHubAppSyncBlockNotice", () => {
     expect(screen.getByRole("link", { name: "Install GitHub App" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Open sync settings" })).toBeTruthy();
   });
+
+  it("can hide settings shortcut when already rendered inside settings flows", () => {
+    render(
+      <GitHubAppSyncBlockNotice
+        message="GitHub App installation is required for this account."
+        showSettingsLink={false}
+      />,
+    );
+
+    expect(screen.getByRole("link", { name: "Install GitHub App" })).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "Open sync settings" })).toBeNull();
+  });
 });

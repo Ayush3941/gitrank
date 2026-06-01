@@ -141,6 +141,10 @@ describe("live fixture frontend smoke coverage", () => {
     expect(
       (await screen.findAllByText("Backed by live PR report evidence.")).length,
     ).toBeTruthy();
+    fireEvent.click(await screen.findByRole("button", { name: "Show metric notes" }));
+    expect(
+      await screen.findByText("Final deterministic XP after multipliers and penalties."),
+    ).toBeTruthy();
     fireEvent.click(await screen.findByRole("button", { name: "Show details" }));
     expect(await screen.findByRole("region", { name: /Hide details/i })).toBeTruthy();
     expect(await screen.findByText("Persisted scorer components")).toBeTruthy();

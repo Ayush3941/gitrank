@@ -73,8 +73,11 @@ export function PRBattleReportPageClient({
   const { data, isLoading, isError, refetch } = usePrReport(owner, repo, number);
   const runPullRequestSync = useRunPullRequestSync();
   const [showTechnicalBreakdown, setShowTechnicalBreakdown] = useState(false);
+  const [showLedgerNotes, setShowLedgerNotes] = useState(false);
   const technicalPanelsId = useId();
   const technicalToggleId = useId();
+  const ledgerRegionId = useId();
+  const ledgerToggleId = useId();
   const [retryNotice, setRetryNotice] = useState<{
     tone: "success" | "warning" | "error";
     message: string;
@@ -315,17 +318,33 @@ export function PRBattleReportPageClient({
       </section>
       <section className="render-opt-section">
         <GlowCard className="space-y-4">
-          <div>
-            <p className="text-xs font-medium text-primary">Deterministic metrics ledger</p>
-            <h2 className="mt-2 text-sm font-semibold text-white">Deterministic scoring inputs and outputs</h2>
-            <p className="mt-2 text-xs text-muted">
-              Only metrics used directly by the deterministic score formula are shown here.
-            </p>
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <p className="text-xs font-medium text-primary">Deterministic metrics ledger</p>
+              <h2 className="mt-2 text-sm font-semibold text-white">Deterministic scoring inputs and outputs</h2>
+              <p className="mt-2 text-xs text-muted">
+                Only metrics used directly by the deterministic score formula are shown here.
+              </p>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              id={ledgerToggleId}
+              aria-expanded={showLedgerNotes}
+              aria-controls={ledgerRegionId}
+              onClick={() => {
+                setShowLedgerNotes((current) => !current);
+              }}
+            >
+              {showLedgerNotes ? "Hide metric notes" : "Show metric notes"}
+            </Button>
           </div>
-          <div className="space-y-4">
+          <div id={ledgerRegionId} role="region" aria-labelledby={ledgerToggleId} className="space-y-4">
             <LedgerSection
               title="Score outputs"
               description="Final output from deterministic scoring."
+              showDescriptions={showLedgerNotes}
               metrics={[
                 {
                   id: "xp_earned",
@@ -344,6 +363,7 @@ export function PRBattleReportPageClient({
             <LedgerSection
               title="Core scoring signals"
               description="Primary inputs used directly by scoring."
+              showDescriptions={showLedgerNotes}
               metrics={[
                 {
                   id: "status",
@@ -398,6 +418,7 @@ export function PRBattleReportPageClient({
             <LedgerSection
               title="Change-volume inputs"
               description="Raw change-size inputs used by deterministic analysis."
+              showDescriptions={showLedgerNotes}
               metrics={[
                 {
                   id: "changed_files",
@@ -1014,10 +1035,12 @@ type LedgerMetric = {
 function LedgerSection({
   title,
   description,
+  showDescriptions,
   metrics,
 }: {
   title: string;
   description: string;
+  showDescriptions: boolean;
   metrics: LedgerMetric[];
 }) {
   return (
@@ -1036,6 +1059,7 @@ function LedgerSection({
             label={metric.label}
             value={metric.value}
             description={metric.description}
+            showDescription={showDescriptions}
           />
         ))}
       </dl>
@@ -1043,12 +1067,24 @@ function LedgerSection({
   );
 }
 
-function MetricCell({ label, value, description }: { label: string; value: string; description: string }) {
+function MetricCell({
+  label,
+  value,
+  description,
+  showDescription,
+}: {
+  label: string;
+  value: string;
+  description: string;
+  showDescription: boolean;
+}) {
   return (
     <div className="neon-surface rounded-[1.2rem] px-4 py-3">
       <dt className="text-xs text-muted">{label}</dt>
-      <dd className="break-anywhere mt-1 text-sm font-semibold text-white">{value}</dd>
-      <dd className="break-anywhere mt-2 text-xs leading-5 text-muted">{description}</dd>
+      <dd className="break-anywhere mt-1 text-sm font-semibold text-white" title={description}>
+        {value}
+      </dd>
+      {showDescription ? <dd className="break-anywhere mt-2 text-xs leading-5 text-muted">{description}</dd> : null}
     </div>
   );
 }

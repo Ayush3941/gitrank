@@ -425,7 +425,7 @@ export function SettingsPageClient() {
             }
           />
         </div>
-        <div className={`grid gap-2 sm:grid-cols-2 ${appInstallationBlocked ? "xl:grid-cols-5" : "xl:grid-cols-4"}`}>
+        <div className={`grid gap-2 sm:grid-cols-2 ${appInstallationBlocked ? "xl:grid-cols-4" : "xl:grid-cols-5"}`}>
           <Button
             variant="secondary"
             className="w-full justify-center"
@@ -468,16 +468,18 @@ export function SettingsPageClient() {
             <FolderGit2 className="h-4 w-4" />
             {accountLinkStart.isPending ? "Starting relink..." : "Reconnect GitHub"}
           </Button>
-          <Button
-            asChild
-            variant={appInstallationBlocked ? "default" : "secondary"}
-            className="w-full justify-center"
-            disabled={isActing}
-          >
-            <IntentPrefetchLink href="/oauth/github/install">
-              {appInstallationBlocked ? "Install GitHub App" : "Manage GitHub App"}
-            </IntentPrefetchLink>
-          </Button>
+          {!appInstallationBlocked ? (
+            <Button
+              asChild
+              variant="secondary"
+              className="w-full justify-center"
+              disabled={isActing}
+            >
+              <IntentPrefetchLink href="/oauth/github/install">
+                Manage GitHub App
+              </IntentPrefetchLink>
+            </Button>
+          ) : null}
           <Button
             variant="secondary"
             className="w-full justify-center"
@@ -502,7 +504,9 @@ export function SettingsPageClient() {
             PR sync requires a GitHub App installation for your account. Install the app, then run refresh.
           </p>
         ) : null}
-        {appInstallationBlocked ? <GitHubAppSyncBlockNotice message={latestSyncOutcome?.message} /> : null}
+        {appInstallationBlocked ? (
+          <GitHubAppSyncBlockNotice message={latestSyncOutcome?.message} showSettingsLink={false} />
+        ) : null}
         {actionError ? (
           <div className="min-h-6">
             <p id={accountActionErrorId} role="alert" className="inline-flex items-center rounded-[0.1rem] border border-rose-300/26 bg-rose-500/10 px-3 py-1.5 text-sm text-rose-100">
