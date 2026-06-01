@@ -6,6 +6,8 @@ import { startTransition, useDeferredValue, useId, useMemo, useState } from "rea
 import {
   BookText,
   CalendarClock,
+  ChevronDown,
+  ChevronUp,
   Cpu,
   FlaskConical,
   Globe2,
@@ -34,6 +36,7 @@ import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import { useStaleSyncRefresh } from "@/hooks/use-stale-sync-refresh";
 import { useMyProfile } from "@/hooks/use-profile";
 import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
+import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
 import {
   isGitHubAppInstallationBlocked,
   selectLatestActionableSyncRunOutcome,
@@ -104,7 +107,10 @@ export function LeaderboardPageClient() {
     : LEADERBOARD_ROW_PAGE_SIZE_DEFAULT;
   const [visibleRowCount, setVisibleRowCount] = useState(rowPageSize);
   const [showLaneDetails, setShowLaneDetails] = useState(false);
+  const [showViewOptions, setShowViewOptions] = useState(false);
   const [preferNearbyMode, setPreferNearbyMode] = useState(true);
+  const leaderboardViewOptionsToggleId = useId();
+  const leaderboardViewOptionsRegionId = useId();
   const tabFromURL = laneParamToTab(searchParams.get("lane"));
   const tab = tabFromURL ?? "Global";
   const deferredTab = useDeferredValue(tab);
@@ -218,7 +224,7 @@ export function LeaderboardPageClient() {
         actions={(
           <div className="flex flex-wrap items-center gap-2">
             <ProfileEvidenceStateChip
-              showFreshness={showRefreshPill}
+              showFreshness={shouldShowProfileFreshnessPill(showRefreshPill, displaySyncState, appInstallationBlocked)}
               refreshedAt={myProfile?.refreshedAt}
               syncState={displaySyncState}
             />
@@ -308,6 +314,36 @@ export function LeaderboardPageClient() {
             />
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              id={leaderboardViewOptionsToggleId}
+              className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
+              aria-expanded={showViewOptions}
+              aria-controls={leaderboardViewOptionsRegionId}
+              onClick={() => {
+                setShowViewOptions((current) => !current);
+              }}
+            >
+              {showViewOptions ? (
+                <>
+                  Hide view options
+                  <ChevronUp className="h-3.5 w-3.5" />
+                </>
+              ) : (
+                <>
+                  View options
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </>
+              )}
+            </button>
+          </div>
+          <div
+            id={leaderboardViewOptionsRegionId}
+            role="region"
+            aria-labelledby={leaderboardViewOptionsToggleId}
+            hidden={!showViewOptions}
+            className="flex flex-wrap items-center gap-2"
+          >
             <Button
               type="button"
               size="sm"
@@ -423,7 +459,7 @@ export function LeaderboardPageClient() {
               </p>
             </div>
           ) : null}
-          <div id={leaderboardRowsRegionId}>
+          <div id={leaderboardRowsRegionId} data-leaderboard-arena="true">
             <LeaderboardArena
               snapshot={snapshot}
               rowLimit={effectiveMode === "full" ? safeVisibleRowCount : undefined}

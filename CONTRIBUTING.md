@@ -6,6 +6,8 @@ This document is intentionally detailed.
 
 ## Session Notes (May 31, 2026)
 
+- Leaderboard controls now use progressive disclosure for secondary view actions: lane tabs stay visible, while `Show details` and nearby/full toggles live under a `View options` disclosure, reducing first-view control noise without removing capabilities.
+- Leaderboard arena root now exposes `data-leaderboard-arena="true"` so visual-regression checks do not depend on brittle generated IDs.
 - Sync-run rows now use per-row disclosure controls for verbose diagnostics: concise metrics stay visible, while long outcome/error/correlation details are revealed on demand with `aria-expanded`/`aria-controls` wiring aligned to WAI-ARIA disclosure guidance.
 - Contributions filters now use progressive disclosure: status and search stay visible by default, while category/sort controls live behind an explicit `Advanced filters` toggle to reduce first-view noise without removing any filtering capability.
 - Dashboard lane navigation now renders through a single shared shell (`DashboardLayout` + `DashboardRouteNav`) instead of stacked wrapper chrome, reducing duplicate borders and keeping lane hierarchy visually consistent across all dashboard routes.

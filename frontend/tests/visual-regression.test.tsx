@@ -146,7 +146,7 @@ function buildLeaderboardVisualSummary(container: HTMLElement) {
     laneMeta: texts(container, "header ul[role='list'] li span"),
     ctas: texts(container, "header a, section a"),
     hasLeaderboardArena: Boolean(
-      container.querySelector("[id='leaderboard-rows-region']"),
+      container.querySelector("[data-leaderboard-arena='true']"),
     ),
     rootClassName: root?.className ?? "",
   };
