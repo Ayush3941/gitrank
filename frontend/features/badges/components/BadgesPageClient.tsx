@@ -2,6 +2,8 @@
 
 import dynamic from "next/dynamic";
 import {
+  ChevronDown,
+  ChevronUp,
   Crown,
   Gem,
   Lock,
@@ -43,6 +45,7 @@ import {
 } from "@/lib/ai/deterministic-identity-summary";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
+import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
 import {
   isGitHubAppInstallationBlocked,
   selectLatestActionableSyncRunOutcome,
@@ -100,10 +103,13 @@ export function BadgesPageClient() {
   const [visibleLockedCount, setVisibleLockedCount] = useState(lockedBadgePageSize);
   const [visibleBadgeCount, setVisibleBadgeCount] = useState(badgeShelfPageSize);
   const [showLockedBadges, setShowLockedBadges] = useState(false);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const badgesEarnedRegionId = useId();
   const badgesLockedRegionId = useId();
   const badgesLockedToggleId = useId();
   const badgesFilterStatusId = useId();
+  const badgesAdvancedFiltersToggleId = useId();
+  const badgesAdvancedFiltersRegionId = useId();
   const canResetFilters = rarity !== "All" || visibility !== "All";
   const isFiltering = deferredRarity !== rarity || deferredVisibility !== visibility;
   const activeFilterCount =
@@ -322,7 +328,7 @@ export function BadgesPageClient() {
         actions={(
           <div className="flex flex-wrap items-center gap-2">
             <ProfileEvidenceStateChip
-              showFreshness={showRefreshPill}
+              showFreshness={shouldShowProfileFreshnessPill(showRefreshPill, displaySyncState, appInstallationBlocked)}
               refreshedAt={profile?.refreshedAt}
               syncState={displaySyncState}
             />
@@ -441,34 +447,6 @@ export function BadgesPageClient() {
             />
             <div className="grid gap-3">
               <div className="space-y-2">
-                <p className="text-xs font-medium text-primary">Rarity</p>
-                <SegmentedTablist
-                  options={BADGE_RARITY_FILTERS.map((item) => ({
-                    value: item,
-                    label: item,
-                    compactLabel:
-                      item === "Legendary"
-                        ? "Legend"
-                        : item === "Uncommon"
-                          ? "Uncommon"
-                          : item === "Common"
-                            ? "Common"
-                            : item === "Mythic"
-                              ? "Mythic"
-                              : item,
-                    icon: <Gem className="h-4 w-4" />,
-                    minWidthClassName: "min-w-[6.75rem] sm:min-w-[8rem]",
-                  }))}
-                  value={rarity}
-                  onValueChange={handleRarityChange}
-                  ariaLabel="Badge rarity filters"
-                  ariaDescribedBy={badgesFilterStatusId}
-                  ariaControls={badgesEarnedRegionId}
-                  tabIdPrefix="badge-rarity-tab"
-                  wrap
-                />
-              </div>
-              <div className="space-y-2">
                 <p className="text-xs font-medium text-primary">State</p>
                 <SegmentedTablist
                   options={BADGE_VISIBILITY_FILTERS.map((item) => {
@@ -493,6 +471,67 @@ export function BadgesPageClient() {
                   ariaDescribedBy={badgesFilterStatusId}
                   ariaControls={badgesEarnedRegionId}
                   tabIdPrefix="badge-visibility-tab"
+                  wrap
+                />
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-xs text-muted">
+                  Use state first. Open advanced filters for rarity lanes.
+                </p>
+                <button
+                  type="button"
+                  id={badgesAdvancedFiltersToggleId}
+                  className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
+                  aria-expanded={showAdvancedFilters}
+                  aria-controls={badgesAdvancedFiltersRegionId}
+                  onClick={() => {
+                    setShowAdvancedFilters((current) => !current);
+                  }}
+                >
+                  {showAdvancedFilters ? (
+                    <>
+                      Hide advanced
+                      <ChevronUp className="h-3.5 w-3.5" />
+                    </>
+                  ) : (
+                    <>
+                      Advanced filters
+                      <ChevronDown className="h-3.5 w-3.5" />
+                    </>
+                  )}
+                </button>
+              </div>
+              <div
+                id={badgesAdvancedFiltersRegionId}
+                role="region"
+                aria-labelledby={badgesAdvancedFiltersToggleId}
+                hidden={!showAdvancedFilters}
+                className="space-y-2"
+              >
+                <p className="text-xs font-medium text-primary">Rarity</p>
+                <SegmentedTablist
+                  options={BADGE_RARITY_FILTERS.map((item) => ({
+                    value: item,
+                    label: item,
+                    compactLabel:
+                      item === "Legendary"
+                        ? "Legend"
+                        : item === "Uncommon"
+                          ? "Uncommon"
+                          : item === "Common"
+                            ? "Common"
+                            : item === "Mythic"
+                              ? "Mythic"
+                              : item,
+                    icon: <Gem className="h-4 w-4" />,
+                    minWidthClassName: "min-w-[6.75rem] sm:min-w-[8rem]",
+                  }))}
+                  value={rarity}
+                  onValueChange={handleRarityChange}
+                  ariaLabel="Badge rarity filters"
+                  ariaDescribedBy={badgesFilterStatusId}
+                  ariaControls={badgesEarnedRegionId}
+                  tabIdPrefix="badge-rarity-tab"
                   wrap
                 />
               </div>
