@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { ArrowRight, Award, Sparkles } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { RarityBadge } from "@/components/shared/RarityBadge";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
@@ -155,20 +155,20 @@ export function RevealPanel({
         <div className="flex flex-wrap justify-center gap-3">
           {needsSyncRecovery ? (
             <Button asChild size="lg">
-              <Link href="/onboarding/analyzing" prefetch={false}>
+              <IntentPrefetchLink href="/onboarding/analyzing">
                 {recoveryActionLabel}
                 <ArrowRight className="h-4 w-4" />
-              </Link>
+              </IntentPrefetchLink>
             </Button>
           ) : null}
           <Button asChild size="lg" variant={needsSyncRecovery ? "secondary" : "default"}>
-            <Link href="/dashboard" prefetch={false}>
+            <IntentPrefetchLink href="/dashboard">
               Enter dashboard
               <ArrowRight className="h-4 w-4" />
-            </Link>
+            </IntentPrefetchLink>
           </Button>
           <Button asChild variant="secondary" size="lg">
-            <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
+            <IntentPrefetchLink href="/dashboard/contributions">Open contributions</IntentPrefetchLink>
           </Button>
           <ShareProfileButton
             variant="secondary"
@@ -179,7 +179,7 @@ export function RevealPanel({
             analyticsTargetPrefix="onboarding-reveal"
           />
           <Button asChild variant="secondary" size="lg">
-            <Link href={`/u/${user.username}`} prefetch={false}>View public profile</Link>
+            <IntentPrefetchLink href={`/u/${user.username}`}>View public profile</IntentPrefetchLink>
           </Button>
         </div>
       </GlowCard>
@@ -251,10 +251,10 @@ export function RevealPanelUnavailable() {
           Reveal now reads the authenticated profile snapshot instead of static sample data. Start or refresh GitHub connection to generate the live view.
         </p>
         <Button asChild size="lg">
-          <Link href="/oauth/github/start?return_to=/dashboard" prefetch={false}>
+          <IntentPrefetchLink href="/oauth/github/start?return_to=/dashboard" prefetchMode="never">
             Connect GitHub
             <ArrowRight className="h-4 w-4" />
-          </Link>
+          </IntentPrefetchLink>
         </Button>
       </GlowCard>
     </main>

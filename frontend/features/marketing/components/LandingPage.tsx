@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { ArrowRight, ChartNoAxesCombined, GitPullRequestArrow, ShieldCheck, Swords, Trophy } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { Button } from "@/components/ui/button";
 
@@ -45,13 +45,16 @@ export function LandingPage() {
             </div>
             <div className="flex flex-wrap gap-3">
               <Button asChild size="lg">
-                <Link href="/oauth/github/start?return_to=/dashboard" prefetch={false}>
+                <IntentPrefetchLink
+                  href="/oauth/github/start?return_to=/dashboard"
+                  prefetchMode="never"
+                >
                   Connect GitHub
                   <ArrowRight className="h-4 w-4" />
-                </Link>
+                </IntentPrefetchLink>
               </Button>
               <Button asChild variant="secondary" size="lg">
-                <Link href="/onboarding/connect-github" prefetch={false}>See onboarding flow</Link>
+                <IntentPrefetchLink href="/onboarding/connect-github">See onboarding flow</IntentPrefetchLink>
               </Button>
             </div>
           </div>
@@ -153,7 +156,7 @@ export function LandingPage() {
             <h3 className="text-xl font-semibold text-white">{journey.mission}</h3>
             <p className="text-sm text-muted">{journey.success}</p>
             <Button asChild variant="secondary" size="sm">
-              <Link href={journey.href} prefetch={false}>{journey.cta}</Link>
+              <IntentPrefetchLink href={journey.href}>{journey.cta}</IntentPrefetchLink>
             </Button>
             </GlowCard>
           </li>
@@ -260,7 +263,12 @@ export function LandingPage() {
             <h2 className="text-3xl font-semibold text-foreground">Build a profile maintainers and hiring teams can trust.</h2>
           </div>
           <Button asChild size="lg">
-            <Link href="/oauth/github/start?return_to=/dashboard" prefetch={false}>Start the reveal</Link>
+            <IntentPrefetchLink
+              href="/oauth/github/start?return_to=/dashboard"
+              prefetchMode="never"
+            >
+              Start the reveal
+            </IntentPrefetchLink>
           </Button>
         </GlowCard>
       </section>

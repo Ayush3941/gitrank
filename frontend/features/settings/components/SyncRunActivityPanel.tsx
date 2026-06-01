@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, Search, XCircle } from "lucide-react";
 import { useDeferredValue, useId, useMemo, useState } from "react";
 import { ControlSurface } from "@/components/shared/ControlSurface";
+import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
 import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
 import { Button } from "@/components/ui/button";
@@ -335,7 +335,7 @@ export function SyncRunActivityPanel({
             <p>No sync runs yet. Open dashboard to start auto-sync.</p>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" variant="secondary">
-                <Link href="/dashboard" prefetch={false}>Open dashboard</Link>
+                <IntentPrefetchLink href="/dashboard">Open dashboard</IntentPrefetchLink>
               </Button>
             </div>
           </div>

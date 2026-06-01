@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { AlertTriangle, RotateCcw } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 
 export function ErrorState({
@@ -73,7 +73,7 @@ export function ErrorState({
         </Button>
         {fallbackHref ? (
           <Button asChild variant="secondary">
-            <Link href={fallbackHref}>{fallbackLabel}</Link>
+            <IntentPrefetchLink href={fallbackHref}>{fallbackLabel}</IntentPrefetchLink>
           </Button>
         ) : onFallback ? (
           <Button type="button" variant="secondary" onClick={handleFallback}>

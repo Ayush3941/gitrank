@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { FolderGit2, LockKeyhole } from "lucide-react";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { TextScaleQuickSwitcher } from "@/components/shared/TextScaleQuickSwitcher";
 import { ThemeQuickSwitcher } from "@/components/shared/ThemeQuickSwitcher";
 import { Button } from "@/components/ui/button";
@@ -43,13 +43,13 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
           </ol>
           <div className="flex flex-wrap gap-3">
             <Button asChild size="lg">
-              <Link href={oauthURL} prefetch={false}>
+              <IntentPrefetchLink href={oauthURL} prefetchMode="never">
                 <FolderGit2 className="h-4 w-4" />
                 Continue with GitHub
-              </Link>
+              </IntentPrefetchLink>
             </Button>
             <Button asChild variant="secondary" size="lg">
-              <Link href="/" prefetch={false}>Back to landing</Link>
+              <IntentPrefetchLink href="/">Back to landing</IntentPrefetchLink>
             </Button>
           </div>
         </div>

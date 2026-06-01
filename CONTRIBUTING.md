@@ -1934,6 +1934,8 @@ ABRA implementation checklist:
 - [x] Dashboard and Contributions stale notice builders now also route through `buildStaleSyncNotice`, removing duplicate blocker-branching logic and keeping stale/partial fallback copy consistent under one shared policy path.
 - [x] GitHub App installation/runtime sync blockers now render through one shared frontend component (`GitHubAppSyncBlockNotice`) across Dashboard, Contributions, Badges, Quests, Leaderboard, and Settings to keep recovery UI and CTA hierarchy consistent.
 - [x] Dashboard surfaces now use one helper (`isGitHubAppInstallationBlocked`) to force effective sync state to `failed` whenever strict App-install/runtime blockers are detected, preventing mixed stale/synced chip states for the same blocking condition.
+- [x] Marketing/onboarding navigation now uses the shared `IntentPrefetchLink` abstraction instead of repeated `next/link prefetch={false}` wiring, keeping link behavior consistent with dashboard route prefetch policy.
+- [x] OAuth-start CTAs (`/oauth/github/start?...`) now explicitly disable prefetch through `prefetchMode="never"` so hover/focus prefetch cannot trigger side-effect-prone auth bootstrap requests.
 
 ABRA closeout artifact:
 

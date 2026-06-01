@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { ArrowRight, FolderGit2, ShieldCheck, Timer } from "lucide-react";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { Button } from "@/components/ui/button";
 import { OnboardingStepper } from "@/features/onboarding/components/OnboardingStepper";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
@@ -88,16 +88,19 @@ export function ConnectGithubPanel() {
         </div>
         <div className="flex flex-wrap gap-3">
           <Button asChild size="lg">
-            <Link href="/oauth/github/start?return_to=/onboarding/analyzing" prefetch={false}>
+            <IntentPrefetchLink
+              href="/oauth/github/start?return_to=/onboarding/analyzing"
+              prefetchMode="never"
+            >
               Connect GitHub
               <ArrowRight className="h-4 w-4" />
-            </Link>
+            </IntentPrefetchLink>
           </Button>
           <Button asChild variant="secondary" size="lg">
-            <Link href="/onboarding/analyzing" prefetch={false}>Continue analyzing</Link>
+            <IntentPrefetchLink href="/onboarding/analyzing">Continue analyzing</IntentPrefetchLink>
           </Button>
           <Button asChild variant="secondary" size="lg">
-            <Link href="/" prefetch={false}>Back to landing</Link>
+            <IntentPrefetchLink href="/">Back to landing</IntentPrefetchLink>
           </Button>
         </div>
       </GlowCard>

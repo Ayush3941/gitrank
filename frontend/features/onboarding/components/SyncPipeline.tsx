@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, LoaderCircle, RefreshCcw } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { InlineNotice } from "@/components/shared/InlineNotice";
+import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { OnboardingStepper } from "@/features/onboarding/components/OnboardingStepper";
@@ -322,10 +322,10 @@ export function SyncPipeline() {
           {isSynced ? (
             <>
               <Button asChild>
-                <Link href="/onboarding/reveal" prefetch={false}>Continue to reveal</Link>
+                <IntentPrefetchLink href="/onboarding/reveal">Continue to reveal</IntentPrefetchLink>
               </Button>
               <Button asChild variant="secondary">
-                <Link href="/dashboard" prefetch={false}>Open dashboard</Link>
+                <IntentPrefetchLink href="/dashboard">Open dashboard</IntentPrefetchLink>
               </Button>
             </>
           ) : null}

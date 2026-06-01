@@ -1,8 +1,8 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { AppShell } from "@/components/shared/AppShell";
 import { ArrowUpRight } from "lucide-react";
 import { BrandLogo } from "@/components/shared/BrandLogo";
+import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { Button } from "@/components/ui/button";
 
 export function MarketingLayout({ children }: { children: ReactNode }) {
@@ -12,7 +12,7 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
         <header className="glass-panel cyber-card cyber-frame neon-outline px-5 py-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap items-center gap-4">
-              <Link href="/" prefetch={false} className="flex items-center gap-3">
+              <IntentPrefetchLink href="/" className="flex items-center gap-3">
                 <div className="rounded-3xl border border-primary/24 bg-primary/14 p-2.5 text-primary ring-glow">
                   <BrandLogo size={22} className="h-[22px] w-[22px]" alt="GitRank" priority />
                 </div>
@@ -20,7 +20,7 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
                   <p className="cyber-title text-lg font-semibold text-foreground">GitRank</p>
                   <p className="hud-eyebrow text-xs font-semibold">Open-source reputation</p>
                 </div>
-              </Link>
+              </IntentPrefetchLink>
               <nav aria-label="Marketing routes">
                 <ul role="list" className="flex flex-wrap items-center gap-2">
                   {[
@@ -30,13 +30,12 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
                     { href: "/#start-reveal", label: "Start" },
                   ].map((item) => (
                     <li key={item.href} className="list-none">
-                      <Link
+                      <IntentPrefetchLink
                         href={item.href}
-                        prefetch={false}
                         className="focus-ring dashboard-nav-item inline-flex min-h-9 items-center justify-center px-3 py-1.5 text-xs font-medium"
                       >
                         {item.label}
-                      </Link>
+                      </IntentPrefetchLink>
                     </li>
                   ))}
                 </ul>
@@ -44,10 +43,13 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
             </div>
             <div className="flex items-center gap-3">
               <Button asChild>
-                <Link href="/oauth/github/start?return_to=/dashboard" prefetch={false}>
+                <IntentPrefetchLink
+                  href="/oauth/github/start?return_to=/dashboard"
+                  prefetchMode="never"
+                >
                   Connect GitHub
                   <ArrowUpRight className="h-4 w-4" />
-                </Link>
+                </IntentPrefetchLink>
               </Button>
             </div>
           </div>
