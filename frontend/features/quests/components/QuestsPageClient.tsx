@@ -12,7 +12,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import { startTransition, useDeferredValue, useMemo, useState } from "react";
+import { startTransition, useDeferredValue, useId, useMemo, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
@@ -39,7 +39,6 @@ import type { Quest } from "@/types/gitrank";
 const groups: Array<Quest["cadence"]> = ["Daily", "Weekly", "Long-term", "Skill-based"];
 const QUEST_GROUP_PAGE_SIZE_DEFAULT = 5;
 const QUEST_GROUP_PAGE_SIZE_CONSTRAINED = 3;
-const QUEST_MISSIONS_REGION_ID = "quests-missions-region";
 const QUEST_FILTERS: Array<{ value: "All" | Quest["cadence"]; label: string }> = [
   { value: "All", label: "All" },
   { value: "Daily", label: "Daily" },
@@ -59,6 +58,8 @@ const QuestCard = dynamic(
 );
 
 export function QuestsPageClient() {
+  const questsMissionsRegionId = useId();
+  const questsFilterStatusId = useId();
   const constrainedNetwork = useNetworkConstraintPreference();
   const runUserSync = useRunUserSync();
   const { data, isLoading, isError, refetch } = useQuests();
@@ -122,7 +123,6 @@ export function QuestsPageClient() {
   const canResetCadenceFilter = cadenceFilter !== "All";
   const activeFilterCount = canResetCadenceFilter ? 1 : 0;
   const isFiltering = deferredCadenceFilter !== cadenceFilter;
-  const filterStatusId = "quests-filter-status";
   const staleNotice = useMemo(
     () =>
       buildStaleSyncNotice({
@@ -177,7 +177,7 @@ export function QuestsPageClient() {
       />
       {!isLoading && !isError ? (
         <section className="space-y-3">
-          <p id={filterStatusId} role="status" aria-live="polite" className="sr-only">
+          <p id={questsFilterStatusId} role="status" aria-live="polite" className="sr-only">
             {isFiltering
               ? "Updating missions…"
               : deferredCadenceFilter === "All"
@@ -195,14 +195,14 @@ export function QuestsPageClient() {
                     : `${visibleQuestCount} ${deferredCadenceFilter.toLowerCase()} missions`
               }
               activeFilterCount={activeFilterCount}
-              resetAction={{
-                onReset: () => {
-                  handleCadenceFilterChange("All");
-                },
-                enabled: canResetCadenceFilter,
-                ariaControls: QUEST_MISSIONS_REGION_ID,
-              }}
-            />
+                resetAction={{
+                  onReset: () => {
+                    handleCadenceFilterChange("All");
+                  },
+                  enabled: canResetCadenceFilter,
+                  ariaControls: questsMissionsRegionId,
+                }}
+              />
             <div className="space-y-2">
               <p className="text-xs font-medium text-primary">Cadence lane</p>
               <SegmentedTablist
@@ -238,8 +238,8 @@ export function QuestsPageClient() {
                 value={cadenceFilter}
                 onValueChange={handleCadenceFilterChange}
                 ariaLabel="Mission cadence filters"
-                ariaDescribedBy={filterStatusId}
-                ariaControls={QUEST_MISSIONS_REGION_ID}
+                ariaDescribedBy={questsFilterStatusId}
+                ariaControls={questsMissionsRegionId}
                 tabIdPrefix="quest-filter-tab"
                 wrap
               />
@@ -260,7 +260,7 @@ export function QuestsPageClient() {
           analyticsTarget="quests:stale"
         />
       ) : null}
-      <div id={QUEST_MISSIONS_REGION_ID} className="space-y-6">
+      <div id={questsMissionsRegionId} className="space-y-6">
         {!isLoading && !isError && profile ? (
           <GlowCard strong className="cyber-hero-shell relative overflow-hidden">
             <div className="space-y-4">

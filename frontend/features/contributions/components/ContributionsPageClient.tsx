@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { startTransition, useDeferredValue, useEffect, useMemo, useState } from "react";
+import { startTransition, useDeferredValue, useEffect, useId, useMemo, useState } from "react";
 import { Download, LayoutList, Rows3 } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -59,10 +59,10 @@ const ContributionList = dynamic(
   },
 );
 
-const CONTRIBUTION_CARDS_REGION_ID = "contributions-cards-region";
 const CONTRIBUTION_SEARCH_DEBOUNCE_MS = 220;
 
 export function ContributionsPageClient() {
+  const contributionCardsRegionId = useId();
   const constrainedNetwork = useNetworkConstraintPreference();
   const reducedGamification = useReducedGamification();
   const [filter, setFilter] = useState<ContributionFilterValue>(CONTRIBUTION_DEFAULT_FILTER);
@@ -328,7 +328,7 @@ export function ContributionsPageClient() {
                   });
                 }}
                 aria-pressed={showCardDetails}
-                aria-controls={CONTRIBUTION_CARDS_REGION_ID}
+                aria-controls={contributionCardsRegionId}
               >
                 {showCardDetails ? (
                   <>
@@ -393,7 +393,7 @@ export function ContributionsPageClient() {
           onSearchChange={handleSearchChange}
           sort={sort}
           onSortChange={handleSortChange}
-          resultsRegionId={CONTRIBUTION_CARDS_REGION_ID}
+          resultsRegionId={contributionCardsRegionId}
           resultCount={filteredRows.length}
           isFiltering={isFiltering}
           canReset={canReset}
@@ -440,7 +440,7 @@ export function ContributionsPageClient() {
       {!isLoading && !isError && filteredRows.length ? (
         <section className="render-opt-section space-y-4">
           <div className="space-y-4">
-            <div id={CONTRIBUTION_CARDS_REGION_ID}>
+            <div id={contributionCardsRegionId}>
               <ContributionList
                 items={visibleRows}
                 narratives={abraInsights.data?.contributionNarratives}
@@ -456,7 +456,7 @@ export function ContributionsPageClient() {
                 <Button
                   type="button"
                   variant="secondary"
-                  aria-controls={CONTRIBUTION_CARDS_REGION_ID}
+                  aria-controls={contributionCardsRegionId}
                   aria-label={`Show ${Math.min(cardPageSize, remainingRows)} more contribution cards. ${remainingRows} remaining.`}
                   onClick={() => {
                     startTransition(() => {

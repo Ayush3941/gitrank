@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { startTransition, useDeferredValue, useMemo, useState } from "react";
+import { startTransition, useDeferredValue, useId, useMemo, useState } from "react";
 import {
   BookText,
   CalendarClock,
@@ -84,10 +84,10 @@ const TAB_ICONS: Record<LeaderboardTab, typeof Globe2> = {
 
 const LEADERBOARD_ROW_PAGE_SIZE_DEFAULT = 12;
 const LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED = 6;
-const LEADERBOARD_ROWS_REGION_ID = "leaderboard-rows-region";
 const LEADERBOARD_NEARBY_DEFAULT_THRESHOLD = 10;
 
 export function LeaderboardPageClient() {
+  const leaderboardRowsRegionId = useId();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -271,7 +271,7 @@ export function LeaderboardPageClient() {
                 });
               },
               enabled: canClearAllControls,
-              ariaControls: LEADERBOARD_ROWS_REGION_ID,
+              ariaControls: leaderboardRowsRegionId,
             }}
           />
           <div className="space-y-2">
@@ -290,7 +290,7 @@ export function LeaderboardPageClient() {
               value={tab}
               onValueChange={handleTabChange}
               ariaLabel="Leaderboard lane filters"
-              ariaControls={LEADERBOARD_ROWS_REGION_ID}
+              ariaControls={leaderboardRowsRegionId}
               className="w-full"
               tabIdPrefix="leaderboard-lane-tab"
               wrap
@@ -304,7 +304,7 @@ export function LeaderboardPageClient() {
               onClick={() => {
                 setShowLaneDetails((current) => !current);
               }}
-              aria-controls={LEADERBOARD_ROWS_REGION_ID}
+              aria-controls={leaderboardRowsRegionId}
               aria-pressed={showLaneDetails}
               title="Toggle additional lane details"
             >
@@ -318,7 +318,7 @@ export function LeaderboardPageClient() {
                 onClick={() => {
                   setPreferNearbyMode((current) => !current);
                 }}
-                aria-controls={LEADERBOARD_ROWS_REGION_ID}
+                aria-controls={leaderboardRowsRegionId}
                 aria-pressed={effectiveMode === "nearby"}
               >
                 {effectiveMode === "nearby" ? "Show full board" : "Show nearby view"}
@@ -412,7 +412,7 @@ export function LeaderboardPageClient() {
               </p>
             </div>
           ) : null}
-          <div id={LEADERBOARD_ROWS_REGION_ID}>
+          <div id={leaderboardRowsRegionId}>
             <LeaderboardArena
               snapshot={snapshot}
               rowLimit={effectiveMode === "full" ? safeVisibleRowCount : undefined}
@@ -426,7 +426,7 @@ export function LeaderboardPageClient() {
                 type="button"
                 variant="secondary"
                 size="sm"
-                aria-controls={LEADERBOARD_ROWS_REGION_ID}
+                aria-controls={leaderboardRowsRegionId}
                 aria-label={`Show ${Math.min(rowPageSize, remainingRows)} more ranked rows. ${remainingRows} remaining.`}
                 onClick={() => {
                   startTransition(() => {

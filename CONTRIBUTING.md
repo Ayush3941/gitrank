@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (May 31, 2026)
 
+- Contributions, Quests, and Leaderboard now generate per-instance disclosure/status region IDs via React `useId` instead of static constants, preventing duplicate-ID collisions when sections are reused while preserving ARIA control/link semantics.
 - User-sync selection in `github-ingestor` now keeps a historic PR slice while authored-history bootstrap is in progress, even when recent discovery can fully fill the per-run cap. This prevents merged evidence from being starved by a stream of newer open PRs.
 - Profile/dashboard skill rendering now uses shared skill deduplication from `frontend/lib/presentation/skill-normalization.ts` and stronger deterministic list keys in high-traffic cards/charts to avoid duplicate-key regressions.
 - Sync state presentation remains evidence-first: "synced" display now requires merged contribution evidence (`mergedPrCount > 0`) instead of repository-only or superficial sync artifacts.
