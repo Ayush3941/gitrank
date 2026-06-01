@@ -29,6 +29,8 @@ This document is intentionally detailed.
 - Disclosure panels now use React `useId` for trigger/content IDs (instead of fixed strings), preventing accidental ID collisions when components are reused or rendered more than once on a page.
 - Badge shelves now use stable badge-ID keys (no index-based keys) and locked-path disclosure now controls a true hidden details region (`Show details`/`Hide details`) with per-instance `useId` wiring while keeping a lightweight preview visible when collapsed.
 - Sync outcome selection now prioritizes GitHub App installation/runtime block diagnostics over newer generic partial outcomes, so dashboard/settings consistently show install-required blocking instead of falsely optimistic sync health when App access is broken.
+- Shared stale-state banners now distinguish `Data is stale` from `Evidence pending` and use intent-prefetch navigation + polite status semantics, keeping partial-sync copy truthful without extra motion or noisy auto-focus behavior.
+- Settings sync-activity disclosure now keeps expanded diagnostic context stable across polling refreshes (auto-open on attention, no implicit auto-collapse), reducing perceived scroll jumps while preserving manual user control.
 
 It serves two purposes:
 

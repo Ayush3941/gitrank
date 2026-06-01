@@ -182,7 +182,7 @@ export function SyncRunActivityPanel({
   }
 
   return (
-    <div className="sync-runs-panel-shell space-y-4">
+    <div className="sync-runs-panel-shell space-y-4" style={{ overflowAnchor: "none" }}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p id={syncRunsHeadingId} className="text-sm font-semibold text-white">
           Recent sync runs

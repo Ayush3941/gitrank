@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { Clock3 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { formatDateTime } from "@/lib/formatters";
 import type { RefreshFeedback } from "@/lib/refresh-feedback";
@@ -19,6 +19,7 @@ export function StaleState({
   refreshLabel = "Refresh",
   onRefresh,
   isRefreshing = false,
+  syncState = "stale",
   analyticsTarget,
 }: {
   message: string;
@@ -29,6 +30,7 @@ export function StaleState({
   refreshLabel?: string;
   onRefresh?: () => void | Promise<void | RefreshFeedback> | RefreshFeedback;
   isRefreshing?: boolean;
+  syncState?: "stale" | "partially_synced";
   analyticsTarget?: string;
 }) {
   const sentEventRef = useRef(false);
@@ -51,6 +53,11 @@ export function StaleState({
   const verifiedDateTime = normalizeDateTime(updatedAt);
   const verifiedLabel = updatedAt ? formatDateTime(updatedAt) : "Unknown";
   const refreshBusy = isRefreshing || isRefreshPending;
+  const label = syncState === "partially_synced" ? "Evidence pending" : "Data is stale";
+  const helper =
+    syncState === "partially_synced"
+      ? "Latest verified data stays visible while remaining PR evidence syncs."
+      : "Latest verified data stays visible while sync refreshes.";
 
   async function handleRefresh() {
     if (!onRefresh || refreshBusy) {
@@ -83,16 +90,16 @@ export function StaleState({
   }
 
   return (
-    <GlowCard className="cyber-sheen space-y-3 border border-amber-400/22 bg-amber-400/8">
+    <GlowCard role="status" aria-live="polite" className="cyber-sheen space-y-3 border border-amber-400/22 bg-amber-400/8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
           <div className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-amber-300/35 bg-amber-400/14 px-2.5 py-1 text-sm font-semibold text-amber-100">
             <Clock3 className="h-4 w-4" />
-            Data is stale
+            {label}
           </div>
           <div className="space-y-1">
             <p className="font-medium text-amber-100">{message}</p>
-            <p className="text-sm text-amber-100">Latest verified data stays visible while sync refreshes.</p>
+            <p className="text-sm text-amber-100">{helper}</p>
             {reasonMessage ? <p className="text-sm text-amber-100">{reasonMessage}</p> : null}
             {verifiedDateTime ? (
               <p className="text-xs text-amber-100">
@@ -119,7 +126,7 @@ export function StaleState({
             </Button>
           ) : null}
           <Button asChild variant="secondary">
-            <Link href={actionHref}>{actionLabel}</Link>
+            <IntentPrefetchLink href={actionHref}>{actionLabel}</IntentPrefetchLink>
           </Button>
         </div>
       </div>

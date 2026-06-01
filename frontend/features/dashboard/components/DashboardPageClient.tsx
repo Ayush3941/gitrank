@@ -256,6 +256,7 @@ export function DashboardPageClient() {
           message={staleNotice.message}
           reasonMessage={staleNotice.reasonMessage}
           updatedAt={data.refreshedAt}
+          syncState={displaySyncState === "partially_synced" ? "partially_synced" : "stale"}
           onRefresh={staleSyncRefresh.onRefresh}
           isRefreshing={staleSyncRefresh.isRefreshing}
           refreshLabel={staleSyncRefresh.refreshLabel}

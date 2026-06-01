@@ -391,6 +391,7 @@ export function ContributionsPageClient() {
           message={staleNotice.message}
           reasonMessage={staleNotice.reasonMessage}
           updatedAt={profile.refreshedAt}
+          syncState={displaySyncState === "partially_synced" ? "partially_synced" : "stale"}
           onRefresh={staleSyncRefresh.onRefresh}
           isRefreshing={staleSyncRefresh.isRefreshing}
           refreshLabel={staleSyncRefresh.refreshLabel}

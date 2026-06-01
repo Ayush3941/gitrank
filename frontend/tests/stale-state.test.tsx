@@ -70,4 +70,19 @@ describe("StaleState", () => {
       screen.getByText("Latest sync was partial because historical backfill is still in progress."),
     ).toBeTruthy();
   });
+
+  it("uses an evidence-pending headline for partially synced state", () => {
+    render(
+      <StaleState
+        message="Profile snapshot exists, but evidence hydration is still in progress."
+        updatedAt="2026-05-17T18:10:00.000Z"
+        syncState="partially_synced"
+      />,
+    );
+
+    expect(screen.getByText("Evidence pending")).toBeTruthy();
+    expect(
+      screen.getByText("Latest verified data stays visible while remaining PR evidence syncs."),
+    ).toBeTruthy();
+  });
 });

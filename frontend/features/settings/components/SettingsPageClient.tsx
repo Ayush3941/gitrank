@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { ChevronDown, ChevronUp, Download, FolderGit2, LogOut, Palette, RefreshCw, Trash2 } from "lucide-react";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
@@ -781,10 +781,16 @@ function SettingsSyncActivitySection({
   defaultExpanded: boolean;
   onRefresh: () => void;
 }) {
-  const [manualExpanded, setManualExpanded] = useState<boolean | null>(null);
-  const expanded = manualExpanded ?? defaultExpanded;
+  const [expanded, setExpanded] = useState(defaultExpanded);
+  const userToggledRef = useRef(false);
   const syncActivityToggleId = useId();
   const syncActivityDetailsId = useId();
+
+  useEffect(() => {
+    if (defaultExpanded && !expanded && !userToggledRef.current) {
+      setExpanded(true);
+    }
+  }, [defaultExpanded, expanded]);
 
   const summary = useMemo(() => {
     let completed = 0;
@@ -836,12 +842,8 @@ function SettingsSyncActivitySection({
           aria-expanded={expanded}
           aria-controls={syncActivityDetailsId}
           onClick={() => {
-            setManualExpanded((current) => {
-              if (current === null) {
-                return !defaultExpanded;
-              }
-              return !current;
-            });
+            userToggledRef.current = true;
+            setExpanded((current) => !current);
           }}
         >
           {expanded ? (
