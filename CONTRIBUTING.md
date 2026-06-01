@@ -284,6 +284,7 @@ Recent no-slop refinement (May 31, 2026):
 - Added focused regression coverage in `frontend/tests/pr-report-retry-ai-summary.test.tsx` to lock retry-action visibility and pull-request sync invocation wiring.
 - Badges and quests filter bars removed duplicate state chips (`Rarity`, `State`, `Cadence`) because segmented tabs already represent active state; control rails now keep only actionable context (`Active` + `Reset` when applicable).
 - Live fixture smoke coverage now asserts selected tab state directly for badge/quest filters, preventing regressions back to duplicated chip state.
+- Added shared `FilterControlsHeader` (`frontend/components/shared/FilterControlsHeader.tsx`) and wired contributions, badges, and quests to it so filter-rail summary/chip/reset layout stays consistent and avoids repeated one-off JSX patterns.
 
 Recent strict app-auth refinement (May 30, 2026):
 

@@ -17,6 +17,7 @@ import { ExpandableText } from "@/components/shared/ExpandableText";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { InlineNotice } from "@/components/shared/InlineNotice";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -391,31 +392,16 @@ export function BadgesPageClient() {
             Showing {filtered.length} of {totalCount} badges
           </p>
           <div className="neon-surface space-y-3 rounded-[1rem] px-3 py-3 sm:px-4 sm:py-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-xs font-medium text-primary">Badge controls</p>
-              <p className="text-xs text-muted">
-                {isFiltering ? "Updating shelf..." : `${filtered.length} of ${totalCount} badges`}
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              {activeFilterCount > 0 ? (
-                <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-                  Active: {activeFilterCount}
-                </span>
-              ) : null}
-              {canResetFilters ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleResetFilters}
-                  aria-controls={BADGES_EARNED_REGION_ID}
-                  className="h-8 px-3"
-                >
-                  Reset
-                </Button>
-              ) : null}
-            </div>
+            <FilterControlsHeader
+              label="Badge controls"
+              summary={isFiltering ? "Updating shelf..." : `${filtered.length} of ${totalCount} badges`}
+              activeFilterCount={activeFilterCount}
+              resetAction={{
+                onReset: handleResetFilters,
+                enabled: canResetFilters,
+                ariaControls: BADGES_EARNED_REGION_ID,
+              }}
+            />
             <div className="grid gap-3">
               <div className="space-y-2">
                 <p className="text-xs font-medium text-primary">Rarity</p>

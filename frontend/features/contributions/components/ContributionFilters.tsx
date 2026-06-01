@@ -16,8 +16,8 @@ import {
   Trophy,
   X,
 } from "lucide-react";
+import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
 import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   contributionFocusFilters,
@@ -166,50 +166,38 @@ export function ContributionFilters({
           ? "Updating..."
           : `${resultCount ?? 0} cards`}
       </p>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs font-medium text-primary">Contribution controls</p>
-        <p className="text-xs text-muted">
-          {isFiltering ? "Updating cards..." : `${resultCount ?? 0} cards`}
-        </p>
-      </div>
-      <div className="flex flex-wrap items-center gap-2">
-        {activeFilterCount > 0 ? (
-          <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-            Active filters: {activeFilterCount}
-          </span>
-        ) : null}
-        {activeFilterCount > 0 ? (
-          <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-            Lane: {activeViewLabel}
-          </span>
-        ) : null}
-        {trimmedSearch.length > 0 ? (
-          <button
-            type="button"
-            className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
-            onClick={handleClearSearch}
-            disabled={isFiltering}
-            aria-label={`Remove Search · ${compactSearch} filter`}
-            aria-controls={resultsRegionId}
-          >
-            Search: {compactSearch}
-            <X className="h-3.5 w-3.5" />
-          </button>
-        ) : null}
-        {onReset ? (
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            onClick={onReset}
-            disabled={!canReset || isFiltering}
-            aria-controls={resultsRegionId}
-            className="h-8 px-3"
-          >
-            Reset
-          </Button>
-        ) : null}
-      </div>
+      <FilterControlsHeader
+        label="Contribution controls"
+        summary={isFiltering ? "Updating cards..." : `${resultCount ?? 0} cards`}
+        activeFilterCount={activeFilterCount}
+        activeCountLabel={activeFilterCount > 0 ? `Active filters: ${activeFilterCount}` : undefined}
+        secondaryLabel={activeFilterCount > 0 ? `Lane: ${activeViewLabel}` : undefined}
+        extraControls={
+          trimmedSearch.length > 0 ? (
+            <button
+              type="button"
+              className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
+              onClick={handleClearSearch}
+              disabled={isFiltering}
+              aria-label={`Remove Search · ${compactSearch} filter`}
+              aria-controls={resultsRegionId}
+            >
+              Search: {compactSearch}
+              <X className="h-3.5 w-3.5" />
+            </button>
+          ) : null
+        }
+        resetAction={
+          onReset
+            ? {
+                onReset,
+                enabled: true,
+                disabled: !canReset || isFiltering,
+                ariaControls: resultsRegionId,
+              }
+            : undefined
+        }
+      />
       <div id="contribution-mobile-controls">
         <div className="space-y-2">
           <p className="text-xs font-medium text-primary">Status</p>

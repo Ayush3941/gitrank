@@ -15,6 +15,7 @@ import {
 import { startTransition, useDeferredValue, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -153,37 +154,24 @@ export function QuestsPageClient() {
                 : `Showing ${visibleQuestCount} ${deferredCadenceFilter.toLowerCase()} missions`}
           </p>
           <div className="neon-surface space-y-3 rounded-[1rem] px-3 py-3 sm:px-4 sm:py-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-xs font-medium text-primary">Mission controls</p>
-              <p className="text-xs text-muted">
-                {isFiltering
+            <FilterControlsHeader
+              label="Mission controls"
+              summary={
+                isFiltering
                   ? "Updating missions..."
                   : deferredCadenceFilter === "All"
                     ? `${visibleQuestCount} missions`
-                    : `${visibleQuestCount} ${deferredCadenceFilter.toLowerCase()} missions`}
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              {activeFilterCount > 0 ? (
-                <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-                  Active: {activeFilterCount}
-                </span>
-              ) : null}
-              {canResetCadenceFilter ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => {
-                    handleCadenceFilterChange("All");
-                  }}
-                  aria-controls={QUEST_MISSIONS_REGION_ID}
-                  className="h-8 px-3"
-                >
-                  Reset
-                </Button>
-              ) : null}
-            </div>
+                    : `${visibleQuestCount} ${deferredCadenceFilter.toLowerCase()} missions`
+              }
+              activeFilterCount={activeFilterCount}
+              resetAction={{
+                onReset: () => {
+                  handleCadenceFilterChange("All");
+                },
+                enabled: canResetCadenceFilter,
+                ariaControls: QUEST_MISSIONS_REGION_ID,
+              }}
+            />
             <div className="space-y-2">
               <p className="text-xs font-medium text-primary">Cadence lane</p>
               <SegmentedTablist
