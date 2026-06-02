@@ -2013,6 +2013,7 @@ ABRA implementation checklist:
 - [x] Shared decorative icons in summary cards, status pills, freshness chips, notices, copy/share controls, theme controls, rank badges, and marketing actions are now explicitly hidden from assistive technology so visible text remains the accessible authority.
 - [x] Shared sync-status pills now restore the exact last-sync timestamp on wider layouts while retaining the compact relative-time label on mobile and the full semantic timestamp for assistive technology.
 - [x] Dashboard and public-profile hero cards now explicitly hide decorative action, metric, trophy, next-move, and signal icons from assistive technology while preserving their visible cyberpunk styling.
+- [x] Dashboard league, streak, quest, and recent-report cards now explicitly hide decorative status, movement, action, and evidence icons from assistive technology while preserving visible lane styling.
 
 ABRA closeout artifact:
 

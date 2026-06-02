@@ -19,7 +19,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
         <Button asChild size="sm" variant="secondary">
           <IntentPrefetchLink href="/dashboard/contributions">
             View all
-            <ArrowRight className="h-4 w-4" />
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </IntentPrefetchLink>
         </Button>
       </div>
@@ -72,7 +72,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
                     {report.contribution.xpEarned.toLocaleString("en-US")}
                   </p>
                   <p className="mt-2 inline-flex items-center gap-1 text-xs text-cyan-100">
-                    <ShieldCheck className="h-3.5 w-3.5 text-cyan-200" />
+                    <ShieldCheck className="h-3.5 w-3.5 text-cyan-200" aria-hidden="true" />
                     {confidenceLabel(report)}
                   </p>
                 </div>
@@ -81,7 +81,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
                 <Button asChild variant="secondary" size="sm">
                   <IntentPrefetchLink href={`/pr/${report.contribution.owner}/${report.contribution.repo}/${report.contribution.number}`}>
                     View report
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
                   </IntentPrefetchLink>
                 </Button>
               </div>

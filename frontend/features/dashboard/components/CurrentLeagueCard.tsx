@@ -20,7 +20,7 @@ export function CurrentLeagueCard({ user }: { user: UserProfile }) {
           <p className="mt-2 text-sm text-muted">{user.rankProgress.season.windowLabel}</p>
         </div>
         <div className="neon-tile rounded-3xl p-3 text-primary">
-          <Trophy className="h-5 w-5" />
+          <Trophy className="h-5 w-5" aria-hidden="true" />
         </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
@@ -29,7 +29,7 @@ export function CurrentLeagueCard({ user }: { user: UserProfile }) {
           value={user.leaguePosition > 0 ? `#${user.leaguePosition}` : "Unranked"}
         />
         <Metric label="Weekly XP" value={user.weeklyXp.toLocaleString("en-US")} />
-        <Metric label="Movement" value={`${positive ? "+" : ""}${user.movement}`} icon={<MovementIcon className="h-4 w-4" />} />
+        <Metric label="Movement" value={`${positive ? "+" : ""}${user.movement}`} icon={<MovementIcon className="h-4 w-4" aria-hidden="true" />} />
       </div>
       <div className="neon-tile rounded-[1.75rem] p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -42,7 +42,7 @@ export function CurrentLeagueCard({ user }: { user: UserProfile }) {
             </p>
           </div>
           <div className="neon-chip neon-chip-info inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold">
-            <CalendarClock className="h-3.5 w-3.5" />
+            <CalendarClock className="h-3.5 w-3.5" aria-hidden="true" />
             {user.rankProgress.season.status}
           </div>
         </div>

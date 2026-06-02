@@ -15,7 +15,7 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
           <h2 className="text-xl font-semibold text-white">Quests</h2>
         </div>
         <div className="neon-surface rounded-3xl p-3 text-primary">
-          <Target className="h-5 w-5" />
+          <Target className="h-5 w-5" aria-hidden="true" />
         </div>
       </div>
       <div className="space-y-3">
@@ -69,7 +69,7 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
                     ))}
                     <li>
                       <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs">
-                        <Link2 className="h-3 w-3" />
+                        <Link2 className="h-3 w-3" aria-hidden="true" />
                         {quest.linkedContributionIds.length} linked PRs
                       </span>
                     </li>

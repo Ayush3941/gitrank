@@ -307,7 +307,7 @@ export function DashboardPageClient() {
           <div className="flex items-center justify-between text-muted">
             <span className="text-sm">Current streak</span>
             <span className="hud-pill rounded-2xl p-2">
-              <Flame className="h-5 w-5 text-primary" />
+              <Flame className="h-5 w-5 text-primary" aria-hidden="true" />
             </span>
           </div>
           <div className="numeric-readout text-3xl font-semibold tracking-tight">
