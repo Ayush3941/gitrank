@@ -2018,6 +2018,7 @@ ABRA implementation checklist:
 - [x] Expandable-text toggles, filter reset actions, sync-log resets, and dialog close buttons now follow the shared 40px compact-control baseline instead of collapsing into undersized touch targets.
 - [x] Feature-route Lucide icons now declare decorative semantics explicitly, and `npm run check:decorative-icons` prevents visual-only SVGs from leaking repeated labels into assistive output.
 - [x] New-tab actions now share an explicit assistive hint, and `npm run check:new-tab-links` enforces both the hint and `rel="noopener noreferrer"` for every `target="_blank"` link.
+- [x] Focusable scroll regions now add one shared assistive instruction so keyboard and screen-reader users know the focused area can be scrolled without adding visible UI noise.
 
 ABRA closeout artifact:
 
