@@ -2004,6 +2004,7 @@ ABRA implementation checklist:
 - [x] Marketing header navigation now uses a separate horizontally scrollable route rail on narrow screens with the same 44px target baseline as dashboard navigation, preventing brand/nav wrapping from degrading scan order or touch usability.
 - [x] Shared in-page section rails now use 40px chips and the established touch-scroll rail treatment across Dashboard, Contributions, Badges, Quests, Leaderboard, Settings, public profiles, and PR reports.
 - [x] Shared inline status notices now expose a 32px dismiss target across contribution, badge, PR-report, onboarding, and settings feedback lanes, improving touch usability without expanding the surrounding notice shell.
+- [x] Shared progressive-disclosure toggles now use 40px targets and decorative chevrons, improving repeated touch interactions and screen-reader output across filters, settings, reports, badges, and chart detail panels.
 
 ABRA closeout artifact:
 

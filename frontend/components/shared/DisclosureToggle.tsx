@@ -27,7 +27,7 @@ export function DisclosureToggle({
       type="button"
       id={id}
       className={cn(
-        "focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold",
+        "focus-ring neon-chip neon-chip-muted inline-flex min-h-10 items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold",
         className,
       )}
       aria-expanded={expanded}
@@ -37,12 +37,12 @@ export function DisclosureToggle({
       {expanded ? (
         <>
           {expandedLabel}
-          <ChevronUp className={cn("h-3.5 w-3.5", iconClassName)} />
+          <ChevronUp className={cn("h-3.5 w-3.5", iconClassName)} aria-hidden="true" />
         </>
       ) : (
         <>
           {collapsedLabel}
-          <ChevronDown className={cn("h-3.5 w-3.5", iconClassName)} />
+          <ChevronDown className={cn("h-3.5 w-3.5", iconClassName)} aria-hidden="true" />
         </>
       )}
     </button>
