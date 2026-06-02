@@ -14,6 +14,7 @@ This document is intentionally detailed.
 - Added `npm run check:native-button-type`; literal `<button>` elements must declare a safe `type`, while the shared `Button` primitive defaults plain buttons to `type="button"` and keeps polymorphic links type-free.
 - Added `npm run check:input-names`; production inputs must expose an accessible-name path and must not rely on placeholder text as the only label.
 - Settings sync-log status filtering now uses the shared `NativeSelect` surface treatment instead of one-off native dropdown styling; `npm run check:select-names` blocks unlabeled production selects.
+- Added `npm run check:switch-names`; shared `Switch` controls must be named by `aria-label`/`aria-labelledby` or by an `id` paired with a visible or screen-reader-only label.
 
 ## Session Notes (May 31, 2026)
 

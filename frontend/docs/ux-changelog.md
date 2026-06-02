@@ -25,6 +25,9 @@
 - Native select consistency pass:
   - added a shared `NativeSelect` primitive for dark neon dropdowns with a decorative chevron and consistent focus/surface treatment.
   - moved the settings sync-run status filter onto the shared primitive and added `npm run check:select-names` to block unlabeled production selects.
+- Switch accessible-name guard:
+  - added `npm run check:switch-names` so production `Switch` controls need explicit naming through labels or ARIA.
+  - added primitive coverage for label-paired switches and compact aria-labeled switch rows.
 
 ## 2026-05-25
 
