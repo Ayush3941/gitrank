@@ -361,7 +361,7 @@ export function PublicProfilePageClient({
           </GlowCard>
           <GlowCard className="space-y-5">
             <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
-              <Award className="h-5 w-5" />
+              <Award className="h-5 w-5" aria-hidden="true" />
             </div>
             <div>
               <p className="text-xs font-medium text-primary">Repositories</p>

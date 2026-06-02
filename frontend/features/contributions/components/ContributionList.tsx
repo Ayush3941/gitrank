@@ -89,7 +89,7 @@ export function ContributionList({
                       </li>
                       <li className="list-none">
                         <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-3 py-1.5 font-semibold">
-                          <CalendarDays className="h-3 w-3" />
+                          <CalendarDays className="h-3 w-3" aria-hidden="true" />
                           {formatContributionDate(item.mergedAt)}
                         </span>
                       </li>
@@ -134,13 +134,13 @@ export function ContributionList({
                     rel="noopener noreferrer"
                   >
                     GitHub PR
-                    <ExternalLink className="h-4 w-4" />
+                    <ExternalLink className="h-4 w-4" aria-hidden="true" />
                   </Link>
                 </Button>
                 <Button asChild variant="secondary" size="sm">
                   <Link href={`/pr/${item.owner}/${item.repo}/${item.number}`} prefetch={false}>
                     Battle report
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
                   </Link>
                 </Button>
               </div>
@@ -263,7 +263,7 @@ function AIPanel({
       <div className={`neon-surface border-fuchsia-300/28 ${lite ? "rounded-[1rem] px-3 py-3" : "rounded-[1.35rem] px-4 py-4"}`}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="inline-flex items-center gap-2 text-xs font-medium text-fuchsia-100">
-          <Sparkles className="h-3.5 w-3.5" />
+          <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
           Impact summary
         </p>
         {!lite ? (

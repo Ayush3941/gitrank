@@ -307,7 +307,7 @@ export function LeaderboardPageClient() {
                   value: item,
                   label: TAB_LABELS[item],
                   compactLabel: TAB_COMPACT_LABELS[item],
-                  icon: <Icon className="h-4 w-4" />,
+                  icon: <Icon className="h-4 w-4" aria-hidden="true" />,
                   minWidthClassName: "min-w-[6.75rem] sm:min-w-[8.5rem]",
                 };
               })}

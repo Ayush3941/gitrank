@@ -2016,6 +2016,7 @@ ABRA implementation checklist:
 - [x] Dashboard league, streak, quest, and recent-report cards now explicitly hide decorative status, movement, action, and evidence icons from assistive technology while preserving visible lane styling.
 - [x] Lazy-rendered lanes no longer read `NODE_ENV` from client-exposed code, and GitHub App blocker guidance now follows the automatic-refresh model instead of telling users to rerun sync manually.
 - [x] Expandable-text toggles, filter reset actions, sync-log resets, and dialog close buttons now follow the shared 40px compact-control baseline instead of collapsing into undersized touch targets.
+- [x] Feature-route Lucide icons now declare decorative semantics explicitly, and `npm run check:decorative-icons` prevents visual-only SVGs from leaking repeated labels into assistive output.
 
 ABRA closeout artifact:
 

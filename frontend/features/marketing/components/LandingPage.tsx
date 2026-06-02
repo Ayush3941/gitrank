@@ -42,9 +42,9 @@ export function LandingPage() {
                 GitRank scores PR difficulty, review depth, tests, and project context, then converts verified evidence into XP, badges, and shareable profile signals.
               </p>
               <div className="grid max-w-3xl gap-2 sm:grid-cols-3">
-                <SignalChip icon={<Gauge className="h-3.5 w-3.5" />} label="Deterministic score authority" />
-                <SignalChip icon={<ShieldCheck className="h-3.5 w-3.5" />} label="GitHub App token extraction" />
-                <SignalChip icon={<Sparkles className="h-3.5 w-3.5" />} label="AI explanation-only layer" />
+                <SignalChip icon={<Gauge className="h-3.5 w-3.5" aria-hidden="true" />} label="Deterministic score authority" />
+                <SignalChip icon={<ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />} label="GitHub App token extraction" />
+                <SignalChip icon={<Sparkles className="h-3.5 w-3.5" aria-hidden="true" />} label="AI explanation-only layer" />
               </div>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -54,7 +54,7 @@ export function LandingPage() {
                   prefetchMode="never"
                 >
                   Connect GitHub
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </IntentPrefetchLink>
               </Button>
               <Button asChild variant="secondary" size="lg">
@@ -98,17 +98,17 @@ export function LandingPage() {
           <div className="grid gap-6 lg:grid-cols-3">
           {[
           {
-            icon: <ChartNoAxesCombined className="h-5 w-5 text-primary" />,
+            icon: <ChartNoAxesCombined className="h-5 w-5 text-primary" aria-hidden="true" />,
             title: "Skill needs evidence.",
             text: "Commits, stars, and streaks miss difficulty and real impact.",
           },
           {
-            icon: <GitPullRequestArrow className="h-5 w-5 text-primary" />,
+            icon: <GitPullRequestArrow className="h-5 w-5 text-primary" aria-hidden="true" />,
             title: "PRs carry different impact.",
             text: "A typo fix and a deep runtime patch deserve different score weight.",
           },
           {
-            icon: <ShieldCheck className="h-5 w-5 text-primary" />,
+            icon: <ShieldCheck className="h-5 w-5 text-primary" aria-hidden="true" />,
             title: "Quality needs evidence.",
             text: "GitRank weights merged outcomes, review depth, tests, and repo context.",
           },
@@ -249,7 +249,7 @@ export function LandingPage() {
       <section id="start-reveal" data-scroll-target="true" className="render-opt-section scroll-mt-24 grid gap-6 lg:grid-cols-[0.9fr,1.1fr]">
         <GlowCard className="space-y-4 border border-amber-400/18 bg-amber-400/6">
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/25 bg-amber-400/12 px-3 py-1.5 text-xs font-semibold text-amber-100">
-            <Swords className="h-3.5 w-3.5" />
+            <Swords className="h-3.5 w-3.5" aria-hidden="true" />
             Anti-spam promise
           </div>
           <h2 className="text-2xl font-semibold text-foreground">Low-signal volume does not outrank meaningful work.</h2>
@@ -261,7 +261,7 @@ export function LandingPage() {
         <GlowCard strong className="flex flex-col justify-between gap-6 sm:flex-row sm:items-center">
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/12 px-3 py-1.5 text-xs font-semibold text-primary">
-              <Trophy className="h-3.5 w-3.5" />
+              <Trophy className="h-3.5 w-3.5" aria-hidden="true" />
               Ready to rank your work?
             </div>
             <h2 className="text-3xl font-semibold text-foreground">Build a profile maintainers and hiring teams can trust.</h2>
@@ -298,7 +298,7 @@ function SignalChip({
 }) {
   return (
     <div className="neon-surface inline-flex items-center gap-2 px-3 py-2 text-xs text-muted">
-      <span className="text-primary">{icon}</span>
+      <span className="text-primary" aria-hidden="true">{icon}</span>
       <span>{label}</span>
     </div>
   );

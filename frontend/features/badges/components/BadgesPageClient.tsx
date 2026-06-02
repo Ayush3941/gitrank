@@ -381,10 +381,10 @@ export function BadgesPageClient() {
                 </div>
               </div>
               <div className="grid gap-3 md:grid-cols-4">
-                <BadgeMetric label="Unlocked" value={unlockedCount} icon={<ShieldCheck className="h-4 w-4 text-cyan-200" />} />
-                <BadgeMetric label="Completion" value={`${completionPercent}%`} icon={<Crown className="h-4 w-4 text-fuchsia-200" />} />
-                <BadgeMetric label="Level" value={profile.user.level.currentLevel} icon={<Trophy className="h-4 w-4 text-violet-200" />} />
-                <BadgeMetric label="Current streak" value={`${streak.currentStreakDays}d`} icon={<Sparkles className="h-4 w-4 text-emerald-200" />} />
+                <BadgeMetric label="Unlocked" value={unlockedCount} icon={<ShieldCheck className="h-4 w-4 text-cyan-200" aria-hidden="true" />} />
+                <BadgeMetric label="Completion" value={`${completionPercent}%`} icon={<Crown className="h-4 w-4 text-fuchsia-200" aria-hidden="true" />} />
+                <BadgeMetric label="Level" value={profile.user.level.currentLevel} icon={<Trophy className="h-4 w-4 text-violet-200" aria-hidden="true" />} />
+                <BadgeMetric label="Current streak" value={`${streak.currentStreakDays}d`} icon={<Sparkles className="h-4 w-4 text-emerald-200" aria-hidden="true" />} />
               </div>
               <div className="space-y-2">
                 <p className="text-xs font-medium text-cyan-200">Badge progress</p>
@@ -465,7 +465,7 @@ export function BadgesPageClient() {
                     return {
                       value: item,
                       label: item,
-                      icon: <Icon className="h-4 w-4" />,
+                      icon: <Icon className="h-4 w-4" aria-hidden="true" />,
                       count,
                       minWidthClassName: "min-w-[6.75rem] sm:min-w-[8rem]",
                     };
@@ -516,7 +516,7 @@ export function BadgesPageClient() {
                             : item === "Mythic"
                               ? "Mythic"
                               : item,
-                    icon: <Gem className="h-4 w-4" />,
+                    icon: <Gem className="h-4 w-4" aria-hidden="true" />,
                     minWidthClassName: "min-w-[6.75rem] sm:min-w-[8rem]",
                   }))}
                   value={rarity}
@@ -759,7 +759,7 @@ function BadgeMetric({
       <p className="text-xs font-medium text-muted">{label}</p>
       <p className="mt-2 flex items-center gap-2 text-xl font-semibold text-white">
         {value}
-        {icon}
+        <span aria-hidden="true">{icon}</span>
       </p>
     </div>
   );

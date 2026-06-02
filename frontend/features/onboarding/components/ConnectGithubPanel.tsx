@@ -30,7 +30,7 @@ export function ConnectGithubPanel() {
       <GlowCard strong className="space-y-6">
         <OnboardingStepper currentStep="connect" />
         <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
-          <FolderGit2 className="h-3.5 w-3.5" />
+          <FolderGit2 className="h-3.5 w-3.5" aria-hidden="true" />
           GitHub OAuth
         </div>
         <div className="space-y-3">
@@ -65,7 +65,7 @@ export function ConnectGithubPanel() {
           ))}
         </ol>
         <div className="neon-callout inline-flex items-center gap-2 px-3 py-2 text-xs text-cyan-100">
-          <Timer className="h-4 w-4 text-cyan-200" />
+          <Timer className="h-4 w-4 text-cyan-200" aria-hidden="true" />
           Typical first snapshot: about 60-90 seconds after OAuth success.
         </div>
         <div className="grid gap-3 md:grid-cols-2">
@@ -93,7 +93,7 @@ export function ConnectGithubPanel() {
               prefetchMode="never"
             >
               Connect GitHub
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </IntentPrefetchLink>
           </Button>
           <Button asChild variant="secondary" size="lg">
@@ -108,7 +108,7 @@ export function ConnectGithubPanel() {
       <GlowCard className="space-y-5">
         <div className="flex items-center gap-3">
           <div className="rounded-3xl bg-emerald-400/12 p-3 text-emerald-200">
-            <ShieldCheck className="h-5 w-5" />
+            <ShieldCheck className="h-5 w-5" aria-hidden="true" />
           </div>
           <div>
             <h2 className="text-xl font-semibold text-white">Privacy baseline</h2>

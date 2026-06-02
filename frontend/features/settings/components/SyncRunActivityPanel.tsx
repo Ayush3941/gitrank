@@ -212,7 +212,7 @@ export function SyncRunActivityPanel({
             disabled={isRefreshing}
             onClick={onRefresh}
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className="h-4 w-4" aria-hidden="true" />
             {isRefreshing ? "Refreshing..." : "Refresh log"}
           </Button>
         </div>
@@ -459,7 +459,7 @@ function StatusChip({
   if (normalized === "Partial") {
     return (
       <span className="neon-chip neon-chip-warning inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold">
-        <AlertTriangle className="h-3.5 w-3.5" />
+        <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
         Partial
       </span>
     );
@@ -467,7 +467,7 @@ function StatusChip({
   if (normalized === "Completed") {
     return (
       <span className="neon-chip neon-chip-success inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold">
-        <CheckCircle2 className="h-3.5 w-3.5" />
+        <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
         Completed
       </span>
     );
@@ -475,7 +475,7 @@ function StatusChip({
   if (normalized === "Failed") {
     return (
       <span className="neon-chip inline-flex items-center gap-1.5 rounded-full border-rose-300/30 bg-rose-500/12 px-2.5 py-1 text-xs font-semibold text-rose-100">
-        <XCircle className="h-3.5 w-3.5" />
+        <XCircle className="h-3.5 w-3.5" aria-hidden="true" />
         Failed
       </span>
     );
@@ -483,7 +483,7 @@ function StatusChip({
   if (normalized === "Queued") {
     return (
       <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold">
-        <Clock3 className="h-3.5 w-3.5" />
+        <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
         Queued
       </span>
     );
@@ -491,14 +491,14 @@ function StatusChip({
   if (normalized === "Running") {
     return (
       <span className="neon-chip neon-chip-info inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold">
-        <Clock3 className="h-3.5 w-3.5" />
+        <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
         Running
       </span>
     );
   }
   return (
     <span className="neon-chip neon-chip-muted inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold">
-      <AlertTriangle className="h-3.5 w-3.5" />
+      <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" />
       {status || "Unknown"}
     </span>
   );

@@ -22,7 +22,7 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
             </div>
           </div>
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
-            <LockKeyhole className="h-3.5 w-3.5" />
+            <LockKeyhole className="h-3.5 w-3.5" aria-hidden="true" />
             Sign in
           </div>
           <h1 className="text-4xl font-semibold tracking-tight text-white">Sign in to unlock your GitRank profile.</h1>
@@ -44,7 +44,7 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
           <div className="flex flex-wrap gap-3">
             <Button asChild size="lg">
               <IntentPrefetchLink href={oauthURL} prefetchMode="never">
-                <FolderGit2 className="h-4 w-4" />
+                <FolderGit2 className="h-4 w-4" aria-hidden="true" />
                 Continue with GitHub
               </IntentPrefetchLink>
             </Button>

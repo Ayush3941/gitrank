@@ -301,7 +301,7 @@ export function DashboardPageClient() {
           label="GitRank score"
           value={user.gitRankScore}
           detail="Impact-weighted from merged PR evidence."
-          icon={<Medal className="h-5 w-5 text-primary" />}
+          icon={<Medal className="h-5 w-5 text-primary" aria-hidden="true" />}
         />
         <GlowCard className="xl:col-span-3 space-y-4">
           <div className="flex items-center justify-between text-muted">
@@ -322,7 +322,7 @@ export function DashboardPageClient() {
           label="Merged PRs"
           value={user.mergedPrCount}
           detail="Primary input for rank progression."
-          icon={<Activity className="h-5 w-5 text-primary" />}
+          icon={<Activity className="h-5 w-5 text-primary" aria-hidden="true" />}
         />
       </section>
       <div className="grid gap-6 xl:grid-cols-[0.86fr,1.14fr]">

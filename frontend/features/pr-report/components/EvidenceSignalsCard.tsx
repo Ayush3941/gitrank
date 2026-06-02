@@ -33,7 +33,7 @@ export function EvidenceSignalsCard({ report }: { report: PullRequestAnalysis })
                   signal.active ? "bg-emerald-400/12 text-emerald-200" : "neon-tile text-muted"
                 }`}
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="h-4 w-4" aria-hidden="true" />
               </div>
               <div>
                 <p className="font-medium text-white">{signal.label}</p>

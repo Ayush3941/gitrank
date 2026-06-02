@@ -66,9 +66,9 @@ export function PublicProfileHero({
             textClassName="break-anywhere text-sm leading-7 text-muted"
           />
           <div className="grid gap-3 sm:grid-cols-3">
-            <MiniMetric icon={<GitPullRequest className="h-4 w-4" />} label="Merged PRs" value={user.mergedPrCount.toLocaleString("en-US")} />
-            <MiniMetric icon={<Sparkles className="h-4 w-4" />} label="GitRank score" value={user.gitRankScore.toLocaleString("en-US")} />
-            <MiniMetric icon={<ShieldCheck className="h-4 w-4" />} label="Consistency" value={`${user.consistencyScore}%`} />
+            <MiniMetric icon={<GitPullRequest className="h-4 w-4" aria-hidden="true" />} label="Merged PRs" value={user.mergedPrCount.toLocaleString("en-US")} />
+            <MiniMetric icon={<Sparkles className="h-4 w-4" aria-hidden="true" />} label="GitRank score" value={user.gitRankScore.toLocaleString("en-US")} />
+            <MiniMetric icon={<ShieldCheck className="h-4 w-4" aria-hidden="true" />} label="Consistency" value={`${user.consistencyScore}%`} />
           </div>
           {identitySummary ? (
             <div className="neon-callout rounded-2xl px-4 py-3 text-sm text-muted">
@@ -144,8 +144,8 @@ export function PublicProfileHero({
           </div>
           <XPProgress className="mt-5" current={user.level.currentXp} next={user.level.nextLevelXp} />
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <MiniMetric icon={<Sparkles className="h-4 w-4" />} label="Season XP" value={user.rankProgress.seasonXp.toLocaleString("en-US")} />
-            <MiniMetric icon={<ShieldCheck className="h-4 w-4" />} label="Formula" value={user.rankProgress.season.scoringVersion} />
+            <MiniMetric icon={<Sparkles className="h-4 w-4" aria-hidden="true" />} label="Season XP" value={user.rankProgress.seasonXp.toLocaleString("en-US")} />
+            <MiniMetric icon={<ShieldCheck className="h-4 w-4" aria-hidden="true" />} label="Formula" value={user.rankProgress.season.scoringVersion} />
           </div>
           <p className="cyber-readout mt-4 text-xs leading-5 text-muted">Evidence-backed snapshot.</p>
         </div>

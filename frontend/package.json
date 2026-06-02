@@ -19,6 +19,7 @@
     "check:server-boundaries": "node scripts/check-server-boundaries.mjs",
     "check:cache-strategy": "node scripts/check-route-cache-strategy.mjs",
     "check:contrast": "node scripts/check-contrast-tokens.mjs",
+    "check:decorative-icons": "node scripts/check-decorative-icon-semantics.mjs",
     "check:readable-text": "node scripts/check-readable-text-tokens.mjs",
     "check:segmented-filters": "node scripts/check-segmented-filter-consistency.mjs",
     "check:nested-buttons": "npm run check:nested-interactive",

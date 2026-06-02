@@ -252,7 +252,7 @@ export function QuestsPageClient() {
                         : item.value === "Long-term"
                           ? "Long"
                           : item.label,
-                    icon: <Icon className="h-4 w-4" />,
+                    icon: <Icon className="h-4 w-4" aria-hidden="true" />,
                     count,
                     minWidthClassName: "min-w-[6.75rem] sm:min-w-[8rem]",
                   };
@@ -292,7 +292,7 @@ export function QuestsPageClient() {
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-cyan-100">
-                      <CalendarClock className="h-3.5 w-3.5" />
+                      <CalendarClock className="h-3.5 w-3.5" aria-hidden="true" />
                       365-day contributor journey
                     </p>
                     <h2 className="mt-3 text-2xl font-semibold text-white">Day {dayOfYear} of 365</h2>
@@ -301,8 +301,8 @@ export function QuestsPageClient() {
                     </p>
                   </div>
                   <div className="grid gap-2 rounded-2xl border border-fuchsia-300/28 bg-fuchsia-400/10 px-4 py-3 text-sm text-fuchsia-100">
-                    <span className="inline-flex items-center gap-2"><Flame className="h-4 w-4" /> Current streak: <span className="numeric-readout">{streak.currentStreakDays.toLocaleString("en-US")}d</span></span>
-                    <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Best streak: <span className="numeric-readout">{streak.bestStreakDays.toLocaleString("en-US")}d</span></span>
+                    <span className="inline-flex items-center gap-2"><Flame className="h-4 w-4" aria-hidden="true" /> Current streak: <span className="numeric-readout">{streak.currentStreakDays.toLocaleString("en-US")}d</span></span>
+                    <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4" aria-hidden="true" /> Best streak: <span className="numeric-readout">{streak.bestStreakDays.toLocaleString("en-US")}d</span></span>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -532,14 +532,14 @@ function MissionSpotlightCard({
       <li className="list-none">
         <div className="neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4">
           <p className={`inline-flex items-center gap-2 text-xs font-medium ${iconTone}`}>
-            <Icon className="h-3.5 w-3.5" />
+            <Icon className="h-3.5 w-3.5" aria-hidden="true" />
             {title}
           </p>
           <p className="text-sm text-muted">{emptyCopy}</p>
           <Button asChild variant="secondary" size="sm">
             <IntentPrefetchLink href={href}>
               {cta}
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </IntentPrefetchLink>
           </Button>
         </div>
@@ -556,7 +556,7 @@ function MissionSpotlightCard({
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className={`inline-flex items-center gap-2 text-xs font-medium ${iconTone}`}>
-              <Icon className="h-3.5 w-3.5" />
+              <Icon className="h-3.5 w-3.5" aria-hidden="true" />
               {title}
             </p>
             <p className="mt-2 text-base font-semibold text-white">{quest.title}</p>
@@ -582,7 +582,7 @@ function MissionSpotlightCard({
         <Button asChild variant="secondary" size="sm">
           <IntentPrefetchLink href={recoveryHrefForGroup(quest.cadence)}>
             {recoveryLabelForGroup(quest.cadence)}
-            <ArrowRight className="h-4 w-4" />
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </IntentPrefetchLink>
         </Button>
       </div>

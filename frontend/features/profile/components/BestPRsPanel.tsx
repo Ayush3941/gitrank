@@ -76,7 +76,7 @@ export function BestPRsPanel({
                 <Button asChild variant="secondary" size="sm">
                   <Link href={`/pr/${report.owner}/${report.repo}/${report.number}`} prefetch={false}>
                     View report
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
                   </Link>
                 </Button>
               </div>

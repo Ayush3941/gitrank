@@ -24,7 +24,7 @@ export function QuestCard({ quest }: { quest: Quest }) {
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-2">
           <div className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs">
-            <Flag className="h-3.5 w-3.5 text-primary" />
+            <Flag className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
             {quest.cadence}
           </div>
           <h3 className="break-anywhere text-xl font-semibold text-white">{quest.title}</h3>
@@ -64,14 +64,14 @@ export function QuestCard({ quest }: { quest: Quest }) {
         ))}
         <li>
           <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs">
-            <Link2 className="h-3 w-3" />
+            <Link2 className="h-3 w-3" aria-hidden="true" />
             <span className="numeric-readout">{quest.linkedContributionIds.length.toLocaleString("en-US")} evidence PRs</span>
           </span>
         </li>
       </ul>
       {quest.rewardBadgeId ? (
         <div className="neon-chip neon-chip-warning inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm text-amber-100">
-          <Gift className="h-3.5 w-3.5" />
+          <Gift className="h-3.5 w-3.5" aria-hidden="true" />
           Rewards badge: {quest.rewardBadgeId}
         </div>
       ) : null}

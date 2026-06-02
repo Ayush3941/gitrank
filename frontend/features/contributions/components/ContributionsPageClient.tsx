@@ -381,12 +381,12 @@ export function ContributionsPageClient() {
               >
                 {showCardDetails ? (
                   <>
-                    <Rows3 className="h-4 w-4" />
+                    <Rows3 className="h-4 w-4" aria-hidden="true" />
                     Hide details
                   </>
                 ) : (
                   <>
-                    <LayoutList className="h-4 w-4" />
+                    <LayoutList className="h-4 w-4" aria-hidden="true" />
                     Show details
                   </>
                 )}
@@ -405,7 +405,7 @@ export function ContributionsPageClient() {
                 setExportNotice(`Exported ${filteredRows.length} contribution rows as CSV.`);
               }}
             >
-              <Download className="h-4 w-4" />
+              <Download className="h-4 w-4" aria-hidden="true" />
               Export CSV
             </Button>
           </div>

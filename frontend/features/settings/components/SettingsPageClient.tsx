@@ -453,7 +453,7 @@ export function SettingsPageClient() {
               });
             }}
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className="h-4 w-4" aria-hidden="true" />
             {appInstallationBlocked
               ? "Install app to sync"
               : runUserSync.isPending
@@ -468,7 +468,7 @@ export function SettingsPageClient() {
             disabled={isActing}
             onClick={handleAccountRelink}
           >
-            <FolderGit2 className="h-4 w-4" />
+            <FolderGit2 className="h-4 w-4" aria-hidden="true" />
             {accountLinkStart.isPending ? "Starting relink..." : "Reconnect GitHub"}
           </Button>
           {!appInstallationBlocked ? (
@@ -489,7 +489,7 @@ export function SettingsPageClient() {
             disabled={isActing}
             onClick={handleSessionLogout}
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-4 w-4" aria-hidden="true" />
             {logoutSession.isPending ? "Signing out..." : "Sign out"}
           </Button>
           <Button
@@ -498,13 +498,13 @@ export function SettingsPageClient() {
             disabled={isActing}
             onClick={handleUnlinkAccount}
           >
-            <FolderGit2 className="h-4 w-4" />
+            <FolderGit2 className="h-4 w-4" aria-hidden="true" />
             {unlinkAccount.isPending ? "Disconnecting..." : "Disconnect GitHub"}
           </Button>
         </div>
         {appInstallationBlocked ? (
           <p className="text-xs leading-5 text-rose-100">
-            PR sync requires a GitHub App installation for your account. Install the app, then run refresh.
+            PR sync requires a GitHub App installation for your account. Install the app, then return here for automatic refresh.
           </p>
         ) : null}
         {appInstallationBlocked ? (
@@ -616,7 +616,7 @@ export function SettingsPageClient() {
             <div className="cyber-divider" />
             <div className="space-y-3">
               <div className="inline-flex items-center gap-2">
-                <Palette className="h-4 w-4 text-primary" />
+                <Palette className="h-4 w-4 text-primary" aria-hidden="true" />
                 <p className="text-sm font-semibold text-white">Theme + text tuning</p>
               </div>
               <div className="neon-surface rounded-[1rem] px-4 py-3">
@@ -785,7 +785,7 @@ export function SettingsPageClient() {
               disabled={isActing}
               onClick={handleExportAccountData}
             >
-              <Download className="h-4 w-4" />
+              <Download className="h-4 w-4" aria-hidden="true" />
               {exportAccount.isPending ? "Exporting..." : "Export data"}
             </Button>
           </div>
@@ -797,7 +797,7 @@ export function SettingsPageClient() {
               disabled={isActing}
               onClick={handleDeleteAccount}
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-4 w-4" aria-hidden="true" />
               {deleteAccount.isPending ? "Deleting account..." : "Delete account"}
             </Button>
           </div>

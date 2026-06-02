@@ -61,7 +61,7 @@ export function RevealPanel({
         <OnboardingStepper currentStep="reveal" />
         <div className="space-y-4">
           <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-3 py-1.5 text-xs font-semibold text-cyan-100">
-            <Sparkles className="h-3.5 w-3.5" />
+            <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
             Analysis complete
           </div>
           <h1 className="text-5xl font-semibold tracking-tight text-white sm:text-6xl">
@@ -116,7 +116,7 @@ export function RevealPanel({
                 unlockedBadges.map((badge, index) => (
                   <li key={`${badge.id}-${index}`} className="list-none rounded-[1.75rem] border border-cyan-300/16 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/22 p-5 text-left">
                     <div className="flex items-center justify-between">
-                      <Award className="h-5 w-5 text-primary" />
+                      <Award className="h-5 w-5 text-primary" aria-hidden="true" />
                       <RarityBadge rarity={badge.rarity} />
                     </div>
                     <h3 className="mt-4 text-xl font-semibold text-white">{badge.name}</h3>
@@ -157,14 +157,14 @@ export function RevealPanel({
             <Button asChild size="lg">
               <IntentPrefetchLink href="/onboarding/analyzing">
                 {recoveryActionLabel}
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </IntentPrefetchLink>
             </Button>
           ) : null}
           <Button asChild size="lg" variant={needsSyncRecovery ? "secondary" : "default"}>
             <IntentPrefetchLink href="/dashboard">
               Enter dashboard
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </IntentPrefetchLink>
           </Button>
           <Button asChild variant="secondary" size="lg">
@@ -241,7 +241,7 @@ export function RevealPanelUnavailable() {
       <GlowCard strong className="space-y-6 text-center">
         <OnboardingStepper currentStep="connect" />
         <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-amber-400/25 bg-amber-400/12 px-3 py-1.5 text-xs font-semibold text-amber-100">
-          <Sparkles className="h-3.5 w-3.5" />
+          <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
           Profile unavailable
         </div>
         <h1 className="text-4xl font-semibold tracking-tight text-white">
@@ -253,7 +253,7 @@ export function RevealPanelUnavailable() {
         <Button asChild size="lg">
           <IntentPrefetchLink href="/oauth/github/start?return_to=/dashboard" prefetchMode="never">
             Connect GitHub
-            <ArrowRight className="h-4 w-4" />
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </IntentPrefetchLink>
         </Button>
       </GlowCard>

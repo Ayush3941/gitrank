@@ -62,7 +62,7 @@ export function BadgeGrid({
               </span>
               {!badge.unlocked ? (
                 <span className="inline-flex items-center gap-1 text-muted">
-                  <Lock className="h-3.5 w-3.5" />
+                  <Lock className="h-3.5 w-3.5" aria-hidden="true" />
                   {badge.progress ?? 0}%
                 </span>
               ) : null}

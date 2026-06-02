@@ -49,7 +49,7 @@ export function LeaderboardArena({
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
             <div className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold text-primary">
-              <CalendarClock className="h-3.5 w-3.5" />
+              <CalendarClock className="h-3.5 w-3.5" aria-hidden="true" />
               {snapshot.season.status} season
             </div>
             <h2 className="mt-4 break-anywhere text-2xl font-semibold text-white">{snapshot.season.name}</h2>
@@ -68,8 +68,8 @@ export function LeaderboardArena({
           </div>
         </div>
         <div className="mt-5 grid gap-3 md:grid-cols-2">
-          <CompactRule icon={<Flame className="h-4 w-4" />} label="Promotion" value={snapshot.season.promotionRule} />
-          <CompactRule icon={<ShieldCheck className="h-4 w-4" />} label="Reset" value={snapshot.season.resetRule} />
+          <CompactRule icon={<Flame className="h-4 w-4" aria-hidden="true" />} label="Promotion" value={snapshot.season.promotionRule} />
+          <CompactRule icon={<ShieldCheck className="h-4 w-4" aria-hidden="true" />} label="Reset" value={snapshot.season.resetRule} />
         </div>
         <ul role="list" className="mt-3 flex flex-wrap gap-2">
           <li>
@@ -217,7 +217,7 @@ export function LeaderboardArena({
                     <Metric
                       label="Movement"
                       value={`${positive ? "+" : ""}${row.movement}`}
-                      icon={positive ? <ArrowUpRight className="h-4 w-4 text-emerald-300" /> : <ArrowDownRight className="h-4 w-4 text-rose-100" />}
+                      icon={positive ? <ArrowUpRight className="h-4 w-4 text-emerald-300" aria-hidden="true" /> : <ArrowDownRight className="h-4 w-4 text-rose-100" aria-hidden="true" />}
                     />
                   </div>
                 </div>
@@ -254,7 +254,7 @@ function CompactRule({
   return (
     <div className="neon-surface rounded-[1.5rem] px-4 py-3">
       <div className="flex items-center gap-2 text-xs font-semibold text-primary">
-        {icon}
+        <span aria-hidden="true">{icon}</span>
         {label}
       </div>
       <p className="mt-2 text-sm leading-6 text-muted">{value}</p>
@@ -296,7 +296,7 @@ function Metric({
       <p className="text-xs font-medium text-muted">{label}</p>
       <div className="numeric-readout mt-2 flex items-center gap-2 text-xl font-semibold text-white">
         <span>{typeof value === "number" ? value.toLocaleString("en-US") : value}</span>
-        {icon}
+        {icon ? <span aria-hidden="true">{icon}</span> : null}
       </div>
     </div>
   );

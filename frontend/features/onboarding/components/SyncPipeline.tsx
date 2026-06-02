@@ -280,9 +280,9 @@ export function SyncPipeline() {
                 >
                   <div className="neon-tile rounded-2xl p-2 text-primary">
                     {done ? (
-                      <CheckCircle2 className="h-5 w-5 text-emerald-300" />
+                      <CheckCircle2 className="h-5 w-5 text-emerald-300" aria-hidden="true" />
                     ) : (
-                      <LoaderCircle className={active ? "h-5 w-5 text-primary" : "h-5 w-5 text-muted"} />
+                      <LoaderCircle className={active ? "h-5 w-5 text-primary" : "h-5 w-5 text-muted"} aria-hidden="true" />
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -307,7 +307,7 @@ export function SyncPipeline() {
               onClick={handleRetrySync}
               disabled={userSync.isPending}
             >
-              <RefreshCcw className="h-4 w-4" />
+              <RefreshCcw className="h-4 w-4" aria-hidden="true" />
               Retry sync
             </Button>
           ) : null}
@@ -316,7 +316,7 @@ export function SyncPipeline() {
             onClick={() => void refetch()}
             disabled={isLoading || userSync.isPending}
           >
-            <RefreshCcw className="h-4 w-4" />
+            <RefreshCcw className="h-4 w-4" aria-hidden="true" />
             Refresh status
           </Button>
           {isSynced ? (

@@ -214,7 +214,7 @@ export function ContributionFilters({
               return {
                 value: filter,
                 label: filter,
-                icon: <Icon className="h-4 w-4" />,
+                icon: <Icon className="h-4 w-4" aria-hidden="true" />,
                 count: statusCounts?.[filter],
                 minWidthClassName: "min-w-[6.75rem] sm:min-w-[8rem]",
               };
@@ -270,7 +270,7 @@ export function ContributionFilters({
                   value: filter,
                   label: filter,
                   compactLabel: focusCompactLabelByValue[filter],
-                  icon: <Icon className="h-4 w-4" />,
+                  icon: <Icon className="h-4 w-4" aria-hidden="true" />,
                   count: focusCounts?.[filter],
                   minWidthClassName: "min-w-[7.25rem] sm:min-w-[8rem]",
                 };
@@ -293,7 +293,7 @@ export function ContributionFilters({
                   value: item,
                   label: item,
                   compactLabel: sortCompactLabelByValue[item],
-                  icon: <Icon className="h-4 w-4" />,
+                  icon: <Icon className="h-4 w-4" aria-hidden="true" />,
                   minWidthClassName: "min-w-[7.5rem] sm:min-w-[9rem]",
                 };
               })}

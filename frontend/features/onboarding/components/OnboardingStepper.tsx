@@ -38,7 +38,7 @@ export function OnboardingStepper({
                 )}
               >
                 {isDone ? (
-                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 ) : (
                   <span className="neon-track inline-flex h-5 w-5 shrink-0 items-center justify-center text-xs font-semibold">
                     {index + 1}
