@@ -8,6 +8,7 @@ This document is intentionally detailed.
 
 - Removed unused frontend modules `components/ui/separator.tsx` and `hooks/use-auth-session.ts`; no production or test imports referenced them, and the unused `@radix-ui/react-separator` dependency was removed with the lockfile refreshed.
 - Removed the orphaned `CopyLinkButton` wrapper and its component-only test; production share flows already use `CopyTextButton`/`ShareProfileButton`, while `toAbsoluteShareUrl` remains covered directly.
+- Added `npm run check:shared-orphans` and wired it into `scripts/check-repo-sync.sh`; shared components, UI primitives, and hooks now need a production import outside themselves or they should be removed instead of kept alive by isolated tests.
 - Removed accidental local project clutter from the working tree: root `node_modules/`, root `GITRANK FLOWS/` image exports, and the root `gitrank/github-ingestor` Go binary. Durable flow docs belong under `gitrank/docs/`, frontend dependencies under `frontend/node_modules/`, and service binaries under `.run/bin/` or ignored temp paths.
 - Root `.gitignore` and `scripts/check-repo-sync.sh` now guard against those clutter paths returning, including root-level Go service binaries for all backend services.
 - Test-only GitHub App private-key placeholders now use non-secret file-path strings instead of PEM-shaped literals, keeping `scripts/check-no-tracked-secrets.sh` high-signal without weakening the scanner.

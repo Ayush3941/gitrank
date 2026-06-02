@@ -6,6 +6,7 @@
   - removed unused `components/ui/separator.tsx` and `hooks/use-auth-session.ts` after confirming no app, component, feature, hook, lib, or test imports referenced them.
   - removed the now-unused `@radix-ui/react-separator` dependency from frontend package metadata.
   - removed the unused `CopyLinkButton` wrapper and its component-only test; copied-link URL normalization stays covered by `tests/share-links.test.ts`.
+  - added `npm run check:shared-orphans` so shared components, UI primitives, and hooks cannot survive as production-dead test-only wrappers.
 - Main-landmark consistency pass:
   - `AppShell` now remains the only frontend owner of `<main id="main-content">`.
   - marketing and onboarding content wrappers render as normal containers inside the shell, preventing nested main landmarks while preserving layout.
