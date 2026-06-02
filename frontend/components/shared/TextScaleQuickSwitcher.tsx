@@ -51,7 +51,7 @@ export function TextScaleQuickSwitcher({
         aria-keyshortcuts="Alt+Shift+L"
         onClick={handleSwitchTextScale}
       >
-        <Type className="h-4 w-4 text-primary" />
+        <Type className="h-4 w-4 text-primary" aria-hidden="true" />
         <span className="text-sm">
           {compact ? (
             <span className="font-semibold">{currentLabel}</span>

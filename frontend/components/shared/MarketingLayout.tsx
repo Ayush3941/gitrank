@@ -27,7 +27,7 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
                   prefetchMode="never"
                 >
                   Connect GitHub
-                  <ArrowUpRight className="h-4 w-4" />
+                  <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
                 </IntentPrefetchLink>
               </Button>
             </div>

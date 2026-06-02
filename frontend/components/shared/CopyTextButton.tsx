@@ -112,7 +112,7 @@ export function CopyTextButton({
         onClick={handleCopy}
         className={cn(stableWidth ? "min-w-[8.5rem] justify-center" : undefined)}
       >
-        {state === "copied" ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+        {state === "copied" ? <Check className="h-4 w-4" aria-hidden="true" /> : <Copy className="h-4 w-4" aria-hidden="true" />}
         {currentLabel}
       </Button>
       <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">

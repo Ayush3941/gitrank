@@ -94,7 +94,7 @@ export function StaleState({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
           <div className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-amber-300/35 bg-amber-400/14 px-2.5 py-1 text-sm font-semibold text-amber-100">
-            <Clock3 className="h-4 w-4" />
+            <Clock3 className="h-4 w-4" aria-hidden="true" />
             {label}
           </div>
           <div className="space-y-1">

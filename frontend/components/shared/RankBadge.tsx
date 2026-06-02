@@ -9,7 +9,7 @@ export function RankBadge({ rank, className }: { rank: string; className?: strin
         className,
       )}
     >
-      <Crown className="h-4 w-4" />
+      <Crown className="h-4 w-4" aria-hidden="true" />
       <span>{rank}</span>
     </div>
   );

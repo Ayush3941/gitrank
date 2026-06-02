@@ -25,7 +25,7 @@ export function SnapshotFreshnessPill({
       )}
       title={`Last refreshed ${exact}`}
     >
-      <Clock3 className="h-3.5 w-3.5" />
+      <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
       <span>{label}</span>
       <time dateTime={machineDateTime ?? undefined}>{formatRelativeDays(refreshedAt)}</time>
     </span>

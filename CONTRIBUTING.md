@@ -2010,6 +2010,8 @@ ABRA implementation checklist:
 - [x] Public profiles no longer repeat score, merged-PR, and consistency metrics immediately below the hero card; the share-facing overview now moves directly from identity context into evidence lanes.
 - [x] Dashboard header summary chips now keep only rank and sync orientation; merged-PR and streak values remain in the richer signal cards below instead of being repeated in the header rail.
 - [x] Contributions, Badges, Quests, Leaderboard, and Settings header rails now keep route orientation plus sync state instead of repeating detailed counts already shown in filters and overview cards; PR reports retain identity-critical metadata.
+- [x] Shared decorative icons in summary cards, status pills, freshness chips, notices, copy/share controls, theme controls, rank badges, and marketing actions are now explicitly hidden from assistive technology so visible text remains the accessible authority.
+- [x] Shared sync-status pills now restore the exact last-sync timestamp on wider layouts while retaining the compact relative-time label on mobile and the full semantic timestamp for assistive technology.
 
 ABRA closeout artifact:
 

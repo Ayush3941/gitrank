@@ -153,7 +153,7 @@ export function ShareProfileButton({
         className={cn("min-w-[9rem] justify-center", className)}
         onClick={handleShare}
       >
-        <Share2 className="h-4 w-4" />
+        <Share2 className="h-4 w-4" aria-hidden="true" />
         {currentLabel}
       </Button>
       <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">

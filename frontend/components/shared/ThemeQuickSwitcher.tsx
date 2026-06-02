@@ -73,7 +73,7 @@ export function ThemeQuickSwitcher({
         aria-keyshortcuts="Alt+Shift+T"
         onClick={handleSwitchTheme}
       >
-        <Palette className="h-4 w-4 text-primary" />
+        <Palette className="h-4 w-4 text-primary" aria-hidden="true" />
         <span className="text-sm">
           {compact ? (
             <span className="font-semibold">{current.shortLabel}</span>

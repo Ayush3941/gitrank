@@ -38,11 +38,12 @@ export function SyncStatusPill({
       title={showExact ? `Last synced ${exact}` : undefined}
       aria-label={`${meta.label}. Last synced ${relative}. ${spokenTime}`.trim()}
     >
-      <Icon className="h-3.5 w-3.5" />
+      <Icon className="h-3.5 w-3.5" aria-hidden="true" />
       <span>{meta.label}</span>
       <time className="text-current" dateTime={machineDateTime ?? undefined}>
         {relative}
       </time>
+      {showExact ? <span className="hidden text-current sm:inline">({exact})</span> : null}
     </div>
   );
 }

@@ -14,7 +14,7 @@ export function GitHubAppSyncBlockNotice({
     <GlowCard className="space-y-4 border-amber-300/28 bg-amber-400/12">
       <div className="flex items-start gap-3">
         <span className="inline-flex rounded-full border border-amber-300/30 bg-amber-300/16 p-2 text-amber-100">
-          <ShieldAlert className="h-4 w-4" />
+          <ShieldAlert className="h-4 w-4" aria-hidden="true" />
         </span>
         <div className="space-y-1">
           <p className="text-sm font-semibold text-amber-100">PR sync is blocked</p>
