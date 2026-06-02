@@ -582,7 +582,7 @@ export function SettingsPageClient() {
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="max-w-2xl">
               <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
-                <BrandLogo size={20} className="h-5 w-5" alt="GitRank" />
+                <BrandLogo size={20} className="h-5 w-5" />
               </div>
               <p className="mt-4 text-xs font-medium text-primary">Display preference</p>
               <h2 className="mt-2 text-xl font-semibold text-white">Reduced gamification</h2>

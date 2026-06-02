@@ -66,6 +66,8 @@ This document is intentionally detailed.
 - Settings sync-run polling now announces its concise `N of M runs` status instead of treating the full scrollable card list as a live region, preventing repeated disclosure-button and diagnostics chatter during refreshes.
 - Shared empty states now use a decorative inbox cue instead of a generic sparkle glyph, keeping absence states purposeful across contributions, badges, quests, leaderboard, profile, and report routes without adding visual weight.
 - Shared empty states now expose one clear recovery action; unused speculative secondary-action branches were removed instead of preserving an unexercised button hierarchy.
+- Shared `BrandLogo` placements now default to decorative empty alt text when paired with visible product or section labels, avoiding repeated spoken branding while retaining an explicit standalone-image override.
+- Settings form accessibility tests now wait for a live privacy switch instead of the route skeleton heading, preventing false-start failures and vacuous control-label passes during client-side loading.
 
 It serves two purposes:
 

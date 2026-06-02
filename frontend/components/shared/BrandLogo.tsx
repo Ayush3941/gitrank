@@ -4,7 +4,7 @@ import { cn } from "@/lib/cn";
 export function BrandLogo({
   size = 20,
   className,
-  alt = "GitRank logo",
+  alt = "",
   priority = false,
 }: {
   size?: number;

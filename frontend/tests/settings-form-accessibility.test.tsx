@@ -15,9 +15,7 @@ describe("settings form accessibility behavior", () => {
 
   it("announces privacy update errors and links them to the affected controls", async () => {
     renderWithClient(<SettingsPageClient />);
-    await screen.findByRole("heading", { name: "Settings" });
-
-    const toggle = screen.getByRole("switch", {
+    const toggle = await screen.findByRole("switch", {
       name: /Enable public profile/i,
     });
     fireEvent.click(toggle);
@@ -40,7 +38,9 @@ describe("settings form accessibility behavior", () => {
 
   it("keeps settings controls discoverable with non-empty accessible names", async () => {
     const rendered = renderWithClient(<SettingsPageClient />);
-    await screen.findByRole("heading", { name: "Settings" });
+    await screen.findByRole("switch", {
+      name: /Enable public profile/i,
+    });
 
     const interactive = rendered.container.querySelectorAll(
       [

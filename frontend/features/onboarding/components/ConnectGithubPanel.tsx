@@ -135,7 +135,7 @@ export function ConnectGithubPanel() {
         </div>
         <div className="rounded-[1.75rem] border border-primary/18 bg-primary/8 p-4 text-sm text-muted">
           <div className="flex items-center gap-2 text-primary">
-            <BrandLogo size={16} className="h-4 w-4" alt="GitRank" />
+            <BrandLogo size={16} className="h-4 w-4" />
             Meaning-first scoring
           </div>
           <p className="mt-2">

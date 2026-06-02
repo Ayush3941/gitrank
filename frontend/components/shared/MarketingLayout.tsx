@@ -14,7 +14,7 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
             <div className="flex flex-wrap items-center gap-4">
               <IntentPrefetchLink href="/" className="flex items-center gap-3">
                 <div className="rounded-3xl border border-primary/24 bg-primary/14 p-2.5 text-primary ring-glow">
-                  <BrandLogo size={22} className="h-[22px] w-[22px]" alt="GitRank" priority />
+                  <BrandLogo size={22} className="h-[22px] w-[22px]" priority />
                 </div>
                 <div>
                   <p className="cyber-title text-lg font-semibold text-foreground">GitRank</p>

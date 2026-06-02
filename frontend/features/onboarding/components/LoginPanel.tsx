@@ -55,7 +55,7 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
         </div>
         <GlowCard className="space-y-4">
           <div className="inline-flex rounded-3xl border border-primary/22 bg-primary/12 p-2.5 text-primary">
-            <BrandLogo size={20} className="h-5 w-5" alt="GitRank" />
+            <BrandLogo size={20} className="h-5 w-5" />
           </div>
           <h2 className="text-2xl font-semibold text-white">How scoring works</h2>
           <div className="space-y-3">
