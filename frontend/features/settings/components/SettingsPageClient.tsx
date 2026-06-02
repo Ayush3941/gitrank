@@ -472,16 +472,21 @@ export function SettingsPageClient() {
             {accountLinkStart.isPending ? "Starting relink..." : "Reconnect GitHub"}
           </Button>
           {!appInstallationBlocked ? (
-            <Button
-              asChild
-              variant="secondary"
-              className="w-full justify-center"
-              disabled={isActing}
-            >
-              <IntentPrefetchLink href="/oauth/github/install">
+            isActing ? (
+              <Button variant="secondary" className="w-full justify-center" disabled>
                 Manage GitHub App
-              </IntentPrefetchLink>
-            </Button>
+              </Button>
+            ) : (
+              <Button
+                asChild
+                variant="secondary"
+                className="w-full justify-center"
+              >
+                <IntentPrefetchLink href="/oauth/github/install">
+                  Manage GitHub App
+                </IntentPrefetchLink>
+              </Button>
+            )
           ) : null}
           <Button
             variant="secondary"

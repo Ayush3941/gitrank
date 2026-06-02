@@ -2019,6 +2019,7 @@ ABRA implementation checklist:
 - [x] Feature-route Lucide icons now declare decorative semantics explicitly, and `npm run check:decorative-icons` prevents visual-only SVGs from leaking repeated labels into assistive output.
 - [x] New-tab actions now share an explicit assistive hint, and `npm run check:new-tab-links` enforces both the hint and `rel="noopener noreferrer"` for every `target="_blank"` link.
 - [x] Focusable scroll regions now add one shared assistive instruction so keyboard and screen-reader users know the focused area can be scrolled without adding visible UI noise.
+- [x] Polymorphic button links no longer use fake disabled states; `npm run check:polymorphic-buttons` prevents `disabled` on `<Button asChild>` so links only render when they are operable.
 
 ABRA closeout artifact:
 
