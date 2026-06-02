@@ -10,6 +10,7 @@ This document is intentionally detailed.
 - Added `npm run check:main-landmark` plus focused render coverage in `frontend/tests/main-landmark.test.tsx` so nested page-level `<main>` wrappers cannot quietly return in feature components.
 - Added `npm run check:navigation-landmarks` and focused shared-nav coverage in `frontend/tests/navigation-landmarks.test.tsx`; every `<nav>` or `role="navigation"` region must keep a stable accessible name.
 - Added `npm run check:route-state-primitives` so route `loading`, `error`, `global-error`, and `not-found` files keep using shared route-state UI primitives instead of one-off fallback screens.
+- Shared inline loading cards now normalize loading targets so visible copy and polite announcements avoid duplicated `Loading` wording and trailing ellipses; `npm run check:copy-tone` blocks production `Loading ...` regressions.
 
 ## Session Notes (May 31, 2026)
 

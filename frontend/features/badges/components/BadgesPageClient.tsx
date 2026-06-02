@@ -532,7 +532,7 @@ export function BadgesPageClient() {
           </ControlSurface>
         </div>
         <div id={badgesEarnedRegionId}>
-          {isLoading ? <LoadingState message="Loading badge shelf..." /> : null}
+          {isLoading ? <LoadingState message="Badge shelf" /> : null}
           {isError ? (
             <ErrorState
               title="Badge sync failed"

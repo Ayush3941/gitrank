@@ -369,7 +369,7 @@ export function LeaderboardPageClient() {
           </div>
         </ControlSurface>
       </section>
-      {isLoading ? <LoadingState message="Loading leaderboard..." /> : null}
+      {isLoading ? <LoadingState message="Leaderboard rows" /> : null}
       {isError ? (
         <ErrorState
           title="Leaderboard unavailable"

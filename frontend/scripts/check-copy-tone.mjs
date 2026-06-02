@@ -28,6 +28,13 @@ const bannedPhrases = [
   "snapshot-based contribution analytics",
 ];
 
+const bannedPatterns = [
+  {
+    regex: /loading\s+[^"`'\n]*\.\.\./i,
+    label: "loading copy with trailing ellipses",
+  },
+];
+
 const allowList = new Set([
   "features/pr-report/components/PRBattleReportPageClient.tsx::analysis has not been persisted",
 ]);
@@ -87,6 +94,17 @@ async function walk(directory) {
         file: relativePath,
         phrase,
         line: lineFromOffset(source, index),
+      });
+    }
+    for (const pattern of bannedPatterns) {
+      const match = source.match(pattern.regex);
+      if (!match || match.index === undefined) {
+        continue;
+      }
+      violations.push({
+        file: relativePath,
+        phrase: pattern.label,
+        line: lineFromOffset(source, match.index),
       });
     }
   }

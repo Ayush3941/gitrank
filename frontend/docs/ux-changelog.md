@@ -12,6 +12,10 @@
 - Route-state primitive guard:
   - added `npm run check:route-state-primitives` so app route loading/error/not-found files keep using shared polished fallback primitives.
   - preserves consistent route-level skeleton, recovery, and alert semantics across marketing, dashboard, and public routes.
+- Inline loading copy cleanup:
+  - shared `LoadingState` now normalizes loading targets before rendering visible copy and polite status text.
+  - badge, quest, and leaderboard loading cards now avoid duplicated `Loading` wording and trailing ellipses.
+  - `npm run check:copy-tone` now blocks production loading-copy strings that reintroduce trailing ellipses.
 
 ## 2026-05-25
 

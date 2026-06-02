@@ -350,7 +350,7 @@ export function QuestsPageClient() {
           ) : null}
         </section>
         <section id="quests-missions" data-scroll-target="true" className="render-opt-section space-y-4">
-          {isLoading ? <LoadingState message="Loading quests..." /> : null}
+          {isLoading ? <LoadingState message="Quest lanes" /> : null}
           {isError ? (
             <ErrorState
               title="Quest engine unavailable"
