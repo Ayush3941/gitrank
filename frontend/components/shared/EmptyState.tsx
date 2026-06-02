@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles } from "lucide-react";
+import { Inbox } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -48,7 +48,7 @@ export function EmptyState({
   return (
     <GlowCard className="cyber-sheen flex flex-col items-start gap-4 border-dashed border-primary/24">
       <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/12 px-3 py-1.5 text-sm font-semibold text-primary">
-        <Sparkles className="h-4 w-4" />
+        <Inbox className="h-4 w-4" aria-hidden="true" />
         {eyebrow}
       </div>
       <div className="space-y-2">
