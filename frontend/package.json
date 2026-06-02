@@ -21,6 +21,7 @@
     "check:route-state-primitives": "node scripts/check-route-state-primitives.mjs",
     "check:contrast": "node scripts/check-contrast-tokens.mjs",
     "check:decorative-icons": "node scripts/check-decorative-icon-semantics.mjs",
+    "check:input-names": "node scripts/check-input-accessible-name.mjs",
     "check:readable-text": "node scripts/check-readable-text-tokens.mjs",
     "check:segmented-filters": "node scripts/check-segmented-filter-consistency.mjs",
     "check:nested-buttons": "npm run check:nested-interactive",

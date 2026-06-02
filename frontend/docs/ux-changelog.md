@@ -19,6 +19,9 @@
 - Button type-safety guard:
   - added `npm run check:native-button-type` to require explicit safe `type` attributes on literal native buttons.
   - added `Button` primitive coverage for default `type="button"`, explicit submit behavior, and polymorphic link rendering.
+- Input accessible-name guard:
+  - added `npm run check:input-names` so production native/shared inputs need an accessible-name path.
+  - expanded shared search-input coverage to assert placeholder text is not used as the accessible name.
 
 ## 2026-05-25
 

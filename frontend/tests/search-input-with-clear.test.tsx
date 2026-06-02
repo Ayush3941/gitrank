@@ -46,6 +46,23 @@ describe("SearchInputWithClear", () => {
     expect(container.querySelector("svg")?.getAttribute("aria-hidden")).toBe("true");
   });
 
+  it("uses aria-label instead of placeholder text as the accessible name", () => {
+    render(
+      <SearchInputWithClear
+        value=""
+        onChange={() => undefined}
+        onClear={() => undefined}
+        placeholder="Search repository or reason"
+        ariaLabel="Search repositories"
+        clearButtonLabel="Clear repository search"
+      />,
+    );
+
+    const input = screen.getByRole("searchbox", { name: "Search repositories" });
+    expect(input.getAttribute("placeholder")).toBe("Search repository or reason");
+    expect(screen.queryByRole("searchbox", { name: "Search repository or reason" })).toBeNull();
+  });
+
   it("does not render clear button when input is empty", () => {
     render(
       <SearchInputWithClear
