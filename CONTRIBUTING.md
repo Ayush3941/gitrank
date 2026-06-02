@@ -2012,6 +2012,7 @@ ABRA implementation checklist:
 - [x] Contributions, Badges, Quests, Leaderboard, and Settings header rails now keep route orientation plus sync state instead of repeating detailed counts already shown in filters and overview cards; PR reports retain identity-critical metadata.
 - [x] Shared decorative icons in summary cards, status pills, freshness chips, notices, copy/share controls, theme controls, rank badges, and marketing actions are now explicitly hidden from assistive technology so visible text remains the accessible authority.
 - [x] Shared sync-status pills now restore the exact last-sync timestamp on wider layouts while retaining the compact relative-time label on mobile and the full semantic timestamp for assistive technology.
+- [x] Dashboard and public-profile hero cards now explicitly hide decorative action, metric, trophy, next-move, and signal icons from assistive technology while preserving their visible cyberpunk styling.
 
 ABRA closeout artifact:
 

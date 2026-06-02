@@ -76,7 +76,7 @@ export function DashboardHeroRankCard({
           <Button asChild variant="secondary">
             <IntentPrefetchLink href={`/u/${user.username}`}>
               Public profile
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </IntentPrefetchLink>
           </Button>
         </div>
@@ -110,7 +110,7 @@ export function DashboardHeroRankCard({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="space-y-1">
             <p className="inline-flex items-center gap-2 text-sm font-semibold text-white">
-              <Sparkles className="h-4 w-4 text-emerald-200" />
+              <Sparkles className="h-4 w-4 text-emerald-200" aria-hidden="true" />
               Next move
             </p>
             <p className="text-sm leading-6 text-muted">
@@ -123,7 +123,7 @@ export function DashboardHeroRankCard({
           <Button asChild variant="secondary" size="sm">
             <IntentPrefetchLink href={nextAction.href}>
               {nextAction.cta}
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </IntentPrefetchLink>
           </Button>
         </div>
@@ -158,7 +158,7 @@ export function DashboardHeroRankCard({
           {strongestSignals.map((signal) => (
             <li key={`${user.username}-${signal}`} className="list-none">
               <span className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm">
-                <Star className="h-3.5 w-3.5 text-primary" />
+                <Star className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                 {signal}
               </span>
             </li>

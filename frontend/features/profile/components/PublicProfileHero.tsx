@@ -139,7 +139,7 @@ export function PublicProfileHero({
               <p className="mt-2 text-4xl font-semibold text-white">Lv. {user.level.currentLevel}</p>
             </div>
             <div className="hud-pill rounded-3xl p-3 text-primary">
-              <Trophy className="h-5 w-5" />
+              <Trophy className="h-5 w-5" aria-hidden="true" />
             </div>
           </div>
           <XPProgress className="mt-5" current={user.level.currentXp} next={user.level.nextLevelXp} />
@@ -166,7 +166,7 @@ function MiniMetric({
   return (
     <div className="neon-metric rounded-[1.4rem] px-4 py-3">
       <div className="flex items-center gap-2 text-xs font-medium text-muted">
-        {icon}
+        <span aria-hidden="true">{icon}</span>
         {label}
       </div>
       <p className="mt-2 text-sm font-semibold text-white">{value}</p>
