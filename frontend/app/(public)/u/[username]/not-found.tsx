@@ -6,11 +6,10 @@ export default function PublicProfileNotFound() {
       centered
       eyebrow="Public profile not found"
       title="This contributor profile is unavailable"
-      description="The requested profile path is unavailable. Open dashboard profile lanes or return to landing."
+      description="The requested profile path is unavailable. Open dashboard or return to landing."
       actions={[
-        { label: "Open dashboard", href: "/dashboard", variant: "secondary" },
-        { label: "Browse contributions", href: "/dashboard/contributions", variant: "secondary" },
-        { label: "Open landing", href: "/", variant: "default" },
+        { label: "Open dashboard", href: "/dashboard", variant: "default" },
+        { label: "Open landing", href: "/", variant: "secondary" },
       ]}
     />
   );

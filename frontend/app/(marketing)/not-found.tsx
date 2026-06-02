@@ -6,10 +6,9 @@ export default function MarketingRouteNotFound() {
       centered
       eyebrow="Marketing route not found"
       title="This public route does not exist"
-      description="Use the primary onboarding path or open login directly to continue with GitHub OAuth."
+      description="Return home or use the primary onboarding path to continue with GitHub."
       actions={[
         { label: "Go home", href: "/", variant: "secondary" },
-        { label: "Open login", href: "/login", variant: "secondary" },
         { label: "Start onboarding", href: "/onboarding/connect-github", variant: "default" },
       ]}
     />

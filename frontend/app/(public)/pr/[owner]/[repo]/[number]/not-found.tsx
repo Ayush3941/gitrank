@@ -8,9 +8,8 @@ export default function PublicPRReportNotFound() {
       title="This battle report route is unavailable"
       description="The requested pull-request report path is unavailable. Open contribution lanes or return to dashboard."
       actions={[
-        { label: "Open contributions", href: "/dashboard/contributions", variant: "secondary" },
+        { label: "Open contributions", href: "/dashboard/contributions", variant: "default" },
         { label: "Open dashboard", href: "/dashboard", variant: "secondary" },
-        { label: "Open landing", href: "/", variant: "default" },
       ]}
     />
   );

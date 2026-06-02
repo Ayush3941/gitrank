@@ -6,11 +6,10 @@ export default function DashboardNotFound() {
       centered
       eyebrow="Dashboard route missing"
       title="This dashboard page does not exist"
-      description="The requested dashboard route is unavailable. Use one of the core dashboard lanes below."
+      description="The requested dashboard route is unavailable. Return to dashboard or inspect contribution evidence."
       actions={[
-        { label: "Dashboard", href: "/dashboard", variant: "secondary" },
+        { label: "Dashboard", href: "/dashboard", variant: "default" },
         { label: "Contributions", href: "/dashboard/contributions", variant: "secondary" },
-        { label: "Settings", href: "/dashboard/settings", variant: "secondary" },
       ]}
     />
   );
