@@ -2002,6 +2002,7 @@ ABRA implementation checklist:
 - [x] Settings sync activity now auto-opens details when failed/partial runs appear and keeps the panel open across refresh transitions so troubleshooting context is not lost when state moves from failed to healthy.
 - [x] Marketing shell anti-spam and first-load copy now use direct product language instead of exaggerated arena/power phrasing, while preserving the established neon visual treatment and report/quest vocabulary.
 - [x] Marketing header navigation now uses a separate horizontally scrollable route rail on narrow screens with the same 44px target baseline as dashboard navigation, preventing brand/nav wrapping from degrading scan order or touch usability.
+- [x] Shared in-page section rails now use 40px chips and the established touch-scroll rail treatment across Dashboard, Contributions, Badges, Quests, Leaderboard, Settings, public profiles, and PR reports.
 
 ABRA closeout artifact:
 

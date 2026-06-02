@@ -63,7 +63,7 @@ export function InPageSectionNav({
       </div>
       <ul
         role="list"
-        className="dashboard-nav-track scroll-fade-x scroll-fade-x-sm-hide flex max-w-full items-center gap-2 overflow-x-auto pb-[0.12rem] sm:flex-wrap sm:overflow-visible sm:pb-0"
+        className="dashboard-nav-track scroll-fade-x scroll-fade-x-sm-hide lane-rail flex max-w-full items-center gap-2 overflow-x-auto pb-[0.12rem] sm:flex-wrap sm:overflow-visible sm:pb-0"
       >
         {uniqueSections.map((section) => {
           const isActive = activeSectionId === section.id;
@@ -75,7 +75,7 @@ export function InPageSectionNav({
                 data-active={isActive ? "true" : "false"}
                 data-scroll-target="true"
                 className={cn(
-                  "focus-ring neon-chip inline-flex min-h-7 items-center rounded-full px-3 py-1 text-xs font-semibold",
+                  "focus-ring neon-chip inline-flex min-h-10 items-center rounded-full px-3 py-1.5 text-xs font-semibold",
                   isActive ? "neon-chip-info" : "neon-chip-muted",
                 )}
               >

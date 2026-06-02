@@ -41,6 +41,8 @@ describe("InPageSectionNav", () => {
     expect(evidenceLink.getAttribute("href")).toBe("#evidence");
     expect(overviewLink.getAttribute("aria-current")).toBe("location");
     expect(evidenceLink.getAttribute("aria-current")).toBeNull();
+    expect(overviewLink.className).toContain("min-h-10");
+    expect(nav.querySelector("ul")?.className).toContain("lane-rail");
   });
 
   it("updates the current location marker after in-page navigation", async () => {
