@@ -216,8 +216,6 @@ export function LeaderboardPageClient() {
           <HeaderMetaChips
             items={[
               { label: `Lane ${TAB_LABELS[tab]}` },
-              { label: `Rows ${rows.length}` },
-              { label: effectiveMode === "nearby" ? "View Nearby" : `Showing ${safeVisibleRowCount}` },
               {
                 label: `Sync ${formatSyncStateLabel(displaySyncState)}`,
                 tone: toneForSyncState(displaySyncState),

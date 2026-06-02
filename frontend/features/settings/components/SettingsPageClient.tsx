@@ -390,8 +390,6 @@ export function SettingsPageClient() {
           <HeaderMetaChips
             items={[
               { label: `@${data.user.username}` },
-              { label: `Repos ${data.user.repositories.length}` },
-              { label: `Hidden ${hiddenRepositoryCount}` },
               {
                 label: `Sync ${formatSyncStateLabel(displaySyncState)}`,
                 tone: toneForSyncState(displaySyncState),

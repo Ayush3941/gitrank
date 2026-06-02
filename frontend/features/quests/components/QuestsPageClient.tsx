@@ -169,9 +169,6 @@ export function QuestsPageClient() {
         meta={(
           <HeaderMetaChips
             items={[
-              { label: `Missions ${visibleQuestCount}` },
-              { label: `Streak ${streak.currentStreakDays}d` },
-              { label: `Day ${dayOfYear}/365` },
               { label: `Focus ${deferredCadenceFilter}` },
               {
                 label: `Sync ${formatSyncStateLabel(displaySyncState)}`,

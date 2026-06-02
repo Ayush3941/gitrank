@@ -352,8 +352,6 @@ export function ContributionsPageClient() {
           <HeaderMetaChips
             items={[
               { label: `Evidence rows ${filteredRows.length}` },
-              { label: `Repos ${repositories.length}` },
-              { label: `Streak ${streak.currentStreakDays}d` },
               {
                 label: `Sync ${formatSyncStateLabel(displaySyncState)}`,
                 tone: toneForSyncState(displaySyncState),

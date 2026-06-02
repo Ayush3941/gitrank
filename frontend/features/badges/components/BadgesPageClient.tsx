@@ -314,15 +314,6 @@ export function BadgesPageClient() {
           <HeaderMetaChips
             items={[
               { label: `Earned ${unlockedCount}` },
-              { label: `Total ${totalCount}` },
-              {
-                label: `Completion ${completionPercent}%`,
-                tone: completionPercent >= 100 ? "success" : completionPercent >= 50 ? "info" : "warning",
-              },
-              {
-                label: `Locked ${lockedBadges.length}`,
-                tone: lockedBadges.length > 0 ? "warning" : "success",
-              },
               {
                 label: `Sync ${formatSyncStateLabel(displaySyncState)}`,
                 tone: toneForSyncState(displaySyncState),
