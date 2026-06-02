@@ -63,6 +63,7 @@ This document is intentionally detailed.
 - Removed the unused `SyncStateGuide` component and its orphaned test instead of preserving a speculative second sync-status pattern; active routes continue to use the shared stale-state, inline-notice, and GitHub-App-block surfaces.
 - Shared `ErrorState` cards now scope assertive alert semantics to the error title and description only; retry and fallback controls remain visually adjacent but outside the announcement region.
 - Settings sync-log fetch errors now announce only the failure sentence; the adjacent retry action remains interactive without being folded into the assertive alert region.
+- Settings sync-run polling now announces its concise `N of M runs` status instead of treating the full scrollable card list as a live region, preventing repeated disclosure-button and diagnostics chatter during refreshes.
 
 It serves two purposes:
 

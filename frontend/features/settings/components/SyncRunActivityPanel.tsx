@@ -332,8 +332,6 @@ export function SyncRunActivityPanel({
       <ScrollableRegion
         id={syncRunsRegionId}
         labelledById={syncRunsHeadingId}
-        aria-live="polite"
-        aria-relevant="additions text"
         aria-busy={isLoading || isRefreshing}
         className="sync-runs-results-viewport overflow-y-auto pr-1"
       >
