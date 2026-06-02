@@ -1,5 +1,12 @@
 # Frontend UX Changelog
 
+## 2026-06-02
+
+- Main-landmark consistency pass:
+  - `AppShell` now remains the only frontend owner of `<main id="main-content">`.
+  - marketing and onboarding content wrappers render as normal containers inside the shell, preventing nested main landmarks while preserving layout.
+  - added `npm run check:main-landmark` and focused render coverage so the global skip-link target stays stable.
+
 ## 2026-05-25
 
 - Settings sync metrics visibility pass:

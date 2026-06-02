@@ -64,6 +64,7 @@ npm run check:oauth-prefetch-policy
 npm run check:dashboard-route-copy-policy
 npm run check:env-example-coverage
 npm run check:jsx-ids
+npm run check:main-landmark
 npm run check:scroll-jumps
 npm run check:motion-budget
 npm run test:smoke
@@ -97,6 +98,7 @@ The public profile page, authenticated dashboard overview, onboarding reveal, ba
 - `npm run check:dashboard-route-copy-policy` fails CI if dashboard route pages stop sourcing metadata from `dashboardNavByHref`, preventing nav-label and metadata drift
 - `npm run check:env-example-coverage` fails CI when frontend runtime env keys in source drift from `gitrank/.env.example` (missing declarations or stale unused keys)
 - `npm run check:jsx-ids` fails CI if a TSX file reuses the same literal `id` more than once, preventing duplicate region IDs that break a11y and section controls
+- `npm run check:main-landmark` fails CI if feature/page components render extra `<main>` landmarks; `AppShell` owns the single `#main-content` skip-link target
 - `npm run check:scroll-jumps` fails CI if product routes reintroduce direct `window.scrollTo`/`scrollIntoView` style APIs that can cause viewport jumps
 - `npm run check:motion-budget` fails CI if product routes reintroduce heavy animation patterns (`framer-motion`, animation utility classes, keyframes, or `transition: all`)
 - `npm run check:perf-budgets` reads `.next/build-manifest.json`; without a prior frontend build it exits cleanly with guidance, and `STRICT_PERF_BUDGET_MANIFEST=1` enforces hard-fail behavior

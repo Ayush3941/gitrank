@@ -56,7 +56,7 @@ export function RevealPanel({
         ];
 
   return (
-    <main className="mx-auto max-w-5xl">
+    <div className="mx-auto max-w-5xl">
       <GlowCard strong className="relative space-y-8 overflow-hidden text-center">
         <OnboardingStepper currentStep="reveal" />
         <div className="space-y-4">
@@ -183,7 +183,7 @@ export function RevealPanel({
           </Button>
         </div>
       </GlowCard>
-    </main>
+    </div>
   );
 }
 
@@ -219,7 +219,7 @@ function RevealFallbackCard({
 
 export function RevealPanelSkeleton() {
   return (
-    <main className="mx-auto max-w-5xl">
+    <div className="mx-auto max-w-5xl">
       <GlowCard strong className="space-y-8 text-center">
         <OnboardingStepper currentStep="reveal" />
         <div className="neon-skeleton mx-auto h-8 w-48 rounded-full" />
@@ -231,13 +231,13 @@ export function RevealPanelSkeleton() {
           ))}
         </div>
       </GlowCard>
-    </main>
+    </div>
   );
 }
 
 export function RevealPanelUnavailable() {
   return (
-    <main className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-3xl">
       <GlowCard strong className="space-y-6 text-center">
         <OnboardingStepper currentStep="connect" />
         <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-amber-400/25 bg-amber-400/12 px-3 py-1.5 text-xs font-semibold text-amber-100">
@@ -257,6 +257,6 @@ export function RevealPanelUnavailable() {
           </IntentPrefetchLink>
         </Button>
       </GlowCard>
-    </main>
+    </div>
   );
 }

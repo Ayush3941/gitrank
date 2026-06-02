@@ -198,7 +198,7 @@ export function SyncPipeline() {
   }
 
   return (
-    <main className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-4xl">
       <GlowCard strong className="space-y-8">
         <OnboardingStepper currentStep="analyze" />
         <div className="space-y-3">
@@ -331,6 +331,6 @@ export function SyncPipeline() {
           ) : null}
         </div>
       </GlowCard>
-    </main>
+    </div>
   );
 }

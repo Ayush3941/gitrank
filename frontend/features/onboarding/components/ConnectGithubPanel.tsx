@@ -26,7 +26,7 @@ export function ConnectGithubPanel() {
   }, []);
 
   return (
-    <main className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[1.05fr,0.95fr]">
+    <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[1.05fr,0.95fr]">
       <GlowCard strong className="space-y-6">
         <OnboardingStepper currentStep="connect" />
         <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
@@ -143,6 +143,6 @@ export function ConnectGithubPanel() {
           </p>
         </div>
       </GlowCard>
-    </main>
+    </div>
   );
 }

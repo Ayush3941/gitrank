@@ -11,7 +11,7 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
   const oauthURL = `/oauth/github/start?return_to=${encodeURIComponent(returnTo)}`;
 
   return (
-    <main className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-4xl">
       <GlowCard strong className="grid gap-6 lg:grid-cols-[1fr,0.9fr]">
         <div className="space-y-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -72,6 +72,6 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
           </div>
         </GlowCard>
       </GlowCard>
-    </main>
+    </div>
   );
 }

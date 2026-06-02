@@ -25,7 +25,7 @@ const loop = [
 
 export function LandingPage() {
   return (
-    <main className="space-y-8">
+    <div className="space-y-8">
       <section className="glass-panel-strong overflow-hidden px-6 py-10 sm:px-10 sm:py-14">
         <div className="grid gap-10 lg:grid-cols-[1.2fr,0.8fr] lg:items-center">
           <div className="space-y-6">
@@ -276,7 +276,7 @@ export function LandingPage() {
           </Button>
         </GlowCard>
       </section>
-    </main>
+    </div>
   );
 }
 

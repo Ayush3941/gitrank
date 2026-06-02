@@ -1,8 +1,13 @@
 # Contributing to GitRank
 
-Last reviewed: May 28, 2026
+Last reviewed: June 2, 2026
 
 This document is intentionally detailed.
+
+## Session Notes (June 2, 2026)
+
+- Frontend route landmarks now use one shared owner: `AppShell` renders the only `<main id="main-content" tabIndex={-1}>`, while marketing/onboarding content renders inside it as normal containers. This keeps the global skip link, landmark navigation, and shell design consistent.
+- Added `npm run check:main-landmark` plus focused render coverage in `frontend/tests/main-landmark.test.tsx` so nested page-level `<main>` wrappers cannot quietly return in feature components.
 
 ## Session Notes (May 31, 2026)
 
@@ -694,6 +699,7 @@ Verification snapshot (May 17, 2026):
 - `cd frontend && npm run check:cache-strategy`
 - `cd frontend && npm run check:contrast`
 - `cd frontend && npm run check:media-stability`
+- `cd frontend && npm run check:main-landmark`
 - `cd frontend && npm run check:main-thread`
 - `cd frontend && npm run check:scroll-jumps`
 - `cd frontend && npm run check:stale-refresh-sync`
