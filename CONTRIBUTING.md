@@ -65,6 +65,7 @@ This document is intentionally detailed.
 - Settings sync-log fetch errors now announce only the failure sentence; the adjacent retry action remains interactive without being folded into the assertive alert region.
 - Settings sync-run polling now announces its concise `N of M runs` status instead of treating the full scrollable card list as a live region, preventing repeated disclosure-button and diagnostics chatter during refreshes.
 - Shared empty states now use a decorative inbox cue instead of a generic sparkle glyph, keeping absence states purposeful across contributions, badges, quests, leaderboard, profile, and report routes without adding visual weight.
+- Shared empty states now expose one clear recovery action; unused speculative secondary-action branches were removed instead of preserving an unexercised button hierarchy.
 
 It serves two purposes:
 

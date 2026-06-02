@@ -14,9 +14,6 @@ export function EmptyState({
   actionLabel,
   actionHref,
   onAction,
-  secondaryActionLabel,
-  secondaryActionHref,
-  onSecondaryAction,
   analyticsTarget,
 }: {
   title: string;
@@ -25,9 +22,6 @@ export function EmptyState({
   actionLabel?: string;
   actionHref?: string;
   onAction?: () => void;
-  secondaryActionLabel?: string;
-  secondaryActionHref?: string;
-  onSecondaryAction?: () => void;
   analyticsTarget?: string;
 }) {
   const sentEventRef = useRef(false);
@@ -55,7 +49,7 @@ export function EmptyState({
         <h2 className="text-xl font-semibold text-white">{title}</h2>
         <p className="max-w-xl text-sm text-muted">{description}</p>
       </div>
-      {actionLabel || secondaryActionLabel ? (
+      {actionLabel ? (
         <div className="flex w-full flex-col items-start gap-2 sm:w-auto sm:flex-row sm:items-center">
           {actionLabel && actionHref ? (
             <Button asChild className="w-full justify-center sm:w-auto">
@@ -65,22 +59,6 @@ export function EmptyState({
           {actionLabel && !actionHref && onAction ? (
             <Button onClick={onAction} className="w-full justify-center sm:w-auto">
               {actionLabel}
-            </Button>
-          ) : null}
-          {secondaryActionLabel && secondaryActionHref ? (
-            <Button asChild variant="secondary" size="sm" className="w-full justify-center sm:w-auto">
-              <IntentPrefetchLink href={secondaryActionHref}>{secondaryActionLabel}</IntentPrefetchLink>
-            </Button>
-          ) : null}
-          {secondaryActionLabel && !secondaryActionHref && onSecondaryAction ? (
-            <Button
-              type="button"
-              onClick={onSecondaryAction}
-              variant="secondary"
-              size="sm"
-              className="w-full justify-center sm:w-auto"
-            >
-              {secondaryActionLabel}
             </Button>
           ) : null}
         </div>
