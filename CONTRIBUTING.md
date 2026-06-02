@@ -2007,6 +2007,7 @@ ABRA implementation checklist:
 - [x] Shared progressive-disclosure toggles now use 40px targets and decorative chevrons, improving repeated touch interactions and screen-reader output across filters, settings, reports, badges, and chart detail panels.
 - [x] Removable search-filter chips now share one 40px control primitive across contribution and repository-privacy filters, eliminating duplicated markup while keeping compact filter summaries touch-friendly.
 - [x] Shared search fields now expose a 40px clear action inside the 44px input lane and mark visual search/clear icons as decorative, keeping contribution, repository, and sync-log filtering touch-friendly and screen-reader concise.
+- [x] Public profiles no longer repeat score, merged-PR, and consistency metrics immediately below the hero card; the share-facing overview now moves directly from identity context into evidence lanes.
 
 ABRA closeout artifact:
 

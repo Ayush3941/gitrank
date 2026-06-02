@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useMemo } from "react";
-import { Award, CheckCircle2, GitPullRequest, ShieldCheck, Stars } from "lucide-react";
+import { Award } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { ExpandableText } from "@/components/shared/ExpandableText";
@@ -14,7 +14,6 @@ import { RarityBadge } from "@/components/shared/RarityBadge";
 import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
 import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { StaleState } from "@/components/shared/StaleState";
-import { StatCard } from "@/components/shared/StatCard";
 import { Button } from "@/components/ui/button";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
@@ -247,12 +246,6 @@ export function PublicProfilePageClient({
           identitySummary={abraInsights.data?.identitySummary ?? fallbackIdentitySummary}
           identitySummaryMode={abraInsights.data?.generatedBy ?? "deterministic"}
         />
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <StatCard label="GitRank score" value={data.user.gitRankScore} icon={<Stars className="h-5 w-5 text-primary" />} />
-          <StatCard label="Merged PRs" value={data.user.mergedPrCount} icon={<GitPullRequest className="h-5 w-5 text-primary" />} />
-          <StatCard label="Badges earned" value={unlockedBadges.length} icon={<ShieldCheck className="h-5 w-5 text-primary" />} />
-          <StatCard label="Consistency" value={`${data.user.consistencyScore}%`} detail={data.trendWindowLabel} icon={<CheckCircle2 className="h-5 w-5 text-primary" />} />
-        </div>
       </section>
       <section
         id="public-profile-badges-skills"
