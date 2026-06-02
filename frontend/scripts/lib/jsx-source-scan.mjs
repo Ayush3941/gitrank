@@ -10,7 +10,8 @@ export function scanJSXFiles({
   root = process.cwd(),
   scanRoots = defaultScanRoots,
   ignoredFiles = [],
-  onElement,
+  onProgram = () => ({}),
+  onElement = () => {},
 }) {
   const ignoredFileSet = new Set(ignoredFiles);
   const parseErrors = [];
@@ -19,6 +20,7 @@ export function scanJSXFiles({
     walk(path.join(root, scanRoot), {
       ignoredFileSet,
       onElement,
+      onProgram,
       parseErrors,
       root,
     });
@@ -124,7 +126,16 @@ function scanSource(relativePath, source, context) {
     return;
   }
 
-  visitNode(ast.program, relativePath, context);
+  const fileContext = context.onProgram({
+    program: ast.program,
+    relativePath,
+    source,
+  }) ?? {};
+
+  visitNode(ast.program, relativePath, {
+    ...context,
+    fileContext,
+  });
 }
 
 function visitNode(node, relativePath, context) {
@@ -141,6 +152,7 @@ function visitNode(node, relativePath, context) {
   if (node.type === "JSXElement") {
     context.onElement({
       element: node,
+      fileContext: context.fileContext,
       openingElement: node.openingElement,
       relativePath,
     });
