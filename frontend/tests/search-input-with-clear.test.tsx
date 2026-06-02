@@ -19,12 +19,31 @@ describe("SearchInputWithClear", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Clear contribution search" }));
+    const clear = screen.getByRole("button", { name: "Clear contribution search" });
+    expect(clear.className).toContain("h-10 w-10");
+    expect(clear.querySelector("svg")?.getAttribute("aria-hidden")).toBe("true");
+
+    fireEvent.click(clear);
     fireEvent.keyDown(screen.getByRole("searchbox", { name: "Search contributions" }), {
       key: "Escape",
     });
 
     expect(onClear).toHaveBeenCalledTimes(2);
+  });
+
+  it("marks the leading search icon as decorative", () => {
+    const { container } = render(
+      <SearchInputWithClear
+        value=""
+        onChange={() => undefined}
+        onClear={() => undefined}
+        placeholder="Search..."
+        ariaLabel="Search repositories"
+        clearButtonLabel="Clear repository search"
+      />,
+    );
+
+    expect(container.querySelector("svg")?.getAttribute("aria-hidden")).toBe("true");
   });
 
   it("does not render clear button when input is empty", () => {

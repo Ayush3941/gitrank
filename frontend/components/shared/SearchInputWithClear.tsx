@@ -51,7 +51,7 @@ export function SearchInputWithClear({
 
   return (
     <div className="relative">
-      <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted" />
+      <Search className="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted" aria-hidden="true" />
       <Input
         ref={inputRef}
         type="search"
@@ -71,12 +71,12 @@ export function SearchInputWithClear({
           }}
           onClick={handleClear}
           disabled={clearButtonDisabled}
-          className="focus-ring absolute top-1/2 right-3 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-cyan-100 hover:bg-primary/12 hover:text-white disabled:opacity-60"
+          className="focus-ring absolute top-1/2 right-0.5 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-cyan-100 hover:bg-primary/12 hover:text-white disabled:opacity-60"
           aria-label={clearButtonLabel}
           aria-controls={ariaControls}
           title={clearButtonTitle}
         >
-          <X className="h-4 w-4" />
+          <X className="h-4 w-4" aria-hidden="true" />
         </button>
       ) : null}
     </div>
