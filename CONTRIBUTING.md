@@ -57,6 +57,8 @@ This document is intentionally detailed.
 - The same in-page section-navigation pattern now extends across Quests, Badges, Leaderboard, Public Profile, and PR Report so long-form surfaces keep consistent scan/jump behavior on desktop and mobile.
 - Shared in-page navigation now normalizes section IDs and marks the active hash target with `aria-current="location"` plus a clearer chip state; hash tracking uses `useSyncExternalStore` and a single `hashchange` subscription instead of scroll listeners.
 - Header summary-chip rails now reuse `ScrollableRegion`, exposing a labeled keyboard-focus target when narrow screens overflow while preserving the existing larger-screen wrapped layout.
+- Dashboard, Settings, Public Profile, and PR Report client-side first loads now use route-shaped `RouteLoadingState` skeletons instead of generic single cards, reducing visual reflow when live data resolves.
+- `RouteLoadingState` now scopes its polite live announcement to one screen-reader-only status node while leaving decorative skeleton markup outside the live region.
 
 It serves two purposes:
 

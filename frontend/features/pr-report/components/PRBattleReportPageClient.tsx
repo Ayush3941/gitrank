@@ -13,8 +13,8 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { InlineNotice } from "@/components/shared/InlineNotice";
-import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
 import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { Button } from "@/components/ui/button";
 import { useRunPullRequestSync } from "@/hooks/use-account-actions";
@@ -93,7 +93,15 @@ export function PRBattleReportPageClient({
   } | null>(null);
 
   if (isLoading) {
-    return <LoadingState message="Loading report..." />;
+    return (
+      <RouteLoadingState
+        eyebrow="PR report"
+        title="PR battle report"
+        description="Loading deterministic score evidence and contribution signals."
+        cardCount={4}
+        variant="report"
+      />
+    );
   }
 
   if (isError) {

@@ -10,8 +10,8 @@ import { ExpandableText } from "@/components/shared/ExpandableText";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
-import { LoadingState } from "@/components/shared/LoadingState";
 import { RarityBadge } from "@/components/shared/RarityBadge";
+import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
 import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
@@ -168,7 +168,15 @@ export function PublicProfilePageClient({
     });
   }, [data, streak.currentStreakDays]);
   if (isLoading) {
-    return <LoadingState message="Loading public profile..." />;
+    return (
+      <RouteLoadingState
+        eyebrow="Public profile"
+        title="Contributor profile"
+        description="Loading identity, skill signals, and public contribution evidence."
+        cardCount={4}
+        variant="profile"
+      />
+    );
   }
 
   if (isError) {

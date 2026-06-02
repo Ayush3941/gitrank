@@ -13,9 +13,9 @@ import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { InlineNotice } from "@/components/shared/InlineNotice";
-import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
+import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -229,7 +229,14 @@ export function SettingsPageClient() {
   }
 
   if (isLoading) {
-    return <LoadingState message="Loading settings..." />;
+    return (
+      <RouteLoadingState
+        eyebrow="Settings"
+        title="Settings"
+        description="Loading account, sync, privacy, and display controls."
+        cardCount={3}
+      />
+    );
   }
 
   if (isError || !data || !currentSettings) {

@@ -19,9 +19,9 @@ import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlock
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
-import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
+import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
 import {
@@ -200,7 +200,15 @@ export function DashboardPageClient() {
   }, [data, isError, isLoading]);
 
   if (isLoading) {
-    return <LoadingState message="Loading dashboard..." />;
+    return (
+      <RouteLoadingState
+        eyebrow="Dashboard"
+        title="Dashboard"
+        description="Loading rank, contribution signals, and recent reports."
+        cardCount={4}
+        variant="dashboard"
+      />
+    );
   }
 
   if (isError || !data || !user) {
