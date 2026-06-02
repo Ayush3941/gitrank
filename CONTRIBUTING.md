@@ -59,6 +59,7 @@ This document is intentionally detailed.
 - Header summary-chip rails now reuse `ScrollableRegion`, exposing a labeled keyboard-focus target when narrow screens overflow while preserving the existing larger-screen wrapped layout.
 - Dashboard, Settings, Public Profile, and PR Report client-side first loads now use route-shaped `RouteLoadingState` skeletons instead of generic single cards, reducing visual reflow when live data resolves.
 - `RouteLoadingState` now scopes its polite live announcement to one screen-reader-only status node while leaving decorative skeleton markup outside the live region.
+- Shared inline loading cards now use the same scoped-announcement pattern and remove the static spinner glyph plus generic filler sentence, keeping deferred dashboard panels quieter and easier to scan.
 
 It serves two purposes:
 
