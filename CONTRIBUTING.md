@@ -61,6 +61,7 @@ This document is intentionally detailed.
 - `RouteLoadingState` now scopes its polite live announcement to one screen-reader-only status node while leaving decorative skeleton markup outside the live region.
 - Shared inline loading cards now use the same scoped-announcement pattern and remove the static spinner glyph plus generic filler sentence, keeping deferred dashboard panels quieter and easier to scan.
 - Removed the unused `SyncStateGuide` component and its orphaned test instead of preserving a speculative second sync-status pattern; active routes continue to use the shared stale-state, inline-notice, and GitHub-App-block surfaces.
+- Shared `ErrorState` cards now scope assertive alert semantics to the error title and description only; retry and fallback controls remain visually adjacent but outside the announcement region.
 
 It serves two purposes:
 
