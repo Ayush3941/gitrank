@@ -27,6 +27,7 @@
     "check:media-stability": "node scripts/check-media-layout-stability.mjs",
     "check:main-thread": "node scripts/check-main-thread-guards.mjs",
     "check:motion-budget": "node scripts/check-motion-budget.mjs",
+    "check:new-tab-links": "node scripts/check-new-tab-link-policy.mjs",
     "check:query-policy": "node scripts/check-query-policy.mjs",
     "check:stale-refresh-sync": "node scripts/check-stale-refresh-sync-wiring.mjs",
     "check:bff-route-contract-coverage": "node scripts/check-bff-route-contract-coverage.mjs",

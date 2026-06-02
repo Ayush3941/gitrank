@@ -8,6 +8,7 @@ import { ContributionPulseStrip } from "@/components/shared/ContributionPulseStr
 import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { NewTabHint } from "@/components/shared/NewTabHint";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { XPProgress } from "@/components/shared/XPProgress";
@@ -128,6 +129,7 @@ export function PublicProfileHero({
                 rel="noopener noreferrer"
               >
                 View card JSON
+                <NewTabHint />
               </Link>
             </Button>
           </div>

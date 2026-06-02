@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ClampedText } from "@/components/shared/ClampedText";
 import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { NewTabHint } from "@/components/shared/NewTabHint";
 import type { ContributionNarrative } from "@/lib/ai/abra-insights-types";
 import { formatContributionStatusLabel } from "@/lib/presentation/contribution-status";
 import {
@@ -135,6 +136,7 @@ export function ContributionList({
                   >
                     GitHub PR
                     <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                    <NewTabHint />
                   </Link>
                 </Button>
                 <Button asChild variant="secondary" size="sm">

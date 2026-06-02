@@ -12,6 +12,7 @@ import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
+import { NewTabHint } from "@/components/shared/NewTabHint";
 import { InlineNotice } from "@/components/shared/InlineNotice";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
@@ -239,6 +240,7 @@ export function PRBattleReportPageClient({
               >
                 View on GitHub
                 <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                <NewTabHint />
               </Link>
             </Button>
           </div>
