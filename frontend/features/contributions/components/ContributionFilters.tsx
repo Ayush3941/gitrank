@@ -13,12 +13,12 @@ import {
   ServerCog,
   ShieldCheck,
   Trophy,
-  X,
 } from "lucide-react";
 import { useId, useState } from "react";
 import { ControlSurface } from "@/components/shared/ControlSurface";
 import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
+import { RemovableFilterChip } from "@/components/shared/RemovableFilterChip";
 import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
 import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
 import {
@@ -184,17 +184,14 @@ export function ContributionFilters({
         secondaryLabel={activeFilterCount > 0 ? `Lane: ${activeViewLabel}` : undefined}
         extraControls={
           trimmedSearch.length > 0 ? (
-            <button
-              type="button"
-              className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
-              onClick={handleClearSearch}
+            <RemovableFilterChip
+              onRemove={handleClearSearch}
               disabled={isFiltering}
-              aria-label={`Remove Search · ${compactSearch} filter`}
-              aria-controls={resultsRegionId}
+              ariaLabel={`Remove Search · ${compactSearch} filter`}
+              ariaControls={resultsRegionId}
             >
               Search: {compactSearch}
-              <X className="h-3.5 w-3.5" />
-            </button>
+            </RemovableFilterChip>
           ) : null
         }
         resetAction={

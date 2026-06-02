@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { X } from "lucide-react";
 import { startTransition, useDeferredValue, useId, useMemo, useState } from "react";
 import { ControlSurface } from "@/components/shared/ControlSurface";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
+import { RemovableFilterChip } from "@/components/shared/RemovableFilterChip";
 import { ScrollableRegion } from "@/components/shared/ScrollableRegion";
 import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
 import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
@@ -83,17 +83,14 @@ export function PrivacyRepositoryToggleList({
           activeFilterCount={activeFilterCount}
           extraControls={
             searchTerm.length > 0 ? (
-              <button
-                type="button"
-                className="focus-ring neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
-                onClick={handleClearSearch}
-                aria-label={`Remove Search · ${compactSearch} filter`}
-                aria-controls={repositoriesRegionId}
+              <RemovableFilterChip
+                onRemove={handleClearSearch}
+                ariaLabel={`Remove Search · ${compactSearch} filter`}
+                ariaControls={repositoriesRegionId}
                 title="Clear search filter"
               >
                 Search: {compactSearch}
-                <X className="h-3.5 w-3.5" />
-              </button>
+              </RemovableFilterChip>
             ) : null
           }
           resetAction={{

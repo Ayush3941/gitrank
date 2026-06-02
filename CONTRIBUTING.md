@@ -2005,6 +2005,7 @@ ABRA implementation checklist:
 - [x] Shared in-page section rails now use 40px chips and the established touch-scroll rail treatment across Dashboard, Contributions, Badges, Quests, Leaderboard, Settings, public profiles, and PR reports.
 - [x] Shared inline status notices now expose a 32px dismiss target across contribution, badge, PR-report, onboarding, and settings feedback lanes, improving touch usability without expanding the surrounding notice shell.
 - [x] Shared progressive-disclosure toggles now use 40px targets and decorative chevrons, improving repeated touch interactions and screen-reader output across filters, settings, reports, badges, and chart detail panels.
+- [x] Removable search-filter chips now share one 40px control primitive across contribution and repository-privacy filters, eliminating duplicated markup while keeping compact filter summaries touch-friendly.
 
 ABRA closeout artifact:
 
