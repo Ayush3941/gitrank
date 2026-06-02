@@ -71,6 +71,7 @@ This document is intentionally detailed.
 - Shared route-level error cards now announce their eyebrow, title, and description through one scoped assertive region while leaving retry and fallback navigation controls outside the announcement boundary.
 - Route-level not-found cards now cap recovery choices at two deliberate links, reducing sparse-screen decision noise while keeping one primary next move and one secondary escape route.
 - Page, section, and route-loading headers now share one eyebrow-normalization helper, so first-load skeletons suppress repeated labels such as `Settings` / `Settings` while preserving distinct context labels.
+- Removed obsolete shared presentation modules (`AnimatedNumber`, the null-returning `ConstrainedNetworkPill`, and superseded `StreakHeatStrip`) after confirming they had no runtime or test imports; active routes use direct formatted values, inline mode chips, and `ContributionPulseStrip`.
 
 It serves two purposes:
 
