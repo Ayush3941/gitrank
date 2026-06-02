@@ -51,7 +51,7 @@ export function InlineNotice({
           <button
             type="button"
             onClick={onDismiss}
-            className="focus-ring ml-3 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-current/35 text-sm leading-none hover:bg-black/15"
+            className="focus-ring ml-3 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-current/35 text-base leading-none hover:bg-black/15"
             aria-label={dismissLabel}
             title="Dismiss"
           >

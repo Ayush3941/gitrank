@@ -24,7 +24,7 @@ describe("InlineNotice", () => {
     expect(screen.getByRole("status")).toBeTruthy();
     const dismiss = screen.getByRole("button", { name: "Dismiss export status" });
     expect(dismiss).toBeTruthy();
-    expect(dismiss.className).toContain("h-6 w-6");
+    expect(dismiss.className).toContain("h-8 w-8");
 
     fireEvent.click(dismiss);
     expect(onDismiss).toHaveBeenCalledTimes(1);
