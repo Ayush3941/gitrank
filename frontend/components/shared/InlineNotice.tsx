@@ -44,7 +44,7 @@ export function InlineNotice({
           variantClassName[variant],
         )}
       >
-        <span role="status" aria-live="polite" className="min-w-0 break-anywhere">
+        <span role="status" aria-live="polite" aria-atomic="true" className="min-w-0 break-anywhere">
           {message}
         </span>
         {onDismiss ? (

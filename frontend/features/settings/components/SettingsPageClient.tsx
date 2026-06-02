@@ -517,7 +517,7 @@ export function SettingsPageClient() {
         ) : null}
         {actionError ? (
           <div className="min-h-6">
-            <p id={accountActionErrorId} role="alert" className="inline-flex items-center rounded-[0.1rem] border border-rose-300/26 bg-rose-500/10 px-3 py-1.5 text-sm text-rose-100">
+            <p id={accountActionErrorId} role="alert" aria-atomic="true" className="inline-flex items-center rounded-[0.1rem] border border-rose-300/26 bg-rose-500/10 px-3 py-1.5 text-sm text-rose-100">
               {actionError}
             </p>
           </div>
@@ -981,7 +981,7 @@ function SettingSection({
         {saving ? <p className="text-sm text-primary">Saving…</p> : null}
       </div>
       {errorMessage ? (
-        <p id={`${toControlID(title)}-error`} role="alert" className="text-sm text-rose-200">
+        <p id={`${toControlID(title)}-error`} role="alert" aria-atomic="true" className="text-sm text-rose-200">
           {errorMessage}
         </p>
       ) : null}

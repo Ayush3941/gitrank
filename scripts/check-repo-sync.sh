@@ -190,6 +190,14 @@ assert_frontend_interactive_title_policy() {
   fi
 }
 
+assert_frontend_live_region_atomicity() {
+  if ! (
+    cd "$ROOT_DIR/frontend" && node scripts/check-live-region-atomicity.mjs >/dev/null
+  ); then
+    fail "frontend live-region atomicity guard failed"
+  fi
+}
+
 assert_backend_env_default_parity() {
   if ! (
     cd "$ROOT_DIR/gitrank/packages/config" \
@@ -466,6 +474,7 @@ main() {
   assert_frontend_stale_refresh_sync_wiring
   assert_frontend_shared_orphans
   assert_frontend_interactive_title_policy
+  assert_frontend_live_region_atomicity
   assert_markdown_npm_script_refs
   assert_markdown_make_target_refs
   assert_markdown_script_path_refs

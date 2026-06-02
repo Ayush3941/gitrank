@@ -230,7 +230,7 @@ export function SyncPipeline() {
             </p>
           ) : null}
           {actionError ? (
-            <p role="alert" className="text-sm text-rose-200">
+            <p role="alert" aria-atomic="true" className="text-sm text-rose-200">
               {actionError}
             </p>
           ) : null}

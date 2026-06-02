@@ -136,6 +136,7 @@ export function StaleState({
         <p
           role="status"
           aria-live="polite"
+          aria-atomic="true"
           className={
             refreshFeedback.tone === "error"
               ? "text-sm text-rose-200"

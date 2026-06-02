@@ -321,7 +321,7 @@ export function SyncRunActivityPanel({
 
       {isError ? (
         <div className="neon-surface space-y-3 border-rose-300/28 px-4 py-3 text-sm text-rose-100">
-          <p role="alert">{errorMessage || "Sync activity is temporarily unavailable."}</p>
+          <p role="alert" aria-atomic="true">{errorMessage || "Sync activity is temporarily unavailable."}</p>
           <div className="flex flex-wrap gap-2">
             <Button type="button" size="sm" variant="secondary" onClick={onRefresh} disabled={isRefreshing}>
               {isRefreshing ? "Refreshing..." : "Retry log fetch"}

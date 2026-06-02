@@ -21,7 +21,7 @@ describe("InlineNotice", () => {
       />,
     );
 
-    expect(screen.getByRole("status")).toBeTruthy();
+    expect(screen.getByRole("status").getAttribute("aria-atomic")).toBe("true");
     const dismiss = screen.getByRole("button", { name: "Dismiss export status" });
     expect(dismiss).toBeTruthy();
     expect(dismiss.className).toContain("h-8 w-8");
