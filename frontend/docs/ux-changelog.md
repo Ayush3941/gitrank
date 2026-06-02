@@ -10,7 +10,7 @@
   - renamed the public profile card export action to `Open proof data`, keeping the same endpoint while removing developer-facing JSON copy from the hero.
   - removed redundant browser `title` tooltips from interactive controls and added `npm run check:interactive-titles`, keeping control names in visible text or ARIA paths.
   - normalized status and alert live regions with explicit atomic announcements and added `npm run check:live-regions`.
-  - extracted shared JSX policy scanning into `frontend/scripts/lib/jsx-source-scan.mjs` so accessibility and interaction guards stop duplicating parser/walker code.
+  - extracted shared JSX policy scanning into `frontend/scripts/lib/jsx-source-scan.mjs` so accessibility, accessible-name, and interaction guards stop duplicating parser/walker code.
 - Main-landmark consistency pass:
   - `AppShell` now remains the only frontend owner of `<main id="main-content">`.
   - marketing and onboarding content wrappers render as normal containers inside the shell, preventing nested main landmarks while preserving layout.

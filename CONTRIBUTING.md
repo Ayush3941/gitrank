@@ -13,7 +13,7 @@ This document is intentionally detailed.
 - Markdown make-target verification now uses a deterministic here-string lookup instead of a `printf | rg` pipeline, avoiding false failures when `pipefail` observes SIGPIPE after a valid early match.
 - Removed redundant browser `title` tooltips from interactive controls and added `npm run check:interactive-titles`; controls must expose names and detail through visible text or ARIA, not hover-only tooltips.
 - Live-region announcements now use explicit atomic updates; `npm run check:live-regions` blocks `role="status"` and `role="alert"` nodes that omit `aria-atomic="true"`.
-- Frontend JSX policy scripts share `frontend/scripts/lib/jsx-source-scan.mjs`; add new AST-based UI guards through that helper instead of copying parser/walker code.
+- Frontend JSX policy scripts share `frontend/scripts/lib/jsx-source-scan.mjs`; add new AST-based UI guards, including accessible-name checks, through that helper instead of copying parser/walker code.
 - Removed accidental local project clutter from the working tree: root `node_modules/`, root `GITRANK FLOWS/` image exports, and the root `gitrank/github-ingestor` Go binary. Durable flow docs belong under `gitrank/docs/`, frontend dependencies under `frontend/node_modules/`, and service binaries under `.run/bin/` or ignored temp paths.
 - Root `.gitignore` and `scripts/check-repo-sync.sh` now guard against those clutter paths returning, including root-level Go service binaries for all backend services.
 - Test-only GitHub App private-key placeholders now use non-secret file-path strings instead of PEM-shaped literals, keeping `scripts/check-no-tracked-secrets.sh` high-signal without weakening the scanner.
