@@ -2001,6 +2001,7 @@ ABRA implementation checklist:
 - [x] Progressive disclosure controls now also cover Settings display/sync sections, PR report technical/ledger sections, and chart data-table toggles, keeping expansion affordances consistent and keyboard/ARIA behavior aligned across all major dashboard surfaces.
 - [x] Settings sync activity now auto-opens details when failed/partial runs appear and keeps the panel open across refresh transitions so troubleshooting context is not lost when state moves from failed to healthy.
 - [x] Marketing shell anti-spam and first-load copy now use direct product language instead of exaggerated arena/power phrasing, while preserving the established neon visual treatment and report/quest vocabulary.
+- [x] Marketing header navigation now uses a separate horizontally scrollable route rail on narrow screens with the same 44px target baseline as dashboard navigation, preventing brand/nav wrapping from degrading scan order or touch usability.
 
 ABRA closeout artifact:
 

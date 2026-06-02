@@ -6,8 +6,8 @@ import { MarketingLayout } from "@/components/shared/MarketingLayout";
 import { LandingPage } from "@/features/marketing/components/LandingPage";
 
 vi.mock("next/link", () => ({
-  default: ({ href, children }: { href: string; children: ReactNode }) => (
-    <a href={href}>{children}</a>
+  default: ({ href, children, className }: { href: string; children: ReactNode; className?: string }) => (
+    <a href={href} className={className}>{children}</a>
   ),
 }));
 
@@ -30,6 +30,10 @@ describe("marketing shell copy", () => {
       ),
     ).not.toBeNull();
     expect(screen.queryByText(/do not make you powerful/i)).toBeNull();
+
+    const nav = screen.getByRole("navigation", { name: "Marketing routes" });
+    expect(nav.querySelector("ul")?.className).toContain("overflow-x-auto");
+    expect(nav.querySelectorAll(".min-h-11")).toHaveLength(4);
   });
 
   it("uses a product-focused first-load label", () => {
