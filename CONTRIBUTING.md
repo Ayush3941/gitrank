@@ -11,6 +11,7 @@ This document is intentionally detailed.
 - Added `npm run check:navigation-landmarks` and focused shared-nav coverage in `frontend/tests/navigation-landmarks.test.tsx`; every `<nav>` or `role="navigation"` region must keep a stable accessible name.
 - Added `npm run check:route-state-primitives` so route `loading`, `error`, `global-error`, and `not-found` files keep using shared route-state UI primitives instead of one-off fallback screens.
 - Shared inline loading cards now normalize loading targets so visible copy and polite announcements avoid duplicated `Loading` wording and trailing ellipses; `npm run check:copy-tone` blocks production `Loading ...` regressions.
+- Added `npm run check:native-button-type`; literal `<button>` elements must declare a safe `type`, while the shared `Button` primitive defaults plain buttons to `type="button"` and keeps polymorphic links type-free.
 
 ## Session Notes (May 31, 2026)
 
@@ -703,6 +704,7 @@ Verification snapshot (May 17, 2026):
 - `cd frontend && npm run check:route-state-primitives`
 - `cd frontend && npm run check:contrast`
 - `cd frontend && npm run check:media-stability`
+- `cd frontend && npm run check:native-button-type`
 - `cd frontend && npm run check:main-landmark`
 - `cd frontend && npm run check:navigation-landmarks`
 - `cd frontend && npm run check:main-thread`

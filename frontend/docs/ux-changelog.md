@@ -16,6 +16,9 @@
   - shared `LoadingState` now normalizes loading targets before rendering visible copy and polite status text.
   - badge, quest, and leaderboard loading cards now avoid duplicated `Loading` wording and trailing ellipses.
   - `npm run check:copy-tone` now blocks production loading-copy strings that reintroduce trailing ellipses.
+- Button type-safety guard:
+  - added `npm run check:native-button-type` to require explicit safe `type` attributes on literal native buttons.
+  - added `Button` primitive coverage for default `type="button"`, explicit submit behavior, and polymorphic link rendering.
 
 ## 2026-05-25
 
