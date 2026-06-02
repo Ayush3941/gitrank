@@ -18,8 +18,6 @@ exports[`route-level visual regression snapshots > matches dashboard visual shel
   "heroTitle": "Live Fixture Maintainer",
   "metaChips": [
     "Rank Gold III",
-    "Merged PRs 12",
-    "Streak 0d",
     "Sync Synced",
   ],
   "rootClassName": "stable-scroll-scope space-y-6",

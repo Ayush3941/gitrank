@@ -2008,6 +2008,7 @@ ABRA implementation checklist:
 - [x] Removable search-filter chips now share one 40px control primitive across contribution and repository-privacy filters, eliminating duplicated markup while keeping compact filter summaries touch-friendly.
 - [x] Shared search fields now expose a 40px clear action inside the 44px input lane and mark visual search/clear icons as decorative, keeping contribution, repository, and sync-log filtering touch-friendly and screen-reader concise.
 - [x] Public profiles no longer repeat score, merged-PR, and consistency metrics immediately below the hero card; the share-facing overview now moves directly from identity context into evidence lanes.
+- [x] Dashboard header summary chips now keep only rank and sync orientation; merged-PR and streak values remain in the richer signal cards below instead of being repeated in the header rail.
 
 ABRA closeout artifact:
 

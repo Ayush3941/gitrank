@@ -241,8 +241,6 @@ export function DashboardPageClient() {
           <HeaderMetaChips
             items={[
               { label: `Rank ${user.level.rankTier}` },
-              { label: `Merged PRs ${user.mergedPrCount.toLocaleString("en-US")}` },
-              { label: `Streak ${streak.currentStreakDays}d` },
               {
                 label: `Sync ${formatSyncStateLabel(displaySyncState)}`,
                 tone: toneForSyncState(displaySyncState),
