@@ -105,6 +105,28 @@ const supersededActiveRowRun = {
 };
 
 describe("SyncRunActivityPanel", () => {
+  it("keeps sync-log recovery controls outside the assertive error message", () => {
+    const onRefresh = vi.fn();
+    render(
+      <SyncRunActivityPanel
+        runs={[]}
+        isLoading={false}
+        isRefreshing={false}
+        isError
+        errorMessage="Sync log fetch failed."
+        onRefresh={onRefresh}
+      />,
+    );
+
+    const alert = screen.getByRole("alert");
+    const retry = screen.getByRole("button", { name: "Retry log fetch" });
+    expect(alert.textContent).toBe("Sync log fetch failed.");
+    expect(alert.contains(retry)).toBe(false);
+
+    fireEvent.click(retry);
+    expect(onRefresh).toHaveBeenCalledTimes(1);
+  });
+
   it("keeps filter reset flow consistent with minimal controls", () => {
     render(
       <SyncRunActivityPanel
