@@ -24,7 +24,15 @@ class TestIntersectionObserver {
   readonly rootMargin = "0px";
   readonly thresholds = [0];
 
-  observe() {}
+  constructor(private readonly callback: IntersectionObserverCallback) {}
+
+  observe(target: Element) {
+    this.callback(
+      [{ isIntersecting: true, target } as IntersectionObserverEntry],
+      this as unknown as IntersectionObserver,
+    );
+  }
+
   unobserve() {}
   disconnect() {}
   takeRecords(): IntersectionObserverEntry[] {

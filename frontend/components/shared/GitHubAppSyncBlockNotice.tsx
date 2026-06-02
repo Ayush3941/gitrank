@@ -28,7 +28,7 @@ export function GitHubAppSyncBlockNotice({
       </div>
       <div className="grid gap-2 rounded-[0.5rem] border border-amber-300/24 bg-black/20 px-3 py-2 text-xs text-amber-100/95 sm:grid-cols-2">
         <p><span className="font-semibold text-amber-100">Why:</span> no active installation is mapped to this signed-in GitHub account.</p>
-        <p><span className="font-semibold text-amber-100">Fix:</span> install GitRank GitHub App, then rerun sync from Settings.</p>
+        <p><span className="font-semibold text-amber-100">Fix:</span> install GitRank GitHub App, then return to Settings for the next automatic refresh.</p>
       </div>
       <div className="flex flex-wrap gap-2">
         <Button asChild size="sm" variant="default">
