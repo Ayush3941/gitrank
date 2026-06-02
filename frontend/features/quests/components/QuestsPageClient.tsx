@@ -17,6 +17,7 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
 import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { ControlSurface } from "@/components/shared/ControlSurface";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
@@ -34,6 +35,7 @@ import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import { useStaleSyncRefresh } from "@/hooks/use-stale-sync-refresh";
 import { useQuests } from "@/hooks/use-quests";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
+import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
 import {
   isGitHubAppInstallationBlocked,
   selectLatestActionableSyncRunOutcome,
@@ -51,6 +53,12 @@ const QUEST_FILTERS: Array<{ value: "All" | Quest["cadence"]; label: string }> =
   { value: "Weekly", label: "Weekly" },
   { value: "Long-term", label: "Long-term" },
   { value: "Skill-based", label: "Skill-based" },
+];
+const QUESTS_SECTION_LINKS = [
+  { id: "quests-filters", label: "Filters" },
+  { id: "quests-journey", label: "Journey" },
+  { id: "quests-spotlight", label: "Spotlight" },
+  { id: "quests-missions", label: "Missions" },
 ];
 
 const QuestCard = dynamic(
@@ -175,7 +183,7 @@ export function QuestsPageClient() {
         actions={(
           <div className="flex flex-wrap items-center gap-2">
             <ProfileEvidenceStateChip
-              showFreshness={showRefreshPill}
+              showFreshness={shouldShowProfileFreshnessPill(showRefreshPill, displaySyncState, appInstallationBlocked)}
               refreshedAt={questSnapshotRefreshedAt}
               syncState={displaySyncState}
             />
@@ -190,8 +198,10 @@ export function QuestsPageClient() {
       {appInstallationBlocked ? (
         <GitHubAppSyncBlockNotice message={latestSyncOutcome?.message} />
       ) : null}
-      {!isLoading && !isError ? (
-        <section className="space-y-3">
+      <InPageSectionNav sections={QUESTS_SECTION_LINKS} className="render-opt-section" />
+      <section id="quests-filters" data-scroll-target="true" className="render-opt-section">
+        {!isLoading && !isError ? (
+          <div className="space-y-3">
           <p id={questsFilterStatusId} role="status" aria-live="polite" aria-atomic="true" className="sr-only">
             {isFiltering
               ? "Updating missions…"
@@ -260,8 +270,9 @@ export function QuestsPageClient() {
               />
             </div>
           </ControlSurface>
-        </section>
-      ) : null}
+          </div>
+        ) : null}
+      </section>
       {displaySyncState === "stale" || displaySyncState === "partially_synced" ? (
         <StaleState
           message={staleNotice.message}
@@ -277,138 +288,144 @@ export function QuestsPageClient() {
         />
       ) : null}
       <div id={questsMissionsRegionId} className="space-y-6">
-        {!isLoading && !isError && profile ? (
-          <GlowCard strong className="cyber-hero-shell relative overflow-hidden">
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-cyan-100">
-                    <CalendarClock className="h-3.5 w-3.5" />
-                    365-day contributor journey
-                  </p>
-                  <h2 className="mt-3 text-2xl font-semibold text-white">Day {dayOfYear} of 365</h2>
-                  <p className="mt-2 text-sm text-muted">
-                    Keep contribution momentum steady.
-                  </p>
+        <section id="quests-journey" data-scroll-target="true" className="render-opt-section">
+          {!isLoading && !isError && profile ? (
+            <GlowCard strong className="cyber-hero-shell relative overflow-hidden">
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="cyber-data-badge inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-cyan-100">
+                      <CalendarClock className="h-3.5 w-3.5" />
+                      365-day contributor journey
+                    </p>
+                    <h2 className="mt-3 text-2xl font-semibold text-white">Day {dayOfYear} of 365</h2>
+                    <p className="mt-2 text-sm text-muted">
+                      Keep contribution momentum steady.
+                    </p>
+                  </div>
+                  <div className="grid gap-2 rounded-2xl border border-fuchsia-300/28 bg-fuchsia-400/10 px-4 py-3 text-sm text-fuchsia-100">
+                    <span className="inline-flex items-center gap-2"><Flame className="h-4 w-4" /> Current streak: <span className="numeric-readout">{streak.currentStreakDays.toLocaleString("en-US")}d</span></span>
+                    <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Best streak: <span className="numeric-readout">{streak.bestStreakDays.toLocaleString("en-US")}d</span></span>
+                  </div>
                 </div>
-                <div className="grid gap-2 rounded-2xl border border-fuchsia-300/28 bg-fuchsia-400/10 px-4 py-3 text-sm text-fuchsia-100">
-                  <span className="inline-flex items-center gap-2"><Flame className="h-4 w-4" /> Current streak: <span className="numeric-readout">{streak.currentStreakDays.toLocaleString("en-US")}d</span></span>
-                  <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Best streak: <span className="numeric-readout">{streak.bestStreakDays.toLocaleString("en-US")}d</span></span>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs text-muted">
+                    <span>Annual progression</span>
+                    <span className="numeric-readout">{dayProgress}%</span>
+                  </div>
+                  <Progress value={dayProgress} />
                 </div>
               </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs text-muted">
-                  <span>Annual progression</span>
-                  <span className="numeric-readout">{dayProgress}%</span>
-                </div>
-                <Progress value={dayProgress} />
-              </div>
+            </GlowCard>
+          ) : null}
+        </section>
+        <section id="quests-spotlight" data-scroll-target="true" className="render-opt-section">
+          {!isLoading && !isError ? (
+            <div className="space-y-3">
+              <h2 className="text-sm font-semibold text-white">Mission spotlight</h2>
+              <ul role="list" className="grid gap-3 md:grid-cols-3">
+                <MissionSpotlightCard
+                  kind="daily"
+                  title="Today's Quest"
+                  quest={todayQuest}
+                  emptyCopy="No daily mission yet."
+                  href="/dashboard/contributions"
+                  cta="Open contributions"
+                />
+                <MissionSpotlightCard
+                  kind="weekly"
+                  title="Weekly Challenge"
+                  quest={weeklyQuest}
+                  emptyCopy="No weekly challenge yet."
+                  href="/dashboard/settings"
+                  cta="Open sync settings"
+                />
+                <MissionSpotlightCard
+                  kind="long-term"
+                  title="Long-Term Journey"
+                  quest={longTermQuest}
+                  emptyCopy="No long-term objective yet."
+                  href="/dashboard/contributions"
+                  cta="Keep building"
+                />
+              </ul>
             </div>
-          </GlowCard>
-        ) : null}
-        {!isLoading && !isError ? (
-          <div className="space-y-3">
-            <h2 className="text-sm font-semibold text-white">Mission spotlight</h2>
-            <ul role="list" className="grid gap-3 md:grid-cols-3">
-              <MissionSpotlightCard
-                kind="daily"
-                title="Today's Quest"
-                quest={todayQuest}
-                emptyCopy="No daily mission yet."
-                href="/dashboard/contributions"
-                cta="Open contributions"
-              />
-              <MissionSpotlightCard
-                kind="weekly"
-                title="Weekly Challenge"
-                quest={weeklyQuest}
-                emptyCopy="No weekly challenge yet."
-                href="/dashboard/settings"
-                cta="Open sync settings"
-              />
-              <MissionSpotlightCard
-                kind="long-term"
-                title="Long-Term Journey"
-                quest={longTermQuest}
-                emptyCopy="No long-term objective yet."
-                href="/dashboard/contributions"
-                cta="Keep building"
-              />
-            </ul>
-          </div>
-        ) : null}
-        {isLoading ? <LoadingState message="Loading quests..." /> : null}
-        {isError ? (
-          <ErrorState
-            title="Quest engine unavailable"
-            description="Quest recommendations are unavailable right now. Retry or open sync settings."
-            onRetry={() => {
-              void refetch();
-            }}
-            fallbackLabel="Open sync settings"
-            fallbackHref="/dashboard/settings"
-            analyticsTarget="quests:error"
-          />
-        ) : null}
-        {!isLoading && !isError && quests.length === 0 ? (
-          <EmptyState
-            eyebrow="Quest generation"
-            title="No quests ready yet."
-            description="Sync and complete scored contributions to unlock quests."
-            actionLabel="Open sync settings"
-            actionHref="/dashboard/settings"
-            analyticsTarget="quests:empty"
-          />
-        ) : null}
-        {!isLoading && !isError && data ? (
-          visibleGroups.map((group) => {
-            const grouped = questMap[group];
-            const visibleCount = visibleGroupCounts[group] ?? questGroupPageSize;
-            const visibleGroup = grouped.slice(0, visibleCount);
-            const hasMoreInGroup = grouped.length > visibleGroup.length;
-            const remainingInGroup = Math.max(0, grouped.length - visibleGroup.length);
+          ) : null}
+        </section>
+        <section id="quests-missions" data-scroll-target="true" className="render-opt-section space-y-4">
+          {isLoading ? <LoadingState message="Loading quests..." /> : null}
+          {isError ? (
+            <ErrorState
+              title="Quest engine unavailable"
+              description="Quest recommendations are unavailable right now. Retry or open sync settings."
+              onRetry={() => {
+                void refetch();
+              }}
+              fallbackLabel="Open sync settings"
+              fallbackHref="/dashboard/settings"
+              analyticsTarget="quests:error"
+            />
+          ) : null}
+          {!isLoading && !isError && quests.length === 0 ? (
+            <EmptyState
+              eyebrow="Quest generation"
+              title="No quests ready yet."
+              description="Sync and complete scored contributions to unlock quests."
+              actionLabel="Open sync settings"
+              actionHref="/dashboard/settings"
+              analyticsTarget="quests:empty"
+            />
+          ) : null}
+          {!isLoading && !isError && data ? (
+            visibleGroups.map((group) => {
+              const grouped = questMap[group];
+              const visibleCount = visibleGroupCounts[group] ?? questGroupPageSize;
+              const visibleGroup = grouped.slice(0, visibleCount);
+              const hasMoreInGroup = grouped.length > visibleGroup.length;
+              const remainingInGroup = Math.max(0, grouped.length - visibleGroup.length);
 
-            return (
-              <section
-                key={group}
-                className="render-opt-section space-y-4"
-              >
-                <h3 className="text-sm font-semibold text-white">
-                  {labelForGroup(group)} ({grouped.length})
-                </h3>
-                <div>
-                  <ul role="list" className="grid gap-4 xl:grid-cols-2">
-                    {visibleGroup.map((quest, index) => (
-                      <li key={`${quest.id}-${index}`} className="list-none">
-                        <QuestCard quest={quest} />
-                      </li>
-                    ))}
-                  </ul>
-                  {hasMoreInGroup ? (
-                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-xs text-muted">{remainingInGroup} missions remaining</p>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => {
-                          startTransition(() => {
-                            setVisibleGroupCounts((current) => ({
-                              ...current,
-                              [group]: Math.min(grouped.length, (current[group] ?? questGroupPageSize) + questGroupPageSize),
-                            }));
-                          });
-                        }}
-                      >
-                        Show more missions
-                      </Button>
-                    </div>
-                  ) : null}
-                </div>
-              </section>
-            );
-          })
-        ) : null}
+              return (
+                <section
+                  key={group}
+                  className="space-y-4"
+                >
+                  <h3 className="text-sm font-semibold text-white">
+                    {labelForGroup(group)} ({grouped.length})
+                  </h3>
+                  <div>
+                    <ul role="list" className="grid gap-4 xl:grid-cols-2">
+                      {visibleGroup.map((quest, index) => (
+                        <li key={`${quest.id}-${index}`} className="list-none">
+                          <QuestCard quest={quest} />
+                        </li>
+                      ))}
+                    </ul>
+                    {hasMoreInGroup ? (
+                      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-xs text-muted">{remainingInGroup} missions remaining</p>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => {
+                            startTransition(() => {
+                              setVisibleGroupCounts((current) => ({
+                                ...current,
+                                [group]: Math.min(grouped.length, (current[group] ?? questGroupPageSize) + questGroupPageSize),
+                              }));
+                            });
+                          }}
+                        >
+                          Show more missions
+                        </Button>
+                      </div>
+                    ) : null}
+                  </div>
+                </section>
+              );
+            })
+          ) : null}
+        </section>
       </div>
     </div>
   );

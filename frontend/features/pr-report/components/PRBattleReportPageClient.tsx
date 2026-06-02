@@ -11,6 +11,7 @@ import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
+import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { InlineNotice } from "@/components/shared/InlineNotice";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -61,6 +62,13 @@ const EvidenceSignalsCard = dynamic(
     loading: () => <TechnicalPanelPlaceholder label="Loading evidence signals" />,
   },
 );
+
+const PR_REPORT_SECTION_LINKS = [
+  { id: "pr-report-overview", label: "Overview" },
+  { id: "pr-report-ledger", label: "Ledger" },
+  { id: "pr-report-summary", label: "Summary" },
+  { id: "pr-report-technical", label: "Technical" },
+];
 
 export function PRBattleReportPageClient({
   owner,
@@ -228,7 +236,8 @@ export function PRBattleReportPageClient({
           </div>
         )}
       />
-      <section>
+      <InPageSectionNav sections={PR_REPORT_SECTION_LINKS} className="render-opt-section" />
+      <section id="pr-report-overview" data-scroll-target="true" className="render-opt-section">
         <GlowCard strong className="space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
@@ -317,7 +326,11 @@ export function PRBattleReportPageClient({
         </div>
         </GlowCard>
       </section>
-      <section className="render-opt-section">
+      <section
+        id="pr-report-ledger"
+        data-scroll-target="true"
+        className="render-opt-section"
+      >
         <GlowCard className="space-y-4">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
@@ -494,7 +507,11 @@ export function PRBattleReportPageClient({
           </GlowCard>
         </section>
       ) : null}
-      <section className="render-opt-section">
+      <section
+        id="pr-report-summary"
+        data-scroll-target="true"
+        className="render-opt-section"
+      >
         <GlowCard className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs font-medium text-primary">{summarySectionLabel}</p>
@@ -520,7 +537,11 @@ export function PRBattleReportPageClient({
           />
         </GlowCard>
       </section>
-      <section className="render-opt-section space-y-4">
+      <section
+        id="pr-report-technical"
+        data-scroll-target="true"
+        className="render-opt-section space-y-4"
+      >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-sm font-semibold text-white">Technical breakdown</h2>
           <DisclosureToggle

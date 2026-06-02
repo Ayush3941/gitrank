@@ -17,6 +17,7 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
 import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { ControlSurface } from "@/components/shared/ControlSurface";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
@@ -92,6 +93,10 @@ const TAB_ICONS: Record<LeaderboardTab, typeof Globe2> = {
 const LEADERBOARD_ROW_PAGE_SIZE_DEFAULT = 12;
 const LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED = 6;
 const LEADERBOARD_NEARBY_DEFAULT_THRESHOLD = 10;
+const LEADERBOARD_SECTION_LINKS = [
+  { id: "leaderboard-controls", label: "Controls" },
+  { id: "leaderboard-arena", label: "Arena" },
+];
 
 export function LeaderboardPageClient() {
   const leaderboardRowsRegionId = useId();
@@ -252,7 +257,12 @@ export function LeaderboardPageClient() {
           analyticsTarget="leaderboard:stale"
         />
       ) : null}
-      <section className="space-y-3">
+      <InPageSectionNav sections={LEADERBOARD_SECTION_LINKS} className="render-opt-section" />
+      <section
+        id="leaderboard-controls"
+        data-scroll-target="true"
+        className="render-opt-section space-y-3"
+      >
         <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">
           {isBusy ? `Refreshing ${tab}...` : `Viewing ${tab}`}
         </p>
@@ -374,108 +384,110 @@ export function LeaderboardPageClient() {
           analyticsTarget="leaderboard:error"
         />
       ) : null}
-      {!isLoading && !isError && rows.length === 0 ? (
-        <section className="space-y-4">
-          <EmptyState
-            eyebrow="Leaderboard participation"
-            title="No leaderboard rows yet."
-            description="Rows appear after contributors sign in, run app-backed sync, and enable visibility."
-            actionLabel="Open contributions"
-            actionHref="/dashboard/contributions"
-            analyticsTarget="leaderboard:no-live-rows"
-          />
-          <GlowCard className="space-y-4">
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-primary">Arena preview</p>
-              <p className="text-sm text-muted">
-                Preview only. These bands explain progression rules and do not represent live user rows.
-              </p>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="neon-surface px-4 py-3">
-                <p className="text-sm font-semibold text-white">Bronze ladder</p>
-                <p className="mt-1 text-xs text-muted">Build first merged evidence and maintain weekly activity.</p>
+      <section id="leaderboard-arena" data-scroll-target="true" className="render-opt-section space-y-4">
+        {!isLoading && !isError && rows.length === 0 ? (
+          <>
+            <EmptyState
+              eyebrow="Leaderboard participation"
+              title="No leaderboard rows yet."
+              description="Rows appear after contributors sign in, run app-backed sync, and enable visibility."
+              actionLabel="Open contributions"
+              actionHref="/dashboard/contributions"
+              analyticsTarget="leaderboard:no-live-rows"
+            />
+            <GlowCard className="space-y-4">
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-primary">Arena preview</p>
+                <p className="text-sm text-muted">
+                  Preview only. These bands explain progression rules and do not represent live user rows.
+                </p>
               </div>
-              <div className="neon-surface px-4 py-3">
-                <p className="text-sm font-semibold text-white">Silver ladder</p>
-                <p className="mt-1 text-xs text-muted">Sustain review-backed PR quality across multiple weeks.</p>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="neon-surface px-4 py-3">
+                  <p className="text-sm font-semibold text-white">Bronze ladder</p>
+                  <p className="mt-1 text-xs text-muted">Build first merged evidence and maintain weekly activity.</p>
+                </div>
+                <div className="neon-surface px-4 py-3">
+                  <p className="text-sm font-semibold text-white">Silver ladder</p>
+                  <p className="mt-1 text-xs text-muted">Sustain review-backed PR quality across multiple weeks.</p>
+                </div>
+                <div className="neon-surface px-4 py-3">
+                  <p className="text-sm font-semibold text-white">Gold+ ladder</p>
+                  <p className="mt-1 text-xs text-muted">High-impact merged work with consistent depth and reliability.</p>
+                </div>
               </div>
-              <div className="neon-surface px-4 py-3">
-                <p className="text-sm font-semibold text-white">Gold+ ladder</p>
-                <p className="mt-1 text-xs text-muted">High-impact merged work with consistent depth and reliability.</p>
+              {myProfile?.user ? (
+                <div className="neon-surface border border-primary/24 px-4 py-3">
+                  <p className="text-sm font-semibold text-white">
+                    Your current tier: {myProfile.user.level.rankTier}
+                  </p>
+                  <p className="mt-1 text-xs text-muted">
+                    {myProfile.user.rankProgress.nextTier
+                      ? `${myProfile.user.rankProgress.xpToNextTier.toLocaleString("en-US")} XP to ${myProfile.user.rankProgress.nextTier}.`
+                      : "You are at the current top tier band."}
+                  </p>
+                </div>
+              ) : null}
+              <div className="flex flex-wrap gap-2">
+                <Button asChild size="sm" variant="secondary">
+                  <IntentPrefetchLink href="/dashboard/contributions">
+                    Open contributions
+                  </IntentPrefetchLink>
+                </Button>
+                <Button asChild size="sm" variant="ghost">
+                  <IntentPrefetchLink href="/dashboard/settings">
+                    Open sync settings
+                  </IntentPrefetchLink>
+                </Button>
               </div>
-            </div>
-            {myProfile?.user ? (
-              <div className="neon-surface border border-primary/24 px-4 py-3">
+            </GlowCard>
+          </>
+        ) : null}
+        {!isLoading && !isError && snapshot && rows.length ? (
+          <>
+            {snapshot.currentUser ? (
+              <div className="neon-surface rounded-[1rem] px-4 py-3">
                 <p className="text-sm font-semibold text-white">
-                  Your current tier: {myProfile.user.level.rankTier}
+                  Rank #{snapshot.currentUser.rank} in {tab}
                 </p>
                 <p className="mt-1 text-xs text-muted">
-                  {myProfile.user.rankProgress.nextTier
-                    ? `${myProfile.user.rankProgress.xpToNextTier.toLocaleString("en-US")} XP to ${myProfile.user.rankProgress.nextTier}.`
-                    : "You are at the current top tier band."}
+                  {snapshot.currentUser.xpToNextRank > 0
+                    ? `${snapshot.currentUser.xpToNextRank} XP to next band`
+                    : "You currently lead this lane"}
                 </p>
               </div>
             ) : null}
-            <div className="flex flex-wrap gap-2">
-              <Button asChild size="sm" variant="secondary">
-                <IntentPrefetchLink href="/dashboard/contributions">
-                  Open contributions
-                </IntentPrefetchLink>
-              </Button>
-              <Button asChild size="sm" variant="ghost">
-                <IntentPrefetchLink href="/dashboard/settings">
-                  Open sync settings
-                </IntentPrefetchLink>
-              </Button>
+            <div id={leaderboardRowsRegionId} data-leaderboard-arena="true">
+              <LeaderboardArena
+                snapshot={snapshot}
+                rowLimit={effectiveMode === "full" ? safeVisibleRowCount : undefined}
+                showDetails={showLaneDetails}
+                viewMode={effectiveMode}
+              />
             </div>
-          </GlowCard>
-        </section>
-      ) : null}
-      {!isLoading && !isError && snapshot && rows.length ? (
-        <section className="render-opt-section space-y-4">
-          {snapshot.currentUser ? (
-            <div className="neon-surface rounded-[1rem] px-4 py-3">
-              <p className="text-sm font-semibold text-white">
-                Rank #{snapshot.currentUser.rank} in {tab}
-              </p>
-              <p className="mt-1 text-xs text-muted">
-                {snapshot.currentUser.xpToNextRank > 0
-                  ? `${snapshot.currentUser.xpToNextRank} XP to next band`
-                  : "You currently lead this lane"}
-              </p>
+            <div className="flex flex-wrap items-center justify-end gap-3">
+              {effectiveMode === "full" && hasMoreRows ? (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  aria-controls={leaderboardRowsRegionId}
+                  aria-label={`Show ${Math.min(rowPageSize, remainingRows)} more ranked rows. ${remainingRows} remaining.`}
+                  onClick={() => {
+                    startTransition(() => {
+                      setVisibleRowCount((current) =>
+                        Math.min(rows.length, current + rowPageSize),
+                      );
+                    });
+                  }}
+                >
+                  Show more rows ({remainingRows} left)
+                </Button>
+              ) : null}
             </div>
-          ) : null}
-          <div id={leaderboardRowsRegionId} data-leaderboard-arena="true">
-            <LeaderboardArena
-              snapshot={snapshot}
-              rowLimit={effectiveMode === "full" ? safeVisibleRowCount : undefined}
-              showDetails={showLaneDetails}
-              viewMode={effectiveMode}
-            />
-          </div>
-          <div className="flex flex-wrap items-center justify-end gap-3">
-            {effectiveMode === "full" && hasMoreRows ? (
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                aria-controls={leaderboardRowsRegionId}
-                aria-label={`Show ${Math.min(rowPageSize, remainingRows)} more ranked rows. ${remainingRows} remaining.`}
-                onClick={() => {
-                  startTransition(() => {
-                    setVisibleRowCount((current) =>
-                      Math.min(rows.length, current + rowPageSize),
-                    );
-                  });
-                }}
-              >
-                Show more rows ({remainingRows} left)
-              </Button>
-            ) : null}
-          </div>
-        </section>
-      ) : null}
+          </>
+        ) : null}
+      </section>
     </div>
   );
 }

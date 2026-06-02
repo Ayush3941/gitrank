@@ -9,6 +9,7 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { RarityBadge } from "@/components/shared/RarityBadge";
 import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
@@ -60,6 +61,13 @@ const BestPRsPanel = dynamic(
     loading: () => <PublicLanePlaceholder label="Loading battle reports" />,
   },
 );
+
+const PUBLIC_PROFILE_SECTION_LINKS = [
+  { id: "public-profile-overview", label: "Overview" },
+  { id: "public-profile-badges-skills", label: "Badges & Skills" },
+  { id: "public-profile-best-prs", label: "Best PRs" },
+  { id: "public-profile-timeline-repos", label: "Timeline & Repos" },
+];
 
 export function PublicProfilePageClient({
   username,
@@ -218,7 +226,12 @@ export function PublicProfilePageClient({
           {data.partialProfileAvailable ? "Partial evidence mode" : "Fresh snapshot"}
         </span>
       </div>
-      <section className="space-y-6">
+      <InPageSectionNav sections={PUBLIC_PROFILE_SECTION_LINKS} className="render-opt-section" />
+      <section
+        id="public-profile-overview"
+        data-scroll-target="true"
+        className="space-y-6"
+      >
         <PublicProfileHero
           user={data.user}
           shareHeadline={data.shareHeadline}
@@ -233,7 +246,12 @@ export function PublicProfilePageClient({
           <StatCard label="Consistency" value={`${data.user.consistencyScore}%`} detail={data.trendWindowLabel} icon={<CheckCircle2 className="h-5 w-5 text-primary" />} />
         </div>
       </section>
-      <section className="render-opt-section space-y-4" aria-label="Badges and skills">
+      <section
+        id="public-profile-badges-skills"
+        data-scroll-target="true"
+        className="render-opt-section space-y-4"
+        aria-label="Badges and skills"
+      >
         <div className="grid gap-6 xl:grid-cols-[1fr,1fr]">
           <GlowCard className="space-y-5">
             <div>
@@ -296,7 +314,12 @@ export function PublicProfilePageClient({
           </GlowCard>
         </div>
       </section>
-      <section className="render-opt-section space-y-4" aria-label="Top PR battle reports">
+      <section
+        id="public-profile-best-prs"
+        data-scroll-target="true"
+        className="render-opt-section space-y-4"
+        aria-label="Top PR battle reports"
+      >
         {constrainedNetwork ? (
           <LiteBestPRSummary reports={data.featuredContributions} />
         ) : (
@@ -305,7 +328,12 @@ export function PublicProfilePageClient({
           </DeferUntilVisible>
         )}
       </section>
-      <section className="render-opt-section space-y-4" aria-label="Timeline and repositories">
+      <section
+        id="public-profile-timeline-repos"
+        data-scroll-target="true"
+        className="render-opt-section space-y-4"
+        aria-label="Timeline and repositories"
+      >
         <div className="grid gap-6 xl:grid-cols-[1.08fr,0.92fr]">
           <GlowCard className="space-y-5">
             <div>

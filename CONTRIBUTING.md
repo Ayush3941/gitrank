@@ -54,6 +54,7 @@ This document is intentionally detailed.
 - Shared inline status notices now keep `role="status"` on message text only (dismiss controls remain outside the live region), improving screen-reader announcement hygiene while preserving the same compact visual style.
 - Stale-sync and GitHub-App-block banners now scope live-region announcements to message text nodes instead of whole cards with action buttons, aligning advisory announcements with ARIA live-region guidance while preserving current CTAs and layout.
 - Dashboard, Contributions, and Settings now share one in-page section-navigation pattern (`InPageSectionNav`) with stable anchor IDs + `data-scroll-target`, so dense pages stay scannable, deep-linkable, and visually consistent without adding sticky chrome or extra motion.
+- The same in-page section-navigation pattern now extends across Quests, Badges, Leaderboard, Public Profile, and PR Report so long-form surfaces keep consistent scan/jump behavior on desktop and mobile.
 
 It serves two purposes:
 

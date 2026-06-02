@@ -19,6 +19,7 @@ import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
+import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { ControlSurface } from "@/components/shared/ControlSurface";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
@@ -69,6 +70,11 @@ const BADGE_VISIBILITY_FILTERS: Array<"All" | "Unlocked" | "Locked"> = [
   "All",
   "Unlocked",
   "Locked",
+];
+const BADGES_SECTION_LINKS = [
+  { id: "badges-overview", label: "Overview" },
+  { id: "badges-shelf", label: "Shelf" },
+  { id: "badges-locked", label: "Locked paths" },
 ];
 
 const BadgeGrid = dynamic(
@@ -339,7 +345,12 @@ export function BadgesPageClient() {
           </div>
         )}
       />
-      <section className="render-opt-section space-y-4">
+      <InPageSectionNav sections={BADGES_SECTION_LINKS} className="render-opt-section" />
+      <section
+        id="badges-overview"
+        data-scroll-target="true"
+        className="render-opt-section space-y-4"
+      >
         {appInstallationBlocked ? (
           <GitHubAppSyncBlockNotice message={latestSyncOutcome?.message} />
         ) : null}
@@ -428,7 +439,11 @@ export function BadgesPageClient() {
           </GlowCard>
         ) : null}
       </section>
-      <section className="render-opt-section space-y-4">
+      <section
+        id="badges-shelf"
+        data-scroll-target="true"
+        className="render-opt-section space-y-4"
+      >
         <div className="space-y-3">
           <p id={badgesFilterStatusId} role="status" aria-live="polite" aria-atomic="true" className="sr-only">
             Showing {filtered.length} of {totalCount} badges
@@ -590,8 +605,13 @@ export function BadgesPageClient() {
           ) : null}
         </div>
       </section>
-      {!isLoading && !isError ? (
-        <section className="render-opt-section space-y-3">
+      <section
+        id="badges-locked"
+        data-scroll-target="true"
+        className="render-opt-section space-y-3"
+      >
+        {!isLoading && !isError ? (
+          <>
           <div className="neon-surface flex flex-wrap items-center justify-between gap-3 rounded-[1rem] px-4 py-3">
             <h2 className="text-sm font-semibold text-white">
               Locked paths ({lockedBadges.length})
@@ -701,8 +721,9 @@ export function BadgesPageClient() {
               </div>
             )}
           </div>
-        </section>
-      ) : null}
+          </>
+        ) : null}
+      </section>
     </div>
   );
 }
