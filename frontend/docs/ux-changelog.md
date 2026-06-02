@@ -9,6 +9,9 @@
 - Navigation-landmark naming pass:
   - added `npm run check:navigation-landmarks` to require accessible names on every `<nav>` or `role="navigation"` region.
   - added shared-nav render coverage for dashboard lanes, marketing routes, onboarding progress, and in-page section navigation.
+- Route-state primitive guard:
+  - added `npm run check:route-state-primitives` so app route loading/error/not-found files keep using shared polished fallback primitives.
+  - preserves consistent route-level skeleton, recovery, and alert semantics across marketing, dashboard, and public routes.
 
 ## 2026-05-25
 

@@ -63,6 +63,7 @@ npm run check:onboarding-prefetch-policy
 npm run check:oauth-prefetch-policy
 npm run check:dashboard-route-copy-policy
 npm run check:env-example-coverage
+npm run check:route-state-primitives
 npm run check:jsx-ids
 npm run check:main-landmark
 npm run check:navigation-landmarks
@@ -98,6 +99,7 @@ The public profile page, authenticated dashboard overview, onboarding reveal, ba
 - `npm run check:oauth-prefetch-policy` fails CI if links targeting `/oauth/github/start` omit strict prefetch-disable policy (`IntentPrefetchLink prefetchMode="never"` or `Link prefetch={false}`)
 - `npm run check:dashboard-route-copy-policy` fails CI if dashboard route pages stop sourcing metadata from `dashboardNavByHref`, preventing nav-label and metadata drift
 - `npm run check:env-example-coverage` fails CI when frontend runtime env keys in source drift from `gitrank/.env.example` (missing declarations or stale unused keys)
+- `npm run check:route-state-primitives` fails CI if route `loading`, `error`, `global-error`, or `not-found` files stop using shared route-state UI primitives
 - `npm run check:jsx-ids` fails CI if a TSX file reuses the same literal `id` more than once, preventing duplicate region IDs that break a11y and section controls
 - `npm run check:main-landmark` fails CI if feature/page components render extra `<main>` landmarks; `AppShell` owns the single `#main-content` skip-link target
 - `npm run check:navigation-landmarks` fails CI if any `<nav>` or `role="navigation"` region lacks an accessible name

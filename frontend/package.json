@@ -18,6 +18,7 @@
     "check:env-example-coverage": "node scripts/check-env-example-coverage.mjs ../gitrank/.env.example",
     "check:server-boundaries": "node scripts/check-server-boundaries.mjs",
     "check:cache-strategy": "node scripts/check-route-cache-strategy.mjs",
+    "check:route-state-primitives": "node scripts/check-route-state-primitives.mjs",
     "check:contrast": "node scripts/check-contrast-tokens.mjs",
     "check:decorative-icons": "node scripts/check-decorative-icon-semantics.mjs",
     "check:readable-text": "node scripts/check-readable-text-tokens.mjs",

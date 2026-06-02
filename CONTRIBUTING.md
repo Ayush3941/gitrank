@@ -9,6 +9,7 @@ This document is intentionally detailed.
 - Frontend route landmarks now use one shared owner: `AppShell` renders the only `<main id="main-content" tabIndex={-1}>`, while marketing/onboarding content renders inside it as normal containers. This keeps the global skip link, landmark navigation, and shell design consistent.
 - Added `npm run check:main-landmark` plus focused render coverage in `frontend/tests/main-landmark.test.tsx` so nested page-level `<main>` wrappers cannot quietly return in feature components.
 - Added `npm run check:navigation-landmarks` and focused shared-nav coverage in `frontend/tests/navigation-landmarks.test.tsx`; every `<nav>` or `role="navigation"` region must keep a stable accessible name.
+- Added `npm run check:route-state-primitives` so route `loading`, `error`, `global-error`, and `not-found` files keep using shared route-state UI primitives instead of one-off fallback screens.
 
 ## Session Notes (May 31, 2026)
 
@@ -698,6 +699,7 @@ Verification snapshot (May 17, 2026):
 - `cd frontend && npm run check:client-env-safety`
 - `cd frontend && npm run check:server-boundaries`
 - `cd frontend && npm run check:cache-strategy`
+- `cd frontend && npm run check:route-state-primitives`
 - `cd frontend && npm run check:contrast`
 - `cd frontend && npm run check:media-stability`
 - `cd frontend && npm run check:main-landmark`
