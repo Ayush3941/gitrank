@@ -309,7 +309,7 @@ export function SyncRunActivityPanel({
                 variant="ghost"
                 onClick={handleResetFilters}
                 aria-controls={syncRunsRegionId}
-                className="h-8 px-3"
+                className="px-3"
               >
                 Reset filters
               </Button>

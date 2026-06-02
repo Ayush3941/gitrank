@@ -58,7 +58,7 @@ export function FilterControlsHeader({
             onClick={resetAction.onReset}
             disabled={resetAction.disabled}
             aria-controls={resetAction.ariaControls}
-            className="h-8 px-3"
+            className="px-3"
           >
             {resetAction.label ?? "Reset"}
           </Button>

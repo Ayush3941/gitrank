@@ -47,7 +47,7 @@ export function ExpandableText({
           type="button"
           size="sm"
           variant="ghost"
-          className="h-auto px-0 py-0 text-xs"
+          className="px-2 text-xs"
           onClick={() => setExpanded((current) => !current)}
           aria-expanded={expanded}
           aria-controls={paragraphId}

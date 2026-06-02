@@ -27,9 +27,9 @@ export function DialogContent({
         {children}
         <DialogPrimitive.Close
           aria-label="Close dialog"
-          className="dialog-safe-close focus-ring neon-tile absolute rounded-full p-2 text-muted hover:text-foreground"
+          className="dialog-safe-close focus-ring neon-tile absolute inline-flex h-10 w-10 items-center justify-center rounded-full p-0 text-muted hover:text-foreground"
         >
-          <X className="h-4 w-4" />
+          <X className="h-4 w-4" aria-hidden="true" />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>
       </DialogPrimitive.Content>

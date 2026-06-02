@@ -2015,6 +2015,7 @@ ABRA implementation checklist:
 - [x] Dashboard and public-profile hero cards now explicitly hide decorative action, metric, trophy, next-move, and signal icons from assistive technology while preserving their visible cyberpunk styling.
 - [x] Dashboard league, streak, quest, and recent-report cards now explicitly hide decorative status, movement, action, and evidence icons from assistive technology while preserving visible lane styling.
 - [x] Lazy-rendered lanes no longer read `NODE_ENV` from client-exposed code, and GitHub App blocker guidance now follows the automatic-refresh model instead of telling users to rerun sync manually.
+- [x] Expandable-text toggles, filter reset actions, sync-log resets, and dialog close buttons now follow the shared 40px compact-control baseline instead of collapsing into undersized touch targets.
 
 ABRA closeout artifact:
 
