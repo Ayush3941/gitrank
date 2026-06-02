@@ -4,7 +4,7 @@ export default function MarketingLoading() {
   return (
     <RouteLoadingState
       eyebrow="GitRank loading"
-      title="Booting your contributor arena"
+      title="Preparing GitRank"
       description="Preparing onboarding, profile preview, and live sync entry points."
       cardCount={3}
       variant="marketing"

@@ -252,7 +252,7 @@ export function LandingPage() {
             <Swords className="h-3.5 w-3.5" />
             Anti-spam promise
           </div>
-            <h2 className="text-2xl font-semibold text-foreground">Spam PRs do not make you powerful here.</h2>
+          <h2 className="text-2xl font-semibold text-foreground">Low-signal volume does not outrank meaningful work.</h2>
           <p className="readable-measure max-w-[68ch] text-sm leading-7 text-amber-50">
             Low-context noise, unreviewed changes, and thin contribution floods are scored down.
           </p>

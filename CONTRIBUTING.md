@@ -2000,6 +2000,7 @@ ABRA implementation checklist:
 - [x] Progressive disclosure toggle behavior is now centralized in a shared `DisclosureToggle` primitive and reused across Contributions filters, Badges filters, and Leaderboard view controls so chips, labels, icons, and ARIA expansion semantics stay visually and behaviorally consistent.
 - [x] Progressive disclosure controls now also cover Settings display/sync sections, PR report technical/ledger sections, and chart data-table toggles, keeping expansion affordances consistent and keyboard/ARIA behavior aligned across all major dashboard surfaces.
 - [x] Settings sync activity now auto-opens details when failed/partial runs appear and keeps the panel open across refresh transitions so troubleshooting context is not lost when state moves from failed to healthy.
+- [x] Marketing shell anti-spam and first-load copy now use direct product language instead of exaggerated arena/power phrasing, while preserving the established neon visual treatment and report/quest vocabulary.
 
 ABRA closeout artifact:
 

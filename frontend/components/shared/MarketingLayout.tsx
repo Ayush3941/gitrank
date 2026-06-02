@@ -57,7 +57,7 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
         {children}
         <footer className="cyber-terminal px-5 py-6 text-sm text-muted">
           <p className="text-foreground">
-            GitRank rewards merged evidence, review depth, tests, and project impact. Spam PRs do not make you powerful here.
+            GitRank rewards merged evidence, review depth, tests, and project impact. Repeated low-signal PRs receive reduced weight.
           </p>
         </footer>
       </div>
