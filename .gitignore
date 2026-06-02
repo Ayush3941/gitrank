@@ -17,8 +17,16 @@ dist/
 coverage.out
 coverage/
 *.test
+gitrank/api-gateway
+gitrank/auth-service
+gitrank/github-ingestor
+gitrank/pr-analyzer
+gitrank/profile-service
+gitrank/scoring-engine
+gitrank/scheduler-worker
 
 # Build and temp
+node_modules/
 tmp/
 .tmp/
 .cache/
@@ -28,6 +36,7 @@ tmp/
 frontend/node_modules/
 frontend/.next/
 frontend/*.tsbuildinfo
+GITRANK FLOWS/
 
 # OS and logs
 *.log

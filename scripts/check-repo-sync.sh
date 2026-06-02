@@ -402,6 +402,35 @@ assert_clean_root_binary_clutter() {
   fi
 }
 
+assert_no_local_clutter_paths() {
+  local failed=0
+  local path reason
+  local clutter_specs=(
+    "node_modules|root dependency cache; install frontend dependencies under frontend/node_modules"
+    "GITRANK FLOWS|local exported diagrams; keep durable flow documentation under gitrank/docs/"
+    "gitrank/api-gateway|root Go service binary; use .run/bin/ or an ignored temp directory"
+    "gitrank/auth-service|root Go service binary; use .run/bin/ or an ignored temp directory"
+    "gitrank/github-ingestor|root Go service binary; use .run/bin/ or an ignored temp directory"
+    "gitrank/pr-analyzer|root Go service binary; use .run/bin/ or an ignored temp directory"
+    "gitrank/profile-service|root Go service binary; use .run/bin/ or an ignored temp directory"
+    "gitrank/scoring-engine|root Go service binary; use .run/bin/ or an ignored temp directory"
+    "gitrank/scheduler-worker|root Go service binary; use .run/bin/ or an ignored temp directory"
+  )
+
+  for spec in "${clutter_specs[@]}"; do
+    path="${spec%%|*}"
+    reason="${spec#*|}"
+    if [[ -e "$ROOT_DIR/$path" ]]; then
+      printf 'local clutter path exists: %s (%s)\n' "$path" "$reason" >&2
+      failed=1
+    fi
+  done
+
+  if [[ "$failed" -ne 0 ]]; then
+    fail "remove local generated clutter before finalizing"
+  fi
+}
+
 main() {
   if contains_generated_runtime_artifacts; then
     fail "tracked generated/runtime artifacts found (logs/pids/test binaries)"
@@ -409,6 +438,7 @@ main() {
 
   assert_no_stale_pdf_references
   assert_clean_root_binary_clutter
+  assert_no_local_clutter_paths
   ensure_repo_tree_in_sync
   assert_script_entrypoint_hygiene
   assert_large_tracked_file_budget

@@ -34,6 +34,7 @@ This top-level map keeps navigation simple without changing service runtime path
 - Use `./scripts/review.sh` for a lightweight local refinement pass (repo-sync + focused sync-state tests).
 - It verifies:
   - no tracked runtime/generated clutter files (including cache trees such as `.tmp`, `.gocache`, `node_modules`, and `.next`)
+  - no local root clutter paths such as accidental root `node_modules/`, exported image-only `GITRANK FLOWS/`, or root-level Go service binaries
   - no stale research filename references
   - root tree cleanliness for large binary references
   - `docs/REPO_TREE.md` freshness
@@ -49,9 +50,10 @@ This top-level map keeps navigation simple without changing service runtime path
   - workflow `make <target>` references in `.github/workflows/*` aligned with `gitrank/Makefile` targets
   - workflow `npm run <script>` references in `.github/workflows/*` aligned with `frontend/package.json` scripts
   - every tracked root `scripts/check-*.sh` stays wired into `scripts/check-repo-sync.sh`
+  - GitHub App sync policy guards track `ValidateGitHubAppSyncRuntime()` for sync/runtime readiness instead of webhook-only validation
   - tracked root `scripts/*.sh` remain discoverable from docs/repo-sync entrypoints
   - syntax validation for tracked shell entrypoints and frontend `scripts/*.mjs` audit scripts
-  - tracked `frontend/scripts/*.mjs` remain discoverable from package/workflow/repo-sync entrypoints
+  - tracked top-level `frontend/scripts/*.mjs` remain discoverable from package/workflow/repo-sync entrypoints; shared helpers under `frontend/scripts/lib/` are allowed when imported by entrypoints
   - `start.sh` service/script contracts aligned with real backend cmd entrypoints and required boot dependencies
   - markdown relative-link integrity across tracked docs
 

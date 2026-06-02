@@ -15,8 +15,8 @@ fi
 
 [[ -f "$ROUTER_FILE" ]] || fail "missing router file: $ROUTER_FILE"
 
-if ! rg -q 'syncConfigError := cfg.ValidateGitHubApp\(\)' "$ROUTER_FILE"; then
-  fail "router missing ValidateGitHubApp sync guard source"
+if ! rg -q 'syncConfigError := cfg.ValidateGitHubAppSyncRuntime\(\)' "$ROUTER_FILE"; then
+  fail "router missing ValidateGitHubAppSyncRuntime sync guard source"
 fi
 
 if ! rg -q 'if syncModeRequiresGitHubApp\(mode\) && syncConfigError != nil \{' "$ROUTER_FILE"; then

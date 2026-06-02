@@ -6,7 +6,7 @@ import (
 )
 
 func Manifest(cfg config.App, version string) contracts.ServiceManifest {
-	githubSyncStatus := dependencyStatusFromError(cfg.ValidateGitHubApp())
+	githubSyncStatus := dependencyStatusFromError(cfg.ValidateGitHubAppSyncRuntime())
 	return contracts.ServiceManifest{
 		Service:     cfg.ServiceName,
 		Description: "Edge API for GitRank clients and public consumers.",

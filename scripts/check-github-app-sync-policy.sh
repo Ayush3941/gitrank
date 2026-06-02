@@ -29,12 +29,12 @@ if ! rg -q 'GitHub App installation token for sync, OAuth user token only for si
   fail "github-ingestor manifest no longer documents strict sync auth policy"
 fi
 
-if ! rg -q 'githubSyncStatus := dependencyStatusFromError\(cfg.ValidateGitHubApp\(\)\)' "$API_MANIFEST"; then
-  fail "api-gateway manifest missing ValidateGitHubApp status derivation"
+if ! rg -q 'githubSyncStatus := dependencyStatusFromError\(cfg.ValidateGitHubAppSyncRuntime\(\)\)' "$API_MANIFEST"; then
+  fail "api-gateway manifest missing ValidateGitHubAppSyncRuntime status derivation"
 fi
 
-if ! rg -q 'githubSyncStatus := dependencyStatusFromError\(cfg.ValidateGitHubApp\(\)\)' "$INGESTOR_MANIFEST"; then
-  fail "github-ingestor manifest missing ValidateGitHubApp status derivation"
+if ! rg -q 'githubSyncStatus := dependencyStatusFromError\(cfg.ValidateGitHubAppSyncRuntime\(\)\)' "$INGESTOR_MANIFEST"; then
+  fail "github-ingestor manifest missing ValidateGitHubAppSyncRuntime status derivation"
 fi
 
 if ! rg -q 'authenticated github login is required for user sync' "$API_SYNC_FILE"; then

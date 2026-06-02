@@ -18,7 +18,11 @@ if ! command -v git >/dev/null 2>&1; then
   fail "git is required"
 fi
 
-mapfile -t tracked_scripts < <(cd "$ROOT_DIR" && git ls-files 'frontend/scripts/*.mjs' | sort)
+mapfile -t tracked_scripts < <(
+  cd "$ROOT_DIR" && git ls-files 'frontend/scripts/*.mjs' \
+    | grep -Ev '^frontend/scripts/lib/' \
+    | sort
+)
 if [[ "${#tracked_scripts[@]}" -eq 0 ]]; then
   fail "no tracked frontend/scripts/*.mjs files found"
 fi

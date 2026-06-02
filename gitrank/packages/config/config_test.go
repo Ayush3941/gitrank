@@ -677,6 +677,26 @@ func TestValidateOAuth(t *testing.T) {
 	}
 }
 
+func TestValidateGitHubAppSyncRuntimeAllowsWebhookPlaceholder(t *testing.T) {
+	t.Setenv("GITHUB_APP_ID", "12345")
+	t.Setenv("GITHUB_APP_CLIENT_ID", "Iv23example")
+	t.Setenv("GITHUB_APP_CLIENT_SECRET", "secret")
+	t.Setenv("GITHUB_APP_PRIVATE_KEY_PEM_PATH", "./secrets/key.pem")
+	t.Setenv("GITHUB_WEBHOOK_SECRET", "replace-me")
+
+	cfg, err := Load("api-gateway", "API_GATEWAY_ADDR")
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+
+	if err := cfg.ValidateGitHubAppSyncRuntime(); err != nil {
+		t.Fatalf("ValidateGitHubAppSyncRuntime() error = %v, want nil", err)
+	}
+	if err := cfg.ValidateGitHubApp(); err == nil {
+		t.Fatal("ValidateGitHubApp() error = nil, want missing webhook-secret validation")
+	}
+}
+
 func TestGitHubClientFallbacksAndInstallURL(t *testing.T) {
 	t.Setenv("GITHUB_APP_CLIENT_ID", "app-client")
 	t.Setenv("GITHUB_APP_CLIENT_SECRET", "app-secret")

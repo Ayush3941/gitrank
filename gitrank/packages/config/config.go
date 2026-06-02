@@ -982,8 +982,28 @@ func (a App) ValidateOAuth() error {
 }
 
 func (a App) ValidateGitHubApp() error {
-	var missing []string
+	missing := a.gitHubAppSyncRuntimeMissing()
+	if normalizeConfigValue(a.GitHub.WebhookSecret) == "" {
+		missing = append(missing, "GITHUB_WEBHOOK_SECRET")
+	}
 
+	if len(missing) == 0 {
+		return nil
+	}
+
+	return fmt.Errorf("missing GitHub App config: %s", strings.Join(missing, ", "))
+}
+
+func (a App) ValidateGitHubAppSyncRuntime() error {
+	missing := a.gitHubAppSyncRuntimeMissing()
+	if len(missing) == 0 {
+		return nil
+	}
+	return fmt.Errorf("missing GitHub App sync config: %s", strings.Join(missing, ", "))
+}
+
+func (a App) gitHubAppSyncRuntimeMissing() []string {
+	var missing []string
 	if a.GitHubAppJWTIssuer() == "" {
 		missing = append(missing, "GITHUB_APP_ID or GITHUB_APP_CLIENT_ID")
 	}
@@ -996,15 +1016,7 @@ func (a App) ValidateGitHubApp() error {
 	if normalizeConfigValue(a.GitHub.AppPrivateKeyPEM) == "" {
 		missing = append(missing, "GITHUB_APP_PRIVATE_KEY_PEM_PATH")
 	}
-	if normalizeConfigValue(a.GitHub.WebhookSecret) == "" {
-		missing = append(missing, "GITHUB_WEBHOOK_SECRET")
-	}
-
-	if len(missing) == 0 {
-		return nil
-	}
-
-	return fmt.Errorf("missing GitHub App config: %s", strings.Join(missing, ", "))
+	return missing
 }
 
 func (a App) ValidateAuthService() error {

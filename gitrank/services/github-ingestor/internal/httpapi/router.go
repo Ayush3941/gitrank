@@ -28,7 +28,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 
 func NewRouterWithStores(cfg config.App, deliveryStore store.DeliveryStore, jobQueue *store.InMemoryJobQueue, persistence *service.Service, executor *service.Executor, log *slog.Logger, version string) http.Handler {
 	manifest := app.Manifest(cfg, version)
-	syncConfigError := cfg.ValidateGitHubApp()
+	syncConfigError := cfg.ValidateGitHubAppSyncRuntime()
 	mux := http.NewServeMux()
 	metrics := httpkit.NewMetrics(cfg.ServiceName)
 	queueMetrics := queueMetricsSource{

@@ -41,7 +41,7 @@ func manifestTestConfig() config.App {
 			AppID:            "12345",
 			AppClientID:      "Iv1.test-client-id",
 			AppClientSecret:  "test-client-secret",
-			AppPrivateKeyPEM: "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----",
+			AppPrivateKeyPEM: "./secrets/test-private-key.pem",
 			WebhookSecret:    "test-webhook-secret",
 			APIBaseURL:       "https://api.github.com",
 		},

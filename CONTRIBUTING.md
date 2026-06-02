@@ -6,6 +6,11 @@ This document is intentionally detailed.
 
 ## Session Notes (June 2, 2026)
 
+- Removed accidental local project clutter from the working tree: root `node_modules/`, root `GITRANK FLOWS/` image exports, and the root `gitrank/github-ingestor` Go binary. Durable flow docs belong under `gitrank/docs/`, frontend dependencies under `frontend/node_modules/`, and service binaries under `.run/bin/` or ignored temp paths.
+- Root `.gitignore` and `scripts/check-repo-sync.sh` now guard against those clutter paths returning, including root-level Go service binaries for all backend services.
+- Test-only GitHub App private-key placeholders now use non-secret file-path strings instead of PEM-shaped literals, keeping `scripts/check-no-tracked-secrets.sh` high-signal without weakening the scanner.
+- Frontend script discoverability now treats `frontend/scripts/lib/` as helper-only code while still requiring top-level `frontend/scripts/*.mjs` audit entrypoints to be reachable from package/workflow/repo-sync wiring.
+- GitHub App sync policy guards now expect `ValidateGitHubAppSyncRuntime()` for gateway/ingestor sync readiness so webhook-only configuration does not block local PR sync.
 - Frontend route landmarks now use one shared owner: `AppShell` renders the only `<main id="main-content" tabIndex={-1}>`, while marketing/onboarding content renders inside it as normal containers. This keeps the global skip link, landmark navigation, and shell design consistent.
 - Added `npm run check:main-landmark` plus focused render coverage in `frontend/tests/main-landmark.test.tsx` so nested page-level `<main>` wrappers cannot quietly return in feature components.
 - Added `npm run check:navigation-landmarks` and focused shared-nav coverage in `frontend/tests/navigation-landmarks.test.tsx`; every `<nav>` or `role="navigation"` region must keep a stable accessible name.

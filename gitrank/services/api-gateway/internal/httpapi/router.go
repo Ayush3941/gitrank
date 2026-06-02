@@ -26,7 +26,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 	scoringBaseURL := strings.TrimRight(cfg.Services.ScoringBaseURL, "/")
 	client := &http.Client{Timeout: cfg.Services.RequestTimeout}
 	syncExecutionClient := &http.Client{Timeout: maxDuration(cfg.Services.RequestTimeout, 10*time.Minute)}
-	syncConfigError := cfg.ValidateGitHubApp()
+	syncConfigError := cfg.ValidateGitHubAppSyncRuntime()
 	sessionSecrets := cfg.SessionSecretRing()
 
 	sessionAuth := newSessionAuthenticator(client, authBaseURL, cfg.Auth.SessionCookieName, cfg.Auth.CSRFCookieName)

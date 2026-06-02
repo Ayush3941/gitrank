@@ -40,7 +40,7 @@ func NewRouter(cfg config.App, authService *service.Service, log *slog.Logger, v
 		if cfg.ValidateOAuth() == nil {
 			checks["github_user_tokens"] = contracts.ComponentCheck{Status: "ok", Details: cfg.GitHubUserClientMode() + " client configured"}
 		}
-		if cfg.ValidateGitHubApp() == nil {
+		if cfg.ValidateGitHubAppSyncRuntime() == nil {
 			checks["github_app"] = contracts.ComponentCheck{Status: "ok", Details: "app installation credentials configured"}
 		}
 		httpkit.WriteJSON(w, http.StatusOK, contracts.NewHealthResponse(cfg.ServiceName, string(cfg.Env), version, checks))
@@ -72,7 +72,7 @@ func NewRouter(cfg config.App, authService *service.Service, log *slog.Logger, v
 		if r.URL.Query().Get("preview") == "1" {
 			httpkit.WriteJSON(w, http.StatusOK, contracts.GitHubAppInstallPreview{
 				InstallURL:            installURL,
-				AppConfigured:         cfg.ValidateGitHubApp() == nil,
+				AppConfigured:         cfg.ValidateGitHubAppSyncRuntime() == nil,
 				UserTokenClientIDMode: cfg.GitHubUserClientMode(),
 			})
 			return
