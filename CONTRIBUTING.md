@@ -56,6 +56,7 @@ This document is intentionally detailed.
 - Dashboard, Contributions, and Settings now share one in-page section-navigation pattern (`InPageSectionNav`) with stable anchor IDs + `data-scroll-target`, so dense pages stay scannable, deep-linkable, and visually consistent without adding sticky chrome or extra motion.
 - The same in-page section-navigation pattern now extends across Quests, Badges, Leaderboard, Public Profile, and PR Report so long-form surfaces keep consistent scan/jump behavior on desktop and mobile.
 - Shared in-page navigation now normalizes section IDs and marks the active hash target with `aria-current="location"` plus a clearer chip state; hash tracking uses `useSyncExternalStore` and a single `hashchange` subscription instead of scroll listeners.
+- Header summary-chip rails now reuse `ScrollableRegion`, exposing a labeled keyboard-focus target when narrow screens overflow while preserving the existing larger-screen wrapped layout.
 
 It serves two purposes:
 

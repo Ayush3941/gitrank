@@ -1,4 +1,5 @@
 import { cn } from "@/lib/cn";
+import { ScrollableRegion } from "@/components/shared/ScrollableRegion";
 
 export type HeaderMetaChipTone = "muted" | "info" | "success" | "warning" | "danger";
 
@@ -10,28 +11,32 @@ export type HeaderMetaChipItem = {
 export function HeaderMetaChips({
   items,
   className,
+  accessibilityLabel = "Page summary metrics",
 }: {
   items: readonly HeaderMetaChipItem[];
   className?: string;
+  accessibilityLabel?: string;
 }) {
   if (!items.length) {
     return null;
   }
 
   return (
-    <ul
-      role="list"
+    <ScrollableRegion
+      label={accessibilityLabel}
       className={cn(
-        "dashboard-nav-track scroll-fade-x scroll-fade-x-sm-hide flex max-w-full items-center gap-2 overflow-x-auto pb-[0.12rem] text-xs sm:flex-wrap sm:overflow-visible sm:pb-0",
+        "dashboard-nav-track scroll-fade-x scroll-fade-x-sm-hide max-w-full overflow-x-auto pb-[0.12rem] sm:overflow-visible sm:pb-0",
         className,
       )}
     >
-      {items.map((item, index) => (
-        <li key={`${item.label}-${index}`} className="list-none shrink-0 sm:shrink">
-          <span className={chipClassName(item.tone)}>{item.label}</span>
-        </li>
-      ))}
-    </ul>
+      <ul role="list" className="flex w-max min-w-full items-center gap-2 text-xs sm:w-auto sm:min-w-0 sm:flex-wrap">
+        {items.map((item, index) => (
+          <li key={`${item.label}-${index}`} className="list-none shrink-0 sm:shrink">
+            <span className={chipClassName(item.tone)}>{item.label}</span>
+          </li>
+        ))}
+      </ul>
+    </ScrollableRegion>
   );
 }
 
