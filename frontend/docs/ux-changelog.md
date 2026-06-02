@@ -22,6 +22,9 @@
 - Input accessible-name guard:
   - added `npm run check:input-names` so production native/shared inputs need an accessible-name path.
   - expanded shared search-input coverage to assert placeholder text is not used as the accessible name.
+- Native select consistency pass:
+  - added a shared `NativeSelect` primitive for dark neon dropdowns with a decorative chevron and consistent focus/surface treatment.
+  - moved the settings sync-run status filter onto the shared primitive and added `npm run check:select-names` to block unlabeled production selects.
 
 ## 2026-05-25
 

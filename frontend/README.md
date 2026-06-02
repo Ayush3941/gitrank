@@ -67,6 +67,7 @@ npm run check:route-state-primitives
 npm run check:jsx-ids
 npm run check:native-button-type
 npm run check:input-names
+npm run check:select-names
 npm run check:main-landmark
 npm run check:navigation-landmarks
 npm run check:scroll-jumps
@@ -105,6 +106,7 @@ The public profile page, authenticated dashboard overview, onboarding reveal, ba
 - `npm run check:jsx-ids` fails CI if a TSX file reuses the same literal `id` more than once, preventing duplicate region IDs that break a11y and section controls
 - `npm run check:native-button-type` fails CI if a literal `<button>` omits an explicit safe type; shared `Button` defaults plain buttons to `type="button"`
 - `npm run check:input-names` fails CI if production inputs lack an accessible-name path or rely only on placeholder text
+- `npm run check:select-names` fails CI if production native selects lack an accessible-name path; use the shared `NativeSelect` surface where possible
 - `npm run check:main-landmark` fails CI if feature/page components render extra `<main>` landmarks; `AppShell` owns the single `#main-content` skip-link target
 - `npm run check:navigation-landmarks` fails CI if any `<nav>` or `role="navigation"` region lacks an accessible name
 - `npm run check:scroll-jumps` fails CI if product routes reintroduce direct `window.scrollTo`/`scrollIntoView` style APIs that can cause viewport jumps

@@ -8,6 +8,7 @@ import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { ScrollableRegion } from "@/components/shared/ScrollableRegion";
 import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
 import { Button } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/select";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { formatDateTime, formatRelativeDays } from "@/lib/formatters";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
@@ -281,7 +282,7 @@ export function SyncRunActivityPanel({
             <label className="sr-only" htmlFor="sync-run-status-filter-select">
               Sync run status filter
             </label>
-            <select
+            <NativeSelect
               id="sync-run-status-filter-select"
               value={statusFilter}
               aria-describedby={filterStatusId}
@@ -289,7 +290,7 @@ export function SyncRunActivityPanel({
               onChange={(event) => {
                 setStatusFilter(event.target.value as SyncRunStatusFilter);
               }}
-              className="focus-ring h-10 w-full rounded-[0.1rem] border border-primary/24 bg-slate-950/60 px-3 text-sm text-white"
+              className="h-10 rounded-[0.1rem] border-primary/24 bg-slate-950/60 py-0 text-white"
             >
               {SYNC_RUN_STATUS_FILTERS.map((status) => {
                 const meta = SYNC_RUN_STATUS_META[status];
@@ -299,7 +300,7 @@ export function SyncRunActivityPanel({
                   </option>
                 );
               })}
-            </select>
+            </NativeSelect>
           </div>
           {canReset ? (
             <div className="flex justify-end">

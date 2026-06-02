@@ -13,6 +13,7 @@ This document is intentionally detailed.
 - Shared inline loading cards now normalize loading targets so visible copy and polite announcements avoid duplicated `Loading` wording and trailing ellipses; `npm run check:copy-tone` blocks production `Loading ...` regressions.
 - Added `npm run check:native-button-type`; literal `<button>` elements must declare a safe `type`, while the shared `Button` primitive defaults plain buttons to `type="button"` and keeps polymorphic links type-free.
 - Added `npm run check:input-names`; production inputs must expose an accessible-name path and must not rely on placeholder text as the only label.
+- Settings sync-log status filtering now uses the shared `NativeSelect` surface treatment instead of one-off native dropdown styling; `npm run check:select-names` blocks unlabeled production selects.
 
 ## Session Notes (May 31, 2026)
 
