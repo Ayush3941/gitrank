@@ -6,6 +6,9 @@
   - `AppShell` now remains the only frontend owner of `<main id="main-content">`.
   - marketing and onboarding content wrappers render as normal containers inside the shell, preventing nested main landmarks while preserving layout.
   - added `npm run check:main-landmark` and focused render coverage so the global skip-link target stays stable.
+- Navigation-landmark naming pass:
+  - added `npm run check:navigation-landmarks` to require accessible names on every `<nav>` or `role="navigation"` region.
+  - added shared-nav render coverage for dashboard lanes, marketing routes, onboarding progress, and in-page section navigation.
 
 ## 2026-05-25
 

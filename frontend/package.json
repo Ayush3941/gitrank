@@ -28,6 +28,7 @@
     "check:main-thread": "node scripts/check-main-thread-guards.mjs",
     "check:motion-budget": "node scripts/check-motion-budget.mjs",
     "check:main-landmark": "node scripts/check-main-landmark-policy.mjs",
+    "check:navigation-landmarks": "node scripts/check-navigation-landmark-policy.mjs",
     "check:new-tab-links": "node scripts/check-new-tab-link-policy.mjs",
     "check:polymorphic-buttons": "node scripts/check-polymorphic-button-disabled.mjs",
     "check:query-policy": "node scripts/check-query-policy.mjs",
