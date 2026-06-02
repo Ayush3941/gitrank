@@ -11,7 +11,6 @@ export function SearchInputWithClear({
   ariaDescribedBy,
   ariaControls,
   clearButtonLabel,
-  clearButtonTitle = "Clear search",
   clearButtonDisabled = false,
   inputClassName = "pl-11 pr-11",
 }: {
@@ -23,7 +22,6 @@ export function SearchInputWithClear({
   ariaDescribedBy?: string;
   ariaControls?: string;
   clearButtonLabel: string;
-  clearButtonTitle?: string;
   clearButtonDisabled?: boolean;
   inputClassName?: string;
 }) {
@@ -74,7 +72,6 @@ export function SearchInputWithClear({
           className="focus-ring absolute top-1/2 right-0.5 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-cyan-100 hover:bg-primary/12 hover:text-white disabled:opacity-60"
           aria-label={clearButtonLabel}
           aria-controls={ariaControls}
-          title={clearButtonTitle}
         >
           <X className="h-4 w-4" aria-hidden="true" />
         </button>

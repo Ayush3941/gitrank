@@ -8,7 +8,6 @@ export function RemovableFilterChip({
   ariaLabel,
   ariaControls,
   disabled = false,
-  title = "Clear filter",
   className,
 }: {
   children: ReactNode;
@@ -16,7 +15,6 @@ export function RemovableFilterChip({
   ariaLabel: string;
   ariaControls?: string;
   disabled?: boolean;
-  title?: string;
   className?: string;
 }) {
   return (
@@ -30,7 +28,6 @@ export function RemovableFilterChip({
       disabled={disabled}
       aria-label={ariaLabel}
       aria-controls={ariaControls}
-      title={title}
     >
       {children}
       <X className="h-3.5 w-3.5" aria-hidden="true" />

@@ -75,7 +75,6 @@ export function SegmentedTablist<T extends string>({
                 type="button"
                 role="tab"
                 id={optionID}
-                title={item.label}
                 aria-label={item.label}
                 aria-controls={ariaControls}
                 aria-selected={active}

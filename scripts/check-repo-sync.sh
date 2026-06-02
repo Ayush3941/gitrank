@@ -182,6 +182,14 @@ assert_frontend_shared_orphans() {
   fi
 }
 
+assert_frontend_interactive_title_policy() {
+  if ! (
+    cd "$ROOT_DIR/frontend" && node scripts/check-interactive-title-policy.mjs >/dev/null
+  ); then
+    fail "frontend interactive title policy guard failed"
+  fi
+}
+
 assert_backend_env_default_parity() {
   if ! (
     cd "$ROOT_DIR/gitrank/packages/config" \
@@ -457,6 +465,7 @@ main() {
   assert_frontend_env_coverage_against_backend_env
   assert_frontend_stale_refresh_sync_wiring
   assert_frontend_shared_orphans
+  assert_frontend_interactive_title_policy
   assert_markdown_npm_script_refs
   assert_markdown_make_target_refs
   assert_markdown_script_path_refs

@@ -44,7 +44,6 @@ export function DashboardRouteNav() {
                 aria-current={active ? "page" : undefined}
                 aria-label={item.label}
                 aria-describedby={descriptionId}
-                title={item.description}
                 className={cn(
                   "focus-ring dashboard-nav-item inline-flex min-h-11 w-full min-w-[9.5rem] items-center justify-center px-3 py-2 text-center text-sm font-medium sm:min-w-0",
                 )}

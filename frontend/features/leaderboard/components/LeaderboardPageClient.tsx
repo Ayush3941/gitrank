@@ -348,7 +348,6 @@ export function LeaderboardPageClient() {
               }}
               aria-controls={leaderboardRowsRegionId}
               aria-pressed={showLaneDetails}
-              title="Toggle additional lane details"
             >
               {showLaneDetails ? "Hide details" : "Show details"}
             </Button>

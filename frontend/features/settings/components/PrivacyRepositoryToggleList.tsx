@@ -87,7 +87,6 @@ export function PrivacyRepositoryToggleList({
                 onRemove={handleClearSearch}
                 ariaLabel={`Remove Search · ${compactSearch} filter`}
                 ariaControls={repositoriesRegionId}
-                title="Clear search filter"
               >
                 Search: {compactSearch}
               </RemovableFilterChip>
