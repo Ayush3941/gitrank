@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
+import { shouldShowHeaderEyebrow } from "@/lib/presentation/header-eyebrow";
 
 export function PageHeader({
   eyebrow,
@@ -16,9 +17,7 @@ export function PageHeader({
   actions?: ReactNode;
   className?: string;
 }) {
-  const showEyebrow =
-    typeof eyebrow === "string" &&
-    normalizeHeaderToken(eyebrow) !== normalizeHeaderToken(title);
+  const showEyebrow = shouldShowHeaderEyebrow(eyebrow, title);
 
   return (
     <header className={cn("flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between lg:gap-6", className)}>
@@ -31,8 +30,4 @@ export function PageHeader({
       {actions ? <div className="flex flex-wrap items-center gap-2 lg:justify-end">{actions}</div> : null}
     </header>
   );
-}
-
-function normalizeHeaderToken(value: string): string {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }

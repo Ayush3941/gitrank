@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { shouldShowHeaderEyebrow } from "@/lib/presentation/header-eyebrow";
 
 export function SectionHeader({
   eyebrow,
@@ -11,9 +12,7 @@ export function SectionHeader({
   description: string;
   action?: ReactNode;
 }) {
-  const showEyebrow =
-    typeof eyebrow === "string" &&
-    normalizeHeaderToken(eyebrow) !== normalizeHeaderToken(title);
+  const showEyebrow = shouldShowHeaderEyebrow(eyebrow, title);
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
@@ -27,8 +26,4 @@ export function SectionHeader({
       {action ? <div className="sm:pt-1">{action}</div> : null}
     </div>
   );
-}
-
-function normalizeHeaderToken(value: string): string {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }

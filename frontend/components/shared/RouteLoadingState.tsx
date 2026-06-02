@@ -1,4 +1,5 @@
 import { GlowCard } from "@/components/shared/GlowCard";
+import { shouldShowHeaderEyebrow } from "@/lib/presentation/header-eyebrow";
 
 export function RouteLoadingState({
   eyebrow,
@@ -14,6 +15,7 @@ export function RouteLoadingState({
   variant?: "default" | "dashboard" | "marketing" | "profile" | "report";
 }) {
   const cards = Array.from({ length: Math.max(1, cardCount) });
+  const showEyebrow = shouldShowHeaderEyebrow(eyebrow, title);
 
   return (
     <div className="space-y-6" aria-busy="true">
@@ -21,7 +23,7 @@ export function RouteLoadingState({
         {`Loading ${title}. ${description}`}
       </p>
       <GlowCard variant="loading" className="space-y-4">
-        <p className="text-xs font-medium text-primary">{eyebrow}</p>
+        {showEyebrow ? <p className="text-xs font-medium text-primary">{eyebrow}</p> : null}
         <h1 className="text-3xl font-semibold text-white">{title}</h1>
         <p className="max-w-3xl text-sm leading-6 text-muted">{description}</p>
       </GlowCard>

@@ -70,6 +70,7 @@ This document is intentionally detailed.
 - Settings form accessibility tests now wait for a live privacy switch instead of the route skeleton heading, preventing false-start failures and vacuous control-label passes during client-side loading.
 - Shared route-level error cards now announce their eyebrow, title, and description through one scoped assertive region while leaving retry and fallback navigation controls outside the announcement boundary.
 - Route-level not-found cards now cap recovery choices at two deliberate links, reducing sparse-screen decision noise while keeping one primary next move and one secondary escape route.
+- Page, section, and route-loading headers now share one eyebrow-normalization helper, so first-load skeletons suppress repeated labels such as `Settings` / `Settings` while preserving distinct context labels.
 
 It serves two purposes:
 

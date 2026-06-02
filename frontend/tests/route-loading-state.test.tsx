@@ -19,6 +19,7 @@ describe("RouteLoadingState", () => {
     expect(shell?.getAttribute("role")).toBeNull();
     expect(status.textContent).toContain("Loading Dashboard. Loading contribution signals.");
     expect(container.querySelectorAll("[role='status']")).toHaveLength(1);
+    expect(screen.getAllByText("Dashboard")).toHaveLength(1);
   });
 
   it("renders a profile-shaped skeleton without duplicating the status announcement", () => {
@@ -33,6 +34,7 @@ describe("RouteLoadingState", () => {
     );
 
     expect(screen.getByText("Contributor profile")).not.toBeNull();
+    expect(screen.getByText("Public profile")).not.toBeNull();
     expect(container.querySelectorAll("[role='status']")).toHaveLength(1);
     expect(container.querySelectorAll(".neon-skeleton").length).toBeGreaterThan(4);
   });
