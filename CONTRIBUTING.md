@@ -55,6 +55,7 @@ This document is intentionally detailed.
 - Stale-sync and GitHub-App-block banners now scope live-region announcements to message text nodes instead of whole cards with action buttons, aligning advisory announcements with ARIA live-region guidance while preserving current CTAs and layout.
 - Dashboard, Contributions, and Settings now share one in-page section-navigation pattern (`InPageSectionNav`) with stable anchor IDs + `data-scroll-target`, so dense pages stay scannable, deep-linkable, and visually consistent without adding sticky chrome or extra motion.
 - The same in-page section-navigation pattern now extends across Quests, Badges, Leaderboard, Public Profile, and PR Report so long-form surfaces keep consistent scan/jump behavior on desktop and mobile.
+- Shared in-page navigation now normalizes section IDs and marks the active hash target with `aria-current="location"` plus a clearer chip state; hash tracking uses `useSyncExternalStore` and a single `hashchange` subscription instead of scroll listeners.
 
 It serves two purposes:
 

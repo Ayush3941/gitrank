@@ -1,7 +1,8 @@
 "use client";
 
-import { useId, useMemo } from "react";
+import { useId, useMemo, useSyncExternalStore } from "react";
 import { cn } from "@/lib/cn";
+import { initialSectionFromHash } from "@/lib/section-nav";
 
 type InPageSection = {
   id: string;
@@ -20,15 +21,28 @@ export function InPageSectionNav({
   const titleId = useId();
   const uniqueSections = useMemo(() => {
     const seen = new Set<string>();
-    return sections.filter((section) => {
+    return sections.flatMap((section) => {
       const normalizedId = section.id.trim();
       if (!normalizedId || seen.has(normalizedId)) {
-        return false;
+        return [];
       }
       seen.add(normalizedId);
-      return true;
+      return [{ ...section, id: normalizedId }];
     });
   }, [sections]);
+  const fallbackSectionId = uniqueSections[0]?.id ?? "";
+  const sectionIds = useMemo(
+    () => uniqueSections.map((section) => section.id),
+    [uniqueSections],
+  );
+  const locationHash = useSyncExternalStore(
+    subscribeToLocationHash,
+    readLocationHash,
+    readServerLocationHash,
+  );
+  const activeSectionId = fallbackSectionId
+    ? initialSectionFromHash(sectionIds, fallbackSectionId, locationHash)
+    : "";
 
   if (uniqueSections.length < 2) {
     return null;
@@ -51,18 +65,41 @@ export function InPageSectionNav({
         role="list"
         className="dashboard-nav-track scroll-fade-x scroll-fade-x-sm-hide flex max-w-full items-center gap-2 overflow-x-auto pb-[0.12rem] sm:flex-wrap sm:overflow-visible sm:pb-0"
       >
-        {uniqueSections.map((section) => (
-          <li key={section.id} className="list-none shrink-0 sm:shrink">
-            <a
-              href={`#${section.id}`}
-              data-scroll-target="true"
-              className="focus-ring neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
-            >
-              {section.label}
-            </a>
-          </li>
-        ))}
+        {uniqueSections.map((section) => {
+          const isActive = activeSectionId === section.id;
+          return (
+            <li key={section.id} className="list-none shrink-0 sm:shrink">
+              <a
+                href={`#${section.id}`}
+                aria-current={isActive ? "location" : undefined}
+                data-active={isActive ? "true" : "false"}
+                data-scroll-target="true"
+                className={cn(
+                  "focus-ring neon-chip inline-flex min-h-7 items-center rounded-full px-3 py-1 text-xs font-semibold",
+                  isActive ? "neon-chip-info" : "neon-chip-muted",
+                )}
+              >
+                {section.label}
+              </a>
+            </li>
+          );
+        })}
       </ul>
     </nav>
   );
+}
+
+function subscribeToLocationHash(onStoreChange: () => void): () => void {
+  window.addEventListener("hashchange", onStoreChange);
+  return () => {
+    window.removeEventListener("hashchange", onStoreChange);
+  };
+}
+
+function readLocationHash(): string {
+  return window.location.hash;
+}
+
+function readServerLocationHash(): string {
+  return "";
 }
