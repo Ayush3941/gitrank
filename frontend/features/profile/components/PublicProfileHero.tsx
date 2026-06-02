@@ -128,7 +128,7 @@ export function PublicProfileHero({
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                View card JSON
+                Open proof data
                 <NewTabHint />
               </Link>
             </Button>

@@ -26,6 +26,7 @@ const bannedPhrases = [
   "text: large",
   "report metadata:",
   "snapshot-based contribution analytics",
+  "view card json",
 ];
 
 const bannedPatterns = [

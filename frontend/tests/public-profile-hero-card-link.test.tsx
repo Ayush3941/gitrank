@@ -5,7 +5,7 @@ import { PublicProfileHero } from "@/features/profile/components/PublicProfileHe
 import type { UserProfile } from "@/types/gitrank";
 
 describe("public profile hero", () => {
-  it("exposes backend card JSON link for the current handle", () => {
+  it("exposes proof-data link for the current handle", () => {
     const user = buildHeroUser();
 
     render(
@@ -15,7 +15,7 @@ describe("public profile hero", () => {
       />,
     );
 
-    const link = screen.getByRole("link", { name: /View card JSON/i });
+    const link = screen.getByRole("link", { name: /Open proof data/i });
     expect(link.getAttribute("href")).toBe("/api/profile/public/octo%2Fuser/card");
   });
 

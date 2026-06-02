@@ -62,7 +62,7 @@ while IFS= read -r match; do
     fi
   fi
 
-  if ! printf '%s\n' "$known_targets" | rg -qx -- "$target"; then
+  if ! rg -qx -- "$target" <<<"$known_targets"; then
     printf 'unknown make target referenced in markdown: %s:%s:%s\n' "$file" "$line_no" "$command_line" >&2
     missing=1
   fi
@@ -75,4 +75,3 @@ if [[ "$missing" -ne 0 ]]; then
 fi
 
 printf 'doc make target check passed\n'
-
