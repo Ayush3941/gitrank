@@ -38,7 +38,7 @@ while IFS= read -r match; do
       | sed -E 's/.*npm( --prefix frontend)? run ([A-Za-z0-9:_-]+).*/\2/'
   )"
 
-  if ! printf '%s\n' "$frontend_scripts" | rg -qx -- "$script_name"; then
+  if ! rg -qx -- "$script_name" <<<"$frontend_scripts"; then
     printf 'unknown frontend npm script referenced in markdown: %s\n' "$match" >&2
     missing=1
   fi
@@ -51,4 +51,3 @@ if [[ "$missing" -ne 0 ]]; then
 fi
 
 printf 'doc npm script check passed\n'
-

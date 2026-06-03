@@ -104,6 +104,29 @@ export function readBooleanishAttribute(attributes, name) {
   return null;
 }
 
+export function readNumberAttribute(attributes, name) {
+  for (const attribute of attributes) {
+    if (!isNamedJSXAttribute(attribute, name)) {
+      continue;
+    }
+    if (
+      attribute.value?.type === "JSXExpressionContainer"
+      && attribute.value.expression?.type === "UnaryExpression"
+      && attribute.value.expression.operator === "-"
+      && attribute.value.expression.argument.type === "NumericLiteral"
+    ) {
+      return -attribute.value.expression.argument.value;
+    }
+    if (
+      attribute.value?.type === "JSXExpressionContainer"
+      && attribute.value.expression?.type === "NumericLiteral"
+    ) {
+      return attribute.value.expression.value;
+    }
+  }
+  return null;
+}
+
 function walk(entry, context) {
   const stat = statSync(entry, { throwIfNoEntry: false });
   if (!stat) {
