@@ -214,6 +214,14 @@ assert_frontend_a11y() {
   fi
 }
 
+assert_frontend_contracts() {
+  if ! (
+    cd "$ROOT_DIR/frontend" && npm run test:contracts >/dev/null
+  ); then
+    fail "frontend contract suite failed"
+  fi
+}
+
 assert_frontend_shared_orphans() {
   if ! (
     cd "$ROOT_DIR/frontend" && node scripts/check-shared-orphans.mjs >/dev/null
@@ -581,6 +589,7 @@ main() {
   assert_frontend_build
   assert_frontend_smoke
   assert_frontend_a11y
+  assert_frontend_contracts
   assert_frontend_shared_orphans
   assert_frontend_interactive_title_policy
   assert_frontend_live_region_atomicity

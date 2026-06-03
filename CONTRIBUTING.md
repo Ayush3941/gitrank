@@ -11,6 +11,7 @@ This document is intentionally detailed.
 - Wired `npm run build` into `scripts/check-repo-sync.sh` so local repo-wide verification also proves the Next production build and prerender pass.
 - Wired `npm run test:smoke` into `scripts/check-repo-sync.sh` so local repo-wide verification renders the live-fixture dashboard, contribution, badge, quest, report, profile, leaderboard, and settings flows.
 - Wired `npm run test:a11y` into `scripts/check-repo-sync.sh` so local repo-wide verification exercises route accessibility, control names, and settings form behavior.
+- Wired `npm run test:contracts` into `scripts/check-repo-sync.sh` so local repo-wide verification covers gateway/BFF route parity, auth proxy parity, and frontend BFF contract tests.
 - Production frontend type fixes now keep auto-sync analytics events, onboarding sync timestamps, PR-report AI retry errors, and unknown status labels aligned with their current runtime contracts.
 
 ## Session Notes (June 2, 2026)
