@@ -250,7 +250,7 @@ export function SyncPipeline() {
             <span>Pipeline progress</span>
             <span className="numeric-readout">{pipelineProgress}%</span>
           </div>
-          <Progress value={pipelineProgress} />
+          <Progress value={pipelineProgress} aria-label="GitHub sync pipeline progress" />
           <p className="text-sm text-muted">
             {completedSteps} of {steps.length} sync phases completed.
           </p>

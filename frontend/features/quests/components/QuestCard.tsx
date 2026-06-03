@@ -49,7 +49,7 @@ export function QuestCard({ quest }: { quest: Quest }) {
           <span className="numeric-readout">+{quest.rewardXp.toLocaleString("en-US")} XP</span>
         </div>
       </div>
-      <Progress value={progress} />
+      <Progress value={progress} aria-label={`${quest.title} quest progress`} />
       <div className="flex items-center justify-between text-sm text-muted">
         <span className="numeric-readout">{quest.progress.toLocaleString("en-US")} / {quest.goal.toLocaleString("en-US")}</span>
         <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusTone}`}>{quest.status}</span>

@@ -62,6 +62,9 @@ jobs:
       - name: Check radius token policy
         run: npm run check:radius-tokens
 
+      - name: Check progress accessible names
+        run: npm run check:progress-names
+
       - name: Check readable text token usage
         run: npm run check:readable-text
 

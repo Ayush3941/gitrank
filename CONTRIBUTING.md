@@ -16,6 +16,7 @@ This document is intentionally detailed.
 - Added `npm run check:radius-tokens`, wired into frontend CI and repo sync, so production source can only use `rounded-[var(--radius-universal)]`, `rounded-full`, or `rounded-none`.
 - `ContributionPulseStrip` now exposes visible Today/Peak summaries and screen-reader day labels instead of relying on browser `title` tooltips for activity-cell detail.
 - Contribution cards now expose their signal strip as a bounded progressbar with readable signal text instead of leaving the score as a purely visual width fill.
+- Added `npm run check:progress-names`, wired into frontend CI and repo sync, so every shared `Progress` meter must expose an accessible name.
 - Removed redundant browser `title` tooltips from interactive controls and added `npm run check:interactive-titles`; controls must expose names and detail through visible text or ARIA, not hover-only tooltips.
 - Live-region announcements now use explicit atomic updates; `npm run check:live-regions` blocks `role="status"` and `role="alert"` nodes that omit `aria-atomic="true"`.
 - Frontend JSX policy scripts share `frontend/scripts/lib/jsx-source-scan.mjs`; add new AST-based UI guards, including accessible-name, decorative-icon, duplicate-id, main-landmark, navigation-landmark, nested-interactive, new-tab-link, polymorphic-button, and unstable-key checks, through that helper instead of copying parser/walker code.
@@ -725,6 +726,7 @@ Verification snapshot (May 17, 2026):
 - `cd frontend && npm run check:route-state-primitives`
 - `cd frontend && npm run check:contrast`
 - `cd frontend && npm run check:radius-tokens`
+- `cd frontend && npm run check:progress-names`
 - `cd frontend && npm run check:media-stability`
 - `cd frontend && npm run check:native-button-type`
 - `cd frontend && npm run check:input-names`

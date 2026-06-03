@@ -76,7 +76,7 @@ export function BadgeDetailDialog({
             ) : null}
             {typeof badge.progress === "number" ? (
               <div className="space-y-2">
-                <Progress value={badge.progress} />
+                <Progress value={badge.progress} aria-label={`${badge.name} badge progress`} />
                 <p className="text-sm text-primary">{badge.progress}% progress</p>
               </div>
             ) : null}

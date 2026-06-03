@@ -388,7 +388,7 @@ export function BadgesPageClient() {
               </div>
               <div className="space-y-2">
                 <p className="text-xs font-medium text-cyan-200">Badge progress</p>
-                <Progress value={completionPercent} />
+                <Progress value={completionPercent} aria-label="Overall badge completion progress" />
               </div>
               <InlineNotice
                 message={unlockNotice}
@@ -670,7 +670,7 @@ export function BadgesPageClient() {
                         showLessLabel="Collapse condition"
                       />
                       <div className="mt-3 space-y-1">
-                        <Progress value={badge.progress ?? 0} />
+                        <Progress value={badge.progress ?? 0} aria-label={`${badge.name} badge progress`} />
                         <p className="text-xs text-muted">
                           {badge.progress ?? 0}% verified progress • {Math.max(0, 100 - (badge.progress ?? 0))}% remaining
                         </p>

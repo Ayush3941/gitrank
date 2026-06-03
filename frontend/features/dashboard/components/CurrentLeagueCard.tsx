@@ -48,6 +48,7 @@ export function CurrentLeagueCard({ user }: { user: UserProfile }) {
         </div>
         <Progress
           className="mt-4"
+          aria-label="Season XP progress toward next rank tier"
           value={Math.min(
             100,
             Math.round(

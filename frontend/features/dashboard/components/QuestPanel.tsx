@@ -54,7 +54,7 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
                       +{quest.rewardXp} XP
                     </div>
                   </div>
-                  <Progress className="mt-4" value={progress} />
+                  <Progress className="mt-4" value={progress} aria-label={`${quest.title} quest progress`} />
                   <div className="mt-2 flex items-center justify-between text-xs text-muted">
                     <span>{quest.progress} / {quest.goal}</span>
                     <span>{quest.weakAreaTarget ? `Targets ${quest.weakAreaTarget}` : quest.cadence}</span>

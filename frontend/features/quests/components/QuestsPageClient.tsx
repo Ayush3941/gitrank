@@ -310,7 +310,7 @@ export function QuestsPageClient() {
                     <span>Annual progression</span>
                     <span className="numeric-readout">{dayProgress}%</span>
                   </div>
-                  <Progress value={dayProgress} />
+                  <Progress value={dayProgress} aria-label="Annual quest progression" />
                 </div>
               </div>
             </GlowCard>
@@ -570,7 +570,7 @@ function MissionSpotlightCard({
         </div>
         <p className="text-sm text-muted">{quest.description}</p>
         <div className="space-y-1">
-          <Progress value={progress} />
+          <Progress value={progress} aria-label={`${quest.title} quest progress`} />
           <div className="flex items-center justify-between text-xs text-muted">
             <span className="numeric-readout">{quest.progress.toLocaleString("en-US")} / {quest.goal.toLocaleString("en-US")}</span>
             <span className="numeric-readout">{progress}%</span>

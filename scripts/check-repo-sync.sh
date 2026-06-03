@@ -206,6 +206,14 @@ assert_frontend_radius_token_policy() {
   fi
 }
 
+assert_frontend_progress_accessible_names() {
+  if ! (
+    cd "$ROOT_DIR/frontend" && node scripts/check-progress-accessible-name.mjs >/dev/null
+  ); then
+    fail "frontend progress accessible-name guard failed"
+  fi
+}
+
 assert_backend_env_default_parity() {
   if ! (
     cd "$ROOT_DIR/gitrank/packages/config" \
@@ -484,6 +492,7 @@ main() {
   assert_frontend_interactive_title_policy
   assert_frontend_live_region_atomicity
   assert_frontend_radius_token_policy
+  assert_frontend_progress_accessible_names
   assert_markdown_npm_script_refs
   assert_markdown_make_target_refs
   assert_markdown_script_path_refs

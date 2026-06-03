@@ -16,6 +16,7 @@
   - added `npm run check:radius-tokens` and wired it into frontend CI plus repo sync to block future hardcoded or large-radius utility drift.
   - upgraded `ContributionPulseStrip` with visible Today/Peak summaries and screen-reader cell text, removing the browser-title tooltip dependency from activity cells.
   - upgraded contribution-card signal strips to bounded progressbars with readable signal text while preserving the same compact visual meter.
+  - added accessible names to shared `Progress` meters and wired `npm run check:progress-names` into frontend CI plus repo sync.
 - Main-landmark consistency pass:
   - `AppShell` now remains the only frontend owner of `<main id="main-content">`.
   - marketing and onboarding content wrappers render as normal containers inside the shell, preventing nested main landmarks while preserving layout.

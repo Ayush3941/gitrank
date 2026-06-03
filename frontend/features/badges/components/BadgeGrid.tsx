@@ -69,7 +69,7 @@ export function BadgeGrid({
             </div>
             {!badge.unlocked ? (
               <div className="space-y-1">
-                <Progress value={badge.progress ?? 0} />
+                <Progress value={badge.progress ?? 0} aria-label={`${badge.name} badge progress`} />
                 <p className="text-xs text-muted">
                   {badge.progress ?? 0}% toward unlock • {Math.max(0, 100 - (badge.progress ?? 0))}% remaining
                 </p>

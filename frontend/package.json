@@ -40,6 +40,7 @@
     "check:navigation-landmarks": "node scripts/check-navigation-landmark-policy.mjs",
     "check:new-tab-links": "node scripts/check-new-tab-link-policy.mjs",
     "check:polymorphic-buttons": "node scripts/check-polymorphic-button-disabled.mjs",
+    "check:progress-names": "node scripts/check-progress-accessible-name.mjs",
     "check:query-policy": "node scripts/check-query-policy.mjs",
     "check:stale-refresh-sync": "node scripts/check-stale-refresh-sync-wiring.mjs",
     "check:bff-route-contract-coverage": "node scripts/check-bff-route-contract-coverage.mjs",
