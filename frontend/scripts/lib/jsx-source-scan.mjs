@@ -12,6 +12,7 @@ export function scanJSXFiles({
   ignoredFiles = [],
   onProgram = () => ({}),
   onElement = () => {},
+  visitElements = true,
 }) {
   const ignoredFileSet = new Set(ignoredFiles);
   const parseErrors = [];
@@ -23,6 +24,7 @@ export function scanJSXFiles({
       onProgram,
       parseErrors,
       root,
+      visitElements,
     });
   }
 
@@ -172,6 +174,10 @@ function scanSource(relativePath, source, context) {
     relativePath,
     source,
   }) ?? {};
+
+  if (!context.visitElements) {
+    return;
+  }
 
   visitNode(ast.program, relativePath, {
     ...context,

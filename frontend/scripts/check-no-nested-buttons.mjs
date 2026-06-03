@@ -1,16 +1,18 @@
-import { readFileSync, readdirSync, statSync } from "node:fs";
-import path from "node:path";
-import parser from "@babel/parser";
+import {
+  hasAttribute,
+  readElementName,
+  readStringAttribute,
+  scanJSXFiles,
+} from "./lib/jsx-source-scan.mjs";
 
-const { parse } = parser;
-const root = process.cwd();
-const scanRoots = ["app", "components", "features"];
-const ignoredDirs = new Set(["node_modules", ".next", "dist", "tests"]);
 const violations = [];
 
-for (const scanRoot of scanRoots) {
-  walk(path.join(root, scanRoot));
-}
+violations.push(...scanJSXFiles({
+  onProgram: ({ program, relativePath }) => {
+    visitNode(program, [], relativePath);
+  },
+  visitElements: false,
+}));
 
 if (violations.length > 0) {
   console.error("Nested interactive guard failed:");
@@ -24,45 +26,6 @@ if (violations.length > 0) {
 }
 
 console.log("Nested interactive guard passed");
-
-function walk(entry) {
-  const stat = statSync(entry, { throwIfNoEntry: false });
-  if (!stat) {
-    return;
-  }
-  if (stat.isDirectory()) {
-    for (const child of readdirSync(entry)) {
-      if (ignoredDirs.has(child)) {
-        continue;
-      }
-      walk(path.join(entry, child));
-    }
-    return;
-  }
-  if (!/\.[cm]?[jt]sx?$/.test(entry)) {
-    return;
-  }
-
-  const relative = path.relative(root, entry).split(path.sep).join("/");
-  const source = readFileSync(entry, "utf8");
-  scanForNestedInteractive(relative, source);
-}
-
-function scanForNestedInteractive(relativePath, source) {
-  let ast;
-  try {
-    ast = parse(source, {
-      sourceType: "module",
-      errorRecovery: true,
-      plugins: ["jsx", "typescript"],
-    });
-  } catch (error) {
-    violations.push(`${relativePath}: failed to parse for nested interactive guard (${error.message})`);
-    return;
-  }
-
-  visitNode(ast.program, [], relativePath);
-}
 
 function visitNode(node, interactiveStack, relativePath) {
   if (!node || typeof node !== "object") {
@@ -97,7 +60,7 @@ function visitNode(node, interactiveStack, relativePath) {
 
 function visitJSXElement(node, interactiveStack, relativePath) {
   const opening = node.openingElement;
-  const tagName = readTagName(opening.name);
+  const tagName = readNativeTagName(opening.name);
   const interactive = interactiveKind(tagName, opening.attributes ?? []);
   const line = opening.loc?.start?.line ?? 1;
 
@@ -121,18 +84,12 @@ function visitJSXElement(node, interactiveStack, relativePath) {
   }
 }
 
-function readTagName(nameNode) {
-  if (!nameNode) {
+function readNativeTagName(nameNode) {
+  const name = readElementName(nameNode);
+  if (!name || name[0] !== name[0].toLowerCase()) {
     return null;
   }
-  if (nameNode.type === "JSXIdentifier") {
-    const name = nameNode.name;
-    if (!name || name[0] !== name[0].toLowerCase()) {
-      return null;
-    }
-    return name;
-  }
-  return null;
+  return name;
 }
 
 function interactiveKind(tagName, attributes) {
@@ -160,44 +117,6 @@ function interactiveKind(tagName, attributes) {
 
   return null;
 }
-
-function hasAttribute(attributes, name) {
-  for (const attribute of attributes) {
-    if (attribute?.type !== "JSXAttribute") {
-      continue;
-    }
-    if (attribute.name?.type !== "JSXIdentifier") {
-      continue;
-    }
-    if (attribute.name.name === name) {
-      return true;
-    }
-  }
-  return false;
-}
-
-function readStringAttribute(attributes, name) {
-  for (const attribute of attributes) {
-    if (attribute?.type !== "JSXAttribute") {
-      continue;
-    }
-    if (attribute.name?.type !== "JSXIdentifier" || attribute.name.name !== name) {
-      continue;
-    }
-    const value = attribute.value;
-    if (!value) {
-      return "";
-    }
-    if (value.type === "StringLiteral") {
-      return value.value;
-    }
-    if (value.type === "JSXExpressionContainer" && value.expression?.type === "StringLiteral") {
-      return value.expression.value;
-    }
-  }
-  return null;
-}
-
 function readTabIndexAttribute(attributes) {
   for (const attribute of attributes) {
     if (attribute?.type !== "JSXAttribute") {
