@@ -3,6 +3,7 @@ type UserFacingErrorContext =
   | "settings-privacy"
   | "settings-sync-runs"
   | "onboarding-sync"
+  | "pr-report-retry-ai-summary"
   | "stale-refresh";
 
 const CONTEXT_FALLBACK_MESSAGES: Record<UserFacingErrorContext, string> = {
@@ -14,6 +15,8 @@ const CONTEXT_FALLBACK_MESSAGES: Record<UserFacingErrorContext, string> = {
     "Sync run history is unavailable right now. Retry shortly while the latest profile snapshot remains visible.",
   "onboarding-sync":
     "Sync failed for now. Keep this page open and retry shortly while background refresh continues.",
+  "pr-report-retry-ai-summary":
+    "AI summary retry failed for now. Retry after a short wait while deterministic PR evidence stays visible.",
   "stale-refresh":
     "Refresh request failed for now. Retry in a moment while the latest verified profile data stays visible.",
 };

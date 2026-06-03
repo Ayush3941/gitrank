@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit --pretty false",
     "check:no-production-mocks": "node scripts/check-no-production-mocks.mjs",
     "check:no-hardcoded-identities": "node scripts/check-no-hardcoded-identities.mjs",
     "check:copy-tone": "node scripts/check-copy-tone.mjs",

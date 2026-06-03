@@ -32,7 +32,7 @@ export function formatSyncStateLabel(state: SyncState | undefined): string {
   if (state === "stale") return "Stale";
   if (state === "failed") return "Failed";
   if (state === "synced") return "Synced";
-  return state.replaceAll("_", " ");
+  return formatUnknownStatusLabel(state);
 }
 
 export function toneForEvidenceStatus(
@@ -65,5 +65,9 @@ export function formatEvidenceStatusLabel(
   if (status === "ai_fallback") {
     return "AI fallback";
   }
+  return formatUnknownStatusLabel(status);
+}
+
+function formatUnknownStatusLabel(status: string): string {
   return status.replaceAll("_", " ");
 }

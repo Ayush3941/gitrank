@@ -56,6 +56,9 @@ jobs:
       - name: Check route cache strategy
         run: npm run check:cache-strategy
 
+      - name: Typecheck frontend
+        run: npm run typecheck
+
       - name: Check design token contrast
         run: npm run check:contrast
 

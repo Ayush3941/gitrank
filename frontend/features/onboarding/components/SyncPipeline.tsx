@@ -70,7 +70,7 @@ export function SyncPipeline() {
       onSuccess: (result) => {
         syncPollingAttemptRef.current = 0;
         setPollIntervalMs(POLL_INTERVAL_STEPS_MS[0]);
-        setSyncStartedAt(result.accepted_at);
+        setSyncStartedAt(result.started_at);
         if (result.status === "queued") {
           setSyncNotice(
             "Initial sync was queued because GitHub fetch is saturated. GitRank will keep polling.",
@@ -187,7 +187,7 @@ export function SyncPipeline() {
       onSuccess: (result) => {
         syncPollingAttemptRef.current = 0;
         setPollIntervalMs(POLL_INTERVAL_STEPS_MS[0]);
-        setSyncStartedAt(result.accepted_at);
+        setSyncStartedAt(result.started_at);
         if (result.status === "queued") {
           setSyncNotice(
             "Retry was queued because GitHub fetch is saturated. GitRank will keep polling.",

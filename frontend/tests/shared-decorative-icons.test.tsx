@@ -20,7 +20,14 @@ describe("shared decorative icons", () => {
       <div>
         <RankBadge rank="Gold III" />
         <SnapshotFreshnessPill refreshedAt="2026-05-25T10:30:00.000Z" />
-        <SyncStatusPill status={{ state: "synced", lastSyncedAt: "2026-05-25T10:30:00.000Z" }} />
+        <SyncStatusPill
+          status={{
+            state: "synced",
+            lastSyncedAt: "2026-05-25T10:30:00.000Z",
+            progress: 100,
+            partialProfileAvailable: false,
+          }}
+        />
         <GitHubAppSyncBlockNotice />
         <StatCard label="Merged PRs" value={12} icon={<Activity />} />
       </div>,

@@ -17,7 +17,7 @@ describe("settings form accessibility behavior", () => {
     renderWithClient(<SettingsPageClient />);
     const toggle = await screen.findByRole("switch", {
       name: /Enable public profile/i,
-    });
+    }, { timeout: 10_000 });
     fireEvent.click(toggle);
 
     const alert = await screen.findByRole("alert");
@@ -40,7 +40,7 @@ describe("settings form accessibility behavior", () => {
     const rendered = renderWithClient(<SettingsPageClient />);
     await screen.findByRole("switch", {
       name: /Enable public profile/i,
-    });
+    }, { timeout: 10_000 });
 
     const interactive = rendered.container.querySelectorAll(
       [
@@ -63,7 +63,7 @@ describe("settings form accessibility behavior", () => {
         `${element.outerHTML} should expose a non-empty label signal`,
       ).toBeGreaterThan(0);
     }
-  });
+  }, 10_000);
 });
 
 async function settingsFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {

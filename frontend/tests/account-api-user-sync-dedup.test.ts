@@ -27,9 +27,11 @@ describe("runUserSync deduplication", () => {
   });
 
   it("deduplicates concurrent requests for the same user", async () => {
-    let resolveFetch: ((value: Response) => void) | null = null;
+    const fetchControl: {
+      resolve?: (value: Response) => void;
+    } = {};
     const fetchPromise = new Promise<Response>((resolve) => {
-      resolveFetch = resolve;
+      fetchControl.resolve = resolve;
     });
     const fetchMock = vi.fn().mockReturnValue(fetchPromise);
     vi.stubGlobal("fetch", fetchMock);
@@ -39,7 +41,7 @@ describe("runUserSync deduplication", () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
-    resolveFetch?.(buildUserSyncResponse({ correlation_id: "sync-1" }));
+    fetchControl.resolve?.(buildUserSyncResponse({ correlation_id: "sync-1" }));
     const [a, b] = await Promise.all([first, second]);
     expect(a.correlation_id).toBe("sync-1");
     expect(b.correlation_id).toBe("sync-1");

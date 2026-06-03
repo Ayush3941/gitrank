@@ -33,6 +33,7 @@ describe("accessibility control naming", () => {
           repositories={[
             {
               name: "octo/gitrank",
+              tracked: true,
               visibility: "Public",
               reason: "Public by default",
             },

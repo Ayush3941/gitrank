@@ -1,5 +1,11 @@
 # Frontend UX Changelog
 
+## 2026-06-03
+
+- Type-safety gate restoration:
+  - added `npm run typecheck` and wired it into frontend CI plus repo sync so production/test contract drift fails before merge.
+  - aligned auto-sync analytics, onboarding sync timestamps, PR-report retry errors, unknown status labels, and stale test fixtures with current TypeScript contracts.
+
 ## 2026-06-02
 
 - Frontend orphan cleanup:

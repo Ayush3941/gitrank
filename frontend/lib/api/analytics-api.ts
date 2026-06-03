@@ -2,6 +2,7 @@ type AnalyticsEventName =
   | "onboarding.started"
   | "onboarding.completed"
   | "onboarding.sync.started"
+  | "sync.session_bootstrap"
   | "sync.succeeded"
   | "sync.failed"
   | "sync.queued"

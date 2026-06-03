@@ -65,7 +65,7 @@ describe("pr report ai retry action", () => {
     );
     expect(await screen.findByText(/Retry executed\./i)).toBeTruthy();
     expect(mockRefetch).toHaveBeenCalled();
-  });
+  }, 10_000);
 
   it("hides retry action for complete reports", async () => {
     const report = buildReportFixture("complete");

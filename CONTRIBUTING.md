@@ -1,8 +1,13 @@
 # Contributing to GitRank
 
-Last reviewed: June 2, 2026
+Last reviewed: June 3, 2026
 
 This document is intentionally detailed.
+
+## Session Notes (June 3, 2026)
+
+- Restored a clean frontend TypeScript gate with `npm run typecheck`, wired it into frontend CI and `scripts/check-repo-sync.sh`, and refreshed stale test fixtures to match current profile, sync, repository visibility, and PR category contracts.
+- Production frontend type fixes now keep auto-sync analytics events, onboarding sync timestamps, PR-report AI retry errors, and unknown status labels aligned with their current runtime contracts.
 
 ## Session Notes (June 2, 2026)
 
@@ -716,6 +721,7 @@ Inspiration usage rule:
 Verification snapshot (May 17, 2026):
 
 - `cd frontend && npm run lint`
+- `cd frontend && npm run typecheck`
 - `cd frontend && npm run build`
 - `cd frontend && npm run start -- --port 4111`
 - `cd frontend && npm run test:smoke`

@@ -82,10 +82,11 @@ npm run check:navigation-landmarks
 npm run check:scroll-jumps
 npm run check:motion-budget
 npm run test:smoke
+npm run typecheck
 npm run build
 ```
 
-The root GitHub Actions workflows run the same lint, production-mock boundary, live-fixture smoke, and build checks plus repo-wide scheduled secret and Trivy filesystem scans.
+The root GitHub Actions workflows run the same lint, typecheck, production-mock boundary, live-fixture smoke, and build checks plus repo-wide scheduled secret and Trivy filesystem scans.
 
 ## Data Sources
 

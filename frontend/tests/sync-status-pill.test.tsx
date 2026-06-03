@@ -9,6 +9,7 @@ describe("SyncStatusPill", () => {
         status={{
           state: "synced",
           lastSyncedAt: "2026-05-17T18:20:00.000Z",
+          progress: 100,
           partialProfileAvailable: false,
         }}
       />,

@@ -1,6 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { useStaleSyncRefresh } from "@/hooks/use-stale-sync-refresh";
+import type { RefreshFeedback } from "@/lib/refresh-feedback";
 
 describe("useStaleSyncRefresh", () => {
   it("returns in-flight feedback without requesting a new sync when a run is queued", async () => {
@@ -32,7 +33,7 @@ describe("useStaleSyncRefresh", () => {
     expect(result.current.hasInFlightSync).toBe(true);
     expect(result.current.refreshLabel).toBe("Check sync status");
 
-    let feedback;
+    let feedback: RefreshFeedback | undefined;
     await act(async () => {
       feedback = await result.current.onRefresh();
     });
@@ -65,7 +66,7 @@ describe("useStaleSyncRefresh", () => {
     expect(result.current.hasInFlightSync).toBe(false);
     expect(result.current.refreshLabel).toBe("Refresh");
 
-    let feedback;
+    let feedback: RefreshFeedback | undefined;
     await act(async () => {
       feedback = await result.current.onRefresh();
     });

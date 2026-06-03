@@ -133,6 +133,7 @@ export function PRBattleReportPageClient({
     );
   }
 
+  const reportData = data;
   const suggestedQuest = data.suggestedQuest;
   const evidenceState = data.evidenceState;
   const sanitizedReportSummary = sanitizeReportSummary(data.contribution.aiSummary);
@@ -183,15 +184,15 @@ export function PRBattleReportPageClient({
     setRetryNotice(null);
     try {
       const result = await runPullRequestSync.mutateAsync({
-        repository: `${data.contribution.owner}/${data.contribution.repo}`,
-        number: data.contribution.number,
+        repository: `${reportData.contribution.owner}/${reportData.contribution.repo}`,
+        number: reportData.contribution.number,
       });
       setRetryNotice(buildRetryAiSummaryNotice(result));
       await refetch();
     } catch (error) {
       const message = sanitizeUserFacingError(
         (error as Error | null)?.message || "",
-        "pr-report:retry-ai-summary",
+        "pr-report-retry-ai-summary",
       );
       setRetryNotice({
         tone: "error",
