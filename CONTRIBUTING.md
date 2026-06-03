@@ -15,6 +15,7 @@ This document is intentionally detailed.
 - Wired `npm run test:visual` into `scripts/check-repo-sync.sh` so route-level visual shell snapshots stay part of the local repo-wide gate.
 - Tightened the public-profile visual snapshot helper so top-signal chips are selected by their labeled list, not by every hero chip that happens to share visual styling.
 - Wired `npm run test:visual` into frontend CI so dashboard, leaderboard, and public-profile shell regressions fail in pull-request checks as well as local repo sync.
+- Wired the OAuth prefetch, dashboard route-copy, and route-state primitive guards into both frontend CI and `scripts/check-repo-sync.sh`, keeping auth navigation, dashboard metadata copy, and route loading/error UI consistent by default.
 - Production frontend type fixes now keep auto-sync analytics events, onboarding sync timestamps, PR-report AI retry errors, and unknown status labels aligned with their current runtime contracts.
 
 ## Session Notes (June 2, 2026)

@@ -174,6 +174,30 @@ assert_frontend_stale_refresh_sync_wiring() {
   fi
 }
 
+assert_frontend_oauth_prefetch_policy() {
+  if ! (
+    cd "$ROOT_DIR/frontend" && npm run check:oauth-prefetch-policy >/dev/null
+  ); then
+    fail "frontend OAuth prefetch policy guard failed"
+  fi
+}
+
+assert_frontend_dashboard_route_copy_policy() {
+  if ! (
+    cd "$ROOT_DIR/frontend" && npm run check:dashboard-route-copy-policy >/dev/null
+  ); then
+    fail "frontend dashboard route copy policy guard failed"
+  fi
+}
+
+assert_frontend_route_state_primitives() {
+  if ! (
+    cd "$ROOT_DIR/frontend" && npm run check:route-state-primitives >/dev/null
+  ); then
+    fail "frontend route state primitive guard failed"
+  fi
+}
+
 assert_frontend_lint() {
   if ! (
     cd "$ROOT_DIR/frontend" && npm run lint >/dev/null
@@ -592,6 +616,9 @@ main() {
   assert_weekly_evidence_png_deduplicated
   assert_frontend_env_coverage_against_backend_env
   assert_frontend_stale_refresh_sync_wiring
+  assert_frontend_oauth_prefetch_policy
+  assert_frontend_dashboard_route_copy_policy
+  assert_frontend_route_state_primitives
   assert_frontend_lint
   assert_frontend_typecheck
   assert_frontend_build

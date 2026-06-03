@@ -47,6 +47,12 @@ jobs:
       - name: Check onboarding prefetch policy
         run: npm run check:onboarding-prefetch-policy
 
+      - name: Check OAuth prefetch policy
+        run: npm run check:oauth-prefetch-policy
+
+      - name: Check dashboard route copy policy
+        run: npm run check:dashboard-route-copy-policy
+
       - name: Check client env safety
         run: npm run check:client-env-safety
 
@@ -55,6 +61,9 @@ jobs:
 
       - name: Check route cache strategy
         run: npm run check:cache-strategy
+
+      - name: Check route state primitives
+        run: npm run check:route-state-primitives
 
       - name: Typecheck frontend
         run: npm run typecheck
