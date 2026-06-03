@@ -108,10 +108,19 @@ export function ContributionList({
                   {!useLiteCards && showDetails ? (
                     <>
                       <p className="mt-2 text-xs text-muted">Signal {signalBand.label}</p>
-                      <div className="mt-2 h-1.5 w-28 overflow-hidden rounded-full border border-primary/24 bg-card/80">
+                      <div
+                        className="mt-2 h-1.5 w-28 overflow-hidden rounded-full border border-primary/24 bg-card/80"
+                        role="progressbar"
+                        aria-label={`${item.title} contribution signal`}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-valuenow={signalIndex}
+                        aria-valuetext={`${signalBand.label} signal, ${signalIndex} of 100`}
+                      >
                         <div
                           className={`h-full rounded-full ${signalBand.barClassName}`}
                           style={{ width: `${signalIndex}%` }}
+                          aria-hidden="true"
                         />
                       </div>
                     </>
