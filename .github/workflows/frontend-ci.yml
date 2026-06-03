@@ -65,6 +65,9 @@ jobs:
       - name: Check progress accessible names
         run: npm run check:progress-names
 
+      - name: Check image alt text
+        run: npm run check:image-alt
+
       - name: Check readable text token usage
         run: npm run check:readable-text
 

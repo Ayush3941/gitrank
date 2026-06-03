@@ -23,6 +23,7 @@
     "check:contrast": "node scripts/check-contrast-tokens.mjs",
     "check:radius-tokens": "node scripts/check-radius-token-policy.mjs",
     "check:decorative-icons": "node scripts/check-decorative-icon-semantics.mjs",
+    "check:image-alt": "node scripts/check-image-alt-text.mjs",
     "check:input-names": "node scripts/check-input-accessible-name.mjs",
     "check:interactive-titles": "node scripts/check-interactive-title-policy.mjs",
     "check:live-regions": "node scripts/check-live-region-atomicity.mjs",
