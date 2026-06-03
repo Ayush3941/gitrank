@@ -174,6 +174,14 @@ assert_frontend_stale_refresh_sync_wiring() {
   fi
 }
 
+assert_frontend_lint() {
+  if ! (
+    cd "$ROOT_DIR/frontend" && npm run lint >/dev/null
+  ); then
+    fail "frontend lint failed"
+  fi
+}
+
 assert_frontend_typecheck() {
   if ! (
     cd "$ROOT_DIR/frontend" && npm run typecheck >/dev/null
@@ -544,6 +552,7 @@ main() {
   assert_weekly_evidence_png_deduplicated
   assert_frontend_env_coverage_against_backend_env
   assert_frontend_stale_refresh_sync_wiring
+  assert_frontend_lint
   assert_frontend_typecheck
   assert_frontend_shared_orphans
   assert_frontend_interactive_title_policy
