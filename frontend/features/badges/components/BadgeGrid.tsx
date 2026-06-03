@@ -23,7 +23,7 @@ export function BadgeGrid({
         <li key={badge.id} className="list-none">
           <GlowCard className="render-opt-card cyber-hero-shell h-full space-y-4">
             <div className="flex items-start justify-between gap-3">
-              <div className="rounded-3xl bg-primary/12 p-3 text-primary">
+              <div className="rounded-[var(--radius-universal)] bg-primary/12 p-3 text-primary">
                 <SignalIcon icon={badge.icon} className="h-5 w-5" />
               </div>
               <RarityBadge rarity={badge.rarity} />
@@ -76,7 +76,7 @@ export function BadgeGrid({
               </div>
             ) : null}
             {stories?.[badge.id] ? (
-              <div className="neon-surface rounded-xl border-fuchsia-300/24 px-3 py-2 text-xs text-muted">
+              <div className="neon-surface rounded-[var(--radius-universal)] border-fuchsia-300/24 px-3 py-2 text-xs text-muted">
                 <ExpandableText
                   text={stories[badge.id].story}
                   lines={2}

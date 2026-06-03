@@ -12,7 +12,8 @@
   - normalized status and alert live regions with explicit atomic announcements and added `npm run check:live-regions`.
   - extracted shared JSX policy scanning into `frontend/scripts/lib/jsx-source-scan.mjs` so accessibility, accessible-name, decorative-icon, duplicate-id, main-landmark, navigation-landmark, nested-interactive, new-tab-link, polymorphic-button, unstable-key, and interaction guards stop duplicating parser/walker code.
   - aligned shared input and native-select primitives with `--radius-universal` directly, removing stale `rounded-2xl` class contracts from form controls.
-  - aligned shared chart shells, route-loading skeleton blocks, dashboard stat icons, and PR evidence signal surfaces with `rounded-[var(--radius-universal)]` so class names match the enforced radius token instead of implying larger corners.
+  - aligned production non-pill surfaces with `rounded-[var(--radius-universal)]` so class names match the enforced radius token instead of implying larger corners.
+  - added `npm run check:radius-tokens` and wired it into frontend CI plus repo sync to block future hardcoded or large-radius utility drift.
 - Main-landmark consistency pass:
   - `AppShell` now remains the only frontend owner of `<main id="main-content">`.
   - marketing and onboarding content wrappers render as normal containers inside the shell, preventing nested main landmarks while preserving layout.

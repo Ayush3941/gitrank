@@ -49,7 +49,7 @@ export function DashboardHeroRankCard({
     <GlowCard strong className="player-card-shell cyber-hero-shell space-y-6 overflow-hidden">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-4">
-          <div className="rank-orbit rounded-[2rem] p-[2px]">
+          <div className="rank-orbit rounded-[var(--radius-universal)] p-[2px]">
             <Image
               src={user.avatarUrl}
               alt={`${user.displayName} avatar`}
@@ -57,7 +57,7 @@ export function DashboardHeroRankCard({
               height={72}
               sizes="72px"
               priority
-              className="cyber-avatar h-[72px] w-[72px] rounded-[1.85rem]"
+              className="cyber-avatar h-[72px] w-[72px] rounded-[var(--radius-universal)]"
             />
           </div>
           <div className="space-y-2">
@@ -82,19 +82,19 @@ export function DashboardHeroRankCard({
         </div>
       </div>
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="neon-metric rounded-[1.75rem] p-5">
+        <div className="neon-metric rounded-[var(--radius-universal)] p-5">
           <p className="text-xs font-medium text-primary">Level</p>
           <p className="mt-3 text-4xl font-semibold text-white">
             <span className="numeric-readout">{user.level.currentLevel.toLocaleString("en-US")}</span>
           </p>
         </div>
-        <div className="neon-metric rounded-[1.75rem] p-5">
+        <div className="neon-metric rounded-[var(--radius-universal)] p-5">
           <p className="text-xs font-medium text-primary">Total XP</p>
           <p className="mt-3 text-4xl font-semibold text-white">
             <span className="numeric-readout">{user.level.currentXp.toLocaleString("en-US")}</span>
           </p>
         </div>
-        <div className="neon-metric rounded-[1.75rem] p-5">
+        <div className="neon-metric rounded-[var(--radius-universal)] p-5">
           <p className="text-xs font-medium text-primary">To next level</p>
           <p className="mt-3 text-lg font-medium text-white">
             <span className="numeric-readout">{Math.max(0, user.level.nextLevelXp - user.level.currentXp).toLocaleString("en-US")}</span> XP left
@@ -106,7 +106,7 @@ export function DashboardHeroRankCard({
       </div>
       <XPProgress current={user.level.currentXp} next={user.level.nextLevelXp} />
       <ContributionPulseStrip contributions={user.contributions} label="14-day activity pulse" />
-      <div className="rounded-[1.75rem] border border-primary/18 bg-primary/8 p-4">
+      <div className="rounded-[var(--radius-universal)] border border-primary/18 bg-primary/8 p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="space-y-1">
             <p className="inline-flex items-center gap-2 text-sm font-semibold text-white">
@@ -129,7 +129,7 @@ export function DashboardHeroRankCard({
         </div>
       </div>
       {identitySummary ? (
-        <div className="rounded-[1.75rem] border border-cyan-300/20 bg-cyan-400/8 p-4">
+        <div className="rounded-[var(--radius-universal)] border border-cyan-300/20 bg-cyan-400/8 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs font-medium text-cyan-200">
               Identity brief ({aiMode === "openai" ? "ChatGPT" : "Deterministic"})

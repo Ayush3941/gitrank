@@ -11,7 +11,7 @@ export function ControlSurface({
   return (
     <Component
       className={cn(
-        "neon-surface space-y-3 rounded-[1rem] px-3 py-3 sm:px-4 sm:py-4",
+        "neon-surface space-y-3 rounded-[var(--radius-universal)] px-3 py-3 sm:px-4 sm:py-4",
         className,
       )}
       {...props}

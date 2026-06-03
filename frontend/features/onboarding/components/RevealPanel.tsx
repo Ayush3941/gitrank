@@ -80,7 +80,7 @@ export function RevealPanel({
             <RevealMetric label="Unlocked badges" value={unlockedBadges.length.toLocaleString("en-US")} />
             <RevealMetric label="Evidence rows" value={evidenceRows.toLocaleString("en-US")} />
           </div>
-            <div className="mx-auto max-w-3xl rounded-2xl border border-primary/24 bg-primary/10 px-4 py-3 text-left text-sm text-foreground">
+            <div className="mx-auto max-w-3xl rounded-[var(--radius-universal)] border border-primary/24 bg-primary/10 px-4 py-3 text-left text-sm text-foreground">
               <p className="text-xs font-medium text-primary">Snapshot state</p>
               <p className="mt-2 leading-6">
                 Sync status is <span className="font-semibold text-white">{formatSyncStateLabel(effectiveSyncState)}</span>.
@@ -92,7 +92,7 @@ export function RevealPanel({
               </p>
             </div>
           {identitySummary ? (
-            <div className="mx-auto max-w-3xl rounded-2xl border border-fuchsia-300/25 bg-fuchsia-400/9 px-4 py-3 text-left text-sm text-foreground">
+            <div className="mx-auto max-w-3xl rounded-[var(--radius-universal)] border border-fuchsia-300/25 bg-fuchsia-400/9 px-4 py-3 text-left text-sm text-foreground">
               <p className="text-xs font-medium text-fuchsia-100">Identity summary ({aiMode === "openai" ? "ChatGPT" : "Deterministic"})</p>
               <p className="mt-2 leading-6">{identitySummary}</p>
             </div>
@@ -114,7 +114,7 @@ export function RevealPanel({
             <ul id="reveal-unlock-preview" role="list" className="grid gap-4 sm:grid-cols-3">
               {unlockedBadges.length > 0 ? (
                 unlockedBadges.map((badge, index) => (
-                  <li key={`${badge.id}-${index}`} className="list-none rounded-[1.75rem] border border-cyan-300/16 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/22 p-5 text-left">
+                  <li key={`${badge.id}-${index}`} className="list-none rounded-[var(--radius-universal)] border border-cyan-300/16 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/22 p-5 text-left">
                     <div className="flex items-center justify-between">
                       <Award className="h-5 w-5 text-primary" aria-hidden="true" />
                       <RarityBadge rarity={badge.rarity} />
@@ -140,10 +140,10 @@ export function RevealPanel({
                 What to do next ({nextActions.length} steps)
               </h2>
             </div>
-            <div id="reveal-next-actions" className="neon-surface rounded-[1.75rem] px-5 py-4 text-left">
+            <div id="reveal-next-actions" className="neon-surface rounded-[var(--radius-universal)] px-5 py-4 text-left">
               <ol className="mt-1 grid gap-3 sm:grid-cols-3">
                 {nextActions.map((item, index) => (
-                  <li key={`${item}-${index}`} className="neon-metric rounded-[1.25rem] px-3 py-3">
+                  <li key={`${item}-${index}`} className="neon-metric rounded-[var(--radius-universal)] px-3 py-3">
                     <p className="text-xs font-medium text-cyan-100">Step {index + 1}</p>
                     <p className="mt-2 text-sm leading-6 text-muted">{item}</p>
                   </li>
@@ -195,7 +195,7 @@ function RevealMetric({
   value: string;
 }) {
   return (
-    <div className="neon-metric rounded-[1.35rem] px-4 py-3 text-left">
+    <div className="neon-metric rounded-[var(--radius-universal)] px-4 py-3 text-left">
       <p className="text-xs font-medium text-cyan-100">{label}</p>
       <p className="mt-2 text-xl font-semibold text-white">{value}</p>
     </div>
@@ -210,7 +210,7 @@ function RevealFallbackCard({
   body: string;
 }) {
   return (
-    <div className="rounded-[1.75rem] border border-dashed border-cyan-300/20 bg-gradient-to-br from-slate-950/82 to-cyan-950/20 p-5 text-left">
+    <div className="rounded-[var(--radius-universal)] border border-dashed border-cyan-300/20 bg-gradient-to-br from-slate-950/82 to-cyan-950/20 p-5 text-left">
       <h3 className="text-lg font-semibold text-white">{title}</h3>
       <p className="mt-2 text-sm text-muted">{body}</p>
     </div>
@@ -223,11 +223,11 @@ export function RevealPanelSkeleton() {
       <GlowCard strong className="space-y-8 text-center">
         <OnboardingStepper currentStep="reveal" />
         <div className="neon-skeleton mx-auto h-8 w-48 rounded-full" />
-        <div className="neon-skeleton mx-auto h-16 w-full max-w-2xl rounded-3xl" />
+        <div className="neon-skeleton mx-auto h-16 w-full max-w-2xl rounded-[var(--radius-universal)]" />
         <div className="neon-skeleton mx-auto h-10 w-72 rounded-full" />
         <div className="grid gap-4 sm:grid-cols-3">
           {[0, 1, 2].map((item, index) => (
-            <div key={`reveal-skeleton-${index}-${item}`} className="neon-skeleton h-40 rounded-[1.75rem]" />
+            <div key={`reveal-skeleton-${index}-${item}`} className="neon-skeleton h-40 rounded-[var(--radius-universal)]" />
           ))}
         </div>
       </GlowCard>

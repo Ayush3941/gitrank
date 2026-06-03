@@ -24,7 +24,7 @@ export function ScoreMatrixCard({ report }: { report: PullRequestAnalysis }) {
 
 function Metric({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="neon-metric rounded-[1.75rem] px-4 py-4">
+    <div className="neon-metric rounded-[var(--radius-universal)] px-4 py-4">
       <p className="text-xs font-medium text-muted">{label}</p>
       <p className="mt-3 text-2xl font-semibold text-white">{value}</p>
     </div>

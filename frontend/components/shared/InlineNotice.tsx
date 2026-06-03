@@ -40,7 +40,7 @@ export function InlineNotice({
     <div className={cn(minHeightClassName, className)}>
       <div
         className={cn(
-          "inline-flex items-start rounded-[0.1rem] border px-3 py-1.5 text-sm",
+          "inline-flex items-start rounded-[var(--radius-universal)] border px-3 py-1.5 text-sm",
           variantClassName[variant],
         )}
       >

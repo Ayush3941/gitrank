@@ -19,7 +19,7 @@ export function CurrentLeagueCard({ user }: { user: UserProfile }) {
           <h2 className="mt-2 text-2xl font-semibold text-white">{user.level.rankTier}</h2>
           <p className="mt-2 text-sm text-muted">{user.rankProgress.season.windowLabel}</p>
         </div>
-        <div className="neon-tile rounded-3xl p-3 text-primary">
+        <div className="neon-tile rounded-[var(--radius-universal)] p-3 text-primary">
           <Trophy className="h-5 w-5" aria-hidden="true" />
         </div>
       </div>
@@ -31,7 +31,7 @@ export function CurrentLeagueCard({ user }: { user: UserProfile }) {
         <Metric label="Weekly XP" value={user.weeklyXp.toLocaleString("en-US")} />
         <Metric label="Movement" value={`${positive ? "+" : ""}${user.movement}`} icon={<MovementIcon className="h-4 w-4" aria-hidden="true" />} />
       </div>
-      <div className="neon-tile rounded-[1.75rem] p-4">
+      <div className="neon-tile rounded-[var(--radius-universal)] p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs font-medium text-muted">Promotion</p>
@@ -84,7 +84,7 @@ function Metric({
   icon?: ReactNode;
 }) {
   return (
-    <div className="neon-metric rounded-3xl p-4">
+    <div className="neon-metric rounded-[var(--radius-universal)] p-4">
       <p className="text-xs font-medium text-muted">{label}</p>
       <div className="numeric-readout mt-2 flex items-center gap-2 text-xl font-semibold text-white">
         <span>{value}</span>

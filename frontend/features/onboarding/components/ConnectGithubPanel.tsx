@@ -57,7 +57,7 @@ export function ConnectGithubPanel() {
               text: "You enter analyzing and unlock your first score snapshot.",
             },
           ].map((item) => (
-            <li key={item.step} className="neon-surface space-y-2 rounded-3xl px-4 py-3 text-sm text-muted">
+            <li key={item.step} className="neon-surface space-y-2 rounded-[var(--radius-universal)] px-4 py-3 text-sm text-muted">
               <p className="text-xs font-medium text-primary">{item.step}</p>
               <p className="font-semibold text-white">{item.title}</p>
               <p className="text-xs leading-6 text-muted">{item.text}</p>
@@ -69,7 +69,7 @@ export function ConnectGithubPanel() {
           Typical first snapshot: about 60-90 seconds after OAuth success.
         </div>
         <div className="grid gap-3 md:grid-cols-2">
-          <div className="neon-surface rounded-3xl px-4 py-3">
+          <div className="neon-surface rounded-[var(--radius-universal)] px-4 py-3">
             <p className="text-xs font-medium text-primary">What data is read in v1</p>
             <ul className="mt-3 space-y-2 text-sm leading-6 text-muted">
               <li>Public profile basics and contribution activity.</li>
@@ -77,7 +77,7 @@ export function ConnectGithubPanel() {
               <li>Repository visibility and recency scoring context.</li>
             </ul>
           </div>
-          <div className="neon-surface rounded-3xl px-4 py-3">
+          <div className="neon-surface rounded-[var(--radius-universal)] px-4 py-3">
             <p className="text-xs font-medium text-primary">What is not read by default</p>
             <ul className="mt-3 space-y-2 text-sm leading-6 text-muted">
               <li>Private repository code content in v1.</li>
@@ -107,7 +107,7 @@ export function ConnectGithubPanel() {
 
       <GlowCard className="space-y-5">
         <div className="flex items-center gap-3">
-          <div className="rounded-3xl bg-emerald-400/12 p-3 text-emerald-200">
+          <div className="rounded-[var(--radius-universal)] bg-emerald-400/12 p-3 text-emerald-200">
             <ShieldCheck className="h-5 w-5" aria-hidden="true" />
           </div>
           <div>
@@ -123,17 +123,17 @@ export function ConnectGithubPanel() {
               "Exact PRs, AI summaries, and leaderboard participation are individually controlled.",
               "Repository visibility can be hidden without deleting the account.",
             ].map((item, index) => (
-              <li key={`${item}-${index}`} className="neon-surface rounded-3xl px-4 py-3 text-sm text-muted">{item}</li>
+              <li key={`${item}-${index}`} className="neon-surface rounded-[var(--radius-universal)] px-4 py-3 text-sm text-muted">{item}</li>
             ))}
           </ul>
         </div>
-        <div className="neon-surface rounded-[1.75rem] border-primary/22 px-4 py-4">
+        <div className="neon-surface rounded-[var(--radius-universal)] border-primary/22 px-4 py-4">
           <p className="text-xs font-medium text-primary">Where this goes next</p>
           <p className="mt-2 text-sm text-foreground">
             After sign-in, GitRank redirects to <span className="font-semibold text-white">Analyzing</span> and starts GitHub App-backed sync.
           </p>
         </div>
-        <div className="rounded-[1.75rem] border border-primary/18 bg-primary/8 p-4 text-sm text-muted">
+        <div className="rounded-[var(--radius-universal)] border border-primary/18 bg-primary/8 p-4 text-sm text-muted">
           <div className="flex items-center gap-2 text-primary">
             <BrandLogo size={16} className="h-4 w-4" />
             Meaning-first scoring

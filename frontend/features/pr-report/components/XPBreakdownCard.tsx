@@ -64,7 +64,7 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
         {visibleRows.map((row, index) => (
           <li
             key={`${row.label}-${index}`}
-            className="list-none neon-surface rounded-[1.75rem] px-4 py-4"
+            className="list-none neon-surface rounded-[var(--radius-universal)] px-4 py-4"
           >
             <div className="flex items-center justify-between gap-4">
               <p className="text-sm text-muted">{row.label}</p>
@@ -74,11 +74,11 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
           </li>
         ))}
         {remainingRows > 0 ? (
-          <li className="list-none neon-surface rounded-[1.75rem] border-dashed px-4 py-3 text-xs text-muted">
+          <li className="list-none neon-surface rounded-[var(--radius-universal)] border-dashed px-4 py-3 text-xs text-muted">
             +{remainingRows} more components available.
           </li>
         ) : null}
-        <li className="list-none rounded-[1.75rem] border border-amber-400/18 bg-amber-400/8 px-4 py-4">
+        <li className="list-none rounded-[var(--radius-universal)] border border-amber-400/18 bg-amber-400/8 px-4 py-4">
           <div className="flex items-center justify-between gap-4">
             <p className="text-sm text-amber-50">Anti-spam multiplier</p>
             <p className="text-sm font-semibold text-amber-100">
@@ -93,7 +93,7 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
         {report.penalties.map((penalty, index) => (
           <li
             key={`${penalty.label}-${index}`}
-            className="list-none rounded-[1.75rem] border border-rose-400/18 bg-rose-400/8 px-4 py-4"
+            className="list-none rounded-[var(--radius-universal)] border border-rose-400/18 bg-rose-400/8 px-4 py-4"
           >
             <div className="flex items-center justify-between gap-4">
               <p className="text-sm text-rose-50">{penalty.label}</p>

@@ -36,7 +36,7 @@ export function PublicProfileHero({
       <div className="grid gap-6 xl:grid-cols-[1.08fr,0.92fr]">
         <div className="space-y-5">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
-            <div className="rank-orbit rounded-[2.1rem] p-[2px]">
+            <div className="rank-orbit rounded-[var(--radius-universal)] p-[2px]">
               <Image
                 src={user.avatarUrl}
                 alt={`${user.displayName} avatar`}
@@ -44,7 +44,7 @@ export function PublicProfileHero({
                 height={96}
                 sizes="96px"
                 priority
-                className="cyber-avatar h-24 w-24 rounded-[2rem]"
+                className="cyber-avatar h-24 w-24 rounded-[var(--radius-universal)]"
               />
             </div>
             <div className="space-y-2">
@@ -72,7 +72,7 @@ export function PublicProfileHero({
             <MiniMetric icon={<ShieldCheck className="h-4 w-4" aria-hidden="true" />} label="Consistency" value={`${user.consistencyScore}%`} />
           </div>
           {identitySummary ? (
-            <div className="neon-callout rounded-2xl px-4 py-3 text-sm text-muted">
+            <div className="neon-callout rounded-[var(--radius-universal)] px-4 py-3 text-sm text-muted">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="cyber-readout text-xs font-medium text-cyan-200">
                   Identity summary ({identitySummaryMode === "openai" ? "ChatGPT" : "Deterministic"})
@@ -134,13 +134,13 @@ export function PublicProfileHero({
             </Button>
           </div>
         </div>
-        <div className="neon-surface rounded-[1.85rem] p-5">
+        <div className="neon-surface rounded-[var(--radius-universal)] p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-xs font-medium text-primary">Profile card</p>
               <p className="mt-2 text-4xl font-semibold text-white">Lv. {user.level.currentLevel}</p>
             </div>
-            <div className="hud-pill rounded-3xl p-3 text-primary">
+            <div className="hud-pill rounded-[var(--radius-universal)] p-3 text-primary">
               <Trophy className="h-5 w-5" aria-hidden="true" />
             </div>
           </div>
@@ -166,7 +166,7 @@ function MiniMetric({
   value: string;
 }) {
   return (
-    <div className="neon-metric rounded-[1.4rem] px-4 py-3">
+    <div className="neon-metric rounded-[var(--radius-universal)] px-4 py-3">
       <div className="flex items-center gap-2 text-xs font-medium text-muted">
         <span aria-hidden="true">{icon}</span>
         {label}

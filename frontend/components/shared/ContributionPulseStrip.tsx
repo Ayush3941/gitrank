@@ -13,7 +13,7 @@ export function ContributionPulseStrip({
   const activeDays = cells.filter((cell) => cell.count > 0).length;
 
   return (
-    <div className="rounded-[1.75rem] border border-primary/16 bg-primary/6 p-4">
+    <div className="rounded-[var(--radius-universal)] border border-primary/16 bg-primary/6 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs font-medium text-primary">{label}</p>
         <p className="text-xs text-muted">
@@ -27,7 +27,7 @@ export function ContributionPulseStrip({
         {cells.map((cell) => (
           <li key={cell.key} className="list-none">
             <span
-              className={`block h-4 w-full rounded-[0.1rem] border ${intensityClasses(cell.count)} ${
+              className={`block h-4 w-full rounded-[var(--radius-universal)] border ${intensityClasses(cell.count)} ${
                 cell.isToday ? "ring-1 ring-primary/32 ring-offset-1 ring-offset-background" : ""
               }`}
               title={`${cell.label}: ${cell.count} contribution${cell.count === 1 ? "" : "s"}`}

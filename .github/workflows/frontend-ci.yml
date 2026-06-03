@@ -59,6 +59,9 @@ jobs:
       - name: Check design token contrast
         run: npm run check:contrast
 
+      - name: Check radius token policy
+        run: npm run check:radius-tokens
+
       - name: Check readable text token usage
         run: npm run check:readable-text
 

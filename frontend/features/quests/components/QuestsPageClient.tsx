@@ -300,7 +300,7 @@ export function QuestsPageClient() {
                       Keep contribution momentum steady.
                     </p>
                   </div>
-                  <div className="grid gap-2 rounded-2xl border border-fuchsia-300/28 bg-fuchsia-400/10 px-4 py-3 text-sm text-fuchsia-100">
+                  <div className="grid gap-2 rounded-[var(--radius-universal)] border border-fuchsia-300/28 bg-fuchsia-400/10 px-4 py-3 text-sm text-fuchsia-100">
                     <span className="inline-flex items-center gap-2"><Flame className="h-4 w-4" aria-hidden="true" /> Current streak: <span className="numeric-readout">{streak.currentStreakDays.toLocaleString("en-US")}d</span></span>
                     <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4" aria-hidden="true" /> Best streak: <span className="numeric-readout">{streak.bestStreakDays.toLocaleString("en-US")}d</span></span>
                   </div>

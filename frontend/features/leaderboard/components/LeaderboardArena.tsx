@@ -85,7 +85,7 @@ export function LeaderboardArena({
         </ul>
       </GlowCard>
       {viewMode === "nearby" ? (
-        <div className="neon-surface rounded-[1rem] px-4 py-3">
+        <div className="neon-surface rounded-[var(--radius-universal)] px-4 py-3">
           <p className="text-sm font-semibold text-white">Nearby rank view</p>
           <p className="mt-1 text-xs text-muted">
             Showing podium plus your local bracket to keep comparisons focused.
@@ -179,7 +179,7 @@ export function LeaderboardArena({
               >
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="neon-surface numeric-readout flex h-14 w-14 items-center justify-center rounded-3xl text-xl font-semibold text-white">
+                    <div className="neon-surface numeric-readout flex h-14 w-14 items-center justify-center rounded-[var(--radius-universal)] text-xl font-semibold text-white">
                       #{row.rank}
                     </div>
                     <div>
@@ -252,7 +252,7 @@ function CompactRule({
   value: string;
 }) {
   return (
-    <div className="neon-surface rounded-[1.5rem] px-4 py-3">
+    <div className="neon-surface rounded-[var(--radius-universal)] px-4 py-3">
       <div className="flex items-center gap-2 text-xs font-semibold text-primary">
         <span aria-hidden="true">{icon}</span>
         {label}
@@ -292,7 +292,7 @@ function Metric({
   icon?: ReactNode;
 }) {
   return (
-    <div className="neon-metric rounded-3xl px-4 py-3">
+    <div className="neon-metric rounded-[var(--radius-universal)] px-4 py-3">
       <p className="text-xs font-medium text-muted">{label}</p>
       <div className="numeric-readout mt-2 flex items-center gap-2 text-xl font-semibold text-white">
         <span>{typeof value === "number" ? value.toLocaleString("en-US") : value}</span>

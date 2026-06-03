@@ -603,7 +603,7 @@ export function BadgesPageClient() {
       >
         {!isLoading && !isError ? (
           <>
-          <div className="neon-surface flex flex-wrap items-center justify-between gap-3 rounded-[1rem] px-4 py-3">
+          <div className="neon-surface flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-universal)] px-4 py-3">
             <h2 className="text-sm font-semibold text-white">
               Locked paths ({lockedBadges.length})
             </h2>
@@ -620,11 +620,11 @@ export function BadgesPageClient() {
           </div>
           {!showLockedBadges ? (
             lockedBadgePreview.length > 0 ? (
-              <div className="neon-surface rounded-[1.4rem] border border-fuchsia-300/18 px-4 py-4">
+              <div className="neon-surface rounded-[var(--radius-universal)] border border-fuchsia-300/18 px-4 py-4">
                 <p className="text-xs font-medium text-fuchsia-200">Upcoming unlock queue</p>
                 <ul role="list" className="mt-3 grid gap-2 md:grid-cols-3">
                   {lockedBadgePreview.map((badge) => (
-                    <li key={`${badge.id}-preview`} className="list-none rounded-[0.8rem] border border-fuchsia-300/20 bg-fuchsia-400/6 px-3 py-2">
+                    <li key={`${badge.id}-preview`} className="list-none rounded-[var(--radius-universal)] border border-fuchsia-300/20 bg-fuchsia-400/6 px-3 py-2">
                       <p className="text-sm font-semibold text-white">{badge.name}</p>
                       <p className="mt-1 text-xs text-muted">{badge.rarity}</p>
                       <p className="mt-1 text-xs text-cyan-100">{badge.progress ?? 0}% complete</p>
@@ -636,7 +636,7 @@ export function BadgesPageClient() {
                 </p>
               </div>
             ) : (
-              <div className="neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4 text-sm text-muted">
+              <div className="neon-surface rounded-[var(--radius-universal)] border-dashed border-fuchsia-300/32 px-4 py-4 text-sm text-muted">
                 No locked badge definitions are returned by this snapshot.
               </div>
             )
@@ -646,13 +646,13 @@ export function BadgesPageClient() {
             role="region"
             aria-labelledby={badgesLockedToggleId}
             hidden={!showLockedBadges}
-            className="neon-surface rounded-[1.4rem] border border-fuchsia-300/24 p-3"
+            className="neon-surface rounded-[var(--radius-universal)] border border-fuchsia-300/24 p-3"
           >
             {lockedBadges.length > 0 ? (
               <>
                 <ul role="list" className="grid gap-3 md:grid-cols-3">
                   {visibleLockedBadges.map((badge) => (
-                    <li key={badge.id} className="render-opt-card neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4">
+                    <li key={badge.id} className="render-opt-card neon-surface rounded-[var(--radius-universal)] border-dashed border-fuchsia-300/32 px-4 py-4">
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="text-xs font-medium text-fuchsia-200">{badge.rarity}</p>
                         <span className="neon-chip neon-chip-info rounded-full px-2.5 py-1 text-xs font-semibold">
@@ -707,7 +707,7 @@ export function BadgesPageClient() {
                 ) : null}
               </>
             ) : (
-              <div className="neon-surface rounded-[1.4rem] border-dashed border-fuchsia-300/32 px-4 py-4 text-sm text-muted">
+              <div className="neon-surface rounded-[var(--radius-universal)] border-dashed border-fuchsia-300/32 px-4 py-4 text-sm text-muted">
                 No locked badge definitions are returned by this snapshot.
               </div>
             )}
@@ -755,7 +755,7 @@ function BadgeMetric({
   icon: ReactNode;
 }) {
   return (
-    <div className="neon-metric rounded-[1.4rem] px-4 py-3">
+    <div className="neon-metric rounded-[var(--radius-universal)] px-4 py-3">
       <p className="text-xs font-medium text-muted">{label}</p>
       <p className="mt-2 flex items-center gap-2 text-xl font-semibold text-white">
         {value}

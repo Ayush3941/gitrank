@@ -69,7 +69,7 @@ export function LandingPage() {
                 <h2 className="cyber-title mt-2 text-2xl font-semibold text-foreground">After your first sync</h2>
               </div>
             </div>
-            <div className="neon-surface rounded-3xl p-4">
+            <div className="neon-surface rounded-[var(--radius-universal)] p-4">
               <p className="text-sm text-muted">
                 Connect GitHub to unlock your real rank, profile card, and progression signals.
               </p>
@@ -114,7 +114,7 @@ export function LandingPage() {
           },
         ].map((item, index) => (
           <GlowCard key={`problem-card-${index}-${item.title}`} className="space-y-3">
-            <div className="neon-tile inline-flex rounded-2xl p-3">{item.icon}</div>
+            <div className="neon-tile inline-flex rounded-[var(--radius-universal)] p-3">{item.icon}</div>
             <h3 className="text-xl font-semibold text-white">{item.title}</h3>
             <p className="text-sm text-muted">{item.text}</p>
           </GlowCard>
@@ -182,7 +182,7 @@ export function LandingPage() {
               "Turns verified work into XP, badge unlocks, league position, and public proof.",
               "Explains score changes so maintainers and recruiters can inspect the evidence instead of trusting a black box.",
             ].map((line, index) => (
-              <li key={`solution-line-${index}`} className="list-none neon-surface rounded-3xl px-4 py-3 text-sm text-muted">
+              <li key={`solution-line-${index}`} className="list-none neon-surface rounded-[var(--radius-universal)] px-4 py-3 text-sm text-muted">
                 {line}
               </li>
             ))}
@@ -197,7 +197,7 @@ export function LandingPage() {
           />
           <ol className="grid gap-3 sm:grid-cols-2">
             {loop.map((step, index) => (
-              <li key={`loop-step-${index}`} className="neon-surface rounded-3xl p-4">
+              <li key={`loop-step-${index}`} className="neon-surface rounded-[var(--radius-universal)] p-4">
                 <p className="text-xs font-medium text-primary">Step {index + 1}</p>
                 <p className="mt-2 text-lg font-medium text-white">{step}</p>
               </li>
@@ -213,7 +213,7 @@ export function LandingPage() {
             title="Every high-signal PR gets a post-match report"
             description="Scoring stays explainable. High XP requires difficulty, context, and credible review signals."
           />
-          <div className="neon-tile rounded-[1.75rem] p-5">
+          <div className="neon-tile rounded-[var(--radius-universal)] p-5">
             <p className="text-sm text-cyan-200">Live report cards unlock after GitHub sign-in and app-backed sync.</p>
             <h3 className="mt-2 text-xl font-semibold text-foreground">Report details appear once your profile sync completes.</h3>
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -237,7 +237,7 @@ export function LandingPage() {
               "Testing and reliability signal",
               "Cross-repository impact",
             ].map((track, index) => (
-              <li key={`badge-track-${index}`} className="neon-surface rounded-[1.75rem] p-4">
+              <li key={`badge-track-${index}`} className="neon-surface rounded-[var(--radius-universal)] p-4">
                 <p className="text-xs font-medium text-primary">Badge track</p>
                 <h3 className="mt-3 text-lg font-semibold text-white">{track}</h3>
               </li>
@@ -282,7 +282,7 @@ export function LandingPage() {
 
 function Metric({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="neon-metric rounded-3xl px-4 py-3">
+    <div className="neon-metric rounded-[var(--radius-universal)] px-4 py-3">
       <p className="text-xs font-medium text-muted">{label}</p>
       <p className="mt-2 text-2xl font-semibold text-foreground">{value}</p>
     </div>
@@ -312,7 +312,7 @@ function AssuranceRow({
   value: string;
 }) {
   return (
-    <div className="neon-surface flex items-center justify-between gap-3 rounded-[1rem] px-3 py-2 text-xs">
+    <div className="neon-surface flex items-center justify-between gap-3 rounded-[var(--radius-universal)] px-3 py-2 text-xs">
       <span className="font-medium text-primary">{label}</span>
       <span className="text-muted">{value}</span>
     </div>

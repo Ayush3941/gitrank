@@ -159,7 +159,7 @@ export function PrivacyRepositoryToggleList({
           <ul role="list" className="grid gap-3">
             {filteredItems.map((repo) => (
               <li key={`${repo.name}:${repo.visibility}:${repo.tracked ? "tracked" : "untracked"}`} className="list-none">
-                <div className="render-opt-card neon-surface flex flex-col gap-3 rounded-[1.75rem] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="render-opt-card neon-surface flex flex-col gap-3 rounded-[var(--radius-universal)] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="font-medium text-white">{repo.name}</p>
                     <p className="text-sm text-muted">{repo.reason}</p>
@@ -199,7 +199,7 @@ export function PrivacyRepositoryToggleList({
             ))}
           </ul>
         ) : (
-          <div className="neon-surface space-y-3 rounded-[1.75rem] border-dashed px-4 py-4 text-sm text-muted">
+          <div className="neon-surface space-y-3 rounded-[var(--radius-universal)] border-dashed px-4 py-4 text-sm text-muted">
             {counts.total === 0 ? (
               <p>
                 Repository visibility records will appear here after the next profile sync.

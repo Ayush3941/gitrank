@@ -25,7 +25,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
       </div>
       <ul role="list" className="grid gap-3">
         {sortedReports.length === 0 ? (
-          <li className="list-none neon-surface space-y-3 rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
+          <li className="list-none neon-surface space-y-3 rounded-[var(--radius-universal)] border-dashed p-4 text-sm text-muted">
             <p>No reports yet. New merged PRs appear here after auto-sync settles.</p>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" variant="secondary">
@@ -43,7 +43,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
           return (
             <li
               key={`${report.contribution.owner}/${report.contribution.repo}#${report.contribution.number}-${report.contribution.id}-${index}`}
-              className="list-none render-opt-card neon-surface rounded-[1.75rem] p-4"
+              className="list-none render-opt-card neon-surface rounded-[var(--radius-universal)] p-4"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>

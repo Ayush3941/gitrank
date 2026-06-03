@@ -517,7 +517,7 @@ export function SettingsPageClient() {
         ) : null}
         {actionError ? (
           <div className="min-h-6">
-            <p id={accountActionErrorId} role="alert" aria-atomic="true" className="inline-flex items-center rounded-[0.1rem] border border-rose-300/26 bg-rose-500/10 px-3 py-1.5 text-sm text-rose-100">
+            <p id={accountActionErrorId} role="alert" aria-atomic="true" className="inline-flex items-center rounded-[var(--radius-universal)] border border-rose-300/26 bg-rose-500/10 px-3 py-1.5 text-sm text-rose-100">
               {actionError}
             </p>
           </div>
@@ -584,7 +584,7 @@ export function SettingsPageClient() {
         <GlowCard className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="max-w-2xl">
-              <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
+              <div className="inline-flex rounded-[var(--radius-universal)] bg-primary/12 p-3 text-primary">
                 <BrandLogo size={20} className="h-5 w-5" />
               </div>
               <p className="mt-4 text-xs font-medium text-primary">Display preference</p>
@@ -624,7 +624,7 @@ export function SettingsPageClient() {
                 <Palette className="h-4 w-4 text-primary" aria-hidden="true" />
                 <p className="text-sm font-semibold text-white">Theme + text tuning</p>
               </div>
-              <div className="neon-surface rounded-[1rem] px-4 py-3">
+              <div className="neon-surface rounded-[var(--radius-universal)] px-4 py-3">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <p className="text-sm text-muted">
                     {activeTheme.label} · {activeTextScale.label} · {themeSource === "system" ? "System" : "Manual"}
@@ -794,7 +794,7 @@ export function SettingsPageClient() {
               {exportAccount.isPending ? "Exporting..." : "Export data"}
             </Button>
           </div>
-          <div className="space-y-2 rounded-[0.1rem] border border-rose-300/24 bg-rose-500/8 px-3 py-3">
+          <div className="space-y-2 rounded-[var(--radius-universal)] border border-rose-300/24 bg-rose-500/8 px-3 py-3">
             <p className="text-xs text-rose-100">Delete wipes synced PR history, score events, badges, profile state, and signs you out. Next login starts from a fresh account state.</p>
             <Button
               variant="danger"
@@ -989,7 +989,7 @@ function SettingSection({
         {rows.map(([label, checked, onCheckedChange], index) => {
           const controlID = `${toControlID(title)}-${toControlID(label)}-${index}`;
           return (
-          <li key={`${label}-${index}`} className="list-none neon-surface flex items-center justify-between gap-4 rounded-[1.75rem] px-4 py-4">
+          <li key={`${label}-${index}`} className="list-none neon-surface flex items-center justify-between gap-4 rounded-[var(--radius-universal)] px-4 py-4">
             <label className="text-sm text-muted" htmlFor={controlID}>
               {label}
             </label>

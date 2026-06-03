@@ -256,7 +256,7 @@ export function SyncPipeline() {
           </p>
         </div>
         <div id="onboarding-sync-phases" className="space-y-3">
-          <div className="neon-surface rounded-[1.35rem] border-dashed border-primary/24 px-4 py-3">
+          <div className="neon-surface rounded-[var(--radius-universal)] border-dashed border-primary/24 px-4 py-3">
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
                 Sync state {formatSyncStateLabel(syncState)}
@@ -276,9 +276,9 @@ export function SyncPipeline() {
               return (
                 <li
                   key={`sync-step-${index}-${step}`}
-                  className="list-none neon-surface flex items-center gap-4 rounded-[1.75rem] px-4 py-4"
+                  className="list-none neon-surface flex items-center gap-4 rounded-[var(--radius-universal)] px-4 py-4"
                 >
-                  <div className="neon-tile rounded-2xl p-2 text-primary">
+                  <div className="neon-tile rounded-[var(--radius-universal)] p-2 text-primary">
                     {done ? (
                       <CheckCircle2 className="h-5 w-5 text-emerald-300" aria-hidden="true" />
                     ) : (

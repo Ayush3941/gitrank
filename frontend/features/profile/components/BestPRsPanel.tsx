@@ -27,7 +27,7 @@ export function BestPRsPanel({
       </div>
       <div className="space-y-3">
         {reports.length === 0 ? (
-          <div className="neon-surface rounded-[1.75rem] border-dashed border-primary/24 p-4 text-sm text-muted">
+          <div className="neon-surface rounded-[var(--radius-universal)] border-dashed border-primary/24 p-4 text-sm text-muted">
             <p>No public PR reports yet for this profile snapshot.</p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Button asChild variant="secondary" size="sm">
@@ -44,7 +44,7 @@ export function BestPRsPanel({
               return (
             <li
               key={`${report.owner}/${report.repo}#${report.number}-${report.id}-${index}`}
-              className="render-opt-card neon-surface cyber-sheen rounded-[1.75rem] border-cyan-300/18 p-4"
+              className="render-opt-card neon-surface cyber-sheen rounded-[var(--radius-universal)] border-cyan-300/18 p-4"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>

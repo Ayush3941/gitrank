@@ -12,7 +12,7 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
         <header className="glass-panel cyber-card cyber-frame neon-outline px-5 py-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <IntentPrefetchLink href="/" className="flex items-center gap-3">
-              <div className="rounded-3xl border border-primary/24 bg-primary/14 p-2.5 text-primary ring-glow">
+              <div className="rounded-[var(--radius-universal)] border border-primary/24 bg-primary/14 p-2.5 text-primary ring-glow">
                 <BrandLogo size={22} className="h-[22px] w-[22px]" priority />
               </div>
               <div>

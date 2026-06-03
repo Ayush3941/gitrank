@@ -19,7 +19,7 @@ export function GlowCard({
     <div
       className={cn(
         surfaceClasses,
-        "rounded-[var(--radius-card)] p-5 sm:p-6",
+        "rounded-[var(--radius-universal)] p-5 sm:p-6",
         className,
       )}
       {...props}

@@ -290,7 +290,7 @@ export function SyncRunActivityPanel({
               onChange={(event) => {
                 setStatusFilter(event.target.value as SyncRunStatusFilter);
               }}
-              className="h-10 rounded-[0.1rem] border-primary/24 bg-slate-950/60 py-0 text-white"
+              className="h-10 rounded-[var(--radius-universal)] border-primary/24 bg-slate-950/60 py-0 text-white"
             >
               {SYNC_RUN_STATUS_FILTERS.map((status) => {
                 const meta = SYNC_RUN_STATUS_META[status];

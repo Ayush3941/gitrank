@@ -32,7 +32,7 @@ export function BadgeDetailDialog({
           </DialogDescription>
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-3">
-              <div className="neon-tile cyber-sheen inline-flex rounded-3xl p-3 text-primary">
+              <div className="neon-tile cyber-sheen inline-flex rounded-[var(--radius-universal)] p-3 text-primary">
                 <SignalIcon icon={badge.icon} className="h-5 w-5" />
               </div>
               <DialogTitle className="text-2xl font-semibold text-white">{badge.name}</DialogTitle>

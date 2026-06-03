@@ -262,7 +262,7 @@ export function PublicProfilePageClient({
             {unlockedBadges.length > 0 ? (
               <ul role="list" className="grid gap-3 sm:grid-cols-2">
                 {unlockedBadges.slice(0, 3).map((badge) => (
-                  <li key={badge.id} className="render-opt-card neon-surface rounded-[1.75rem] p-4">
+                  <li key={badge.id} className="render-opt-card neon-surface rounded-[var(--radius-universal)] p-4">
                     <RarityBadge rarity={badge.rarity} />
                     <h3 className="mt-3 text-lg font-medium text-white">{badge.name}</h3>
                     <ExpandableText
@@ -278,7 +278,7 @@ export function PublicProfilePageClient({
                 ))}
               </ul>
             ) : (
-              <div className="neon-surface space-y-3 rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
+              <div className="neon-surface space-y-3 rounded-[var(--radius-universal)] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
                 <p>Badge unlocks will appear here as scored contributions land.</p>
                 <div className="flex flex-wrap gap-2">
                   <Button asChild size="sm" variant="secondary">
@@ -297,7 +297,7 @@ export function PublicProfilePageClient({
               </p>
             </div>
             {skillTree.length === 0 ? (
-              <div className="neon-surface space-y-3 rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
+              <div className="neon-surface space-y-3 rounded-[var(--radius-universal)] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
                 <p>Skill evidence will appear here after the next scored snapshot.</p>
                 <div className="flex flex-wrap gap-2">
                   <Button asChild size="sm" variant="secondary">
@@ -343,7 +343,7 @@ export function PublicProfilePageClient({
               <p className="mt-1 text-sm text-muted">{data.trendWindowLabel}</p>
             </div>
             {data.user.xpTimeline.length === 0 ? (
-              <div className="neon-surface space-y-3 rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
+              <div className="neon-surface space-y-3 rounded-[var(--radius-universal)] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
                 <p>Timeline signal will appear here after more scored history is synced.</p>
                 <div className="flex flex-wrap gap-2">
                   <Button asChild size="sm" variant="secondary">
@@ -360,7 +360,7 @@ export function PublicProfilePageClient({
             )}
           </GlowCard>
           <GlowCard className="space-y-5">
-            <div className="inline-flex rounded-3xl bg-primary/12 p-3 text-primary">
+            <div className="inline-flex rounded-[var(--radius-universal)] bg-primary/12 p-3 text-primary">
               <Award className="h-5 w-5" aria-hidden="true" />
             </div>
             <div>
@@ -369,7 +369,7 @@ export function PublicProfilePageClient({
             </div>
             <div className="space-y-3">
               {data.topRepositories.length === 0 ? (
-                <div className="neon-surface space-y-3 rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
+                <div className="neon-surface space-y-3 rounded-[var(--radius-universal)] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
                   <p>Repository signal will appear here after more scored PR evidence is synced.</p>
                   <div className="flex flex-wrap gap-2">
                     <Button asChild size="sm" variant="secondary">
@@ -382,7 +382,7 @@ export function PublicProfilePageClient({
                   {data.topRepositories.slice(0, 3).map((repository, index) => (
                     <li
                       key={`${repository.name}-${repository.contributionCount}-${repository.totalXp}`}
-                      className="render-opt-card neon-surface rounded-[1.5rem] px-4 py-3"
+                      className="render-opt-card neon-surface rounded-[var(--radius-universal)] px-4 py-3"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex items-start gap-3">
@@ -417,7 +417,7 @@ export function PublicProfilePageClient({
 function LiteSkillSummary({ skills }: { skills: SkillNode[] }) {
   if (skills.length === 0) {
     return (
-      <div className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
+      <div className="neon-surface rounded-[var(--radius-universal)] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
         <p>Skill evidence will appear here after the next scored snapshot.</p>
       </div>
     );
@@ -448,7 +448,7 @@ function LiteSkillSummary({ skills }: { skills: SkillNode[] }) {
           return (
             <li
               key={`${skill.category}-${skill.score}-${skill.delta}`}
-              className="neon-surface rounded-[1.3rem] px-4 py-3"
+              className="neon-surface rounded-[var(--radius-universal)] px-4 py-3"
             >
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-medium text-white">{skill.category}</p>
@@ -475,7 +475,7 @@ function LiteTimelineSummary({
 }) {
   if (timeline.length === 0) {
     return (
-      <div className="neon-surface rounded-[1.5rem] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
+      <div className="neon-surface rounded-[var(--radius-universal)] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
         <p>Timeline signal will appear here after more scored history is synced.</p>
       </div>
     );
@@ -491,7 +491,7 @@ function LiteTimelineSummary({
 
   return (
     <div className="space-y-3">
-      <div className="neon-surface rounded-[1.3rem] px-4 py-3">
+      <div className="neon-surface rounded-[var(--radius-universal)] px-4 py-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs text-muted">Latest XP snapshot</p>
           <span className="neon-chip neon-chip-muted rounded-full px-2.5 py-1 text-xs font-semibold">
@@ -513,7 +513,7 @@ function LiteTimelineSummary({
         {recent.map((point, index) => (
           <li
             key={`${point.label}-${index}`}
-            className="neon-surface flex items-center justify-between gap-3 rounded-[1.2rem] px-4 py-2.5"
+            className="neon-surface flex items-center justify-between gap-3 rounded-[var(--radius-universal)] px-4 py-2.5"
           >
             <p className="text-sm text-muted">{point.label}</p>
             <p className="text-sm font-semibold text-white">{point.xp.toLocaleString("en-US")}</p>
@@ -556,7 +556,7 @@ function LiteBestPRSummary({
         {reports.slice(0, 4).map((report) => (
           <li
             key={report.id}
-            className="neon-surface rounded-[1.3rem] px-4 py-3"
+            className="neon-surface rounded-[var(--radius-universal)] px-4 py-3"
           >
             <p className="break-anywhere text-sm font-medium text-white">{report.title}</p>
             <p className="mt-1 break-anywhere text-xs text-muted">

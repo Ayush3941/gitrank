@@ -102,7 +102,7 @@ export function ContributionList({
                     </ul>
                   ) : null}
                 </div>
-                <div className={`neon-surface border-primary/28 text-right ${useLiteCards ? "rounded-[1rem] px-3 py-2.5" : "rounded-[1.25rem] px-4 py-3"}`}>
+                <div className={`neon-surface border-primary/28 text-right ${useLiteCards ? "rounded-[var(--radius-universal)] px-3 py-2.5" : "rounded-[var(--radius-universal)] px-4 py-3"}`}>
                   <p className="text-xs font-medium text-primary">Earned</p>
                   <p className="numeric-readout mt-2 text-3xl font-semibold text-white">{item.xpEarned} XP</p>
                   {!useLiteCards && showDetails ? (
@@ -262,7 +262,7 @@ function AIPanel({
     : sanitizedSummary;
 
   return (
-      <div className={`neon-surface border-fuchsia-300/28 ${lite ? "rounded-[1rem] px-3 py-3" : "rounded-[1.35rem] px-4 py-4"}`}>
+      <div className={`neon-surface border-fuchsia-300/28 ${lite ? "rounded-[var(--radius-universal)] px-3 py-3" : "rounded-[var(--radius-universal)] px-4 py-4"}`}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="inline-flex items-center gap-2 text-xs font-medium text-fuchsia-100">
           <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />

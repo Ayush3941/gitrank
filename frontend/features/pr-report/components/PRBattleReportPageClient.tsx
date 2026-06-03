@@ -279,24 +279,24 @@ export function PRBattleReportPageClient({
           </div>
         </div>
           <div className="grid gap-3 sm:grid-cols-3">
-            <div className="neon-metric rounded-[1.4rem] px-4 py-3">
+            <div className="neon-metric rounded-[var(--radius-universal)] px-4 py-3">
               <p className="text-xs font-medium text-muted">Category</p>
               <p className="mt-2 text-sm font-semibold text-white">{data.contribution.category}</p>
             </div>
-            <div className="neon-metric rounded-[1.4rem] px-4 py-3">
+            <div className="neon-metric rounded-[var(--radius-universal)] px-4 py-3">
               <p className="text-xs font-medium text-muted">Files changed</p>
               <p className="mt-2 text-sm font-semibold text-white">
                 {data.contribution.changedFilesCount.toLocaleString("en-US")}
               </p>
             </div>
-            <div className="neon-metric rounded-[1.4rem] px-4 py-3">
+            <div className="neon-metric rounded-[var(--radius-universal)] px-4 py-3">
               <p className="text-xs font-medium text-muted">Confidence</p>
               <p className="mt-2 text-sm font-semibold text-white">
                 {formatConfidenceLabel(evidenceState)}
               </p>
             </div>
           </div>
-          <div className="neon-tile rounded-[1.5rem] p-4">
+          <div className="neon-tile rounded-[var(--radius-universal)] p-4">
             <p className="text-xs font-medium text-muted">Evidence state</p>
           <ul role="list" className="mt-3 flex flex-wrap gap-2">
             <li className="list-none">
@@ -599,7 +599,7 @@ export function PRBattleReportPageClient({
                       {uniqueBadgeUnlocks.map((badge, index) => {
                         const badgeSignals = buildEvidenceSignalChips(badge.evidenceSignals, 3);
                         return (
-                          <li key={`${badge.key}-${index}`} className="list-none render-opt-card neon-surface rounded-[1.75rem] p-4">
+                          <li key={`${badge.key}-${index}`} className="list-none render-opt-card neon-surface rounded-[var(--radius-universal)] p-4">
                             <p className="text-lg font-semibold text-white">{badge.name}</p>
                             {badge.description ? <p className="mt-2 text-sm text-muted">{badge.description}</p> : null}
                             <p className="mt-3 text-xs text-emerald-100">
@@ -629,25 +629,25 @@ export function PRBattleReportPageClient({
           <GlowCard className="space-y-4">
             <p className="text-xs font-medium text-primary">Quick read</p>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <div className="neon-surface rounded-[1.2rem] px-4 py-3">
+              <div className="neon-surface rounded-[var(--radius-universal)] px-4 py-3">
                 <p className="text-xs text-muted">Difficulty</p>
                 <p className="mt-1 text-sm font-semibold text-white">
                   {data.contribution.difficultyScore}
                 </p>
               </div>
-              <div className="neon-surface rounded-[1.2rem] px-4 py-3">
+              <div className="neon-surface rounded-[var(--radius-universal)] px-4 py-3">
                 <p className="text-xs text-muted">Impact</p>
                 <p className="mt-1 text-sm font-semibold text-white">
                   {data.contribution.impactScore}
                 </p>
               </div>
-              <div className="neon-surface rounded-[1.2rem] px-4 py-3">
+              <div className="neon-surface rounded-[var(--radius-universal)] px-4 py-3">
                 <p className="text-xs text-muted">Review depth</p>
                 <p className="mt-1 text-sm font-semibold text-white">
                   {data.contribution.reviewDepthScore}
                 </p>
               </div>
-              <div className="neon-surface rounded-[1.2rem] px-4 py-3">
+              <div className="neon-surface rounded-[var(--radius-universal)] px-4 py-3">
                 <p className="text-xs text-muted">Test signal</p>
                 <p className="mt-1 text-sm font-semibold text-white">
                   {data.contribution.testSignalScore}
@@ -1070,7 +1070,7 @@ function LedgerSection({
   metrics: LedgerMetric[];
 }) {
   return (
-    <section className="space-y-3 rounded-[1.4rem] border border-white/10 bg-black/20 p-3 sm:p-4">
+    <section className="space-y-3 rounded-[var(--radius-universal)] border border-white/10 bg-black/20 p-3 sm:p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">{title}</h3>
         <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-muted">
@@ -1105,7 +1105,7 @@ function MetricCell({
   showDescription: boolean;
 }) {
   return (
-    <div className="neon-surface rounded-[1.2rem] px-4 py-3">
+    <div className="neon-surface rounded-[var(--radius-universal)] px-4 py-3">
       <dt className="text-xs text-muted">{label}</dt>
       <dd className="break-anywhere mt-1 text-sm font-semibold text-white" title={description}>
         {value}

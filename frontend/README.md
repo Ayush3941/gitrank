@@ -64,6 +64,7 @@ npm run check:oauth-prefetch-policy
 npm run check:dashboard-route-copy-policy
 npm run check:env-example-coverage
 npm run check:route-state-primitives
+npm run check:radius-tokens
 npm run check:jsx-ids
 npm run check:native-button-type
 npm run check:input-names
@@ -104,6 +105,7 @@ The public profile page, authenticated dashboard overview, onboarding reveal, ba
 - `npm run check:dashboard-route-copy-policy` fails CI if dashboard route pages stop sourcing metadata from `dashboardNavByHref`, preventing nav-label and metadata drift
 - `npm run check:env-example-coverage` fails CI when frontend runtime env keys in source drift from `gitrank/.env.example` (missing declarations or stale unused keys)
 - `npm run check:route-state-primitives` fails CI if route `loading`, `error`, `global-error`, or `not-found` files stop using shared route-state UI primitives
+- `npm run check:radius-tokens` fails CI if production frontend modules use large or hardcoded radius utility classes instead of `rounded-[var(--radius-universal)]`, `rounded-full`, or `rounded-none`
 - `npm run check:jsx-ids` fails CI if a TSX file reuses the same literal `id` more than once, preventing duplicate region IDs that break a11y and section controls
 - `npm run check:native-button-type` fails CI if a literal `<button>` omits an explicit safe type; shared `Button` defaults plain buttons to `type="button"`
 - `npm run check:input-names` fails CI if production inputs lack an accessible-name path or rely only on placeholder text

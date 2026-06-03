@@ -45,7 +45,7 @@ export function QuestCard({ quest }: { quest: Quest }) {
             />
           ) : null}
         </div>
-        <div className="neon-chip neon-chip-info rounded-3xl px-3 py-2 text-sm font-medium">
+        <div className="neon-chip neon-chip-info rounded-[var(--radius-universal)] px-3 py-2 text-sm font-medium">
           <span className="numeric-readout">+{quest.rewardXp.toLocaleString("en-US")} XP</span>
         </div>
       </div>

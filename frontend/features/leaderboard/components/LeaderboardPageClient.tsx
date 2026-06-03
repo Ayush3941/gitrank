@@ -443,7 +443,7 @@ export function LeaderboardPageClient() {
         {!isLoading && !isError && snapshot && rows.length ? (
           <>
             {snapshot.currentUser ? (
-              <div className="neon-surface rounded-[1rem] px-4 py-3">
+              <div className="neon-surface rounded-[var(--radius-universal)] px-4 py-3">
                 <p className="text-sm font-semibold text-white">
                   Rank #{snapshot.currentUser.rank} in {tab}
                 </p>

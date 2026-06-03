@@ -12,7 +12,8 @@ This document is intentionally detailed.
 - Public profile card exports now use the user-facing `Open proof data` label; `npm run check:copy-tone` blocks the old developer-facing JSON label from returning.
 - Markdown make-target verification now uses a deterministic here-string lookup instead of a `printf | rg` pipeline, avoiding false failures when `pipefail` observes SIGPIPE after a valid early match.
 - Markdown frontend npm-script verification now uses the same deterministic here-string lookup so valid `npm run` references do not fail under `pipefail`.
-- Shared `Input`, `NativeSelect`, chart shells, route-loading skeleton blocks, dashboard stat icons, and PR evidence signal surfaces now use `rounded-[var(--radius-universal)]` directly, keeping component code aligned with the global radius token instead of relying on CSS overrides to erase large-radius classes.
+- Production frontend surfaces now use `rounded-[var(--radius-universal)]` directly for non-pill shapes, keeping component code aligned with the global radius token instead of relying on CSS overrides to erase large-radius classes.
+- Added `npm run check:radius-tokens`, wired into frontend CI and repo sync, so production source can only use `rounded-[var(--radius-universal)]`, `rounded-full`, or `rounded-none`.
 - Removed redundant browser `title` tooltips from interactive controls and added `npm run check:interactive-titles`; controls must expose names and detail through visible text or ARIA, not hover-only tooltips.
 - Live-region announcements now use explicit atomic updates; `npm run check:live-regions` blocks `role="status"` and `role="alert"` nodes that omit `aria-atomic="true"`.
 - Frontend JSX policy scripts share `frontend/scripts/lib/jsx-source-scan.mjs`; add new AST-based UI guards, including accessible-name, decorative-icon, duplicate-id, main-landmark, navigation-landmark, nested-interactive, new-tab-link, polymorphic-button, and unstable-key checks, through that helper instead of copying parser/walker code.
@@ -721,6 +722,7 @@ Verification snapshot (May 17, 2026):
 - `cd frontend && npm run check:cache-strategy`
 - `cd frontend && npm run check:route-state-primitives`
 - `cd frontend && npm run check:contrast`
+- `cd frontend && npm run check:radius-tokens`
 - `cd frontend && npm run check:media-stability`
 - `cd frontend && npm run check:native-button-type`
 - `cd frontend && npm run check:input-names`

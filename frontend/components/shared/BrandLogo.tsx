@@ -19,7 +19,7 @@ export function BrandLogo({
       width={size}
       height={size}
       priority={priority}
-      className={cn("rounded-[0.1rem] object-contain", className)}
+      className={cn("rounded-[var(--radius-universal)] object-contain", className)}
     />
   );
 }

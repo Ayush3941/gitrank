@@ -14,13 +14,13 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
         <div>
           <h2 className="text-xl font-semibold text-white">Quests</h2>
         </div>
-        <div className="neon-surface rounded-3xl p-3 text-primary">
+        <div className="neon-surface rounded-[var(--radius-universal)] p-3 text-primary">
           <Target className="h-5 w-5" aria-hidden="true" />
         </div>
       </div>
       <div className="space-y-3">
         {quests.length === 0 ? (
-          <div className="neon-surface space-y-3 rounded-[1.75rem] border-dashed p-4 text-sm text-muted">
+          <div className="neon-surface space-y-3 rounded-[var(--radius-universal)] border-dashed p-4 text-sm text-muted">
             <p>No quests yet. Sync scored PR evidence to generate missions.</p>
             <div className="flex flex-wrap gap-2">
               <Button asChild size="sm" variant="secondary">
@@ -38,7 +38,7 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
             const visibleSignals = buildEvidenceSignalChips(quest.evidenceSignals, 3);
             return (
               <li key={`${quest.id}-${questIndex}`} className="list-none">
-                <article className="render-opt-card neon-surface rounded-[1.75rem] p-4">
+                <article className="render-opt-card neon-surface rounded-[var(--radius-universal)] p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <h3 className="text-lg font-medium text-white">{quest.title}</h3>

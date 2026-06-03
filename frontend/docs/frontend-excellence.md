@@ -45,6 +45,8 @@ Source of truth: `frontend/app/globals.css`.
   affordance requires a larger interactive silhouette.
 - Non-pill surfaces should spell `rounded-[var(--radius-universal)]` directly
   instead of using large-radius classes that the global token layer overrides.
+- `npm run check:radius-tokens` enforces the policy across production frontend
+  source.
 
 ### Typography baseline
 
