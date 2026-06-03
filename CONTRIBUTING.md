@@ -22,7 +22,11 @@ This document is intentionally detailed.
 - Added `npm run check:role-img-names`, wired into frontend CI and repo sync, so chart/avatar-style `role="img"` visuals must expose an accessible name.
 - Added `npm run check:button-names`, wired into frontend CI and repo sync, so literal and shared buttons must expose visible, ARIA, or screen-reader-only names.
 - Added `npm run check:link-names`, wired into frontend CI and repo sync, so literal, Next, and intent-prefetch links must expose visible, ARIA, or screen-reader-only names.
+- `InlineNotice` now requires contextual placeholder text, and `npm run check:inline-notice-placeholders` blocks generic hidden status lanes from returning.
+- Shared `Input` now forwards refs so focus restoration helpers can target the real input element without unsafe prop assumptions.
 - Shared search-clear refocus now uses `focusWithoutScroll()`, and `npm run check:focus-without-scroll` is wired into frontend CI and repo sync to block raw `.focus()` calls that can jump the viewport.
+- Stale-refresh pages now pass the optional user-sync argument explicitly, and the stale-refresh wiring guard accepts that type-safe form while still requiring `runUserSync.mutateAsync(...)`.
+- Contributions stale-refresh handling now uses the shared stale-refresh error context, and contributions/badges/leaderboard only render stale-state details when a profile snapshot exists.
 - Removed redundant browser `title` tooltips from interactive controls and added `npm run check:interactive-titles`; controls must expose names and detail through visible text or ARIA, not hover-only tooltips.
 - Live-region announcements now use explicit atomic updates; `npm run check:live-regions` blocks `role="status"` and `role="alert"` nodes that omit `aria-atomic="true"`.
 - Frontend JSX policy scripts share `frontend/scripts/lib/jsx-source-scan.mjs`; add new AST-based UI guards, including accessible-name, decorative-icon, duplicate-id, main-landmark, navigation-landmark, nested-interactive, new-tab-link, polymorphic-button, and unstable-key checks, through that helper instead of copying parser/walker code.
@@ -737,6 +741,7 @@ Verification snapshot (May 17, 2026):
 - `cd frontend && npm run check:role-img-names`
 - `cd frontend && npm run check:button-names`
 - `cd frontend && npm run check:link-names`
+- `cd frontend && npm run check:inline-notice-placeholders`
 - `cd frontend && npm run check:focus-without-scroll`
 - `cd frontend && npm run check:media-stability`
 - `cd frontend && npm run check:native-button-type`

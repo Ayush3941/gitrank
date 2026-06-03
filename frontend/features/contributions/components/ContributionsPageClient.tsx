@@ -185,7 +185,7 @@ export function ContributionsPageClient() {
   const staleSyncRefresh = useStaleSyncRefresh({
     runs: syncRunsQuery.data?.runs,
     isSyncPending: runUserSync.isPending,
-    requestSync: () => runUserSync.mutateAsync(),
+    requestSync: () => runUserSync.mutateAsync(undefined),
     refetchAfterSync: async () => {
       await refetch();
     },
@@ -263,7 +263,7 @@ export function ContributionsPageClient() {
   const shouldBlockOnLoading = isLoading && !hasCachedProfile;
   const shouldBlockOnError = isError && !hasCachedProfile;
   const backgroundRefreshError = isError && hasCachedProfile
-    ? `${sanitizeUserFacingError((error as Error | null)?.message || "", "contributions-refresh")} Showing latest verified contribution data.`
+    ? `${sanitizeUserFacingError((error as Error | null)?.message || "", "stale-refresh")} Showing latest verified contribution data.`
     : "";
 
   useEffect(() => {
@@ -424,6 +424,7 @@ export function ContributionsPageClient() {
       {backgroundRefreshError ? (
         <InlineNotice
           message={backgroundRefreshError}
+          placeholder="Background refresh status"
           variant="warning"
           minHeightClassName="min-h-0"
         />
@@ -431,7 +432,7 @@ export function ContributionsPageClient() {
       {appInstallationBlocked ? (
         <GitHubAppSyncBlockNotice message={latestSyncOutcome?.message} />
       ) : null}
-      {displaySyncState === "stale" || displaySyncState === "partially_synced" ? (
+      {profile && (displaySyncState === "stale" || displaySyncState === "partially_synced") ? (
         <StaleState
           message={staleNotice.message}
           reasonMessage={staleNotice.reasonMessage}

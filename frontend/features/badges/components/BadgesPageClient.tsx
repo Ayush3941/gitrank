@@ -144,7 +144,7 @@ export function BadgesPageClient() {
   const staleSyncRefresh = useStaleSyncRefresh({
     runs: syncRunsQuery.data?.runs,
     isSyncPending: runUserSync.isPending,
-    requestSync: () => runUserSync.mutateAsync(),
+    requestSync: () => runUserSync.mutateAsync(undefined),
     refetchAfterSync: async () => {
       await refetch();
     },
@@ -345,7 +345,7 @@ export function BadgesPageClient() {
         {appInstallationBlocked ? (
           <GitHubAppSyncBlockNotice message={latestSyncOutcome?.message} />
         ) : null}
-        {displaySyncState === "stale" || displaySyncState === "partially_synced" ? (
+        {profile && (displaySyncState === "stale" || displaySyncState === "partially_synced") ? (
           <StaleState
             message={staleNotice.message}
             reasonMessage={staleNotice.reasonMessage}

@@ -11,7 +11,7 @@ const variantClassName: Record<NoticeVariant, string> = {
 
 export function InlineNotice({
   message,
-  placeholder = "Status",
+  placeholder,
   variant = "info",
   className,
   minHeightClassName = "min-h-6",
@@ -19,7 +19,7 @@ export function InlineNotice({
   dismissLabel = "Dismiss status message",
 }: {
   message?: string;
-  placeholder?: string;
+  placeholder: string;
   variant?: NoticeVariant;
   className?: string;
   minHeightClassName?: string;

@@ -151,7 +151,7 @@ export function LeaderboardPageClient() {
   const staleSyncRefresh = useStaleSyncRefresh({
     runs: syncRunsQuery.data?.runs,
     isSyncPending: runUserSync.isPending,
-    requestSync: () => runUserSync.mutateAsync(),
+    requestSync: () => runUserSync.mutateAsync(undefined),
     refetchAfterSync: async () => {
       await Promise.allSettled([refetchMyProfile(), refetch()]);
     },
@@ -241,7 +241,7 @@ export function LeaderboardPageClient() {
       {appInstallationBlocked ? (
         <GitHubAppSyncBlockNotice message={latestSyncOutcome?.message} />
       ) : null}
-      {displaySyncState === "stale" || displaySyncState === "partially_synced" ? (
+      {myProfile && (displaySyncState === "stale" || displaySyncState === "partially_synced") ? (
         <StaleState
           message={staleNotice.message}
           reasonMessage={staleNotice.reasonMessage}

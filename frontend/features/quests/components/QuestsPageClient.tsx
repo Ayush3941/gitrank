@@ -106,7 +106,7 @@ export function QuestsPageClient() {
   const staleSyncRefresh = useStaleSyncRefresh({
     runs: syncRunsQuery.data?.runs,
     isSyncPending: runUserSync.isPending,
-    requestSync: () => runUserSync.mutateAsync(),
+    requestSync: () => runUserSync.mutateAsync(undefined),
     refetchAfterSync: async () => {
       await refetch();
     },

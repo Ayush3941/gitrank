@@ -44,7 +44,7 @@ for (const relativePath of targets) {
   );
   const hasSharedRefreshHook = /useStaleSyncRefresh/.test(source);
   const hasSharedRefreshInitialization =
-    /const\s+staleSyncRefresh\s*=\s*useStaleSyncRefresh\(\{[\s\S]*requestSync:\s*\(\)\s*=>\s*runUserSync\.mutateAsync\(\)[\s\S]*\}\)/.test(
+    /const\s+staleSyncRefresh\s*=\s*useStaleSyncRefresh\(\{[\s\S]*requestSync:\s*\(\)\s*=>\s*runUserSync\.mutateAsync\(\s*(?:undefined\s*)?\)[\s\S]*\}\)/.test(
       source,
     );
   const hasSharedRefreshWiring =

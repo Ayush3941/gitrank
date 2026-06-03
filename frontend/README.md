@@ -70,6 +70,7 @@ npm run check:image-alt
 npm run check:role-img-names
 npm run check:button-names
 npm run check:link-names
+npm run check:inline-notice-placeholders
 npm run check:jsx-ids
 npm run check:native-button-type
 npm run check:focus-without-scroll
@@ -117,6 +118,7 @@ The public profile page, authenticated dashboard overview, onboarding reveal, ba
 - `npm run check:role-img-names` fails CI if chart/avatar-style `role="img"` visuals lack `aria-label` or `aria-labelledby`
 - `npm run check:button-names` fails CI if literal buttons or non-polymorphic shared buttons lack visible text, ARIA naming, or an sr-only label
 - `npm run check:link-names` fails CI if literal links, Next links, or intent-prefetch links lack visible text, ARIA naming, or an sr-only label
+- `npm run check:inline-notice-placeholders` fails CI if shared `InlineNotice` status lanes omit contextual placeholder text
 - `npm run check:jsx-ids` fails CI if a TSX file reuses the same literal `id` more than once, preventing duplicate region IDs that break a11y and section controls
 - `npm run check:native-button-type` fails CI if a literal `<button>` omits an explicit safe type; shared `Button` defaults plain buttons to `type="button"`
 - `npm run check:focus-without-scroll` fails CI if production source uses raw `.focus()` instead of the shared `focusWithoutScroll()` helper
@@ -128,7 +130,7 @@ The public profile page, authenticated dashboard overview, onboarding reveal, ba
 - `npm run check:scroll-jumps` fails CI if product routes reintroduce direct `window.scrollTo`/`scrollIntoView` style APIs that can cause viewport jumps
 - `npm run check:motion-budget` fails CI if product routes reintroduce heavy animation patterns (`framer-motion`, animation utility classes, keyframes, or `transition: all`)
 - `npm run check:perf-budgets` reads `.next/build-manifest.json`; without a prior frontend build it exits cleanly with guidance, and `STRICT_PERF_BUDGET_MANIFEST=1` enforces hard-fail behavior
-- frontend CI enforces these UI integrity checks directly (`no-hardcoded-identities`, `copy-tone`, `query-policy`, `jsx-keys`, `jsx-ids`, `nested-interactive`, `focus-without-scroll`, `scroll-jumps`, `motion-budget`) so regressions fail pull requests before merge
+- frontend CI enforces these UI integrity checks directly (`no-hardcoded-identities`, `copy-tone`, `query-policy`, `jsx-keys`, `jsx-ids`, `nested-interactive`, `inline-notice-placeholders`, `focus-without-scroll`, `scroll-jumps`, `motion-budget`) so regressions fail pull requests before merge
 - frontend CI also runs `../gitrank/scripts/verify_v2_no_mock_release_gate.sh` to verify critical OpenAPI entries, worker-flow coverage, and live fixture coverage stay wired
 - `npm run test:smoke` renders dashboard, quest, PR-report, profile, leaderboard, and settings flows from live-shaped BFF fixtures
 

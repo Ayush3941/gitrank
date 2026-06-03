@@ -16,6 +16,7 @@ describe("InlineNotice", () => {
     render(
       <InlineNotice
         message="Profile export queued"
+        placeholder="Export status"
         onDismiss={onDismiss}
         dismissLabel="Dismiss export status"
       />,
