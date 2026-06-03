@@ -7,6 +7,7 @@
   - wired `npm run lint` into repo sync so local guardrails match the frontend CI lint gate.
   - wired `npm run build` into repo sync so production compile and prerender drift is caught locally too.
   - wired `npm run test:smoke` into repo sync so live-fixture route rendering stays part of the local quality gate.
+  - wired `npm run test:a11y` into repo sync so route accessibility, control names, and settings form behavior stay part of local verification.
   - aligned auto-sync analytics, onboarding sync timestamps, PR-report retry errors, unknown status labels, and stale test fixtures with current TypeScript contracts.
 
 ## 2026-06-02

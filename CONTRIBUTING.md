@@ -10,6 +10,7 @@ This document is intentionally detailed.
 - Wired `npm run lint` into `scripts/check-repo-sync.sh` so the local repo-wide gate now matches frontend CI for lint and typecheck drift.
 - Wired `npm run build` into `scripts/check-repo-sync.sh` so local repo-wide verification also proves the Next production build and prerender pass.
 - Wired `npm run test:smoke` into `scripts/check-repo-sync.sh` so local repo-wide verification renders the live-fixture dashboard, contribution, badge, quest, report, profile, leaderboard, and settings flows.
+- Wired `npm run test:a11y` into `scripts/check-repo-sync.sh` so local repo-wide verification exercises route accessibility, control names, and settings form behavior.
 - Production frontend type fixes now keep auto-sync analytics events, onboarding sync timestamps, PR-report AI retry errors, and unknown status labels aligned with their current runtime contracts.
 
 ## Session Notes (June 2, 2026)
