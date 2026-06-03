@@ -1,6 +1,7 @@
 import { Search, X } from "lucide-react";
 import { type KeyboardEvent, useRef } from "react";
 import { Input } from "@/components/ui/input";
+import { focusWithoutScroll } from "@/components/shared/focus-without-scroll";
 
 export function SearchInputWithClear({
   value,
@@ -30,7 +31,9 @@ export function SearchInputWithClear({
 
   function restoreInputFocus() {
     queueMicrotask(() => {
-      inputRef.current?.focus();
+      if (inputRef.current) {
+        focusWithoutScroll(inputRef.current);
+      }
     });
   }
 

@@ -22,6 +22,7 @@
   - added `npm run check:role-img-names` so chart/avatar-style visual groups cannot use `role="img"` without an accessible name.
   - added `npm run check:button-names` so literal and shared buttons cannot ship without visible, ARIA, or sr-only naming.
   - added `npm run check:link-names` so literal, Next, and intent-prefetch links keep visible, ARIA, or sr-only naming.
+  - routed shared search-clear refocus through `focusWithoutScroll()` and added `npm run check:focus-without-scroll` to block raw `.focus()` calls from reintroducing viewport jumps.
 - Main-landmark consistency pass:
   - `AppShell` now remains the only frontend owner of `<main id="main-content">`.
   - marketing and onboarding content wrappers render as normal containers inside the shell, preventing nested main landmarks while preserving layout.

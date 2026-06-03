@@ -98,6 +98,9 @@ jobs:
       - name: Check scroll-jump APIs
         run: npm run check:scroll-jumps
 
+      - name: Check focus without scroll
+        run: npm run check:focus-without-scroll
+
       - name: Check media layout stability
         run: npm run check:media-stability
 
