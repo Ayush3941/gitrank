@@ -16,6 +16,9 @@ describe("ContributionPulseStrip", () => {
 
     expect(screen.queryByText("Pulse")).not.toBeNull();
     expect(screen.queryByText("2/7 active days")).not.toBeNull();
+    expect(screen.queryByText("Today")).not.toBeNull();
+    expect(screen.queryByText("Peak")).not.toBeNull();
+    expect(screen.queryByText("May 25, 1 contribution")).not.toBeNull();
     const list = screen.getByRole("list");
     const tiles = within(list).getAllByRole("listitem");
     expect(tiles).toHaveLength(7);
@@ -33,7 +36,9 @@ describe("ContributionPulseStrip", () => {
     });
 
     expect(screen.queryByText("2/7 active days")).not.toBeNull();
-    expect(screen.queryByLabelText(/May 25: 2 contributions/i)).not.toBeNull();
+    expect(screen.queryByText("May 25, 2 contributions")).not.toBeNull();
+    expect(screen.queryByText(/May 25: 2 contributions/i)).not.toBeNull();
+    expect(screen.queryByTitle(/May 25: 2 contributions/i)).toBeNull();
   });
 });
 

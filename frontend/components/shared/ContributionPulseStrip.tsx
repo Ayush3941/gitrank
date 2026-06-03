@@ -11,6 +11,14 @@ export function ContributionPulseStrip({
 }) {
   const cells = buildContributionPulse(contributions, days);
   const activeDays = cells.filter((cell) => cell.count > 0).length;
+  const todayCell = cells[cells.length - 1] ?? null;
+  const peakCell = cells.reduce<(typeof cells)[number] | null>(
+    (best, cell) => (!best || cell.count >= best.count ? cell : best),
+    null,
+  );
+  const peakSummary = peakCell && peakCell.count > 0
+    ? `${peakCell.label}, ${formatContributionCount(peakCell.count)}`
+    : "No active days";
 
   return (
     <div className="rounded-[var(--radius-universal)] border border-primary/16 bg-primary/6 p-4">
@@ -19,6 +27,16 @@ export function ContributionPulseStrip({
         <p className="text-xs text-muted">
           {activeDays}/{days} active days
         </p>
+      </div>
+      <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted" role="group" aria-label="Activity pulse summary">
+        <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-2.5 py-1">
+          <span className="font-semibold text-primary">Today</span>
+          {todayCell ? formatContributionCount(todayCell.count) : "No data"}
+        </span>
+        <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-2.5 py-1">
+          <span className="font-semibold text-primary">Peak</span>
+          {peakSummary}
+        </span>
       </div>
       <ol
         role="list"
@@ -30,9 +48,9 @@ export function ContributionPulseStrip({
               className={`block h-4 w-full rounded-[var(--radius-universal)] border ${intensityClasses(cell.count)} ${
                 cell.isToday ? "ring-1 ring-primary/32 ring-offset-1 ring-offset-background" : ""
               }`}
-              title={`${cell.label}: ${cell.count} contribution${cell.count === 1 ? "" : "s"}`}
-              aria-label={`${cell.label}: ${cell.count} contribution${cell.count === 1 ? "" : "s"}`}
+              aria-hidden="true"
             />
+            <span className="sr-only">{`${cell.label}: ${formatContributionCount(cell.count)}`}</span>
           </li>
         ))}
       </ol>
@@ -85,6 +103,10 @@ function startOfDay(date: Date): Date {
   const next = new Date(date);
   next.setHours(0, 0, 0, 0);
   return next;
+}
+
+function formatContributionCount(count: number): string {
+  return `${count} contribution${count === 1 ? "" : "s"}`;
 }
 
 function intensityClasses(count: number): string {
