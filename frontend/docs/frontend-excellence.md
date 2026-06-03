@@ -115,6 +115,6 @@ Every week:
    - field freshness/error counters
 3. Update `frontend/docs/ux-changelog.md` with decisions and measurable impact.
 
-Latest evidence bundle:
+Latest retained evidence summary:
 
 - `frontend/docs/evidence/weekly-2026-05-17/README.md`

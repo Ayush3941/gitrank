@@ -13,11 +13,11 @@ Target budgets (p75):
 These thresholds are the frontend quality target for release decisions and are
 aligned with the production checklist in `CONTRIBUTING.md`.
 
-Latest Lighthouse lab evidence:
+Latest retained Lighthouse lab summary:
 
 - `frontend/docs/evidence/weekly-2026-05-17/README.md`
-- includes incognito route snapshots, route screenshots, and before/after
-  metric deltas for the home route.
+- includes route metric snapshots and before/after metric deltas for the home
+  route without storing raw generated screenshots or JSON in source control.
 
 ## Build-Time Performance Budgets
 

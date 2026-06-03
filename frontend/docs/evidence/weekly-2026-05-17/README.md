@@ -1,32 +1,14 @@
 # Frontend Weekly Refinement Evidence (2026-05-17)
 
-This record captures the weekly frontend refinement loop artifacts for ABRA
-design/performance hardening.
+This record keeps the human-readable result of the May 17 frontend refinement
+loop without storing raw Lighthouse JSON or Playwright screenshots in source
+control.
 
-## Route Screenshots
+Raw generated evidence belongs under `/ai_test` during an agent run. Promote only
+durable tests, scripts, or summarized release evidence into tracked project
+directories.
 
-Current route screenshots captured via headless Chromium:
-
-- `playwright-dashboard.png`
-- `playwright-u-live-maintainer.png`
-- `playwright-home.png`
-
-Notes:
-
-- Multiple dashboard/login route screenshots produced byte-identical captures in this run.
-- Duplicate files were removed to keep the evidence folder useful and non-redundant.
-- Route-specific metric coverage still exists in the Lighthouse JSON artifacts listed below.
-
-## Before and After Pair (Home Route)
-
-Before and after screenshots were captured from Lighthouse `final-screenshot`
-artifacts:
-
-- before: `lighthouse-home-before-final.png`
-- after: `lighthouse-home-final.png`
-
-Only one dashboard final screenshot artifact is retained (`lighthouse-dashboard-final.png`);
-the per-route dashboard/login final screenshots were byte-identical duplicates and removed.
+## Home Route Metric Diff
 
 Metric diff (`/` route, incognito Lighthouse):
 
@@ -39,14 +21,9 @@ Metric diff (`/` route, incognito Lighthouse):
 - TBT: `6970ms -> 2520ms`
 - CLS: `0 -> 0`
 
-Raw artifacts:
-
-- `lighthouse-home-before.json`
-- `lighthouse-home.json`
-
 ## Route Metric Snapshot (Incognito Lighthouse)
 
-Scores below are from JSON outputs in this directory:
+Scores below were captured during the May 17 local Lighthouse run:
 
 - `dashboard`: perf `0.42`, a11y `1.00`, bp `0.96`, seo `1.00`, LCP `50.4s`, TBT `5950ms`, CLS `0`
 - `dashboard/contributions`: perf `0.45`, a11y `1.00`, bp `0.96`, seo `1.00`, LCP `50.2s`, TBT `2940ms`, CLS `0`
@@ -62,8 +39,8 @@ Scores below are from JSON outputs in this directory:
 Contrast is validated through two independent checks:
 
 - token-level guardrail (`npm run check:contrast`)
-- route-level Lighthouse audit (`audits.color-contrast.score = 1` for each
-  recorded route JSON in this directory)
+- route-level Lighthouse audit (`audits.color-contrast.score = 1`) in the May
+  17 local run
 
 ## Field Data Comparison Context
 

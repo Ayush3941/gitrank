@@ -7,7 +7,12 @@ MAX_DEPTH="${MAX_DEPTH:-2}"
 
 render_tree() {
   local tracked_files
-  tracked_files="$(cd "$ROOT_DIR" && git ls-files)"
+  tracked_files="$(
+    cd "$ROOT_DIR"
+    git ls-files | while IFS= read -r file; do
+      [[ -e "$file" ]] && printf '%s\n' "$file"
+    done
+  )"
 
   if command -v tree >/dev/null 2>&1; then
     printf '%s\n' "$tracked_files" \

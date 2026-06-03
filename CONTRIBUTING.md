@@ -731,9 +731,10 @@ Verification snapshot (May 17, 2026):
 - `cd frontend && npm run check:stale-refresh-sync`
 - `cd frontend && npm run check:perf-budgets`
 - `cd frontend && npm run analyze:bundle`
-- `cd frontend && npx lighthouse http://localhost:4113/ --chrome-flags='--headless --incognito --no-sandbox --disable-gpu --disable-software-rasterizer --disable-dev-shm-usage' --output=json --output-path=docs/evidence/weekly-2026-05-17/lighthouse-home.json`
-- `cd frontend && npx playwright screenshot --full-page http://localhost:4113/dashboard docs/evidence/weekly-2026-05-17/playwright-dashboard.png`
-- Weekly screenshot and metric-diff evidence is recorded in `frontend/docs/evidence/weekly-2026-05-17/README.md`.
+- `mkdir -p ai_test/frontend-evidence/weekly-$(date +%F)`
+- `cd frontend && npx lighthouse http://localhost:4113/ --chrome-flags='--headless --incognito --no-sandbox --disable-gpu --disable-software-rasterizer --disable-dev-shm-usage' --output=json --output-path=../ai_test/frontend-evidence/weekly-$(date +%F)/lighthouse-home.json`
+- `cd frontend && npx playwright screenshot --full-page http://localhost:4113/dashboard ../ai_test/frontend-evidence/weekly-$(date +%F)/playwright-dashboard.png`
+- Keep generated screenshot and Lighthouse JSON artifacts in `/ai_test`; track only durable scripts, tests, or summarized evidence such as `frontend/docs/evidence/weekly-2026-05-17/README.md`.
 - Backend-to-frontend route parity matrix is tracked in `gitrank/docs/backend-frontend-coverage.md`.
 
 ### Review expectations

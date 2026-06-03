@@ -1972,9 +1972,9 @@
   test suites as side effects.
 - Added public-profile route visual regression coverage to keep share-card hero
   presentation stable in snapshot tests.
-- Added weekly refinement evidence bundle under
-  `frontend/docs/evidence/weekly-2026-05-17/` with route screenshots plus
-  Lighthouse JSON artifacts and before/after metric diffs.
+- Replaced the weekly refinement evidence bundle with a lightweight summary
+  under `frontend/docs/evidence/weekly-2026-05-17/`; raw generated screenshots
+  and Lighthouse JSON now stay out of tracked source.
 - Hardened client analytics emission with short abort windows plus `keepalive`
   so telemetry failures do not hold open route transitions in local/offline
   conditions.
