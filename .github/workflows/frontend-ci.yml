@@ -128,6 +128,9 @@ jobs:
       - name: Run accessibility checks
         run: npm run test:a11y
 
+      - name: Run visual shell snapshots
+        run: npm run test:visual
+
       - name: Run build
         run: npm run build
 

@@ -11,6 +11,7 @@
   - wired `npm run test:contracts` into repo sync so route parity and BFF contract coverage stay aligned locally.
   - wired `npm run test:visual` into repo sync so dashboard, leaderboard, and public-profile visual shell snapshots stay guarded locally.
   - tightened the public-profile visual summary to read the labeled top-signal list instead of all matching hero chips.
+  - wired `npm run test:visual` into frontend CI so visual shell regressions fail during pull-request checks too.
   - aligned auto-sync analytics, onboarding sync timestamps, PR-report retry errors, unknown status labels, and stale test fixtures with current TypeScript contracts.
 
 ## 2026-06-02
