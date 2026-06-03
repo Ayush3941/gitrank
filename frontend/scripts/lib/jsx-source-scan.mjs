@@ -44,6 +44,24 @@ export function hasAttribute(attributes, name) {
   ));
 }
 
+export function hasNonEmptyAttribute(attributes, name) {
+  for (const attribute of attributes) {
+    if (!isNamedJSXAttribute(attribute, name)) {
+      continue;
+    }
+    if (!attribute.value) {
+      return false;
+    }
+    if (attribute.value.type === "StringLiteral") {
+      return attribute.value.value.trim().length > 0;
+    }
+    if (attribute.value.type === "JSXExpressionContainer") {
+      return attribute.value.expression?.type !== "JSXEmptyExpression";
+    }
+  }
+  return false;
+}
+
 export function readStringAttribute(attributes, name) {
   for (const attribute of attributes) {
     if (!isNamedJSXAttribute(attribute, name)) {

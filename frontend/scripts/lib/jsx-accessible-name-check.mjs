@@ -1,4 +1,5 @@
 import {
+  hasNonEmptyAttribute,
   readElementName,
   scanJSXFiles,
 } from "./jsx-source-scan.mjs";
@@ -61,26 +62,4 @@ function hasAccessibleNamePath(attributes) {
     hasNonEmptyAttribute(attributes, "title") ||
     hasNonEmptyAttribute(attributes, "id")
   );
-}
-
-function hasNonEmptyAttribute(attributes, name) {
-  for (const attribute of attributes) {
-    if (
-      attribute?.type !== "JSXAttribute" ||
-      attribute.name?.type !== "JSXIdentifier" ||
-      attribute.name.name !== name
-    ) {
-      continue;
-    }
-    if (!attribute.value) {
-      return false;
-    }
-    if (attribute.value.type === "StringLiteral") {
-      return attribute.value.value.trim().length > 0;
-    }
-    if (attribute.value.type === "JSXExpressionContainer") {
-      return attribute.value.expression?.type !== "JSXEmptyExpression";
-    }
-  }
-  return false;
 }
