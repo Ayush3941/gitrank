@@ -16,8 +16,8 @@ const TimelineChartInner = dynamic(
     ssr: false,
     loading: () => (
       <div className="grid h-full w-full gap-2 p-3">
-        <div className="neon-skeleton h-6 w-1/2 rounded-lg" />
-        <div className="neon-skeleton h-full rounded-2xl" />
+        <div className="neon-skeleton h-6 w-1/2 rounded-[var(--radius-universal)]" />
+        <div className="neon-skeleton h-full rounded-[var(--radius-universal)]" />
       </div>
     ),
   },
@@ -52,7 +52,7 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
     <div className="space-y-3">
       <div
         ref={viewportRef}
-        className="neon-tile relative h-72 w-full overflow-hidden rounded-[1.75rem] p-3"
+        className="neon-tile relative h-72 w-full overflow-hidden rounded-[var(--radius-universal)] p-3"
         role="img"
         aria-label={`Contribution timeline chart across ${safeData.length} windows.`}
         aria-describedby={summaryId}
@@ -147,8 +147,8 @@ function formatSignedXP(value: number): string {
 function TimelineChartFallback() {
   return (
     <div className="grid h-full w-full gap-2 p-3">
-      <div className="neon-skeleton h-6 w-1/2 rounded-lg" />
-      <div className="neon-skeleton h-full rounded-2xl" />
+      <div className="neon-skeleton h-6 w-1/2 rounded-[var(--radius-universal)]" />
+      <div className="neon-skeleton h-full rounded-[var(--radius-universal)]" />
     </div>
   );
 }

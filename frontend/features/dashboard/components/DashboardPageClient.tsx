@@ -306,7 +306,7 @@ export function DashboardPageClient() {
         <GlowCard className="xl:col-span-3 space-y-4">
           <div className="flex items-center justify-between text-muted">
             <span className="text-sm">Current streak</span>
-            <span className="hud-pill rounded-2xl p-2">
+            <span className="hud-pill rounded-[var(--radius-universal)] p-2">
               <Flame className="h-5 w-5 text-primary" aria-hidden="true" />
             </span>
           </div>

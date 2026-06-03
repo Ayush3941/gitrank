@@ -27,9 +27,9 @@ export function EvidenceSignalsCard({ report }: { report: PullRequestAnalysis })
         {signals.map((signal, index) => {
           const Icon = signal.icon;
           return (
-            <li key={`${signal.label}-${index}`} className="list-none neon-surface flex items-center gap-3 rounded-[1.75rem] px-4 py-4">
+            <li key={`${signal.label}-${index}`} className="list-none neon-surface flex items-center gap-3 rounded-[var(--radius-universal)] px-4 py-4">
               <div
-                className={`rounded-2xl p-2 ${
+                className={`rounded-[var(--radius-universal)] p-2 ${
                   signal.active ? "bg-emerald-400/12 text-emerald-200" : "neon-tile text-muted"
                 }`}
               >
@@ -51,7 +51,7 @@ export function EvidenceSignalsCard({ report }: { report: PullRequestAnalysis })
           );
         })}
       </ul>
-      <div className="neon-surface rounded-[1.75rem] p-4">
+      <div className="neon-surface rounded-[var(--radius-universal)] p-4">
         <h3 className="text-xs font-medium text-primary">Stored evidence labels</h3>
         <ul role="list" className="mt-3 flex flex-wrap gap-2">
           {visibleSignals.map((signal, index) => (

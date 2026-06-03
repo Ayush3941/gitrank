@@ -43,6 +43,8 @@ Source of truth: `frontend/app/globals.css`.
 - Global radius baseline is enforced at `0.1rem` via universal selector.
 - Component-specific radius overrides should only be used when a functional
   affordance requires a larger interactive silhouette.
+- Non-pill surfaces should spell `rounded-[var(--radius-universal)]` directly
+  instead of using large-radius classes that the global token layer overrides.
 
 ### Typography baseline
 

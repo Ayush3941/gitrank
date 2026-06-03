@@ -21,8 +21,8 @@ const SkillRadarChartInner = dynamic(
     ssr: false,
     loading: () => (
       <div className="grid h-full w-full gap-2 p-3">
-        <div className="neon-skeleton h-6 w-1/2 rounded-lg" />
-        <div className="neon-skeleton h-full rounded-2xl" />
+        <div className="neon-skeleton h-6 w-1/2 rounded-[var(--radius-universal)]" />
+        <div className="neon-skeleton h-full rounded-[var(--radius-universal)]" />
       </div>
     ),
   },
@@ -49,7 +49,7 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
     <div className="space-y-3">
       <div
         ref={viewportRef}
-        className="neon-tile relative h-80 w-full overflow-hidden rounded-[1.75rem] p-3"
+        className="neon-tile relative h-80 w-full overflow-hidden rounded-[var(--radius-universal)] p-3"
         role="img"
         aria-label={`Skill radar chart across ${sortedSkills.length} lanes.`}
         aria-describedby={summaryId}
@@ -126,8 +126,8 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
 function SkillRadarChartFallback() {
   return (
     <div className="grid h-full w-full gap-2 p-3">
-      <div className="neon-skeleton h-6 w-1/2 rounded-lg" />
-      <div className="neon-skeleton h-full rounded-2xl" />
+      <div className="neon-skeleton h-6 w-1/2 rounded-[var(--radius-universal)]" />
+      <div className="neon-skeleton h-full rounded-[var(--radius-universal)]" />
     </div>
   );
 }

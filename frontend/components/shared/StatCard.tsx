@@ -21,7 +21,7 @@ export function StatCard({
     <GlowCard className={cn("cyber-sheen space-y-3", className)}>
       <div className="flex items-center justify-between text-muted">
         <span className="text-sm">{label}</span>
-        <span className="hud-pill rounded-2xl p-2" aria-hidden="true">{icon}</span>
+        <span className="hud-pill rounded-[var(--radius-universal)] p-2" aria-hidden="true">{icon}</span>
       </div>
       <div className={cn("numeric-readout text-3xl font-semibold tracking-tight", valueClassName)}>{value}</div>
       {detail ? <p className="text-sm leading-6 text-muted">{detail}</p> : null}
