@@ -14,6 +14,7 @@
   - wired `npm run test:visual` into frontend CI so visual shell regressions fail during pull-request checks too.
   - wired OAuth prefetch, dashboard route-copy, and route-state primitive guards into frontend CI plus repo sync so navigation safety, route metadata copy, and loading/error shells stay consistent.
   - replaced the settings sync-run status select with the shared wrapped `SegmentedTablist`, removed the orphaned select primitive/dependency, and wired the remaining frontend CI source, presentation, interaction, performance, and bundle guards into repo sync.
+  - promoted the remaining repo-only frontend guards into frontend CI so env coverage, decorative icons, form/control names, button safety, landmarks, new-tab links, live regions, stale refresh wiring, and shared-orphan cleanup fail during pull-request checks too.
   - aligned auto-sync analytics, onboarding sync timestamps, PR-report retry errors, unknown status labels, and stale test fixtures with current TypeScript contracts.
 
 ## 2026-06-02

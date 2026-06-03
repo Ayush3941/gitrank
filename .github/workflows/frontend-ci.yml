@@ -56,6 +56,9 @@ jobs:
       - name: Check client env safety
         run: npm run check:client-env-safety
 
+      - name: Check backend env example coverage
+        run: npm run check:env-example-coverage
+
       - name: Check server/client boundaries
         run: npm run check:server-boundaries
 
@@ -65,11 +68,20 @@ jobs:
       - name: Check route state primitives
         run: npm run check:route-state-primitives
 
+      - name: Check main landmark policy
+        run: npm run check:main-landmark
+
+      - name: Check navigation landmark policy
+        run: npm run check:navigation-landmarks
+
       - name: Typecheck frontend
         run: npm run typecheck
 
       - name: Check design token contrast
         run: npm run check:contrast
+
+      - name: Check decorative icon semantics
+        run: npm run check:decorative-icons
 
       - name: Check radius token policy
         run: npm run check:radius-tokens
@@ -89,8 +101,23 @@ jobs:
       - name: Check link accessible names
         run: npm run check:link-names
 
+      - name: Check input accessible names
+        run: npm run check:input-names
+
+      - name: Check select accessible names
+        run: npm run check:select-names
+
+      - name: Check switch accessible names
+        run: npm run check:switch-names
+
       - name: Check inline notice placeholders
         run: npm run check:inline-notice-placeholders
+
+      - name: Check interactive title policy
+        run: npm run check:interactive-titles
+
+      - name: Check live-region atomicity
+        run: npm run check:live-regions
 
       - name: Check readable text token usage
         run: npm run check:readable-text
@@ -101,6 +128,12 @@ jobs:
       - name: Check query policy
         run: npm run check:query-policy
 
+      - name: Check stale-refresh sync wiring
+        run: npm run check:stale-refresh-sync
+
+      - name: Check shared component orphans
+        run: npm run check:shared-orphans
+
       - name: Check unstable JSX keys
         run: npm run check:jsx-keys
 
@@ -109,6 +142,15 @@ jobs:
 
       - name: Check nested interactive controls
         run: npm run check:nested-interactive
+
+      - name: Check native button types
+        run: npm run check:native-button-type
+
+      - name: Check polymorphic button disabled states
+        run: npm run check:polymorphic-buttons
+
+      - name: Check new-tab link policy
+        run: npm run check:new-tab-links
 
       - name: Check scroll-jump APIs
         run: npm run check:scroll-jumps

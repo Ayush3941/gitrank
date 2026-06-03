@@ -17,6 +17,7 @@ This document is intentionally detailed.
 - Wired `npm run test:visual` into frontend CI so dashboard, leaderboard, and public-profile shell regressions fail in pull-request checks as well as local repo sync.
 - Wired the OAuth prefetch, dashboard route-copy, and route-state primitive guards into both frontend CI and `scripts/check-repo-sync.sh`, keeping auth navigation, dashboard metadata copy, and route loading/error UI consistent by default.
 - Replaced the settings sync-run status `<select>` with the shared wrapped `SegmentedTablist`, removed the orphaned `NativeSelect` primitive and unused Radix select dependency, and expanded `scripts/check-repo-sync.sh` to run the remaining frontend CI source, presentation, interaction, performance-budget, and bundle-composition guards locally.
+- Promoted the remaining repo-only frontend guards into frontend CI: env-example coverage, decorative icons, input/select/switch names, native and polymorphic button safety, landmarks, new-tab links, live-region atomicity, stale-refresh wiring, and shared-orphan cleanup.
 - Production frontend type fixes now keep auto-sync analytics events, onboarding sync timestamps, PR-report AI retry errors, and unknown status labels aligned with their current runtime contracts.
 
 ## Session Notes (June 2, 2026)
