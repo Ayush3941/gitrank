@@ -9,6 +9,7 @@ This document is intentionally detailed.
 - Restored a clean frontend TypeScript gate with `npm run typecheck`, wired it into frontend CI and `scripts/check-repo-sync.sh`, and refreshed stale test fixtures to match current profile, sync, repository visibility, and PR category contracts.
 - Wired `npm run lint` into `scripts/check-repo-sync.sh` so the local repo-wide gate now matches frontend CI for lint and typecheck drift.
 - Wired `npm run build` into `scripts/check-repo-sync.sh` so local repo-wide verification also proves the Next production build and prerender pass.
+- Wired `npm run test:smoke` into `scripts/check-repo-sync.sh` so local repo-wide verification renders the live-fixture dashboard, contribution, badge, quest, report, profile, leaderboard, and settings flows.
 - Production frontend type fixes now keep auto-sync analytics events, onboarding sync timestamps, PR-report AI retry errors, and unknown status labels aligned with their current runtime contracts.
 
 ## Session Notes (June 2, 2026)

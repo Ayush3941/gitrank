@@ -198,6 +198,14 @@ assert_frontend_build() {
   fi
 }
 
+assert_frontend_smoke() {
+  if ! (
+    cd "$ROOT_DIR/frontend" && npm run test:smoke >/dev/null
+  ); then
+    fail "frontend live-fixture smoke suite failed"
+  fi
+}
+
 assert_frontend_shared_orphans() {
   if ! (
     cd "$ROOT_DIR/frontend" && node scripts/check-shared-orphans.mjs >/dev/null
@@ -563,6 +571,7 @@ main() {
   assert_frontend_lint
   assert_frontend_typecheck
   assert_frontend_build
+  assert_frontend_smoke
   assert_frontend_shared_orphans
   assert_frontend_interactive_title_policy
   assert_frontend_live_region_atomicity
