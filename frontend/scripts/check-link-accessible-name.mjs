@@ -1,30 +1,29 @@
 import {
-  hasAttribute,
-  readElementName,
-  scanJSXFiles,
-} from "./lib/jsx-source-scan.mjs";
-import {
   hasAccessibleNameAttribute,
   hasReadableContent,
 } from "./lib/jsx-accessible-content.mjs";
+import {
+  readElementName,
+  scanJSXFiles,
+} from "./lib/jsx-source-scan.mjs";
 
-const checkedTags = new Set(["button", "Button"]);
+const checkedTags = new Set(["a", "Link", "IntentPrefetchLink"]);
 const violations = [];
 
 violations.push(...scanJSXFiles({ onElement: checkElement }));
 
 if (violations.length > 0) {
-  console.error("Button accessible-name check failed:");
+  console.error("Link accessible-name check failed:");
   for (const violation of violations) {
     console.error(`- ${violation}`);
   }
   console.error(
-    "Buttons must expose a readable accessible name through visible text, aria-label, aria-labelledby, or an sr-only label.",
+    "Links must expose a readable accessible name through visible text, aria-label, aria-labelledby, or an sr-only label.",
   );
   process.exit(1);
 }
 
-console.log("Button accessible-name check passed");
+console.log("Link accessible-name check passed");
 
 function checkElement({ element, openingElement, relativePath }) {
   const tagName = readElementName(openingElement.name);
@@ -33,9 +32,6 @@ function checkElement({ element, openingElement, relativePath }) {
   }
 
   const attributes = openingElement.attributes ?? [];
-  if (tagName === "Button" && hasAttribute(attributes, "asChild")) {
-    return;
-  }
   if (hasAccessibleNameAttribute(attributes) || hasReadableContent(element.children ?? [])) {
     return;
   }

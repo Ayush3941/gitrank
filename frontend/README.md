@@ -69,6 +69,7 @@ npm run check:progress-names
 npm run check:image-alt
 npm run check:role-img-names
 npm run check:button-names
+npm run check:link-names
 npm run check:jsx-ids
 npm run check:native-button-type
 npm run check:input-names
@@ -114,6 +115,7 @@ The public profile page, authenticated dashboard overview, onboarding reveal, ba
 - `npm run check:image-alt` fails CI if production `Image` or `img` elements omit an explicit `alt` attribute; use `alt=""` only for decorative images with nearby or wrapper-level accessible text
 - `npm run check:role-img-names` fails CI if chart/avatar-style `role="img"` visuals lack `aria-label` or `aria-labelledby`
 - `npm run check:button-names` fails CI if literal buttons or non-polymorphic shared buttons lack visible text, ARIA naming, or an sr-only label
+- `npm run check:link-names` fails CI if literal links, Next links, or intent-prefetch links lack visible text, ARIA naming, or an sr-only label
 - `npm run check:jsx-ids` fails CI if a TSX file reuses the same literal `id` more than once, preventing duplicate region IDs that break a11y and section controls
 - `npm run check:native-button-type` fails CI if a literal `<button>` omits an explicit safe type; shared `Button` defaults plain buttons to `type="button"`
 - `npm run check:input-names` fails CI if production inputs lack an accessible-name path or rely only on placeholder text
