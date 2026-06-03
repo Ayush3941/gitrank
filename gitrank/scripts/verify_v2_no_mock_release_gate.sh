@@ -3,6 +3,8 @@ set -eu
 
 root_dir="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 repo_dir="$(CDPATH= cd -- "$root_dir/.." && pwd)"
+tmp_root="${TMPDIR:-$root_dir/.tmp}"
+mkdir -p "$tmp_root"
 
 fail() {
   echo "v2 no-mock release gate failed: $1" >&2
@@ -73,7 +75,7 @@ require_contains "$k8s_deployments" "value: api" "scheduler API run mode"
 
 live_workflow_verifier="$root_dir/scripts/verify_live_v2_workflow.sh"
 [ -x "$live_workflow_verifier" ] || fail "live V2 workflow verifier script is missing or not executable"
-TMPDIR="${TMPDIR:-$root_dir/.tmp}" "$live_workflow_verifier"
+TMPDIR="$tmp_root" "$live_workflow_verifier"
 
 for file in \
   "$root_dir/scripts/verify_live_observability.sh" \

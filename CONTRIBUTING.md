@@ -20,6 +20,7 @@ This document is intentionally detailed.
 - Promoted the remaining repo-only frontend guards into frontend CI: env-example coverage, decorative icons, input/select/switch names, native and polymorphic button safety, landmarks, new-tab links, live-region atomicity, stale-refresh wiring, and shared-orphan cleanup.
 - Added `scripts/check-frontend-ci-repo-sync-parity.sh` and expanded the grouped repo-sync source-policy guard list so every frontend CI `npm run ...` step must stay covered by `scripts/check-repo-sync.sh` through either a direct npm call, grouped helper entry, or the underlying frontend script path.
 - Hardened `scripts/check-workflow-frontend-npm-scripts.sh` to use a here-string lookup instead of a `printf | rg -q` pipeline, avoiding false failures under `pipefail` when `rg` exits early after a valid match.
+- Removed stale local clutter (`frontend/.next`, `gitrank/.tmp`, and empty untracked scaffold directories), hardened live-gate scripts to create their temp root on demand, and deleted the obsolete `frontend/app/head.tsx` App Router convention after checking the installed Next.js docs; root metadata now stays owned by `app/layout.tsx`, `manifest.ts`, `robots.ts`, `sitemap.ts`, and generated OG/Twitter image files.
 - Production frontend type fixes now keep auto-sync analytics events, onboarding sync timestamps, PR-report AI retry errors, and unknown status labels aligned with their current runtime contracts.
 
 ## Session Notes (June 2, 2026)

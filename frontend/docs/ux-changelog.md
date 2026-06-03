@@ -17,6 +17,7 @@
   - promoted the remaining repo-only frontend guards into frontend CI so env coverage, decorative icons, form/control names, button safety, landmarks, new-tab links, live regions, stale refresh wiring, and shared-orphan cleanup fail during pull-request checks too.
   - added a frontend CI/repo-sync parity guard and expanded the grouped repo-sync source-policy guard list so CI `npm run ...` checks cannot drift away from the local repo-wide verification path.
   - hardened the workflow npm-script reference guard to avoid `pipefail` false failures when a valid script match closes the lookup early.
+  - removed stale generated/local clutter and deleted the obsolete `app/head.tsx` file; App Router head ownership now stays in `layout.tsx` metadata exports plus the current metadata file conventions.
   - aligned auto-sync analytics, onboarding sync timestamps, PR-report retry errors, unknown status labels, and stale test fixtures with current TypeScript contracts.
 
 ## 2026-06-02
@@ -997,7 +998,7 @@
   - removed tiny uppercase mobile active-label styling in favor of clearer `text-xs` title-case rendering.
   - increased desktop jump-pill tap area (`min-h-9`) for more reliable pointer and touch navigation.
 - Background preload pass:
-  - added `app/head.tsx` preload link for `/assets/background.webp` (gated by `prefers-reduced-data: no-preference`) so the locked background visual appears faster on initial load.
+  - added `app/head.tsx` preload link for `/assets/background.webp` (gated by `prefers-reduced-data: no-preference`) so the locked background visual appears faster on initial load; this stale convention was removed on June 3 after the Next.js metadata audit.
   - keeps reduced-data users on the lighter path while improving first-paint visual consistency for default-network sessions.
 - Loading-surface simplification pass:
   - added `GlowCard` `variant="loading"` to render lightweight panel shells without the full cyber-frame/cyber-sheen layered effects.

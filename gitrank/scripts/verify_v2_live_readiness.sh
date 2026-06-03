@@ -2,6 +2,8 @@
 set -eu
 
 root_dir="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
+tmp_root="${TMPDIR:-$root_dir/.tmp}"
+mkdir -p "$tmp_root"
 
 RUN_LOCAL_STATIC="${RUN_LOCAL_STATIC:-true}"
 RUN_GITHUB_CONTROLS="${RUN_GITHUB_CONTROLS:-false}"
@@ -22,7 +24,7 @@ fail() {
 run_make() {
   target=$1
   shift || true
-  (cd "$root_dir" && TMPDIR="${TMPDIR:-$root_dir/.tmp}" make "$target" "$@")
+  (cd "$root_dir" && TMPDIR="$tmp_root" make "$target" "$@")
 }
 
 if [ "$RUN_LOCAL_STATIC" = "true" ]; then
@@ -64,7 +66,7 @@ if [ "$RUN_PUBLIC_WORKFLOW_HEALTH" = "true" ]; then
         fi
       fi
       if [ -z "$token_candidate" ] && [ "$has_app_bootstrap" != "true" ]; then
-        push_probe_log=$(mktemp "${TMPDIR:-$root_dir/.tmp}/gitrank-origin-push-probe.XXXXXX")
+        push_probe_log=$(mktemp "$tmp_root/gitrank-origin-push-probe.XXXXXX")
         if run_make verify-origin-push-access >"$push_probe_log" 2>&1; then
           current_branch=$(git -C "$root_dir/.." rev-parse --abbrev-ref HEAD 2>/dev/null || printf 'main')
           rm -f "$push_probe_log"
@@ -111,7 +113,7 @@ if [ "$RUN_REMOTE_WORKFLOW_SYNC" = "true" ]; then
         fi
       fi
       if [ -z "$token_candidate" ] && [ "$has_app_bootstrap" != "true" ]; then
-        push_probe_log=$(mktemp "${TMPDIR:-$root_dir/.tmp}/gitrank-origin-push-probe.XXXXXX")
+        push_probe_log=$(mktemp "$tmp_root/gitrank-origin-push-probe.XXXXXX")
         if run_make verify-origin-push-access >"$push_probe_log" 2>&1; then
           current_branch=$(git -C "$root_dir/.." rev-parse --abbrev-ref HEAD 2>/dev/null || printf 'main')
           rm -f "$push_probe_log"

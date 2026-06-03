@@ -5,6 +5,8 @@ root_dir="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 repo_dir="$(CDPATH= cd -- "$root_dir/.." && pwd)"
 contributing_file="$repo_dir/CONTRIBUTING.md"
 abra_closeout_file="$root_dir/docs/releases/abra-closeout.md"
+tmp_root="${TMPDIR:-$root_dir/.tmp}"
+mkdir -p "$tmp_root"
 
 fail() {
   printf 'abra checklist verification failed: %s\n' "$1" >&2
@@ -36,7 +38,7 @@ if [ -n "$unchecked_in_abra" ]; then
   fail "ABRA section still contains unchecked checklist items"
 fi
 
-abra_section_tmp="$(mktemp "${TMPDIR:-$root_dir/.tmp}/abra-checklist-section.XXXXXX")"
+abra_section_tmp="$(mktemp "$tmp_root/abra-checklist-section.XXXXXX")"
 trap 'rm -f "$abra_section_tmp"' EXIT
 sed -n "${abra_start_line},$((abra_end_line - 1))p" "$contributing_file" >"$abra_section_tmp"
 

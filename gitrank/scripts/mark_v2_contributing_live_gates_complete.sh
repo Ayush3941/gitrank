@@ -4,6 +4,8 @@ set -eu
 root_dir="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 repo_dir="$(CDPATH= cd -- "$root_dir/.." && pwd)"
 contributing_file="${CONTRIBUTING_FILE:-$repo_dir/CONTRIBUTING.md}"
+tmp_root="${TMPDIR:-$root_dir/.tmp}"
+mkdir -p "$tmp_root"
 
 MARK_OBSERVABILITY="${MARK_OBSERVABILITY:-false}"
 MARK_GITHUB_CONTROLS="${MARK_GITHUB_CONTROLS:-false}"
@@ -25,7 +27,7 @@ fail() {
 run_make() {
   target=$1
   shift || true
-  (cd "$root_dir" && TMPDIR="${TMPDIR:-$root_dir/.tmp}" make "$target" "$@")
+  (cd "$root_dir" && TMPDIR="$tmp_root" make "$target" "$@")
 }
 
 replace_checkbox_for_substring() {
