@@ -1860,9 +1860,10 @@ For a one-command OAuth-assisted variant, use
 `make -C gitrank finalize-v2-live-closeout-via-oauth-web-flow`.
 Use `AUDIT_REPORT_FILE=... make audit-v2-contributing-checklist` when you need
 an artifact-backed audit report for release notes.
-Latest local audit snapshot: `gitrank/docs/evidence/v2-completion-audit-2026-05-17-current.txt`
-captures the current unresolved live prerequisites (10 unchecked external gates as
-of May 17, 2026).
+Generated audit and live-evidence snapshots are local/release artifacts and are
+ignored by default; regenerate them with the commands in
+`gitrank/docs/releases/v2-remaining-live-gates.md` when a fresh handoff needs
+dated proof.
 The audit now includes an `External Unblock Preflight Snapshot` section by
 default (`RUN_EXTERNAL_UNBLOCK_PREFLIGHT_SNAPSHOT=true`), so unresolved lines
 and required live inputs are captured in one report.
@@ -1903,8 +1904,8 @@ source for release gating.
   API dispatch is available via `make run-live-v2-gates-workflow` for scripted execution.
   Local/CLI apply+verify can also bootstrap a short-lived token directly from
   OAuth credentials by setting `GITRANK_ALLOW_OAUTH_WEB_TOKEN_BOOTSTRAP=yes`.
-- [x] Run and record staging rollback and restore drills. Executed and recorded in `gitrank/docs/evidence/rollback-drill-2026-05-15-local.txt` and `gitrank/docs/evidence/database-restore-drill-2026-05-15-local.txt`, each validated by `make verify-rollback-drill-evidence` and `make verify-database-restore-drill-evidence`.
-- [x] Replace provider-neutral Kubernetes placeholders with environment-specific secrets, TLS, ingress, managed PostgreSQL, managed Redis, registry, and environment-tuned autoscaling thresholds. Verified by rendering environment-specific staging and production manifests via `make render-k8s-release-manifests` into `gitrank/docs/evidence/rendered-k8s-staging-2026-05-15.yaml` and `gitrank/docs/evidence/rendered-k8s-production-2026-05-15.yaml` with placeholder rejection enforced.
+- [x] Run and record staging rollback and restore drills. Evidence templates and validators live under `gitrank/docs/evidence/`; dated drill records are generated release artifacts and are ignored from source history unless a release handoff intentionally force-adds them.
+- [x] Replace provider-neutral Kubernetes placeholders with environment-specific secrets, TLS, ingress, managed PostgreSQL, managed Redis, registry, and environment-tuned autoscaling thresholds. `make render-k8s-release-manifests` verifies environment-specific staging and production renders with placeholder rejection; generated rendered manifests are release artifacts and are ignored from source history by default.
 - [x] Add release gates that fail when mock-backed production routes, demo-only imports, missing OpenAPI entries, or unverified worker paths remain. `make verify-v2-no-mock-release-gate` and frontend CI now run a V2 gate that reuses the frontend production-mock import check, verifies critical gateway OpenAPI paths, ensures the authored-PR/direct-PR/scoring/profile critical-path tests remain wired, and checks live fixture coverage for dashboard, PR report, leaderboard, and settings flows.
 - [x] Add a V2 staging seed that uses synthetic GitHub-like evidence through real APIs and persistence, not frontend mock functions. `make seed-v2-staging` applies evidence-only SQL and drives scoring/profile/PR-report verification through real service APIs; `make verify-v2-staging-seed` proves the seed inserts raw evidence without precomputing score events or profile snapshots.
 - [x] Add V2 release notes that clearly state which v1 limitations were removed and which limitations remain intentionally out of scope. See `gitrank/docs/releases/v2.md`; the notes are explicit that this is not production launch approval until the remaining live ops and orchestration gates pass.

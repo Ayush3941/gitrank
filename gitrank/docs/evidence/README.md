@@ -1,7 +1,11 @@
 # Evidence Records
 
-This directory holds templates and optional committed records for production
-readiness evidence.
+This directory holds production-readiness evidence templates.
+
+Generated dated evidence records are local or release artifacts, not source
+files. The root `.gitignore` excludes generated closeout reports, rendered
+Kubernetes manifests, drill records, and observability snapshots by default.
+Force-add a generated record only when a release handoff explicitly requires it.
 
 Templates:
 

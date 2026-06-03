@@ -178,11 +178,10 @@ Checklist refs:
 Current local evidence:
 
 - `make verify-observability-manifests` passes.
-- Local production-like drill now passes:
-  - `make verify-live-observability`
-  - `make verify-observability-evidence EVIDENCE_FILE=docs/evidence/observability-live-2026-05-15-local.txt`
-- Evidence file:
-  - `docs/evidence/observability-live-2026-05-15-local.txt`
+- `make generate-observability-evidence-from-workflow-run` creates a dated
+  `docs/evidence/observability-live-YYYY-MM-DD.txt` record for a verified run.
+- Generated observability records are release artifacts and are ignored from
+  source history by default.
 
 How to complete:
 
@@ -284,8 +283,11 @@ Checklist refs:
 Current local evidence:
 
 - `make verify-rollback-procedure` passes.
-- `make verify-rollback-drill-evidence EVIDENCE_FILE=docs/evidence/rollback-drill-2026-05-15-local.txt` passes.
-- `make verify-database-restore-drill-evidence EVIDENCE_FILE=docs/evidence/database-restore-drill-2026-05-15-local.txt` passes.
+- `make generate-rollback-drill-evidence` and
+  `make generate-database-restore-drill-evidence` create dated drill records
+  from captured rollback/restore metadata.
+- Generated drill records are release artifacts and are ignored from source
+  history by default.
 
 ## 4) Environment-Specific Kubernetes Runtime Proof
 
@@ -297,6 +299,5 @@ Current local evidence:
 
 - `make render-k8s-release-manifests` passes with environment-specific staging
   and production runtime values.
-- Rendered evidence artifacts:
-  - `docs/evidence/rendered-k8s-staging-2026-05-15.yaml`
-  - `docs/evidence/rendered-k8s-production-2026-05-15.yaml`
+- Rendered staging/production manifests are generated release artifacts and are
+  ignored from source history by default.
