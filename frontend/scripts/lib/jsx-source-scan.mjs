@@ -129,6 +129,21 @@ export function readNumberAttribute(attributes, name) {
   return null;
 }
 
+export function readExpressionAttribute(attributes, name) {
+  for (const attribute of attributes) {
+    if (!isNamedJSXAttribute(attribute, name)) {
+      continue;
+    }
+    if (
+      attribute.value?.type === "JSXExpressionContainer"
+      && attribute.value.expression?.type !== "JSXEmptyExpression"
+    ) {
+      return attribute.value.expression;
+    }
+  }
+  return null;
+}
+
 function walk(entry, context) {
   const stat = statSync(entry, { throwIfNoEntry: false });
   if (!stat) {
@@ -169,11 +184,15 @@ function scanSource(relativePath, source, context) {
     return;
   }
 
-  const fileContext = context.onProgram({
+  const fileContext = {
     program: ast.program,
-    relativePath,
     source,
-  }) ?? {};
+    ...(context.onProgram({
+      program: ast.program,
+      relativePath,
+      source,
+    }) ?? {}),
+  };
 
   if (!context.visitElements) {
     return;

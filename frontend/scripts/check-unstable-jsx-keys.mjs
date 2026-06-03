@@ -1,12 +1,9 @@
 #!/usr/bin/env node
-import { readdir, readFile } from "node:fs/promises";
-import path from "node:path";
+import {
+  readExpressionAttribute,
+  scanJSXFiles,
+} from "./lib/jsx-source-scan.mjs";
 
-const root = process.cwd();
-const scanRoots = ["components", "features"];
-const includeExt = new Set([".tsx"]);
-
-const directKeyPattern = /key=\{\s*([A-Za-z_$][\w$.]*)\s*\}/g;
 const riskyTokens = [
   "label",
   "name",
@@ -22,10 +19,10 @@ const riskyTokens = [
 
 const violations = [];
 
-for (const relRoot of scanRoots) {
-  const absRoot = path.join(root, relRoot);
-  await walk(absRoot);
-}
+violations.push(...scanJSXFiles({
+  scanRoots: ["components", "features"],
+  onElement: checkElement,
+}));
 
 if (violations.length > 0) {
   console.error("Potentially unstable JSX key patterns detected:");
@@ -40,52 +37,65 @@ if (violations.length > 0) {
 
 console.log("Unstable JSX key check passed");
 
-async function walk(dir) {
-  let entries = [];
-  try {
-    entries = await readdir(dir, { withFileTypes: true });
-  } catch {
+function checkElement({ fileContext, openingElement, relativePath }) {
+  const expression = readExpressionAttribute(openingElement.attributes ?? [], "key");
+  const expressionText = expression ? stringifyDirectKeyExpression(expression) : null;
+  if (!expressionText) {
     return;
   }
 
-  for (const entry of entries) {
-    const abs = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      await walk(abs);
-      continue;
-    }
-    if (!entry.isFile() || !includeExt.has(path.extname(entry.name))) {
-      continue;
-    }
-    const source = await readFile(abs, "utf8");
-    const relative = path.relative(root, abs);
-    let match = directKeyPattern.exec(source);
-    while (match) {
-      const expression = (match[1] ?? "").trim();
-      const snippet = (match[0] ?? "").trim();
-      const normalized = expression.toLowerCase();
-      const hasStabilityHint =
-        normalized.includes(".id") ||
-        normalized.includes("item.href") ||
-        normalized.includes("item.value") ||
-        normalized.includes("step.key") ||
-        normalized.includes("datekey");
-      const hasRiskyToken = riskyTokens.some((token) => normalized.includes(token));
+  const normalized = expressionText.toLowerCase();
+  const hasStabilityHint =
+    normalized.includes(".id") ||
+    normalized.includes("item.href") ||
+    normalized.includes("item.value") ||
+    normalized.includes("step.key") ||
+    normalized.includes("datekey");
+  const hasRiskyToken = riskyTokens.some((token) => normalized.includes(token));
 
-      if (hasRiskyToken && !hasStabilityHint) {
-        const line = lineFromOffset(source, match.index ?? 0);
-        violations.push({
-          file: relative,
-          line,
-          snippet,
-        });
-      }
-
-      match = directKeyPattern.exec(source);
-    }
+  if (hasRiskyToken && !hasStabilityHint) {
+    violations.push({
+      file: relativePath,
+      line: openingElement.loc?.start?.line ?? 1,
+      snippet: readExpressionSnippet(fileContext.source, expression, expressionText),
+    });
   }
 }
 
-function lineFromOffset(source, offset) {
-  return source.slice(0, offset).split("\n").length;
+function stringifyDirectKeyExpression(expression) {
+  if (expression.type === "Identifier") {
+    return expression.name;
+  }
+  if (
+    expression.type === "MemberExpression"
+    || expression.type === "OptionalMemberExpression"
+  ) {
+    return stringifyMemberExpression(expression);
+  }
+  return null;
+}
+
+function stringifyMemberExpression(expression) {
+  if (expression.computed) {
+    return null;
+  }
+  const object = stringifyDirectKeyExpression(expression.object);
+  const property = expression.property?.type === "Identifier"
+    ? expression.property.name
+    : null;
+  if (!object || !property) {
+    return null;
+  }
+  return `${object}.${property}`;
+}
+
+function readExpressionSnippet(source, expression, fallback) {
+  if (
+    typeof source === "string"
+    && Number.isInteger(expression.start)
+    && Number.isInteger(expression.end)
+  ) {
+    return `key={${source.slice(expression.start, expression.end)}}`;
+  }
+  return `key={${fallback}}`;
 }
