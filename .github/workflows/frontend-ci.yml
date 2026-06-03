@@ -71,6 +71,9 @@ jobs:
       - name: Check role img accessible names
         run: npm run check:role-img-names
 
+      - name: Check button accessible names
+        run: npm run check:button-names
+
       - name: Check readable text token usage
         run: npm run check:readable-text
 

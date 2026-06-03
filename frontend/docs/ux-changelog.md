@@ -20,6 +20,7 @@
   - extracted dashboard/public-profile avatar rendering into `ProfileAvatar`, keeping optimized image sizing and a single wrapper-level profile-image name instead of duplicate ad hoc avatar markup.
   - added `npm run check:image-alt` so every production `Image`/`img` element must make decorative or descriptive image intent explicit.
   - added `npm run check:role-img-names` so chart/avatar-style visual groups cannot use `role="img"` without an accessible name.
+  - added `npm run check:button-names` so literal and shared buttons cannot ship without visible, ARIA, or sr-only naming.
 - Main-landmark consistency pass:
   - `AppShell` now remains the only frontend owner of `<main id="main-content">`.
   - marketing and onboarding content wrappers render as normal containers inside the shell, preventing nested main landmarks while preserving layout.

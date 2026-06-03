@@ -25,6 +25,7 @@
     "check:decorative-icons": "node scripts/check-decorative-icon-semantics.mjs",
     "check:image-alt": "node scripts/check-image-alt-text.mjs",
     "check:role-img-names": "node scripts/check-role-img-accessible-name.mjs",
+    "check:button-names": "node scripts/check-button-accessible-name.mjs",
     "check:input-names": "node scripts/check-input-accessible-name.mjs",
     "check:interactive-titles": "node scripts/check-interactive-title-policy.mjs",
     "check:live-regions": "node scripts/check-live-region-atomicity.mjs",
