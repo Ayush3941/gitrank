@@ -68,6 +68,9 @@ jobs:
       - name: Check image alt text
         run: npm run check:image-alt
 
+      - name: Check role img accessible names
+        run: npm run check:role-img-names
+
       - name: Check readable text token usage
         run: npm run check:readable-text
 

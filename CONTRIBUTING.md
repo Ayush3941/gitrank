@@ -19,6 +19,7 @@ This document is intentionally detailed.
 - Added `npm run check:progress-names`, wired into frontend CI and repo sync, so every shared `Progress` meter must expose an accessible name.
 - Dashboard and public-profile hero avatars now render through shared `ProfileAvatar`, keeping optimized dimensions and one wrapper-level profile-image label instead of duplicate ad hoc `next/image` markup.
 - Added `npm run check:image-alt`, wired into frontend CI and repo sync, so production `Image`/`img` elements must declare explicit decorative or descriptive alt intent.
+- Added `npm run check:role-img-names`, wired into frontend CI and repo sync, so chart/avatar-style `role="img"` visuals must expose an accessible name.
 - Removed redundant browser `title` tooltips from interactive controls and added `npm run check:interactive-titles`; controls must expose names and detail through visible text or ARIA, not hover-only tooltips.
 - Live-region announcements now use explicit atomic updates; `npm run check:live-regions` blocks `role="status"` and `role="alert"` nodes that omit `aria-atomic="true"`.
 - Frontend JSX policy scripts share `frontend/scripts/lib/jsx-source-scan.mjs`; add new AST-based UI guards, including accessible-name, decorative-icon, duplicate-id, main-landmark, navigation-landmark, nested-interactive, new-tab-link, polymorphic-button, and unstable-key checks, through that helper instead of copying parser/walker code.
@@ -730,6 +731,7 @@ Verification snapshot (May 17, 2026):
 - `cd frontend && npm run check:radius-tokens`
 - `cd frontend && npm run check:progress-names`
 - `cd frontend && npm run check:image-alt`
+- `cd frontend && npm run check:role-img-names`
 - `cd frontend && npm run check:media-stability`
 - `cd frontend && npm run check:native-button-type`
 - `cd frontend && npm run check:input-names`

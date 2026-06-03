@@ -222,6 +222,14 @@ assert_frontend_image_alt_text() {
   fi
 }
 
+assert_frontend_role_img_accessible_names() {
+  if ! (
+    cd "$ROOT_DIR/frontend" && node scripts/check-role-img-accessible-name.mjs >/dev/null
+  ); then
+    fail "frontend role=img accessible-name guard failed"
+  fi
+}
+
 assert_backend_env_default_parity() {
   if ! (
     cd "$ROOT_DIR/gitrank/packages/config" \
@@ -502,6 +510,7 @@ main() {
   assert_frontend_radius_token_policy
   assert_frontend_progress_accessible_names
   assert_frontend_image_alt_text
+  assert_frontend_role_img_accessible_names
   assert_markdown_npm_script_refs
   assert_markdown_make_target_refs
   assert_markdown_script_path_refs
