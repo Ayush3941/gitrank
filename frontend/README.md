@@ -124,7 +124,7 @@ The public profile page, authenticated dashboard overview, onboarding reveal, ba
 - `npm run check:native-button-type` fails CI if a literal `<button>` omits an explicit safe type; shared `Button` defaults plain buttons to `type="button"`
 - `npm run check:focus-without-scroll` fails CI if production source uses raw `.focus()` instead of the shared `focusWithoutScroll()` helper
 - `npm run check:input-names` fails CI if production inputs lack an accessible-name path or rely only on placeholder text
-- `npm run check:select-names` fails CI if production native selects lack an accessible-name path; use the shared `NativeSelect` surface where possible
+- `npm run check:select-names` fails if production native selects lack an accessible-name path; prefer shared segmented filters for dashboard controls
 - `npm run check:switch-names` fails CI if production shared switches lack an accessible-name path
 - `npm run check:main-landmark` fails CI if feature/page components render extra `<main>` landmarks; `AppShell` owns the single `#main-content` skip-link target
 - `npm run check:navigation-landmarks` fails CI if any `<nav>` or `role="navigation"` region lacks an accessible name

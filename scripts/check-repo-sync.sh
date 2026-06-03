@@ -8,6 +8,16 @@ fail() {
   exit 1
 }
 
+assert_frontend_npm_script() {
+  local script_name="$1"
+  local failure_message="$2"
+  if ! (
+    cd "$ROOT_DIR/frontend" && npm run "$script_name" >/dev/null
+  ); then
+    fail "$failure_message"
+  fi
+}
+
 contains_generated_runtime_artifacts() {
   local matches
   matches="$(cd "$ROOT_DIR" && git ls-files | rg '(^|/)(\.tmp|\.run|\.logs|\.gocache|node_modules|\.next)/|\.pid$|\.log$|\.test$|coverage\.out$|\.tsbuildinfo$' || true)"
@@ -198,6 +208,36 @@ assert_frontend_route_state_primitives() {
   fi
 }
 
+assert_frontend_ci_source_policy_guards() {
+  local spec script_name failure_message
+  local specs=(
+    "check:no-production-mocks|frontend production mock import guard failed"
+    "check:copy-tone|frontend copy tone guard failed"
+    "check:sync-copy-policy|frontend sync copy policy guard failed"
+    "check:onboarding-prefetch-policy|frontend onboarding prefetch policy guard failed"
+    "check:client-env-safety|frontend client env safety guard failed"
+    "check:server-boundaries|frontend server/client boundary guard failed"
+    "check:cache-strategy|frontend route cache strategy guard failed"
+    "check:contrast|frontend contrast token guard failed"
+    "check:readable-text|frontend readable text token guard failed"
+    "check:segmented-filters|frontend segmented filter consistency guard failed"
+    "check:query-policy|frontend query policy guard failed"
+    "check:jsx-keys|frontend unstable JSX key guard failed"
+    "check:jsx-ids|frontend duplicate JSX id guard failed"
+    "check:nested-interactive|frontend nested interactive guard failed"
+    "check:scroll-jumps|frontend scroll-jump API guard failed"
+    "check:media-stability|frontend media layout-stability guard failed"
+    "check:main-thread|frontend main-thread guard failed"
+    "check:motion-budget|frontend motion budget guard failed"
+  )
+
+  for spec in "${specs[@]}"; do
+    script_name="${spec%%|*}"
+    failure_message="${spec#*|}"
+    assert_frontend_npm_script "$script_name" "$failure_message"
+  done
+}
+
 assert_frontend_lint() {
   if ! (
     cd "$ROOT_DIR/frontend" && npm run lint >/dev/null
@@ -220,6 +260,11 @@ assert_frontend_build() {
   ); then
     fail "frontend production build failed"
   fi
+}
+
+assert_frontend_ci_bundle_guards() {
+  assert_frontend_npm_script "check:perf-budgets" "frontend performance budget guard failed"
+  assert_frontend_npm_script "analyze:bundle" "frontend bundle composition guard failed"
 }
 
 assert_frontend_smoke() {
@@ -619,9 +664,11 @@ main() {
   assert_frontend_oauth_prefetch_policy
   assert_frontend_dashboard_route_copy_policy
   assert_frontend_route_state_primitives
+  assert_frontend_ci_source_policy_guards
   assert_frontend_lint
   assert_frontend_typecheck
   assert_frontend_build
+  assert_frontend_ci_bundle_guards
   assert_frontend_smoke
   assert_frontend_a11y
   assert_frontend_contracts

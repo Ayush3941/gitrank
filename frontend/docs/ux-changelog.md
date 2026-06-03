@@ -13,6 +13,7 @@
   - tightened the public-profile visual summary to read the labeled top-signal list instead of all matching hero chips.
   - wired `npm run test:visual` into frontend CI so visual shell regressions fail during pull-request checks too.
   - wired OAuth prefetch, dashboard route-copy, and route-state primitive guards into frontend CI plus repo sync so navigation safety, route metadata copy, and loading/error shells stay consistent.
+  - replaced the settings sync-run status select with the shared wrapped `SegmentedTablist`, removed the orphaned select primitive/dependency, and wired the remaining frontend CI source, presentation, interaction, performance, and bundle guards into repo sync.
   - aligned auto-sync analytics, onboarding sync timestamps, PR-report retry errors, unknown status labels, and stale test fixtures with current TypeScript contracts.
 
 ## 2026-06-02
@@ -63,8 +64,8 @@
   - added `npm run check:input-names` so production native/shared inputs need an accessible-name path.
   - expanded shared search-input coverage to assert placeholder text is not used as the accessible name.
 - Native select consistency pass:
-  - added a shared `NativeSelect` primitive for dark neon dropdowns with a decorative chevron and consistent focus/surface treatment.
-  - moved the settings sync-run status filter onto the shared primitive and added `npm run check:select-names` to block unlabeled production selects.
+  - moved the settings sync-run status filter onto the shared segmented filter pattern and added `npm run check:select-names` to block unlabeled production selects.
+  - removed the now-orphaned `NativeSelect` primitive after segmented filters replaced its last production use.
 - Switch accessible-name guard:
   - added `npm run check:switch-names` so production `Switch` controls need explicit naming through labels or ARIA.
   - added primitive coverage for label-paired switches and compact aria-labeled switch rows.

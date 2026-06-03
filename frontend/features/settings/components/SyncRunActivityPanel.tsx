@@ -7,8 +7,8 @@ import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { ScrollableRegion } from "@/components/shared/ScrollableRegion";
 import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
+import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
 import { Button } from "@/components/ui/button";
-import { NativeSelect } from "@/components/ui/select";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { formatDateTime, formatRelativeDays } from "@/lib/formatters";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
@@ -279,28 +279,26 @@ export function SyncRunActivityPanel({
           />
           <div className="space-y-2">
             <p className="text-xs font-medium text-primary">Run status</p>
-            <label className="sr-only" htmlFor="sync-run-status-filter-select">
-              Sync run status filter
-            </label>
-            <NativeSelect
-              id="sync-run-status-filter-select"
-              value={statusFilter}
-              aria-describedby={filterStatusId}
-              aria-controls={syncRunsRegionId}
-              onChange={(event) => {
-                setStatusFilter(event.target.value as SyncRunStatusFilter);
-              }}
-              className="h-10 rounded-[var(--radius-universal)] border-primary/24 bg-slate-950/60 py-0 text-white"
-            >
-              {SYNC_RUN_STATUS_FILTERS.map((status) => {
+            <SegmentedTablist
+              options={SYNC_RUN_STATUS_FILTERS.map((status) => {
                 const meta = SYNC_RUN_STATUS_META[status];
-                return (
-                  <option key={status} value={status}>
-                    {status} ({statusCounts[meta.countKey]})
-                  </option>
-                );
+                return {
+                  value: status,
+                  label: status,
+                  count: statusCounts[meta.countKey],
+                  minWidthClassName: "min-w-[6.75rem] sm:min-w-[8rem]",
+                };
               })}
-            </NativeSelect>
+              value={statusFilter}
+              onValueChange={(next) => {
+                setStatusFilter(next);
+              }}
+              ariaLabel="Sync run status filter"
+              ariaDescribedBy={filterStatusId}
+              ariaControls={syncRunsRegionId}
+              tabIdPrefix="sync-run-status-filter-tab"
+              wrap
+            />
           </div>
           {canReset ? (
             <div className="flex justify-end">

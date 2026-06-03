@@ -210,14 +210,10 @@ describe("SyncRunActivityPanel", () => {
       />,
     );
 
-    fireEvent.change(screen.getByRole("combobox", { name: "Sync run status filter" }), {
-      target: { value: "Completed" },
-    });
+    fireEvent.click(screen.getByRole("tab", { name: "Completed" }));
     expect(screen.getByText("No sync runs match this filter.")).toBeTruthy();
 
-    fireEvent.change(screen.getByRole("combobox", { name: "Sync run status filter" }), {
-      target: { value: "Partial" },
-    });
+    fireEvent.click(screen.getByRole("tab", { name: "Partial" }));
     expect(screen.queryByText("No sync runs match this filter.")).toBeNull();
     expect(screen.getByText(/octocat\s*•\s*user/i)).toBeTruthy();
   });
