@@ -40,7 +40,7 @@ while IFS= read -r match; do
   )"
   [[ -n "$script_name" ]] || continue
 
-  if ! printf '%s\n' "$frontend_scripts" | rg -qx -- "$script_name"; then
+  if ! rg -qx -- "$script_name" <<<"$frontend_scripts"; then
     printf 'unknown frontend npm script referenced in workflow: %s\n' "$match" >&2
     missing=1
   fi

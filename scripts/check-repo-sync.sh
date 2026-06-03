@@ -219,12 +219,21 @@ assert_frontend_ci_source_policy_guards() {
     "check:server-boundaries|frontend server/client boundary guard failed"
     "check:cache-strategy|frontend route cache strategy guard failed"
     "check:contrast|frontend contrast token guard failed"
+    "check:decorative-icons|frontend decorative icon semantics guard failed"
+    "check:input-names|frontend input accessible-name guard failed"
+    "check:select-names|frontend select accessible-name guard failed"
+    "check:switch-names|frontend switch accessible-name guard failed"
     "check:readable-text|frontend readable text token guard failed"
     "check:segmented-filters|frontend segmented filter consistency guard failed"
     "check:query-policy|frontend query policy guard failed"
     "check:jsx-keys|frontend unstable JSX key guard failed"
     "check:jsx-ids|frontend duplicate JSX id guard failed"
     "check:nested-interactive|frontend nested interactive guard failed"
+    "check:native-button-type|frontend native button type guard failed"
+    "check:polymorphic-buttons|frontend polymorphic button disabled-state guard failed"
+    "check:main-landmark|frontend main landmark policy guard failed"
+    "check:navigation-landmarks|frontend navigation landmark policy guard failed"
+    "check:new-tab-links|frontend new-tab link policy guard failed"
     "check:scroll-jumps|frontend scroll-jump API guard failed"
     "check:media-stability|frontend media layout-stability guard failed"
     "check:main-thread|frontend main-thread guard failed"
@@ -564,6 +573,12 @@ assert_workflow_frontend_npm_scripts() {
   fi
 }
 
+assert_frontend_ci_repo_sync_parity() {
+  if ! "$ROOT_DIR/scripts/check-frontend-ci-repo-sync-parity.sh" >/dev/null; then
+    fail "frontend CI checks drifted from repo-sync coverage"
+  fi
+}
+
 assert_repo_sync_check_coverage() {
   if ! "$ROOT_DIR/scripts/check-repo-sync-check-coverage.sh" >/dev/null; then
     fail "repo sync check coverage drifted from tracked scripts/check-*.sh"
@@ -696,6 +711,7 @@ main() {
   assert_workflow_script_refs
   assert_workflow_make_target_refs
   assert_workflow_frontend_npm_scripts
+  assert_frontend_ci_repo_sync_parity
   assert_repo_sync_check_coverage
   assert_root_script_discoverability
   assert_shell_script_syntax
