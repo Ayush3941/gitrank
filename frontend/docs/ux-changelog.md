@@ -5,6 +5,7 @@
 - Type-safety gate restoration:
   - added `npm run typecheck` and wired it into frontend CI plus repo sync so production/test contract drift fails before merge.
   - wired `npm run lint` into repo sync so local guardrails match the frontend CI lint gate.
+  - wired `npm run build` into repo sync so production compile and prerender drift is caught locally too.
   - aligned auto-sync analytics, onboarding sync timestamps, PR-report retry errors, unknown status labels, and stale test fixtures with current TypeScript contracts.
 
 ## 2026-06-02

@@ -190,6 +190,14 @@ assert_frontend_typecheck() {
   fi
 }
 
+assert_frontend_build() {
+  if ! (
+    cd "$ROOT_DIR/frontend" && npm run build >/dev/null
+  ); then
+    fail "frontend production build failed"
+  fi
+}
+
 assert_frontend_shared_orphans() {
   if ! (
     cd "$ROOT_DIR/frontend" && node scripts/check-shared-orphans.mjs >/dev/null
@@ -554,6 +562,7 @@ main() {
   assert_frontend_stale_refresh_sync_wiring
   assert_frontend_lint
   assert_frontend_typecheck
+  assert_frontend_build
   assert_frontend_shared_orphans
   assert_frontend_interactive_title_policy
   assert_frontend_live_region_atomicity
