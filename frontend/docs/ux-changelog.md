@@ -9,6 +9,8 @@
   - wired `npm run test:smoke` into repo sync so live-fixture route rendering stays part of the local quality gate.
   - wired `npm run test:a11y` into repo sync so route accessibility, control names, and settings form behavior stay part of local verification.
   - wired `npm run test:contracts` into repo sync so route parity and BFF contract coverage stay aligned locally.
+  - wired `npm run test:visual` into repo sync so dashboard, leaderboard, and public-profile visual shell snapshots stay guarded locally.
+  - tightened the public-profile visual summary to read the labeled top-signal list instead of all matching hero chips.
   - aligned auto-sync analytics, onboarding sync timestamps, PR-report retry errors, unknown status labels, and stale test fixtures with current TypeScript contracts.
 
 ## 2026-06-02

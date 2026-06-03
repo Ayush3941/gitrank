@@ -222,6 +222,14 @@ assert_frontend_contracts() {
   fi
 }
 
+assert_frontend_visual() {
+  if ! (
+    cd "$ROOT_DIR/frontend" && npm run test:visual >/dev/null
+  ); then
+    fail "frontend visual regression suite failed"
+  fi
+}
+
 assert_frontend_shared_orphans() {
   if ! (
     cd "$ROOT_DIR/frontend" && node scripts/check-shared-orphans.mjs >/dev/null
@@ -590,6 +598,7 @@ main() {
   assert_frontend_smoke
   assert_frontend_a11y
   assert_frontend_contracts
+  assert_frontend_visual
   assert_frontend_shared_orphans
   assert_frontend_interactive_title_policy
   assert_frontend_live_region_atomicity

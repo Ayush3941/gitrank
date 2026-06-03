@@ -158,7 +158,7 @@ function buildPublicProfileVisualSummary(container: HTMLElement) {
     route: "public-profile",
     heading: text(container, ".player-card-shell h2"),
     sectionCount: container.querySelectorAll("section").length,
-    topSkillChips: texts(container, ".player-card-shell .neon-chip"),
+    topSkillChips: listTextsAfterLabel(container, "Top signals (public evidence)"),
     statCards: texts(
       container,
       ".md\\:grid-cols-2.xl\\:grid-cols-4 .text-sm",
@@ -182,6 +182,21 @@ function texts(container: HTMLElement, selector: string): string[] {
     .map((node) => normalizeText(node.textContent ?? ""))
     .filter((value) => value.length > 0)
     .slice(0, 12);
+}
+
+function listTextsAfterLabel(container: HTMLElement, label: string): string[] {
+  const labelNode = Array.from(container.querySelectorAll<HTMLElement>("p")).find(
+    (node) => normalizeText(node.textContent ?? "") === label,
+  );
+  let sibling = labelNode?.nextElementSibling;
+  while (sibling && sibling.getAttribute("role") !== "list") {
+    sibling = sibling.nextElementSibling;
+  }
+  const listNode = sibling instanceof HTMLElement ? sibling : null;
+  if (!listNode) {
+    return [];
+  }
+  return texts(listNode, "li");
 }
 
 function normalizeText(value: string): string {
