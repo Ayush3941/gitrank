@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { GitPullRequest, ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import type { ReactNode } from "react";
@@ -9,6 +8,7 @@ import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { NewTabHint } from "@/components/shared/NewTabHint";
+import { ProfileAvatar } from "@/components/shared/ProfileAvatar";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { XPProgress } from "@/components/shared/XPProgress";
@@ -36,17 +36,7 @@ export function PublicProfileHero({
       <div className="grid gap-6 xl:grid-cols-[1.08fr,0.92fr]">
         <div className="space-y-5">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
-            <div className="rank-orbit rounded-[var(--radius-universal)] p-[2px]">
-              <Image
-                src={user.avatarUrl}
-                alt={`${user.displayName} avatar`}
-                width={96}
-                height={96}
-                sizes="96px"
-                priority
-                className="cyber-avatar h-24 w-24 rounded-[var(--radius-universal)]"
-              />
-            </div>
+            <ProfileAvatar src={user.avatarUrl} displayName={user.displayName} size="lg" priority />
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-3">
                 <h2 className="break-anywhere text-2xl font-semibold text-white">{user.displayName}</h2>

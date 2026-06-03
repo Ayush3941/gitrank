@@ -1,10 +1,10 @@
-import Image from "next/image";
 import { ArrowRight, Sparkles, Star } from "lucide-react";
 import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { ContributionPulseStrip } from "@/components/shared/ContributionPulseStrip";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
+import { ProfileAvatar } from "@/components/shared/ProfileAvatar";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { XPProgress } from "@/components/shared/XPProgress";
 import { Button } from "@/components/ui/button";
@@ -49,17 +49,7 @@ export function DashboardHeroRankCard({
     <GlowCard strong className="player-card-shell cyber-hero-shell space-y-6 overflow-hidden">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-4">
-          <div className="rank-orbit rounded-[var(--radius-universal)] p-[2px]">
-            <Image
-              src={user.avatarUrl}
-              alt={`${user.displayName} avatar`}
-              width={72}
-              height={72}
-              sizes="72px"
-              priority
-              className="cyber-avatar h-[72px] w-[72px] rounded-[var(--radius-universal)]"
-            />
-          </div>
+          <ProfileAvatar src={user.avatarUrl} displayName={user.displayName} priority />
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-3">
               <p className="break-anywhere text-2xl font-semibold text-white">{user.displayName}</p>

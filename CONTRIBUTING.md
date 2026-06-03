@@ -17,6 +17,7 @@ This document is intentionally detailed.
 - `ContributionPulseStrip` now exposes visible Today/Peak summaries and screen-reader day labels instead of relying on browser `title` tooltips for activity-cell detail.
 - Contribution cards now expose their signal strip as a bounded progressbar with readable signal text instead of leaving the score as a purely visual width fill.
 - Added `npm run check:progress-names`, wired into frontend CI and repo sync, so every shared `Progress` meter must expose an accessible name.
+- Dashboard and public-profile hero avatars now render through shared `ProfileAvatar`, keeping optimized dimensions and one wrapper-level profile-image label instead of duplicate ad hoc `next/image` markup.
 - Removed redundant browser `title` tooltips from interactive controls and added `npm run check:interactive-titles`; controls must expose names and detail through visible text or ARIA, not hover-only tooltips.
 - Live-region announcements now use explicit atomic updates; `npm run check:live-regions` blocks `role="status"` and `role="alert"` nodes that omit `aria-atomic="true"`.
 - Frontend JSX policy scripts share `frontend/scripts/lib/jsx-source-scan.mjs`; add new AST-based UI guards, including accessible-name, decorative-icon, duplicate-id, main-landmark, navigation-landmark, nested-interactive, new-tab-link, polymorphic-button, and unstable-key checks, through that helper instead of copying parser/walker code.
