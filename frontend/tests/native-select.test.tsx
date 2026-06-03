@@ -17,6 +17,7 @@ describe("NativeSelect", () => {
     const select = screen.getByRole("combobox", { name: "Run status" });
     expect(select.className).toContain("neon-surface");
     expect(select.className).toContain("appearance-none");
+    expect(select.className).toContain("rounded-[var(--radius-universal)]");
   });
 
   it("keeps the visual chevron decorative", () => {

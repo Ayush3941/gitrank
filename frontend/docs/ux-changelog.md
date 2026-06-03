@@ -11,6 +11,7 @@
   - removed redundant browser `title` tooltips from interactive controls and added `npm run check:interactive-titles`, keeping control names in visible text or ARIA paths.
   - normalized status and alert live regions with explicit atomic announcements and added `npm run check:live-regions`.
   - extracted shared JSX policy scanning into `frontend/scripts/lib/jsx-source-scan.mjs` so accessibility, accessible-name, decorative-icon, duplicate-id, main-landmark, navigation-landmark, nested-interactive, new-tab-link, polymorphic-button, unstable-key, and interaction guards stop duplicating parser/walker code.
+  - aligned shared input and native-select primitives with `--radius-universal` directly, removing stale `rounded-2xl` class contracts from form controls.
 - Main-landmark consistency pass:
   - `AppShell` now remains the only frontend owner of `<main id="main-content">`.
   - marketing and onboarding content wrappers render as normal containers inside the shell, preventing nested main landmarks while preserving layout.

@@ -60,6 +60,7 @@ describe("SearchInputWithClear", () => {
 
     const input = screen.getByRole("searchbox", { name: "Search repositories" });
     expect(input.getAttribute("placeholder")).toBe("Search repository or reason");
+    expect(input.className).toContain("rounded-[var(--radius-universal)]");
     expect(screen.queryByRole("searchbox", { name: "Search repository or reason" })).toBeNull();
   });
 

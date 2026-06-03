@@ -13,7 +13,7 @@ export const NativeSelect = React.forwardRef<HTMLSelectElement, NativeSelectProp
         <select
           ref={ref}
           className={cn(
-            "focus-ring neon-surface h-11 w-full appearance-none rounded-2xl border-primary/28 px-4 pr-11 text-sm text-foreground disabled:cursor-not-allowed disabled:opacity-60 [&>option]:bg-slate-950 [&>option]:text-white",
+            "focus-ring neon-surface h-11 w-full appearance-none rounded-[var(--radius-universal)] border-primary/28 px-4 pr-11 text-sm text-foreground disabled:cursor-not-allowed disabled:opacity-60 [&>option]:bg-slate-950 [&>option]:text-white",
             className,
           )}
           {...props}
