@@ -8,8 +8,8 @@ require (
 	github.com/gitrank/gitrank/packages/contracts v0.0.0
 	github.com/gitrank/gitrank/packages/httpkit v0.0.0
 	github.com/gitrank/gitrank/packages/logger v0.0.0
-	github.com/jackc/pgx/v5 v5.9.2
-	github.com/redis/go-redis/v9 v9.19.0
+	github.com/jackc/pgx/v5 v5.10.0
+	github.com/redis/go-redis/v9 v9.20.0
 )
 
 require (
