@@ -245,7 +245,7 @@ html[data-theme="high-contrast"] {
     box-shadow: none !important;
   }
 
-  :where(a[href], button, [role="button"], [role="tab"], [role="switch"]):focus-visible {
+  :where(a[href], button, [role="button"], [role="radio"], [role="switch"]):focus-visible {
     outline-color: Highlight !important;
   }
 }
@@ -288,7 +288,7 @@ html[data-theme="high-contrast"] {
     select,
     textarea,
     [role="button"],
-    [role="tab"],
+    [role="radio"],
     [role="switch"],
     .glass-panel,
     .glass-panel-strong,
@@ -542,7 +542,7 @@ select {
   line-height: 1.45;
 }
 
-:where(button, [role="button"], [role="tab"], [role="switch"], .focus-ring) {
+:where(button, [role="button"], [role="radio"], [role="switch"], .focus-ring) {
   min-width: 24px;
   min-height: 24px;
 }
@@ -2092,7 +2092,7 @@ html[data-theme="high-contrast"] .cyber-card {
     select,
     textarea,
     [role="button"],
-    [role="tab"],
+    [role="radio"],
     [role="switch"]
   ) {
   transition-duration: 70ms !important;
@@ -2142,7 +2142,7 @@ html[data-theme="high-contrast"] .cyber-card {
       select,
       textarea,
       [role="button"],
-      [role="tab"],
+      [role="radio"],
       [role="switch"]
     ) {
     transition-duration: 70ms !important;
@@ -2194,7 +2194,7 @@ html[data-theme="high-contrast"] .cyber-card {
       select,
       textarea,
       [role="button"],
-      [role="tab"],
+      [role="radio"],
       [role="switch"]
     ) {
     min-height: 44px;

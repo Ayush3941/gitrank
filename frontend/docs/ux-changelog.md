@@ -5,6 +5,9 @@
 - Loading-state polish:
   - added a shared loading-copy helper for card and route loading states so screen-reader announcements avoid repeated `Loading` phrasing while preserving progressive route copy like `Preparing your dashboard`.
   - kept skeleton bars outside live regions and covered route/card loading announcements with focused render tests.
+- Segmented-control semantics pass:
+  - replaced the shared tablist-shaped filter control with `SegmentedControl`, using `radiogroup`/`radio` semantics and `aria-checked` for single-choice filters and view selectors.
+  - updated filter consistency checks and render tests so dashboard segmented controls stay visually unchanged while exposing the correct accessibility pattern.
 
 ## 2026-06-03
 
@@ -19,7 +22,7 @@
   - tightened the public-profile visual summary to read the labeled top-signal list instead of all matching hero chips.
   - wired `npm run test:visual` into frontend CI so visual shell regressions fail during pull-request checks too.
   - wired OAuth prefetch, dashboard route-copy, and route-state primitive guards into frontend CI plus repo sync so navigation safety, route metadata copy, and loading/error shells stay consistent.
-  - replaced the settings sync-run status select with the shared wrapped `SegmentedTablist`, removed the orphaned select primitive/dependency, and wired the remaining frontend CI source, presentation, interaction, performance, and bundle guards into repo sync.
+  - replaced the settings sync-run status select with the shared wrapped `SegmentedControl`, removed the orphaned select primitive/dependency, and wired the remaining frontend CI source, presentation, interaction, performance, and bundle guards into repo sync.
   - promoted the remaining repo-only frontend guards into frontend CI so env coverage, decorative icons, form/control names, button safety, landmarks, new-tab links, live regions, stale refresh wiring, and shared-orphan cleanup fail during pull-request checks too.
   - added a frontend CI/repo-sync parity guard and expanded the grouped repo-sync source-policy guard list so CI `npm run ...` checks cannot drift away from the local repo-wide verification path.
   - hardened the workflow npm-script reference guard to avoid `pipefail` false failures when a valid script match closes the lookup early.
@@ -145,7 +148,7 @@
   - rewrote category guidance in a more conversational tone while preserving the same accuracy boundary.
   - keeps skill framing clear without sounding overly rigid.
 - Segmented-lane touch-spacing pass:
-  - increased segmented-control option gaps from `gap-1.5` to `gap-2` (8px) in shared segmented tablists and dashboard route navigation.
+  - increased segmented-control option gaps from `gap-1.5` to `gap-2` (8px) in shared segmented controls and dashboard route navigation.
   - improves adjacent target separation for touch inputs without changing route/filter behavior.
 - Active-filter row simplification pass:
   - removed redundant visible `Active filters` labels from contribution, sync-log, and repository-visibility search-chip rows.
@@ -187,9 +190,9 @@
   - updated chip labels to lane-friendly formatting (`Rarity · ...`, `State · ...`, `Cadence · ...`) and added a single `Clear all` action in each filter shell.
   - keeps filter interactions visually and behaviorally consistent across all major dashboard tabs.
 - Segmented-control compact-label pass:
-  - added optional compact labels to shared `SegmentedTablist` so mobile can render shorter lane names while preserving full labels for desktop and assistive text.
+  - added optional compact labels to shared `SegmentedControl` so mobile can render shorter lane names while preserving full labels for desktop and assistive text.
   - applied compact labels to leaderboard lanes (`Documentation` → `Docs`, `Weekly XP` → `Weekly`, `Testing` → `Tests`) with tighter mobile min widths.
-  - updated segmented-tablist tests to assert the focus-first mousedown behavior that prevents scroll jumps before click selection.
+  - updated segmented-control tests to assert the focus-first mousedown behavior that prevents scroll jumps before click selection.
 - Leaderboard active-filter clarity pass:
   - added an `Active filters` row to leaderboard controls with removable chips for lane selection, details view, and full-board mode.
   - added one-click `Clear all` control to restore default leaderboard context (`Global` lane, nearby mode, details off).
@@ -209,7 +212,7 @@
   - added compact mobile labels for longer contribution lanes and sort options (for example `Bugfix`, `Perf`, `Top Diff`) while preserving full desktop labels.
   - reduced mobile minimum widths for those lane options to keep contribution controls easier to scan without excessive horizontal travel.
 - Segmented-label accessibility-name guard pass:
-  - updated shared segmented-tablist naming logic so compact labels only alter accessible names when they differ from the full label.
+  - updated shared segmented-control naming logic so compact labels only alter accessible names when they differ from the full label.
   - prevents duplicated names like `Newest (Newest)` and keeps role-name queries stable in tests and assistive output.
 - Repository-visibility result-feedback pass:
   - added visible count feedback (`x of y repositories`) in repository-visibility controls header.
@@ -402,7 +405,7 @@
   - removed forced viewport restoration (`window.scrollTo`) from shared segmented-tab selection and keyboard fallback focus handling.
   - fixes jump-to-top behavior seen when switching filter tabs in dashboard routes (notably settings sync status tabs).
 - Added regression coverage:
-  - updated `tests/segmented-tablist.test.tsx` to assert tab selection does not invoke viewport scroll restoration.
+  - updated `tests/segmented-control.test.tsx` to assert control selection does not invoke viewport scroll restoration.
   - keeps filter interactions stable while preserving manual keyboard activation behavior.
 - Reduced decorative interaction motion on dashboard chrome:
   - softened `cyber-card` hover deltas so cards keep visual hierarchy without expensive hover glow jumps.

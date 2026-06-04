@@ -18,8 +18,8 @@ for (const relativePath of filterFiles) {
   const absolutePath = path.join(root, relativePath);
   const source = readFileSync(absolutePath, "utf8");
 
-  if (!source.includes("SegmentedTablist")) {
-    violations.push(`${relativePath}: expected SegmentedTablist usage for filter controls`);
+  if (!source.includes("SegmentedControl")) {
+    violations.push(`${relativePath}: expected SegmentedControl usage for filter controls`);
   }
 
   if (/<select\b/i.test(source)) {
@@ -28,17 +28,17 @@ for (const relativePath of filterFiles) {
     );
   }
 
-  const segmentedInvocations = source.match(/<SegmentedTablist[\s\S]*?\n\s*\/>/g) ?? [];
+  const segmentedInvocations = source.match(/<SegmentedControl[\s\S]*?\n\s*\/>/g) ?? [];
   for (const invocation of segmentedInvocations) {
     if (!/\bwrap\b/.test(invocation)) {
       violations.push(
-        `${relativePath}: SegmentedTablist filter controls must set 'wrap' to avoid horizontal overflow`,
+        `${relativePath}: SegmentedControl filter controls must set 'wrap' to avoid horizontal overflow`,
       );
       break;
     }
     if (!/\bariaControls=/.test(invocation)) {
       violations.push(
-        `${relativePath}: SegmentedTablist filter controls must set 'ariaControls' for result-region accessibility`,
+        `${relativePath}: SegmentedControl filter controls must set 'ariaControls' for result-region accessibility`,
       );
       break;
     }

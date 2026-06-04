@@ -24,7 +24,7 @@ import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
-import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
+import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { StaleState } from "@/components/shared/StaleState";
 import { Button } from "@/components/ui/button";
 import { laneParamToTab, tabToLaneParam } from "@/features/leaderboard/lib/lane-param";
@@ -300,7 +300,7 @@ export function LeaderboardPageClient() {
           />
           <div className="space-y-2">
             <p className="text-xs font-medium text-primary">Lane</p>
-            <SegmentedTablist
+            <SegmentedControl
               options={tabs.map((item) => {
                 const Icon = TAB_ICONS[item];
                 return {
@@ -316,7 +316,7 @@ export function LeaderboardPageClient() {
               ariaLabel="Leaderboard lane filters"
               ariaControls={leaderboardRowsRegionId}
               className="w-full"
-              tabIdPrefix="leaderboard-lane-tab"
+              controlIdPrefix="leaderboard-lane-filter"
               wrap
             />
           </div>

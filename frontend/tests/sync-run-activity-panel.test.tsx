@@ -210,10 +210,10 @@ describe("SyncRunActivityPanel", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("tab", { name: "Completed" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Completed" }));
     expect(screen.getByText("No sync runs match this filter.")).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("tab", { name: "Partial" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Partial" }));
     expect(screen.queryByText("No sync runs match this filter.")).toBeNull();
     expect(screen.getByText(/octocat\s*•\s*user/i)).toBeTruthy();
   });

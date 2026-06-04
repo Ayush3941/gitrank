@@ -24,7 +24,7 @@ import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
-import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
+import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { StaleState } from "@/components/shared/StaleState";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -227,7 +227,7 @@ export function QuestsPageClient() {
             />
             <div className="space-y-2">
               <p className="text-xs font-medium text-primary">Cadence lane</p>
-              <SegmentedTablist
+              <SegmentedControl
                 options={QUEST_FILTERS.map((item) => {
                   const count =
                     item.value === "All"
@@ -262,7 +262,7 @@ export function QuestsPageClient() {
                 ariaLabel="Mission cadence filters"
                 ariaDescribedBy={questsFilterStatusId}
                 ariaControls={questsMissionsRegionId}
-                tabIdPrefix="quest-filter-tab"
+                controlIdPrefix="quest-filter"
                 wrap
               />
             </div>

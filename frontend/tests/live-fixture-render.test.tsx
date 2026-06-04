@@ -93,9 +93,9 @@ describe("live fixture frontend smoke coverage", () => {
       await screen.findByText("Backed by live quest fixture evidence."),
     ).toBeTruthy();
     expect(screen.queryByText("Active: 1")).toBeNull();
-    fireEvent.click(screen.getByRole("tab", { name: /Weekly/i }));
+    fireEvent.click(screen.getByRole("radio", { name: /Weekly/i }));
     await waitFor(() =>
-      expect(screen.getByRole("tab", { name: /Weekly/i }).getAttribute("aria-selected")).toBe("true"),
+      expect(screen.getByRole("radio", { name: /Weekly/i }).getAttribute("aria-checked")).toBe("true"),
     );
     expect(await screen.findByText("Active: 1")).toBeTruthy();
     const paths = nonAnalyticsPaths();
@@ -117,9 +117,9 @@ describe("live fixture frontend smoke coverage", () => {
     expect(screen.queryByRole("tab", { name: /Rare/i })).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: /Advanced filters/i }));
-    fireEvent.click(screen.getByRole("tab", { name: /Rare/i }));
+    fireEvent.click(screen.getByRole("radio", { name: /Rare/i }));
     await waitFor(() =>
-      expect(screen.getByRole("tab", { name: /Rare/i }).getAttribute("aria-selected")).toBe("true"),
+      expect(screen.getByRole("radio", { name: /Rare/i }).getAttribute("aria-checked")).toBe("true"),
     );
     expect(await screen.findByText("Active: 1")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /^Show details$/i }));

@@ -37,7 +37,7 @@ exports[`route-level visual regression snapshots > matches leaderboard visual sh
     "Lane Global",
     "Sync Synced",
   ],
-  "laneTabs": [
+  "laneOptions": [
     "Global",
     "Backend",
     "Tests",

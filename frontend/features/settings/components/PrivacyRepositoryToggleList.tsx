@@ -7,7 +7,7 @@ import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
 import { RemovableFilterChip } from "@/components/shared/RemovableFilterChip";
 import { ScrollableRegion } from "@/components/shared/ScrollableRegion";
 import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
-import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
+import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import type { RepositoryVisibility } from "@/types/gitrank";
@@ -114,7 +114,7 @@ export function PrivacyRepositoryToggleList({
           />
           <div className="space-y-2">
             <p className="text-xs font-medium text-primary">Visibility</p>
-            <SegmentedTablist
+            <SegmentedControl
               options={[
                 {
                   value: "All",
@@ -144,7 +144,7 @@ export function PrivacyRepositoryToggleList({
               ariaLabel="Repository visibility filter"
               ariaDescribedBy={statusId}
               ariaControls={repositoriesRegionId}
-              tabIdPrefix="repo-visibility-filter-tab"
+              controlIdPrefix="repo-visibility-filter"
               wrap
             />
           </div>

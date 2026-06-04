@@ -1,11 +1,8 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
-import {
-  handleHorizontalTabKeyDown,
-  type TablistKeyboardActivation,
-} from "@/components/shared/tablist-keyboard";
+import { handleSegmentedControlKeyDown } from "@/components/shared/segmented-control-keyboard";
 
-export type SegmentedTabOption<T extends string> = {
+export type SegmentedControlOption<T extends string> = {
   value: T;
   label: string;
   compactLabel?: string;
@@ -14,28 +11,26 @@ export type SegmentedTabOption<T extends string> = {
   minWidthClassName?: string;
 };
 
-export function SegmentedTablist<T extends string>({
+export function SegmentedControl<T extends string>({
   options,
   value,
   onValueChange,
   ariaLabel,
   ariaDescribedBy,
   ariaControls,
-  tabIdPrefix = "segmented-tab",
+  controlIdPrefix = "segmented-control",
   className,
   wrap = false,
-  keyboardActivation = "manual",
 }: {
-  options: Array<SegmentedTabOption<T>>;
+  options: Array<SegmentedControlOption<T>>;
   value: T;
   onValueChange: (value: T) => void;
   ariaLabel: string;
   ariaDescribedBy?: string;
   ariaControls?: string;
-  tabIdPrefix?: string;
+  controlIdPrefix?: string;
   className?: string;
   wrap?: boolean;
-  keyboardActivation?: TablistKeyboardActivation;
 }) {
   function handleSelect(nextValue: T) {
     if (nextValue === value) {
@@ -46,11 +41,11 @@ export function SegmentedTablist<T extends string>({
 
   return (
     <div
-      role="tablist"
+      role="radiogroup"
       aria-orientation="horizontal"
       aria-label={ariaLabel}
       aria-describedby={ariaDescribedBy}
-      data-segmented-tablist="true"
+      data-segmented-control="true"
       className={cn(
         wrap
           ? "dashboard-nav-track lane-rail flex flex-wrap gap-2 overflow-visible p-0.5"
@@ -58,10 +53,10 @@ export function SegmentedTablist<T extends string>({
         className,
       )}
     >
-      <ul role="list" className="contents">
+      <ul role="presentation" className="contents">
         {options.map((item) => {
           const active = value === item.value;
-          const optionID = `${tabIdPrefix}-${item.value.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+          const optionID = `${controlIdPrefix}-${item.value.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
           const hasDistinctCompactLabel =
             typeof item.compactLabel === "string" &&
             item.compactLabel.trim().length > 0 &&
@@ -69,15 +64,16 @@ export function SegmentedTablist<T extends string>({
           return (
             <li
               key={item.value}
+              role="none"
               className={cn("list-none shrink-0", item.minWidthClassName ?? "min-w-[8rem]")}
             >
               <button
                 type="button"
-                role="tab"
+                role="radio"
                 id={optionID}
                 aria-label={item.label}
                 aria-controls={ariaControls}
-                aria-selected={active}
+                aria-checked={active}
                 tabIndex={active ? 0 : -1}
                 data-active={active ? "true" : "false"}
                 data-segmented-option="true"
@@ -87,8 +83,7 @@ export function SegmentedTablist<T extends string>({
                   handleSelect(item.value);
                 }}
                 onKeyDown={(event) => {
-                  handleHorizontalTabKeyDown(event, {
-                    activationMode: keyboardActivation,
+                  handleSegmentedControlKeyDown(event, {
                     onActivate: (target) => {
                       const nextValue = target.getAttribute("data-segmented-value");
                       if (!nextValue) {

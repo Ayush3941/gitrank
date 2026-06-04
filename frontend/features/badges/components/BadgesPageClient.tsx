@@ -27,7 +27,7 @@ import { InlineNotice } from "@/components/shared/InlineNotice";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
-import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
+import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { StaleState } from "@/components/shared/StaleState";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -453,7 +453,7 @@ export function BadgesPageClient() {
             <div className="grid gap-3">
               <div className="space-y-2">
                 <p className="text-xs font-medium text-primary">State</p>
-                <SegmentedTablist
+                <SegmentedControl
                   options={BADGE_VISIBILITY_FILTERS.map((item) => {
                     const Icon = item === "Unlocked" ? Unlock : item === "Locked" ? Lock : Medal;
                     const count =
@@ -475,7 +475,7 @@ export function BadgesPageClient() {
                   ariaLabel="Badge visibility filters"
                   ariaDescribedBy={badgesFilterStatusId}
                   ariaControls={badgesEarnedRegionId}
-                  tabIdPrefix="badge-visibility-tab"
+                  controlIdPrefix="badge-visibility-filter"
                   wrap
                 />
               </div>
@@ -502,7 +502,7 @@ export function BadgesPageClient() {
                 className="space-y-2"
               >
                 <p className="text-xs font-medium text-primary">Rarity</p>
-                <SegmentedTablist
+                <SegmentedControl
                   options={BADGE_RARITY_FILTERS.map((item) => ({
                     value: item,
                     label: item,
@@ -524,7 +524,7 @@ export function BadgesPageClient() {
                   ariaLabel="Badge rarity filters"
                   ariaDescribedBy={badgesFilterStatusId}
                   ariaControls={badgesEarnedRegionId}
-                  tabIdPrefix="badge-rarity-tab"
+                  controlIdPrefix="badge-rarity-filter"
                   wrap
                 />
               </div>

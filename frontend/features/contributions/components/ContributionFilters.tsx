@@ -20,7 +20,7 @@ import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
 import { RemovableFilterChip } from "@/components/shared/RemovableFilterChip";
 import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
-import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
+import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import {
   contributionFocusFilters,
   CONTRIBUTION_DEFAULT_FILTER,
@@ -208,7 +208,7 @@ export function ContributionFilters({
       <div id={mobileControlsId} className="grid gap-3">
         <div className="space-y-2">
           <p className="text-xs font-medium text-primary">Status</p>
-          <SegmentedTablist
+          <SegmentedControl
             options={contributionStatusFilters.map((filter) => {
               const Icon = statusIconByValue[filter];
               return {
@@ -223,7 +223,7 @@ export function ContributionFilters({
             onValueChange={handleStatusChange}
             ariaLabel="Contribution status filters"
             ariaControls={resultsRegionId}
-            tabIdPrefix="contribution-status-tab"
+            controlIdPrefix="contribution-status-filter"
             wrap
           />
         </div>
@@ -263,7 +263,7 @@ export function ContributionFilters({
         >
           <div className="space-y-2">
             <p className="text-xs font-medium text-primary">Category</p>
-            <SegmentedTablist
+            <SegmentedControl
               options={contributionFocusFilters.map((filter) => {
                 const Icon = focusIconByValue[filter];
                 return {
@@ -279,14 +279,14 @@ export function ContributionFilters({
               onValueChange={handleFocusChange}
               ariaLabel="Contribution focus filters"
               ariaControls={resultsRegionId}
-              tabIdPrefix="contribution-focus-tab"
+              controlIdPrefix="contribution-focus-filter"
               wrap
             />
             <p className="text-xs text-muted">Category filters contribution type.</p>
           </div>
           <div className="space-y-2">
             <p className="text-xs font-medium text-primary">Sort order</p>
-            <SegmentedTablist
+            <SegmentedControl
               options={contributionSortOptions.map((item) => {
                 const Icon = sortIconByValue[item];
                 return {
@@ -307,7 +307,7 @@ export function ContributionFilters({
               ariaLabel="Contribution sort options"
               ariaDescribedBy={statusId}
               ariaControls={resultsRegionId}
-              tabIdPrefix="contribution-sort-tab"
+              controlIdPrefix="contribution-sort-filter"
               wrap
             />
           </div>

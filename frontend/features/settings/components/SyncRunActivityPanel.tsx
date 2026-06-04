@@ -7,7 +7,7 @@ import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { ScrollableRegion } from "@/components/shared/ScrollableRegion";
 import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
-import { SegmentedTablist } from "@/components/shared/SegmentedTablist";
+import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { Button } from "@/components/ui/button";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { formatDateTime, formatRelativeDays } from "@/lib/formatters";
@@ -279,7 +279,7 @@ export function SyncRunActivityPanel({
           />
           <div className="space-y-2">
             <p className="text-xs font-medium text-primary">Run status</p>
-            <SegmentedTablist
+            <SegmentedControl
               options={SYNC_RUN_STATUS_FILTERS.map((status) => {
                 const meta = SYNC_RUN_STATUS_META[status];
                 return {
@@ -296,7 +296,7 @@ export function SyncRunActivityPanel({
               ariaLabel="Sync run status filter"
               ariaDescribedBy={filterStatusId}
               ariaControls={syncRunsRegionId}
-              tabIdPrefix="sync-run-status-filter-tab"
+              controlIdPrefix="sync-run-status-filter"
               wrap
             />
           </div>

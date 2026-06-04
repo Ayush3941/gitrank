@@ -142,7 +142,7 @@ function buildLeaderboardVisualSummary(container: HTMLElement) {
     route: "leaderboard",
     heading: text(container, "h1"),
     sectionCount: container.querySelectorAll("section").length,
-    laneTabs: texts(container, "[role='tablist'] [role='tab'] .truncate"),
+    laneOptions: texts(container, "[role='radiogroup'] [role='radio'] .truncate"),
     laneMeta: texts(container, "header ul[role='list'] li span"),
     ctas: texts(container, "header a, section a"),
     hasLeaderboardArena: Boolean(
