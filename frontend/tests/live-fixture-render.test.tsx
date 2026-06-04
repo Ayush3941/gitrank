@@ -114,7 +114,7 @@ describe("live fixture frontend smoke coverage", () => {
     expect(await screen.findByRole("heading", { name: "Badges" })).toBeTruthy();
     expect(screen.queryByText("Active: 1")).toBeNull();
     expect(screen.queryByRole("region", { name: /Hide details/i })).toBeNull();
-    expect(screen.queryByRole("tab", { name: /Rare/i })).toBeNull();
+    expect(screen.queryByRole("radio", { name: /Rare/i })).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: /Advanced filters/i }));
     fireEvent.click(screen.getByRole("radio", { name: /Rare/i }));

@@ -6,7 +6,7 @@
   - added a shared loading-copy helper for card and route loading states so screen-reader announcements avoid repeated `Loading` phrasing while preserving progressive route copy like `Preparing your dashboard`.
   - kept skeleton bars outside live regions and covered route/card loading announcements with focused render tests.
 - Segmented-control semantics pass:
-  - replaced the shared tablist-shaped filter control with `SegmentedControl`, using `radiogroup`/`radio` semantics and `aria-checked` for single-choice filters and view selectors.
+  - replaced the shared filter control with `SegmentedControl`, using `radiogroup`/`radio` semantics and `aria-checked` for single-choice filters and view selectors.
   - updated filter consistency checks and render tests so dashboard segmented controls stay visually unchanged while exposing the correct accessibility pattern.
 
 ## 2026-06-03
@@ -90,8 +90,8 @@
   - summary logic reads both legacy counters and new backend-prefixed keys (`persisted_*`, `fetched_*`) and highlights skipped/fetch-error counts.
   - completed runs with skipped or fetch-error telemetry now render a `Partial` status chip instead of a false-clean `Completed` badge.
   - failed runs now surface compact failure telemetry (`Failures`, `Timeout`, `Rate limited`, `Upstream`) from backend sync-run metrics.
-- Segmented-tab pointer-focus scroll-jump fix:
-  - removed forced pointer-down focus behavior in shared segmented tablists.
+- Segmented-control pointer-focus scroll-jump fix:
+  - removed forced pointer-down focus behavior in shared segmented controls.
   - pointer and mouse interactions now select without pre-focusing, reducing viewport jump risk on long settings/dashboard pages.
   - keyboard tab/arrow/enter behavior remains unchanged for accessibility.
 - Contributions filter-note presentation pass:
@@ -107,8 +107,8 @@
   - updated summary chips from `Category/Sort` to `View/Order` for cleaner scan semantics.
   - refined helper copy to plain-language guidance: use Status for PR state and Focus for work type.
   - added a clear-search fallback path that resets via `onSearchChange("")` when an explicit clear handler is absent.
-- Segmented-tab pointer interaction hardening pass:
-  - added pointer-down focus-without-scroll handling before click selection in shared segmented tablists.
+- Segmented-control pointer interaction hardening pass:
+  - added pointer-down focus-without-scroll handling before click selection in shared segmented controls.
   - preserves no-jump behavior for touch, pen, and mouse paths while keeping keyboard activation unchanged.
 - Settings sync-filter simplification pass:
   - switched sync status segmented controls to wrapping lanes with narrower minimum widths to avoid horizontal jitter.
@@ -223,9 +223,9 @@
 
 ## 2026-05-24
 
-- Segmented-tab focus fallback hardening pass:
+- Segmented-control focus fallback hardening pass:
   - introduced shared `focusWithoutScroll` fallback restoration logic for browsers that do not support `focus({ preventScroll: true })`.
-  - wired the helper into both pointer selection and keyboard navigation paths for segmented tablists.
+  - wired the helper into both pointer selection and keyboard navigation paths for segmented controls.
   - reduces jump-to-top behavior on long dashboard/settings pages when switching status filters.
 - Visual regression snapshot hardening pass:
   - switched route-level visual regression assertions from brittle full-HTML snapshots to stable semantic summaries.

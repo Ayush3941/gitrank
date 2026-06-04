@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
@@ -12,6 +12,12 @@ const filterFiles = [
   "features/settings/components/PrivacyRepositoryToggleList.tsx",
 ];
 
+const staleNameFiles = [
+  "components",
+  "features",
+  "tests",
+];
+
 const violations = [];
 
 for (const relativePath of filterFiles) {
@@ -20,6 +26,10 @@ for (const relativePath of filterFiles) {
 
   if (!source.includes("SegmentedControl")) {
     violations.push(`${relativePath}: expected SegmentedControl usage for filter controls`);
+  }
+
+  if (/SegmentedTablist|segmented-tablist|tablist-keyboard|aria-selected/.test(source)) {
+    violations.push(`${relativePath}: found stale segmented tablist naming or selection state`);
   }
 
   if (/<select\b/i.test(source)) {
@@ -45,6 +55,11 @@ for (const relativePath of filterFiles) {
   }
 }
 
+for (const relativePath of staleNameFiles) {
+  const absolutePath = path.join(root, relativePath);
+  scanForStaleNames(absolutePath, relativePath);
+}
+
 if (violations.length > 0) {
   console.error("Segmented filter consistency check failed:");
   for (const violation of violations) {
@@ -54,3 +69,22 @@ if (violations.length > 0) {
 }
 
 console.log("Segmented filter consistency check passed");
+
+function scanForStaleNames(directory, relativeDirectory) {
+  for (const entry of readdirSync(directory)) {
+    const absolutePath = path.join(directory, entry);
+    const relativePath = path.join(relativeDirectory, entry);
+    const stats = statSync(absolutePath);
+    if (stats.isDirectory()) {
+      scanForStaleNames(absolutePath, relativePath);
+      continue;
+    }
+    if (!/\.(tsx?|jsx?)$/.test(entry)) {
+      continue;
+    }
+    const source = readFileSync(absolutePath, "utf8");
+    if (/SegmentedTablist|segmented-tablist|tablist-keyboard|laneTabs/.test(source)) {
+      violations.push(`${relativePath}: found stale segmented tablist naming`);
+    }
+  }
+}

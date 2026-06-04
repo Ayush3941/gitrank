@@ -8,6 +8,7 @@ This document is intentionally detailed.
 
 - Added shared loading-copy normalization for route and card loading states so assistive-technology announcements remove duplicated `Loading` prefixes while preserving intentional progressive copy such as `Preparing your dashboard`.
 - Replaced the shared `SegmentedTablist` implementation with `SegmentedControl` radio-group semantics for dashboard filters and view selectors; filter controls now expose `radiogroup`/`radio` with `aria-checked`, and `npm run check:segmented-filters` enforces the shared component.
+- Tightened the segmented-control cleanup guard so stale tablist component names, stale `aria-selected` filter state, and old leaderboard snapshot naming cannot drift back into shared/source/test files.
 
 ## Session Notes (June 3, 2026)
 

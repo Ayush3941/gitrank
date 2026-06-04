@@ -49,7 +49,7 @@ describe("settings form accessibility behavior", () => {
         "select",
         "[role='button']",
         "[role='switch']",
-        "[role='tab']",
+        "[role='radio']",
       ].join(","),
     );
 

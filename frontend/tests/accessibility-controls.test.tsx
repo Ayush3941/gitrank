@@ -49,7 +49,7 @@ describe("accessibility control naming", () => {
         "select",
         "[role='button']",
         "[role='switch']",
-        "[role='tab']",
+        "[role='radio']",
       ].join(","),
     );
 
