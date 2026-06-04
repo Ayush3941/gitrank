@@ -1,5 +1,11 @@
 # Frontend UX Changelog
 
+## 2026-06-04
+
+- Loading-state polish:
+  - added a shared loading-copy helper for card and route loading states so screen-reader announcements avoid repeated `Loading` phrasing while preserving progressive route copy like `Preparing your dashboard`.
+  - kept skeleton bars outside live regions and covered route/card loading announcements with focused render tests.
+
 ## 2026-06-03
 
 - Type-safety gate restoration:

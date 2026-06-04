@@ -1,4 +1,5 @@
 import { GlowCard } from "@/components/shared/GlowCard";
+import { formatLoadingAnnouncement } from "@/lib/presentation/loading-copy";
 import { shouldShowHeaderEyebrow } from "@/lib/presentation/header-eyebrow";
 
 export function RouteLoadingState({
@@ -16,11 +17,12 @@ export function RouteLoadingState({
 }) {
   const cards = Array.from({ length: Math.max(1, cardCount) });
   const showEyebrow = shouldShowHeaderEyebrow(eyebrow, title);
+  const announcement = formatLoadingAnnouncement(title, description);
 
   return (
     <div className="space-y-6" aria-busy="true">
       <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
-        {`Loading ${title}. ${description}`}
+        {announcement}
       </p>
       <GlowCard variant="loading" className="space-y-4">
         {showEyebrow ? <p className="text-xs font-medium text-primary">{eyebrow}</p> : null}

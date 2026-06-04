@@ -1,8 +1,12 @@
 # Contributing to GitRank
 
-Last reviewed: June 3, 2026
+Last reviewed: June 4, 2026
 
 This document is intentionally detailed.
+
+## Session Notes (June 4, 2026)
+
+- Added shared loading-copy normalization for route and card loading states so assistive-technology announcements remove duplicated `Loading` prefixes while preserving intentional progressive copy such as `Preparing your dashboard`.
 
 ## Session Notes (June 3, 2026)
 
