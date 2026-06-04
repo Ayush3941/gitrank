@@ -8,6 +8,9 @@
 - Segmented-control semantics pass:
   - replaced the shared filter control with `SegmentedControl`, using `radiogroup`/`radio` semantics and `aria-checked` for single-choice filters and view selectors.
   - updated filter consistency checks and render tests so dashboard segmented controls stay visually unchanged while exposing the correct accessibility pattern.
+- ABRA insight provider clarity:
+  - frontend ABRA insight generation now follows `AI_PROVIDER` explicitly instead of selecting provider credentials by implicit fallback order.
+  - identity-summary source labels distinguish `ChatGPT`, `Gemini`, and deterministic copy so users can tell which enrichment path generated the visible narrative.
 
 ## 2026-06-03
 

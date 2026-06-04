@@ -14,6 +14,8 @@ import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { XPProgress } from "@/components/shared/XPProgress";
 import { Button } from "@/components/ui/button";
 import { uniqueDisplayValues } from "@/lib/display-values";
+import type { AbraInsightSource } from "@/lib/ai/abra-insights-types";
+import { formatAIInsightSourceLabel } from "@/lib/presentation/ai-insight-source";
 import type { UserProfile } from "@/types/gitrank";
 
 export function PublicProfileHero({
@@ -27,8 +29,9 @@ export function PublicProfileHero({
   shareHeadline: string;
   archetype?: string;
   identitySummary?: string;
-  identitySummaryMode?: "openai" | "deterministic";
+  identitySummaryMode?: AbraInsightSource;
 }) {
+  const identitySummarySourceLabel = formatAIInsightSourceLabel(identitySummaryMode);
   const topSkills = uniqueDisplayValues(user.topSkills, 4);
 
   return (
@@ -65,7 +68,7 @@ export function PublicProfileHero({
             <div className="neon-callout rounded-[var(--radius-universal)] px-4 py-3 text-sm text-muted">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="cyber-readout text-xs font-medium text-cyan-200">
-                  Identity summary ({identitySummaryMode === "openai" ? "ChatGPT" : "Deterministic"})
+                  Identity summary ({identitySummarySourceLabel})
                 </p>
                 <CopyTextButton
                   text={identitySummary}

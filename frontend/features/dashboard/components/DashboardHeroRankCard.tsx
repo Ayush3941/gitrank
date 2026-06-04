@@ -9,6 +9,8 @@ import { RankBadge } from "@/components/shared/RankBadge";
 import { XPProgress } from "@/components/shared/XPProgress";
 import { Button } from "@/components/ui/button";
 import { uniqueDisplayValues } from "@/lib/display-values";
+import type { AbraInsightSource } from "@/lib/ai/abra-insights-types";
+import { formatAIInsightSourceLabel } from "@/lib/presentation/ai-insight-source";
 import type { UserProfile } from "@/types/gitrank";
 
 export function DashboardHeroRankCard({
@@ -21,9 +23,10 @@ export function DashboardHeroRankCard({
   user: UserProfile;
   archetype?: string;
   identitySummary?: string;
-  aiMode?: "openai" | "deterministic";
+  aiMode?: AbraInsightSource;
   effectiveSyncState?: UserProfile["syncStatus"]["state"];
 }) {
+  const aiSourceLabel = formatAIInsightSourceLabel(aiMode);
   const strongestSignals = uniqueDisplayValues(user.strongestSignals, 4);
   const syncState = effectiveSyncState ?? user.syncStatus.state;
   const nextAction =
@@ -122,7 +125,7 @@ export function DashboardHeroRankCard({
         <div className="rounded-[var(--radius-universal)] border border-cyan-300/20 bg-cyan-400/8 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs font-medium text-cyan-200">
-              Identity brief ({aiMode === "openai" ? "ChatGPT" : "Deterministic"})
+              Identity brief ({aiSourceLabel})
             </p>
             <CopyTextButton
               text={identitySummary}

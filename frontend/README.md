@@ -223,10 +223,11 @@ PR XP and rank progression are not AI-authored: deterministic backend scoring is
 Set these in `gitrank/.env`:
 
 ```bash
+AI_PROVIDER=openai
 OPENAI_API_KEY=your-key
 OPENAI_MODEL=gpt-4o-mini
 # optional override
 # OPENAI_BASE_URL=https://api.openai.com/v1
 ```
 
-If `OPENAI_API_KEY` is not set or request generation fails, GitRank automatically falls back to deterministic insight copy so demo flows remain stable.
+If the selected provider key is not set or request generation fails, GitRank automatically falls back to deterministic insight copy so local flows remain stable. Use `AI_PROVIDER=gemini` with `GEMINI_API_KEY`, `GEMINI_MODEL`, and `GEMINI_BASE_URL` only when deliberately testing the Gemini-compatible path.

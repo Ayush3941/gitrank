@@ -10,9 +10,12 @@ import type {
   ContributionNarrative,
   SkillInsight,
 } from "@/lib/ai/abra-insights-types";
+import {
+  resolveAIProviderConfig,
+  type AIProvider,
+  type AIProviderConfig,
+} from "@/lib/ai/ai-provider-config";
 
-const DEFAULT_OPENAI_BASE_URL = "https://api.openai.com/v1";
-const DEFAULT_OPENAI_MODEL = "gpt-4o-mini";
 const CACHE_TTL_MS = 20 * 60 * 1000;
 const MAX_CONTRIBUTIONS = 8;
 const MAX_BADGES = 8;
@@ -92,13 +95,13 @@ export async function buildAbraInsights(
   }
 
   const fallback = deterministicInsights(normalized);
-  const apiKey = process.env.OPENAI_API_KEY?.trim() || process.env.GEMINI_API_KEY?.trim();
-  if (!apiKey) {
+  const providerConfig = resolveAIProviderConfig();
+  if (!providerConfig) {
     return cacheResult(cacheKey, fallback);
   }
 
   try {
-    const generated = await generateOpenAIInsights(normalized, apiKey);
+    const generated = await generateOpenAIInsights(normalized, providerConfig);
     const merged = mergeInsights(fallback, generated);
     return cacheResult(cacheKey, merged);
   } catch {
@@ -264,21 +267,13 @@ function fallbackSkillInsights(input: AbraInsightsRequest): Record<string, Skill
 
 async function generateOpenAIInsights(
   input: AbraInsightsRequest,
-  apiKey: string,
+  config: AIProviderConfig,
 ): Promise<AbraInsightsResponse> {
-  const model =
-    process.env.OPENAI_MODEL?.trim() ||
-    process.env.GEMINI_MODEL?.trim() ||
-    DEFAULT_OPENAI_MODEL;
-  const baseURL =
-    process.env.OPENAI_BASE_URL?.trim() ||
-    process.env.GEMINI_BASE_URL?.trim() ||
-    DEFAULT_OPENAI_BASE_URL;
-  const endpoint = `${baseURL.replace(/\/+$/, "")}/chat/completions`;
+  const endpoint = `${config.baseURL.replace(/\/+$/, "")}/chat/completions`;
 
   const prompt = buildAIPrompt(input);
   const requestBody: OpenAIChatCompletionRequest = {
-    model,
+    model: config.model,
     temperature: 0.35,
     messages: [
       {
@@ -304,7 +299,7 @@ async function generateOpenAIInsights(
   const response = await fetch(endpoint, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${apiKey}`,
+      Authorization: `Bearer ${config.apiKey}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify(requestBody),
@@ -322,7 +317,7 @@ async function generateOpenAIInsights(
   }
 
   const parsed = JSON.parse(text) as AIInsightsShape;
-  return normalizeAIResponse(parsed);
+  return normalizeAIResponse(parsed, config.provider);
 }
 
 function extractOpenAIResponseText(content: string | OpenAIContentPart[] | undefined): string {
@@ -416,7 +411,10 @@ function abraResponseSchema() {
   };
 }
 
-function normalizeAIResponse(input: AIInsightsShape): AbraInsightsResponse {
+function normalizeAIResponse(
+  input: AIInsightsShape,
+  provider: AIProvider,
+): AbraInsightsResponse {
   const archetype = nonEmptyString(input.archetype) || "Systems Builder";
   const identitySummary =
     nonEmptyString(input.identity_summary) ||
@@ -473,7 +471,7 @@ function normalizeAIResponse(input: AIInsightsShape): AbraInsightsResponse {
   }
 
   return {
-    generatedBy: "openai",
+    generatedBy: provider,
     archetype,
     identitySummary,
     contributionNarratives,

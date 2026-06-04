@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import { OnboardingStepper } from "@/features/onboarding/components/OnboardingStepper";
 import { uniqueDisplayValues } from "@/lib/display-values";
 import { formatRelativeDays } from "@/lib/formatters";
+import type { AbraInsightSource } from "@/lib/ai/abra-insights-types";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
+import { formatAIInsightSourceLabel } from "@/lib/presentation/ai-insight-source";
 import { deriveEffectiveSyncState } from "@/lib/presentation/sync-evidence";
 import { formatSyncStateLabel } from "@/lib/presentation/status-tone";
 import type { UserProfile } from "@/types/gitrank";
@@ -22,8 +24,9 @@ export function RevealPanel({
   user: UserProfile;
   archetype?: string;
   identitySummary?: string;
-  aiMode?: "openai" | "deterministic";
+  aiMode?: AbraInsightSource;
 }) {
+  const aiSourceLabel = formatAIInsightSourceLabel(aiMode);
   const strongestSignals = uniqueDisplayValues(user.strongestSignals, 4);
   const strongestSignalSummary =
     strongestSignals.length > 0 ? strongestSignals.join(", ") : "recent contribution";
@@ -93,7 +96,7 @@ export function RevealPanel({
             </div>
           {identitySummary ? (
             <div className="mx-auto max-w-3xl rounded-[var(--radius-universal)] border border-fuchsia-300/25 bg-fuchsia-400/9 px-4 py-3 text-left text-sm text-foreground">
-              <p className="text-xs font-medium text-fuchsia-100">Identity summary ({aiMode === "openai" ? "ChatGPT" : "Deterministic"})</p>
+              <p className="text-xs font-medium text-fuchsia-100">Identity summary ({aiSourceLabel})</p>
               <p className="mt-2 leading-6">{identitySummary}</p>
             </div>
           ) : null}
