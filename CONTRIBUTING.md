@@ -11,6 +11,8 @@ This document is intentionally detailed.
 - Added shared plain, signed, and XP number formatters and routed dashboard rank, league, progress, and recent battle-report numbers through them instead of repeating locale formatting in UI components.
 - Routed leaderboard preview, nearby-bracket, XP gap, movement, and metric values through the shared number formatters so ranking surfaces follow the same numeric display contract as dashboard cards.
 - Added shared signed-XP formatting and routed PR battle-report overview, deterministic ledger, change-volume rows, score fallback rows, and penalty deltas through shared number formatters.
+- Routed public profile hero, skill summary, timeline, and best-PR number displays through shared number and XP formatters so public proof surfaces match dashboard/report numeric presentation.
+- Removed unused marketing and onboarding data barrel files after a static import reachability pass confirmed they were not imported by routes, components, hooks, libraries, or tests.
 
 ## Session Notes (June 4, 2026)
 

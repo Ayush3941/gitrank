@@ -15,6 +15,7 @@ import { XPProgress } from "@/components/shared/XPProgress";
 import { Button } from "@/components/ui/button";
 import { uniqueDisplayValues } from "@/lib/display-values";
 import type { AbraInsightSource } from "@/lib/ai/abra-insights-types";
+import { formatNumber, formatXp } from "@/lib/formatters";
 import { formatAIInsightSourceLabel } from "@/lib/presentation/ai-insight-source";
 import type { UserProfile } from "@/types/gitrank";
 
@@ -60,8 +61,16 @@ export function PublicProfileHero({
             textClassName="break-anywhere text-sm leading-7 text-muted"
           />
           <div className="grid gap-3 sm:grid-cols-3">
-            <MiniMetric icon={<GitPullRequest className="h-4 w-4" aria-hidden="true" />} label="Merged PRs" value={user.mergedPrCount.toLocaleString("en-US")} />
-            <MiniMetric icon={<Sparkles className="h-4 w-4" aria-hidden="true" />} label="GitRank score" value={user.gitRankScore.toLocaleString("en-US")} />
+            <MiniMetric
+              icon={<GitPullRequest className="h-4 w-4" aria-hidden="true" />}
+              label="Merged PRs"
+              value={formatNumber(user.mergedPrCount)}
+            />
+            <MiniMetric
+              icon={<Sparkles className="h-4 w-4" aria-hidden="true" />}
+              label="GitRank score"
+              value={formatNumber(user.gitRankScore)}
+            />
             <MiniMetric icon={<ShieldCheck className="h-4 w-4" aria-hidden="true" />} label="Consistency" value={`${user.consistencyScore}%`} />
           </div>
           {identitySummary ? (
@@ -139,7 +148,11 @@ export function PublicProfileHero({
           </div>
           <XPProgress className="mt-5" current={user.level.currentXp} next={user.level.nextLevelXp} />
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <MiniMetric icon={<Sparkles className="h-4 w-4" aria-hidden="true" />} label="Season XP" value={user.rankProgress.seasonXp.toLocaleString("en-US")} />
+            <MiniMetric
+              icon={<Sparkles className="h-4 w-4" aria-hidden="true" />}
+              label="Season XP"
+              value={formatXp(user.rankProgress.seasonXp)}
+            />
             <MiniMetric icon={<ShieldCheck className="h-4 w-4" aria-hidden="true" />} label="Formula" value={user.rankProgress.season.scoringVersion} />
           </div>
           <p className="cyber-readout mt-4 text-xs leading-5 text-muted">Evidence-backed snapshot.</p>

@@ -15,6 +15,12 @@
 - PR report number consistency:
   - added shared signed-XP formatting for PR report score deltas and fallback breakdown rows.
   - PR report overview, deterministic ledger, changed-file, addition, and deletion values now reuse shared number formatting instead of local locale calls.
+- Public profile number consistency:
+  - public profile hero metrics, skill summaries, timeline XP rows, and best-PR XP values now reuse shared number and XP formatters.
+  - public proof surfaces now match dashboard, leaderboard, and report numeric presentation.
+- Frontend source cleanup:
+  - removed unused marketing and onboarding data barrels that were no longer imported by production routes, shared components, or tests.
+  - kept actual marketing and onboarding UI copy owned by the active components instead of carrying parallel static lists.
 
 ## 2026-06-04
 

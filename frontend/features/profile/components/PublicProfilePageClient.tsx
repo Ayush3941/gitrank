@@ -25,7 +25,7 @@ import {
   deriveDeterministicArchetype,
   shouldRequestAbraInsights,
 } from "@/lib/ai/deterministic-identity-summary";
-import { formatRelativeDays } from "@/lib/formatters";
+import { formatNumber, formatRelativeDays, formatSignedNumber, formatSignedXp, formatXp } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { formatContributionStatusLabel } from "@/lib/presentation/contribution-status";
@@ -438,7 +438,7 @@ function LiteSkillSummary({ skills }: { skills: SkillNode[] }) {
             {strongest.category}
           </p>
           <p className="mt-1 text-xs text-muted">
-            Signal {strongest.score.toLocaleString("en-US")}
+            Signal {formatNumber(strongest.score)}
           </p>
         </div>
       ) : null}
@@ -452,7 +452,7 @@ function LiteSkillSummary({ skills }: { skills: SkillNode[] }) {
             >
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-medium text-white">{skill.category}</p>
-                <p className="text-xs text-muted">{skill.score}</p>
+                <p className="text-xs text-muted">{formatNumber(skill.score)}</p>
               </div>
               <div className="mt-2 h-2 rounded-full bg-primary/10">
                 <div
@@ -499,14 +499,14 @@ function LiteTimelineSummary({
           </span>
         </div>
         <p className="mt-1 text-lg font-semibold text-white">
-          {latest.xp.toLocaleString("en-US")} XP
+          {formatXp(latest.xp)} XP
         </p>
         <p className="mt-1 text-xs text-muted">
           {latest.label}
-          {previous ? ` • ${delta >= 0 ? "+" : ""}${delta.toLocaleString("en-US")} vs previous` : ""}
+          {previous ? ` • ${formatSignedNumber(delta)} vs previous` : ""}
         </p>
         <p className="mt-1 text-xs text-muted">
-          Recent window change: {windowDelta >= 0 ? "+" : ""}{windowDelta.toLocaleString("en-US")} XP
+          Recent window change: {formatSignedXp(windowDelta)}
         </p>
       </div>
       <ul role="list" className="space-y-2">
@@ -516,7 +516,7 @@ function LiteTimelineSummary({
             className="neon-surface flex items-center justify-between gap-3 rounded-[var(--radius-universal)] px-4 py-2.5"
           >
             <p className="text-sm text-muted">{point.label}</p>
-            <p className="text-sm font-semibold text-white">{point.xp.toLocaleString("en-US")}</p>
+            <p className="text-sm font-semibold text-white">{formatXp(point.xp)}</p>
           </li>
         ))}
       </ul>

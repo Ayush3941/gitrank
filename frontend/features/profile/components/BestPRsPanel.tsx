@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ClampedText } from "@/components/shared/ClampedText";
 import { GlowCard } from "@/components/shared/GlowCard";
+import { formatXp } from "@/lib/formatters";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import type { FeaturedContribution, PullRequestAnalysis } from "@/types/gitrank";
 
@@ -68,7 +69,7 @@ export function BestPRsPanel({
                 <div className="text-right">
                   <p className="text-xs font-medium text-primary">XP</p>
                   <p className="numeric-readout mt-2 text-2xl font-semibold text-white">
-                    {report.xpEarned.toLocaleString("en-US")}
+                    {formatXp(report.xpEarned)}
                   </p>
                 </div>
               </div>
