@@ -5,12 +5,12 @@ import { useDeferredValue, useId, useMemo, useState } from "react";
 import { ControlSurface } from "@/components/shared/ControlSurface";
 import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
+import { RelativeTime } from "@/components/shared/RelativeTime";
 import { ScrollableRegion } from "@/components/shared/ScrollableRegion";
 import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { Button } from "@/components/ui/button";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
-import { formatDateTime, formatRelativeDays } from "@/lib/formatters";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import {
   syncRunStatusLabel,
@@ -197,13 +197,11 @@ export function SyncRunActivityPanel({
           {lastUpdatedAt ? (
             <p className="text-xs font-medium text-cyan-200">
               Updated{" "}
-              <time
-                dateTime={toNormalizedDateTime(lastUpdatedAt) ?? undefined}
-                title={formatDateTime(lastUpdatedAt)}
-                aria-label={`Updated ${formatRelativeDays(lastUpdatedAt)}, ${formatDateTime(lastUpdatedAt)}`}
-              >
-                {formatRelativeDays(lastUpdatedAt)}
-              </time>
+              <RelativeTime
+                value={lastUpdatedAt}
+                fallback="time pending"
+                exactLabel="Updated at"
+              />
             </p>
           ) : null}
           <Button
@@ -222,12 +220,11 @@ export function SyncRunActivityPanel({
         <span className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold">
           Last attempted{" "}
           {lastAttemptedAt ? (
-            <time
-              dateTime={toNormalizedDateTime(lastAttemptedAt) ?? undefined}
-              title={formatDateTime(lastAttemptedAt)}
-            >
-              {formatRelativeDays(lastAttemptedAt)}
-            </time>
+            <RelativeTime
+              value={lastAttemptedAt}
+              fallback="time pending"
+              exactLabel="Last attempted at"
+            />
           ) : (
             "never"
           )}
@@ -235,12 +232,11 @@ export function SyncRunActivityPanel({
         <span className="neon-chip neon-chip-muted inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold">
           Last successful{" "}
           {lastSuccessfulAt ? (
-            <time
-              dateTime={toNormalizedDateTime(lastSuccessfulAt) ?? undefined}
-              title={formatDateTime(lastSuccessfulAt)}
-            >
-              {formatRelativeDays(lastSuccessfulAt)}
-            </time>
+            <RelativeTime
+              value={lastSuccessfulAt}
+              fallback="time pending"
+              exactLabel="Last successful at"
+            />
           ) : (
             "none yet"
           )}
@@ -673,17 +669,6 @@ function metricSumBySuffix(metrics: Record<string, number>, suffix: string): num
     total += Math.floor(value);
   }
   return total;
-}
-
-function toNormalizedDateTime(value?: string): string | null {
-  if (!value) {
-    return null;
-  }
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return null;
-  }
-  return parsed.toISOString();
 }
 
 function sanitizeSyncRunErrorMessage(value?: string): string | null {

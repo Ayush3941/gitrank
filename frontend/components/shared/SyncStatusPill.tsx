@@ -1,6 +1,6 @@
 import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, ShieldAlert, WifiOff } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { formatDateTime, formatRelativeDays } from "@/lib/formatters";
+import { RelativeTime } from "@/components/shared/RelativeTime";
 import type { SyncStatus } from "@/types/gitrank";
 
 const statusMap = {
@@ -22,11 +22,6 @@ export function SyncStatusPill({
 }) {
   const meta = statusMap[status.state];
   const Icon = meta.icon;
-  const machineDateTime = normalizeDateTime(status.lastSyncedAt);
-  const relative = formatRelativeDays(status.lastSyncedAt);
-  const exact = formatDateTime(status.lastSyncedAt);
-  const showExact = exact !== "Unknown" && machineDateTime !== null;
-  const spokenTime = showExact ? `Exact time ${exact}.` : "";
 
   return (
     <div
@@ -35,26 +30,17 @@ export function SyncStatusPill({
         meta.tone,
         className,
       )}
-      title={showExact ? `Last synced ${exact}` : undefined}
-      aria-label={`${meta.label}. Last synced ${relative}. ${spokenTime}`.trim()}
     >
       <Icon className="h-3.5 w-3.5" aria-hidden="true" />
       <span>{meta.label}</span>
-      <time className="text-current" dateTime={machineDateTime ?? undefined}>
-        {relative}
-      </time>
-      {showExact ? <span className="hidden text-current sm:inline">({exact})</span> : null}
+      <RelativeTime
+        value={status.lastSyncedAt}
+        fallback="Never synced"
+        exactLabel="Exact sync time"
+        exactVisibility="responsive"
+        className="text-current"
+        exactClassName="text-current"
+      />
     </div>
   );
-}
-
-function normalizeDateTime(value?: string): string | null {
-  if (!value) {
-    return null;
-  }
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-  return date.toISOString();
 }

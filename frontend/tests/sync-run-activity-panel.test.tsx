@@ -190,6 +190,29 @@ describe("SyncRunActivityPanel", () => {
     expect(screen.getAllByText("Completed").length).toBeGreaterThan(0);
   });
 
+  it("keeps sync-run timestamps semantic without hover-only title text", () => {
+    render(
+      <SyncRunActivityPanel
+        runs={[sampleRun]}
+        lastUpdatedAt="2026-05-25T00:05:00Z"
+        lastAttemptedAt="2026-05-25T00:04:00Z"
+        lastSuccessfulAt="2026-05-25T00:02:00Z"
+        isLoading={false}
+        isRefreshing={false}
+        isError={false}
+        onRefresh={() => undefined}
+      />,
+    );
+
+    const semanticTimes = screen.getAllByText((_content, element) => element?.tagName.toLowerCase() === "time");
+    expect(semanticTimes.length).toBeGreaterThanOrEqual(3);
+    for (const semanticTime of semanticTimes) {
+      expect(semanticTime.hasAttribute("title")).toBe(false);
+    }
+    expect(screen.getByText(/Last attempted at:/).className).toContain("sr-only");
+    expect(screen.getByText(/Last successful at:/).className).toContain("sr-only");
+  });
+
   it("classifies completed rows with degraded metrics under the Partial filter", () => {
     const degradedCompletedRun = {
       ...sampleRun,

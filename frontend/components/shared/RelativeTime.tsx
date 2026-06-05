@@ -1,0 +1,53 @@
+import { cn } from "@/lib/cn";
+import { formatDateTime, formatRelativeDays } from "@/lib/formatters";
+
+type ExactTimeVisibility = "screen-reader" | "responsive" | "hidden";
+
+export function RelativeTime({
+  value,
+  fallback = "Unknown sync time",
+  exactLabel = "Exact timestamp",
+  exactVisibility = "screen-reader",
+  className,
+  exactClassName,
+}: {
+  value?: string;
+  fallback?: string;
+  exactLabel?: string;
+  exactVisibility?: ExactTimeVisibility;
+  className?: string;
+  exactClassName?: string;
+}) {
+  const normalizedDateTime = normalizeDateTime(value);
+  if (!normalizedDateTime) {
+    return <span className={className}>{fallback}</span>;
+  }
+
+  const relative = formatRelativeDays(value);
+  const exact = formatDateTime(value);
+  const shouldExposeExact = exact !== "Unknown" && exactVisibility !== "hidden";
+
+  return (
+    <time className={className} dateTime={normalizedDateTime}>
+      <span>{relative}</span>
+      {shouldExposeExact ? <span className="sr-only">{`, ${exactLabel}: ${exact}`}</span> : null}
+      {shouldExposeExact && exactVisibility === "responsive" ? (
+        <span aria-hidden="true" className={cn("hidden sm:inline", exactClassName)}>
+          {" "}
+          ({exact})
+        </span>
+      ) : null}
+    </time>
+  );
+}
+
+function normalizeDateTime(value?: string): string | null {
+  if (!value) {
+    return null;
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+  return date.toISOString();
+}
