@@ -1,4 +1,4 @@
-export type RefreshFeedbackTone = "success" | "warning" | "error";
+type RefreshFeedbackTone = "success" | "warning" | "error";
 
 export type RefreshFeedback = {
   message: string;

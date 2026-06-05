@@ -2,6 +2,10 @@
 
 ## 2026-06-05
 
+- Frontend cleanup:
+  - pruned unused exported helpers/types from preference, formatting, metrics, evidence-chip, PR-report API, AI-insight, refresh-feedback, and shared model modules.
+  - removed obsolete manual installation/review/issue sync client wrappers after the settings operator panel cleanup left no UI caller.
+  - declared scanner/test packages directly in `devDependencies` while keeping the narrow `dom-accessibility-api` test shim required by that package's export map.
 - Sync-log error state:
   - settings sync-log fetch failures now render through shared `ErrorState` instead of a feature-local rose alert card.
   - shared `ErrorState` retry actions can be disabled while retry work is already active.

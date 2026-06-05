@@ -57,12 +57,6 @@ export function formatRatioPercent(value: number, fallback = "0%") {
   return formatPercent(value * 100, fallback);
 }
 
-export function formatCompactNumber(value: number) {
-  return new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(
-    value,
-  );
-}
-
 type DateValue = Date | string | undefined;
 
 function validDate(value: DateValue): Date | null {

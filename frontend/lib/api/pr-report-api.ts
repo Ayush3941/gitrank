@@ -9,7 +9,7 @@ import type {
 import { normalizePRCategory } from "@/lib/runtime/pr-category-policy";
 import { normalizeSkillCategory as normalizeRuntimeSkillCategory } from "@/lib/runtime/skill-category-policy";
 
-export type ApiPRReportContribution = {
+type ApiPRReportContribution = {
   id: string;
   owner: string;
   repo: string;
@@ -35,14 +35,14 @@ export type ApiPRReportContribution = {
   evidence_signals?: string[];
 };
 
-export type ApiScoreBreakdown = {
+type ApiScoreBreakdown = {
   label: string;
   delta_xp: number;
   type: string;
   reason: string;
 };
 
-export type ApiScoreComponent = {
+type ApiScoreComponent = {
   key: string;
   label: string;
   value: number;
@@ -51,7 +51,7 @@ export type ApiScoreComponent = {
   reason: string;
 };
 
-export type ApiPRReportBadgeUnlock = {
+type ApiPRReportBadgeUnlock = {
   key: string;
   name: string;
   description?: string;
@@ -62,7 +62,7 @@ export type ApiPRReportBadgeUnlock = {
   evidence_pr_ids?: string[];
 };
 
-export type ApiPRReportSuggestedQuest = {
+type ApiPRReportSuggestedQuest = {
   id: string;
   title: string;
   description: string;
@@ -72,7 +72,7 @@ export type ApiPRReportSuggestedQuest = {
   evidence_signals?: string[];
 };
 
-export type ApiPRReportEvidenceState = {
+type ApiPRReportEvidenceState = {
   status: PREvidenceState["status"];
   reasons?: string[];
   missing_evidence?: string[];

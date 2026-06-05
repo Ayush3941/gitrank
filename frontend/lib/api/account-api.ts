@@ -356,28 +356,6 @@ export async function runUserSync(user?: string): Promise<ApiSyncExecutionRespon
   }
 }
 
-export async function runInstallationSync(
-  installationId: number,
-): Promise<ApiSyncExecutionResponse> {
-  const csrfToken = requireCSRFToken();
-  const response = await fetch("/api/sync/installation", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRF-Token": csrfToken,
-    },
-    credentials: "same-origin",
-    cache: "no-store",
-    body: JSON.stringify({
-      installation_id: installationId,
-    }),
-  });
-  return adaptJSON<ApiSyncExecutionResponse>(response, "Installation sync failed.", {
-    transformError: (message, status, code) =>
-      sanitizeSyncExecutionError(message, status, code, "installation"),
-  });
-}
-
 export async function runPullRequestSync(
   repository: string,
   number: number,
@@ -402,60 +380,6 @@ export async function runPullRequestSync(
   return adaptJSON<ApiSyncExecutionResponse>(response, "Pull request sync failed.", {
     transformError: (message, status, code) =>
       sanitizeSyncExecutionError(message, status, code, "pull_request"),
-  });
-}
-
-export async function runReviewSync(
-  repository: string,
-  number: number,
-  context?: SyncExecutionAuthContext,
-): Promise<ApiSyncExecutionResponse> {
-  const syncContext = normalizeSyncExecutionContext(context);
-  const csrfToken = requireCSRFToken();
-  const response = await fetch("/api/sync/review", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRF-Token": csrfToken,
-    },
-    credentials: "same-origin",
-    cache: "no-store",
-    body: JSON.stringify({
-      repository,
-      number,
-      ...syncContext,
-    }),
-  });
-  return adaptJSON<ApiSyncExecutionResponse>(response, "Review sync failed.", {
-    transformError: (message, status, code) =>
-      sanitizeSyncExecutionError(message, status, code, "review"),
-  });
-}
-
-export async function runIssueSync(
-  repository: string,
-  number: number,
-  context?: SyncExecutionAuthContext,
-): Promise<ApiSyncExecutionResponse> {
-  const syncContext = normalizeSyncExecutionContext(context);
-  const csrfToken = requireCSRFToken();
-  const response = await fetch("/api/sync/issue", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRF-Token": csrfToken,
-    },
-    credentials: "same-origin",
-    cache: "no-store",
-    body: JSON.stringify({
-      repository,
-      number,
-      ...syncContext,
-    }),
-  });
-  return adaptJSON<ApiSyncExecutionResponse>(response, "Issue sync failed.", {
-    transformError: (message, status, code) =>
-      sanitizeSyncExecutionError(message, status, code, "issue"),
   });
 }
 

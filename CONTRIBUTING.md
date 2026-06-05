@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 5, 2026)
 
+- Pruned unused frontend export surface from preference, formatting, metric, evidence-signal, PR-report, AI-insight, refresh-feedback, and shared type modules; removed obsolete manual installation/review/issue sync helper wrappers that no UI path calls; declared direct dev dependencies for scanner/test imports while keeping the narrow `dom-accessibility-api` test shim required by the package export map.
 - Routed settings sync-log fetch failures through shared `ErrorState` and added disabled retry support so panel-level errors no longer carry bespoke rose-card markup.
 - Extended shared `InlineNotice` with assertive alert-mode semantics and routed settings account-action errors plus onboarding sync-action errors through it instead of hand-built inline alert markup.
 - Routed settings repository-visibility and sync-run empty/filter states through shared `EmptyState`, removing one-off dashed cards and dead disabled reset actions while keeping real reset and dashboard recovery actions available.

@@ -63,7 +63,7 @@ export function useNetworkConstraintPreference() {
   return Boolean(networkConstraintReason);
 }
 
-export function useNetworkConstraintReason() {
+function useNetworkConstraintReason() {
   return useSyncExternalStore<NetworkConstraintReason | null>(
     subscribeNetworkConstraint,
     getNetworkConstraintReasonSnapshot,

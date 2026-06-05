@@ -28,7 +28,7 @@ export function buildEvidenceSignalChips(
   return output;
 }
 
-export function formatEvidenceSignal(signal: string): string | null {
+function formatEvidenceSignal(signal: string): string | null {
   const value = signal.trim();
   if (!value) {
     return null;

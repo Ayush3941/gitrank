@@ -111,41 +111,7 @@ export function summarizeRepositories(
     .slice(0, limit);
 }
 
-export function monthTimeline(contributions: Contribution[]): Array<{ month: string; xp: number }> {
-  const map = new Map<string, number>();
-  for (const row of contributions) {
-    const date = new Date(row.mergedAt);
-    if (Number.isNaN(date.getTime())) continue;
-    const key = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
-    map.set(key, (map.get(key) ?? 0) + row.xpEarned);
-  }
-
-  return [...map.entries()]
-    .sort(([left], [right]) => left.localeCompare(right))
-    .slice(-8)
-    .map(([key, xp]) => {
-      const [year, month] = key.split("-");
-      const date = new Date(Date.UTC(Number(year), Number(month) - 1, 1));
-      return {
-        month: new Intl.DateTimeFormat("en-US", {
-          month: "short",
-          timeZone: "UTC",
-        }).format(date),
-        xp,
-      };
-    });
-}
-
-export function uniqueContributionDayCount(contributions: Contribution[]): number {
-  const daySet = new Set<string>();
-  for (const row of contributions) {
-    const key = toUTCDateKey(row.mergedAt);
-    if (key) daySet.add(key);
-  }
-  return daySet.size;
-}
-
-export function toUTCDateKey(value: string): string {
+function toUTCDateKey(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
     return "";

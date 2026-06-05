@@ -36,7 +36,7 @@ export type SyncState =
   | "failed"
   | "rate_limited";
 
-export type ContributionStatus = "merged" | "open" | "closed";
+type ContributionStatus = "merged" | "open" | "closed";
 
 export type SkillCategory =
   | "Documentation"
@@ -62,7 +62,7 @@ export type BadgeIcon =
   | "shield"
   | "wrench";
 
-export interface GitRankLevel {
+interface GitRankLevel {
   currentLevel: number;
   title: string;
   currentXp: number;
@@ -85,7 +85,7 @@ export interface LeaderboardSeason {
   explanation: string;
 }
 
-export interface RankProgress {
+interface RankProgress {
   season: LeaderboardSeason;
   currentTier: RankTier;
   nextTier?: RankTier;
@@ -208,7 +208,7 @@ export interface PREvidenceState {
   stale: boolean;
 }
 
-export interface PRSuggestedQuest {
+interface PRSuggestedQuest {
   id: string;
   title: string;
   description: string;
@@ -374,15 +374,6 @@ export interface ProfileViewData {
   scoreHistoryCap?: number;
   highXPThreshold?: number;
   shareHeadline: string;
-  trendWindowLabel: string;
-  refreshedAt: string;
-  isStale: boolean;
-  partialProfileAvailable: boolean;
-}
-
-export interface DashboardData {
-  user: UserProfile;
-  recentReports: PullRequestAnalysis[];
   trendWindowLabel: string;
   refreshedAt: string;
   isStale: boolean;

@@ -24,7 +24,7 @@ export type AbraBadgeInput = {
   evidencePrIds: string[];
 };
 
-export type AbraProfileInput = {
+type AbraProfileInput = {
   username: string;
   displayName: string;
   currentTitle: string;
